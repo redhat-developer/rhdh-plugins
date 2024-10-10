@@ -1,0 +1,6 @@
+{
+  "platform": "github",
+  "includeForks": false,
+  "repositories": ["redhat-developer/rhdh-plugins"],
+  "gitAuthor": "Renovate Bot <bot@renovateapp.com>"
+}
