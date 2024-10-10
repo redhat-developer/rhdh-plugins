@@ -1623,9 +1623,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/cli@portal:./workspaces/repo-tools/packages/cli::locator=%40backstage-community%2Fplugins%40workspace%3A.":
+"@backstage-community/cli@portal:./workspaces/repo-tools/packages/cli::locator=%40redhat-developer%2Frhdh-plugins%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "@backstage-community/cli@portal:./workspaces/repo-tools/packages/cli::locator=%40backstage-community%2Fplugins%40workspace%3A."
+  resolution: "@backstage-community/cli@portal:./workspaces/repo-tools/packages/cli::locator=%40redhat-developer%2Frhdh-plugins%40workspace%3A."
   dependencies:
     "@backstage/cli": ^0.26.11
     "@backstage/cli-node": ^0.2.7
@@ -1642,32 +1642,6 @@ __metadata:
   bin:
     community-cli: bin/community-cli
   languageName: node
-  linkType: soft
-
-"@backstage-community/plugins@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@backstage-community/plugins@workspace:."
-  dependencies:
-    "@backstage-community/cli": "portal:./workspaces/repo-tools/packages/cli"
-    "@backstage/cli": ^0.27.0
-    "@backstage/cli-node": ^0.2.2
-    "@changesets/parse": ^0.4.0
-    "@manypkg/get-packages": ^2.2.2
-    "@octokit/rest": ^20.1.1
-    "@spotify/eslint-plugin": ^15.0.0
-    "@spotify/prettier-config": ^15.0.0
-    array-to-table: ^1.0.1
-    eslint: ^8.6.0
-    eslint-plugin-notice: ^0.9.10
-    eslint-plugin-react: ^7.28.0
-    eslint-plugin-testing-library: ^6.0.0
-    fs-extra: 11.2.0
-    husky: ^9.0.11
-    lint-staged: ^15.2.2
-    lodash.escaperegexp: ^4.1.2
-    node-fetch: ^2.6.7
-    prettier: ^2.3.2
-  languageName: unknown
   linkType: soft
 
 "@backstage/catalog-model@npm:^1.5.0":
@@ -3968,6 +3942,32 @@ __metadata:
   checksum: a82eced9519f4dcac424acae719f819ab4150bfcf2874ac7daaf25a4f1c409e3d8b9d693fea0c686c24d520a5473756df32da90d8b89739670f8f8084c600bb4
   languageName: node
   linkType: hard
+
+"@redhat-developer/rhdh-plugins@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@redhat-developer/rhdh-plugins@workspace:."
+  dependencies:
+    "@backstage-community/cli": "portal:./workspaces/repo-tools/packages/cli"
+    "@backstage/cli": ^0.27.0
+    "@backstage/cli-node": ^0.2.2
+    "@changesets/parse": ^0.4.0
+    "@manypkg/get-packages": ^2.2.2
+    "@octokit/rest": ^20.1.1
+    "@spotify/eslint-plugin": ^15.0.0
+    "@spotify/prettier-config": ^15.0.0
+    array-to-table: ^1.0.1
+    eslint: ^8.6.0
+    eslint-plugin-notice: ^0.9.10
+    eslint-plugin-react: ^7.28.0
+    eslint-plugin-testing-library: ^6.0.0
+    fs-extra: 11.2.0
+    husky: ^9.0.11
+    lint-staged: ^15.2.2
+    lodash.escaperegexp: ^4.1.2
+    node-fetch: ^2.6.7
+    prettier: ^2.3.2
+  languageName: unknown
+  linkType: soft
 
 "@rollup/plugin-commonjs@npm:^25.0.0":
   version: 25.0.7
