@@ -1,15 +1,15 @@
 {
-  "name": "@backstage-community/cli",
-  "description": "CLI for the Community Plugins Repository",
-  "version": "0.0.3",
+  "name": "@red-hat-developer-hub/cli",
+  "description": "CLI for the RHDH Plugins Repository",
+  "version": "0.0.1",
   "backstage": {
     "role": "cli"
   },
   "private": true,
-  "homepage": "https://backstage.io",
+  "homepage": "https://red.ht/rhdh",
   "repository": {
     "type": "git",
-    "url": "https://github.com/backstage/community-plugins",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
     "directory": "workspaces/repo-tools/packages/cli"
   },
   "keywords": [
@@ -25,7 +25,7 @@
     "start": "nodemon --"
   },
   "bin": {
-    "community-cli": "bin/community-cli"
+    "rhdh-cli": "bin/rhdh-cli"
   },
   "files": [
     "bin",
@@ -47,7 +47,7 @@
   },
   "nodemonConfig": {
     "watch": "./src",
-    "exec": "bin/community-cli",
+    "exec": "bin/rhdh-cli",
     "ext": "ts"
   },
   "devDependencies": {

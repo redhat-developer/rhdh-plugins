@@ -22,8 +22,8 @@ import * as url from 'url';
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const baseOptions = {
-  owner: 'backstage',
-  repo: 'community-plugins',
+  owner: 'redhat-developer',
+  repo: 'rhdh-plugins',
 };
 
 async function getPackageJson(filePath) {

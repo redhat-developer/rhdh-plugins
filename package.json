@@ -7,7 +7,7 @@
     "node": "20"
   },
   "scripts": {
-    "create-workspace": "community-cli workspace create",
+    "create-workspace": "rhdh-cli workspace create",
     "postinstall": "husky",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write ."
@@ -15,12 +15,12 @@
   "type": "module",
   "packageManager": "yarn@3.2.3",
   "devDependencies": {
-    "@backstage-community/cli": "portal:./workspaces/repo-tools/packages/cli",
     "@backstage/cli": "^0.27.0",
     "@backstage/cli-node": "^0.2.2",
     "@changesets/parse": "^0.4.0",
     "@manypkg/get-packages": "^2.2.2",
     "@octokit/rest": "^20.1.1",
+    "@red-hat-developer-hub/cli": "portal:./workspaces/repo-tools/packages/cli",
     "@spotify/eslint-plugin": "^15.0.0",
     "@spotify/prettier-config": "^15.0.0",
     "array-to-table": "^1.0.1",

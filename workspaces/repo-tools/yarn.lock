@@ -2985,29 +2985,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/cli@workspace:packages/cli":
-  version: 0.0.0-use.local
-  resolution: "@backstage-community/cli@workspace:packages/cli"
-  dependencies:
-    "@backstage/cli": ^0.26.11
-    "@backstage/cli-node": ^0.2.7
-    "@backstage/errors": ^1.2.4
-    "@manypkg/get-packages": ^2.2.1
-    "@types/fs-extra": ^11.0.4
-    "@types/inquirer": ^9.0.7
-    chalk: ^4.1.2
-    commander: ^12.0.0
-    find-up: ^5.0.0
-    fs-extra: ^11.2.0
-    inquirer: ^8.0.0
-    replace-in-file: ^7.1.0
-    semver: ^7.6.0
-    ts-morph: ^23.0.0
-  bin:
-    community-cli: bin/community-cli
-  languageName: unknown
-  linkType: soft
-
 "@backstage/backend-common@npm:^0.23.3":
   version: 0.23.3
   resolution: "@backstage/backend-common@npm:0.23.3"
@@ -5393,6 +5370,29 @@ __metadata:
   checksum: a82eced9519f4dcac424acae719f819ab4150bfcf2874ac7daaf25a4f1c409e3d8b9d693fea0c686c24d520a5473756df32da90d8b89739670f8f8084c600bb4
   languageName: node
   linkType: hard
+
+"@red-hat-developer-hub/cli@workspace:packages/cli":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/cli@workspace:packages/cli"
+  dependencies:
+    "@backstage/cli": ^0.26.11
+    "@backstage/cli-node": ^0.2.7
+    "@backstage/errors": ^1.2.4
+    "@manypkg/get-packages": ^2.2.1
+    "@types/fs-extra": ^11.0.4
+    "@types/inquirer": ^9.0.7
+    chalk: ^4.1.2
+    commander: ^12.0.0
+    find-up: ^5.0.0
+    fs-extra: ^11.2.0
+    inquirer: ^8.0.0
+    replace-in-file: ^7.1.0
+    semver: ^7.6.0
+    ts-morph: ^23.0.0
+  bin:
+    rhdh-cli: bin/rhdh-cli
+  languageName: unknown
+  linkType: soft
 
 "@rollup/plugin-commonjs@npm:^25.0.0":
   version: 25.0.7
