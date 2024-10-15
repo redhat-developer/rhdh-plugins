@@ -7,4 +7,7 @@
 
 <!--- Please include the following in your Pull Request when applicable: -->
 
-- [ ] A changeset describing the change and affected packages. ([more info](https://github.com/backstage/community-plugins/blob/master/CONTRIBUTING.md#creating-changesets))
+- [ ] A changeset describing the change and affected packages. ([more info](https://github.com/redhat-developer/rhdh-plugins/blob/main/CONTRIBUTING.md#creating-changesets))
+- [ ] Added or Updated documentation
+- [ ] Tests for new functionality and regression tests for bug fixes
+- [ ] Screenshots attached (for UI changes)
