@@ -62,6 +62,12 @@ async function main() {
     throw new Error('WORKSPACE_NAME environment variable not set');
   }
 
+  // Don't release repo-tools workspace
+  if (process.env.WORKSPACE_NAME === 'repo-tools') {
+    console.log('Changes detected in repo-tools workspace, no release needed');
+    return;
+  }
+
   const repoRoot = resolvePath(__dirname, '..', '..');
   process.cwd(resolvePath(repoRoot, 'workspaces', process.env.WORKSPACE_NAME));
 
