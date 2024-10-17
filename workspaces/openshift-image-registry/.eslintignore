@@ -1,3 +1,2 @@
-!.plugins/openshift-image-registry/.eslintignore
-!.plugins/openshift-image-registry/.prettierrc.js
+!.prettierrc.js
 playwright.config.ts
