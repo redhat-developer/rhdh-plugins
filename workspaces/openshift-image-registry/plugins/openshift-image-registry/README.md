@@ -15,17 +15,17 @@ Please notice that the ServiceAccount will be created in your current namespace 
 Additional information on these commands could be found in the [OpenShift Container Platform authentication and authorization documentation](https://docs.openshift.com/container-platform/latest/authentication/index.html).
 
 ```console
-oc create serviceaccount janus-idp-openshift-image-registry-reader
+oc create serviceaccount red-hat-developer-hub-openshift-image-registry-reader
 
-oc create clusterrole janus-idp-openshift-image-registry-reader --verb=get,watch,list --resource=imagestreams --resource=imagestreamtags
+oc create clusterrole red-hat-developer-hub-openshift-image-registry-reader --verb=get,watch,list --resource=imagestreams --resource=imagestreamtags
 
-oc adm policy add-cluster-role-to-user janus-idp-openshift-image-registry-reader -z janus-idp-openshift-image-registry-reader
+oc adm policy add-cluster-role-to-user red-hat-developer-hub-openshift-image-registry-reader -z red-hat-developer-hub-openshift-image-registry-reader
 ```
 
 And finally you can use this command to create a token that is valid for one week:
 
 ```console
-oc create token --duration=168h janus-idp-openshift-image-registry-reader
+oc create token --duration=168h red-hat-developer-hub-openshift-image-registry-reader
 ```
 
 ### Installation

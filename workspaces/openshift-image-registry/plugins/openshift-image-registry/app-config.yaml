@@ -11,7 +11,7 @@ proxy:
 
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-acr:
+    red-hat-developer-hub.backstage-plugin-openshift-image-registry:
       dynamicRoutes:
         - path: /openshift-image-registry
           importName: OpenshiftImageRegistryPage

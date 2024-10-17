@@ -83,7 +83,7 @@
   "maintainers": [
     "@divyanshiGupta"
   ],
-  "author": "The Backstage Community",
+  "author": "Red Hat",
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "keywords": [

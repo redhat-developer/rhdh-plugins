@@ -25,7 +25,7 @@ module.exports = {
     '',
     '<THIRD_PARTY_MODULES>',
     '',
-    '^@janus-idp/(.*)$',
+    '^@red-hat-developer-hub/(.*)$',
     '',
     '<BUILTIN_MODULES>',
     '',
