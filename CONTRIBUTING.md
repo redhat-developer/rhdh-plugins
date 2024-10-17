@@ -54,7 +54,7 @@ Most plugins come with a standalone runner that you should be able to utilize in
 There could be times when there is a need for a more rich development environment for a workspace. Say that the workspace and it's plugin depend on a full catalog, and maybe the kubernetes plugin already running too, that could be a bit of a pain to set up. In that case, there might be a full Backstage environment that you can run with `yarn dev` in the workspace root, which will start up a full Backstage environment located in `$WORKSPACE_ROOT/packages/app` and `$WORKSPACE_ROOT/packages/backend`.
 
 > [!IMPORTANT]  
-> This full Backstage environment is not setup by default, and is setup on a per workspace basis. Check out the workspace `README.md` for more information on how to get a dev environment setup for each plugin.
+> Both the full Backstage environment and standalone runners are configured on a per-workspace basis. Be sure to check the workspace `README.md` for specific instructions on setting up the development environment for each plugin.
 
 ## Coding Guidelines
 
@@ -97,6 +97,9 @@ As soon as a plugin is part of the rhdh plugins repository every PR with a chang
 
 A release is automatically triggered by merging the plugins “Version Packages” PR.
 
+> [!Important]
+> Please note that plugins with the private property set to 'true' will not be published upon merging the "Version Packages" PR. If you want full autonomy over the release process, you can mark your plugin as private. In this case, the release process will be managed by the plugin maintainer.
+
 ## Creating a new Workspace
 
 For workspaces the name should reflect the name of the plugins contained in a simple manner (e.g. for the plugins `todo` & `todo-backend` the workspace would be called `todo`).
@@ -135,6 +138,7 @@ By migrating a plugin to this repository you will need to ensure you can meet ce
 
 - Agree to publish the plugin to the `@red-hat-developer-hub` npm scope.
 - Adopt the Changesets workflow for releasing new plugin versions.
+- Adhere to the repository security process for handling security-related issues.
 - Plugins moved to the repository should be licensed under Apache 2.0.
 
 ### Manual migration steps
@@ -156,9 +160,14 @@ git checkout -b migrate-workspace
 
 1. Create a new workspace in the rhdh plugins repository.
 
+```sh
+yarn create-workspace
+```
+
 2. Copy the plugin files from the source repository to the `redhat-developer/rhdh-plugins` repository.
 
 ```sh
+cd your-workspace-name
 cp -r ../existing-plugins/plugins/plugin-name plugins/
 ```
 
@@ -168,15 +177,15 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
 
 > **Note:** The `CODEOWNERS` file will have errors until you are a member of the Red Hat Developer GitHub organization. However, it is still useful to add `CODEOWNERS` at this point as it provides a documented reference as to who owns/maintains the plugin.
 
-1. Create a new pull request from your branch.
+7. Create a new pull request from your branch.
 
-2. Update external references to the old plugin location such as documentation to point to the new location in the `redhat-developer/rhdh-plugins` repository.
+8. Update external references to the old plugin location such as documentation to point to the new location in the `redhat-developer/rhdh-plugins` repository.
 
-3. In the original repository, update the plugin to indicate that it has been moved to the `redhat-developer/rhdh-plugins` repository. You may wish to deprecate the old version on npm.
+9. In the original repository, update the plugin to indicate that it has been moved to the `redhat-developer/rhdh-plugins` repository. You may wish to deprecate the old version on npm.
 
 ## API Reports
 
-Backstage uses [API Extractor](https://api-extractor.com/) and TSDoc comments to generate API Reports in Markdown format. These reports are what drive the [API Reference documentation](https://backstage.io/docs/reference/). What this means is that if you are making changes to the API or adding a new plugin then you will need either generate a new API Report or update an existing API Report. If you don't do this the CI build will fail when you create your Pull Request.
+This repository uses [API Extractor](https://api-extractor.com/) and TSDoc comments to generate API Reports in Markdown format, similar to those used in Backstage. If you make changes to the API or add a new plugin then you will need either generate a new API Report or update an existing API Report. If you don't do this the CI build will fail when you create your Pull Request.
 
 There are two ways you can do this:
 
@@ -185,7 +194,7 @@ There are two ways you can do this:
 
 > Note: the above commands assume you've run `yarn install` before hand or recently
 
-Each plugin/package has its own API Report which means you might see more then one file updated or created depending on your changes. These changes will then need to be committed as well.
+Each plugin/package has its own API Report which means you might see more than one file updated or created depending on your changes. These changes will then need to be committed as well.
 
 ## Submitting a Pull Request
 
