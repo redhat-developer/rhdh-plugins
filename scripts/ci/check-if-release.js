@@ -77,6 +77,17 @@ async function main() {
 
   // Ensure we have fetched the targetBranch
   await runPlain('git', 'fetch', 'origin', targetBranch);
+  const branchExists = await runPlain(
+    'git',
+    'rev-parse',
+    '--verify',
+    'plugin-openshift-image-registry@1.1.0',
+  );
+  if (!branchExists) {
+    console.error(
+      `Branch 'plugin-openshift-image-registry@1.1.0' does not exist.`,
+    );
+  }
 
   const diff = await runPlain(
     'git',
