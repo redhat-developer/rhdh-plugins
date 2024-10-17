@@ -87,6 +87,7 @@ jobs:
         env:
           WORKSPACE_NAME: ${{ inputs.workspace }}
           COMMIT_SHA_BEFORE: '${{ github.event.before }}'
+          TARGET_BRANCH: ${{inputs.branch}}
 
       - name: Update Version Packages (${{ inputs.workspace }}) PR
         id: changesets-pr
