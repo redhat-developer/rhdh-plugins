@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.1.1
+
+### Patch Changes
+
+- dd32692: The content is identical to v1.9.6, this is just for testing multiple release branches.
+
 ## 1.1.0
 
 ### Minor Changes
