@@ -98,7 +98,7 @@ jobs:
           title: Version Packages (${{ inputs.workspace }})
           cwd: workspaces/${{ inputs.workspace }}
           version: yarn changeset version
-          versionBranch: changesets-release/${{ inputs.workspace }}
+          versionBranch: changesets-release/${{ inputs.workspace }}/${{ inputs.branch }}
           skipRootChangelogUpdate: true
         env:
           GITHUB_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
