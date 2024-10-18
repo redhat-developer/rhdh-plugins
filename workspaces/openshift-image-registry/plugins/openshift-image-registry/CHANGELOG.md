@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.1.0
+
+### Minor Changes
+
+- 5ae9d94: The content is identical to v1.9.6, this is just for testing multiple release branches.
+
 ## 1.9.6
 
 ### Patch Changes
