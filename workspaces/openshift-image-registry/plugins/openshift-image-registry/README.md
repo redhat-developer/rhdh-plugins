@@ -1,3 +1,6 @@
+[! WARNING]
+This package is for testing purposes only. It is being published solely to validate multiple release lines in rhdh-plugins. Do not use in production.
+
 # OpenShift Image Registry plugin for Backstage
 
 The OpenShift Image Registry plugin displays all ImageStreams in an Openshift cluster.
