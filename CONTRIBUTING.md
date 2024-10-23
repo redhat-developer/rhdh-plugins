@@ -19,8 +19,6 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
   - [Migrating a plugin](#migrating-a-plugin)
     - [Manual migration steps](#manual-migration-steps)
     - [Using the cli to migrate plugins from janus-idp/backstage-plugins](#using-the-cli-to-migrate-plugins-from-janus-idpbackstage-plugins)
-      - [Prerequisites](#prerequisites)
-      - [Steps](#steps)
   - [API Reports](#api-reports)
   - [Submitting a Pull Request](#submitting-a-pull-request)
 
@@ -188,14 +186,9 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
 
 ### Using the cli to migrate plugins from janus-idp/backstage-plugins
 
-#### Prerequisites
+1. Prepare your environment by cloning a fork of both the `janus-idp/backstage-plugins` and the `backstage/rhdh-plugins` repositories
 
-- Have a `janus-idp/backstage-plugins` fork locally cloned
-- Have a `backstage/rhdh-plugins` fork locally cloned
-
-#### Steps
-
-1. In both repositories, create a new branch:
+2. In both repositories, create a new branch:
 
    - For `janus-idp/backstage-plugins`:
 
@@ -208,7 +201,7 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
      git checkout -b "migrate-workspace-name"
      ```
 
-2. In the `backstage/rhdh-plugins` repository, execute the janus-plugin migrate command.- Usage:`yarn rhdh-cli janus-plugin migrate --monorepo-path [path_to_backstage_plugins]--workspace-name [workspace_name] --branch [branch_name] --maintainers [maintainer1],[maintainer2],[maintainer3],...`
+3. In the `backstage/rhdh-plugins` repository, execute the janus-plugin migrate command.- Usage:`yarn rhdh-cli janus-plugin migrate --monorepo-path [path_to_backstage_plugins]--workspace-name [workspace_name] --branch [branch_name] --maintainers [maintainer1],[maintainer2],[maintainer3],...`
 
    - The `path_to_backstage_plugins` is the path to the `backstage-plugins` project where the plugin(s) you want to migrate live.
    - The `workspace-name` is the name of the workspace you wish to create in the `rhdh-plugins` project. All plugins in the `backstage-plugins` that either are exactly or start with `@janus-idp/backstage-plugin-[workspace_name]` will be migrated to this new workspace.
@@ -220,14 +213,14 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
       yarn rhdh-cli janus-plugin migrate --monorepo-path ../backstage-plugins --workspace-name workspace-name --branch deprecate-workspace-name --maintainers @maintainer1,@maintainer2,@maintainer3
      ```
 
-3. The script will generate changesets in both repositories. Be sure to commit these changes and open pull requests.
+4. The script will generate changesets in both repositories. Be sure to commit these changes and open pull requests.
 
 > [!IMPORTANT]  
 > This script updates metadata commonly found across all plugins. Please review your migrated plugins to ensure that all references to "janus" have been updated to point to "rhdh-plugins."
 
-4. If you run into CI issues take a look at [this github gist](https://gist.github.com/Fortune-Ndlovu/1562789f3905b4fe818b9079a3032982) which outlines the process taken to migrate argocd plugins in great detail.
+5. If you run into CI issues take a look at [this github gist](https://gist.github.com/Fortune-Ndlovu/1562789f3905b4fe818b9079a3032982) which outlines the process taken to migrate argocd plugins in great detail.
 
-5. Check if the migrated plugins need to be added to janus-idp/backstage-showcase. If they do, create a wrapper for them following the steps below:
+6. Check if the migrated plugins need to be added to janus-idp/backstage-showcase. If they do, create a wrapper for them following the steps below:
 
 - In `dynamic-plugins> wrappers` create a directory, name it based on your plugin (eg: `backstage-community-plugin-3scale-backend`)
 - Create a `src` directory within it
