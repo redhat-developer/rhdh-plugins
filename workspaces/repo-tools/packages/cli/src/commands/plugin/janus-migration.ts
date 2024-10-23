@@ -465,6 +465,7 @@ export default async (opts: OptionValues) => {
         movedPackageJson.peerDependencies.react;
       movedPackageJson.devDependencies['react-dom'] =
         movedPackageJson.peerDependencies.react;
+      movedPackageJson.devDependencies['react-router-dom'] = '^6.0.0';
     }
 
     await fs.writeJson(movedPackageJsonPath, movedPackageJson, { spaces: 2 });
@@ -508,17 +509,30 @@ export default async (opts: OptionValues) => {
     console.error(`Exec failed: ${error}`);
   }
 
-  // run yarn export dynamic in each package
+  // Run yarn export dynamic in each package
   for (const pkg of packagesToBeMoved) {
     console.log(
       chalk.yellow`Running yarn export-dynamic in ${pkg.packageJson.name}`,
     );
     const packagePath = path.join(workspacePath, pkg.relativeDir);
+
     try {
-      await exec('yarn', ['export-dynamic', '--clean'], {
-        cwd: packagePath,
-        shell: true,
-      });
+      // Read the package.json file
+      const packageJsonPath = path.join(packagePath, 'package.json');
+      const packageJson = await fs.readFile(packageJsonPath, 'utf-8');
+      const packageData = JSON.parse(packageJson);
+
+      // Check if the export-dynamic script exists
+      if (packageData.scripts && packageData.scripts['export-dynamic']) {
+        await exec('yarn', ['export-dynamic', '--clean'], {
+          cwd: packagePath,
+          shell: true,
+        });
+      } else {
+        console.log(
+          chalk.yellow`Skipping ${pkg.packageJson.name}: No export-dynamic script found.`,
+        );
+      }
     } catch (error) {
       console.log(error);
     }
