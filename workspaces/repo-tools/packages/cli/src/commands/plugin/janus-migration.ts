@@ -24,7 +24,6 @@ import { createWorkspace } from '../../lib/workspaces/createWorkspace';
 import { ExitCodeError } from '../../lib/errors';
 import { promisify } from 'util';
 import { execFile } from 'child_process';
-import semver from 'semver';
 
 const replace = require('replace-in-file');
 
@@ -123,12 +122,12 @@ const fixSourceCodeReferences = async (options: {
   for (const pkg of options.packagesToBeMoved) {
     const oldConfigPath = path.join(
       options.workspacePath,
-      pkg.packageJson.repository.directory,
+      (pkg.packageJson as any).repository?.directory,
       'app-config.janus-idp.yaml',
     );
     const newConfigPath = path.join(
       options.workspacePath,
-      pkg.packageJson.repository.directory,
+      (pkg.packageJson as any).repository?.directory,
       'app-config.yaml',
     );
 
@@ -147,7 +146,7 @@ const fixSourceCodeReferences = async (options: {
     // Update janus references in catalog-info.yaml
     const catalogInfoPath = path.join(
       options.workspacePath,
-      pkg.packageJson.repository.directory,
+      (pkg.packageJson as any).repository?.directory,
       'catalog-info.yaml',
     );
 
@@ -164,7 +163,7 @@ const fixSourceCodeReferences = async (options: {
     // Update janus references in .prettierrc.js
     const prettierConfigPath = path.join(
       options.workspacePath,
-      pkg.packageJson.repository.directory,
+      (pkg.packageJson as any).repository?.directory,
       '.prettierrc.js',
     );
 
