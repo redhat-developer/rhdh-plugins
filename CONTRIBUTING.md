@@ -18,6 +18,7 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
   - [Creating new plugins or packages in a Workspace](#creating-new-plugins-or-packages-in-a-workspace)
   - [Migrating a plugin](#migrating-a-plugin)
     - [Manual migration steps](#manual-migration-steps)
+    - [Using the cli to migrate plugins from janus-idp/backstage-plugins](#using-the-cli-to-migrate-plugins-from-janus-idpbackstage-plugins)
   - [API Reports](#api-reports)
   - [Submitting a Pull Request](#submitting-a-pull-request)
 
@@ -182,6 +183,52 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
 8. Update external references to the old plugin location such as documentation to point to the new location in the `redhat-developer/rhdh-plugins` repository.
 
 9. In the original repository, update the plugin to indicate that it has been moved to the `redhat-developer/rhdh-plugins` repository. You may wish to deprecate the old version on npm.
+
+### Using the cli to migrate plugins from janus-idp/backstage-plugins
+
+1. Prepare your environment by cloning a fork of both the `janus-idp/backstage-plugins` and the `backstage/rhdh-plugins` repositories
+
+2. In both repositories, create a new branch:
+
+   - For `janus-idp/backstage-plugins`:
+
+     ```bash
+     git checkout -b "deprecate-workspace-name"
+     ```
+
+   - For `backstage/rhdh-plugins`:
+     ```bash
+     git checkout -b "migrate-workspace-name"
+     ```
+
+3. In the `backstage/rhdh-plugins` repository, execute the janus-plugin migrate command.- Usage:`yarn rhdh-cli janus-plugin migrate --monorepo-path [path_to_backstage_plugins]--workspace-name [workspace_name] --branch [branch_name] --maintainers [maintainer1],[maintainer2],[maintainer3],...`
+
+   - The `path_to_backstage_plugins` is the path to the `backstage-plugins` project where the plugin(s) you want to migrate live.
+   - The `workspace-name` is the name of the workspace you wish to create in the `rhdh-plugins` project. All plugins in the `backstage-plugins` that either are exactly or start with `@janus-idp/backstage-plugin-[workspace_name]` will be migrated to this new workspace.
+   - The `branch_name` is the name of the branch in the `backstage-plugins` project where the changes to add a deprecate note for the migrated plugins will be made.
+   - The `maintainers` array of arguments is the github usernames of those individuals that should be listed as the maintainers for the migrated plugins. Please separate each maintainer by a comma while supplying this value.
+
+   - example usage:
+     ```bash
+      yarn rhdh-cli janus-plugin migrate --monorepo-path ../backstage-plugins --workspace-name workspace-name --branch deprecate-workspace-name --maintainers @maintainer1,@maintainer2,@maintainer3
+     ```
+
+4. The script will generate changesets in both repositories. Be sure to commit these changes and open pull requests.
+
+> [!IMPORTANT]  
+> This script updates metadata commonly found across all plugins. Please review your migrated plugins to ensure that all references to "janus" have been updated to point to "rhdh-plugins."
+
+5. If you run into CI issues take a look at [this github gist](https://gist.github.com/Fortune-Ndlovu/1562789f3905b4fe818b9079a3032982) which outlines the process taken to migrate argocd plugins in great detail.
+
+6. Check if the migrated plugins need to be added to janus-idp/backstage-showcase. If they do, create a wrapper for them following the steps below:
+
+- In `dynamic-plugins> wrappers` create a directory, name it based on your plugin (eg: `backstage-community-plugin-3scale-backend`)
+- Create a `src` directory within it
+- Add a `index.ts` file to this src directory and export from the plugin package here. Eg: `export * from '@backstage-community/plugin-3scale-backend';`
+- In `dynamic-plugins> wrappers > backstage-community-plugin-3scale-backend` (or whatever you named your wrapper directory), add a `package.json` file. Add your plugin package in dependencies.
+  - [Frontend plugin `package.json` example](https://github.com/janus-idp/backstage-showcase/blob/main/dynamic-plugins/wrappers/backstage-community-plugin-redhat-argocd/package.json)
+  - [Backend plugin `package.json` example](https://github.com/janus-idp/backstage-showcase/blob/main/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend/package.json)
+- run `yarn export-dynamic` to generate dist-dynamic directory
 
 ## API Reports
 
