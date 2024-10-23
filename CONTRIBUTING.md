@@ -220,10 +220,10 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
       yarn rhdh-cli janus-plugin migrate --monorepo-path ../backstage-plugins --workspace-name workspace-name --branch deprecate-workspace-name --maintainers @maintainer1,@maintainer2,@maintainer3
      ```
 
-3. > [!Important]
-   > This script updates metadata commonly found across all plugins. Please review your migrated plugins to ensure that all references to "janus" have been updated to point to "rhdh-plugins."
+3. The script will generate changesets in both repositories. Be sure to commit these changes and open pull requests.
 
-   The script will generate changesets in both repositories. Be sure to commit these changes and open pull requests.
+> [!IMPORTANT]  
+>  This script updates metadata commonly found across all plugins. Please review your migrated plugins to ensure that all references to "janus" have been updated to point to "rhdh-plugins."
 
 4. If you run into CI issues take a look at [this github gist](https://gist.github.com/Fortune-Ndlovu/1562789f3905b4fe818b9079a3032982) which outlines the process taken to migrate argocd plugins in great detail.
 
