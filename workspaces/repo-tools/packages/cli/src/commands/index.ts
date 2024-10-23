@@ -36,6 +36,22 @@ function lazy(
 
 export const registerCommands = (program: Command) => {
   program
+    .command('janus-plugin')
+    .command('migrate')
+    .requiredOption('--monorepo-path [path]', 'Path to the monorepo')
+    .requiredOption(
+      '--workspace-name [name]',
+      'Name of the workspace that will be created, the plugins will be pulled automatically from the monorepo',
+    )
+    .option('--branch [branch]', 'use a branch for deprecation commits')
+    .option('--maintainers <names...>', 'List of maintainers', value =>
+      value.split(','),
+    )
+    .action(
+      lazy(() => import('./plugin/janus-migration').then(m => m.default)),
+    );
+
+  program
     .command('workspace')
     .command('create')
     .action(lazy(() => import('./workspace/create').then(m => m.default)));
