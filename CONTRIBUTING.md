@@ -19,8 +19,8 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
   - [Migrating a plugin](#migrating-a-plugin)
     - [Manual migration steps](#manual-migration-steps)
     - [Using the cli to migrate plugins from janus-idp/backstage-plugins](#using-the-cli-to-migrate-plugins-from-janus-idpbackstage-plugins)
-  - [Prerequisites](#prerequisites)
-  - [Steps](#steps)
+      - [Prerequisites](#prerequisites)
+      - [Steps](#steps)
   - [API Reports](#api-reports)
   - [Submitting a Pull Request](#submitting-a-pull-request)
 
@@ -188,12 +188,12 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
 
 ### Using the cli to migrate plugins from janus-idp/backstage-plugins
 
-## Prerequisites
+#### Prerequisites
 
 - Have a `janus-idp/backstage-plugins` fork locally cloned
 - Have a `backstage/rhdh-plugins` fork locally cloned
 
-## Steps
+#### Steps
 
 1. In both repositories, create a new branch:
 
