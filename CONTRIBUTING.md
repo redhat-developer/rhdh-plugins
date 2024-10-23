@@ -223,7 +223,7 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
 3. The script will generate changesets in both repositories. Be sure to commit these changes and open pull requests.
 
 > [!IMPORTANT]  
->  This script updates metadata commonly found across all plugins. Please review your migrated plugins to ensure that all references to "janus" have been updated to point to "rhdh-plugins."
+> This script updates metadata commonly found across all plugins. Please review your migrated plugins to ensure that all references to "janus" have been updated to point to "rhdh-plugins."
 
 4. If you run into CI issues take a look at [this github gist](https://gist.github.com/Fortune-Ndlovu/1562789f3905b4fe818b9079a3032982) which outlines the process taken to migrate argocd plugins in great detail.
 
