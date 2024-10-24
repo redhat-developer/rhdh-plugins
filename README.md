@@ -1,8 +1,5 @@
 # Red Hat Developer Hub Plugins Repository
 
-> [!WARNING]
-> Under Construction
-
 ## What is this repository?
 
 This repository hosts plugins developed by Red Hat. The processes, tooling, and workflows are based on those in [backstage/community-plugins](https://github.com/backstage/community-plugins).
