@@ -413,6 +413,14 @@ export default async (opts: OptionValues) => {
       }
     }
 
+    // remove @janus-idp/cli from devDeps
+    delete movedPackageJson.devDependencies['@janus-idp/cli'];
+
+    // Remove export-dynamic and export-dynamic:clean scripts if they exist
+    delete movedPackageJson.scripts['export-dynamic'];
+    delete movedPackageJson.scripts['export-dynamic:clean'];
+    delete movedPackageJson.scripts.postversion;
+
     // If it's a frontend package do some magic
     const frontendDevDeps = {
       '@testing-library/dom': '^10.0.0',
@@ -516,35 +524,6 @@ export default async (opts: OptionValues) => {
     await exec('yarn tsc', { cwd: workspacePath, shell: true });
   } catch (error) {
     console.error(`Exec failed: ${error}`);
-  }
-
-  // Run yarn export dynamic in each package
-  for (const pkg of packagesToBeMoved) {
-    console.log(
-      chalk.yellow`Running yarn export-dynamic in ${pkg.packageJson.name}`,
-    );
-    const packagePath = path.join(workspacePath, pkg.relativeDir);
-
-    try {
-      // Read the package.json file
-      const packageJsonPath = path.join(packagePath, 'package.json');
-      const packageJson = await fs.readFile(packageJsonPath, 'utf-8');
-      const packageData = JSON.parse(packageJson);
-
-      // Check if the export-dynamic script exists
-      if (packageData.scripts && packageData.scripts['export-dynamic']) {
-        await exec('yarn', ['export-dynamic', '--clean'], {
-          cwd: packagePath,
-          shell: true,
-        });
-      } else {
-        console.log(
-          chalk.yellow`Skipping ${pkg.packageJson.name}: No export-dynamic script found.`,
-        );
-      }
-    } catch (error) {
-      console.log(error);
-    }
   }
 
   console.log(chalk.yellow`Running yarn tsc:full in new repository`);
