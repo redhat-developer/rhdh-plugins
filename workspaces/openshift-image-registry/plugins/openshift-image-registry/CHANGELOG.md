@@ -1,5 +1,14 @@
 ### Dependencies
 
+## 1.10.0
+
+### Minor Changes
+
+- 15d2695: Rebased with latest changes from janus-idp/backstage-plugins:
+
+  - update to backstage 1.31
+  - upgrade to yarn v3
+
 ## 1.9.6
 
 ### Patch Changes
