@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 1.7.1
+
+### Patch Changes
+
+- 07bf748: Migrated from [janus-idp/backstage-plugins](https://github.com/janus-idp/backstage-plugins).
+- Updated dependencies [07bf748]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.3.1
+
 ## 1.7.0
 
 ### Minor Changes
