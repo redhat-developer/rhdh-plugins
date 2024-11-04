@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 1.8.0
+
+### Minor Changes
+
+- 919f996: rebase with latest changes from janus
+
+### Patch Changes
+
+- Updated dependencies [919f996]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.4.0
+
 ## 1.7.1
 
 ### Patch Changes
