@@ -5,3 +5,4 @@
 # https://help.github.com/articles/about-codeowners/
 
 *                                                   @bethgriggs @nickbolt
+/workspaces/bulk-import                             @debsmita1 @rm3l
