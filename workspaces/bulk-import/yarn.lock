@@ -5295,7 +5295,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/backstage-plugin-audit-log-node@npm:^1.7.0":
+"@janus-idp/backstage-plugin-audit-log-node@npm:^1.7.1":
   version: 1.7.1
   resolution: "@janus-idp/backstage-plugin-audit-log-node@npm:1.7.1"
   dependencies:
@@ -5304,7 +5304,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/shared-react@npm:^2.13.0":
+"@janus-idp/shared-react@npm:^2.13.1":
   version: 2.13.1
   resolution: "@janus-idp/shared-react@npm:2.13.1"
   dependencies:
@@ -7839,7 +7839,7 @@ __metadata:
     "@backstage/plugin-catalog-node": ^1.13.1
     "@backstage/plugin-permission-common": ^0.8.1
     "@backstage/plugin-permission-node": ^0.8.4
-    "@janus-idp/backstage-plugin-audit-log-node": ^1.7.0
+    "@janus-idp/backstage-plugin-audit-log-node": ^1.7.1
     "@octokit/auth-app": ^6.0.3
     "@octokit/rest": ^20.0.2
     "@openapitools/openapi-generator-cli": 2.13.4
@@ -7894,7 +7894,7 @@ __metadata:
     "@backstage/plugin-permission-react": ^0.4.27
     "@backstage/test-utils": 1.7.0
     "@backstage/theme": ^0.6.0
-    "@janus-idp/shared-react": ^2.13.0
+    "@janus-idp/shared-react": ^2.13.1
     "@material-ui/core": ^4.9.13
     "@material-ui/icons": ^4.11.3
     "@material-ui/lab": ^4.0.0-alpha.61
