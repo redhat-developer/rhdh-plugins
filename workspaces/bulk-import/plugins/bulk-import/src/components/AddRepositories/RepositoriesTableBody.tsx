@@ -14,21 +14,16 @@
  * limitations under the License.
  */ import * as React from 'react';
 
-import { makeStyles, TableBody, TableCell, TableRow } from '@material-ui/core';
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 
 import { AddedRepositories, AddRepositoryData } from '../../types';
 import { OrganizationTableRow } from './OrganizationTableRow';
 import { RepositoriesColumnHeader } from './RepositoriesColumnHeader';
 import { RepositoryTableRow } from './RepositoryTableRow';
-
-const useStyles = makeStyles(theme => ({
-  empty: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    justifyContent: 'center',
-  },
-}));
 
 export const RepositoriesTableBody = ({
   loading,
@@ -51,8 +46,6 @@ export const RepositoriesTableBody = ({
   isDrawer?: boolean;
   showOrganizations?: boolean;
 }) => {
-  const classes = useStyles();
-
   const isSelected = (id: string) => {
     return !!selectedRepos[id];
   };
@@ -62,9 +55,16 @@ export const RepositoriesTableBody = ({
       <tbody>
         <tr>
           <td colSpan={RepositoriesColumnHeader.length}>
-            <div data-testid={`${ariaLabel}-loading`} className={classes.empty}>
+            <Box
+              data-testid={`${ariaLabel}-loading`}
+              sx={{
+                padding: 2,
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
               <CircularProgress />
-            </div>
+            </Box>
           </td>
         </tr>
       </tbody>
@@ -106,9 +106,16 @@ export const RepositoriesTableBody = ({
     <tbody>
       <tr>
         <td colSpan={RepositoriesColumnHeader.length}>
-          <div data-testid="no-repositories-found" className={classes.empty}>
+          <Box
+            data-testid="no-repositories-found"
+            sx={{
+              p: 2,
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
             No records found
-          </div>
+          </Box>
         </td>
       </tr>
     </tbody>

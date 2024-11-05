@@ -36,6 +36,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
           color="inherit"
           onClick={() => openDialog(data)}
           aria-label="Delete"
+          size="large"
         >
           <Delete />
         </IconButton>

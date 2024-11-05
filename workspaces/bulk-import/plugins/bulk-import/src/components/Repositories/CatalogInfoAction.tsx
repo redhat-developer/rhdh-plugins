@@ -20,9 +20,10 @@ import { useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
 import { useDrawer } from '@janus-idp/shared-react';
-import { IconButton, Tooltip } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
+import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormikContext } from 'formik';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
@@ -128,6 +129,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
             aria-label="Update"
             data-testid="update"
             onClick={() => handleOpenDrawer(value as ImportJobStatus)}
+            size="large"
           >
             <EditIcon />
           </IconButton>
@@ -142,6 +144,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
             }
             color="inherit"
             aria-label="View"
+            size="large"
           >
             <OpenInNewIcon />
           </IconButton>

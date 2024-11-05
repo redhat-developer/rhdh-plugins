@@ -21,7 +21,8 @@ import {
   DeleteDialogContextProvider,
   DrawerContextProvider,
 } from '@janus-idp/shared-react';
-import { Alert, AlertTitle } from '@material-ui/lab';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Formik } from 'formik';

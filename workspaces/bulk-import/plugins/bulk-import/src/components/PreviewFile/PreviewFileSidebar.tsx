@@ -20,7 +20,8 @@ import {
   useApi,
 } from '@backstage/core-plugin-api';
 
-import { Drawer, makeStyles } from '@material-ui/core';
+import Drawer from '@mui/material/Drawer';
+import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
@@ -39,15 +40,12 @@ import {
 } from '../../utils/repository-utils';
 import { PreviewFileSidebarDrawerContent } from './PreviewFileSidebarDrawerContent';
 
-const useDrawerStyles = makeStyles(theme => ({
+const useDrawerStyles = makeStyles({
   paper: {
     width: '40%',
     gap: '3%',
   },
-  body: {
-    padding: theme.spacing(2.5),
-  },
-}));
+});
 
 export const PreviewFileSidebar = ({
   open,

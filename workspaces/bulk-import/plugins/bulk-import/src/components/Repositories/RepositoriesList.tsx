@@ -18,7 +18,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Table } from '@backstage/core-components';
 
 import { useDeleteDialog, useDrawer } from '@janus-idp/shared-react';
-import { makeStyles, TablePagination } from '@material-ui/core';
+import Box from '@mui/material/Box';
+import TablePagination from '@mui/material/TablePagination';
 
 import { useAddedRepositories } from '../../hooks/useAddedRepositories';
 import { AddRepositoryData, Order } from '../../types';
@@ -30,18 +31,9 @@ import EditCatalogInfo from './EditCatalogInfo';
 import { RepositoriesAddLink } from './RepositoriesAddLink';
 import { RepositoriesListColumns } from './RepositoriesListColumns';
 
-const useStyles = makeStyles(theme => ({
-  empty: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    justifyContent: 'center',
-  },
-}));
-
 export const RepositoriesList = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const classes = useStyles();
   const queryParams = new URLSearchParams(location.search);
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<string>();
@@ -151,9 +143,16 @@ export const RepositoriesList = () => {
           ),
         }}
         emptyContent={
-          <div data-testid="no-import-jobs-found" className={classes.empty}>
+          <Box
+            data-testid="no-import-jobs-found"
+            sx={{
+              padding: 2,
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
             No records found
-          </div>
+          </Box>
         }
       />
       {openDrawer && (

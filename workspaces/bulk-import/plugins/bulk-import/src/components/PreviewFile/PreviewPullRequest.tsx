@@ -16,8 +16,9 @@
 
 import { Link } from '@backstage/core-components';
 
-import { Alert, AlertTitle } from '@material-ui/lab';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import { useFormikContext } from 'formik';
 
