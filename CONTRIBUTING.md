@@ -230,6 +230,14 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
   - [Backend plugin `package.json` example](https://github.com/janus-idp/backstage-showcase/blob/main/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend/package.json)
 - run `yarn export-dynamic` to generate dist-dynamic directory
 
+### Next steps
+
+Once PRs are merged in the new repo, you should [mark the old plugins deprecated, and delete the content - leaving only a README.md](https://github.com/janus-idp/backstage-plugins/pull/2482/files#diff-74b70d63dd0c250dcfdd7cacf4639fc82a1a66098d9fc2a269bb98bf89790f9fR1).
+
+### Maintenance of older versions
+
+As only a single version will be migrated to the new repo, maintenance of older plugins for previous RHDH releases should continue to be done in the older repo, as the migrated versions will be aligned to newer versions of Backstage and may not be compatible.
+
 ## API Reports
 
 This repository uses [API Extractor](https://api-extractor.com/) and TSDoc comments to generate API Reports in Markdown format, similar to those used in Backstage. If you make changes to the API or add a new plugin then you will need either generate a new API Report or update an existing API Report. If you don't do this the CI build will fail when you create your Pull Request.
