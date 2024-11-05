@@ -117,6 +117,7 @@ test.describe('Bulk import plugin', () => {
       timeout: 20000,
     });
     await page.locator('button[aria-label="Next page"]').click();
+    await page.waitForTimeout(2000);
     await page.click('input[aria-label="select all repositories"]');
     await expect(
       page.getByRole('heading', { name: 'Selected repositories (9)' }),
@@ -124,6 +125,7 @@ test.describe('Bulk import plugin', () => {
       timeout: 20000,
     });
     await page.locator(`button`).filter({ hasText: 'Organization' }).click();
+    await page.waitForTimeout(2000);
     await expect(
       page.getByRole('heading', { name: 'Selected repositories (9)' }),
     ).toBeVisible({
@@ -139,6 +141,7 @@ test.describe('Bulk import plugin', () => {
 
   test('Select Repositories side panel is shown', async () => {
     await page.locator('button[type="button"][value="repository"]').click();
+    await page.waitForTimeout(2000);
     await expect(
       page.getByRole('heading', { name: 'Selected repositories (9)' }),
     ).toBeVisible({

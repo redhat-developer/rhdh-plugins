@@ -54,7 +54,7 @@ export const RepositoriesList = () => {
   const {
     data: importJobs,
     error: errJobs,
-    loaded: jobsLoaded,
+    loading,
     refetch,
   } = useAddedRepositories(pageNumber + 1, rowsPerPage, debouncedSearch);
 
@@ -105,7 +105,7 @@ export const RepositoriesList = () => {
         columns={RepositoriesListColumns}
         onSearchChange={handleSearch}
         title={
-          !jobsLoaded || !importJobs || importJobs.totalJobs === 0
+          importJobs?.totalJobs === 0
             ? 'Added repositories'
             : `Added repositories (${importJobs.totalJobs})`
         }
@@ -121,7 +121,7 @@ export const RepositoriesList = () => {
           Body: () => (
             <AddedRepositoriesTableBody
               error={errJobs}
-              loading={!jobsLoaded}
+              loading={loading}
               rows={sortedData}
               emptyRows={emptyRows}
             />
