@@ -16,8 +16,10 @@
 
 import { Link } from '@backstage/core-components';
 
-import { makeStyles, TableCell, TableRow } from '@material-ui/core';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { AddRepositoriesFormValues, AddRepositoryData } from '../../types';

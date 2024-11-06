@@ -27,7 +27,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
-import { Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import createStyles from '@mui/styles/createStyles';
@@ -36,41 +35,19 @@ import { useMutation } from '@tanstack/react-query';
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { AddRepositoryData } from '../../types';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     dialogContainer: {
       height: '70%',
     },
-
-    titleContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: theme.spacing(1),
-    },
     dialogTitle: {
       padding: '16px 20px',
-    },
-    closeButton: {
-      position: 'absolute',
-      right: theme.spacing(1),
-      top: theme.spacing(1),
-      color: theme.palette.grey[700],
     },
     warningIcon: {
       alignContent: 'center',
       marginTop: '7px',
       marginBottom: '-5px',
       color: '#F0AB00',
-    },
-    button: {
-      textTransform: 'none',
-    },
-    deleteButton: {
-      backgroundColor: '#C9190B',
-      color: theme.palette.getContrastText(theme.palette.error.main),
-      '&:hover': {
-        backgroundColor: theme.palette.error.dark,
-      },
     },
   }),
 );
@@ -115,7 +92,13 @@ const DeleteRepositoryDialog = ({
         title="Delete Repository"
         className={classes.dialogTitle}
       >
-        <Box className={classes.titleContainer}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
           <span style={{ fontWeight: 'bold' }}>
             <WarningIcon className={classes.warningIcon} color="warning" />{' '}
             Remove {repository.repoName} repository?
@@ -123,10 +106,15 @@ const DeleteRepositoryDialog = ({
 
           <IconButton
             aria-label="close"
-            className={classes.closeButton}
             onClick={closeDialog}
             title="Close"
             size="large"
+            sx={{
+              position: 'absolute',
+              right: 1,
+              top: 1,
+              color: 'grey.700',
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -151,7 +139,6 @@ const DeleteRepositoryDialog = ({
       <DialogActions style={{ justifyContent: 'left', padding: '20px' }}>
         <Button
           variant="contained"
-          className={`${classes.deleteButton} ${classes.button}`}
           onClick={() => handleClickRemove()}
           disabled={
             isUrlMissing || mutationDelete.isLoading || mutationDelete.isError
@@ -161,12 +148,23 @@ const DeleteRepositoryDialog = ({
               <CircularProgress size="20px" color="inherit" />
             )
           }
+          sx={{
+            backgroundColor: '#C9190B',
+            textTransform: 'none',
+            color: theme =>
+              theme.palette.getContrastText(theme.palette.error.main),
+            '&:hover': {
+              backgroundColor: 'error.dark',
+            },
+          }}
         >
           Remove
         </Button>
         <Button
           variant="outlined"
-          className={classes.button}
+          sx={{
+            textTransform: 'none',
+          }}
           onClick={() => closeDialog()}
         >
           Cancel

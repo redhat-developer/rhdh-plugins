@@ -14,21 +14,16 @@
  * limitations under the License.
  */ import * as React from 'react';
 
-import { makeStyles, TableBody, TableCell, TableRow } from '@material-ui/core';
-import { Alert } from '@material-ui/lab';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 
 import { AddRepositoryData } from '../../types';
 import { AddedRepositoryTableRow } from './AddedRepositoryTableRow';
 import { RepositoriesListColumns } from './RepositoriesListColumns';
-
-const useStyles = makeStyles(theme => ({
-  empty: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    justifyContent: 'center',
-  },
-}));
 
 export const AddedRepositoriesTableBody = ({
   loading,
@@ -41,16 +36,21 @@ export const AddedRepositoriesTableBody = ({
   emptyRows: number;
   rows: AddRepositoryData[];
 }) => {
-  const classes = useStyles();
-
   if (loading) {
     return (
       <tbody>
         <tr>
           <td colSpan={RepositoriesListColumns?.length}>
-            <div data-testid="import-jobs-loading" className={classes.empty}>
+            <Box
+              data-testid="import-jobs-loading"
+              sx={{
+                p: 2,
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
               <CircularProgress />
-            </div>
+            </Box>
           </td>
         </tr>
       </tbody>
@@ -92,9 +92,16 @@ export const AddedRepositoriesTableBody = ({
     <tbody>
       <tr>
         <td colSpan={RepositoriesListColumns?.length}>
-          <div data-testid="no-import-jobs-found" className={classes.empty}>
+          <Box
+            data-testid="no-import-jobs-found"
+            sx={{
+              p: 2,
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
             No records found
-          </div>
+          </Box>
         </td>
       </tr>
     </tbody>
