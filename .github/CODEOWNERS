@@ -4,7 +4,7 @@
 # The last matching pattern takes precedence.
 # https://help.github.com/articles/about-codeowners/
 
-*                                                   @bethgriggs @nickbolt
+*                                                   @bethgriggs @nickboldt
 /workspaces/bulk-import                             @christoph-jerolimov @debsmita1 @rm3l
 /workspaces/dynamic-home-page                       @christoph-jerolimov @ciiay @debsmita1
 /workspaces/marketplace                             @christoph-jerolimov @debsmita1 @divyanshiGupta
