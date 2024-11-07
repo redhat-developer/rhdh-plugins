@@ -11107,6 +11107,7 @@ __metadata:
     react-use: ^17.2.4
     start-server-and-test: 2.0.8
     yaml: ^2.0.0
+    yup: ^1.4.0
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
@@ -37586,7 +37587,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yup@npm:^1.0.0":
+"yup@npm:^1.0.0, yup@npm:^1.4.0":
   version: 1.4.0
   resolution: "yup@npm:1.4.0"
   dependencies:
