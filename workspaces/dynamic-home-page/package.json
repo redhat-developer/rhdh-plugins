@@ -6,17 +6,23 @@
     "node": "18 || 20"
   },
   "scripts": {
+    "dev": "yarn workspaces foreach -A --include backend --include app --parallel -v -i run start",
+    "start": "yarn workspace app start",
+    "start-backend": "yarn workspace backend start",
+    "build:backend": "yarn workspace backend build",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck false --incremental false",
     "build:all": "backstage-cli repo build --all",
     "build:api-reports": "yarn build:api-reports:only --tsc",
     "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type --validate-release-tags",
+    "build-image": "yarn workspace backend build-image",
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
     "test:all": "backstage-cli repo test --coverage",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
+    "test:e2e": "playwright test",
     "prettier:check": "prettier --check .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
