@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.10.0
+
+### Minor Changes
+
+- ab15e37: use react query to fetch repositories
+
 ## 1.9.0
 
 ### Minor Changes
