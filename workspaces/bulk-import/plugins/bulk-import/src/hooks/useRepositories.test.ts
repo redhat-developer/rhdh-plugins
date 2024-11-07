@@ -12,8 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import { useApi } from '@backstage/core-plugin-api';
-
+ */ import { useQuery } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 
 import { mockGetOrganizations, mockGetRepositories } from '../mocks/mockData';
@@ -24,12 +23,18 @@ jest.mock('@backstage/core-plugin-api', () => ({
   useApi: jest.fn(),
 }));
 
-const mockUseApi = useApi as jest.MockedFunction<typeof useApi>;
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(),
+}));
 
 describe('useRepositories', () => {
   it('should return repositories', async () => {
-    mockUseApi.mockReturnValue({
-      dataFetcher: jest.fn().mockReturnValue(mockGetRepositories),
+    (useQuery as jest.Mock).mockReturnValue({
+      data: mockGetRepositories,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
     });
     const { result } = renderHook(() =>
       useRepositories({
@@ -46,8 +51,11 @@ describe('useRepositories', () => {
   });
 
   it('should return organizations', async () => {
-    mockUseApi.mockReturnValue({
-      dataFetcher: jest.fn().mockReturnValue(mockGetOrganizations),
+    (useQuery as jest.Mock).mockReturnValue({
+      data: mockGetOrganizations,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
     });
     const { result } = renderHook(() =>
       useRepositories({ page: 1, querySize: 10, showOrganizations: true }),
@@ -61,13 +69,16 @@ describe('useRepositories', () => {
   });
 
   it('should return repositories in an organization', async () => {
-    mockUseApi.mockReturnValue({
-      dataFetcher: jest.fn().mockReturnValue({
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
         ...mockGetRepositories,
         repositories: mockGetRepositories.repositories?.filter(
           r => r.organization === 'org/dessert',
         ),
-      }),
+      },
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
     });
     const { result } = renderHook(() =>
       useRepositories({ page: 1, querySize: 10, orgName: 'org/dessert' }),

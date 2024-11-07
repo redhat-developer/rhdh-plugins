@@ -31,7 +31,6 @@ import {
   evaluateRowForRepo,
   filterSelectedForActiveDrawer,
   getComparator,
-  getNewOrgsData,
   updateWithNewSelectedRepositories,
 } from '../../utils/repository-utils';
 import { AddRepositoriesDrawer } from './AddRepositoriesDrawer';
@@ -74,13 +73,6 @@ export const RepositoriesTable = ({
     searchString,
   });
 
-  const [orgsData, setOrgsData] = React.useState<{
-    [name: string]: AddRepositoryData;
-  }>({});
-  const [, setReposData] = React.useState<{
-    [name: string]: AddRepositoryData;
-  }>({});
-
   React.useEffect(() => {
     if (drawerOrganization) {
       setDrawerPage(0);
@@ -97,12 +89,8 @@ export const RepositoriesTable = ({
 
   React.useEffect(() => {
     if (showOrganizations) {
-      setOrgsData(data?.organizations || {});
-
       setTableData(Object.values(data?.organizations || {}));
     } else {
-      setReposData(data?.repositories || {});
-
       setTableData(Object.values(data?.repositories || {}));
     }
   }, [data, showOrganizations]);
@@ -173,34 +161,6 @@ export const RepositoriesTable = ({
     } else {
       updateSelectedRepositories(newSelectedRows);
     }
-
-    const newOrgsData = Object.values(orgsData)?.reduce((orgAcc, org) => {
-      return {
-        ...orgAcc,
-        [org.orgName as string]: {
-          ...org,
-          selectedRepositories: Object.values(newSelectedRows)?.reduce(
-            (acc, row) => {
-              if (row.orgName === org.orgName) {
-                return {
-                  ...acc,
-                  [row.id]: {
-                    ...row,
-                    catalogInfoYaml: {
-                      ...row.catalogInfoYaml,
-                      status: RepositoryStatus.Ready,
-                    },
-                  },
-                };
-              }
-              return acc;
-            },
-            {},
-          ),
-        },
-      };
-    }, {});
-    setOrgsData(newOrgsData);
   };
   const handleSelectAllClick = (
     _event: React.ChangeEvent<HTMLInputElement>,
@@ -234,11 +194,6 @@ export const RepositoriesTable = ({
       newSelected = { ...selected, [repo.id]: repo };
     }
     updateSelection(newSelected);
-    // handle non drawer selection click
-    if (!drawerOrganization) {
-      const newOrgsData = getNewOrgsData(orgsData, repo);
-      setOrgsData(newOrgsData);
-    }
   };
 
   const handleChangePage = (_event: unknown, newPage: number) => {
@@ -278,27 +233,13 @@ export const RepositoriesTable = ({
   }, [setIsOpen]);
 
   const handleUpdatesFromDrawer = React.useCallback(
-    (drawerSelected: AddedRepositories, drawerOrgId: string) => {
+    (drawerSelected: AddedRepositories) => {
       if (drawerSelected) {
         setSelected(drawerSelected);
         updateSelectedRepositories(drawerSelected);
-
-        const newOrgsData = Object.values(orgsData).reduce((acc, org) => {
-          if (org.id === drawerOrgId) {
-            return {
-              ...acc,
-              [org.orgName as string]: {
-                ...org,
-                selectedRepositories: drawerSelected,
-              },
-            };
-          }
-          return acc;
-        }, {});
-        setOrgsData(newOrgsData);
       }
     },
-    [updateSelectedRepositories, orgsData, setOrgsData, setSelected],
+    [updateSelectedRepositories, setSelected],
   );
 
   const selectedForActiveDrawer = React.useMemo(

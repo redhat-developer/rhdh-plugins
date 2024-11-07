@@ -144,3 +144,11 @@ export type JobErrors = {
 export interface RepositoriesError extends Error {
   errors?: string[];
 }
+
+export type DataFetcherQueryParams = {
+  page: number;
+  querySize: number;
+  showOrganizations?: boolean;
+  orgName?: string;
+  searchString?: string;
+};
