@@ -10263,6 +10263,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/theme@workspace:^, @red-hat-developer-hub/theme@workspace:packages/theme":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/theme@workspace:packages/theme"
+  dependencies:
+    "@backstage/cli": ^0.28.0
+    "@testing-library/jest-dom": ^6.0.0
+  languageName: unknown
+  linkType: soft
+
 "@remix-run/router@npm:1.21.0":
   version: 1.21.0
   resolution: "@remix-run/router@npm:1.21.0"
@@ -14495,6 +14504,7 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@playwright/test": ^1.32.3
+    "@red-hat-developer-hub/theme": "workspace:^"
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
