@@ -135,7 +135,7 @@ export const PreviewPullRequests = ({
         return (
           <CustomTabPanel value={value} index={index} key={repo.id}>
             <PreviewPullRequest
-              repoId={repo.id || ''}
+              repoId={repo.id}
               repoUrl={repo.repoUrl || ''}
               repoBranch={repo.defaultBranch || 'main'}
               pullRequest={pullRequest}
