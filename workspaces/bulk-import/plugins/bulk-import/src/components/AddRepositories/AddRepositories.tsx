@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- import React from 'react';
+import React from 'react';
 
 import { useDrawer } from '@janus-idp/shared-react';
 import Alert from '@mui/material/Alert';
@@ -36,22 +36,10 @@ import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
 import { AddRepositoriesTable } from './AddRepositoriesTable';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   body: {
     marginBottom: '50px',
     padding: '24px',
-  },
-  approvalTool: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'left',
-    alignItems: 'center',
-    paddingTop: '24px',
-    paddingBottom: '24px',
-    paddingLeft: '16px',
-    backgroundColor: theme.palette.background.paper,
-    borderBottomStyle: 'groove',
-    border: theme.palette.divider,
   },
 
   approvalToolTooltip: {
