@@ -1,13 +1,13 @@
 proxy:
   endpoints:
     '/openshift-image-registry/api':
-    target: ${OCP_API_ENDPOINT}
-    headers:
-      X-Requested-With: 'XMLHttpRequest'
-      Authorization: Bearer ${OCP_API_TOKEN}
-    changeOrigin: true
-    # Change to "false" in case of using self hosted OpenShift cluster with a self-signed certificate
-    secure: true
+      target: ${OCP_API_ENDPOINT}
+      headers:
+        X-Requested-With: 'XMLHttpRequest'
+        Authorization: Bearer ${OCP_API_TOKEN}
+      changeOrigin: true
+      # Change to "false" in case of using self hosted OpenShift cluster with a self-signed certificate
+      secure: true
 
 dynamicPlugins:
   frontend:

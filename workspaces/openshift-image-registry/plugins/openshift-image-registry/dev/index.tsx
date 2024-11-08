@@ -12,11 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
+ */
+import React from 'react';
 
 import { createDevApp } from '@backstage/dev-utils';
 import { TestApiProvider } from '@backstage/test-utils';
 
+import ExtensionIcon from '@mui/icons-material/Extension';
 import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 
 import {
@@ -110,5 +112,6 @@ createDevApp()
     ),
     title: 'Image Registry',
     path: '/openshift-image-registry',
+    icon: ExtensionIcon,
   })
   .render();
