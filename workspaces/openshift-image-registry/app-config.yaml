@@ -1,0 +1,28 @@
+app:
+  title: Scaffolded Backstage App
+  baseUrl: http://localhost:3000
+
+organization:
+  name: My Company
+
+backend:
+  # Used for enabling authentication, secret is shared by all backend plugins
+  # See https://backstage.io/docs/auth/service-to-service-auth for
+  # information on the format
+  # auth:
+  #   keys:
+  #     - secret: ${BACKEND_SECRET}
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+
+proxy:
+  endpoints:
+    '/openshift-image-registry/api':
+      target: ${OCP_API_ENDPOINT}
+      headers:
+        X-Requested-With: 'XMLHttpRequest'
+        Authorization: Bearer ${OCP_API_TOKEN}
+      changeOrigin: true
+      # Change to "false" in case of using self hosted OpenShift cluster with a self-signed certificate
+      secure: true
