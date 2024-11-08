@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import { Entity } from '@backstage/catalog-model';
+ */
+ import { Entity } from '@backstage/catalog-model';
 
 import { Repository as RepositoryResponse } from './response-types';
 
@@ -144,3 +145,11 @@ export type JobErrors = {
 export interface RepositoriesError extends Error {
   errors?: string[];
 }
+
+export type DataFetcherQueryParams = {
+  page: number;
+  querySize: number;
+  showOrganizations?: boolean;
+  orgName?: string;
+  searchString?: string;
+};

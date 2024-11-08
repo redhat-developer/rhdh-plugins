@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React, { useState } from 'react';
+ */
+ import React, { useState } from 'react';
 
 import { Link } from '@backstage/core-components';
 
@@ -62,7 +63,7 @@ export const AddRepositoriesDrawer = ({
 }: {
   open: boolean;
   onClose: () => void;
-  onSelect: (repos: AddedRepositories, drawerOrgName: string) => void;
+  onSelect: (repos: AddedRepositories) => void;
   title: string;
   orgData: AddRepositoryData;
 }) => {
@@ -77,7 +78,7 @@ export const AddRepositoriesDrawer = ({
   };
 
   const handleSelectRepoFromDrawer = (selected: AddedRepositories) => {
-    onSelect(selected, orgData?.orgName || '');
+    onSelect(selected);
     const newStatus = { ...(status?.errors || {}) };
     Object.keys(newStatus).forEach(s => {
       if (!Object.keys(selected).find(sel => sel === s)) {

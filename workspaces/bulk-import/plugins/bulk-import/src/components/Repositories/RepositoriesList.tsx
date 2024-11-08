@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
+ */
+ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Table } from '@backstage/core-components';
@@ -46,7 +47,7 @@ export const RepositoriesList = () => {
   const {
     data: importJobs,
     error: errJobs,
-    loaded: jobsLoaded,
+    loading,
     refetch,
   } = useAddedRepositories(pageNumber + 1, rowsPerPage, debouncedSearch);
 
@@ -97,7 +98,7 @@ export const RepositoriesList = () => {
         columns={RepositoriesListColumns}
         onSearchChange={handleSearch}
         title={
-          !jobsLoaded || !importJobs || importJobs.totalJobs === 0
+          importJobs?.totalJobs === 0
             ? 'Added repositories'
             : `Added repositories (${importJobs.totalJobs})`
         }
@@ -113,7 +114,7 @@ export const RepositoriesList = () => {
           Body: () => (
             <AddedRepositoriesTableBody
               error={errJobs}
-              loading={!jobsLoaded}
+              loading={loading}
               rows={sortedData}
               emptyRows={emptyRows}
             />

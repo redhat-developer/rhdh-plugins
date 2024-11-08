@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
+ */
+ import React from 'react';
 
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
@@ -61,7 +62,7 @@ export const BulkImportPage = () => {
     }
     if (bulkImportViewPermissionResult.allowed) {
       return (
-        <QueryClientProvider client={queryClientRef.current as QueryClient}>
+        <QueryClientProvider client={queryClientRef.current!}>
           <Formik
             initialValues={initialValues}
             enableReinitialize

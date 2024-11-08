@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
+ */
+ import React from 'react';
 
 import {
   RequirePermission,
@@ -51,7 +52,7 @@ describe('BulkImport Page', () => {
     RequirePermissionMock.mockImplementation(props => <>{props.children}</>);
     mockUsePermission.mockReturnValue({ loading: false, allowed: true });
     mockUseAddedRepositories.mockReturnValue({
-      loaded: true,
+      loading: false,
       data: { addedRepositories: [], totalJobs: 0 },
       refetch: jest.fn(),
       error: undefined,

@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import * as React from 'react';
+ */
+ import * as React from 'react';
 
 import { Link } from '@backstage/core-components';
 
@@ -51,8 +52,6 @@ export const PreviewPullRequest = ({
   setFormErrors: (pullRequest: PullRequestPreviewData) => void;
 }) => {
   const { status } = useFormikContext<AddRepositoriesFormValues>();
-
-  const [entityOwner, setEntityOwner] = React.useState<string>('');
 
   const error = status?.errors?.[repoId];
   const info = status?.infos?.[repoId];
@@ -115,8 +114,6 @@ export const PreviewPullRequest = ({
         </Box>
       )}
       <PreviewPullRequestForm
-        entityOwner={entityOwner}
-        setEntityOwner={setEntityOwner}
         repoId={repoId}
         repoUrl={repoUrl}
         pullRequest={pullRequest}

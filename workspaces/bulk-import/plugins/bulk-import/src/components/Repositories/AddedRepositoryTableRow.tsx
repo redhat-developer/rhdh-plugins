@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import * as React from 'react';
+ */
+ import * as React from 'react';
 
 import { Link } from '@backstage/core-components';
 
@@ -62,23 +63,34 @@ export const AddedRepositoryTableRow = ({
   const classes = useStyles();
 
   return (
-    <TableRow hover key={data.id}>
+    <TableRow hover>
       <TableCell component="th" scope="row" className={classes.tableCellStyle}>
         {data.repoName}
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
-        <Link to={data?.repoUrl || ''}>
-          {urlHelper(data?.repoUrl || '')}
-          <OpenInNewIcon style={{ verticalAlign: 'sub', paddingTop: '7px' }} />
-        </Link>
+        {data?.repoUrl ? (
+          <Link to={data.repoUrl}>
+            {urlHelper(data.repoUrl)}
+            <OpenInNewIcon
+              style={{ verticalAlign: 'sub', paddingTop: '7px' }}
+            />
+          </Link>
+        ) : (
+          <>-</>
+        )}
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
-        <Link to={data?.organizationUrl || ''}>
-          {urlHelper(data?.organizationUrl || '')}
-          <OpenInNewIcon style={{ verticalAlign: 'sub', paddingTop: '7px' }} />
-        </Link>
+        {data?.organizationUrl ? (
+          <Link to={data.organizationUrl}>
+            {urlHelper(data.organizationUrl)}
+            <OpenInNewIcon
+              style={{ verticalAlign: 'sub', paddingTop: '7px' }}
+            />
+          </Link>
+        ) : (
+          <>-</>
+        )}
       </TableCell>
-
       <TableCell align="left" className={classes.tableCellStyle}>
         <ImportStatus data={data} />
       </TableCell>

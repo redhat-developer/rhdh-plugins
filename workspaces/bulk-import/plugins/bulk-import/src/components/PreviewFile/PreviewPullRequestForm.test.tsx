@@ -12,13 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React, { useState } from 'react';
+ */
+import React from 'react';
 
 import { configApiRef } from '@backstage/core-plugin-api';
 import { CatalogApi, catalogApiRef } from '@backstage/plugin-catalog-react';
 import { MockConfigApi, TestApiProvider } from '@backstage/test-utils';
 
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
@@ -27,11 +28,6 @@ import { mockEntities } from '../../mocks/mockEntities';
 import { ApprovalTool, ImportJobStatus } from '../../types';
 import { getPRTemplate } from '../../utils/repository-utils';
 import { PreviewPullRequestForm } from './PreviewPullRequestForm';
-
-jest.mock('react', () => ({
-  ...jest.requireActual('react'),
-  useState: jest.fn(),
-}));
 
 jest.mock('@mui/material', () => ({
   ...jest.requireActual('@mui/material'),
@@ -63,12 +59,6 @@ class MockBulkImportApi {
     ) as ImportJobStatus;
   }
 }
-
-const setState = jest.fn();
-
-beforeEach(() => {
-  (useState as jest.Mock).mockImplementation(initial => [initial, setState]);
-});
 
 const mockBulkImportApi = new MockBulkImportApi();
 
@@ -110,8 +100,6 @@ describe('Preview Pull Request Form', () => {
         <PreviewPullRequestForm
           repoId="org/dessert/cupcake"
           repoUrl="https://github.com/org/dessert/cupcake"
-          entityOwner="user:default/guest"
-          setEntityOwner={jest.fn()}
           pullRequest={{
             cupcake: getPRTemplate(
               'org/dessert/cupcake',
@@ -165,8 +153,6 @@ describe('Preview Pull Request Form', () => {
         <PreviewPullRequestForm
           repoId="org/dessert/cupcake"
           repoUrl="https://github.com/org/dessert/cupcake"
-          entityOwner="user:default/guest"
-          setEntityOwner={jest.fn()}
           pullRequest={{
             'org/dessert/cupcake': getPRTemplate(
               'org/dessert/cupcake',
@@ -222,8 +208,6 @@ describe('Preview Pull Request Form', () => {
         <PreviewPullRequestForm
           repoId="org/dessert/cupcake"
           repoUrl="https://github.com/org/dessert/cupcake"
-          entityOwner="user:default/guest"
-          setEntityOwner={jest.fn()}
           pullRequest={{
             'org/dessert/cupcake': getPRTemplate(
               'org/dessert/cupcake',
@@ -244,18 +228,18 @@ describe('Preview Pull Request Form', () => {
       /Add Backstage catalog entity descriptor files/,
     );
     fireEvent.change(prTitle, { target: { value: '' } });
-    expect(setFormErrors).toHaveBeenCalledWith({
-      'org/dessert/cupcake': {
-        prTitle: 'Pull request title is missing',
-      },
+    await waitFor(() => {
+      expect(
+        screen.queryByText('Pull request title is required'),
+      ).toBeInTheDocument();
     });
 
     const componentName = getByPlaceholderText(/Component Name/);
     fireEvent.change(componentName, { target: { value: '' } });
-    expect(setFormErrors).toHaveBeenCalledWith({
-      'org/dessert/cupcake': {
-        componentName: 'Component name is missing',
-      },
+    await waitFor(() => {
+      expect(
+        screen.queryByText('Component name is required'),
+      ).toBeInTheDocument();
     });
   });
 });

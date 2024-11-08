@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React, { useState } from 'react';
+ */
+ import React, { useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -23,6 +24,7 @@ import { useFormikContext } from 'formik';
 
 import { mockGetImportJobs, mockGetRepositories } from '../../mocks/mockData';
 import { RepositoryStatus } from '../../types';
+import { getPRTemplate } from '../../utils/repository-utils';
 import CatalogInfoAction from './CatalogInfoAction';
 
 jest.mock('@backstage/plugin-permission-react', () => ({
@@ -119,8 +121,18 @@ describe('CatalogInfoAction', () => {
         repositories: {
           ['org/dessert/cupcake']: {
             ...mockGetImportJobs.imports[0],
+            repoUrl: 'https://github.com/org/dessert/cupcake',
+            status: RepositoryStatus.ADDED,
             catalogInfoYaml: {
               status: RepositoryStatus.ADDED,
+              prTemplate: getPRTemplate(
+                'org/dessert/cupcake',
+                'org/dessert',
+                'user:default/guest',
+                'https://localhost:3001',
+                'https://github.com/org/dessert/cupcake',
+                'main',
+              ),
             },
           },
         },

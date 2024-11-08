@@ -12,14 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
-import { useNavigate } from 'react-router-dom';
+ */
+ import React from 'react';
 
 import { Content, Header, Page, Progress } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { DrawerContextProvider } from '@janus-idp/shared-react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -29,22 +27,10 @@ import AlertTitle from '@mui/material/AlertTitle';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import { Formik, FormikHelpers } from 'formik';
-import { get } from 'lodash';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
-import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
-import {
-  AddRepositoriesFormValues,
-  ApprovalTool,
-  ImportJobResponse,
-  RepositorySelection,
-} from '../../types';
-import {
-  getJobErrors,
-  prepareDataForSubmission,
-} from '../../utils/repository-utils';
 import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
 
@@ -58,75 +44,18 @@ const useStyles = makeStyles(() => ({
 }));
 
 export const AddRepositoriesPage = () => {
+  const queryClientRef = React.useRef<QueryClient>();
   const theme = useTheme();
   const classes = useStyles();
-  const bulkImportApi = useApi(bulkImportApiRef);
-  const navigate = useNavigate();
-  const [generalSubmitError, setGeneralSubmitError] = React.useState<{
-    message: string;
-    title: string;
-  } | null>(null);
-  const initialValues: AddRepositoriesFormValues = {
-    repositoryType: RepositorySelection.Repository,
-    repositories: {},
-    excludedRepositories: {},
-    approvalTool: ApprovalTool.Git,
-  };
+
+  if (!queryClientRef.current) {
+    queryClientRef.current = new QueryClient();
+  }
 
   const bulkImportViewPermissionResult = usePermission({
     permission: bulkImportPermission,
     resourceRef: bulkImportPermission.resourceType,
   });
-
-  const handleSubmit = async (
-    values: AddRepositoriesFormValues,
-    formikHelpers: FormikHelpers<AddRepositoriesFormValues>,
-  ) => {
-    formikHelpers.setSubmitting(true);
-    formikHelpers.setStatus(null);
-    const importRepositories = prepareDataForSubmission(
-      values.repositories,
-      values.approvalTool,
-    );
-    try {
-      formikHelpers.setSubmitting(true);
-      const dryrunResponse: ImportJobResponse[] =
-        await bulkImportApi.createImportJobs(importRepositories, true);
-      const dryRunErrors = getJobErrors(dryrunResponse);
-      if (Object.keys(dryRunErrors?.errors || {}).length > 0) {
-        formikHelpers.setStatus(dryRunErrors);
-        formikHelpers.setSubmitting(false);
-      } else {
-        formikHelpers.setStatus(dryRunErrors); // to show info messages
-        const createJobResponse: ImportJobResponse[] | Response =
-          await bulkImportApi.createImportJobs(importRepositories);
-        formikHelpers.setSubmitting(true);
-        if (!Array.isArray(createJobResponse)) {
-          setGeneralSubmitError({
-            message:
-              get(createJobResponse, 'error.message') ||
-              'Failed to create pull request',
-            title: get(createJobResponse, 'error.name') || 'Error occured',
-          });
-          formikHelpers.setSubmitting(false);
-        } else {
-          const createJobErrors = getJobErrors(createJobResponse);
-          if (Object.keys(createJobErrors?.errors || {}).length > 0) {
-            formikHelpers.setStatus(createJobErrors);
-            formikHelpers.setSubmitting(false);
-          } else {
-            navigate(`..`);
-          }
-        }
-      }
-    } catch (error: any) {
-      setGeneralSubmitError({
-        message: error?.message || 'Error occured',
-        title: error?.name,
-      });
-      formikHelpers.setSubmitting(false);
-    }
-  };
 
   const showContent = () => {
     if (bulkImportViewPermissionResult.loading) {
@@ -189,15 +118,9 @@ export const AddRepositoriesPage = () => {
               </AccordionDetails>
             </Accordion>
           </div>
-          <DrawerContextProvider>
-            <Formik
-              initialValues={initialValues}
-              enableReinitialize
-              onSubmit={handleSubmit}
-            >
-              <AddRepositoriesForm error={generalSubmitError} />
-            </Formik>
-          </DrawerContextProvider>
+          <QueryClientProvider client={queryClientRef.current as QueryClient}>
+            <AddRepositoriesForm />
+          </QueryClientProvider>
         </>
       );
     }

@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import * as React from 'react';
+ */
+import * as React from 'react';
 
 import { Entity } from '@backstage/catalog-model';
 import { StatusOK, StatusPending } from '@backstage/core-components';
@@ -20,6 +21,7 @@ import { StatusOK, StatusPending } from '@backstage/core-components';
 import * as jsyaml from 'js-yaml';
 import { get } from 'lodash';
 import * as yaml from 'yaml';
+import * as yup from 'yup';
 
 import GitAltIcon from '../components/GitAltIcon';
 import {
@@ -35,7 +37,9 @@ import {
   ImportStatus,
   JobErrors,
   Order,
+  OrgAndRepoResponse,
   PullRequestPreview,
+  Repository,
   RepositorySelection,
   RepositoryStatus,
 } from '../types';
@@ -60,8 +64,8 @@ export const descendingComparator = (
   };
 
   if (orderBy === 'selectedRepositories') {
-    value1 = value1?.length;
-    value2 = value2?.length;
+    value1 = Object.keys(value1)?.length;
+    value2 = Object.values(value2)?.length;
   }
 
   if (orderBy === 'catalogInfoYaml.status') {
@@ -205,37 +209,6 @@ export const urlHelper = (url: string) => {
   return url.split('https://')[1] || url;
 };
 
-export const getNewOrgsData = (
-  orgsData: { [name: string]: AddRepositoryData },
-  repo: AddRepositoryData,
-): { [name: string]: AddRepositoryData } => {
-  const org = Object.values(orgsData)?.find(o => o.orgName === repo.orgName);
-
-  let selectedRepositories = { ...(org?.selectedRepositories || {}) };
-  selectedRepositories = selectedRepositories[repo.id]
-    ? Object.keys(selectedRepositories).reduce(
-        (acc, sr) => (sr === repo.id ? { ...acc, [repo.id]: repo } : acc),
-        {},
-      )
-    : { ...selectedRepositories, [repo.id]: repo };
-
-  const newOrgsData =
-    org &&
-    Object.values(orgsData)?.reduce((acc, od) => {
-      if (od.orgName === org.orgName) {
-        return {
-          ...acc,
-          [org.orgName as string]: {
-            ...org,
-            selectedRepositories: selectedRepositories || [],
-          },
-        };
-      }
-      return acc;
-    }, {});
-  return newOrgsData || [];
-};
-
 export const getImportStatus = (status: string, showIcon?: boolean) => {
   if (!status) {
     return '';
@@ -332,7 +305,7 @@ export const areAllRowsSelected = (
 export const getJobErrors = (
   createJobResponse: ImportJobResponse[],
 ): JobErrors => {
-  return createJobResponse.reduce(
+  return createJobResponse?.reduce(
     (acc: JobErrors, res: ImportJobResponse) => {
       if (res.errors?.length > 0) {
         const errs =
@@ -383,7 +356,8 @@ export const convertKeyValuePairsToString = (
 ): string => {
   return keyValuePairs
     ? Object.entries(keyValuePairs)
-        .map(([key, value]) => `${key.trim()}: ${value.trim()}`)
+        .filter(val => val)
+        .map(([key, value]) => `${key.trim()}: ${value?.trim() || ''}`)
         .join('; ')
     : '';
 };
@@ -568,13 +542,68 @@ export const evaluatePRTemplate = (
   }
 };
 
+export const prepareDataForOrganizations = (result: OrgAndRepoResponse) => {
+  const orgData: { [id: string]: AddRepositoryData } =
+    result?.organizations?.reduce(
+      (acc: { [id: string]: AddRepositoryData }, val: Repository) => {
+        return {
+          ...acc,
+          [val.id]: {
+            id: val.id,
+            orgName: val.name,
+            organizationUrl: `https://github.com/${val?.name}`,
+            totalReposInOrg: val.totalRepoCount,
+          },
+        };
+      },
+      {},
+    ) || {};
+  return { organizations: orgData, totalOrganizations: result?.totalCount };
+};
+
+export const prepareDataForRepositories = (
+  result: OrgAndRepoResponse,
+  user: string,
+  baseUrl: string,
+) => {
+  const repoData: { [id: string]: AddRepositoryData } =
+    result?.repositories?.reduce((acc, val: Repository) => {
+      const id = val.id;
+      return {
+        ...acc,
+        [id]: {
+          id,
+          repoName: val.name,
+          defaultBranch: val.defaultBranch || 'main',
+          orgName: val.organization,
+          repoUrl: val.url,
+          organizationUrl: val.url?.substring(
+            0,
+            val.url.indexOf(val?.name || '') - 1,
+          ),
+          catalogInfoYaml: {
+            prTemplate: getPRTemplate(
+              val.name || '',
+              val.organization || '',
+              user,
+              baseUrl || '',
+              val.url || '',
+              val.defaultBranch || 'main',
+            ),
+          },
+        },
+      };
+    }, {}) || {};
+  return { repositories: repoData, totalRepositories: result?.totalCount };
+};
+
 export const prepareDataForAddedRepositories = (
   addedRepositories: ImportJobs | Response | undefined,
   user: string,
   baseUrl: string,
-) => {
+): { repoData: AddedRepositories; totalJobs: number } => {
   if (!Array.isArray((addedRepositories as ImportJobs)?.imports)) {
-    return {};
+    return { repoData: {}, totalJobs: 0 };
   }
   const importJobs = addedRepositories as ImportJobs;
   const repoData: { [id: string]: AddRepositoryData } =
@@ -610,5 +639,53 @@ export const prepareDataForAddedRepositories = (
         },
       };
     }, {});
-  return repoData;
+  return {
+    repoData,
+    totalJobs: (addedRepositories as ImportJobs)?.totalCount || 0,
+  };
 };
+
+const validateKeyValuePair = yup
+  .string()
+  .nullable()
+  .test(
+    'is-key-value-pair',
+    'Each entry must have a key and a value separated by a colon.',
+    value => {
+      if (!value) return true;
+      const keyValuePairs = value.split(';').map(pair => pair.trim());
+      for (const pair of keyValuePairs) {
+        if (pair) {
+          const [key, val] = pair.split(':').map(part => part.trim());
+          if (!key || !val) {
+            return false;
+          }
+        }
+      }
+      return true;
+    },
+  );
+
+export const getValidationSchema = (approvalTool: string) =>
+  yup.object().shape({
+    prTitle: yup.string().required(`${approvalTool} title is required`),
+    prDescription: yup
+      .string()
+      .required(`${approvalTool} description is required`),
+    componentName: yup
+      .string()
+      .matches(
+        componentNameRegex,
+        `"${yup.string()}" is not valid; expected a string that is sequences of [a-zA-Z0-9] separated by any of [-_.], at most 63 characters in total. To learn more about catalog file format, visit: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md`,
+      )
+      .required('Component name is required'),
+    useCodeOwnersFile: yup.boolean(),
+    entityOwner: yup.string().when('useCodeOwnersFile', {
+      is: false,
+      then: schema => schema.required('Entity Owner is required'),
+      otherwise: schema => schema.notRequired(),
+    }),
+    prLabels: validateKeyValuePair,
+    prAnnotations: validateKeyValuePair,
+    prSpec: validateKeyValuePair,
+  });

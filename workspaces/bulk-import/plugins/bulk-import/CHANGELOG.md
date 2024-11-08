@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 1.10.0
+
+### Minor Changes
+
+- ab15e37: use react query to fetch repositories
+
+## 1.9.0
+
+### Minor Changes
+
+- 06f1869: update preview form to use separate formik context
+
 ## 1.8.0
 
 ### Minor Changes

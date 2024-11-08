@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import * as React from 'react';
+ */
+ import * as React from 'react';
 
 import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
@@ -136,7 +137,7 @@ export const PreviewPullRequests = ({
         return (
           <CustomTabPanel value={value} index={index} key={repo.id}>
             <PreviewPullRequest
-              repoId={repo.id || ''}
+              repoId={repo.id}
               repoUrl={repo.repoUrl || ''}
               repoBranch={repo.defaultBranch || 'main'}
               pullRequest={pullRequest}

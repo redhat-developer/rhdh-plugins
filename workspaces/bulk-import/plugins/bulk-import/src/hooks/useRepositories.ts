@@ -12,8 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
-import { useAsync, useDebounce } from 'react-use';
+ */
+import React from 'react';
+import { useAsync } from 'react-use';
 
 import {
   configApiRef,
@@ -21,58 +22,35 @@ import {
   useApi,
 } from '@backstage/core-plugin-api';
 
-import {
-  useDebounceCallback,
-  useDeepCompareMemoize,
-} from '@janus-idp/shared-react';
+import { useQuery } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../api/BulkImportBackendClient';
 import {
   AddRepositoryData,
+  DataFetcherQueryParams,
   OrgAndRepoResponse,
   RepositoriesError,
-  Repository,
 } from '../types';
-import { getPRTemplate } from '../utils/repository-utils';
+import {
+  prepareDataForOrganizations,
+  prepareDataForRepositories,
+} from '../utils/repository-utils';
 
-export const useRepositories = (options: {
-  page: number;
-  querySize: number;
-  showOrganizations?: boolean;
-  orgName?: string;
-  searchString?: string;
-}): {
+export const useRepositories = (
+  options: DataFetcherQueryParams,
+): {
   loading: boolean;
   data: {
     repositories?: { [id: string]: AddRepositoryData };
     organizations?: { [id: string]: AddRepositoryData };
-    totalRepositories: number;
-    totalOrganizations: number;
+    totalRepositories?: number;
+    totalOrganizations?: number;
   } | null;
   error: RepositoriesError | undefined;
 } => {
-  const [repositoriesData, setRepositoriesData] = React.useState<{
-    [id: string]: AddRepositoryData;
-  }>({});
-  const [totalOrganizations, setTotalOrganizations] = React.useState(0);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [debouncedSearch, setDebouncedSearch] = React.useState(
-    options?.searchString,
-  );
-  const [totalRepositories, setTotalRepositories] = React.useState(0);
-  const [organizationsData, setOrganizationsData] = React.useState<{
-    [id: string]: AddRepositoryData;
-  }>({});
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
-
-  useDebounce(
-    () => {
-      setDebouncedSearch(options?.searchString);
-    },
-    500,
-    [options?.searchString],
-  );
+  const bulkImportApi = useApi(bulkImportApiRef);
 
   const { value: user } = useAsync(async () => {
     const identityRef = await identityApi.getBackstageIdentity();
@@ -84,129 +62,57 @@ export const useRepositories = (options: {
     return url;
   });
 
-  const bulkImportApi = useApi(bulkImportApiRef);
-  const { value, loading, error } = useAsync(async () => {
-    setIsLoading(true);
-    if (options.showOrganizations) {
+  const fetchRepositories = async (queryOptions: DataFetcherQueryParams) => {
+    if (queryOptions?.showOrganizations) {
       return await bulkImportApi.dataFetcher(
-        options.page,
-        options.querySize,
-        debouncedSearch || '',
+        queryOptions?.page,
+        queryOptions?.querySize,
+        queryOptions?.searchString || '',
         {
           fetchOrganizations: true,
         },
       );
     }
-    if (options.orgName) {
+    if (queryOptions?.orgName) {
       return await bulkImportApi.dataFetcher(
-        options.page,
-        options.querySize,
-        debouncedSearch || '',
+        queryOptions?.page,
+        queryOptions?.querySize,
+        queryOptions?.searchString || '',
         {
-          orgName: options.orgName,
+          orgName: queryOptions?.orgName,
         },
       );
     }
     return await bulkImportApi.dataFetcher(
-      options.page,
-      options.querySize,
-      debouncedSearch || '',
+      queryOptions?.page,
+      queryOptions?.querySize,
+      queryOptions?.searchString || '',
     );
-  }, [
-    options?.page,
-    options?.querySize,
-    options?.showOrganizations,
-    options?.orgName,
-    debouncedSearch,
-  ]);
+  };
 
-  const prepareData = React.useCallback(
-    (result: OrgAndRepoResponse, dataLoading: boolean) => {
-      const prepareDataForRepositories = () => {
-        const repoData: { [id: string]: AddRepositoryData } =
-          result?.repositories?.reduce((acc, val: Repository) => {
-            const id = val.id || `${val.organization}/${val.name}`;
-            return {
-              ...acc,
-              [id]: {
-                id,
-                repoName: val.name,
-                defaultBranch: val.defaultBranch,
-                orgName: val.organization,
-                repoUrl: val.url,
-                organizationUrl: val?.url?.substring(
-                  0,
-                  val.url.indexOf(val?.name || '') - 1,
-                ),
-                catalogInfoYaml: {
-                  prTemplate: getPRTemplate(
-                    val.name || '',
-                    val.organization || '',
-                    user as string,
-                    baseUrl as string,
-                    val.url || '',
-                    val.defaultBranch || 'main',
-                  ),
-                },
-              },
-            };
-          }, {}) || {};
-        setRepositoriesData(repoData);
-        setTotalRepositories(result?.totalCount);
-        setIsLoading(false);
-      };
-      const prepareDataForOrganizations = () => {
-        const orgData: { [id: string]: AddRepositoryData } =
-          result?.organizations?.reduce(
-            (acc: { [id: string]: AddRepositoryData }, val: Repository) => {
-              return {
-                ...acc,
-                [val.id]: {
-                  id: val.id,
-                  orgName: val.name,
-                  organizationUrl: `https://github.com/${val?.name}`,
-                  totalReposInOrg: val.totalRepoCount,
-                },
-              };
-            },
-            {},
-          ) || {};
-        setOrganizationsData(orgData);
-        setTotalOrganizations(result?.totalCount);
-        setIsLoading(false);
-      };
-      if (!dataLoading)
-        if (options?.showOrganizations) {
-          prepareDataForOrganizations();
-        } else {
-          prepareDataForRepositories();
-        }
-    },
-    [
-      user,
-      options?.showOrganizations,
-      baseUrl,
-      setRepositoriesData,
-      setOrganizationsData,
-      setTotalOrganizations,
-      setTotalRepositories,
-    ],
+  const {
+    data: value,
+    error,
+    isLoading: isQueryLoading,
+  } = useQuery(
+    [options?.showOrganizations ? 'organizations' : 'repositories', options],
+    () => fetchRepositories(options),
   );
 
-  const debouncedUpdateResources = useDebounceCallback(prepareData, 200);
+  const prepareData = React.useMemo(() => {
+    if (options?.showOrganizations) {
+      return prepareDataForOrganizations(value as OrgAndRepoResponse);
+    }
+    return prepareDataForRepositories(
+      value as OrgAndRepoResponse,
+      user || 'user:default/guest',
+      baseUrl || '',
+    );
+  }, [options?.showOrganizations, value, user, baseUrl]);
 
-  React.useEffect(() => {
-    debouncedUpdateResources?.(value, loading);
-  }, [debouncedUpdateResources, value, loading]);
-
-  return useDeepCompareMemoize({
-    loading: isLoading,
-    data: {
-      repositories: repositoriesData,
-      organizations: organizationsData,
-      totalOrganizations: totalOrganizations,
-      totalRepositories: totalRepositories,
-    },
+  return {
+    loading: isQueryLoading,
+    data: prepareData,
     error: {
       ...(error ?? {}),
       ...((value?.errors && value.errors.length > 0) ||
@@ -214,5 +120,5 @@ export const useRepositories = (options: {
         ? { errors: value?.errors || (value as any as Response)?.statusText }
         : {}),
     } as RepositoriesError,
-  });
+  };
 };

@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import { IdentityApi } from '@backstage/core-plugin-api';
+ */
+ import { IdentityApi } from '@backstage/core-plugin-api';
 
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
@@ -145,8 +146,11 @@ const handlers = [
         )
       ) {
         return res(
-          ctx.status(400),
-          ctx.json({ message: 'Dry run for creating import jobs failed' }),
+          ctx.json({
+            message: 'Dry run for creating import jobs failed',
+            ok: false,
+            status: 404,
+          }),
         );
       }
       return res(ctx.json(jobs));
@@ -368,6 +372,8 @@ describe('BulkImportBackendClient', () => {
 
       expect(response).toEqual({
         message: 'Dry run for creating import jobs failed',
+        ok: false,
+        status: 404,
       });
     });
   });

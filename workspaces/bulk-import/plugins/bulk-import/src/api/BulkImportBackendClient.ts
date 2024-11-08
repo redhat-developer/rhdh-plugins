@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import {
+ */
+ import {
   ConfigApi,
   createApiRef,
   IdentityApi,
@@ -136,7 +137,11 @@ export class BulkImportBackendClient implements BulkImportAPI {
         body: JSON.stringify(importRepositories),
       },
     );
-    return jsonResponse.json();
+    if (!jsonResponse.ok) {
+      const errorResponse = await jsonResponse.json();
+      throw errorResponse;
+    }
+    return jsonResponse.status === 204 ? null : await jsonResponse.json();
   }
 
   async deleteImportAction(repo: string, defaultBranch: string) {
