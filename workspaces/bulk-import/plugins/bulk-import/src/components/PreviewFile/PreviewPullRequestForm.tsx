@@ -271,7 +271,7 @@ export const PreviewPullRequestForm = ({
         placeholder="Add Backstage catalog entity descriptor files"
         variant="outlined"
         margin="normal"
-        fullWidth
+        sx={{ width: '99%' }}
         name="prTitle"
         value={formik.values?.prTitle}
         onChange={handleChange}
@@ -285,7 +285,7 @@ export const PreviewPullRequestForm = ({
         placeholder="A describing text with Markdown support"
         margin="normal"
         variant="outlined"
-        fullWidth
+        sx={{ width: '99%' }}
         onChange={handleChange}
         name="prDescription"
         value={formik.values?.prDescription}
@@ -309,7 +309,7 @@ export const PreviewPullRequestForm = ({
         value={formik.values?.componentName}
         error={!!formik.errors?.componentName}
         helperText={formik.errors?.componentName}
-        fullWidth
+        sx={{ width: '99%' }}
         required
       />
       <br />

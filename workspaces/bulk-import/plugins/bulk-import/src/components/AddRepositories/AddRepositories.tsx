@@ -41,7 +41,18 @@ const useStyles = makeStyles(() => ({
     marginBottom: '50px',
     padding: '24px',
   },
-
+  // approvalTool: {
+  //   display: 'flex',
+  //   flexDirection: 'row',
+  //   justifyContent: 'left',
+  //   alignItems: 'center',
+  //   paddingTop: '24px',
+  //   paddingBottom: '24px',
+  //   paddingLeft: '16px',
+  //   backgroundColor: theme.palette.background.paper,
+  //   borderBottomStyle: 'groove',
+  //   border: theme.palette.divider,
+  // },
   approvalToolTooltip: {
     paddingTop: '4px',
     paddingRight: '24px',
