@@ -297,7 +297,6 @@ const packageAndTypeMap = {
   'humanize-duration': { name: '@types/humanize-duration', version: '^3.18.1' },
   'mime-types': { name: '@types/mime-types', version: '^2.1.0' },
   supertest: { name: '@types/supertest', version: '^2.0.8' },
-  '@backstage/core-components': { name: 'canvas', version: '^2.11.2' },
   pluralize: { name: '@types/pluralize', version: '^0.0.33' },
   'git-url-parse': { name: '@types/git-url-parse', version: '^9.0.0' },
   'node-fetch': { name: '@types/node-fetch', version: '^2.5.12' },
