@@ -42,10 +42,6 @@ import { makeStyles } from '@mui/styles';
 import React from 'react';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  // filters: {
-  //   padding: theme.spacing(2),
-  //   marginTop: theme.spacing(2),
-  // },
   filter: {
     '& + &': {
       marginTop: theme.spacing(2.5),

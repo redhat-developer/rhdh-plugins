@@ -41,6 +41,7 @@ const useStyles = makeStyles(() => ({
     marginBottom: '50px',
     padding: '24px',
   },
+  // We would need this once the ServiceNow approval tool is incorporated in the plugin
   // approvalTool: {
   //   display: 'flex',
   //   flexDirection: 'row',
