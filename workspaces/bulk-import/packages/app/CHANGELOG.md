@@ -1,5 +1,12 @@
 # app
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [faa82f1]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import@1.10.1
+
 ## 0.0.2
 
 ### Patch Changes
