@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import { useQuery } from '@tanstack/react-query';
+ */
+import { useQuery } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 
 import { mockGetOrganizations, mockGetRepositories } from '../mocks/mockData';

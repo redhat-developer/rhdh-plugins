@@ -42,13 +42,6 @@ import { makeStyles } from '@mui/styles';
 import React from 'react';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  bar: {
-    padding: theme.spacing(1, 0),
-  },
-  filters: {
-    padding: theme.spacing(2),
-    marginTop: theme.spacing(2),
-  },
   filter: {
     '& + &': {
       marginTop: theme.spacing(2.5),
@@ -67,7 +60,11 @@ const SearchPage = () => {
       <Content>
         <Grid container direction="row">
           <Grid item xs={12}>
-            <Paper className={classes.bar}>
+            <Paper
+              sx={{
+                py: 1,
+              }}
+            >
               <SearchBar />
             </Paper>
           </Grid>
@@ -88,7 +85,12 @@ const SearchPage = () => {
                 },
               ]}
             />
-            <Paper className={classes.filters}>
+            <Paper
+              sx={{
+                p: 2,
+                mt: 2,
+              }}
+            >
               {types.includes('techdocs') && (
                 <SearchFilter.Select
                   className={classes.filter}

@@ -29,8 +29,8 @@ import { ApprovalTool, ImportJobStatus } from '../../types';
 import { getPRTemplate } from '../../utils/repository-utils';
 import { PreviewPullRequestForm } from './PreviewPullRequestForm';
 
-jest.mock('@material-ui/core', () => ({
-  ...jest.requireActual('@material-ui/core'),
+jest.mock('@mui/material', () => ({
+  ...jest.requireActual('@mui/material'),
   makeStyles: () => () => {
     return {
       previewCard: 'previewcard',

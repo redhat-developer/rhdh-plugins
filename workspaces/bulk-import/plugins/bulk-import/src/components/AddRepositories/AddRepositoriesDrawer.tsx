@@ -12,21 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React, { useState } from 'react';
+ */
+import React, { useState } from 'react';
 
 import { Link } from '@backstage/core-components';
 
-import {
-  Button,
-  Card,
-  Container,
-  Drawer,
-  IconButton,
-  makeStyles,
-  Typography,
-} from '@material-ui/core';
 import CloseIcon from '@mui/icons-material/Close';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import Container from '@mui/material/Container';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import {
@@ -38,18 +38,7 @@ import { urlHelper } from '../../utils/repository-utils';
 import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
 import { RepositoriesTable } from './RepositoriesTable';
 
-const useStyles = makeStyles(theme => ({
-  createButton: {
-    marginRight: theme.spacing(1),
-  },
-  sidePanelfooter: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'right',
-    marginTop: theme.spacing(2),
-    position: 'fixed',
-    bottom: '20px',
-  },
+const useStyles = makeStyles({
   drawerPaper: {
     ['@media (max-width: 960px)']: {
       '& > div[class*="MuiDrawer-paper-"]': {
@@ -63,7 +52,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
   },
-}));
+});
 
 export const AddRepositoriesDrawer = ({
   open,
@@ -129,7 +118,7 @@ export const AddRepositoriesDrawer = ({
             </Link>
           </div>
           <div>
-            <IconButton onClick={onClose} className="align-right">
+            <IconButton onClick={onClose} className="align-right" size="large">
               <CloseIcon />
             </IconButton>
           </div>
@@ -147,13 +136,24 @@ export const AddRepositoriesDrawer = ({
             drawerOrganization={orgData?.orgName}
           />
         </Card>
-        <div className={classes.sidePanelfooter}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'right',
+            mt: 2,
+            position: 'fixed',
+            bottom: '20px',
+          }}
+        >
           <span>
             <Button
               variant="contained"
               color="primary"
               onClick={() => handleSelectRepoFromDrawer(selectedRepos)}
-              className={classes.createButton}
+              sx={{
+                mr: 1,
+              }}
               data-testid="select-from-drawer"
             >
               Select
@@ -168,7 +168,7 @@ export const AddRepositoriesDrawer = ({
               Cancel
             </Button>
           </span>
-        </div>
+        </Box>
       </Container>
     </Drawer>
   );

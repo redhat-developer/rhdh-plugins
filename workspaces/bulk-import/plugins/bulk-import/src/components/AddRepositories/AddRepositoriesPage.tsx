@@ -12,21 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
+ */
+import React from 'react';
 
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  makeStyles,
-  useTheme,
-} from '@material-ui/core';
-import { Alert, AlertTitle } from '@material-ui/lab';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
@@ -77,7 +77,7 @@ export const AddRepositoriesPage = () => {
               <AccordionDetails className={classes.accordionDetails}>
                 {/* <Illustrations
                 iconClassname={
-                  theme.palette.type === 'dark'
+                  theme.palette.mode === 'dark'
                     ? 'icon-approval-tool-white'
                     : 'icon-approval-tool-black'
                 }
@@ -85,7 +85,7 @@ export const AddRepositoriesPage = () => {
               /> */}
                 <Illustrations
                   iconClassname={
-                    theme.palette.type === 'dark'
+                    theme.palette.mode === 'dark'
                       ? 'icon-choose-repositories-white'
                       : 'icon-choose-repositories-black'
                   }
@@ -93,7 +93,7 @@ export const AddRepositoriesPage = () => {
                 />
                 <Illustrations
                   iconClassname={
-                    theme.palette.type === 'dark'
+                    theme.palette.mode === 'dark'
                       ? 'icon-generate-cataloginfo-white'
                       : 'icon-generate-cataloginfo-black'
                   }
@@ -101,7 +101,7 @@ export const AddRepositoriesPage = () => {
                 />
                 <Illustrations
                   iconClassname={
-                    theme.palette.type === 'dark'
+                    theme.palette.mode === 'dark'
                       ? 'icon-edit-pullrequest-white'
                       : 'icon-edit-pullrequest-black'
                   }
@@ -109,7 +109,7 @@ export const AddRepositoriesPage = () => {
                 />
                 <Illustrations
                   iconClassname={
-                    theme.palette.type === 'dark'
+                    theme.palette.mode === 'dark'
                       ? 'icon-track-status-white'
                       : 'icon-track-status-black'
                   }

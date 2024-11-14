@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
+ */
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -20,9 +21,10 @@ import { useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
 import { useDrawer } from '@janus-idp/shared-react';
-import { IconButton, Tooltip } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
+import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormikContext } from 'formik';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
@@ -123,6 +125,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
             aria-label="Update"
             data-testid="update"
             onClick={() => handleOpenDrawer(value as ImportJobStatus)}
+            size="large"
           >
             <EditIcon />
           </IconButton>
@@ -139,6 +142,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
             href={canView}
             color="inherit"
             aria-label="View"
+            size="large"
           >
             <OpenInNewIcon />
           </IconButton>

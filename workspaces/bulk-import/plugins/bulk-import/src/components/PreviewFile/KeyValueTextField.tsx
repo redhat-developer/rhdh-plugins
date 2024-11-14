@@ -15,7 +15,8 @@
  */
 import React from 'react';
 
-import { FormHelperText, TextField } from '@material-ui/core';
+import FormHelperText from '@mui/material/FormHelperText';
+import TextField from '@mui/material/TextField';
 
 interface KeyValueTextFieldProps {
   label: string;

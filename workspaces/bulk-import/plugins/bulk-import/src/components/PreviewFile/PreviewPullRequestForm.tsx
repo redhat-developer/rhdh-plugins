@@ -27,13 +27,15 @@ import {
   humanizeEntityRef,
 } from '@backstage/plugin-catalog-react';
 
-import { Checkbox, FormHelperText, makeStyles } from '@material-ui/core';
-import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
 import { FormikErrors, useFormik, useFormikContext } from 'formik';
 
 import {
@@ -48,14 +50,15 @@ import {
 } from '../../utils/repository-utils';
 import KeyValueTextField from './KeyValueTextField';
 
-const useDrawerContentStyles = makeStyles(theme => ({
+// THEME_NOT_RESOLVED
+const useDrawerContentStyles = makeStyles({
   previewCard: {
-    marginTop: theme.spacing(1),
+    // marginTop: theme?.spacing(1),
   },
   previewCardContent: {
     paddingTop: 0,
   },
-}));
+});
 
 export const PreviewPullRequestForm = ({
   repoId,
@@ -268,7 +271,7 @@ export const PreviewPullRequestForm = ({
         placeholder="Add Backstage catalog entity descriptor files"
         variant="outlined"
         margin="normal"
-        fullWidth
+        sx={{ width: '99%' }}
         name="prTitle"
         value={formik.values?.prTitle}
         onChange={handleChange}
@@ -282,7 +285,7 @@ export const PreviewPullRequestForm = ({
         placeholder="A describing text with Markdown support"
         margin="normal"
         variant="outlined"
-        fullWidth
+        sx={{ width: '99%' }}
         onChange={handleChange}
         name="prDescription"
         value={formik.values?.prDescription}
@@ -306,7 +309,7 @@ export const PreviewPullRequestForm = ({
         value={formik.values?.componentName}
         error={!!formik.errors?.componentName}
         helperText={formik.errors?.componentName}
-        fullWidth
+        sx={{ width: '99%' }}
         required
       />
       <br />

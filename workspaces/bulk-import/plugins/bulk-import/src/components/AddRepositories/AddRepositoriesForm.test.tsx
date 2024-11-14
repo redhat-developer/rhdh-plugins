@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
+ */
+import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 import { configApiRef, identityApiRef } from '@backstage/core-plugin-api';
@@ -51,8 +52,8 @@ jest.mock('@janus-idp/shared-react', () => ({
   useDrawer: jest.fn(),
 }));
 
-jest.mock('@material-ui/core', () => ({
-  ...jest.requireActual('@material-ui/core'),
+jest.mock('@mui/material', () => ({
+  ...jest.requireActual('@mui/material'),
   makeStyles: () => () => {
     return {
       body: 'body',

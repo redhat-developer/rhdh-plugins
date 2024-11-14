@@ -14,13 +14,11 @@
  * limitations under the License.
  */ import * as React from 'react';
 
-import {
-  Checkbox,
-  TableCell,
-  TableHead,
-  TableRow,
-  TableSortLabel,
-} from '@material-ui/core';
+import Checkbox from '@mui/material/Checkbox';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TableSortLabel from '@mui/material/TableSortLabel';
 
 import { Order } from '../../types';
 import { RepositoriesListColumns } from '../Repositories/RepositoriesListColumns';

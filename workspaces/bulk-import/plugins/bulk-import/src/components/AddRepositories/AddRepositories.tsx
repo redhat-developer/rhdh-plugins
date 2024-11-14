@@ -12,12 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
+ */
+import React from 'react';
 
 import { useDrawer } from '@janus-idp/shared-react';
-import { makeStyles } from '@material-ui/core';
-import { Alert, AlertTitle } from '@material-ui/lab';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
+import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 import { get } from 'lodash';
 
@@ -34,24 +36,24 @@ import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
 import { AddRepositoriesTable } from './AddRepositoriesTable';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   body: {
     marginBottom: '50px',
     padding: '24px',
   },
-  approvalTool: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'left',
-    alignItems: 'center',
-    paddingTop: '24px',
-    paddingBottom: '24px',
-    paddingLeft: '16px',
-    backgroundColor: theme.palette.background.paper,
-    borderBottomStyle: 'groove',
-    border: theme.palette.divider,
-  },
-
+  // We would need this once the ServiceNow approval tool is incorporated in the plugin
+  // approvalTool: {
+  //   display: 'flex',
+  //   flexDirection: 'row',
+  //   justifyContent: 'left',
+  //   alignItems: 'center',
+  //   paddingTop: '24px',
+  //   paddingBottom: '24px',
+  //   paddingLeft: '16px',
+  //   backgroundColor: theme.palette.background.paper,
+  //   borderBottomStyle: 'groove',
+  //   border: theme.palette.divider,
+  // },
   approvalToolTooltip: {
     paddingTop: '4px',
     paddingRight: '24px',
