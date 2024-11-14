@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.10.1
+
+### Patch Changes
+
+- faa82f1: Removed canvas as a devDependency
+
 ## 1.10.0
 
 ### Minor Changes
