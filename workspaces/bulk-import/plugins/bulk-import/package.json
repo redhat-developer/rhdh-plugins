@@ -46,7 +46,7 @@
     "@mui/icons-material": "5.16.4",
     "@mui/material": "^5.12.2",
     "@mui/styles": "^6.1.6",
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "^1.4.0",
+    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^",
     "@tanstack/react-query": "^4.29.21",
     "formik": "^2.4.5",
     "js-yaml": "^4.1.0",
