@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import { rest } from 'msw';
+ */
+import { rest } from 'msw';
 
 const localHostAndPort = 'localhost:8765';
 export const LOCAL_ADDR = `http://${localHostAndPort}`;
