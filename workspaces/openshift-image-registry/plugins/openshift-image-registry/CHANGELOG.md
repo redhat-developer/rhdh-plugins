@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.10.1
+
+### Patch Changes
+
+- b910e0b: bump @backstage/repo-tools to 0.10.0 and regenerate api report
+
 ## 1.10.0
 
 ### Minor Changes
