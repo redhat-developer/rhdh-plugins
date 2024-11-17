@@ -64,6 +64,10 @@ import {
   findRepositoriesByOrganization,
 } from './handlers/repository';
 
+/**
+ * Router Options
+ * @public
+ */
 export interface RouterOptions {
   logger: LoggerService;
   permissions: PermissionEvaluator;
@@ -75,6 +79,10 @@ export interface RouterOptions {
   catalogApi: CatalogApi;
 }
 
+/**
+ * Router
+ * @public
+ */
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {

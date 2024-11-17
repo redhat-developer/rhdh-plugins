@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import {
+ */
+ import {
   configApiRef,
   createApiFactory,
   createComponentExtension,
@@ -27,6 +28,10 @@ import {
 } from './api/BulkImportBackendClient';
 import { addRepositoriesRouteRef, rootRouteRef } from './routes';
 
+/**
+ * @public
+ * Bulk Import Plugin
+ */
 export const bulkImportPlugin = createPlugin({
   id: 'bulk-import',
   routes: {
@@ -46,6 +51,10 @@ export const bulkImportPlugin = createPlugin({
   ],
 });
 
+/**
+ * @public
+ * Bulk Import Page
+ */
 export const BulkImportPage = bulkImportPlugin.provide(
   createRoutableExtension({
     name: 'BulkImportPage',
@@ -54,6 +63,10 @@ export const BulkImportPage = bulkImportPlugin.provide(
   }),
 );
 
+/**
+ * @public
+ * Bulk Import SidebarItem
+ */
 export const BulkImportSidebarItem = bulkImportPlugin.provide(
   createComponentExtension({
     name: 'BulkImportSidebarItem',

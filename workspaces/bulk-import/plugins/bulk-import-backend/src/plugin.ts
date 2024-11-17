@@ -24,6 +24,7 @@ import { createRouter } from './service/router';
 
 /**
  * The bulk-import backend plugin.
+ * @public
  */
 export const bulkImportPlugin = createBackendPlugin({
   pluginId: 'bulk-import',

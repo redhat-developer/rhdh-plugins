@@ -10,14 +10,10 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
 
-// Warning: (ae-missing-release-tag) "OpenshiftImageRegistryPage" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 export const OpenshiftImageRegistryPage: () => JSX_2.Element;
 
-// Warning: (ae-missing-release-tag) "openshiftImageRegistryPlugin" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 export const openshiftImageRegistryPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;
