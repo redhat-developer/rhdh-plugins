@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-bulk-import-common [0.2.0](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.1.0...@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.2.0) (2024-07-25)
 
+## 1.4.1
+
+### Patch Changes
+
+- b910e0b: bump @backstage/repo-tools to 0.10.0 and regenerate api reports
+
 ## 1.4.0
 
 ### Minor Changes

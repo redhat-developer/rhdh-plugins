@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 5.1.1
+
+### Patch Changes
+
+- b910e0b: bump @backstage/repo-tools to 0.10.0 and regenerate api reports
+- Updated dependencies [b910e0b]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.4.1
+
 ## 5.1.0
 
 ### Minor Changes
