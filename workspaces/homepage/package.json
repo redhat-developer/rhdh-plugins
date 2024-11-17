@@ -1,5 +1,5 @@
 {
-  "name": "@internal/dynamic-home-page",
+  "name": "@internal/homepage",
   "version": "1.0.0",
   "private": true,
   "engines": {
@@ -36,7 +36,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/dynamic-home-page"
+    "directory": "workspaces/homepage"
   },
   "devDependencies": {
     "@backstage/cli": "^0.28.0",

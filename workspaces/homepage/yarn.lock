@@ -7118,9 +7118,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@internal/dynamic-home-page@workspace:.":
+"@internal/homepage@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@internal/dynamic-home-page@workspace:."
+  resolution: "@internal/homepage@workspace:."
   dependencies:
     "@backstage/cli": ^0.28.0
     "@backstage/e2e-test-utils": ^0.1.1

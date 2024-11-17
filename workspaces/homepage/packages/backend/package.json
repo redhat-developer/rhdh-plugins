@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/dynamic-home-page/packages/backend"
+    "directory": "workspaces/homepage/packages/backend"
   },
   "backstage": {
     "role": "backend"

@@ -13,11 +13,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/dynamic-home-page/plugins/dynamic-home-page"
+    "directory": "workspaces/homepage/plugins/dynamic-home-page"
   },
   "backstage": {
     "role": "frontend-plugin",
-    "pluginId": "dynamic-home-page",
+    "pluginId": "@red-hat-developer-hub/backstage-plugin-dynamic-home-page",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-dynamic-home-page"
     ]
