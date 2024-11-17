@@ -21,6 +21,7 @@ import {
 import { rootRouteRef } from './routes';
 
 /**
+ * Marketplace Plugin
  * @public
  */
 export const marketplacePlugin = createPlugin({
@@ -31,6 +32,7 @@ export const marketplacePlugin = createPlugin({
 });
 
 /**
+ * Marketplace Page
  * @public
  */
 export const MarketplacePage = marketplacePlugin.provide(

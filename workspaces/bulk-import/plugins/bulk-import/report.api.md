@@ -12,27 +12,19 @@ import { default as React_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 
-// Warning: (ae-missing-release-tag) "BulkImportIcon" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 export const BulkImportIcon: () => React_2.JSX.Element;
 
-// Warning: (ae-missing-release-tag) "BulkImportPage" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 export const BulkImportPage: () => JSX_2.Element;
 
-// Warning: (ae-missing-release-tag) "bulkImportPlugin" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 export const bulkImportPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 addRepositories: SubRouteRef<undefined>;
 }, {}, {}>;
 
-// Warning: (ae-missing-release-tag) "BulkImportSidebarItem" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 export const BulkImportSidebarItem: () => JSX_2.Element | null;
 
 // (No @packageDocumentation comment for this package)

@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import React from 'react';
+ */
+ import React from 'react';
 
 import { SidebarItem } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
@@ -22,6 +23,10 @@ import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bu
 
 import { getImageForIconClass } from '../utils/icons';
 
+/**
+ * @public
+ * Bulk Import Icon
+ */
 export const BulkImportIcon = () => {
   return (
     <img

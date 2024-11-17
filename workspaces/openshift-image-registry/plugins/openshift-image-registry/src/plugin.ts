@@ -29,6 +29,10 @@ import {
 } from './api';
 import { rootRouteRef } from './routes';
 
+/**
+ * @public
+ * Openshift Image Registry Plugin
+ */
 export const openshiftImageRegistryPlugin = createPlugin({
   id: 'openshift-image-registry',
   routes: {
@@ -52,6 +56,10 @@ export const openshiftImageRegistryPlugin = createPlugin({
   ],
 });
 
+/**
+ * @public
+ * Openshift Image Registry Page
+ */
 export const OpenshiftImageRegistryPage = openshiftImageRegistryPlugin.provide(
   createRoutableExtension({
     name: 'OpenshiftImageRegistryPage',

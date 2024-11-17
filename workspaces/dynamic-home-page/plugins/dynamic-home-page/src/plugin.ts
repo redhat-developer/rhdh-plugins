@@ -21,6 +21,7 @@ import {
 import { rootRouteRef } from './routes';
 
 /**
+ * Dynamic Home Page Plugin
  * @public
  */
 export const dynamicHomePagePlugin = createPlugin({
@@ -31,6 +32,7 @@ export const dynamicHomePagePlugin = createPlugin({
 });
 
 /**
+ * Dynamic Home Page
  * @public
  */
 export const DynamicHomePagePage = dynamicHomePagePlugin.provide(
