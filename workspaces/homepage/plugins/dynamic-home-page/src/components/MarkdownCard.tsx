@@ -13,11 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import React from 'react';
+
+import { InfoCard, MarkdownContent } from '@backstage/core-components';
 
 /**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
+ * @public
  */
+export interface MarkdownCardProps {
+  title?: string;
+  content?: string;
+}
 
-export * from './plugin';
+/**
+ * @public
+ */
+export const MarkdownCard = (props: MarkdownCardProps) => {
+  return (
+    <InfoCard title={props.title}>
+      <MarkdownContent dialect="gfm" content={props.content ?? ''} />
+    </InfoCard>
+  );
+};

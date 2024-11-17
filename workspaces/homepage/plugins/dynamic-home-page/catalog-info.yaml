@@ -1,0 +1,28 @@
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-component
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: rhdh-plugins-dynamic-home-page-frontend
+  title: '@red-hat-developer-hub/backstage-plugin-dynamic-home-page'
+  description: Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
+  annotations:
+    {}
+    # github.com/project-slug: janus-idp/backstage-showcase
+    # github.com/team-slug: janus-idp/maintainers-plugins
+    # sonarqube.org/project-key: janus-idp_backstage-showcase
+  tags:
+    - homepage
+  links:
+    - url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/homepage/plugins/dynamic-home-page
+      title: GitHub Source
+      icon: source
+      type: source
+spec:
+  type: backstage-frontend-plugin
+  lifecycle: production
+  owner: rhdh-team
+  system: rhdh
+  subcomponentOf: rhdh-plugins-homepage
+  dependsOn:
+    - component:backstage-plugin-home
+    - component:backstage-plugin-home-react

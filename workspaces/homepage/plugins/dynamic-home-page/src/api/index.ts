@@ -13,11 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
-
-export * from './plugin';
+export * from './QuickAccessApiClient';

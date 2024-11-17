@@ -13,4 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { ExampleFetchComponent } from './ExampleFetchComponent';
+import React from 'react';
+
+/**
+ * @public
+ */
+export interface HeadlineProps {
+  title?: string;
+  align?: 'left' | 'center' | 'right';
+}
+
+/**
+ * @public
+ */
+export const Headline = (props: HeadlineProps) => {
+  return <h1 style={{ textAlign: props.align }}>{props.title}</h1>;
+};
