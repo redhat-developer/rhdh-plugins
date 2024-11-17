@@ -36,11 +36,6 @@ import {
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
-import { apis } from './apis';
-import { entityPage } from './components/catalog/EntityPage';
-import { searchPage } from './components/search/SearchPage';
-import { Root } from './components/Root';
-
 import {
   AlertDisplay,
   OAuthRequestDialog,
@@ -51,7 +46,14 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
+
+import { getThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 import { MarketplacePage } from '@red-hat-developer-hub/backstage-plugin-marketplace';
+
+import { apis } from './apis';
+import { entityPage } from './components/catalog/EntityPage';
+import { searchPage } from './components/search/SearchPage';
+import { Root } from './components/Root';
 
 const app = createApp({
   apis,
@@ -75,6 +77,7 @@ const app = createApp({
   components: {
     SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
   },
+  themes: getThemes(),
 });
 
 const routes = (
