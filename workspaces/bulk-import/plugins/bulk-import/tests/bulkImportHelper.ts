@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import { expect, type Locator, type Page } from '@playwright/test';
+ */
+import { expect, type Locator, type Page } from '@playwright/test';
 
 export class Common {
   page: Page;

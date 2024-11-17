@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import approvalToolBlackImg from '../images/ApprovalTool_Black.svg';
+ */
+import approvalToolBlackImg from '../images/ApprovalTool_Black.svg';
 import approvalToolWhiteImg from '../images/ApprovalTool_White.svg';
 import bulkImportWhiteImg from '../images/BulkImportIcon-White.svg';
 import chooseRepositoriesBlackImg from '../images/ChooseRepositories_Black.svg';
