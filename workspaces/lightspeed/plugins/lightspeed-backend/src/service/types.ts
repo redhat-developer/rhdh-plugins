@@ -20,6 +20,10 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 
+/**
+ * @public
+ * The lightspeed backend router options
+ */
 export type RouterOptions = {
   logger: LoggerService;
   config: Config;

@@ -21,6 +21,7 @@ import {
 import { createRouter } from './service/router';
 
 /**
+ * @public
  * The lightspeed backend plugin.
  */
 export const lightspeedPlugin = createBackendPlugin({

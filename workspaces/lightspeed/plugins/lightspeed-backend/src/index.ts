@@ -16,3 +16,5 @@
 
 export { lightspeedPlugin as default } from './plugin';
 export * from './service/router';
+
+export type { RouterOptions } from './service/types';

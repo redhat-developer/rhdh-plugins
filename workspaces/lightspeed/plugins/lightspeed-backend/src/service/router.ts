@@ -47,6 +47,10 @@ import {
   validateLoadHistoryRequest,
 } from './validation';
 
+/**
+ * @public
+ * The lightspeed backend router
+ */
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {

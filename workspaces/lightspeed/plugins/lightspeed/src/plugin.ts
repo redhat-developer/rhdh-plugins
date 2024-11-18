@@ -28,6 +28,10 @@ import { lightspeedApiRef } from './api/api';
 import { LightspeedApiClient } from './api/LightspeedApiClient';
 import { rootRouteRef } from './routes';
 
+/**
+ * Lightspeed Plugin
+ * @public
+ */
 export const lightspeedPlugin = createPlugin({
   id: 'lightspeed',
   routes: {
@@ -46,6 +50,10 @@ export const lightspeedPlugin = createPlugin({
   ],
 });
 
+/**
+ * Lightspeed Page
+ * @public
+ */
 export const LightspeedPage = lightspeedPlugin.provide(
   createRoutableExtension({
     name: 'LightspeedPage',
