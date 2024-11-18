@@ -70,13 +70,16 @@
   "configSchema": "config.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/janus-idp/backstage-plugins.git",
-    "directory": "plugins/lightspeed-backend"
+    "url": "git+https://github.com/redhat-developer/rhdh-plugins.git",
+    "directory": "workspaces/lightspeed/plugins/lightspeed-backend"
   },
   "keywords": [
     "backstage",
     "plugin"
   ],
-  "homepage": "https://janus-idp.io/",
-  "bugs": "https://github.com/janus-idp/backstage-plugins/issues"
+  "homepage": "https://red.ht/rhdh",
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
+  "maintainers": [
+    "@yangcao77"
+  ]
 }

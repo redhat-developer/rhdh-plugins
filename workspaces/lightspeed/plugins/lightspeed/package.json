@@ -83,8 +83,8 @@
   "configSchema": "config.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/janus-idp/backstage-plugins.git",
-    "directory": "plugins/lightspeed"
+    "url": "git+https://github.com/redhat-developer/rhdh-plugins.git",
+    "directory": "workspaces/lightspeed/plugins/lightspeed"
   },
   "keywords": [
     "lifecycle:active",
@@ -92,9 +92,10 @@
     "plugin"
   ],
   "homepage": "https://red.ht/rhdh",
-  "bugs": "https://github.com/janus-idp/backstage-plugins/issues",
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "maintainers": [
-    "@janus-idp/rhtap"
+    "@karthikjeeyar",
+    "@rohitkrai03"
   ],
   "author": "Red Hat"
 }
