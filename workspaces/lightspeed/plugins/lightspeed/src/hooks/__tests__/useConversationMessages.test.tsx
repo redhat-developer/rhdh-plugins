@@ -397,6 +397,7 @@ describe('useConversationMesages', () => {
   });
 
   it('should have scrollToBottomRef defined', async () => {
+    queryClient.clear();
     const mockData = [
       {
         id: ['HumanMessage'],
