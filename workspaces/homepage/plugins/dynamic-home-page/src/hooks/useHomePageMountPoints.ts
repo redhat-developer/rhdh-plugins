@@ -13,11 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useScalprum } from '@scalprum/react-core';
 
-/**
- * Common functionalities for the marketplace plugin.
- *
- * @packageDocumentation
- */
+import { HomePageCardMountPoint } from '../types';
 
-export * from './types';
+interface ScalprumState {
+  api?: {
+    dynamicRootConfig?: {
+      mountPoints?: {
+        'home.page/cards': HomePageCardMountPoint[];
+      };
+    };
+  };
+}
+
+export const useHomePageMountPoints = ():
+  | HomePageCardMountPoint[]
+  | undefined => {
+  const scalprum = useScalprum<ScalprumState>();
+
+  const homePageMountPoints =
+    scalprum?.api?.dynamicRootConfig?.mountPoints?.['home.page/cards'];
+
+  return homePageMountPoints;
+};

@@ -1,5 +1,5 @@
 {
-  "name": "@internal/marketplace",
+  "name": "@internal/homepage",
   "version": "1.0.0",
   "private": true,
   "engines": {
@@ -19,10 +19,10 @@
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
     "test:all": "backstage-cli repo test --coverage",
-    "test:e2e": "playwright test",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
+    "test:e2e": "playwright test",
     "prettier:check": "prettier --check .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
@@ -36,14 +36,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/marketplace"
+    "directory": "workspaces/homepage"
   },
   "devDependencies": {
     "@backstage/cli": "^0.28.0",
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.10.0",
     "@changesets/cli": "^2.27.1",
-    "@playwright/test": "^1.32.3",
     "@spotify/prettier-config": "^12.0.0",
     "node-gyp": "^9.0.0",
     "prettier": "^2.3.2",

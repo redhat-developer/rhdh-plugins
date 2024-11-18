@@ -13,11 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import React from 'react';
 
 /**
- * Common functionalities for the marketplace plugin.
- *
- * @packageDocumentation
+ * @public
  */
+export interface HeadlineProps {
+  title?: string;
+  align?: 'left' | 'center' | 'right';
+}
 
-export * from './types';
+/**
+ * @public
+ */
+export const Headline = (props: HeadlineProps) => {
+  return <h1 style={{ textAlign: props.align }}>{props.title}</h1>;
+};

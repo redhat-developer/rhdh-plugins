@@ -13,11 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import React from 'react';
+
+import { InfoCard, MarkdownContent } from '@backstage/core-components';
 
 /**
- * Common functionalities for the marketplace plugin.
- *
- * @packageDocumentation
+ * @public
  */
+export interface MarkdownCardProps {
+  title?: string;
+  content?: string;
+}
 
-export * from './types';
+/**
+ * @public
+ */
+export const MarkdownCard = (props: MarkdownCardProps) => {
+  return (
+    <InfoCard title={props.title}>
+      <MarkdownContent dialect="gfm" content={props.content ?? ''} />
+    </InfoCard>
+  );
+};

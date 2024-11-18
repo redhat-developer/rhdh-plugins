@@ -13,11 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * Common functionalities for the marketplace plugin.
- *
- * @packageDocumentation
- */
-
-export * from './types';
+export * from './QuickAccessApiClient';

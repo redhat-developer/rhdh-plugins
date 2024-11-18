@@ -13,11 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useApi } from '@backstage/core-plugin-api';
 
-/**
- * Common functionalities for the marketplace plugin.
- *
- * @packageDocumentation
- */
+import { useQuery } from '@tanstack/react-query';
 
-export * from './types';
+import { marketplaceApiRef } from '../api';
+
+export const usePlugins = () => {
+  const marketplaceApi = useApi(marketplaceApiRef);
+
+  //   const [search, setSearch] = useQueryParamState<string | undefined>('q');
+
+  return useQuery({
+    queryKey: ['plugins'],
+    queryFn: () => marketplaceApi.getPlugins(),
+  });
+};

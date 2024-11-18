@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { createApiRef } from '@backstage/core-plugin-api';
 
-/**
- * Common functionalities for the marketplace plugin.
- *
- * @packageDocumentation
- */
+import { MarketplaceApi } from './MarketplaceApi';
 
-export * from './types';
+export * from './MarketplaceApi';
+export * from './MarketplaceClient';
+
+export const marketplaceApiRef = createApiRef<MarketplaceApi>({
+  id: 'plugin.marketplace.api-ref',
+});
