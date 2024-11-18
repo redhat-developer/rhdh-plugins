@@ -17,8 +17,9 @@ import { createApiRef } from '@backstage/core-plugin-api';
 
 import { MarketplaceApi } from './MarketplaceApi';
 
+export * from './MarketplaceApi';
 export * from './MarketplaceClient';
 
-export const MarketplaceApiRef = createApiRef<MarketplaceApi>({
+export const marketplaceApiRef = createApiRef<MarketplaceApi>({
   id: 'plugin.marketplace.api-ref',
 });

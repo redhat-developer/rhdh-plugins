@@ -22,7 +22,7 @@ import {
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
-import { MarketplaceApiRef, MarketplaceClient } from './api';
+import { marketplaceApiRef, MarketplaceClient } from './api';
 
 /**
  * Marketplace Plugin
@@ -35,7 +35,7 @@ export const marketplacePlugin = createPlugin({
   },
   apis: [
     createApiFactory({
-      api: MarketplaceApiRef,
+      api: marketplaceApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
         fetchApi: fetchApiRef,
