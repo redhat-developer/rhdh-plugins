@@ -26,7 +26,6 @@ import {
   useRouteRef,
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
-import { usePermission } from '@backstage/plugin-permission-react';
 
 import { Button, Grid, Tooltip } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
@@ -34,7 +33,9 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import {
   AssessedProcessInstanceDTO,
   orchestratorWorkflowExecutePermission,
+  orchestratorWorkflowExecuteSpecificPermission,
   orchestratorWorkflowInstanceAbortPermission,
+  orchestratorWorkflowInstanceAbortSpecificPermission,
   ProcessInstanceStatusDTO,
   QUERY_PARAM_ASSESSMENT_INSTANCE_ID,
   QUERY_PARAM_INSTANCE_ID,
@@ -42,6 +43,7 @@ import {
 
 import { orchestratorApiRef } from '../api';
 import { SHORT_REFRESH_INTERVAL } from '../constants';
+import { usePermissionArray } from '../hooks/usePermissionArray';
 import usePolling from '../hooks/usePolling';
 import { executeWorkflowRouteRef, workflowInstanceRouteRef } from '../routes';
 import { isNonNullable } from '../utils/TypeGuards';
@@ -119,13 +121,6 @@ export const WorkflowInstancePage = ({
   const [isAbortAlertDialogOpen, setIsAbortAlertDialogOpen] = useState(false);
   const [abortWorkflowInstanceErrorMsg, setAbortWorkflowInstanceErrorMsg] =
     useState('');
-  const permittedToExecute = usePermission({
-    permission: orchestratorWorkflowExecutePermission,
-  });
-
-  const permittedToAbort = usePermission({
-    permission: orchestratorWorkflowInstanceAbortPermission,
-  });
 
   const fetchInstance = React.useCallback(async () => {
     if (!instanceId && !queryInstanceId) {
@@ -148,6 +143,25 @@ export const WorkflowInstancePage = ({
       (curValue.instance.status === 'Active' ||
         curValue.instance.status === 'Pending' ||
         !curValue.instance.status),
+  );
+
+  const workflowId = value?.instance?.processId;
+  const permittedToExecute = usePermissionArray(
+    workflowId
+      ? [
+          orchestratorWorkflowExecutePermission,
+          orchestratorWorkflowExecuteSpecificPermission(workflowId),
+        ]
+      : [orchestratorWorkflowExecutePermission],
+  );
+
+  const permittedToAbort = usePermissionArray(
+    workflowId
+      ? [
+          orchestratorWorkflowInstanceAbortPermission,
+          orchestratorWorkflowInstanceAbortSpecificPermission(workflowId),
+        ]
+      : [orchestratorWorkflowInstanceAbortPermission],
   );
 
   const canAbort =
