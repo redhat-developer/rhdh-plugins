@@ -64,9 +64,7 @@
   "files": [
     "dist",
     "config.d.ts",
-    "dist-dynamic/*.*",
-    "dist-dynamic/dist/**",
-    "app-config.janus-idp.yaml"
+    "app-config.dynamic.yaml"
   ],
   "configSchema": "config.d.ts",
   "repository": {

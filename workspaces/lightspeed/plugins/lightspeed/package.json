@@ -73,10 +73,10 @@
     "dist",
     "config.d.ts",
     "dist-scalprum",
-    "app-config.janus-idp.yaml"
+    "app-config.dynamic.yaml"
   ],
   "scalprum": {
-    "name": "janus-idp.backstage-plugin-lightspeed",
+    "name": "redhat-developer.backstage-plugin-lightspeed",
     "exposedModules": {
       "LightspeedPlugin": "./src/index.ts"
     }

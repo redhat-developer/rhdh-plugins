@@ -1,6 +1,6 @@
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-lightspeed:
+    redhat-developer.backstage-plugin-lightspeed:
       appIcons:
         - name: LightspeedIcon
           module: LightspeedPlugin
