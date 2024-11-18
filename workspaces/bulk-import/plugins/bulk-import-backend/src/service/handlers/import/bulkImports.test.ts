@@ -21,6 +21,7 @@ import type { CatalogClient } from '@backstage/catalog-client';
 import gitUrlParse from 'git-url-parse';
 
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
+import { CatalogLocation } from '../../../catalog/types';
 import { Paths } from '../../../generated/openapi';
 import { GithubApiService } from '../../../github';
 import { deleteImportByRepo, findAllImports } from './bulkImports';
@@ -170,26 +171,83 @@ describe('bulkimports.ts unit tests', () => {
   describe('findAllImports', () => {
     const locationUrls = [
       // from app-config
-      'https://github.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml',
-      'https://github.com/my-org-1/my-repo-12/blob/main/some/path/to/catalog-info.yaml',
-      'https://github.com/my-user/my-repo-123/blob/main/catalog-info.yaml',
-      'https://github.com/some-public-org/some-public-repo/blob/main/catalog-info.yaml',
+      {
+        id: 'app-config--location-https://github.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml',
+        target:
+          'https://github.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml',
+        source: 'config',
+      },
+      {
+        id: 'app-config--location-https://github.com/my-org-1/my-repo-12/blob/main/some/path/to/catalog-info.yaml',
+        target:
+          'https://github.com/my-org-1/my-repo-12/blob/main/some/path/to/catalog-info.yaml',
+        source: 'config',
+      },
+      {
+        id: 'app-config--location-https://github.com/my-user/my-repo-123/blob/main/catalog-info.yaml',
+        target:
+          'https://github.com/my-user/my-repo-123/blob/main/catalog-info.yaml',
+        source: 'config',
+      },
+      {
+        id: 'app-config--location-https://github.com/some-public-org/some-public-repo/blob/main/catalog-info.yaml',
+        target:
+          'https://github.com/some-public-org/some-public-repo/blob/main/catalog-info.yaml',
+        source: 'config',
+      },
 
       // from some Locations
-      'https://github.com/my-org-2/my-repo-21/blob/master/catalog-info.yaml',
-      'https://github.com/my-org-2/my-repo-22/blob/master/catalog-info.yaml',
-      'https://github.com/my-org-21/my-repo-211/blob/another-branch/catalog-info.yaml',
+      {
+        id: 'l-21',
+        target:
+          'https://github.com/my-org-2/my-repo-21/blob/master/catalog-info.yaml',
+        source: 'location',
+      },
+      {
+        id: 'l-22',
+        target:
+          'https://github.com/my-org-2/my-repo-22/blob/master/catalog-info.yaml',
+        source: 'location',
+      },
+      {
+        id: 'l-211',
+        target:
+          'https://github.com/my-org-21/my-repo-211/blob/another-branch/catalog-info.yaml',
+        source: 'location',
+      },
 
       // from some Location entities (simulating repos that could be auto-discovered by the discovery plugin)
-      'https://github.com/my-org-3/my-repo-31/blob/main/catalog-info.yaml',
-      'https://github.com/my-org-3/my-repo-32/blob/dev/catalog-info.yaml',
-      'https://github.com/my-org-3/my-repo-33/blob/dev/all.yaml',
-      'https://github.com/my-org-3/my-repo-34/blob/dev/path/to/catalog-info.yaml',
-    ];
+      {
+        id: 'o-31',
+        target:
+          'https://github.com/my-org-3/my-repo-31/blob/main/catalog-info.yaml',
+        source: 'other',
+      },
+      {
+        id: 'o-32',
+        target:
+          'https://github.com/my-org-3/my-repo-32/blob/dev/catalog-info.yaml',
+        source: 'other',
+      },
+      {
+        id: 'o-33',
+        target: 'https://github.com/my-org-3/my-repo-33/blob/dev/all.yaml',
+        source: 'other',
+      },
+      {
+        id: 'o-34',
+        target:
+          'https://github.com/my-org-3/my-repo-34/blob/dev/path/to/catalog-info.yaml',
+        source: 'other',
+      },
+    ] as CatalogLocation[];
 
-    function searchInLocationUrls(locations: string[], search?: string) {
+    function searchInLocationUrls(
+      locations: CatalogLocation[],
+      search?: string,
+    ) {
       return search
-        ? locations.filter(l => l.toLowerCase().includes(search))
+        ? locations.filter(l => l.target.toLowerCase().includes(search))
         : locations;
     }
 
@@ -197,9 +255,9 @@ describe('bulkimports.ts unit tests', () => {
       'should return only imports from repos that are accessible from the configured GH integrations (API Version: %s)',
       async apiVersionStr => {
         jest
-          .spyOn(mockCatalogHttpClient, 'listCatalogUrlLocations')
+          .spyOn(mockCatalogHttpClient, 'listCatalogUrlLocationsById')
           .mockResolvedValue({
-            targetUrls: locationUrls,
+            locations: locationUrls,
             totalCount: locationUrls.length,
           });
         jest
@@ -254,6 +312,7 @@ describe('bulkimports.ts unit tests', () => {
                 url: 'https://github.com/my-org-1/my-repo-11/pull/987',
               },
             },
+            source: 'config',
           },
           {
             id: 'https://github.com/my-user/my-repo-123',
@@ -266,6 +325,7 @@ describe('bulkimports.ts unit tests', () => {
             },
             approvalTool: 'GIT',
             status: 'PR_ERROR',
+            source: 'config',
             errors: [
               'could not find out if there is an import PR open on this repo',
             ],
@@ -281,6 +341,7 @@ describe('bulkimports.ts unit tests', () => {
             },
             approvalTool: 'GIT',
             status: 'ADDED',
+            source: 'location',
           },
           {
             id: 'https://github.com/my-org-2/my-repo-22',
@@ -293,6 +354,7 @@ describe('bulkimports.ts unit tests', () => {
             },
             approvalTool: 'GIT',
             status: null,
+            source: 'location',
           },
           {
             id: 'https://github.com/my-org-3/my-repo-31',
@@ -305,6 +367,7 @@ describe('bulkimports.ts unit tests', () => {
             },
             approvalTool: 'GIT',
             status: 'ADDED',
+            source: 'other',
           },
           {
             id: 'https://github.com/my-org-3/my-repo-32',
@@ -317,6 +380,7 @@ describe('bulkimports.ts unit tests', () => {
             },
             approvalTool: 'GIT',
             status: 'WAIT_PR_APPROVAL',
+            source: 'other',
             github: {
               pullRequest: {
                 number: 100,
@@ -431,12 +495,12 @@ describe('bulkimports.ts unit tests', () => {
         ) => {
           const filteredLocations = searchInLocationUrls(locationUrls, search);
           return {
-            targetUrls: filteredLocations,
+            locations: filteredLocations,
             totalCount: filteredLocations.length,
           };
         };
         jest
-          .spyOn(mockCatalogHttpClient, 'listCatalogUrlLocations')
+          .spyOn(mockCatalogHttpClient, 'listCatalogUrlLocationsById')
           .mockImplementation(listCatalogUrlLocationsMockFn);
         jest
           .spyOn(
@@ -516,6 +580,7 @@ describe('bulkimports.ts unit tests', () => {
             },
             approvalTool: 'GIT',
             status: 'ADDED',
+            source: 'location',
           },
           {
             id: 'https://github.com/my-org-2/my-repo-22',
@@ -528,6 +593,7 @@ describe('bulkimports.ts unit tests', () => {
             },
             approvalTool: 'GIT',
             status: null,
+            source: 'location',
           },
         ];
         expectedResponse = allImportsExpected;
@@ -649,6 +715,7 @@ describe('bulkimports.ts unit tests', () => {
             {
               id: 'location-id-11',
               target: `${repoUrl}/blob/${defaultBranch}/catalog-info.yaml`,
+              source: 'location',
             },
           ],
           totalCount: 1,

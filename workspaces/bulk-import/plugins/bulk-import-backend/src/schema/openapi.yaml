@@ -188,7 +188,7 @@ paths:
                 oneOf:
                   - type: array
                     items:
-                      $ref: '#/components/schemas/Import'
+                      $ref: '#/components/schemas/SourceImport'
                   - $ref: '#/components/schemas/ImportJobListV2'
               examples:
                 twoImports:
@@ -513,7 +513,7 @@ components:
         imports:
           type: array
           items:
-            $ref: '#/components/schemas/Import'
+            $ref: '#/components/schemas/SourceImport'
         errors:
           type: array
           items:
@@ -569,6 +569,25 @@ components:
                 catalogInfoContent:
                   type: string
                   description: content of the catalog-info.yaml as fetched from the Pull Request.
+
+    SourceImport:
+      title: Import Job with source it originates from
+      allOf:
+        - $ref: '#/components/schemas/Import'
+        - type: object
+          properties:
+            source:
+              $ref: '#/components/schemas/Source'
+
+    Source:
+      type: string
+      nullable: true
+      description: Import Source
+      enum:
+        - config
+        - location
+        - other
+        - null
 
     ImportRequest:
       title: Import Job request

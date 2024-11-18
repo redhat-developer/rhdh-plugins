@@ -319,7 +319,7 @@ const OPENAPI = `
                     {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/Import"
+                        "$ref": "#/components/schemas/SourceImport"
                       }
                     },
                     {
@@ -750,7 +750,7 @@ const OPENAPI = `
           "imports": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Import"
+              "$ref": "#/components/schemas/SourceImport"
             }
           },
           "errors": {
@@ -832,6 +832,33 @@ const OPENAPI = `
             }
           }
         }
+      },
+      "SourceImport": {
+        "title": "Import Job with source it originates from",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Import"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "source": {
+                "$ref": "#/components/schemas/Source"
+              }
+            }
+          }
+        ]
+      },
+      "Source": {
+        "type": "string",
+        "nullable": true,
+        "description": "Import Source",
+        "enum": [
+          "config",
+          "location",
+          "other",
+          null
+        ]
       },
       "ImportRequest": {
         "title": "Import Job request",

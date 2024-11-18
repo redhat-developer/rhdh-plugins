@@ -89,7 +89,7 @@ declare namespace Components {
      * Import Job List
      */
     export interface ImportJobListV2 {
-      imports?: /* Import Job */ Import[];
+      imports?: /* Import Job with source it originates from */ SourceImport[];
       errors?: string[];
       totalCount?: number;
       page?: number;
@@ -227,6 +227,53 @@ declare namespace Components {
       pagePerIntegration?: number;
       sizePerIntegration?: number;
     }
+    /**
+     * Import Source
+     */
+    export type Source = 'config' | 'location' | 'other' | null;
+    /**
+     * Import Job with source it originates from
+     */
+    export interface SourceImport {
+      id?: string;
+      status?: /* Import Job status */ ImportStatus;
+      /**
+       * Specified entity name in the catalog. Filled only in response for dry-run import requests.
+       */
+      catalogEntityName?: string;
+      lastUpdate?: string; // date-time
+      errors?: string[];
+      approvalTool?: ApprovalTool;
+      repository?: /* Repository */ Repository;
+      /**
+       * GitHub details. Applicable if approvalTool is git.
+       */
+      github?: {
+        pullRequest?: {
+          /**
+           * URL of the Pull Request
+           */
+          url?: string;
+          /**
+           * Pull Request number
+           */
+          number?: number;
+          /**
+           * title of the Pull Request
+           */
+          title?: string;
+          /**
+           * body of the Pull Request
+           */
+          body?: string;
+          /**
+           * content of the catalog-info.yaml as fetched from the Pull Request.
+           */
+          catalogInfoContent?: string;
+        };
+      };
+      source?: /* Import Source */ Source;
+    }
   }
 }
 declare namespace Paths {
@@ -277,9 +324,8 @@ declare namespace Paths {
       search?: Parameters.Search;
     }
     namespace Responses {
-      export type $200 =
-        /* Import Job */
-        | Components.Schemas.Import[]
+      export type $200 = /* Import Job with source it originates from */
+        | Components.Schemas.SourceImport[]
         | /* Import Job List */ Components.Schemas.ImportJobListV2;
       export type $500 =
         | string
@@ -540,3 +586,5 @@ export type Organization = Components.Schemas.Organization;
 export type OrganizationList = Components.Schemas.OrganizationList;
 export type Repository = Components.Schemas.Repository;
 export type RepositoryList = Components.Schemas.RepositoryList;
+export type Source = Components.Schemas.Source;
+export type SourceImport = Components.Schemas.SourceImport;

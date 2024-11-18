@@ -93,7 +93,7 @@ export async function findAllImports(
       pageNumber,
       pageSize,
     )
-  ).targetUrls;
+  ).uniqueCatalogUrlLocations;
 
   // resolve default branches for each unique repo URL from GH,
   // because we cannot easily determine that from the location target URL.
@@ -101,14 +101,14 @@ export async function findAllImports(
   const defaultBranchByRepoUrl = await resolveReposDefaultBranches(
     deps.logger,
     deps.githubApiService,
-    allLocations,
+    allLocations.keys(),
     catalogFilename,
   );
 
   // filter out locations that do not match what we are expecting, i.e.:
   // an URL to a catalog-info YAML file at the root of the repo
   const importCandidates = findImportCandidates(
-    allLocations,
+    allLocations.keys(),
     defaultBranchByRepoUrl,
     catalogFilename,
   );
@@ -119,6 +119,8 @@ export async function findAllImports(
       importCandidates,
     );
 
+  const repoUrlToLocation = new Map<string, string>();
+
   // now fetch the import statuses in different promises
   const importStatusPromises: Promise<
     HandlerResponse<Components.Schemas.Import>
@@ -128,6 +130,7 @@ export async function findAllImports(
     if (!repoUrl) {
       continue;
     }
+    repoUrlToLocation.set(repoUrl, loc);
 
     importStatusPromises.push(
       findImportStatusByRepo(
@@ -142,7 +145,15 @@ export async function findAllImports(
   const result = await Promise.all(importStatusPromises);
   const imports = result
     .filter(res => res.responseBody)
-    .map(res => res.responseBody!);
+    .map(res => res.responseBody!)
+    .map(res => {
+      const key = res?.repository?.url;
+      const location = key ? repoUrlToLocation.get(key) : undefined;
+      return {
+        ...res,
+        source: location ? allLocations.get(location)?.source : undefined,
+      };
+    });
 
   // sorting the output to make it deterministic and easy to navigate in the UI
   sortImports(imports);
@@ -168,7 +179,7 @@ export async function findAllImports(
 async function resolveReposDefaultBranches(
   logger: LoggerService,
   githubApiService: GithubApiService,
-  allLocations: string[],
+  allLocations: Iterable<string>,
   catalogFilename: string,
 ) {
   const defaultBranchByRepoUrlPromises: Promise<{
@@ -228,7 +239,7 @@ function repoUrlFromLocation(loc: string) {
 }
 
 function findImportCandidates(
-  allLocations: string[],
+  allLocations: Iterable<string>,
   defaultBranchByRepoUrl: Map<string, string>,
   catalogFilename: string,
 ) {
@@ -309,9 +320,8 @@ async function handleAddedReposFromCreateImportJobs(
       req.repository.url,
       req.repository.defaultBranch,
     );
-    const hasLocation = await deps.catalogHttpClient.verifyLocationExistence(
-      repoCatalogUrl,
-    );
+    const hasLocation =
+      await deps.catalogHttpClient.verifyLocationExistence(repoCatalogUrl);
     if (!hasLocation) {
       continue;
     }
@@ -558,9 +568,8 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    const hasEntity = await deps.catalogHttpClient.hasEntityInCatalog(
-      catalogEntityName,
-    );
+    const hasEntity =
+      await deps.catalogHttpClient.hasEntityInCatalog(catalogEntityName);
     if (hasEntity) {
       return { dryRunStatuses: ['CATALOG_ENTITY_CONFLICT'] };
     }
@@ -683,7 +692,8 @@ export async function findImportStatusByRepo(
     if (!openImportPr.prUrl) {
       const catalogLocations = (
         await deps.catalogHttpClient.listCatalogUrlLocations()
-      ).targetUrls;
+      ).uniqueCatalogUrlLocations.keys();
+
       const catalogUrl = getCatalogUrl(deps.config, repoUrl, defaultBranch);
       let exists = false;
       for (const loc of catalogLocations) {
@@ -708,9 +718,8 @@ export async function findImportStatusByRepo(
         );
       }
       // No import PR => let's determine last update from the repository
-      const ghRepo = await deps.githubApiService.getRepositoryFromIntegrations(
-        repoUrl,
-      );
+      const ghRepo =
+        await deps.githubApiService.getRepositoryFromIntegrations(repoUrl);
       result.lastUpdate = ghRepo.repository?.updated_at ?? undefined;
       return {
         statusCode: 200,

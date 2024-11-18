@@ -139,6 +139,7 @@ describe('imports', () => {
               url: 'https://github.com/octocat/my-awesome-repo',
             },
             status: null,
+            source: 'location',
           },
           {
             approvalTool: 'GIT',
@@ -152,6 +153,7 @@ describe('imports', () => {
               url: 'https://github.com/my-org-1/my-repo-with-existing-catalog-info-in-default-branch',
             },
             status: 'ADDED',
+            source: 'config',
           },
           {
             approvalTool: 'GIT',
@@ -173,6 +175,7 @@ describe('imports', () => {
               url: 'https://github.com/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-import-pr',
             },
             status: 'WAIT_PR_APPROVAL',
+            source: 'config',
           },
         ];
         if (apiVersion === 'v2') {

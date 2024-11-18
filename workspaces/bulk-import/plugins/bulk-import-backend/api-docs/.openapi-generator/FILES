@@ -17,6 +17,8 @@ Models/Organization.md
 Models/OrganizationList.md
 Models/Repository.md
 Models/RepositoryList.md
+Models/Source.md
+Models/SourceImport.md
 Models/findAllImports_200_response.md
 Models/findAllImports_500_response.md
 Models/ping_200_response.md

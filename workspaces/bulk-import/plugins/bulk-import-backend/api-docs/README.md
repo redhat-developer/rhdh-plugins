@@ -35,6 +35,8 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 - [OrganizationList](./Models/OrganizationList.md)
 - [Repository](./Models/Repository.md)
 - [RepositoryList](./Models/RepositoryList.md)
+- [Source](./Models/Source.md)
+- [SourceImport](./Models/SourceImport.md)
 - [findAllImports_200_response](./Models/findAllImports_200_response.md)
 - [findAllImports_500_response](./Models/findAllImports_500_response.md)
 - [ping_200_response](./Models/ping_200_response.md)

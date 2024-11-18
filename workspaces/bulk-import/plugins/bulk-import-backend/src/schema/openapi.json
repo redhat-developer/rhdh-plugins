@@ -729,6 +729,9 @@
           "status": {
             "$ref": "#/components/schemas/ImportStatus"
           },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
           "catalogEntityName": {
             "type": "string",
             "description": "Specified entity name in the catalog. Filled only in response for dry-run import requests."
@@ -781,6 +784,28 @@
             }
           }
         }
+      },
+      "SourceImport": {
+        "title": "Import Job with source it originates from",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Import"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "source": {
+                "$ref": "#/components/schemas/Source"
+              }
+            }
+          }
+        ]
+      },
+      "Source": {
+        "type": "string",
+        "nullable": true,
+        "description": "Import Source",
+        "enum": ["config", "location", "other", null]
       },
       "ImportRequest": {
         "title": "Import Job request",
