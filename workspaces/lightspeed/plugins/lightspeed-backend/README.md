@@ -18,7 +18,9 @@ Add the following to your `packages/backend/src/index.ts` file:
 const backend = createBackend();
 
 // Add the following line
-backend.add(import('@red-hat-developer-hub/backstage-plugin-lightspeed-backend'));
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-lightspeed-backend'),
+);
 
 backend.start();
 ```

@@ -193,7 +193,9 @@ export const LightspeedChat = ({
       const filteredConversations = Object.entries(categorizedMessages).reduce(
         (acc, [key, items]) => {
           const filteredItems = items.filter(item =>
-            item.text.toLocaleLowerCase('en-US').includes(targetValue.toLocaleLowerCase('en-US')),
+            item.text
+              .toLocaleLowerCase('en-US')
+              .includes(targetValue.toLocaleLowerCase('en-US')),
           );
           if (filteredItems.length > 0) {
             acc[key] = filteredItems;

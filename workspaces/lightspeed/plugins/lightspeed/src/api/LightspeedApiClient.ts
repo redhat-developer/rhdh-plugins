@@ -37,7 +37,9 @@ export class LightspeedApiClient implements LightspeedAPI {
 
   getServerUrl() {
     // Currently supports a single llm server
-    return `${this.configApi.getConfigArray('lightspeed.servers')[0].getOptionalString('url')}`;
+    return `${this.configApi
+      .getConfigArray('lightspeed.servers')[0]
+      .getOptionalString('url')}`;
   }
 
   async createMessage(
