@@ -17,7 +17,7 @@ The home page loads automatically a configuration like this, when no other confi
 ```yaml
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage
@@ -63,7 +63,7 @@ Each card can have a `layouts` definition and `props` that are depending on the 
 ```yaml
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Headline
