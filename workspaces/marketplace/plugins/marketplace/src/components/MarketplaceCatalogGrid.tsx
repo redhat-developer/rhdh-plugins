@@ -21,7 +21,6 @@ import {
   Link,
   LinkButton,
 } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -31,10 +30,8 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { useQuery } from '@tanstack/react-query';
-
 import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { MarketplaceApiRef } from '../api';
+import { usePlugins } from '../hooks/usePlugins';
 
 const EntrySkeleton = ({
   animation,
@@ -121,29 +118,24 @@ const Entry = ({ entry }: { entry: MarketplacePluginEntry }) => (
 );
 
 export const MarketplaceCatalogGrid = () => {
-  const marketplaceApi = useApi(MarketplaceApiRef);
+  const plugins = usePlugins();
 
   const [search] = useQueryParamState<string | undefined>('q');
 
-  const query = useQuery({
-    queryKey: ['plugins'],
-    queryFn: () => marketplaceApi.getPlugins(),
-  });
-
   const filteredEntries = React.useMemo(() => {
-    if (!search || !query.data) {
-      return query.data;
+    if (!search || !plugins.data) {
+      return plugins.data;
     }
     const lowerCaseSearch = search.toLocaleLowerCase('en-US');
-    return query.data.filter(entry => {
+    return plugins.data.filter(entry => {
       const lowerCaseValue = entry.metadata.title.toLocaleLowerCase('en-US');
       return lowerCaseValue.includes(lowerCaseSearch);
     });
-  }, [search, query.data]);
+  }, [search, plugins.data]);
 
   return (
     <ItemCardGrid>
-      {query.isLoading ? (
+      {plugins.isLoading ? (
         <>
           <EntrySkeleton />
           <EntrySkeleton />

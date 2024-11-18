@@ -16,7 +16,6 @@
 import React from 'react';
 
 import { useQueryParamState } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -24,28 +23,21 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import { useQuery } from '@tanstack/react-query';
-
-import { MarketplaceApiRef } from '../api';
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
+import { usePlugins } from '../hooks/usePlugins';
 
 export const MarketplaceCatalogTab = () => {
-  const marketplaceApi = useApi(MarketplaceApiRef);
-
   const [search, setSearch] = useQueryParamState<string | undefined>('q');
 
-  const query = useQuery({
-    queryKey: ['plugins'],
-    queryFn: () => marketplaceApi.getPlugins(),
-  });
+  const plugins = usePlugins();
 
   return (
     <Card>
       <Box sx={{ p: 2 }}>
         <Stack direction="row">
           <Typography variant="h2" sx={{ pb: 2 }}>
-            All plugins{' '}
-            {!query.isLoading && query.data ? `(${query.data.length})` : null}
+            All plugins
+            {plugins.data ? ` (${plugins.data.length})` : null}
           </Typography>
 
           {/* TODO: Align with Backstage UI */}
