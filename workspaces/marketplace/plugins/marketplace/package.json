@@ -40,6 +40,7 @@
     "@backstage/theme": "^0.6.0",
     "@mui/material": "^5.12.2",
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",
+    "@tanstack/react-query": "^5.60.5",
     "react-use": "^17.2.4"
   },
   "peerDependencies": {

@@ -18,6 +18,9 @@ import { InputError } from '@backstage/errors';
 import { z } from 'zod';
 import express from 'express';
 import Router from 'express-promise-router';
+
+import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
 import { TodoListService } from './services/TodoListService/types';
 
 export async function createRouter({
@@ -29,6 +32,90 @@ export async function createRouter({
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
+
+  router.get('/plugins', async (_req, res) => {
+    await new Promise(resolve => setTimeout(() => resolve(null), 1000));
+
+    const plugins: MarketplacePluginEntry[] = [
+      {
+        metadata: {
+          name: 'airbreak',
+          title: 'Airbreak',
+          developer: 'Spotify',
+          abstract:
+            'Access Airbreak error monitoring and other integrations from within...',
+
+          categories: ['Monitoring'],
+        },
+        spec: {
+          description:
+            '## Access Airbreak error monitoring and other integrations from within...',
+        },
+      },
+      {
+        metadata: {
+          name: 'airbreak2',
+          title: 'Airbreak2',
+          developer: 'Spotify',
+          abstract:
+            'Access Airbreak error monitoring and other integrations from within. Access Airbreak error monitoring and other integrations from within.',
+
+          categories: ['Monitoring'],
+        },
+        spec: {
+          description:
+            '## Access Airbreak error monitoring and other integrations from within...',
+        },
+      },
+      {
+        metadata: {
+          name: 'airbreak3',
+          title: 'Airbreak3',
+          developer: 'Spotify',
+          abstract:
+            'Access Airbreak error monitoring and other integrations from within...',
+
+          categories: ['Monitoring'],
+        },
+        spec: {
+          description:
+            '## Access Airbreak error monitoring and other integrations from within...',
+        },
+      },
+      {
+        metadata: {
+          name: 'airbreak4',
+          title: 'Airbreak4',
+          developer: 'Spotify',
+          abstract:
+            'Access Airbreak error monitoring and other integrations from within. Access Airbreak error monitoring and other integrations from within.',
+
+          categories: ['Monitoring'],
+        },
+        spec: {
+          description:
+            '## Access Airbreak error monitoring and other integrations from within...',
+        },
+      },
+      {
+        metadata: {
+          name: 'airbreak5',
+          title: 'Airbreak5',
+          developer: 'Spotify',
+          abstract:
+            'Access Airbreak error monitoring and other integrations from within...',
+
+          categories: ['Monitoring'],
+        },
+        spec: {
+          description:
+            '## Access Airbreak error monitoring and other integrations from within...',
+        },
+      },
+    ];
+
+    res.json(plugins);
+  });
 
   // TEMPLATE NOTE:
   // Zod is a powerful library for data validation and recommended in particular

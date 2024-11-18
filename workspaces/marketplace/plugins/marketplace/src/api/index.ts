@@ -13,4 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { ExampleComponent } from './ExampleComponent';
+import { createApiRef } from '@backstage/core-plugin-api';
+
+import { MarketplaceApi } from './MarketplaceApi';
+
+export * from './MarketplaceClient';
+
+export const MarketplaceApiRef = createApiRef<MarketplaceApi>({
+  id: 'plugin.marketplace.api-ref',
+});

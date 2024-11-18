@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 import {
-  createPlugin,
+  createApiFactory,
   createRoutableExtension,
+  createPlugin,
+  discoveryApiRef,
+  fetchApiRef,
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
+import { MarketplaceApiRef, MarketplaceClient } from './api';
 
 /**
  * Marketplace Plugin
@@ -29,6 +33,20 @@ export const marketplacePlugin = createPlugin({
   routes: {
     root: rootRouteRef,
   },
+  apis: [
+    createApiFactory({
+      api: MarketplaceApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ discoveryApi, fetchApi }) =>
+        new MarketplaceClient({
+          discoveryApi,
+          fetchApi,
+        }),
+    }),
+  ],
 });
 
 /**
@@ -39,7 +57,7 @@ export const MarketplacePage = marketplacePlugin.provide(
   createRoutableExtension({
     name: 'MarketplacePage',
     component: () =>
-      import('./components/ExampleComponent').then(m => m.ExampleComponent),
+      import('./components/MarketplacePage').then(m => m.MarketplacePage),
     mountPoint: rootRouteRef,
   }),
 );
