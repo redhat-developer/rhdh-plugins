@@ -4,11 +4,11 @@
 
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
-import type { FeaturedDocsCardProps } from '@backstage/plugin-home';
+import { FeaturedDocsCardProps } from '@backstage/plugin-home';
 import { default as React_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
-import type { StarredEntitiesProps } from '@backstage/plugin-home';
-import type { VisitedByTypeProps } from '@backstage/plugin-home';
+import { StarredEntitiesProps } from '@backstage/plugin-home';
+import { VisitedByTypeProps } from '@backstage/plugin-home';
 
 // @public (undocumented)
 export const CatalogStarredEntitiesCard: React_2.ComponentType<StarredEntitiesProps>;
@@ -110,4 +110,7 @@ export interface SearchBarProps {
 
 // @public (undocumented)
 export const TopVisitedCard: React_2.ComponentType<VisitedByTypeProps>;
+
+// @public (undocumented)
+export const VisitListener: () => React_2.JSX.Element | null;
 ```

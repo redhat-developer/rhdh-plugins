@@ -11,7 +11,7 @@ The title is optional for both components.
 ```yaml
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       mountPoints:
         - mountPoint: home.page/cards
           importName: MarkdownCard

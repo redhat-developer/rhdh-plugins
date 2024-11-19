@@ -1,7 +1,7 @@
 # please keep this in sync with packages/app/src/App.tsx
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage

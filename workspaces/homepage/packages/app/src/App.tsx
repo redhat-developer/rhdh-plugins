@@ -52,7 +52,10 @@ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 
-import { DynamicHomePage } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
+import {
+  DynamicHomePage,
+  VisitListener,
+} from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
 
 const app = createApp({
   apis,
@@ -120,6 +123,8 @@ export default app.createRoot(
     <AlertDisplay />
     <OAuthRequestDialog />
     <AppRouter>
+      {/* RHIDP-4234: VisitListener should be replaced with a mount point */}
+      <VisitListener />
       <Root>{routes}</Root>
     </AppRouter>
   </>,

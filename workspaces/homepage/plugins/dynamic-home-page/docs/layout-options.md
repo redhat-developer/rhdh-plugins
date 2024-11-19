@@ -19,7 +19,7 @@ So the default width takes 100% and the default height is 4*60 (row height) + 3*
 ```yaml
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Placeholder
@@ -60,7 +60,7 @@ The following card will use the full space on smaller widows, and the half of th
 ```yaml
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Placeholder
@@ -86,7 +86,7 @@ A second card will be shown below that card by default. To show cards side by si
 ```yaml
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Placeholder
@@ -125,7 +125,7 @@ And this will work similar also for 3 columns of course:
 ```yaml
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Placeholder
