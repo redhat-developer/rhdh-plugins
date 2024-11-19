@@ -144,7 +144,7 @@ export class CatalogHttpClient {
       method: 'GET',
     });
     const locations = (await response.json()) as {
-      data: CatalogLocation;
+      data: { id?: string; target: string; type: string };
     }[];
     if (!Array.isArray(locations)) {
       return { locations: [] };
@@ -183,7 +183,7 @@ export class CatalogHttpClient {
           id: `app-config-location--${target}`,
           target,
           source,
-        };
+        } as CatalogLocation;
       });
     const filtered = filterLocations(res, search);
     return { locations: filtered, totalCount: filtered.length };
