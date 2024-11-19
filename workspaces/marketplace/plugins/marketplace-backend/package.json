@@ -36,12 +36,12 @@
   "dependencies": {
     "@backstage/backend-defaults": "^0.5.2",
     "@backstage/backend-plugin-api": "^1.0.1",
-    "@backstage/catalog-client": "^1.7.1",
     "@backstage/errors": "^1.2.4",
-    "@backstage/plugin-catalog-node": "^1.13.1",
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
+    "glob": "^10.4.5",
+    "yaml": "^2.6.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

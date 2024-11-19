@@ -1,0 +1,8 @@
+metadata:
+  name: tekton
+  title: Pipelines with Tekton
+  abstract: Easily view Tekton PipelineRun status for your services in Backstage.
+  categories:
+    - CI/CD
+  developer: Red Hat
+  icon: https://janus-idp.io/images/plugins/tekton.svg

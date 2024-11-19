@@ -1,0 +1,8 @@
+metadata:
+  name: topology
+  title: Application Topology for Kubernetes
+  abstract: Visualize the deployment status and related resources of your applications deployed on any Kubernetes cluster.
+  categories:
+    - Kubernetes
+  developer: Red Hat
+  icon: https://janus-idp.io/images/plugins/topology.svg

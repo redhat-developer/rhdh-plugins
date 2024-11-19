@@ -10015,16 +10015,16 @@ __metadata:
     "@backstage/backend-defaults": ^0.5.2
     "@backstage/backend-plugin-api": ^1.0.1
     "@backstage/backend-test-utils": ^1.0.2
-    "@backstage/catalog-client": ^1.7.1
     "@backstage/cli": ^0.28.0
     "@backstage/errors": ^1.2.4
-    "@backstage/plugin-catalog-node": ^1.13.1
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
     "@types/express": "*"
     "@types/supertest": ^2.0.12
     express: ^4.17.1
     express-promise-router: ^4.1.0
+    glob: ^10.4.5
     supertest: ^6.2.4
+    yaml: ^2.6.0
     zod: ^3.22.4
   languageName: unknown
   linkType: soft
@@ -20389,7 +20389,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^10.0.0, glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.4.1":
+"glob@npm:^10.0.0, glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.4.1, glob@npm:^10.4.5":
   version: 10.4.5
   resolution: "glob@npm:10.4.5"
   dependencies:
@@ -33841,7 +33841,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2":
+"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.6.0":
   version: 2.6.0
   resolution: "yaml@npm:2.6.0"
   bin:

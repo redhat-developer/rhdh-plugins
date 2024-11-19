@@ -1,0 +1,8 @@
+metadata:
+  name: acr
+  title: Container Image Registry for ACR
+  abstract: View container image details from Azure Container Registry in Backstage.
+  categories:
+    - Kubernetes
+  developer: Red Hat
+  icon: https://janus-idp.io/images/plugins/oci-acr.svg
