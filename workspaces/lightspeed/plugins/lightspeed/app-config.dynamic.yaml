@@ -1,6 +1,6 @@
 dynamicPlugins:
   frontend:
-    redhat-developer.backstage-plugin-lightspeed:
+    red-hat-developer-hub.backstage-plugin-lightspeed:
       appIcons:
         - name: LightspeedIcon
           module: LightspeedPlugin
