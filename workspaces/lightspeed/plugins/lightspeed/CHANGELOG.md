@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed 1.0.0 (2024-08-07)
 
+## 0.1.3
+
+### Patch Changes
+
+- 9fccf3f: Migrated from [janus-idp/backstage-plugins](https://github.com/janus-idp/backstage-plugins).
+
 ### Features
 
 - **lightspeed:** add a new lightspeed plugin with basic implementation of chat ([#1889](https://github.com/janus-idp/backstage-plugins/issues/1889)) ([cb80e38](https://github.com/janus-idp/backstage-plugins/commit/cb80e38d4d35a8097cd84b57c1b8eb12ec5af6b4))
