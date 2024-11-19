@@ -8337,6 +8337,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/icons-material@npm:^5.16.7":
+  version: 5.16.7
+  resolution: "@mui/icons-material@npm:5.16.7"
+  dependencies:
+    "@babel/runtime": ^7.23.9
+  peerDependencies:
+    "@mui/material": ^5.0.0
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: a875f2837897d79a83173d80461e06ab090b64d08913d26433cf2cbeb8e7c7456468632a7aa495d722718f09111a8043255777d73b4dfbe9e0f863a170fc7190
+  languageName: node
+  linkType: hard
+
 "@mui/material@npm:^5.12.2":
   version: 5.16.7
   resolution: "@mui/material@npm:5.16.7"
@@ -10048,6 +10064,7 @@ __metadata:
     "@backstage/dev-utils": ^1.1.2
     "@backstage/test-utils": ^1.7.0
     "@backstage/theme": ^0.6.0
+    "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
     "@tanstack/react-query": ^5.60.5
@@ -10055,11 +10072,13 @@ __metadata:
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
     msw: ^1.0.0
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
     react-use: ^17.2.4
   peerDependencies:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
   languageName: unknown
   linkType: soft
 
@@ -28990,7 +29009,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^16.13.1 || ^17.0.0 || ^18.0.0, react@npm:^18.0.2":
+"react@npm:^17.0.0 || ^18.0.0, react@npm:^18.0.2":
   version: 18.3.1
   resolution: "react@npm:18.3.1"
   dependencies:

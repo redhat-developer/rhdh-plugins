@@ -8,7 +8,7 @@ export interface MarketplacePluginEntry {
   // (undocumented)
   metadata: MarketplacePluginMetadata;
   // (undocumented)
-  spec: MarketplacePluginSpec;
+  spec?: MarketplacePluginSpec;
 }
 
 // @public (undocumented)

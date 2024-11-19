@@ -19,7 +19,7 @@
  */
 export interface MarketplacePluginEntry {
   metadata: MarketplacePluginMetadata;
-  spec: MarketplacePluginSpec;
+  spec?: MarketplacePluginSpec;
 }
 
 /**

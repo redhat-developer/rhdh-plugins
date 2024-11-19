@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   useQueryParamState,
@@ -21,6 +22,7 @@ import {
   Link,
   LinkButton,
 } from '@backstage/core-components';
+import { useRouteRef } from '@backstage/core-plugin-api';
 
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -32,6 +34,7 @@ import Typography from '@mui/material/Typography';
 
 import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { usePlugins } from '../hooks/usePlugins';
+import { detailsRouteRef, rootRouteRef } from '../routes';
 
 const Icon = ({ entry }: { entry: MarketplacePluginEntry }) =>
   entry.metadata.icon ? (
@@ -81,65 +84,88 @@ const EntrySkeleton = ({
 );
 
 // TODO: add link around card
-const Entry = ({ entry }: { entry: MarketplacePluginEntry }) => (
-  <Card
-    variant="outlined"
-    sx={{
-      '&:hover': { backgroundColor: 'background.default', cursor: 'pointer' },
-    }}
-  >
-    <CardContent sx={{ backgroundColor: 'transparent' }}>
-      <Stack spacing={2}>
-        <Stack direction="row" spacing={2}>
-          <Icon entry={entry} />
-          <Stack spacing={0.5}>
-            <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
-              {entry.metadata.title}
-            </Typography>
-            {entry.metadata.developer ? (
-              <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-                {' by '}
-                <Link
-                  to={`/marketplace?developer=${encodeURIComponent(
-                    entry.metadata.developer,
-                  )}`}
-                  color="primary"
-                >
-                  {entry.metadata.developer}
-                </Link>
-              </Typography>
-            ) : null}
-            {entry.metadata.categories &&
-            entry.metadata.categories.length > 0 ? (
-              <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-                <LinkButton
-                  to={`/marketplace?category=${encodeURIComponent(
-                    entry.metadata.categories[0],
-                  )}`}
-                  variant="outlined"
-                  style={{ fontWeight: 'normal', padding: '2px 6px' }}
-                >
-                  {entry.metadata.categories[0]}
-                </LinkButton>
-              </Typography>
-            ) : null}
-          </Stack>
-        </Stack>
+const Entry = ({ entry }: { entry: MarketplacePluginEntry }) => {
+  const navigate = useNavigate();
+  const getIndexPath = useRouteRef(rootRouteRef);
+  const getDetailsPath = useRouteRef(detailsRouteRef);
 
-        {entry.metadata.abstract ? (
-          <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-            {entry.metadata.abstract}
-          </Typography>
-        ) : null}
-      </Stack>
-    </CardContent>
-    <CardActions sx={{ pl: 2, pr: 2, pb: 2, justifyContent: 'flex-start' }}>
-      <Link to={`/marketplace/${encodeURIComponent(entry.metadata.name)}`}>
-        Read more
-      </Link>
-    </CardActions>
-  </Card>
-);
+  const detailsPath = getDetailsPath({ name: entry.metadata.name });
+  const withSearchParameter = (name: string, value: string) =>
+    `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
+      value,
+    )}`;
+
+  return (
+    <Card
+      variant="outlined"
+      sx={{
+        '&:hover': { backgroundColor: 'background.default', cursor: 'pointer' },
+      }}
+      onClick={() => navigate(detailsPath)}
+    >
+      <CardContent sx={{ backgroundColor: 'transparent' }}>
+        <Stack spacing={2}>
+          <Stack direction="row" spacing={2}>
+            <Icon entry={entry} />
+            <Stack spacing={0.5}>
+              <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
+                {entry.metadata.title}
+              </Typography>
+              {entry.metadata.developer ? (
+                <Typography
+                  variant="subtitle2"
+                  style={{ fontWeight: 'normal' }}
+                >
+                  {' by '}
+                  <Link
+                    to={withSearchParameter(
+                      'developer',
+                      entry.metadata.developer,
+                    )}
+                    color="primary"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {entry.metadata.developer}
+                  </Link>
+                </Typography>
+              ) : null}
+              {entry.metadata.categories &&
+              entry.metadata.categories.length > 0 ? (
+                <Typography
+                  variant="subtitle2"
+                  style={{ fontWeight: 'normal' }}
+                >
+                  <LinkButton
+                    to={withSearchParameter(
+                      'category',
+                      entry.metadata.categories[0],
+                    )}
+                    variant="outlined"
+                    style={{ fontWeight: 'normal', padding: '2px 6px' }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {entry.metadata.categories[0]}
+                  </LinkButton>
+                </Typography>
+              ) : null}
+            </Stack>
+          </Stack>
+
+          {entry.metadata.abstract ? (
+            <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
+              {entry.metadata.abstract}
+            </Typography>
+          ) : null}
+        </Stack>
+      </CardContent>
+      <CardActions sx={{ pl: 2, pr: 2, pb: 2, justifyContent: 'flex-start' }}>
+        <Link to={detailsPath} onClick={e => e.stopPropagation()}>
+          Read more
+        </Link>
+      </CardActions>
+    </Card>
+  );
+};
 
 export const MarketplaceCatalogGrid = () => {
   const plugins = usePlugins();
