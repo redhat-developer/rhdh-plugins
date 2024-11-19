@@ -1,0 +1,7 @@
+dist-dynamic
+dist-scalprum
+CHANGELOG.md
+**/generated/**
+templates
+*.hbs
+renovate.json
