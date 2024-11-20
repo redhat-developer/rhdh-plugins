@@ -613,6 +613,7 @@ export const prepareDataForAddedRepositories = (
         ...acc,
         [id]: {
           id,
+          source: val.source,
           repoName: val.repository.name,
           defaultBranch: val.repository.defaultBranch,
           orgName: val.repository.organization,

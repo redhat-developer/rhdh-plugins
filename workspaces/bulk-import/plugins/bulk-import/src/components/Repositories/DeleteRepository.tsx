@@ -30,14 +30,20 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
     setOpenDialog(true);
   };
 
+  const tooltipMessage =
+    data.source === 'location'
+      ? 'Remove'
+      : 'This repository added to the app-config file. To remove it modify the file directly';
+
   return (
-    <Tooltip title="Remove">
+    <Tooltip title={tooltipMessage}>
       <span data-testid="delete-repository">
         <IconButton
           color="inherit"
           onClick={() => openDialog(data)}
           aria-label="Delete"
           size="large"
+          disabled={data.source !== 'location'}
         >
           <Delete />
         </IconButton>
