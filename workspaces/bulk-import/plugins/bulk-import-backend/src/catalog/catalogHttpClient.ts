@@ -178,11 +178,10 @@ export class CatalogHttpClient {
       )
       .map(location => {
         const target = location.getString('target');
-        const source = 'config';
         return {
           id: `app-config-location--${target}`,
           target,
-          source,
+          source: 'config',
         } as CatalogLocation;
       });
     const filtered = filterLocations(res, search);
