@@ -144,7 +144,7 @@ export class CatalogHttpClient {
       method: 'GET',
     });
     const locations = (await response.json()) as {
-      data: { id?: string; target: string; type: string };
+      data: { id: string; target: string; type: string };
     }[];
     if (!Array.isArray(locations)) {
       return { locations: [] };
