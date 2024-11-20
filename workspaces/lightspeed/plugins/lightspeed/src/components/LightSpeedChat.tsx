@@ -134,11 +134,9 @@ export const LightspeedChat = ({
 
   // Auto-scrolls to the latest message
   React.useEffect(() => {
-    if (messages.length > 2) {
-      setTimeout(() => {
-        scrollToBottomRef.current?.scrollIntoView({ behavior: 'auto' });
-      }, 10);
-    }
+    setTimeout(() => {
+      scrollToBottomRef.current?.scrollIntoView({ behavior: 'auto' });
+    }, 10);
     // eslint-disable-next-line
   }, [messages, scrollToBottomRef.current]);
 
