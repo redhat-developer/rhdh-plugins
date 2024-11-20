@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 import fs from 'fs-extra';

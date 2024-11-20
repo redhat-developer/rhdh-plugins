@@ -122,7 +122,9 @@ export class SonataFlowService {
       throw new Error(errorMessage);
     } else {
       this.logger.error(
-        `Execute workflow did not return a workflow instance ID. Response: ${JSON.stringify(json)}`,
+        `Execute workflow did not return a workflow instance ID. Response: ${JSON.stringify(
+          json,
+        )}`,
       );
       throw new Error('Execute workflow did not return a workflow instance ID');
     }
@@ -141,7 +143,11 @@ export class SonataFlowService {
 
     if (!response.ok) {
       throw new Error(
-        `${await this.createPrefixFetchErrorMessage(urlToFetch, response, 'POST')}`,
+        `${await this.createPrefixFetchErrorMessage(
+          urlToFetch,
+          response,
+          'POST',
+        )}`,
       );
     }
 

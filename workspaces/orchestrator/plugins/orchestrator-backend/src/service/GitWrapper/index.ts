@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-
 // Based on https://github.com/backstage/backstage/pull/24605/files
 export * from './git';

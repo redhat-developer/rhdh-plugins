@@ -377,7 +377,9 @@ describe('fetchWorkflowInfos', () => {
 
   it('should fetch workflow infos with definitionIds and filter', async () => {
     // Given
-    const whereClause = `and: [{id: {in: ${JSON.stringify(definitionIds)}}}, {${filterString}}]`;
+    const whereClause = `and: [{id: {in: ${JSON.stringify(
+      definitionIds,
+    )}}}, {${filterString}}]`;
     // Given
     const mockQueryResult = {
       ProcessDefinitions: mockWfInfos,
@@ -425,7 +427,9 @@ describe('fetchWorkflowInfos', () => {
 
   it('should fetch workflow infos with definitionIds, pagination, and filter', async () => {
     // Given
-    const whereClause = `and: [{id: {in: ${JSON.stringify(definitionIds)}}}, {${filterString}}]`;
+    const whereClause = `and: [{id: {in: ${JSON.stringify(
+      definitionIds,
+    )}}}, {${filterString}}]`;
     // Given
     const mockQueryResult = {
       ProcessDefinitions: mockWfInfos,
@@ -485,7 +489,9 @@ describe('fetchInstances', () => {
   const pagination = { limit: 10, offset: 0, order: 'ASC', sortField: 'name' };
 
   const processIdNotNullCondition = 'processId: {isNull: false}';
-  const processIdDefinitions = `processId: {in: ${JSON.stringify(definitionIds)}`;
+  const processIdDefinitions = `processId: {in: ${JSON.stringify(
+    definitionIds,
+  )}`;
   const queryBody =
     'id, processName, processId, businessKey, state, start, end, nodes { id }, variables, parentProcessInstance {id, processName, businessKey}';
 

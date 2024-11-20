@@ -77,14 +77,20 @@ describe('buildGraphQlQuery', () => {
         whereClause: '',
         pagination: defaultTestParams.pagination,
       },
-      expectedResult: `{${defaultTestParams.type} (${getPaginationString(defaultTestParams.pagination)} {${defaultTestParams.queryBody} } }`,
+      expectedResult: `{${defaultTestParams.type} (${getPaginationString(
+        defaultTestParams.pagination,
+      )} {${defaultTestParams.queryBody} } }`,
     },
     {
       name: 'should build a query with both where clause and pagination',
       params: {
         ...defaultTestParams,
       },
-      expectedResult: `{${defaultTestParams.type} (where: {${defaultTestParams.whereClause}}, ${getPaginationString(defaultTestParams.pagination)} {${defaultTestParams.queryBody} } }`,
+      expectedResult: `{${defaultTestParams.type} (where: {${
+        defaultTestParams.whereClause
+      }}, ${getPaginationString(defaultTestParams.pagination)} {${
+        defaultTestParams.queryBody
+      } } }`,
     },
   ];
 

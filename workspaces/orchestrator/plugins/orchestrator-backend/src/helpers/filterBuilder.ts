@@ -49,11 +49,15 @@ function handleBetweenOperator(filter: FieldFilter): string {
   if (!Array.isArray(filter.value) || filter.value.length !== 2) {
     throw new Error('Between operator requires an array of two elements');
   }
-  return `${filter.field}: {${getGraphQLOperator(FieldFilterOperatorEnum.Between)}: {from: "${filter.value[0]}", to: "${filter.value[1]}"}}`;
+  return `${filter.field}: {${getGraphQLOperator(
+    FieldFilterOperatorEnum.Between,
+  )}: {from: "${filter.value[0]}", to: "${filter.value[1]}"}}`;
 }
 
 function handleIsNullOperator(filter: FieldFilter): string {
-  return `${filter.field}: {${getGraphQLOperator(FieldFilterOperatorEnum.IsNull)}: ${convertToBoolean(filter.value)}}`;
+  return `${filter.field}: {${getGraphQLOperator(
+    FieldFilterOperatorEnum.IsNull,
+  )}: ${convertToBoolean(filter.value)}}`;
 }
 
 function isEnumFilter(
@@ -117,9 +121,13 @@ function handleBinaryOperator(
     );
   }
   const formattedValue = Array.isArray(binaryFilter.value)
-    ? `[${binaryFilter.value.map(v => formatValue(binaryFilter.field, v, fieldDef, type)).join(', ')}]`
+    ? `[${binaryFilter.value
+        .map(v => formatValue(binaryFilter.field, v, fieldDef, type))
+        .join(', ')}]`
     : formatValue(binaryFilter.field, binaryFilter.value, fieldDef, type);
-  return `${binaryFilter.field}: {${getGraphQLOperator(binaryFilter.operator)}: ${formattedValue}}`;
+  return `${binaryFilter.field}: {${getGraphQLOperator(
+    binaryFilter.operator,
+  )}: ${formattedValue}}`;
 }
 
 export function buildFilterCondition(
