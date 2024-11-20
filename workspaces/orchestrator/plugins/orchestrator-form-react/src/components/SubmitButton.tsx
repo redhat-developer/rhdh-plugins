@@ -17,6 +17,10 @@ import React from 'react';
 
 import { Button, CircularProgress } from '@material-ui/core';
 
+/**
+ * @public
+ * Button with loading state.
+ */
 const SubmitButton = ({
   submitting,
   handleClick,

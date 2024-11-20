@@ -17,6 +17,10 @@ import React from 'react';
 
 import { SvgIcon, SvgIconProps } from '@material-ui/core';
 
+/**
+ * @public
+ * Orchestrator icon
+ */
 const OrchestratorIcon = (props: SvgIconProps) => (
   <SvgIcon viewBox="0 0 126 166.8" {...props}>
     <path d="M48.8,106.6c10.2-1.1,17.7-10.2,16.7-20.5C64.4,75.8,55.2,68.4,45,69.4c-10.2,1.1-17.7,10.2-16.7,20.5 S38.5,107.6,48.8,106.6z" />

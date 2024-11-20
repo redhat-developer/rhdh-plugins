@@ -24,6 +24,10 @@ import {
 import { orchestratorApiRef, OrchestratorClient } from './api';
 import { orchestratorRootRouteRef } from './routes';
 
+/**
+ * @public
+ * Orchestrator Plugin
+ */
 export const orchestratorPlugin = createPlugin({
   id: 'orchestrator',
   apis: [
@@ -40,6 +44,10 @@ export const orchestratorPlugin = createPlugin({
   },
 });
 
+/**
+ * @public
+ * Orchestrator Page
+ */
 export const OrchestratorPage = orchestratorPlugin.provide(
   createRoutableExtension({
     name: 'OrchestratorPage',

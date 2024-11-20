@@ -69,7 +69,11 @@ const SingleStepForm = ({
   return <OrchestratorFormStepper steps={steps} />;
 };
 
-type OrchestratorFormProps = {
+/**
+ * @public
+ * OrchestratorForm component properties
+ */
+export type OrchestratorFormProps = {
   schema: JSONSchema7;
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
@@ -77,6 +81,10 @@ type OrchestratorFormProps = {
   isDataReadonly?: boolean;
 };
 
+/**
+ * @public
+ * The component contains the react-json-schema-form and serves as an extensible form. It allows loading a custom plugin decorator to override the default react-json-schema-form properties.
+ */
 const OrchestratorForm = ({
   schema,
   handleExecute,

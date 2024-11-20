@@ -21,6 +21,9 @@ import { ErrorSchema, UiSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 
 /**
+ * @public
+ * FormDecoratorProps
+ *
  * Type definition for properties passed to a form decorator component.
  * This interface extends selected fields from `FormProps` provided by `react-jsonschema-form`,
  * with additional custom functionality.
@@ -48,17 +51,37 @@ export type FormDecoratorProps = Pick<
   ) => Promise<ErrorSchema<JsonObject>> | undefined;
 };
 
+/**
+ * @public
+ * OrchestratorFormDecorator
+ *
+ */
 export type OrchestratorFormDecorator = (
   FormComponent: React.ComponentType<FormDecoratorProps>,
 ) => React.ComponentType;
 
+/**
+ * @public
+ * OrchestratorFormApi
+ * API to be implemented by factory in a custom plugin
+ */
 export interface OrchestratorFormApi {
+  /**
+   * @public
+   * getFormDecorator
+   * return the form decorator
+   */
   getFormDecorator(
     schema: JSONSchema7,
     uiSchema: UiSchema<JsonObject, JSONSchema7>,
   ): OrchestratorFormDecorator;
 }
 
+/**
+ * @public
+ * OrchestratorFormApiRef
+ *
+ */
 export const orchestratorFormApiRef = createApiRef<OrchestratorFormApi>({
   id: 'plugin.orchestrator.form',
 });

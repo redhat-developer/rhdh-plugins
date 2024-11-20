@@ -21,6 +21,10 @@ import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 
 import { createRouter } from './routerWrapper';
 
+/**
+ * @public
+ * Orchestrator Backend Plugin
+ */
 export const orchestratorPlugin = createBackendPlugin({
   pluginId: 'orchestrator',
   register(env) {
