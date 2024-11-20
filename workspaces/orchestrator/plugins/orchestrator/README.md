@@ -55,9 +55,9 @@ The Orchestrator plugin is composed of the following packages:
 
 - Docker up and running
 
-#### Setting up the Orchestrator as a dynamic plugin in a Helm deployment
+#### Setting up the Orchestrator as a dynamic plugin in a Red Hat Developer Hub Deployment
 
-Please follow this link for instructions: https://github.com/janus-idp/backstage-showcase/blob/main/showcase-docs/dynamic-plugins.md#helm-deployment
+- Follow https://github.com/janus-idp/backstage-showcase/blob/main/docs/dynamic-plugins/installing-plugins.md#installing-external-dynamic-plugins
 
 #### Setting up the configuration for the Orchestrator plugin
 
@@ -100,7 +100,9 @@ For more information about the configuration options, including other optional p
    const backend = createBackend();
 
    /* highlight-add-next-line */
-   backend.add(import('@red-hat-developer-hub/backstage-plugin-orchestrator-backend'));
+   backend.add(
+     import('@red-hat-developer-hub/backstage-plugin-orchestrator-backend'),
+   );
 
    backend.start();
    ```
