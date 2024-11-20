@@ -28,12 +28,12 @@ import { Button, Grid, Tooltip } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 
 import {
-  orchestratorWorkflowExecutePermission,
-  orchestratorWorkflowExecuteSpecificPermission,
+  orchestratorWorkflowUsePermission,
+  orchestratorWorkflowUseSpecificPermission,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
-import { usePermissionArray } from '../../hooks/usePermissionArray';
+import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import {
   executeWorkflowRouteRef,
   workflowDefinitionsRouteRef,
@@ -46,10 +46,11 @@ export const WorkflowDefinitionViewerPage = () => {
   const { workflowId, format } = useRouteRefParams(workflowDefinitionsRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
 
-  const { loading: loadingPermission, allowed: canRun } = usePermissionArray([
-    orchestratorWorkflowExecutePermission,
-    orchestratorWorkflowExecuteSpecificPermission(workflowId),
-  ]);
+  const { loading: loadingPermission, allowed: canRun } =
+    usePermissionArrayDecision([
+      orchestratorWorkflowUsePermission,
+      orchestratorWorkflowUseSpecificPermission(workflowId),
+    ]);
   const {
     value: workflowOverviewDTO,
     loading,
