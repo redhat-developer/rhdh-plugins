@@ -60,8 +60,9 @@ export class DataIndexService {
 
   public async initInputProcessDefinitionArgs(): Promise<IntrospectionField[]> {
     if (this.processDefinitionArguments.length === 0) {
-      this.processDefinitionArguments =
-        await this.inspectInputArgument('ProcessDefinition');
+      this.processDefinitionArguments = await this.inspectInputArgument(
+        'ProcessDefinition',
+      );
     }
     return this.processDefinitionArguments; // For testing purposes
   }

@@ -69,13 +69,10 @@ function replaceSparseArrayElementsdWithEmptyObject(value: any): any {
       return item ? replaceSparseArrayElementsdWithEmptyObject(item) : {};
     });
   } else if (value && typeof value === 'object') {
-    return Object.keys(value).reduce(
-      (acc, key) => {
-        acc[key] = replaceSparseArrayElementsdWithEmptyObject(value[key]);
-        return acc;
-      },
-      {} as Record<string, any>,
-    );
+    return Object.keys(value).reduce((acc, key) => {
+      acc[key] = replaceSparseArrayElementsdWithEmptyObject(value[key]);
+      return acc;
+    }, {} as Record<string, any>);
   }
   return value;
 }
