@@ -9,7 +9,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/bulk-import/packages/app"
+    "directory": "workspaces/orchestrator/packages/app"
   },
   "scripts": {
     "start": "backstage-cli package start",
