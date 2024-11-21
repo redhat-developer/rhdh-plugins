@@ -852,7 +852,7 @@ const OPENAPI = `
       "Source": {
         "type": "string",
         "nullable": true,
-        "description": "Import Source. Possible values are:\\n- 'config': Import from static catalog location configuration in 'app-config'\\n- 'location': Import of user registered entities using locations endpoint \\n- 'integration': Import using a GitHub integration\\n- 'null': Import source is unknown\\n",
+        "description": "Import Source:\\n  * 'config' - Import from static catalog location configuration in 'app-config'\\n  * 'location' - Import of user registered entities using locations endpoint\\n  * 'integration' - Import using a GitHub integration\\n  * null - Import source is unknown\\n",
         "enum": [
           "config",
           "location",

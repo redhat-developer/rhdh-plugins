@@ -228,11 +228,11 @@ declare namespace Components {
       sizePerIntegration?: number;
     }
     /**
-     * Import Source. Possible values are:
-     * - 'config': Import from static catalog location configuration in 'app-config'
-     * - 'location': Import of user registered entities using locations endpoint
-     * - 'integration': Import using a GitHub integration
-     * - 'null': Import source is unknown
+     * Import Source:
+     *   * 'config' - Import from static catalog location configuration in 'app-config'
+     *   * 'location' - Import of user registered entities using locations endpoint
+     *   * 'integration' - Import using a GitHub integration
+     *   * null - Import source is unknown
      *
      */
     export type Source = 'config' | 'location' | 'integration' | null;
@@ -278,11 +278,11 @@ declare namespace Components {
         };
       };
       source?: /**
-       * Import Source. Possible values are:
-       * - 'config': Import from static catalog location configuration in 'app-config'
-       * - 'location': Import of user registered entities using locations endpoint
-       * - 'integration': Import using a GitHub integration
-       * - 'null': Import source is unknown
+       * Import Source:
+       *   * 'config' - Import from static catalog location configuration in 'app-config'
+       *   * 'location' - Import of user registered entities using locations endpoint
+       *   * 'integration' - Import using a GitHub integration
+       *   * null - Import source is unknown
        *
        */
       Source;
