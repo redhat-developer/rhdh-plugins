@@ -1,0 +1,41 @@
+---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-user
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: guest
+spec:
+  memberOf: [guests]
+---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-group
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: guests
+spec:
+  type: team
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  # replace this with <your_github_id>
+  name: ciiay
+spec:
+  profile:
+    # replace this with <your_github_email>
+    email: yicai@redhat.com
+  memberOf: [rhdh-ui-test]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: rhdh-ui-test
+  description: The RHDH UI test group
+spec:
+  type: team
+  profile:
+    displayName: RHDH UI test
+  children: []
+  # replace member with <your_github_id> on L23
+  members: [ciiay]
