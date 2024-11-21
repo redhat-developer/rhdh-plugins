@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+import { Source } from '../generated/openapi';
+
 export type CatalogLocation = {
   id?: string;
   target: string;
-  source: SourceType;
+  source: Source;
 };
-
-export type SourceType = 'location' | 'config' | 'other';
