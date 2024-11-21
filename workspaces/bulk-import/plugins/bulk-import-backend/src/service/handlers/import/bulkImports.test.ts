@@ -221,24 +221,24 @@ describe('bulkimports.ts unit tests', () => {
         id: 'o-31',
         target:
           'https://github.com/my-org-3/my-repo-31/blob/main/catalog-info.yaml',
-        source: 'other',
+        source: 'integration',
       },
       {
         id: 'o-32',
         target:
           'https://github.com/my-org-3/my-repo-32/blob/dev/catalog-info.yaml',
-        source: 'other',
+        source: 'integration',
       },
       {
         id: 'o-33',
         target: 'https://github.com/my-org-3/my-repo-33/blob/dev/all.yaml',
-        source: 'other',
+        source: 'integration',
       },
       {
         id: 'o-34',
         target:
           'https://github.com/my-org-3/my-repo-34/blob/dev/path/to/catalog-info.yaml',
-        source: 'other',
+        source: 'integration',
       },
     ] as CatalogLocation[];
 
@@ -367,7 +367,7 @@ describe('bulkimports.ts unit tests', () => {
             },
             approvalTool: 'GIT',
             status: 'ADDED',
-            source: 'other',
+            source: 'integration',
           },
           {
             id: 'https://github.com/my-org-3/my-repo-32',
@@ -380,7 +380,7 @@ describe('bulkimports.ts unit tests', () => {
             },
             approvalTool: 'GIT',
             status: 'WAIT_PR_APPROVAL',
-            source: 'other',
+            source: 'integration',
             github: {
               pullRequest: {
                 number: 100,

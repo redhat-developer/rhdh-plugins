@@ -220,7 +220,7 @@ export class CatalogHttpClient {
         return {
           id: location.metadata.uid,
           target: location.spec.target!,
-          source: 'other',
+          source: 'integration',
         } as CatalogLocation;
       });
     const filtered = filterLocations(res, search);

@@ -228,9 +228,14 @@ declare namespace Components {
       sizePerIntegration?: number;
     }
     /**
-     * Import Source
+     * Import Source. Possible values are:
+     * - 'config': Import from static catalog location configuration in 'app-config'
+     * - 'location': Import of user registered entities using locations endpoint
+     * - 'integration': Import using a GitHub integration
+     * - 'null': Import source is unknown
+     *
      */
-    export type Source = 'config' | 'location' | 'other' | null;
+    export type Source = 'config' | 'location' | 'integration' | null;
     /**
      * Import Job with source it originates from
      */
@@ -272,7 +277,15 @@ declare namespace Components {
           catalogInfoContent?: string;
         };
       };
-      source?: /* Import Source */ Source;
+      source?: /**
+       * Import Source. Possible values are:
+       * - 'config': Import from static catalog location configuration in 'app-config'
+       * - 'location': Import of user registered entities using locations endpoint
+       * - 'integration': Import using a GitHub integration
+       * - 'null': Import source is unknown
+       *
+       */
+      Source;
     }
   }
 }
