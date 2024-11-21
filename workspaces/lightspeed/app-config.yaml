@@ -90,6 +90,6 @@ catalog:
 
 lightspeed:
   servers:
-    - id: my-llm-server
-      url: http://localhost:11434/v1/
-      token: js92n-ssj28dbdk902
+    - id: ollama
+      url: http://localhost:11434/v1
+      token: dummy-token
