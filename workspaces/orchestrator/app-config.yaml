@@ -1,5 +1,5 @@
 app:
-  title: Janus IDP Plugins
+  title: RHDH Plugins
   baseUrl: http://localhost:3000
 
 organization:

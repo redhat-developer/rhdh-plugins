@@ -43,7 +43,8 @@
   "configSchema": "config.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "yarn openapi:check && backstage-cli package build",
+    "build": "backstage-cli package build",
+    "prebuild": "yarn openapi:check",
     "tsc": "tsc",
     "prettier:check": "prettier --ignore-unknown --check .",
     "prettier:fix": "prettier --ignore-unknown --write .",

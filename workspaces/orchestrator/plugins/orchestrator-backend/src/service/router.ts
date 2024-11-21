@@ -30,11 +30,11 @@ import {
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 import type { JsonObject, JsonValue } from '@backstage/types';
 
+import { UnauthorizedError } from '@backstage-community/plugin-rbac-common';
 import {
   AuditLogger,
   DefaultAuditLogger,
 } from '@janus-idp/backstage-plugin-audit-log-node';
-import { UnauthorizedError } from '@janus-idp/backstage-plugin-rbac-common';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import express, { Router } from 'express';
 import { Request as HttpRequest } from 'express-serve-static-core';
