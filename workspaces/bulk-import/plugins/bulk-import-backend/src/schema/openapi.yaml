@@ -582,7 +582,13 @@ components:
     Source:
       type: string
       nullable: true
-      description: Import Source
+      description: |
+        Import Source. Possible values are:
+        - 'config': Import from static catalog location configuration in 'app-config'
+        - 'location': Import of user registered entities using locations endpoint 
+        - 'other': Import using a GitHub integration
+        - 'null': Import source is unknown
+
       enum:
         - config
         - location
