@@ -1,5 +1,5 @@
 app:
-  title: Scaffolded Backstage App
+  title: RHDH Lightspeed
   baseUrl: http://localhost:3000
 
 organization:
@@ -77,16 +77,6 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow: [Component, System, API, Resource, Location]
-  locations:
-    # Local example data, file locations are relative to the backend process, typically `packages/backend`
-    - type: file
-      target: ../../examples/entities.yaml
-
-    # Local example organizational data
-    - type: file
-      target: ../../examples/org.yaml
-      rules:
-        - allow: [User, Group]
 
 lightspeed:
   servers:
