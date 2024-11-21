@@ -44,7 +44,6 @@
   "sideEffects": false,
   "scripts": {
     "build": "backstage-cli package build",
-    "prebuild": "yarn openapi:check",
     "tsc": "tsc",
     "prettier:check": "prettier --ignore-unknown --check .",
     "prettier:fix": "prettier --ignore-unknown --write .",
