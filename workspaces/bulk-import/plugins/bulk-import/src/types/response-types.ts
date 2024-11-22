@@ -46,6 +46,7 @@ export type ImportJobStatus = {
   };
   status: string;
   id: string;
+  source?: 'location' | 'config' | 'integration';
   lastUpdate: string;
   repository: Repository;
 };
