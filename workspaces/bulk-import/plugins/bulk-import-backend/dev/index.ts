@@ -24,5 +24,6 @@ const backend = createBackend();
 // https://github.com/backstage/backstage/blob/master/plugins/catalog-backend/src/service/createRouter.ts
 backend.add(import('@backstage/plugin-catalog-backend/alpha'));
 backend.add(bulkImportPlugin);
+console.log('hi');
 
 backend.start();
