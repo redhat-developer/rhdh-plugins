@@ -19,6 +19,7 @@ import {
   mockServices,
   startTestBackend,
 } from '@backstage/backend-test-utils';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
@@ -129,7 +130,10 @@ describe('lightspeed router tests', () => {
     server.resetHandlers();
   });
 
-  async function startBackendServer(config?: Record<PropertyKey, unknown>) {
+  async function startBackendServer(
+    config?: Record<PropertyKey, unknown>,
+    authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
+  ) {
     const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] =
       [
         lightspeedPlugin,
@@ -140,6 +144,11 @@ describe('lightspeed router tests', () => {
         mockServices.httpAuth.factory({
           defaultCredentials: mockCredentials.user(mockUserId),
         }),
+        mockServices.permissions.mock({
+          authorize: async () => [
+            { result: authorizeResult ?? AuthorizeResult.ALLOW },
+          ],
+        }).factory,
         mockServices.userInfo.factory(),
       ];
     return (await startTestBackend({ features })).server;
@@ -182,6 +191,14 @@ describe('lightspeed router tests', () => {
   });
 
   describe('POST /conversations', () => {
+    it('should fail with unauthorized error while creating new conversation_id', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer).post(
+        `/api/lightspeed/conversations`,
+      );
+
+      expect(response.statusCode).toEqual(403);
+    });
     it('generate new conversation_id', async () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer).post(
@@ -244,6 +261,14 @@ describe('lightspeed router tests', () => {
       expect(responseData[1].kwargs?.response_metadata.model).toBe(mockModel);
     });
 
+    it('should fail with unauthorized error while fetching conversation history', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer).get(
+        `/api/lightspeed/conversations/${encodedConversationId}`,
+      );
+      expect(response.statusCode).toEqual(403);
+    });
+
     it('delete history', async () => {
       // delete request
       const backendServer = await startBackendServer();
@@ -251,6 +276,15 @@ describe('lightspeed router tests', () => {
         `/api/lightspeed/conversations/${encodedConversationId}`,
       );
       expect(deleteResponse.statusCode).toEqual(200);
+    });
+
+    it('should fail with unauthorized error while deleting a conversation history', async () => {
+      // delete request
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const deleteResponse = await request(backendServer).delete(
+        `/api/lightspeed/conversations/${encodedConversationId}`,
+      );
+      expect(deleteResponse.statusCode).toEqual(403);
     });
 
     it('load history with deleted conversation_id', async () => {
@@ -342,6 +376,19 @@ describe('lightspeed router tests', () => {
       });
       receivedData = receivedData.trimEnd(); // remove space at the last chunk
       expect(receivedData).toEqual(expectedData);
+    });
+
+    it('should fail with unauthorized error in chat completion API', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const chatCompletionResponse = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          conversation_id: mockConversationId,
+          query: 'Hello',
+          serverURL: LOCAL_AI_ADDR,
+        });
+      expect(chatCompletionResponse.statusCode).toEqual(403);
     });
 
     it('should not have any history for the initial conversation', async () => {

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
+import { NotAllowedError } from '@backstage/errors';
+import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
 import { BaseMessage, HumanMessage } from '@langchain/core/messages';
 import {
@@ -23,6 +25,13 @@ import {
 import { ChatOpenAI } from '@langchain/openai';
 import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+
+import {
+  lightspeedConversationsCreatePermission,
+  lightspeedConversationsDeletePermission,
+  lightspeedConversationsReadPermission,
+  lightspeedPermissions,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
 import {
   deleteHistory,
@@ -35,6 +44,7 @@ import {
   generateConversationId,
   validateUserRequest,
 } from '../handlers/conversationId';
+import { userPermissionAuthorization } from './permission';
 import {
   ConversationSummary,
   DEFAULT_HISTORY_LENGTH,
@@ -54,7 +64,7 @@ import {
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
-  const { logger, config, httpAuth, userInfo } = options;
+  const { logger, config, httpAuth, userInfo, permissions } = options;
 
   const router = Router();
   router.use(express.json());
@@ -63,17 +73,35 @@ export async function createRouter(
     response.json({ status: 'ok' });
   });
 
+  const permissionIntegrationRouter = createPermissionIntegrationRouter({
+    permissions: lightspeedPermissions,
+  });
+  router.use(permissionIntegrationRouter);
+
+  const authorizer = userPermissionAuthorization(permissions);
+
   // Middleware proxy to exclude /v1/query
   router.use('/v1', async (req, res, next) => {
     if (req.path === '/query') {
       return next(); // This will skip proxying and go to /v1/query endpoint
     }
-
     // TODO: parse server_id from req.body and get URL and token when multi-server is supported
-    const user = await userInfo.getUserInfo(await httpAuth.credentials(req));
+    const credentials = await httpAuth.credentials(req);
+    const user = await userInfo.getUserInfo(credentials);
     const userEntity = user.userEntityRef;
 
     logger.info(`/v1 receives call from user: ${userEntity}`);
+    try {
+      await authorizer.authorizeUser(
+        lightspeedConversationsReadPermission,
+        credentials,
+      );
+    } catch (error) {
+      if (error instanceof NotAllowedError) {
+        logger.error(error.message);
+        res.status(403).json({ error: error.message });
+      }
+    }
 
     // Proxy middleware configuration
     const apiProxy = createProxyMiddleware({
@@ -90,31 +118,46 @@ export async function createRouter(
 
   router.post('/conversations', async (request, response) => {
     try {
-      const userEntity = await userInfo.getUserInfo(
-        await httpAuth.credentials(request),
-      );
+      const credentials = await httpAuth.credentials(request, {
+        allow: ['user'],
+      });
+
+      const userEntity = await userInfo.getUserInfo(credentials);
       const user_id = userEntity.userEntityRef;
 
       logger.info(`POST /conversations receives call from user: ${user_id}`);
 
-      const conversation_id = generateConversationId(user_id);
+      await authorizer.authorizeUser(
+        lightspeedConversationsCreatePermission,
+        credentials,
+      );
 
+      const conversation_id = generateConversationId(user_id);
       response.status(200).json({ conversation_id: conversation_id });
       response.end();
     } catch (error) {
       const errormsg = `${error}`;
       logger.error(errormsg);
-      response.status(500).json({ error: errormsg });
+      if (error instanceof NotAllowedError) {
+        response.status(403).json({ error: error.message });
+      } else {
+        response.status(500).json({ error: errormsg });
+      }
     }
   });
 
   router.get('/conversations', async (request, response) => {
     try {
-      const userEntity = await userInfo.getUserInfo(
-        await httpAuth.credentials(request),
-      );
+      const credentials = await httpAuth.credentials(request);
+      const userEntity = await userInfo.getUserInfo(credentials);
       const user_id = userEntity.userEntityRef;
       logger.info(`GET /conversations receives call from user: ${user_id}`);
+
+      await authorizer.authorizeUser(
+        lightspeedConversationsReadPermission,
+        credentials,
+      );
+
       const conversationList = await loadAllConversations(user_id);
       const conversationSummaryList: ConversationSummary[] = [];
 
@@ -208,7 +251,12 @@ export async function createRouter(
       const errormsg = `${error}`;
       logger.error(errormsg);
       console.log(errormsg);
-      response.status(500).json({ error: errormsg });
+
+      if (error instanceof NotAllowedError) {
+        response.status(403).json({ error: error.message });
+      } else {
+        response.status(500).json({ error: errormsg });
+      }
     }
   });
 
@@ -221,12 +269,15 @@ export async function createRouter(
 
       const loadhistoryLength: number = historyLength || DEFAULT_HISTORY_LENGTH;
       try {
-        const userEntity = await userInfo.getUserInfo(
-          await httpAuth.credentials(request),
-        );
+        const credentials = await httpAuth.credentials(request);
+        const userEntity = await userInfo.getUserInfo(credentials);
         const user_id = userEntity.userEntityRef;
         logger.info(
           `GET /conversations/:conversation_id receives call from user: ${user_id}`,
+        );
+        await authorizer.authorizeUser(
+          lightspeedConversationsReadPermission,
+          credentials,
         );
 
         validateUserRequest(conversation_id, user_id); // will throw error and return 500 with error message if user_id does not match
@@ -240,7 +291,11 @@ export async function createRouter(
       } catch (error) {
         const errormsg = `${error}`;
         logger.error(errormsg);
-        response.status(500).json({ error: errormsg });
+        if (error instanceof NotAllowedError) {
+          response.status(403).json({ error: error.message });
+        } else {
+          response.status(500).json({ error: errormsg });
+        }
       }
     },
   );
@@ -250,13 +305,18 @@ export async function createRouter(
     async (request, response) => {
       const conversation_id = request.params.conversation_id;
       try {
-        const userEntity = await userInfo.getUserInfo(
-          await httpAuth.credentials(request),
-        );
+        const credentials = await httpAuth.credentials(request);
+        const userEntity = await userInfo.getUserInfo(credentials);
+
         const user_id = userEntity.userEntityRef;
 
         logger.info(
           `DELETE /conversations/:conversation_id receives call from user: ${user_id}`,
+        );
+
+        await authorizer.authorizeUser(
+          lightspeedConversationsDeletePermission,
+          credentials,
         );
 
         validateUserRequest(conversation_id, user_id); // will throw error and return 500 with error message if user_id does not match
@@ -266,7 +326,11 @@ export async function createRouter(
       } catch (error) {
         const errormsg = `${error}`;
         logger.error(errormsg);
-        response.status(500).json({ error: errormsg });
+        if (error instanceof NotAllowedError) {
+          response.status(403).json({ error: error.message });
+        } else {
+          response.status(500).json({ error: errormsg });
+        }
       }
     },
   );
@@ -278,13 +342,18 @@ export async function createRouter(
       const { conversation_id, model, query, serverURL }: QueryRequestBody =
         request.body;
       try {
-        const userEntity = await userInfo.getUserInfo(
-          await httpAuth.credentials(request),
-        );
+        const credentials = await httpAuth.credentials(request);
+        const userEntity = await userInfo.getUserInfo(credentials);
         const user_id = userEntity.userEntityRef;
 
         logger.info(`/v1/query receives call from user: ${user_id}`);
+
         validateUserRequest(conversation_id, user_id); // will throw error and return 500 with error message if user_id does not match
+
+        await authorizer.authorizeUser(
+          lightspeedConversationsCreatePermission,
+          credentials,
+        );
 
         // currently only supports single server
         const apiToken = config
@@ -370,7 +439,12 @@ export async function createRouter(
       } catch (error) {
         const errormsg = `Error fetching completions from ${serverURL}: ${error}`;
         logger.error(errormsg);
-        response.status(500).json({ error: errormsg });
+
+        if (error instanceof NotAllowedError) {
+          response.status(403).json({ error: error.message });
+        } else {
+          response.status(500).json({ error: errormsg });
+        }
       }
     },
   );
