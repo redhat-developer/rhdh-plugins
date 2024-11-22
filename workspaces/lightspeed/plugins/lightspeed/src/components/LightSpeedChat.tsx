@@ -15,7 +15,9 @@
  */
 import React from 'react';
 
-import { makeStyles } from '@material-ui/core';
+import { ErrorPanel } from '@backstage/core-components';
+
+import { Box, makeStyles } from '@material-ui/core';
 import { DropdownItem, Title } from '@patternfly/react-core';
 import {
   Chatbot,
@@ -38,6 +40,7 @@ import { useConversationMessages } from '../hooks/useConversationMessages';
 import { useConversations } from '../hooks/useConversations';
 import { useCreateConversation } from '../hooks/useCreateConversation';
 import { useDeleteConversation } from '../hooks/useDeleteConversation';
+import { useLightspeedDeletePermission } from '../hooks/useLightspeedDeletePermission';
 import { ConversationSummary } from '../types';
 import {
   getCategorizeMessages,
@@ -54,6 +57,11 @@ const useStyles = makeStyles(theme => ({
   },
   header: {
     padding: `${theme.spacing(3)}px !important`,
+  },
+  drawerActions: {
+    '&.pf-v6-c-drawer__actions': {
+      flexDirection: 'row-reverse',
+    },
   },
   headerTitle: {
     justifyContent: 'left !important',
@@ -92,12 +100,14 @@ export const LightspeedChat = ({
   const [newChatCreated, setNewChatCreated] = React.useState<boolean>(true);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     React.useState<boolean>(false);
+  const [error, setError] = React.useState<Error | null>(null);
 
   const queryClient = useQueryClient();
 
   const { data: conversations = [] } = useConversations();
   const { mutateAsync: createConversation } = useCreateConversation();
   const { mutateAsync: deleteConversation } = useDeleteConversation();
+  const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
 
   React.useEffect(() => {
     if (user) {
@@ -108,6 +118,7 @@ export const LightspeedChat = ({
         .catch(e => {
           // eslint-disable-next-line
           console.warn(e);
+          setError(e);
         });
     }
   }, [user, setConversationId, createConversation]);
@@ -162,6 +173,7 @@ export const LightspeedChat = ({
     (conversationSummary: ConversationSummary) => ({
       menuItems: (
         <DropdownItem
+          isDisabled={!hasDeleteAccess}
           onClick={async () => {
             try {
               await deleteConversation({
@@ -169,9 +181,9 @@ export const LightspeedChat = ({
                 invalidateCache: false,
               });
               onNewChat();
-            } catch (error) {
+            } catch (e) {
               // eslint-disable-next-line no-console
-              console.warn({ error });
+              console.warn(e);
             }
           }}
         >
@@ -179,7 +191,7 @@ export const LightspeedChat = ({
         </DropdownItem>
       ),
     }),
-    [deleteConversation, onNewChat],
+    [deleteConversation, onNewChat, hasDeleteAccess],
   );
   const categorizedMessages = getCategorizeMessages(
     conversations,
@@ -250,9 +262,36 @@ export const LightspeedChat = ({
     setIsDrawerOpen(isOpen => !isOpen);
   }, []);
 
+  if (error) {
+    return (
+      <Box padding={1}>
+        <ErrorPanel error={error} />
+      </Box>
+    );
+  }
+
   return (
     <>
       <Chatbot displayMode={ChatbotDisplayMode.embedded}>
+        <ChatbotHeader className={classes.header}>
+          <ChatbotHeaderMain>
+            <ChatbotHeaderMenu
+              aria-expanded={isDrawerOpen}
+              onMenuToggle={() => setIsDrawerOpen(!isDrawerOpen)}
+            />
+            <ChatbotHeaderTitle className={classes.headerTitle}>
+              <Title headingLevel="h1" size="3xl">
+                Developer Hub Lightspeed
+              </Title>
+            </ChatbotHeaderTitle>
+          </ChatbotHeaderMain>
+
+          <LightspeedChatBoxHeader
+            selectedModel={selectedModel}
+            handleSelectedModel={item => handleSelectedModel(item)}
+            models={models}
+          />
+        </ChatbotHeader>
         <ChatbotConversationHistoryNav
           displayMode={ChatbotDisplayMode.embedded}
           onDrawerToggle={onDrawerToggle}
@@ -265,26 +304,6 @@ export const LightspeedChat = ({
           handleTextInputChange={handleFilter}
           drawerContent={
             <>
-              <ChatbotHeader className={classes.header}>
-                <ChatbotHeaderMain>
-                  <ChatbotHeaderMenu
-                    aria-expanded={isDrawerOpen}
-                    onMenuToggle={() => setIsDrawerOpen(!isDrawerOpen)}
-                  />
-                  <ChatbotHeaderTitle className={classes.headerTitle}>
-                    <Title headingLevel="h1" size="3xl">
-                      Developer Hub Lightspeed
-                    </Title>
-                  </ChatbotHeaderTitle>
-                </ChatbotHeaderMain>
-
-                <LightspeedChatBoxHeader
-                  selectedModel={selectedModel}
-                  handleSelectedModel={item => handleSelectedModel(item)}
-                  models={models}
-                />
-              </ChatbotHeader>
-
               <ChatbotContent className={classes.content}>
                 <LightspeedChatBox
                   userName={userName}

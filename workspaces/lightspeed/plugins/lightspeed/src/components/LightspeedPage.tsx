@@ -20,9 +20,11 @@ import { Content, Page } from '@backstage/core-components';
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
+import { Alert, AlertTitle } from '@material-ui/lab';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
+import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
 import queryClient from '../utils/queryClient';
 import { LightspeedChat } from './LightSpeedChat';
 
@@ -46,6 +48,7 @@ const LightspeedPageInner = () => {
   const identityApi = useApi(identityApiRef);
 
   const { data: models } = useAllModels();
+  const { allowed: hasViewAccess, loading } = useLightspeedViewPermission();
 
   const { value: profile, loading: profileLoading } = useAsync(
     async () => await identityApi.getProfileInfo(),
@@ -72,19 +75,31 @@ const LightspeedPageInner = () => {
     if (modelsItems.length > 0) setSelectedModel(modelsItems[0].value);
   }, [modelsItems]);
 
+  if (loading) {
+    return null;
+  }
   return (
     <Page themeId="tool">
       <Content className={classes.container}>
-        <LightspeedChat
-          selectedModel={selectedModel}
-          handleSelectedModel={item => {
-            setSelectedModel(item);
-          }}
-          models={modelsItems}
-          userName={profile?.displayName}
-          avatar={profile?.picture}
-          profileLoading={profileLoading}
-        />
+        {!hasViewAccess ? (
+          <Alert severity="warning" data-testid="no-permission-alert">
+            <AlertTitle>Permission required</AlertTitle>
+            To view lightspeed plugin, contact your administrator to give you
+            the `lightspeed.conversations.read` and
+            `lightspeed.conversations.create` permission.
+          </Alert>
+        ) : (
+          <LightspeedChat
+            selectedModel={selectedModel}
+            handleSelectedModel={item => {
+              setSelectedModel(item);
+            }}
+            models={modelsItems}
+            userName={profile?.displayName}
+            avatar={profile?.picture}
+            profileLoading={profileLoading}
+          />
+        )}
       </Content>
     </Page>
   );
