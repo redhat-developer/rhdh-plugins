@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 5.2.0
+
+### Minor Changes
+
+- be29a84: Introduced a new response key 'source' in the GET /imports endpoint to indicate from which source the import originated from ('config', 'location', 'integration'). In case of duplicates, it returns first source it finds in order 'config', 'location', 'integration'.
+
 ## 5.1.1
 
 ### Patch Changes
