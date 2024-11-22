@@ -57,7 +57,7 @@ export type AddRepositoryData = {
   repoName?: string;
   orgName?: string;
   totalReposInOrg?: number;
-  source?: 'location' | 'config' | 'other';
+  source?: 'location' | 'config' | 'integration';
   repoUrl?: string;
   organizationUrl?: string;
   selectedRepositories?: AddedRepositories;
