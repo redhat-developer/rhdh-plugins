@@ -90,6 +90,11 @@ jobs:
       - name: type checking and declarations
         run: yarn tsc:full
 
+      - name: Verify changesets
+        if: ${{ !(github.actor == 'rhdh-bot' || github.actor == 'github-actions[bot]') && matrix.workspace != 'repo-tools' }}
+        run: |
+          yarn changeset status --since=${{ github.event.pull_request.base.sha }}
+
       - name: prettier
         run: yarn prettier:check
 
