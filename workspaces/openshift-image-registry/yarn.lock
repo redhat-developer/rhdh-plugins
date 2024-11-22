@@ -15065,7 +15065,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app@workspace:*, app@workspace:packages/app":
+"app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
+  version: 0.0.0-use.local
+  resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
+  languageName: node
+  linkType: soft
+
+"app@workspace:packages/app":
   version: 0.0.0-use.local
   resolution: "app@workspace:packages/app"
   dependencies:
@@ -15775,7 +15781,7 @@ __metadata:
     "@types/express": ^4.17.6
     "@types/express-serve-static-core": ^4.17.5
     "@types/luxon": ^2.0.4
-    app: "workspace:*"
+    app: "link:../app"
     better-sqlite3: ^9.0.0
     node-gyp: ^10.0.0
     pg: ^8.11.3
