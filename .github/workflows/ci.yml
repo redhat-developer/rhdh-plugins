@@ -70,6 +70,7 @@ jobs:
         uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
 
       - name: Set up Node ${{ matrix.node-version }}
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4
@@ -89,6 +90,11 @@ jobs:
 
       - name: type checking and declarations
         run: yarn tsc:full
+
+      - name: Verify changesets
+        if: ${{ !(github.actor == 'rhdh-bot' || github.actor == 'github-actions[bot]') && matrix.workspace != 'repo-tools' && matrix.workspace != 'noop' }}
+        run: |
+          yarn changeset status --since=${{ github.event.pull_request.base.sha }}
 
       - name: prettier
         run: yarn prettier:check
