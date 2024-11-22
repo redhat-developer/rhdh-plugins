@@ -27,6 +27,7 @@ import fetch from 'node-fetch';
 
 import { getTokenForPlugin, logErrorIfNeeded } from '../helpers';
 import { filterLocations, getCatalogUrl } from './catalogUtils';
+import { CatalogLocation } from './types';
 
 export class CatalogHttpClient {
   private readonly logger: LoggerService;
@@ -78,18 +79,25 @@ export class CatalogHttpClient {
     search?: string,
     pageNumber?: number,
     pageSize?: number,
-  ): Promise<{ targetUrls: string[]; totalCount?: number }> {
+  ): Promise<{
+    uniqueCatalogUrlLocations: Map<string, CatalogLocation>;
+    totalCount?: number;
+  }> {
+    // byId order: config, locations, other
     const byId = await this.listCatalogUrlLocationsById(
       search,
       pageNumber,
       pageSize,
     );
-    const result = new Set<string>();
+    const result = new Map<string, CatalogLocation>();
+
     for (const l of byId.locations) {
-      result.add(l.target);
+      if (!result.has(l.target)) {
+        result.set(l.target, l);
+      }
     }
     return {
-      targetUrls: Array.from(result.values()),
+      uniqueCatalogUrlLocations: result,
       totalCount: byId.totalCount,
     };
   }
@@ -99,7 +107,7 @@ export class CatalogHttpClient {
     pageNumber?: number,
     pageSize?: number,
   ): Promise<{
-    locations: { id?: string; target: string }[];
+    locations: CatalogLocation[];
     totalCount?: number;
   }> {
     const result = await Promise.all([
@@ -121,7 +129,7 @@ export class CatalogHttpClient {
   async listCatalogUrlLocationsByIdFromLocationsEndpoint(
     search?: string,
   ): Promise<{
-    locations: { id?: string; target: string }[];
+    locations: CatalogLocation[];
     totalCount?: number;
   }> {
     const url = `${await this.discovery.getBaseUrl('catalog')}/locations`;
@@ -149,14 +157,15 @@ export class CatalogHttpClient {
         return {
           id: location.data?.id,
           target: location.data.target,
-        };
+          source: 'location',
+        } as CatalogLocation;
       });
     const filtered = filterLocations(res, search);
     return { locations: filtered, totalCount: filtered.length };
   }
 
   listCatalogUrlLocationsFromConfig(search?: string): {
-    locations: { id?: string; target: string }[];
+    locations: CatalogLocation[];
     totalCount?: number;
   } {
     const locationConfigs =
@@ -172,7 +181,8 @@ export class CatalogHttpClient {
         return {
           id: `app-config-location--${target}`,
           target,
-        };
+          source: 'config',
+        } as CatalogLocation;
       });
     const filtered = filterLocations(res, search);
     return { locations: filtered, totalCount: filtered.length };
@@ -183,7 +193,7 @@ export class CatalogHttpClient {
     _pageNumber?: number,
     _pageSize?: number,
   ): Promise<{
-    locations: { id?: string; target: string }[];
+    locations: CatalogLocation[];
     totalCount?: number;
   }> {
     const result = await this.catalogApi.getEntities(
@@ -210,7 +220,8 @@ export class CatalogHttpClient {
         return {
           id: location.metadata.uid,
           target: location.spec.target!,
-        };
+          source: 'integration',
+        } as CatalogLocation;
       });
     const filtered = filterLocations(res, search);
     return { locations: filtered, totalCount: filtered.length };

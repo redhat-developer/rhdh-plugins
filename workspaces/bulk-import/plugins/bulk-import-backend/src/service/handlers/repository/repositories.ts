@@ -125,10 +125,11 @@ async function formatResponse(
     };
   }
 
-  let catalogLocations: string[] = [];
+  let catalogLocations: Iterable<string> = [];
   if (checkStatus) {
-    catalogLocations = (await deps.catalogHttpClient.listCatalogUrlLocations())
-      .targetUrls;
+    catalogLocations = (
+      await deps.catalogHttpClient.listCatalogUrlLocations()
+    ).uniqueCatalogUrlLocations.keys();
   }
   const repoList: Components.Schemas.Repository[] = [];
   for (const repo of allReposAccessible.repositories) {

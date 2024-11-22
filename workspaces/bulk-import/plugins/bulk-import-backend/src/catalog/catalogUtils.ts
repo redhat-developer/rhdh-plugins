@@ -18,6 +18,8 @@ import type { Config } from '@backstage/config';
 
 import gitUrlParse from 'git-url-parse';
 
+import { CatalogLocation } from './types';
+
 export function getCatalogFilename(config: Config): string {
   return (
     config.getOptionalString('catalog.import.entityFilename') ??
@@ -41,7 +43,7 @@ export function getCatalogUrl(
 }
 
 export function filterLocations(
-  res: { id: string | undefined; target: string }[],
+  res: CatalogLocation[],
   search: string | undefined,
 ) {
   return search

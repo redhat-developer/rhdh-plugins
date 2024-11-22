@@ -33,7 +33,7 @@ export async function getImportStatusFromLocations(
     catalogHttpClient: CatalogHttpClient;
   },
   repoUrl: string,
-  catalogUrlLocations: string[],
+  catalogUrlLocations: Iterable<string>,
   defaultBranch?: string,
 ): Promise<{
   status: Components.Schemas.ImportStatus;
