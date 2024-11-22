@@ -9,6 +9,7 @@ import type { Config } from '@backstage/config';
 import express from 'express';
 import type { HttpAuthService } from '@backstage/backend-plugin-api';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import type { PermissionsService } from '@backstage/backend-plugin-api';
 import type { UserInfoService } from '@backstage/backend-plugin-api';
 
 // @public
@@ -24,6 +25,7 @@ export type RouterOptions = {
     config: Config;
     httpAuth: HttpAuthService;
     userInfo: UserInfoService;
+    permissions: PermissionsService;
 };
 
 // (No @packageDocumentation comment for this package)

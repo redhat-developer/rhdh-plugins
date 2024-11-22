@@ -8,13 +8,13 @@
   "private": true,
   "publishConfig": {
     "access": "public",
-    "main": "dist/index.cjs.js",
-    "module": "dist/index.esm.js",
+    "main": "dist/index.esm.js",
     "types": "dist/index.d.ts"
   },
   "backstage": {
     "role": "common-library",
     "supported-versions": "1.32.5",
+    "pluginId": "lightspeed",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-lightspeed-common",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-lightspeed",
@@ -62,6 +62,7 @@
   "maintainers": [
     "@karthikjeeyar",
     "@rohitkrai03",
-    "@yangcao77"
+    "@yangcao77",
+    "@Eswaraiahsapram"
   ]
 }
