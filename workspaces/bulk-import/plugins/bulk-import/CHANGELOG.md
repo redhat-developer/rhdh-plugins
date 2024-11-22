@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.10.3
+
+### Patch Changes
+
+- 0afb197: Disable Delete button for repositories that are not sourced from `location`.
+
 ## 1.10.2
 
 ### Patch Changes
