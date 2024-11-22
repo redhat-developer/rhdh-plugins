@@ -34,14 +34,16 @@ export const lightspeedPlugin = createBackendPlugin({
         http: coreServices.httpRouter,
         httpAuth: coreServices.httpAuth,
         userInfo: coreServices.userInfo,
+        permissions: coreServices.permissions,
       },
-      async init({ logger, config, http, httpAuth, userInfo }) {
+      async init({ logger, config, http, httpAuth, userInfo, permissions }) {
         http.use(
           await createRouter({
             config: config,
             logger: logger,
             httpAuth: httpAuth,
             userInfo: userInfo,
+            permissions,
           }),
         );
 

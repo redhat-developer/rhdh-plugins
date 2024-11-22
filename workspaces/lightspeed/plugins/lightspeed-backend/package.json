@@ -11,9 +11,11 @@
   "backstage": {
     "role": "backend-plugin",
     "pluginId": "lightspeed",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-lightspeed-backend",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-lightspeed",
-      "@red-hat-developer-hub/backstage-plugin-lightspeed-backend"
+      "@red-hat-developer-hub/backstage-plugin-lightspeed-backend",
+      "@red-hat-developer-hub/backstage-plugin-lightspeed-common"
     ],
     "supported-versions": "1.32.5"
   },
@@ -44,8 +46,12 @@
   "dependencies": {
     "@backstage/backend-defaults": "^0.5.2",
     "@backstage/backend-plugin-api": "^1.0.1",
+    "@backstage/errors": "^1.2.4",
+    "@backstage/plugin-permission-common": "^0.8.1",
+    "@backstage/plugin-permission-node": "^0.8.5",
     "@langchain/core": "^0.2.30",
     "@langchain/openai": "^0.2.8",
+    "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
     "express": "^4.21.1",
     "http-proxy-middleware": "^3.0.2"
   },

@@ -16,6 +16,7 @@
 import type {
   HttpAuthService,
   LoggerService,
+  PermissionsService,
   UserInfoService,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
@@ -29,6 +30,7 @@ export type RouterOptions = {
   config: Config;
   httpAuth: HttpAuthService;
   userInfo: UserInfoService;
+  permissions: PermissionsService;
 };
 
 /**
