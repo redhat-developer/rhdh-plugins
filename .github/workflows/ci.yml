@@ -91,7 +91,7 @@ jobs:
         run: yarn tsc:full
 
       - name: Verify changesets
-        if: ${{ !(github.actor == 'rhdh-bot' || github.actor == 'github-actions[bot]') && matrix.workspace != 'repo-tools' }}
+        if: ${{ !(github.actor == 'rhdh-bot' || github.actor == 'github-actions[bot]') && matrix.workspace != 'repo-tools' && matrix.workspace != 'noop' }}
         run: |
           yarn changeset status --since=${{ github.event.pull_request.base.sha }}
 
