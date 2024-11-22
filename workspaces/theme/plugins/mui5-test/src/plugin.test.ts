@@ -13,4 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export {};
+import { mui5TestPlugin } from './plugin';
+
+describe('mui5-test', () => {
+  it('should export plugin', () => {
+    expect(mui5TestPlugin).toBeDefined();
+  });
+});

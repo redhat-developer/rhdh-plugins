@@ -52,6 +52,11 @@ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 
+import { BCTestPage } from '@red-hat-developer-hub/backstage-plugin-bc-test';
+import { MUI4TestPage } from '@red-hat-developer-hub/backstage-plugin-mui4-test';
+import { MUI5TestPage } from '@red-hat-developer-hub/backstage-plugin-mui5-test';
+import { allThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+
 const app = createApp({
   apis,
   bindRoutes({ bind }) {
@@ -74,6 +79,7 @@ const app = createApp({
   components: {
     SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
   },
+  themes: allThemes,
 });
 
 const routes = (
@@ -110,6 +116,9 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
+    <Route path="/bc-tests" element={<BCTestPage />} />
+    <Route path="/mui4-tests" element={<MUI4TestPage />} />
+    <Route path="/mui5-tests" element={<MUI5TestPage />} />
   </FlatRoutes>
 );
 

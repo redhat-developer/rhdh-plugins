@@ -92,6 +92,10 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
         {/* End global nav */}
         <SidebarDivider />
+        <SidebarItem icon={ExtensionIcon} to="bc-tests" text="BC tests" />
+        <SidebarItem icon={ExtensionIcon} to="mui4-tests" text="MUI v4 tests" />
+        <SidebarItem icon={ExtensionIcon} to="mui5-tests" text="MUI v5 tests" />
+        <SidebarDivider />
         <SidebarScrollWrapper>
           {/* Items in this group will be scrollable if they run out of space */}
         </SidebarScrollWrapper>

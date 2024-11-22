@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/theme
+# @red-hat-developer-hub/backstage-plugin-theme
 
 _This package was created through the Backstage CLI_.
 
@@ -8,5 +8,5 @@ Install the package via Yarn:
 
 ```sh
 cd <package-dir> # if within a monorepo
-yarn add @red-hat-developer-hub/theme
+yarn add @red-hat-developer-hub/backstage-plugin-theme
 ```
