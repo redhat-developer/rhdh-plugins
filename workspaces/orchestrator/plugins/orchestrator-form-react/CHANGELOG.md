@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 1.4.3
+
+### Patch Changes
+
+- 54daa8c: Migrated from [janus-idp/backstage-plugins](https://github.com/janus-idp/backstage-plugins).
+- Updated dependencies [54daa8c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.4.2
+
 ## 1.4.2
 
 ### Patch Changes
