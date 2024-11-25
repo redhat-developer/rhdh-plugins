@@ -1,0 +1,25 @@
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-component
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: red-hat-developer-hub-orchestrator-common
+  title: '@red-hat-developer-hub/backstage-plugin-orchestrator-common'
+  description: Orchestrator Common Plugin for Backstage
+  annotations:
+    backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-common
+    backstage.io/view-url: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-common/catalog-info.yaml
+    backstage.io/edit-url: https://github.com/redhat-developer/rhdh-plugins/edit/main/workspaces/orchestrator/plugins/orchestrator-common/catalog-info.yaml
+    github.com/project-slug: red-hat-developer-hub/backstage-plugins
+    github.com/team-slug: red-hat-developer-hub/orchestrator-codeowners
+    sonarqube.org/project-key: red_hat_developer_hub_plugins
+  links:
+    - url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-common
+      title: GitHub Source
+      icon: source
+      type: source
+spec:
+  type: backstage-common-library
+  lifecycle: production
+  owner: orchestrator-team
+  system: rhdh
+  subcomponentOf: red-hat-developer-hub-orchestrator
