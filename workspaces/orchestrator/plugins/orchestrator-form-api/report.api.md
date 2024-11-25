@@ -20,7 +20,7 @@ export type FormDecoratorProps = Pick<FormProps<JsonObject, JSONSchema7>, 'formD
 
 // @public
 export interface OrchestratorFormApi {
-    getFormDecorator(schema: JSONSchema7, uiSchema: UiSchema<JsonObject, JSONSchema7>): OrchestratorFormDecorator;
+    getFormDecorator(schema: JSONSchema7, uiSchema: UiSchema<JsonObject, JSONSchema7>, initialFormData?: JsonObject): OrchestratorFormDecorator;
 }
 
 // @public
