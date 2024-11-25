@@ -35,6 +35,9 @@ backend:
     connection: ':memory:'
   cache:
     store: memory
+  # useful for debugging APIs via curl in dev env without requiring a auth:
+  # auth:
+  #   dangerouslyDisableDefaultAuthPolicy: true
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
 integrations: {}

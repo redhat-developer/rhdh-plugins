@@ -92,7 +92,7 @@ export class SonataFlowService {
   public async executeWorkflow(args: {
     definitionId: string;
     serviceUrl: string;
-    inputData: ProcessInstanceVariables;
+    inputData?: ProcessInstanceVariables;
     businessKey?: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
     const urlToFetch = args.businessKey
@@ -101,7 +101,7 @@ export class SonataFlowService {
 
     const response = await fetch(urlToFetch, {
       method: 'POST',
-      body: JSON.stringify(args.inputData),
+      body: JSON.stringify(args.inputData || {}),
       headers: { 'content-type': 'application/json' },
     });
 

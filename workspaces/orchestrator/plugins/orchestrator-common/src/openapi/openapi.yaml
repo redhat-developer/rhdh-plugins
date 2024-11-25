@@ -585,8 +585,6 @@ components:
         inputData:
           type: object
           additionalProperties: true
-      required:
-        - inputData
     ExecuteWorkflowResponseDTO:
       type: object
       properties:
