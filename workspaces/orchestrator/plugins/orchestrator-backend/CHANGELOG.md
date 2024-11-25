@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 4.1.1
+
+### Patch Changes
+
+- 54daa8c: Migrated from [janus-idp/backstage-plugins](https://github.com/janus-idp/backstage-plugins).
+- Updated dependencies [54daa8c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.24.1
+
 ## 4.1.0
 
 ### Minor Changes
