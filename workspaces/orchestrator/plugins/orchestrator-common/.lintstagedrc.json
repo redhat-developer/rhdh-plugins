@@ -1,4 +1,0 @@
-{
-  "*": "prettier --ignore-unknown --no-warn-ignored --write",
-  "*.{js,jsx,ts,tsx,mjs,cjs}": "backstage-cli package lint --fix"
-}
