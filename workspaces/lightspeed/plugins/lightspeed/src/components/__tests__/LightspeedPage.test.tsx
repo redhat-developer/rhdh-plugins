@@ -72,7 +72,7 @@ describe('LightspeedPage', () => {
     });
   });
 
-  it('should display permission required alert', async () => {
+  it('should display missing permissions alert', async () => {
     mockUsePermission.mockReturnValue({ loading: false, allowed: false });
 
     await renderInTestApp(
@@ -82,7 +82,7 @@ describe('LightspeedPage', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Permission required')).toBeInTheDocument();
+      expect(screen.getByText('Missing permissions')).toBeInTheDocument();
     });
   });
 
