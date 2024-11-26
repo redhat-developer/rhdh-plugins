@@ -43,6 +43,7 @@ jobs:
           marker: <!-- changeset-feedback -->
           issue-number: ${{ github.event.pull_request.number }}
           app-id: ${{ secrets.RHDH_GH_APP_ID }}
+          bot-username: rhdh-gh-app[bot]
           private-key: ${{ secrets.RHDH_GH_APP_PRIVATE_KEY }}
           installation-id: ${{ secrets.RHDH_GH_APP_INSTALLATION_ID }}
           multiple-workspaces: true
