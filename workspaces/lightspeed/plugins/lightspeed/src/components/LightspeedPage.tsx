@@ -20,13 +20,13 @@ import { Content, Page } from '@backstage/core-components';
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
-import { Alert, AlertTitle } from '@material-ui/lab';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
 import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
 import queryClient from '../utils/queryClient';
 import { LightspeedChat } from './LightSpeedChat';
+import PermissionRequiredState from './PermissionRequiredState';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -78,16 +78,12 @@ const LightspeedPageInner = () => {
   if (loading) {
     return null;
   }
+
   return (
     <Page themeId="tool">
       <Content className={classes.container}>
         {!hasViewAccess ? (
-          <Alert severity="warning" data-testid="no-permission-alert">
-            <AlertTitle>Permission required</AlertTitle>
-            To view lightspeed plugin, contact your administrator to give you
-            the `lightspeed.conversations.read` and
-            `lightspeed.conversations.create` permission.
-          </Alert>
+          <PermissionRequiredState />
         ) : (
           <LightspeedChat
             selectedModel={selectedModel}
