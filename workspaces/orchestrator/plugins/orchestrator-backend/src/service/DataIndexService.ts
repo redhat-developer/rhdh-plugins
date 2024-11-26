@@ -416,7 +416,7 @@ export class DataIndexService {
     limit: number;
     offset: number;
   }): Promise<ProcessInstance[]> {
-    const graphQlQuery = `{ ProcessInstances(where: {processId: {equal: "${args.definitionId}" } }, pagination: {limit: ${args.limit}, offset: ${args.offset}}) { id, processName, state, start, end } }`;
+    const graphQlQuery = `{ ProcessInstances(where: {processId: {equal: "${args.definitionId}" } }, orderBy: {start:DESC}, pagination: {limit: ${args.limit}, offset: ${args.offset}}) { id, processName, state, start, end } }`;
 
     const result = await this.client.query(graphQlQuery, {});
 
