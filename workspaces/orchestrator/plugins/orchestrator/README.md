@@ -55,9 +55,9 @@ The Orchestrator plugin is composed of the following packages:
 
 - Docker up and running
 
-#### Setting up the Orchestrator as a dynamic plugin in a Red Hat Developer Hub Deployment
+#### Setting up the Orchestrator as a dynamic plugin in a Helm deployment
 
-- Follow https://github.com/janus-idp/backstage-showcase/blob/main/docs/dynamic-plugins/installing-plugins.md#installing-external-dynamic-plugins
+Please follow this link for instructions: https://github.com/janus-idp/backstage-showcase/blob/main/docs/dynamic-plugins/installing-plugins.md#installing-external-dynamic-plugins.
 
 #### Setting up the configuration for the Orchestrator plugin
 
@@ -158,7 +158,7 @@ For more information about the configuration options, including other optional p
 
 ### Extensible Workflow Execution Form
 
-The `orchestrator` plugin includes an extensible form for executing forms. For detailed guidance see the [Extensible Workflow Execution Form Documentation](./docs/extensibleForm.md).
+The `orchestrator` plugin includes an extensible form for executing forms. For detailed guidance see the [Extensible Workflow Execution Form Documentation](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator/docs/extensibleForm.md).
 
 ## For users
 
@@ -166,7 +166,7 @@ The `orchestrator` plugin includes an extensible form for executing forms. For d
 
 The Orchestrator plugin enhances the Backstage with the execution of developer self-service flows. It provides a graphical editor to visualize workflow definitions, and a dashboard to monitor the execution of the workflows.
 
-Refer to the [Quick start](https://github.com/janus-idp/backstage-plugins/blob/main/plugins/orchestrator/docs/quickstart.md) to install the Orchestrator using the helm chart and execute a sample workflow through the Red Hat Developer Hub orchestrator plugin UI.
+Refer to the [Quick start](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator/docs/quickstart.md) to install the Orchestrator using the helm chart and execute a sample workflow through the Red Hat Developer Hub orchestrator plugin UI.
 
 ## OpenAPI
 
@@ -174,24 +174,18 @@ The plugin provides OpenAPI `v2` endpoints definition to facilitate communicatio
 
 In addition, by leveraging on OpenAPI spec, it is possible to generate clients and create CI steps.
 
-OpenAPI specification [file](https://github.com/janus-idp/backstage-plugins/blob/main/plugins/orchestrator-common/src/openapi/openapi.yaml) is available in [orchestrator-common](https://github.com/janus-idp/backstage-plugins/blob/main/plugins/orchestrator-common).  
-OpenAPI specification documentation is available [here](https://github.com/janus-idp/backstage-plugins/blob/main/plugins/orchestrator-common/src/generated/docs/markdown/README.md)
-
-> **NOTE:**\
-> While the OpenAPI specification is available in the Orchestrator plugin, the UI currently does not rely on this spec. \
-> We plan to incorporate v2 endpoints into the UI in the near future.
+OpenAPI specification [file](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-common/src/openapi/openapi.yaml) is available in [orchestrator-common](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-common).  
+OpenAPI specification documentation is available [here](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-common/src/generated/docs/markdown/README.md)
 
 ### orchestrator-common
 
-The typescript schema is generated in [auto-generated](https://github.com/janus-idp/backstage-plugins/blob/main/plugins/orchestrator-common/src/auto-generated/api/models/schema.ts) folder from openapi.yaml specification file.
+The typescript client is generated in [generated](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-common/src/generated/client) folder from openapi.yaml specification file.
 
 ### orchestrator-backend
 
 The orchestrator backend can use the generated schema to validate the HTTP requests and responses.
 
-> NOTE: Temporary the validation has been disabled. It will be enabled when the orchestrator frontend will switch to the use of v2 endpoints only.
-
-#### audit log
+### audit log
 
 The orchestrator backend has audit logs for all incoming requests.
 
@@ -202,17 +196,17 @@ For more information about audit logs in RHDH, please refer to [the official doc
 
 Checkout the backstage-plugin
 
-`git clone git@github.com:janus-idp/backstage-plugins.git`
+`git clone git@github.com:red-hat-developer-hub/backstage-plugins.git`
 
-If you need to change the OpenAPI spec, edit the [openapi.yaml](https://github.com/janus-idp/backstage-plugins/blob/main/plugins/orchestrator-common/src/openapi/openapi.yaml) according to your needs and then execute from the project root folder:
+If you need to change the OpenAPI spec, edit the [openapi.yaml](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-common/src/openapi/openapi.yaml) according to your needs and then execute from the project root folder:
 
 `yarn --cwd plugins/orchestrator-common openapi`
 
-This command updates the [auto-generated files](https://github.com/janus-idp/backstage-plugins/blob/main/plugins/orchestrator-common/src/auto-generated/api/) and the [auto-generated docs](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-common/src/auto-generated/docs).
+This command updates the [generated files](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-common/src/generated) including API, client and docs.
 
 > NOTE: Do not manually edit auto-generated files
 
-If you add a new component in the spec, then you need to export the generated typescript object [here](https://github.com/janus-idp/backstage-plugins/blob/main/plugins/orchestrator-common/src/openapi/types.ts). For example, if you define
+If you add a new component in the spec, then you need to export the generated typescript object [here](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-common/src/generated/client/api.ts). For example, if you define
 
 ```yaml
 components:
@@ -254,7 +248,7 @@ paths:
                   $ref: '#/components/schemas/Person'
 ```
 
-Then you can implement the endpoint in [router.ts](https://github.com/janus-idp/backstage-plugins/blob/main/plugins/orchestrator-backend/src/service/router.ts) referring the operationId `getNames`:
+Then you can implement the endpoint in [router.ts](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-backend/src/service/router.ts) referring the operationId `getNames`:
 
 ```typescript
 api.register('getNames', async (_c, _req, res: express.Response, next) => {
