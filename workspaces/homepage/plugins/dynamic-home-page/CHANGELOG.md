@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.0.1
+
+### Patch Changes
+
+- 849e0c7: Update dependencies (@scalprum/react-core from 0.8 to 0.9 and tss-react)
+
 ## 1.0.0
 
 ### Major Changes
