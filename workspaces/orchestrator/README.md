@@ -1,13 +1,10 @@
 # [Backstage](https://backstage.io)
 
-This is your newly scaffolded Backstage App, Good Luck!
+## Orchestrator documentation
 
-To start the app, run:
+Please refer the [Orchestrator plugin README](./plugins/orchestrator/README.md) for details on installing the orchestrator plugins in your environment.
 
-```sh
-yarn install
-yarn dev
-```
+## knip-reports
 
 To generate knip reports for this app, run:
 

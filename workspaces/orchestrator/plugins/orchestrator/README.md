@@ -86,6 +86,21 @@ orchestrator:
 
 For more information about the configuration options, including other optional properties, see the [config.d.ts](../orchestrator-common/config.d.ts) file.
 
+#### How to use the Git Hub identity provider
+
+The `workspaces/orchestrator/app-config.yaml` and the `workspaces/orchestrator/packages/app/src/App.tsx` files contain sufficient configuration to use the Git Hub identity provider.
+
+Feel free to update the `users.yaml` file to match your identity.
+
+To run, additional secrets needs to be provided:
+
+```
+export AUTH_GITHUB_CLIENT_ID=...fill
+export AUTH_GITHUB_CLIENT_SECRET=...fill
+
+yarn dev
+```
+
 #### Setting up the Orchestrator backend package
 
 1. Install the Orchestrator backend plugin using the following command:
