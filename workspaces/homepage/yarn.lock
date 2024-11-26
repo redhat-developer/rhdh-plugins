@@ -10079,7 +10079,7 @@ __metadata:
     "@mui/styles": 5.16.7
     "@openshift/dynamic-plugin-sdk": 5.0.1
     "@redhat-developer/red-hat-developer-hub-theme": 0.4.0
-    "@scalprum/react-core": 0.8.0
+    "@scalprum/react-core": 0.9.3
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.5.2
@@ -10088,7 +10088,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-grid-layout: 1.4.4
     react-use: 17.5.1
-    tss-react: 4.9.12
+    tss-react: 4.9.13
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.26.2
@@ -10483,27 +10483,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "@scalprum/core@npm:0.7.0"
+"@scalprum/core@npm:^0.8.1":
+  version: 0.8.1
+  resolution: "@scalprum/core@npm:0.8.1"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
     tslib: ^2.6.2
-  checksum: 0698e2520a9a9a7c220b5067792e81f267659ae0e9c0e117d9dc5aa24f28be2b8c72d5c79aedf3a68fc803e47c1f473ff25945299c03b978ea5360d766975fc2
+  checksum: 581631848bda2081dfe797c4c4326b442ce086d69117cc1eb74c18d345124825d87f570d09e8edaaa132d32a7720db0e728971834f1509aca9349aff21246a52
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.8.0":
-  version: 0.8.0
-  resolution: "@scalprum/react-core@npm:0.8.0"
+"@scalprum/react-core@npm:0.9.3":
+  version: 0.9.3
+  resolution: "@scalprum/react-core@npm:0.9.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
-    "@scalprum/core": ^0.7.0
+    "@scalprum/core": ^0.8.1
     lodash: ^4.17.0
   peerDependencies:
     react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
     react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 1eff07a1efa4cded62bc3602ef5745e2ff39f8291af1af4486bc6fa703b59f5e94fc6c76929f5653c15d5a5e70dd85d41c145982f605042d4ec2eb983b531031
+  checksum: 19c29a54e25c8025b668a96291741ce4b68dc0c87684cc39c260fc29aa2e0fc0d3e01266e0b5f64a290607e3df8d766539b619d23b756e2d09534b37034c313c
   languageName: node
   linkType: hard
 
@@ -31938,9 +31938,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tss-react@npm:4.9.12":
-  version: 4.9.12
-  resolution: "tss-react@npm:4.9.12"
+"tss-react@npm:4.9.13":
+  version: 4.9.13
+  resolution: "tss-react@npm:4.9.13"
   dependencies:
     "@emotion/cache": "*"
     "@emotion/serialize": "*"
@@ -31948,14 +31948,14 @@ __metadata:
   peerDependencies:
     "@emotion/react": ^11.4.1
     "@emotion/server": ^11.4.0
-    "@mui/material": ^5.0.0
+    "@mui/material": ^5.0.0 || ^6.0.0
     react: ^16.8.0 || ^17.0.2 || ^18.0.0
   peerDependenciesMeta:
     "@emotion/server":
       optional: true
     "@mui/material":
       optional: true
-  checksum: b1bec7c6d80b93d325ceca040ff5629b8a898b9f86a6d3260f2614943b64873afacd1f56d65a7850090a01869ea4fdac045da77ec96b80fbf157d475bcbd7187
+  checksum: 9327cef392007237020df5d388b4aeabbf7cc06f6d5ac32e2781367244c2de34688922a345878408f45a38890324d67d9a0f7b48cf6b1c968d66d52b3e14e28f
   languageName: node
   linkType: hard
 
