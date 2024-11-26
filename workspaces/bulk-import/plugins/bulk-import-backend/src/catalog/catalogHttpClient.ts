@@ -376,6 +376,7 @@ export class CatalogHttpClient {
   ) {
     const entityRef = `${kind}:${namespace}/${name}`;
     this.logger.debug(`Refreshing entityRef: ${entityRef}`);
+    console.log('testing ...');
     await this.catalogApi.refreshEntity(entityRef, {
       token: await getTokenForPlugin(this.auth, 'catalog'),
     });
