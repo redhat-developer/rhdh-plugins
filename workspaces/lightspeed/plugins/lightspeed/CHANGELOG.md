@@ -1,4 +1,4 @@
-## @red-hat-developer-hub/backstage-plugin-lightspeed 1.0.0 (2024-08-07)
+## @red-hat-developer-hub/backstage-plugin-lightspeed
 
 ## 0.1.3
 
