@@ -20,7 +20,6 @@ import {
   Filter,
   fromWorkflowSource,
   getWorkflowCategory,
-  ProcessInstance,
   ProcessInstanceStateValues,
   ProcessInstanceVariables,
   WorkflowDefinition,
@@ -171,43 +170,25 @@ export class SonataFlowService {
   private async fetchWorkflowOverviewBySource(
     source: string,
   ): Promise<WorkflowOverview | undefined> {
-    let processInstances: ProcessInstance[] = [];
-    const limit = 10;
-    let offset: number = 0;
-
     let lastTriggered: Date = new Date(0);
     let lastRunStatus: ProcessInstanceStateValues | undefined;
     let lastRunId: string | undefined;
-    let counter = 0;
-    let totalDuration = 0;
     const definition = fromWorkflowSource(source);
 
-    do {
-      processInstances =
-        await this.dataIndexService.fetchInstancesByDefinitionId({
-          definitionId: definition.id,
-          limit,
-          offset,
-        });
+    const processInstances =
+      await this.dataIndexService.fetchInstancesByDefinitionId({
+        definitionId: definition.id,
+        limit: 1,
+        offset: 0,
+      });
 
-      for (const pInstance of processInstances) {
-        if (!pInstance.start) {
-          continue;
-        }
-        if (new Date(pInstance.start) > lastTriggered) {
-          lastRunId = pInstance.id;
-          lastTriggered = new Date(pInstance.start);
-          lastRunStatus = pInstance.state;
-        }
-        if (pInstance.end) {
-          const start: Date = new Date(pInstance.start);
-          const end: Date = new Date(pInstance.end);
-          totalDuration += end.valueOf() - start.valueOf();
-          counter++;
-        }
-      }
-      offset += limit;
-    } while (processInstances.length > 0);
+    const pInstance = processInstances[0];
+
+    if (pInstance.start) {
+      lastRunId = pInstance.id;
+      lastTriggered = new Date(pInstance.start);
+      lastRunStatus = pInstance.state;
+    }
 
     return {
       workflowId: definition.id,
@@ -217,7 +198,6 @@ export class SonataFlowService {
       lastTriggeredMs: lastTriggered.getTime(),
       lastRunStatus,
       category: getWorkflowCategory(definition),
-      avgDurationMs: counter ? totalDuration / counter : undefined,
       description: definition.description,
     };
   }
