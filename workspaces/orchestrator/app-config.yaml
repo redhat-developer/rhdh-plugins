@@ -65,7 +65,23 @@ techdocs:
 
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
-  providers: { guest: {} }
+  environment: development
+  providers:
+    guest: {}
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            # See https://backstage.io/docs/auth/github/provider#resolvers for more resolvers
+            - resolver: emailMatchingUserEntityProfileEmail
+
+# permission:
+#   enabled: true
+#   rbac:
+#     policies-csv-file: /full/path/to/the/rbac-policy.csv
+#     policyFileReload: true
 
 scaffolder:
   {}
@@ -83,6 +99,11 @@ catalog:
 
     - type: url
       target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
+
+    - type: file
+      target: ../../users.yaml
+      rules:
+        - allow: [User]
 
 dynamicPlugins:
   frontend: {}
