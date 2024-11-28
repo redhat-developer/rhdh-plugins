@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ import * as React from 'react';
+ */
+import * as React from 'react';
 
 import { Table, TableContainer, TablePagination } from '@material-ui/core';
 import { Alert, AlertTitle } from '@material-ui/lab';
@@ -30,6 +31,7 @@ import {
   evaluateRowForOrg,
   evaluateRowForRepo,
   filterSelectedForActiveDrawer,
+  filterSelectedRepositoriesOnActivePage,
   getComparator,
   updateWithNewSelectedRepositories,
 } from '../../utils/repository-utils';
@@ -246,7 +248,10 @@ export const RepositoriesTable = ({
     () => filterSelectedForActiveDrawer(tableData || [], selected),
     [tableData, selected],
   );
-
+  const selectedRepositoriesOnActivePage = React.useMemo(
+    () => filterSelectedRepositoriesOnActivePage(filteredData, selected),
+    [filteredData, selected],
+  );
   const getRowCount = () => {
     if (drawerOrganization) {
       return tableData?.filter(
@@ -292,7 +297,7 @@ export const RepositoriesTable = ({
             numSelected={
               drawerOrganization
                 ? Object.keys(selectedForActiveDrawer).length
-                : Object.keys(selected).length
+                : selectedRepositoriesOnActivePage.length
             }
             isDataLoading={loading}
             order={order}
