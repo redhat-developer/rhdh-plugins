@@ -1,5 +1,17 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.2.0
+
+### Minor Changes
+
+- c113d1a: - add RBAC permission support.
+  - add multiple chats, chat creation, deletion and searching. [#2501](https://github.com/janus-idp/backstage-plugins/pull/2501)
+
+### Patch Changes
+
+- Updated dependencies [c113d1a]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.1.1
+
 ## 0.1.3
 
 ### Patch Changes
