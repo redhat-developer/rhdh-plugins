@@ -46,7 +46,6 @@ export function mapToWorkflowOverviewDTO(
     name: overview.name,
     format: overview.format,
     workflowId: overview.workflowId,
-    avgDurationMs: overview.avgDurationMs,
     description: overview.description,
     lastRunId: overview.lastRunId,
     lastRunStatus: overview.lastRunStatus

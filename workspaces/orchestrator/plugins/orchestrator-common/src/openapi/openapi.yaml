@@ -379,9 +379,6 @@ components:
           $ref: '#/components/schemas/ProcessInstanceStatusDTO'
         category:
           $ref: '#/components/schemas/WorkflowCategoryDTO'
-        avgDurationMs:
-          type: number
-          minimum: 0
         description:
           type: string
       required:

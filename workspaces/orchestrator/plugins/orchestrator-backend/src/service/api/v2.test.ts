@@ -296,7 +296,6 @@ describe('getWorkflowOverviewById', () => {
     expect(overviewV2.lastTriggeredMs).toBeUndefined();
     expect(overviewV2.lastRunStatus).toBeUndefined();
     expect(overviewV2.category).toEqual('infrastructure');
-    expect(overviewV2.avgDurationMs).toBeUndefined();
     expect(overviewV2.description).toBeUndefined();
   });
 

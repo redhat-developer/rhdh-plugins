@@ -662,12 +662,6 @@ export interface WorkflowOverviewDTO {
     'category'?: WorkflowCategoryDTO;
     /**
      * 
-     * @type {number}
-     * @memberof WorkflowOverviewDTO
-     */
-    'avgDurationMs'?: number;
-    /**
-     * 
      * @type {string}
      * @memberof WorkflowOverviewDTO
      */
