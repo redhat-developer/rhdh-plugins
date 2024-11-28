@@ -135,7 +135,6 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
             VALUE_UNAVAILABLE
           ),
       },
-      { title: 'Avg. duration', field: 'avgDuration' },
       { title: 'Description', field: 'description', minWidth: '25vw' },
     ],
     [definitionLink],

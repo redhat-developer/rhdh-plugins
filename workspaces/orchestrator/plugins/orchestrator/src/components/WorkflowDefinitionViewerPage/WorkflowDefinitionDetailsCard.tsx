@@ -60,10 +60,7 @@ const WorkflowDefinitionDetailsCard = ({
         label: 'type',
         value: formattedWorkflowOverview?.category,
       },
-      {
-        label: 'average duration',
-        value: formattedWorkflowOverview?.avgDuration,
-      },
+
       {
         label: 'last run',
         value: formattedWorkflowOverview?.lastTriggered,
