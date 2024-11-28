@@ -53,6 +53,7 @@ import {
   ProcessInstanceListResultDTO,
   QUERY_PARAM_BUSINESS_KEY,
   QUERY_PARAM_INCLUDE_ASSESSMENT,
+  WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import * as pkg from '../../package.json';

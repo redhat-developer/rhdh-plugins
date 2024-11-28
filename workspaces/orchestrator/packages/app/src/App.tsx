@@ -49,6 +49,7 @@ import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orches
 import { getThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
+import { RbacPage } from '@backstage-community/plugin-rbac';
 import React from 'react';
 import { Navigate, Route } from 'react-router-dom';
 import { apis } from './apis';
@@ -131,6 +132,7 @@ const routes = (
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
     <Route path="/orchestrator" element={<OrchestratorPage />} />
+    <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>
 );
 

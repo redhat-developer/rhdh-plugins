@@ -41,6 +41,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { makeStyles } from '@mui/styles';
 import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
+import { Administration } from '@backstage-community/plugin-rbac';
 import React, { PropsWithChildren } from 'react';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
@@ -107,6 +108,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
               to="orchestrator"
               text="Orchestrator"
             />
+            <Administration />
           </SidebarScrollWrapper>
         </SidebarGroup>
         <SidebarSpace />
