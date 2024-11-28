@@ -38,7 +38,7 @@ const useStyles = makeStyles(
       [ProcessInstanceStatusDTO.Pending]: {
         color: theme.palette.grey[500],
       },
-    } as const),
+    }) as const,
 );
 
 export const useWorkflowInstanceStateColors = (
