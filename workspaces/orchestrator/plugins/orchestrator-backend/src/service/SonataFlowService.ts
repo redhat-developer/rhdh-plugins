@@ -184,7 +184,7 @@ export class SonataFlowService {
 
     const pInstance = processInstances[0];
 
-    if (pInstance.start) {
+    if (pInstance?.start) {
       lastRunId = pInstance.id;
       lastTriggered = new Date(pInstance.start);
       lastRunStatus = pInstance.state;
