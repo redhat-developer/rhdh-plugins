@@ -183,7 +183,7 @@ export class OrchestratorService {
   public async executeWorkflow(args: {
     definitionId: string;
     serviceUrl: string;
-    inputData: ProcessInstanceVariables;
+    inputData?: ProcessInstanceVariables;
     businessKey?: string;
     cacheHandler?: CacheHandler;
   }): Promise<WorkflowExecutionResponse | undefined> {
