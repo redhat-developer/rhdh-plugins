@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React, { Fragment } from 'react';
 
 import { JsonObject } from '@backstage/types';
@@ -39,15 +40,28 @@ const getNumSteps = (schema: JSONSchema7): number | undefined => {
 
 const SingleStepForm = ({
   schema,
-  formData,
-  onChange,
+  initialFormData,
+  onSubmit,
   uiSchema,
 }: {
   schema: JSONSchema7;
-  formData: JsonObject;
-  onChange: (formData: JsonObject) => void;
+  initialFormData?: JsonObject;
+  onSubmit: (formData: JsonObject) => void;
   uiSchema: UiSchema<JsonObject>;
 }) => {
+  const [_initialFormData, setInitialFormData] = React.useState<
+    JsonObject | undefined
+  >(initialFormData);
+
+  const _onSubmit = React.useCallback(
+    (formData: JsonObject) => {
+      // Since the review step is outside of the MuiForm component in SingleStepForm, we need to load the current values when navigating back.
+      setInitialFormData(formData);
+      onSubmit(formData);
+    },
+    [onSubmit, setInitialFormData],
+  );
+
   const steps = React.useMemo<OrchestratorFormStep[]>(() => {
     return [
       {
@@ -56,8 +70,8 @@ const SingleStepForm = ({
         content: (
           <OrchestratorFormWrapper
             schema={{ ...schema, title: '' }}
-            formData={formData}
-            onChange={onChange}
+            initialFormData={_initialFormData}
+            onSubmit={_onSubmit}
             uiSchema={uiSchema}
           >
             <OrchestratorFormToolbar />
@@ -65,7 +79,7 @@ const SingleStepForm = ({
         ),
       },
     ];
-  }, [schema, formData, onChange, uiSchema]);
+  }, [schema, _initialFormData, uiSchema, _onSubmit]);
   return <OrchestratorFormStepper steps={steps} />;
 };
 
@@ -103,7 +117,7 @@ const OrchestratorForm = ({
     handleExecute(formData || {});
   }, [formData, handleExecute]);
 
-  const onChange = React.useCallback(
+  const onSubmit = React.useCallback(
     (_formData: JsonObject) => {
       setFormData(_formData);
     },
@@ -136,17 +150,17 @@ const OrchestratorForm = ({
         <OrchestratorFormWrapper
           schema={schema}
           numStepsInMultiStepSchema={numStepsInMultiStepSchema}
-          formData={formData}
-          onChange={onChange}
+          onSubmit={onSubmit}
           uiSchema={uiSchema}
+          initialFormData={data}
         >
           <Fragment />
         </OrchestratorFormWrapper> // it is required to pass the fragment so rjsf won't generate a Submit button
       ) : (
         <SingleStepForm
           schema={schema}
-          onChange={onChange}
-          formData={formData}
+          onSubmit={onSubmit}
+          initialFormData={data}
           uiSchema={uiSchema}
         />
       )}

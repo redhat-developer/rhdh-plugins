@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
@@ -42,9 +43,9 @@ type OrchestratorFormWrapperProps = {
   schema: JSONSchema7;
   numStepsInMultiStepSchema?: number;
   children: React.ReactNode;
-  formData: JsonObject;
-  onChange: (formData: JsonObject) => void;
+  onSubmit: (formData: JsonObject) => void;
   uiSchema: UiSchema<JsonObject, JSONSchema7>;
+  initialFormData?: JsonObject;
 };
 
 const WrapperFormPropsContext =
@@ -64,13 +65,17 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     numStepsInMultiStepSchema,
     uiSchema,
     schema,
-    onChange,
-    formData,
+    onSubmit: _onSubmit,
+    initialFormData,
     children,
   } = props;
   const [extraErrors, setExtraErrors] = React.useState<
     ErrorSchema<JsonObject> | undefined
   >();
+  // make this form a controlled component so state will remain when moving between steps. see https://rjsf-team.github.io/react-jsonschema-form/docs/quickstart#controlled-component
+  const [formData, setFormData] = React.useState<JsonObject>(
+    initialFormData || {},
+  );
   const isMultiStep = numStepsInMultiStepSchema !== undefined;
   const { handleNext, activeStep, handleValidateStarted, handleValidateEnded } =
     useStepperContext();
@@ -111,6 +116,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       !_validationError &&
       activeStep < (numStepsInMultiStepSchema || 1)
     ) {
+      _onSubmit(_formData);
       handleNext();
     }
   };
@@ -134,7 +140,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           extraErrors={extraErrors}
           onSubmit={e => onSubmit(e.formData || {})}
           onChange={e => {
-            onChange(e.formData || {});
+            setFormData(e.formData || {});
             if (decoratorProps.onChange) {
               decoratorProps.onChange(e);
             }
@@ -150,18 +156,22 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
 const OrchestratorFormWrapper = ({
   schema,
   uiSchema,
-  formData,
+  initialFormData,
   ...props
 }: OrchestratorFormWrapperProps) => {
   const formApi =
     useApiHolder().get(orchestratorFormApiRef) || defaultFormExtensionsApi;
   const NewComponent = React.useMemo(() => {
-    const formDecorator = formApi.getFormDecorator(schema, uiSchema, formData);
+    const formDecorator = formApi.getFormDecorator(
+      schema,
+      uiSchema,
+      initialFormData,
+    );
     return formDecorator(FormComponent);
-  }, [schema, formApi, uiSchema, formData]);
+  }, [schema, uiSchema, formApi, initialFormData]);
   return (
     <WrapperFormPropsContext.Provider
-      value={{ schema, uiSchema, formData, ...props }}
+      value={{ schema, uiSchema, initialFormData, ...props }}
     >
       <NewComponent />
     </WrapperFormPropsContext.Provider>
