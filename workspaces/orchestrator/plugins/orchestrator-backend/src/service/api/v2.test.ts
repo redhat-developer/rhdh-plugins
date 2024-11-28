@@ -311,9 +311,8 @@ describe('getWorkflowOverviewById', () => {
     ).mockResolvedValue(mockOverviewsV1);
 
     // Act
-    const result: WorkflowOverviewDTO = await v2.getWorkflowOverviewById(
-      'test_workflowId',
-    );
+    const result: WorkflowOverviewDTO =
+      await v2.getWorkflowOverviewById('test_workflowId');
 
     // Assert
     expect(result).toEqual(mapToWorkflowOverviewDTO(mockOverviewsV1));

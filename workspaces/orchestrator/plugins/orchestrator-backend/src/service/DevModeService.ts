@@ -52,7 +52,10 @@ export class DevModeService {
   private readonly connection: DevModeConnectionConfig;
   private readonly gitService;
 
-  constructor(config: Config, private readonly logger: LoggerService) {
+  constructor(
+    config: Config,
+    private readonly logger: LoggerService,
+  ) {
     this.connection = this.extractConnectionConfig(config);
     this.gitService = new GitService(logger, config);
   }

@@ -175,7 +175,7 @@ const RefForwardingWorkflowEditor: ForwardRefRenderFunction<
             endLineNumber: lsDiagnostic.range.end.line + 1,
             endColumn: lsDiagnostic.range.end.character + 1,
           },
-        } as Notification),
+        }) as Notification,
     );
   }, [editor, embeddedFile, languageService]);
 
@@ -215,18 +215,14 @@ const RefForwardingWorkflowEditor: ForwardRefRenderFunction<
     });
   }, [editorMode, embeddedFile, languageService, stateControl]);
 
-  useImperativeHandle(
-    forwardedRef,
-    () => {
-      return {
-        validate,
-        getContent,
-        workflowDefinition: workflowDefinitionPromise.data,
-        isReady: ready,
-      };
-    },
-    [validate, getContent, workflowDefinitionPromise.data, ready],
-  );
+  useImperativeHandle(forwardedRef, () => {
+    return {
+      validate,
+      getContent,
+      workflowDefinition: workflowDefinitionPromise.data,
+      isReady: ready,
+    };
+  }, [validate, getContent, workflowDefinitionPromise.data, ready]);
 
   useCancelableEffect(
     useCallback(

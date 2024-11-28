@@ -343,9 +343,8 @@ describe('OrchestratorClient', () => {
       jest.spyOn(axios, 'request').mockResolvedValueOnce(mockResponse);
 
       // When
-      const result = await orchestratorClient.listWorkflowOverviews(
-        paginationInfo,
-      );
+      const result =
+        await orchestratorClient.listWorkflowOverviews(paginationInfo);
 
       // Then
       expect(result).toBeDefined();
