@@ -6,13 +6,14 @@ organization:
   name: Red Hat
 
 backend:
-  # Used for enabling authentication, secret is shared by all backend plugins
-  # See https://backstage.io/docs/auth/service-to-service-auth for
-  # information on the format
-  # auth:
-  #   keys:
-  #     - secret: ${BACKEND_SECRET}
   baseUrl: http://localhost:7007
+  auth:
+    externalAccess:
+      - type: static
+        options:
+          # echo mycurlpasswd | base64
+          token: bXljdXJscGFzc3dkCg==
+          subject: my-external-feed
   listen:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
