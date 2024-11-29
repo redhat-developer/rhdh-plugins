@@ -11,6 +11,7 @@ backend:
     externalAccess:
       - type: static
         options:
+          # notsecret
           # echo mycurlpasswd | base64
           token: bXljdXJscGFzc3dkCg==
           subject: my-external-feed
