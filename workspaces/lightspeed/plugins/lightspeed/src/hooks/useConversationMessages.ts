@@ -73,6 +73,9 @@ export const useConversationMessages = (
   const [conversations, setConversations] = React.useState<Conversations>({
     [currentConversation]: [],
   });
+  const streamingConversations = React.useRef<Conversations>({
+    [currentConversation]: [],
+  });
 
   React.useEffect(() => {
     if (currentConversation !== conversationId) {
@@ -131,31 +134,54 @@ export const useConversationMessages = (
         newConvoIndex.push(index);
         index++;
       }
+
+      if (streamingConversations.current[currentConversation]) {
+        _conversations[currentConversation].push(
+          ...streamingConversations.current[currentConversation],
+        );
+      }
+
       setConversations(_conversations);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationsData, userName, avatar, currentConversation, selectedModel]);
+  }, [
+    conversationsData,
+    userName,
+    avatar,
+    currentConversation,
+    selectedModel,
+    streamingConversations,
+  ]);
 
   const handleInputPrompt = React.useCallback(
     async (prompt: string) => {
+      const conversationTuple = [
+        createUserMessage({
+          avatar,
+          name: userName,
+          content: prompt,
+          timestamp: getTimestamp(Date.now()) ?? '',
+        }),
+        createBotMessage({
+          avatar: logo,
+          isLoading: true,
+          name: selectedModel,
+          content: '',
+          timestamp: '',
+        }),
+      ];
+
+      streamingConversations.current = {
+        ...streamingConversations.current,
+        [currentConversation]: conversationTuple,
+      };
+
       setConversations((prevConv: Conversations) => {
         return {
           ...prevConv,
           [currentConversation]: [
             ...(prevConv?.[currentConversation] ?? []),
-            createUserMessage({
-              avatar,
-              name: userName,
-              content: prompt,
-              timestamp: getTimestamp(Date.now()) ?? '',
-            }),
-            createBotMessage({
-              avatar: logo,
-              isLoading: true,
-              name: selectedModel,
-              content: '',
-              timestamp: '',
-            }),
+            ...conversationTuple,
           ],
         };
       });
@@ -189,14 +215,27 @@ export const useConversationMessages = (
               const jsonData = JSON.parse(line);
               const content = jsonData?.response?.kwargs?.content || '';
               finalMessages.push(content);
-              setConversations(prevConversations => {
-                const conversation = prevConversations[currentConversation];
 
-                if (!conversation) {
-                  return prevConversations;
-                }
+              // Store streaming message
+              const [humanMessage, aiMessage] =
+                streamingConversations.current[currentConversation];
+              streamingConversations.current[currentConversation] = [
+                humanMessage,
+                { ...aiMessage, content: aiMessage.content + content },
+              ];
+
+              setConversations(prevConversations => {
+                const conversation =
+                  prevConversations[currentConversation] ?? [];
+
                 const lastMessageIndex = conversation.length - 1;
-                const lastMessage = { ...conversation[lastMessageIndex] };
+                const lastMessage =
+                  conversation.length === 0
+                    ? createBotMessage({
+                        content: '',
+                        timestamp: getTimestamp(Date.now()),
+                      })
+                    : { ...conversation[lastMessageIndex] };
 
                 lastMessage.isLoading = false;
                 lastMessage.content += content;
@@ -228,13 +267,16 @@ export const useConversationMessages = (
         }
       } catch (e) {
         setConversations(prevConversations => {
-          const conversation = prevConversations[currentConversation];
+          const conversation = prevConversations[currentConversation] ?? [];
 
-          if (!conversation) {
-            return prevConversations;
-          }
           const lastMessageIndex = conversation.length - 1;
-          const lastMessage = { ...conversation[lastMessageIndex] };
+          const lastMessage =
+            conversation.length === 0
+              ? createBotMessage({
+                  content: '',
+                  timestamp: getTimestamp(Date.now()),
+                })
+              : { ...conversation[lastMessageIndex] };
 
           lastMessage.isLoading = false;
           lastMessage.content += e;
@@ -253,7 +295,8 @@ export const useConversationMessages = (
           };
         });
       }
-
+      // reset current streaming
+      streamingConversations.current[currentConversation] = [];
       if (typeof onComplete === 'function') {
         onComplete(finalMessages.join(''));
       }
