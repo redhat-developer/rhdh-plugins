@@ -113,13 +113,18 @@ describe('OrchestratorClient', () => {
       mockExecResponse: ExecuteWorkflowResponseDTO,
       executeWorkflowSpy: jest.SpyInstance,
       parameters: JsonObject,
+      businessKey?: string,
     ) => {
       return () => {
         expect(result).toBeDefined();
         expect(result.data).toEqual(mockExecResponse);
         expect(axios.request).toHaveBeenCalledTimes(1);
         expect(axios.request).toHaveBeenCalledWith({
-          ...getAxiosTestRequest(`/v2/workflows/${workflowId}/execute`),
+          ...getAxiosTestRequest(
+            `/v2/workflows/${workflowId}/execute${
+              businessKey ? `?businessKey=${businessKey}` : ''
+            }`,
+          ),
           data: JSON.stringify({ inputData: parameters }),
           method: 'POST',
           headers: {
@@ -131,6 +136,7 @@ describe('OrchestratorClient', () => {
         expect(executeWorkflowSpy).toHaveBeenCalledWith(
           workflowId,
           { inputData: parameters },
+          businessKey,
           getDefaultTestRequestConfig(),
         );
       };
@@ -153,25 +159,33 @@ describe('OrchestratorClient', () => {
     });
     it('should execute workflow with business key', async () => {
       // Given
+      const businessKey = 'business123';
       const { mockExecResponse, executeWorkflowSpy, args } = setupTest(
         'execId001',
         {},
-        'business123',
+        businessKey,
       );
 
       const result = await orchestratorClient.executeWorkflow(args);
 
       expect(
-        getExpectations(result, mockExecResponse, executeWorkflowSpy, {}),
+        getExpectations(
+          result,
+          mockExecResponse,
+          executeWorkflowSpy,
+          {},
+          businessKey,
+        ),
       ).not.toThrow();
     });
     it('should execute workflow with parameters and business key', async () => {
       // Given
+      const businessKey = 'business123';
       const parameters = { param1: 'one', param2: 2, param3: true };
       const { mockExecResponse, executeWorkflowSpy, args } = setupTest(
         'execId001',
         parameters,
-        'business123',
+        businessKey,
       );
 
       const result = await orchestratorClient.executeWorkflow(args);
@@ -182,6 +196,7 @@ describe('OrchestratorClient', () => {
           mockExecResponse,
           executeWorkflowSpy,
           parameters,
+          businessKey,
         ),
       ).not.toThrow();
     });
