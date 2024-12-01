@@ -29,6 +29,8 @@ import { Grid } from '@material-ui/core';
 import {
   capitalize,
   ellipsis,
+  PaginationInfoDTO,
+  PaginationInfoDTOOrderDirectionEnum,
   ProcessInstanceState,
   ProcessInstanceStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -42,6 +44,8 @@ import OverrideBackstageTable from './ui/OverrideBackstageTable';
 import { mapProcessInstanceToDetails } from './WorkflowInstancePageContent';
 import { WorkflowInstanceStatusIndicator } from './WorkflowInstanceStatusIndicator';
 import { WorkflowRunDetail } from './WorkflowRunDetail';
+import { Pagination } from '@material-ui/lab';
+
 
 const makeSelectItemsFromProcessInstanceValues = () =>
   [
@@ -63,16 +67,6 @@ export const WorkflowRunsTabContent = () => {
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
     Selector.AllItems,
   );
-
-  const fetchInstances = React.useCallback(async () => {
-    const instances = await orchestratorApi.listInstances({});
-    const clonedData: WorkflowRunDetail[] =
-      instances.data.items?.map(mapProcessInstanceToDetails) || [];
-    return clonedData;
-  }, [orchestratorApi]);
-
-  const { loading, error, value } = usePolling(fetchInstances);
-
   const columns = React.useMemo(
     (): TableColumn<WorkflowRunDetail>[] => [
       {
@@ -83,11 +77,11 @@ export const WorkflowRunsTabContent = () => {
             {ellipsis(data.id)}
           </Link>
         ),
-        sorting: false,
+        sorting: false
       },
       {
         title: 'Name',
-        field: 'name',
+        field: 'processName',
       },
       {
         title: 'Status',
@@ -102,12 +96,35 @@ export const WorkflowRunsTabContent = () => {
         title: 'Category',
         field: 'category',
         render: data => capitalize(data.category ?? VALUE_UNAVAILABLE),
+        sorting: false,
       },
-      { title: 'Started', field: 'started', defaultSort: 'desc' },
-      { title: 'Duration', field: 'duration' },
+      { title: 'Started', field: 'start'},
+      { title: 'Duration', field: 'duration', sorting: false },
     ],
     [workflowInstanceLink],
   );
+  const [searchText, setSearchText] = React.useState<string>("");
+  const [page, setPage] = useState(0); 
+  const [pageSize, setPageSize] = useState(DEFAULT_TABLE_PAGE_SIZE); 
+  const [orderBy, setOrderBy] = useState<number>(columns.findIndex((value) => value.field === "start")); 
+  const [orderDirection, setOrderDirection] = useState('desc'); 
+
+  const fetchInstances = React.useCallback(async () => {
+    const paginationInfo: PaginationInfoDTO = {
+      pageSize, 
+      offset: page*pageSize,
+      orderBy: columns[orderBy].field, 
+      orderDirection: orderDirection === 'asc' ? PaginationInfoDTOOrderDirectionEnum.Asc : PaginationInfoDTOOrderDirectionEnum.Desc
+    };
+    const instances = await orchestratorApi.listInstances(paginationInfo);
+    const clonedData: WorkflowRunDetail[] =
+      instances.data.items?.map(mapProcessInstanceToDetails) || [];
+    return clonedData;
+  }, [orchestratorApi, page, pageSize, orderBy, orderDirection]);
+
+  const { loading, error, value } = usePolling(fetchInstances);
+
+  
 
   const statuses = React.useMemo(makeSelectItemsFromProcessInstanceValues, []);
 
@@ -136,22 +153,55 @@ export const WorkflowRunsTabContent = () => {
     ),
     [statusSelectorValue, statuses],
   );
-  const paging = (value?.length || 0) > DEFAULT_TABLE_PAGE_SIZE; // this behavior fits the backstage catalog table behavior https://github.com/backstage/backstage/blob/v1.14.0/plugins/catalog/src/components/CatalogTable/CatalogTable.tsx#L228
+  const CustomPagination = () => {    
 
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        padding: '10px' 
+      }}>
+        <button 
+          onClick={() => setPage(page - 1)}
+          disabled={page === 0}
+          style={{ margin: '0 10px' }}
+        >
+          Previous
+        </button>
+        <span>{`Page ${page}`}</span>
+        <button 
+          onClick={() => setPage(page + 1)}
+          style={{ margin: '0 10px' }}
+        >
+          Next
+        </button>
+      </div>
+    );
+  };
+  console.log("data", filteredData.length, "pageSize", pageSize);
   return error ? (
     <ErrorPanel error={error} />
   ) : (
     <InfoCard noPadding title={selectors}>
       <OverrideBackstageTable
-        title="Workflow Runs"
-        options={{
-          paging,
-          search: true,
-          pageSize: DEFAULT_TABLE_PAGE_SIZE,
-        }}
+        title="Workflow Runs"        
         isLoading={loading}
         columns={columns}
         data={filteredData}
+        options={{
+          pageSize: pageSize,
+        }}
+        onSearchChange={(searchText: string) => {
+          setSearchText(searchText);
+        }}
+        onOrderChange={(orderBy: number, orderDirection: "asc" | "desc") => {
+          setOrderBy(orderBy); 
+          setOrderDirection(orderDirection);
+        }}        
+        components={{
+          Pagination: CustomPagination
+        }}
       />
     </InfoCard>
   );

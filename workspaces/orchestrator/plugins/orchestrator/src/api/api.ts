@@ -23,7 +23,9 @@ import {
   ExecuteWorkflowResponseDTO,
   GetInstancesRequest,
   InputSchemaResponseDTO,
+  PaginationInfoDTO,
   ProcessInstanceListResultDTO,
+  SearchRequest,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -58,7 +60,8 @@ export interface OrchestratorApi {
   >;
 
   listInstances(
-    args?: GetInstancesRequest,
+    paginationInfo?: PaginationInfoDTO,
+    filters?: SearchRequest,
   ): Promise<AxiosResponse<ProcessInstanceListResultDTO>>;
 }
 

@@ -6,19 +6,14 @@ organization:
   name: Red Hat
 
 backend:
-  baseUrl: http://localhost:7007
-  auth:
-    externalAccess:
-      - type: static
-        options:
-          # notsecret
-          # echo mycurlpasswd | base64
-          token: bXljdXJscGFzc3dkCg==
-          subject: my-external-feed
+  baseUrl: http://localhost:7007 
   listen:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
     # host: 127.0.0.1
+  auth:
+    auth:
+      dangerouslyDisableDefaultAuthPolicy: true
   csp:
     frame-ancestors: ['http://localhost:3000', 'http://localhost:7007']
     script-src: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]

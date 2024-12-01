@@ -305,15 +305,18 @@ export class DataIndexService {
     });
 
     this.logger.debug(`GraphQL query: ${graphQlQuery}`);
-
-    const result = await this.client.query(graphQlQuery, {});
-
+    
+    const result = await this.client.query<{ProcessInstances: ProcessInstance[]}>(graphQlQuery, {});
     this.logger.debug(
       `Fetch process instances result: ${JSON.stringify(result)}`,
     );
-
-    const processInstancesSrc = result.data
-      .ProcessInstances as ProcessInstance[];
+    if (result.error) {
+      this.logger.error(
+        `Error when fetching instances: ${result.error}`,
+      );
+      throw result.error;
+    }
+    const processInstancesSrc = result.data ? result.data.ProcessInstances : [];
 
     const processInstances = await Promise.all(
       processInstancesSrc.map(async instance => {

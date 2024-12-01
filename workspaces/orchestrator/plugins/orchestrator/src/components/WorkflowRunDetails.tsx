@@ -89,7 +89,7 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
       <Grid item md={4} key="Started">
         <AboutField label="Started">
           <Typography variant="subtitle2" component="div">
-            <b>{details.started}</b>
+            <b>{details.start}</b>
           </Typography>
         </AboutField>
       </Grid>

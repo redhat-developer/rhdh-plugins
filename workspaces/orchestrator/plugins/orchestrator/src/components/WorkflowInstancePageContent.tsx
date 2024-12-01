@@ -48,9 +48,9 @@ export const mapProcessInstanceToDetails = (
 
   return {
     id: instance.id,
-    name,
+    processName: name,
     workflowId: instance.processId,
-    started,
+    start: started,
     duration,
     category: instance.category,
     status: instance.status,

@@ -34,6 +34,7 @@ import {
   InputSchemaResponseDTO,
   PaginationInfoDTO,
   ProcessInstanceListResultDTO,
+  SearchRequest,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -163,13 +164,14 @@ export class OrchestratorClient implements OrchestratorApi {
   }
 
   async listInstances(
-    args: GetInstancesRequest,
+    paginationInfo?: PaginationInfoDTO,
+    filters?: SearchRequest,
   ): Promise<AxiosResponse<ProcessInstanceListResultDTO>> {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
       await this.getDefaultReqConfig();
     try {
-      return await defaultApi.getInstances(args, reqConfigOption);
+      return await defaultApi.getInstances({paginationInfo, filters}, reqConfigOption);
     } catch (err) {
       throw getError(err);
     }
