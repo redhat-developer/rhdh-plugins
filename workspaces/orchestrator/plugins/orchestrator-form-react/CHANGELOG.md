@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.4.4
+
+### Patch Changes
+
+- c301dbd: resolve rerendering form decorator on every change
+
 ## 1.4.3
 
 ### Patch Changes

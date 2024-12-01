@@ -1,5 +1,20 @@
 ### Dependencies
 
+## 5.0.0
+
+### Major Changes
+
+- 9547093: fix SonataFlowService.ts:fetchWorkflowOverviewBySource to fetch less instances
+
+### Patch Changes
+
+- 9f61eb0: execute API should allow no inputs
+- 0703b6a: we fail when workflow has 0 instances
+- bab8daa: The parent assessment link is shown again thanks to fixing passing of the businessKey when "execute" action is trigerred.
+- Updated dependencies [9f61eb0]
+- Updated dependencies [bab8daa]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.24.2
+
 ## 4.1.1
 
 ### Patch Changes
