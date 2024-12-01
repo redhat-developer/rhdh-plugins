@@ -40,6 +40,7 @@ import GroupIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
 import { makeStyles } from '@mui/styles';
 import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 import React, { PropsWithChildren } from 'react';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
@@ -100,6 +101,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           {/* End global nav */}
           <SidebarDivider />
           <SidebarScrollWrapper>
+            <NotificationsSidebarItem />
             <SidebarItem
               icon={OrchestratorIcon}
               to="orchestrator"
