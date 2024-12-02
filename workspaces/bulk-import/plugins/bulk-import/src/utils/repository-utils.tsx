@@ -202,6 +202,15 @@ export const filterSelectedForActiveDrawer = (
   );
 };
 
+export const filterSelectedRepositoriesOnActivePage = (
+  activePageTableData: AddRepositoryData[],
+  selectedRepositories: AddedRepositories,
+) => {
+  return Object.keys(selectedRepositories).filter(repoId => {
+    return activePageTableData.some(activeRepo => activeRepo.id === repoId);
+  });
+};
+
 export const urlHelper = (url: string) => {
   if (!url || url === '') {
     return '-';
