@@ -61,4 +61,7 @@ backend.add(
   import('@red-hat-developer-hub/backstage-plugin-orchestrator-backend'),
 );
 
+backend.add(import('@backstage/plugin-notifications-backend'));
+backend.add(import('@backstage/plugin-signals-backend'));
+
 backend.start();
