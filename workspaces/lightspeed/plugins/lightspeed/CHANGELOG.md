@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.2.2
+
+### Patch Changes
+
+- 193645a: add delete confirmation modal during chat delete
+
 ## 0.2.1
 
 ### Patch Changes
