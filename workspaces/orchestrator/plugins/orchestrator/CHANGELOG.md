@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 2.4.2
+
+### Patch Changes
+
+- 8f32f1c: Configuration and documentation added to ease development setup
+- bab8daa: The parent assessment link is shown again thanks to fixing passing of the businessKey when "execute" action is trigerred.
+- Updated dependencies [9f61eb0]
+- Updated dependencies [c301dbd]
+- Updated dependencies [bab8daa]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.24.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.4.4
+
 ## 2.4.1
 
 ### Patch Changes
