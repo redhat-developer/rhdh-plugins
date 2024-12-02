@@ -46,6 +46,7 @@ import {
   getCategorizeMessages,
   getFootnoteProps,
 } from '../utils/lightspeed-chatbox-utils';
+import { DeleteModal } from './DeleteModal';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 
@@ -101,6 +102,10 @@ export const LightspeedChat = ({
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     React.useState<boolean>(false);
   const [error, setError] = React.useState<Error | null>(null);
+  const [targetConversationId, setTargetConversationId] =
+    React.useState<string>('');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] =
+    React.useState<boolean>(false);
 
   const queryClient = useQueryClient();
 
@@ -169,29 +174,46 @@ export const LightspeedChat = ({
     })();
   }, [createConversation, setConversationId, setMessages]);
 
+  const openDeleteModal = (conversation_id: string) => {
+    // TODO: Remove this temporary workaround and refactor once the dependency handling is updated in the future.
+    document.dispatchEvent(
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    setTargetConversationId(conversation_id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConversation = React.useCallback(() => {
+    (async () => {
+      try {
+        await deleteConversation({
+          conversation_id: targetConversationId,
+          invalidateCache: false,
+        });
+        onNewChat();
+        setIsDeleteModalOpen(false);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn(e);
+      }
+    })();
+  }, [deleteConversation, onNewChat, targetConversationId]);
+
   const additionalMessageProps = React.useCallback(
     (conversationSummary: ConversationSummary) => ({
       menuItems: (
         <DropdownItem
           isDisabled={!hasDeleteAccess}
-          onClick={async () => {
-            try {
-              await deleteConversation({
-                conversation_id: conversationSummary.conversation_id,
-                invalidateCache: false,
-              });
-              onNewChat();
-            } catch (e) {
-              // eslint-disable-next-line no-console
-              console.warn(e);
-            }
-          }}
+          onClick={() => openDeleteModal(conversationSummary.conversation_id)}
         >
           Delete
         </DropdownItem>
       ),
     }),
-    [deleteConversation, onNewChat, hasDeleteAccess],
+    [hasDeleteAccess],
   );
   const categorizedMessages = getCategorizeMessages(
     conversations,
@@ -272,6 +294,13 @@ export const LightspeedChat = ({
 
   return (
     <>
+      {isDeleteModalOpen && (
+        <DeleteModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDeleteConversation}
+        />
+      )}
       <Chatbot displayMode={ChatbotDisplayMode.embedded}>
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
