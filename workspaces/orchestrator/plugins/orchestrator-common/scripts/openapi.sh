@@ -8,6 +8,8 @@ API_FOLDER="${GENERATED_FOLDER}/api"
 DEFINITION_FILE="${API_FOLDER}/definition.ts"
 METADATA_FILE="${GENERATED_FOLDER}/.METADATA.sha1"
 CLIENT_FOLDER="${GENERATED_FOLDER}/client"
+APIDOC_TEMPLATE_FILE="./src/openapi/api-doc-template.yaml"
+APIDOC_GENERATED_FILE=${GENERATED_FOLDER}/docs/api-doc/orchestrator-api.yaml
 
 openapi_generate() {
     # TypeScript Client generation
@@ -15,9 +17,13 @@ openapi_generate() {
     openapi-generator-cli generate -g typescript-axios -i ${OPENAPI_SPEC_FILE} -o ${CLIENT_FOLDER}
 
     # Docs generation
-    rm -rf ./src/generated/docs/markdown ./src/generated/docs/html
+    rm -rf ./src/generated/docs/markdown ./src/generated/docs/html ./src/generated/docs/api-doc
     openapi-generator-cli generate -g markdown -i ${OPENAPI_SPEC_FILE} -o ./src/generated/docs/markdown/
     openapi-generator-cli generate -g html2 -i ${OPENAPI_SPEC_FILE} -o ./src/generated/docs/html
+    mkdir ./src/generated/docs/api-doc
+    cp $APIDOC_TEMPLATE_FILE $APIDOC_GENERATED_FILE
+    cat $OPENAPI_SPEC_FILE | sed 's/^/    /g' >> $APIDOC_GENERATED_FILE
+
 
     yaml2json -f ${OPENAPI_SPEC_FILE}
 

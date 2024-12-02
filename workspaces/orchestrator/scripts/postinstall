@@ -1,0 +1,6 @@
+#!/bin/bash
+mydir=`pwd`
+cd ../../ && yarn install
+cd $mydir
+cd plugins/orchestrator-common
+yarn openapi:check
