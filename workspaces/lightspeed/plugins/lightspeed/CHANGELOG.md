@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.2.1
+
+### Patch Changes
+
+- dd818f9: fix crash when switching between conversation during streaming
+
 ## 0.2.0
 
 ### Minor Changes
