@@ -76,7 +76,6 @@ describe('scenarios to verify mapToWorkflowOverviewDTO', () => {
       getProcessInstancesStatusDTOFromString(overview.lastRunStatus),
     );
     expect(result.category).toBe('assessment');
-    expect(result.avgDurationMs).toBe(overview.avgDurationMs);
     expect(result.description).toBe(overview.description);
   });
 });
