@@ -442,4 +442,153 @@ describe('useConversationMesages', () => {
       expect(result.current.scrollToBottomRef).toBeDefined();
     });
   });
+
+  it('should handle switching between conversations multiple times', async () => {
+    const onComplete = jest.fn();
+
+    const lightSpeedApi = {
+      createMessage: jest.fn().mockResolvedValue({
+        read: jest
+          .fn()
+          .mockResolvedValueOnce({
+            done: false,
+            value: new TextEncoder().encode(
+              '{"response":{"kwargs":{"content":"Hi from conversation 1!"}}}',
+            ),
+          })
+          .mockResolvedValueOnce({ done: true, value: null }),
+      }),
+    };
+
+    (useApi as jest.Mock).mockReturnValue(lightSpeedApi);
+
+    const { result, rerender } = renderHook(
+      ({ conversationId }) =>
+        useConversationMessages(
+          conversationId,
+          'test-user',
+          'gpt-3',
+          'user.png',
+          onComplete,
+        ),
+      {
+        initialProps: { conversationId: 'conversation1' },
+        wrapper,
+      },
+    );
+
+    // Handle input for the first conversation
+    await act(async () => {
+      await result.current.handleInputPrompt('Hello conversation 1!');
+    });
+
+    expect(onComplete).toHaveBeenCalledWith('Hi from conversation 1!');
+
+    // Switch to the second conversation
+    rerender({ conversationId: 'conversation2' });
+
+    lightSpeedApi.createMessage.mockResolvedValueOnce({
+      read: jest
+        .fn()
+        .mockResolvedValueOnce({
+          done: false,
+          value: new TextEncoder().encode(
+            '{"response":{"kwargs":{"content":"Hi from conversation 2!"}}}',
+          ),
+        })
+        .mockResolvedValueOnce({ done: true, value: null }),
+    });
+
+    await act(async () => {
+      await result.current.handleInputPrompt('Hello conversation 2!');
+    });
+
+    expect(onComplete).toHaveBeenCalledWith('Hi from conversation 2!');
+
+    // Switch back to first conversation
+    rerender({ conversationId: 'conversation1' });
+
+    await act(async () => {
+      await result.current.handleInputPrompt('Hello again, conversation 1!');
+    });
+
+    expect(onComplete).toHaveBeenCalledWith('Hi from conversation 1!');
+  });
+
+  it('should resume streaming for the first conversation after switching back and complete', async () => {
+    const onComplete = jest.fn();
+
+    const lightSpeedApi = {
+      createMessage: jest.fn().mockResolvedValue({
+        read: jest
+          .fn()
+          .mockResolvedValueOnce({
+            done: false,
+            value: new TextEncoder().encode(
+              '{"response":{"kwargs":{"content":"Hi from conversation 1 (part 1)!"}}}',
+            ),
+          })
+          .mockResolvedValueOnce({
+            done: false,
+            value: new TextEncoder().encode(
+              '{"response":{"kwargs":{"content":"Hi from conversation 1 (part 2)!"}}}',
+            ),
+          })
+          .mockResolvedValueOnce({ done: true, value: null }),
+      }),
+    };
+
+    (useApi as jest.Mock).mockReturnValue(lightSpeedApi);
+
+    const { result, rerender } = renderHook(
+      ({ conversationId }) =>
+        useConversationMessages(
+          conversationId,
+          'test-user',
+          'gpt-3',
+          'user.png',
+          onComplete,
+        ),
+      {
+        initialProps: { conversationId: 'conversation1' },
+        wrapper,
+      },
+    );
+
+    // Start streaming for the first conversation
+    await act(async () => {
+      result.current.handleInputPrompt('Hello conversation 1!');
+    });
+
+    // Mock API response for the second conversation
+    lightSpeedApi.createMessage.mockResolvedValueOnce({
+      read: jest
+        .fn()
+        .mockResolvedValueOnce({
+          done: false,
+          value: new TextEncoder().encode(
+            '{"response":{"kwargs":{"content":"Hi from conversation 2!"}}}',
+          ),
+        })
+        .mockResolvedValueOnce({ done: true, value: null }),
+    });
+
+    // Switch to the second conversation mid-stream
+    rerender({ conversationId: 'conversation2' });
+
+    await act(async () => {
+      result.current.handleInputPrompt('Hello conversation 2!');
+    });
+
+    expect(onComplete).toHaveBeenCalledWith('Hi from conversation 2!');
+
+    // Switch back to the first conversation
+    rerender({ conversationId: 'conversation1' });
+
+    await act(async () => {
+      expect(onComplete).toHaveBeenCalledWith(
+        'Hi from conversation 1 (part 1)!Hi from conversation 1 (part 2)!',
+      );
+    });
+  });
 });
