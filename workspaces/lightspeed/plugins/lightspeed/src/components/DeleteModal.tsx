@@ -48,7 +48,7 @@ export const DeleteModal = ({
       Activity.
     </ModalBody>
     <ModalFooter>
-      <Button key="confirm" variant="primary" onClick={onConfirm}>
+      <Button key="confirm" variant="danger" onClick={onConfirm}>
         Delete
       </Button>
       <Button key="cancel" variant="link" onClick={onClose}>
