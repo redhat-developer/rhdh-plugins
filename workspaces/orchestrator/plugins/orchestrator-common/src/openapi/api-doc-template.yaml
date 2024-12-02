@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: orchestrator-backend
+  description: The Orchestrator backend plugin API
+  tags:
+    - orchestrator
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: development
+  definition: |
