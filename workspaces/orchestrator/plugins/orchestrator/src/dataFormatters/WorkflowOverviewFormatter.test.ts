@@ -32,7 +32,6 @@ describe('WorkflowOverviewAdapter', () => {
       lastTriggeredMs: 1697276096000,
       lastRunStatus: ProcessInstanceStatusDTO.Completed,
       category: WorkflowCategoryDTO.Infrastructure,
-      avgDurationMs: 150000,
       description: 'Sample description',
       format: 'yaml',
     };
@@ -47,7 +46,6 @@ describe('WorkflowOverviewAdapter', () => {
     );
     expect(adaptedData.lastRunStatus).toBe(mockWorkflowOverview.lastRunStatus);
     expect(adaptedData.category).toBe(mockWorkflowOverview.category);
-    expect(adaptedData.avgDuration).toBe('3 minutes');
     expect(adaptedData.description).toBe(mockWorkflowOverview.description);
     expect(adaptedData.format).toBe('yaml'); // Adjust based on your expected value
   });
@@ -66,7 +64,6 @@ describe('WorkflowOverviewAdapter', () => {
     expect(adaptedData.lastTriggered).toBe('---');
     expect(adaptedData.lastRunStatus).toBe('---');
     expect(adaptedData.category).toBe('---');
-    expect(adaptedData.avgDuration).toBe('---');
     expect(adaptedData.description).toBe('---');
     expect(adaptedData.format).toBe('yaml');
   });

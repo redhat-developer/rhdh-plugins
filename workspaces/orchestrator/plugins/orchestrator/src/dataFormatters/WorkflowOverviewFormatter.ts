@@ -30,13 +30,9 @@ export interface FormattedWorkflowOverview {
   readonly lastRunStatus: string;
   readonly lastRunId: string;
   readonly category: string;
-  readonly avgDuration: string;
   readonly description: string;
   readonly format: WorkflowFormatDTO;
 }
-
-const formatDuration = (milliseconds: number): string =>
-  moment.duration(milliseconds).humanize();
 
 const WorkflowOverviewFormatter: DataFormatter<
   WorkflowOverviewDTO,
@@ -52,9 +48,6 @@ const WorkflowOverviewFormatter: DataFormatter<
       lastRunStatus: data.lastRunStatus?.toString() ?? VALUE_UNAVAILABLE,
       lastRunId: data.lastRunId ?? VALUE_UNAVAILABLE,
       category: data.category ?? VALUE_UNAVAILABLE,
-      avgDuration: data.avgDurationMs
-        ? formatDuration(data.avgDurationMs)
-        : VALUE_UNAVAILABLE,
       description: data.description ?? VALUE_UNAVAILABLE,
       format: data.format,
     };
