@@ -75,9 +75,9 @@ auth:
         clientId: ${AUTH_GITHUB_CLIENT_ID}
         clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
         signIn:
-           resolvers:
-             # See https://backstage.io/docs/auth/github/provider#resolvers for more resolvers
-             - resolver: emailMatchingUserEntityProfileEmail
+          resolvers:
+            # See https://backstage.io/docs/auth/github/provider#resolvers for more resolvers
+            - resolver: emailMatchingUserEntityProfileEmail
 
 # permission:
 #   enabled: true
