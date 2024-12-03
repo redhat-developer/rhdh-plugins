@@ -10142,6 +10142,10 @@ __metadata:
     msw: ^1.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   peerDependencies:
+    "@backstage/core-components": ^0.15.1
+    "@backstage/core-plugin-api": ^1.10.0
+    "@backstage/theme": ^0.6.0
+    "@material-ui/icons": ^4.11.3
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
   linkType: soft
