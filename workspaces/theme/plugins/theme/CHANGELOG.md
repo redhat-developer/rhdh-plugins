@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.1.0
+
+### Minor Changes
+
+- 5692219: This version contains the initial theme from RHDH 1.1 https://github.com/janus-idp/backstage-showcase/tree/v1.1.0/packages/app/src/themes
+
 ## 0.0.1
 
 ### Patch Changes
