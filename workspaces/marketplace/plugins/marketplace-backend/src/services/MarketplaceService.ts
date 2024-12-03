@@ -13,4 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { createTodoListService } from './createTodoListService';
+import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
+export interface MarketplaceService {
+  getPlugins(): Promise<MarketplacePluginEntry[]>;
+}

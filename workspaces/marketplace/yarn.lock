@@ -8337,6 +8337,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/icons-material@npm:^5.16.7":
+  version: 5.16.7
+  resolution: "@mui/icons-material@npm:5.16.7"
+  dependencies:
+    "@babel/runtime": ^7.23.9
+  peerDependencies:
+    "@mui/material": ^5.0.0
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: a875f2837897d79a83173d80461e06ab090b64d08913d26433cf2cbeb8e7c7456468632a7aa495d722718f09111a8043255777d73b4dfbe9e0f863a170fc7190
+  languageName: node
+  linkType: hard
+
 "@mui/material@npm:^5.12.2":
   version: 5.16.7
   resolution: "@mui/material@npm:5.16.7"
@@ -10015,16 +10031,16 @@ __metadata:
     "@backstage/backend-defaults": ^0.5.2
     "@backstage/backend-plugin-api": ^1.0.1
     "@backstage/backend-test-utils": ^1.0.2
-    "@backstage/catalog-client": ^1.7.1
     "@backstage/cli": ^0.28.0
     "@backstage/errors": ^1.2.4
-    "@backstage/plugin-catalog-node": ^1.13.1
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
     "@types/express": "*"
     "@types/supertest": ^2.0.12
     express: ^4.17.1
     express-promise-router: ^4.1.0
+    glob: ^10.4.5
     supertest: ^6.2.4
+    yaml: ^2.6.0
     zod: ^3.22.4
   languageName: unknown
   linkType: soft
@@ -10048,6 +10064,7 @@ __metadata:
     "@backstage/dev-utils": ^1.1.2
     "@backstage/test-utils": ^1.7.0
     "@backstage/theme": ^0.6.0
+    "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
     "@tanstack/react-query": ^5.60.5
@@ -10055,11 +10072,13 @@ __metadata:
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
     msw: ^1.0.0
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
     react-use: ^17.2.4
   peerDependencies:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
   languageName: unknown
   linkType: soft
 
@@ -20389,7 +20408,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^10.0.0, glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.4.1":
+"glob@npm:^10.0.0, glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.4.1, glob@npm:^10.4.5":
   version: 10.4.5
   resolution: "glob@npm:10.4.5"
   dependencies:
@@ -28990,7 +29009,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^16.13.1 || ^17.0.0 || ^18.0.0, react@npm:^18.0.2":
+"react@npm:^17.0.0 || ^18.0.0, react@npm:^18.0.2":
   version: 18.3.1
   resolution: "react@npm:18.3.1"
   dependencies:
@@ -33841,7 +33860,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2":
+"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.6.0":
   version: 2.6.0
   resolution: "yaml@npm:2.6.0"
   bin:

@@ -13,8 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createRouteRef } from '@backstage/core-plugin-api';
+import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
 
 export const rootRouteRef = createRouteRef({
   id: 'marketplace',
+});
+
+export const detailsRouteRef = createSubRouteRef({
+  id: 'details-page',
+  parent: rootRouteRef,
+  path: '/:name',
 });

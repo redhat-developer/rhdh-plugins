@@ -18,6 +18,7 @@ import { Page, Header, TabbedLayout } from '@backstage/core-components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { MarketplaceCatalogTab } from './MarketplaceCatalogTab';
+import { MarketplaceEntryDetailDrawer } from './MarketplaceEntryDetailDrawer';
 
 const queryClient = new QueryClient();
 
@@ -31,5 +32,6 @@ export const MarketplacePage = () => (
         </TabbedLayout.Route>
       </TabbedLayout>
     </Page>
+    <MarketplaceEntryDetailDrawer />
   </QueryClientProvider>
 );
