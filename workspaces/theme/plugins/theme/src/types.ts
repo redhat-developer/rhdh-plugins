@@ -13,4 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { themes, allThemes } from './themes';
+export type ThemeColors = {
+  primaryColor?: string | undefined;
+  headerColor1?: string | undefined;
+  headerColor2?: string | undefined;
+  navigationIndicatorColor?: string | undefined;
+};

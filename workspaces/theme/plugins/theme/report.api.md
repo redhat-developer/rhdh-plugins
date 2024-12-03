@@ -4,16 +4,9 @@
 
 ```ts
 import { AppTheme } from '@backstage/core-plugin-api';
-import { UnifiedTheme } from '@backstage/theme';
 
 // @public (undocumented)
 export const allThemes: AppTheme[];
-
-// @public (undocumented)
-export const darkTheme: UnifiedTheme;
-
-// @public (undocumented)
-export const lightTheme: UnifiedTheme;
 
 // @public (undocumented)
 export const themes: AppTheme[];
