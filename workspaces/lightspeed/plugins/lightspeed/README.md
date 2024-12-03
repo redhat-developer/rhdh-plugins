@@ -6,7 +6,7 @@ The Lightspeed plugin enables you to interact with any LLM server running a mode
 
 ### Prerequisites
 
-- Follow the lightspeed backend plugin [README](https://github.com/janus-idp/backstage-plugins/tree/main/plugins/lightspeed-backend) to integrate lightspeed backend in your Backstage instance.
+- Follow the lightspeed backend plugin [README](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed-backend/README.md) to integrate lightspeed backend in your Backstage instance.
 
 **Note**
 
@@ -100,7 +100,7 @@ global:
         pluginConfig:
           dynamicPlugins:
             frontend:
-              janus-idp.backstage-plugin-lightspeed:
+              red-hat-developer-hub.backstage-plugin-lightspeed:
                 appIcons:
                   - name: LightspeedIcon
                     module: LightspeedPlugin
@@ -163,7 +163,7 @@ lightspeed:
 
 dynamicPlugins:
   frontend:
-    janus-idp.backstage-plugin-lightspeed:
+    red-hat-developer-hub.backstage-plugin-lightspeed:
       appIcons:
         - name: LightspeedIcon
           module: LightspeedPlugin
