@@ -4,19 +4,19 @@
 
 ### Minor Changes
 
-- cecd842: Align the 0.3.x theme with the 1.3.x RHDH theme. It's based on @redhat-developer/red-hat-developer-hub-theme@0.3.0 and the sourcecode is migrated from https://github.com/redhat-developer/red-hat-developer-hub-theme/tree/1cd29db2abb807f94a2edb09688157b316bf6ff8/src/themes/rhdh and aligned with linter and prettier rules in rhdh-plugins.
+- cecd842: Migrate the 0.3.x theme with the 1.3.x RHDH theme. It's based on @redhat-developer/red-hat-developer-hub-theme@0.3.0 and the sourcecode is migrated from https://github.com/redhat-developer/red-hat-developer-hub-theme/tree/1cd29db2abb807f94a2edb09688157b316bf6ff8/src/themes/rhdh and aligned with linter and prettier rules in rhdh-plugins.
 
 ## 0.2.2
 
 ### Patch Changes
 
-- 4cd05dd: add sideeffect configuration to load Red Hat font from the plugin
+- 4cd05dd: Add `sideEffects` configuration to allow the plugin to load the Red Hat font.
 
 ## 0.2.1
 
 ### Patch Changes
 
-- 9d6e7b2: Align the 0.2.x theme with the latest 1.2.x RHDH theme. It's based on @redhat-developer/red-hat-developer-hub-theme@0.1.7 and the sourcecode is migrated from https://github.com/redhat-developer/red-hat-developer-hub-theme/tree/147ec09221a4440177e1bf89260c188041de7a79/src/themes/rhdh and aligned with linter and prettier rules in rhdh-plugins.
+- 9d6e7b2: Migrate the 0.2.x theme with the latest 1.2.x RHDH theme. It's based on @redhat-developer/red-hat-developer-hub-theme@0.1.7 and the sourcecode is migrated from https://github.com/redhat-developer/red-hat-developer-hub-theme/tree/147ec09221a4440177e1bf89260c188041de7a79/src/themes/rhdh and aligned with linter and prettier rules in rhdh-plugins.
 
 ## 0.2.0
 

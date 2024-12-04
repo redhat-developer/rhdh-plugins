@@ -21,12 +21,14 @@ export interface RHDHThemePalette {
   general: {
     disabledBackground: string;
     disabled: string;
-    searchBarBorderColor: string;
     formControlBackgroundColor: string;
     mainSectionBackgroundColor: string;
     headerBottomBorderColor: string;
     cardBackgroundColor: string;
-    sideBarBackgroundColor: string;
+    /** @deprecated please use `sidebarBackgroundColor` instead */
+    sideBarBackgroundColor?: string;
+    sidebarBackgroundColor: string;
+    sidebarItemSelectedBackgroundColor: string;
     cardBorderColor: string;
     tableTitleColor: string;
     tableSubtitleColor: string;
@@ -78,6 +80,8 @@ export interface ThemeConfigOptions {
   buttons?: 'patternfly' | 'mui';
 
   inputs?: 'patternfly' | 'mui';
+
+  checkbox?: 'patternfly' | 'mui';
 
   accordions?: 'patternfly' | 'mui';
 

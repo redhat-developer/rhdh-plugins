@@ -230,6 +230,14 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     };
   }
 
+  if (options.inputs !== 'mui') {
+    components.MuiCheckbox = {
+      defaultProps: {
+        color: 'primary',
+      },
+    };
+  }
+
   // MUI accordion
   if (options.accordions !== 'mui') {
     components.MuiAccordion = {
@@ -405,6 +413,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   // MUI tabs
   if (options.tabs !== 'mui') {
     components.MuiTabs = {
+      defaultProps: {
+        indicatorColor: 'primary',
+      },
       styleOverrides: {
         root: {
           boxShadow: `0 -1px ${general.tabsBottomBorderColor} inset`,
@@ -469,7 +480,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     components.BackstageSidebar = {
       styleOverrides: {
         drawer: {
-          backgroundColor: general.sideBarBackgroundColor,
+          backgroundColor:
+            general.sidebarBackgroundColor ?? general.sideBarBackgroundColor,
+          '& a[class*="BackstageSidebarItem-selected-"]': {
+            backgroundColor: general.sidebarItemSelectedBackgroundColor,
+          },
         },
       },
     };
@@ -496,13 +511,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         root: {
           backgroundColor: general.mainSectionBackgroundColor,
-          '& div:first-child': {
-            '& > div[class*="-searchBar"]': {
-              backgroundColor: general.formControlBackgroundColor,
-              border: `1px solid ${general.searchBarBorderColor}`,
-              boxShadow: 'none',
-            },
-          },
         },
       },
     };
