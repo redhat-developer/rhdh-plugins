@@ -45,6 +45,7 @@ const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
   return getImportStatus(
     values.repositories?.[data.id]?.catalogInfoYaml?.status as string,
     true,
+    values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
   );
 };
 
