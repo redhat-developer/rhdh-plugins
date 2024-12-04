@@ -17,7 +17,9 @@
   "backstage": {
     "role": "web-library"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./fons/*.css"
+  ],
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
