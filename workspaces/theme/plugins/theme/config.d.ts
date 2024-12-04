@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { createDevApp } from '@backstage/dev-utils';
-import { getAllThemes } from '../src';
+import { ThemeConfig } from './src';
 
-createDevApp()
-  .addThemes(getAllThemes())
-  .addPage({
-    element: <div />,
-    title: 'Root Page',
-    path: '/theme',
-  })
-  .render();
+export interface Config {
+  app: {
+    branding?: {
+      /**
+       * Theme configuration.
+       * @deepVisibility frontend
+       */
+      theme?: {
+        [key: string]: ThemeConfig;
+      };
+    };
+  };
+}

@@ -4,12 +4,162 @@
 
 ```ts
 import { AppTheme } from '@backstage/core-plugin-api';
+import { Theme } from '@mui/material/styles';
+import { UnifiedThemeOptions } from '@backstage/theme';
 
 // @public (undocumented)
-export const allThemes: AppTheme[];
+export type BackstageThemePalette = UnifiedThemeOptions['palette'];
 
 // @public (undocumented)
-export const themes: AppTheme[];
+export interface Branding {
+  // (undocumented)
+  theme?: {
+    [key: string]: ThemeConfig;
+  };
+}
+
+// @public (undocumented)
+export interface Config {
+  // (undocumented)
+  app: {
+    branding?: Branding;
+  };
+}
+
+// @public (undocumented)
+export const getAllThemes: () => AppTheme[];
+
+// @public (undocumented)
+export const getThemes: () => AppTheme[];
+
+// @public (undocumented)
+export interface RHDHThemePalette {
+  // (undocumented)
+  cards?: {
+    headerTextColor: string;
+    headerBackgroundColor: string;
+    headerBackgroundImage: string;
+  };
+  // (undocumented)
+  general: {
+    disabledBackground: string;
+    disabled: string;
+    searchBarBorderColor: string;
+    formControlBackgroundColor: string;
+    mainSectionBackgroundColor: string;
+    headerBottomBorderColor: string;
+    cardBackgroundColor: string;
+    sideBarBackgroundColor: string;
+    cardBorderColor: string;
+    tableTitleColor: string;
+    tableSubtitleColor: string;
+    tableColumnTitleColor: string;
+    tableRowHover: string;
+    tableBorderColor: string;
+    tableBackgroundColor: string;
+    tabsBottomBorderColor: string;
+    contrastText: string;
+  };
+  // (undocumented)
+  primary: {
+    main: string;
+    focusVisibleBorder: string;
+  };
+  // (undocumented)
+  secondary: {
+    main: string;
+    focusVisibleBorder: string;
+  };
+}
+
+// @public (undocumented)
+export interface ThemeConfig {
+  // (undocumented)
+  defaultPageTheme?: string;
+  // (undocumented)
+  fontFamily?: UnifiedThemeOptions['fontFamily'];
+  // (undocumented)
+  htmlFontSize?: UnifiedThemeOptions['htmlFontSize'];
+  mode?: 'light' | 'dark';
+  // (undocumented)
+  options?: ThemeConfigOptions;
+  // (undocumented)
+  pageTheme?: Record<string, ThemeConfigPageTheme>;
+  // (undocumented)
+  palette?: ThemeConfigPalette;
+  // (undocumented)
+  typography?: UnifiedThemeOptions['typography'];
+  variant?: 'rhdh' | 'backstage';
+}
+
+// @public (undocumented)
+export interface ThemeConfigOptions {
+  // (undocumented)
+  accordions?: 'patternfly' | 'mui';
+  // (undocumented)
+  buttons?: 'patternfly' | 'mui';
+  // (undocumented)
+  cards?: 'patternfly' | 'mui';
+  // (undocumented)
+  components?: 'rhdh' | 'backstage' | 'mui';
+  // (undocumented)
+  dialogs?: 'patternfly' | 'mui';
+  // (undocumented)
+  headers?: 'patternfly' | 'mui';
+  // (undocumented)
+  inputs?: 'patternfly' | 'mui';
+  // (undocumented)
+  pages?: 'patternfly' | 'mui';
+  // (undocumented)
+  paper?: 'patternfly' | 'mui';
+  // (undocumented)
+  rippleEffect?: 'on' | 'off';
+  // (undocumented)
+  sidebars?: 'patternfly' | 'mui';
+  // (undocumented)
+  tables?: 'patternfly' | 'mui';
+  // (undocumented)
+  tabs?: 'patternfly' | 'mui';
+  // (undocumented)
+  toolbars?: 'patternfly' | 'mui';
+}
+
+// @public (undocumented)
+export interface ThemeConfigPageTheme {
+  // (undocumented)
+  backgroundColor?: string | string[];
+  // (undocumented)
+  backgroundImage?: string;
+  // (undocumented)
+  colors?: string | string[];
+  // (undocumented)
+  fontColor?: string;
+  // (undocumented)
+  shape?: string;
+}
+
+// @public (undocumented)
+export type ThemeConfigPalette = BackstageThemePalette & {
+  rhdh?: RHDHThemePalette;
+};
+
+// @public (undocumented)
+export const useAllThemes: () => AppTheme[];
+
+// @public (undocumented)
+export const useBranding: () => Branding | undefined;
+
+// @public (undocumented)
+export const useLoaderTheme: () => Theme;
+
+// @public (undocumented)
+export const useThemeConfig: (themeName: string) => ThemeConfig;
+
+// @public
+export const useThemeOptions: (themeConfig: ThemeConfig) => UnifiedThemeOptions;
+
+// @public (undocumented)
+export const useThemes: () => AppTheme[];
 
 // (No @packageDocumentation comment for this package)
 ```

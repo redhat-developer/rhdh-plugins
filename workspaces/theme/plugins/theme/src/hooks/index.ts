@@ -13,15 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { createDevApp } from '@backstage/dev-utils';
-import { getAllThemes } from '../src';
-
-createDevApp()
-  .addThemes(getAllThemes())
-  .addPage({
-    element: <div />,
-    title: 'Root Page',
-    path: '/theme',
-  })
-  .render();
+export * from './useBranding';
+export * from './useThemeConfig';
+export * from './useThemeOptions';
