@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.2.2
+
+### Patch Changes
+
+- 4cd05dd: add sideeffect configuration to load Red Hat font from the plugin
+
 ## 0.2.1
 
 ### Patch Changes
