@@ -108,11 +108,11 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
               to="orchestrator"
               text="Orchestrator"
             />
-            <Administration />
           </SidebarScrollWrapper>
         </SidebarGroup>
         <SidebarSpace />
         <SidebarDivider />
+        <Administration />
         <SidebarGroup
           label="Settings"
           icon={<UserSettingsSignInAvatar />}

@@ -76,7 +76,6 @@ auth:
         clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
         signIn:
           resolvers:
-            # See https://backstage.io/docs/auth/github/provider#resolvers for more resolvers
             - resolver: emailMatchingUserEntityProfileEmail
 
 # permission:
@@ -84,6 +83,9 @@ auth:
 #   rbac:
 #     policies-csv-file: ../../plugins/orchestrator/docs/rbac-policy.csv
 #     policyFileReload: true
+#     admin:
+#       users:
+#         - name: user:default/mareklibra
 
 scaffolder:
   {}
