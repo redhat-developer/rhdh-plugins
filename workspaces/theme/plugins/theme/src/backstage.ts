@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { createDevApp } from '@backstage/dev-utils';
-import { getAllThemes } from '../src';
+import { palettes } from '@backstage/theme';
 
-createDevApp()
-  .addThemes(getAllThemes())
-  .addPage({
-    element: <div />,
-    title: 'Root Page',
-    path: '/theme',
-  })
-  .render();
+import { ThemeConfig } from './types';
+
+export const getDefaultThemeConfig = (mode: 'light' | 'dark'): ThemeConfig => {
+  const palette = mode === 'dark' ? palettes.dark : palettes.light;
+
+  return {
+    variant: 'backstage',
+    mode: mode === 'dark' ? 'dark' : 'light',
+    palette,
+  };
+};

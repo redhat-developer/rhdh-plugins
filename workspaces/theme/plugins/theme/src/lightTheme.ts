@@ -13,36 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createUnifiedTheme, themes } from '@backstage/theme';
-import { components } from './componentOverrides';
-import { pageTheme } from './pageTheme';
-import { ThemeColors } from './types';
+import { palettes } from '@backstage/theme';
+import { type PaletteOptions } from '@mui/material/styles';
 
-export const customLightTheme = (themeColors: ThemeColors) =>
-  createUnifiedTheme({
-    palette: {
-      ...themes.light.getTheme('v5')?.palette,
-      ...(themeColors.primaryColor && {
-        primary: {
-          ...themes.light.getTheme('v5')?.palette.primary,
-          main: themeColors.primaryColor,
-        },
-      }),
-      navigation: {
-        background: '#222427',
-        indicator: themeColors.navigationIndicatorColor || '#0066CC',
-        color: '#ffffff',
-        selectedColor: '#ffffff',
-        navItem: {
-          hoverBackground: '#3c3f42',
-        },
+import { type ThemeConfigPalette } from './types';
+
+export const customLightTheme = (): ThemeConfigPalette => {
+  const palette: (typeof palettes)['light'] & PaletteOptions = palettes.light;
+  return {
+    ...palette,
+    primary: {
+      main: '#0066CC',
+    },
+    secondary: {
+      main: '#8476D1',
+    },
+    navigation: {
+      background: '#222427',
+      indicator: '#0066CC',
+      color: '#ffffff',
+      selectedColor: '#ffffff',
+      navItem: {
+        hoverBackground: '#3c3f42',
       },
-      text: {
-        primary: '#151515',
-        secondary: '#757575',
+      submenu: {
+        background: '#222427',
       },
     },
-    defaultPageTheme: 'home',
-    pageTheme: pageTheme(themeColors),
-    components: components(themeColors, 'light'),
-  });
+    text: {
+      primary: '#151515',
+      secondary: '#757575',
+    },
+    rhdh: {
+      general: {
+        disabledBackground: '#D2D2D2',
+        disabled: '#6A6E73',
+        searchBarBorderColor: '#E4E4E4',
+        formControlBackgroundColor: '#FFF',
+        mainSectionBackgroundColor: '#FFF',
+        headerBottomBorderColor: '#C7C7C7',
+        cardBackgroundColor: '#FFF',
+        sideBarBackgroundColor: '#212427',
+        cardBorderColor: '#C7C7C7',
+        tableTitleColor: '#181818',
+        tableSubtitleColor: '#616161',
+        tableColumnTitleColor: '#151515',
+        tableRowHover: '#F5F5F5',
+        tableBorderColor: '#E0E0E0',
+        tableBackgroundColor: '#FFF',
+        tabsBottomBorderColor: '#D2D2D2',
+        contrastText: '#FFF',
+      },
+      primary: {
+        main: '#0066CC',
+        focusVisibleBorder: '#0066CC',
+      },
+      secondary: {
+        main: '#8476D1',
+        focusVisibleBorder: '#8476D1',
+      },
+      cards: {
+        headerTextColor: '#151515',
+        headerBackgroundColor: '#FFF',
+        headerBackgroundImage: 'none',
+      },
+    },
+  };
+};
