@@ -26,7 +26,7 @@ export const customLightTheme = (): ThemeConfigPalette => {
       main: '#0066CC',
     },
     secondary: {
-      main: '#8476D1',
+      main: '#0066CC',
     },
     navigation: {
       background: '#222427',
@@ -48,12 +48,12 @@ export const customLightTheme = (): ThemeConfigPalette => {
       general: {
         disabledBackground: '#D2D2D2',
         disabled: '#6A6E73',
-        searchBarBorderColor: '#E4E4E4',
         formControlBackgroundColor: '#FFF',
         mainSectionBackgroundColor: '#FFF',
         headerBottomBorderColor: '#C7C7C7',
         cardBackgroundColor: '#FFF',
-        sideBarBackgroundColor: '#212427',
+        sidebarBackgroundColor: '#212427',
+        sidebarItemSelectedBackgroundColor: '#4F5255',
         cardBorderColor: '#C7C7C7',
         tableTitleColor: '#181818',
         tableSubtitleColor: '#616161',
@@ -69,8 +69,8 @@ export const customLightTheme = (): ThemeConfigPalette => {
         focusVisibleBorder: '#0066CC',
       },
       secondary: {
-        main: '#8476D1',
-        focusVisibleBorder: '#8476D1',
+        main: '#0066CC',
+        focusVisibleBorder: '#0066CC',
       },
       cards: {
         headerTextColor: '#151515',

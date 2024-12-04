@@ -15,6 +15,7 @@
  */
 import { palettes } from '@backstage/theme';
 import { type PaletteOptions } from '@mui/material/styles';
+
 import { type ThemeConfigPalette } from './types';
 
 export const customDarkTheme = (): ThemeConfigPalette => {
@@ -25,7 +26,7 @@ export const customDarkTheme = (): ThemeConfigPalette => {
       main: '#1FA7F8',
     },
     secondary: {
-      main: '#B2A3FF',
+      main: '#1FA7F8',
     },
     navigation: {
       background: '#0f1214',
@@ -43,12 +44,12 @@ export const customDarkTheme = (): ThemeConfigPalette => {
       general: {
         disabledBackground: '#444548',
         disabled: '#AAABAC',
-        searchBarBorderColor: '#57585a',
         formControlBackgroundColor: '#36373A',
         mainSectionBackgroundColor: '#0f1214',
         headerBottomBorderColor: '#A3A3A3',
         cardBackgroundColor: '#1b1d21',
-        sideBarBackgroundColor: '#1b1d21',
+        sidebarBackgroundColor: '#1b1d21',
+        sidebarItemSelectedBackgroundColor: '#4F5255',
         cardBorderColor: '#A3A3A3',
         tableTitleColor: '#E0E0E0',
         tableSubtitleColor: '#E0E0E0',
@@ -64,8 +65,8 @@ export const customDarkTheme = (): ThemeConfigPalette => {
         focusVisibleBorder: '#ADD6FF',
       },
       secondary: {
-        main: '#B2A3FF',
-        focusVisibleBorder: '#D0C7FF',
+        main: '#1FA7F8',
+        focusVisibleBorder: '#ADD6FF',
       },
       cards: {
         headerTextColor: '#FFF',
