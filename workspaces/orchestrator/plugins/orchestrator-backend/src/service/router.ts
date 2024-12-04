@@ -246,12 +246,9 @@ export async function createBackendRouter(
       throw new Error('next is undefined');
     }
 
-    return routerApi.openApiBackend.handleRequest(
-      req as Request,
-      req,
-      res,
-      next,
-    );
+    return routerApi.openApiBackend
+      .handleRequest(req as Request, req, res, next)
+      .catch(next);
   });
 
   const middleware = MiddlewareFactory.create({ logger, config });
@@ -586,6 +583,7 @@ function setupInternalRoutes(
       if (decision.result === AuthorizeResult.DENY) {
         manageDenyAuthorization(endpointName, endpoint, _req);
       }
+
       return routerApi.v2
         .getWorkflowOverviewById(workflowId)
         .then(result => res.json(result))
