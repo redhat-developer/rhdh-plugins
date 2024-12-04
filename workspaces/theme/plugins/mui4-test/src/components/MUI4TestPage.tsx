@@ -20,6 +20,7 @@ import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
 import { FormComponents } from './FormComponents';
 import { PaperExamples } from './PaperExamples';
 import { InlineStyles } from './InlineStyles';
+import { TabExamples } from './TabExamples';
 
 export const MUI4TestPage = () => {
   return (
@@ -42,6 +43,11 @@ export const MUI4TestPage = () => {
           path="/inline-styles"
           title="Inline styles"
           children={<InlineStyles />}
+        />
+        <TabbedLayout.Route
+          path="/tabs"
+          title="Tabs"
+          children={<TabExamples />}
         />
       </TabbedLayout>
     </Page>
