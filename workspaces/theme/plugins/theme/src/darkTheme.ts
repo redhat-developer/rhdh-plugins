@@ -47,7 +47,7 @@ export const customDarkTheme = (): ThemeConfigPalette => {
         formControlBackgroundColor: '#36373A',
         mainSectionBackgroundColor: '#0f1214',
         headerBottomBorderColor: '#A3A3A3',
-        cardBackgroundColor: '#292929',
+        cardBackgroundColor: '#1b1d21',
         sideBarBackgroundColor: '#1b1d21',
         cardBorderColor: '#A3A3A3',
         tableTitleColor: '#E0E0E0',
