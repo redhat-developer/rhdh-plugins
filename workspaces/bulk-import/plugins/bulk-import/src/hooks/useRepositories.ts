@@ -38,6 +38,7 @@ import {
 
 export const useRepositories = (
   options: DataFetcherQueryParams,
+  pollInterval?: number,
 ): {
   loading: boolean;
   data: {
@@ -97,6 +98,7 @@ export const useRepositories = (
   } = useQuery(
     [options?.showOrganizations ? 'organizations' : 'repositories', options],
     () => fetchRepositories(options),
+    { refetchInterval: pollInterval || 60000 },
   );
 
   const prepareData = React.useMemo(() => {

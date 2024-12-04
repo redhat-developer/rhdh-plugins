@@ -63,7 +63,8 @@ export const PreviewFileSidebar = ({
   handleSave: (pullRequest: PullRequestPreviewData, _event: any) => void;
   isSubmitting?: boolean;
 }) => {
-  const { setStatus, status } = useFormikContext<AddRepositoriesFormValues>();
+  const { setStatus, status, setFieldValue, values } =
+    useFormikContext<AddRepositoriesFormValues>();
   const classes = useDrawerStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
   const identityApi = useApi(identityApiRef);
@@ -81,6 +82,10 @@ export const PreviewFileSidebar = ({
     branch: string,
     repoPrTemplate: PullRequestPreview,
   ) => {
+    if (values?.repositories?.[id]?.catalogInfoYaml?.isInitialized) {
+      return values.repositories[id].catalogInfoYaml
+        ?.prTemplate as PullRequestPreview;
+    }
     const result = await bulkImportApi.getImportAction(
       url || '',
       branch || 'main',
@@ -159,6 +164,10 @@ export const PreviewFileSidebar = ({
           repo.defaultBranch || 'main',
           repo.catalogInfoYaml?.prTemplate as PullRequestPreview,
         );
+        setFieldValue(
+          `repositories.${repo.id}.catalogInfoYaml.isInitialized`,
+          true,
+        );
       }
     } else {
       newPullRequestData[data.id] = await fetchPullRequestData(
@@ -168,6 +177,10 @@ export const PreviewFileSidebar = ({
         data.repoUrl || '',
         data.defaultBranch || 'main',
         data.catalogInfoYaml?.prTemplate as PullRequestPreview,
+      );
+      setFieldValue(
+        `repositories.${data.id}.catalogInfoYaml.isInitialized`,
+        true,
       );
     }
     setPullRequest(newPullRequestData);

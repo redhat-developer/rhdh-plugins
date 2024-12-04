@@ -16,14 +16,14 @@
 import * as React from 'react';
 
 import { Entity } from '@backstage/catalog-model';
-import { StatusOK, StatusPending } from '@backstage/core-components';
+import { StatusOK } from '@backstage/core-components';
 
 import * as jsyaml from 'js-yaml';
 import { get } from 'lodash';
 import * as yaml from 'yaml';
 import * as yup from 'yup';
 
-import GitAltIcon from '../components/GitAltIcon';
+import { WaitingForPR } from '../components/WaitingForPR';
 import {
   AddedRepositories,
   AddRepositoryData,
@@ -218,25 +218,18 @@ export const urlHelper = (url: string) => {
   return url.split('https://')[1] || url;
 };
 
-export const getImportStatus = (status: string, showIcon?: boolean) => {
+export const getImportStatus = (
+  status: string,
+  showIcon?: boolean,
+  prUrl?: string,
+) => {
   if (!status) {
     return '';
   }
   switch (status) {
     case 'WAIT_PR_APPROVAL':
       return showIcon ? (
-        <span style={{ display: 'flex' }}>
-          <StatusPending />
-          <GitAltIcon
-            style={{
-              height: '1.4em',
-              width: '2em',
-              marginBottom: 'auto',
-              marginRight: '4px',
-            }}
-          />
-          Waiting for Approval
-        </span>
+        <WaitingForPR url={prUrl as string} />
       ) : (
         'Waiting for Approval'
       );
