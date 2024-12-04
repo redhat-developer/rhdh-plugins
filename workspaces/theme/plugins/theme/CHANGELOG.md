@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.2.0
+
+### Minor Changes
+
+- bf40004: This version contains the initial theme from RHDH 1.2
+
 ## 0.1.0
 
 ### Minor Changes
