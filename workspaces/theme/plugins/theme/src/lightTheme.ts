@@ -61,6 +61,7 @@ export const customLightTheme = (): ThemeConfigPalette => {
         tableRowHover: '#F5F5F5',
         tableBorderColor: '#E0E0E0',
         tableBackgroundColor: '#FFF',
+        tabsDisabledBackgroundColor: '#f5f5f5',
         tabsBottomBorderColor: '#D2D2D2',
         contrastText: '#FFF',
       },
