@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 1.24.3
+
+### Patch Changes
+
+- b6cf167: generate openapi spec api-doc
+- 1d4cfa1: update openapi flpath-1893
+
 ## 1.24.2
 
 ### Patch Changes
