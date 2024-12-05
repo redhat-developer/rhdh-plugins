@@ -83,17 +83,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             height: 0,
           },
         },
-        elevation0: {
-          '& div[class*="Mui-disabled"]': {
-            backgroundColor: 'unset',
-          },
-          '& span[class*="Mui-disabled"]': {
-            backgroundColor: 'unset',
-          },
-          '& input[class*="Mui-disabled"]': {
-            backgroundColor: 'unset',
-          },
-        },
         elevation1: {
           boxShadow: 'none',
           outline: `1px solid ${general.paperBorderColor}`,
