@@ -248,7 +248,19 @@ export async function createBackendRouter(
 
     return routerApi.openApiBackend
       .handleRequest(req as Request, req, res, next)
-      .catch(next);
+      .catch(error => {
+        auditLogger.auditLog({
+          eventName: 'genericErrorHandler',
+          stage: 'completion',
+          status: 'failed',
+          level: 'error',
+          request: req,
+          message: `Exception thrown during processing request ${req.path} , ${error.message || error.name || error}`,
+          errors: [error],
+        });
+
+        next(error);
+      });
   });
 
   const middleware = MiddlewareFactory.create({ logger, config });
