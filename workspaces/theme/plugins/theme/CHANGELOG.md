@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.4.1
+
+### Patch Changes
+
+- 037324e: fixed that all disabled elements used a disable background color instead of just disabled tabs
+- ee1085e: Fixed Mui v5 outlined button missing outline and causes other buttons move on hover issue.
+
 ## 0.4.0
 
 ### Minor Changes
