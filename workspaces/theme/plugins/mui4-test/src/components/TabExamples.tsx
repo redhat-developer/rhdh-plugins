@@ -38,15 +38,28 @@ export const TabExamples = () => {
             indicatorColor="primary"
             textColor="primary"
             onChange={handleChange}
-            aria-label="disabled tabs example"
           >
-            <Tab label="One" />
+            <Tab label={`color: ${color}`} />
             <Tab label="Two" />
             <Tab label="Three" />
             <Tab label="Disabled" disabled />
           </Tabs>
         </div>
       ))}
+
+      <Tabs
+        orientation="vertical"
+        value={selectedTab}
+        indicatorColor="primary"
+        textColor="primary"
+        onChange={handleChange}
+        aria-label="disabled tabs example"
+      >
+        <Tab label="Vertical test" />
+        <Tab label="Two" />
+        <Tab label="Three" />
+        <Tab label="Disabled" disabled />
+      </Tabs>
     </div>
   );
 };

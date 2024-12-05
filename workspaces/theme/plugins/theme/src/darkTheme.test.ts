@@ -107,6 +107,7 @@ describe('customDarkTheme', () => {
           tableRowHover: '#0f1214',
           tableBorderColor: '#515151',
           tableBackgroundColor: '#1b1d21',
+          tabsDisabledBackgroundColor: '#444548',
           tabsBottomBorderColor: '#444548',
           contrastText: '#FFF',
         },
