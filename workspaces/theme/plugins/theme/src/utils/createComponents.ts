@@ -157,8 +157,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         outlined: {
+          border: `1px solid color-mix(in srgb, currentColor 50%, transparent)`,
+          borderOpacity: 0.5,
           '&:hover': {
             backgroundColor: 'transparent',
+            border: `1px solid`,
           },
         },
         outlinedPrimary: {
