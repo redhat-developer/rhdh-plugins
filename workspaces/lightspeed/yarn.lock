@@ -10864,6 +10864,8 @@ __metadata:
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
     "@spotify/prettier-config": ^15.0.0
     prettier: 3.3.3
+  peerDependencies:
+    "@backstage/plugin-permission-common": ^0.8.1
   languageName: unknown
   linkType: soft
 
