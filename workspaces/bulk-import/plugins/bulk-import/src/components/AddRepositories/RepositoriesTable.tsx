@@ -323,30 +323,30 @@ export const RepositoriesTable = ({
             showOrganizations={showOrganizations}
           />
         </Table>
+        {!isOpen && tableData?.length > 0 && (
+          <TablePagination
+            style={{ height: '30%' }}
+            rowsPerPageOptions={[
+              { value: 5, label: '5 rows' },
+              { value: 10, label: '10 rows' },
+              { value: 20, label: '20 rows' },
+              { value: 50, label: '50 rows' },
+              { value: 100, label: '100 rows' },
+            ]}
+            component="div"
+            count={
+              (showOrganizations
+                ? data?.totalOrganizations
+                : data?.totalRepositories) || 0
+            }
+            rowsPerPage={rowsPerPage}
+            page={effectivePage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage={null}
+          />
+        )}
       </TableContainer>
-      {!isOpen && tableData?.length > 0 && (
-        <TablePagination
-          style={{ height: '30%' }}
-          rowsPerPageOptions={[
-            { value: 5, label: '5 rows' },
-            { value: 10, label: '10 rows' },
-            { value: 20, label: '20 rows' },
-            { value: 50, label: '50 rows' },
-            { value: 100, label: '100 rows' },
-          ]}
-          component="div"
-          count={
-            (showOrganizations
-              ? data?.totalOrganizations
-              : data?.totalRepositories) || 0
-          }
-          rowsPerPage={rowsPerPage}
-          page={effectivePage}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage={null}
-        />
-      )}
       {showOrganizations && activeOrganization && (
         <AddRepositoriesDrawer
           title="Selected repositories"
