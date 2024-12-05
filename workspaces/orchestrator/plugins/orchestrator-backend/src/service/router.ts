@@ -811,11 +811,13 @@ function setupInternalRoutes(
       });
 
       try {
-        // TODO: use pagination only if the generic orchestratorWorkflowPermission is in place
+        // TODO FLPATH-1916: Get list of authorized workflowIds and pass it to orchestratorService.fetchInstances() so the DataIndex will do the pagination.
         const result = await routerApi.v2.getInstances(
           buildPagination(req),
           getRequestFilters(req),
         );
+
+        // following call will be removed by FLPATH-1916
         const instances = await filterAuthorizedInstances(
           req,
           permissions,
