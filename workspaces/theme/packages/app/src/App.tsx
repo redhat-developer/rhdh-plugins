@@ -55,7 +55,7 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { BCTestPage } from '@red-hat-developer-hub/backstage-plugin-bc-test';
 import { MUI4TestPage } from '@red-hat-developer-hub/backstage-plugin-mui4-test';
 import { MUI5TestPage } from '@red-hat-developer-hub/backstage-plugin-mui5-test';
-import { allThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const app = createApp({
   apis,
@@ -79,7 +79,7 @@ const app = createApp({
   components: {
     SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
   },
-  themes: allThemes,
+  themes: getAllThemes(),
 });
 
 const routes = (

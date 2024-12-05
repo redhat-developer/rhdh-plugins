@@ -15,165 +15,142 @@
  */
 import React from 'react';
 import { AppTheme } from '@backstage/core-plugin-api';
-import {
-  createBaseThemeOptions,
-  createUnifiedTheme,
-  palettes,
-  themes as backstageThemes,
-  UnifiedThemeProvider,
-} from '@backstage/theme';
+import { UnifiedTheme, UnifiedThemeProvider, themes } from '@backstage/theme';
 import LightIcon from '@material-ui/icons/WbSunny';
 import DarkIcon from '@material-ui/icons/Brightness2';
+import { createTheme } from '@mui/material/styles';
 
-/**
- * @public
- */
-export const lightTheme = createUnifiedTheme({
-  ...createBaseThemeOptions({
-    palette: {
-      ...palettes.light,
-      primary: {
-        main: '#0066CC',
-      },
-      secondary: {
-        main: '#0066CC',
-      },
-      error: {
-        main: '#B1380B',
-      },
-      warning: {
-        main: '#FFCC17',
-      },
-      info: {
-        main: '#5E40CE',
-      },
-      success: {
-        main: '#3D7317',
-      },
-      background: {
-        default: '#ffffff',
-        paper: '#ffffff',
-      },
-      banner: {
-        info: '#5E40CE',
-        error: '#B1380B',
-        text: '#343b58', // TODO
-        link: '#565a6e', // TODO
-      },
-      // errorBackground: '#8c4351',
-      // warningBackground: '#8f5e15',
-      // infoBackground: '#343b58',
-      navigation: {
-        background: '#F2F2F2',
-        indicator: '#0066CC',
-        color: '#4D4D4D',
-        selectedColor: '#151515',
-        navItem: {
-          hoverBackground: '#FFFFFF',
-        },
-      },
+import * as backstage from './backstage';
+import * as rhdh from './rhdh';
+import { ThemeConfig } from './types';
+import { useTheme } from './hooks/useTheme';
+import { useThemeConfig } from './hooks/useThemeConfig';
+
+const createThemeProvider = (theme: UnifiedTheme): AppTheme['Provider'] =>
+  function RHDHThemeProvider({ children }) {
+    return (
+      <UnifiedThemeProvider theme={theme}>{children}</UnifiedThemeProvider>
+    );
+  };
+
+const createThemeProviderForThemeConfig = (
+  themeConfig: ThemeConfig,
+): AppTheme['Provider'] =>
+  function RHDHThemeProviderForThemeConfig({ children }) {
+    const theme = useTheme(themeConfig);
+    return (
+      <UnifiedThemeProvider theme={theme}>{children}</UnifiedThemeProvider>
+    );
+  };
+
+const createThemeProviderForThemeName = (
+  themeName: string,
+): AppTheme['Provider'] =>
+  function RHDHThemeProviderForThemeName({ children }) {
+    const themeConfig = useThemeConfig(themeName);
+    const theme = useTheme(themeConfig);
+    return (
+      <UnifiedThemeProvider theme={theme}>{children}</UnifiedThemeProvider>
+    );
+  };
+
+export const getAllThemes = (): AppTheme[] => {
+  return [
+    {
+      id: 'light',
+      title: 'RHDH Light (latest)',
+      variant: 'light',
+      icon: <LightIcon />,
+      Provider: createThemeProviderForThemeName('light'),
     },
-  }),
-  defaultPageTheme: 'home',
-});
-
-/**
- * @public
- */
-export const darkTheme = createUnifiedTheme({
-  ...createBaseThemeOptions({
-    palette: {
-      ...palettes.dark,
-      primary: {
-        main: '#0066CC',
-      },
-      secondary: {
-        main: '#0066CC',
-      },
-      error: {
-        main: '#B1380B',
-      },
-      warning: {
-        main: '#FFCC17',
-      },
-      info: {
-        main: '#5E40CE',
-      },
-      success: {
-        main: '#3D7317',
-      },
-      background: {
-        default: '#292929',
-        paper: '#292929',
-      },
-      banner: {
-        info: '#5E40CE',
-        error: '#B1380B',
-        text: '#343b58', // TODO
-        link: '#565a6e', // TODO
-      },
-      // errorBackground: '#8c4351',
-      // warningBackground: '#8f5e15',
-      // infoBackground: '#343b58',
-      navigation: {
-        background: '#151515',
-        indicator: '#0066CC',
-        color: '#C7C7C7',
-        selectedColor: '#FFFFFF',
-        navItem: {
-          hoverBackground: '#292929',
-        },
-      },
+    {
+      id: 'dark',
+      title: 'RHDH Dark (latest)',
+      variant: 'dark',
+      icon: <DarkIcon />,
+      Provider: createThemeProviderForThemeName('dark'),
     },
-  }),
-  defaultPageTheme: 'home',
-});
+    {
+      id: 'light-customized',
+      title: 'RHDH Light (customized)',
+      variant: 'light',
+      icon: <LightIcon />,
+      Provider: createThemeProviderForThemeConfig({
+        mode: 'light',
+        variant: 'rhdh',
+        palette: {
+          primary: { main: '#ff0000' },
+          secondary: { main: '#00ff00' },
+        },
+      }),
+    },
+    {
+      id: 'dark-customized',
+      title: 'RHDH Dark (customized)',
+      variant: 'dark',
+      icon: <DarkIcon />,
+      Provider: createThemeProviderForThemeConfig({
+        mode: 'dark',
+        variant: 'rhdh',
+        palette: {
+          primary: { main: '#ff0000' },
+          secondary: { main: '#00ff00' },
+        },
+      }),
+    },
+    {
+      id: 'backstage-light',
+      title: 'Backstage Light',
+      variant: 'light',
+      icon: <LightIcon />,
+      Provider: createThemeProvider(themes.light),
+    },
+    {
+      id: 'backstage-dark',
+      title: 'Backstage Dark',
+      variant: 'dark',
+      icon: <DarkIcon />,
+      Provider: createThemeProvider(themes.dark),
+    },
+  ];
+};
 
-/**
- * @public
- */
-export const themes: AppTheme[] = [
-  {
-    id: 'light-theme',
-    title: 'Light Theme',
-    variant: 'light',
-    icon: <LightIcon />,
-    Provider: ({ children }: { children: React.ReactNode }) => (
-      <UnifiedThemeProvider theme={lightTheme} children={children} />
-    ),
-  },
-  {
-    id: 'dark-theme',
-    title: 'Dark Theme',
-    variant: 'dark',
-    icon: <DarkIcon />,
-    Provider: ({ children }: { children: React.ReactNode }) => (
-      <UnifiedThemeProvider theme={darkTheme} children={children} />
-    ),
-  },
-];
+export const useAllThemes = (): AppTheme[] => {
+  return React.useMemo(() => getAllThemes(), []);
+};
 
-/**
- * @public
- */
-export const allThemes: AppTheme[] = [
-  ...themes,
-  {
-    id: 'backstage-light-theme',
-    title: 'Backstage Light Theme',
-    variant: 'light',
-    icon: <LightIcon />,
-    Provider: ({ children }: { children: React.ReactNode }) => (
-      <UnifiedThemeProvider theme={backstageThemes.light} children={children} />
-    ),
-  },
-  {
-    id: 'backstage-dark-theme',
-    title: 'backstage Dark Theme',
-    variant: 'dark',
-    icon: <DarkIcon />,
-    Provider: ({ children }: { children: React.ReactNode }) => (
-      <UnifiedThemeProvider theme={backstageThemes.dark} children={children} />
-    ),
-  },
-];
+export const getThemes = (): AppTheme[] => {
+  return [
+    {
+      id: 'light',
+      title: 'Light',
+      variant: 'light',
+      icon: <LightIcon />,
+      Provider: createThemeProviderForThemeName('light'),
+    },
+    {
+      id: 'dark',
+      title: 'Dark',
+      variant: 'dark',
+      icon: <DarkIcon />,
+      Provider: createThemeProviderForThemeName('dark'),
+    },
+  ];
+};
+
+export const useThemes = (): AppTheme[] => {
+  return React.useMemo(() => getThemes(), []);
+};
+
+export const useLoaderTheme = () => {
+  return React.useMemo(() => {
+    const latestTheme = localStorage.getItem('theme');
+    const mode = latestTheme?.includes('dark') ? 'dark' : 'light';
+    const variant = latestTheme?.includes('backstage') ? 'backstage' : 'rhdh';
+    const themeOptions =
+      variant === 'backstage'
+        ? backstage.getDefaultThemeConfig(mode)
+        : rhdh.getDefaultThemeConfig(mode);
+    return createTheme(themeOptions);
+  }, []);
+};

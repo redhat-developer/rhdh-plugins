@@ -1,6 +1,7 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-theme",
-  "version": "0.2.0",
+  "version": "0.4.1",
+  "description": "Red Hat Developer Hub Theme",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -17,7 +18,9 @@
   "backstage": {
     "role": "web-library"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./fons/*.css"
+  ],
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
@@ -26,6 +29,9 @@
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@mui/material": "^5.0.0"
   },
   "peerDependencies": {
     "@backstage/core-components": "^0.15.1",
@@ -42,14 +48,33 @@
     "@backstage/dev-utils": "^1.1.2",
     "@backstage/test-utils": "^1.7.0",
     "@backstage/theme": "^0.6.0",
+    "@backstage/types": "^1.2.0",
     "@material-ui/icons": "^4.11.3",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
+    "@testing-library/react-hooks": "^8.0.1",
     "@testing-library/user-event": "^14.0.0",
     "msw": "^1.0.0",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
+  "configSchema": "config.d.ts",
   "files": [
-    "dist"
+    "config.d.ts",
+    "dist",
+    "fonts"
+  ],
+  "author": "Red Hat",
+  "homepage": "https://red.ht/rhdh",
+  "keywords": [
+    "backstage",
+    "rhdh",
+    "theme",
+    "redhat"
+  ],
+  "maintainers": [
+    "@christoph-jerolimov",
+    "@ciiay",
+    "@debsmita1",
+    "@divyanshiGupta"
   ]
 }

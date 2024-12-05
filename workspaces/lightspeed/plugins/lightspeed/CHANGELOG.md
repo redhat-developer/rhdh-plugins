@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.2.3
+
+### Patch Changes
+
+- 0cb862f: rename janus references in README.md
+
 ## 0.2.2
 
 ### Patch Changes

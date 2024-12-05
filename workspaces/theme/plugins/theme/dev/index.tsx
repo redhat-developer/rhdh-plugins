@@ -15,10 +15,10 @@
  */
 import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
-import { allThemes } from '../src';
+import { getAllThemes } from '../src';
 
 createDevApp()
-  .addThemes(allThemes)
+  .addThemes(getAllThemes())
   .addPage({
     element: <div />,
     title: 'Root Page',
