@@ -6,7 +6,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "private": true,
   "workspaces": {
     "nohoist": [
       "@kie-tools/**"
