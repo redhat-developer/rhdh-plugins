@@ -32,14 +32,15 @@ export const TabExamples = () => {
   return (
     <div>
       {colors.map(color => (
-        <div key={color} style={{ padding: '20px 0' }}>
+        <div key={color}>
+          <div style={{ padding: '20px 0' }}>color: {color ?? 'undefined'}</div>
           <Tabs
             value={selectedTab}
             indicatorColor="primary"
             textColor="primary"
             onChange={handleChange}
           >
-            <Tab label={`color: ${color}`} />
+            <Tab label="One" />
             <Tab label="Two" />
             <Tab label="Three" />
             <Tab label="Disabled" disabled />
@@ -47,6 +48,7 @@ export const TabExamples = () => {
         </div>
       ))}
 
+      <div style={{ padding: '20px 0' }}>Vertical test</div>
       <Tabs
         orientation="vertical"
         value={selectedTab}
@@ -55,7 +57,7 @@ export const TabExamples = () => {
         onChange={handleChange}
         aria-label="disabled tabs example"
       >
-        <Tab label="Vertical test" />
+        <Tab label="One" />
         <Tab label="Two" />
         <Tab label="Three" />
         <Tab label="Disabled" disabled />
