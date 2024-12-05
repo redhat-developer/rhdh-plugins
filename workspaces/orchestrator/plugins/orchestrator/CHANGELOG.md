@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 2.4.3
+
+### Patch Changes
+
+- f5bcd52: remove average duration from workflow table and overview page
+- 6a71932: added export-dynamic scripts
+- Updated dependencies [b6cf167]
+- Updated dependencies [1d4cfa1]
+- Updated dependencies [35bb667]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.24.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.4.5
+
 ## 2.4.2
 
 ### Patch Changes

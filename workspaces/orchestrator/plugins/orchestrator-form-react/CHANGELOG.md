@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.4.5
+
+### Patch Changes
+
+- 35bb667: Fix alignment of key-values on the Review step of the Run Workflow.
+
 ## 1.4.4
 
 ### Patch Changes

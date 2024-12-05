@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 5.0.1
+
+### Patch Changes
+
+- 9156260: Fixes the workflow editor
+- 1d4cfa1: update openapi flpath-1893
+- 6a71932: added export-dynamic scripts
+- Updated dependencies [b6cf167]
+- Updated dependencies [1d4cfa1]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.24.3
+
 ## 5.0.0
 
 ### Major Changes
