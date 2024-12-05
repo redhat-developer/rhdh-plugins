@@ -96,15 +96,22 @@ describe('customLightTheme', () => {
       },
       rhdh: {
         general: {
-          disabledBackground: '#D2D2D2',
           disabled: '#6A6E73',
-          formControlBackgroundColor: '#FFF',
-          mainSectionBackgroundColor: '#FFF',
-          headerBottomBorderColor: '#C7C7C7',
+          disabledBackground: '#D2D2D2',
+
+          paperBackgroundImage: 'none',
+          paperBorderColor: '#C7C7C7',
+
           cardBackgroundColor: '#FFF',
+          cardBorderColor: '#C7C7C7',
+
+          headerBottomBorderColor: '#C7C7C7',
+          mainSectionBackgroundColor: '#FFF',
+          formControlBackgroundColor: '#FFF',
+
           sidebarBackgroundColor: '#212427',
           sidebarItemSelectedBackgroundColor: '#4F5255',
-          cardBorderColor: '#C7C7C7',
+
           tableTitleColor: '#181818',
           tableSubtitleColor: '#616161',
           tableColumnTitleColor: '#151515',
@@ -112,6 +119,7 @@ describe('customLightTheme', () => {
           tableBorderColor: '#E0E0E0',
           tableBackgroundColor: '#FFF',
           tabsBottomBorderColor: '#D2D2D2',
+
           contrastText: '#FFF',
         },
         primary: {
