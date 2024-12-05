@@ -439,7 +439,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         root: {
           textTransform: 'none',
           minWidth: 'initial !important',
-          '&.Mui-disabled': {
+          '&:disabled': {
             backgroundColor: general.disabledBackground,
           },
         },
