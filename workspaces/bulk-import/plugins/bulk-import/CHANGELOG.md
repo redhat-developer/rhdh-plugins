@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.10.5
+
+### Patch Changes
+
+- ea3e1df: fix add repository pagination padding/position
+
 ## 1.10.4
 
 ### Patch Changes
