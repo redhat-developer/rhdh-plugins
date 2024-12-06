@@ -98,6 +98,9 @@ describe('customDarkTheme', () => {
           paperBackgroundImage: 'none',
           paperBorderColor: '#A3A3A3',
 
+          popoverBoxShadow:
+            '0 0.25rem 0.5rem 0rem rgba(3, 3, 3, 0.48), 0 0 0.25rem 0 rgba(3, 3, 3, 0.24)',
+
           cardBackgroundColor: '#1b1d21',
           cardBorderColor: '#A3A3A3',
 
