@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.4.3
+
+### Patch Changes
+
+- 1de5006: fix `sideEffect` typo to load Red Hat font
+
 ## 0.4.2
 
 ### Patch Changes
