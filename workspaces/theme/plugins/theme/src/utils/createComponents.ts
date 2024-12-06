@@ -102,6 +102,17 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         elevation0: noElevationStyle,
       },
     };
+    components.MuiPopover = {
+      styleOverrides: {
+        paper: {
+          // Box shadow from PatternFly 5 (--pf-v5-global--BoxShadow--sm)
+          boxShadow: general.popoverBoxShadow,
+          // `Popover` has no outline by default, but since we're adding it to the `Paper`
+          // components, this ensures that the `Popover` doesn't has a shadow and an outline.
+          outline: 0,
+        },
+      },
+    };
 
     // Required for MUI v4, not MUI v5
     const elevations = Array.from(

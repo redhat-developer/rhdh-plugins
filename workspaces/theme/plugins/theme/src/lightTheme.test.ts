@@ -102,6 +102,9 @@ describe('customLightTheme', () => {
           paperBackgroundImage: 'none',
           paperBorderColor: '#C7C7C7',
 
+          popoverBoxShadow:
+            '0 0.25rem 0.5rem 0rem rgba(3, 3, 3, 0.12), 0 0 0.25rem 0 rgba(3, 3, 3, 0.06)',
+
           cardBackgroundColor: '#FFF',
           cardBorderColor: '#C7C7C7',
 

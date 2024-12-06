@@ -25,6 +25,8 @@ export interface RHDHThemePalette {
     paperBackgroundImage: string;
     paperBorderColor: string;
 
+    popoverBoxShadow: string;
+
     cardBackgroundColor: string;
     cardBorderColor: string;
 

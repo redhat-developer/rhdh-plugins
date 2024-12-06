@@ -46,6 +46,7 @@ export interface RHDHThemePalette {
     disabledBackground: string;
     paperBackgroundImage: string;
     paperBorderColor: string;
+    popoverBoxShadow: string;
     cardBackgroundColor: string;
     cardBorderColor: string;
     headerBottomBorderColor: string;
