@@ -44,6 +44,9 @@
     "@spotify/prettier-config": "^15.0.0",
     "prettier": "3.3.3"
   },
+  "peerDependencies": {
+    "@backstage/plugin-permission-common": "^0.8.1"
+  },
   "files": [
     "dist"
   ],
