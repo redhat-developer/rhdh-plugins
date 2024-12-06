@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.4.2
+
+### Patch Changes
+
+- 93b7ee8: align disabled tabs background color more with patternfly (5 for now)
+- d92dc06: remove bottom border and vertical padding from vertical tabs
+
 ## 0.4.1
 
 ### Patch Changes
