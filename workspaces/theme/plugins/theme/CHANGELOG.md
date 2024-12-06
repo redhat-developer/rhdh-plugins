@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.4.5
+
+### Patch Changes
+
+- 15aa207: add workaround for `style-inject`(ion) issue with the published package
+
 ## 0.4.4
 
 ### Patch Changes
