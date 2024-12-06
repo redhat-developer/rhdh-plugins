@@ -423,6 +423,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           borderBottom: `1px solid ${general.tabsBottomBorderColor}`,
           padding: '0 1.5rem',
         },
+        vertical: {
+          borderBottom: `none`,
+          padding: 0,
+        },
         flexContainerVertical: {
           '& > button:hover': {
             boxShadow: `-3px 0 ${general.tabsBottomBorderColor} inset`,
