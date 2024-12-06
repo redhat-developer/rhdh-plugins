@@ -19,7 +19,7 @@
     "role": "web-library"
   },
   "sideEffects": [
-    "./fons/*.css"
+    "./fonts/*.css"
   ],
   "scripts": {
     "start": "backstage-cli package start",
