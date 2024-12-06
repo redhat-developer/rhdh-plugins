@@ -16,6 +16,8 @@
 import React from 'react';
 import Tabs, { TabsProps } from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
 
 export const TabExamples = () => {
   const colors: TabsProps['indicatorColor'][] = [
@@ -49,19 +51,30 @@ export const TabExamples = () => {
       ))}
 
       <div style={{ padding: '20px 0' }}>Vertical test</div>
-      <Tabs
-        orientation="vertical"
-        value={selectedTab}
-        indicatorColor="primary"
-        textColor="primary"
-        onChange={handleChange}
-        aria-label="disabled tabs example"
-      >
-        <Tab label="One" />
-        <Tab label="Two" />
-        <Tab label="Three" />
-        <Tab label="Disabled" disabled />
-      </Tabs>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+        <Box sx={{ p: 2 }}>
+          <Tabs
+            orientation="vertical"
+            value={selectedTab}
+            indicatorColor="primary"
+            textColor="primary"
+            onChange={handleChange}
+            aria-label="disabled tabs example"
+          >
+            <Tab label="One" />
+            <Tab label="Two" />
+            <Tab label="Extra long label Three" />
+            <Tab label="Disabled" disabled />
+          </Tabs>
+        </Box>
+        <Box
+          sx={{ height: 200, width: '100%', border: '1px solid #ccc', m: 2 }}
+        >
+          <Typography variant="h6" style={{ padding: '20px' }}>{`selectedTab: ${
+            selectedTab + 1
+          }`}</Typography>
+        </Box>
+      </Box>
     </div>
   );
 };

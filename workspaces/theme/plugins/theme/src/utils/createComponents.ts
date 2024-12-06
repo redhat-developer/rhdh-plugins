@@ -424,13 +424,25 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           padding: '0 1.5rem',
         },
         vertical: {
+          '& > div > div > button[class*="v5"]': {
+            alignItems: 'baseline',
+            textAlign: 'left',
+          },
+          '& > div > div > button > span': {
+            alignItems: 'baseline',
+            textAlign: 'left',
+          },
           borderBottom: `none`,
+          borderLeft: `1px solid ${general.tabsBottomBorderColor}`,
           padding: 0,
         },
         flexContainerVertical: {
           '& > button:hover': {
-            boxShadow: `-3px 0 ${general.tabsBottomBorderColor} inset`,
+            boxShadow: `2px 0 ${general.tabsBottomBorderColor} inset`,
           },
+        },
+        indicator: {
+          left: 0,
         },
       },
     };
@@ -444,6 +456,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           minWidth: 'initial !important',
           '&:disabled': {
             backgroundColor: general.tabsDisabledBackgroundColor,
+          },
+          '&:hover': {
+            boxShadow: `0 -2px ${general.tabsBottomBorderColor} inset`,
           },
         },
       },
