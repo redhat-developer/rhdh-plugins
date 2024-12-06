@@ -42,16 +42,18 @@ export interface RHDHThemePalette {
   };
   // (undocumented)
   general: {
-    disabledBackground: string;
     disabled: string;
-    formControlBackgroundColor: string;
-    mainSectionBackgroundColor: string;
-    headerBottomBorderColor: string;
+    disabledBackground: string;
+    paperBackgroundImage: string;
+    paperBorderColor: string;
     cardBackgroundColor: string;
+    cardBorderColor: string;
+    headerBottomBorderColor: string;
+    mainSectionBackgroundColor: string;
+    formControlBackgroundColor: string;
     sideBarBackgroundColor?: string;
     sidebarBackgroundColor: string;
     sidebarItemSelectedBackgroundColor: string;
-    cardBorderColor: string;
     tableTitleColor: string;
     tableSubtitleColor: string;
     tableColumnTitleColor: string;
