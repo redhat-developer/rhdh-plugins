@@ -90,6 +90,7 @@ const usePermittedToViewBatch = (
       orchestratorWorkflowSpecificPermission(workflowId),
     ),
   );
+
   return {
     allowed: items.map((_, idx) => generic.allowed || specific.allowed[idx]),
   };

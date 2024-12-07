@@ -50,7 +50,6 @@ import {
   orchestratorWorkflowSpecificPermission,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
-  ProcessInstanceListResultDTO,
   QUERY_PARAM_BUSINESS_KEY,
   QUERY_PARAM_INCLUDE_ASSESSMENT,
   WorkflowOverviewListResultDTO,
@@ -105,12 +104,12 @@ const authorize = async (
   );
 };
 
-const getAuthorizedWorkflowIds = async (
+const filterAuthorizedWorkflowIds = async (
   request: HttpRequest,
   permissionsSvc: PermissionsService,
   httpAuth: HttpAuthService,
   workflowIds: string[],
-): Promise<boolean[]> => {
+): Promise<string[]> => {
   const credentials = await httpAuth.credentials(request);
   const genericWorkflowPermissionDecision = await permissionsSvc.authorize(
     [{ permission: orchestratorWorkflowPermission }],
@@ -121,7 +120,7 @@ const getAuthorizedWorkflowIds = async (
 
   if (genericWorkflowPermissionDecision[0].result === AuthorizeResult.ALLOW) {
     // The user can see all workflows
-    return workflowIds.map(_ => true);
+    return workflowIds;
   }
 
   const specificWorkflowRequests: AuthorizePermissionRequest[] =
@@ -133,7 +132,9 @@ const getAuthorizedWorkflowIds = async (
     credentials,
   });
 
-  return decisions.map(d => d.result === AuthorizeResult.ALLOW);
+  return workflowIds.filter(
+    (_, idx) => decisions[idx].result === AuthorizeResult.ALLOW,
+  );
 };
 
 const filterAuthorizedWorkflows = async (
@@ -146,7 +147,7 @@ const filterAuthorizedWorkflows = async (
     return workflows;
   }
 
-  const authorizedWorkflowIds = await getAuthorizedWorkflowIds(
+  const authorizedWorkflowIds = await filterAuthorizedWorkflowIds(
     request,
     permissionsSvc,
     httpAuth,
@@ -155,34 +156,9 @@ const filterAuthorizedWorkflows = async (
 
   const filtered = {
     ...workflows,
-    overviews: workflows.overviews.filter(
-      (_, idx) => authorizedWorkflowIds[idx],
+    overviews: workflows.overviews.filter(w =>
+      authorizedWorkflowIds.includes(w.workflowId),
     ),
-  };
-
-  return filtered;
-};
-
-const filterAuthorizedInstances = async (
-  request: HttpRequest,
-  permissionsSvc: PermissionsService,
-  httpAuth: HttpAuthService,
-  instances: ProcessInstanceListResultDTO,
-): Promise<ProcessInstanceListResultDTO> => {
-  if (!instances.items) {
-    return instances;
-  }
-
-  const authorizedWorkflowIds = await getAuthorizedWorkflowIds(
-    request,
-    permissionsSvc,
-    httpAuth,
-    instances.items.map(instance => instance.processId),
-  );
-
-  const filtered = {
-    ...instances,
-    items: instances.items.filter((_, idx) => authorizedWorkflowIds[idx]),
   };
 
   return filtered;
@@ -418,7 +394,6 @@ function setupInternalRoutes(
       });
 
       try {
-        // TODO: use pagination only if the generic orchestratorWorkflowPermission is in place
         const result = await routerApi.v2.getWorkflowsOverview(
           buildPagination(req),
           getRequestFilters(req),
@@ -785,7 +760,9 @@ function setupInternalRoutes(
         manageDenyAuthorization(endpointName, endpoint, req);
       }
       return routerApi.v2
-        .getInstances(buildPagination(req), getRequestFilters(req), workflowId)
+        .getInstances(buildPagination(req), getRequestFilters(req), [
+          workflowId,
+        ])
         .then(result => res.json(result))
         .catch(error => {
           auditLogRequestError(error, endpointName, endpoint, req);
@@ -811,20 +788,23 @@ function setupInternalRoutes(
       });
 
       try {
-        // TODO FLPATH-1916: Get list of authorized workflowIds and pass it to orchestratorService.fetchInstances() so the DataIndex will do the pagination.
+        // Once we assign user to the instance in the future, we can rework this filtering
+        const allWorkflowIds = routerApi.v2.getWorkflowIds();
+        const authorizedWorkflowIds: string[] =
+          await filterAuthorizedWorkflowIds(
+            req,
+            permissions,
+            httpAuth,
+            allWorkflowIds,
+          );
+
         const result = await routerApi.v2.getInstances(
           buildPagination(req),
           getRequestFilters(req),
+          authorizedWorkflowIds,
         );
 
-        // following call will be removed by FLPATH-1916
-        const instances = await filterAuthorizedInstances(
-          req,
-          permissions,
-          httpAuth,
-          result,
-        );
-        res.json(instances);
+        res.json(result);
       } catch (error) {
         auditLogRequestError(error, endpointName, endpoint, req);
         next(error);
