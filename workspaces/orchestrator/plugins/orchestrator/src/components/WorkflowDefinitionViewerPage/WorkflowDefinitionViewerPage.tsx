@@ -23,14 +23,17 @@ import {
   useRouteRef,
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
-import { usePermission } from '@backstage/plugin-permission-react';
 
 import { Button, Grid, Tooltip } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 
-import { orchestratorWorkflowExecutePermission } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import {
+  orchestratorWorkflowUsePermission,
+  orchestratorWorkflowUseSpecificPermission,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
+import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import {
   executeWorkflowRouteRef,
   workflowDefinitionsRouteRef,
@@ -42,9 +45,12 @@ import WorkflowDefinitionDetailsCard from './WorkflowDefinitionDetailsCard';
 export const WorkflowDefinitionViewerPage = () => {
   const { workflowId, format } = useRouteRefParams(workflowDefinitionsRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
-  const { loading: loadingPermission, allowed: canRun } = usePermission({
-    permission: orchestratorWorkflowExecutePermission,
-  });
+
+  const { loading: loadingPermission, allowed: canRun } =
+    usePermissionArrayDecision([
+      orchestratorWorkflowUsePermission,
+      orchestratorWorkflowUseSpecificPermission(workflowId),
+    ]);
   const {
     value: workflowOverviewDTO,
     loading,

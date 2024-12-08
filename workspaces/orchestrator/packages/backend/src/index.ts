@@ -38,14 +38,6 @@ backend.add(
 // See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
-// permission plugin
-backend.add(import('@backstage/plugin-permission-backend/alpha'));
-
-// See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
-backend.add(
-  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
-);
-
 // search plugin
 backend.add(import('@backstage/plugin-search-backend/alpha'));
 
@@ -63,5 +55,8 @@ backend.add(
 
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
+
+// permission plugin
+backend.add(import('@backstage-community/plugin-rbac-backend'));
 
 backend.start();

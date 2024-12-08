@@ -70,6 +70,10 @@ export class V2 {
     return result;
   }
 
+  public getWorkflowIds(): string[] {
+    return this.orchestratorService.getWorkflowIds();
+  }
+
   public async getWorkflowOverviewById(
     workflowId: string,
   ): Promise<WorkflowOverviewDTO> {
@@ -105,15 +109,15 @@ export class V2 {
   public async getInstances(
     pagination?: Pagination,
     filter?: Filter,
-    workflowId?: string,
+    workflowIds?: string[],
   ): Promise<ProcessInstanceListResultDTO> {
     const instances = await this.orchestratorService.fetchInstances({
       pagination,
       filter,
-      workflowId,
+      workflowIds,
     });
     const totalCount = await this.orchestratorService.fetchInstancesTotalCount(
-      workflowId,
+      workflowIds,
       filter,
     );
 
