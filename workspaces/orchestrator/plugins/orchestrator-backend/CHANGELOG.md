@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 5.1.0
+
+### Minor Changes
+
+- 5ab913b: Access can now be managed on a per-workflow basis.
+
+### Patch Changes
+
+- Updated dependencies [5ab913b]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.25.0
+
 ## 5.0.1
 
 ### Patch Changes
