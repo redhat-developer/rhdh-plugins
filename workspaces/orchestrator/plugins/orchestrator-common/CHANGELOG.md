@@ -1,5 +1,15 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 1.25.0
+
+### Minor Changes
+
+- 5ab913b: Access can now be managed on a per-workflow basis.
+
+### Patch Changes
+
+- 5b90f96: resolve dependency issues
+
 ## 1.24.3
 
 ### Patch Changes
