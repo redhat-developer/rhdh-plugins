@@ -11955,7 +11955,6 @@ __metadata:
     express-promise-router: ^4.1.1
     fs-extra: ^10.1.0
     isomorphic-git: ^1.23.0
-    json-schema: ^0.4.0
     moment: ^2.29.4
     openapi-backend: ^5.10.5
     prettier: 3.3.3
@@ -11972,20 +11971,13 @@ __metadata:
   dependencies:
     "@backstage/cli": 0.28.2
     "@backstage/plugin-permission-common": ^0.8.1
-    "@backstage/types": 1.1.1
+    "@backstage/types": ^1.1.1
     "@openapitools/openapi-generator-cli": 2.13.4
-    "@severlessworkflow/sdk-typescript": 3.0.3
+    "@severlessworkflow/sdk-typescript": ^3.0.3
+    "@types/json-schema": 7.0.15
     axios: ^1.7.4
     js-yaml: ^4.1.0
     js-yaml-cli: 0.6.0
-    json-schema: 0.4.0
-    prettier: 3.3.3
-  peerDependencies:
-    "@backstage/plugin-permission-common": ^0.8.1
-    "@backstage/types": ^1.1.1
-    "@severlessworkflow/sdk-typescript": ^3.0.3
-    axios: ^1.7.4
-    js-yaml: ^4.1.0
   languageName: unknown
   linkType: soft
 
@@ -12599,7 +12591,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@severlessworkflow/sdk-typescript@npm:3.0.3, @severlessworkflow/sdk-typescript@npm:^3.0.3":
+"@severlessworkflow/sdk-typescript@npm:^3.0.3":
   version: 3.0.3
   resolution: "@severlessworkflow/sdk-typescript@npm:3.0.3"
   dependencies:
