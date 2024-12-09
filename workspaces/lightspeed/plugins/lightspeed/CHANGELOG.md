@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.2.4
+
+### Patch Changes
+
+- Updated dependencies [5f6faba]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.1.2
+
 ## 0.2.3
 
 ### Patch Changes
