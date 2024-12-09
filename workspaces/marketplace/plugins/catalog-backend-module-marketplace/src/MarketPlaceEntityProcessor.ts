@@ -32,16 +32,86 @@ const pluginJsonSchema = {
   $id: 'ComponentV1alpha1',
   description:
     'A Component describes a software component. It is typically intimately linked to the source code that constitutes the component, and should be what a developer may regard a "unit of software", usually with a distinct deployable or linkable artifact.',
+  allOf: [
+    {
+      properties: {
+        apiVersion: {
+          type: 'string',
+          enum: ['community.backstage.io/v1alpha1'],
+        },
+        kind: {
+          type: 'string',
+          enum: ['Marketplace'],
+        },
+        metadata: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+            },
+            title: {
+              type: 'string',
+            },
+            description: {
+              type: 'string',
+            },
+            tags: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+            },
+            labels: {
+              type: 'object',
+              properties: {
+                product_name: {
+                  type: 'string',
+                },
+              },
+              required: ['product_name'],
+            },
+            annotations: {
+              type: 'object',
+              properties: {
+                docs: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+          required: ['name', 'title', 'description'],
+        },
+        spec: {
+          type: 'object',
+          properties: {
+            type: {
+              type: 'string',
+            },
+            lifecycle: {
+              type: 'string',
+              enum: ['production'],
+            },
+            owner: {
+              type: 'string',
+            },
+          },
+          required: ['type', 'lifecycle', 'owner'],
+        },
+      },
+      required: ['apiVersion', 'kind', 'metadata', 'spec'],
+    },
+  ],
   examples: [
     {
       apiVersion: {
-        enum: ['backstage.io/v1alpha1'],
+        enum: ['community.backstage.io/v1alpha1'],
       },
       kind: {
-        enum: ['Plugin'],
+        enum: ['Marketplace'],
       },
       metadata: {
-        name: 'TestPlugin',
+        name: 'testplugin',
+        title: 'Test Plugin',
         description: 'Creates Lorems like a pro.',
         labels: {
           product_name: 'test-product',
@@ -51,7 +121,7 @@ const pluginJsonSchema = {
         },
       },
       spec: {
-        type: 'service',
+        type: 'frontend-plugin',
         lifecycle: 'production',
         owner: 'redhat',
       },
@@ -66,6 +136,9 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
     return 'MarketplacePluginProcessor';
   }
 
+  // validateEntityKind is responsible for signaling to the catalog processing
+  // engine that this entity is valid and should therefore be submitted for
+  // further processing.
   async validateEntityKind(entity: Entity): Promise<boolean> {
     for (const validator of this.validators) {
       if (validator(entity)) {
@@ -81,13 +154,9 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
     _location: LocationSpec,
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
-    if (!this.validateEntityKind(entity)) {
-      return entity;
-    }
-
     if (
-      entity.apiVersion === 'backstage.io/v1alpha1' &&
-      entity.kind === 'Plugin'
+      entity.apiVersion === 'community.backstage.io/v1alpha1' &&
+      entity.kind === 'Marketplace'
     ) {
       const thisEntityRef = getCompoundEntityRef(entity);
       const target = entity?.spec?.owner || 'redhat';

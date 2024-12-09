@@ -32,13 +32,9 @@ export interface MarketplacePluginMetadata {
   // primary display name
   title: string;
 
-  abstract?: string;
-
-  categories?: string[];
-  developer?: string;
+  description?: string;
 
   // TODO: support for light/dark icon
-  icon?: string;
 
   labels?: Record<string, string>;
   annotations?: Record<string, string>;
@@ -60,6 +56,9 @@ export interface MarketplacePluginLink {
  * @public
  */
 export interface MarketplacePluginSpec {
+  icon?: string;
+  categories?: string[];
+  developer?: string;
   highlights?: string[];
   description?: string;
   installation?: {

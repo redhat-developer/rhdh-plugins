@@ -19,7 +19,6 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
 import { MarketplacePluginProcessor } from './MarketPlaceEntityProcessor';
-import { MarketplacePluginProvider } from './MarketPlacePluginsProvider';
 
 /**
  * @public
@@ -32,21 +31,9 @@ export const catalogModuleMarketplace = createBackendModule({
       deps: {
         logger: coreServices.logger,
         catalog: catalogProcessingExtensionPoint,
-        scheduler: coreServices.scheduler,
       },
-      async init({ logger, catalog, scheduler }) {
+      async init({ logger, catalog }) {
         logger.info('Marketplace provider initialized!');
-
-        const taskRunner = scheduler.createScheduledTaskRunner({
-          frequency: { minutes: 2 },
-          timeout: { minutes: 1 },
-        });
-        const marketplaceProvider = new MarketplacePluginProvider(
-          'dev',
-          taskRunner,
-          logger,
-        );
-        catalog.addEntityProvider(marketplaceProvider);
         catalog.addProcessor(new MarketplacePluginProcessor());
       },
     });
