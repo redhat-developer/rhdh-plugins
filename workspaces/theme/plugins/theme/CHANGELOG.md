@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.4.7
+
+### Patch Changes
+
+- 5ff9b79: add missing shadow to action menus/dropdowns that uses the Popover component
+
 ## 0.4.6
 
 ### Patch Changes
