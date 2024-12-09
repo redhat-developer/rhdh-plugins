@@ -29,19 +29,19 @@ import {
 
 const pluginJsonSchema = {
   $schema: 'http://json-schema.org/draft-07/schema',
-  $id: 'ComponentV1alpha1',
+  $id: 'PluginV1alpha1',
   description:
-    'A Component describes a software component. It is typically intimately linked to the source code that constitutes the component, and should be what a developer may regard a "unit of software", usually with a distinct deployable or linkable artifact.',
+    'A Plugin describes a software component. It is typically intimately linked to the source code that constitutes the component, and should be what a developer may regard a "unit of software", usually with a distinct deployable or linkable artifact.',
   allOf: [
     {
       properties: {
         apiVersion: {
           type: 'string',
-          enum: ['community.backstage.io/v1alpha1'],
+          enum: ['marketplace.backstage.io/v1alpha1'],
         },
         kind: {
           type: 'string',
-          enum: ['Marketplace'],
+          enum: ['Plugin'],
         },
         metadata: {
           type: 'object',
@@ -63,20 +63,9 @@ const pluginJsonSchema = {
             },
             labels: {
               type: 'object',
-              properties: {
-                product_name: {
-                  type: 'string',
-                },
-              },
-              required: ['product_name'],
             },
             annotations: {
               type: 'object',
-              properties: {
-                docs: {
-                  type: 'string',
-                },
-              },
             },
           },
           required: ['name', 'title', 'description'],
@@ -89,7 +78,6 @@ const pluginJsonSchema = {
             },
             lifecycle: {
               type: 'string',
-              enum: ['production'],
             },
             owner: {
               type: 'string',
@@ -104,10 +92,10 @@ const pluginJsonSchema = {
   examples: [
     {
       apiVersion: {
-        enum: ['community.backstage.io/v1alpha1'],
+        enum: ['marketplace.backstage.io/v1alpha1'],
       },
       kind: {
-        enum: ['Marketplace'],
+        enum: ['Plugin'],
       },
       metadata: {
         name: 'testplugin',
@@ -155,24 +143,26 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
     if (
-      entity.apiVersion === 'community.backstage.io/v1alpha1' &&
-      entity.kind === 'Marketplace'
+      entity.apiVersion === 'marketplace.backstage.io/v1alpha1' &&
+      entity.kind === 'Plugin'
     ) {
       const thisEntityRef = getCompoundEntityRef(entity);
-      const target = entity?.spec?.owner || 'redhat';
-      const targetRef = parseEntityRef(target as string, {
-        defaultKind: 'Group',
-        defaultNamespace: thisEntityRef.namespace,
-      });
+      const target = entity?.spec?.owner;
+      if (target) {
+        const targetRef = parseEntityRef(target as string, {
+          defaultKind: 'Group',
+          defaultNamespace: thisEntityRef.namespace,
+        });
 
-      // emit any relations associated with the entity here.
-      emit(
-        processingResult.relation({
-          type: RELATION_OWNED_BY,
-          target: targetRef,
-          source: thisEntityRef,
-        }),
-      );
+        // emit any relations associated with the entity here.
+        emit(
+          processingResult.relation({
+            type: RELATION_OWNED_BY,
+            target: targetRef,
+            source: thisEntityRef,
+          }),
+        );
+      }
     }
 
     return entity;

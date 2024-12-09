@@ -1,5 +1,5 @@
-apiVersion: community.backstage.io/v1alpha1
-kind: Marketplace
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
 metadata:
   name: tekton
   title: Pipelines with Tekton

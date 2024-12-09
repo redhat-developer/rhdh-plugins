@@ -26,15 +26,9 @@ export interface MarketplacePluginLink {
 // @public (undocumented)
 export interface MarketplacePluginMetadata {
   // (undocumented)
-  abstract?: string;
-  // (undocumented)
   annotations?: Record<string, string>;
   // (undocumented)
-  categories?: string[];
-  // (undocumented)
-  developer?: string;
-  // (undocumented)
-  icon?: string;
+  description?: string;
   // (undocumented)
   labels?: Record<string, string>;
   // (undocumented)
@@ -50,9 +44,15 @@ export interface MarketplacePluginMetadata {
 // @public (undocumented)
 export interface MarketplacePluginSpec {
   // (undocumented)
+  categories?: string[];
+  // (undocumented)
   description?: string;
   // (undocumented)
+  developer?: string;
+  // (undocumented)
   highlights?: string[];
+  // (undocumented)
+  icon?: string;
   // (undocumented)
   installation?: {
     markdown?: string;

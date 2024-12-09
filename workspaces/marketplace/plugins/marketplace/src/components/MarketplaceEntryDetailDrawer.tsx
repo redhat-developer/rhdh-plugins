@@ -38,9 +38,9 @@ import { usePlugins } from '../hooks/usePlugins';
 import { rootRouteRef } from '../routes';
 
 const Icon = ({ entry }: { entry: MarketplacePluginEntry }) =>
-  entry.metadata.icon ? (
+  entry.spec?.icon ? (
     <CardMedia
-      image={entry.metadata.icon}
+      image={entry.spec.icon}
       sx={{ width: 80, height: 80, flexShrink: 0 }}
     />
   ) : null;
@@ -108,18 +108,18 @@ const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
           <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
             {entry.metadata.title}
           </Typography>
-          {entry.metadata.developer ? (
+          {entry.spec?.developer ? (
             <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
               {' by '}
               <Link
-                to={withSearchParameter('developer', entry.metadata.developer)}
+                to={withSearchParameter('developer', entry.spec.developer)}
                 color="primary"
               >
-                {entry.metadata.developer}
+                {entry.spec.developer}
               </Link>
             </Typography>
           ) : null}
-          {entry.metadata.categories?.map(category => (
+          {entry.spec?.categories?.map(category => (
             <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
               <LinkButton
                 to={withSearchParameter('category', category)}
@@ -159,9 +159,9 @@ const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
             About
           </Typography>
-          {entry.metadata.abstract ? (
+          {entry.metadata.description ? (
             <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-              {entry.metadata.abstract}
+              {entry.metadata.description}
             </Typography>
           ) : null}
         </Grid>
