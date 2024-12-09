@@ -6,3 +6,6 @@ metadata:
     - API Discovery
   developer: Red Hat
   icon: https://janus-idp.io/images/plugins/3scale.svg
+  tags:
+    - 3scale
+    - api

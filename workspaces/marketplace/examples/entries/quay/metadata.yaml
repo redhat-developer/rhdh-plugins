@@ -1,0 +1,14 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: quay
+  title: Container Image Registry for Quay
+  description: View container image details from Quay in Backstage.
+spec:
+  type: frontend-plugin
+  lifecycle: production
+  owner: redhat
+  categories:
+    - Kubernetes
+  developer: Red Hat
+  icon: https://janus-idp.io/images/plugins/quay.svg

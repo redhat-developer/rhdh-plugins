@@ -1,0 +1,18 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: 3scale
+  title: APIs with 3scale
+  description: Synchronize 3scale content into the Backstage catalog.
+  tags:
+    - 3scale
+    - api
+spec:
+  categories:
+    - API Discovery
+  developer: Red Hat
+  icon: https://janus-idp.io/images/plugins/3scale.svg
+
+  type: frontend-plugin
+  lifecycle: production
+  owner: redhat

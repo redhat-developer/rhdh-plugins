@@ -4,6 +4,17 @@
 
 ```ts
 // @public (undocumented)
+export const MARKETPLACE_API_VERSION = 'marketplace.backstage.io/v1alpha1';
+
+// @public (undocumented)
+export enum MarketplaceKinds {
+  // (undocumented)
+  plugin = 'Plugin',
+  // (undocumented)
+  pluginList = 'PluginList',
+}
+
+// @public (undocumented)
 export interface MarketplacePluginEntry {
   // (undocumented)
   metadata: MarketplacePluginMetadata;
@@ -24,17 +35,21 @@ export interface MarketplacePluginLink {
 }
 
 // @public (undocumented)
-export interface MarketplacePluginMetadata {
+export interface MarketplacePluginList {
   // (undocumented)
-  abstract?: string;
+  metadata: MarketplacePluginMetadata;
+  // (undocumented)
+  spec?: {
+    plugins: string[];
+  } & MarketplacePluginSpec;
+}
+
+// @public (undocumented)
+export interface MarketplacePluginMetadata {
   // (undocumented)
   annotations?: Record<string, string>;
   // (undocumented)
-  categories?: string[];
-  // (undocumented)
-  developer?: string;
-  // (undocumented)
-  icon?: string;
+  description?: string;
   // (undocumented)
   labels?: Record<string, string>;
   // (undocumented)
@@ -50,9 +65,15 @@ export interface MarketplacePluginMetadata {
 // @public (undocumented)
 export interface MarketplacePluginSpec {
   // (undocumented)
+  categories?: string[];
+  // (undocumented)
   description?: string;
   // (undocumented)
+  developer?: string;
+  // (undocumented)
   highlights?: string[];
+  // (undocumented)
+  icon?: string;
   // (undocumented)
   installation?: {
     markdown?: string;

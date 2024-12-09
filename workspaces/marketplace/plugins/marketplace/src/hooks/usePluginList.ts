@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  MarketplacePluginEntry,
-  MarketplacePluginList,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { useApi } from '@backstage/core-plugin-api';
 
-/**
- * @public
- */
-export interface MarketplaceApi {
-  getPluginList(): Promise<MarketplacePluginList[]>;
-  getPlugins(): Promise<MarketplacePluginEntry[]>;
-}
+import { useQuery } from '@tanstack/react-query';
+
+import { marketplaceApiRef } from '../api';
+
+export const usePluginList = () => {
+  const marketplaceApi = useApi(marketplaceApiRef);
+
+  return useQuery({
+    queryKey: ['pluginList'],
+    queryFn: () => marketplaceApi.getPluginList(),
+  });
+};

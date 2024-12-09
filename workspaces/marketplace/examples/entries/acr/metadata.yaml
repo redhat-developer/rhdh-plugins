@@ -1,0 +1,14 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: acr
+  title: Container Image Registry for ACR
+  description: View container image details from Azure Container Registry in Backstage.
+spec:
+  type: frontend-plugin
+  lifecycle: production
+  owner: redhat
+  categories:
+    - Kubernetes
+  developer: Red Hat
+  icon: https://janus-idp.io/images/plugins/oci-acr.svg

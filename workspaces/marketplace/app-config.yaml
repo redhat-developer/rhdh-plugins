@@ -82,6 +82,11 @@ catalog:
     - type: file
       target: ../../examples/entities.yaml
 
+    - type: file
+      target: ../../examples/entries/all.yaml
+      rules:
+        - allow: [Plugin, PluginList, Group]
+
     # Local example template
     - type: file
       target: ../../examples/template/template.yaml

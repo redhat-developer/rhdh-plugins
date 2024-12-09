@@ -64,4 +64,9 @@ backend.add(
   import('@red-hat-developer-hub/backstage-plugin-marketplace-backend'),
 );
 
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace'
+  ),
+);
 backend.start();

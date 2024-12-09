@@ -1,0 +1,14 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: topology
+  title: Application Topology for Kubernetes
+  description: Visualize the deployment status and related resources of your applications deployed on any Kubernetes cluster.
+spec:
+  type: frontend-plugin
+  lifecycle: production
+  owner: redhat
+  categories:
+    - Kubernetes
+  developer: Red Hat
+  icon: https://janus-idp.io/images/plugins/topology.svg

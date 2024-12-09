@@ -37,9 +37,9 @@ import { usePlugins } from '../hooks/usePlugins';
 import { detailsRouteRef, rootRouteRef } from '../routes';
 
 const Icon = ({ entry }: { entry: MarketplacePluginEntry }) =>
-  entry.metadata.icon ? (
+  entry.spec?.icon ? (
     <CardMedia
-      image={entry.metadata.icon}
+      image={entry.spec.icon}
       sx={{ width: 80, height: 80, flexShrink: 0 }}
     />
   ) : null;
@@ -111,26 +111,22 @@ const Entry = ({ entry }: { entry: MarketplacePluginEntry }) => {
               <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
                 {entry.metadata.title}
               </Typography>
-              {entry.metadata.developer ? (
+              {entry.spec?.developer ? (
                 <Typography
                   variant="subtitle2"
                   style={{ fontWeight: 'normal' }}
                 >
                   {' by '}
                   <Link
-                    to={withSearchParameter(
-                      'developer',
-                      entry.metadata.developer,
-                    )}
+                    to={withSearchParameter('developer', entry.spec.developer)}
                     color="primary"
                     onClick={e => e.stopPropagation()}
                   >
-                    {entry.metadata.developer}
+                    {entry.spec.developer}
                   </Link>
                 </Typography>
               ) : null}
-              {entry.metadata.categories &&
-              entry.metadata.categories.length > 0 ? (
+              {entry.spec?.categories && entry.spec.categories.length > 0 ? (
                 <Typography
                   variant="subtitle2"
                   style={{ fontWeight: 'normal' }}
@@ -138,22 +134,22 @@ const Entry = ({ entry }: { entry: MarketplacePluginEntry }) => {
                   <LinkButton
                     to={withSearchParameter(
                       'category',
-                      entry.metadata.categories[0],
+                      entry.spec.categories[0],
                     )}
                     variant="outlined"
                     style={{ fontWeight: 'normal', padding: '2px 6px' }}
                     onClick={e => e.stopPropagation()}
                   >
-                    {entry.metadata.categories[0]}
+                    {entry.spec.categories[0]}
                   </LinkButton>
                 </Typography>
               ) : null}
             </Stack>
           </Stack>
 
-          {entry.metadata.abstract ? (
+          {entry.metadata.description ? (
             <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-              {entry.metadata.abstract}
+              {entry.metadata.description}
             </Typography>
           ) : null}
         </Stack>
