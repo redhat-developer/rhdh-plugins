@@ -3106,15 +3106,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/catalog-model@npm:^1.7.0":
-  version: 1.7.0
-  resolution: "@backstage/catalog-model@npm:1.7.0"
+"@backstage/catalog-model@npm:^1.7.0, @backstage/catalog-model@npm:^1.7.1":
+  version: 1.7.1
+  resolution: "@backstage/catalog-model@npm:1.7.1"
   dependencies:
-    "@backstage/errors": ^1.2.4
-    "@backstage/types": ^1.1.1
+    "@backstage/errors": ^1.2.5
+    "@backstage/types": ^1.2.0
     ajv: ^8.10.0
     lodash: ^4.17.21
-  checksum: 6ff537e9e6064d35fa4a173a1c96f94e904489494a67a136e2dd0a743f9e3f4fd8a1f7a661fe8495dfbb642aabcc8fbf1746a300ad496b6e4a5d02f4db00f914
+  checksum: 05e2b386aac897f8ac87c1e479101f8da90d96c517c837b99796a4118cce63932ffbb29fbb1f8ec156258370ff5bab65555bbe2fd7091be438f8c554f0a5bdff
   languageName: node
   linkType: hard
 
@@ -3490,13 +3490,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/errors@npm:^1.2.4":
-  version: 1.2.4
-  resolution: "@backstage/errors@npm:1.2.4"
+"@backstage/errors@npm:^1.2.4, @backstage/errors@npm:^1.2.5":
+  version: 1.2.5
+  resolution: "@backstage/errors@npm:1.2.5"
   dependencies:
-    "@backstage/types": ^1.1.1
+    "@backstage/types": ^1.2.0
     serialize-error: ^8.0.1
-  checksum: ed988b2d3594a2fe989dd45fe197154e522194e30602552224e4a2bf6ed895c671e7f832d5c01b8e24881484698ccf3abaf2930dba5374bccfdaa283f4850fb9
+  checksum: 8b4411cca1a9038b136ffa766d3ec284d0dac730ef27b1f565dc7f471249ce87a3d6599fe5c21c7643363ee13f0b0457d5c4fa29d20da64ca3a09fecec3ccd31
   languageName: node
   linkType: hard
 
@@ -5536,10 +5536,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/types@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@backstage/types@npm:1.1.1"
-  checksum: 54bd9e53570cf2a7a8d9ae30e7181ee6b669b7f543949391a2168f616e1f7b13f0419f324941a87aa15f723d0313eda8f212db2077675421d6f91484f477c4f5
+"@backstage/types@npm:^1.1.1, @backstage/types@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@backstage/types@npm:1.2.0"
+  checksum: a8b22a95b7c64bde31927e18f6892bb0be949bd1a7bc5d9ef1e4d9df984ff80144148a6019a69d1084f6214fcb9536fdd7d8f2fb3708ef373ff2e1bac28442b0
   languageName: node
   linkType: hard
 
@@ -10023,6 +10023,23 @@ __metadata:
   checksum: 842dd51a2c875814c7468632315d756e79fcdff2882d7224e8e06c630f95ab788b6a59c29c0318cb049a18be97537803be8e3dbae12de34b2ae1290ababe266a
   languageName: node
   linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@workspace:plugins/catalog-backend-module-marketplace":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@workspace:plugins/catalog-backend-module-marketplace"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.0.1
+    "@backstage/backend-test-utils": ^1.0.2
+    "@backstage/catalog-model": ^1.7.1
+    "@backstage/cli": ^0.28.0
+    "@backstage/plugin-catalog-common": ^1.1.0
+    "@backstage/plugin-catalog-node": ^1.13.1
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
+    express: ^4.17.1
+    glob: ^10.4.5
+    yaml: ^2.6.0
+  languageName: unknown
+  linkType: soft
 
 "@red-hat-developer-hub/backstage-plugin-marketplace-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-marketplace-backend@workspace:plugins/marketplace-backend":
   version: 0.0.0-use.local
@@ -15086,6 +15103,7 @@ __metadata:
     "@backstage/plugin-search-backend-module-techdocs": ^0.3.0
     "@backstage/plugin-search-backend-node": ^1.3.3
     "@backstage/plugin-techdocs-backend": ^1.11.0
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-marketplace-backend": "workspace:^"
     app: "link:../app"
     better-sqlite3: ^9.0.0

@@ -44,6 +44,7 @@
     "@backstage/plugin-search-backend-module-techdocs": "^0.3.0",
     "@backstage/plugin-search-backend-node": "^1.3.3",
     "@backstage/plugin-techdocs-backend": "^1.11.0",
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-marketplace-backend": "workspace:^",
     "app": "link:../app",
     "better-sqlite3": "^9.0.0",

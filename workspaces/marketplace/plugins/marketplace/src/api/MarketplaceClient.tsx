@@ -34,8 +34,8 @@ export class MarketplaceClient implements MarketplaceApi {
   }
 
   async getPlugins(): Promise<MarketplacePluginEntry[]> {
-    const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
-    const url = `${baseUrl}/plugins`;
+    const baseUrl = await this.discoveryApi.getBaseUrl('catalog');
+    const url = `${baseUrl}/entities?filter=kind=plugin`;
 
     const response = await this.fetchApi.fetch(url);
     if (!response.ok) {
