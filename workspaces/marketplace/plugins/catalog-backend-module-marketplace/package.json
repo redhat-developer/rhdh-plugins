@@ -12,8 +12,22 @@
     "types": "dist/index.d.ts"
   },
   "backstage": {
-    "role": "backend-plugin-module"
+    "role": "backend-plugin-module",
+    "pluginId": "marketplace",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-marketplace",
+      "@red-hat-developer-hub/backstage-plugin-marketplace-backend",
+      "@red-hat-developer-hub/backstage-plugin-marketplace-common",
+      "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace"
+    ],
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-marketplace-backend"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/marketplace/plugins/catalog-backend-module-marketplace"
+  },
+  "sideEffects": false,
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
