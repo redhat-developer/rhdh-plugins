@@ -175,6 +175,13 @@ yarn dev
 
 The `orchestrator` plugin includes an extensible form for executing forms. For detailed guidance see the [Extensible Workflow Execution Form Documentation](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator/docs/extensibleForm.md).
 
+### Setting up permissions
+
+The HTTP endpoints exposed by the `orchestrator-backend` can enforce authorization if the [RBAC plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins) is deployed.
+Please refer the RBAC plugin documentation for the setup steps (mind they rely on the [Backstage authentication and identity](https://backstage.io/docs/auth)).
+
+More detailed info about permissions can be found in [docs/Permissions.md](docs/Permissions.md).
+
 ## For users
 
 ### Using the Orchestrator plugin in Backstage

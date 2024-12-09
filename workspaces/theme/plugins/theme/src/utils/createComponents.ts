@@ -73,43 +73,44 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
 
   // MUI container
   if (options.paper !== 'mui') {
+    const elevationStyle = {
+      boxShadow: 'none',
+      outline: `1px solid ${general.paperBorderColor}`,
+      '& > hr[class|="MuiDivider-root"]': {
+        backgroundColor: general.paperBorderColor,
+      },
+    };
+    const noElevationStyle = {
+      boxShadow: 'none',
+      outline: 'none',
+    };
+
     components.MuiPaper = {
       styleOverrides: {
         root: {
+          // This works for all MUI v5 components, but in MUI v4
           boxShadow: 'none',
-          backgroundColor: general.cardBackgroundColor,
+          outline: `1px solid ${general.paperBorderColor}`,
+          // Required only for MUI v5 components because a gradient `backgroundImage`
+          // overrides the default background.paper color otherwise.
+          backgroundImage: general.paperBackgroundImage,
           // hide the first child element which is a divider with MuiDivider-root classname in MuiPaper
           '& > hr:first-child[class|="MuiDivider-root"]': {
             height: 0,
           },
         },
-        elevation0: {
-          '& div[class*="Mui-disabled"]': {
-            backgroundColor: 'unset',
-          },
-          '& span[class*="Mui-disabled"]': {
-            backgroundColor: 'unset',
-          },
-          '& input[class*="Mui-disabled"]': {
-            backgroundColor: 'unset',
-          },
-        },
-        elevation1: {
-          boxShadow: 'none',
-          borderRadius: '0',
-          outline: `1px solid ${general.cardBorderColor}`,
-          '& > hr[class|="MuiDivider-root"]': {
-            backgroundColor: general.cardBorderColor,
-          },
-        },
-        elevation2: {
-          backgroundColor: general.tableBackgroundColor,
-          boxShadow: 'none',
-          outline: `1px solid ${general.cardBorderColor}`,
-          padding: '1rem',
-        },
+        elevation0: noElevationStyle,
       },
     };
+
+    // Required for MUI v4, not MUI v5
+    const elevations = Array.from(
+      { length: 24 },
+      (_, i) => `elevation${i + 1}`,
+    ) as 'elevation1'[];
+    elevations.forEach(elevation => {
+      components.MuiPaper!.styleOverrides![elevation] = elevationStyle;
+    });
   }
 
   // MUI buttons
@@ -424,13 +425,25 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           padding: '0 1.5rem',
         },
         vertical: {
+          '& > div > div > button[class*="v5"]': {
+            alignItems: 'baseline',
+            textAlign: 'left',
+          },
+          '& > div > div > button > span': {
+            alignItems: 'baseline',
+            textAlign: 'left',
+          },
           borderBottom: `none`,
+          borderLeft: `1px solid ${general.tabsBottomBorderColor}`,
           padding: 0,
         },
         flexContainerVertical: {
           '& > button:hover': {
-            boxShadow: `-3px 0 ${general.tabsBottomBorderColor} inset`,
+            boxShadow: `2px 0 ${general.tabsBottomBorderColor} inset`,
           },
+        },
+        indicator: {
+          left: 0,
         },
       },
     };
@@ -444,6 +457,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           minWidth: 'initial !important',
           '&:disabled': {
             backgroundColor: general.tabsDisabledBackgroundColor,
+          },
+          '&:hover': {
+            boxShadow: `0 -2px ${general.tabsBottomBorderColor} inset`,
           },
         },
       },

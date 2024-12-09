@@ -209,22 +209,6 @@ export class SonataFlowService {
     return response.ok;
   }
 
-  public async updateInstanceInputData(args: {
-    definitionId: string;
-    serviceUrl: string;
-    instanceId: string;
-    inputData: ProcessInstanceVariables;
-  }): Promise<boolean> {
-    const { definitionId, serviceUrl, instanceId, inputData } = args;
-    const urlToFetch = `${serviceUrl}/${definitionId}/${instanceId}`;
-    const response = await fetch(urlToFetch, {
-      method: 'PATCH',
-      body: JSON.stringify(inputData),
-      headers: { 'content-type': 'application/json' },
-    });
-    return response.ok;
-  }
-
   public async createPrefixFetchErrorMessage(
     urlToFetch: string,
     response: Response,

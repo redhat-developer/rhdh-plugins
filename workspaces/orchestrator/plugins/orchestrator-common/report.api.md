@@ -758,30 +758,25 @@ export const openApiDocument: any;
 // @public (undocumented)
 export const orchestratorPermissions: BasicPermission[];
 
-// Warning: (ae-missing-release-tag) "orchestratorWorkflowExecutePermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// Warning: (ae-missing-release-tag) "orchestratorWorkflowPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export const orchestratorWorkflowExecutePermission: BasicPermission;
+export const orchestratorWorkflowPermission: BasicPermission;
 
-// Warning: (ae-missing-release-tag) "orchestratorWorkflowInstanceAbortPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// Warning: (ae-missing-release-tag) "orchestratorWorkflowSpecificPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export const orchestratorWorkflowInstanceAbortPermission: BasicPermission;
+export const orchestratorWorkflowSpecificPermission: (workflowId: string) => BasicPermission;
 
-// Warning: (ae-missing-release-tag) "orchestratorWorkflowInstanceReadPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// Warning: (ae-missing-release-tag) "orchestratorWorkflowUsePermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export const orchestratorWorkflowInstanceReadPermission: BasicPermission;
+export const orchestratorWorkflowUsePermission: BasicPermission;
 
-// Warning: (ae-missing-release-tag) "orchestratorWorkflowInstancesReadPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// Warning: (ae-missing-release-tag) "orchestratorWorkflowUseSpecificPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export const orchestratorWorkflowInstancesReadPermission: BasicPermission;
-
-// Warning: (ae-missing-release-tag) "orchestratorWorkflowReadPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
-export const orchestratorWorkflowReadPermission: BasicPermission;
+export const orchestratorWorkflowUseSpecificPermission: (workflowId: string) => BasicPermission;
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
@@ -2053,12 +2048,11 @@ export interface WorkflowRunStatusDTO {
 // src/models.d.ts:100:5 - (ae-undocumented) Missing documentation for "String".
 // src/models.d.ts:101:5 - (ae-undocumented) Missing documentation for "StringArray".
 // src/models.d.ts:102:5 - (ae-undocumented) Missing documentation for "Date".
-// src/permissions.d.ts:1:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowInstancesReadPermission".
-// src/permissions.d.ts:2:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowInstanceReadPermission".
-// src/permissions.d.ts:3:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowReadPermission".
-// src/permissions.d.ts:4:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowExecutePermission".
-// src/permissions.d.ts:5:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowInstanceAbortPermission".
-// src/permissions.d.ts:6:22 - (ae-undocumented) Missing documentation for "orchestratorPermissions".
+// src/permissions.d.ts:1:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowPermission".
+// src/permissions.d.ts:2:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowSpecificPermission".
+// src/permissions.d.ts:3:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowUsePermission".
+// src/permissions.d.ts:4:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowUseSpecificPermission".
+// src/permissions.d.ts:5:22 - (ae-undocumented) Missing documentation for "orchestratorPermissions".
 // src/types.d.ts:9:1 - (ae-undocumented) Missing documentation for "OmitRecursively".
 // src/types.d.ts:12:1 - (ae-undocumented) Missing documentation for "WorkflowDefinition".
 // src/types.d.ts:13:1 - (ae-undocumented) Missing documentation for "WorkflowListResult".

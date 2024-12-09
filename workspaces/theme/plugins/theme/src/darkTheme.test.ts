@@ -20,7 +20,7 @@ describe('customDarkTheme', () => {
     expect(customDarkTheme()).toEqual({
       background: {
         default: '#333333',
-        paper: '#424242',
+        paper: '#1b1d21',
       },
       banner: {
         closeButtonColor: '#FFFFFF',
@@ -92,15 +92,22 @@ describe('customDarkTheme', () => {
 
       rhdh: {
         general: {
-          disabledBackground: '#444548',
           disabled: '#AAABAC',
-          formControlBackgroundColor: '#36373A',
-          mainSectionBackgroundColor: '#0f1214',
-          headerBottomBorderColor: '#A3A3A3',
+          disabledBackground: '#444548',
+
+          paperBackgroundImage: 'none',
+          paperBorderColor: '#A3A3A3',
+
           cardBackgroundColor: '#1b1d21',
+          cardBorderColor: '#A3A3A3',
+
+          headerBottomBorderColor: '#A3A3A3',
+          mainSectionBackgroundColor: '#0f1214',
+          formControlBackgroundColor: '#36373A',
+
           sidebarBackgroundColor: '#1b1d21',
           sidebarItemSelectedBackgroundColor: '#4F5255',
-          cardBorderColor: '#A3A3A3',
+
           tableTitleColor: '#E0E0E0',
           tableSubtitleColor: '#E0E0E0',
           tableColumnTitleColor: '#E0E0E0',
@@ -109,6 +116,7 @@ describe('customDarkTheme', () => {
           tableBackgroundColor: '#1b1d21',
           tabsDisabledBackgroundColor: '#444548',
           tabsBottomBorderColor: '#444548',
+
           contrastText: '#FFF',
         },
         primary: {

@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.4.6
+
+### Patch Changes
+
+- 715c448: add workaround for `style-inject`(ion) issue with the published package
+
+## 0.4.5
+
+### Patch Changes
+
+- 15aa207: add workaround for `style-inject`(ion) issue with the published package
+
+## 0.4.4
+
+### Patch Changes
+
+- f2fad21: removes all drop shadow from MUI v4 Papers and add missing border for MUI v5 Papers
+- f2fad21: fix/remove different paper background colors/shades in MUI v5
+- a62d5b8: Add hover style to tabs, move vertical tabs indicator to left to match PF style.
+
 ## 0.4.3
 
 ### Patch Changes

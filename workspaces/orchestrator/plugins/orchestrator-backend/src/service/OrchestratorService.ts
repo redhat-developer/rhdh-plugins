@@ -36,6 +36,9 @@ export class OrchestratorService {
   ) {}
 
   // Data Index Service Wrapper
+  public getWorkflowIds(): string[] {
+    return this.workflowCacheService.definitionIds;
+  }
 
   public async abortWorkflowInstance(args: {
     instanceId: string;
@@ -70,10 +73,10 @@ export class OrchestratorService {
   public async fetchInstances(args: {
     pagination?: Pagination;
     filter?: Filter;
-    workflowId?: string;
+    workflowIds?: string[];
   }): Promise<ProcessInstance[]> {
-    const definitionIds = args.workflowId
-      ? [args.workflowId]
+    const definitionIds = args.workflowIds
+      ? args.workflowIds
       : this.workflowCacheService.definitionIds;
     return await this.dataIndexService.fetchInstances({
       definitionIds: definitionIds,
@@ -83,11 +86,11 @@ export class OrchestratorService {
   }
 
   public async fetchInstancesTotalCount(
-    workflowId?: string,
+    workflowIds?: string[],
     filter?: Filter,
   ): Promise<number> {
-    const definitionIds = workflowId
-      ? [workflowId]
+    const definitionIds = workflowIds
+      ? workflowIds
       : this.workflowCacheService.definitionIds;
     return await this.dataIndexService.fetchInstancesTotalCount(
       definitionIds,
