@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "@backstage/core-plugin-api": "^1.10.0",
-    "@backstage/types": "^1.1.1",
     "@rjsf/core": "^5.21.2",
     "@rjsf/utils": "^5.21.2"
   },
@@ -37,6 +36,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "0.28.2",
+    "@backstage/types": "^1.1.1",
     "@types/json-schema": "7.0.15",
     "@types/react": "^18.2.58",
     "prettier": "3.3.3",
