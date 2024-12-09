@@ -25,6 +25,29 @@ export interface MarketplacePluginEntry {
 /**
  * @public
  */
+export interface MarketplacePluginList {
+  metadata: MarketplacePluginMetadata;
+  spec?: {
+    plugins: string[];
+  } & MarketplacePluginSpec;
+}
+
+/**
+ * @public
+ */
+export const MARKETPLACE_API_VERSION = 'marketplace.backstage.io/v1alpha1';
+
+/**
+ * @public
+ */
+export enum MarketplaceKinds {
+  plugin = 'Plugin',
+  pluginList = 'PluginList',
+}
+
+/**
+ * @public
+ */
 export interface MarketplacePluginMetadata {
   // primary identifier
   name: string;

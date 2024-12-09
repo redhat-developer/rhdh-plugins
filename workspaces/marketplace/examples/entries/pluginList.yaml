@@ -1,0 +1,15 @@
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: PluginList
+metadata:
+  name: curated-plugin-list
+  title: Curated plugins
+  description: Curated set of plugins in Marketplace.
+spec:
+  type: plugin-list
+  lifecycle: production
+  owner: redhat
+  plugins:
+    - quay
+    - 3scale
+    - tekton
+    - topology

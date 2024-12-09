@@ -6,6 +6,7 @@ metadata:
 spec:
   targets:
     - ./group.yaml
+    - ./pluginList.yaml
     - ./3scale/metadata.yaml
     - ./acr/metadata.yaml
     - ./keycloak/metadata.yaml

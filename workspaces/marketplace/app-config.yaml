@@ -85,7 +85,7 @@ catalog:
     - type: file
       target: ../../examples/entries/all.yaml
       rules:
-        - allow: [Marketplace, Group]
+        - allow: [Plugin, PluginList, Group]
 
     # Local example template
     - type: file

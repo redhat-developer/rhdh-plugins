@@ -19,6 +19,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
 import { MarketplacePluginProcessor } from './MarketPlaceEntityProcessor';
+import { MarketplacePluginListProcessor } from './MarketPlacePluginListProcessor';
 
 /**
  * @public
@@ -35,6 +36,7 @@ export const catalogModuleMarketplace = createBackendModule({
       async init({ logger, catalog }) {
         logger.info('Marketplace provider initialized!');
         catalog.addProcessor(new MarketplacePluginProcessor());
+        catalog.addProcessor(new MarketplacePluginListProcessor());
       },
     });
   },

@@ -15,7 +15,10 @@
  */
 import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 
-import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  MarketplacePluginEntry,
+  MarketplacePluginList,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { MarketplaceApi } from './MarketplaceApi';
 
@@ -36,6 +39,20 @@ export class MarketplaceClient implements MarketplaceApi {
   async getPlugins(): Promise<MarketplacePluginEntry[]> {
     const baseUrl = await this.discoveryApi.getBaseUrl('catalog');
     const url = `${baseUrl}/entities?filter=kind=plugin`;
+
+    const response = await this.fetchApi.fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Unexpected status code: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  async getPluginList(): Promise<MarketplacePluginList[]> {
+    const baseUrl = await this.discoveryApi.getBaseUrl('catalog');
+    const url = `${baseUrl}/entities?filter=kind=pluginList`;
 
     const response = await this.fetchApi.fetch(url);
     if (!response.ok) {
