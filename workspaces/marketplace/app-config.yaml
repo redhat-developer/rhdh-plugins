@@ -80,34 +80,26 @@ catalog:
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
-      target: ../../examples/entities.yaml
-
-    - type: file
-      target: ../../examples/entries/all.yaml
+      target: ../../examples/all-org.yaml
       rules:
-        - allow: [Plugin, PluginList, Group]
-
-    # Local example template
+        - allow: [Group]
     - type: file
-      target: ../../examples/template/template.yaml
+      target: ../../examples/all-plugins.yaml
       rules:
-        - allow: [Template]
-
-    # Local example organizational data
+        - allow: [Plugin]
     - type: file
-      target: ../../examples/org.yaml
+      target: ../../examples/all-pluginlists.yaml
+      rules:
+        - allow: [PluginList]
+    - type: file
+      target: ../../examples/all-orgs.yaml
       rules:
         - allow: [User, Group]
 
-    ## Uncomment these lines to add more example data
-    # - type: url
-    #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
-
-    ## Uncomment these lines to add an example org
-    # - type: url
-    #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
-    #   rules:
-    #     - allow: [User, Group]
+    - type: file
+      target: ../../examples/catalog-demo.yaml
+      rules:
+        - allow: [User, Group, System, Component, API]
 
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
