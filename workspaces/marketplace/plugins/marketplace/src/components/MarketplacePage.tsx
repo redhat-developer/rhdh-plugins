@@ -18,7 +18,8 @@ import { Page, Header, TabbedLayout } from '@backstage/core-components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { MarketplaceCatalogTab } from './MarketplaceCatalogTab';
-import { MarketplaceEntryDetailDrawer } from './MarketplaceEntryDetailDrawer';
+import { MarketplaceEntryAboutDrawer } from './MarketplaceEntryAboutDrawer';
+import { MarketplaceEntryInstallDrawer } from './MarketplaceEntryInstallDrawer';
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ export const MarketplacePage = () => (
         </TabbedLayout.Route>
       </TabbedLayout>
     </Page>
-    <MarketplaceEntryDetailDrawer />
+    <MarketplaceEntryAboutDrawer />
+    <MarketplaceEntryInstallDrawer />
   </QueryClientProvider>
 );
