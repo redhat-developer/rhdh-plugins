@@ -21,6 +21,7 @@ import {
   ErrorPanel,
   Link,
   LinkButton,
+  MarkdownContent,
 } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
@@ -35,7 +36,7 @@ import Grid from '@mui/material/Grid';
 
 import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { usePlugins } from '../hooks/usePlugins';
-import { rootRouteRef } from '../routes';
+import { installRouteRef, rootRouteRef } from '../routes';
 
 const Icon = ({ entry }: { entry: MarketplacePluginEntry }) =>
   entry.spec?.icon ? (
@@ -94,11 +95,17 @@ const EntryContentSkeleton = () => {
 
 const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
   const getIndexPath = useRouteRef(rootRouteRef);
+  const getInstallPath = useRouteRef(installRouteRef);
 
   const withSearchParameter = (name: string, value: string) =>
     `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
       value,
     )}`;
+
+  let readme = entry.spec?.description ?? entry.metadata.description ?? '';
+  if (!readme.startsWith('#')) {
+    readme = `# About\n\n${readme}`;
+  }
 
   return (
     <Content>
@@ -106,7 +113,7 @@ const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
         <Icon entry={entry} />
         <Stack spacing={0.5}>
           <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
-            {entry.metadata.title}
+            {entry.metadata.title || entry.metadata.name}
           </Typography>
           {entry.spec?.developer ? (
             <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
@@ -151,19 +158,16 @@ const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
             </>
           ) : null}
 
-          <LinkButton to="install" color="primary" variant="contained">
+          <LinkButton
+            to={getInstallPath({ name: entry.metadata.name })}
+            color="primary"
+            variant="contained"
+          >
             Install
           </LinkButton>
         </Grid>
         <Grid item md={10}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            About
-          </Typography>
-          {entry.metadata.description ? (
-            <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-              {entry.metadata.description}
-            </Typography>
-          ) : null}
+          <MarkdownContent content={readme} dialect="gfm" />
         </Grid>
       </Grid>
     </Content>
@@ -188,12 +192,16 @@ const Entry = ({ entryName }: { entryName: string }) => {
   return <EntryContent entry={entry} />;
 };
 
-export const MarketplaceEntryDetailDrawer = () => {
+export const MarketplaceEntryAboutDrawer = () => {
   const params = useParams();
   const navigate = useNavigate();
   const getIndexPath = useRouteRef(rootRouteRef);
 
-  const entryName = params['*'];
+  // TODO: remove workaround for overlapping subroutes
+  let entryName = params['*'];
+  if (entryName?.includes('/')) {
+    entryName = entryName.substring(0, entryName.indexOf('/'));
+  }
 
   const open = !!entryName;
   const handleClose = () => navigate(getIndexPath());
@@ -205,7 +213,7 @@ export const MarketplaceEntryDetailDrawer = () => {
       onClose={handleClose}
       PaperProps={{ sx: { minWidth: '300px', width: '55vw' } }}
     >
-      {/* params:
+      {/* about page:
       <pre>
         {JSON.stringify(params, null, 2)}
       </pre> */}

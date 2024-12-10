@@ -24,3 +24,9 @@ export const detailsRouteRef = createSubRouteRef({
   parent: rootRouteRef,
   path: '/:name',
 });
+
+export const installRouteRef = createSubRouteRef({
+  id: 'install-page',
+  parent: rootRouteRef,
+  path: '/:name/install',
+});
