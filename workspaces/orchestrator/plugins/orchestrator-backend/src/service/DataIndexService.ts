@@ -497,7 +497,6 @@ export class DataIndexService {
           processName
           processId
           serviceUrl
-          businessKey
           state
           start
           end
