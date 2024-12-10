@@ -243,12 +243,6 @@ spec:
               required: true
               schema:
                 type: string
-            - name: businessKey
-              in: query
-              description: ID of the parent workflow
-              required: false
-              schema:
-                type: string
           requestBody:
             required: true
             content:
@@ -500,7 +494,7 @@ spec:
               type: string
             workflowdata:
               $ref: '#/components/schemas/WorkflowDataDTO'
-            businessKey:
+            assessmentInstanceId:
               type: string
             nodes:
               type: array
@@ -587,6 +581,8 @@ spec:
             inputData:
               type: object
               additionalProperties: true
+            orchestratorAssessmentInstanceId:
+              type: string
         ExecuteWorkflowResponseDTO:
           type: object
           properties:
