@@ -87,7 +87,7 @@ export const WorkflowRunsTabContent = () => {
         sorting: false,
       },
       {
-        title: 'Name',
+        title: 'Workflow name',
         field: 'name',
       },
       {
