@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: all-pluginlists
+  description: A collection of all the marketplace pluginlists
+spec:
+  targets:
+    - ./pluginlists/featured.yaml

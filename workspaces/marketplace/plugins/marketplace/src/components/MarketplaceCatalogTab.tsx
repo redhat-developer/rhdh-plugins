@@ -15,41 +15,33 @@
  */
 import React from 'react';
 
-import { useQueryParamState } from '@backstage/core-components';
-
-import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { usePlugins } from '../hooks/usePlugins';
+import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
+import { SearchTextField } from './SearchTextField';
 
 export const MarketplaceCatalogTab = () => {
-  const [search, setSearch] = useQueryParamState<string | undefined>('q');
-
   const plugins = usePlugins();
 
   return (
     <Card>
-      <Box sx={{ p: 2 }}>
-        <Stack direction="row">
-          <Typography variant="h2" sx={{ pb: 2 }}>
+      <Stack gap={3} sx={{ p: 2 }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Typography variant="h5">
             All plugins
             {plugins.data ? ` (${plugins.data.length})` : null}
           </Typography>
-
-          {/* TODO: Align with Backstage UI */}
-          <TextField
-            value={search || ''}
-            onChange={event =>
-              setSearch(event.target.value ? event.target.value : undefined)
-            }
-          />
+          <SearchTextField variant="filter" />
         </Stack>
         <MarketplaceCatalogGrid />
-      </Box>
+      </Stack>
     </Card>
   );
 };

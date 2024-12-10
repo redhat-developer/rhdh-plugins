@@ -1,11 +1,11 @@
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: PluginList
 metadata:
-  name: curated-plugin-list
-  title: Curated plugins
-  description: Curated set of plugins in Marketplace.
+  name: featured-plugins
+  title: Featured Plugins
+  description: A set of great plugins! :)
 spec:
-  type: plugin-list
+  type: curated-list
   lifecycle: production
   owner: redhat
   plugins:
