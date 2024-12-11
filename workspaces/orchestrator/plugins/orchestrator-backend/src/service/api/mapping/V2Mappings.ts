@@ -163,7 +163,6 @@ export function mapToProcessInstanceDTO(
     processName: processInstance.processName,
     description: processInstance.description,
     serviceUrl: processInstance.serviceUrl,
-    businessKey: processInstance.businessKey,
     endpoint: processInstance.endpoint,
     error: processInstance.error,
     category: mapWorkflowCategoryDTO(processInstance.category),
@@ -172,6 +171,7 @@ export function mapToProcessInstanceDTO(
     duration: duration,
     // @ts-ignore
     workflowdata: variables?.workflowdata,
+    assessmentInstanceId: variables?.orchestratorAssessmentInstanceId,
     status: getProcessInstancesStatusDTOFromString(processInstance.state),
     nodes: processInstance.nodes.map(mapToNodeInstanceDTO),
   };
