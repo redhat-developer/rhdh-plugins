@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.10.6
+
+### Patch Changes
+
+- 462bfde: Persist changes made in the preview pull request form when PR is waiting to be approved
+
 ## 1.10.5
 
 ### Patch Changes
