@@ -45,6 +45,7 @@ const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
   return getImportStatus(
     values.repositories?.[data.id]?.catalogInfoYaml?.status as string,
     true,
+    values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
   );
 };
 
@@ -82,7 +83,7 @@ export const AddedRepositoryTableRow = ({
       <TableCell align="left" className={classes.tableCellStyle}>
         {data?.organizationUrl ? (
           <Link to={data.organizationUrl}>
-            {urlHelper(data.organizationUrl)}
+            {data.orgName}
             <OpenInNewIcon
               style={{ verticalAlign: 'sub', paddingTop: '7px' }}
             />

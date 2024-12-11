@@ -93,8 +93,16 @@ class MockBulkImportApi implements BulkImportAPI {
   async getImportJobs(
     _page: number,
     _size: number,
-    _seachString: string,
+    searchString: string,
   ): Promise<ImportJobs> {
+    if (searchString) {
+      return {
+        ...mockGetImportJobs,
+        imports: mockGetImportJobs.imports?.filter(r =>
+          r.repository.name?.includes(searchString),
+        ),
+      };
+    }
     return mockGetImportJobs;
   }
 
