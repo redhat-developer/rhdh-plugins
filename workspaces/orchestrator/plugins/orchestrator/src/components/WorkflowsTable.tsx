@@ -167,7 +167,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     const actionItems: TableProps<FormattedWorkflowOverview>['actions'] = [
       rowData => ({
         icon: PlayArrow,
-        tooltip: 'Execute',
+        tooltip: 'Run',
         disabled: !canExecuteWorkflow(rowData.id),
         onClick: () => handleExecute(rowData),
       }),
