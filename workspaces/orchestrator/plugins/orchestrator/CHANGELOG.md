@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 2.5.1
+
+### Patch Changes
+
+- cea6963: workflow runs list view - rename name column
+- 353e038: Workflows Table - rename tooltip "Run” instead of “Execute.”
+
 ## 2.5.0
 
 ### Minor Changes
