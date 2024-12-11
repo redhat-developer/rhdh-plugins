@@ -111,7 +111,7 @@
     "react-router-dom": "^6.0.0"
   },
   "scalprum": {
-    "name": "janus-idp.backstage-plugin-orchestrator",
+    "name": "red-hat-developer-hub.backstage-plugin-orchestrator",
     "exposedModules": {
       "OrchestratorPlugin": "./src/index.ts"
     }
