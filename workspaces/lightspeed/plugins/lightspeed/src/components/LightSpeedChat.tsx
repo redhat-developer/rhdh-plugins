@@ -164,13 +164,6 @@ export const LightspeedChat = ({
   }, [createConversation, setConversationId, setMessages]);
 
   const openDeleteModal = (conversation_id: string) => {
-    // TODO: Remove this temporary workaround and refactor once the dependency handling is updated in the future.
-    document.dispatchEvent(
-      new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
     setTargetConversationId(conversation_id);
     setIsDeleteModalOpen(true);
   };
