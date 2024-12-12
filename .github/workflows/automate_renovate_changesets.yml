@@ -30,7 +30,7 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.email rhdh-bot@users.noreply.github.com 
+          git config --global user.email 146280956+rhdh-bot@users.noreply.github.com
           git config --global user.name 'Github changeset workflow'
 
       - name: Generate changesets
