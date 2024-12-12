@@ -62,8 +62,10 @@ export type AddRepositoryData = {
   organizationUrl?: string;
   selectedRepositories?: AddedRepositories;
   catalogInfoYaml?: {
+    pullRequest?: string;
     status?: ImportStatus;
     prTemplate?: PullRequestPreview;
+    isInitialized?: boolean;
     lastUpdated?: string;
   };
   lastUpdated?: string;

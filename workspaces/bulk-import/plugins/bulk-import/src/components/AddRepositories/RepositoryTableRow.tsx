@@ -104,7 +104,7 @@ export const RepositoryTableRow = ({
         <TableCell align="left" className={classes.tableCellStyle}>
           {data?.organizationUrl ? (
             <Link to={data.organizationUrl}>
-              {urlHelper(data.organizationUrl)}
+              {data.orgName}
               <OpenInNewIcon
                 style={{ verticalAlign: 'sub', paddingTop: '7px' }}
               />

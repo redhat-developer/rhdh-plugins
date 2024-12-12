@@ -29,7 +29,6 @@ import { Grid } from '@material-ui/core';
 import {
   capitalize,
   ellipsis,
-  ProcessInstanceState,
   ProcessInstanceStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -45,11 +44,11 @@ import { WorkflowRunDetail } from './WorkflowRunDetail';
 
 const makeSelectItemsFromProcessInstanceValues = () =>
   [
-    ProcessInstanceState.Active,
-    ProcessInstanceState.Error,
-    ProcessInstanceState.Completed,
-    ProcessInstanceState.Aborted,
-    ProcessInstanceState.Suspended,
+    ProcessInstanceStatusDTO.Active,
+    ProcessInstanceStatusDTO.Error,
+    ProcessInstanceStatusDTO.Completed,
+    ProcessInstanceStatusDTO.Aborted,
+    ProcessInstanceStatusDTO.Suspended,
   ].map(
     (status): SelectItem => ({
       label: capitalize(status),
@@ -117,7 +116,7 @@ export const WorkflowRunsTabContent = () => {
       (value ?? []).filter(
         (row: WorkflowRunDetail) =>
           statusSelectorValue === Selector.AllItems ||
-          row.status?.toLocaleLowerCase('en-US') === statusSelectorValue,
+          row.status === statusSelectorValue,
       ),
     [statusSelectorValue, value],
   );

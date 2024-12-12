@@ -55,9 +55,17 @@ test.describe('Bulk import plugin', () => {
     }
   });
 
+  test('View pull request for jobs waiting for approval', async () => {
+    await page.locator('input[aria-label="Search"]').fill('cupcake');
+    await page.waitForTimeout(2000);
+    await expect(
+      page.locator('a[data-testid="pull request url"]'),
+    ).toBeVisible();
+  });
+
   test('Edit icon, Delete icon and Refresh icon are shown', async () => {
     await expect(
-      page.locator('span[data-testid="view-catalog-info"]').first(),
+      page.locator('span[data-testid="edit-catalog-info"]').first(),
     ).toBeVisible();
     await expect(
       page.locator('span[data-testid="delete-repository"]').first(),
@@ -67,19 +75,13 @@ test.describe('Bulk import plugin', () => {
     ).toBeVisible();
   });
 
-  test('Remove repository alert window is shown', async () => {
-    await page.getByPlaceholder('Filter').fill('cupcake');
-    await page.locator('span[data-testid="delete-repository"]').first().click();
-    await expect(page.getByText('Remove cupcake repository?')).toBeVisible();
+  test('Disabled repository icon should show tooltip', async () => {
+    await page.locator('span[data-testid="delete-repository"]').hover();
     await expect(
       page.getByText(
-        'Removing a repository erases all associated information from the Catalog page.',
+        'This repository added to the app-config file. To remove it modify the file directly',
       ),
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Remove' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
-
-    await page.locator('button[title="Close"]').click();
   });
 
   test('Add button is shown', async () => {
@@ -117,7 +119,7 @@ test.describe('Bulk import plugin', () => {
     ).toBeVisible({
       timeout: 20000,
     });
-    await page.locator('button[aria-label="Next page"]').click();
+    await page.locator('button[aria-label="Go to next page"]').click();
     await page.waitForTimeout(2000);
     await page.click('input[aria-label="select all repositories"]');
     await expect(
