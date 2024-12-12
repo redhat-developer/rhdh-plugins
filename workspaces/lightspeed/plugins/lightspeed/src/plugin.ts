@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import '@patternfly/react-core/dist/styles/base.css';
-import '@patternfly/virtual-assistant/dist/css/main.css';
+import '@patternfly/chatbot/dist/css/main.css';
 
 import {
   configApiRef,
