@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { Conversation } from '@patternfly/virtual-assistant';
+import { Conversation } from '@patternfly/chatbot';
 
 import { BaseMessage, ConversationList, ConversationSummary } from '../types';
 

@@ -23,11 +23,14 @@ import {
   MessageBox,
   MessageProps,
   WelcomePrompt,
-} from '@patternfly/virtual-assistant';
+} from '@patternfly/chatbot';
 
 const useStyles = makeStyles(theme => ({
   prompt: {
     'justify-content': 'flex-end',
+  },
+  container: {
+    maxWidth: 'unset !important',
   },
   userMessageText: {
     '& div.pf-chatbot__message--user': {
@@ -66,12 +69,13 @@ export const LightspeedChatBox = React.forwardRef(
       setCMessages(messages);
     }, [messages]);
 
+    const messageBoxClasses = `${classes.container} ${classes.userMessageText}`;
     return (
       <MessageBox
         className={
           welcomePrompts.length
-            ? `${classes.userMessageText} ${classes.prompt}`
-            : classes.userMessageText
+            ? `${messageBoxClasses} ${classes.prompt}`
+            : messageBoxClasses
         }
         announcement={announcement}
         style={{ justifyContent: 'flex-end' }}
