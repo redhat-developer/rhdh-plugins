@@ -15,11 +15,15 @@
  */
 import {
   createApiFactory,
-  createRoutableExtension,
   createPlugin,
+  createRoutableExtension,
+  createComponentExtension,
   discoveryApiRef,
   fetchApiRef,
+  type IconComponent,
 } from '@backstage/core-plugin-api';
+
+import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
 
 import { rootRouteRef } from './routes';
 import { marketplaceApiRef, MarketplaceClient } from './api';
@@ -50,7 +54,7 @@ export const marketplacePlugin = createPlugin({
 });
 
 /**
- * Marketplace Page
+ * Marketplace page with header and tabs.
  * @public
  */
 export const MarketplacePage = marketplacePlugin.provide(
@@ -61,3 +65,24 @@ export const MarketplacePage = marketplacePlugin.provide(
     mountPoint: rootRouteRef,
   }),
 );
+
+/**
+ * Marketplace catalog content without header and tabs.
+ * @public
+ */
+export const MarketplaceCatalogContent = marketplacePlugin.provide(
+  createComponentExtension({
+    name: 'MarketplaceCatalogContent',
+    component: {
+      lazy: () =>
+        import('./components/MarketplaceCatalogContent').then(
+          m => m.MarketplaceCatalogContent,
+        ),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const MarketplaceIcon: IconComponent = MUIMarketplaceIcon;
