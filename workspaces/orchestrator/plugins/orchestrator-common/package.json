@@ -59,7 +59,7 @@
   "dependencies": {
     "@backstage/plugin-permission-common": "^0.8.1",
     "@severlessworkflow/sdk-typescript": "^3.0.3",
-    "axios": "^1.7.4",
+    "axios": "^1.7.9",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
