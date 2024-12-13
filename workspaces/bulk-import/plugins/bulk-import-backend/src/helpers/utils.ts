@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-export * from './auth';
-export * from './loggingUtils';
-export * from './pagination';
-export * from './utils';
+export function getNestedValue<T>(obj: T, path: string): any {
+  return path
+    .split('.')
+    .reduce((acc, key) => (acc && acc[key] ? acc[key] : undefined), obj);
+}
+export enum SortingOrderEnum {
+  ASC = 'asc',
+  DESC = 'desc',
+}

@@ -28,7 +28,12 @@ import {
 } from '../../../catalog/catalogUtils';
 import type { Components, Paths } from '../../../generated/openapi';
 import type { GithubApiService } from '../../../github';
-import { logErrorIfNeeded, paginateArray } from '../../../helpers';
+import {
+  getNestedValue,
+  logErrorIfNeeded,
+  paginateArray,
+  SortingOrderEnum,
+} from '../../../helpers';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -45,18 +50,22 @@ type FindAllImportsResponse =
   | Components.Schemas.Import[]
   | Components.Schemas.ImportJobListV2;
 
-function sortImports(imports: Components.Schemas.Import[]) {
+function sortImports(
+  imports: Components.Schemas.Import[],
+  sortColumn: string,
+  sortOrder: string = SortingOrderEnum.ASC,
+) {
   imports.sort((a, b) => {
-    if (a.repository?.name === undefined && b.repository?.name === undefined) {
-      return 0;
-    }
-    if (a.repository?.name === undefined) {
-      return -1;
-    }
-    if (b.repository?.name === undefined) {
-      return 1;
-    }
-    return a.repository.name.localeCompare(b.repository.name);
+    const value1 = getNestedValue(a, sortColumn);
+    const value2 = getNestedValue(b, sortColumn);
+    // Handle cases where values are undefined
+    if (value1 === undefined && value2 === undefined) return 0;
+    if (value1 === undefined) return SortingOrderEnum.ASC ? -1 : 1;
+    if (value2 === undefined) return SortingOrderEnum.ASC ? 1 : -1;
+    // Compare values based on sort order
+    return SortingOrderEnum.ASC === sortOrder
+      ? value1.localeCompare(value2)
+      : value2.localeCompare(value1);
   });
 }
 
@@ -74,16 +83,16 @@ export async function findAllImports(
     search?: string;
     pageNumber?: number;
     pageSize?: number;
+    sortColumn?: string;
+    sortOrder?: string;
   },
 ): Promise<HandlerResponse<FindAllImportsResponse>> {
   const apiVersion = requestHeaders?.apiVersion ?? 'v1';
   const search = queryParams?.search;
   const pageNumber = queryParams?.pageNumber ?? DefaultPageNumber;
   const pageSize = queryParams?.pageSize ?? DefaultPageSize;
-
-  deps.logger.debug(
-    `Getting all bulk import jobs (apiVersion=${apiVersion}, search=${search}, page=${pageNumber}, size=${pageSize})..`,
-  );
+  const sortColumn = queryParams?.sortColumn;
+  const sortOrder = queryParams?.sortOrder;
 
   const catalogFilename = getCatalogFilename(deps.config);
 
@@ -156,8 +165,9 @@ export async function findAllImports(
     });
 
   // sorting the output to make it deterministic and easy to navigate in the UI
-  sortImports(imports);
-
+  if (sortColumn) {
+    sortImports(imports, sortColumn, sortOrder);
+  }
   const paginated = paginateArray(imports, pageNumber, pageSize);
   if (apiVersion === 'v1') {
     return {
