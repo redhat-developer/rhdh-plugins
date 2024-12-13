@@ -17,7 +17,7 @@ import React from 'react';
 import { Page, Header, TabbedLayout } from '@backstage/core-components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { MarketplaceCatalogTab } from './MarketplaceCatalogTab';
+import { MarketplaceCatalogContent } from './MarketplaceCatalogContent';
 import { MarketplaceEntryAboutDrawer } from './MarketplaceEntryAboutDrawer';
 import { MarketplaceEntryInstallDrawer } from './MarketplaceEntryInstallDrawer';
 
@@ -29,7 +29,7 @@ export const MarketplacePage = () => (
       <Header title="Plugins" />
       <TabbedLayout>
         <TabbedLayout.Route path="/" title="Catalog">
-          <MarketplaceCatalogTab />
+          <MarketplaceCatalogContent />
         </TabbedLayout.Route>
       </TabbedLayout>
     </Page>

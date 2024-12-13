@@ -6,8 +6,15 @@
 /// <reference types="react" />
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
+
+// @public
+export const MarketplaceCatalogContent: () => JSX_2.Element;
+
+// @public (undocumented)
+export const MarketplaceIcon: IconComponent;
 
 // @public
 export const MarketplacePage: () => JSX_2.Element;

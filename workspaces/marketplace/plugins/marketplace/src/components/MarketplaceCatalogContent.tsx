@@ -23,7 +23,7 @@ import { usePlugins } from '../hooks/usePlugins';
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { SearchTextField } from './SearchTextField';
 
-export const MarketplaceCatalogTab = () => {
+export const MarketplaceCatalogContent = () => {
   const plugins = usePlugins();
 
   return (
