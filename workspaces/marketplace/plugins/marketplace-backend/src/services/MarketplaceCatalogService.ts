@@ -34,7 +34,7 @@ export type Options = {
   catalogApi: CatalogApi;
 };
 
-export class MarketplaceServiceFSImpl implements MarketplaceService {
+export class MarketplaceCatalogService implements MarketplaceService {
   private readonly logger: LoggerService;
   private readonly catalog: CatalogApi;
   private readonly auth: AuthService;

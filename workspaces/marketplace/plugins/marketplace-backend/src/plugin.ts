@@ -18,7 +18,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './router';
-import { MarketplaceServiceFSImpl } from './services/MarketplaceServiceFSImpl';
+import { MarketplaceCatalogService } from './services/MarketplaceCatalogService';
 import { CatalogClient } from '@backstage/catalog-client';
 /**
  * marketplacePlugin backend plugin
@@ -39,7 +39,7 @@ export const marketplacePlugin = createBackendPlugin({
       },
       async init({ logger, auth, config, httpAuth, httpRouter, discovery }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
-        const marketplaceService = new MarketplaceServiceFSImpl({
+        const marketplaceService = new MarketplaceCatalogService({
           logger,
           auth,
           config,

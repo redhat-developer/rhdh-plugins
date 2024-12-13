@@ -34,8 +34,8 @@ export async function createRouter({
   });
 
   router.get('/pluginlist', async (_req, res) => {
-    const plugins = await marketplaceService.getPluginList();
-    res.json(plugins);
+    const pluginlist = await marketplaceService.getPluginList();
+    res.json(pluginlist);
   });
 
   return router;
