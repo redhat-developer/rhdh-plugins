@@ -19,12 +19,7 @@ import Router from 'express-promise-router';
 
 import { MarketplaceService } from './services/MarketplaceService';
 
-// TODO: remove this later
-const sleep = (ms: number) =>
-  new Promise(resolve => setTimeout(() => resolve(null), ms));
-
 export async function createRouter({
-  // httpAuth,
   marketplaceService,
 }: {
   httpAuth: HttpAuthService;
@@ -34,8 +29,12 @@ export async function createRouter({
   router.use(express.json());
 
   router.get('/plugins', async (_req, res) => {
-    await sleep(1000);
     const plugins = await marketplaceService.getPlugins();
+    res.json(plugins);
+  });
+
+  router.get('/pluginlist', async (_req, res) => {
+    const plugins = await marketplaceService.getPluginList();
     res.json(plugins);
   });
 

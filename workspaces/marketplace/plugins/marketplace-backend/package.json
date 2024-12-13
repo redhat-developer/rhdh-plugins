@@ -36,6 +36,7 @@
   "dependencies": {
     "@backstage/backend-defaults": "^0.5.2",
     "@backstage/backend-plugin-api": "^1.0.1",
+    "@backstage/catalog-client": "^1.8.0",
     "@backstage/errors": "^1.2.4",
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",
     "express": "^4.17.1",

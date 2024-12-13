@@ -37,8 +37,8 @@ export class MarketplaceClient implements MarketplaceApi {
   }
 
   async getPlugins(): Promise<MarketplacePluginEntry[]> {
-    const baseUrl = await this.discoveryApi.getBaseUrl('catalog');
-    const url = `${baseUrl}/entities?filter=kind=plugin`;
+    const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
+    const url = `${baseUrl}/plugins`;
 
     const response = await this.fetchApi.fetch(url);
     if (!response.ok) {
@@ -51,8 +51,8 @@ export class MarketplaceClient implements MarketplaceApi {
   }
 
   async getPluginList(): Promise<MarketplacePluginList[]> {
-    const baseUrl = await this.discoveryApi.getBaseUrl('catalog');
-    const url = `${baseUrl}/entities?filter=kind=pluginList`;
+    const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
+    const url = `${baseUrl}/pluginlist`;
 
     const response = await this.fetchApi.fetch(url);
     if (!response.ok) {

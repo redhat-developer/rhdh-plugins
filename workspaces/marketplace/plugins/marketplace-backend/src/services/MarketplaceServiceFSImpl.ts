@@ -19,46 +19,67 @@ import {
   RootConfigService,
 } from '@backstage/backend-plugin-api';
 
-import { readFile } from 'node:fs/promises';
-import { glob } from 'glob';
-import { parse } from 'yaml';
-
-import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  MarketplacePluginEntry,
+  MarketplacePluginList,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { MarketplaceService } from './MarketplaceService';
+import { CatalogApi } from '@backstage/catalog-client';
 
 export type Options = {
   logger: LoggerService;
   auth: AuthService;
-  config: RootConfigService;
+  config?: RootConfigService;
+  catalogApi: CatalogApi;
 };
 
 export class MarketplaceServiceFSImpl implements MarketplaceService {
   private readonly logger: LoggerService;
-  // TODO: add private
-  readonly auth: AuthService;
-  readonly config: RootConfigService;
+  private readonly catalog: CatalogApi;
+  private readonly auth: AuthService;
 
   constructor(options: Options) {
     this.logger = options.logger;
     this.auth = options.auth;
-    this.config = options.config;
+    this.catalog = options.catalogApi;
   }
 
   async getPlugins(): Promise<MarketplacePluginEntry[]> {
     this.logger.info('getPlugins');
 
-    const entries: MarketplacePluginEntry[] = [];
+    const token = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: 'catalog',
+    });
+    const result = await this.catalog.getEntities(
+      {
+        filter: {
+          kind: 'plugin',
+        },
+      },
+      token,
+    );
 
-    const metadataFiles = await glob('../../data/entries/**/metadata.yaml');
+    return result.items as MarketplacePluginEntry[];
+  }
 
-    for await (const metadataFile of metadataFiles) {
-      this.logger.info('getPlugins, read file', { metadataFile });
-      entries.push(await parse(await readFile(metadataFile, 'utf-8')));
-    }
+  async getPluginList(): Promise<MarketplacePluginList[]> {
+    this.logger.info('getPluginList');
 
-    entries.sort((a, b) => a.metadata.title.localeCompare(b.metadata.title));
+    const token = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: 'catalog',
+    });
+    const result = await this.catalog.getEntities(
+      {
+        filter: {
+          kind: 'pluginList',
+        },
+      },
+      token,
+    );
 
-    return entries;
+    return result.items as MarketplacePluginList[];
   }
 }
