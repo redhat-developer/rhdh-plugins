@@ -57,7 +57,9 @@ export class MarketplaceServiceFSImpl implements MarketplaceService {
       entries.push(await parse(await readFile(metadataFile, 'utf-8')));
     }
 
-    entries.sort((a, b) => a.metadata.title.localeCompare(b.metadata.title));
+    entries.sort((a, b) =>
+      (a.metadata?.title ?? '').localeCompare(b.metadata?.title ?? ''),
+    );
 
     return entries;
   }

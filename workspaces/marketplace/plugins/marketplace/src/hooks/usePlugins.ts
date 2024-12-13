@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 import { useApi } from '@backstage/core-plugin-api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import { useQuery } from '@tanstack/react-query';
 
-import { marketplaceApiRef } from '../api';
-
 export const usePlugins = () => {
-  const marketplaceApi = useApi(marketplaceApiRef);
-
-  //   const [search, setSearch] = useQueryParamState<string | undefined>('q');
-
+  const catalogApi = useApi(catalogApiRef);
   return useQuery({
     queryKey: ['plugins'],
-    queryFn: () => marketplaceApi.getPlugins(),
+    queryFn: () =>
+      catalogApi.getEntities({
+        filter: {
+          kind: 'plugin',
+        },
+      }),
+    select: data => (data.items ? data.items : []),
   });
 };

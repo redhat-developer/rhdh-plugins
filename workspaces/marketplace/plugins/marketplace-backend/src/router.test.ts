@@ -23,6 +23,8 @@ import { MarketplaceService } from './services/MarketplaceService';
 
 const mockPlugins: MarketplacePluginEntry[] = [
   {
+    kind: 'plugin',
+    apiVersion: 'community.backstage.io/v1alpha1',
     metadata: {
       name: 'plugin-a',
       title: 'Plugin A',

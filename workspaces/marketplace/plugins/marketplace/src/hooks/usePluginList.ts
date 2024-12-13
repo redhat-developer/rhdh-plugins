@@ -17,13 +17,18 @@ import { useApi } from '@backstage/core-plugin-api';
 
 import { useQuery } from '@tanstack/react-query';
 
-import { marketplaceApiRef } from '../api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
-export const usePluginList = () => {
-  const marketplaceApi = useApi(marketplaceApiRef);
+export const usePlugins = () => {
+  const catalogApi = useApi(catalogApiRef);
 
   return useQuery({
     queryKey: ['pluginList'],
-    queryFn: () => marketplaceApi.getPluginList(),
+    queryFn: () =>
+      catalogApi.getEntities({
+        filter: {
+          kind: 'pluginList',
+        },
+      }),
   });
 };

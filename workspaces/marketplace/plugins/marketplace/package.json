@@ -37,6 +37,7 @@
   "dependencies": {
     "@backstage/core-components": "^0.15.1",
     "@backstage/core-plugin-api": "^1.10.0",
+    "@backstage/plugin-catalog-react": "^1.14.0",
     "@backstage/theme": "^0.6.0",
     "@mui/icons-material": "^5.16.7",
     "@mui/material": "^5.12.2",

@@ -36,7 +36,7 @@ export const MarketplaceCatalogContent = () => {
         >
           <Typography variant="h5">
             All plugins
-            {plugins.data ? ` (${plugins.data.length})` : null}
+            {plugins.data ? ` (${plugins.data?.length})` : null}
           </Typography>
           <SearchTextField variant="filter" />
         </Stack>
