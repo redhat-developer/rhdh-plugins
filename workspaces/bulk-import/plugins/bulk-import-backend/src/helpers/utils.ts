@@ -16,7 +16,13 @@
 export function getNestedValue<T>(obj: T, path: string): any {
   return path
     .split('.')
-    .reduce((acc, key) => (acc && acc[key] ? acc[key] : undefined), obj);
+    .reduce(
+      (acc, key) =>
+        acc && (acc as Record<string, any>)[key]
+          ? (acc as Record<string, any>)[key]
+          : undefined,
+      obj,
+    );
 }
 export enum SortingOrderEnum {
   ASC = 'asc',

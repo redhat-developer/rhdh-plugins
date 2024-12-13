@@ -28,7 +28,6 @@ import {
   AddRepositoryData,
   SortingOrderEnum,
 } from '../../types';
-import { getComparator } from '../../utils/repository-utils';
 import { RepositoriesHeader } from '../AddRepositories/RepositoriesHeader';
 import { AddedRepositoriesTableBody } from './AddedRepositoriesTableBody';
 import DeleteRepositoryDialog from './DeleteRepositoryDialog';

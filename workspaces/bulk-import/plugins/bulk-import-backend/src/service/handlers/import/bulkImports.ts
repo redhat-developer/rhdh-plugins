@@ -52,7 +52,7 @@ type FindAllImportsResponse =
 
 function sortImports(
   imports: Components.Schemas.Import[],
-  sortColumn: string,
+  sortColumn: string = 'repository.name',
   sortOrder: string = SortingOrderEnum.ASC,
 ) {
   imports.sort((a, b) => {
