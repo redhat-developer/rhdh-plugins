@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 import {
-  createApiFactory,
   createPlugin,
   createRoutableExtension,
   createComponentExtension,
-  discoveryApiRef,
-  fetchApiRef,
   type IconComponent,
 } from '@backstage/core-plugin-api';
 
