@@ -16,11 +16,10 @@
     "pluginId": "marketplace",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-marketplace",
-      "@red-hat-developer-hub/backstage-plugin-marketplace-backend",
       "@red-hat-developer-hub/backstage-plugin-marketplace-common",
       "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace"
     ],
-    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-marketplace-backend"
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace"
   },
   "repository": {
     "type": "git",

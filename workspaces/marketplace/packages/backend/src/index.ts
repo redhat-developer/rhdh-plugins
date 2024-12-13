@@ -59,11 +59,7 @@ backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
 // kubernetes
 backend.add(import('@backstage/plugin-kubernetes-backend/alpha'));
 
-// marketplace
-backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-marketplace-backend'),
-);
-
+// catalog-backend-module-marketplace
 backend.add(
   import(
     '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace'

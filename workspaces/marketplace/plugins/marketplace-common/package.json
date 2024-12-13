@@ -22,7 +22,6 @@
     "pluginId": "marketplace",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-marketplace",
-      "@red-hat-developer-hub/backstage-plugin-marketplace-backend",
       "@red-hat-developer-hub/backstage-plugin-marketplace-common"
     ]
   },
