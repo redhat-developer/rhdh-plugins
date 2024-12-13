@@ -21,12 +21,14 @@ import {
 } from '@backstage/core-plugin-api';
 
 import {
+  AddedRepositoryColumnNameEnum,
   APITypes,
   CreateImportJobRepository,
   ImportJobResponse,
   ImportJobs,
   ImportJobStatus,
   OrgAndRepoResponse,
+  SortingOrderEnum,
 } from '../types';
 import { getApi } from '../utils/repository-utils';
 
@@ -42,6 +44,8 @@ export type BulkImportAPI = {
     page: number,
     size: number,
     searchString: string,
+    sortColumn: AddedRepositoryColumnNameEnum,
+    sortOrder: SortingOrderEnum,
   ) => Promise<ImportJobs | Response>;
   createImportJobs: (
     importRepositories: CreateImportJobRepository[],
@@ -100,11 +104,17 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.json();
   }
 
-  async getImportJobs(page: number, size: number, searchString: string) {
+  async getImportJobs(
+    page: number,
+    size: number,
+    searchString: string,
+    sortColumn: AddedRepositoryColumnNameEnum,
+    sortOrder: SortingOrderEnum,
+  ) {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/imports?page=${page}&size=${size}&search=${searchString}`,
+      `${backendUrl}/api/bulk-import/imports?page=${page}&size=${size}&search=${searchString}&sortColumn=${sortColumn}&sortOrder=${sortOrder}`,
       {
         headers: {
           'Content-Type': 'application/json',

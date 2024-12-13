@@ -98,7 +98,17 @@ export enum RepositoryStatus {
   'REPO_EMPTY' = 'REPO_EMPTY',
   'CODEOWNERS_FILE_NOT_FOUND_IN_REPO' = 'CODEOWNERS_FILE_NOT_FOUND_IN_REPO',
 }
-
+export enum AddedRepositoryColumnNameEnum {
+  repoName = 'repository.name',
+  organizationUrl = 'repository.organization',
+  repoUrl = 'repository.url',
+  catalogInfoYamlLastUpdated = 'lastUpdate',
+  catalogInfoYamlStatus = 'status',
+}
+export enum SortingOrderEnum {
+  ASC = 'asc',
+  DESC = 'desc',
+}
 export enum RepositorySelection {
   Repository = 'repository',
   Organization = 'organization',

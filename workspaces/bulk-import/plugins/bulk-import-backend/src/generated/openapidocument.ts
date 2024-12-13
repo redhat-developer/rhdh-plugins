@@ -306,6 +306,12 @@ const OPENAPI = `
             "$ref": "#/components/parameters/sizeQueryParam"
           },
           {
+            "$ref": "#/components/parameters/sortOrderQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/sortColumnQueryParam"
+          },
+          {
             "$ref": "#/components/parameters/searchQueryParam"
           }
         ],
@@ -560,6 +566,29 @@ const OPENAPI = `
         "schema": {
           "type": "integer",
           "default": 1
+        }
+      },
+      "sortColumnQueryParam": {
+        "in": "query",
+        "name": "sortColumn",
+        "description": "The name of the column to sort by",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "sortOrderQueryParam": {
+        "in": "query",
+        "name": "sortOrder",
+        "description": "The order of sorting asc for ascending or desc for descending",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
         }
       },
       "sizePerIntegrationQueryParamDeprecated": {

@@ -274,6 +274,8 @@ export async function createRouter(
           search: q.search,
           pageNumber: page,
           pageSize: size,
+          sortColumn: q.sortColumn,
+          sortOrder: q.sortOrder,
         },
       );
       return res.status(response.statusCode).json(response.responseBody);
