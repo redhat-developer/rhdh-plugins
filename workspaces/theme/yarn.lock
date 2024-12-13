@@ -10087,9 +10087,9 @@ __metadata:
     "@backstage/dev-utils": ^1.1.2
     "@backstage/plugin-user-settings": ^0.8.16
     "@backstage/test-utils": ^1.7.0
-    "@material-ui/core": ^4.9.13
     "@material-ui/icons": ^4.9.1
     "@material-ui/lab": ^4.0.0-alpha.61
+    "@mui/material": ^5.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
@@ -14427,8 +14427,8 @@ __metadata:
     "@backstage/plugin-user-settings": ^0.8.14
     "@backstage/test-utils": ^1.7.0
     "@backstage/theme": ^0.6.0
-    "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
+    "@mui/material": ^5.0.0
     "@playwright/test": ^1.32.3
     "@red-hat-developer-hub/backstage-plugin-bc-test": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-mui4-test": "workspace:^"
