@@ -38,6 +38,7 @@ describe('createRouter', () => {
   beforeEach(async () => {
     marketplaceService = {
       getPlugins: jest.fn(),
+      getPluginList: jest.fn(),
     };
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
