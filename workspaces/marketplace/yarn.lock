@@ -3094,15 +3094,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/catalog-client@npm:^1.7.1":
-  version: 1.7.1
-  resolution: "@backstage/catalog-client@npm:1.7.1"
+"@backstage/catalog-client@npm:^1.7.1, @backstage/catalog-client@npm:^1.8.0":
+  version: 1.8.0
+  resolution: "@backstage/catalog-client@npm:1.8.0"
   dependencies:
-    "@backstage/catalog-model": ^1.7.0
-    "@backstage/errors": ^1.2.4
+    "@backstage/catalog-model": ^1.7.1
+    "@backstage/errors": ^1.2.5
     cross-fetch: ^4.0.0
     uri-template: ^2.0.0
-  checksum: 0a70a929e95b4e424b021010202e19b68ab5ad3a6b6613e5c01850f31f6067e33ebb8863119c197bc213e9d86793d5368d0ad100288802e72eb6e818f54e765f
+  checksum: 781ce437855eb59cf33687866b64d374471ed9376cdaec9aa4f5dc389ee2a5eb41e98707c902312cc4b99dfc885daa7e26d59228cf6eb5b539c9207aeda02f8c
   languageName: node
   linkType: hard
 
@@ -10048,6 +10048,7 @@ __metadata:
     "@backstage/backend-defaults": ^0.5.2
     "@backstage/backend-plugin-api": ^1.0.1
     "@backstage/backend-test-utils": ^1.0.2
+    "@backstage/catalog-client": ^1.8.0
     "@backstage/cli": ^0.28.0
     "@backstage/errors": ^1.2.4
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
@@ -10066,7 +10067,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@workspace:plugins/marketplace-common"
   dependencies:
+    "@backstage/catalog-model": ^1.7.0
     "@backstage/cli": ^0.28.0
+    "@backstage/types": ^1.2.0
   languageName: unknown
   linkType: soft
 

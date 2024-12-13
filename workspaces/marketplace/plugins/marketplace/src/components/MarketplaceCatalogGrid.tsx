@@ -174,8 +174,8 @@ export const MarketplaceCatalogGrid = () => {
     }
     const lowerCaseSearch = search.toLocaleLowerCase('en-US');
     return plugins.data.filter(entry => {
-      const lowerCaseValue = entry.metadata.title.toLocaleLowerCase('en-US');
-      return lowerCaseValue.includes(lowerCaseSearch);
+      const lowerCaseValue = entry.metadata?.title?.toLocaleLowerCase('en-US');
+      return lowerCaseValue?.includes(lowerCaseSearch);
     });
   }, [search, plugins.data]);
 
