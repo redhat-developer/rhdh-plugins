@@ -10088,7 +10088,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-grid-layout: 1.4.4
     react-use: 17.5.1
-    tss-react: 4.9.13
+    tss-react: 4.9.14
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-router-dom: 6.26.2
@@ -31904,9 +31904,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tss-react@npm:4.9.13":
-  version: 4.9.13
-  resolution: "tss-react@npm:4.9.13"
+"tss-react@npm:4.9.14":
+  version: 4.9.14
+  resolution: "tss-react@npm:4.9.14"
   dependencies:
     "@emotion/cache": "*"
     "@emotion/serialize": "*"
@@ -31915,13 +31915,14 @@ __metadata:
     "@emotion/react": ^11.4.1
     "@emotion/server": ^11.4.0
     "@mui/material": ^5.0.0 || ^6.0.0
-    react: ^16.8.0 || ^17.0.2 || ^18.0.0
+    "@types/react": ^16.8.0 || ^17.0.2 || ^18.0.0 || ^19.0.0
+    react: ^16.8.0 || ^17.0.2 || ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
     "@emotion/server":
       optional: true
     "@mui/material":
       optional: true
-  checksum: 9327cef392007237020df5d388b4aeabbf7cc06f6d5ac32e2781367244c2de34688922a345878408f45a38890324d67d9a0f7b48cf6b1c968d66d52b3e14e28f
+  checksum: dfab7acd2bb88bde482eba90876b4dd4a8f553a15c2cb9a0dc6203d63f27d3d18bf50d15b11b8ada224035f42fadc6684163e716c052318f1efca8b1589a586e
   languageName: node
   linkType: hard
 
