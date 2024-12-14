@@ -87,7 +87,7 @@ const Checkboxes = () => {
       </tr>
       {colors.map(color => (
         <tr key={color}>
-          <td>{color ?? 'undefined'}</td>
+          <td>{color ?? 'no color'}</td>
           <td>
             <FormControlLabel
               control={<Checkbox defaultChecked color={color} />}
