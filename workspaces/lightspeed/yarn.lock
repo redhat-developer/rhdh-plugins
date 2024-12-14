@@ -10895,7 +10895,7 @@ __metadata:
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^15.0.0
     "@testing-library/user-event": 14.5.2
-    msw: 1.3.3
+    msw: 1.3.5
     openai: ^4.52.6
     prettier: 3.3.3
     react: 16.13.1 || ^17.0.0 || ^18.0.0
@@ -27441,9 +27441,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:1.3.3":
-  version: 1.3.3
-  resolution: "msw@npm:1.3.3"
+"msw@npm:1.3.5, msw@npm:^1.0.0":
+  version: 1.3.5
+  resolution: "msw@npm:1.3.5"
   dependencies:
     "@mswjs/cookies": ^0.2.2
     "@mswjs/interceptors": ^0.17.10
@@ -27460,7 +27460,7 @@ __metadata:
     js-levenshtein: ^1.1.6
     node-fetch: ^2.6.7
     outvariant: ^1.4.0
-    path-to-regexp: ^6.2.0
+    path-to-regexp: ^6.3.0
     strict-event-emitter: ^0.4.3
     type-fest: ^2.19.0
     yargs: ^17.3.1
@@ -27471,7 +27471,7 @@ __metadata:
       optional: true
   bin:
     msw: cli/index.js
-  checksum: cb3fda1519485f219d36c4e5ac1e1190ffe77dab66121c88cb9db0bace1ecb5a45c83db49e68e7c688b330ce43eed17d00939e09812dc710c0d4b3e59925730c
+  checksum: 5e1d96d63c0ce07db94373b2315739abecb76dac32dcc6ce116c902ced3e61ef2b1c7ff87eed3627c93fe0588002717edab9c745ebdee29437ed0da4b3beb561
   languageName: node
   linkType: hard
 
@@ -27505,40 +27505,6 @@ __metadata:
   bin:
     msw: cli/index.js
   checksum: 0be990c56dc1f071bab37785807be99d8429abeb165f122ed47954a2513a5bcd2a0b1866390faed211cf8cd9232e93d9c5551075c59b3a1aa555cafa3a3233f6
-  languageName: node
-  linkType: hard
-
-"msw@npm:^1.0.0":
-  version: 1.3.5
-  resolution: "msw@npm:1.3.5"
-  dependencies:
-    "@mswjs/cookies": ^0.2.2
-    "@mswjs/interceptors": ^0.17.10
-    "@open-draft/until": ^1.0.3
-    "@types/cookie": ^0.4.1
-    "@types/js-levenshtein": ^1.1.1
-    chalk: ^4.1.1
-    chokidar: ^3.4.2
-    cookie: ^0.4.2
-    graphql: ^16.8.1
-    headers-polyfill: 3.2.5
-    inquirer: ^8.2.0
-    is-node-process: ^1.2.0
-    js-levenshtein: ^1.1.6
-    node-fetch: ^2.6.7
-    outvariant: ^1.4.0
-    path-to-regexp: ^6.3.0
-    strict-event-emitter: ^0.4.3
-    type-fest: ^2.19.0
-    yargs: ^17.3.1
-  peerDependencies:
-    typescript: ">= 4.4.x"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  bin:
-    msw: cli/index.js
-  checksum: 5e1d96d63c0ce07db94373b2315739abecb76dac32dcc6ce116c902ced3e61ef2b1c7ff87eed3627c93fe0588002717edab9c745ebdee29437ed0da4b3beb561
   languageName: node
   linkType: hard
 
