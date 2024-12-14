@@ -10742,7 +10742,7 @@ __metadata:
     "@openapitools/openapi-generator-cli": 2.13.4
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
-    "@types/express": 4.17.1
+    "@types/express": 4.17.21
     "@types/git-url-parse": ^9.0.0
     "@types/node-fetch": ^2.5.12
     "@types/supertest": 2.0.16
@@ -13652,18 +13652,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:4.17.1":
-  version: 4.17.1
-  resolution: "@types/express@npm:4.17.1"
-  dependencies:
-    "@types/body-parser": "*"
-    "@types/express-serve-static-core": "*"
-    "@types/serve-static": "*"
-  checksum: ff2a0b41f707bae64c2cc20a631ff08633a90ad1ec287bea00a43469551f115cf2974e11f1c755f14904026e4dde78f2ce793c61d09f64fd81b43624194eb0c3
-  languageName: node
-  linkType: hard
-
-"@types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
+"@types/express@npm:4.17.21, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
   version: 4.17.21
   resolution: "@types/express@npm:4.17.21"
   dependencies:
