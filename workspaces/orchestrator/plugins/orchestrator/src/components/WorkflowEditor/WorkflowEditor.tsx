@@ -64,7 +64,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
-import { workflowDefinitionsRouteRef } from '../../routes';
+import { workflowRouteRef } from '../../routes';
 import { WorkflowEditorLanguageService } from './channel/WorkflowEditorLanguageService';
 import { WorkflowEditorLanguageServiceChannelApiImpl } from './channel/WorkflowEditorLanguageServiceChannelApiImpl';
 
@@ -111,7 +111,7 @@ const RefForwardingWorkflowEditor: ForwardRefRenderFunction<
   const [canRender, setCanRender] = useState(false);
   const [ready, setReady] = useState(false);
   const navigate = useNavigate();
-  const viewWorkflowLink = useRouteRef(workflowDefinitionsRouteRef);
+  const viewWorkflowLink = useRouteRef(workflowRouteRef);
 
   const currentProcessInstance = useMemo(() => {
     if (kind !== EditorViewKind.RUNTIME) {

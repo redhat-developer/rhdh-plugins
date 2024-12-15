@@ -18,29 +18,27 @@ import { Route, Routes } from 'react-router-dom';
 
 import {
   executeWorkflowRouteRef,
-  workflowDefinitionsRouteRef,
   workflowInstanceRouteRef,
+  workflowRouteRef,
 } from '../routes';
 import { ExecuteWorkflowPage } from './ExecuteWorkflowPage/ExecuteWorkflowPage';
 import { OrchestratorPage } from './OrchestratorPage';
-import { WorkflowDefinitionViewerPage } from './WorkflowDefinitionViewerPage';
 import { WorkflowInstancePage } from './WorkflowInstancePage';
+import { WorkflowPage } from './WorkflowPage';
 
 export const Router = () => {
   return (
+    // relative to orchestrator/
     <Routes>
       <Route path="/*" element={<OrchestratorPage />} />
-      <Route
-        path={workflowInstanceRouteRef.path}
-        element={<WorkflowInstancePage />}
-      />
-      <Route
-        path={workflowDefinitionsRouteRef.path}
-        element={<WorkflowDefinitionViewerPage />}
-      />
+      <Route path={`${workflowRouteRef.path}/*`} element={<WorkflowPage />} />
       <Route
         path={executeWorkflowRouteRef.path}
         element={<ExecuteWorkflowPage />}
+      />
+      <Route
+        path={workflowInstanceRouteRef.path}
+        element={<WorkflowInstancePage />}
       />
     </Routes>
   );

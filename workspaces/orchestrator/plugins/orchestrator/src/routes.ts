@@ -15,30 +15,40 @@
  */
 import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
 
+// orchestrator page
 export const orchestratorRootRouteRef = createRouteRef({
-  id: 'orchestrator',
-});
-
-export const workflowDefinitionsRouteRef = createSubRouteRef({
-  id: 'orchestrator/workflows',
-  parent: orchestratorRootRouteRef,
-  path: '/workflows/:format/:workflowId',
+  id: 'orchestrator', // display WorkflowsTabContent
 });
 
 export const workflowInstancesRouteRef = createSubRouteRef({
   id: 'orchestrator/instances',
   parent: orchestratorRootRouteRef,
-  path: '/instances',
+  path: '/instances', // display WorkflowRunsTabContent
 });
 
+// single instance page
 export const workflowInstanceRouteRef = createSubRouteRef({
   id: 'orchestrator/instances',
   parent: orchestratorRootRouteRef,
-  path: '/instances/:instanceId',
+  path: '/instances/:instanceId', // display WorkflowInstancePage
 });
 
+// workflow page
+export const workflowRouteRef = createSubRouteRef({
+  id: 'orchestrator/workflows',
+  parent: orchestratorRootRouteRef,
+  path: '/workflows/:format/:workflowId', // display WorkflowDefinitionViewerPage
+});
+
+export const workflowRunsRouteRef = createSubRouteRef({
+  id: 'orchestrator/workflows',
+  parent: orchestratorRootRouteRef,
+  path: '/runs', // display WorkflowRunsTabContentFiltered
+});
+
+// execute workflow page
 export const executeWorkflowRouteRef = createSubRouteRef({
   id: 'orchestrator/workflows/execute',
   parent: orchestratorRootRouteRef,
-  path: '/workflows/:workflowId/execute',
+  path: '/workflows/:workflowId/execute', // diaplsy ExecuteWorkflowPage
 });

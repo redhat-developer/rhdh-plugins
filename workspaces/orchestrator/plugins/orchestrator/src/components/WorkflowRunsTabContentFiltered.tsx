@@ -22,7 +22,11 @@ import {
   SelectItem,
   TableColumn,
 } from '@backstage/core-components';
-import { useApi, useRouteRef } from '@backstage/core-plugin-api';
+import {
+  useApi,
+  useRouteRef,
+  useRouteRefParams,
+} from '@backstage/core-plugin-api';
 
 import { Grid } from '@material-ui/core';
 
@@ -36,7 +40,7 @@ import {
 import { orchestratorApiRef } from '../api';
 import { DEFAULT_TABLE_PAGE_SIZE, VALUE_UNAVAILABLE } from '../constants';
 import usePolling from '../hooks/usePolling';
-import { workflowInstanceRouteRef } from '../routes';
+import { workflowInstanceRouteRef, workflowRouteRef } from '../routes';
 import { Selector } from './Selector';
 import OverrideBackstageTable from './ui/OverrideBackstageTable';
 import { mapProcessInstanceToDetails } from './WorkflowInstancePageContent';
@@ -57,7 +61,9 @@ const makeSelectItemsFromProcessInstanceValues = () =>
     }),
   );
 
-export const WorkflowRunsTabContent = () => {
+export const WorkflowRunsTabContentFiltered = () => {
+  const { workflowId } = useRouteRefParams(workflowRouteRef);
+
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
@@ -69,8 +75,8 @@ export const WorkflowRunsTabContent = () => {
     const instances = await orchestratorApi.listInstances({});
     const clonedData: WorkflowRunDetail[] =
       instances.data.items?.map(mapProcessInstanceToDetails) || [];
-    return clonedData;
-  }, [orchestratorApi]);
+    return clonedData.filter(item => item.workflowId === workflowId);
+  }, [orchestratorApi, workflowId]);
 
   const { loading, error, value } = usePolling(fetchInstances);
 
@@ -144,7 +150,7 @@ export const WorkflowRunsTabContent = () => {
   ) : (
     <InfoCard noPadding title={selectors}>
       <OverrideBackstageTable
-        title="Workflow Runs"
+        title="Workflow  Runs"
         options={{
           paging,
           search: true,

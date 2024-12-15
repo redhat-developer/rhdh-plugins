@@ -34,16 +34,13 @@ import {
 
 import { orchestratorApiRef } from '../../api';
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
-import {
-  executeWorkflowRouteRef,
-  workflowDefinitionsRouteRef,
-} from '../../routes';
+import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
 import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
 import { EditorViewKind, WorkflowEditor } from '../WorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDefinitionDetailsCard';
 
 export const WorkflowDefinitionViewerPage = () => {
-  const { workflowId, format } = useRouteRefParams(workflowDefinitionsRouteRef);
+  const { workflowId, format } = useRouteRefParams(workflowRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
 
   const { loading: loadingPermission, allowed: canRun } =
