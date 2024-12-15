@@ -22,7 +22,11 @@ import {
   SelectItem,
   TableColumn,
 } from '@backstage/core-components';
-import { useApi, useRouteRef } from '@backstage/core-plugin-api';
+import {
+  useApi,
+  useRouteRef,
+  useRouteRefParams,
+} from '@backstage/core-plugin-api';
 
 import { Grid } from '@material-ui/core';
 
@@ -35,7 +39,8 @@ import {
 import { orchestratorApiRef } from '../api';
 import { DEFAULT_TABLE_PAGE_SIZE, VALUE_UNAVAILABLE } from '../constants';
 import usePolling from '../hooks/usePolling';
-import { workflowInstanceRouteRef } from '../routes';
+import { workflowInstanceRouteRef, workflowRouteRef } from '../routes';
+import { ExecuteWorkflowButton } from './ExecuteWorkflowButton';
 import { Selector } from './Selector';
 import OverrideBackstageTable from './ui/OverrideBackstageTable';
 import { mapProcessInstanceToDetails } from './WorkflowInstancePageContent';
@@ -56,7 +61,22 @@ const makeSelectItemsFromProcessInstanceValues = () =>
     }),
   );
 
-export const WorkflowRunsTabContent = () => {
+interface Props {
+  error: Error | undefined;
+  loadingPermission: boolean;
+  loading: boolean;
+  canRun: boolean;
+  workflowOverviewDTO: any;
+}
+export const WorkflowRunsTabContent = ({
+  error,
+  loadingPermission,
+  loading,
+  canRun,
+  workflowOverviewDTO,
+}: Props) => {
+  const { workflowId } = useRouteRefParams(workflowRouteRef);
+  const statuses = makeSelectItemsFromProcessInstanceValues();
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
@@ -68,10 +88,16 @@ export const WorkflowRunsTabContent = () => {
     const instances = await orchestratorApi.listInstances({});
     const clonedData: WorkflowRunDetail[] =
       instances.data.items?.map(mapProcessInstanceToDetails) || [];
-    return clonedData;
-  }, [orchestratorApi]);
+    return workflowId
+      ? clonedData.filter(item => item.workflowId === workflowId)
+      : clonedData;
+  }, [orchestratorApi, workflowId]);
 
-  const { loading, error, value } = usePolling(fetchInstances);
+  const {
+    loading: loadingFetchInstances,
+    error2: errorFetchInstances,
+    value,
+  } = usePolling(fetchInstances);
 
   const columns = React.useMemo(
     (): TableColumn<WorkflowRunDetail>[] => [
@@ -109,8 +135,6 @@ export const WorkflowRunsTabContent = () => {
     [workflowInstanceLink],
   );
 
-  const statuses = React.useMemo(makeSelectItemsFromProcessInstanceValues, []);
-
   const filteredData = React.useMemo(
     () =>
       (value ?? []).filter(
@@ -138,21 +162,32 @@ export const WorkflowRunsTabContent = () => {
   );
   const paging = (value?.length || 0) > DEFAULT_TABLE_PAGE_SIZE; // this behavior fits the backstage catalog table behavior https://github.com/backstage/backstage/blob/v1.14.0/plugins/catalog/src/components/CatalogTable/CatalogTable.tsx#L228
 
-  return error ? (
-    <ErrorPanel error={error} />
+  return errorFetchInstances ? (
+    <ErrorPanel error={errorFetchInstances} />
   ) : (
-    <InfoCard noPadding title={selectors}>
-      <OverrideBackstageTable
-        title="Workflow Runs"
-        options={{
-          paging,
-          search: true,
-          pageSize: DEFAULT_TABLE_PAGE_SIZE,
-        }}
-        isLoading={loading}
-        columns={columns}
-        data={filteredData}
+    <Grid container spacing={2} direction="column" wrap="nowrap">
+      <ExecuteWorkflowButton
+        error={error}
+        loadingPermission={loadingPermission}
+        loading={loading}
+        canRun={canRun}
+        workflowOverviewDTO={workflowOverviewDTO}
       />
-    </InfoCard>
+      <Grid item>
+        <InfoCard noPadding title={selectors}>
+          <OverrideBackstageTable
+            title="Workflow Runs"
+            options={{
+              paging,
+              search: true,
+              pageSize: DEFAULT_TABLE_PAGE_SIZE,
+            }}
+            isLoading={loading}
+            columns={columns}
+            data={filteredData}
+          />
+        </InfoCard>
+      </Grid>
+    </Grid>
   );
 };

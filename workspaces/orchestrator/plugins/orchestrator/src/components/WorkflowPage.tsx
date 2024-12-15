@@ -13,29 +13,69 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
+import { useAsync } from 'react-use';
 
 import { TabbedLayout } from '@backstage/core-components';
-import { useRouteRefParams } from '@backstage/core-plugin-api';
+import { useApi, useRouteRefParams } from '@backstage/core-plugin-api';
 
+import {
+  orchestratorWorkflowUsePermission,
+  orchestratorWorkflowUseSpecificPermission,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
+import { orchestratorApiRef } from '../api';
+import { usePermissionArrayDecision } from '../hooks/usePermissionArray';
 import { workflowRouteRef, workflowRunsRouteRef } from '../routes';
 import { BaseOrchestratorPage } from './BaseOrchestratorPage';
 import { WorkflowDefinitionViewerPage } from './WorkflowDefinitionViewerPage';
-import { WorkflowRunsTabContentFiltered } from './WorkflowRunsTabContentFiltered';
+import { WorkflowRunsTabContent } from './WorkflowRunsTabContent';
 
 export const WorkflowPage = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
+  const orchestratorApi = useApi(orchestratorApiRef);
+
+  const { loading: loadingPermission, allowed: canRun } =
+    usePermissionArrayDecision([
+      orchestratorWorkflowUsePermission,
+      orchestratorWorkflowUseSpecificPermission(workflowId),
+    ]);
+  const {
+    value: workflowOverviewDTO,
+    loading,
+    error,
+  } = useAsync(() => {
+    return orchestratorApi.getWorkflowOverview(workflowId);
+  }, []);
+
   return (
-    <BaseOrchestratorPage title={workflowId} noPadding>
+    <BaseOrchestratorPage
+      title={workflowOverviewDTO?.data.name || workflowId}
+      type="Workflows"
+      typeLink="/orchestrator"
+    >
       <TabbedLayout>
         <TabbedLayout.Route path="/" title="Workflow details">
-          <WorkflowDefinitionViewerPage />
+          <WorkflowDefinitionViewerPage
+            error={error}
+            loadingPermission={loadingPermission}
+            loading={loading}
+            canRun={canRun}
+            workflowOverviewDTO={workflowOverviewDTO}
+          />
         </TabbedLayout.Route>
         <TabbedLayout.Route
-          path={workflowRunsRouteRef.path}
+          path={workflowRunsRouteRef.path.split('/').pop() || 'runs'}
           title="Workflow runs"
         >
-          <WorkflowRunsTabContentFiltered />
+          <WorkflowRunsTabContent
+            error={error}
+            loadingPermission={loadingPermission}
+            loading={loading}
+            canRun={canRun}
+            workflowOverviewDTO={workflowOverviewDTO}
+          />
         </TabbedLayout.Route>
       </TabbedLayout>
     </BaseOrchestratorPage>

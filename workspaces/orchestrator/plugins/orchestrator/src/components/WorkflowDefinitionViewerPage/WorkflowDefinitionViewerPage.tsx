@@ -14,110 +14,64 @@
  * limitations under the License.
  */
 import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAsync } from 'react-use';
 
-import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
-import {
-  useApi,
-  useRouteRef,
-  useRouteRefParams,
-} from '@backstage/core-plugin-api';
+import { InfoCard } from '@backstage/core-components';
+import { useRouteRefParams } from '@backstage/core-plugin-api';
 
-import { Button, Grid, Tooltip } from '@material-ui/core';
-import { Skeleton } from '@material-ui/lab';
+import { Grid } from '@material-ui/core';
 
-import {
-  orchestratorWorkflowUsePermission,
-  orchestratorWorkflowUseSpecificPermission,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
-
-import { orchestratorApiRef } from '../../api';
-import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
-import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
-import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
+import { workflowRouteRef } from '../../routes';
+import { ExecuteWorkflowButton } from '../ExecuteWorkflowButton';
 import { EditorViewKind, WorkflowEditor } from '../WorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDefinitionDetailsCard';
 
-export const WorkflowDefinitionViewerPage = () => {
+interface Props {
+  error: Error | undefined;
+  loadingPermission: boolean;
+  loading: boolean;
+  canRun: boolean;
+  workflowOverviewDTO: any;
+}
+
+export const WorkflowDefinitionViewerPage = ({
+  error,
+  loadingPermission,
+  loading,
+  canRun,
+  workflowOverviewDTO,
+}: Props) => {
   const { workflowId, format } = useRouteRefParams(workflowRouteRef);
-  const orchestratorApi = useApi(orchestratorApiRef);
-
-  const { loading: loadingPermission, allowed: canRun } =
-    usePermissionArrayDecision([
-      orchestratorWorkflowUsePermission,
-      orchestratorWorkflowUseSpecificPermission(workflowId),
-    ]);
-  const {
-    value: workflowOverviewDTO,
-    loading,
-    error,
-  } = useAsync(() => {
-    return orchestratorApi.getWorkflowOverview(workflowId);
-  }, []);
-  const navigate = useNavigate();
-  const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
-
   const workflowFormat = useMemo(
     () => (format === 'json' ? 'json' : 'yaml'),
     [format],
   );
 
-  const handleExecute = () => {
-    navigate(executeWorkflowLink({ workflowId }));
-  };
-
   return (
-    <BaseOrchestratorPage
-      title={workflowOverviewDTO?.data.name || workflowId}
-      type="Workflows"
-      typeLink="/orchestrator"
-    >
-      <Grid container spacing={2} direction="column" wrap="nowrap">
-        {error && (
-          <Grid item>
-            <ResponseErrorPanel error={error} />
-          </Grid>
-        )}
-        <Grid container item justifyContent="flex-end" spacing={1}>
-          <Grid item>
-            {loading || loadingPermission ? (
-              <Skeleton variant="text" width="5rem" />
-            ) : (
-              <Tooltip
-                title="user not authorized to execute workflow"
-                disableHoverListener={canRun}
-              >
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleExecute}
-                  disabled={!canRun}
-                >
-                  Run
-                </Button>
-              </Tooltip>
-            )}
-          </Grid>
-        </Grid>
-        <Grid item>
-          <WorkflowDefinitionDetailsCard
-            workflowOverview={workflowOverviewDTO?.data}
-            loading={loading}
-          />
-        </Grid>
-        <Grid item>
-          <InfoCard title="Workflow definition">
-            <div style={{ height: '600px' }}>
-              <WorkflowEditor
-                kind={EditorViewKind.EXTENDED_DIAGRAM_VIEWER}
-                workflowId={workflowId}
-                format={workflowFormat}
-              />
-            </div>
-          </InfoCard>
-        </Grid>
+    <Grid container spacing={2} direction="column" wrap="nowrap">
+      <ExecuteWorkflowButton
+        error={error}
+        loadingPermission={loadingPermission}
+        loading={loading}
+        canRun={canRun}
+        workflowOverviewDTO={workflowOverviewDTO}
+      />
+      <Grid item>
+        <WorkflowDefinitionDetailsCard
+          workflowOverview={workflowOverviewDTO?.data}
+          loading={loading}
+        />
       </Grid>
-    </BaseOrchestratorPage>
+      <Grid item>
+        <InfoCard title="Workflow definition">
+          <div style={{ height: '600px' }}>
+            <WorkflowEditor
+              kind={EditorViewKind.EXTENDED_DIAGRAM_VIEWER}
+              workflowId={workflowId}
+              format={workflowFormat}
+            />
+          </div>
+        </InfoCard>
+      </Grid>
+    </Grid>
   );
 };

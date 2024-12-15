@@ -74,7 +74,7 @@ const usePolling = <T>(
 
   return {
     value: data,
-    error,
+    error2: error,
     loading: isLoading,
     restart,
   };

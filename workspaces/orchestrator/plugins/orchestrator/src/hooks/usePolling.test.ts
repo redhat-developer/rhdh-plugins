@@ -59,7 +59,7 @@ describe('usePolling', () => {
       expect(result.current.loading).toEqual(false);
     });
     await waitFor(() => {
-      expect(result.current.error).toEqual(undefined);
+      expect(result.current.error2).toEqual(undefined);
     });
     await waitFor(() => {
       expect(result.current.value).toEqual(ACTIVE);
@@ -107,7 +107,7 @@ describe('usePolling', () => {
     const { result } = renderHook(() =>
       usePolling(mockAsyncFn, SHORT_REFRESH_INTERVAL),
     );
-    await waitFor(() => expect(result.current.error).toEqual('test error'));
+    await waitFor(() => expect(result.current.error2).toEqual('test error'));
   });
 
   test('should not return error if fails on after first loading, on first polling error, and should preserve previous value', async () => {
@@ -126,7 +126,7 @@ describe('usePolling', () => {
     await waitFor(() => {
       expect(result.current.value).toEqual(COMPLETED);
     });
-    await waitFor(() => expect(result.current.error).toBeUndefined());
+    await waitFor(() => expect(result.current.error2).toBeUndefined());
   });
 
   test('should return error if fails three times, and should preserve previous value, and stop polling', async () => {
@@ -147,7 +147,7 @@ describe('usePolling', () => {
     await waitFor(() => {
       expect(result.current.value).toEqual(ACTIVE1);
     });
-    await waitFor(() => expect(result.current.error).toEqual('test error'));
+    await waitFor(() => expect(result.current.error2).toEqual('test error'));
     expect(mockAsyncFn).toHaveBeenCalledTimes(5);
   });
 
@@ -165,7 +165,7 @@ describe('usePolling', () => {
       await act(async () => jest.advanceTimersByTime(SHORT_REFRESH_INTERVAL));
     }
     await waitFor(() => expect(result.current.value).toEqual(COMPLETED));
-    expect(result.current.error).toEqual(undefined);
+    expect(result.current.error2).toEqual(undefined);
   });
 
   test('should update value after restart', async () => {

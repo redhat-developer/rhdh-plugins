@@ -40,9 +40,11 @@ export const WorkflowsTabContent = () => {
     return overviewsResp.data.overviews;
   }, [orchestratorApi]);
 
-  const { loading, error, value } = usePolling<
-    WorkflowOverviewDTO[] | undefined
-  >(fetchWorkflowOverviews);
+  const {
+    loading,
+    error2: error,
+    value,
+  } = usePolling<WorkflowOverviewDTO[] | undefined>(fetchWorkflowOverviews);
 
   const isReady = React.useMemo(() => !loading && !error, [loading, error]);
 
