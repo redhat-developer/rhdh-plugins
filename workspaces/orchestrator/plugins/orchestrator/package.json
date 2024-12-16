@@ -86,7 +86,7 @@
     "@backstage/dev-utils": "1.1.2",
     "@backstage/test-utils": "1.7.0",
     "@backstage/types": "1.1.1",
-    "@janus-idp/cli": "1.17.0",
+    "@janus-idp/cli": "1.19.1",
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
     "@material-ui/lab": "^4.0.0-alpha.45",
@@ -99,7 +99,7 @@
     "@types/react": "^18.2.58",
     "@types/react-dom": "^18.2.19",
     "@types/uuid": "^9.0.0",
-    "prettier": "3.3.3"
+    "prettier": "3.4.2"
   },
   "peerDependencies": {
     "@material-ui/core": "^4.12.4",
