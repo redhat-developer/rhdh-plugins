@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import '../fonts/font.css';
-
 import { ThemeConfig } from './types';
 import { customDarkTheme } from './darkTheme';
 import { customLightTheme } from './lightTheme';
-import { fonts, typography } from './typography';
+import { redHatFonts } from './fonts';
+import { typography } from './typography';
 
 export const getDefaultThemeConfig = (mode: 'light' | 'dark'): ThemeConfig => {
   const palette = mode === 'dark' ? customDarkTheme() : customLightTheme();
@@ -28,7 +26,7 @@ export const getDefaultThemeConfig = (mode: 'light' | 'dark'): ThemeConfig => {
     variant: 'rhdh',
     mode: mode === 'dark' ? 'dark' : 'light',
     palette,
-    fontFamily: fonts.text,
+    fontFamily: redHatFonts.text,
     typography,
     defaultPageTheme: 'default',
     pageTheme: {
