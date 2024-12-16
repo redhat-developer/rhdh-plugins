@@ -12101,9 +12101,9 @@ __metadata:
     css-loader: 6.11.0
     filemanager-webpack-plugin: 8.0.0
     html-webpack-plugin: 5.6.3
-    monaco-editor: 0.52.2
-    monaco-editor-webpack-plugin: 7.1.0
-    monaco-yaml: 5.2.3
+    monaco-editor: ^0.52.2
+    monaco-editor-webpack-plugin: ^7.1.0
+    monaco-yaml: ^5.2.3
     node-polyfill-webpack-plugin: 3.0.0
     prettier: 3.4.2
     sass: 1.83.0
@@ -12156,7 +12156,7 @@ __metadata:
     "@types/uuid": ^9.0.0
     axios: ^1.7.7
     moment: ^2.29.4
-    monaco-editor: 0.50.0
+    monaco-editor: ^0.52.2
     prettier: 3.4.2
     react-json-view: ^1.21.3
     react-moment: ^1.1.3
@@ -29392,7 +29392,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-editor-webpack-plugin@npm:7.1.0":
+"monaco-editor-webpack-plugin@npm:^7.1.0":
   version: 7.1.0
   resolution: "monaco-editor-webpack-plugin@npm:7.1.0"
   dependencies:
@@ -29404,24 +29404,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-editor@npm:0.50.0":
-  version: 0.50.0
-  resolution: "monaco-editor@npm:0.50.0"
-  checksum: 841b047c89060bcd5e8864c671389f7cda322bd8372663ea71f42eb3d780edbbabc41b151791629fec04bbf3c53b407eb9e5b0829ef95292103d685df0994147
-  languageName: node
-  linkType: hard
-
-"monaco-editor@npm:0.52.2":
-  version: 0.52.2
-  resolution: "monaco-editor@npm:0.52.2"
-  checksum: d5ff7b7a469afee25ac708d9ace0dcc5ef24ed328dfc526a52944a497f0d826cfb0685a778ff4b7becc0a8f7843f260c17ea6de3f6719481d53501d79ebb1260
-  languageName: node
-  linkType: hard
-
 "monaco-editor@npm:^0.39.0":
   version: 0.39.0
   resolution: "monaco-editor@npm:0.39.0"
   checksum: 6d906c5f07fc6761b93bebee70bc1c461d6bbea493252751f4e2e60f26678faced9261ed9cca21613511695e6d7b75c2f2214b6d53aaa479a7e0b6f2d912f90b
+  languageName: node
+  linkType: hard
+
+"monaco-editor@npm:^0.52.2":
+  version: 0.52.2
+  resolution: "monaco-editor@npm:0.52.2"
+  checksum: d5ff7b7a469afee25ac708d9ace0dcc5ef24ed328dfc526a52944a497f0d826cfb0685a778ff4b7becc0a8f7843f260c17ea6de3f6719481d53501d79ebb1260
   languageName: node
   linkType: hard
 
@@ -29461,27 +29454,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-yaml@npm:5.2.3":
-  version: 5.2.3
-  resolution: "monaco-yaml@npm:5.2.3"
-  dependencies:
-    jsonc-parser: ^3.0.0
-    monaco-languageserver-types: ^0.4.0
-    monaco-marker-data-provider: ^1.0.0
-    monaco-types: ^0.1.0
-    monaco-worker-manager: ^2.0.0
-    path-browserify: ^1.0.0
-    prettier: ^2.0.0
-    vscode-languageserver-textdocument: ^1.0.0
-    vscode-languageserver-types: ^3.0.0
-    vscode-uri: ^3.0.0
-    yaml: ^2.0.0
-  peerDependencies:
-    monaco-editor: ">=0.36"
-  checksum: d67a190c18dd2c2cfff0358a1be2610fce40359252df383aa500956f9d189388778412333571dff630f3437f28cf1cfe0eac9c7e354956acf40cc03d468ca0d1
-  languageName: node
-  linkType: hard
-
 "monaco-yaml@npm:^4.0.4":
   version: 4.0.4
   resolution: "monaco-yaml@npm:4.0.4"
@@ -29499,6 +29471,27 @@ __metadata:
   peerDependencies:
     monaco-editor: ">=0.30"
   checksum: c9961a506d248a56bf327f62565a551c04320992f1894ccd2f9da2db138096b073c26db0fc1deddf020139ec819931023e5545fcd0d8b05f23b9400e6c0e34e7
+  languageName: node
+  linkType: hard
+
+"monaco-yaml@npm:^5.2.3":
+  version: 5.2.3
+  resolution: "monaco-yaml@npm:5.2.3"
+  dependencies:
+    jsonc-parser: ^3.0.0
+    monaco-languageserver-types: ^0.4.0
+    monaco-marker-data-provider: ^1.0.0
+    monaco-types: ^0.1.0
+    monaco-worker-manager: ^2.0.0
+    path-browserify: ^1.0.0
+    prettier: ^2.0.0
+    vscode-languageserver-textdocument: ^1.0.0
+    vscode-languageserver-types: ^3.0.0
+    vscode-uri: ^3.0.0
+    yaml: ^2.0.0
+  peerDependencies:
+    monaco-editor: ">=0.36"
+  checksum: d67a190c18dd2c2cfff0358a1be2610fce40359252df383aa500956f9d189388778412333571dff630f3437f28cf1cfe0eac9c7e354956acf40cc03d468ca0d1
   languageName: node
   linkType: hard
 
