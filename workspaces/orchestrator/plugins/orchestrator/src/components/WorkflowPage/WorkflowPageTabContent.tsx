@@ -74,7 +74,7 @@ export const WorkflowPageTabContent = ({
           )}
         </Grid>
       </Grid>
-      {children}
+      <Grid item>{children}</Grid>
     </Grid>
   );
 };

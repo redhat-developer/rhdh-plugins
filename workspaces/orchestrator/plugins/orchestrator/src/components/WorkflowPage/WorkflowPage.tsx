@@ -27,7 +27,7 @@ import {
 
 import { orchestratorApiRef } from '../../api';
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
-import { workflowRouteRef, workflowRunsRouteRef } from '../../routes';
+import { workflowRouteRef, workflowRunsRoutePath } from '../../routes';
 import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
 import { WorkflowRunsTabContent } from '../WorkflowRunsTabContent';
 import { WorkflowDetailsTabContent } from './WorkflowDetailsTabContent';
@@ -68,14 +68,11 @@ export const WorkflowPage = () => {
           >
             <WorkflowDetailsTabContent
               loading={loading}
-              workflowOverviewDTO={workflowOverviewDTO}
+              workflowOverviewDTO={workflowOverviewDTO?.data}
             />
           </WorkflowPageTabContent>
         </TabbedLayout.Route>
-        <TabbedLayout.Route
-          path={workflowRunsRouteRef.path.split('/').pop() || 'runs'}
-          title="Workflow runs"
-        >
+        <TabbedLayout.Route path={workflowRunsRoutePath} title="Workflow runs">
           <WorkflowPageTabContent
             error={error}
             loadingPermission={loadingPermission}

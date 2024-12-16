@@ -32,7 +32,6 @@ import { Grid } from '@material-ui/core';
 
 import {
   capitalize,
-  ellipsis,
   ProcessInstanceStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -60,9 +59,10 @@ const makeSelectItemsFromProcessInstanceValues = () =>
     }),
   );
 
+const statuses = makeSelectItemsFromProcessInstanceValues();
+
 export const WorkflowRunsTabContent = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
-  const statuses = makeSelectItemsFromProcessInstanceValues();
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
@@ -79,7 +79,7 @@ export const WorkflowRunsTabContent = () => {
       : clonedData;
   }, [orchestratorApi, workflowId]);
 
-  const { loading: loading, error: error, value } = usePolling(fetchInstances);
+  const { loading, error, value } = usePolling(fetchInstances);
 
   const columns = React.useMemo(
     (): TableColumn<WorkflowRunDetail>[] => [
@@ -88,7 +88,7 @@ export const WorkflowRunsTabContent = () => {
         field: 'id',
         render: data => (
           <Link to={workflowInstanceLink({ instanceId: data.id })}>
-            {ellipsis(data.id)}
+            {data.id}
           </Link>
         ),
         sorting: false,
@@ -104,17 +104,22 @@ export const WorkflowRunsTabContent = () => {
       {
         title: 'Status',
         field: 'status',
-        render: data => (
+        render: (data: WorkflowRunDetail) => (
           <WorkflowInstanceStatusIndicator
             status={data.status as ProcessInstanceStatusDTO}
           />
         ),
       },
-      {
-        title: 'Category',
-        field: 'category',
-        render: data => capitalize(data.category ?? VALUE_UNAVAILABLE),
-      },
+      ...(workflowId
+        ? []
+        : [
+            {
+              title: 'Category',
+              field: 'category',
+              render: (data: WorkflowRunDetail) =>
+                capitalize(data.category ?? VALUE_UNAVAILABLE),
+            },
+          ]),
       { title: 'Started', field: 'started', defaultSort: 'desc' },
       { title: 'Duration', field: 'duration' },
     ],
@@ -144,27 +149,25 @@ export const WorkflowRunsTabContent = () => {
         </Grid>
       </Grid>
     ),
-    [statusSelectorValue, statuses],
+    [statusSelectorValue],
   );
   const paging = (value?.length || 0) > DEFAULT_TABLE_PAGE_SIZE; // this behavior fits the backstage catalog table behavior https://github.com/backstage/backstage/blob/v1.14.0/plugins/catalog/src/components/CatalogTable/CatalogTable.tsx#L228
 
   return error ? (
     <ErrorPanel error={error} />
   ) : (
-    <Grid item>
-      <InfoCard noPadding title={selectors}>
-        <OverrideBackstageTable
-          title="Workflow Runs"
-          options={{
-            paging,
-            search: true,
-            pageSize: DEFAULT_TABLE_PAGE_SIZE,
-          }}
-          isLoading={loading}
-          columns={columns}
-          data={filteredData}
-        />
-      </InfoCard>
-    </Grid>
+    <InfoCard noPadding title={selectors}>
+      <OverrideBackstageTable
+        title="Workflow Runs"
+        options={{
+          paging,
+          search: true,
+          pageSize: DEFAULT_TABLE_PAGE_SIZE,
+        }}
+        isLoading={loading}
+        columns={columns}
+        data={filteredData}
+      />
+    </InfoCard>
   );
 };

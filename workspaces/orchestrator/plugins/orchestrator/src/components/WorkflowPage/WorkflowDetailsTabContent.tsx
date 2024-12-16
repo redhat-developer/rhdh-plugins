@@ -43,7 +43,7 @@ export const WorkflowDetailsTabContent = ({
     <>
       <Grid item>
         <WorkflowDefinitionDetailsCard
-          workflowOverview={workflowOverviewDTO?.data}
+          workflowOverview={workflowOverviewDTO}
           loading={loading}
         />
       </Grid>

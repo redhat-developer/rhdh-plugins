@@ -131,12 +131,9 @@ export const WorkflowInstancePage = ({
     return res.data;
   }, [instanceId, orchestratorApi, queryInstanceId]);
 
-  const {
-    loading,
-    error: error,
-    value,
-    restart,
-  } = usePolling<AssessedProcessInstanceDTO | undefined>(
+  const { loading, error, value, restart } = usePolling<
+    AssessedProcessInstanceDTO | undefined
+  >(
     fetchInstance,
     SHORT_REFRESH_INTERVAL,
     (curValue: AssessedProcessInstanceDTO | undefined) =>
