@@ -22,14 +22,14 @@ import { Grid } from '@material-ui/core';
 
 import { workflowRouteRef } from '../../routes';
 import { EditorViewKind, WorkflowEditor } from '../WorkflowEditor';
-import WorkflowDefinitionDetailsCard from './WorkflowDefinitionDetailsCard';
+import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
 
 interface Props {
   loading: boolean;
   workflowOverviewDTO: any;
 }
 
-export const WorkflowDefinitionViewerPage = ({
+export const WorkflowDetailsTabContent = ({
   loading,
   workflowOverviewDTO,
 }: Props) => {

@@ -22,7 +22,7 @@ import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import { Button, Grid, Tooltip } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 
-import { executeWorkflowRouteRef, workflowRouteRef } from '../routes';
+import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
 
 interface Props {
   error: Error | undefined;
@@ -32,7 +32,7 @@ interface Props {
   children: ReactNode;
 }
 
-export const ExecuteWorkflowButton = ({
+export const WorkflowPageTabContent = ({
   error,
   loadingPermission,
   loading,

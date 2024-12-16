@@ -25,13 +25,13 @@ import {
   orchestratorWorkflowUseSpecificPermission,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { orchestratorApiRef } from '../api';
-import { usePermissionArrayDecision } from '../hooks/usePermissionArray';
-import { workflowRouteRef, workflowRunsRouteRef } from '../routes';
-import { BaseOrchestratorPage } from './BaseOrchestratorPage';
-import { WorkflowDefinitionViewerPage } from './WorkflowDefinitionViewerPage';
-import { ExecuteWorkflowButton } from './WorkflowPageTabContent';
-import { WorkflowRunsTabContent } from './WorkflowRunsTabContent';
+import { orchestratorApiRef } from '../../api';
+import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
+import { workflowRouteRef, workflowRunsRouteRef } from '../../routes';
+import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
+import { WorkflowRunsTabContent } from '../WorkflowRunsTabContent';
+import { WorkflowDetailsTabContent } from './WorkflowDetailsTabContent';
+import { WorkflowPageTabContent } from './WorkflowPageTabContent';
 
 export const WorkflowPage = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
@@ -56,33 +56,34 @@ export const WorkflowPage = () => {
       title={workflowOverviewDTO?.data.name || workflowId}
       type="Workflows"
       typeLink="/orchestrator"
+      noPadding
     >
       <TabbedLayout>
         <TabbedLayout.Route path="/" title="Workflow details">
-          <ExecuteWorkflowButton
+          <WorkflowPageTabContent
             error={error}
             loadingPermission={loadingPermission}
             loading={loading}
             canRun={canRun}
           >
-            <WorkflowDefinitionViewerPage
+            <WorkflowDetailsTabContent
               loading={loading}
               workflowOverviewDTO={workflowOverviewDTO}
             />
-          </ExecuteWorkflowButton>
+          </WorkflowPageTabContent>
         </TabbedLayout.Route>
         <TabbedLayout.Route
           path={workflowRunsRouteRef.path.split('/').pop() || 'runs'}
           title="Workflow runs"
         >
-          <ExecuteWorkflowButton
+          <WorkflowPageTabContent
             error={error}
             loadingPermission={loadingPermission}
             loading={loading}
             canRun={canRun}
           >
             <WorkflowRunsTabContent />
-          </ExecuteWorkflowButton>
+          </WorkflowPageTabContent>
         </TabbedLayout.Route>
       </TabbedLayout>
     </BaseOrchestratorPage>

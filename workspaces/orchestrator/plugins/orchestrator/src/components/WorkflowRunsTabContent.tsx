@@ -93,10 +93,14 @@ export const WorkflowRunsTabContent = () => {
         ),
         sorting: false,
       },
-      {
-        title: 'Workflow name',
-        field: 'name',
-      },
+      ...(workflowId
+        ? []
+        : [
+            {
+              title: 'Workflow name',
+              field: 'name',
+            },
+          ]),
       {
         title: 'Status',
         field: 'status',
@@ -114,7 +118,7 @@ export const WorkflowRunsTabContent = () => {
       { title: 'Started', field: 'started', defaultSort: 'desc' },
       { title: 'Duration', field: 'duration' },
     ],
-    [workflowInstanceLink],
+    [workflowInstanceLink, workflowId],
   );
 
   const filteredData = React.useMemo(
