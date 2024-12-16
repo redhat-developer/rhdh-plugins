@@ -10086,7 +10086,7 @@ __metadata:
     "@types/react-grid-layout": 1.3.5
     msw: 1.3.5
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-grid-layout: 1.4.4
+    react-grid-layout: 1.5.0
     react-use: 17.5.1
     tss-react: 4.9.14
   peerDependencies:
@@ -28504,9 +28504,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-grid-layout@npm:1.4.4":
-  version: 1.4.4
-  resolution: "react-grid-layout@npm:1.4.4"
+"react-grid-layout@npm:1.5.0":
+  version: 1.5.0
+  resolution: "react-grid-layout@npm:1.5.0"
   dependencies:
     clsx: ^2.0.0
     fast-equals: ^4.0.3
@@ -28517,7 +28517,7 @@ __metadata:
   peerDependencies:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
-  checksum: 0d1d27d6ca58d5b7e9bf778f5d74e5a6353737980f86652b6a799a83b8683735d333f2a0d9b48e3186879da3eefd7f53a7db05a5149dfba27d9d124e5cd3f138
+  checksum: 74aac7226efdfbe932f9672f6cc6f24bdfe8d385875fa9279374ec87610df5363f63a558cc7d6e9eba5f2a68293054e717a91f0d04cbf835ffc099f74306c409
   languageName: node
   linkType: hard
 
