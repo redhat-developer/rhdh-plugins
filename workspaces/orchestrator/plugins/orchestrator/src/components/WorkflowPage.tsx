@@ -30,6 +30,7 @@ import { usePermissionArrayDecision } from '../hooks/usePermissionArray';
 import { workflowRouteRef, workflowRunsRouteRef } from '../routes';
 import { BaseOrchestratorPage } from './BaseOrchestratorPage';
 import { WorkflowDefinitionViewerPage } from './WorkflowDefinitionViewerPage';
+import { ExecuteWorkflowButton } from './WorkflowPageTabContent';
 import { WorkflowRunsTabContent } from './WorkflowRunsTabContent';
 
 export const WorkflowPage = () => {
@@ -41,6 +42,7 @@ export const WorkflowPage = () => {
       orchestratorWorkflowUsePermission,
       orchestratorWorkflowUseSpecificPermission(workflowId),
     ]);
+
   const {
     value: workflowOverviewDTO,
     loading,
@@ -57,25 +59,30 @@ export const WorkflowPage = () => {
     >
       <TabbedLayout>
         <TabbedLayout.Route path="/" title="Workflow details">
-          <WorkflowDefinitionViewerPage
+          <ExecuteWorkflowButton
             error={error}
             loadingPermission={loadingPermission}
             loading={loading}
             canRun={canRun}
-            workflowOverviewDTO={workflowOverviewDTO}
-          />
+          >
+            <WorkflowDefinitionViewerPage
+              loading={loading}
+              workflowOverviewDTO={workflowOverviewDTO}
+            />
+          </ExecuteWorkflowButton>
         </TabbedLayout.Route>
         <TabbedLayout.Route
           path={workflowRunsRouteRef.path.split('/').pop() || 'runs'}
           title="Workflow runs"
         >
-          <WorkflowRunsTabContent
+          <ExecuteWorkflowButton
             error={error}
             loadingPermission={loadingPermission}
             loading={loading}
             canRun={canRun}
-            workflowOverviewDTO={workflowOverviewDTO}
-          />
+          >
+            <WorkflowRunsTabContent />
+          </ExecuteWorkflowButton>
         </TabbedLayout.Route>
       </TabbedLayout>
     </BaseOrchestratorPage>

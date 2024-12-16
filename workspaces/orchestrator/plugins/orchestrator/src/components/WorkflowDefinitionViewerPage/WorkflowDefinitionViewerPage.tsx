@@ -21,23 +21,16 @@ import { useRouteRefParams } from '@backstage/core-plugin-api';
 import { Grid } from '@material-ui/core';
 
 import { workflowRouteRef } from '../../routes';
-import { ExecuteWorkflowButton } from '../ExecuteWorkflowButton';
 import { EditorViewKind, WorkflowEditor } from '../WorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDefinitionDetailsCard';
 
 interface Props {
-  error: Error | undefined;
-  loadingPermission: boolean;
   loading: boolean;
-  canRun: boolean;
   workflowOverviewDTO: any;
 }
 
 export const WorkflowDefinitionViewerPage = ({
-  error,
-  loadingPermission,
   loading,
-  canRun,
   workflowOverviewDTO,
 }: Props) => {
   const { workflowId, format } = useRouteRefParams(workflowRouteRef);
@@ -47,14 +40,7 @@ export const WorkflowDefinitionViewerPage = ({
   );
 
   return (
-    <Grid container spacing={2} direction="column" wrap="nowrap">
-      <ExecuteWorkflowButton
-        error={error}
-        loadingPermission={loadingPermission}
-        loading={loading}
-        canRun={canRun}
-        workflowOverviewDTO={workflowOverviewDTO}
-      />
+    <>
       <Grid item>
         <WorkflowDefinitionDetailsCard
           workflowOverview={workflowOverviewDTO?.data}
@@ -72,6 +58,6 @@ export const WorkflowDefinitionViewerPage = ({
           </div>
         </InfoCard>
       </Grid>
-    </Grid>
+    </>
   );
 };

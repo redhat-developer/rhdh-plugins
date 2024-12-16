@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ResponseErrorPanel } from '@backstage/core-components';
@@ -29,13 +29,15 @@ interface Props {
   loadingPermission: boolean;
   loading: boolean;
   canRun: boolean;
-  workflowOverviewDTO: any;
+  children: ReactNode;
 }
+
 export const ExecuteWorkflowButton = ({
   error,
   loadingPermission,
   loading,
   canRun,
+  children,
 }: Props) => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const navigate = useNavigate();
@@ -45,7 +47,7 @@ export const ExecuteWorkflowButton = ({
   };
 
   return (
-    <>
+    <Grid container spacing={2} direction="column" wrap="nowrap">
       {error && (
         <Grid item>
           <ResponseErrorPanel error={error} />
@@ -72,6 +74,7 @@ export const ExecuteWorkflowButton = ({
           )}
         </Grid>
       </Grid>
-    </>
+      {children}
+    </Grid>
   );
 };

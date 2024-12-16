@@ -133,7 +133,7 @@ export const WorkflowInstancePage = ({
 
   const {
     loading,
-    error2: error,
+    error: error,
     value,
     restart,
   } = usePolling<AssessedProcessInstanceDTO | undefined>(

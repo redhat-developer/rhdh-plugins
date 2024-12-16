@@ -40,7 +40,6 @@ import { orchestratorApiRef } from '../api';
 import { DEFAULT_TABLE_PAGE_SIZE, VALUE_UNAVAILABLE } from '../constants';
 import usePolling from '../hooks/usePolling';
 import { workflowInstanceRouteRef, workflowRouteRef } from '../routes';
-import { ExecuteWorkflowButton } from './ExecuteWorkflowButton';
 import { Selector } from './Selector';
 import OverrideBackstageTable from './ui/OverrideBackstageTable';
 import { mapProcessInstanceToDetails } from './WorkflowInstancePageContent';
@@ -61,20 +60,7 @@ const makeSelectItemsFromProcessInstanceValues = () =>
     }),
   );
 
-interface Props {
-  error: Error | undefined;
-  loadingPermission: boolean;
-  loading: boolean;
-  canRun: boolean;
-  workflowOverviewDTO: any;
-}
-export const WorkflowRunsTabContent = ({
-  error,
-  loadingPermission,
-  loading,
-  canRun,
-  workflowOverviewDTO,
-}: Props) => {
+export const WorkflowRunsTabContent = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const statuses = makeSelectItemsFromProcessInstanceValues();
   const orchestratorApi = useApi(orchestratorApiRef);
@@ -93,11 +79,7 @@ export const WorkflowRunsTabContent = ({
       : clonedData;
   }, [orchestratorApi, workflowId]);
 
-  const {
-    loading: loadingFetchInstances,
-    error2: errorFetchInstances,
-    value,
-  } = usePolling(fetchInstances);
+  const { loading: loading, error: error, value } = usePolling(fetchInstances);
 
   const columns = React.useMemo(
     (): TableColumn<WorkflowRunDetail>[] => [
@@ -162,32 +144,23 @@ export const WorkflowRunsTabContent = ({
   );
   const paging = (value?.length || 0) > DEFAULT_TABLE_PAGE_SIZE; // this behavior fits the backstage catalog table behavior https://github.com/backstage/backstage/blob/v1.14.0/plugins/catalog/src/components/CatalogTable/CatalogTable.tsx#L228
 
-  return errorFetchInstances ? (
-    <ErrorPanel error={errorFetchInstances} />
+  return error ? (
+    <ErrorPanel error={error} />
   ) : (
-    <Grid container spacing={2} direction="column" wrap="nowrap">
-      <ExecuteWorkflowButton
-        error={error}
-        loadingPermission={loadingPermission}
-        loading={loading}
-        canRun={canRun}
-        workflowOverviewDTO={workflowOverviewDTO}
-      />
-      <Grid item>
-        <InfoCard noPadding title={selectors}>
-          <OverrideBackstageTable
-            title="Workflow Runs"
-            options={{
-              paging,
-              search: true,
-              pageSize: DEFAULT_TABLE_PAGE_SIZE,
-            }}
-            isLoading={loading}
-            columns={columns}
-            data={filteredData}
-          />
-        </InfoCard>
-      </Grid>
+    <Grid item>
+      <InfoCard noPadding title={selectors}>
+        <OverrideBackstageTable
+          title="Workflow Runs"
+          options={{
+            paging,
+            search: true,
+            pageSize: DEFAULT_TABLE_PAGE_SIZE,
+          }}
+          isLoading={loading}
+          columns={columns}
+          data={filteredData}
+        />
+      </InfoCard>
     </Grid>
   );
 };

@@ -42,7 +42,7 @@ export const WorkflowsTabContent = () => {
 
   const {
     loading,
-    error2: error,
+    error: error,
     value,
   } = usePolling<WorkflowOverviewDTO[] | undefined>(fetchWorkflowOverviews);
 
