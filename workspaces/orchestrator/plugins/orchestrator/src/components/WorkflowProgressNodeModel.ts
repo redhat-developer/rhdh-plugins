@@ -48,18 +48,19 @@ export const fromNodeInstanceToWorkflowProgressNodeModel =
     }
 
     if (node.definitionId === workflowError?.nodeDefinitionId) {
-      model.status = 'Error';
+      model.status = ProcessInstanceStatusDTO.Error;
       model.error = workflowError;
     } else if (node.enter && node.exit) {
-      model.status = 'Completed';
+      model.status = ProcessInstanceStatusDTO.Completed;
     } else if (!node.exit) {
-      model.status = 'Active';
+      model.status = ProcessInstanceStatusDTO.Active;
     }
 
     if (
       workflowStatus &&
       isLastNode &&
-      ['ABORTED', 'SUSPENDED'].includes(workflowStatus)
+      (workflowStatus === ProcessInstanceStatusDTO.Aborted ||
+        workflowStatus === ProcessInstanceStatusDTO.Suspended)
     ) {
       model.status = workflowStatus;
     }

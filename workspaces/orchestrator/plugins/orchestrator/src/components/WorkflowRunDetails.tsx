@@ -65,7 +65,7 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
           <Typography variant="subtitle2" component="div">
             <b>
               <WorkflowInstanceStatusIndicator
-                status={details.status as ProcessInstanceStatusDTO}
+                status={details.state as ProcessInstanceStatusDTO}
               />
             </b>
           </Typography>
@@ -89,7 +89,7 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
       <Grid item md={4} key="Started">
         <AboutField label="Started">
           <Typography variant="subtitle2" component="div">
-            <b>{details.started}</b>
+            <b>{details.start}</b>
           </Typography>
         </AboutField>
       </Grid>

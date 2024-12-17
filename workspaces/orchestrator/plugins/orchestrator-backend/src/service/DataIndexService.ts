@@ -306,14 +306,17 @@ export class DataIndexService {
 
     this.logger.debug(`GraphQL query: ${graphQlQuery}`);
 
-    const result = await this.client.query(graphQlQuery, {});
-
+    const result = await this.client.query<{
+      ProcessInstances: ProcessInstance[];
+    }>(graphQlQuery, {});
     this.logger.debug(
       `Fetch process instances result: ${JSON.stringify(result)}`,
     );
-
-    const processInstancesSrc = result.data
-      .ProcessInstances as ProcessInstance[];
+    if (result.error) {
+      this.logger.error(`Error when fetching instances: ${result.error}`);
+      throw result.error;
+    }
+    const processInstancesSrc = result.data ? result.data.ProcessInstances : [];
 
     const processInstances = await Promise.all(
       processInstancesSrc.map(async instance => {
@@ -321,50 +324,6 @@ export class DataIndexService {
       }),
     );
     return processInstances;
-  }
-
-  public async fetchInstancesTotalCount(
-    definitionIds?: string[],
-    filter?: Filter,
-  ): Promise<number> {
-    const definitionIdsCondition = definitionIds
-      ? `processId: {in: ${JSON.stringify(definitionIds)}}`
-      : undefined;
-    this.initInputProcessDefinitionArgs();
-    const filterCondition = filter
-      ? buildFilterCondition(
-          await this.inspectInputArgument('ProcessInstance'),
-          'ProcessInstance',
-          filter,
-        )
-      : '';
-
-    let whereClause: string | undefined;
-    if (definitionIds && filter) {
-      whereClause = `and: [{${definitionIdsCondition}}, {${filterCondition}}]`;
-    } else if (definitionIdsCondition || filterCondition) {
-      whereClause = definitionIdsCondition ?? filterCondition;
-    }
-
-    const graphQlQuery = buildGraphQlQuery({
-      type: 'ProcessInstances',
-      queryBody: 'id',
-      whereClause,
-    });
-    this.logger.debug(`GraphQL query: ${graphQlQuery}`);
-
-    const result = await this.client.query(graphQlQuery, {});
-
-    if (result.error) {
-      this.logger.error(
-        `Error when fetching instances total count: ${result.error}`,
-      );
-      throw result.error;
-    }
-
-    const idArr = result.data.ProcessInstances as ProcessInstance[];
-
-    return idArr.length;
   }
 
   private async getWorkflowDefinitionFromInstance(instance: ProcessInstance) {

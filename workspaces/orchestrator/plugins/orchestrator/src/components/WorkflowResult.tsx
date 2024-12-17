@@ -292,7 +292,7 @@ export const WorkflowResult: React.FC<{
       title="Results"
       subheader={
         <ResultMessage
-          status={instance.status}
+          status={instance.state}
           error={instance.error}
           resultMessage={result?.message}
           completedWith={result?.completedWith}

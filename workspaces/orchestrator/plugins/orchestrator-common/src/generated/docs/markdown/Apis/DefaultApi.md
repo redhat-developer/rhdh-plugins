@@ -103,7 +103,7 @@ No authorization required
 
 <a name="getInstances"></a>
 # **getInstances**
-> ProcessInstanceListResultDTO getInstances(GetInstancesRequest)
+> ProcessInstanceListResultDTO getInstances(SearchRequest)
 
 Get instances
 
@@ -113,7 +113,7 @@ Get instances
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **GetInstancesRequest** | [**GetInstancesRequest**](../Models/GetInstancesRequest.md)| Parameters for retrieving instances | [optional] |
+| **SearchRequest** | [**SearchRequest**](../Models/SearchRequest.md)| Parameters for retrieving instances | [optional] |
 
 ### Return type
 

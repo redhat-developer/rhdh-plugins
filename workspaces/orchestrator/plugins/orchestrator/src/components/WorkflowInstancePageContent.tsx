@@ -50,10 +50,10 @@ export const mapProcessInstanceToDetails = (
     id: instance.id,
     name,
     workflowId: instance.processId,
-    started,
+    start: started,
     duration,
     category: instance.category,
-    status: instance.status,
+    state: instance.state,
     description: instance.description,
     businessKey: instance.businessKey,
   };
@@ -165,7 +165,7 @@ export const WorkflowInstancePageContent: React.FC<{
             <WorkflowProgress
               workflowError={assessedInstance.instance.error}
               workflowNodes={assessedInstance.instance.nodes}
-              workflowStatus={assessedInstance.instance.status}
+              workflowStatus={assessedInstance.instance.state}
             />
           </InfoCard>
         </Grid>

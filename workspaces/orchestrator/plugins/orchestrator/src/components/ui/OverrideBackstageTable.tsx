@@ -26,16 +26,23 @@ import { makeStyles } from '@material-ui/core';
 // This is achieved by overriding the global Mui-disabled class, which results in the actions column header background turning gray.
 // See https://github.com/janus-idp/backstage-showcase/blob/main/packages/app/src/themes/componentOverrides.ts#L59
 
-const useStyles = makeStyles({
-  orchestratorTable: {
+const useStyles = makeStyles(() => ({
+  orchestratorTable: ({ removeOutline }: { removeOutline: boolean }) => ({
     '& .Mui-disabled': {
       backgroundColor: 'transparent',
     },
-  },
-});
+    ...(removeOutline && {
+      '& [class^=MuiPaper]': {
+        outline: 'unset',
+      },
+    }),
+  }),
+}));
 
-const OverrideBackstageTable = <T extends object>(props: TableProps<T>) => {
-  const classes = useStyles();
+const OverrideBackstageTable = <T extends object>(
+  props: TableProps<T> & { removeOutline?: boolean },
+) => {
+  const classes = useStyles({ removeOutline: props.removeOutline || false });
   return (
     <div className={classes.orchestratorTable}>
       <BackstageTable

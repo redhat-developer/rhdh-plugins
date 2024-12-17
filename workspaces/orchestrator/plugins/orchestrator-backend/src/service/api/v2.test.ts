@@ -65,7 +65,6 @@ const createMockOrchestratorService = (): OrchestratorService => {
   mockOrchestratorService.fetchWorkflowInfo = jest.fn();
   mockOrchestratorService.fetchInstances = jest.fn();
   mockOrchestratorService.fetchInstance = jest.fn();
-  mockOrchestratorService.fetchInstancesTotalCount = jest.fn();
   mockOrchestratorService.executeWorkflow = jest.fn();
   mockOrchestratorService.abortWorkflowInstance = jest.fn();
 

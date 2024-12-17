@@ -116,17 +116,13 @@ export class V2 {
       filter,
       workflowIds,
     });
-    const totalCount = await this.orchestratorService.fetchInstancesTotalCount(
-      workflowIds,
-      filter,
-    );
 
     const result: ProcessInstanceListResultDTO = {
       items: instances?.map(mapToProcessInstanceDTO),
       paginationInfo: {
         pageSize: pagination?.limit,
         offset: pagination?.offset,
-        totalCount: totalCount,
+        totalCount: 0,
       },
     };
     return result;

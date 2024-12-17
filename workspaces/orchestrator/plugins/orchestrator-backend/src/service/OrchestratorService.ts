@@ -85,19 +85,6 @@ export class OrchestratorService {
     });
   }
 
-  public async fetchInstancesTotalCount(
-    workflowIds?: string[],
-    filter?: Filter,
-  ): Promise<number> {
-    const definitionIds = workflowIds
-      ? workflowIds
-      : this.workflowCacheService.definitionIds;
-    return await this.dataIndexService.fetchInstancesTotalCount(
-      definitionIds,
-      filter,
-    );
-  }
-
   public async fetchWorkflowSource(args: {
     definitionId: string;
     cacheHandler?: CacheHandler;

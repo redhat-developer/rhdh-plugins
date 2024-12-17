@@ -138,9 +138,9 @@ export const WorkflowInstancePage = ({
     SHORT_REFRESH_INTERVAL,
     (curValue: AssessedProcessInstanceDTO | undefined) =>
       !!curValue &&
-      (curValue.instance.status === 'Active' ||
-        curValue.instance.status === 'Pending' ||
-        !curValue.instance.status),
+      (curValue.instance.state === ProcessInstanceStatusDTO.Active ||
+        curValue.instance.state === ProcessInstanceStatusDTO.Pending ||
+        !curValue.instance.state),
   );
 
   const workflowId = value?.instance?.processId;
@@ -154,13 +154,13 @@ export const WorkflowInstancePage = ({
   );
 
   const canAbort =
-    value?.instance.status === ProcessInstanceStatusDTO.Active ||
-    value?.instance.status === ProcessInstanceStatusDTO.Error;
+    value?.instance.state === ProcessInstanceStatusDTO.Active ||
+    value?.instance.state === ProcessInstanceStatusDTO.Error;
 
   const canRerun =
-    value?.instance.status === ProcessInstanceStatusDTO.Completed ||
-    value?.instance.status === ProcessInstanceStatusDTO.Aborted ||
-    value?.instance.status === ProcessInstanceStatusDTO.Error;
+    value?.instance.state === ProcessInstanceStatusDTO.Completed ||
+    value?.instance.state === ProcessInstanceStatusDTO.Aborted ||
+    value?.instance.state === ProcessInstanceStatusDTO.Error;
 
   const toggleAbortConfirmationDialog = () => {
     setIsAbortConfirmationDialogOpen(!isAbortConfirmationDialogOpen);

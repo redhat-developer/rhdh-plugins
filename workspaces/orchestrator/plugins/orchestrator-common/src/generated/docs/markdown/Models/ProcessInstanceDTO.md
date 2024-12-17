@@ -6,7 +6,7 @@
 | **id** | **String** |  | [default to null] |
 | **processId** | **String** |  | [default to null] |
 | **processName** | **String** |  | [optional] [default to null] |
-| **status** | [**ProcessInstanceStatusDTO**](ProcessInstanceStatusDTO.md) |  | [optional] [default to null] |
+| **state** | [**ProcessInstanceStatusDTO**](ProcessInstanceStatusDTO.md) |  | [optional] [default to null] |
 | **endpoint** | **String** |  | [optional] [default to null] |
 | **serviceUrl** | **String** |  | [optional] [default to null] |
 | **start** | **String** |  | [optional] [default to null] |

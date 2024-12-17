@@ -23,6 +23,8 @@ import ErrorIcon from '@mui/icons-material/Error';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 
+import { ProcessInstanceStatusDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
 import { VALUE_UNAVAILABLE } from '../constants';
 import { useWorkflowInstanceStateColors } from '../hooks/useWorkflowInstanceStatusColors';
 import { Paragraph } from './Paragraph';
@@ -34,7 +36,7 @@ const WorkflowProgressNodeIcon: React.FC<{
 }> = ({ status, error }) => {
   const color = useWorkflowInstanceStateColors(status);
   switch (status) {
-    case 'Error': {
+    case ProcessInstanceStatusDTO.Error: {
       return (
         <Tooltip
           title={
@@ -46,35 +48,35 @@ const WorkflowProgressNodeIcon: React.FC<{
         </Tooltip>
       );
     }
-    case 'Completed': {
+    case ProcessInstanceStatusDTO.Completed: {
       return (
         <Tooltip title="Completed">
           <CheckCircleIcon className={color} />
         </Tooltip>
       );
     }
-    case 'Active': {
+    case ProcessInstanceStatusDTO.Active: {
       return (
         <Tooltip title="Active">
           <HourglassTopIcon className={color} />
         </Tooltip>
       );
     }
-    case 'Aborted': {
+    case ProcessInstanceStatusDTO.Aborted: {
       return (
         <Tooltip title="Aborted">
           <CancelIcon className={color} />
         </Tooltip>
       );
     }
-    case 'Suspended': {
+    case ProcessInstanceStatusDTO.Suspended: {
       return (
         <Tooltip title="Suspended">
           <PauseCircleIcon className={color} />
         </Tooltip>
       );
     }
-    case 'Pending': {
+    case ProcessInstanceStatusDTO.Pending: {
       return (
         <Tooltip title="Pending">
           <HourglassTopIcon className={color} />

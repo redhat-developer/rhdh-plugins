@@ -121,7 +121,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetInstancesRequest'
+              $ref: '#/components/schemas/SearchRequest'
       responses:
         '200':
           description: Success
@@ -477,7 +477,7 @@ components:
           type: string
         processName:
           type: string
-        status:
+        state:
           $ref: '#/components/schemas/ProcessInstanceStatusDTO'
         endpoint:
           type: string
@@ -569,12 +569,12 @@ components:
       type: string
       description: Status of the workflow run
       enum:
-        - Active
-        - Error
-        - Completed
-        - Aborted
-        - Suspended
-        - Pending
+        - ACTIVE
+        - ERROR
+        - COMPLETED
+        - ABORTED
+        - SUSPENDED
+        - PENDING
     WorkflowRunStatusDTO:
       type: object
       properties:
