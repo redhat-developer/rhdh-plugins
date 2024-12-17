@@ -145,25 +145,6 @@ export type Filter = FieldFilter | LogicalFilter;
 /**
  * 
  * @export
- * @interface GetInstancesRequest
- */
-export interface GetInstancesRequest {
-    /**
-     * 
-     * @type {PaginationInfoDTO}
-     * @memberof GetInstancesRequest
-     */
-    'paginationInfo'?: PaginationInfoDTO;
-    /**
-     * 
-     * @type {SearchRequest}
-     * @memberof GetInstancesRequest
-     */
-    'filters'?: SearchRequest;
-}
-/**
- * 
- * @export
  * @interface GetOverviewsRequestParams
  */
 export interface GetOverviewsRequestParams {
@@ -302,12 +283,6 @@ export interface PaginationInfoDTO {
     'offset'?: number;
     /**
      * 
-     * @type {number}
-     * @memberof PaginationInfoDTO
-     */
-    'totalCount'?: number;
-    /**
-     * 
      * @type {string}
      * @memberof PaginationInfoDTO
      */
@@ -356,7 +331,7 @@ export interface ProcessInstanceDTO {
      * @type {ProcessInstanceStatusDTO}
      * @memberof ProcessInstanceDTO
      */
-    'status'?: ProcessInstanceStatusDTO;
+    'state'?: ProcessInstanceStatusDTO;
     /**
      * 
      * @type {string}
@@ -477,12 +452,12 @@ export interface ProcessInstanceListResultDTO {
  */
 
 export const ProcessInstanceStatusDTO = {
-    Active: 'Active',
-    Error: 'Error',
-    Completed: 'Completed',
-    Aborted: 'Aborted',
-    Suspended: 'Suspended',
-    Pending: 'Pending'
+    Active: 'ACTIVE',
+    Error: 'ERROR',
+    Completed: 'COMPLETED',
+    Aborted: 'ABORTED',
+    Suspended: 'SUSPENDED',
+    Pending: 'PENDING'
 } as const;
 
 export type ProcessInstanceStatusDTO = typeof ProcessInstanceStatusDTO[keyof typeof ProcessInstanceStatusDTO];
@@ -1003,11 +978,11 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * Retrieve an array of workflow executions (instances)
          * @summary Get instances
-         * @param {GetInstancesRequest} [getInstancesRequest] Parameters for retrieving instances
+         * @param {SearchRequest} [searchRequest] Parameters for retrieving instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getInstances: async (getInstancesRequest?: GetInstancesRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getInstances: async (searchRequest?: SearchRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/v2/workflows/instances`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1027,7 +1002,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(getInstancesRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(searchRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1332,12 +1307,12 @@ export const DefaultApiFp = function(configuration?: Configuration) {
         /**
          * Retrieve an array of workflow executions (instances)
          * @summary Get instances
-         * @param {GetInstancesRequest} [getInstancesRequest] Parameters for retrieving instances
+         * @param {SearchRequest} [searchRequest] Parameters for retrieving instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getInstances(getInstancesRequest?: GetInstancesRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProcessInstanceListResultDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getInstances(getInstancesRequest, options);
+        async getInstances(searchRequest?: SearchRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProcessInstanceListResultDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getInstances(searchRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.getInstances']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1477,12 +1452,12 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         /**
          * Retrieve an array of workflow executions (instances)
          * @summary Get instances
-         * @param {GetInstancesRequest} [getInstancesRequest] Parameters for retrieving instances
+         * @param {SearchRequest} [searchRequest] Parameters for retrieving instances
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getInstances(getInstancesRequest?: GetInstancesRequest, options?: any): AxiosPromise<ProcessInstanceListResultDTO> {
-            return localVarFp.getInstances(getInstancesRequest, options).then((request) => request(axios, basePath));
+        getInstances(searchRequest?: SearchRequest, options?: any): AxiosPromise<ProcessInstanceListResultDTO> {
+            return localVarFp.getInstances(searchRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * Get the workflow input schema. It defines the input fields of the workflow
@@ -1604,13 +1579,13 @@ export class DefaultApi extends BaseAPI {
     /**
      * Retrieve an array of workflow executions (instances)
      * @summary Get instances
-     * @param {GetInstancesRequest} [getInstancesRequest] Parameters for retrieving instances
+     * @param {SearchRequest} [searchRequest] Parameters for retrieving instances
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public getInstances(getInstancesRequest?: GetInstancesRequest, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).getInstances(getInstancesRequest, options).then((request) => request(this.axios, this.basePath));
+    public getInstances(searchRequest?: SearchRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getInstances(searchRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

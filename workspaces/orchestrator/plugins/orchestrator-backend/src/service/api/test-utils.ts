@@ -61,7 +61,6 @@ export function generateTestWorkflowOverviewList(
 ): WorkflowOverviewListResult {
   const res: WorkflowOverviewListResult = {
     items: [],
-    totalCount: howmany,
     offset: 0,
     limit: 0,
   };

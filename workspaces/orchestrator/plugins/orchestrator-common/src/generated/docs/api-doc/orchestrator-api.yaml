@@ -133,7 +133,7 @@ spec:
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/GetInstancesRequest'
+                  $ref: '#/components/schemas/SearchRequest'
           responses:
             '200':
               description: Success
@@ -243,6 +243,12 @@ spec:
               required: true
               schema:
                 type: string
+            - name: businessKey
+              in: query
+              description: ID of the parent workflow
+              required: false
+              schema:
+                type: string
           requestBody:
             required: true
             content:
@@ -339,13 +345,6 @@ spec:
               type: string
           required:
             - message
-        GetInstancesRequest:
-          type: object
-          properties:
-            paginationInfo:
-              $ref: '#/components/schemas/PaginationInfoDTO'
-            filters:
-              $ref: '#/components/schemas/SearchRequest'
         GetOverviewsRequestParams:
           type: object
           properties:
@@ -385,9 +384,6 @@ spec:
               $ref: '#/components/schemas/ProcessInstanceStatusDTO'
             category:
               $ref: '#/components/schemas/WorkflowCategoryDTO'
-            avgDurationMs:
-              type: number
-              minimum: 0
             description:
               type: string
           required:
@@ -399,8 +395,6 @@ spec:
             pageSize:
               type: number
             offset:
-              type: number
-            totalCount:
               type: number
             orderDirection:
               enum:
@@ -486,7 +480,7 @@ spec:
               type: string
             processName:
               type: string
-            status:
+            state:
               $ref: '#/components/schemas/ProcessInstanceStatusDTO'
             endpoint:
               type: string
@@ -578,12 +572,12 @@ spec:
           type: string
           description: Status of the workflow run
           enum:
-            - Active
-            - Error
-            - Completed
-            - Aborted
-            - Suspended
-            - Pending
+            - ACTIVE
+            - ERROR
+            - COMPLETED
+            - ABORTED
+            - SUSPENDED
+            - PENDING
         WorkflowRunStatusDTO:
           type: object
           properties:
@@ -597,8 +591,6 @@ spec:
             inputData:
               type: object
               additionalProperties: true
-          required:
-            - inputData
         ExecuteWorkflowResponseDTO:
           type: object
           properties:

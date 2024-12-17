@@ -5,7 +5,6 @@
 |------------ | ------------- | ------------- | -------------|
 | **pageSize** | **BigDecimal** |  | [optional] [default to null] |
 | **offset** | **BigDecimal** |  | [optional] [default to null] |
-| **totalCount** | **BigDecimal** |  | [optional] [default to null] |
 | **orderDirection** | **String** |  | [optional] [default to null] |
 | **orderBy** | **String** |  | [optional] [default to null] |
 

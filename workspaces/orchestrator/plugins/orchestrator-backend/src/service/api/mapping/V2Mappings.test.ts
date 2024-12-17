@@ -72,8 +72,11 @@ describe('scenarios to verify mapToWorkflowOverviewDTO', () => {
     expect(result.name).toBe(overview.name);
     expect(result.format).toBe(overview.format);
     expect(result.lastTriggeredMs).toBe(overview.lastTriggeredMs);
+
     expect(result.lastRunStatus).toBe(
-      getProcessInstancesStatusDTOFromString(overview.lastRunStatus),
+      overview.lastRunStatus
+        ? getProcessInstancesStatusDTOFromString(overview.lastRunStatus)
+        : undefined,
     );
     expect(result.category).toBe('assessment');
     expect(result.description).toBe(overview.description);
@@ -115,8 +118,11 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     expect(result.start).toEqual(processInstanceV1.start);
     expect(result.end).toBeUndefined();
     expect(result.duration).toBeUndefined();
-    expect(result.status).toEqual(
-      getProcessInstancesStatusDTOFromString(processInstanceV1.state),
+    if (!result.state) {
+      throw new Error('result.state should be defined');
+    }
+    expect(result.state).toEqual(
+      getProcessInstancesStatusDTOFromString(result.state),
     );
     expect(result.description).toEqual(processInstanceV1.description);
     expect(result.category).toEqual('infrastructure');
@@ -143,7 +149,16 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     expect(result.duration).toEqual(duration);
 
     expect(result).toBeDefined();
-    expect(result.status).toEqual(
+    if (!result.state) {
+      throw new Error('result.state should be defined');
+    }
+    expect(result.state).toEqual(
+      getProcessInstancesStatusDTOFromString(result.state),
+    );
+    if (!processIntanceV1.state) {
+      throw new Error('processIntanceV1.state should be defined');
+    }
+    expect(result.state).toEqual(
       getProcessInstancesStatusDTOFromString(processIntanceV1.state),
     );
     expect(result.end).toEqual(processIntanceV1.end);

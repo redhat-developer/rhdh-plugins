@@ -40,14 +40,12 @@ export type WorkflowDefinition = OmitRecursively<
 
 export type WorkflowListResult = {
   items: WorkflowDefinition[];
-  totalCount: number;
   offset: number;
   limit: number;
 };
 
 export type WorkflowOverviewListResult = {
   items: WorkflowOverview[];
-  totalCount: number;
   offset: number;
   limit: number;
 };
