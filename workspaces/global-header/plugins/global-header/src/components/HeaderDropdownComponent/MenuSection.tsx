@@ -25,19 +25,19 @@ import MenuItemContent from './MenuItemContent';
 
 export interface MenuItemBase {
   key: string;
-  icon?: React.ElementType<SvgIconProps>; // Optional icon component
+  icon?: React.ElementType<SvgIconProps>;
   label: string;
-  subLabel?: string; // Optional description text
+  subLabel?: string;
 }
 
 export interface MenuItemLink extends MenuItemBase {
-  link: string; // For navigation
-  onClick?: never; // Prevent `onClick` from being used here
+  link: string;
+  onClick?: never;
 }
 
 export interface MenuItemAction extends MenuItemBase {
-  onClick: () => void; // Callback function for actions
-  link?: never; // Prevent `link` from being used here
+  onClick: () => void;
+  link?: never;
 }
 
 export type MenuItemConfig = MenuItemLink | MenuItemAction;
