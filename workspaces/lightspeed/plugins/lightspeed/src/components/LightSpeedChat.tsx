@@ -18,7 +18,6 @@ import React from 'react';
 import { ErrorPanel } from '@backstage/core-components';
 
 import { Box, makeStyles } from '@material-ui/core';
-import { DropdownItem, Title } from '@patternfly/react-core';
 import {
   Chatbot,
   ChatbotContent,
@@ -31,8 +30,9 @@ import {
   ChatbotHeaderTitle,
   MessageBar,
   MessageProps,
-} from '@patternfly/virtual-assistant';
-import ChatbotConversationHistoryNav from '@patternfly/virtual-assistant/dist/dynamic/ChatbotConversationHistoryNav';
+} from '@patternfly/chatbot';
+import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
+import { DropdownItem, Title } from '@patternfly/react-core';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useBackstageUserIdentity } from '../hooks/useBackstageUserIdentity';
@@ -51,26 +51,15 @@ import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 
 const useStyles = makeStyles(theme => ({
-  content: {
-    '&.pf-chatbot__content': {
-      padding: 0,
-    },
-  },
   header: {
     padding: `${theme.spacing(3)}px !important`,
-  },
-  drawerActions: {
-    '&.pf-v6-c-drawer__actions': {
-      flexDirection: 'row-reverse',
-    },
   },
   headerTitle: {
     justifyContent: 'left !important',
   },
   footer: {
-    '&.pf-chatbot__footer': {
-      padding:
-        '0 var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg)',
+    '&>.pf-chatbot__footer-container': {
+      width: '95% !important',
     },
   },
 }));
@@ -175,13 +164,6 @@ export const LightspeedChat = ({
   }, [createConversation, setConversationId, setMessages]);
 
   const openDeleteModal = (conversation_id: string) => {
-    // TODO: Remove this temporary workaround and refactor once the dependency handling is updated in the future.
-    document.dispatchEvent(
-      new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
     setTargetConversationId(conversation_id);
     setIsDeleteModalOpen(true);
   };
@@ -322,6 +304,7 @@ export const LightspeedChat = ({
           />
         </ChatbotHeader>
         <ChatbotConversationHistoryNav
+          reverseButtonOrder
           displayMode={ChatbotDisplayMode.embedded}
           onDrawerToggle={onDrawerToggle}
           isDrawerOpen={isDrawerOpen}
@@ -333,7 +316,7 @@ export const LightspeedChat = ({
           handleTextInputChange={handleFilter}
           drawerContent={
             <>
-              <ChatbotContent className={classes.content}>
+              <ChatbotContent>
                 <LightspeedChatBox
                   userName={userName}
                   messages={messages}
