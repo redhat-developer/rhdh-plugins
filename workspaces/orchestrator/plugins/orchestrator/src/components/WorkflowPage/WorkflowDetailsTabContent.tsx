@@ -20,13 +20,15 @@ import { useRouteRefParams } from '@backstage/core-plugin-api';
 
 import { Grid } from '@material-ui/core';
 
+import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
 import { workflowRouteRef } from '../../routes';
 import { EditorViewKind, WorkflowEditor } from '../WorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
 
 interface Props {
   loading: boolean;
-  workflowOverviewDTO: any;
+  workflowOverviewDTO: WorkflowOverviewDTO | undefined;
 }
 
 export const WorkflowDetailsTabContent = ({
