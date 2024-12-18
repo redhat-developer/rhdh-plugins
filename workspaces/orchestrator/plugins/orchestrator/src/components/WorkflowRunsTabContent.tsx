@@ -22,20 +22,23 @@ import {
   SelectItem,
   TableColumn,
 } from '@backstage/core-components';
-import { useApi, useRouteRef } from '@backstage/core-plugin-api';
+import {
+  useApi,
+  useRouteRef,
+  useRouteRefParams,
+} from '@backstage/core-plugin-api';
 
 import { Grid } from '@material-ui/core';
 
 import {
   capitalize,
-  ellipsis,
   ProcessInstanceStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../api';
 import { DEFAULT_TABLE_PAGE_SIZE, VALUE_UNAVAILABLE } from '../constants';
 import usePolling from '../hooks/usePolling';
-import { workflowInstanceRouteRef } from '../routes';
+import { workflowInstanceRouteRef, workflowRouteRef } from '../routes';
 import { Selector } from './Selector';
 import OverrideBackstageTable from './ui/OverrideBackstageTable';
 import { mapProcessInstanceToDetails } from './WorkflowInstancePageContent';
@@ -56,7 +59,10 @@ const makeSelectItemsFromProcessInstanceValues = () =>
     }),
   );
 
+const statuses = makeSelectItemsFromProcessInstanceValues();
+
 export const WorkflowRunsTabContent = () => {
+  const { workflowId } = useRouteRefParams(workflowRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
@@ -68,8 +74,10 @@ export const WorkflowRunsTabContent = () => {
     const instances = await orchestratorApi.listInstances({});
     const clonedData: WorkflowRunDetail[] =
       instances.data.items?.map(mapProcessInstanceToDetails) || [];
-    return clonedData;
-  }, [orchestratorApi]);
+    return workflowId
+      ? clonedData.filter(item => item.workflowId === workflowId)
+      : clonedData;
+  }, [orchestratorApi, workflowId]);
 
   const { loading, error, value } = usePolling(fetchInstances);
 
@@ -80,36 +88,43 @@ export const WorkflowRunsTabContent = () => {
         field: 'id',
         render: data => (
           <Link to={workflowInstanceLink({ instanceId: data.id })}>
-            {ellipsis(data.id)}
+            {data.id}
           </Link>
         ),
         sorting: false,
       },
-      {
-        title: 'Workflow name',
-        field: 'name',
-      },
+      ...(workflowId
+        ? []
+        : [
+            {
+              title: 'Workflow name',
+              field: 'name',
+            },
+          ]),
       {
         title: 'Status',
         field: 'status',
-        render: data => (
+        render: (data: WorkflowRunDetail) => (
           <WorkflowInstanceStatusIndicator
             status={data.status as ProcessInstanceStatusDTO}
           />
         ),
       },
-      {
-        title: 'Category',
-        field: 'category',
-        render: data => capitalize(data.category ?? VALUE_UNAVAILABLE),
-      },
+      ...(workflowId
+        ? []
+        : [
+            {
+              title: 'Category',
+              field: 'category',
+              render: (data: WorkflowRunDetail) =>
+                capitalize(data.category ?? VALUE_UNAVAILABLE),
+            },
+          ]),
       { title: 'Started', field: 'started', defaultSort: 'desc' },
       { title: 'Duration', field: 'duration' },
     ],
-    [workflowInstanceLink],
+    [workflowInstanceLink, workflowId],
   );
-
-  const statuses = React.useMemo(makeSelectItemsFromProcessInstanceValues, []);
 
   const filteredData = React.useMemo(
     () =>
@@ -134,7 +149,7 @@ export const WorkflowRunsTabContent = () => {
         </Grid>
       </Grid>
     ),
-    [statusSelectorValue, statuses],
+    [statusSelectorValue],
   );
   const paging = (value?.length || 0) > DEFAULT_TABLE_PAGE_SIZE; // this behavior fits the backstage catalog table behavior https://github.com/backstage/backstage/blob/v1.14.0/plugins/catalog/src/components/CatalogTable/CatalogTable.tsx#L228
 

@@ -38,10 +38,7 @@ import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../dataFormatters/WorkflowOverviewFormatter';
 import { usePermissionArray } from '../hooks/usePermissionArray';
-import {
-  executeWorkflowRouteRef,
-  workflowDefinitionsRouteRef,
-} from '../routes';
+import { executeWorkflowRouteRef, workflowRouteRef } from '../routes';
 import OverrideBackstageTable from './ui/OverrideBackstageTable';
 import { WorkflowInstanceStatusIndicator } from './WorkflowInstanceStatusIndicator';
 
@@ -98,7 +95,7 @@ const usePermittedToViewBatch = (
 
 export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const navigate = useNavigate();
-  const definitionLink = useRouteRef(workflowDefinitionsRouteRef);
+  const definitionLink = useRouteRef(workflowRouteRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const [data, setData] = useState<FormattedWorkflowOverview[]>([]);
 
