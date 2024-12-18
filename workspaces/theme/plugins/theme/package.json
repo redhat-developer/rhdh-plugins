@@ -31,20 +31,16 @@
     "postpack": "backstage-cli package postpack",
     "prepublish": "./fix-style-inject-imports.sh"
   },
-  "dependencies": {
-    "@mui/material": "^5.0.0"
-  },
   "peerDependencies": {
-    "@backstage/core-components": "^0.15.1",
     "@backstage/core-plugin-api": "^1.10.0",
     "@backstage/theme": "^0.6.0",
     "@material-ui/icons": "^4.11.3",
+    "@mui/material": "^5.0.0",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
     "@backstage/cli": "^0.28.0",
     "@backstage/core-app-api": "^1.15.1",
-    "@backstage/core-components": "^0.15.1",
     "@backstage/core-plugin-api": "^1.10.0",
     "@backstage/dev-utils": "^1.1.2",
     "@backstage/test-utils": "^1.7.0",
