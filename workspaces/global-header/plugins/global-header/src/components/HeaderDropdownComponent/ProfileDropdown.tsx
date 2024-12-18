@@ -28,13 +28,11 @@ import {
   useApi,
 } from '@backstage/core-plugin-api';
 
-type ProfileDropdownProps = {
-  user: { firstName: string; lastName: string };
-};
-
-const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user }) => {
+const ProfileDropdown = () => {
   const errorApi = useApi(errorApiRef);
   const identityApi = useApi(identityApiRef);
+  const user = 'Guest';
+
   const handleLogout = () => {
     identityApi.signOut().catch(error => errorApi.post(error));
   };
@@ -65,7 +63,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user }) => {
             sx={{ mx: 1 }}
           />
           <Typography variant="body2" sx={{ fontWeight: 500, mx: 1 }}>
-            {`${user.firstName} ${user.lastName}`}
+            {user ?? 'Guest'}
           </Typography>
           <KeyboardArrowDownOutlinedIcon
             sx={{

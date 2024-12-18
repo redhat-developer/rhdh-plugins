@@ -59,8 +59,8 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
 }) => (
   <Box>
     {sectionLabel && (
-      <Box
-        sx={{
+      <MenuItem
+        style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -82,7 +82,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
             {optionalLinkLabel}
           </Link>
         )}
-      </Box>
+      </MenuItem>
     )}
     <ul style={{ margin: '0 12px', padding: 0, listStyle: 'none' }}>
       {items.map(({ key, icon: Icon, label, subLabel, link, onClick }) => (

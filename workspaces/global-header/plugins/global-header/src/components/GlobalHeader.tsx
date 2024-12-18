@@ -22,16 +22,21 @@ import { HeaderIconButton } from './HeaderIconButton/HeaderIconButton';
 import CreateDropdown from './HeaderDropdownComponent/CreateDropdown';
 import ProfileDropdown from './HeaderDropdownComponent/ProfileDropdown';
 import Divider from '@mui/material/Divider';
-import { IconComponentType } from './HeaderIconButton/SmallIconWrapper';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineRounded';
+import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 
-interface GlobalHeaderProps {
-  iconButtons: {
-    Icon: IconComponentType;
-    onClick: () => void;
-  }[];
-}
+export const GlobalHeader = () => {
+  const iconButtons = [
+    {
+      Icon: HelpOutlineOutlinedIcon,
+      onClick: () => {},
+    },
+    {
+      Icon: NotificationsOutlinedIcon,
+      onClick: () => {},
+    },
+  ];
 
-export const GlobalHeader: React.FC<GlobalHeaderProps> = ({ iconButtons }) => {
   return (
     <AppBar
       position="sticky"
@@ -53,7 +58,7 @@ export const GlobalHeader: React.FC<GlobalHeaderProps> = ({ iconButtons }) => {
           flexItem
           sx={{ borderColor: '#373A40' }}
         />
-        <ProfileDropdown user={{ firstName: 'John', lastName: 'Smith' }} />
+        <ProfileDropdown />
       </Toolbar>
     </AppBar>
   );

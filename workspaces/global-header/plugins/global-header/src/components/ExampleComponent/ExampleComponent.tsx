@@ -25,23 +25,10 @@ import {
 import { ExampleFetchComponent } from '../ExampleFetchComponent';
 import { GlobalHeader } from '../GlobalHeader';
 import Box from '@mui/material/Box';
-import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineRounded';
-import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
-
-const HeaderIconButtonList = [
-  {
-    Icon: HelpOutlineOutlinedIcon,
-    onClick: () => {},
-  },
-  {
-    Icon: NotificationsOutlinedIcon,
-    onClick: () => {},
-  },
-];
 
 export const ExampleComponent = () => (
   <Box>
-    <GlobalHeader iconButtons={HeaderIconButtonList} />
+    <GlobalHeader />
     <Content>
       <ContentHeader title="Global Header Example">
         <SupportButton>A description of your plugin goes here.</SupportButton>
