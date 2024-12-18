@@ -13,16 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { createDevApp } from '@backstage/dev-utils';
-import { globalHeaderPlugin } from '../src/plugin';
-import { ExampleComponent } from '../src/components/ExampleComponent';
+import {
+  ScmIntegrationsApi,
+  scmIntegrationsApiRef,
+  ScmAuth,
+} from '@backstage/integration-react';
+import {
+  AnyApiFactory,
+  configApiRef,
+  createApiFactory,
+} from '@backstage/core-plugin-api';
 
-createDevApp()
-  .registerPlugin(globalHeaderPlugin)
-  .addPage({
-    element: <ExampleComponent />,
-    title: 'Global Header',
-    path: '/global-header',
-  })
-  .render();
+export const apis: AnyApiFactory[] = [
+  createApiFactory({
+    api: scmIntegrationsApiRef,
+    deps: { configApi: configApiRef },
+    factory: ({ configApi }) => ScmIntegrationsApi.fromConfig(configApi),
+  }),
+  ScmAuth.createDefaultApiFactory(),
+];

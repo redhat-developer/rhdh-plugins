@@ -15,23 +15,18 @@
  */
 import {
   createPlugin,
-  createRoutableExtension,
+  createComponentExtension,
 } from '@backstage/core-plugin-api';
-
-import { rootRouteRef } from './routes';
 
 export const globalHeaderPlugin = createPlugin({
   id: 'global-header',
-  routes: {
-    root: rootRouteRef,
-  },
 });
 
-export const GlobalHeaderPage = globalHeaderPlugin.provide(
-  createRoutableExtension({
-    name: 'GlobalHeaderPage',
-    component: () =>
-      import('./components/ExampleComponent').then(m => m.ExampleComponent),
-    mountPoint: rootRouteRef,
+export const GlobalHeader = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'GlobalHeader',
+    component: {
+      lazy: () => import('./components').then(m => m.GlobalHeader),
+    },
   }),
 );

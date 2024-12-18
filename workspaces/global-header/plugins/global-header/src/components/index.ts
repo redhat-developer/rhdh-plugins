@@ -13,16 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { createDevApp } from '@backstage/dev-utils';
-import { globalHeaderPlugin } from '../src/plugin';
-import { ExampleComponent } from '../src/components/ExampleComponent';
-
-createDevApp()
-  .registerPlugin(globalHeaderPlugin)
-  .addPage({
-    element: <ExampleComponent />,
-    title: 'Global Header',
-    path: '/global-header',
-  })
-  .render();
+export { GlobalHeader } from './GlobalHeader';

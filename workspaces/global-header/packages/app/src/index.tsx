@@ -13,16 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import '@backstage/cli/asset-types';
 import React from 'react';
-import { createDevApp } from '@backstage/dev-utils';
-import { globalHeaderPlugin } from '../src/plugin';
-import { ExampleComponent } from '../src/components/ExampleComponent';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
-createDevApp()
-  .registerPlugin(globalHeaderPlugin)
-  .addPage({
-    element: <ExampleComponent />,
-    title: 'Global Header',
-    path: '/global-header',
-  })
-  .render();
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
