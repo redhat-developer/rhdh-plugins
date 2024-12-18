@@ -1,5 +1,14 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.2.5
+
+### Patch Changes
+
+- 18547a0: Updated dependency `msw` to `1.3.5`.
+- d59e940: Updated dependency `prettier` to `3.4.2`.
+- Updated dependencies [d59e940]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.1.3
+
 ## 0.2.4
 
 ### Patch Changes
