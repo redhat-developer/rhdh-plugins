@@ -15318,6 +15318,7 @@ __metadata:
     "@backstage/theme": "npm:^0.6.3"
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
+    "@mui/icons-material": "npm:5.16.9"
     "@playwright/test": "npm:^1.32.3"
     "@red-hat-developer-hub/backstage-plugin-global-header": "workspace:^"
     "@testing-library/dom": "npm:^9.0.0"
