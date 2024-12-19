@@ -5,3 +5,4 @@ coverage
 .eslintrc.js
 generated
 report.api.md
+*.hbs
