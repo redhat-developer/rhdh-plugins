@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 1.10.2
+
+### Patch Changes
+
+- 97534e9: Updated dependency `@types/node` to `18.19.68`.
+- 4cf968f: Updated dependency `@janus-idp/shared-react` to `2.14.1`.
+- 18547a0: Updated dependency `msw` to `1.3.5`.
+- d59e940: Updated dependency `prettier` to `3.4.2`.
+  Updated dependency `@janus-idp/cli` to `1.19.1`.
+- 414250a: Updated dependency `@testing-library/jest-dom` to `6.6.3`.
+
 ## 1.10.1
 
 ### Patch Changes
