@@ -31,11 +31,15 @@ declare namespace Components {
     export type SizePerIntegrationQueryParam = number;
     export type SizePerIntegrationQueryParamDeprecated = number;
     export type SizeQueryParam = number;
+    export type SortColumnQueryParam = string;
+    export type SortOrderQueryParam = 'asc' | 'desc';
   }
   export interface QueryParameters {
     pagePerIntegrationQueryParam?: Parameters.PagePerIntegrationQueryParam;
     sizePerIntegrationQueryParam?: Parameters.SizePerIntegrationQueryParam;
     pagePerIntegrationQueryParamDeprecated?: Parameters.PagePerIntegrationQueryParamDeprecated;
+    sortColumnQueryParam?: Parameters.SortColumnQueryParam;
+    sortOrderQueryParam?: Parameters.SortOrderQueryParam;
     sizePerIntegrationQueryParamDeprecated?: Parameters.SizePerIntegrationQueryParamDeprecated;
     searchQueryParam?: Parameters.SearchQueryParam;
     pageQueryParam?: Parameters.PageQueryParam;
@@ -328,17 +332,20 @@ declare namespace Paths {
       export type Search = string;
       export type Size = number;
       export type SizePerIntegration = number;
+      export type SortColumn = string;
+      export type SortOrder = 'asc' | 'desc';
     }
     export interface QueryParameters {
       pagePerIntegration?: Parameters.PagePerIntegration;
       sizePerIntegration?: Parameters.SizePerIntegration;
       page?: Parameters.Page;
       size?: Parameters.Size;
+      sortOrder?: Parameters.SortOrder;
+      sortColumn?: Parameters.SortColumn;
       search?: Parameters.Search;
     }
     namespace Responses {
-      export type $200 =
-        /* Import Job with source it originates from */
+      export type $200 = /* Import Job with source it originates from */
         | Components.Schemas.SourceImport[]
         | /* Import Job List */ Components.Schemas.ImportJobListV2;
       export type $500 =
