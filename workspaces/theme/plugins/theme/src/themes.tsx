@@ -15,44 +15,19 @@
  */
 import React from 'react';
 import { AppTheme } from '@backstage/core-plugin-api';
-import { UnifiedTheme, UnifiedThemeProvider, themes } from '@backstage/theme';
+import { themes } from '@backstage/theme';
+
 import LightIcon from '@material-ui/icons/WbSunny';
 import DarkIcon from '@material-ui/icons/Brightness2';
 import { createTheme } from '@mui/material/styles';
 
+import {
+  createThemeProvider,
+  createThemeProviderForThemeName,
+  createThemeProviderForThemeConfig,
+} from './components/ThemeProvider';
 import * as backstage from './backstage';
 import * as rhdh from './rhdh';
-import { ThemeConfig } from './types';
-import { useTheme } from './hooks/useTheme';
-import { useThemeConfig } from './hooks/useThemeConfig';
-
-const createThemeProvider = (theme: UnifiedTheme): AppTheme['Provider'] =>
-  function RHDHThemeProvider({ children }) {
-    return (
-      <UnifiedThemeProvider theme={theme}>{children}</UnifiedThemeProvider>
-    );
-  };
-
-const createThemeProviderForThemeConfig = (
-  themeConfig: ThemeConfig,
-): AppTheme['Provider'] =>
-  function RHDHThemeProviderForThemeConfig({ children }) {
-    const theme = useTheme(themeConfig);
-    return (
-      <UnifiedThemeProvider theme={theme}>{children}</UnifiedThemeProvider>
-    );
-  };
-
-const createThemeProviderForThemeName = (
-  themeName: string,
-): AppTheme['Provider'] =>
-  function RHDHThemeProviderForThemeName({ children }) {
-    const themeConfig = useThemeConfig(themeName);
-    const theme = useTheme(themeConfig);
-    return (
-      <UnifiedThemeProvider theme={theme}>{children}</UnifiedThemeProvider>
-    );
-  };
 
 export const getAllThemes = (): AppTheme[] => {
   return [
