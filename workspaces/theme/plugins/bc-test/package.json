@@ -35,7 +35,8 @@
   "dependencies": {
     "@backstage/core-components": "^0.15.1",
     "@backstage/core-plugin-api": "^1.10.0",
-    "@backstage/plugin-user-settings": "^0.8.16"
+    "@backstage/plugin-user-settings": "^0.8.16",
+    "@mui/material": "^5"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"

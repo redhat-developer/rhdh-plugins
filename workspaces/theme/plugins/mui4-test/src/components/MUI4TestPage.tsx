@@ -19,36 +19,32 @@ import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
 
 import { FormComponents } from './FormComponents';
 import { PaperExamples } from './PaperExamples';
-import { InlineStyles } from './InlineStyles';
 import { TabExamples } from './TabExamples';
+import { GridExamples } from './GridExamples';
+import { InlineStyles } from './InlineStyles';
 
 export const MUI4TestPage = () => {
   return (
     <Page themeId="tool">
-      <Header title="MUI v4 / Material UI Test Page">
+      <Header title="MUI v4 Test Page">
         <UserSettingsThemeToggle />
       </Header>
       <TabbedLayout>
-        <TabbedLayout.Route
-          path="/"
-          title="Form components"
-          children={<FormComponents />}
-        />
-        <TabbedLayout.Route
-          path="/paper-examples"
-          title="Paper examples"
-          children={<PaperExamples />}
-        />
-        <TabbedLayout.Route
-          path="/inline-styles"
-          title="Inline styles"
-          children={<InlineStyles />}
-        />
-        <TabbedLayout.Route
-          path="/tabs"
-          title="Tabs"
-          children={<TabExamples />}
-        />
+        <TabbedLayout.Route path="/" title="Form components">
+          <FormComponents />
+        </TabbedLayout.Route>
+        <TabbedLayout.Route path="/papers" title="Papers">
+          <PaperExamples />
+        </TabbedLayout.Route>
+        <TabbedLayout.Route path="/tabs" title="Tabs">
+          <TabExamples />
+        </TabbedLayout.Route>
+        <TabbedLayout.Route path="/grids" title="Grids">
+          <GridExamples />
+        </TabbedLayout.Route>
+        <TabbedLayout.Route path="/inline-styles" title="Inline styles">
+          <InlineStyles />
+        </TabbedLayout.Route>
       </TabbedLayout>
     </Page>
   );
