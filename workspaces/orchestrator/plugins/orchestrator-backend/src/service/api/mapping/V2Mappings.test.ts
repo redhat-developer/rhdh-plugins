@@ -121,7 +121,9 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     expect(result.duration).toBeUndefined();
     expect(result.state).toBeDefined();
     expect(result.state).toEqual(
-      getProcessInstancesStatusDTOFromString(result.state as ProcessInstanceStatusDTO),
+      getProcessInstancesStatusDTOFromString(
+        result.state as ProcessInstanceStatusDTO,
+      ),
     );
     expect(result.description).toEqual(processInstanceV1.description);
     expect(result.category).toEqual('infrastructure');
@@ -156,7 +158,9 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     );
     expect(processIntanceV1.state).toBeDefined();
     expect(result.state).toEqual(
-      getProcessInstancesStatusDTOFromString(processIntanceV1.state as ProcessInstanceStatusDTO),
+      getProcessInstancesStatusDTOFromString(
+        processIntanceV1.state as ProcessInstanceStatusDTO,
+      ),
     );
     expect(result.end).toEqual(processIntanceV1.end);
     expect(result.duration).toEqual(duration);
