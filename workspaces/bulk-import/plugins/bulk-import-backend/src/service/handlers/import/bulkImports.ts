@@ -320,9 +320,8 @@ async function handleAddedReposFromCreateImportJobs(
       req.repository.url,
       req.repository.defaultBranch,
     );
-    const hasLocation = await deps.catalogHttpClient.verifyLocationExistence(
-      repoCatalogUrl,
-    );
+    const hasLocation =
+      await deps.catalogHttpClient.verifyLocationExistence(repoCatalogUrl);
     if (!hasLocation) {
       continue;
     }
@@ -569,9 +568,8 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    const hasEntity = await deps.catalogHttpClient.hasEntityInCatalog(
-      catalogEntityName,
-    );
+    const hasEntity =
+      await deps.catalogHttpClient.hasEntityInCatalog(catalogEntityName);
     if (hasEntity) {
       return { dryRunStatuses: ['CATALOG_ENTITY_CONFLICT'] };
     }
@@ -720,9 +718,8 @@ export async function findImportStatusByRepo(
         );
       }
       // No import PR => let's determine last update from the repository
-      const ghRepo = await deps.githubApiService.getRepositoryFromIntegrations(
-        repoUrl,
-      );
+      const ghRepo =
+        await deps.githubApiService.getRepositoryFromIntegrations(repoUrl);
       result.lastUpdate = ghRepo.repository?.updated_at ?? undefined;
       return {
         statusCode: 200,
