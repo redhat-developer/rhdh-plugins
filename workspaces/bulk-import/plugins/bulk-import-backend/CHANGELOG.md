@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 5.2.1
+
+### Patch Changes
+
+- 97534e9: Updated dependency `@types/express` to `4.17.21`.
+- 18547a0: Updated dependency `msw` to `1.3.5`.
+- d59e940: Updated dependency `@openapitools/openapi-generator-cli` to `2.15.3`.
+  Updated dependency `openapicmd` to `2.6.1`.
+  Updated dependency `prettier` to `3.4.2`.
+- Updated dependencies [d59e940]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.4.2
+
 ## 5.2.0
 
 ### Minor Changes
