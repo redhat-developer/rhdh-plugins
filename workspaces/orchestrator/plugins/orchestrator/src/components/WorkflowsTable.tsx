@@ -20,7 +20,7 @@ import { Link, TableColumn, TableProps } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import Pageview from '@material-ui/icons/Pageview';
+import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import PlayArrow from '@material-ui/icons/PlayArrow';
 
 import {
@@ -38,7 +38,11 @@ import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../dataFormatters/WorkflowOverviewFormatter';
 import { usePermissionArray } from '../hooks/usePermissionArray';
-import { executeWorkflowRouteRef, workflowRouteRef } from '../routes';
+import {
+  executeWorkflowRouteRef,
+  workflowRouteRef,
+  workflowRunsRouteRef,
+} from '../routes';
 import OverrideBackstageTable from './ui/OverrideBackstageTable';
 import { WorkflowInstanceStatusIndicator } from './WorkflowInstanceStatusIndicator';
 
@@ -96,6 +100,7 @@ const usePermittedToViewBatch = (
 export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const navigate = useNavigate();
   const definitionLink = useRouteRef(workflowRouteRef);
+  const definitionRunsLink = useRouteRef(workflowRunsRouteRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const [data, setData] = useState<FormattedWorkflowOverview[]>([]);
 
@@ -114,10 +119,10 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const handleView = useCallback(
     (rowData: FormattedWorkflowOverview) => {
       navigate(
-        definitionLink({ workflowId: rowData.id, format: rowData.format }),
+        definitionRunsLink({ workflowId: rowData.id, format: rowData.format }),
       );
     },
-    [definitionLink, navigate],
+    [definitionRunsLink, navigate],
   );
 
   const handleExecute = useCallback(
@@ -169,8 +174,8 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
         onClick: () => handleExecute(rowData),
       }),
       rowData => ({
-        icon: Pageview,
-        tooltip: 'View',
+        icon: FormatListBulleted,
+        tooltip: 'View runs',
         disabled: !canViewWorkflow(rowData.id),
         onClick: () => handleView(rowData),
       }),
