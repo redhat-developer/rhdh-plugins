@@ -31,7 +31,7 @@ import {
   DefaultAuditLogger,
   type AuditLogger,
 } from '@janus-idp/backstage-plugin-audit-log-node';
-import { fullFormats } from 'ajv-formats/dist/formats';
+import { fullFormats } from 'ajv-formats';
 import express, { Router, type Request, type Response } from 'express';
 import {
   OpenAPIBackend,
