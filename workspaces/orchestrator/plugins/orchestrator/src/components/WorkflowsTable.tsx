@@ -119,7 +119,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const handleView = useCallback(
     (rowData: FormattedWorkflowOverview) => {
       navigate(
-        `${definitionRunsLink({ workflowId: rowData.id, format: rowData.format })}/runs`,
+        definitionRunsLink({ workflowId: rowData.id, format: rowData.format }),
       );
     },
     [definitionRunsLink, navigate],
