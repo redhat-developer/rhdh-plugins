@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */ declare module '*.svg' {
+ */
+declare module '*.svg' {
   const content: React.FunctionComponent<React.SVGAttributes<SVGElement>>;
   export default content;
 }
