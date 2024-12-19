@@ -13,8 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { type UnifiedThemeOptions } from '@backstage/theme';
+import {
+  type UnifiedThemeOptions,
+  defaultComponentThemes as backstageComponents,
+} from '@backstage/theme';
+import { type CSSObject } from '@mui/material/styles';
+
 import { ThemeConfig, ThemeConfigOptions, RHDHThemePalette } from '../types';
+import { redHatFontFaces, redHatFonts } from '../fonts';
 
 export type Component = {
   defaultProps?: unknown;
@@ -58,6 +64,31 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   //
   // MUI components
   //
+  components.MuiCssBaseline = {
+    styleOverrides: theme => {
+      const backstageOverrides =
+        backstageComponents!.MuiCssBaseline!.styleOverrides!;
+      const backstageStyles =
+        typeof backstageOverrides === 'function'
+          ? (backstageOverrides(theme) as CSSObject)
+          : (backstageOverrides as CSSObject);
+
+      return {
+        ...backstageStyles,
+        '@font-face': redHatFontFaces,
+        body: {
+          ...(backstageStyles.body as CSSObject),
+          fontFamily: redHatFonts.text,
+        },
+        'h1, h2, h3, h4, h5, h6': {
+          fontFamily: redHatFonts.heading,
+        },
+        'pre, code': {
+          fontFamily: redHatFonts.monospace,
+        },
+      };
+    },
+  };
 
   // MUI base
   if (options.buttons !== 'mui') {

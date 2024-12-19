@@ -18,12 +18,10 @@
   "backstage": {
     "role": "web-library"
   },
-  "sideEffects": [
-    "./fonts/*.css"
-  ],
+  "sideEffects": false,
   "scripts": {
     "start": "backstage-cli package start",
-    "build": "backstage-cli package build && ./fix-style-inject-imports.sh",
+    "build": "backstage-cli package build",
     "lint": "backstage-cli package lint",
     "test": "backstage-cli package test",
     "clean": "backstage-cli package clean",
@@ -57,8 +55,7 @@
   "configSchema": "config.d.ts",
   "files": [
     "config.d.ts",
-    "dist",
-    "fonts"
+    "dist"
   ],
   "author": "Red Hat",
   "homepage": "https://red.ht/rhdh",
