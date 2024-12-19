@@ -929,16 +929,6 @@ ul.nav-tabs {
     "$ref" : "#/components/schemas/FieldFilter"
   } ]
 };
-    defs["GetInstancesRequest"] = {
-  "properties" : {
-    "paginationInfo" : {
-      "$ref" : "#/components/schemas/PaginationInfoDTO"
-    },
-    "filters" : {
-      "$ref" : "#/components/schemas/SearchRequest"
-    }
-  }
-};
     defs["GetOverviewsRequestParams"] = {
   "properties" : {
     "paginationInfo" : {
@@ -1020,9 +1010,6 @@ ul.nav-tabs {
     "offset" : {
       "type" : "number"
     },
-    "totalCount" : {
-      "type" : "number"
-    },
     "orderDirection" : {
       "type" : "string",
       "enum" : [ "ASC", "DESC" ]
@@ -1045,7 +1032,7 @@ ul.nav-tabs {
     "processName" : {
       "type" : "string"
     },
-    "status" : {
+    "state" : {
       "$ref" : "#/components/schemas/ProcessInstanceStatusDTO"
     },
     "endpoint" : {
@@ -1120,7 +1107,7 @@ ul.nav-tabs {
     defs["ProcessInstanceStatusDTO"] = {
   "type" : "string",
   "description" : "Status of the workflow run",
-  "enum" : [ "Active", "Error", "Completed", "Aborted", "Suspended", "Pending" ]
+  "enum" : [ "ACTIVE", "ERROR", "COMPLETED", "ABORTED", "SUSPENDED", "PENDING" ]
 };
     defs["SearchRequest"] = {
   "properties" : {
@@ -2843,21 +2830,11 @@ Whether to include assessment
     &quot;offset&quot; : 1.4658129805029452,
     &quot;pageSize&quot; : 6.027456183070403,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
-    &quot;orderBy&quot; : &quot;orderBy&quot;,
-    &quot;totalCount&quot; : 5.962133916683182
+    &quot;orderBy&quot; : &quot;orderBy&quot;
   },
   &quot;filters&quot; : {
-    &quot;paginationInfo&quot; : {
-      &quot;offset&quot; : 1.4658129805029452,
-      &quot;pageSize&quot; : 6.027456183070403,
-      &quot;orderDirection&quot; : &quot;ASC&quot;,
-      &quot;orderBy&quot; : &quot;orderBy&quot;,
-      &quot;totalCount&quot; : 5.962133916683182
-    },
-    &quot;filters&quot; : {
-      &quot;filters&quot; : [ null, null ],
-      &quot;operator&quot; : &quot;AND&quot;
-    }
+    &quot;filters&quot; : [ null, null ],
+    &quot;operator&quot; : &quot;AND&quot;
   }
 }'
 </code></pre>
@@ -2876,10 +2853,10 @@ public class DefaultApiExample {
 
         // Create an instance of the API class
         DefaultApi apiInstance = new DefaultApi();
-        GetInstancesRequest getInstancesRequest = ; // GetInstancesRequest | 
+        SearchRequest searchRequest = ; // SearchRequest | 
 
         try {
-            ProcessInstanceListResultDTO result = apiInstance.getInstances(getInstancesRequest);
+            ProcessInstanceListResultDTO result = apiInstance.getInstances(searchRequest);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#getInstances");
@@ -2895,10 +2872,10 @@ public class DefaultApiExample {
 
 final api_instance = DefaultApi();
 
-final GetInstancesRequest getInstancesRequest = new GetInstancesRequest(); // GetInstancesRequest | 
+final SearchRequest searchRequest = new SearchRequest(); // SearchRequest | 
 
 try {
-    final result = await api_instance.getInstances(getInstancesRequest);
+    final result = await api_instance.getInstances(searchRequest);
     print(result);
 } catch (e) {
     print('Exception when calling DefaultApi->getInstances: $e\n');
@@ -2913,10 +2890,10 @@ try {
 public class DefaultApiExample {
     public static void main(String[] args) {
         DefaultApi apiInstance = new DefaultApi();
-        GetInstancesRequest getInstancesRequest = ; // GetInstancesRequest | 
+        SearchRequest searchRequest = ; // SearchRequest | 
 
         try {
-            ProcessInstanceListResultDTO result = apiInstance.getInstances(getInstancesRequest);
+            ProcessInstanceListResultDTO result = apiInstance.getInstances(searchRequest);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#getInstances");
@@ -2934,10 +2911,10 @@ public class DefaultApiExample {
 
 // Create an instance of the API class
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
-GetInstancesRequest *getInstancesRequest = ; //  (optional)
+SearchRequest *searchRequest = ; //  (optional)
 
 // Get instances
-[apiInstance getInstancesWith:getInstancesRequest
+[apiInstance getInstancesWith:searchRequest
               completionHandler: ^(ProcessInstanceListResultDTO output, NSError* error) {
     if (output) {
         NSLog(@"%@", output);
@@ -2955,7 +2932,7 @@ GetInstancesRequest *getInstancesRequest = ; //  (optional)
 // Create an instance of the API class
 var api = new OrchestratorPlugin.DefaultApi()
 var opts = {
-  'getInstancesRequest':  // {GetInstancesRequest} 
+  'searchRequest':  // {SearchRequest} 
 };
 
 var callback = function(error, data, response) {
@@ -2988,11 +2965,11 @@ namespace Example
 
             // Create an instance of the API class
             var apiInstance = new DefaultApi();
-            var getInstancesRequest = new GetInstancesRequest(); // GetInstancesRequest |  (optional) 
+            var searchRequest = new SearchRequest(); // SearchRequest |  (optional) 
 
             try {
                 // Get instances
-                ProcessInstanceListResultDTO result = apiInstance.getInstances(getInstancesRequest);
+                ProcessInstanceListResultDTO result = apiInstance.getInstances(searchRequest);
                 Debug.WriteLine(result);
             } catch (Exception e) {
                 Debug.Print("Exception when calling DefaultApi.getInstances: " + e.Message );
@@ -3009,10 +2986,10 @@ require_once(__DIR__ . '/vendor/autoload.php');
 
 // Create an instance of the API class
 $api_instance = new OpenAPITools\Client\Api\DefaultApi();
-$getInstancesRequest = ; // GetInstancesRequest | 
+$searchRequest = ; // SearchRequest | 
 
 try {
-    $result = $api_instance->getInstances($getInstancesRequest);
+    $result = $api_instance->getInstances($searchRequest);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DefaultApi->getInstances: ', $e->getMessage(), PHP_EOL;
@@ -3027,10 +3004,10 @@ use WWW::OPenAPIClient::DefaultApi;
 
 # Create an instance of the API class
 my $api_instance = WWW::OPenAPIClient::DefaultApi->new();
-my $getInstancesRequest = WWW::OPenAPIClient::Object::GetInstancesRequest->new(); # GetInstancesRequest | 
+my $searchRequest = WWW::OPenAPIClient::Object::SearchRequest->new(); # SearchRequest | 
 
 eval {
-    my $result = $api_instance->getInstances(getInstancesRequest => $getInstancesRequest);
+    my $result = $api_instance->getInstances(searchRequest => $searchRequest);
     print Dumper($result);
 };
 if ($@) {
@@ -3047,11 +3024,11 @@ from pprint import pprint
 
 # Create an instance of the API class
 api_instance = openapi_client.DefaultApi()
-getInstancesRequest =  # GetInstancesRequest |  (optional)
+searchRequest =  # SearchRequest |  (optional)
 
 try:
     # Get instances
-    api_response = api_instance.get_instances(getInstancesRequest=getInstancesRequest)
+    api_response = api_instance.get_instances(searchRequest=searchRequest)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling DefaultApi->getInstances: %s\n" % e)</code></pre>
@@ -3061,10 +3038,10 @@ except ApiException as e:
                               <pre class="prettyprint"><code class="language-rust">extern crate DefaultApi;
 
 pub fn main() {
-    let getInstancesRequest = ; // GetInstancesRequest
+    let searchRequest = ; // SearchRequest
 
     let mut context = DefaultApi::Context::default();
-    let result = client.getInstances(getInstancesRequest, &context).wait();
+    let result = client.getInstances(searchRequest, &context).wait();
 
     println!("{:?}", result);
 }
@@ -3087,7 +3064,7 @@ pub fn main() {
                                 <th width="150px">Name</th>
                                 <th>Description</th>
                               </tr>
-                                <tr><td style="width:150px;">getInstancesRequest </td>
+                                <tr><td style="width:150px;">searchRequest </td>
 <td>
 <p class="marked">Parameters for retrieving instances</p>
 <script>
@@ -3097,7 +3074,7 @@ $(document).ready(function() {
   "content" : {
     "application/json" : {
       "schema" : {
-        "$ref" : "#/components/schemas/GetInstancesRequest"
+        "$ref" : "#/components/schemas/SearchRequest"
       }
     }
   },
@@ -3118,12 +3095,12 @@ $(document).ready(function() {
   }
 
   var view = new JSONSchemaView(schema,2,{isBodyParam: true});
-  var result = $('#d2e199_getInstances_getInstancesRequest');
+  var result = $('#d2e199_getInstances_searchRequest');
   result.empty();
   result.append(view.render());
 });
 </script>
-<div id="d2e199_getInstances_getInstancesRequest"></div>
+<div id="d2e199_getInstances_searchRequest"></div>
 </td>
 </tr>
 
@@ -3756,8 +3733,7 @@ ID of instance
     &quot;offset&quot; : 1.4658129805029452,
     &quot;pageSize&quot; : 6.027456183070403,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
-    &quot;orderBy&quot; : &quot;orderBy&quot;,
-    &quot;totalCount&quot; : 5.962133916683182
+    &quot;orderBy&quot; : &quot;orderBy&quot;
   },
   &quot;filters&quot; : {
     &quot;filters&quot; : [ null, null ],
@@ -5451,8 +5427,7 @@ pub fn main() {
     &quot;offset&quot; : 1.4658129805029452,
     &quot;pageSize&quot; : 6.027456183070403,
     &quot;orderDirection&quot; : &quot;ASC&quot;,
-    &quot;orderBy&quot; : &quot;orderBy&quot;,
-    &quot;totalCount&quot; : 5.962133916683182
+    &quot;orderBy&quot; : &quot;orderBy&quot;
   },
   &quot;filters&quot; : {
     &quot;filters&quot; : [ null, null ],

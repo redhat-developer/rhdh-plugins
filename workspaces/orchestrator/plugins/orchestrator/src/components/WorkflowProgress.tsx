@@ -23,7 +23,7 @@ import { WorkflowProgressNode } from './WorkflowProgressNode';
 import { fromNodeInstanceToWorkflowProgressNodeModel } from './WorkflowProgressNodeModel';
 
 export interface WorkflowProgressProps {
-  workflowStatus: ProcessInstanceDTO['status'];
+  workflowStatus: ProcessInstanceDTO['state'];
   workflowNodes: ProcessInstanceDTO['nodes'];
   workflowError?: ProcessInstanceDTO['error'];
   emptyState?: React.ReactNode;

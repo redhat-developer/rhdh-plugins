@@ -7,7 +7,6 @@ Models/ExecuteWorkflowResponseDTO.md
 Models/FieldFilter.md
 Models/FieldFilter_value.md
 Models/Filter.md
-Models/GetInstancesRequest.md
 Models/GetOverviewsRequestParams.md
 Models/InputSchemaResponseDTO.md
 Models/LogicalFilter.md

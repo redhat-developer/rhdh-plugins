@@ -64,7 +64,6 @@ export class V2 {
       paginationInfo: {
         pageSize: pagination.limit,
         offset: pagination.offset,
-        totalCount: overviews.length,
       },
     };
     return result;
@@ -116,17 +115,12 @@ export class V2 {
       filter,
       workflowIds,
     });
-    const totalCount = await this.orchestratorService.fetchInstancesTotalCount(
-      workflowIds,
-      filter,
-    );
 
     const result: ProcessInstanceListResultDTO = {
       items: instances?.map(mapToProcessInstanceDTO),
       paginationInfo: {
         pageSize: pagination?.limit,
         offset: pagination?.offset,
-        totalCount: totalCount,
       },
     };
     return result;

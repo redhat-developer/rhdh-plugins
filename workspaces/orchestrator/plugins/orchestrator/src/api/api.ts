@@ -21,8 +21,9 @@ import { AxiosResponse } from 'axios';
 import {
   AssessedProcessInstanceDTO,
   ExecuteWorkflowResponseDTO,
-  GetInstancesRequest,
+  Filter,
   InputSchemaResponseDTO,
+  PaginationInfoDTO,
   ProcessInstanceListResultDTO,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
@@ -58,7 +59,8 @@ export interface OrchestratorApi {
   >;
 
   listInstances(
-    args?: GetInstancesRequest,
+    paginationInfo?: PaginationInfoDTO,
+    filters?: Filter,
   ): Promise<AxiosResponse<ProcessInstanceListResultDTO>>;
 }
 

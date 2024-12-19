@@ -30,7 +30,6 @@ All URIs are relative to *http://localhost*
  - [FieldFilter](./Models/FieldFilter.md)
  - [FieldFilter_value](./Models/FieldFilter_value.md)
  - [Filter](./Models/Filter.md)
- - [GetInstancesRequest](./Models/GetInstancesRequest.md)
  - [GetOverviewsRequestParams](./Models/GetOverviewsRequestParams.md)
  - [InputSchemaResponseDTO](./Models/InputSchemaResponseDTO.md)
  - [LogicalFilter](./Models/LogicalFilter.md)
