@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.4.9
+
+### Patch Changes
+
+- 1134fb2: fix font loading after migrating theme
+
 ## 0.4.8
 
 ### Patch Changes
