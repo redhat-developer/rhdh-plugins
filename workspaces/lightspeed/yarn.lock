@@ -10034,6 +10034,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@patternfly/react-core@npm:6.0.0, @patternfly/react-core@npm:^6.0.0-prerelease.21":
+  version: 6.0.0
+  resolution: "@patternfly/react-core@npm:6.0.0"
+  dependencies:
+    "@patternfly/react-icons": ^6.0.0
+    "@patternfly/react-styles": ^6.0.0
+    "@patternfly/react-tokens": ^6.0.0
+    focus-trap: 7.6.0
+    react-dropzone: ^14.2.3
+    tslib: ^2.7.0
+  peerDependencies:
+    react: ^17 || ^18
+    react-dom: ^17 || ^18
+  checksum: 196ca777d06df73945cfa0c8c11d3d54d303012bf5b15e67fabb6b996c217a5326b58a7be6c9eaf2a7055391b71065c27ab34ddc4b88fd6cc69760b237444864
+  languageName: node
+  linkType: hard
+
 "@patternfly/react-core@npm:6.0.0-prerelease.21":
   version: 6.0.0-prerelease.21
   resolution: "@patternfly/react-core@npm:6.0.0-prerelease.21"
@@ -10048,23 +10065,6 @@ __metadata:
     react: ^17 || ^18
     react-dom: ^17 || ^18
   checksum: 4fd63e89fb13c109421f66d074666dc3645f1bb9076c55b5cc06cc3611f166eea82a78f1bcc8c12f4918898db0602194fce32424443b7b15d53da5f5e9e98adf
-  languageName: node
-  linkType: hard
-
-"@patternfly/react-core@npm:^6.0.0-prerelease.21":
-  version: 6.0.0
-  resolution: "@patternfly/react-core@npm:6.0.0"
-  dependencies:
-    "@patternfly/react-icons": ^6.0.0
-    "@patternfly/react-styles": ^6.0.0
-    "@patternfly/react-tokens": ^6.0.0
-    focus-trap: 7.6.0
-    react-dropzone: ^14.2.3
-    tslib: ^2.7.0
-  peerDependencies:
-    react: ^17 || ^18
-    react-dom: ^17 || ^18
-  checksum: 196ca777d06df73945cfa0c8c11d3d54d303012bf5b15e67fabb6b996c217a5326b58a7be6c9eaf2a7055391b71065c27ab34ddc4b88fd6cc69760b237444864
   languageName: node
   linkType: hard
 
@@ -10876,7 +10876,7 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
-    "@patternfly/react-core": 6.0.0-prerelease.21
+    "@patternfly/react-core": 6.0.0
     "@patternfly/virtual-assistant": 2.0.0-alpha.61
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
