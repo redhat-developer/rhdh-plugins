@@ -26,8 +26,7 @@
     "test": "backstage-cli package test",
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack",
-    "prepublish": "./fix-style-inject-imports.sh"
+    "postpack": "backstage-cli package postpack"
   },
   "peerDependencies": {
     "@backstage/core-plugin-api": "^1.10.0",
