@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
   ContentHeader,
@@ -107,6 +107,8 @@ export const WorkflowInstancePage = ({
 }: {
   instanceId?: string;
 }) => {
+  const location = useLocation();
+  const fromPage = location.state?.from;
   const classes = useStyles();
   const navigate = useNavigate();
   const orchestratorApi = useApi(orchestratorApiRef);
@@ -201,8 +203,10 @@ export const WorkflowInstancePage = ({
   return (
     <BaseOrchestratorPage
       title={value?.instance.processId ?? value?.instance.id ?? instanceId}
-      type="Workflow runs"
-      typeLink="/orchestrator/instances"
+      type={
+        fromPage === '/orchestrator/instances' ? 'All runs' : 'Workflow Runs'
+      }
+      typeLink={fromPage}
     >
       {loading ? <Progress /> : null}
       {error ? <ResponseErrorPanel error={error} /> : null}
