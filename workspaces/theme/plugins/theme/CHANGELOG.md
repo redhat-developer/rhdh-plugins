@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.4.8
+
+### Patch Changes
+
+- 370d9b1: move the mui v5 package to a peer dependency to ensure that we don't load it twice
+- 67de15b: added a workaround so that `defaultProps` are also picked up from MUI v5 components (like Button disabledRipple or Grid spacing)
+
 ## 0.4.7
 
 ### Patch Changes
