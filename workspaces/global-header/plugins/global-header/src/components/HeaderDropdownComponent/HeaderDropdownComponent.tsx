@@ -39,7 +39,7 @@ const Listbox = styled('ul')(
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  min-width: 200px;
+  min-width: 188px;
   border-radius: 3px;
   text-decoration: none;
   list-style: none;

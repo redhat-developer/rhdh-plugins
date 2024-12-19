@@ -31,7 +31,7 @@ import {
 const ProfileDropdown = () => {
   const errorApi = useApi(errorApiRef);
   const identityApi = useApi(identityApiRef);
-  const user = 'Guest';
+  const user = 'Guest User';
 
   const handleLogout = () => {
     identityApi.signOut().catch(error => errorApi.post(error));
@@ -63,7 +63,7 @@ const ProfileDropdown = () => {
             sx={{ mx: 1 }}
           />
           <Typography variant="body2" sx={{ fontWeight: 500, mx: 1 }}>
-            {user ?? 'Guest'}
+            {user ?? 'Guest User'}
           </Typography>
           <KeyboardArrowDownOutlinedIcon
             sx={{
