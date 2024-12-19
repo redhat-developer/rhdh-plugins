@@ -40,6 +40,7 @@ import WorkflowOverviewFormatter, {
 import { usePermissionArray } from '../hooks/usePermissionArray';
 import {
   executeWorkflowRouteRef,
+  workflowInstancesRouteRef,
   workflowRouteRef,
   workflowRunsRouteRef,
 } from '../routes';
@@ -99,6 +100,7 @@ const usePermittedToViewBatch = (
 
 export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const navigate = useNavigate();
+  const instancesLink = useRouteRef(workflowInstancesRouteRef);
   const definitionLink = useRouteRef(workflowRouteRef);
   const definitionRunsLink = useRouteRef(workflowRunsRouteRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
@@ -127,9 +129,11 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
 
   const handleExecute = useCallback(
     (rowData: FormattedWorkflowOverview) => {
-      navigate(executeWorkflowLink({ workflowId: rowData.id }));
+      navigate(executeWorkflowLink({ workflowId: rowData.id }), {
+        state: { from: instancesLink() },
+      });
     },
-    [executeWorkflowLink, navigate],
+    [executeWorkflowLink, navigate, instancesLink],
   );
 
   const canExecuteWorkflow = useCallback(

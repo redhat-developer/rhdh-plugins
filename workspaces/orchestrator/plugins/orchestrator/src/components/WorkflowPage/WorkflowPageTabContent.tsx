@@ -22,7 +22,11 @@ import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import { Button, Grid, Tooltip } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 
-import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
+import {
+  executeWorkflowRouteRef,
+  workflowRouteRef,
+  workflowRunsRouteRef,
+} from '../../routes';
 
 interface Props {
   error: Error | undefined;
@@ -39,11 +43,16 @@ export const WorkflowPageTabContent = ({
   canRun,
   children,
 }: Props) => {
-  const { workflowId } = useRouteRefParams(workflowRouteRef);
+  const { workflowId, format } = useRouteRefParams(workflowRouteRef);
+  const definitionRunsLink = useRouteRef(workflowRunsRouteRef);
   const navigate = useNavigate();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const handleExecute = () => {
-    navigate(executeWorkflowLink({ workflowId }));
+    navigate(executeWorkflowLink({ workflowId }), {
+      state: {
+        from: definitionRunsLink({ workflowId: workflowId, format: format }),
+      },
+    });
   };
 
   return (

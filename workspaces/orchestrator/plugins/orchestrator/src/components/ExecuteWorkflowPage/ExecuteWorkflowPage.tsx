@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import React, { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
 import {
@@ -49,6 +49,7 @@ import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
 import JsonTextAreaForm from './JsonTextAreaForm';
 
 export const ExecuteWorkflowPage = () => {
+  const location = useLocation();
   const orchestratorApi = useApi(orchestratorApiRef);
   const { workflowId } = useRouteRefParams(executeWorkflowRouteRef);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -91,14 +92,23 @@ export const ExecuteWorkflowPage = () => {
           parameters,
           businessKey: assessmentInstanceId,
         });
-        navigate(instanceLink({ instanceId: response.data.id }));
+        navigate(instanceLink({ instanceId: response.data.id }), {
+          state: location.state,
+        });
       } catch (err) {
         setUpdateError(getErrorObject(err));
       } finally {
         setIsExecuting(false);
       }
     },
-    [orchestratorApi, workflowId, navigate, instanceLink, assessmentInstanceId],
+    [
+      orchestratorApi,
+      workflowId,
+      navigate,
+      instanceLink,
+      assessmentInstanceId,
+      location.state,
+    ],
   );
 
   const error = responseError || workflowNameError;
