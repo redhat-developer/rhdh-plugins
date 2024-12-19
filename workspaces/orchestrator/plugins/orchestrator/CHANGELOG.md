@@ -1,5 +1,25 @@
 ### Dependencies
 
+## 2.5.1
+
+### Patch Changes
+
+- cea6963: workflow runs list view - rename name column
+- d59e940: Updated dependency `@openapitools/openapi-generator-cli` to `2.15.3`.
+  Updated dependency `prettier` to `3.4.2`.
+  Updated dependency `@janus-idp/cli` to `1.19.1`.
+  Updated dependency `monaco-editor` to `0.52.2`.
+  Updated dependency `monaco-yaml` to `5.2.3`.
+  Updated dependency `sass` to `1.83.0`.
+  Updated dependency `webpack` to `5.97.1`.
+- cf1c024: bug fix in workflow runs table status filter
+- 353e038: Workflows Table - rename tooltip "Run” instead of “Execute.”
+- f3ace9e: add workflow tabs - details and runs
+- Updated dependencies [d59e940]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.25.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.4.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.4.6
+
 ## 2.5.0
 
 ### Minor Changes
