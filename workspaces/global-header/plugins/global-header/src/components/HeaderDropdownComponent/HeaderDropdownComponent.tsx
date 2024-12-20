@@ -15,10 +15,8 @@
  */
 
 import React from 'react';
-import { Dropdown } from '@mui/base/Dropdown';
-import { Menu } from '@mui/base/Menu';
-import { MenuItem } from '@mui/base/MenuItem';
-import { MenuButton } from '@mui/base/MenuButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from '@backstage/core-components';
@@ -31,6 +29,9 @@ interface HeaderDropdownProps {
   menuSections?: MenuSectionConfig[];
   menuBottomItems?: MenuItemConfig[];
   buttonProps?: React.ComponentProps<typeof Button>;
+  buttonClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  anchorEl: HTMLElement | null;
+  setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
 
 const Listbox = styled('ul')(
@@ -39,7 +40,7 @@ const Listbox = styled('ul')(
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  min-width: 188px;
+  min-width: 160px;
   border-radius: 3px;
   text-decoration: none;
   list-style: none;
@@ -70,6 +71,9 @@ const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
   menuSections = [],
   menuBottomItems = [],
   buttonProps,
+  buttonClick,
+  anchorEl,
+  setAnchorEl,
 }) => {
   const shouldHideDivider = (index: number) =>
     menuSections.length === 1 &&
@@ -77,53 +81,85 @@ const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
     menuBottomItems.length === 0;
 
   return (
-    <Dropdown>
-      <MenuButton slots={{ root: 'div' }}>
-        <Button {...buttonProps}>{buttonContent}</Button>
-      </MenuButton>
-      <Menu slots={{ listbox: Listbox }}>
-        {menuSections.map((section, index) => (
-          <MenuSection
-            key={section.sectionLabel}
-            {...{ hideDivider: shouldHideDivider(index), ...section }}
-          />
-        ))}
-        {menuBottomItems.map(({ key, icon: Icon, label, subLabel, link }) => (
-          <MenuItem key={key} style={{ margin: '8px' }}>
-            {link && (
-              <Link
-                to={link}
-                style={{
-                  display: 'flex',
-                  color: 'inherit',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                }}
-              >
-                {Icon && (
-                  <Icon
-                    fontSize="small"
-                    style={{
-                      marginRight: '0.5rem',
-                      flexShrink: 0,
-                      color: 'slategray',
-                    }}
-                  />
-                )}
-                <Box>
-                  <Typography variant="body2">{label}</Typography>
-                  {subLabel && (
-                    <Typography variant="caption" color="text.secondary">
-                      {subLabel}
-                    </Typography>
+    <Box>
+      <Button
+        disableRipple
+        disableTouchRipple
+        {...buttonProps}
+        onClick={buttonClick}
+      >
+        {buttonContent}
+      </Button>
+      <Menu
+        id="menu-appbar"
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        sx={{
+          '& ul[class*="MuiMenu-list"]': {
+            py: 0,
+          },
+        }}
+      >
+        <Listbox role="menu">
+          {menuSections.map((section, index) => (
+            <MenuSection
+              key={section.sectionLabel}
+              {...{ hideDivider: shouldHideDivider(index), ...section }}
+              handleClose={() => setAnchorEl(null)}
+            />
+          ))}
+          {menuBottomItems.map(({ key, icon: Icon, label, subLabel, link }) => (
+            <MenuItem
+              key={key}
+              sx={{ my: '8px', '&:hover': { background: 'transparent' } }}
+              onClick={() => setAnchorEl(null)}
+              disableRipple
+            >
+              {link && (
+                <Link
+                  to={link}
+                  style={{
+                    display: 'flex',
+                    color: 'inherit',
+                    alignItems: 'center',
+                    textDecoration: 'none',
+                  }}
+                >
+                  {Icon && (
+                    <Icon
+                      fontSize="small"
+                      style={{
+                        marginRight: '0.5rem',
+                        flexShrink: 0,
+                        color: 'slategray',
+                      }}
+                    />
                   )}
-                </Box>
-              </Link>
-            )}
-          </MenuItem>
-        ))}
+                  <Box>
+                    <Typography variant="body2">{label}</Typography>
+                    {subLabel && (
+                      <Typography variant="caption" color="text.secondary">
+                        {subLabel}
+                      </Typography>
+                    )}
+                  </Box>
+                </Link>
+              )}
+            </MenuItem>
+          ))}
+        </Listbox>
       </Menu>
-    </Dropdown>
+    </Box>
   );
 };
 

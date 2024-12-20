@@ -13,8 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createRouteRef } from '@backstage/core-plugin-api';
 
-export const rootRouteRef = createRouteRef({
-  id: 'global-header',
-});
+import React from 'react';
+
+export const useDropdownManager = () => {
+  const [menuStates, setMenuStates] = React.useState<
+    Record<string, HTMLElement | null>
+  >({});
+
+  const handleOpen =
+    (key: string) => (event: React.MouseEvent<HTMLElement>) => {
+      setMenuStates(prev => ({ ...prev, [key]: event.currentTarget }));
+    };
+
+  const handleClose = (key: string) => () => {
+    setMenuStates(prev => ({ ...prev, [key]: null }));
+  };
+
+  return {
+    menuStates,
+    handleOpen,
+    handleClose,
+  };
+};

@@ -28,7 +28,17 @@ import {
   useApi,
 } from '@backstage/core-plugin-api';
 
-const ProfileDropdown = () => {
+interface ProfileDropdownProps {
+  handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
+  anchorEl: HTMLElement | null;
+  setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
+}
+
+const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+  handleMenu,
+  anchorEl,
+  setAnchorEl,
+}) => {
   const errorApi = useApi(errorApiRef);
   const identityApi = useApi(identityApiRef);
   const user = 'Guest User';
@@ -52,6 +62,7 @@ const ProfileDropdown = () => {
           onClick: handleLogout,
         },
       ],
+      handleClose: () => setAnchorEl(null),
     },
   ];
   return (
@@ -83,6 +94,9 @@ const ProfileDropdown = () => {
           ml: 1,
         },
       }}
+      buttonClick={handleMenu}
+      anchorEl={anchorEl}
+      setAnchorEl={setAnchorEl}
     />
   );
 };

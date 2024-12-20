@@ -19,7 +19,7 @@ import { SvgIconProps } from '@mui/material/SvgIcon';
 import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { MenuItem } from '@mui/base/MenuItem';
+import MenuItem from '@mui/material/MenuItem';
 import { Link } from '@backstage/core-components';
 import MenuItemContent from './MenuItemContent';
 
@@ -48,6 +48,7 @@ export interface MenuSectionConfig {
   optionalLinkLabel?: string;
   items: MenuItemConfig[];
   hideDivider?: boolean;
+  handleClose: () => void;
 }
 
 const MenuSection: React.FC<MenuSectionConfig> = ({
@@ -56,37 +57,55 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
   optionalLinkLabel,
   items,
   hideDivider = false,
+  handleClose,
 }) => (
   <Box>
     {sectionLabel && (
-      <MenuItem
-        style={{
+      <Box
+        sx={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          margin: '0.75rem',
+          mx: 0,
+          mt: '0.5rem',
+          '&:hover': { background: 'transparent' },
         }}
       >
         <Typography
           variant="body2"
-          sx={{ fontSize: '0.875em', color: 'text.disabled' }}
+          sx={{ ml: 2, fontSize: '0.875em', color: 'text.disabled' }}
         >
           {sectionLabel}
         </Typography>
-        {optionalLink && optionalLinkLabel && (
-          <Link
-            to={optionalLink}
-            underline="none"
-            style={{ fontSize: '0.875em' }}
-          >
-            {optionalLinkLabel}
-          </Link>
-        )}
-      </MenuItem>
+        <MenuItem
+          sx={{
+            '&:hover': { background: 'transparent' },
+          }}
+          disableRipple
+          disableTouchRipple
+          onClick={handleClose}
+        >
+          {optionalLink && optionalLinkLabel && (
+            <Link
+              to={optionalLink}
+              underline="none"
+              style={{ fontSize: '0.875em' }}
+            >
+              {optionalLinkLabel}
+            </Link>
+          )}
+        </MenuItem>
+      </Box>
     )}
-    <ul style={{ margin: '0 12px', padding: 0, listStyle: 'none' }}>
+    <ul style={{ padding: 0, listStyle: 'none' }}>
       {items.map(({ key, icon: Icon, label, subLabel, link, onClick }) => (
-        <MenuItem key={key} style={{ margin: '1rem 0' }}>
+        <MenuItem
+          key={key}
+          disableRipple
+          disableTouchRipple
+          onClick={handleClose}
+          sx={{ py: 0.5, '&:hover': { background: 'transparent' } }}
+        >
           {link ? (
             <Link
               to={link}

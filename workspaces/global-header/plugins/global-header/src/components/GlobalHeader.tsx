@@ -24,16 +24,39 @@ import ProfileDropdown from './HeaderDropdownComponent/ProfileDropdown';
 import Divider from '@mui/material/Divider';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineRounded';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import { useDropdownManager } from '../hooks';
+
+const iconButtons = [
+  {
+    Icon: HelpOutlineOutlinedIcon,
+    onClick: () => {},
+  },
+  {
+    Icon: NotificationsOutlinedIcon,
+    onClick: () => {},
+  },
+];
 
 export const GlobalHeader = () => {
-  const iconButtons = [
+  const { menuStates, handleOpen, handleClose } = useDropdownManager();
+  const dropdownConfigs = [
     {
-      Icon: HelpOutlineOutlinedIcon,
-      onClick: () => {},
+      key: 'create',
+      component: CreateDropdown,
+      buttonProps: {
+        handleMenu: handleOpen('create'),
+        anchorEl: menuStates.create,
+        setAnchorEl: handleClose('create'),
+      },
     },
     {
-      Icon: NotificationsOutlinedIcon,
-      onClick: () => {},
+      key: 'profile',
+      component: ProfileDropdown,
+      buttonProps: {
+        handleMenu: handleOpen('profile'),
+        anchorEl: menuStates.profile,
+        setAnchorEl: handleClose('profile'),
+      },
     },
   ];
 
@@ -45,7 +68,10 @@ export const GlobalHeader = () => {
     >
       <Toolbar>
         <SearchComponent />
-        <CreateDropdown />
+        <CreateDropdown
+          key={dropdownConfigs[0].key}
+          {...dropdownConfigs[0].buttonProps}
+        />
         {iconButtons.map(({ Icon, onClick }) => (
           <HeaderIconButton
             key={`header-icon-button-${Icon.toString}`}
@@ -58,7 +84,10 @@ export const GlobalHeader = () => {
           flexItem
           sx={{ borderColor: '#373A40' }}
         />
-        <ProfileDropdown />
+        <ProfileDropdown
+          key={dropdownConfigs[1].key}
+          {...dropdownConfigs[1].buttonProps}
+        />
       </Toolbar>
     </AppBar>
   );
