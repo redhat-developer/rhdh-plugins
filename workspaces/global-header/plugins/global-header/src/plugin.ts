@@ -18,10 +18,18 @@ import {
   createComponentExtension,
 } from '@backstage/core-plugin-api';
 
+/**
+ * @public
+ * Global Header Plugin
+ */
 export const globalHeaderPlugin = createPlugin({
   id: 'global-header',
 });
 
+/**
+ * @public
+ * Global Header
+ */
 export const GlobalHeader = globalHeaderPlugin.provide(
   createComponentExtension({
     name: 'GlobalHeader',
