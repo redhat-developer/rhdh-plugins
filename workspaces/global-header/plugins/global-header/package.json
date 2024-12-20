@@ -10,8 +10,17 @@
     "main": "dist/index.esm.js",
     "types": "dist/index.d.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/global-header/plugins/global-header"
+  },
   "backstage": {
-    "role": "frontend-plugin"
+    "role": "frontend-plugin",
+    "pluginId": "global-header",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-global-header"
+    ]
   },
   "sideEffects": false,
   "scripts": {
