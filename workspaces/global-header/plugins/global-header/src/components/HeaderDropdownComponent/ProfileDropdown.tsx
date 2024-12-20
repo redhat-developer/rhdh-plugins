@@ -48,15 +48,16 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   };
   const menuSections = [
     {
+      sectionKey: 'profile',
       items: [
         {
-          key: 'settings',
+          itemKey: 'settings',
           icon: ManageAccountsOutlinedIcon,
           label: 'Settings',
           link: '/settings',
         },
         {
-          key: 'logout',
+          itemKey: 'logout',
           icon: LogoutOutlinedIcon,
           label: 'Log out',
           onClick: handleLogout,

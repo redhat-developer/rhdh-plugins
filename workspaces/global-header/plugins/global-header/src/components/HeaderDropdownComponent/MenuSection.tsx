@@ -24,7 +24,7 @@ import { Link } from '@backstage/core-components';
 import MenuItemContent from './MenuItemContent';
 
 export interface MenuItemBase {
-  key: string;
+  itemKey: string;
   icon?: React.ElementType<SvgIconProps>;
   label: string;
   subLabel?: string;
@@ -43,6 +43,7 @@ export interface MenuItemAction extends MenuItemBase {
 export type MenuItemConfig = MenuItemLink | MenuItemAction;
 
 export interface MenuSectionConfig {
+  sectionKey: string;
   sectionLabel?: string;
   optionalLink?: string;
   optionalLinkLabel?: string;
@@ -52,6 +53,7 @@ export interface MenuSectionConfig {
 }
 
 const MenuSection: React.FC<MenuSectionConfig> = ({
+  sectionKey,
   sectionLabel,
   optionalLink,
   optionalLinkLabel,
@@ -60,7 +62,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
   handleClose,
 }) => (
   <Box>
-    {sectionLabel && (
+    {sectionLabel && sectionKey && (
       <Box
         sx={{
           display: 'flex',
@@ -98,9 +100,9 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
       </Box>
     )}
     <ul style={{ padding: 0, listStyle: 'none' }}>
-      {items.map(({ key, icon: Icon, label, subLabel, link, onClick }) => (
+      {items.map(({ itemKey, icon: Icon, label, subLabel, link, onClick }) => (
         <MenuItem
-          key={key}
+          key={`menu-item-${itemKey}`}
           disableRipple
           disableTouchRipple
           onClick={handleClose}

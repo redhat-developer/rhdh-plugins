@@ -28,10 +28,12 @@ import { useDropdownManager } from '../hooks';
 
 const iconButtons = [
   {
+    key: 'help',
     Icon: HelpOutlineOutlinedIcon,
     onClick: () => {},
   },
   {
+    key: 'notification',
     Icon: NotificationsOutlinedIcon,
     onClick: () => {},
   },
@@ -72,9 +74,9 @@ export const GlobalHeader = () => {
           key={dropdownConfigs[0].key}
           {...dropdownConfigs[0].buttonProps}
         />
-        {iconButtons.map(({ Icon, onClick }) => (
+        {iconButtons.map(({ key, Icon, onClick }) => (
           <HeaderIconButton
-            key={`header-icon-button-${Icon.toString}`}
+            key={`header-icon-button-${key}`}
             Icon={Icon}
             onClick={onClick}
           />

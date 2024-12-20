@@ -34,6 +34,6 @@ describe('ExampleComponent', () => {
 
   it('should render', async () => {
     await renderInTestApp(<ExampleComponent />);
-    expect(screen.getByText('Welcome to global-header!')).toBeInTheDocument();
+    expect(screen.getByText('Global Header Example')).toBeInTheDocument();
   });
 });

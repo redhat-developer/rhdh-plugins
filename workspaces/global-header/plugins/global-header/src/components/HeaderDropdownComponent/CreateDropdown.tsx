@@ -56,11 +56,12 @@ const models = [
 
 const menuSections = [
   {
+    sectionKey: 'templates',
     sectionLabel: 'Use a template',
     optionalLinkLabel: 'All templates',
     optionalLink: '/create',
     items: models.map(m => ({
-      key: m.key,
+      itemKey: m.key,
       label: m.label,
       link: `/create/templates/default/${m.value}`,
     })),
@@ -70,7 +71,7 @@ const menuSections = [
 
 const menuBottomItems: MenuItemConfig[] = [
   {
-    key: 'custom',
+    itemKey: 'custom',
     icon: CategoryOutlinedIcon,
     label: 'Register a component',
     subLabel: 'Import it to the catalog page',

@@ -113,50 +113,52 @@ const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
         <Listbox role="menu">
           {menuSections.map((section, index) => (
             <MenuSection
-              key={section.sectionLabel}
+              key={`menu-section-${section.sectionKey}`}
               {...{ hideDivider: shouldHideDivider(index), ...section }}
               handleClose={() => setAnchorEl(null)}
             />
           ))}
-          {menuBottomItems.map(({ key, icon: Icon, label, subLabel, link }) => (
-            <MenuItem
-              key={key}
-              sx={{ my: '8px', '&:hover': { background: 'transparent' } }}
-              onClick={() => setAnchorEl(null)}
-              disableRipple
-            >
-              {link && (
-                <Link
-                  to={link}
-                  style={{
-                    display: 'flex',
-                    color: 'inherit',
-                    alignItems: 'center',
-                    textDecoration: 'none',
-                  }}
-                >
-                  {Icon && (
-                    <Icon
-                      fontSize="small"
-                      style={{
-                        marginRight: '0.5rem',
-                        flexShrink: 0,
-                        color: 'slategray',
-                      }}
-                    />
-                  )}
-                  <Box>
-                    <Typography variant="body2">{label}</Typography>
-                    {subLabel && (
-                      <Typography variant="caption" color="text.secondary">
-                        {subLabel}
-                      </Typography>
+          {menuBottomItems.map(
+            ({ itemKey, icon: Icon, label, subLabel, link }) => (
+              <MenuItem
+                key={`menu-item-${itemKey}`}
+                sx={{ my: '8px', '&:hover': { background: 'transparent' } }}
+                onClick={() => setAnchorEl(null)}
+                disableRipple
+              >
+                {link && (
+                  <Link
+                    to={link}
+                    style={{
+                      display: 'flex',
+                      color: 'inherit',
+                      alignItems: 'center',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    {Icon && (
+                      <Icon
+                        fontSize="small"
+                        style={{
+                          marginRight: '0.5rem',
+                          flexShrink: 0,
+                          color: 'slategray',
+                        }}
+                      />
                     )}
-                  </Box>
-                </Link>
-              )}
-            </MenuItem>
-          ))}
+                    <Box>
+                      <Typography variant="body2">{label}</Typography>
+                      {subLabel && (
+                        <Typography variant="caption" color="text.secondary">
+                          {subLabel}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Link>
+                )}
+              </MenuItem>
+            ),
+          )}
         </Listbox>
       </Menu>
     </Box>
