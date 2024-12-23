@@ -236,14 +236,14 @@ export const WorkflowInstancePage = ({
             />
             <Grid container item justifyContent="flex-end" spacing={1}>
               <Grid item>
-                {permittedToUse.allowed && canAbort && (
+                {canAbort && (
                   <Tooltip
                     title="user not authorized to abort workflow"
                     disableHoverListener={permittedToUse.allowed}
                   >
                     <Button
                       variant="contained"
-                      disabled={!permittedToUse.allowed || !canAbort}
+                      disabled={!permittedToUse.allowed}
                       onClick={toggleAbortConfirmationDialog}
                       className={classes.abortButton}
                     >
