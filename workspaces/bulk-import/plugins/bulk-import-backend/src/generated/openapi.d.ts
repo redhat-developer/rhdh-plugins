@@ -31,7 +31,12 @@ declare namespace Components {
     export type SizePerIntegrationQueryParam = number;
     export type SizePerIntegrationQueryParamDeprecated = number;
     export type SizeQueryParam = number;
-    export type SortColumnQueryParam = string;
+    export type SortColumnQueryParam =
+      | 'repository.name'
+      | 'repository.organization'
+      | 'repository.url'
+      | 'lastUpdate'
+      | 'status';
     export type SortOrderQueryParam = 'asc' | 'desc';
   }
   export interface QueryParameters {
@@ -332,7 +337,12 @@ declare namespace Paths {
       export type Search = string;
       export type Size = number;
       export type SizePerIntegration = number;
-      export type SortColumn = string;
+      export type SortColumn =
+        | 'repository.name'
+        | 'repository.organization'
+        | 'repository.url'
+        | 'lastUpdate'
+        | 'status';
       export type SortOrder = 'asc' | 'desc';
     }
     export interface QueryParameters {

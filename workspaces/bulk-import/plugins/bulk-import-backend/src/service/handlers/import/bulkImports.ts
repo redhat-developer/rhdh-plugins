@@ -32,7 +32,6 @@ import {
   getNestedValue,
   logErrorIfNeeded,
   paginateArray,
-  SortingOrderEnum,
 } from '../../../helpers';
 import {
   DefaultPageNumber,
@@ -52,18 +51,27 @@ type FindAllImportsResponse =
 
 function sortImports(
   imports: Components.Schemas.Import[],
-  sortColumn: string = 'repository.name',
-  sortOrder: string = SortingOrderEnum.ASC,
+  sortColumn: Components.Parameters.SortColumnQueryParam = 'repository.name',
+  sortOrder: Components.Parameters.SortOrderQueryParam = 'asc',
 ) {
   imports.sort((a, b) => {
     const value1 = getNestedValue(a, sortColumn);
     const value2 = getNestedValue(b, sortColumn);
     // Handle cases where values are undefined
     if (value1 === undefined && value2 === undefined) return 0;
-    if (value1 === undefined) return SortingOrderEnum.ASC ? -1 : 1;
-    if (value2 === undefined) return SortingOrderEnum.ASC ? 1 : -1;
+    if (value1 === undefined) return sortOrder === 'asc' ? -1 : 1;
+    if (value2 === undefined) return sortOrder === 'asc' ? 1 : -1;
+
+    if (sortColumn === 'lastUpdate') {
+      const date1 = new Date(value1); // Convert string to Date object
+      const date2 = new Date(value2); // Convert string to Date object
+      // Compare dates
+      return sortOrder === 'asc'
+        ? date2.getTime() - date1.getTime()
+        : date1.getTime() - date2.getTime();
+    }
     // Compare values based on sort order
-    return SortingOrderEnum.ASC === sortOrder
+    return sortOrder === 'asc'
       ? value1.localeCompare(value2)
       : value2.localeCompare(value1);
   });
@@ -83,8 +91,8 @@ export async function findAllImports(
     search?: string;
     pageNumber?: number;
     pageSize?: number;
-    sortColumn?: string;
-    sortOrder?: string;
+    sortColumn?: Components.Parameters.SortColumnQueryParam;
+    sortOrder?: Components.Parameters.SortOrderQueryParam;
   },
 ): Promise<HandlerResponse<FindAllImportsResponse>> {
   const apiVersion = requestHeaders?.apiVersion ?? 'v1';

@@ -24,7 +24,3 @@ export function getNestedValue<T>(obj: T, path: string): any {
       obj,
     );
 }
-export enum SortingOrderEnum {
-  ASC = 'asc',
-  DESC = 'desc',
-}

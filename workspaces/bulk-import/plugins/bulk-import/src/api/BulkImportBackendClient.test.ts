@@ -314,8 +314,8 @@ describe('BulkImportBackendClient', () => {
         1,
         2,
         '',
-        AddedRepositoryColumnNameEnum.repoName,
-        SortingOrderEnum.ASC,
+        AddedRepositoryColumnNameEnum.repositoryName,
+        SortingOrderEnum.Asc,
       );
       expect(jobs).toEqual(mockGetImportJobs);
     });
@@ -325,8 +325,8 @@ describe('BulkImportBackendClient', () => {
         1,
         2,
         'cup',
-        AddedRepositoryColumnNameEnum.repoName,
-        SortingOrderEnum.ASC,
+        AddedRepositoryColumnNameEnum.repositoryName,
+        SortingOrderEnum.Asc,
       );
       expect(jobs).toEqual(
         mockGetImportJobs.imports.filter(r =>
@@ -341,8 +341,8 @@ describe('BulkImportBackendClient', () => {
           1,
           2,
           '',
-          AddedRepositoryColumnNameEnum.repoName,
-          SortingOrderEnum.ASC,
+          AddedRepositoryColumnNameEnum.repositoryName,
+          SortingOrderEnum.Asc,
         ),
       ).resolves.toEqual(expect.objectContaining([]));
     });

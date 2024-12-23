@@ -364,10 +364,23 @@ components:
     sortColumnQueryParam:
       in: query
       name: sortColumn
-      description: The name of the column to sort by
+      description: |
+        The allowed values for sorting columns:
+        - `repository.name`: Sort by repository name.
+        - `repository.organization`: Sort by organization URL.
+        - `repository.url`: Sort by repository URL.
+        - `lastUpdate`: Sort by the last time the catalog-info.yaml was updated.
+        - `status`: Sort by the status of the catalog-info.yaml.
       required: false
       schema:
-        type: string
+        enum:
+          - repository.name
+          - repository.organization
+          - repository.url
+          - lastUpdate
+          - status
+        default: repository.name
+
     sortOrderQueryParam:
       in: query
       name: sortOrder

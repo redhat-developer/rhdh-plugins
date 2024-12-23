@@ -571,10 +571,17 @@ const OPENAPI = `
       "sortColumnQueryParam": {
         "in": "query",
         "name": "sortColumn",
-        "description": "The name of the column to sort by",
+        "description": "The allowed values for sorting columns:\\n- repository.name: Sort by repository name.\\n- repository.organization: Sort by organization URL.\\n- repository.url: Sort by repository URL.\\n- lastUpdate: Sort by the last time the catalog-info.yaml was updated.\\n- status: Sort by the status of the catalog-info.yaml.\\n",
         "required": false,
         "schema": {
-          "type": "string"
+          "enum": [
+            "repository.name",
+            "repository.organization",
+            "repository.url",
+            "lastUpdate",
+            "status"
+          ],
+          "default": "repository.name"
         }
       },
       "sortOrderQueryParam": {

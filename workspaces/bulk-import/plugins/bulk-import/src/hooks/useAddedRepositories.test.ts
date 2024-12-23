@@ -55,8 +55,8 @@ describe('useAddedRepositories', () => {
         1,
         5,
         '',
-        AddedRepositoryColumnNameEnum.repoName,
-        SortingOrderEnum.ASC,
+        AddedRepositoryColumnNameEnum.repositoryName,
+        SortingOrderEnum.Asc,
       ),
     );
     await waitFor(() => {

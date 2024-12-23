@@ -41,10 +41,10 @@ export const RepositoriesList = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const [order, setOrder] = React.useState<SortingOrderEnum>(
-    SortingOrderEnum.ASC,
+    SortingOrderEnum.Asc,
   );
   const [orderBy, setOrderBy] = React.useState<string>(
-    AddedRepositoryColumnNameEnum.repoName,
+    AddedRepositoryColumnNameEnum.repositoryName,
   );
   const { openDialog, setOpenDialog, deleteComponent } = useDeleteDialog();
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
@@ -66,7 +66,7 @@ export const RepositoriesList = () => {
     pageNumber + 1,
     rowsPerPage,
     debouncedSearch,
-    AddedRepositoryColumnNameEnum[orderByColumn] || '',
+    AddedRepositoryColumnNameEnum[orderByColumn],
     order,
   );
 
@@ -90,7 +90,7 @@ export const RepositoriesList = () => {
     property: string,
   ) => {
     const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? SortingOrderEnum.DESC : SortingOrderEnum.ASC);
+    setOrder(isAsc ? SortingOrderEnum.Desc : SortingOrderEnum.Asc);
     setOrderBy(property);
   };
 
