@@ -243,7 +243,6 @@ const RefForwardingWorkflowEditor: ForwardRefRenderFunction<
             if (format && workflowId && format !== workflowFormat) {
               const link = viewWorkflowLink({
                 workflowId: workflowId,
-                format: workflowFormat,
               });
 
               navigate(link, { replace: true });

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { InfoCard } from '@backstage/core-components';
 import { useRouteRefParams } from '@backstage/core-plugin-api';
@@ -35,11 +35,7 @@ export const WorkflowDetailsTabContent = ({
   loading,
   workflowOverviewDTO,
 }: Props) => {
-  const { workflowId, format } = useRouteRefParams(workflowRouteRef);
-  const workflowFormat = useMemo(
-    () => (format === 'json' ? 'json' : 'yaml'),
-    [format],
-  );
+  const { workflowId } = useRouteRefParams(workflowRouteRef);
 
   return (
     <>
@@ -55,7 +51,7 @@ export const WorkflowDetailsTabContent = ({
             <WorkflowEditor
               kind={EditorViewKind.EXTENDED_DIAGRAM_VIEWER}
               workflowId={workflowId}
-              format={workflowFormat}
+              format={workflowOverviewDTO?.format}
             />
           </div>
         </InfoCard>

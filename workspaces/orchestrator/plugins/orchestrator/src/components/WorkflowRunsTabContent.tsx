@@ -69,6 +69,7 @@ export const WorkflowRunsTabContent = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
+  const workflowPageLink = useRouteRef(workflowRouteRef);
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
     Selector.AllItems,
   );
@@ -91,6 +92,11 @@ export const WorkflowRunsTabContent = () => {
             {
               title: 'Workflow name',
               field: 'name',
+              render: (data: WorkflowRunDetail) => (
+                <Link to={workflowPageLink({ workflowId: data.workflowId })}>
+                  {data.name}
+                </Link>
+              ),
             },
           ]),
       {
@@ -115,7 +121,7 @@ export const WorkflowRunsTabContent = () => {
       { title: 'Started', field: 'start', defaultSort: 'desc' },
       { title: 'Duration', field: 'duration' },
     ],
-    [workflowInstanceLink, workflowId],
+    [workflowInstanceLink, workflowId, workflowPageLink],
   );
 
   const [page, setPage] = useState(0);

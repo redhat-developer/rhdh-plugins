@@ -38,7 +38,7 @@ export const workflowInstanceRouteRef = createSubRouteRef({
 export const workflowRouteRef = createSubRouteRef({
   id: 'orchestrator/workflows',
   parent: orchestratorRootRouteRef,
-  path: '/workflows/:format/:workflowId',
+  path: '/workflows/:workflowId',
 });
 
 // workflow page - instances tab
@@ -46,7 +46,7 @@ export const workflowRunsRoutePath = 'runs';
 export const workflowRunsRouteRef = createSubRouteRef({
   id: 'orchestrator/workflows',
   parent: orchestratorRootRouteRef,
-  path: `/workflows/:format/:workflowId/${workflowRunsRoutePath}`,
+  path: `/workflows/:workflowId/${workflowRunsRoutePath}`,
 });
 
 // execute workflow page
