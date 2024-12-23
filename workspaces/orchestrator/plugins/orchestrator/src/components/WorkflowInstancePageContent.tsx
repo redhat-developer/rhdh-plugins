@@ -26,7 +26,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { VALUE_UNAVAILABLE } from '../constants';
-import { EditorViewKind, WorkflowEditor } from './WorkflowEditor';
 import { WorkflowProgress } from './WorkflowProgress';
 import { WorkflowResult } from './WorkflowResult';
 import { WorkflowRunDetail } from './WorkflowRunDetail';
@@ -106,7 +105,7 @@ export const WorkflowInstancePageContent: React.FC<{
   return (
     <Content noPadding>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
           <InfoCard
             title="Details"
             divider={false}
@@ -118,10 +117,15 @@ export const WorkflowInstancePageContent: React.FC<{
             />
           </InfoCard>
         </Grid>
-
         <Grid item xs={6}>
+          <WorkflowResult
+            assessedInstance={assessedInstance}
+            className={styles.middleRowCard}
+          />
+        </Grid>
+        <Grid item xs={12}>
           <InfoCard
-            title="Variables"
+            title="Inputs"
             divider={false}
             className={styles.middleRowCard}
             cardClassName={styles.autoOverflow}
@@ -134,28 +138,7 @@ export const WorkflowInstancePageContent: React.FC<{
             )}
           </InfoCard>
         </Grid>
-        <Grid item xs={6}>
-          <WorkflowResult
-            assessedInstance={assessedInstance}
-            className={styles.middleRowCard}
-          />
-        </Grid>
-
-        <Grid item xs={6}>
-          <InfoCard
-            title="Workflow definition"
-            divider={false}
-            className={styles.bottomRowCard}
-          >
-            <WorkflowEditor
-              workflowId={assessedInstance.instance.processId}
-              kind={EditorViewKind.DIAGRAM_VIEWER}
-              editorMode="text"
-            />
-          </InfoCard>
-        </Grid>
-
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <InfoCard
             title="Workflow progress"
             divider={false}
