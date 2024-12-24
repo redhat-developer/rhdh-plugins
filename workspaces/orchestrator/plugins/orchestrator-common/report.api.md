@@ -146,7 +146,7 @@ export const DEFAULT_SONATAFLOW_BASE_URL = "http://localhost";
 // Warning: (ae-missing-release-tag) "DEFAULT_SONATAFLOW_CONTAINER_IMAGE" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export const DEFAULT_SONATAFLOW_CONTAINER_IMAGE = "docker.io/apache/incubator-kie-sonataflow-devmode:latest";
+export const DEFAULT_SONATAFLOW_CONTAINER_IMAGE = "quay.io/kubesmarts/incubator-kie-sonataflow-devmode:main";
 
 // Warning: (ae-missing-release-tag) "DEFAULT_SONATAFLOW_PERSISTENCE_PATH" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
