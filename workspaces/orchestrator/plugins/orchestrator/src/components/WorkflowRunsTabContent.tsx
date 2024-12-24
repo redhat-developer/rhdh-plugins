@@ -72,57 +72,9 @@ export const WorkflowRunsTabContent = () => {
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
     Selector.AllItems,
   );
-
-  const columns = React.useMemo(
-    (): TableColumn<WorkflowRunDetail>[] => [
-      {
-        title: 'ID',
-        field: 'id',
-        render: data => (
-          <Link to={workflowInstanceLink({ instanceId: data.id })}>
-            {data.id}
-          </Link>
-        ),
-        sorting: false,
-      },
-      ...(workflowId
-        ? []
-        : [
-            {
-              title: 'Workflow name',
-              field: 'name',
-            },
-          ]),
-      {
-        title: 'Status',
-        field: 'state',
-        render: (data: WorkflowRunDetail) => (
-          <WorkflowInstanceStatusIndicator
-            status={data.state as ProcessInstanceStatusDTO}
-          />
-        ),
-      },
-      ...(workflowId
-        ? []
-        : [
-            {
-              title: 'Category',
-              field: 'category',
-              render: (data: WorkflowRunDetail) =>
-                capitalize(data.category ?? VALUE_UNAVAILABLE),
-            },
-          ]),
-      { title: 'Started', field: 'start', defaultSort: 'desc' },
-      { title: 'Duration', field: 'duration' },
-    ],
-    [workflowInstanceLink, workflowId],
-  );
-
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
-  const [orderBy, setOrderBy] = useState<number>(
-    columns.findIndex(value => value.field === 'start'),
-  );
+  const [orderByField, setOrderByField] = useState<string>('start');
   const [orderDirection, setOrderDirection] = useState('desc');
 
   const getFilter = React.useCallback((): Filter | undefined => {
@@ -158,7 +110,7 @@ export const WorkflowRunsTabContent = () => {
     const paginationInfo: PaginationInfoDTO = {
       pageSize: pageSize + 1, // add one more to know if this is the last page or there are more instances. If there are no more instances, next button is disabled.
       offset: page * pageSize,
-      orderBy: columns[orderBy].field,
+      orderBy: orderByField,
       orderDirection:
         orderDirection === 'asc'
           ? PaginationInfoDTOOrderDirectionEnum.Asc
@@ -176,10 +128,9 @@ export const WorkflowRunsTabContent = () => {
     orchestratorApi,
     page,
     pageSize,
-    orderBy,
+    orderByField,
     orderDirection,
     getFilter,
-    columns,
   ]);
 
   const { loading, error, value } = usePolling(fetchInstances);
@@ -203,6 +154,72 @@ export const WorkflowRunsTabContent = () => {
     [statusSelectorValue],
   );
 
+  const applyBackendSort = React.useCallback(
+    (item1: WorkflowRunDetail, item2: WorkflowRunDetail): number => {
+      // Workaround for material-table applying sorting on top of backend sorting. The version we are using is too old to request a fix.
+      // Should be resolved when upgrading backstage and all plugins to material6
+      // The workaround is to configure the FE sorting material-table applies to be according to order received from backend
+      // TODO: resolve when upgrading to material 6
+      if (!value) {
+        return 0;
+      }
+      const item1Index = value?.findIndex(curItem => curItem.id === item1.id);
+      const item2Index = value?.findIndex(curItem => curItem.id === item2.id);
+      return orderDirection === 'asc'
+        ? item1Index - item2Index
+        : item2Index - item1Index;
+    },
+    [value, orderDirection],
+  );
+
+  const columns = React.useMemo(
+    (): TableColumn<WorkflowRunDetail>[] => [
+      {
+        title: 'ID',
+        field: 'id',
+        render: row => (
+          <Link to={workflowInstanceLink({ instanceId: row.id })}>
+            {row.id}
+          </Link>
+        ),
+        sorting: false,
+      },
+      ...(workflowId
+        ? []
+        : [
+            {
+              title: 'Workflow name',
+              field: 'processName',
+              customSort: applyBackendSort,
+            },
+          ]),
+      {
+        title: 'Status',
+        field: 'state',
+        render: (row: WorkflowRunDetail) => (
+          <WorkflowInstanceStatusIndicator
+            status={row.state as ProcessInstanceStatusDTO}
+          />
+        ),
+        customSort: applyBackendSort,
+      },
+      ...(workflowId
+        ? []
+        : [
+            {
+              title: 'Category',
+              field: 'category',
+              render: (row: WorkflowRunDetail) =>
+                capitalize(row.category ?? VALUE_UNAVAILABLE),
+              sorting: false,
+            },
+          ]),
+      { title: 'Started', field: 'start', customSort: applyBackendSort },
+      { title: 'Duration', field: 'duration', sorting: false },
+    ],
+    [workflowInstanceLink, workflowId, applyBackendSort],
+  );
+
   let data = value || [];
   let hasNextPage = false;
   if (data.length === pageSize + 1) {
@@ -224,7 +241,11 @@ export const WorkflowRunsTabContent = () => {
           paging: false,
         }}
         onOrderChange={(orderBy_: number, orderDirection_: 'asc' | 'desc') => {
-          setOrderBy(orderBy_);
+          const field = columns[orderBy_].field;
+          if (!field) {
+            throw new Error(`Failed to find column number ${orderBy_}`);
+          }
+          setOrderByField(field);
           setOrderDirection(orderDirection_);
         }}
         components={{
