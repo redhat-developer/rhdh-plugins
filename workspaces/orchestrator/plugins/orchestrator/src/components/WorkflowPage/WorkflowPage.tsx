@@ -66,10 +66,12 @@ export const WorkflowPage = () => {
             loading={loading}
             canRun={canRun}
           >
-            <WorkflowDetailsTabContent
-              loading={loading}
-              workflowOverviewDTO={workflowOverviewDTO?.data}
-            />
+            {workflowOverviewDTO && (
+              <WorkflowDetailsTabContent
+                loading={loading}
+                workflowOverviewDTO={workflowOverviewDTO.data}
+              />
+            )}
           </WorkflowPageTabContent>
         </TabbedLayout.Route>
         <TabbedLayout.Route path={workflowRunsRoutePath} title="Workflow runs">

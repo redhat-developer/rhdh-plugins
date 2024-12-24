@@ -16,27 +16,23 @@
 import React from 'react';
 
 import { InfoCard } from '@backstage/core-components';
-import { useRouteRefParams } from '@backstage/core-plugin-api';
 
 import { Grid } from '@material-ui/core';
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { workflowRouteRef } from '../../routes';
 import { EditorViewKind, WorkflowEditor } from '../WorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
 
 interface Props {
   loading: boolean;
-  workflowOverviewDTO: WorkflowOverviewDTO | undefined;
+  workflowOverviewDTO: WorkflowOverviewDTO;
 }
 
 export const WorkflowDetailsTabContent = ({
   loading,
   workflowOverviewDTO,
 }: Props) => {
-  const { workflowId } = useRouteRefParams(workflowRouteRef);
-
   return (
     <>
       <Grid item>
@@ -50,8 +46,8 @@ export const WorkflowDetailsTabContent = ({
           <div style={{ height: '600px' }}>
             <WorkflowEditor
               kind={EditorViewKind.EXTENDED_DIAGRAM_VIEWER}
-              workflowId={workflowId}
-              format={workflowOverviewDTO?.format}
+              workflowId={workflowOverviewDTO.workflowId}
+              format={workflowOverviewDTO.format}
             />
           </div>
         </InfoCard>
