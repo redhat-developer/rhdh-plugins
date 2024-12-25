@@ -117,15 +117,17 @@ export const WorkflowInstancePageContent: React.FC<{
             />
           </InfoCard>
         </Grid>
+
         <Grid item xs={6}>
           <WorkflowResult
             assessedInstance={assessedInstance}
             className={styles.middleRowCard}
           />
         </Grid>
-        <Grid item xs={12}>
+
+        <Grid item xs={6}>
           <InfoCard
-            title="Inputs"
+            title="Variables"
             divider={false}
             className={styles.middleRowCard}
             cardClassName={styles.autoOverflow}
@@ -138,11 +140,12 @@ export const WorkflowInstancePageContent: React.FC<{
             )}
           </InfoCard>
         </Grid>
-        <Grid item xs={12}>
+
+        <Grid item xs={6}>
           <InfoCard
             title="Workflow progress"
             divider={false}
-            className={styles.bottomRowCard}
+            className={styles.middleRowCard}
             cardClassName={styles.autoOverflow}
           >
             <WorkflowProgress
