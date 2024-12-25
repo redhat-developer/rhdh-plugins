@@ -52,6 +52,7 @@ const usePolling = <T>(
     onSuccess: () => {
       isInitalLoad.current = false;
     },
+    revalidateOnFocus: false, // click on sort will result in two calls to backend if not disabled
   });
 
   const restart = React.useCallback(

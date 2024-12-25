@@ -36,19 +36,17 @@ import { WorkflowVariablesViewer } from './WorkflowVariablesViewer';
 export const mapProcessInstanceToDetails = (
   instance: ProcessInstanceDTO,
 ): WorkflowRunDetail => {
-  const name = instance.processName || instance.processId;
   const start = instance.start ? moment(instance.start) : undefined;
   let duration: string = VALUE_UNAVAILABLE;
   if (start && instance.end) {
     const end = moment(instance.end);
     duration = moment.duration(start.diff(end)).humanize();
   }
-
   const started = start?.toDate().toLocaleString() ?? VALUE_UNAVAILABLE;
 
   return {
     id: instance.id,
-    name,
+    processName: instance.processName || VALUE_UNAVAILABLE,
     workflowId: instance.processId,
     start: started,
     duration,
