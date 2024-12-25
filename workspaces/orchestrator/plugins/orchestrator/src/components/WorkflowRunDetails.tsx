@@ -40,7 +40,6 @@ type WorkflowDetailsCardProps = {
 const useStyles = makeStyles({
   root: {
     overflowY: 'auto',
-    height: '15rem',
   },
 });
 

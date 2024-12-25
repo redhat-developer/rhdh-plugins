@@ -58,31 +58,32 @@ export const mapProcessInstanceToDetails = (
   };
 };
 
-const useStyles = makeStyles(_ => ({
-  topRowCard: {
-    height: '20rem',
-  },
-  middleRowCard: {
-    height: '20rem',
-    overflow: 'auto',
-    wordBreak: 'break-word',
-  },
-  bottomRowCard: {
-    minHeight: '40rem',
-    height: '100%',
-  },
-  autoOverflow: { overflow: 'auto' },
-  recommendedLabelContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    whiteSpace: 'nowrap',
-  },
-  recommendedLabel: { margin: '0 0.25rem' },
-}));
-
 export const WorkflowInstancePageContent: React.FC<{
   assessedInstance: AssessedProcessInstanceDTO;
 }> = ({ assessedInstance }) => {
+  const height = assessedInstance.assessedBy ? '21rem' : '18rem';
+  const useStyles = makeStyles(_ => ({
+    topRowCard: {
+      height: height,
+    },
+    middleRowCard: {
+      height: '20rem',
+      overflow: 'auto',
+      wordBreak: 'break-word',
+    },
+    bottomRowCard: {
+      minHeight: '40rem',
+      height: '100%',
+    },
+    autoOverflow: { overflow: 'auto' },
+    recommendedLabelContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      whiteSpace: 'nowrap',
+    },
+    recommendedLabel: { margin: '0 0.25rem' },
+  }));
+
   const styles = useStyles();
 
   const details = React.useMemo(
@@ -121,7 +122,7 @@ export const WorkflowInstancePageContent: React.FC<{
         <Grid item xs={6}>
           <WorkflowResult
             assessedInstance={assessedInstance}
-            className={styles.middleRowCard}
+            className={styles.topRowCard}
           />
         </Grid>
 
@@ -129,7 +130,7 @@ export const WorkflowInstancePageContent: React.FC<{
           <InfoCard
             title="Variables"
             divider={false}
-            className={styles.middleRowCard}
+            className={styles.bottomRowCard}
             cardClassName={styles.autoOverflow}
           >
             {instanceVariables && (
@@ -145,7 +146,7 @@ export const WorkflowInstancePageContent: React.FC<{
           <InfoCard
             title="Workflow progress"
             divider={false}
-            className={styles.middleRowCard}
+            className={styles.bottomRowCard}
             cardClassName={styles.autoOverflow}
           >
             <WorkflowProgress
