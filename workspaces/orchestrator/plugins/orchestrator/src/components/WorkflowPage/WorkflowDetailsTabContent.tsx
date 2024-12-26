@@ -26,7 +26,7 @@ import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
 
 interface Props {
   loading: boolean;
-  workflowOverviewDTO: WorkflowOverviewDTO;
+  workflowOverviewDTO: WorkflowOverviewDTO | undefined;
 }
 
 export const WorkflowDetailsTabContent = ({
@@ -42,15 +42,17 @@ export const WorkflowDetailsTabContent = ({
         />
       </Grid>
       <Grid item>
-        <InfoCard title="Workflow definition">
-          <div style={{ height: '600px' }}>
-            <WorkflowEditor
-              kind={EditorViewKind.EXTENDED_DIAGRAM_VIEWER}
-              workflowId={workflowOverviewDTO.workflowId}
-              format={workflowOverviewDTO.format}
-            />
-          </div>
-        </InfoCard>
+        {workflowOverviewDTO && (
+          <InfoCard title="Workflow definition">
+            <div style={{ height: '600px' }}>
+              <WorkflowEditor
+                kind={EditorViewKind.EXTENDED_DIAGRAM_VIEWER}
+                workflowId={workflowOverviewDTO.workflowId}
+                format={workflowOverviewDTO.format}
+              />
+            </div>
+          </InfoCard>
+        )}
       </Grid>
     </>
   );

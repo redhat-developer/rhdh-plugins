@@ -143,20 +143,6 @@ export const WorkflowInstancePageContent: React.FC<{
 
         <Grid item xs={6}>
           <InfoCard
-            title="Workflow definition"
-            divider={false}
-            className={styles.bottomRowCard}
-          >
-            <WorkflowEditor
-              workflowId={assessedInstance.instance.processId}
-              kind={EditorViewKind.DIAGRAM_VIEWER}
-              editorMode="text"
-            />
-          </InfoCard>
-        </Grid>
-
-        <Grid item xs={6}>
-          <InfoCard
             title="Workflow progress"
             divider={false}
             className={styles.bottomRowCard}
