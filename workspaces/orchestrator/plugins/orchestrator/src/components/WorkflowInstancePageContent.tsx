@@ -58,33 +58,30 @@ export const mapProcessInstanceToDetails = (
   };
 };
 
+const useStyles = makeStyles(() => ({
+  topRowCard: ({ height: height }: { height: string }) => ({
+    height: height,
+    overflow: 'auto',
+  }),
+  bottomRowCard: {
+    minHeight: '40rem',
+    height: '100%',
+  },
+  autoOverflow: { overflow: 'auto' },
+  recommendedLabelContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',
+  },
+  recommendedLabel: { margin: '0 0.25rem' },
+}));
+
 export const WorkflowInstancePageContent: React.FC<{
   assessedInstance: AssessedProcessInstanceDTO;
 }> = ({ assessedInstance }) => {
   const height = assessedInstance.assessedBy ? '21rem' : '18rem';
-  const useStyles = makeStyles(_ => ({
-    topRowCard: {
-      height: height,
-    },
-    middleRowCard: {
-      height: '20rem',
-      overflow: 'auto',
-      wordBreak: 'break-word',
-    },
-    bottomRowCard: {
-      minHeight: '40rem',
-      height: '100%',
-    },
-    autoOverflow: { overflow: 'auto' },
-    recommendedLabelContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      whiteSpace: 'nowrap',
-    },
-    recommendedLabel: { margin: '0 0.25rem' },
-  }));
 
-  const styles = useStyles();
+  const styles = useStyles({ height: height || '21rem' });
 
   const details = React.useMemo(
     () => mapProcessInstanceToDetails(assessedInstance.instance),
