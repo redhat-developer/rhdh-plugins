@@ -81,7 +81,7 @@ export const WorkflowInstancePageContent: React.FC<{
 }> = ({ assessedInstance }) => {
   const height = assessedInstance.assessedBy ? '21rem' : '18rem';
 
-  const styles = useStyles({ height: height || '21rem' });
+  const styles = useStyles({ height: height });
 
   const details = React.useMemo(
     () => mapProcessInstanceToDetails(assessedInstance.instance),
