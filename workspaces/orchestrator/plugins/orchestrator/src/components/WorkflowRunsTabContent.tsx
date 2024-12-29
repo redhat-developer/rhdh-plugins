@@ -217,6 +217,7 @@ export const WorkflowRunsTabContent = () => {
               field: 'category',
               render: (data: WorkflowRunDetail) =>
                 capitalize(data.category ?? VALUE_UNAVAILABLE),
+              sorting: false,
             },
           ]),
       { title: 'Started', field: 'start', customSort: applyBackendSort },
