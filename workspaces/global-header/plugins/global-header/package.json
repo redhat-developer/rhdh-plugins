@@ -36,9 +36,9 @@
     "@backstage/core-components": "^0.16.1",
     "@backstage/core-plugin-api": "^1.10.1",
     "@backstage/theme": "^0.6.2",
-    "@mui/icons-material": "5.16.11",
-    "@mui/material": "5.16.11",
-    "@mui/styled-engine": "5.16.8",
+    "@mui/icons-material": "5.16.13",
+    "@mui/material": "5.16.13",
+    "@mui/styled-engine": "5.16.13",
     "react-dom": "16.13.1 || ^17.0.0 || ^18.0.0",
     "react-router-dom": "^6.3.0",
     "react-use": "^17.2.4"
