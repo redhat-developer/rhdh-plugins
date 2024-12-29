@@ -1,5 +1,13 @@
 ## @red-hat-developer-hub/backstage-plugin-bulk-import-common [0.2.0](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.1.0...@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.2.0) (2024-07-25)
 
+## 1.4.2
+
+### Patch Changes
+
+- d59e940: Updated dependency `@openapitools/openapi-generator-cli` to `2.15.3`.
+  Updated dependency `openapicmd` to `2.6.1`.
+  Updated dependency `prettier` to `3.4.2`.
+
 ## 1.4.1
 
 ### Patch Changes
