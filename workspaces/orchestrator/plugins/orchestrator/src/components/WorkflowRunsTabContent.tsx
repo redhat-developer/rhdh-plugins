@@ -191,10 +191,11 @@ export const WorkflowRunsTabContent = () => {
         : [
             {
               title: 'Workflow name',
-              field: 'name',
+              field: 'processName',
+              customSort: applyBackendSort,
               render: (data: WorkflowRunDetail) => (
                 <Link to={workflowPageLink({ workflowId: data.workflowId })}>
-                  {data.name}
+                  {data.processName}
                 </Link>
               ),
             },
@@ -218,10 +219,10 @@ export const WorkflowRunsTabContent = () => {
                 capitalize(data.category ?? VALUE_UNAVAILABLE),
             },
           ]),
-      { title: 'Started', field: 'start', defaultSort: 'desc' },
-      { title: 'Duration', field: 'duration' },
+      { title: 'Started', field: 'start', customSort: applyBackendSort },
+      { title: 'Duration', field: 'duration', sorting: false },
     ],
-    [workflowInstanceLink, workflowId, workflowPageLink],
+    [workflowInstanceLink, workflowId, workflowPageLink, applyBackendSort],
   );
 
   let data = value || [];
