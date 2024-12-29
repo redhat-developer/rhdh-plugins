@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
-}
+import {
+  ScmIntegrationsApi,
+  scmIntegrationsApiRef,
+  ScmAuth,
+} from '@backstage/integration-react';
+import {
+  AnyApiFactory,
+  configApiRef,
+  createApiFactory,
+} from '@backstage/core-plugin-api';
 
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  duration: string;
-  category?: string;
-  description?: string;
-  businessKey?: string;
-};
+export const apis: AnyApiFactory[] = [
+  createApiFactory({
+    api: scmIntegrationsApiRef,
+    deps: { configApi: configApiRef },
+    factory: ({ configApi }) => ScmIntegrationsApi.fromConfig(configApi),
+  }),
+  ScmAuth.createDefaultApiFactory(),
+];

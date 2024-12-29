@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright 2020 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
-}
 
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  duration: string;
-  category?: string;
-  description?: string;
-  businessKey?: string;
-};
+import { test, expect } from '@playwright/test';
+
+test('App should render the welcome page', async ({ page }) => {
+  await page.goto('/');
+
+  const enterButton = page.getByRole('button', { name: 'Enter' });
+  await expect(enterButton).toBeVisible();
+  await enterButton.click();
+
+  await expect(page.getByText('My Company Catalog')).toBeVisible();
+});

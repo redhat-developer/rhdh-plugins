@@ -13,19 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
-}
 
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  duration: string;
-  category?: string;
-  description?: string;
-  businessKey?: string;
+import React from 'react';
+
+export const useDropdownManager = () => {
+  const [menuStates, setMenuStates] = React.useState<
+    Record<string, HTMLElement | null>
+  >({});
+
+  const handleOpen =
+    (key: string) => (event: React.MouseEvent<HTMLElement>) => {
+      setMenuStates(prev => ({ ...prev, [key]: event.currentTarget }));
+    };
+
+  const handleClose = (key: string) => () => {
+    setMenuStates(prev => ({ ...prev, [key]: null }));
+  };
+
+  return {
+    menuStates,
+    handleOpen,
+    handleClose,
+  };
 };

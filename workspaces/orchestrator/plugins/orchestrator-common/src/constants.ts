@@ -15,7 +15,7 @@
  */
 
 export const DEFAULT_SONATAFLOW_CONTAINER_IMAGE =
-  'docker.io/apache/incubator-kie-sonataflow-devmode:latest';
+  'quay.io/kubesmarts/incubator-kie-sonataflow-devmode:main';
 export const DEFAULT_SONATAFLOW_PERSISTENCE_PATH = '/home/kogito/persistence';
 export const DEFAULT_SONATAFLOW_BASE_URL = 'http://localhost';
 

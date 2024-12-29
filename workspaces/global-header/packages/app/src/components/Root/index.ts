@@ -13,19 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
-}
-
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  duration: string;
-  category?: string;
-  description?: string;
-  businessKey?: string;
-};
+export { Root } from './Root';

@@ -74,6 +74,106 @@ export const WorkflowRunsTabContent = () => {
     Selector.AllItems,
   );
 
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
+  const [orderByField, setOrderByField] = useState<string>('start');
+  const [orderDirection, setOrderDirection] = useState('desc');
+
+  const getFilter = React.useCallback((): Filter | undefined => {
+    const statusFilter: FieldFilter | undefined =
+      statusSelectorValue !== Selector.AllItems
+        ? {
+            operator: 'EQ',
+            value: statusSelectorValue,
+            field: 'state',
+          }
+        : undefined;
+    const workflowIdFilter: FieldFilter | undefined = workflowId
+      ? {
+          operator: 'EQ',
+          value: workflowId,
+          field: 'processId',
+        }
+      : undefined;
+    if (statusFilter && workflowIdFilter) {
+      return {
+        operator: 'AND',
+        filters: [statusFilter, workflowIdFilter],
+      };
+    } else if (statusFilter) {
+      return statusFilter;
+    } else if (workflowIdFilter) {
+      return workflowIdFilter;
+    }
+    return undefined;
+  }, [statusSelectorValue, workflowId]);
+
+  const fetchInstances = React.useCallback(async () => {
+    const paginationInfo: PaginationInfoDTO = {
+      pageSize: pageSize + 1, // add one more to know if this is the last page or there are more instances. If there are no more instances, next button is disabled.
+      offset: page * pageSize,
+      orderBy: orderByField,
+      orderDirection:
+        orderDirection === 'asc'
+          ? PaginationInfoDTOOrderDirectionEnum.Asc
+          : PaginationInfoDTOOrderDirectionEnum.Desc,
+    };
+    const filter = getFilter();
+    const instances = await orchestratorApi.listInstances(
+      paginationInfo,
+      filter,
+    );
+    const clonedData: WorkflowRunDetail[] =
+      instances.data.items?.map(mapProcessInstanceToDetails) || [];
+    return clonedData;
+  }, [
+    orchestratorApi,
+    page,
+    pageSize,
+    orderByField,
+    orderDirection,
+    getFilter,
+  ]);
+
+  const { loading, error, value } = usePolling(fetchInstances);
+
+  const selectors = React.useMemo(
+    () => (
+      <Grid container alignItems="center">
+        <Grid item>
+          <Selector
+            label="Status"
+            items={statuses}
+            onChange={value_ => {
+              setStatusSelectorValue(value_);
+              setPage(0);
+            }}
+            selected={statusSelectorValue}
+          />
+        </Grid>
+      </Grid>
+    ),
+    [statusSelectorValue],
+  );
+
+  const applyBackendSort = React.useCallback(
+    (item1: WorkflowRunDetail, item2: WorkflowRunDetail): number => {
+      // Workaround for material-table applying sorting on top of backend sorting. The version we are using is too old to request a fix.
+      // Should be resolved when upgrading backstage and all plugins to material6
+      // The workaround is to configure the FE sorting material-table applies to be according to order received from backend
+      // TODO: resolve when upgrading to material 6
+      if (!value) {
+        return 0;
+      }
+      const item1Index = value?.findIndex(curItem => curItem.id === item1.id);
+      const item2Index = value?.findIndex(curItem => curItem.id === item2.id);
+      return orderDirection === 'asc'
+        ? item1Index - item2Index
+        : item2Index - item1Index;
+    },
+    [value, orderDirection],
+  );
+
   const columns = React.useMemo(
     (): TableColumn<WorkflowRunDetail>[] => [
       {
@@ -124,91 +224,6 @@ export const WorkflowRunsTabContent = () => {
     [workflowInstanceLink, workflowId, workflowPageLink],
   );
 
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
-  const [orderBy, setOrderBy] = useState<number>(
-    columns.findIndex(value => value.field === 'start'),
-  );
-  const [orderDirection, setOrderDirection] = useState('desc');
-
-  const getFilter = React.useCallback((): Filter | undefined => {
-    const statusFilter: FieldFilter | undefined =
-      statusSelectorValue !== Selector.AllItems
-        ? {
-            operator: 'EQ',
-            value: statusSelectorValue,
-            field: 'state',
-          }
-        : undefined;
-    const workflowIdFilter: FieldFilter | undefined = workflowId
-      ? {
-          operator: 'EQ',
-          value: workflowId,
-          field: 'processId',
-        }
-      : undefined;
-    if (statusFilter && workflowIdFilter) {
-      return {
-        operator: 'AND',
-        filters: [statusFilter, workflowIdFilter],
-      };
-    } else if (statusFilter) {
-      return statusFilter;
-    } else if (workflowIdFilter) {
-      return workflowIdFilter;
-    }
-    return undefined;
-  }, [statusSelectorValue, workflowId]);
-
-  const fetchInstances = React.useCallback(async () => {
-    const paginationInfo: PaginationInfoDTO = {
-      pageSize: pageSize + 1, // add one more to know if this is the last page or there are more instances. If there are no more instances, next button is disabled.
-      offset: page * pageSize,
-      orderBy: columns[orderBy].field,
-      orderDirection:
-        orderDirection === 'asc'
-          ? PaginationInfoDTOOrderDirectionEnum.Asc
-          : PaginationInfoDTOOrderDirectionEnum.Desc,
-    };
-    const filter = getFilter();
-    const instances = await orchestratorApi.listInstances(
-      paginationInfo,
-      filter,
-    );
-    const clonedData: WorkflowRunDetail[] =
-      instances.data.items?.map(mapProcessInstanceToDetails) || [];
-    return clonedData;
-  }, [
-    orchestratorApi,
-    page,
-    pageSize,
-    orderBy,
-    orderDirection,
-    getFilter,
-    columns,
-  ]);
-
-  const { loading, error, value } = usePolling(fetchInstances);
-
-  const selectors = React.useMemo(
-    () => (
-      <Grid container alignItems="center">
-        <Grid item>
-          <Selector
-            label="Status"
-            items={statuses}
-            onChange={value_ => {
-              setStatusSelectorValue(value_);
-              setPage(0);
-            }}
-            selected={statusSelectorValue}
-          />
-        </Grid>
-      </Grid>
-    ),
-    [statusSelectorValue],
-  );
-
   let data = value || [];
   let hasNextPage = false;
   if (data.length === pageSize + 1) {
@@ -230,7 +245,11 @@ export const WorkflowRunsTabContent = () => {
           paging: false,
         }}
         onOrderChange={(orderBy_: number, orderDirection_: 'asc' | 'desc') => {
-          setOrderBy(orderBy_);
+          const field = columns[orderBy_].field;
+          if (!field) {
+            throw new Error(`Failed to find column number ${orderBy_}`);
+          }
+          setOrderByField(field);
           setOrderDirection(orderDirection_);
         }}
         components={{

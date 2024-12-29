@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
-}
+import {
+  createPlugin,
+  createComponentExtension,
+} from '@backstage/core-plugin-api';
 
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  duration: string;
-  category?: string;
-  description?: string;
-  businessKey?: string;
-};
+/**
+ * @public
+ * Global Header Plugin
+ */
+export const globalHeaderPlugin = createPlugin({
+  id: 'global-header',
+});
+
+/**
+ * @public
+ * Global Header
+ */
+export const GlobalHeader = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'GlobalHeader',
+    component: {
+      lazy: () => import('./components').then(m => m.GlobalHeader),
+    },
+  }),
+);

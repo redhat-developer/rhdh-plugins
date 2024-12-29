@@ -26,7 +26,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { VALUE_UNAVAILABLE } from '../constants';
-import { EditorViewKind, WorkflowEditor } from './WorkflowEditor';
 import { WorkflowProgress } from './WorkflowProgress';
 import { WorkflowResult } from './WorkflowResult';
 import { WorkflowRunDetail } from './WorkflowRunDetail';
@@ -36,19 +35,17 @@ import { WorkflowVariablesViewer } from './WorkflowVariablesViewer';
 export const mapProcessInstanceToDetails = (
   instance: ProcessInstanceDTO,
 ): WorkflowRunDetail => {
-  const name = instance.processName || instance.processId;
   const start = instance.start ? moment(instance.start) : undefined;
   let duration: string = VALUE_UNAVAILABLE;
   if (start && instance.end) {
     const end = moment(instance.end);
     duration = moment.duration(start.diff(end)).humanize();
   }
-
   const started = start?.toDate().toLocaleString() ?? VALUE_UNAVAILABLE;
 
   return {
     id: instance.id,
-    name,
+    processName: instance.processName || VALUE_UNAVAILABLE,
     workflowId: instance.processId,
     start: started,
     duration,
@@ -59,15 +56,11 @@ export const mapProcessInstanceToDetails = (
   };
 };
 
-const useStyles = makeStyles(_ => ({
-  topRowCard: {
-    height: '20rem',
-  },
-  middleRowCard: {
-    height: '20rem',
+const useStyles = makeStyles(() => ({
+  topRowCard: ({ height: height }: { height: string }) => ({
+    height: height,
     overflow: 'auto',
-    wordBreak: 'break-word',
-  },
+  }),
   bottomRowCard: {
     minHeight: '40rem',
     height: '100%',
@@ -84,7 +77,9 @@ const useStyles = makeStyles(_ => ({
 export const WorkflowInstancePageContent: React.FC<{
   assessedInstance: AssessedProcessInstanceDTO;
 }> = ({ assessedInstance }) => {
-  const styles = useStyles();
+  const height = assessedInstance.assessedBy ? '21rem' : '18rem';
+
+  const styles = useStyles({ height: height });
 
   const details = React.useMemo(
     () => mapProcessInstanceToDetails(assessedInstance.instance),
@@ -106,7 +101,7 @@ export const WorkflowInstancePageContent: React.FC<{
   return (
     <Content noPadding>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
           <InfoCard
             title="Details"
             divider={false}
@@ -120,10 +115,17 @@ export const WorkflowInstancePageContent: React.FC<{
         </Grid>
 
         <Grid item xs={6}>
+          <WorkflowResult
+            assessedInstance={assessedInstance}
+            className={styles.topRowCard}
+          />
+        </Grid>
+
+        <Grid item xs={6}>
           <InfoCard
             title="Variables"
             divider={false}
-            className={styles.middleRowCard}
+            className={styles.bottomRowCard}
             cardClassName={styles.autoOverflow}
           >
             {instanceVariables && (
@@ -134,13 +136,7 @@ export const WorkflowInstancePageContent: React.FC<{
             )}
           </InfoCard>
         </Grid>
-        <Grid item xs={6}>
-          <WorkflowResult
-            assessedInstance={assessedInstance}
-            className={styles.middleRowCard}
-          />
-        </Grid>
-
+        
         <Grid item xs={6}>
           <InfoCard
             title="Workflow progress"

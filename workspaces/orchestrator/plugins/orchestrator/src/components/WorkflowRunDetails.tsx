@@ -40,7 +40,6 @@ type WorkflowDetailsCardProps = {
 const useStyles = makeStyles({
   root: {
     overflowY: 'auto',
-    height: '15rem',
   },
 });
 
@@ -53,14 +52,14 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
 
   return (
     <Grid container className={styles.root} alignContent="flex-start">
-      <Grid item md={4} key="Category">
+      <Grid item md={7} key="Category">
         <AboutField label="Category">
           <Typography variant="subtitle2" component="div">
             <b>{capitalize(details.category ?? VALUE_UNAVAILABLE)}</b>
           </Typography>
         </AboutField>
       </Grid>
-      <Grid item md={4} key="Status">
+      <Grid item md={5} key="Status">
         <AboutField label="Status">
           <Typography variant="subtitle2" component="div">
             <b>
@@ -71,29 +70,35 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
-      <Grid item md={4} key="Duration">
-        <AboutField label="Duration">
-          <Typography variant="subtitle2" component="div">
-            <b>{details.duration}</b>
-          </Typography>
-        </AboutField>
-      </Grid>
 
-      <Grid item md={8} key="ID">
+      <Grid item md={7} key="ID">
         <AboutField label="ID">
           <Typography variant="subtitle2" component="div">
             <b>{details.id}</b>
           </Typography>
         </AboutField>
       </Grid>
-      <Grid item md={4} key="Started">
+      <Grid item md={5} key="Duration">
+        <AboutField label="Duration">
+          <Typography variant="subtitle2" component="div">
+            <b>{details.duration}</b>
+          </Typography>
+        </AboutField>
+      </Grid>
+      <Grid item md={7} key="Description">
+        <AboutField label="Description">
+          <Typography variant="subtitle2" component="div">
+            <b>{details.description ?? VALUE_UNAVAILABLE}</b>
+          </Typography>
+        </AboutField>
+      </Grid>
+      <Grid item md={5} key="Started">
         <AboutField label="Started">
           <Typography variant="subtitle2" component="div">
             <b>{details.start}</b>
           </Typography>
         </AboutField>
       </Grid>
-
       {assessedBy ? (
         <Grid item md={12} key="Assessed by">
           <AboutField label="Assessed by">
@@ -111,14 +116,6 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
           </AboutField>
         </Grid>
       ) : null}
-
-      <Grid item md={12} key="Description">
-        <AboutField label="Description">
-          <Typography variant="subtitle2" component="div">
-            <b>{details.description ?? VALUE_UNAVAILABLE}</b>
-          </Typography>
-        </AboutField>
-      </Grid>
     </Grid>
   );
 };

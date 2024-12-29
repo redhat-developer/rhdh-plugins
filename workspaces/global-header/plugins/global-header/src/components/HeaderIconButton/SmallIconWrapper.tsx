@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
+
+import React from 'react';
+import { SvgIconProps } from '@mui/material/SvgIcon';
+
+export type IconComponentType = React.ElementType<SvgIconProps>;
+
+interface SmallIconWrapperProps extends SvgIconProps {
+  IconComponent: IconComponentType;
 }
 
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  duration: string;
-  category?: string;
-  description?: string;
-  businessKey?: string;
+const SmallIconWrapper: React.FC<SmallIconWrapperProps> = ({
+  IconComponent,
+  ...props
+}) => {
+  return <IconComponent fontSize="small" {...props} />;
 };
+
+export default SmallIconWrapper;

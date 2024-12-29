@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
+
+import React from 'react';
+import IconButton from '@mui/material/IconButton';
+import SmallIconWrapper, { IconComponentType } from './SmallIconWrapper';
+
+interface HeaderIconButtonProps {
+  Icon: IconComponentType;
+  onClick: () => void;
 }
 
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  duration: string;
-  category?: string;
-  description?: string;
-  businessKey?: string;
+export const HeaderIconButton: React.FC<HeaderIconButtonProps> = ({
+  Icon,
+  onClick,
+}) => {
+  return (
+    <IconButton
+      color="inherit"
+      aria-label="help"
+      sx={{ mr: 1.5 }}
+      onClick={onClick}
+    >
+      <SmallIconWrapper IconComponent={Icon} />
+    </IconButton>
+  );
 };

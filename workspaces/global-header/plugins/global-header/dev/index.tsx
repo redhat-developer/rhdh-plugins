@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export interface WorkflowSuggestion {
-  id: string;
-  name: string;
-}
+import React from 'react';
+import { createDevApp } from '@backstage/dev-utils';
+import { globalHeaderPlugin } from '../src/plugin';
+import { ExampleComponent } from '../src/components/ExampleComponent';
 
-export type WorkflowRunDetail = {
-  id: string;
-  processName: string;
-  workflowId: string;
-  state?: string;
-  start: string;
-  duration: string;
-  category?: string;
-  description?: string;
-  businessKey?: string;
-};
+createDevApp()
+  .registerPlugin(globalHeaderPlugin)
+  .addPage({
+    element: <ExampleComponent />,
+    title: 'Global Header',
+    path: '/global-header',
+  })
+  .render();
