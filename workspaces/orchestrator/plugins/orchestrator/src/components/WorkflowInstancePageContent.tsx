@@ -136,7 +136,7 @@ export const WorkflowInstancePageContent: React.FC<{
             )}
           </InfoCard>
         </Grid>
-        
+
         <Grid item xs={6}>
           <InfoCard
             title="Workflow progress"
