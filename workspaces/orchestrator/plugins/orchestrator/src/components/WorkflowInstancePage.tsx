@@ -40,6 +40,9 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import ErrorIcon from '@material-ui/icons/Error';
 import Alert from '@material-ui/lab/Alert';
+import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
+import StartIcon from '@mui/icons-material/Start';
+import SwipeRightAltOutlinedIcon from '@mui/icons-material/SwipeRightAltOutlined';
 
 import {
   AssessedProcessInstanceDTO,
@@ -222,6 +225,34 @@ export const WorkflowInstancePage = ({
     navigate(urlToNavigate);
   }, [value, navigate, executeWorkflowLink]);
 
+  const handleRetrigger = async () => {
+    if (!value) {
+      return;
+    }
+    // try {
+    //   const res = await orchestratorApi.retriggerInstance(value.instance.processId, value.instance.id);
+    //   console.log(res)
+    // } catch (error) {
+    //   console.error('Error retriggering the instance:', error);
+    // }
+  };
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenue = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOptionClick = (option: 'retrigger' | 'rerun') => {
+    handleCloseMenue();
+    if (option === 'rerun') handleRerun();
+    else if (option === 'retrigger') handleRetrigger();
+  };
+
   return (
     <BaseOrchestratorPage
       title={value?.instance.id}
@@ -277,11 +308,45 @@ export const WorkflowInstancePage = ({
                     variant="contained"
                     color="primary"
                     disabled={!permittedToUse.allowed || !canRerun}
-                    onClick={handleRerun}
+                    onClick={
+                      value?.instance.state === ProcessInstanceStatusDTO.Error
+                        ? handleClick
+                        : handleRerun
+                    }
+                    endIcon={
+                      value?.instance.state ===
+                      ProcessInstanceStatusDTO.Error ? (
+                        <ArrowDropDown />
+                      ) : null
+                    }
+                    style={{ color: 'white' }}
                   >
                     Rerun
                   </Button>
                 </Tooltip>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleCloseMenue}
+                  getContentAnchorEl={null}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                >
+                  <MenuItem onClick={() => handleOptionClick('rerun')}>
+                    <StartIcon />
+                    Entire workflow
+                  </MenuItem>
+                  <MenuItem onClick={() => handleOptionClick('retrigger')}>
+                    <SwipeRightAltOutlinedIcon />
+                    From failure point
+                  </MenuItem>
+                </Menu>
               </Grid>
             </Grid>
           </ContentHeader>
