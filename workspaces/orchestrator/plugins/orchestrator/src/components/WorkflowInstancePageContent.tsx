@@ -16,11 +16,7 @@
 import React from 'react';
 import { useAsync } from 'react-use';
 
-import {
-  Content,
-  InfoCard,
-  StructuredMetadataTable,
-} from '@backstage/core-components';
+import { Content, InfoCard } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
 import { Grid, makeStyles } from '@material-ui/core';
@@ -34,6 +30,7 @@ import {
 
 import { orchestratorApiRef } from '../../src/api/api';
 import { VALUE_UNAVAILABLE } from '../constants';
+import { WorkflowInputs } from './WorkflowInputs';
 import { WorkflowProgress } from './WorkflowProgress';
 import { WorkflowResult } from './WorkflowResult';
 import { WorkflowRunDetail } from './WorkflowRunDetail';
@@ -104,14 +101,17 @@ export const WorkflowInstancePageContent: React.FC<{
   }
   const workflowId = assessedInstance.instance.processId;
   const instanceId = assessedInstance.instance.id;
-  const { value } = useAsync(async (): Promise<InputSchemaResponseDTO> => {
+  const {
+    value,
+    loading,
+    error: responseError,
+  } = useAsync(async (): Promise<InputSchemaResponseDTO> => {
     const res = await orchestratorApi.getWorkflowDataInputSchema(
       workflowId,
       instanceId,
     );
     return res.data;
   }, [orchestratorApi, workflowId]);
-  const inputs = value?.data;
 
   return (
     <Content noPadding>
@@ -137,15 +137,13 @@ export const WorkflowInstancePageContent: React.FC<{
         </Grid>
 
         <Grid item xs={6}>
-          <InfoCard
-            title="Inputs"
-            divider={false}
+          <WorkflowInputs
             className={styles.bottomRowCard}
             cardClassName={styles.autoOverflow}
-          >
-            {inputs && <StructuredMetadataTable dense metadata={inputs} />}
-            {!inputs && <div>The workflow instance has no inputs</div>}
-          </InfoCard>
+            value={value}
+            loading={loading}
+            responseError={responseError}
+          />
         </Grid>
 
         <Grid item xs={6}>
