@@ -16,14 +16,10 @@
 import { useApi } from '@backstage/core-plugin-api';
 
 import { useQuery } from '@tanstack/react-query';
-
 import { marketplaceApiRef } from '../api';
 
 export const usePlugins = () => {
   const marketplaceApi = useApi(marketplaceApiRef);
-
-  //   const [search, setSearch] = useQueryParamState<string | undefined>('q');
-
   return useQuery({
     queryKey: ['plugins'],
     queryFn: () => marketplaceApi.getPlugins(),

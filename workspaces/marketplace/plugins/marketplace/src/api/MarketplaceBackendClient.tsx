@@ -27,7 +27,7 @@ export type Options = {
   fetchApi: FetchApi;
 };
 
-export class MarketplaceClient implements MarketplaceApi {
+export class MarketplaceBackendClient implements MarketplaceApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
 
