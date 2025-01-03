@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright 2024 The Backstage and RHDH Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ module.exports = {
     'notice/notice': [
       'error',
       {
+        mustMatch:
+          /Copyright \d{4} (The Backstage and RHDH Authors|The RHDH Authors)/,
         templateFile: path.resolve(
           // eslint-disable-next-line no-restricted-syntax
           __dirname,
