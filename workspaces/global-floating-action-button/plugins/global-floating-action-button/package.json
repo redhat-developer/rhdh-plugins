@@ -38,7 +38,7 @@
     "@backstage/theme": "^0.6.0",
     "@mui/icons-material": "^5.15.17",
     "@mui/material": "^5.15.17",
-    "@mui/styles": "5.16.7",
+    "@mui/styles": "5.16.13",
     "classnames": "^2.5.1",
     "react-use": "^17.2.4"
   },
