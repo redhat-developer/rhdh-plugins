@@ -7468,7 +7468,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ianvs/prettier-plugin-sort-imports@npm:^4.3.1, @ianvs/prettier-plugin-sort-imports@npm:^4.4.0":
+"@ianvs/prettier-plugin-sort-imports@npm:^4.4.0":
   version: 4.4.0
   resolution: "@ianvs/prettier-plugin-sort-imports@npm:4.4.0"
   dependencies:
@@ -7540,7 +7540,7 @@ __metadata:
     "@backstage/e2e-test-utils": ^0.1.1
     "@backstage/repo-tools": ^0.10.0
     "@changesets/cli": ^2.27.1
-    "@ianvs/prettier-plugin-sort-imports": ^4.3.1
+    "@ianvs/prettier-plugin-sort-imports": ^4.4.0
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
