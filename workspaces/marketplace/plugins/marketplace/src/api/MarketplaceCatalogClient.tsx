@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 
 import {
   MarketplacePluginEntry,
@@ -21,46 +20,35 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { MarketplaceApi } from './MarketplaceApi';
+import { CatalogApi } from '@backstage/plugin-catalog-react';
 
-type Options = {
-  discoveryApi: DiscoveryApi;
-  fetchApi: FetchApi;
+type CatalogApiOptions = {
+  catalogApi: CatalogApi;
 };
 
 export class MarketplaceCatalogClient implements MarketplaceApi {
-  private readonly discoveryApi: DiscoveryApi;
-  private readonly fetchApi: FetchApi;
+  private readonly catalogApi: CatalogApi;
 
-  constructor(options: Options) {
-    this.discoveryApi = options.discoveryApi;
-    this.fetchApi = options.fetchApi;
+  constructor(options: CatalogApiOptions) {
+    this.catalogApi = options.catalogApi;
   }
 
   async getPlugins(): Promise<MarketplacePluginEntry[]> {
-    const baseUrl = await this.discoveryApi.getBaseUrl('catalog');
-    const url = `${baseUrl}/entities?filter=kind=plugin`;
+    const result = await this.catalogApi.getEntities({
+      filter: {
+        kind: 'plugin',
+      },
+    });
 
-    const response = await this.fetchApi.fetch(url);
-    if (!response.ok) {
-      throw new Error(
-        `Unexpected status code: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    return response.json();
+    return result?.items as MarketplacePluginEntry[];
   }
 
   async getPluginList(): Promise<MarketplacePluginList[]> {
-    const baseUrl = await this.discoveryApi.getBaseUrl('catalog');
-    const url = `${baseUrl}/entities?filter=kind=pluginList`;
-
-    const response = await this.fetchApi.fetch(url);
-    if (!response.ok) {
-      throw new Error(
-        `Unexpected status code: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    return response.json();
+    const result = await this.catalogApi.getEntities({
+      filter: {
+        kind: 'pluginList',
+      },
+    });
+    return result.items as MarketplacePluginList[];
   }
 }

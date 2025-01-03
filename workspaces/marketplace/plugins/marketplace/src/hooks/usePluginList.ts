@@ -19,7 +19,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { marketplaceApiRef } from '../api';
 
-export const usePlugins = () => {
+export const usePluginList = () => {
   const marketplaceApi = useApi(marketplaceApiRef);
 
   return useQuery({
