@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 import {
-  createApiFactory,
   createPlugin,
   createRoutableExtension,
   createComponentExtension,
+  type IconComponent,
+  createApiFactory,
   discoveryApiRef,
   fetchApiRef,
-  type IconComponent,
 } from '@backstage/core-plugin-api';
 
 import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
 
 import { rootRouteRef } from './routes';
-import { marketplaceApiRef, MarketplaceClient } from './api';
+import { marketplaceApiRef, MarketplaceBackendClient } from './api';
 
 /**
  * Marketplace Plugin
@@ -45,7 +45,7 @@ export const marketplacePlugin = createPlugin({
         fetchApi: fetchApiRef,
       },
       factory: ({ discoveryApi, fetchApi }) =>
-        new MarketplaceClient({
+        new MarketplaceBackendClient({
           discoveryApi,
           fetchApi,
         }),
