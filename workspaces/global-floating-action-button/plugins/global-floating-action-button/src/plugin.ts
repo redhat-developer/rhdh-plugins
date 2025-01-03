@@ -19,16 +19,18 @@ import {
 } from '@backstage/core-plugin-api';
 
 /**
- * @public
  * Global Floating Action Button Plugin
+ *
+ * @public
  */
 export const globalFloatingActionButtonPlugin = createPlugin({
   id: 'global-floating-action-button',
 });
 
 /**
- * @public
  * Global Floating Action Button
+ *
+ * @public
  */
 export const GlobalFloatingActionButton =
   globalFloatingActionButtonPlugin.provide(
