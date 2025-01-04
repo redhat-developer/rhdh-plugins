@@ -10546,7 +10546,7 @@ __metadata:
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.5.2
-    "@types/node": 18.19.68
+    "@types/node": 18.19.69
     cross-fetch: 4.1.0
     msw: 1.3.5
     prettier: 3.4.2
@@ -13618,12 +13618,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:18.19.68, @types/node@npm:^18.11.18, @types/node@npm:^18.11.9":
-  version: 18.19.68
-  resolution: "@types/node@npm:18.19.68"
+"@types/node@npm:18.19.69, @types/node@npm:^18.11.18, @types/node@npm:^18.11.9":
+  version: 18.19.69
+  resolution: "@types/node@npm:18.19.69"
   dependencies:
     undici-types: ~5.26.4
-  checksum: 84e1cd61b719405aa3b9cc42fbdd8821696684150be04cbd35ebed3b92363a83e904cd89dec5b50dd6a8ff0ea9f26c60436109900b485dbd5b93a81fd6374ccb
+  checksum: 4c4dcb79aa4c6680e05cad8514140a9b6f50387e33255afa53619ed7971371cdba09b235acad9bb7e2464ad8375db7681dcef0bb54170d136ba63605736700ef
   languageName: node
   linkType: hard
 
