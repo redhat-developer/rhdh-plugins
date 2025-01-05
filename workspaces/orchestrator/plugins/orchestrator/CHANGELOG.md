@@ -1,5 +1,34 @@
 ### Dependencies
 
+## 2.5.1
+
+### Patch Changes
+
+- a75cfff: improve workflow details card in workflow page
+- 6a777cc: workflow name column values in workflow runs table should be a link to workflow page
+- d8c6ed0: update workflow instance page
+- d33a96e: Workflow progress panel should have a scroll
+- cea6963: workflow runs list view - rename name column
+- be7b8c9: "Add runs button"
+- d59e940: Updated dependency `@openapitools/openapi-generator-cli` to `2.15.3`.
+  Updated dependency `prettier` to `3.4.2`.
+  Updated dependency `@janus-idp/cli` to `1.19.1`.
+  Updated dependency `monaco-editor` to `0.52.2`.
+  Updated dependency `monaco-yaml` to `5.2.3`.
+  Updated dependency `sass` to `1.83.0`.
+  Updated dependency `webpack` to `5.97.1`.
+- cf1c024: bug fix in workflow runs table status filter
+- 71fd546: Implement inputs card in workflow instance page
+- 1d1d8cf: hide abort button when disabled
+- 353e038: Workflows Table - rename tooltip "Run” instead of “Execute.”
+- f3ace9e: add workflow tabs - details and runs
+- Updated dependencies [d59e940]
+- Updated dependencies [d6e5b1a]
+- Updated dependencies [9cc8c89]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.25.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.4.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.4.6
+
 ## 2.5.0
 
 ### Minor Changes

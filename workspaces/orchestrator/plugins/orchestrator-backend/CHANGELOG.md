@@ -1,5 +1,20 @@
 ### Dependencies
 
+## 5.1.1
+
+### Patch Changes
+
+- d59e940: Updated dependency `@openapitools/openapi-generator-cli` to `2.15.3`.
+  Updated dependency `prettier` to `3.4.2`.
+  Updated dependency `@janus-idp/cli` to `1.19.1`.
+  Updated dependency `monaco-editor` to `0.52.2`.
+  Updated dependency `monaco-yaml` to `5.2.3`.
+  Updated dependency `sass` to `1.83.0`.
+  Updated dependency `webpack` to `5.97.1`.
+- Updated dependencies [d59e940]
+- Updated dependencies [9cc8c89]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.25.1
+
 ## 5.1.0
 
 ### Minor Changes
