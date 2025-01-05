@@ -35,7 +35,9 @@ export const WorkflowInputs: React.FC<{
     <InfoCard
       title="Inputs"
       subheader={
-        !loading && !inputs && <i>The workflow instance has no inputs</i>
+        !loading &&
+        !responseError &&
+        !inputs && <i>The workflow instance has no inputs</i>
       }
       divider={false}
       className={className}
