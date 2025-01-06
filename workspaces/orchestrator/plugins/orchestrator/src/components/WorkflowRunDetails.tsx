@@ -28,7 +28,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { VALUE_UNAVAILABLE } from '../constants';
-import { workflowInstanceRouteRef } from '../routes';
+import { workflowInstanceRouteRef, workflowRouteRef } from '../routes';
 import { WorkflowInstanceStatusIndicator } from './WorkflowInstanceStatusIndicator';
 import { WorkflowRunDetail } from './WorkflowRunDetail';
 
@@ -50,13 +50,17 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
   const styles = useStyles();
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
 
+  const workflowPageLink = useRouteRef(workflowRouteRef);
+
   return (
     <Grid container className={styles.root} alignContent="flex-start">
-      <Grid item md={7} key="Category">
-        <AboutField label="Category">
-          <Typography variant="subtitle2" component="div">
-            <b>{capitalize(details.category ?? VALUE_UNAVAILABLE)}</b>
-          </Typography>
+      <Grid item md={7} key="Workflow">
+        <AboutField label="Workflow">
+          <Link to={workflowPageLink({ workflowId: details.workflowId })}>
+            <Typography variant="subtitle2" component="div">
+              <b>{capitalize(details.processName)}</b>
+            </Typography>
+          </Link>
         </AboutField>
       </Grid>
       <Grid item md={5} key="Status">
@@ -70,11 +74,10 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
-
-      <Grid item md={7} key="ID">
-        <AboutField label="ID">
+      <Grid item md={7} key="Category">
+        <AboutField label="Category">
           <Typography variant="subtitle2" component="div">
-            <b>{details.id}</b>
+            <b>{capitalize(details.category ?? VALUE_UNAVAILABLE)}</b>
           </Typography>
         </AboutField>
       </Grid>
