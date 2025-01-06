@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright 2025 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import yaml from 'yaml';
 
-/**
- * Common functionalities for the marketplace plugin.
- *
- * @packageDocumentation
- */
+interface Options {
+  // TODO
+  glob?: boolean;
+  // TODO
+  recursive?: boolean;
+}
 
-export * as NPM from './npm';
-export * as OCI from './oci';
-export * from './types';
+export default async function verify(files: string[], _options: Options) {
+  for (const file of files) {
+    const fileContent = await fs.readFile(file, 'utf8');
+
+    const data = yaml.parse(fileContent);
+
+    console.log(
+      'Found',
+      chalk.blueBright(data.kind),
+      chalk.green(data.metadata.name),
+    );
+  }
+}

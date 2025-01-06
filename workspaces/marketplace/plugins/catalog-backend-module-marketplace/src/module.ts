@@ -21,6 +21,10 @@ import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/
 import { MarketplacePluginProcessor } from './MarketplacePluginProcessor';
 import { MarketplacePluginListProcessor } from './MarketplacePluginListProcessor';
 
+import { MarketplaceMicrositeProvider } from './providers/MarketplaceMicrositeProvider';
+import { MarketplaceNPMProvider } from './providers/MarketplaceNPMProvider';
+import { MarketplaceOCIProvider } from './providers/MarketplaceOCIProvider';
+
 /**
  * @public
  */
@@ -30,13 +34,31 @@ export const catalogModuleMarketplace = createBackendModule({
   register(reg) {
     reg.registerInit({
       deps: {
-        logger: coreServices.logger,
+        config: coreServices.rootConfig,
         catalog: catalogProcessingExtensionPoint,
+        logger: coreServices.logger,
       },
-      async init({ logger, catalog }) {
-        logger.info('Marketplace provider initialized!');
+      async init({ config, catalog, logger }) {
+        logger.info('Initialize Marketplace...');
+
+        logger.info('- create MarketplacePluginProcessor...');
         catalog.addProcessor(new MarketplacePluginProcessor());
+
+        logger.info('- create MarketplacePluginListProcessor...');
         catalog.addProcessor(new MarketplacePluginListProcessor());
+
+        logger.info('- create MarketplaceMicrositeProvider...');
+        catalog.addEntityProvider(
+          MarketplaceMicrositeProvider.fromConfig(config, { logger }),
+        );
+
+        logger.info('- create MarketplaceNPMProvider...');
+        catalog.addEntityProvider(MarketplaceNPMProvider.fromConfig(config));
+
+        logger.info('- create MarketplaceOCIProviders...');
+        catalog.addEntityProvider(MarketplaceOCIProvider.fromConfig(config));
+
+        logger.info('Marketplace initialized!');
       },
     });
   },

@@ -97,6 +97,11 @@ catalog:
       rules:
         - allow: [User, Group, System, Component, API]
 
+marketplace:
+  providers:
+    npm:
+      - package: '@backstage-community/plugin-npm'
+
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
 

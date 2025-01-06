@@ -13,13 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * Common functionalities for the marketplace plugin.
- *
- * @packageDocumentation
- */
-
-export * as NPM from './npm';
-export * as OCI from './oci';
+export * from './api';
 export * from './types';
+export * from './utils';
