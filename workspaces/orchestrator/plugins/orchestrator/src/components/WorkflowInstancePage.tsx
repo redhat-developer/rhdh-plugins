@@ -200,7 +200,7 @@ export const WorkflowInstancePage = ({
 
   return (
     <BaseOrchestratorPage
-      title={value?.instance.processId ?? value?.instance.id ?? instanceId}
+      title={value?.instance.id}
       type="All runs"
       typeLink="/orchestrator/instances"
     >
