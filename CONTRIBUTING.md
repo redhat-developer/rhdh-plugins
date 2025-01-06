@@ -19,7 +19,10 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
   - [Migrating a plugin](#migrating-a-plugin)
     - [Manual migration steps](#manual-migration-steps)
     - [Using the cli to migrate plugins from janus-idp/backstage-plugins](#using-the-cli-to-migrate-plugins-from-janus-idpbackstage-plugins)
+    - [Next steps](#next-steps)
+    - [Maintenance of older versions](#maintenance-of-older-versions)
   - [API Reports](#api-reports)
+  - [Keeping Workspaces Upto Date with Backstage](#keeping-workspaces-upto-date-with-backstage)
   - [Submitting a Pull Request](#submitting-a-pull-request)
 
 ## License
@@ -250,6 +253,10 @@ There are two ways you can do this:
 > Note: the above commands assume you've run `yarn install` before hand or recently
 
 Each plugin/package has its own API Report which means you might see more than one file updated or created depending on your changes. These changes will then need to be committed as well.
+
+## Keeping Workspaces Upto Date with Backstage
+
+To keep plugins in the various workspaces up to date with Backstage we have a [Version Bump Workflow](https://github.com/redhat-developer/rhdh-plugins/actions/workflows/version-bump.yml) in place, similar to the one that is used in the [backstage/community-plugins](https://github.com/backstage/community-plugins) repository. For instructions on how to use this workflow, refer to the guidelines in this document: https://github.com/backstage/community-plugins/blob/main/docs/version-bump.md#process.
 
 ## Submitting a Pull Request
 
