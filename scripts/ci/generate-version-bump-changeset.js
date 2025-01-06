@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable @backstage/no-undeclared-imports */
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
