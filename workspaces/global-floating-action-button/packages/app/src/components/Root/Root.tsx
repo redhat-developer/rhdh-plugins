@@ -47,7 +47,11 @@ import { makeStyles } from '@mui/styles';
 import React, { PropsWithChildren } from 'react';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
-import { GlobalFloatingActionButton } from '@red-hat-developer-hub/backstage-plugin-global-floating-action-button';
+
+import {
+  GlobalFloatingActionButton,
+  Slot,
+} from '@red-hat-developer-hub/backstage-plugin-global-floating-action-button';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -92,11 +96,11 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             to: '/create',
           },
           {
+            slot: Slot.BOTTOM_CENTER,
             icon: <LibraryBooks />,
             label: 'Docs',
             toolTip: 'Docs',
             to: '/docs',
-            position: 'bottom-center',
           },
           {
             color: 'success',
@@ -107,6 +111,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           },
           {
             color: 'success',
+            showLabel: true,
             icon: <GitHubIcon />,
             label: 'RHDH plugins',
             toolTip: 'RHDH plugins',

@@ -29,7 +29,11 @@ export const GlobalFloatingActionButton = ({
   return (
     <>
       {floatingButtonMap.map(fb => (
-        <FloatingButton position={fb.slot} floatingButtons={fb.actions} />
+        <FloatingButton
+          key={fb.slot}
+          slot={fb.slot}
+          floatingButtons={fb.actions}
+        />
       ))}
     </>
   );

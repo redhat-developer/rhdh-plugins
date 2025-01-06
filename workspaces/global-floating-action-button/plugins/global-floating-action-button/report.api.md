@@ -9,15 +9,12 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react';
 
 // @public
-export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse';
-
-// @public
 export type FloatingActionButton = {
+  slot?: Slot;
   label: string;
   showLabel?: boolean;
   icon?: string | React.ReactElement;
   size?: 'small' | 'medium' | 'large';
-  position?: Slot | string;
   color?:
     | 'default'
     | 'error'

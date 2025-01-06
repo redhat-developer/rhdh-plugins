@@ -30,21 +30,21 @@ const floatingButtons: FloatingActionButton[] = [
     toolTip: 'Git',
   },
   {
+    slot: Slot.BOTTOM_CENTER,
     color: 'success',
     icon: 'GitIcon',
     label: 'Add',
     toolTip: 'Add',
     to: 'https://github.com/xyz',
-    position: 'BOTTOM_CENTER',
     priority: 100,
   },
   {
+    slot: Slot.BOTTOM_CENTER,
     color: 'success',
     icon: 'GitIcon',
     label: 'Menu',
     toolTip: 'Menu',
     to: 'https://github.com/xyz',
-    position: 'BOTTOM_CENTER',
     priority: 200,
     visibleOnPaths: ['/test-pathname'],
   },
@@ -64,12 +64,12 @@ describe('Global floating action button utils', () => {
     const buttons = sortButtonsWithPriority(floatingButtons);
     expect(buttons).toEqual([
       {
+        slot: Slot.BOTTOM_CENTER,
         color: 'success',
         icon: 'GitIcon',
         label: 'Menu',
         toolTip: 'Menu',
         to: 'https://github.com/xyz',
-        position: 'BOTTOM_CENTER',
         priority: 200,
         visibleOnPaths: ['/test-pathname'],
       },
@@ -84,12 +84,12 @@ describe('Global floating action button utils', () => {
       },
 
       {
+        slot: Slot.BOTTOM_CENTER,
         color: 'success',
         icon: 'GitIcon',
         label: 'Add',
         toolTip: 'Add',
         to: 'https://github.com/xyz',
-        position: 'BOTTOM_CENTER',
         priority: 100,
       },
       {
@@ -106,22 +106,22 @@ describe('Global floating action button utils', () => {
     const buttons = filterAndSortButtons(floatingButtons, '/test-pathname');
     expect(buttons).toEqual([
       {
+        slot: Slot.BOTTOM_CENTER,
         color: 'success',
         icon: 'GitIcon',
         label: 'Menu',
         toolTip: 'Menu',
         to: 'https://github.com/xyz',
-        position: 'BOTTOM_CENTER',
         priority: 200,
         visibleOnPaths: ['/test-pathname'],
       },
       {
+        slot: Slot.BOTTOM_CENTER,
         color: 'success',
         icon: 'GitIcon',
         label: 'Add',
         toolTip: 'Add',
         to: 'https://github.com/xyz',
-        position: 'BOTTOM_CENTER',
         priority: 100,
       },
       {
@@ -162,21 +162,21 @@ describe('Global floating action button utils', () => {
         slot: Slot.BOTTOM_CENTER,
         actions: [
           {
+            slot: Slot.BOTTOM_CENTER,
             color: 'success',
             icon: 'GitIcon',
             label: 'Add',
             toolTip: 'Add',
             to: 'https://github.com/xyz',
-            position: 'BOTTOM_CENTER',
             priority: 100,
           },
           {
+            slot: Slot.BOTTOM_CENTER,
             color: 'success',
             icon: 'GitIcon',
             label: 'Menu',
             toolTip: 'Menu',
             to: 'https://github.com/xyz',
-            position: 'BOTTOM_CENTER',
             priority: 200,
             visibleOnPaths: ['/test-pathname'],
           },

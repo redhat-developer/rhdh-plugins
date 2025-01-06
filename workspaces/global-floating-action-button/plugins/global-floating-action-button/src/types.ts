@@ -15,10 +15,10 @@
  */
 
 /**
- * @public
  * Slot
+ *
+ * @public
  */
-
 export enum Slot {
   /**
    * Positions the floating action button in the bottom-right corner of the page
@@ -31,32 +31,16 @@ export enum Slot {
 }
 
 /**
- * @public
- * Floating Action Button With Positions
- */
-
-export type FloatingActionButtonWithPositions = Array<{
-  slot: Slot;
-  actions: FloatingActionButton[];
-}>;
-
-/**
- * @public
- * Flex Direction
- */
-
-export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse';
-
-/**
- * @public
  * Floating Action Button
+ *
+ * @public
  */
 export type FloatingActionButton = {
+  slot?: Slot;
   label: string;
   showLabel?: boolean;
   icon?: string | React.ReactElement;
   size?: 'small' | 'medium' | 'large';
-  position?: Slot | string;
   color?:
     | 'default'
     | 'error'
@@ -73,3 +57,13 @@ export type FloatingActionButton = {
   visibleOnPaths?: string[];
   excludeOnPaths?: string[];
 };
+
+/**
+ * Floating Action Button With Positions
+ *
+ * @public
+ */
+export type FloatingActionButtonWithPositions = Array<{
+  slot: Slot;
+  actions: FloatingActionButton[];
+}>;

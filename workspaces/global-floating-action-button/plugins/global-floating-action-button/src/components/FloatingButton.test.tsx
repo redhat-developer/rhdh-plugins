@@ -57,7 +57,7 @@ describe('Floating Button', () => {
             toolTip: 'Main menu',
           },
         ]}
-        position={Slot.BOTTOM_CENTER}
+        slot={Slot.BOTTOM_CENTER}
       />,
     );
     expect(screen.getByTestId('floating-button')).toBeInTheDocument();
@@ -76,7 +76,7 @@ describe('Floating Button', () => {
             toolTip: 'Git',
           },
         ]}
-        position={Slot.BOTTOM_CENTER}
+        slot={Slot.BOTTOM_CENTER}
       />,
     );
     expect(screen.getByTestId('floating-button')).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe('Floating Button', () => {
             toolTip: 'Ac Unit',
           },
         ]}
-        position={Slot.BOTTOM_CENTER}
+        slot={Slot.BOTTOM_CENTER}
       />,
     );
     expect(screen.getByTestId('floating-button')).toBeInTheDocument();

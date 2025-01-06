@@ -21,7 +21,7 @@ import classnames from 'classnames';
 import { makeStyles } from '@mui/styles';
 import { FABWithSubmenu } from './FABWithSubmenu';
 import { FAB } from './FAB';
-import { FlexDirection, FloatingActionButton, Slot } from '../types';
+import { FloatingActionButton, Slot } from '../types';
 import { filterAndSortButtons } from '../utils';
 
 const useStyles = makeStyles(theme => ({
@@ -35,24 +35,27 @@ const useStyles = makeStyles(theme => ({
   'page-end': {
     bottom: theme.spacing(4),
     right: theme.spacing(4),
+    alignItems: 'end',
   },
   'bottom-center': {
     bottom: theme.spacing(4),
     left: '50%',
+    alignItems: 'center',
   },
 }));
 
 export const FloatingButton = ({
   floatingButtons,
-  position,
+  slot,
 }: {
   floatingButtons: FloatingActionButton[];
-  position: Slot;
+  slot: Slot;
 }) => {
   const { pathname } = useLocation();
   const subMenuRef = React.useRef<HTMLDivElement>(null);
-  const [subMenuDirection, setSubMenuDirection] =
-    React.useState<FlexDirection>('column');
+  const [subMenuDirection, setSubMenuDirection] = React.useState<
+    'column' | 'column-reverse'
+  >('column');
   const fabButton = useStyles();
 
   React.useEffect(() => {
@@ -78,9 +81,9 @@ export const FloatingButton = ({
   }
   return (
     <div
-      className={classnames(fabButton.button, fabButton[position])}
+      className={classnames(fabButton.button, fabButton[slot])}
       style={{
-        flexDirection: subMenuDirection || 'column-reverse',
+        flexDirection: subMenuDirection,
       }}
       id="floating-button"
       data-testId="floating-button"

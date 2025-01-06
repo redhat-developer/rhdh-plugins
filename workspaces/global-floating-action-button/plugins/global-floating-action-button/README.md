@@ -22,7 +22,10 @@ This plugin has been added to the example app in this workspace, meaning it can 
 
    ```tsx title="packages/app/src/components/Root/Root.tsx"
    /* highlight-add-next-line */
-   import { GlobalFloatingButton } from '@red-hat-developer-hub/backstage-plugin-global-floating-action-button';
+   import {
+     GlobalFloatingButton,
+     Slot,
+   } from '@red-hat-developer-hub/backstage-plugin-global-floating-action-button';
 
    export const Root = ({ children }: PropsWithChildren<{}>) => (
      <SidebarPage>
@@ -37,11 +40,11 @@ This plugin has been added to the example app in this workspace, meaning it can 
              to: '/create',
            },
            {
+             slot: Slot.BOTTOM_CENTER,
              icon: <LibraryBooks />,
              label: 'Docs',
              toolTip: 'Docs',
              to: '/docs',
-             position: 'bottom-center',
            },
          ]}
        />

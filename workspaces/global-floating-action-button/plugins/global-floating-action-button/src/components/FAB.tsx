@@ -56,7 +56,9 @@ export const FAB = ({
         >
           {actionButton.icon && <FabIcon icon={actionButton.icon} />}
           {(actionButton.showLabel || !actionButton.icon) && (
-            <Typography sx={{ ml: 1 }}>{actionButton.label}</Typography>
+            <Typography sx={actionButton.icon ? { ml: 1 } : {}}>
+              {actionButton.label}
+            </Typography>
           )}
         </Fab>
       </div>
