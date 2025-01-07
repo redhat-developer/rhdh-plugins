@@ -14,6 +14,13 @@ import { LocationSpec } from '@backstage/plugin-catalog-common';
 import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 // @public (undocumented)
+export type CachedData = {
+  [key: string]: number | string[];
+  plugins: any;
+  cachedTime: number;
+};
+
+// @public (undocumented)
 const catalogModuleMarketplace: BackendFeature;
 export default catalogModuleMarketplace;
 
@@ -24,7 +31,7 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
   getCachedPlugins(
     cache: CatalogProcessorCache,
     entityRef: string,
-  ): Promise<any>;
+  ): Promise<CachedData>;
   // (undocumented)
   getInstalledPlugins(): Promise<any>;
   // (undocumented)
@@ -32,11 +39,24 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
   // (undocumented)
   preProcessEntity(
     entity: Entity,
-    _: any,
-    __: any,
-    ___: any,
+    _location: LocationSpec,
+    _emit: CatalogProcessorEmit,
+    _originLocation: LocationSpec,
     cache: CatalogProcessorCache,
   ): Promise<MarketplacePluginEntry>;
+}
+
+// @public (undocumented)
+export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
+  constructor(paths?: string[]);
+  // (undocumented)
+  findWorkspacesPath(startPath?: string): string;
+  // (undocumented)
+  getProcessorName(): string;
+  // (undocumented)
+  isJSON(str: string): boolean;
+  // (undocumented)
+  preProcessEntity(entity: MarketplacePluginEntry): Promise<Entity>;
 }
 
 // @public (undocumented)
@@ -65,23 +85,5 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
   ): Promise<Entity>;
   // (undocumented)
   validateEntityKind(entity: Entity): Promise<boolean>;
-}
-
-// @public (undocumented)
-export class StaticPluginInstallStatusProcessor implements CatalogProcessor {
-  constructor(paths?: string[]);
-  // (undocumented)
-  findWorkspacesPath(startPath?: string): any;
-  // (undocumented)
-  getProcessorName(): string;
-  // (undocumented)
-  isJSON(str: string): boolean;
-  // (undocumented)
-  preProcessEntity(
-    entity: MarketplacePluginEntry,
-    _: any,
-    __: any,
-    ___: any,
-  ): Promise<Entity>;
 }
 ```

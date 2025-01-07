@@ -64,6 +64,10 @@ const discoveryService = mockServices.discovery.mock({
   },
 });
 const authService = mockServices.auth.mock();
+const locationSpec = {
+  type: '',
+  target: '',
+};
 
 describe('DynamicPluginInstallStatusProcessor', () => {
   beforeEach(() => {
@@ -166,7 +170,30 @@ describe('DynamicPluginInstallStatusProcessor', () => {
       jest.resetAllMocks();
     });
 
-    it('should return entity', async () => {
+    it('should not process if the installStatus is already set', async () => {
+      const processor = new DynamicPluginInstallStatusProcessor(
+        discoveryService,
+        authService,
+      );
+
+      const entity = await processor.preProcessEntity(
+        {
+          ...pluginEntity,
+          spec: {
+            ...pluginEntity.spec,
+            installStatus: InstallStatus.Installed,
+          },
+        },
+        locationSpec,
+        jest.fn(),
+        locationSpec,
+        cache,
+      );
+
+      expect(entity.spec?.installStatus).toBe(InstallStatus.Installed);
+    });
+
+    it('should return Installed', async () => {
       const pluginsMock = { testplugin: {}, plugin2: {} };
 
       (fetch as jest.Mock).mockResolvedValue(
@@ -180,9 +207,9 @@ describe('DynamicPluginInstallStatusProcessor', () => {
 
       const entity = await processor.preProcessEntity(
         pluginEntity,
-        null,
-        null,
-        null,
+        locationSpec,
+        jest.fn(),
+        locationSpec,
         cache,
       );
 
@@ -208,9 +235,9 @@ describe('DynamicPluginInstallStatusProcessor', () => {
 
       const result = await processor.preProcessEntity(
         entity,
-        null,
-        null,
-        null,
+        locationSpec,
+        jest.fn(),
+        locationSpec,
         cache,
       );
       expect(result.spec?.installStatus).toBe('NotInstalled');
@@ -231,9 +258,9 @@ describe('DynamicPluginInstallStatusProcessor', () => {
 
       const result = await processor.preProcessEntity(
         entity,
-        null,
-        null,
-        null,
+        locationSpec,
+        jest.fn(),
+        locationSpec,
         cache,
       );
       expect(result).toEqual(entity);

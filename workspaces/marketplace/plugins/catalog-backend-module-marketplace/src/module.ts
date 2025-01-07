@@ -22,7 +22,7 @@ import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/
 import { MarketplacePluginProcessor } from './processors/MarketplacePluginProcessor';
 import { MarketplacePluginListProcessor } from './processors/MarketplacePluginListProcessor';
 import { DynamicPluginInstallStatusProcessor } from './processors/DynamicPluginInstallStatusProcessor';
-import { StaticPluginInstallStatusProcessor } from './processors/StaticPluginInstallStatusProcessor';
+import { LocalPluginInstallStatusProcessor } from './processors/LocalPluginInstallStatusProcessor';
 
 /**
  * @public
@@ -39,13 +39,13 @@ export const catalogModuleMarketplace = createBackendModule({
         auth: coreServices.auth,
       },
       async init({ logger, catalog, discovery, auth }) {
-        logger.info('Marketplace module initialized!');
+        logger.info('Adding Marketplace processors to catalog...');
         catalog.addProcessor(new MarketplacePluginProcessor());
         catalog.addProcessor(new MarketplacePluginListProcessor());
+        catalog.addProcessor(new LocalPluginInstallStatusProcessor());
         catalog.addProcessor(
           new DynamicPluginInstallStatusProcessor(discovery, auth),
         );
-        catalog.addProcessor(new StaticPluginInstallStatusProcessor());
       },
     });
   },

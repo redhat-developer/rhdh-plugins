@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   InstallStatus,
   MarketplacePluginEntry,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { StaticPluginInstallStatusProcessor } from '../StaticPluginInstallStatusProcessor';
+import { LocalPluginInstallStatusProcessor } from '../LocalPluginInstallStatusProcessor';
 
 const pluginEntity: MarketplacePluginEntry = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
@@ -42,59 +43,44 @@ const pluginEntity: MarketplacePluginEntry = {
   },
 };
 
-describe('StaticPluginInstallStatusProcessor', () => {
+describe('LocalPluginInstallStatusProcessor', () => {
   it('should return processor name', () => {
-    const processor = new StaticPluginInstallStatusProcessor();
+    const processor = new LocalPluginInstallStatusProcessor();
     expect(processor.getProcessorName()).toBe(
-      'StaticPluginInstallStatusProcessor',
+      'LocalPluginInstallStatusProcessor',
     );
   });
 
   it('should return the workspace path', async () => {
-    const processor = new StaticPluginInstallStatusProcessor();
+    const processor = new LocalPluginInstallStatusProcessor();
 
-    const result = await processor.preProcessEntity(
-      pluginEntity,
-      undefined,
-      undefined,
-      undefined,
-    );
+    const result = await processor.preProcessEntity(pluginEntity);
     expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
   });
 
   it('should return not installed status', async () => {
-    const processor = new StaticPluginInstallStatusProcessor();
+    const processor = new LocalPluginInstallStatusProcessor();
 
-    const result = await processor.preProcessEntity(
-      pluginEntity,
-      undefined,
-      undefined,
-      undefined,
-    );
+    const result = await processor.preProcessEntity(pluginEntity);
     expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
   });
 
-  it('should return false if the root folder does not have workspaces', async () => {
-    const processor = new StaticPluginInstallStatusProcessor();
+  it('should return empty string if the root folder does not have workspaces', async () => {
+    const processor = new LocalPluginInstallStatusProcessor();
 
-    const result = await processor.findWorkspacesPath('../../../../../../../');
-    expect(result).toBe(false);
+    const result = processor.findWorkspacesPath('../../../../../../../');
+    expect(result).toBe('');
   });
 
   it('should return notInstalled status if the entity does not have package version information', async () => {
-    const processor = new StaticPluginInstallStatusProcessor();
+    const processor = new LocalPluginInstallStatusProcessor();
 
-    const result = await processor.preProcessEntity(
-      pluginEntity,
-      undefined,
-      undefined,
-      undefined,
-    );
+    const result = await processor.preProcessEntity(pluginEntity);
     expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
   });
 
   it('should return NotInstalled status if the entity has incorrect package installed', async () => {
-    const processor = new StaticPluginInstallStatusProcessor();
+    const processor = new LocalPluginInstallStatusProcessor();
 
     const searchBackendPlugin = {
       ...pluginEntity,
@@ -108,17 +94,12 @@ describe('StaticPluginInstallStatusProcessor', () => {
         ],
       },
     };
-    const result = await processor.preProcessEntity(
-      searchBackendPlugin,
-      undefined,
-      undefined,
-      undefined,
-    );
+    const result = await processor.preProcessEntity(searchBackendPlugin);
     expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
   });
 
   it('should return Installed status if the entity has incorrect package version installed', async () => {
-    const processor = new StaticPluginInstallStatusProcessor();
+    const processor = new LocalPluginInstallStatusProcessor();
 
     const searchBackendPlugin = {
       ...pluginEntity,
@@ -132,17 +113,12 @@ describe('StaticPluginInstallStatusProcessor', () => {
         ],
       },
     };
-    const result = await processor.preProcessEntity(
-      searchBackendPlugin,
-      undefined,
-      undefined,
-      undefined,
-    );
+    const result = await processor.preProcessEntity(searchBackendPlugin);
     expect(result?.spec?.installStatus).toBe(InstallStatus.Installed);
   });
 
   it('should return NotInstalled status when invalid workspaces paths', async () => {
-    const processor = new StaticPluginInstallStatusProcessor([
+    const processor = new LocalPluginInstallStatusProcessor([
       'packages/modules',
     ]);
 
@@ -158,12 +134,12 @@ describe('StaticPluginInstallStatusProcessor', () => {
         ],
       },
     };
-    const result = await processor.preProcessEntity(searchPlugin, {}, {}, {});
+    const result = await processor.preProcessEntity(searchPlugin);
     expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
   });
 
   it('should return Installed status when only package names are passed', async () => {
-    const processor = new StaticPluginInstallStatusProcessor();
+    const processor = new LocalPluginInstallStatusProcessor();
 
     const searchPlugin = {
       ...pluginEntity,
@@ -175,23 +151,23 @@ describe('StaticPluginInstallStatusProcessor', () => {
         ],
       },
     };
-    const result = await processor.preProcessEntity(searchPlugin, {}, {}, {});
+    const result = await processor.preProcessEntity(searchPlugin);
     expect(result?.spec?.installStatus).toBe(InstallStatus.Installed);
   });
 
   it('should not process any other kind other than plugin', async () => {
-    const processor = new StaticPluginInstallStatusProcessor();
+    const processor = new LocalPluginInstallStatusProcessor();
 
     const testEntity = {
       ...pluginEntity,
       kind: 'TestKind',
     };
-    const result = await processor.preProcessEntity(testEntity, {}, {}, {});
+    const result = await processor.preProcessEntity(testEntity);
     expect(result).toEqual(testEntity);
   });
 
   it('should return correct values when isJson method is called', async () => {
-    const processor = new StaticPluginInstallStatusProcessor();
+    const processor = new LocalPluginInstallStatusProcessor();
     expect(processor.isJSON(null as any)).toBe(false);
     expect(processor.isJSON(undefined as any)).toBe(false);
     expect(processor.isJSON(123 as any)).toBe(false);

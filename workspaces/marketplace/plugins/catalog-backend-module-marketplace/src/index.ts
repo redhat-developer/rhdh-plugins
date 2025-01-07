@@ -22,13 +22,4 @@
 
 export { catalogModuleMarketplace as default } from './module';
 
-/**
- * The marketplace processors for ingesting data into the catalog.
- * @public
- */
-export {
-  MarketplacePluginProcessor,
-  MarketplacePluginListProcessor,
-  StaticPluginInstallStatusProcessor,
-  DynamicPluginInstallStatusProcessor,
-} from './processors';
+export * from './processors';

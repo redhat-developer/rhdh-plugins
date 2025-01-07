@@ -16,9 +16,11 @@
 
 import { AuthService, DiscoveryService } from '@backstage/backend-plugin-api';
 import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
+import { LocationSpec } from '@backstage/plugin-catalog-common';
 import {
   CatalogProcessor,
   CatalogProcessorCache,
+  CatalogProcessorEmit,
 } from '@backstage/plugin-catalog-node';
 import { durationToMilliseconds } from '@backstage/types';
 import {
@@ -28,11 +30,15 @@ import {
   MarketplacePluginEntry,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-interface CachedData {
+/**
+ * @public
+ */
+export type CachedData = {
   [key: string]: number | string[];
   plugins: any;
   cachedTime: number;
-}
+};
+
 /**
  * @public
  */
@@ -60,6 +66,7 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
       onBehalfOf: await this.auth.getOwnServiceCredentials(),
       targetPluginId: 'catalog',
     });
+
     const response = await fetch(`${scalprumUrl}/plugins`, {
       headers: {
         'Content-Type': 'application/json',
@@ -80,7 +87,7 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
   async getCachedPlugins(
     cache: CatalogProcessorCache,
     entityRef: string,
-  ): Promise<any> {
+  ): Promise<CachedData> {
     let cachedData = (await cache.get(entityRef)) as CachedData;
     if (!cachedData || this.isExpired(cachedData)) {
       const plugins = await this.getInstalledPlugins();
@@ -104,20 +111,23 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
 
   async preProcessEntity(
     entity: Entity,
-    _: any,
-    __: any,
-    ___: any,
+    _location: LocationSpec,
+    _emit: CatalogProcessorEmit,
+    _originLocation: LocationSpec,
     cache: CatalogProcessorCache,
   ): Promise<MarketplacePluginEntry> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
       entity.kind === MarketplaceKinds.plugin
     ) {
+      if (entity.spec?.installStatus === InstallStatus.Installed) {
+        return entity;
+      }
+
       const entityRef = stringifyEntityRef(entity);
 
       const data = await this.getCachedPlugins(cache, entityRef);
       const installedPluginNames = Object.keys(data?.plugins);
-
       return {
         ...entity,
         spec: {

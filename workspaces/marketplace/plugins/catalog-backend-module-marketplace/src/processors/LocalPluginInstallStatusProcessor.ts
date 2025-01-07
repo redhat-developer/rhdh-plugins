@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const fs = require('fs');
-const path = require('path');
-const semver = require('semver');
 
+import fs from 'fs';
+import path from 'path';
+import semver from 'semver';
 import { Entity } from '@backstage/catalog-model';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import {
   InstallStatus,
   MARKETPLACE_API_VERSION,
   MarketplaceKinds,
-  MarketplacePackage,
   MarketplacePluginEntry,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 /**
  * @public
  */
-export class StaticPluginInstallStatusProcessor implements CatalogProcessor {
+export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
   private workspacesPath = this.findWorkspacesPath();
   private customPaths;
 
@@ -46,7 +45,7 @@ export class StaticPluginInstallStatusProcessor implements CatalogProcessor {
       );
   }
   getProcessorName(): string {
-    return 'StaticPluginInstallStatusProcessor';
+    return 'LocalPluginInstallStatusProcessor';
   }
 
   findWorkspacesPath(startPath = process.cwd()) {
@@ -67,7 +66,7 @@ export class StaticPluginInstallStatusProcessor implements CatalogProcessor {
 
       currentPath = path.dirname(currentPath);
     }
-    return false;
+    return '';
   }
 
   private isPackageInstalled(
@@ -132,48 +131,43 @@ export class StaticPluginInstallStatusProcessor implements CatalogProcessor {
 
     try {
       const parsed = JSON.parse(str);
-      if (typeof parsed === 'object' && parsed !== null) {
-        return true;
-      }
-      return true;
+      return typeof parsed === 'object' && parsed !== null;
     } catch (e) {
       return false;
     }
   }
 
-  async preProcessEntity(
-    entity: MarketplacePluginEntry,
-    _: any,
-    __: any,
-    ___: any,
-  ): Promise<Entity> {
+  async preProcessEntity(entity: MarketplacePluginEntry): Promise<Entity> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
       entity.kind === MarketplaceKinds.plugin
     ) {
-      let installStatus: InstallStatus;
+      let installStatus: InstallStatus = InstallStatus.NotInstalled;
 
-      if (
-        (entity?.spec?.packages ?? []).length > 0 &&
-        this.isJSON(JSON.stringify(entity.spec?.packages?.[0])) &&
-        typeof entity.spec?.packages?.[0] !== 'string'
-      ) {
-        const pkgs = entity.spec?.packages as MarketplacePackage[];
-        installStatus = pkgs?.every(npmPackage => {
-          const versions = npmPackage?.version?.split(',');
-          return versions?.every(version =>
-            this.customPaths.some(cpath =>
-              this.isPackageInstalled(npmPackage?.name, cpath, version),
-            ),
-          );
-        })
-          ? InstallStatus.Installed
-          : InstallStatus.NotInstalled;
-      } else {
-        const pkgs = entity.spec?.packages as string[];
-        installStatus = pkgs?.every(pkg =>
-          this.customPaths.some(cpath => this.isPackageInstalled(pkg, cpath)),
-        )
+      if (entity?.spec?.packages?.length) {
+        const somePackagesInstalled = entity.spec.packages.some(
+          marketplacePackageOrString => {
+            const npmPackage =
+              typeof marketplacePackageOrString === 'string'
+                ? {
+                    name: marketplacePackageOrString,
+                  }
+                : marketplacePackageOrString;
+
+            const versions = npmPackage?.version?.split(',');
+            return versions
+              ? versions?.every(version =>
+                  this.customPaths.some(cpath =>
+                    this.isPackageInstalled(npmPackage?.name, cpath, version),
+                  ),
+                )
+              : this.customPaths.some(cpath =>
+                  this.isPackageInstalled(npmPackage?.name, cpath),
+                );
+          },
+        );
+
+        installStatus = somePackagesInstalled
           ? InstallStatus.Installed
           : InstallStatus.NotInstalled;
       }
