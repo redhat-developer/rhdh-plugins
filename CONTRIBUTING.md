@@ -256,7 +256,25 @@ Each plugin/package has its own API Report which means you might see more than o
 
 ## Keeping Workspaces Upto Date with Backstage
 
-To keep plugins in the various workspaces up to date with Backstage we have a [Version Bump Workflow](https://github.com/redhat-developer/rhdh-plugins/actions/workflows/version-bump.yml) in place, similar to the one that is used in the [backstage/community-plugins](https://github.com/backstage/community-plugins) repository. For instructions on how to use this workflow, refer to the guidelines in this document: https://github.com/backstage/community-plugins/blob/main/docs/version-bump.md#process.
+To keep plugins in the various workspaces up to date with Backstage we have a [Version Bump Workflow](https://github.com/redhat-developer/rhdh-plugins/actions/workflows/version-bump.yml) in place, similar to the one that is used in the [backstage/community-plugins](https://github.com/backstage/community-plugins) repository.
+
+> [!NOTE]
+> To run this workflow, you will need write access to the repository. If you are a plugin owner and do not have write access, please reach out to one of the repository admins (@bethgriggs, @nickboldt, @04kash).
+
+### Process
+
+When a Plugin Owner wants to upgrade their workspace(s) to the latest version of Backstage they will simply need to do the following:
+
+1. Navigate to the [Version Bump](https://github.com/redhat-developer/rhdh-plugins/actions/workflows/version-bump.yml) workflow
+2. On the right hand side click on the "Run workflow" button
+3. In the menu that appears use the following:
+   1. For "Use workflow from" use the default "Branch: main"
+   2. For "Release Line" use the default "main"
+   3. For "Workspace (this much be a JSON array)" you will enter the name(s) of the workspace(s). For example for a single workspace it would look like this: `["bulk-import"]` and for multiple workspaces it would look like this: `["lightspeed", "homepage", "marketplace"]`
+   4. For "Specifies the type of version update to apply" use the default "minor"
+4. Now click the "Run workflow" button
+5. The workflow will then run and create a PR to upgrade each of the specified workspaces to the latest `main` release of Backstage
+6. Review and merge the generated PR(s)
 
 ## Submitting a Pull Request
 
