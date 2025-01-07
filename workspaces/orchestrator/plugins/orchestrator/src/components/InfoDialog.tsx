@@ -28,7 +28,7 @@ import {
 import CloseIcon from '@material-ui/icons/Close';
 
 export type InfoDialogProps = {
-  title: string;
+  title: React.ReactNode;
   open: boolean;
   onClose?: () => void;
   dialogActions?: React.ReactNode;
