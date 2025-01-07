@@ -4,8 +4,76 @@
 
 ```ts
 import { BackendFeature } from '@backstage/backend-plugin-api';
+import { CatalogProcessor } from '@backstage/plugin-catalog-node';
+import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
+import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
+import { DiscoveryService } from '@backstage/backend-plugin-api';
+import { Entity } from '@backstage/catalog-model';
+import { LocationSpec } from '@backstage/plugin-catalog-common';
+import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 // @public (undocumented)
 const catalogModuleMarketplace: BackendFeature;
 export default catalogModuleMarketplace;
+
+// @public (undocumented)
+export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
+  constructor(discovery: DiscoveryService);
+  // (undocumented)
+  getInstalledPlugins(): Promise<any>;
+  // (undocumented)
+  getProcessorName(): string;
+  // (undocumented)
+  preProcessEntity(
+    entity: Entity,
+    _: any,
+    __: any,
+    ___: any,
+    cache: CatalogProcessorCache,
+  ): Promise<MarketplacePluginEntry>;
+}
+
+// @public (undocumented)
+export class MarketplacePluginListProcessor implements CatalogProcessor {
+  // (undocumented)
+  getProcessorName(): string;
+  // (undocumented)
+  postProcessEntity(
+    entity: Entity,
+    _location: LocationSpec,
+    emit: CatalogProcessorEmit,
+  ): Promise<Entity>;
+  // (undocumented)
+  validateEntityKind(entity: Entity): Promise<boolean>;
+}
+
+// @public (undocumented)
+export class MarketplacePluginProcessor implements CatalogProcessor {
+  // (undocumented)
+  getProcessorName(): string;
+  // (undocumented)
+  postProcessEntity(
+    entity: Entity,
+    _location: LocationSpec,
+    emit: CatalogProcessorEmit,
+  ): Promise<Entity>;
+  // (undocumented)
+  validateEntityKind(entity: Entity): Promise<boolean>;
+}
+
+// @public (undocumented)
+export class StaticPluginInstallStatusProcessor implements CatalogProcessor {
+  constructor(paths?: string[]);
+  // (undocumented)
+  getProcessorName(): string;
+  // (undocumented)
+  isJSON(str: string): boolean;
+  // (undocumented)
+  preProcessEntity(
+    entity: MarketplacePluginEntry,
+    _: any,
+    __: any,
+    ___: any,
+  ): Promise<Entity>;
+}
 ```
