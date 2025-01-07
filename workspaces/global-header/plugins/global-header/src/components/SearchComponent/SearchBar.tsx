@@ -29,7 +29,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
-import { highlightMatch } from '../../utils/stringUtils';
+import { createSearchLink, highlightMatch } from '../../utils/stringUtils';
 import styles from './SearchBar.module.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -54,6 +54,7 @@ export const SearchBar = (props: SearchBarProps) => {
         } else if (query?.term) {
           options = ['No results found'];
         }
+        const searchLink = createSearchLink(query?.term ?? '');
 
         return (
           <Autocomplete
@@ -69,7 +70,7 @@ export const SearchBar = (props: SearchBarProps) => {
               if (event.key === 'Enter') {
                 event.preventDefault();
                 if (query?.term) {
-                  navigate(`/search?query=${query?.term}`);
+                  navigate(searchLink);
                 }
               }
             }}
@@ -90,7 +91,7 @@ export const SearchBar = (props: SearchBarProps) => {
                   ),
                 }}
                 sx={{
-                  pt: '0.5rem',
+                  pt: '6px',
                   input: { color: '#fff' },
                   button: { color: '#fff' },
                 }}
@@ -101,7 +102,7 @@ export const SearchBar = (props: SearchBarProps) => {
                 return (
                   <Box key="all-results" id="all-results">
                     <Divider sx={{ my: 0.5 }} />
-                    <Link to={`/search?query=${query?.term}`} underline="none">
+                    <Link to={searchLink} underline="none">
                       <ListItem
                         {...renderProps}
                         sx={{ my: 0 }}

@@ -26,7 +26,11 @@ import Typography from '@mui/material/Typography';
 export const highlightMatch = (text: string, query: string) => {
   if (!query) return <>{text}</>;
 
-  const regex = new RegExp(`(${query})`, 'i');
+  const escapeRegex = (input: string) =>
+    input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedQuery = escapeRegex(query);
+
+  const regex = new RegExp(`(${escapedQuery})`, 'i');
   const parts = text.split(regex);
 
   return (
@@ -52,4 +56,8 @@ export const highlightMatch = (text: string, query: string) => {
       )}
     </>
   );
+};
+
+export const createSearchLink = (searchTerm: string) => {
+  return `/search?query=${encodeURIComponent(searchTerm)}`;
 };
