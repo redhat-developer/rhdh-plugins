@@ -5046,7 +5046,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-react@npm:^1.8.4":
+"@backstage/plugin-search-react@npm:1.8.4, @backstage/plugin-search-react@npm:^1.8.4":
   version: 1.8.4
   resolution: "@backstage/plugin-search-react@npm:1.8.4"
   dependencies:
@@ -5076,7 +5076,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search@npm:^1.4.21":
+"@backstage/plugin-search@npm:1.4.21, @backstage/plugin-search@npm:^1.4.21":
   version: 1.4.21
   resolution: "@backstage/plugin-search@npm:1.4.21"
   dependencies:
@@ -9980,6 +9980,12 @@ __metadata:
     "@backstage/core-components": ^0.16.1
     "@backstage/core-plugin-api": ^1.10.1
     "@backstage/dev-utils": ^1.1.4
+    "@backstage/plugin-search": 1.4.21
+    "@backstage/plugin-search-backend": ^1.8.0
+    "@backstage/plugin-search-backend-module-catalog": ^0.2.6
+    "@backstage/plugin-search-backend-module-pg": ^0.5.39
+    "@backstage/plugin-search-backend-module-techdocs": ^0.3.4
+    "@backstage/plugin-search-react": 1.8.4
     "@backstage/test-utils": ^1.7.2
     "@backstage/theme": ^0.6.2
     "@mui/icons-material": 5.16.13

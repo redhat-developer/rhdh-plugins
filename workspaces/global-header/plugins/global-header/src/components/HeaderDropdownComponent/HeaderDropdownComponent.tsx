@@ -115,7 +115,7 @@ const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
             <MenuSection
               key={`menu-section-${section.sectionKey}`}
               {...{ hideDivider: shouldHideDivider(index), ...section }}
-              handleClose={() => setAnchorEl(null)}
+              handleClose={section.handleClose}
             />
           ))}
           {menuBottomItems.map(

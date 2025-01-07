@@ -14,32 +14,29 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
-import SearchIcon from '@mui/icons-material/Search';
-import InputBase from '@mui/material/InputBase';
+import { SearchBar } from './SearchBar';
+import { SearchContextProvider } from '@backstage/plugin-search-react';
 
 export const SearchComponent = () => {
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
   return (
-    <Box
-      sx={{
-        position: 'relative',
-        paddingTop: '4px',
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'start',
-        direction: 'ltr',
-      }}
-    >
-      <Box sx={{ pointerEvents: 'none', alignSelf: 'end' }}>
-        <SearchIcon />
+    <SearchContextProvider>
+      <Box
+        sx={{
+          position: 'relative',
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'start',
+          direction: 'ltr',
+          mr: 4,
+        }}
+      >
+        <SearchBar query={{ term: searchTerm }} setSearchTerm={setSearchTerm} />
       </Box>
-      <InputBase
-        sx={{ padding: '0 0.5rem', color: 'inherit', width: '100%' }}
-        placeholder="Search…"
-        inputProps={{ 'aria-label': 'search' }}
-      />
-    </Box>
+    </SearchContextProvider>
   );
 };
