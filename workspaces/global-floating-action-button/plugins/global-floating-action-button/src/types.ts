@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ export enum Slot {
   /**
    * Positions the floating action button at the bottom center of the page
    */
-  BOTTOM_CENTER = 'bottom-center',
+  BOTTOM_LEFT = 'bottom-left',
 }
 
 /**
@@ -39,7 +39,7 @@ export type FloatingActionButton = {
   slot?: Slot;
   label: string;
   showLabel?: boolean;
-  icon?: string | React.ReactElement;
+  icon: string | React.ReactElement;
   size?: 'small' | 'medium' | 'large';
   color?:
     | 'default'

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import {
   ContentHeader,
   HeaderLabel,
   SupportButton,
+  GitHubIcon,
 } from '@backstage/core-components';
 import { ExampleFetchComponent } from './ExampleFetchComponent';
 import { GlobalFloatingActionButton, Slot } from '../../src';
@@ -77,7 +78,7 @@ export const ExampleComponent = () => (
             icon: '<svg viewBox="0 0 250 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><path d="M200.134 0l55.555 117.514-55.555 117.518h-47.295l55.555-117.518L152.84 0h47.295zM110.08 99.836l20.056-38.092-2.29-8.868L102.847 0H55.552l48.647 102.898 5.881-3.062zm17.766 74.433l-17.333-39.034-6.314-3.101-48.647 102.898h47.295l25-52.88v-7.883z" fill="#40B4E5"/><path d="M152.842 235.032L97.287 117.514 152.842 0h47.295l-55.555 117.514 55.555 117.518h-47.295zm-97.287 0L0 117.514 55.555 0h47.296L47.295 117.514l55.556 117.518H55.555z" fill="#003764"/></svg>',
           },
           {
-            slot: Slot.BOTTOM_CENTER,
+            slot: Slot.BOTTOM_LEFT,
             color: 'success',
             icon: <AddIcon />,
             label: 'Add',
@@ -86,10 +87,11 @@ export const ExampleComponent = () => (
             priority: 100,
           },
           {
-            slot: Slot.BOTTOM_CENTER,
+            slot: Slot.BOTTOM_LEFT,
             color: 'success',
-            label: 'Menu',
-            toolTip: 'Menu',
+            label: 'Github',
+            icon: <GitHubIcon />,
+            toolTip: 'Github',
             to: 'https://github.com/xyz',
             priority: 200,
             visibleOnPaths: ['/test-global-floating-action'],

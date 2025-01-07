@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ const floatingButtons: FloatingActionButton[] = [
     toolTip: 'Git',
   },
   {
-    slot: Slot.BOTTOM_CENTER,
+    slot: Slot.BOTTOM_LEFT,
     color: 'success',
     icon: 'GitIcon',
     label: 'Add',
@@ -39,7 +39,7 @@ const floatingButtons: FloatingActionButton[] = [
     priority: 100,
   },
   {
-    slot: Slot.BOTTOM_CENTER,
+    slot: Slot.BOTTOM_LEFT,
     color: 'success',
     icon: 'GitIcon',
     label: 'Menu',
@@ -64,7 +64,7 @@ describe('Global floating action button utils', () => {
     const buttons = sortButtonsWithPriority(floatingButtons);
     expect(buttons).toEqual([
       {
-        slot: Slot.BOTTOM_CENTER,
+        slot: Slot.BOTTOM_LEFT,
         color: 'success',
         icon: 'GitIcon',
         label: 'Menu',
@@ -84,7 +84,7 @@ describe('Global floating action button utils', () => {
       },
 
       {
-        slot: Slot.BOTTOM_CENTER,
+        slot: Slot.BOTTOM_LEFT,
         color: 'success',
         icon: 'GitIcon',
         label: 'Add',
@@ -106,7 +106,7 @@ describe('Global floating action button utils', () => {
     const buttons = filterAndSortButtons(floatingButtons, '/test-pathname');
     expect(buttons).toEqual([
       {
-        slot: Slot.BOTTOM_CENTER,
+        slot: Slot.BOTTOM_LEFT,
         color: 'success',
         icon: 'GitIcon',
         label: 'Menu',
@@ -116,7 +116,7 @@ describe('Global floating action button utils', () => {
         visibleOnPaths: ['/test-pathname'],
       },
       {
-        slot: Slot.BOTTOM_CENTER,
+        slot: Slot.BOTTOM_LEFT,
         color: 'success',
         icon: 'GitIcon',
         label: 'Add',
@@ -159,10 +159,10 @@ describe('Global floating action button utils', () => {
         ],
       },
       {
-        slot: Slot.BOTTOM_CENTER,
+        slot: Slot.BOTTOM_LEFT,
         actions: [
           {
-            slot: Slot.BOTTOM_CENTER,
+            slot: Slot.BOTTOM_LEFT,
             color: 'success',
             icon: 'GitIcon',
             label: 'Add',
@@ -171,7 +171,7 @@ describe('Global floating action button utils', () => {
             priority: 100,
           },
           {
-            slot: Slot.BOTTOM_CENTER,
+            slot: Slot.BOTTOM_LEFT,
             color: 'success',
             icon: 'GitIcon',
             label: 'Menu',

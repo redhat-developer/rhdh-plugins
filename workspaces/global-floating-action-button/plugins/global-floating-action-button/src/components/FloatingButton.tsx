@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,22 +25,21 @@ import { FloatingActionButton, Slot } from '../types';
 import { filterAndSortButtons } from '../utils';
 
 const useStyles = makeStyles(theme => ({
-  button: {
+  fabContainer: {
     zIndex: 200,
     display: 'flex',
     position: 'fixed',
-    maxWidth: '150px',
     gap: '10px',
   },
   'page-end': {
-    bottom: theme.spacing(4),
-    right: theme.spacing(4),
+    bottom: theme.spacing(2),
+    right: theme.spacing(2),
     alignItems: 'end',
   },
-  'bottom-center': {
-    bottom: theme.spacing(4),
-    left: '50%',
-    alignItems: 'center',
+  'bottom-left': {
+    bottom: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
+    alignItems: 'start',
   },
 }));
 
@@ -52,7 +51,6 @@ export const FloatingButton = ({
   slot: Slot;
 }) => {
   const { pathname } = useLocation();
-  const subMenuRef = React.useRef<HTMLDivElement>(null);
   const [subMenuDirection, setSubMenuDirection] = React.useState<
     'column' | 'column-reverse'
   >('column');
@@ -81,16 +79,15 @@ export const FloatingButton = ({
   }
   return (
     <div
-      className={classnames(fabButton.button, fabButton[slot])}
+      className={classnames(fabButton.fabContainer, fabButton[slot])}
       style={{
         flexDirection: subMenuDirection,
       }}
       id="floating-button"
       data-testId="floating-button"
-      ref={subMenuRef}
     >
       {fabs.length > 1 ? (
-        <FABWithSubmenu fabs={fabs} ref={subMenuRef.current} />
+        <FABWithSubmenu fabs={fabs} slot={slot} />
       ) : (
         <FAB actionButton={fabs[0]} />
       )}

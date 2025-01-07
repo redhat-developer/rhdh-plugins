@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,35 @@
 
 import * as React from 'react';
 import { useLocation } from 'react-router-dom';
+import { makeStyles } from '@mui/styles';
 import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
-import Slide from '@mui/material/Slide';
-import { FloatingActionButton } from '../types';
+import Collapse from '@mui/material/Collapse';
 import { FAB } from './FAB';
+import { slotOptions } from '../utils';
+import { FloatingActionButton, Slot } from '../types';
+
+const useStyles = makeStyles(theme => ({
+  button: {
+    paddingTop: '10px',
+    color: theme.palette.grey[500],
+  },
+  menuButtonStyle: {
+    color: '#1f1f1f',
+  },
+}));
 
 export const FABWithSubmenu = ({
   fabs,
-  ref,
+  slot,
 }: {
   fabs: FloatingActionButton[];
-  ref: HTMLDivElement | null;
+  slot: Slot;
 }) => {
+  const styles = useStyles();
   const theme = useTheme();
   const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -43,36 +56,50 @@ export const FABWithSubmenu = ({
   }, [pathname]);
 
   const handleClick = () => {
-    setIsMenuOpen(!isMenuOpen);
+    setIsMenuOpen(prev => !prev);
   };
   return (
     <>
-      <Tooltip title="Menu" placement="left">
+      <Tooltip title="Menu" placement={slotOptions[slot].tooltipDirection}>
         <Fab
           size="medium"
-          color="default"
+          color="info"
           onClick={handleClick}
           aria-label="Menu"
           variant="circular"
+          data-testid="fab-with-submenu"
         >
-          {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
+          {isMenuOpen ? (
+            <CloseIcon className={styles.menuButtonStyle} />
+          ) : (
+            <MenuIcon className={styles.menuButtonStyle} />
+          )}
         </Fab>
       </Tooltip>
-      {isMenuOpen && (
-        <Slide
-          container={ref}
-          easing={{
-            enter: theme.transitions.easing.easeOut,
-            exit: theme.transitions.easing.sharp,
-          }}
-        >
-          <>
-            {fabs?.map(fb => {
-              return <FAB actionButton={fb} size="medium" key={fb.label} />;
-            })}
-          </>
-        </Slide>
-      )}
+      <Collapse
+        style={{ textAlign: slotOptions[slot].textAlign }}
+        in={isMenuOpen}
+        mountOnEnter
+        unmountOnExit
+        orientation="vertical"
+        easing={{
+          enter: theme.transitions.easing.easeOut,
+          exit: theme.transitions.easing.sharp,
+        }}
+      >
+        <>
+          {fabs?.map(fb => {
+            return (
+              <FAB
+                actionButton={fb}
+                size="medium"
+                key={fb.label}
+                className={styles.button}
+              />
+            );
+          })}
+        </>
+      </Collapse>
     </>
   );
 };
