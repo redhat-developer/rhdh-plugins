@@ -28,6 +28,7 @@ import {
 } from '@backstage/core-plugin-api';
 
 import {
+  Box,
   Button,
   CircularProgress,
   Grid,
@@ -37,7 +38,7 @@ import {
 import Snackbar from '@material-ui/core/Snackbar';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
-import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
+import ErrorIcon from '@material-ui/icons/Error';
 import Alert from '@material-ui/lab/Alert';
 
 import {
@@ -87,9 +88,11 @@ export type AbortAlertDialogContentProps = {
 
 const AbortConfirmationDialogContent = () => (
   <div>
-    Are you sure you want to abort this workflow run? <br /> <br />
-    Aborting will stop all in-progress and pending steps immediately. Any
-    incomplete tasks will not be saved.
+    <b>
+      Are you sure you want to abort this workflow run? <br /> <br />
+      Aborting will stop all in-progress and pending steps immediately. Any
+      incomplete tasks will not be saved.
+    </b>
   </div>
 );
 
@@ -109,11 +112,11 @@ export const WorkflowInstancePage = ({
     useState(false);
 
   const [isAborting, setIsAborting] = React.useState(false);
-  const [open, setOpen] = React.useState(false);
+  const [isAbortSnackbarOpen, setIsAbortSnackbarOpen] = React.useState(false);
   const [abortError, setAbortError] = React.useState('');
 
   const handleClose = () => {
-    setOpen(false);
+    setIsAbortSnackbarOpen(false);
   };
 
   const AbortConfirmationDialogActions = (
@@ -195,8 +198,8 @@ export const WorkflowInstancePage = ({
         await orchestratorApi.abortWorkflowInstance(value.instance.id);
         restart();
       } catch (e) {
-        setAbortError(`Running again has failed: ${(e as Error).message}`);
-        setOpen(true);
+        setAbortError(`Abort failed: ${(e as Error).message}`);
+        setIsAbortSnackbarOpen(true);
       } finally {
         setIsAborting(false);
         toggleAbortConfirmationDialog();
@@ -232,10 +235,10 @@ export const WorkflowInstancePage = ({
           <ContentHeader title="">
             <InfoDialog
               title={
-                <>
-                  <ErrorOutlineIcon color="error" />{' '}
-                  <b>Abort workflow {value?.instance.processId}</b>
-                </>
+                <Box display="flex" alignItems="center">
+                  <ErrorIcon color="error" style={{ marginRight: 8 }} />
+                  <b>Abort workflow</b>
+                </Box>
               }
               onClose={toggleAbortConfirmationDialog}
               open={isAbortConfirmationDialogOpen}
@@ -255,10 +258,10 @@ export const WorkflowInstancePage = ({
                     disableHoverListener={permittedToUse.allowed}
                   >
                     <Button
-                      variant="contained"
+                      variant="outlined"
+                      color="primary"
                       disabled={!permittedToUse.allowed}
                       onClick={toggleAbortConfirmationDialog}
-                      className={classes.abortButton}
                     >
                       Abort
                     </Button>
@@ -283,7 +286,7 @@ export const WorkflowInstancePage = ({
             </Grid>
           </ContentHeader>
           <Snackbar
-            open={open}
+            open={isAbortSnackbarOpen}
             onClose={handleClose}
             anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           >

@@ -43,6 +43,10 @@ const useStyles = makeStyles(_theme => ({
     right: 8,
     top: 8,
   },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    paddingLeft: _theme.spacing(2),
+  },
 }));
 
 export const RefForwardingInfoDialog: ForwardRefRenderFunction<
@@ -69,7 +73,9 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
       <DialogContent>
         <Box>{children}</Box>
       </DialogContent>
-      <DialogActions>{dialogActions}</DialogActions>
+      <DialogActions className={classes.dialogActions}>
+        {dialogActions}
+      </DialogActions>
     </Dialog>
   );
 };
