@@ -263,7 +263,7 @@ To keep plugins in the various workspaces up to date with Backstage we have a [V
 
 ### Process
 
-When a Plugin Owner wants to upgrade one or many workspaces to the latest version of Backstage they will simply need to do the following:
+When a Plugin Owner wants to upgrade their workspace(s) to the latest version of Backstage they will simply need to do the following:
 
 1. Navigate to the [Version Bump](https://github.com/redhat-developer/rhdh-plugins/actions/workflows/version-bump.yml) workflow
 2. On the right hand side click on the "Run workflow" button
