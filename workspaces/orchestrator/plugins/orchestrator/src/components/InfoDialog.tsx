@@ -28,7 +28,7 @@ import {
 import CloseIcon from '@material-ui/icons/Close';
 
 export type InfoDialogProps = {
-  title: string;
+  title: React.ReactNode;
   open: boolean;
   onClose?: () => void;
   dialogActions?: React.ReactNode;
@@ -42,6 +42,10 @@ const useStyles = makeStyles(_theme => ({
     position: 'absolute',
     right: 8,
     top: 8,
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    paddingLeft: _theme.spacing(2),
   },
 }));
 
@@ -69,7 +73,9 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
       <DialogContent>
         <Box>{children}</Box>
       </DialogContent>
-      <DialogActions>{dialogActions}</DialogActions>
+      <DialogActions className={classes.dialogActions}>
+        {dialogActions}
+      </DialogActions>
     </Dialog>
   );
 };
