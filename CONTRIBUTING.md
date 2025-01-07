@@ -274,7 +274,7 @@ When a Plugin Owner wants to upgrade one or many workspaces to the latest versio
    4. For "Specifies the type of version update to apply" use the default "minor".
 4. Now click the "Run workflow" button
 5. The workflow will then run and create a PR to upgrade each of the specified workspaces to the latest `main` release of Backstage
-6. At this point you can review the created PR(s) like any other PR
+6. Review and merge the generated PR(s)
 
 ## Submitting a Pull Request
 
