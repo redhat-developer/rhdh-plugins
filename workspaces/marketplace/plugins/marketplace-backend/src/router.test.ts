@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { mockErrorHandler, mockServices } from '@backstage/backend-test-utils';
 import express from 'express';
 import request from 'supertest';
@@ -23,6 +24,8 @@ import { MarketplaceService } from './services/MarketplaceService';
 
 const mockPlugins: MarketplacePluginEntry[] = [
   {
+    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    kind: 'plugin',
     metadata: {
       name: 'plugin-a',
       title: 'Plugin A',
@@ -38,6 +41,7 @@ describe('createRouter', () => {
   beforeEach(async () => {
     marketplaceService = {
       getPlugins: jest.fn(),
+      getPluginList: jest.fn(),
     };
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),

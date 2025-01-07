@@ -287,6 +287,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.createPrefixFetchErrorMessage(
         TEST_URL,
         mockResponse,
+        mockResponseJson,
         'POST',
       );
 
@@ -307,6 +308,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.createPrefixFetchErrorMessage(
         TEST_URL,
         mockResponse,
+        mockResponseJson,
       );
 
       // Then
@@ -325,6 +327,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.createPrefixFetchErrorMessage(
         TEST_URL,
         mockResponse,
+        mockResponseJson,
       );
 
       // Then
@@ -341,6 +344,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.createPrefixFetchErrorMessage(
         TEST_URL,
         mockResponse,
+        mockResponseJson,
       );
 
       // Then
@@ -360,6 +364,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.createPrefixFetchErrorMessage(
         TEST_URL,
         mockResponse,
+        {},
       );
 
       // Then

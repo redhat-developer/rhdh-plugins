@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 import { InfoCard } from '@backstage/core-components';
 import Button, { ButtonProps } from '@material-ui/core/Button';
@@ -37,7 +38,7 @@ const Buttons = () => {
       </tr>
       {colors.map(color => (
         <tr key={color}>
-          <td>{color ?? 'undefined'}</td>
+          <td>{color ?? 'no color'}</td>
           {variants.map(variant => (
             <td key={variant}>
               <Button color={color} variant={variant}>
@@ -74,7 +75,7 @@ const Checkboxes = () => {
       </tr>
       {colors.map(color => (
         <tr key={color}>
-          <td>{color ?? 'undefined'}</td>
+          <td>{color ?? 'no color'}</td>
           <td>
             <FormControlLabel
               control={<Checkbox defaultChecked color={color} />}

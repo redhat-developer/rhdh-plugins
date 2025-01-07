@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import { Entity } from '@backstage/catalog-model';
+import { JsonObject } from '@backstage/types';
+
 /**
  * @public
  */
-export interface MarketplacePluginEntry {
-  metadata: MarketplacePluginMetadata;
+export interface MarketplacePluginEntry extends Entity {
   spec?: MarketplacePluginSpec;
 }
 
@@ -26,7 +28,6 @@ export interface MarketplacePluginEntry {
  * @public
  */
 export interface MarketplacePluginList {
-  metadata: MarketplacePluginMetadata;
   spec?: {
     plugins: string[];
   } & MarketplacePluginSpec;
@@ -48,37 +49,7 @@ export enum MarketplaceKinds {
 /**
  * @public
  */
-export interface MarketplacePluginMetadata {
-  // primary identifier
-  name: string;
-
-  // primary display name
-  title: string;
-
-  description?: string;
-
-  // TODO: support for light/dark icon
-
-  labels?: Record<string, string>;
-  annotations?: Record<string, string>;
-  tags?: string[];
-  links?: MarketplacePluginLink[];
-}
-
-/**
- * @public
- */
-export interface MarketplacePluginLink {
-  url: string;
-  title?: string;
-  icon?: string;
-  type?: string;
-}
-
-/**
- * @public
- */
-export interface MarketplacePluginSpec {
+export interface MarketplacePluginSpec extends JsonObject {
   icon?: string;
   categories?: string[];
   developer?: string;

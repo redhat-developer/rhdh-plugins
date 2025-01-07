@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
-  createApiFactory,
-  createRoutableExtension,
   createPlugin,
+  createRoutableExtension,
+  createComponentExtension,
+  type IconComponent,
+  createApiFactory,
   discoveryApiRef,
   fetchApiRef,
 } from '@backstage/core-plugin-api';
 
+import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
+
 import { rootRouteRef } from './routes';
-import { marketplaceApiRef, MarketplaceClient } from './api';
+import { marketplaceApiRef, MarketplaceBackendClient } from './api';
 
 /**
  * Marketplace Plugin
@@ -41,7 +46,7 @@ export const marketplacePlugin = createPlugin({
         fetchApi: fetchApiRef,
       },
       factory: ({ discoveryApi, fetchApi }) =>
-        new MarketplaceClient({
+        new MarketplaceBackendClient({
           discoveryApi,
           fetchApi,
         }),
@@ -50,7 +55,7 @@ export const marketplacePlugin = createPlugin({
 });
 
 /**
- * Marketplace Page
+ * Marketplace page with header and tabs.
  * @public
  */
 export const MarketplacePage = marketplacePlugin.provide(
@@ -61,3 +66,24 @@ export const MarketplacePage = marketplacePlugin.provide(
     mountPoint: rootRouteRef,
   }),
 );
+
+/**
+ * Marketplace catalog content without header and tabs.
+ * @public
+ */
+export const MarketplaceCatalogContent = marketplacePlugin.provide(
+  createComponentExtension({
+    name: 'MarketplaceCatalogContent',
+    component: {
+      lazy: () =>
+        import('./components/MarketplaceCatalogContent').then(
+          m => m.MarketplaceCatalogContent,
+        ),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const MarketplaceIcon: IconComponent = MUIMarketplaceIcon;

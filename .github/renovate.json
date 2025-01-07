@@ -18,7 +18,50 @@
   "npm": {
     "minimumReleaseAge": "3 days"
   },
+  "major": {
+    "dependencyDashboardApproval": true
+  },
   "packageRules": [
+    {
+      "groupName": "DevDependencies (minor)",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor"]
+    },
+    {
+      "groupName": "DevDependencies (patch)",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch"]
+    },
+    {
+      "groupName": "Test packages (minor)",
+      "matchDepNames": ["@playwright/{/,}**", "msw", "@testing-library/{/,}**"],
+      "matchUpdateTypes": ["minor"]
+    },
+    {
+      "groupName": "Test packages (patch)",
+      "matchDepNames": ["@playwright/{/,}**", "msw", "@testing-library/{/,}**"],
+      "matchUpdateTypes": ["patch"]
+    },
+    {
+      "groupName": "Kie Tools (minor)",
+      "matchDepNames": ["@kie-tools-core/{/,}**", "@kie-tools/{/,}**"],
+      "matchUpdateTypes": ["minor"]
+    },
+    {
+      "groupName": "Kie Tools (patch)",
+      "matchDepNames": ["@kie-tools-core/{/,}**", "@kie-tools/{/,}**"],
+      "matchUpdateTypes": ["patch"]
+    },
+    {
+      "groupName": "types (minor)",
+      "matchPackageNames": ["@types/{/,}**"],
+      "matchUpdateTypes": ["minor"]
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "groupName": "types (patch)",
+      "matchPackageNames": ["@types/{/,}**"]
+    },
     {
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions"
@@ -34,6 +77,11 @@
     {
       "matchPackageNames": ["yn"],
       "allowedVersions": "<5.0.0"
+    },
+    {
+      "groupName": "Core Backstage packages",
+      "dependencyDashboardApproval": true,
+      "matchDepNames": ["/^@backstage//"]
     }
   ],
   "ignorePaths": ["**/dist-dynamic/**"]

@@ -31,7 +31,7 @@ export const OrchestratorPage = () => {
         </TabbedLayout.Route>
         <TabbedLayout.Route
           path={workflowInstancesRouteRef.path}
-          title="Workflow runs"
+          title="All runs"
         >
           <WorkflowRunsTabContent />
         </TabbedLayout.Route>

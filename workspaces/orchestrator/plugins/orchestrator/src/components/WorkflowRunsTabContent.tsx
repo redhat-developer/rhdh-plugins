@@ -22,21 +22,27 @@ import {
   SelectItem,
   TableColumn,
 } from '@backstage/core-components';
-import { useApi, useRouteRef } from '@backstage/core-plugin-api';
+import {
+  useApi,
+  useRouteRef,
+  useRouteRefParams,
+} from '@backstage/core-plugin-api';
 
-import { Grid } from '@material-ui/core';
+import { Grid, TablePagination } from '@material-ui/core';
 
 import {
   capitalize,
-  ellipsis,
-  ProcessInstanceState,
+  FieldFilter,
+  Filter,
+  PaginationInfoDTO,
+  PaginationInfoDTOOrderDirectionEnum,
   ProcessInstanceStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../api';
 import { DEFAULT_TABLE_PAGE_SIZE, VALUE_UNAVAILABLE } from '../constants';
 import usePolling from '../hooks/usePolling';
-import { workflowInstanceRouteRef } from '../routes';
+import { workflowInstanceRouteRef, workflowRouteRef } from '../routes';
 import { Selector } from './Selector';
 import OverrideBackstageTable from './ui/OverrideBackstageTable';
 import { mapProcessInstanceToDetails } from './WorkflowInstancePageContent';
@@ -45,11 +51,11 @@ import { WorkflowRunDetail } from './WorkflowRunDetail';
 
 const makeSelectItemsFromProcessInstanceValues = () =>
   [
-    ProcessInstanceState.Active,
-    ProcessInstanceState.Error,
-    ProcessInstanceState.Completed,
-    ProcessInstanceState.Aborted,
-    ProcessInstanceState.Suspended,
+    ProcessInstanceStatusDTO.Active,
+    ProcessInstanceStatusDTO.Error,
+    ProcessInstanceStatusDTO.Completed,
+    ProcessInstanceStatusDTO.Aborted,
+    ProcessInstanceStatusDTO.Suspended,
   ].map(
     (status): SelectItem => ({
       label: capitalize(status),
@@ -57,70 +63,79 @@ const makeSelectItemsFromProcessInstanceValues = () =>
     }),
   );
 
+const statuses = makeSelectItemsFromProcessInstanceValues();
+
 export const WorkflowRunsTabContent = () => {
+  const { workflowId } = useRouteRefParams(workflowRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
+  const workflowPageLink = useRouteRef(workflowRouteRef);
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
     Selector.AllItems,
   );
 
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
+  const [orderByField, setOrderByField] = useState<string>('start');
+  const [orderDirection, setOrderDirection] = useState('desc');
+
+  const getFilter = React.useCallback((): Filter | undefined => {
+    const statusFilter: FieldFilter | undefined =
+      statusSelectorValue !== Selector.AllItems
+        ? {
+            operator: 'EQ',
+            value: statusSelectorValue,
+            field: 'state',
+          }
+        : undefined;
+    const workflowIdFilter: FieldFilter | undefined = workflowId
+      ? {
+          operator: 'EQ',
+          value: workflowId,
+          field: 'processId',
+        }
+      : undefined;
+    if (statusFilter && workflowIdFilter) {
+      return {
+        operator: 'AND',
+        filters: [statusFilter, workflowIdFilter],
+      };
+    } else if (statusFilter) {
+      return statusFilter;
+    } else if (workflowIdFilter) {
+      return workflowIdFilter;
+    }
+    return undefined;
+  }, [statusSelectorValue, workflowId]);
+
   const fetchInstances = React.useCallback(async () => {
-    // TODO: use pagination with generic permission, skip (or use FE-only) for specific permissions
-    const instances = await orchestratorApi.listInstances({});
+    const paginationInfo: PaginationInfoDTO = {
+      pageSize: pageSize + 1, // add one more to know if this is the last page or there are more instances. If there are no more instances, next button is disabled.
+      offset: page * pageSize,
+      orderBy: orderByField,
+      orderDirection:
+        orderDirection === 'asc'
+          ? PaginationInfoDTOOrderDirectionEnum.Asc
+          : PaginationInfoDTOOrderDirectionEnum.Desc,
+    };
+    const filter = getFilter();
+    const instances = await orchestratorApi.listInstances(
+      paginationInfo,
+      filter,
+    );
     const clonedData: WorkflowRunDetail[] =
       instances.data.items?.map(mapProcessInstanceToDetails) || [];
     return clonedData;
-  }, [orchestratorApi]);
+  }, [
+    orchestratorApi,
+    page,
+    pageSize,
+    orderByField,
+    orderDirection,
+    getFilter,
+  ]);
 
   const { loading, error, value } = usePolling(fetchInstances);
-
-  const columns = React.useMemo(
-    (): TableColumn<WorkflowRunDetail>[] => [
-      {
-        title: 'ID',
-        field: 'id',
-        render: data => (
-          <Link to={workflowInstanceLink({ instanceId: data.id })}>
-            {ellipsis(data.id)}
-          </Link>
-        ),
-        sorting: false,
-      },
-      {
-        title: 'Workflow name',
-        field: 'name',
-      },
-      {
-        title: 'Status',
-        field: 'status',
-        render: data => (
-          <WorkflowInstanceStatusIndicator
-            status={data.status as ProcessInstanceStatusDTO}
-          />
-        ),
-      },
-      {
-        title: 'Category',
-        field: 'category',
-        render: data => capitalize(data.category ?? VALUE_UNAVAILABLE),
-      },
-      { title: 'Started', field: 'started', defaultSort: 'desc' },
-      { title: 'Duration', field: 'duration' },
-    ],
-    [workflowInstanceLink],
-  );
-
-  const statuses = React.useMemo(makeSelectItemsFromProcessInstanceValues, []);
-
-  const filteredData = React.useMemo(
-    () =>
-      (value ?? []).filter(
-        (row: WorkflowRunDetail) =>
-          statusSelectorValue === Selector.AllItems ||
-          row.status?.toLocaleLowerCase('en-US') === statusSelectorValue,
-      ),
-    [statusSelectorValue, value],
-  );
 
   const selectors = React.useMemo(
     () => (
@@ -129,31 +144,138 @@ export const WorkflowRunsTabContent = () => {
           <Selector
             label="Status"
             items={statuses}
-            onChange={setStatusSelectorValue}
+            onChange={value_ => {
+              setStatusSelectorValue(value_);
+              setPage(0);
+            }}
             selected={statusSelectorValue}
           />
         </Grid>
       </Grid>
     ),
-    [statusSelectorValue, statuses],
+    [statusSelectorValue],
   );
-  const paging = (value?.length || 0) > DEFAULT_TABLE_PAGE_SIZE; // this behavior fits the backstage catalog table behavior https://github.com/backstage/backstage/blob/v1.14.0/plugins/catalog/src/components/CatalogTable/CatalogTable.tsx#L228
+
+  const applyBackendSort = React.useCallback(
+    (item1: WorkflowRunDetail, item2: WorkflowRunDetail): number => {
+      // Workaround for material-table applying sorting on top of backend sorting. The version we are using is too old to request a fix.
+      // Should be resolved when upgrading backstage and all plugins to material6
+      // The workaround is to configure the FE sorting material-table applies to be according to order received from backend
+      // TODO: resolve when upgrading to material 6
+      if (!value) {
+        return 0;
+      }
+      const item1Index = value?.findIndex(curItem => curItem.id === item1.id);
+      const item2Index = value?.findIndex(curItem => curItem.id === item2.id);
+      return orderDirection === 'asc'
+        ? item1Index - item2Index
+        : item2Index - item1Index;
+    },
+    [value, orderDirection],
+  );
+
+  const columns = React.useMemo(
+    (): TableColumn<WorkflowRunDetail>[] => [
+      {
+        title: 'ID',
+        field: 'id',
+        render: data => (
+          <Link to={workflowInstanceLink({ instanceId: data.id })}>
+            {data.id}
+          </Link>
+        ),
+        sorting: false,
+      },
+      ...(workflowId
+        ? []
+        : [
+            {
+              title: 'Workflow name',
+              field: 'processName',
+              customSort: applyBackendSort,
+              render: (data: WorkflowRunDetail) => (
+                <Link to={workflowPageLink({ workflowId: data.workflowId })}>
+                  {data.processName}
+                </Link>
+              ),
+            },
+          ]),
+      {
+        title: 'Status',
+        field: 'state',
+        render: (data: WorkflowRunDetail) => (
+          <WorkflowInstanceStatusIndicator
+            status={data.state as ProcessInstanceStatusDTO}
+          />
+        ),
+      },
+      ...(workflowId
+        ? []
+        : [
+            {
+              title: 'Category',
+              field: 'category',
+              render: (data: WorkflowRunDetail) =>
+                capitalize(data.category ?? VALUE_UNAVAILABLE),
+              sorting: false,
+            },
+          ]),
+      { title: 'Started', field: 'start', customSort: applyBackendSort },
+      { title: 'Duration', field: 'duration', sorting: false },
+    ],
+    [workflowInstanceLink, workflowId, workflowPageLink, applyBackendSort],
+  );
+
+  let data = value || [];
+  let hasNextPage = false;
+  if (data.length === pageSize + 1) {
+    hasNextPage = true;
+    data = data.slice(0, -1);
+  }
+  const enablePaging = page > 0 || hasNextPage;
 
   return error ? (
     <ErrorPanel error={error} />
   ) : (
     <InfoCard noPadding title={selectors}>
       <OverrideBackstageTable
-        title="Workflow Runs"
-        options={{
-          paging,
-          search: true,
-          pageSize: DEFAULT_TABLE_PAGE_SIZE,
-        }}
+        removeOutline
         isLoading={loading}
         columns={columns}
-        data={filteredData}
+        data={data}
+        options={{
+          paging: false,
+        }}
+        onOrderChange={(orderBy_: number, orderDirection_: 'asc' | 'desc') => {
+          const field = columns[orderBy_].field;
+          if (!field) {
+            throw new Error(`Failed to find column number ${orderBy_}`);
+          }
+          setOrderByField(field);
+          setOrderDirection(orderDirection_);
+        }}
+        components={{
+          Toolbar: () => <></>, // this removes the search filter, which isn't applicable for most fields
+        }}
       />
+      {enablePaging && (
+        <TablePagination
+          component="div"
+          count={-1}
+          page={page}
+          onPageChange={(_, page_) => setPage(page_)}
+          onRowsPerPageChange={e => {
+            setPageSize(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+          rowsPerPage={pageSize}
+          labelDisplayedRows={({ from }) => {
+            return `${from}-${from + data.length - 1}`;
+          }}
+          rowsPerPageOptions={[5, 10, 20]}
+          nextIconButtonProps={{ disabled: !hasNextPage }}
+        />
+      )}
     </InfoCard>
   );
 };

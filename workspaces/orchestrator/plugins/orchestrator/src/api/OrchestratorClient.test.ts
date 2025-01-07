@@ -425,7 +425,7 @@ describe('OrchestratorClient', () => {
       jest.spyOn(axios, 'request').mockResolvedValueOnce(mockResponse);
 
       // When
-      const result = await orchestratorClient.listInstances({ paginationInfo });
+      const result = await orchestratorClient.listInstances(paginationInfo);
       // Then
       expect(result).toBeDefined();
       expect(result.data).toEqual(mockInstances);

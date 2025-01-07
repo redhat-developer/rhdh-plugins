@@ -138,9 +138,9 @@ export const WorkflowInstancePage = ({
     SHORT_REFRESH_INTERVAL,
     (curValue: AssessedProcessInstanceDTO | undefined) =>
       !!curValue &&
-      (curValue.instance.status === 'Active' ||
-        curValue.instance.status === 'Pending' ||
-        !curValue.instance.status),
+      (curValue.instance.state === ProcessInstanceStatusDTO.Active ||
+        curValue.instance.state === ProcessInstanceStatusDTO.Pending ||
+        !curValue.instance.state),
   );
 
   const workflowId = value?.instance?.processId;
@@ -154,13 +154,13 @@ export const WorkflowInstancePage = ({
   );
 
   const canAbort =
-    value?.instance.status === ProcessInstanceStatusDTO.Active ||
-    value?.instance.status === ProcessInstanceStatusDTO.Error;
+    value?.instance.state === ProcessInstanceStatusDTO.Active ||
+    value?.instance.state === ProcessInstanceStatusDTO.Error;
 
   const canRerun =
-    value?.instance.status === ProcessInstanceStatusDTO.Completed ||
-    value?.instance.status === ProcessInstanceStatusDTO.Aborted ||
-    value?.instance.status === ProcessInstanceStatusDTO.Error;
+    value?.instance.state === ProcessInstanceStatusDTO.Completed ||
+    value?.instance.state === ProcessInstanceStatusDTO.Aborted ||
+    value?.instance.state === ProcessInstanceStatusDTO.Error;
 
   const toggleAbortConfirmationDialog = () => {
     setIsAbortConfirmationDialogOpen(!isAbortConfirmationDialogOpen);
@@ -200,8 +200,8 @@ export const WorkflowInstancePage = ({
 
   return (
     <BaseOrchestratorPage
-      title={value?.instance.processId ?? value?.instance.id ?? instanceId}
-      type="Workflow runs"
+      title={value?.instance.id}
+      type="All runs"
       typeLink="/orchestrator/instances"
     >
       {loading ? <Progress /> : null}
@@ -236,21 +236,22 @@ export const WorkflowInstancePage = ({
             />
             <Grid container item justifyContent="flex-end" spacing={1}>
               <Grid item>
-                <Tooltip
-                  title="user not authorized to abort workflow"
-                  disableHoverListener={permittedToUse.allowed}
-                >
-                  <Button
-                    variant="contained"
-                    disabled={!permittedToUse.allowed || !canAbort}
-                    onClick={toggleAbortConfirmationDialog}
-                    className={classes.abortButton}
+                {canAbort && (
+                  <Tooltip
+                    title="user not authorized to abort workflow"
+                    disableHoverListener={permittedToUse.allowed}
                   >
-                    Abort
-                  </Button>
-                </Tooltip>
+                    <Button
+                      variant="contained"
+                      disabled={!permittedToUse.allowed}
+                      onClick={toggleAbortConfirmationDialog}
+                      className={classes.abortButton}
+                    >
+                      Abort
+                    </Button>
+                  </Tooltip>
+                )}
               </Grid>
-
               <Grid item>
                 <Tooltip
                   title="user not authorized to execute workflow"

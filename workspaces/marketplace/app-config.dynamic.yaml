@@ -1,0 +1,31 @@
+catalog:
+  locations:
+    # Examples from https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/marketplace/examples
+    - type: url
+      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/marketplace/examples/all-orgs.yaml
+      rules:
+        - allow: [Group]
+    - type: url
+      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/marketplace/examples/all-plugins.yaml
+      rules:
+        - allow: [Plugin]
+    - type: url
+      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/marketplace/examples/all-pluginlists.yaml
+      rules:
+        - allow: [PluginList]
+
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-marketplace:
+      appIcons:
+        - name: marketplace
+          importName: MarketplaceIcon
+      dynamicRoutes:
+        - path: /marketplace
+          importName: MarketplacePage
+          menuItem:
+            icon: marketplace
+            text: Marketplace
+      mountPoints:
+        - mountPoint: admin.page.plugins/cards
+          importName: MarketplaceCatalogContent

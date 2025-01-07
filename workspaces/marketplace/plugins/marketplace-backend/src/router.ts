@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { HttpAuthService } from '@backstage/backend-plugin-api';
 import express from 'express';
 import Router from 'express-promise-router';
 
 import { MarketplaceService } from './services/MarketplaceService';
 
-// TODO: remove this later
-const sleep = (ms: number) =>
-  new Promise(resolve => setTimeout(() => resolve(null), ms));
-
 export async function createRouter({
-  // httpAuth,
   marketplaceService,
 }: {
   httpAuth: HttpAuthService;
@@ -34,9 +30,13 @@ export async function createRouter({
   router.use(express.json());
 
   router.get('/plugins', async (_req, res) => {
-    await sleep(1000);
     const plugins = await marketplaceService.getPlugins();
     res.json(plugins);
+  });
+
+  router.get('/pluginlist', async (_req, res) => {
+    const pluginlist = await marketplaceService.getPluginList();
+    res.json(pluginlist);
   });
 
   return router;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import * as React from 'react';
 
 import {
@@ -63,7 +64,8 @@ export const PreviewFileSidebar = ({
   handleSave: (pullRequest: PullRequestPreviewData, _event: any) => void;
   isSubmitting?: boolean;
 }) => {
-  const { setStatus, status } = useFormikContext<AddRepositoriesFormValues>();
+  const { setStatus, status, setFieldValue, values } =
+    useFormikContext<AddRepositoriesFormValues>();
   const classes = useDrawerStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
   const identityApi = useApi(identityApiRef);
@@ -81,6 +83,10 @@ export const PreviewFileSidebar = ({
     branch: string,
     repoPrTemplate: PullRequestPreview,
   ) => {
+    if (values?.repositories?.[id]?.catalogInfoYaml?.isInitialized) {
+      return values.repositories[id].catalogInfoYaml
+        ?.prTemplate as PullRequestPreview;
+    }
     const result = await bulkImportApi.getImportAction(
       url || '',
       branch || 'main',
@@ -159,6 +165,10 @@ export const PreviewFileSidebar = ({
           repo.defaultBranch || 'main',
           repo.catalogInfoYaml?.prTemplate as PullRequestPreview,
         );
+        setFieldValue(
+          `repositories.${repo.id}.catalogInfoYaml.isInitialized`,
+          true,
+        );
       }
     } else {
       newPullRequestData[data.id] = await fetchPullRequestData(
@@ -168,6 +178,10 @@ export const PreviewFileSidebar = ({
         data.repoUrl || '',
         data.defaultBranch || 'main',
         data.catalogInfoYaml?.prTemplate as PullRequestPreview,
+      );
+      setFieldValue(
+        `repositories.${data.id}.catalogInfoYaml.isInitialized`,
+        true,
       );
     }
     setPullRequest(newPullRequestData);

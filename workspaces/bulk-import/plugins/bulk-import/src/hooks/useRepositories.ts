@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 import { useAsync } from 'react-use';
 
@@ -38,6 +39,7 @@ import {
 
 export const useRepositories = (
   options: DataFetcherQueryParams,
+  pollInterval?: number,
 ): {
   loading: boolean;
   data: {
@@ -97,6 +99,7 @@ export const useRepositories = (
   } = useQuery(
     [options?.showOrganizations ? 'organizations' : 'repositories', options],
     () => fetchRepositories(options),
+    { refetchInterval: pollInterval || 60000 },
   );
 
   const prepareData = React.useMemo(() => {

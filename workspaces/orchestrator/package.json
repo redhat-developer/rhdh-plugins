@@ -8,6 +8,7 @@
   "scripts": {
     "tsc": "tsc",
     "dev": "yarn workspaces foreach -A --include backend --include app --parallel -v -i run start",
+    "dev:debug": "LOG_LEVEL=debug yarn dev",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
     "build:api-reports": "yarn build:api-reports:only",
@@ -41,9 +42,9 @@
     "@changesets/cli": "^2.27.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@spotify/prettier-config": "^12.0.0",
-    "knip": "^5.27.4",
+    "knip": "^5.40.0",
     "node-gyp": "^9.0.0",
-    "prettier": "3.3.3",
+    "prettier": "3.4.2",
     "typescript": "~5.3.0"
   },
   "resolutions": {

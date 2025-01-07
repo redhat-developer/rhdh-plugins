@@ -19,11 +19,8 @@ import {
   Filter,
   IntrospectionField,
   LogicalFilter,
-  ProcessInstanceStatusDTO,
   TypeName,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
-
-import { getProcessInstanceStateFromStatusDTOString } from '../service/api/mapping/V2Mappings';
 
 type ProcessType = 'ProcessDefinition' | 'ProcessInstance';
 
@@ -72,30 +69,6 @@ function isEnumFilter(
   return false;
 }
 
-function convertEnumValue(
-  fieldName: string,
-  fieldValue: string,
-  type: 'ProcessDefinition' | 'ProcessInstance',
-): string {
-  if (type === 'ProcessInstance') {
-    if (fieldName === 'state') {
-      const state = (ProcessInstanceStatusDTO as any)[
-        fieldValue as keyof typeof ProcessInstanceStatusDTO
-      ];
-
-      if (!state) {
-        throw new Error(
-          `status ${fieldValue} is not a valid value of ProcessInstanceStatusDTO`,
-        );
-      }
-      return getProcessInstanceStateFromStatusDTOString(state).valueOf();
-    }
-  }
-  throw new Error(
-    `Unsupported enum ${fieldName}: can't convert value ${fieldValue}`,
-  );
-}
-
 function isValidEnumOperator(operator: FieldFilterOperatorEnum): boolean {
   return (
     operator === FieldFilterOperatorEnum.In ||
@@ -114,11 +87,6 @@ function handleBinaryOperator(
         `Invalid operator ${binaryFilter.operator} for enum field ${binaryFilter.field} filter`,
       );
     }
-    binaryFilter.value = convertEnumValue(
-      binaryFilter.field,
-      binaryFilter.value,
-      type,
-    );
   }
   const formattedValue = Array.isArray(binaryFilter.value)
     ? `[${binaryFilter.value
@@ -152,8 +120,10 @@ export function buildFilterCondition(
     throw new Error(`Can't find field "${filters.field}" definition`);
   }
 
-  if (!isOperatorAllowedForField(filters.operator, fieldDef)) {
-    throw new Error(`Unsupported field type ${fieldDef.type.name}`);
+  if (!isOperatorAllowedForField(filters.operator, fieldDef, type)) {
+    throw new Error(
+      `Unsupported operator ${filters.operator} for field "${fieldDef.name}" of type "${fieldDef.type.name}"`,
+    );
   }
 
   switch (filters.operator) {
@@ -196,7 +166,11 @@ function isFieldFilterSupported(fieldDef: IntrospectionField): boolean {
 function isOperatorAllowedForField(
   operator: FieldFilterOperatorEnum,
   fieldDef: IntrospectionField,
+  type: ProcessType,
 ): boolean {
+  if (isEnumFilter(fieldDef.name, type) && isValidEnumOperator(operator)) {
+    return true;
+  }
   const allowedOperators: Record<TypeName, FieldFilterOperatorEnum[]> = {
     [TypeName.String]: [
       FieldFilterOperatorEnum.In,

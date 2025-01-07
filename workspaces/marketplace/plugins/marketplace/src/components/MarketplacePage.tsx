@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 import { Page, Header, TabbedLayout } from '@backstage/core-components';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { MarketplaceCatalogTab } from './MarketplaceCatalogTab';
+import { MarketplaceCatalogContent } from './MarketplaceCatalogContent';
 import { MarketplaceEntryAboutDrawer } from './MarketplaceEntryAboutDrawer';
 import { MarketplaceEntryInstallDrawer } from './MarketplaceEntryInstallDrawer';
 
@@ -29,7 +30,7 @@ export const MarketplacePage = () => (
       <Header title="Plugins" />
       <TabbedLayout>
         <TabbedLayout.Route path="/" title="Catalog">
-          <MarketplaceCatalogTab />
+          <MarketplaceCatalogContent />
         </TabbedLayout.Route>
       </TabbedLayout>
     </Page>

@@ -26,6 +26,9 @@ import { useStepperContext } from '../utils/StepperContext';
 import SubmitButton from './SubmitButton';
 
 const useStyles = makeStyles(theme => ({
+  backButton: {
+    marginRight: theme.spacing(1),
+  },
   footer: {
     display: 'flex',
     flexDirection: 'row',
@@ -70,7 +73,11 @@ const ReviewStep = ({
         <StructuredMetadataTable dense metadata={displayData} />
         <Box mb={4} />
         <div className={styles.footer}>
-          <Button onClick={handleBack} disabled={busy}>
+          <Button
+            onClick={handleBack}
+            className={styles.backButton}
+            disabled={busy}
+          >
             Back
           </Button>
           <SubmitButton

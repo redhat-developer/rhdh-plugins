@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import * as React from 'react';
 import { useAsync } from 'react-use';
 
@@ -104,7 +105,7 @@ export const RepositoryTableRow = ({
         <TableCell align="left" className={classes.tableCellStyle}>
           {data?.organizationUrl ? (
             <Link to={data.organizationUrl}>
-              {urlHelper(data.organizationUrl)}
+              {data.orgName}
               <OpenInNewIcon
                 style={{ verticalAlign: 'sub', paddingTop: '7px' }}
               />

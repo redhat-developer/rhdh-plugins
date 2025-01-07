@@ -14,63 +14,59 @@
  * limitations under the License.
  */
 import React from 'react';
+import { useAsync } from 'react-use';
 
 import { Content, InfoCard } from '@backstage/core-components';
+import { useApi } from '@backstage/core-plugin-api';
 
 import { Grid, makeStyles } from '@material-ui/core';
 import moment from 'moment';
 
 import {
   AssessedProcessInstanceDTO,
+  InputSchemaResponseDTO,
   ProcessInstanceDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { orchestratorApiRef } from '../../src/api/api';
 import { VALUE_UNAVAILABLE } from '../constants';
-import { EditorViewKind, WorkflowEditor } from './WorkflowEditor';
+import { WorkflowInputs } from './WorkflowInputs';
 import { WorkflowProgress } from './WorkflowProgress';
 import { WorkflowResult } from './WorkflowResult';
 import { WorkflowRunDetail } from './WorkflowRunDetail';
 import { WorkflowRunDetails } from './WorkflowRunDetails';
-import { WorkflowVariablesViewer } from './WorkflowVariablesViewer';
 
 export const mapProcessInstanceToDetails = (
   instance: ProcessInstanceDTO,
 ): WorkflowRunDetail => {
-  const name = instance.processName || instance.processId;
   const start = instance.start ? moment(instance.start) : undefined;
   let duration: string = VALUE_UNAVAILABLE;
   if (start && instance.end) {
     const end = moment(instance.end);
     duration = moment.duration(start.diff(end)).humanize();
   }
-
   const started = start?.toDate().toLocaleString() ?? VALUE_UNAVAILABLE;
 
   return {
     id: instance.id,
-    name,
+    processName: instance.processName || VALUE_UNAVAILABLE,
     workflowId: instance.processId,
-    started,
+    start: started,
     duration,
     category: instance.category,
-    status: instance.status,
+    state: instance.state,
     description: instance.description,
     businessKey: instance.businessKey,
   };
 };
 
-const useStyles = makeStyles(_ => ({
-  topRowCard: {
-    height: '20rem',
-  },
-  middleRowCard: {
-    height: '20rem',
+const useStyles = makeStyles(() => ({
+  topRowCard: () => ({
+    height: '21rem',
     overflow: 'auto',
-    wordBreak: 'break-word',
-  },
+  }),
   bottomRowCard: {
-    minHeight: '40rem',
-    height: '100%',
+    height: '42rem',
   },
   autoOverflow: { overflow: 'auto' },
   recommendedLabelContainer: {
@@ -85,6 +81,7 @@ export const WorkflowInstancePageContent: React.FC<{
   assessedInstance: AssessedProcessInstanceDTO;
 }> = ({ assessedInstance }) => {
   const styles = useStyles();
+  const orchestratorApi = useApi(orchestratorApiRef);
 
   const details = React.useMemo(
     () => mapProcessInstanceToDetails(assessedInstance.instance),
@@ -102,11 +99,24 @@ export const WorkflowInstancePageContent: React.FC<{
       delete instanceVariables.result;
     }
   }
+  const workflowId = assessedInstance.instance.processId;
+  const instanceId = assessedInstance.instance.id;
+  const {
+    value,
+    loading,
+    error: responseError,
+  } = useAsync(async (): Promise<InputSchemaResponseDTO> => {
+    const res = await orchestratorApi.getWorkflowDataInputSchema(
+      workflowId,
+      instanceId,
+    );
+    return res.data;
+  }, [orchestratorApi, workflowId]);
 
   return (
     <Content noPadding>
       <Grid container spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
           <InfoCard
             title="Details"
             divider={false}
@@ -120,39 +130,20 @@ export const WorkflowInstancePageContent: React.FC<{
         </Grid>
 
         <Grid item xs={6}>
-          <InfoCard
-            title="Variables"
-            divider={false}
-            className={styles.middleRowCard}
-            cardClassName={styles.autoOverflow}
-          >
-            {instanceVariables && (
-              <WorkflowVariablesViewer variables={instanceVariables} />
-            )}
-            {!instanceVariables && (
-              <div>The workflow instance has no variables</div>
-            )}
-          </InfoCard>
-        </Grid>
-        <Grid item xs={6}>
           <WorkflowResult
             assessedInstance={assessedInstance}
-            className={styles.middleRowCard}
+            className={styles.topRowCard}
           />
         </Grid>
 
         <Grid item xs={6}>
-          <InfoCard
-            title="Workflow definition"
-            divider={false}
+          <WorkflowInputs
             className={styles.bottomRowCard}
-          >
-            <WorkflowEditor
-              workflowId={assessedInstance.instance.processId}
-              kind={EditorViewKind.DIAGRAM_VIEWER}
-              editorMode="text"
-            />
-          </InfoCard>
+            cardClassName={styles.autoOverflow}
+            value={value}
+            loading={loading}
+            responseError={responseError}
+          />
         </Grid>
 
         <Grid item xs={6}>
@@ -165,7 +156,7 @@ export const WorkflowInstancePageContent: React.FC<{
             <WorkflowProgress
               workflowError={assessedInstance.instance.error}
               workflowNodes={assessedInstance.instance.nodes}
-              workflowStatus={assessedInstance.instance.status}
+              workflowStatus={assessedInstance.instance.state}
             />
           </InfoCard>
         </Grid>

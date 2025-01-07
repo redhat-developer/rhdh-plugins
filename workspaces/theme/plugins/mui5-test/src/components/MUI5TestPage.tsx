@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 import { Page, Header, TabbedLayout } from '@backstage/core-components';
 import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
 
 import { FormComponents } from './FormComponents';
 import { PaperExamples } from './PaperExamples';
-import { InlineStyles } from './InlineStyles';
 import { TabExamples } from './TabExamples';
+import { GridExamples } from './GridExamples';
+import { InlineStyles } from './InlineStyles';
 
 export const MUI5TestPage = () => {
   return (
@@ -29,26 +31,21 @@ export const MUI5TestPage = () => {
         <UserSettingsThemeToggle />
       </Header>
       <TabbedLayout>
-        <TabbedLayout.Route
-          path="/form-components"
-          title="Form components"
-          children={<FormComponents />}
-        />
-        <TabbedLayout.Route
-          path="/paper-examples"
-          title="Paper examples"
-          children={<PaperExamples />}
-        />
-        <TabbedLayout.Route
-          path="/inline-styles"
-          title="Inline styles"
-          children={<InlineStyles />}
-        />
-        <TabbedLayout.Route
-          path="/tabs"
-          title="Tabs"
-          children={<TabExamples />}
-        />
+        <TabbedLayout.Route path="/form-components" title="Form components">
+          <FormComponents />
+        </TabbedLayout.Route>
+        <TabbedLayout.Route path="/papers" title="Papers">
+          <PaperExamples />
+        </TabbedLayout.Route>
+        <TabbedLayout.Route path="/tabs" title="Tabs">
+          <TabExamples />
+        </TabbedLayout.Route>
+        <TabbedLayout.Route path="/grids" title="Grids">
+          <GridExamples />
+        </TabbedLayout.Route>
+        <TabbedLayout.Route path="/inline-styles" title="Inline styles">
+          <InlineStyles />
+        </TabbedLayout.Route>
       </TabbedLayout>
     </Page>
   );
