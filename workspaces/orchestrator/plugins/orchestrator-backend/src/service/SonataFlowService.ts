@@ -240,7 +240,7 @@ export class SonataFlowService {
       errorInfo.push(`Stack: ${jsonResponse?.stack}`);
     }
     if (jsonResponse?.message) {
-      errorInfo.push(`Message: ${jsonResponse?.message0}`);
+      errorInfo.push(`Message: ${jsonResponse?.message}`);
     }
     if (errorInfo.length > 0) {
       errorMsg += ` ${errorInfo.join(', ')}`;
