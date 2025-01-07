@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright 2025 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * The marketplace backend module for the catalog plugin.
- *
- * @packageDocumentation
- */
-
-export { catalogModuleMarketplace as default } from './module';
-
-/**
- * The marketplace processors for ingesting data into the catalog.
- * @public
- */
-export {
-  MarketplacePluginProcessor,
-  MarketplacePluginListProcessor,
-  StaticPluginInstallStatusProcessor,
-  DynamicPluginInstallStatusProcessor,
-} from './processors';
+export { MarketplacePluginProcessor } from './MarketplacePluginProcessor';
+export { MarketplacePluginListProcessor } from './MarketplacePluginListProcessor';
+export { DynamicPluginInstallStatusProcessor } from './DynamicPluginInstallStatusProcessor';
+export { StaticPluginInstallStatusProcessor } from './StaticPluginInstallStatusProcessor';

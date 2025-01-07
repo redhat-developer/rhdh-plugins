@@ -19,8 +19,10 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
-import { MarketplacePluginProcessor } from './MarketplacePluginProcessor';
-import { MarketplacePluginListProcessor } from './MarketplacePluginListProcessor';
+import { MarketplacePluginProcessor } from './processors/MarketplacePluginProcessor';
+import { MarketplacePluginListProcessor } from './processors/MarketplacePluginListProcessor';
+import { DynamicPluginInstallStatusProcessor } from './processors/DynamicPluginInstallStatusProcessor';
+import { StaticPluginInstallStatusProcessor } from './processors/StaticPluginInstallStatusProcessor';
 
 /**
  * @public
@@ -33,11 +35,16 @@ export const catalogModuleMarketplace = createBackendModule({
       deps: {
         logger: coreServices.logger,
         catalog: catalogProcessingExtensionPoint,
+        discovery: coreServices.discovery,
       },
-      async init({ logger, catalog }) {
-        logger.info('Marketplace provider initialized!');
+      async init({ logger, catalog, discovery }) {
+        logger.info('Marketplace module initialized!');
         catalog.addProcessor(new MarketplacePluginProcessor());
         catalog.addProcessor(new MarketplacePluginListProcessor());
+        catalog.addProcessor(
+          new DynamicPluginInstallStatusProcessor(discovery),
+        );
+        catalog.addProcessor(new StaticPluginInstallStatusProcessor());
       },
     });
   },
