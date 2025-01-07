@@ -36,13 +36,14 @@ export const catalogModuleMarketplace = createBackendModule({
         logger: coreServices.logger,
         catalog: catalogProcessingExtensionPoint,
         discovery: coreServices.discovery,
+        auth: coreServices.auth,
       },
-      async init({ logger, catalog, discovery }) {
+      async init({ logger, catalog, discovery, auth }) {
         logger.info('Marketplace module initialized!');
         catalog.addProcessor(new MarketplacePluginProcessor());
         catalog.addProcessor(new MarketplacePluginListProcessor());
         catalog.addProcessor(
-          new DynamicPluginInstallStatusProcessor(discovery),
+          new DynamicPluginInstallStatusProcessor(discovery, auth),
         );
         catalog.addProcessor(new StaticPluginInstallStatusProcessor());
       },

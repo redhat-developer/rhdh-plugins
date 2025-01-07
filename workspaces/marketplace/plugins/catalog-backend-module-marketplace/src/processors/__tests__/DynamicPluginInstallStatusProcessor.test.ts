@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { mockServices } from '@backstage/backend-test-utils';
 import { DynamicPluginInstallStatusProcessor } from '../DynamicPluginInstallStatusProcessor';
 import {
@@ -62,6 +63,7 @@ const discoveryService = mockServices.discovery.mock({
     return `http://localhost:7007/api/${pluginId}`;
   },
 });
+const authService = mockServices.auth.mock();
 
 describe('DynamicPluginInstallStatusProcessor', () => {
   beforeEach(() => {
@@ -71,6 +73,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
   it('should return processor name', () => {
     const processor = new DynamicPluginInstallStatusProcessor(
       mockServices.discovery.mock(),
+      authService,
     );
 
     expect(processor.getProcessorName()).toBe(
@@ -88,6 +91,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
 
       const processor = new DynamicPluginInstallStatusProcessor(
         discoveryService,
+        authService,
       );
 
       const result = await processor.getInstalledPlugins();
@@ -102,6 +106,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
     it('should handle non-200 responses gracefully', async () => {
       const processor = new DynamicPluginInstallStatusProcessor(
         discoveryService,
+        authService,
       );
 
       (fetch as jest.Mock).mockResolvedValue(new Response('', { status: 500 }));
@@ -121,6 +126,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
 
       const processor = new DynamicPluginInstallStatusProcessor(
         discoveryService,
+        authService,
       );
 
       const result = await processor.getCachedPlugins(cache, 'some-entity-ref');
@@ -142,6 +148,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
 
       const processor = new DynamicPluginInstallStatusProcessor(
         discoveryService,
+        authService,
       );
 
       const result = await processor.getCachedPlugins(cache, 'some-entity-ref');
@@ -168,6 +175,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
 
       const processor = new DynamicPluginInstallStatusProcessor(
         discoveryService,
+        authService,
       );
 
       const entity = await processor.preProcessEntity(
@@ -195,6 +203,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
 
       const processor = new DynamicPluginInstallStatusProcessor(
         discoveryService,
+        authService,
       );
 
       const result = await processor.preProcessEntity(
@@ -217,6 +226,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
 
       const processor = new DynamicPluginInstallStatusProcessor(
         discoveryService,
+        authService,
       );
 
       const result = await processor.preProcessEntity(
