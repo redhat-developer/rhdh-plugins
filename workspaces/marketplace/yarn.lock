@@ -10035,6 +10035,7 @@ __metadata:
     "@backstage/plugin-catalog-common": ^1.1.0
     "@backstage/plugin-catalog-node": ^1.13.1
     "@backstage/types": ^1.2.0
+    "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
     semver: ^7.6.3
   languageName: unknown
   linkType: soft
