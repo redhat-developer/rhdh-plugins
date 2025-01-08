@@ -664,7 +664,7 @@ describe('bulkimports.ts unit tests', () => {
         }
         expect(resp.responseBody).toEqual(expectedResponse);
 
-        // Unit test for sort if empty string is provided sorting should be based on name in asc order
+        // Unit test for sort if nothing is provided sorting should be based on name in asc order
         resp = await findAllImports(
           {
             logger,
@@ -678,8 +678,6 @@ describe('bulkimports.ts unit tests', () => {
           {
             pageNumber: 1,
             pageSize: 6,
-            sortColumn: '',
-            sortOrder: '',
           },
         );
         const sortedNames =
