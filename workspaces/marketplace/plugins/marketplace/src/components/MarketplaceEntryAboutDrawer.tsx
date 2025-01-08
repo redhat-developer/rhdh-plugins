@@ -35,7 +35,10 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 
-import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  InstallStatus,
+  MarketplacePluginEntry,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { usePlugins } from '../hooks/usePlugins';
 import { installRouteRef, rootRouteRef } from '../routes';
 
@@ -160,11 +163,14 @@ const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
           ) : null}
 
           <LinkButton
+            disabled={entry.spec?.installStatus === InstallStatus.Installed}
             to={getInstallPath({ name: entry.metadata.name })}
             color="primary"
             variant="contained"
           >
-            Install
+            {entry.spec?.installStatus !== InstallStatus.Installed
+              ? 'Install'
+              : InstallStatus.Installed}
           </LinkButton>
         </Grid>
         <Grid item md={10}>

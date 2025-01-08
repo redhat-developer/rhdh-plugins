@@ -35,6 +35,12 @@
   "dependencies": {
     "@backstage/core-components": "^0.16.1",
     "@backstage/core-plugin-api": "^1.10.1",
+    "@backstage/plugin-search": "1.4.21",
+    "@backstage/plugin-search-backend": "^1.8.0",
+    "@backstage/plugin-search-backend-module-catalog": "^0.2.6",
+    "@backstage/plugin-search-backend-module-pg": "^0.5.39",
+    "@backstage/plugin-search-backend-module-techdocs": "^0.3.4",
+    "@backstage/plugin-search-react": "1.8.4",
     "@backstage/theme": "^0.6.2",
     "@mui/icons-material": "5.16.13",
     "@mui/material": "5.16.13",

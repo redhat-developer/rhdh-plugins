@@ -27,7 +27,7 @@ export interface MarketplacePluginEntry extends Entity {
 /**
  * @public
  */
-export interface MarketplacePluginList {
+export interface MarketplacePluginList extends Entity {
   spec?: {
     plugins: string[];
   } & MarketplacePluginSpec;
@@ -49,7 +49,30 @@ export enum MarketplaceKinds {
 /**
  * @public
  */
+export enum InstallStatus {
+  NotInstalled = 'NotInstalled',
+  Installed = 'Installed',
+}
+
+/**
+ * @public
+ */
+export type MarketplacePackage = {
+  name: string;
+  version?: string; // from package.json
+  backstage?: {
+    role?: string; // from package.json backstage role
+    'supported-versions'?: string;
+  };
+  distribution?: string;
+};
+
+/**
+ * @public
+ */
 export interface MarketplacePluginSpec extends JsonObject {
+  packages?: (string | MarketplacePackage)[];
+  installStatus?: keyof typeof InstallStatus;
   icon?: string;
   categories?: string[];
   developer?: string;

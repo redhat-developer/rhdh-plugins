@@ -27,8 +27,19 @@ import {
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
 
-import { Button, Grid, Tooltip } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  IconButton,
+  Tooltip,
+} from '@material-ui/core';
+import Snackbar from '@material-ui/core/Snackbar';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import CloseIcon from '@material-ui/icons/Close';
+import ErrorIcon from '@material-ui/icons/Error';
+import Alert from '@material-ui/lab/Alert';
 
 import {
   AssessedProcessInstanceDTO,
@@ -76,30 +87,13 @@ export type AbortAlertDialogContentProps = {
 };
 
 const AbortConfirmationDialogContent = () => (
-  <div>Are you sure you want to abort this workflow instance?</div>
-);
-
-const AbortAlertDialogContent = (props: AbortAlertDialogContentProps) => (
   <div>
-    The abort operation failed with the following error: {props.message}
+    <b>
+      Are you sure you want to abort this workflow run? <br /> <br />
+      Aborting will stop all in-progress and pending steps immediately. Any
+      incomplete tasks will not be saved.
+    </b>
   </div>
-);
-
-const AbortConfirmationDialogActions = (
-  props: AbortConfirmationDialogActionsProps,
-) => (
-  <>
-    <Button onClick={props.handleCancel}>Cancel</Button>
-    <Button onClick={props.handleSubmit} color="primary">
-      Ok
-    </Button>
-  </>
-);
-
-const AbortAlertDialogActions = (props: AbortAlertDialogActionsProps) => (
-  <Button onClick={props.handleClose} color="primary">
-    OK
-  </Button>
 );
 
 export const WorkflowInstancePage = ({
@@ -116,9 +110,40 @@ export const WorkflowInstancePage = ({
   );
   const [isAbortConfirmationDialogOpen, setIsAbortConfirmationDialogOpen] =
     useState(false);
-  const [isAbortAlertDialogOpen, setIsAbortAlertDialogOpen] = useState(false);
-  const [abortWorkflowInstanceErrorMsg, setAbortWorkflowInstanceErrorMsg] =
-    useState('');
+
+  const [isAborting, setIsAborting] = React.useState(false);
+  const [isAbortSnackbarOpen, setIsAbortSnackbarOpen] = React.useState(false);
+  const [abortError, setAbortError] = React.useState('');
+
+  const handleClose = () => {
+    setIsAbortSnackbarOpen(false);
+  };
+
+  const AbortConfirmationDialogActions = (
+    props: AbortConfirmationDialogActionsProps,
+  ) => (
+    <>
+      <Button
+        onClick={props.handleSubmit}
+        variant="contained"
+        className={classes.abortButton}
+        startIcon={isAborting ? <CircularProgress size="1rem" /> : null}
+        disabled={isAborting}
+      >
+        {' '}
+        Abort
+      </Button>
+      <Button
+        onClick={props.handleCancel}
+        variant="outlined"
+        color="primary"
+        disabled={isAborting}
+      >
+        {' '}
+        Cancel
+      </Button>
+    </>
+  );
 
   const fetchInstance = React.useCallback(async () => {
     if (!instanceId && !queryInstanceId) {
@@ -162,26 +187,25 @@ export const WorkflowInstancePage = ({
     value?.instance.state === ProcessInstanceStatusDTO.Aborted ||
     value?.instance.state === ProcessInstanceStatusDTO.Error;
 
-  const toggleAbortConfirmationDialog = () => {
-    setIsAbortConfirmationDialogOpen(!isAbortConfirmationDialogOpen);
-  };
-
-  const toggleAbortAlertDialog = () => {
-    setIsAbortAlertDialogOpen(!isAbortAlertDialogOpen);
-  };
+  const toggleAbortConfirmationDialog = React.useCallback(() => {
+    setIsAbortConfirmationDialogOpen(prev => !prev);
+  }, []);
 
   const handleAbort = React.useCallback(async () => {
     if (value) {
+      setIsAborting(true);
       try {
         await orchestratorApi.abortWorkflowInstance(value.instance.id);
         restart();
       } catch (e) {
-        setAbortWorkflowInstanceErrorMsg(`${(e as Error).message}`);
-        setIsAbortAlertDialogOpen(true);
+        setAbortError(`Abort failed: ${(e as Error).message}`);
+        setIsAbortSnackbarOpen(true);
+      } finally {
+        setIsAborting(false);
+        toggleAbortConfirmationDialog();
       }
-      setIsAbortConfirmationDialogOpen(false);
     }
-  }, [orchestratorApi, restart, value]);
+  }, [orchestratorApi, restart, value, toggleAbortConfirmationDialog]);
 
   const handleRerun = React.useCallback(() => {
     if (!value) {
@@ -210,7 +234,12 @@ export const WorkflowInstancePage = ({
         <>
           <ContentHeader title="">
             <InfoDialog
-              title="Abort workflow"
+              title={
+                <Box display="flex" alignItems="center">
+                  <ErrorIcon color="error" style={{ marginRight: 8 }} />
+                  <b>Abort workflow</b>
+                </Box>
+              }
               onClose={toggleAbortConfirmationDialog}
               open={isAbortConfirmationDialogOpen}
               dialogActions={
@@ -221,19 +250,6 @@ export const WorkflowInstancePage = ({
               }
               children={<AbortConfirmationDialogContent />}
             />
-            <InfoDialog
-              title="Abort workflow failed"
-              onClose={toggleAbortAlertDialog}
-              open={isAbortAlertDialogOpen}
-              dialogActions={
-                <AbortAlertDialogActions handleClose={toggleAbortAlertDialog} />
-              }
-              children={
-                <AbortAlertDialogContent
-                  message={abortWorkflowInstanceErrorMsg}
-                />
-              }
-            />
             <Grid container item justifyContent="flex-end" spacing={1}>
               <Grid item>
                 {canAbort && (
@@ -242,10 +258,10 @@ export const WorkflowInstancePage = ({
                     disableHoverListener={permittedToUse.allowed}
                   >
                     <Button
-                      variant="contained"
+                      variant="outlined"
+                      color="primary"
                       disabled={!permittedToUse.allowed}
                       onClick={toggleAbortConfirmationDialog}
-                      className={classes.abortButton}
                     >
                       Abort
                     </Button>
@@ -269,6 +285,27 @@ export const WorkflowInstancePage = ({
               </Grid>
             </Grid>
           </ContentHeader>
+          <Snackbar
+            open={isAbortSnackbarOpen}
+            onClose={handleClose}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          >
+            <Alert
+              severity="error"
+              action={
+                <IconButton
+                  size="small"
+                  aria-label="close"
+                  color="inherit"
+                  onClick={handleClose}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              }
+            >
+              {abortError}
+            </Alert>
+          </Snackbar>
           <WorkflowInstancePageContent assessedInstance={value} />
         </>
       ) : null}

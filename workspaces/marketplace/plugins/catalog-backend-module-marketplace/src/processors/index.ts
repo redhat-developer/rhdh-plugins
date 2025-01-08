@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-/**
- * The marketplace backend module for the catalog plugin.
- *
- * @packageDocumentation
- */
-
-export { catalogModuleMarketplace as default } from './module';
-
-export * from './processors';
+export { MarketplacePluginProcessor } from './MarketplacePluginProcessor';
+export { MarketplacePluginListProcessor } from './MarketplacePluginListProcessor';
+export * from './DynamicPluginInstallStatusProcessor';
+export { LocalPluginInstallStatusProcessor as LocalPluginInstallStatusProcessor } from './LocalPluginInstallStatusProcessor';

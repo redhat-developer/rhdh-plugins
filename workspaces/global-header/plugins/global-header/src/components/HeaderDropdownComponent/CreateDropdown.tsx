@@ -54,21 +54,6 @@ const models = [
   },
 ];
 
-const menuSections = [
-  {
-    sectionKey: 'templates',
-    sectionLabel: 'Use a template',
-    optionalLinkLabel: 'All templates',
-    optionalLink: '/create',
-    items: models.map(m => ({
-      itemKey: m.key,
-      label: m.label,
-      link: `/create/templates/default/${m.value}`,
-    })),
-    handleClose: () => {},
-  },
-];
-
 const menuBottomItems: MenuItemConfig[] = [
   {
     itemKey: 'custom',
@@ -83,11 +68,25 @@ const CreateDropdown: React.FC<CreateButtonProps> = ({
   anchorEl,
   setAnchorEl,
 }) => {
+  const menuSections = [
+    {
+      sectionKey: 'templates',
+      sectionLabel: 'Use a template',
+      optionalLinkLabel: 'All templates',
+      optionalLink: '/create',
+      items: models.map(m => ({
+        itemKey: m.key,
+        label: m.label,
+        link: `/create/templates/default/${m.value}`,
+      })),
+      handleClose: () => setAnchorEl(null),
+    },
+  ];
   return (
     <HeaderDropdownComponent
       buttonContent={
         <>
-          Create <ArrowDropDownOutlinedIcon style={{ marginLeft: '0.5rem' }} />
+          Create <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
         </>
       }
       menuSections={menuSections}
@@ -95,7 +94,7 @@ const CreateDropdown: React.FC<CreateButtonProps> = ({
       buttonProps={{
         color: 'primary',
         variant: 'contained',
-        sx: { marginRight: '1rem' },
+        sx: { mr: 2 },
       }}
       buttonClick={handleMenu}
       anchorEl={anchorEl}
