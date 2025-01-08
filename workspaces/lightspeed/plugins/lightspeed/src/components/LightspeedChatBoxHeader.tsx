@@ -16,6 +16,7 @@
 
 import React from 'react';
 
+import { ChatbotHeaderActions } from '@patternfly/chatbot';
 import {
   Dropdown,
   DropdownItem,
@@ -23,7 +24,6 @@ import {
   MenuToggle,
   MenuToggleElement,
 } from '@patternfly/react-core';
-import { ChatbotHeaderActions } from '@patternfly/virtual-assistant';
 
 type LightspeedChatBoxHeaderProps = {
   selectedModel: string;
