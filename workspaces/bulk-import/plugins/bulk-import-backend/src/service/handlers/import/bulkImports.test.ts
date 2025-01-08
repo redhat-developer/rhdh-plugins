@@ -684,13 +684,13 @@ describe('bulkimports.ts unit tests', () => {
         );
         const sortedNames =
           apiVersion === 'v2'
-            ? resp?.responseBody?.imports?.map(
-                (importObj: { repository: { name: any } }) =>
-                  importObj.repository.name,
-              )
-            : resp?.responseBody?.map(
-                (importObj: { repository: { name: any } }) =>
-                  importObj.repository.name,
+            ? (
+                resp?.responseBody as {
+                  imports: { repository: { name: any } }[];
+                }
+              )?.imports?.map(importObj => importObj.repository.name)
+            : (resp?.responseBody as { repository: { name: any } }[])?.map(
+                importObj => importObj.repository.name,
               );
         let expectedSortedArray = [
           'my-repo-11',
@@ -723,14 +723,14 @@ describe('bulkimports.ts unit tests', () => {
 
         let sortedOrganization =
           apiVersion === 'v2'
-            ? resp?.responseBody?.imports?.map(
-                (importObj: { repository: { organization: any } }) =>
-                  importObj.repository.organization,
-              )
-            : resp?.responseBody?.map(
-                (importObj: { repository: { organization: any } }) =>
-                  importObj.repository.organization,
-              );
+            ? (
+                resp?.responseBody as {
+                  imports: { repository: { organization: any } }[];
+                }
+              )?.imports?.map(importObj => importObj.repository.organization)
+            : (
+                resp?.responseBody as { repository: { organization: any } }[]
+              )?.map(importObj => importObj.repository.organization);
         expectedSortedArray = [
           'my-org-1',
           'my-org-2',
@@ -761,14 +761,14 @@ describe('bulkimports.ts unit tests', () => {
 
         sortedOrganization =
           apiVersion === 'v2'
-            ? resp?.responseBody?.imports?.map(
-                (importObj: { repository: { organization: any } }) =>
-                  importObj.repository.organization,
-              )
-            : resp?.responseBody?.map(
-                (importObj: { repository: { organization: any } }) =>
-                  importObj.repository.organization,
-              );
+            ? (
+                resp?.responseBody as {
+                  imports: { repository: { organization: any } }[];
+                }
+              )?.imports?.map(importObj => importObj.repository.organization)
+            : (
+                resp?.responseBody as { repository: { organization: any } }[]
+              )?.map(importObj => importObj.repository.organization);
         expectedSortedArray = [
           'my-user',
           'my-org-3',
