@@ -36,9 +36,8 @@ declare namespace Components {
       | 'repository.organization'
       | 'repository.url'
       | 'lastUpdate'
-      | 'status'
-      | '';
-    export type SortOrderQueryParam = 'asc' | 'desc' | '';
+      | 'status';
+    export type SortOrderQueryParam = 'asc' | 'desc';
   }
   export interface QueryParameters {
     pagePerIntegrationQueryParam?: Parameters.PagePerIntegrationQueryParam;
@@ -343,9 +342,8 @@ declare namespace Paths {
         | 'repository.organization'
         | 'repository.url'
         | 'lastUpdate'
-        | 'status'
-        | '';
-      export type SortOrder = 'asc' | 'desc' | '';
+        | 'status';
+      export type SortOrder = 'asc' | 'desc';
     }
     export interface QueryParameters {
       pagePerIntegration?: Parameters.PagePerIntegration;
@@ -357,7 +355,8 @@ declare namespace Paths {
       search?: Parameters.Search;
     }
     namespace Responses {
-      export type $200 = /* Import Job with source it originates from */
+      export type $200 =
+        /* Import Job with source it originates from */
         | Components.Schemas.SourceImport[]
         | /* Import Job List */ Components.Schemas.ImportJobListV2;
       export type $500 =
