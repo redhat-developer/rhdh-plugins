@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 0.3.0
+
+### Minor Changes
+
+- e41a860: Backstage version bump to v1.34.2
+
+### Patch Changes
+
+- Updated dependencies [e41a860]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.2.0
+
 ## 0.2.2
 
 ### Patch Changes
