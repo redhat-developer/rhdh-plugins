@@ -41,6 +41,7 @@ import { useConversationMessages } from '../hooks/useConversationMessages';
 import { useConversations } from '../hooks/useConversations';
 import { useCreateConversation } from '../hooks/useCreateConversation';
 import { useDeleteConversation } from '../hooks/useDeleteConversation';
+import { useLastOpenedConversation } from '../hooks/useLastOpenedConversation';
 import { useLightspeedDeletePermission } from '../hooks/useLightspeedDeletePermission';
 import { ConversationSummary } from '../types';
 import {
@@ -89,7 +90,7 @@ export const LightspeedChat = ({
   const [announcement, setAnnouncement] = React.useState<string>('');
   const [conversationId, setConversationId] = React.useState<string>('');
   const [isDrawerOpen, setIsDrawerOpen] = React.useState<boolean>(true);
-  const [newChatCreated, setNewChatCreated] = React.useState<boolean>(true);
+  const [newChatCreated, setNewChatCreated] = React.useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     React.useState<boolean>(false);
   const [error, setError] = React.useState<Error | null>(null);
@@ -97,6 +98,15 @@ export const LightspeedChat = ({
     React.useState<string>('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] =
     React.useState<boolean>(false);
+  const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
+    useLastOpenedConversation(user);
+
+  // Sync conversationId with lastOpenedId whenever lastOpenedId changes
+  React.useEffect(() => {
+    if (isReady && lastOpenedId !== null) {
+      setConversationId(lastOpenedId);
+    }
+  }, [lastOpenedId, isReady]);
 
   const queryClient = useQueryClient();
 
@@ -106,10 +116,11 @@ export const LightspeedChat = ({
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
 
   React.useEffect(() => {
-    if (user) {
+    if (user && lastOpenedId === null && isReady) {
       createConversation()
         .then(({ conversation_id }) => {
           setConversationId(conversation_id);
+          setNewChatCreated(true);
         })
         .catch(e => {
           // eslint-disable-next-line
@@ -117,7 +128,14 @@ export const LightspeedChat = ({
           setError(e);
         });
     }
-  }, [user, setConversationId, createConversation]);
+  }, [user, isReady, lastOpenedId, setConversationId, createConversation]);
+
+  React.useEffect(() => {
+    // Update last opened conversation whenever `conversationId` changes
+    if (conversationId) {
+      setLastOpenedId(conversationId);
+    }
+  }, [conversationId, setLastOpenedId]);
 
   const onComplete = (message: string) => {
     setIsSendButtonDisabled(false);
@@ -177,14 +195,23 @@ export const LightspeedChat = ({
           conversation_id: targetConversationId,
           invalidateCache: false,
         });
-        onNewChat();
+        if (targetConversationId === lastOpenedId) {
+          onNewChat();
+          clearLastOpenedId();
+        }
         setIsDeleteModalOpen(false);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.warn(e);
       }
     })();
-  }, [deleteConversation, onNewChat, targetConversationId]);
+  }, [
+    deleteConversation,
+    clearLastOpenedId,
+    lastOpenedId,
+    onNewChat,
+    targetConversationId,
+  ]);
 
   const additionalMessageProps = React.useCallback(
     (conversationSummary: ConversationSummary) => ({
@@ -245,20 +272,25 @@ export const LightspeedChat = ({
     [setConversationId],
   );
 
-  const welcomePrompts = newChatCreated
-    ? [
-        {
-          title: 'Topic 1',
-          message: 'Helpful prompt for Topic 1',
-          onClick: () => sendMessage('Helpful prompt for Topic 1'),
-        },
-        {
-          title: 'Topic 2',
-          message: 'Helpful prompt for Topic 2',
-          onClick: () => sendMessage('Helpful prompt for Topic 2'),
-        },
-      ]
-    : [];
+  const conversationFound = !!conversations.find(
+    c => c.conversation_id === conversationId,
+  );
+
+  const welcomePrompts =
+    newChatCreated || (!conversationFound && conversationMessages.length === 0)
+      ? [
+          {
+            title: 'Topic 1',
+            message: 'Helpful prompt for Topic 1',
+            onClick: () => sendMessage('Helpful prompt for Topic 1'),
+          },
+          {
+            title: 'Topic 2',
+            message: 'Helpful prompt for Topic 2',
+            onClick: () => sendMessage('Helpful prompt for Topic 2'),
+          },
+        ]
+      : [];
 
   const handleFilter = React.useCallback((value: string) => {
     setFilterValue(value);
