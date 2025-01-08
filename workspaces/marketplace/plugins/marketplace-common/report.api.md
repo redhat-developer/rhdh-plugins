@@ -7,6 +7,14 @@ import { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
 // @public (undocumented)
+export enum InstallStatus {
+  // (undocumented)
+  Installed = 'Installed',
+  // (undocumented)
+  NotInstalled = 'NotInstalled',
+}
+
+// @public (undocumented)
 export const MARKETPLACE_API_VERSION = 'marketplace.backstage.io/v1alpha1';
 
 // @public (undocumented)
@@ -18,13 +26,24 @@ export enum MarketplaceKinds {
 }
 
 // @public (undocumented)
+export type MarketplacePackage = {
+  name: string;
+  version?: string;
+  backstage?: {
+    role?: string;
+    'supported-versions'?: string;
+  };
+  distribution?: string;
+};
+
+// @public (undocumented)
 export interface MarketplacePluginEntry extends Entity {
   // (undocumented)
   spec?: MarketplacePluginSpec;
 }
 
 // @public (undocumented)
-export interface MarketplacePluginList {
+export interface MarketplacePluginList extends Entity {
   // (undocumented)
   spec?: {
     plugins: string[];
@@ -48,5 +67,9 @@ export interface MarketplacePluginSpec extends JsonObject {
     markdown?: string;
     appconfig?: string;
   };
+  // (undocumented)
+  installStatus?: keyof typeof InstallStatus;
+  // (undocumented)
+  packages?: (string | MarketplacePackage)[];
 }
 ```

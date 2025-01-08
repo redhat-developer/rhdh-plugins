@@ -26,17 +26,17 @@ import {
   getCompoundEntityRef,
   parseEntityRef,
   RELATION_OWNED_BY,
-  RELATION_PART_OF,
 } from '@backstage/catalog-model';
 import {
   MARKETPLACE_API_VERSION,
   MarketplaceKinds,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-const pluginListJsonSchema = {
+const pluginJsonSchema = {
   $schema: 'http://json-schema.org/draft-07/schema',
-  $id: 'PluginListV1alpha1',
-  description: 'A PluginList contains a curated list of plugins.',
+  $id: 'PluginV1alpha1',
+  description:
+    'A Plugin describes a software component. It is typically intimately linked to the source code that constitutes the component, and should be what a developer may regard a "unit of software", usually with a distinct deployable or linkable artifact.',
   allOf: [
     {
       type: 'object',
@@ -47,7 +47,7 @@ const pluginListJsonSchema = {
         },
         kind: {
           type: 'string',
-          enum: ['PluginList'],
+          enum: ['Plugin'],
         },
         metadata: {
           type: 'object',
@@ -88,14 +88,8 @@ const pluginListJsonSchema = {
             owner: {
               type: 'string',
             },
-            plugins: {
-              type: 'array',
-              items: {
-                type: 'string',
-              },
-            },
           },
-          required: ['type', 'lifecycle', 'owner', 'plugins'],
+          // required: ['type', 'lifecycle', 'owner'],
         },
       },
       required: ['apiVersion', 'kind', 'metadata', 'spec'],
@@ -107,15 +101,21 @@ const pluginListJsonSchema = {
         enum: ['marketplace.backstage.io/v1alpha1'],
       },
       kind: {
-        enum: ['PluginList'],
+        enum: ['Plugin'],
       },
       metadata: {
-        name: 'testpluginlist',
-        title: 'Test PluginList',
+        name: 'testplugin',
+        title: 'Test Plugin',
         description: 'Creates Lorems like a pro.',
+        labels: {
+          product_name: 'test-product',
+        },
+        annotations: {
+          docs: 'https://github.com/..../tree/develop/doc',
+        },
       },
       spec: {
-        type: 'plugin-list',
+        type: 'frontend-plugin',
         lifecycle: 'production',
         owner: 'redhat',
       },
@@ -123,14 +123,15 @@ const pluginListJsonSchema = {
   ],
 };
 
-export class MarketplacePluginListProcessor implements CatalogProcessor {
-  private readonly validators = [
-    entityKindSchemaValidator(pluginListJsonSchema),
-  ];
+/**
+ * @public
+ */
+export class MarketplacePluginProcessor implements CatalogProcessor {
+  private readonly validators = [entityKindSchemaValidator(pluginJsonSchema)];
 
   // Return processor name
   getProcessorName(): string {
-    return 'MarketplacePluginListProcessor';
+    return 'MarketplacePluginProcessor';
   }
 
   // validateEntityKind is responsible for signaling to the catalog processing
@@ -153,21 +154,15 @@ export class MarketplacePluginListProcessor implements CatalogProcessor {
   ): Promise<Entity> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKinds.pluginList
+      entity.kind === MarketplaceKinds.plugin
     ) {
       const thisEntityRef = getCompoundEntityRef(entity);
-      const target = entity?.spec?.owner as string;
-      // Relation - OWNEDBY
+      const target = entity?.spec?.owner;
       if (target) {
-        const targetRef = parseEntityRef(
-          {
-            name: target,
-            kind: 'Group',
-          },
-          {
-            defaultNamespace: thisEntityRef.namespace,
-          },
-        );
+        const targetRef = parseEntityRef(target as string, {
+          defaultKind: 'Group',
+          defaultNamespace: thisEntityRef.namespace,
+        });
 
         // emit any relations associated with the entity here.
         emit(
@@ -177,27 +172,6 @@ export class MarketplacePluginListProcessor implements CatalogProcessor {
             source: thisEntityRef,
           }),
         );
-      }
-
-      // Relation - Plugins
-
-      if (target) {
-        const plugins = (entity.spec?.plugins as string[]) || [];
-        plugins.forEach((plugin: string) => {
-          const pluginRef = parseEntityRef({
-            name: plugin,
-            kind: MarketplaceKinds.plugin,
-          });
-          if (pluginRef) {
-            emit(
-              processingResult.relation({
-                type: RELATION_PART_OF,
-                target: pluginRef,
-                source: thisEntityRef,
-              }),
-            );
-          }
-        });
       }
     }
 

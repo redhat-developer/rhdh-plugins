@@ -10034,10 +10034,9 @@ __metadata:
     "@backstage/cli": ^0.28.0
     "@backstage/plugin-catalog-common": ^1.1.0
     "@backstage/plugin-catalog-node": ^1.13.1
+    "@backstage/types": ^1.2.0
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
-    express: ^4.17.1
-    glob: ^10.4.5
-    yaml: ^2.6.0
+    semver: ^7.6.3
   languageName: unknown
   linkType: soft
 
@@ -30079,7 +30078,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:7.6.3, semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.3.8, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0":
+"semver@npm:7.6.3, semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.3.8, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0, semver@npm:^7.6.3":
   version: 7.6.3
   resolution: "semver@npm:7.6.3"
   bin:
