@@ -22,7 +22,14 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
     - [Next steps](#next-steps)
     - [Maintenance of older versions](#maintenance-of-older-versions)
   - [API Reports](#api-reports)
-  - [Keeping Workspaces Upto Date with Backstage](#keeping-workspaces-upto-date-with-backstage)
+  - [Maintaining Plugins](#maintaining-plugins)
+    - [Keeping Workspaces Up to Date with Backstage](#keeping-workspaces-up-to-date-with-backstage)
+      - [Process](#process)
+    - [Updating Dependencies with Renovate](#updating-dependencies-with-renovate)
+      - [Types of PRs](#types-of-prs)
+        - [Dependency Updates](#dependency-updates)
+        - [Security Fixes](#security-fixes)
+      - [Responsibilities](#responsibilities)
   - [Submitting a Pull Request](#submitting-a-pull-request)
 
 ## License
@@ -254,14 +261,16 @@ There are two ways you can do this:
 
 Each plugin/package has its own API Report which means you might see more than one file updated or created depending on your changes. These changes will then need to be committed as well.
 
-## Keeping Workspaces Upto Date with Backstage
+## Maintaining Plugins
+
+### Keeping Workspaces Up to Date with Backstage
 
 To keep plugins in the various workspaces up to date with Backstage we have a [Version Bump Workflow](https://github.com/redhat-developer/rhdh-plugins/actions/workflows/version-bump.yml) in place, similar to the one that is used in the [backstage/community-plugins](https://github.com/backstage/community-plugins) repository.
 
 > [!NOTE]
 > To run this workflow, you will need write access to the repository. If you are a plugin owner and do not have write access, please reach out to one of the repository admins (@bethgriggs, @nickboldt, @04kash).
 
-### Process
+#### Process
 
 When a Plugin Owner wants to upgrade their workspace(s) to the latest version of Backstage they will simply need to do the following:
 
@@ -275,6 +284,31 @@ When a Plugin Owner wants to upgrade their workspace(s) to the latest version of
 4. Now click the "Run workflow" button
 5. The workflow will then run and create a PR to upgrade each of the specified workspaces to the latest `main` release of Backstage
 6. Review and merge the generated PR(s)
+
+### Updating Dependencies with Renovate
+
+This repository uses [Renovate](https://docs.renovatebot.com/) to automatically manage dependency updates for your plugins.
+
+#### Types of PRs
+
+##### Dependency Updates
+
+- PRs will be created for dependencies that have patch or minor version updates.
+- Major version updates will require [dashboard approval](https://github.com/redhat-developer/rhdh-plugins/issues/175) in order to generate a PR. Alternatively, the plugin owner can manually create their own PR to update to a major version.
+
+##### Security Fixes
+
+- PRs can also be opened for security alerts. These PRs are distinguishable with a `[security]`suffix in its title and will also have a `security` label.
+
+#### Responsibilities
+
+As a plugin owner,
+
+- You are responsible for reviewing, approving, and merging the PRs opened against your plugins
+- If you decide to not accept the Renovate fixes, provide a justification before closing.
+- Work with your security team to ensure vulnerabilities are fixed according to their SLA timelines and Product Lifecycle requirements.
+
+Because we do not have release branches in this repo, Renovate will only create PRs against the latest code. Plugin owners will need to ensure any necessary patches are backported if their plugins are maintained in multiple product versions.
 
 ## Submitting a Pull Request
 
