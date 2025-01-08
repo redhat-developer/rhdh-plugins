@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,11 @@ import {
   SearchResultState,
   SearchResultProps,
 } from '@backstage/plugin-search-react';
-import Typography from '@mui/material/Typography';
-import { Link } from '@backstage/core-components';
-import ListItem from '@mui/material/ListItem';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import SearchIcon from '@mui/icons-material/Search';
-import { createSearchLink, highlightMatch } from '../../utils/stringUtils';
-import styles from './SearchBar.module.css';
+import { createSearchLink } from '../../utils/stringUtils';
 import { useNavigate } from 'react-router-dom';
+import { SearchInput } from './SearchInput';
+import { SearchOption } from './SearchOption';
 
 interface SearchBarProps {
   query: SearchResultProps['query'];
@@ -75,72 +67,23 @@ export const SearchBar = (props: SearchBarProps) => {
               }
             }}
             renderInput={params => (
-              <TextField
-                {...params}
-                placeholder="Search..."
-                variant="standard"
+              <SearchInput
+                params={params}
                 error={!!error}
                 helperText={error ? 'Error fetching results' : ''}
-                InputProps={{
-                  ...params.InputProps,
-                  disableUnderline: true,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon style={{ color: '#fff' }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  pt: '6px',
-                  input: { color: '#fff' },
-                  button: { color: '#fff' },
-                }}
               />
             )}
-            renderOption={(renderProps, option, { index }) => {
-              if (option === query?.term && index === options.length - 1) {
-                return (
-                  <Box key="all-results" id="all-results">
-                    <Divider sx={{ my: 0.5 }} />
-                    <Link to={searchLink} underline="none">
-                      <ListItem
-                        {...renderProps}
-                        sx={{ my: 0 }}
-                        className={styles.allResultsOption}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Typography sx={{ flexGrow: 1, mr: 1 }}>
-                            All results
-                          </Typography>
-                          <ArrowForwardIcon fontSize="small" />
-                        </Box>
-                      </ListItem>
-                    </Link>
-                  </Box>
-                );
-              }
-
-              const result = results.find(r => r.document.title === option);
-              return (
-                <Link
-                  to={result?.document.location ?? '#'}
-                  underline="none"
-                  key={option}
-                >
-                  <ListItem {...renderProps} sx={{ cursor: 'pointer', py: 2 }}>
-                    <Box sx={{ display: 'flex', width: '100%' }}>
-                      <Typography
-                        sx={{ color: 'text.primary', py: 0.5, flexGrow: 1 }}
-                      >
-                        {option === 'No results found'
-                          ? option
-                          : highlightMatch(option, query?.term ?? '')}
-                      </Typography>
-                    </Box>
-                  </ListItem>
-                </Link>
-              );
-            }}
+            renderOption={(renderProps, option, { index }) => (
+              <SearchOption
+                option={option}
+                index={index}
+                options={options}
+                query={query}
+                results={results}
+                renderProps={renderProps}
+                searchLink={searchLink}
+              />
+            )}
             ListboxProps={{
               style: { maxHeight: 600 },
             }}
