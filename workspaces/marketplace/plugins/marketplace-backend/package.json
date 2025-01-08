@@ -47,6 +47,7 @@
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.0.2",
     "@backstage/cli": "^0.28.0",
+    "@backstage/plugin-catalog-node": "^1.15.0",
     "@types/express": "*",
     "@types/supertest": "^2.0.12",
     "supertest": "^6.2.4"
