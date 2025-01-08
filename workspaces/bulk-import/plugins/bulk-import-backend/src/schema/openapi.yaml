@@ -379,6 +379,7 @@ components:
           - repository.url
           - lastUpdate
           - status
+          - ''
         default: repository.name
 
     sortOrderQueryParam:
@@ -391,6 +392,7 @@ components:
         enum:
           - asc
           - desc
+          - ''
         default: asc
 
     sizePerIntegrationQueryParamDeprecated:

@@ -579,7 +579,8 @@ const OPENAPI = `
             "repository.organization",
             "repository.url",
             "lastUpdate",
-            "status"
+            "status",
+            ""
           ],
           "default": "repository.name"
         }
@@ -593,7 +594,8 @@ const OPENAPI = `
           "type": "string",
           "enum": [
             "asc",
-            "desc"
+            "desc",
+            ""
           ],
           "default": "asc"
         }

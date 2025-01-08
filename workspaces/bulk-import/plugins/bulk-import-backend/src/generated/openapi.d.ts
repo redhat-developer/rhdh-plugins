@@ -36,8 +36,9 @@ declare namespace Components {
       | 'repository.organization'
       | 'repository.url'
       | 'lastUpdate'
-      | 'status';
-    export type SortOrderQueryParam = 'asc' | 'desc';
+      | 'status'
+      | '';
+    export type SortOrderQueryParam = 'asc' | 'desc' | '';
   }
   export interface QueryParameters {
     pagePerIntegrationQueryParam?: Parameters.PagePerIntegrationQueryParam;
@@ -342,8 +343,9 @@ declare namespace Paths {
         | 'repository.organization'
         | 'repository.url'
         | 'lastUpdate'
-        | 'status';
-      export type SortOrder = 'asc' | 'desc';
+        | 'status'
+        | '';
+      export type SortOrder = 'asc' | 'desc' | '';
     }
     export interface QueryParameters {
       pagePerIntegration?: Parameters.PagePerIntegration;

@@ -36,6 +36,8 @@ import {
 import {
   DefaultPageNumber,
   DefaultPageSize,
+  DefaultSortColumn,
+  DefaultSortOrder,
   type HandlerResponse,
 } from '../handlers';
 
@@ -51,8 +53,8 @@ type FindAllImportsResponse =
 
 function sortImports(
   imports: Components.Schemas.Import[],
-  sortColumn: Components.Parameters.SortColumnQueryParam = 'repository.name',
-  sortOrder: Components.Parameters.SortOrderQueryParam = 'asc',
+  sortColumn: Components.Parameters.SortColumnQueryParam = DefaultSortColumn,
+  sortOrder: Components.Parameters.SortOrderQueryParam = DefaultSortOrder,
 ) {
   imports.sort((a, b) => {
     const value1 = getNestedValue(a, sortColumn);
@@ -99,8 +101,8 @@ export async function findAllImports(
   const search = queryParams?.search;
   const pageNumber = queryParams?.pageNumber ?? DefaultPageNumber;
   const pageSize = queryParams?.pageSize ?? DefaultPageSize;
-  const sortColumn = queryParams?.sortColumn;
-  const sortOrder = queryParams?.sortOrder;
+  const sortColumn = queryParams?.sortColumn ?? DefaultSortColumn;
+  const sortOrder = queryParams?.sortOrder ?? DefaultSortOrder;
 
   const catalogFilename = getCatalogFilename(deps.config);
 
@@ -173,9 +175,8 @@ export async function findAllImports(
     });
 
   // sorting the output to make it deterministic and easy to navigate in the UI
-  if (sortColumn) {
-    sortImports(imports, sortColumn, sortOrder);
-  }
+
+  sortImports(imports, sortColumn, sortOrder);
   const paginated = paginateArray(imports, pageNumber, pageSize);
   if (apiVersion === 'v1') {
     return {

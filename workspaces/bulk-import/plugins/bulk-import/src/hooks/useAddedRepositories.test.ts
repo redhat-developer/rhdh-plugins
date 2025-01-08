@@ -55,7 +55,7 @@ describe('useAddedRepositories', () => {
         1,
         5,
         '',
-        AddedRepositoryColumnNameEnum.repositoryName,
+        AddedRepositoryColumnNameEnum.repoName,
         SortingOrderEnum.Asc,
       ),
     );
