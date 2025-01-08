@@ -74,7 +74,7 @@ The YAML file is structured into the following sections:
 - `spec.installation.markdown`: Installation guide for the plugin.
 - `spec.packages` - Defines all the package names to identify the installation status of the plugin. This field accepts both array of plugin names and JSON format. ie: name, version, backstage and distribution information.
 
-  **_NOTE:_** more examlpes of the plugins can be seen [here](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/marketplace/examples/plugins).
+  **_NOTE:_** more examples of the plugins can be seen [here](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/marketplace/examples/plugins).
 
 ### PluginList configuration YAML Guide:
 
@@ -104,7 +104,7 @@ The YAML file is structured into the following sections:
 
 - `spec.plugins`: Defines a list of the plugins.
 
-  **_NOTE:_** more examlpes of the plugins can be seen [here](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/marketplace/examples/pluginlists).
+  **_NOTE:_** more examples of the plugins can be seen [here](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/marketplace/examples/pluginlists).
 
 ## Processors
 

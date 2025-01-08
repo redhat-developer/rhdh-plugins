@@ -40,8 +40,8 @@
   "files": [
     "dist"
   ],
-  "dependencies": {
+  "peerDependencies": {
     "@backstage/catalog-model": "^1.7.0",
-    "@backstage/types": "^1.2.0"
+    "@backstage/types": "^1.1.1"
   }
 }

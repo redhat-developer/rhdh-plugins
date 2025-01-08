@@ -10030,11 +10030,11 @@ __metadata:
   dependencies:
     "@backstage/backend-plugin-api": ^1.0.1
     "@backstage/backend-test-utils": ^1.0.2
-    "@backstage/catalog-model": ^1.7.1
+    "@backstage/catalog-model": ^1.7.0
     "@backstage/cli": ^0.28.0
     "@backstage/plugin-catalog-common": ^1.1.0
     "@backstage/plugin-catalog-node": ^1.13.1
-    "@backstage/types": ^1.2.0
+    "@backstage/types": ^1.1.1
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
     semver: ^7.6.3
   languageName: unknown
@@ -10066,9 +10066,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@workspace:plugins/marketplace-common"
   dependencies:
-    "@backstage/catalog-model": ^1.7.0
     "@backstage/cli": ^0.28.0
-    "@backstage/types": ^1.2.0
+  peerDependencies:
+    "@backstage/catalog-model": ^1.7.0
+    "@backstage/types": ^1.1.1
   languageName: unknown
   linkType: soft
 
