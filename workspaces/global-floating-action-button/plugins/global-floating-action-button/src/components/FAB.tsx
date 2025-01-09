@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,50 +16,126 @@
 
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { makeStyles } from '@mui/styles';
 import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { FabIcon } from './FabIcon';
 import { FloatingActionButton, Slot } from '../types';
+import { slotOptions } from '../utils';
+
+const useStyles = makeStyles(() => ({
+  openInNew: { paddingBottom: '5px', paddingTop: '3px' },
+}));
+
+const FABLabel = ({
+  label,
+  slot,
+  showExternalIcon,
+  icon,
+  order,
+}: {
+  label: string;
+  slot: Slot;
+  showExternalIcon: boolean;
+  icon: string | React.ReactElement;
+  order: { externalIcon?: number; icon?: number };
+}) => {
+  const styles = useStyles();
+  const marginStyle = slotOptions[slot].margin;
+  return (
+    <Typography sx={{ display: 'flex' }}>
+      {showExternalIcon && (
+        <OpenInNewIcon
+          className={styles.openInNew}
+          sx={{ ...marginStyle, order: order.externalIcon }}
+        />
+      )}
+      {label && (
+        <Typography
+          sx={{
+            ...marginStyle,
+            color: '#151515',
+            order: 2,
+          }}
+        >
+          {label}
+        </Typography>
+      )}
+      <Typography sx={{ mb: -1, order: order.icon }}>
+        <FabIcon icon={icon} />
+      </Typography>
+    </Typography>
+  );
+};
 
 export const FAB = ({
   actionButton,
   size,
+  className,
 }: {
   actionButton: FloatingActionButton;
   size?: 'small' | 'medium' | 'large';
+  className?: string;
 }) => {
   const navigate = useNavigate();
   const isExternalUri = (uri: string) => /^([a-z+.-]+):/.test(uri);
-  const external = isExternalUri(actionButton.to!);
-  const newWindow = external && !!/^https?:/.exec(actionButton.to!);
+  const isExternal = isExternalUri(actionButton.to!);
+  const newWindow = isExternal && !!/^https?:/.exec(actionButton.to!);
   const navigateTo = () =>
-    actionButton.to && !external ? navigate(actionButton.to) : '';
+    actionButton.to && !isExternal ? navigate(actionButton.to) : '';
+  const labelText =
+    actionButton.label.length > 20
+      ? `${actionButton.label.slice(0, actionButton.label.length)}...`
+      : actionButton.label;
+  const getColor = () => {
+    if (actionButton.color) {
+      return actionButton.color;
+    }
+    if (!className) {
+      return 'info';
+    }
+    return undefined;
+  };
+
+  const displayOnRight =
+    actionButton.slot === Slot.PAGE_END || !actionButton.slot;
+
   return (
     <Tooltip
       title={actionButton.toolTip}
-      placement={Slot.PAGE_END ? 'left' : 'right'}
+      placement={
+        slotOptions[actionButton.slot || Slot.PAGE_END].tooltipDirection
+      }
     >
-      <div>
+      <div className={className}>
         <Fab
           {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
+          style={{ color: '#1f1f1f' }}
           variant={
-            actionButton.showLabel || !actionButton.icon
-              ? 'extended'
-              : 'circular'
+            actionButton.showLabel || isExternal ? 'extended' : 'circular'
           }
           size={size || actionButton.size || 'medium'}
-          color={actionButton.color || 'default'}
+          color={getColor()}
           aria-label={actionButton.label}
+          data-testid={actionButton.label
+            .replace(' ', '-')
+            .toLocaleLowerCase('en-US')}
           onClick={actionButton.onClick || navigateTo}
-          {...(external ? { href: actionButton.to } : {})}
+          {...(isExternal ? { href: actionButton.to } : {})}
         >
-          {actionButton.icon && <FabIcon icon={actionButton.icon} />}
-          {(actionButton.showLabel || !actionButton.icon) && (
-            <Typography sx={actionButton.icon ? { ml: 1 } : {}}>
-              {actionButton.label}
-            </Typography>
-          )}
+          <FABLabel
+            showExternalIcon={isExternal}
+            icon={actionButton.icon}
+            label={actionButton.showLabel ? labelText : ''}
+            order={
+              displayOnRight
+                ? { externalIcon: isExternal ? 1 : -1, icon: 3 }
+                : { externalIcon: isExternal ? 3 : -1, icon: 1 }
+            }
+            slot={actionButton.slot || Slot.PAGE_END}
+          />
         </Fab>
       </div>
     </Tooltip>

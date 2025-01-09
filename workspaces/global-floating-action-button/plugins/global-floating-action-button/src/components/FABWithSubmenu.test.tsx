@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 import { fireEvent, render, screen } from '@testing-library/react';
-import AddIcon from '@mui/icons-material/Add';
 import GitIcon from '@mui/icons-material/GitHub';
 import SnowFlake from '@mui/icons-material/AcUnit';
 import * as React from 'react';
-import { FloatingButton } from './FloatingButton';
 import { Slot } from '../types';
+import { FABWithSubmenu } from './FABWithSubmenu';
 
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
@@ -28,66 +27,37 @@ jest.mock('react-router-dom', () => ({
   })),
 }));
 
-jest.mock('@backstage/core-plugin-api', () => ({
-  useApp: jest.fn(() => ({
-    getSystemIcon: jest.fn(),
-  })),
-}));
-
 jest.mock('@mui/styles', () => ({
   ...jest.requireActual('@mui/styles'),
   makeStyles: () => () => {
     return {
-      fabContainer: 'fabContainer',
-      'page-end': 'page-end',
-      'bottom-left': 'bottom-left',
+      button: 'button',
     };
   },
 }));
 
-describe('Floating Button', () => {
-  it('should render a floating button', () => {
-    render(
-      <FloatingButton
-        floatingButtons={[
-          {
-            icon: <AddIcon />,
-            label: 'Add',
-            color: 'primary',
-            toolTip: 'Main menu',
-          },
-        ]}
-        slot={Slot.BOTTOM_LEFT}
-      />,
-    );
-    expect(screen.getByTestId('floating-button')).toBeInTheDocument();
-    expect(screen.getByTestId('AddIcon')).toBeInTheDocument();
-  });
+jest.mock('@backstage/core-plugin-api', () => ({
+  useApp: jest.fn(() => ({
+    getSystemIcon: jest.fn(),
+  })),
+  usetheme: jest.fn(() => ({
+    theme: {
+      transitions: {
+        easing: {
+          easeOut: 'eo',
+          sharp: 's',
+        },
+      },
+    },
+  })),
+}));
 
-  it('should render a floating button with git icon', () => {
+describe('Floating Button with submenu', () => {
+  it('should render a floating button with submenu actions', () => {
     render(
-      <FloatingButton
-        floatingButtons={[
-          {
-            color: 'success',
-            icon: <GitIcon />,
-            label: 'Git repo',
-            to: 'https://github.com/xyz',
-            toolTip: 'Git',
-          },
-        ]}
+      <FABWithSubmenu
         slot={Slot.BOTTOM_LEFT}
-      />,
-    );
-    expect(screen.getByTestId('floating-button')).toBeInTheDocument();
-    expect(screen.queryByTestId('AddIcon')).not.toBeInTheDocument();
-    expect(screen.getByTestId('GitHubIcon')).toBeInTheDocument();
-  });
-
-  it('should render a floating button with sub-menu', () => {
-    render(
-      <FloatingButton
-        floatingButtons={[
+        fabs={[
           {
             color: 'success',
             icon: <GitIcon />,
@@ -104,14 +74,13 @@ describe('Floating Button', () => {
             toolTip: 'Ac Unit',
           },
         ]}
-        slot={Slot.BOTTOM_LEFT}
       />,
     );
-    expect(screen.getByTestId('floating-button')).toBeInTheDocument();
+    expect(screen.getByTestId('fab-with-submenu')).toBeInTheDocument();
     expect(screen.getByTestId('MenuIcon')).toBeInTheDocument();
     const button = screen.getByTestId('MenuIcon');
     fireEvent.click(button);
     expect(screen.getByText('Git repo')).toBeInTheDocument();
-    expect(screen.queryByText('Ac Unit')).not.toBeInTheDocument();
+    expect(screen.getByTestId('AcUnitIcon')).toBeInTheDocument();
   });
 });

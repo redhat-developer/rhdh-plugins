@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   GitHubIcon,
   Link,
@@ -96,14 +97,21 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             to: '/create',
           },
           {
-            slot: Slot.BOTTOM_CENTER,
+            slot: Slot.BOTTOM_LEFT,
             icon: <LibraryBooks />,
+            label: 'Api Docs',
+            toolTip: 'Api Docs',
+            to: '/api-docs',
+          },
+          {
+            slot: Slot.BOTTOM_LEFT,
+            icon: <ExtensionIcon />,
+            showLabel: true,
             label: 'Docs',
             toolTip: 'Docs',
             to: '/docs',
           },
           {
-            color: 'success',
             icon: <SearchIcon />,
             label: 'Search',
             toolTip: 'Search',
@@ -111,10 +119,18 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           },
           {
             color: 'success',
-            showLabel: true,
             icon: <GitHubIcon />,
-            label: 'RHDH plugins',
+            label: 'RHDH pluginsssssssssssssss',
+            showLabel: true,
             toolTip: 'RHDH plugins',
+            to: 'https://github.com/redhat-developer/rhdh-plugins',
+            visibleOnPaths: ['/catalog'],
+          },
+          {
+            color: 'success',
+            icon: <GitHubIcon />,
+            label: 'RHDH pluginsssssssssssssss',
+            toolTip: 'External link',
             to: 'https://github.com/redhat-developer/rhdh-plugins',
             visibleOnPaths: ['/catalog'],
           },
