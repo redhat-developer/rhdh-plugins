@@ -5578,6 +5578,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cfworker/json-schema@npm:^4.0.2":
+  version: 4.1.0
+  resolution: "@cfworker/json-schema@npm:4.1.0"
+  checksum: 8b9b4d5f6c1625224ee31a3625e41f86e8b24b5ea66a2928fa01a5692be1790f756b0ad1a79a367893ec34f41658dedef5249c7c285366b9be6e601e0783fba0
+  languageName: node
+  linkType: hard
+
 "@changesets/apply-release-plan@npm:^7.0.5":
   version: 7.0.5
   resolution: "@changesets/apply-release-plan@npm:7.0.5"
@@ -7812,22 +7819,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:^0.2.30":
-  version: 0.2.36
-  resolution: "@langchain/core@npm:0.2.36"
+"@langchain/core@npm:^0.3.0":
+  version: 0.3.27
+  resolution: "@langchain/core@npm:0.3.27"
   dependencies:
+    "@cfworker/json-schema": ^4.0.2
     ansi-styles: ^5.0.0
     camelcase: 6
     decamelize: 1.2.0
     js-tiktoken: ^1.0.12
-    langsmith: ^0.1.56-rc.1
+    langsmith: ^0.2.8
     mustache: ^4.2.0
     p-queue: ^6.6.2
     p-retry: 4
     uuid: ^10.0.0
     zod: ^3.22.4
     zod-to-json-schema: ^3.22.3
-  checksum: 963aca44a8422dbbe8259d063e65867bc1ad0735e805c7b46048d48e12822ae669f64f46f077a31dd5a9aa0c43b2f1ed7a5e57369392902e8d419dd9fa3611f3
+  checksum: 416077ab412f25a9d40ab17b7a2c91b1cd5cf056e2148a72dba5e952575cdc15913ff17469cfd575d5a84a9ecdf326d4d6810c3eb03644b1a90531f0dd6f4c35
   languageName: node
   linkType: hard
 
@@ -10377,7 +10385,7 @@ __metadata:
     "@backstage/plugin-permission-common": ^0.8.3
     "@backstage/plugin-permission-node": ^0.8.6
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
-    "@langchain/core": ^0.2.30
+    "@langchain/core": ^0.3.0
     "@langchain/openai": ^0.3.0
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
@@ -24449,9 +24457,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langsmith@npm:^0.1.56-rc.1":
-  version: 0.1.68
-  resolution: "langsmith@npm:0.1.68"
+"langsmith@npm:^0.2.8":
+  version: 0.2.15
+  resolution: "langsmith@npm:0.2.15"
   dependencies:
     "@types/uuid": ^10.0.0
     commander: ^10.0.1
@@ -24464,7 +24472,7 @@ __metadata:
   peerDependenciesMeta:
     openai:
       optional: true
-  checksum: b5422f9d52d22992b928089704233d7c67581744058f141f78dc9e7e0b789bf0b7cd7e0a964a23d7777d9d5bc55e3a0f2f86f760d6b23844817b2ad80367d704
+  checksum: 72dbc86c72e186b3228ec754abc1c98fd17e62aee337375c228ba83da6dd6aaa0eea0acb0ca2c754e6c33f69ab0e11d39a122a7e51b6b33100ce95395aa57e9a
   languageName: node
   linkType: hard
 

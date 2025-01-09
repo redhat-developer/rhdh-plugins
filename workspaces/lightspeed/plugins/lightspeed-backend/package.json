@@ -48,7 +48,7 @@
     "@backstage/errors": "^1.2.6",
     "@backstage/plugin-permission-common": "^0.8.3",
     "@backstage/plugin-permission-node": "^0.8.6",
-    "@langchain/core": "^0.2.30",
+    "@langchain/core": "^0.3.0",
     "@langchain/openai": "^0.3.0",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
     "express": "^4.21.1",
