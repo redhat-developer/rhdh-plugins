@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 0.0.3
+
+### Patch Changes
+
+- 01c8d1c: update global floating action button plugin readme
+- 3d2f8a3: update fab content
+
 ## 0.0.2
 
 ### Patch Changes
