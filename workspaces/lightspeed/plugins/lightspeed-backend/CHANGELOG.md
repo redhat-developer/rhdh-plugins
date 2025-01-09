@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 0.3.2
+
+### Patch Changes
+
+- dc61798: Updated dependency `@langchain/core` to `^0.3.0`.
+
 ## 0.3.1
 
 ### Patch Changes
