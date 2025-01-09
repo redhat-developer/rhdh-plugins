@@ -46,7 +46,7 @@ See https://casbin.org/docs/rbac for more information about casbin rules.
 
 ## Enable permissions
 
-To enable permissions, you need to add the following in the [app-config file](../../../app-config.yaml):
+To enable permissions, you need to add the following in the [app-config file](../app-config.yaml):
 
 ```
 permission:
