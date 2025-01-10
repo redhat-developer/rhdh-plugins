@@ -10056,6 +10056,7 @@ __metadata:
     express: ^4.17.1
     express-promise-router: ^4.1.0
     glob: ^10.4.5
+    msw: ^1.0.0
     supertest: ^6.2.4
     yaml: ^2.6.0
     zod: ^3.22.4

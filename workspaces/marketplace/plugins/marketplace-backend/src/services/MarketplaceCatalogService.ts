@@ -21,12 +21,14 @@ import {
 } from '@backstage/backend-plugin-api';
 
 import {
+  MarketplaceKinds,
   MarketplacePluginEntry,
   MarketplacePluginList,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { MarketplaceService } from './MarketplaceService';
 import { CatalogApi } from '@backstage/catalog-client';
+import { NotFoundError } from '@backstage/errors';
 
 export type Options = {
   logger: LoggerService;
@@ -82,5 +84,70 @@ export class MarketplaceCatalogService implements MarketplaceService {
     );
 
     return result.items as MarketplacePluginList[];
+  }
+
+  async getPluginListByName(name: string): Promise<MarketplacePluginList> {
+    const token = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: 'catalog',
+    });
+    const result = await this.catalog.getEntities(
+      {
+        filter: {
+          kind: 'pluginList',
+          'metadata.name': name,
+        },
+      },
+      token,
+    );
+
+    return result.items?.[0] as MarketplacePluginList;
+  }
+
+  async getPluginByName(name: string): Promise<MarketplacePluginEntry> {
+    const token = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: 'catalog',
+    });
+    const result = await this.catalog.getEntities(
+      {
+        filter: {
+          kind: 'plugin',
+          'metadata.name': name,
+        },
+      },
+      token,
+    );
+
+    return result.items?.[0] as MarketplacePluginEntry;
+  }
+
+  async getPluginsByPluginsListName(
+    name: string,
+  ): Promise<MarketplacePluginEntry[]> {
+    const pluginList = await this.getPluginListByName(name);
+    const plugins = pluginList?.spec?.plugins;
+
+    if (!pluginList) {
+      throw new NotFoundError(
+        `${MarketplaceKinds.pluginList}:${name} not found`,
+      );
+    }
+
+    if (!plugins) {
+      return [] as MarketplacePluginEntry[];
+    }
+
+    const token = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: 'catalog',
+    });
+
+    const entityRefs = plugins.map(plugin =>
+      `${MarketplaceKinds.plugin}:${pluginList.metadata?.namespace}/${plugin}`.toLowerCase(),
+    );
+    const result = await this.catalog.getEntitiesByRefs({ entityRefs }, token);
+
+    return result.items as MarketplacePluginEntry[];
   }
 }

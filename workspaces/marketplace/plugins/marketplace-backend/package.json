@@ -50,6 +50,7 @@
     "@backstage/plugin-catalog-node": "^1.15.0",
     "@types/express": "*",
     "@types/supertest": "^2.0.12",
+    "msw": "^1.0.0",
     "supertest": "^6.2.4"
   },
   "files": [

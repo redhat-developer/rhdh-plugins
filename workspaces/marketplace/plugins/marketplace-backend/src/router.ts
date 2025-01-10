@@ -19,6 +19,8 @@ import express from 'express';
 import Router from 'express-promise-router';
 
 import { MarketplaceService } from './services/MarketplaceService';
+import { NotFoundError } from '@backstage/errors';
+import { MarketplaceKinds } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export async function createRouter({
   marketplaceService,
@@ -34,9 +36,48 @@ export async function createRouter({
     res.json(plugins);
   });
 
+  router.get('/plugins/:name', async (_req, res) => {
+    const name = _req.params.name;
+    const plugin = await marketplaceService.getPluginByName(name);
+    if (!plugin) {
+      res
+        .status(404)
+        .json({ error: `${MarketplaceKinds.plugin}:${name} not found` });
+    }
+    res.json(plugin);
+  });
+
   router.get('/pluginlist', async (_req, res) => {
     const pluginlist = await marketplaceService.getPluginList();
     res.json(pluginlist);
+  });
+
+  router.get('/pluginlist/:name', async (_req, res) => {
+    const name = _req.params.name;
+    const pluginlist = await marketplaceService.getPluginListByName(name);
+    if (!pluginlist) {
+      res
+        .status(404)
+        .json({ error: `${MarketplaceKinds.pluginList}:${name} not found` });
+    }
+    res.json(pluginlist);
+  });
+
+  router.get('/pluginlist/:name/plugins', async (_req, res) => {
+    const name = _req.params.name;
+
+    try {
+      const pluginlist = await marketplaceService.getPluginsByPluginsListName(
+        name,
+      );
+
+      res.json(pluginlist);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        res.status(404).json({ error: error.message });
+      }
+      res.status(500).json({ error: `Internal server error: ${error}` });
+    }
   });
 
   return router;

@@ -21,5 +21,8 @@ import {
 
 export interface MarketplaceService {
   getPlugins(): Promise<MarketplacePluginEntry[]>;
+  getPluginByName(name: string): Promise<MarketplacePluginEntry>;
   getPluginList(): Promise<MarketplacePluginList[]>;
+  getPluginListByName(name: string): Promise<MarketplacePluginList>;
+  getPluginsByPluginsListName(name: string): Promise<MarketplacePluginEntry[]>;
 }
