@@ -35,7 +35,7 @@ export const GlobalHeader = globalHeaderPlugin.provide(
   createComponentExtension({
     name: 'GlobalHeader',
     component: {
-      lazy: () => import('./components').then(m => m.GlobalHeader),
+      lazy: () => import('./components/GlobalHeader').then(m => m.GlobalHeader),
     },
   }),
 );
