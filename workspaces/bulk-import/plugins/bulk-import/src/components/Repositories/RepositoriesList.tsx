@@ -43,9 +43,7 @@ export const RepositoriesList = () => {
   const [order, setOrder] = React.useState<SortingOrderEnum>(
     SortingOrderEnum.Asc,
   );
-  const [orderBy, setOrderBy] = React.useState<string>(
-    AddedRepositoryColumnNameEnum.repoName,
-  );
+  const [orderBy, setOrderBy] = React.useState<string>('repoName');
   const { openDialog, setOpenDialog, deleteComponent } = useDeleteDialog();
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const [pageNumber, setPageNumber] = React.useState(0);
@@ -53,10 +51,9 @@ export const RepositoriesList = () => {
   const [debouncedSearch, setDebouncedSearch] = React.useState('');
 
   const orderByColumn = React.useMemo(() => {
-    const column = orderBy?.replace(/\.([a-zA-Z])/g, (_, char) =>
+    return orderBy?.replace(/\.([a-zA-Z])/g, (_, char) =>
       char.toUpperCase('en-US'),
     ) as keyof typeof AddedRepositoryColumnNameEnum;
-    return column === 'repositoryName' ? 'repoName' : column;
   }, [orderBy]);
   const {
     data: importJobs,
