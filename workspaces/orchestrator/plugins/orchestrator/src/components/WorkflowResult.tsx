@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 
-import { InfoCard, Link } from '@backstage/core-components';
+import {
+  InfoCard,
+  Link,
+  StructuredMetadataTable,
+} from '@backstage/core-components';
 import { RouteFunc, useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
 
@@ -57,6 +62,11 @@ const useStyles = makeStyles(theme => ({
   },
   links: {
     padding: '0px',
+  },
+  values: {
+    '& tr > td': {
+      paddingLeft: '0px',
+    },
   },
   errorIcon: {
     color: theme.palette.error.main,
@@ -234,28 +244,24 @@ const WorkflowOutputs = ({
   }
 
   const links = outputs?.filter(item => item.format === 'link');
-  const nonLinks = outputs?.filter(item => item.format !== 'link');
+  const nonLinksFiltered = outputs?.filter(item => item.format !== 'link');
+  const nonLinks = nonLinksFiltered.reduce<{
+    [key: string]: any;
+  }>((data, item) => {
+    let value = item.value || VALUE_UNAVAILABLE;
+    if (typeof value !== 'string') {
+      // This is a workaround for malformed returned data. It should not happen if the sender does WorkflowResult validation properly.
+      if (typeof value === 'object') {
+        value = `Object: ${JSON.stringify(value)}`;
+      } else {
+        value = 'Unexpected type';
+      }
+    }
+    return { ...data, [item.key]: value };
+  }, {});
 
   return (
     <>
-      {nonLinks.map(item => {
-        let value = item.value || VALUE_UNAVAILABLE;
-        if (typeof value !== 'string') {
-          // This is a workaround for malformed returned data. It should not happen if the sender does WorkflowResult validation properly.
-          if (typeof value === 'object') {
-            value = `Object: ${JSON.stringify(value)}`;
-          } else {
-            value = 'Unexpected type';
-          }
-        }
-
-        return (
-          <Grid item md={6} key={item.key} className={styles.outputGrid}>
-            <AboutField label={item.key} value={value as string} />
-          </Grid>
-        );
-      })}
-
       {links?.length > 0 && (
         <Grid item md={12} key="__links" className={styles.links}>
           <AboutField label="Links">
@@ -276,6 +282,12 @@ const WorkflowOutputs = ({
           </AboutField>
         </Grid>
       )}
+
+      <Grid item md={12} key="__links" className={styles.values}>
+        <AboutField label="Values">
+          <StructuredMetadataTable dense metadata={nonLinks} />
+        </AboutField>
+      </Grid>
     </>
   );
 };
