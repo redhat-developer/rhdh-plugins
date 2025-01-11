@@ -45,7 +45,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../api';
-import { VALUE_UNAVAILABLE } from '../constants';
 import { executeWorkflowRouteRef } from '../routes';
 import { buildUrl } from '../utils/UrlUtils';
 import {
@@ -127,7 +126,7 @@ const ResultMessage = ({
           {resultMessage}
         </Typography>
       )}
-      {errorMessage && <b>{errorMessage}</b>}
+      {errorMessage}
       {noResult}
     </>
   );
@@ -248,7 +247,7 @@ const WorkflowOutputs = ({
   const nonLinks = nonLinksFiltered.reduce<{
     [key: string]: any;
   }>((data, item) => {
-    let value = item.value || VALUE_UNAVAILABLE;
+    let value = item.value || '';
     if (typeof value !== 'string') {
       // This is a workaround for malformed returned data. It should not happen if the sender does WorkflowResult validation properly.
       if (typeof value === 'object') {
