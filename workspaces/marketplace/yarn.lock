@@ -3105,7 +3105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/catalog-model@npm:^1.7.0, @backstage/catalog-model@npm:^1.7.1, @backstage/catalog-model@npm:^1.7.2":
+"@backstage/catalog-model@npm:^1.7.0, @backstage/catalog-model@npm:^1.7.2":
   version: 1.7.2
   resolution: "@backstage/catalog-model@npm:1.7.2"
   dependencies:
