@@ -18,15 +18,17 @@ import { HttpAuthService } from '@backstage/backend-plugin-api';
 import express from 'express';
 import Router from 'express-promise-router';
 
-import { MarketplaceService } from './services/MarketplaceService';
 import { NotFoundError } from '@backstage/errors';
-import { MarketplaceKinds } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  MarketplaceKinds,
+  MarketplaceClient,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export async function createRouter({
   marketplaceService,
 }: {
   httpAuth: HttpAuthService;
-  marketplaceService: MarketplaceService;
+  marketplaceService: MarketplaceClient;
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -47,12 +49,12 @@ export async function createRouter({
     res.json(plugin);
   });
 
-  router.get('/pluginlist', async (_req, res) => {
-    const pluginlist = await marketplaceService.getPluginList();
+  router.get('/pluginlists', async (_req, res) => {
+    const pluginlist = await marketplaceService.getPluginLists();
     res.json(pluginlist);
   });
 
-  router.get('/pluginlist/:name', async (_req, res) => {
+  router.get('/pluginlists/:name', async (_req, res) => {
     const name = _req.params.name;
     const pluginlist = await marketplaceService.getPluginListByName(name);
     if (!pluginlist) {
@@ -63,11 +65,11 @@ export async function createRouter({
     res.json(pluginlist);
   });
 
-  router.get('/pluginlist/:name/plugins', async (_req, res) => {
+  router.get('/pluginlists/:name/plugins', async (_req, res) => {
     const name = _req.params.name;
 
     try {
-      const pluginlist = await marketplaceService.getPluginsByPluginsListName(
+      const pluginlist = await marketplaceService.getPluginsByPluginListName(
         name,
       );
 

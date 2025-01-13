@@ -10047,6 +10047,7 @@ __metadata:
     "@backstage/backend-plugin-api": ^1.0.1
     "@backstage/backend-test-utils": ^1.0.2
     "@backstage/catalog-client": ^1.8.0
+    "@backstage/catalog-model": ^1.7.0
     "@backstage/cli": ^0.28.0
     "@backstage/errors": ^1.2.4
     "@backstage/plugin-catalog-node": ^1.15.0
@@ -10067,8 +10068,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@workspace:plugins/marketplace-common"
   dependencies:
+    "@backstage/backend-plugin-api": ^1.0.1
+    "@backstage/backend-test-utils": ^1.0.2
     "@backstage/cli": ^0.28.0
+    "@backstage/errors": ^1.2.4
   peerDependencies:
+    "@backstage/catalog-client": ^1.8.0
     "@backstage/catalog-model": ^1.7.0
     "@backstage/types": ^1.1.1
   languageName: unknown
@@ -10079,12 +10084,10 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@workspace:plugins/marketplace"
   dependencies:
     "@backstage/cli": ^0.28.0
-    "@backstage/core-app-api": ^1.15.1
     "@backstage/core-components": ^0.15.1
     "@backstage/core-plugin-api": ^1.10.0
     "@backstage/dev-utils": ^1.1.2
     "@backstage/plugin-catalog-react": ^1.14.0
-    "@backstage/test-utils": ^1.7.0
     "@backstage/theme": ^0.6.0
     "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
@@ -10092,12 +10095,8 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.4.7
     "@tanstack/react-query": ^5.60.5
     "@testing-library/jest-dom": ^6.0.0
-    "@testing-library/react": ^14.0.0
-    "@testing-library/user-event": ^14.0.0
-    msw: ^1.0.0
     react: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-    react-use: ^17.2.4
   peerDependencies:
     react: ^17.0.0 || ^18.0.0
     react-dom: ^17.0.0 || ^18.0.0
@@ -33902,12 +33901,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.6.0":
+"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2":
   version: 2.6.0
   resolution: "yaml@npm:2.6.0"
   bin:
     yaml: bin.mjs
   checksum: e5e74fd75e01bde2c09333d529af9fbb5928c5f7f01bfdefdcb2bf753d4ef489a45cab4deac01c9448f55ca27e691612b81fe3c3a59bb8cb5b0069da0f92cf0b
+  languageName: node
+  linkType: hard
+
+"yaml@npm:^2.6.0":
+  version: 2.7.0
+  resolution: "yaml@npm:2.7.0"
+  bin:
+    yaml: bin.mjs
+  checksum: 6e8b2f9b9d1b18b10274d58eb3a47ec223d9a93245a890dcb34d62865f7e744747190a9b9177d5f0ef4ea2e44ad2c0214993deb42e0800766203ac46f00a12dd
   languageName: node
   linkType: hard
 

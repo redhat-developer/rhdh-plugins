@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePluginProcessor } from '../MarketplacePluginProcessor';
 
-const pluginEntity: MarketplacePluginEntry = {
+const pluginEntity: MarketplacePlugin = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
   metadata: {
     name: 'testplugin',

@@ -13,17 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { CatalogClient } from '@backstage/catalog-client';
+import { MarketplaceClient } from './marketplaceClient';
+import { MarketplaceKinds } from './types';
 import { mockServices } from '@backstage/backend-test-utils';
-import { MarketplaceCatalogService } from '../MarketplaceCatalogService';
-import { CatalogClient } from '@backstage/catalog-client/index';
-import { mockPlugins, mockPluginList } from '../../../__fixtures__/mockData';
 
+const mockPlugins = [
+  {
+    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    kind: MarketplaceKinds.plugin,
+    metadata: { name: 'plugin1' },
+  },
+  {
+    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    kind: MarketplaceKinds.plugin,
+    metadata: { name: 'plugin2' },
+  },
+];
+
+const mockPluginList = [
+  {
+    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    kind: MarketplaceKinds.pluginList,
+    metadata: { name: 'test-featured-plugins' },
+    spec: {
+      plugins: ['plugin1', 'plugin2'],
+    },
+  },
+];
+
+const mockQueryEntities = jest.fn();
 const mockGetEntities = jest.fn();
-const mockGetEntitiesByRefs = jest.fn();
+const mockQueryEntitiesByRefs = jest.fn();
 
 const mockCatalogClient = {
   getEntities: mockGetEntities,
-  getEntitiesByRefs: mockGetEntitiesByRefs,
+  queryEntities: mockQueryEntities,
+  getEntitiesByRefs: mockQueryEntitiesByRefs,
 } as unknown as CatalogClient;
 
 const options = {
@@ -33,21 +59,21 @@ const options = {
   catalogApi: mockCatalogClient,
 };
 
-describe('MarketplaceCatalogService', () => {
+describe('MarketplaceClient', () => {
   describe('getPlugins', () => {
     beforeEach(() => {
-      mockGetEntities.mockReturnValue({
+      mockQueryEntities.mockReturnValue({
         items: mockPlugins,
       });
     });
 
-    it('should call getEntities function', async () => {
-      const api = new MarketplaceCatalogService(options);
+    it('should call queryEntities function', async () => {
+      const api = new MarketplaceClient(options);
 
       await api.getPlugins();
 
-      expect(mockGetEntities).toHaveBeenCalledTimes(1);
-      expect(mockGetEntities).toHaveBeenCalledWith(
+      expect(mockQueryEntities).toHaveBeenCalledTimes(1);
+      expect(mockQueryEntities).toHaveBeenCalledWith(
         {
           filter: { kind: 'plugin' },
         },
@@ -56,7 +82,7 @@ describe('MarketplaceCatalogService', () => {
     });
 
     it('should return the plugins', async () => {
-      const api = new MarketplaceCatalogService(options);
+      const api = new MarketplaceClient(options);
       const plugins = await api.getPlugins();
       expect(plugins).toHaveLength(2);
     });
@@ -64,13 +90,13 @@ describe('MarketplaceCatalogService', () => {
 
   describe('getPluginByName', () => {
     beforeEach(() => {
-      mockGetEntities.mockReturnValue({
+      mockQueryEntities.mockReturnValue({
         items: mockPlugins,
       });
     });
 
     it('should return the plugin by name', async () => {
-      const api = new MarketplaceCatalogService(options);
+      const api = new MarketplaceClient(options);
       const plugin = await api.getPluginByName('plugin1');
       expect(plugin).toBeDefined();
       expect(plugin.metadata.name).toBe('plugin1');
@@ -79,13 +105,13 @@ describe('MarketplaceCatalogService', () => {
 
   describe('getPluginListByName', () => {
     beforeEach(() => {
-      mockGetEntities.mockReturnValue({
+      mockQueryEntities.mockReturnValue({
         items: mockPluginList,
       });
     });
 
     it('should return the pluginlist by name', async () => {
-      const api = new MarketplaceCatalogService(options);
+      const api = new MarketplaceClient(options);
       const featuredPluginList = await api.getPluginListByName(
         'test-featured-plugins',
       );
@@ -94,16 +120,16 @@ describe('MarketplaceCatalogService', () => {
     });
   });
 
-  describe('getPluginList', () => {
+  describe('getPluginLists', () => {
     beforeEach(() => {
-      mockGetEntities.mockReturnValue({
+      mockQueryEntities.mockReturnValue({
         items: mockPluginList,
       });
     });
 
     it('should return the pluginlist', async () => {
-      const api = new MarketplaceCatalogService(options);
-      const featuredPluginsList = await api.getPluginList();
+      const api = new MarketplaceClient(options);
+      const featuredPluginsList = await api.getPluginLists();
 
       expect(featuredPluginsList).toHaveLength(1);
       expect(featuredPluginsList[0].spec?.plugins).toEqual([
@@ -113,9 +139,9 @@ describe('MarketplaceCatalogService', () => {
     });
   });
 
-  describe('getPluginsByPluginsListName', () => {
+  describe('getPluginsByPluginListName', () => {
     beforeEach(() => {
-      mockGetEntities.mockImplementation(({ filter }) => {
+      mockQueryEntities.mockImplementation(({ filter }) => {
         return filter['metadata.name'] === 'test-featured-plugins'
           ? {
               items: mockPluginList,
@@ -123,14 +149,14 @@ describe('MarketplaceCatalogService', () => {
           : {};
       });
 
-      mockGetEntitiesByRefs.mockResolvedValue({
+      mockQueryEntitiesByRefs.mockResolvedValue({
         items: mockPlugins,
       });
     });
 
     it('should return all the plugins for the pluginlist name', async () => {
-      const api = new MarketplaceCatalogService(options);
-      const plugins = await api.getPluginsByPluginsListName(
+      const api = new MarketplaceClient(options);
+      const plugins = await api.getPluginsByPluginListName(
         'test-featured-plugins',
       );
       expect(plugins).toHaveLength(2);
@@ -139,22 +165,22 @@ describe('MarketplaceCatalogService', () => {
     });
 
     it('should throw not found error for the non-existent pluginlist name', async () => {
-      const api = new MarketplaceCatalogService(options);
+      const api = new MarketplaceClient(options);
 
       await expect(
-        api.getPluginsByPluginsListName('non-existent-featured-plugins'),
+        api.getPluginsByPluginListName('non-existent-featured-plugins'),
       ).rejects.toThrow('PluginList:non-existent-featured-plugins not found');
     });
     it('should return empty array when the plugins are not set', async () => {
       jest.resetAllMocks();
       jest.clearAllMocks();
 
-      mockGetEntities.mockResolvedValue({
+      mockQueryEntities.mockResolvedValue({
         items: [{ ...mockPluginList, spec: { plugins: undefined } }],
       });
 
-      const api = new MarketplaceCatalogService(options);
-      const plugins = await api.getPluginsByPluginsListName(
+      const api = new MarketplaceClient(options);
+      const plugins = await api.getPluginsByPluginListName(
         'non-existent-featured-plugins',
       );
       expect(plugins).toHaveLength(0);

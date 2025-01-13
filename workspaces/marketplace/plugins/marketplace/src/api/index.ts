@@ -20,7 +20,6 @@ import { MarketplaceApi } from './MarketplaceApi';
 
 export * from './MarketplaceApi';
 export * from './MarketplaceBackendClient';
-export * from './MarketplaceCatalogClient';
 
 export const marketplaceApiRef = createApiRef<MarketplaceApi>({
   id: 'plugin.marketplace.api-ref',

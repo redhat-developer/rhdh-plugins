@@ -15,7 +15,7 @@
  */
 
 import {
-  MarketplacePluginEntry,
+  MarketplacePlugin,
   MarketplacePluginList,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
@@ -23,6 +23,6 @@ import {
  * @public
  */
 export interface MarketplaceApi {
-  getPluginList(): Promise<MarketplacePluginList[]>;
-  getPlugins(): Promise<MarketplacePluginEntry[]>;
+  getPluginLists(): Promise<MarketplacePluginList[]>;
+  getPlugins(): Promise<MarketplacePlugin[]>;
 }

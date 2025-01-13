@@ -17,7 +17,7 @@
 import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 
 import {
-  MarketplacePluginEntry,
+  MarketplacePlugin,
   MarketplacePluginList,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
@@ -37,7 +37,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     this.fetchApi = options.fetchApi;
   }
 
-  async getPlugins(): Promise<MarketplacePluginEntry[]> {
+  async getPlugins(): Promise<MarketplacePlugin[]> {
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
     const url = `${baseUrl}/plugins`;
 
@@ -51,9 +51,9 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     return response.json();
   }
 
-  async getPluginList(): Promise<MarketplacePluginList[]> {
+  async getPluginLists(): Promise<MarketplacePluginList[]> {
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
-    const url = `${baseUrl}/pluginlist`;
+    const url = `${baseUrl}/pluginlists`;
 
     const response = await this.fetchApi.fetch(url);
     if (!response.ok) {

@@ -19,8 +19,8 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './router';
-import { MarketplaceCatalogService } from './services/MarketplaceCatalogService';
 import { CatalogClient } from '@backstage/catalog-client';
+import { MarketplaceClient } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 /**
  * marketplacePlugin backend plugin
  *
@@ -31,19 +31,15 @@ export const marketplacePlugin = createBackendPlugin({
   register(env) {
     env.registerInit({
       deps: {
-        logger: coreServices.logger,
         auth: coreServices.auth,
-        config: coreServices.rootConfig,
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         discovery: coreServices.discovery,
       },
-      async init({ logger, auth, config, httpAuth, httpRouter, discovery }) {
+      async init({ auth, httpAuth, httpRouter, discovery }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
-        const marketplaceService = new MarketplaceCatalogService({
-          logger,
+        const marketplaceService = new MarketplaceClient({
           auth,
-          config,
           catalogApi,
         });
 

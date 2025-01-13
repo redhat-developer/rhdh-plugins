@@ -24,7 +24,7 @@ import { marketplacePlugin } from './plugin';
 import { mockPluginList, mockPlugins } from '../__fixtures__/mockData';
 import { ExtendedHttpServer } from '@backstage/backend-defaults/dist/rootHttpRouter';
 import {
-  MarketplacePluginEntry,
+  MarketplacePlugin,
   MarketplacePluginList,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
@@ -77,14 +77,14 @@ const testSetup = setupTest();
 const setupTestWithMockCatalog = async ({
   mockData,
 }: {
-  mockData: MarketplacePluginEntry[] | MarketplacePluginList[] | {};
+  mockData: MarketplacePlugin[] | MarketplacePluginList[] | {};
 }): Promise<{ backendServer: ExtendedHttpServer }> => {
   const { server } = testSetup();
   const backendServer: ExtendedHttpServer = await startBackendServer();
   server.use(
     rest.get(
-      `http://localhost:${backendServer.port()}/api/catalog/entities`,
-      (_, res, ctx) => res(ctx.status(200), ctx.json(mockData)),
+      `http://localhost:${backendServer.port()}/api/catalog/entities/by-query`,
+      (_, res, ctx) => res(ctx.status(200), ctx.json({ items: mockData })),
     ),
   );
 
@@ -97,7 +97,7 @@ describe('createRouter', () => {
       mockData: mockPlugins,
     });
     const response = await request(backendServer).get(
-      `/api/marketplace/plugins`,
+      '/api/marketplace/plugins',
     );
     expect(response.status).toEqual(200);
     expect(response.body).toHaveLength(2);
@@ -109,7 +109,7 @@ describe('createRouter', () => {
     });
 
     const response = await request(backendServer).get(
-      `/api/marketplace/plugins/plugin1`,
+      '/api/marketplace/plugins/plugin1',
     );
 
     expect(response.status).toEqual(200);
@@ -121,7 +121,7 @@ describe('createRouter', () => {
       mockData: {},
     });
     const response = await request(backendServer).get(
-      `/api/marketplace/plugins/test-plugin`,
+      '/api/marketplace/plugins/test-plugin',
     );
 
     expect(response.status).toEqual(404);
@@ -134,7 +134,7 @@ describe('createRouter', () => {
     });
 
     const response = await request(backendServer).get(
-      `/api/marketplace/pluginlist`,
+      '/api/marketplace/pluginlists',
     );
 
     expect(response.status).toEqual(200);
@@ -147,7 +147,7 @@ describe('createRouter', () => {
     });
 
     const response = await request(backendServer).get(
-      `/api/marketplace/pluginlist/featured-plugins`,
+      '/api/marketplace/pluginlists/featured-plugins',
     );
 
     expect(response.status).toEqual(200);
@@ -161,7 +161,7 @@ describe('createRouter', () => {
     });
 
     const response = await request(backendServer).get(
-      `/api/marketplace/pluginlist/invalid-pluginlist`,
+      '/api/marketplace/pluginlists/invalid-pluginlist',
     );
 
     expect(response.status).toEqual(404);
@@ -176,7 +176,7 @@ describe('createRouter', () => {
     });
 
     const response = await request(backendServer).get(
-      `/api/marketplace/pluginlist/featured-plugins/plugins`,
+      '/api/marketplace/pluginlists/featured-plugins/plugins',
     );
 
     expect(response.status).toEqual(200);
@@ -188,8 +188,9 @@ describe('createRouter', () => {
     const backendServer = await startBackendServer();
     server.use(
       rest.get(
-        `http://localhost:${backendServer.port()}/api/catalog/entities`,
-        (_, res, ctx) => res(ctx.status(200), ctx.json(mockPluginList)),
+        `http://localhost:${backendServer.port()}/api/catalog/entities/by-query`,
+        (_, res, ctx) =>
+          res(ctx.status(200), ctx.json({ items: mockPluginList })),
       ),
       rest.post(
         `http://localhost:${backendServer.port()}/api/catalog/entities/by-refs`,
@@ -198,7 +199,7 @@ describe('createRouter', () => {
     );
 
     const response = await request(backendServer).get(
-      `/api/marketplace/pluginlist/featured-plugins/plugins`,
+      '/api/marketplace/pluginlists/featured-plugins/plugins',
     );
 
     expect(response.status).toEqual(200);
@@ -213,7 +214,7 @@ describe('createRouter', () => {
     });
 
     const response = await request(backendServer).get(
-      `/api/marketplace/pluginlist/featured-plugins/plugins`,
+      '/api/marketplace/pluginlists/featured-plugins/plugins',
     );
 
     expect(response.status).toEqual(404);

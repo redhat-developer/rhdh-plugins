@@ -14,48 +14,44 @@
  * limitations under the License.
  */
 
-import {
-  AuthService,
-  LoggerService,
-  RootConfigService,
-} from '@backstage/backend-plugin-api';
-
+import { AuthService } from '@backstage/backend-plugin-api';
+import { MarketplaceService } from './types';
+import { stringifyEntityRef } from '@backstage/catalog-model';
 import {
   MarketplaceKinds,
-  MarketplacePluginEntry,
+  MarketplacePlugin,
   MarketplacePluginList,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { MarketplaceService } from './MarketplaceService';
 import { CatalogApi } from '@backstage/catalog-client';
 import { NotFoundError } from '@backstage/errors';
 
-export type Options = {
-  logger: LoggerService;
+/**
+ * @public
+ */
+export type MarketplaceClientOptions = {
   auth: AuthService;
-  config?: RootConfigService;
   catalogApi: CatalogApi;
 };
 
-export class MarketplaceCatalogService implements MarketplaceService {
-  private readonly logger: LoggerService;
+/**
+ * @public
+ */
+export class MarketplaceClient implements MarketplaceService {
   private readonly catalog: CatalogApi;
   private readonly auth: AuthService;
 
-  constructor(options: Options) {
-    this.logger = options.logger;
+  constructor(options: MarketplaceClientOptions) {
     this.auth = options.auth;
     this.catalog = options.catalogApi;
   }
 
-  async getPlugins(): Promise<MarketplacePluginEntry[]> {
-    this.logger.info('getPlugins');
-
+  async getPlugins(): Promise<MarketplacePlugin[]> {
     const token = await this.auth.getPluginRequestToken({
       onBehalfOf: await this.auth.getOwnServiceCredentials(),
       targetPluginId: 'catalog',
     });
-    const result = await this.catalog.getEntities(
+    const result = await this.catalog.queryEntities(
       {
         filter: {
           kind: 'plugin',
@@ -64,17 +60,15 @@ export class MarketplaceCatalogService implements MarketplaceService {
       token,
     );
 
-    return result.items as MarketplacePluginEntry[];
+    return result.items as MarketplacePlugin[];
   }
 
-  async getPluginList(): Promise<MarketplacePluginList[]> {
-    this.logger.info('getPluginList');
-
+  async getPluginLists(): Promise<MarketplacePluginList[]> {
     const token = await this.auth.getPluginRequestToken({
       onBehalfOf: await this.auth.getOwnServiceCredentials(),
       targetPluginId: 'catalog',
     });
-    const result = await this.catalog.getEntities(
+    const result = await this.catalog.queryEntities(
       {
         filter: {
           kind: 'pluginList',
@@ -91,7 +85,7 @@ export class MarketplaceCatalogService implements MarketplaceService {
       onBehalfOf: await this.auth.getOwnServiceCredentials(),
       targetPluginId: 'catalog',
     });
-    const result = await this.catalog.getEntities(
+    const result = await this.catalog.queryEntities(
       {
         filter: {
           kind: 'pluginList',
@@ -104,12 +98,12 @@ export class MarketplaceCatalogService implements MarketplaceService {
     return result.items?.[0] as MarketplacePluginList;
   }
 
-  async getPluginByName(name: string): Promise<MarketplacePluginEntry> {
+  async getPluginByName(name: string): Promise<MarketplacePlugin> {
     const token = await this.auth.getPluginRequestToken({
       onBehalfOf: await this.auth.getOwnServiceCredentials(),
       targetPluginId: 'catalog',
     });
-    const result = await this.catalog.getEntities(
+    const result = await this.catalog.queryEntities(
       {
         filter: {
           kind: 'plugin',
@@ -119,12 +113,10 @@ export class MarketplaceCatalogService implements MarketplaceService {
       token,
     );
 
-    return result.items?.[0] as MarketplacePluginEntry;
+    return result.items?.[0] as MarketplacePlugin;
   }
 
-  async getPluginsByPluginsListName(
-    name: string,
-  ): Promise<MarketplacePluginEntry[]> {
+  async getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]> {
     const pluginList = await this.getPluginListByName(name);
     const plugins = pluginList?.spec?.plugins;
 
@@ -135,7 +127,7 @@ export class MarketplaceCatalogService implements MarketplaceService {
     }
 
     if (!plugins) {
-      return [] as MarketplacePluginEntry[];
+      return [] as MarketplacePlugin[];
     }
 
     const token = await this.auth.getPluginRequestToken({
@@ -144,10 +136,15 @@ export class MarketplaceCatalogService implements MarketplaceService {
     });
 
     const entityRefs = plugins.map(plugin =>
-      `${MarketplaceKinds.plugin}:${pluginList.metadata?.namespace}/${plugin}`.toLowerCase(),
+      stringifyEntityRef({
+        kind: MarketplaceKinds.plugin,
+        namespace: pluginList.metadata!.namespace,
+        name: plugin,
+      }),
     );
+
     const result = await this.catalog.getEntitiesByRefs({ entityRefs }, token);
 
-    return result.items as MarketplacePluginEntry[];
+    return result.items as MarketplacePlugin[];
   }
 }
