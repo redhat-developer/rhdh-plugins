@@ -4,4 +4,4 @@
 
 ### Patch Changes
 
-- 086841f: First release of globa-header plugin
+- 086841f: First release of global-header plugin
