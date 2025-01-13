@@ -20,7 +20,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './router';
 import { CatalogClient } from '@backstage/catalog-client';
-import { MarketplaceClient } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplaceCatalogClient } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 /**
  * marketplacePlugin backend plugin
  *
@@ -38,7 +38,7 @@ export const marketplacePlugin = createBackendPlugin({
       },
       async init({ auth, httpAuth, httpRouter, discovery }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
-        const marketplaceService = new MarketplaceClient({
+        const marketplaceService = new MarketplaceCatalogClient({
           auth,
           catalogApi,
         });

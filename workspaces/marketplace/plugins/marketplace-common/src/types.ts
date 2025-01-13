@@ -86,7 +86,7 @@ export interface MarketplacePluginSpec extends JsonObject {
 /**
  * @public
  */
-export interface MarketplaceService {
+export interface MarketplaceApi {
   getPlugins(): Promise<MarketplacePlugin[]>;
   getPluginByName(name: string): Promise<MarketplacePlugin>;
   getPluginLists(): Promise<MarketplacePluginList[]>;

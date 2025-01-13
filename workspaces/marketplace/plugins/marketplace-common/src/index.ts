@@ -21,4 +21,4 @@
  */
 
 export * from './types';
-export * from './marketplaceClient';
+export * from './api';

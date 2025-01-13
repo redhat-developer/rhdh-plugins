@@ -76,8 +76,12 @@ const testSetup = setupTest();
 
 const setupTestWithMockCatalog = async ({
   mockData,
+  name,
+  kind = 'plugin',
 }: {
-  mockData: MarketplacePlugin[] | MarketplacePluginList[] | {};
+  mockData: MarketplacePlugin[] | MarketplacePluginList[] | {} | null;
+  name?: string;
+  kind?: string;
 }): Promise<{ backendServer: ExtendedHttpServer }> => {
   const { server } = testSetup();
   const backendServer: ExtendedHttpServer = await startBackendServer();
@@ -85,6 +89,10 @@ const setupTestWithMockCatalog = async ({
     rest.get(
       `http://localhost:${backendServer.port()}/api/catalog/entities/by-query`,
       (_, res, ctx) => res(ctx.status(200), ctx.json({ items: mockData })),
+    ),
+    rest.get(
+      `http://localhost:${backendServer.port()}/api/catalog/entities/by-name/${kind}/default/${name}`,
+      (_, res, ctx) => res(ctx.status(200), ctx.json(mockData)),
     ),
   );
 
@@ -105,7 +113,8 @@ describe('createRouter', () => {
 
   it('should get the plugin by name', async () => {
     const { backendServer } = await setupTestWithMockCatalog({
-      mockData: [mockPlugins[0]],
+      mockData: mockPlugins[0],
+      name: 'plugin1',
     });
 
     const response = await request(backendServer).get(
@@ -143,7 +152,9 @@ describe('createRouter', () => {
 
   it('should get the pluginlist by name', async () => {
     const { backendServer } = await setupTestWithMockCatalog({
-      mockData: mockPluginList,
+      mockData: mockPluginList[0],
+      name: 'featured-plugins',
+      kind: 'pluginlist',
     });
 
     const response = await request(backendServer).get(
@@ -157,7 +168,9 @@ describe('createRouter', () => {
 
   it('should throw error while fetching pluginlist by name', async () => {
     const { backendServer } = await setupTestWithMockCatalog({
-      mockData: {},
+      mockData: null,
+      name: 'invalid-pluginlist',
+      kind: 'pluginlist',
     });
 
     const response = await request(backendServer).get(
@@ -172,7 +185,9 @@ describe('createRouter', () => {
 
   it('should return empty array when plugins is not set in the pluginList entity', async () => {
     const { backendServer } = await setupTestWithMockCatalog({
-      mockData: [{ ...mockPluginList[0], spec: {} }],
+      mockData: { ...mockPluginList[0], spec: {} },
+      name: 'featured-plugins',
+      kind: 'pluginlist',
     });
 
     const response = await request(backendServer).get(
@@ -188,9 +203,8 @@ describe('createRouter', () => {
     const backendServer = await startBackendServer();
     server.use(
       rest.get(
-        `http://localhost:${backendServer.port()}/api/catalog/entities/by-query`,
-        (_, res, ctx) =>
-          res(ctx.status(200), ctx.json({ items: mockPluginList })),
+        `http://localhost:${backendServer.port()}/api/catalog/entities/by-name/pluginlist/default/featured-plugins`,
+        (_, res, ctx) => res(ctx.status(200), ctx.json(mockPluginList[0])),
       ),
       rest.post(
         `http://localhost:${backendServer.port()}/api/catalog/entities/by-refs`,
@@ -210,7 +224,9 @@ describe('createRouter', () => {
 
   it('should throw an error when the pluginlist is not available', async () => {
     const { backendServer } = await setupTestWithMockCatalog({
-      mockData: {},
+      mockData: null,
+      name: 'featured-plugins',
+      kind: 'pluginlist',
     });
 
     const response = await request(backendServer).get(

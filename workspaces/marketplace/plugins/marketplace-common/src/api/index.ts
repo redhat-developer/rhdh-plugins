@@ -13,16 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {
-  MarketplacePlugin,
-  MarketplacePluginList,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-
-/**
- * @public
- */
-export interface MarketplaceApi {
-  getPluginLists(): Promise<MarketplacePluginList[]>;
-  getPlugins(): Promise<MarketplacePlugin[]>;
-}
+export * from './MarketplaceCatalogClient';

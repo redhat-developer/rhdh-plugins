@@ -21,14 +21,14 @@ import Router from 'express-promise-router';
 import { NotFoundError } from '@backstage/errors';
 import {
   MarketplaceKinds,
-  MarketplaceClient,
+  MarketplaceCatalogClient,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export async function createRouter({
   marketplaceService,
 }: {
   httpAuth: HttpAuthService;
-  marketplaceService: MarketplaceClient;
+  marketplaceService: MarketplaceCatalogClient;
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -69,9 +69,8 @@ export async function createRouter({
     const name = _req.params.name;
 
     try {
-      const pluginlist = await marketplaceService.getPluginsByPluginListName(
-        name,
-      );
+      const pluginlist =
+        await marketplaceService.getPluginsByPluginListName(name);
 
       res.json(pluginlist);
     } catch (error) {

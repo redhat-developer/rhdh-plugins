@@ -4,6 +4,8 @@
 
 ```ts
 
+import { AuthService } from '@backstage/backend-plugin-api';
+import { CatalogApi } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
@@ -17,6 +19,41 @@ export enum InstallStatus {
 
 // @public (undocumented)
 export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";
+
+// @public (undocumented)
+export interface MarketplaceApi {
+    // (undocumented)
+    getPluginByName(name: string): Promise<MarketplacePlugin>;
+    // (undocumented)
+    getPluginListByName(name: string): Promise<MarketplacePluginList>;
+    // (undocumented)
+    getPluginLists(): Promise<MarketplacePluginList[]>;
+    // (undocumented)
+    getPlugins(): Promise<MarketplacePlugin[]>;
+    // (undocumented)
+    getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
+}
+
+// @public (undocumented)
+export class MarketplaceCatalogClient implements MarketplaceApi {
+    constructor(options: MarketplaceCatalogClientOptions);
+    // (undocumented)
+    getPluginByName(name: string): Promise<MarketplacePlugin>;
+    // (undocumented)
+    getPluginListByName(name: string): Promise<MarketplacePluginList>;
+    // (undocumented)
+    getPluginLists(): Promise<MarketplacePluginList[]>;
+    // (undocumented)
+    getPlugins(): Promise<MarketplacePlugin[]>;
+    // (undocumented)
+    getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
+}
+
+// @public (undocumented)
+export type MarketplaceCatalogClientOptions = {
+    auth?: AuthService;
+    catalogApi: CatalogApi;
+};
 
 // @public (undocumented)
 export enum MarketplaceKinds {
@@ -38,7 +75,7 @@ export type MarketplacePackage = {
 };
 
 // @public (undocumented)
-export interface MarketplacePluginEntry extends Entity {
+export interface MarketplacePlugin extends Entity {
     // (undocumented)
     spec?: MarketplacePluginSpec;
 }
