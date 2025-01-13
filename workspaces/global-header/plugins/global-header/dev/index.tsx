@@ -18,11 +18,30 @@ import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
 import { globalHeaderPlugin } from '../src/plugin';
 import { ExampleComponent } from '../src/components/ExampleComponent';
+import { TestApiProvider } from '@backstage/test-utils';
+import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
+
+const mockSearchApi = new MockSearchApi({
+  results: [
+    {
+      type: 'software-catalog',
+      document: {
+        title: 'example search result',
+        text: 'this is an example search result',
+        location: 'https://example.com',
+      },
+    },
+  ],
+});
 
 createDevApp()
   .registerPlugin(globalHeaderPlugin)
   .addPage({
-    element: <ExampleComponent />,
+    element: (
+      <TestApiProvider apis={[[searchApiRef, mockSearchApi]]}>
+        <ExampleComponent />
+      </TestApiProvider>
+    ),
     title: 'Global Header',
     path: '/global-header',
   })
