@@ -101,7 +101,6 @@ export enum RepositoryStatus {
 
 export enum AddedRepositoryColumnNameEnum {
   repoName = 'repository.name', // because of property name
-  repositoryName = 'repository.name',
   organizationUrl = 'repository.organization',
   repoUrl = 'repository.url',
   catalogInfoYamlLastUpdated = 'lastUpdate',
