@@ -19,25 +19,38 @@ import {
   createComponentExtension,
 } from '@backstage/core-plugin-api';
 
+export type { TestButtonProps } from './components/TestButton';
+export type { TestHeaderProps } from './components/TestHeader';
+
 /**
- * Global Header Plugin
+ * Global Header Test Plugin
  *
  * @public
  */
-export const globalHeaderPlugin = createPlugin({
-  id: 'global-header',
+export const globalHeaderTestPlugin = createPlugin({
+  id: 'global-header-test',
 });
 
 /**
- * Global Header
- *
  * @public
  */
-export const GlobalHeader = globalHeaderPlugin.provide(
+export const TestButton = globalHeaderTestPlugin.provide(
   createComponentExtension({
-    name: 'GlobalHeader',
+    name: 'TestButton',
     component: {
-      lazy: () => import('./components/GlobalHeader').then(m => m.GlobalHeader),
+      lazy: () => import('./components/TestButton').then(m => m.TestButton),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const TestHeader = globalHeaderTestPlugin.provide(
+  createComponentExtension({
+    name: 'TestHeader',
+    component: {
+      lazy: () => import('./components/TestHeader').then(m => m.TestHeader),
     },
   }),
 );

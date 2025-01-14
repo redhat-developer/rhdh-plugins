@@ -14,30 +14,27 @@
  * limitations under the License.
  */
 
-import {
-  createPlugin,
-  createComponentExtension,
-} from '@backstage/core-plugin-api';
+import React from 'react';
 
 /**
- * Global Header Plugin
- *
  * @public
  */
-export const globalHeaderPlugin = createPlugin({
-  id: 'global-header',
-});
+export interface TestHeaderProps {
+  title?: string;
+}
 
-/**
- * Global Header
- *
- * @public
- */
-export const GlobalHeader = globalHeaderPlugin.provide(
-  createComponentExtension({
-    name: 'GlobalHeader',
-    component: {
-      lazy: () => import('./components/GlobalHeader').then(m => m.GlobalHeader),
-    },
-  }),
+export const TestHeader = (props: TestHeaderProps) => (
+  <header
+    style={{
+      color: 'white',
+      backgroundColor: '#a00',
+      fontWeight: 'bold',
+      fontSize: '1.5rem',
+      textAlign: 'center',
+      border: '1px solid darkred',
+      padding: 10,
+    }}
+  >
+    {props.title ?? 'This is a test header!'}
+  </header>
 );

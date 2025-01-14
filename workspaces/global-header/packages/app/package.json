@@ -47,6 +47,7 @@
     "@material-ui/icons": "^4.9.1",
     "@mui/icons-material": "5.16.13",
     "@red-hat-developer-hub/backstage-plugin-global-header": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-global-header-test": "workspace:^",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
     "react-router": "^6.3.0",

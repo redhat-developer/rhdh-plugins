@@ -1,0 +1,27 @@
+# test global-header components. this isn't implemented yet!
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-global-header-test:
+      mountPoints:
+        # Additional headers
+        - mountPoint: application/header
+          importName: TestHeader
+          config:
+            layout:
+              position: above-sidebar
+
+        - mountPoint: application/header
+          importName: TestHeader
+          config:
+            layout:
+              position: above-main-content
+
+        # Additional header components within the global-header
+        - mountPoint: header/component
+          importName: TestButton
+
+        - mountPoint: header/create
+          importName: TestButton
+
+        - mountPoint: header/profile
+          importName: TestButton

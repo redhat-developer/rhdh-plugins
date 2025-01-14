@@ -13,31 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import React from 'react';
+import { createDevApp } from '@backstage/dev-utils';
+import { globalHeaderTestPlugin, TestHeader, TestButton } from '../src/plugin';
 
-import {
-  createPlugin,
-  createComponentExtension,
-} from '@backstage/core-plugin-api';
-
-/**
- * Global Header Plugin
- *
- * @public
- */
-export const globalHeaderPlugin = createPlugin({
-  id: 'global-header',
-});
-
-/**
- * Global Header
- *
- * @public
- */
-export const GlobalHeader = globalHeaderPlugin.provide(
-  createComponentExtension({
-    name: 'GlobalHeader',
-    component: {
-      lazy: () => import('./components/GlobalHeader').then(m => m.GlobalHeader),
-    },
-  }),
-);
+createDevApp()
+  .registerPlugin(globalHeaderTestPlugin)
+  .addPage({
+    element: <TestHeader />,
+    title: 'TestHeader',
+    path: '/test-header',
+  })
+  .addPage({
+    element: <TestButton />,
+    title: 'TestButton',
+    path: '/test-button',
+  })
+  .render();
