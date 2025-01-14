@@ -32,7 +32,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { usePlugins } from '../hooks/usePlugins';
 import { detailsRouteRef, rootRouteRef } from '../routes';
 
@@ -62,7 +62,7 @@ const EntryContentSkeleton = () => {
   );
 };
 
-const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
+const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
   const getIndexPath = useRouteRef(rootRouteRef);
 
   const withSearchParameter = (name: string, value: string) =>
