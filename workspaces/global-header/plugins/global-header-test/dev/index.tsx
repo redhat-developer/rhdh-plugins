@@ -15,7 +15,13 @@
  */
 import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
-import { globalHeaderTestPlugin, TestHeader, TestButton } from '../src/plugin';
+import {
+  globalHeaderTestPlugin,
+  TestHeader,
+  TestButton,
+  CrashButton,
+  CrashHeader,
+} from '../src/plugin';
 
 createDevApp()
   .registerPlugin(globalHeaderTestPlugin)
@@ -28,5 +34,15 @@ createDevApp()
     element: <TestButton />,
     title: 'TestButton',
     path: '/test-button',
+  })
+  .addPage({
+    element: <CrashButton />,
+    title: 'CrashButton',
+    path: '/crash-button',
+  })
+  .addPage({
+    element: <CrashHeader />,
+    title: 'CrashHeader',
+    path: '/crash-header',
   })
   .render();

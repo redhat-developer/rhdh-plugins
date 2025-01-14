@@ -21,6 +21,8 @@ import {
 
 export type { TestButtonProps } from './components/TestButton';
 export type { TestHeaderProps } from './components/TestHeader';
+export type { CrashButtonProps } from './components/CrashButton';
+export type { CrashHeaderProps } from './components/CrashHeader';
 
 /**
  * Global Header Test Plugin
@@ -51,6 +53,30 @@ export const TestHeader = globalHeaderTestPlugin.provide(
     name: 'TestHeader',
     component: {
       lazy: () => import('./components/TestHeader').then(m => m.TestHeader),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const CrashButton = globalHeaderTestPlugin.provide(
+  createComponentExtension({
+    name: 'CrashButton',
+    component: {
+      lazy: () => import('./components/CrashButton').then(m => m.CrashButton),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const CrashHeader = globalHeaderTestPlugin.provide(
+  createComponentExtension({
+    name: 'CrashHeader',
+    component: {
+      lazy: () => import('./components/CrashHeader').then(m => m.CrashHeader),
     },
   }),
 );
