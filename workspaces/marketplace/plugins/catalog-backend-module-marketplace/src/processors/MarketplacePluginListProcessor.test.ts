@@ -15,7 +15,8 @@
  */
 
 import { MarketplacePluginList } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { MarketplacePluginListProcessor } from '../MarketplacePluginListProcessor';
+
+import { MarketplacePluginListProcessor } from './MarketplacePluginListProcessor';
 
 const pluginListEntity: MarketplacePluginList = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',

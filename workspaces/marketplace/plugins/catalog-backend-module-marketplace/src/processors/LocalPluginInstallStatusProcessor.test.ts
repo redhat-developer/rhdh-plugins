@@ -18,7 +18,8 @@ import {
   InstallStatus,
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { LocalPluginInstallStatusProcessor } from '../LocalPluginInstallStatusProcessor';
+
+import { LocalPluginInstallStatusProcessor } from './LocalPluginInstallStatusProcessor';
 
 const pluginEntity: MarketplacePlugin = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',

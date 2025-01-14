@@ -15,12 +15,13 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { DynamicPluginInstallStatusProcessor } from '../DynamicPluginInstallStatusProcessor';
+import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 import {
   InstallStatus,
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
+
+import { DynamicPluginInstallStatusProcessor } from './DynamicPluginInstallStatusProcessor';
 
 const pluginEntity: MarketplacePlugin = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',

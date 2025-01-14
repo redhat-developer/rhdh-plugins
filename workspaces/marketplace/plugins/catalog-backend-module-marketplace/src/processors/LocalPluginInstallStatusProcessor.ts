@@ -44,6 +44,7 @@ export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
         cpath => `${this.workspacesPath}/${cpath}/package.json`,
       );
   }
+
   getProcessorName(): string {
     return 'LocalPluginInstallStatusProcessor';
   }
