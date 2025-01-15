@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.0.4
+
+### Patch Changes
+
+- 5f09737: Emit pluginlist relationship bidirectionlly to establish complete connections
+
 ## 0.0.3
 
 ### Patch Changes
