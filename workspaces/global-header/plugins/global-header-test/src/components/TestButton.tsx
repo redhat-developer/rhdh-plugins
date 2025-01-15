@@ -14,30 +14,18 @@
  * limitations under the License.
  */
 
-import {
-  createPlugin,
-  createComponentExtension,
-} from '@backstage/core-plugin-api';
+import React from 'react';
+import Button from '@mui/material/Button';
 
 /**
- * Global Header Plugin
- *
  * @public
  */
-export const globalHeaderPlugin = createPlugin({
-  id: 'global-header',
-});
+export interface TestButtonProps {
+  label?: string;
+}
 
-/**
- * Global Header
- *
- * @public
- */
-export const GlobalHeader = globalHeaderPlugin.provide(
-  createComponentExtension({
-    name: 'GlobalHeader',
-    component: {
-      lazy: () => import('./components/GlobalHeader').then(m => m.GlobalHeader),
-    },
-  }),
+export const TestButton = ({ label, ...props }: TestButtonProps) => (
+  <Button color="primary" {...props}>
+    {label ?? 'Test Button'}
+  </Button>
 );

@@ -13,31 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { globalHeaderTestPlugin } from './plugin';
 
-import {
-  createPlugin,
-  createComponentExtension,
-} from '@backstage/core-plugin-api';
-
-/**
- * Global Header Plugin
- *
- * @public
- */
-export const globalHeaderPlugin = createPlugin({
-  id: 'global-header',
+describe('global-header-test', () => {
+  it('should export plugin', () => {
+    expect(globalHeaderTestPlugin).toBeDefined();
+  });
 });
-
-/**
- * Global Header
- *
- * @public
- */
-export const GlobalHeader = globalHeaderPlugin.provide(
-  createComponentExtension({
-    name: 'GlobalHeader',
-    component: {
-      lazy: () => import('./components/GlobalHeader').then(m => m.GlobalHeader),
-    },
-  }),
-);

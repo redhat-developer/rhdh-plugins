@@ -14,30 +14,24 @@
  * limitations under the License.
  */
 
-import {
-  createPlugin,
-  createComponentExtension,
-} from '@backstage/core-plugin-api';
+import React from 'react';
+import Button from '@mui/material/Button';
 
 /**
- * Global Header Plugin
- *
  * @public
  */
-export const globalHeaderPlugin = createPlugin({
-  id: 'global-header',
-});
+export interface CrashButtonProps {
+  label?: string;
+}
 
-/**
- * Global Header
- *
- * @public
- */
-export const GlobalHeader = globalHeaderPlugin.provide(
-  createComponentExtension({
-    name: 'GlobalHeader',
-    component: {
-      lazy: () => import('./components/GlobalHeader').then(m => m.GlobalHeader),
-    },
-  }),
-);
+export const CrashButton = ({ label, ...props }: CrashButtonProps) => {
+  const [crash, setCrash] = React.useState(false);
+  if (crash) {
+    throw new Error('This is an expected render-crash from CrashButton!');
+  }
+  return (
+    <Button color="primary" {...props} onClick={() => setCrash(true)}>
+      {label ?? 'Crash Button'}
+    </Button>
+  );
+};
