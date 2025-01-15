@@ -12,7 +12,7 @@ import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
 import { DiscoveryService } from '@backstage/backend-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
-import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 // @public (undocumented)
 export type CachedData = {
@@ -35,7 +35,7 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
     // (undocumented)
     getProcessorName(): string;
     // (undocumented)
-    preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec, cache: CatalogProcessorCache): Promise<MarketplacePluginEntry>;
+    preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec, cache: CatalogProcessorCache): Promise<MarketplacePlugin>;
 }
 
 // @public (undocumented)
@@ -48,7 +48,7 @@ export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
     // (undocumented)
     isJSON(str: string): boolean;
     // (undocumented)
-    preProcessEntity(entity: MarketplacePluginEntry): Promise<Entity>;
+    preProcessEntity(entity: MarketplacePlugin): Promise<Entity>;
 }
 
 // @public (undocumented)

@@ -27,7 +27,7 @@ import {
   InstallStatus,
   MARKETPLACE_API_VERSION,
   MarketplaceKinds,
-  MarketplacePluginEntry,
+  MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 /**
@@ -115,7 +115,7 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
     _emit: CatalogProcessorEmit,
     _originLocation: LocationSpec,
     cache: CatalogProcessorCache,
-  ): Promise<MarketplacePluginEntry> {
+  ): Promise<MarketplacePlugin> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
       entity.kind === MarketplaceKinds.plugin

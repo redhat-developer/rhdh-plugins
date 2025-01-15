@@ -21,4 +21,4 @@ ClassNameGenerator.configure(componentName => {
     : `v5-${componentName}`;
 });
 
-export { globalHeaderPlugin, GlobalHeader } from './plugin';
+export * from './plugin';

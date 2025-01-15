@@ -16,10 +16,13 @@
 
 import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
-import { globalHeaderPlugin } from '../src/plugin';
-import { ExampleComponent } from '../src/components/ExampleComponent';
 import { TestApiProvider } from '@backstage/test-utils';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
+
+import Button from '@mui/material/Button';
+
+import { globalHeaderPlugin, NotificationBanner } from '../src/plugin';
+import { ExampleComponent } from '../src/components/ExampleComponent';
 
 const mockSearchApi = new MockSearchApi({
   results: [
@@ -44,5 +47,48 @@ createDevApp()
     ),
     title: 'Global Header',
     path: '/global-header',
+  })
+  .addPage({
+    element: (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <NotificationBanner
+          title={`🥳 Happy ${new Date().getFullYear()}! 🥳`}
+        />
+        <NotificationBanner title="## This is Markdown!" markdown />
+        <NotificationBanner title="This is also **Markdown**!" markdown />
+        <NotificationBanner title="This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information!" />
+
+        {/* <NotificationBanner title="This is a warning!" icon="info" />
+        <NotificationBanner title="This is a warning!" icon="success" />
+        <NotificationBanner title="This is a warning!" icon="warning" />
+        <NotificationBanner title="This is a warning!" icon="error" /> */}
+
+        <NotificationBanner
+          title="A colorized notification: ⚠️ Maintainance planned for this week! ⚠️"
+          textColor="blue"
+          backgroundColor="yellow"
+          border="2px solid blue"
+        />
+        <NotificationBanner
+          title="And a dismissable notification! Will appear after reload!"
+          dismiss="session"
+        />
+        <NotificationBanner
+          title="And a dismissable notification! Dismiss option is saved in local storage!"
+          dismiss="localstorage"
+        />
+
+        <Button
+          onClick={() => {
+            localStorage.removeItem('global-header/NotificationBanner');
+            window.location.reload();
+          }}
+        >
+          Cleanup localStorage
+        </Button>
+      </div>
+    ),
+    title: 'Notifications',
+    path: '/notifications',
   })
   .render();
