@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 0.0.3
+
+### Patch Changes
+
+- 4959ebb: add new notificationbanner component
+
 ## 0.0.2
 
 ### Patch Changes
