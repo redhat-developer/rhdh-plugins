@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
-import {
-  MarketplacePluginEntry,
-  MarketplacePluginList,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+ClassNameGenerator.configure(componentName => {
+  return componentName.startsWith('v5-')
+    ? componentName
+    : `v5-${componentName}`;
+});
 
-/**
- * @public
- */
-export interface MarketplaceApi {
-  getPluginList(): Promise<MarketplacePluginList[]>;
-  getPlugins(): Promise<MarketplacePluginEntry[]>;
-}
+export * from './plugin';

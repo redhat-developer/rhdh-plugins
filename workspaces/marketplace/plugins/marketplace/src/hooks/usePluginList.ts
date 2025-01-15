@@ -25,6 +25,6 @@ export const usePluginList = () => {
 
   return useQuery({
     queryKey: ['pluginList'],
-    queryFn: () => marketplaceApi.getPluginList(),
+    queryFn: () => marketplaceApi.getPluginLists(),
   });
 };

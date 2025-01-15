@@ -23,7 +23,7 @@ import {
   InstallStatus,
   MARKETPLACE_API_VERSION,
   MarketplaceKinds,
-  MarketplacePluginEntry,
+  MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 /**
@@ -44,6 +44,7 @@ export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
         cpath => `${this.workspacesPath}/${cpath}/package.json`,
       );
   }
+
   getProcessorName(): string {
     return 'LocalPluginInstallStatusProcessor';
   }
@@ -137,7 +138,7 @@ export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
     }
   }
 
-  async preProcessEntity(entity: MarketplacePluginEntry): Promise<Entity> {
+  async preProcessEntity(entity: MarketplacePlugin): Promise<Entity> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
       entity.kind === MarketplaceKinds.plugin

@@ -15,14 +15,15 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { DynamicPluginInstallStatusProcessor } from '../DynamicPluginInstallStatusProcessor';
+import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 import {
   InstallStatus,
-  MarketplacePluginEntry,
+  MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 
-const pluginEntity: MarketplacePluginEntry = {
+import { DynamicPluginInstallStatusProcessor } from './DynamicPluginInstallStatusProcessor';
+
+const pluginEntity: MarketplacePlugin = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
   metadata: {
     name: 'testplugin',
@@ -217,7 +218,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
     });
 
     it('should set installStatus to NotInstalled if the plugin is not found', async () => {
-      const entity: MarketplacePluginEntry = {
+      const entity: MarketplacePlugin = {
         apiVersion: 'marketplace.backstage.io/v1alpha1',
         kind: 'Plugin',
         metadata: { name: 'unknown-plugin' },
@@ -244,7 +245,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
     });
 
     it('should return the entity unchanged for non-plugin entities', async () => {
-      const entity: MarketplacePluginEntry = {
+      const entity: MarketplacePlugin = {
         apiVersion: 'other-api/v1',
         kind: 'Component',
         metadata: { name: 'component1' },
