@@ -659,13 +659,13 @@ describe('lightspeed router tests', () => {
       await saveHistory(mockConversationId, Roles.HumanRole, humanMessage);
       await saveHistory(mockConversationId, Roles.AIRole, aiMessage);
 
-      // wait for 1ms for the second conversation to be saved to test for timestamp
-      await new Promise(resolve => setTimeout(resolve, 1));
+      // wait for 5ms for the second conversation to be saved to test for timestamp
+      await new Promise(resolve => setTimeout(resolve, 5));
 
       await saveHistory(mockConversationId2, Roles.HumanRole, humanMessage);
       await saveHistory(mockConversationId2, Roles.AIRole, aiMessage);
 
-      await new Promise(resolve => setTimeout(resolve, 1));
+      await new Promise(resolve => setTimeout(resolve, 5));
       const mockConversationId3 = 'user: default/user1+9i8u7y6t-654red3';
       await saveHistory(mockConversationId3, Roles.HumanRole, humanMessage);
       await saveHistory(mockConversationId3, Roles.AIRole, aiMessage);
