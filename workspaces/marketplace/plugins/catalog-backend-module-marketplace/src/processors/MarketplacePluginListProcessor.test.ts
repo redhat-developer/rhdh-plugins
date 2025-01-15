@@ -69,7 +69,7 @@ describe('MarketplacePluginListProcessor', () => {
 
     const emit = jest.fn();
     await processor.postProcessEntity(pluginListEntity, null as any, emit);
-    expect(emit).toHaveBeenCalledTimes(4);
+    expect(emit).toHaveBeenCalledTimes(7);
     expect(emit).toHaveBeenCalledWith({
       type: 'relation',
       relation: {
@@ -81,6 +81,27 @@ describe('MarketplacePluginListProcessor', () => {
         type: 'ownedBy',
         target: { kind: 'Group', namespace: 'default', name: 'test-group' },
       },
+    });
+    const getPluginHasPartOfPluginListRelation = (pluginName: string) => ({
+      source: {
+        kind: 'Plugin',
+        namespace: 'default',
+        name: pluginName,
+      },
+      type: 'hasPart',
+      target: {
+        kind: 'PluginList',
+        namespace: 'default',
+        name: 'testplugin',
+      },
+    });
+    expect(emit).toHaveBeenCalledWith({
+      type: 'relation',
+      relation: getPluginHasPartOfPluginListRelation('plugin-a'),
+    });
+    expect(emit).toHaveBeenCalledWith({
+      type: 'relation',
+      relation: getPluginHasPartOfPluginListRelation('plugin-b'),
     });
   });
 });
