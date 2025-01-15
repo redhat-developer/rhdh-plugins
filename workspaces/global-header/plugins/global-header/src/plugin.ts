@@ -19,6 +19,11 @@ import {
   createComponentExtension,
 } from '@backstage/core-plugin-api';
 
+export type {
+  NotificationBannerProps,
+  NotificationBannerDismiss,
+} from './components/NotificationBanner';
+
 /**
  * Global Header Plugin
  *
@@ -38,6 +43,23 @@ export const GlobalHeader = globalHeaderPlugin.provide(
     name: 'GlobalHeader',
     component: {
       lazy: () => import('./components/GlobalHeader').then(m => m.GlobalHeader),
+    },
+  }),
+);
+
+/**
+ * NotificationBanner
+ *
+ * @public
+ */
+export const NotificationBanner = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'NotificationBanner',
+    component: {
+      lazy: () =>
+        import('./components/NotificationBanner').then(
+          m => m.NotificationBanner,
+        ),
     },
   }),
 );
