@@ -1,8 +1,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Location
 metadata:
-  name: rhdh-plugins
-  title: RHDH plugins
+  name: rhdh-plugins-plugins
+  title: RHDH plugins (list of plugins)
   description: Backstage Plugins by Red Hat
 spec:
   targets:
