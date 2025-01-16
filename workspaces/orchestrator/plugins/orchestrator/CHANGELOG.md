@@ -1,5 +1,15 @@
 ### Dependencies
 
+## 2.5.2
+
+### Patch Changes
+
+- 00f0cea: Improve abort
+- cda86f1: improve details in workflow instance page details card
+- 1ab4ae4: removing business key
+- Updated dependencies [1ab4ae4]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.25.2
+
 ## 2.5.1
 
 ### Patch Changes

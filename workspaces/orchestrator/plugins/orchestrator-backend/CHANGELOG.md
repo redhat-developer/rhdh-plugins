@@ -1,5 +1,14 @@
 ### Dependencies
 
+## 5.1.2
+
+### Patch Changes
+
+- 665947d: fix bug in error handling of execute API
+- 1ab4ae4: replace business key with variable
+- Updated dependencies [1ab4ae4]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.25.2
+
 ## 5.1.1
 
 ### Patch Changes
