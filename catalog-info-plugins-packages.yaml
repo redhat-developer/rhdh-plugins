@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: rhdh-plugins
+  title: RHDH plugins
+  description: Backstage Plugins by Red Hat
+spec:
+  targets:
+    # This list contains all packages (=frontend plugins, backend plugins, etc.)
+    # for the plugins=workspace you cans ee in `catalog-info-plugins.yaml`.
+    # For maintance reasons, please keep this list alphabetically sorted.
+    - ./workspaces/bulk-import/plugins/bulk-import-backend/catalog-info.yaml
+    - ./workspaces/bulk-import/plugins/bulk-import-common/catalog-info.yaml
+    - ./workspaces/bulk-import/plugins/bulk-import/catalog-info.yaml
+    - ./workspaces/homepage/plugins/dynamic-home-page/catalog-info.yaml
+    - ./workspaces/openshift-image-registry/plugins/openshift-image-registry/catalog-info.yaml
+    - ./workspaces/orchestrator/plugins/orchestrator-backend/catalog-info.yaml
+    - ./workspaces/orchestrator/plugins/orchestrator-common/catalog-info.yaml
+    - ./workspaces/orchestrator/plugins/orchestrator-swf-editor-envelope/catalog-info.yaml
+    - ./workspaces/orchestrator/plugins/orchestrator/catalog-info.yaml
