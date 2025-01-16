@@ -5,9 +5,6 @@ metadata:
   title: RHDH OpenShift Image Registry plugin
   description: OpenShift Image Registry plugin for Backstage
   annotations:
-    backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/openshift-image-registry/plugins/openshift-image-registry
-    backstage.io/view-url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/openshift-image-registry/plugins/openshift-image-registry/catalog-info.yaml
-    backstage.io/edit-url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/openshift-image-registry/plugins/openshift-image-registry/catalog-info.yaml
     github.com/project-slug: red-hat-developer-hub/backstage-plugins
     github.com/team-slug: red-hat-developer-hub/maintainers-plugins
     sonarqube.org/project-key: red-hat-developer-hub_backstage-plugins
