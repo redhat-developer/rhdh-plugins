@@ -13,5 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { GlobalFloatingActionButton } from './GlobalFloatingActionButton';
-export { DynamicGlobalFloatingActionButton } from './DynamicGlobalFloatingActionButton';
+
+import React from 'react';
+
+import { useFabMountPoints } from '../hooks/useFabMountPoints';
+import { GlobalFloatingActionButton } from './GlobalFloatingActionButton';
+import { FloatingActionButton } from '../types';
+
+/**
+ * Dynamic Global Floating Action Button
+ *
+ * @public
+ */
+export const DynamicGlobalFloatingActionButton = () => {
+  const allFabMountPoints = useFabMountPoints();
+
+  const floatingButtons = (allFabMountPoints || []).map(
+    fab => fab?.config,
+  ) as FloatingActionButton[];
+
+  return <GlobalFloatingActionButton floatingButtons={floatingButtons || []} />;
+};
