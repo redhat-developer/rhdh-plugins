@@ -6,9 +6,6 @@ metadata:
   title: '@red-hat-developer-hub/backstage-plugin-orchestrator-backend'
   description: Orchestrator Backend Plugin for Backstage
   annotations:
-    backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-backend
-    backstage.io/view-url: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-backend/catalog-info.yaml
-    backstage.io/edit-url: https://github.com/redhat-developer/rhdh-plugins/edit/main/workspaces/orchestrator/plugins/orchestrator-backend/catalog-info.yaml
     github.com/project-slug: red-hat-developer-hub/backstage-plugins
     github.com/team-slug: red-hat-developer-hub/orchestrator-codeowners
     sonarqube.org/project-key: red_hat_developer_hub_plugins

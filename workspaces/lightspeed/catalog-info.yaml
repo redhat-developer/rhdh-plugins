@@ -3,6 +3,11 @@ kind: Component
 metadata:
   name: red-hat-developer-hub-lightspeed
   title: RHDH Lightspeed plugin
+  tags:
+    - backstage
+    - rhdh
+    - plugin
+    - ai
 spec:
   type: backstage-plugin
   lifecycle: production

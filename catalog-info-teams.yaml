@@ -36,14 +36,6 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Group
 metadata:
-  name: rhtap-team
-spec:
-  type: team
-  children: []
----
-apiVersion: backstage.io/v1alpha1
-kind: Group
-metadata:
   name: orchestrator-team
 spec:
   type: team

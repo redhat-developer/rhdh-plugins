@@ -5,12 +5,14 @@ metadata:
   name: red-hat-developer-hub-bulk-import
   title: RHDH Bulk Import plugin
   annotations:
-    backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/bulk-import/plugins/bulk-import
-    backstage.io/view-url: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/bulk-import/plugins/bulk-import/catalog-info.yaml
-    backstage.io/edit-url: https://github.com/redhat-developer/rhdh-plugins/edit/main/workspaces/bulk-import/plugins/bulk-import/catalog-info.yaml
     github.com/project-slug: red-hat-developer-hub/backstage-plugins
     github.com/team-slug: rhdh/maintainers-plugins
     sonarqube.org/project-key: red_hat_developer_hub_plugins
+  tags:
+    - backstage
+    - rhdh
+    - plugin
+    - github
   links:
     - url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/bulk-import/plugins/bulk-import
       title: GitHub Source
