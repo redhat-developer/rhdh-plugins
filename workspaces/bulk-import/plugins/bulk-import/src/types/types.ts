@@ -99,6 +99,18 @@ export enum RepositoryStatus {
   'CODEOWNERS_FILE_NOT_FOUND_IN_REPO' = 'CODEOWNERS_FILE_NOT_FOUND_IN_REPO',
 }
 
+export enum AddedRepositoryColumnNameEnum {
+  repoName = 'repository.name', // because of property name
+  organizationUrl = 'repository.organization',
+  repoUrl = 'repository.url',
+  catalogInfoYamlLastUpdated = 'lastUpdate',
+  catalogInfoYamlStatus = 'status',
+}
+
+export enum SortingOrderEnum {
+  Asc = 'asc',
+  Desc = 'desc',
+}
 export enum RepositorySelection {
   Repository = 'repository',
   Organization = 'organization',

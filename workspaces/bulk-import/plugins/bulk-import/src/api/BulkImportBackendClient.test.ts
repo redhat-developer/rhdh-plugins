@@ -25,7 +25,12 @@ import {
   mockGetRepositories,
   mockSelectedRepositories,
 } from '../mocks/mockData';
-import { ApprovalTool, RepositoryStatus } from '../types';
+import {
+  AddedRepositoryColumnNameEnum,
+  ApprovalTool,
+  RepositoryStatus,
+  SortingOrderEnum,
+} from '../types';
 import { prepareDataForSubmission } from '../utils/repository-utils';
 import {
   BulkImportAPI,
@@ -305,12 +310,24 @@ describe('BulkImportBackendClient', () => {
 
   describe('getImportJobs', () => {
     it('getImportJobs should retrieve the import jobs successfully', async () => {
-      const jobs = await bulkImportApi.getImportJobs(1, 2, '');
+      const jobs = await bulkImportApi.getImportJobs(
+        1,
+        2,
+        '',
+        AddedRepositoryColumnNameEnum.repoName,
+        SortingOrderEnum.Asc,
+      );
       expect(jobs).toEqual(mockGetImportJobs);
     });
 
     it('getImportJobs should retrieve the import jobs based on search string', async () => {
-      const jobs = await bulkImportApi.getImportJobs(1, 2, 'cup');
+      const jobs = await bulkImportApi.getImportJobs(
+        1,
+        2,
+        'cup',
+        AddedRepositoryColumnNameEnum.repoName,
+        SortingOrderEnum.Asc,
+      );
       expect(jobs).toEqual(
         mockGetImportJobs.imports.filter(r =>
           r.repository.name?.includes('cup'),
@@ -319,9 +336,15 @@ describe('BulkImportBackendClient', () => {
     });
 
     it('getImportJobs should handle non-200/204 responses correctly', async () => {
-      await expect(bulkImportApi.getImportJobs(1, 2, '')).resolves.toEqual(
-        expect.objectContaining([]),
-      );
+      await expect(
+        bulkImportApi.getImportJobs(
+          1,
+          2,
+          '',
+          AddedRepositoryColumnNameEnum.repoName,
+          SortingOrderEnum.Asc,
+        ),
+      ).resolves.toEqual(expect.objectContaining([]));
     });
   });
 

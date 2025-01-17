@@ -13,9 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { Components } from '../../generated/openapi';
 
 export const DefaultPageNumber = 1;
 export const DefaultPageSize = 20;
+
+export const DefaultSortColumn: Components.Parameters.SortColumnQueryParam =
+  'repository.name';
+export const DefaultSortOrder: Components.Parameters.SortOrderQueryParam =
+  'asc';
 
 export interface HandlerResponse<ResponseBody = any> {
   statusCode: number;

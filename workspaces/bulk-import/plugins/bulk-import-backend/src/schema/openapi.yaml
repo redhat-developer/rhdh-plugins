@@ -176,7 +176,8 @@ paths:
         - $ref: '#/components/parameters/sizePerIntegrationQueryParamDeprecated'
         - $ref: '#/components/parameters/pageQueryParam'
         - $ref: '#/components/parameters/sizeQueryParam'
-
+        - $ref: '#/components/parameters/sortOrderQueryParam'
+        - $ref: '#/components/parameters/sortColumnQueryParam'
         - $ref: '#/components/parameters/searchQueryParam'
 
       responses:
@@ -360,6 +361,38 @@ components:
       schema:
         type: integer
         default: 1
+    sortColumnQueryParam:
+      in: query
+      name: sortColumn
+      description: |
+        The allowed values for sorting columns:
+        - `repository.name`: Sort by repository name.
+        - `repository.organization`: Sort by organization URL.
+        - `repository.url`: Sort by repository URL.
+        - `lastUpdate`: Sort by the last time the catalog-info.yaml was updated.
+        - `status`: Sort by the status of the catalog-info.yaml.
+      required: false
+      schema:
+        enum:
+          - repository.name
+          - repository.organization
+          - repository.url
+          - lastUpdate
+          - status
+        default: repository.name
+
+    sortOrderQueryParam:
+      in: query
+      name: sortOrder
+      description: The order of sorting asc for ascending or desc for descending
+      required: false
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: asc
+
     sizePerIntegrationQueryParamDeprecated:
       in: query
       name: sizePerIntegration

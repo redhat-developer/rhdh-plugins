@@ -31,11 +31,20 @@ declare namespace Components {
     export type SizePerIntegrationQueryParam = number;
     export type SizePerIntegrationQueryParamDeprecated = number;
     export type SizeQueryParam = number;
+    export type SortColumnQueryParam =
+      | 'repository.name'
+      | 'repository.organization'
+      | 'repository.url'
+      | 'lastUpdate'
+      | 'status';
+    export type SortOrderQueryParam = 'asc' | 'desc';
   }
   export interface QueryParameters {
     pagePerIntegrationQueryParam?: Parameters.PagePerIntegrationQueryParam;
     sizePerIntegrationQueryParam?: Parameters.SizePerIntegrationQueryParam;
     pagePerIntegrationQueryParamDeprecated?: Parameters.PagePerIntegrationQueryParamDeprecated;
+    sortColumnQueryParam?: Parameters.SortColumnQueryParam;
+    sortOrderQueryParam?: Parameters.SortOrderQueryParam;
     sizePerIntegrationQueryParamDeprecated?: Parameters.SizePerIntegrationQueryParamDeprecated;
     searchQueryParam?: Parameters.SearchQueryParam;
     pageQueryParam?: Parameters.PageQueryParam;
@@ -328,12 +337,21 @@ declare namespace Paths {
       export type Search = string;
       export type Size = number;
       export type SizePerIntegration = number;
+      export type SortColumn =
+        | 'repository.name'
+        | 'repository.organization'
+        | 'repository.url'
+        | 'lastUpdate'
+        | 'status';
+      export type SortOrder = 'asc' | 'desc';
     }
     export interface QueryParameters {
       pagePerIntegration?: Parameters.PagePerIntegration;
       sizePerIntegration?: Parameters.SizePerIntegration;
       page?: Parameters.Page;
       size?: Parameters.Size;
+      sortOrder?: Parameters.SortOrder;
+      sortColumn?: Parameters.SortColumn;
       search?: Parameters.Search;
     }
     namespace Responses {

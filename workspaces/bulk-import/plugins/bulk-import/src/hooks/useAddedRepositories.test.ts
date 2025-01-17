@@ -17,6 +17,7 @@
 import { renderHook, waitFor } from '@testing-library/react';
 
 import { mockGetImportJobs, mockGetRepositories } from '../mocks/mockData';
+import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
 import { useAddedRepositories } from './useAddedRepositories';
 
 jest.mock('@backstage/core-plugin-api', () => ({
@@ -49,7 +50,15 @@ jest.mock('formik', () => ({
 
 describe('useAddedRepositories', () => {
   it('should return import jobs', async () => {
-    const { result } = renderHook(() => useAddedRepositories(1, 5, ''));
+    const { result } = renderHook(() =>
+      useAddedRepositories(
+        1,
+        5,
+        '',
+        AddedRepositoryColumnNameEnum.repoName,
+        SortingOrderEnum.Asc,
+      ),
+    );
     await waitFor(() => {
       expect(result.current.loading).toBeFalsy();
       expect(result.current.data.totalJobs).toBe(4);

@@ -28,9 +28,11 @@ import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../api/BulkImportBackendClient';
 import {
+  AddedRepositoryColumnNameEnum,
   AddRepositoriesFormValues,
   AddRepositoryData,
   ImportJobs,
+  SortingOrderEnum,
 } from '../types';
 import { prepareDataForAddedRepositories } from '../utils/repository-utils';
 
@@ -38,6 +40,8 @@ export const useAddedRepositories = (
   pageNumber: number,
   rowsPerPage: number,
   searchString: string,
+  sortColumn: AddedRepositoryColumnNameEnum,
+  sortOrder: SortingOrderEnum,
   pollInterval?: number,
 ): {
   data: {
@@ -64,7 +68,10 @@ export const useAddedRepositories = (
     page: number,
     size: number,
     searchStr: string,
-  ) => await bulkImportApi.getImportJobs(page, size, searchStr);
+    sortCol: AddedRepositoryColumnNameEnum,
+    sortOrd: SortingOrderEnum,
+  ) =>
+    await bulkImportApi.getImportJobs(page, size, searchStr, sortCol, sortOrd);
 
   const {
     data: value,
@@ -72,8 +79,22 @@ export const useAddedRepositories = (
     isLoading: isLoadingTable,
     refetch,
   } = useQuery(
-    ['importJobs', pageNumber, rowsPerPage, searchString],
-    () => fetchAddedRepositories(pageNumber, rowsPerPage, searchString),
+    [
+      'importJobs',
+      pageNumber,
+      rowsPerPage,
+      searchString,
+      sortColumn,
+      sortOrder,
+    ],
+    () =>
+      fetchAddedRepositories(
+        pageNumber,
+        rowsPerPage,
+        searchString,
+        sortColumn,
+        sortOrder,
+      ),
     { refetchInterval: pollInterval || 60000 },
   );
 
