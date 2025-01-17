@@ -1,4 +1,0 @@
-site_name: RHDH Home Page plugin
-docs_dir: docs
-plugins:
-  - techdocs-core
