@@ -1,0 +1,14 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+      mountPoints:
+        - mountPoint: application/provider
+          importName: DynamicGlobalFloatingActionButton
+        - mountPoint: application/listener
+          importName: DynamicGlobalFloatingActionButtonRouteListener
+        - mountPoint: global.floatingactionbutton/component
+          config:
+            icon: github
+            label: 'Git'
+            toolTip: 'Github'
+            to: https://github.com/rhdh-plugins

@@ -32,13 +32,14 @@ const useStyles = makeStyles(theme => ({
     gap: '10px',
   },
   'page-end': {
-    bottom: theme.spacing(2),
-    right: theme.spacing(2),
+    bottom: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
+    right: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
     alignItems: 'end',
   },
   'bottom-left': {
-    bottom: theme.spacing(2),
-    paddingLeft: theme.spacing(2),
+    bottom: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
+    paddingLeft:
+      theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
     alignItems: 'start',
   },
 }));

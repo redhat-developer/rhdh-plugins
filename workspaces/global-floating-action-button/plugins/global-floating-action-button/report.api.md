@@ -9,6 +9,21 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react';
 
 // @public
+export const DynamicGlobalFloatingActionButton: React.ComponentType;
+
+// @public
+export const dynamicGlobalFloatingActionButtonPlugin: BackstagePlugin<
+  {},
+  {},
+  {}
+>;
+
+// @public
+export type FABMountPoint = {
+  config?: FloatingActionButton;
+};
+
+// @public
 export type FloatingActionButton = {
   slot?: Slot;
   label: string;

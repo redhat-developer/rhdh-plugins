@@ -39,6 +39,7 @@
     "@mui/icons-material": "^5.15.17",
     "@mui/material": "^5.15.17",
     "@mui/styles": "5.16.13",
+    "@scalprum/react-core": "0.9.3",
     "classnames": "^2.5.1",
     "react-use": "^17.2.4"
   },
@@ -49,6 +50,7 @@
   "devDependencies": {
     "@backstage/cli": "^0.28.0",
     "@backstage/dev-utils": "^1.1.2",
+    "@openshift/dynamic-plugin-sdk": "5.0.1",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
