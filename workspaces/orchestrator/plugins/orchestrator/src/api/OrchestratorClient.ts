@@ -129,6 +129,24 @@ export class OrchestratorClient implements OrchestratorApi {
     }
   }
 
+  async retriggerInstance(
+    workflowId: string,
+    instanceId: string,
+  ): Promise<AxiosResponse<object>> {
+    const defaultApi = await this.getDefaultAPI();
+    const reqConfigOption: AxiosRequestConfig =
+      await this.getDefaultReqConfig();
+    try {
+      return await defaultApi.retriggerInstance(
+        workflowId,
+        instanceId,
+        reqConfigOption,
+      );
+    } catch (err) {
+      throw getError(err);
+    }
+  }
+
   async getWorkflowSource(workflowId: string): Promise<AxiosResponse<string>> {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
