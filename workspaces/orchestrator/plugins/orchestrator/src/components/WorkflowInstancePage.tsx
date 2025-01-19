@@ -255,6 +255,8 @@ export const WorkflowInstancePage = ({
             `Couldn't retrigger instance ${value.instance.id} of workflow ${value.instance.processName}`,
           );
         setIsRerunSnackbarOpen(true);
+      } finally {
+        setIsRetrigger(false);
       }
     }
   };

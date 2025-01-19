@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 import {
@@ -148,6 +149,7 @@ export class SonataFlowService {
 
     if (!response.ok) {
       const json = await response.json();
+      json.details = `failedNodeId:${json?.failedNodeId}`;
       this.logger.error(`Retrigger failed with: ${JSON.stringify(json)}`);
       throw new Error(
         `${await this.createPrefixFetchErrorMessage(
