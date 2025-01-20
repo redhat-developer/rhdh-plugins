@@ -174,7 +174,6 @@ export class OrchestratorService {
     definitionId: string;
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
-    businessKey?: string;
     cacheHandler?: CacheHandler;
   }): Promise<WorkflowExecutionResponse | undefined> {
     const { definitionId, cacheHandler } = args;

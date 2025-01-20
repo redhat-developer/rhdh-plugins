@@ -25,6 +25,7 @@ import {
   entityKindSchemaValidator,
   getCompoundEntityRef,
   parseEntityRef,
+  RELATION_HAS_PART,
   RELATION_OWNED_BY,
   RELATION_PART_OF,
 } from '@backstage/catalog-model';
@@ -195,6 +196,14 @@ export class MarketplacePluginListProcessor implements CatalogProcessor {
                 type: RELATION_PART_OF,
                 target: pluginRef,
                 source: thisEntityRef,
+              }),
+            );
+
+            emit(
+              processingResult.relation({
+                type: RELATION_HAS_PART,
+                target: thisEntityRef,
+                source: pluginRef,
               }),
             );
           }

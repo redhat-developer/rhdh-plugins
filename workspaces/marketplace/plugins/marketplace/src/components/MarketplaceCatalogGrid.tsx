@@ -33,11 +33,11 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { usePlugins } from '../hooks/usePlugins';
 import { detailsRouteRef, rootRouteRef } from '../routes';
 
-const Icon = ({ entry }: { entry: MarketplacePluginEntry }) =>
+const Icon = ({ entry }: { entry: MarketplacePlugin }) =>
   entry.spec?.icon ? (
     <CardMedia
       image={entry.spec.icon}
@@ -85,7 +85,7 @@ const EntrySkeleton = ({
 );
 
 // TODO: add link around card
-const Entry = ({ entry }: { entry: MarketplacePluginEntry }) => {
+const Entry = ({ entry }: { entry: MarketplacePlugin }) => {
   const navigate = useNavigate();
   const getIndexPath = useRouteRef(rootRouteRef);
   const getDetailsPath = useRouteRef(detailsRouteRef);
