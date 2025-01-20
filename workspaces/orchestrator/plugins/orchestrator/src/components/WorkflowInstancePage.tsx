@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -246,7 +246,7 @@ export const WorkflowInstancePage = ({
         );
         restart();
       } catch (retriggerInstanceError) {
-        if (retriggerInstanceError.toString().includes('failedNodeId')) {
+        if (retriggerInstanceError.toString().includes('Failed Node Id')) {
           setRetriggerError(
             `Run failed again:${(retriggerInstanceError as Error).message}`,
           );
@@ -261,18 +261,19 @@ export const WorkflowInstancePage = ({
     }
   };
 
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const anchorRef = useRef(null);
+  const [openRerunMenu, setOpenRerunMenu] = useState(false);
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleClick = () => {
+    setOpenRerunMenu(prev => !prev);
   };
 
-  const handleCloseMenue = () => {
-    setAnchorEl(null);
+  const handleCloseMenu = () => {
+    setOpenRerunMenu(false);
   };
 
   const handleOptionClick = (option: 'retrigger' | 'rerun') => {
-    handleCloseMenue();
+    handleCloseMenu();
     if (option === 'rerun') handleRerun();
     else if (option === 'retrigger') handleRetrigger();
   };
@@ -329,6 +330,7 @@ export const WorkflowInstancePage = ({
                   disableHoverListener={permittedToUse.allowed}
                 >
                   <Button
+                    ref={anchorRef}
                     variant="contained"
                     color="primary"
                     startIcon={
@@ -352,9 +354,9 @@ export const WorkflowInstancePage = ({
                   </Button>
                 </Tooltip>
                 <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleCloseMenue}
+                  anchorEl={anchorRef.current}
+                  open={openRerunMenu}
+                  onClose={handleCloseMenu}
                   getContentAnchorEl={null}
                   anchorOrigin={{
                     vertical: 'bottom',

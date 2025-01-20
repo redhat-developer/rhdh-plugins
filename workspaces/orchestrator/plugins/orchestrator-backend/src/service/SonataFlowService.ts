@@ -149,7 +149,6 @@ export class SonataFlowService {
 
     if (!response.ok) {
       const json = await response.json();
-      json.details = `failedNodeId:${json?.failedNodeId}`;
       this.logger.error(`Retrigger failed with: ${JSON.stringify(json)}`);
       throw new Error(
         `${await this.createPrefixFetchErrorMessage(
@@ -240,6 +239,9 @@ export class SonataFlowService {
     }
     if (jsonResponse?.message) {
       errorInfo.push(`Message: ${jsonResponse?.message}`);
+    }
+    if (jsonResponse?.failedNodeId) {
+      errorInfo.push(`Failed Node Id: ${jsonResponse?.failedNodeId}`);
     }
     if (errorInfo.length > 0) {
       errorMsg += ` ${errorInfo.join(', ')}`;
