@@ -99,8 +99,11 @@ export class SonataFlowService {
     definitionId: string;
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
+    businessKey?: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
-    const urlToFetch = `${args.serviceUrl}/${args.definitionId}`;
+    const urlToFetch = args.businessKey
+      ? `${args.serviceUrl}/${args.definitionId}?businessKey=${args.businessKey}`
+      : `${args.serviceUrl}/${args.definitionId}`;
 
     const response = await fetch(urlToFetch, {
       method: 'POST',

@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright 2024 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import { DiscoveryApi, IdentityApi } from '@backstage/core-plugin-api';
 import type { JsonObject } from '@backstage/types';
 
@@ -84,7 +83,11 @@ describe('OrchestratorClient', () => {
   describe('executeWorkflow', () => {
     const workflowId = 'workflow123';
 
-    const setupTest = (executionId: string, parameters: JsonObject) => {
+    const setupTest = (
+      executionId: string,
+      parameters: JsonObject,
+      businessKey?: string,
+    ) => {
       const mockExecResponse: ExecuteWorkflowResponseDTO = { id: executionId };
       const mockResponse: AxiosResponse<ExecuteWorkflowResponseDTO> = {
         data: mockExecResponse,
@@ -100,7 +103,7 @@ describe('OrchestratorClient', () => {
       );
       axios.request = jest.fn().mockResolvedValueOnce(mockResponse);
 
-      const args = { workflowId, parameters };
+      const args = { workflowId, parameters, businessKey };
 
       return { mockExecResponse, executeWorkflowSpy, args };
     };
@@ -110,13 +113,18 @@ describe('OrchestratorClient', () => {
       mockExecResponse: ExecuteWorkflowResponseDTO,
       executeWorkflowSpy: jest.SpyInstance,
       parameters: JsonObject,
+      businessKey?: string,
     ) => {
       return () => {
         expect(result).toBeDefined();
         expect(result.data).toEqual(mockExecResponse);
         expect(axios.request).toHaveBeenCalledTimes(1);
         expect(axios.request).toHaveBeenCalledWith({
-          ...getAxiosTestRequest(`/v2/workflows/${workflowId}/execute`),
+          ...getAxiosTestRequest(
+            `/v2/workflows/${workflowId}/execute${
+              businessKey ? `?businessKey=${businessKey}` : ''
+            }`,
+          ),
           data: JSON.stringify({ inputData: parameters }),
           method: 'POST',
           headers: {
@@ -128,6 +136,7 @@ describe('OrchestratorClient', () => {
         expect(executeWorkflowSpy).toHaveBeenCalledWith(
           workflowId,
           { inputData: parameters },
+          businessKey,
           getDefaultTestRequestConfig(),
         );
       };
@@ -150,23 +159,33 @@ describe('OrchestratorClient', () => {
     });
     it('should execute workflow with business key', async () => {
       // Given
+      const businessKey = 'business123';
       const { mockExecResponse, executeWorkflowSpy, args } = setupTest(
         'execId001',
         {},
+        businessKey,
       );
 
       const result = await orchestratorClient.executeWorkflow(args);
 
       expect(
-        getExpectations(result, mockExecResponse, executeWorkflowSpy, {}),
+        getExpectations(
+          result,
+          mockExecResponse,
+          executeWorkflowSpy,
+          {},
+          businessKey,
+        ),
       ).not.toThrow();
     });
     it('should execute workflow with parameters and business key', async () => {
       // Given
+      const businessKey = 'business123';
       const parameters = { param1: 'one', param2: 2, param3: true };
       const { mockExecResponse, executeWorkflowSpy, args } = setupTest(
         'execId001',
         parameters,
+        businessKey,
       );
 
       const result = await orchestratorClient.executeWorkflow(args);
@@ -177,6 +196,7 @@ describe('OrchestratorClient', () => {
           mockExecResponse,
           executeWorkflowSpy,
           parameters,
+          businessKey,
         ),
       ).not.toThrow();
     });

@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright 2024 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import moment from 'moment';
 
 import {
@@ -134,6 +133,7 @@ export function mapToProcessInstanceDTO(
     processName: processInstance.processName,
     description: processInstance.description,
     serviceUrl: processInstance.serviceUrl,
+    businessKey: processInstance.businessKey,
     endpoint: processInstance.endpoint,
     error: processInstance.error,
     category: mapWorkflowCategoryDTO(processInstance.category),
@@ -142,7 +142,6 @@ export function mapToProcessInstanceDTO(
     duration: duration,
     // @ts-ignore
     workflowdata: variables?.workflowdata,
-    assessmentInstanceId: variables?.orchestratorAssessmentInstanceId as string,
     state: processInstance.state
       ? getProcessInstancesStatusDTOFromString(processInstance.state)
       : undefined,
