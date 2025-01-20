@@ -131,6 +131,6 @@ The `orchestrator-form-react` plugin handles the following key tasks:
 
 - **Organizing Forms into Wizard-Style Steps:** If the schema is an object containing nested objects (i.e., the root is an object, and its properties are also objects), the plugin organizes the form into multiple steps. Each nested object becomes a separate step in a wizard-style interface. For example, the schema provided above results in two steps: _Personal Details_ and _Contact Details_.
 
-The [`orchestrator-form-react`](https://github.com/janus-idp/backstage-plugins/tree/main/plugins/orchestrator-form-react) plugin is designed to operate independently of the main orchestrator plugin. This modularity allows developers to test and validate form behavior in a standalone Backstage development environment before integrating it with the full orchestrator setup.
+The [`orchestrator-form-react`](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-form-react) plugin is designed to operate independently of the main orchestrator plugin. This modularity allows developers to test and validate form behavior in a standalone Backstage development environment before integrating it with the full orchestrator setup.
 
 To use this plugin, add the `@red-hat-developer-hub/backstage-plugin-orchestrator-form-react` package as a dependency in your project.

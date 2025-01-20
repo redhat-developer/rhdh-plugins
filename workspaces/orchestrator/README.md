@@ -2,9 +2,9 @@
 
 The Orchestrator for Backstage is designed to enable self-service flows. It serves as a vital component that enhances and augments the existing scaffolder functionality of Backstage with a more flexible and powerful set of features including long-running and asynchronous flows.
 
-It utilizes [SonataFlow](https://sonataflow.org/), a powerful tool for building cloud-native workflow applications.
+The Backstage Orchestrator plugin aims to provide a better option to Scaffolder, based on workflows to have a more flexible and powerful tool that addresses the need by streamlining and automating processes, allowing developers to focus more on coding and innovation.
 
-The orchestrator works harmoniously with other Backstage components such as the Software Catalog, permissions, and plugins as well as others. By leveraging its capabilities, organizations can orchestrate and coordinate developer self-service flows effectively.
+It utilizes [SonataFlow](https://sonataflow.org/), a powerful tool for building cloud-native workflow applications.
 
 ## Architecture Overview
 
@@ -15,9 +15,9 @@ The architecture adheres to standard Backstage plugin guidelines and requires th
    - Provides the frontend interface.
 
 2. **`backstage-plugin-orchestrator-backend`**
-   - Serves as a backend proxy between to SonataFlow.
+   - Serves as a backend proxy between Backstage and SonataFlow.
 
-In addition to the main plugins, the architecture includes several isolated plugins that are imported by the above plugins:
+These plugins farther import following isolated plugins:
 
 1. **`backstage-plugin-orchestrator-swf-editor-envelope`**
 
@@ -34,6 +34,8 @@ In addition to the main plugins, the architecture includes several isolated plug
 4. **`backstage-plugin-orchestrator-form-api`**
    - Defines the API for extending the workflow execution form.
    - For more details, see the [Extensible Form Documentation](./docs/extensibleForm.md).
+
+For more details about architecture, see the [Architecture](https://www.rhdhorchestrator.io/main/docs/architecture/) page.
 
 ## Install as a static plugin
 
@@ -191,7 +193,7 @@ The plugin provides an auto generated typescript client that can be used to call
 
 The orchestrator backend has audit logs for all incoming requests.
 
-For more information about audit logs in RHDH, please refer to [the official documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.2/html/getting_started_with_red_hat_developer_hub/assembly-audit-log#con-audit-log-config_assembly-audit-log).
+For more information about audit logs in RHDH, please refer to [the official documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.4/html/audit_log/assembly-audit-log).
 [The official Log storage OpenShift documentation](https://docs.openshift.com/container-platform/4.15/observability/logging/log_storage/about-log-storage.html) may also be of interest.
 
 ## Extensible workflow execution form
