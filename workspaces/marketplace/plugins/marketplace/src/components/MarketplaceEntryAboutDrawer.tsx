@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -34,11 +35,14 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 
-import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  InstallStatus,
+  MarketplacePlugin,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { usePlugins } from '../hooks/usePlugins';
 import { installRouteRef, rootRouteRef } from '../routes';
 
-const Icon = ({ entry }: { entry: MarketplacePluginEntry }) =>
+const Icon = ({ entry }: { entry: MarketplacePlugin }) =>
   entry.spec?.icon ? (
     <CardMedia
       image={entry.spec.icon}
@@ -93,7 +97,7 @@ const EntryContentSkeleton = () => {
   );
 };
 
-const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
+const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
   const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(installRouteRef);
 
@@ -159,11 +163,14 @@ const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
           ) : null}
 
           <LinkButton
+            disabled={entry.spec?.installStatus === InstallStatus.Installed}
             to={getInstallPath({ name: entry.metadata.name })}
             color="primary"
             variant="contained"
           >
-            Install
+            {entry.spec?.installStatus !== InstallStatus.Installed
+              ? 'Install'
+              : InstallStatus.Installed}
           </LinkButton>
         </Grid>
         <Grid item md={10}>

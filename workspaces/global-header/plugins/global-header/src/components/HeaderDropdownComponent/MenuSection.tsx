@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,10 +73,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
           '&:hover': { background: 'transparent' },
         }}
       >
-        <Typography
-          variant="body2"
-          sx={{ ml: 2, fontSize: '0.875em', color: 'text.disabled' }}
-        >
+        <Typography variant="body2" sx={{ pl: 2, color: 'text.disabled' }}>
           {sectionLabel}
         </Typography>
         <MenuItem

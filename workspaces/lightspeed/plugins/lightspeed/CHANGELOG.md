@@ -1,5 +1,33 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.3.1
+
+### Patch Changes
+
+- 66c4da3: Updated dependency `@patternfly/chatbot` to `2.2.0-prerelease.10`.
+
+## 0.3.0
+
+### Minor Changes
+
+- e41a860: Backstage version bump to v1.34.2
+
+### Patch Changes
+
+- Updated dependencies [e41a860]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.2.0
+
+## 0.2.5
+
+### Patch Changes
+
+- 7b21401: Upgrade to latest PF chatbot version
+- 9556c86: Persist last conversation state and reload on user revisit
+- 18547a0: Updated dependency `msw` to `1.3.5`.
+- d59e940: Updated dependency `prettier` to `3.4.2`.
+- Updated dependencies [d59e940]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.1.3
+
 ## 0.2.4
 
 ### Patch Changes

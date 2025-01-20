@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   coreServices,
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
-import { MarketplacePluginProcessor } from './MarketplacePluginProcessor';
-import { MarketplacePluginListProcessor } from './MarketplacePluginListProcessor';
+
+import { MarketplacePluginProcessor } from './processors/MarketplacePluginProcessor';
+import { MarketplacePluginListProcessor } from './processors/MarketplacePluginListProcessor';
+import { DynamicPluginInstallStatusProcessor } from './processors/DynamicPluginInstallStatusProcessor';
+import { LocalPluginInstallStatusProcessor } from './processors/LocalPluginInstallStatusProcessor';
 
 /**
  * @public
@@ -32,11 +36,17 @@ export const catalogModuleMarketplace = createBackendModule({
       deps: {
         logger: coreServices.logger,
         catalog: catalogProcessingExtensionPoint,
+        discovery: coreServices.discovery,
+        auth: coreServices.auth,
       },
-      async init({ logger, catalog }) {
-        logger.info('Marketplace provider initialized!');
+      async init({ logger, catalog, discovery, auth }) {
+        logger.info('Adding Marketplace processors to catalog...');
         catalog.addProcessor(new MarketplacePluginProcessor());
         catalog.addProcessor(new MarketplacePluginListProcessor());
+        catalog.addProcessor(new LocalPluginInstallStatusProcessor());
+        catalog.addProcessor(
+          new DynamicPluginInstallStatusProcessor(discovery, auth),
+        );
       },
     });
   },

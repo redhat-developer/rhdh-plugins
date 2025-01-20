@@ -21,9 +21,8 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
 
-import { configApiRef, useApi, useRouteRef } from '@backstage/core-plugin-api';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import {
   ChannelType,
@@ -55,7 +54,6 @@ import {
 } from 'vscode-languageserver-types';
 
 import {
-  extractWorkflowFormat,
   fromWorkflowSource,
   ProcessInstance,
   toWorkflowString,
@@ -64,7 +62,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
-import { workflowRouteRef } from '../../routes';
 import { WorkflowEditorLanguageService } from './channel/WorkflowEditorLanguageService';
 import { WorkflowEditorLanguageServiceChannelApiImpl } from './channel/WorkflowEditorLanguageServiceChannelApiImpl';
 
@@ -90,7 +87,7 @@ export type WorkflowEditorView =
 
 type WorkflowEditorProps = {
   workflowId: string;
-  format?: WorkflowFormat;
+  format: WorkflowFormat;
   editorMode?: editorDisplayOptions;
 } & WorkflowEditorView;
 
@@ -110,8 +107,6 @@ const RefForwardingWorkflowEditor: ForwardRefRenderFunction<
     usePromiseState<WorkflowDefinition>();
   const [canRender, setCanRender] = useState(false);
   const [ready, setReady] = useState(false);
-  const navigate = useNavigate();
-  const viewWorkflowLink = useRouteRef(workflowRouteRef);
 
   const currentProcessInstance = useMemo(() => {
     if (kind !== EditorViewKind.RUNTIME) {
@@ -238,26 +233,12 @@ const RefForwardingWorkflowEditor: ForwardRefRenderFunction<
             const definition = fromWorkflowSource(source.data);
             setWorkflowDefinitionPromise({ data: definition });
 
-            const workflowFormat = extractWorkflowFormat(source.data);
-
-            if (format && workflowId && format !== workflowFormat) {
-              const link = viewWorkflowLink({
-                workflowId: workflowId,
-                format: workflowFormat,
-              });
-
-              navigate(link, { replace: true });
-
-              return;
-            }
-
-            const filename = `workflow.sw.${workflowFormat}`;
+            const filename = `workflow.sw.${format}`;
             setEmbeddedFile({
               path: filename,
-              getFileContents: async () =>
-                toWorkflowString(definition, workflowFormat),
+              getFileContents: async () => toWorkflowString(definition, format),
               isReadOnly: true,
-              fileExtension: workflowFormat,
+              fileExtension: format,
               fileName: filename,
             });
 
@@ -267,14 +248,7 @@ const RefForwardingWorkflowEditor: ForwardRefRenderFunction<
             setWorkflowDefinitionPromise({ error: e });
           });
       },
-      [
-        orchestratorApi,
-        workflowId,
-        setWorkflowDefinitionPromise,
-        format,
-        viewWorkflowLink,
-        navigate,
-      ],
+      [orchestratorApi, workflowId, setWorkflowDefinitionPromise, format],
     ),
   );
 

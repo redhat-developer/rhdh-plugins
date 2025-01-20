@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   createPlugin,
   createComponentExtension,
 } from '@backstage/core-plugin-api';
 
+export type {
+  NotificationBannerProps,
+  NotificationBannerDismiss,
+} from './components/NotificationBanner';
+
 /**
- * @public
  * Global Header Plugin
+ *
+ * @public
  */
 export const globalHeaderPlugin = createPlugin({
   id: 'global-header',
 });
 
 /**
- * @public
  * Global Header
+ *
+ * @public
  */
 export const GlobalHeader = globalHeaderPlugin.provide(
   createComponentExtension({
     name: 'GlobalHeader',
     component: {
-      lazy: () => import('./components').then(m => m.GlobalHeader),
+      lazy: () => import('./components/GlobalHeader').then(m => m.GlobalHeader),
+    },
+  }),
+);
+
+/**
+ * NotificationBanner
+ *
+ * @public
+ */
+export const NotificationBanner = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'NotificationBanner',
+    component: {
+      lazy: () =>
+        import('./components/NotificationBanner').then(
+          m => m.NotificationBanner,
+        ),
     },
   }),
 );

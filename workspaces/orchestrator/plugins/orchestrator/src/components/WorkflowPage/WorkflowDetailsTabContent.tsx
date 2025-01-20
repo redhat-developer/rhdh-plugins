@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { InfoCard } from '@backstage/core-components';
-import { useRouteRefParams } from '@backstage/core-plugin-api';
 
 import { Grid } from '@material-ui/core';
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { workflowRouteRef } from '../../routes';
 import { EditorViewKind, WorkflowEditor } from '../WorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
 
@@ -35,12 +33,6 @@ export const WorkflowDetailsTabContent = ({
   loading,
   workflowOverviewDTO,
 }: Props) => {
-  const { workflowId, format } = useRouteRefParams(workflowRouteRef);
-  const workflowFormat = useMemo(
-    () => (format === 'json' ? 'json' : 'yaml'),
-    [format],
-  );
-
   return (
     <>
       <Grid item>
@@ -50,15 +42,17 @@ export const WorkflowDetailsTabContent = ({
         />
       </Grid>
       <Grid item>
-        <InfoCard title="Workflow definition">
-          <div style={{ height: '600px' }}>
-            <WorkflowEditor
-              kind={EditorViewKind.EXTENDED_DIAGRAM_VIEWER}
-              workflowId={workflowId}
-              format={workflowFormat}
-            />
-          </div>
-        </InfoCard>
+        {workflowOverviewDTO && (
+          <InfoCard title="Workflow definition">
+            <div style={{ height: '600px' }}>
+              <WorkflowEditor
+                kind={EditorViewKind.EXTENDED_DIAGRAM_VIEWER}
+                workflowId={workflowOverviewDTO.workflowId}
+                format={workflowOverviewDTO.format}
+              />
+            </div>
+          </InfoCard>
+        )}
       </Grid>
     </>
   );

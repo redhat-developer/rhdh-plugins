@@ -26,6 +26,8 @@ import {
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 
+import { WorkflowFormat } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
 import { WorkflowEditor } from './WorkflowEditor';
 import {
   WorkflowEditorRef,
@@ -34,6 +36,7 @@ import {
 
 export type OrchestratorWorkflowDialogProps = {
   workflowId: string;
+  format: WorkflowFormat;
   title: string;
   open: boolean;
   close: () => void;

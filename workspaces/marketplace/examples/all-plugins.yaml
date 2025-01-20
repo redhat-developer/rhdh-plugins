@@ -11,3 +11,4 @@ spec:
     - ./plugins/quay.yaml
     - ./plugins/tekton.yaml
     - ./plugins/topology.yaml
+    - ./plugins/search.yaml

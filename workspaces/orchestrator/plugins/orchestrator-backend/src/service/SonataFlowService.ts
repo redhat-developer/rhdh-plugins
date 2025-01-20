@@ -43,14 +43,22 @@ export class SonataFlowService {
   }): Promise<WorkflowInfo | undefined> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}`;
     const response = await fetch(urlToFetch);
-
+    const jsonResponse = await response.json();
     if (response.ok) {
-      const json = await response.json();
-      this.logger.debug(`Fetch workflow info result: ${JSON.stringify(json)}`);
-      return json;
+      this.logger.debug(
+        `Fetch workflow info result: ${JSON.stringify(jsonResponse)}`,
+      );
+      return jsonResponse;
     }
+    this.logger.error(
+      `Fetch workflow info failed with: ${JSON.stringify(jsonResponse)}`,
+    );
     throw new Error(
-      await this.createPrefixFetchErrorMessage(urlToFetch, response),
+      await this.createPrefixFetchErrorMessage(
+        urlToFetch,
+        response,
+        jsonResponse,
+      ),
     );
   }
 
@@ -91,11 +99,8 @@ export class SonataFlowService {
     definitionId: string;
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
-    businessKey?: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
-    const urlToFetch = args.businessKey
-      ? `${args.serviceUrl}/${args.definitionId}?businessKey=${args.businessKey}`
-      : `${args.serviceUrl}/${args.definitionId}`;
+    const urlToFetch = `${args.serviceUrl}/${args.definitionId}`;
 
     const response = await fetch(urlToFetch, {
       method: 'POST',
@@ -113,6 +118,7 @@ export class SonataFlowService {
       const errorMessage = await this.createPrefixFetchErrorMessage(
         urlToFetch,
         response,
+        json,
         'POST',
       );
       this.logger.error(
@@ -141,10 +147,13 @@ export class SonataFlowService {
     });
 
     if (!response.ok) {
+      const json = await response.json();
+      this.logger.error(`Retrigger failed with: ${JSON.stringify(json)}`);
       throw new Error(
         `${await this.createPrefixFetchErrorMessage(
           urlToFetch,
           response,
+          json,
           'POST',
         )}`,
       );
@@ -212,20 +221,23 @@ export class SonataFlowService {
   public async createPrefixFetchErrorMessage(
     urlToFetch: string,
     response: Response,
+    jsonResponse: any,
     httpMethod = 'GET',
   ): Promise<string> {
-    const res = await response.json();
     const errorInfo = [];
     let errorMsg = `Request ${httpMethod} ${urlToFetch} failed with: StatusCode: ${response.status}`;
 
     if (response.statusText) {
       errorInfo.push(`StatusText: ${response.statusText}`);
     }
-    if (res?.details) {
-      errorInfo.push(`Details: ${res?.details}`);
+    if (jsonResponse?.details) {
+      errorInfo.push(`Details: ${jsonResponse?.details}`);
     }
-    if (res?.stack) {
-      errorInfo.push(`Stack: ${res?.stack}`);
+    if (jsonResponse?.stack) {
+      errorInfo.push(`Stack: ${jsonResponse?.stack}`);
+    }
+    if (jsonResponse?.message) {
+      errorInfo.push(`Message: ${jsonResponse?.message}`);
     }
     if (errorInfo.length > 0) {
       errorMsg += ` ${errorInfo.join(', ')}`;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { MessageProps } from '@patternfly/virtual-assistant';
+import { MessageProps } from '@patternfly/chatbot';
 import { useQuery } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
@@ -50,6 +51,8 @@ export const useFetchConversationMessages = (currentConversation: string) => {
 
 type Conversations = { [_key: string]: MessageProps[] };
 
+const defaultAvatar =
+  'https://img.freepik.com/premium-photo/graphic-designer-digital-avatar-generative-ai_934475-9292.jpg';
 /**
  * Fetches all the messages for given conversation_id
  * @param conversationId
@@ -62,7 +65,7 @@ export const useConversationMessages = (
   conversationId: string,
   userName: string | undefined,
   selectedModel: string,
-  avatar: string | undefined,
+  avatar: string = defaultAvatar,
   onComplete?: (message: string) => void,
 ) => {
   const { mutateAsync: createMessage } = useCreateConversationMessage();

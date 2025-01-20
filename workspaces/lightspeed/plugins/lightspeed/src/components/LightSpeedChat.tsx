@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
 
 import { Box, makeStyles } from '@material-ui/core';
-import { DropdownItem, Title } from '@patternfly/react-core';
 import {
   Chatbot,
   ChatbotContent,
@@ -31,8 +31,9 @@ import {
   ChatbotHeaderTitle,
   MessageBar,
   MessageProps,
-} from '@patternfly/virtual-assistant';
-import ChatbotConversationHistoryNav from '@patternfly/virtual-assistant/dist/dynamic/ChatbotConversationHistoryNav';
+} from '@patternfly/chatbot';
+import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
+import { DropdownItem, Title } from '@patternfly/react-core';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useBackstageUserIdentity } from '../hooks/useBackstageUserIdentity';
@@ -40,6 +41,7 @@ import { useConversationMessages } from '../hooks/useConversationMessages';
 import { useConversations } from '../hooks/useConversations';
 import { useCreateConversation } from '../hooks/useCreateConversation';
 import { useDeleteConversation } from '../hooks/useDeleteConversation';
+import { useLastOpenedConversation } from '../hooks/useLastOpenedConversation';
 import { useLightspeedDeletePermission } from '../hooks/useLightspeedDeletePermission';
 import { ConversationSummary } from '../types';
 import {
@@ -51,26 +53,16 @@ import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 
 const useStyles = makeStyles(theme => ({
-  content: {
-    '&.pf-chatbot__content': {
-      padding: 0,
-    },
-  },
   header: {
     padding: `${theme.spacing(3)}px !important`,
-  },
-  drawerActions: {
-    '&.pf-v6-c-drawer__actions': {
-      flexDirection: 'row-reverse',
-    },
   },
   headerTitle: {
     justifyContent: 'left !important',
   },
   footer: {
-    '&.pf-chatbot__footer': {
-      padding:
-        '0 var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg)',
+    '&>.pf-chatbot__footer-container': {
+      width: '95% !important',
+      maxWidth: 'unset !important',
     },
   },
 }));
@@ -98,7 +90,7 @@ export const LightspeedChat = ({
   const [announcement, setAnnouncement] = React.useState<string>('');
   const [conversationId, setConversationId] = React.useState<string>('');
   const [isDrawerOpen, setIsDrawerOpen] = React.useState<boolean>(true);
-  const [newChatCreated, setNewChatCreated] = React.useState<boolean>(true);
+  const [newChatCreated, setNewChatCreated] = React.useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     React.useState<boolean>(false);
   const [error, setError] = React.useState<Error | null>(null);
@@ -106,6 +98,15 @@ export const LightspeedChat = ({
     React.useState<string>('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] =
     React.useState<boolean>(false);
+  const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
+    useLastOpenedConversation(user);
+
+  // Sync conversationId with lastOpenedId whenever lastOpenedId changes
+  React.useEffect(() => {
+    if (isReady && lastOpenedId !== null) {
+      setConversationId(lastOpenedId);
+    }
+  }, [lastOpenedId, isReady]);
 
   const queryClient = useQueryClient();
 
@@ -115,10 +116,11 @@ export const LightspeedChat = ({
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
 
   React.useEffect(() => {
-    if (user) {
+    if (user && lastOpenedId === null && isReady) {
       createConversation()
         .then(({ conversation_id }) => {
           setConversationId(conversation_id);
+          setNewChatCreated(true);
         })
         .catch(e => {
           // eslint-disable-next-line
@@ -126,7 +128,14 @@ export const LightspeedChat = ({
           setError(e);
         });
     }
-  }, [user, setConversationId, createConversation]);
+  }, [user, isReady, lastOpenedId, setConversationId, createConversation]);
+
+  React.useEffect(() => {
+    // Update last opened conversation whenever `conversationId` changes
+    if (conversationId) {
+      setLastOpenedId(conversationId);
+    }
+  }, [conversationId, setLastOpenedId]);
 
   const onComplete = (message: string) => {
     setIsSendButtonDisabled(false);
@@ -175,13 +184,6 @@ export const LightspeedChat = ({
   }, [createConversation, setConversationId, setMessages]);
 
   const openDeleteModal = (conversation_id: string) => {
-    // TODO: Remove this temporary workaround and refactor once the dependency handling is updated in the future.
-    document.dispatchEvent(
-      new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
     setTargetConversationId(conversation_id);
     setIsDeleteModalOpen(true);
   };
@@ -193,14 +195,23 @@ export const LightspeedChat = ({
           conversation_id: targetConversationId,
           invalidateCache: false,
         });
-        onNewChat();
+        if (targetConversationId === lastOpenedId) {
+          onNewChat();
+          clearLastOpenedId();
+        }
         setIsDeleteModalOpen(false);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.warn(e);
       }
     })();
-  }, [deleteConversation, onNewChat, targetConversationId]);
+  }, [
+    deleteConversation,
+    clearLastOpenedId,
+    lastOpenedId,
+    onNewChat,
+    targetConversationId,
+  ]);
 
   const additionalMessageProps = React.useCallback(
     (conversationSummary: ConversationSummary) => ({
@@ -261,20 +272,25 @@ export const LightspeedChat = ({
     [setConversationId],
   );
 
-  const welcomePrompts = newChatCreated
-    ? [
-        {
-          title: 'Topic 1',
-          message: 'Helpful prompt for Topic 1',
-          onClick: () => sendMessage('Helpful prompt for Topic 1'),
-        },
-        {
-          title: 'Topic 2',
-          message: 'Helpful prompt for Topic 2',
-          onClick: () => sendMessage('Helpful prompt for Topic 2'),
-        },
-      ]
-    : [];
+  const conversationFound = !!conversations.find(
+    c => c.conversation_id === conversationId,
+  );
+
+  const welcomePrompts =
+    newChatCreated || (!conversationFound && conversationMessages.length === 0)
+      ? [
+          {
+            title: 'Topic 1',
+            message: 'Helpful prompt for Topic 1',
+            onClick: () => sendMessage('Helpful prompt for Topic 1'),
+          },
+          {
+            title: 'Topic 2',
+            message: 'Helpful prompt for Topic 2',
+            onClick: () => sendMessage('Helpful prompt for Topic 2'),
+          },
+        ]
+      : [];
 
   const handleFilter = React.useCallback((value: string) => {
     setFilterValue(value);
@@ -322,6 +338,7 @@ export const LightspeedChat = ({
           />
         </ChatbotHeader>
         <ChatbotConversationHistoryNav
+          reverseButtonOrder
           displayMode={ChatbotDisplayMode.embedded}
           onDrawerToggle={onDrawerToggle}
           isDrawerOpen={isDrawerOpen}
@@ -333,7 +350,7 @@ export const LightspeedChat = ({
           handleTextInputChange={handleFilter}
           drawerContent={
             <>
-              <ChatbotContent className={classes.content}>
+              <ChatbotContent>
                 <LightspeedChatBox
                   userName={userName}
                   messages={messages}

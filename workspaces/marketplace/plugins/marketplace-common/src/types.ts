@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
 /**
  * @public
  */
-export interface MarketplacePluginEntry extends Entity {
+export interface MarketplacePlugin extends Entity {
   spec?: MarketplacePluginSpec;
 }
 
 /**
  * @public
  */
-export interface MarketplacePluginList {
+export interface MarketplacePluginList extends Entity {
   spec?: {
     plugins: string[];
   } & MarketplacePluginSpec;
@@ -48,7 +49,30 @@ export enum MarketplaceKinds {
 /**
  * @public
  */
+export enum InstallStatus {
+  NotInstalled = 'NotInstalled',
+  Installed = 'Installed',
+}
+
+/**
+ * @public
+ */
+export type MarketplacePackage = {
+  name: string;
+  version?: string; // from package.json
+  backstage?: {
+    role?: string; // from package.json backstage role
+    'supported-versions'?: string;
+  };
+  distribution?: string;
+};
+
+/**
+ * @public
+ */
 export interface MarketplacePluginSpec extends JsonObject {
+  packages?: (string | MarketplacePackage)[];
+  installStatus?: keyof typeof InstallStatus;
   icon?: string;
   categories?: string[];
   developer?: string;
@@ -58,4 +82,14 @@ export interface MarketplacePluginSpec extends JsonObject {
     markdown?: string;
     appconfig?: string;
   };
+}
+/**
+ * @public
+ */
+export interface MarketplaceApi {
+  getPlugins(): Promise<MarketplacePlugin[]>;
+  getPluginByName(name: string): Promise<MarketplacePlugin>;
+  getPluginLists(): Promise<MarketplacePluginList[]>;
+  getPluginListByName(name: string): Promise<MarketplacePluginList>;
+  getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
 }

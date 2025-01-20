@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { createRouter } from './router';
-import { MarketplaceCatalogService } from './services/MarketplaceCatalogService';
 import { CatalogClient } from '@backstage/catalog-client';
+
+import {
+  MarketplaceApi,
+  MarketplaceCatalogClient,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
+import { createRouter } from './router';
+
 /**
  * marketplacePlugin backend plugin
  *
@@ -30,26 +37,22 @@ export const marketplacePlugin = createBackendPlugin({
   register(env) {
     env.registerInit({
       deps: {
-        logger: coreServices.logger,
         auth: coreServices.auth,
-        config: coreServices.rootConfig,
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         discovery: coreServices.discovery,
       },
-      async init({ logger, auth, config, httpAuth, httpRouter, discovery }) {
+      async init({ auth, httpAuth, httpRouter, discovery }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
-        const marketplaceService = new MarketplaceCatalogService({
-          logger,
+        const marketplaceApi: MarketplaceApi = new MarketplaceCatalogClient({
           auth,
-          config,
           catalogApi,
         });
 
         httpRouter.use(
           await createRouter({
             httpAuth,
-            marketplaceService,
+            marketplaceApi,
           }),
         );
       },

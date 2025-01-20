@@ -1,5 +1,22 @@
 ### Dependencies
 
+## 1.10.7
+
+### Patch Changes
+
+- f627fd2: Updated dependency `@mui/icons-material` to `5.16.13`.
+  Updated dependency `@mui/material` to `5.16.13`.
+  Updated dependency `@mui/styles` to `5.16.13`.
+- e9e670c: Updated dependency `@mui/icons-material` to `5.16.11`.
+- 18547a0: Updated dependency `msw` to `1.3.5`.
+- d59e940: Updated dependency `@openapitools/openapi-generator-cli` to `2.15.3`.
+  Updated dependency `openapicmd` to `2.6.1`.
+  Updated dependency `prettier` to `3.4.2`.
+- 2743f5b: Updated dependency `start-server-and-test` to `2.0.9`.
+- 414250a: Updated dependency `@playwright/test` to `1.49.1`.
+- Updated dependencies [d59e940]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.4.2
+
 ## 1.10.6
 
 ### Patch Changes

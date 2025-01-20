@@ -33,6 +33,7 @@ node_modules/
 
 # Build output
 dist
+dist-scalprum
 dist-types
 
 # Temporary change files created by Vim

@@ -22,4 +22,4 @@ spec:
   lifecycle: production
   owner: orchestrator-team
   system: rhdh
-  subcomponentOf: red-hat-developer-hub-plugins
+  subcomponentOf: red-hat-developer-hub-orchestrator

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 
 import { makeStyles } from '@material-ui/core';
@@ -22,11 +23,14 @@ import {
   MessageBox,
   MessageProps,
   WelcomePrompt,
-} from '@patternfly/virtual-assistant';
+} from '@patternfly/chatbot';
 
 const useStyles = makeStyles(theme => ({
   prompt: {
     'justify-content': 'flex-end',
+  },
+  container: {
+    maxWidth: 'unset !important',
   },
   userMessageText: {
     '& div.pf-chatbot__message--user': {
@@ -65,12 +69,13 @@ export const LightspeedChatBox = React.forwardRef(
       setCMessages(messages);
     }, [messages]);
 
+    const messageBoxClasses = `${classes.container} ${classes.userMessageText}`;
     return (
       <MessageBox
         className={
           welcomePrompts.length
-            ? `${classes.userMessageText} ${classes.prompt}`
-            : classes.userMessageText
+            ? `${messageBoxClasses} ${classes.prompt}`
+            : messageBoxClasses
         }
         announcement={announcement}
         style={{ justifyContent: 'flex-end' }}

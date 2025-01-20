@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
             <MenuSection
               key={`menu-section-${section.sectionKey}`}
               {...{ hideDivider: shouldHideDivider(index), ...section }}
-              handleClose={() => setAnchorEl(null)}
+              handleClose={section.handleClose}
             />
           ))}
           {menuBottomItems.map(

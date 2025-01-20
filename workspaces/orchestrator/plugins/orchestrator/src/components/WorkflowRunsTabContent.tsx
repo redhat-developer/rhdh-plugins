@@ -69,9 +69,11 @@ export const WorkflowRunsTabContent = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
+  const workflowPageLink = useRouteRef(workflowRouteRef);
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
     Selector.AllItems,
   );
+
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
   const [orderByField, setOrderByField] = useState<string>('start');
@@ -177,9 +179,9 @@ export const WorkflowRunsTabContent = () => {
       {
         title: 'ID',
         field: 'id',
-        render: row => (
-          <Link to={workflowInstanceLink({ instanceId: row.id })}>
-            {row.id}
+        render: data => (
+          <Link to={workflowInstanceLink({ instanceId: data.id })}>
+            {data.id}
           </Link>
         ),
         sorting: false,
@@ -191,17 +193,21 @@ export const WorkflowRunsTabContent = () => {
               title: 'Workflow name',
               field: 'processName',
               customSort: applyBackendSort,
+              render: (data: WorkflowRunDetail) => (
+                <Link to={workflowPageLink({ workflowId: data.workflowId })}>
+                  {data.processName}
+                </Link>
+              ),
             },
           ]),
       {
         title: 'Status',
         field: 'state',
-        render: (row: WorkflowRunDetail) => (
+        render: (data: WorkflowRunDetail) => (
           <WorkflowInstanceStatusIndicator
-            status={row.state as ProcessInstanceStatusDTO}
+            status={data.state as ProcessInstanceStatusDTO}
           />
         ),
-        customSort: applyBackendSort,
       },
       ...(workflowId
         ? []
@@ -209,15 +215,15 @@ export const WorkflowRunsTabContent = () => {
             {
               title: 'Category',
               field: 'category',
-              render: (row: WorkflowRunDetail) =>
-                capitalize(row.category ?? VALUE_UNAVAILABLE),
+              render: (data: WorkflowRunDetail) =>
+                capitalize(data.category ?? VALUE_UNAVAILABLE),
               sorting: false,
             },
           ]),
       { title: 'Started', field: 'start', customSort: applyBackendSort },
       { title: 'Duration', field: 'duration', sorting: false },
     ],
-    [workflowInstanceLink, workflowId, applyBackendSort],
+    [workflowInstanceLink, workflowId, workflowPageLink, applyBackendSort],
   );
 
   let data = value || [];

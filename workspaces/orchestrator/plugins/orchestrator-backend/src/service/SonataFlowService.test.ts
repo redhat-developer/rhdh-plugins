@@ -192,26 +192,6 @@ describe('SonataFlowService', () => {
       expect(loggerMock.child).not.toHaveBeenCalled();
     });
 
-    it('should include businessKey in the URL if provided', async () => {
-      // Given
-      const businessKey = 'key-123';
-      setupTest({ ok: true, json: { id: definitionId, status: 'completed' } });
-
-      // When
-      const result = await sonataFlowService.executeWorkflow({
-        definitionId,
-        serviceUrl,
-        inputData,
-        businessKey,
-      });
-
-      // Then
-      expect(fetch).toHaveBeenCalledWith(
-        `${serviceUrl}/${definitionId}?businessKey=${businessKey}`,
-        expectedFetchRequestInit(),
-      );
-      expect(result).toEqual({ id: definitionId, status: 'completed' });
-    });
     it('should propagate thrown error when the fetch response is not ok without extra info', async () => {
       // When
       setupTest({
@@ -287,6 +267,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.createPrefixFetchErrorMessage(
         TEST_URL,
         mockResponse,
+        mockResponseJson,
         'POST',
       );
 
@@ -307,6 +288,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.createPrefixFetchErrorMessage(
         TEST_URL,
         mockResponse,
+        mockResponseJson,
       );
 
       // Then
@@ -325,6 +307,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.createPrefixFetchErrorMessage(
         TEST_URL,
         mockResponse,
+        mockResponseJson,
       );
 
       // Then
@@ -341,6 +324,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.createPrefixFetchErrorMessage(
         TEST_URL,
         mockResponse,
+        mockResponseJson,
       );
 
       // Then
@@ -360,6 +344,7 @@ describe('SonataFlowService', () => {
       const result = await sonataFlowService.createPrefixFetchErrorMessage(
         TEST_URL,
         mockResponse,
+        {},
       );
 
       // Then
