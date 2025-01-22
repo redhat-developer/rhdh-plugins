@@ -15,10 +15,19 @@
  */
 
 import { createApiRef } from '@backstage/core-plugin-api';
-import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  MarketplaceApi,
+  MarketplaceAggregationApi,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export * from './MarketplaceBackendClient';
+export * from './MarketplaceAggregationBackendClient';
 
 export const marketplaceApiRef = createApiRef<MarketplaceApi>({
   id: 'plugin.marketplace.api-ref',
 });
+
+export const MarketplaceAggregationApiRef =
+  createApiRef<MarketplaceAggregationApi>({
+    id: 'plugin.marketplace.aggregation.api-ref',
+  });

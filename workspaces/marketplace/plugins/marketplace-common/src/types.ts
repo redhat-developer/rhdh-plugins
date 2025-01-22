@@ -94,7 +94,13 @@ export interface MarketplaceApi {
   getPluginLists(): Promise<MarketplacePluginList[]>;
   getPluginListByName(name: string): Promise<MarketplacePluginList>;
   getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
-  getAggregateData(
+}
+
+/**
+ * @public
+ */
+export interface MarketplaceAggregationApi {
+  fetchAggregatedData(
     aggregationsRequest: AggregationsRequest,
     baseQuery?: Knex.QueryBuilder | null,
   ): Promise<Knex.QueryBuilder>;

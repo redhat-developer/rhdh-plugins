@@ -21,15 +21,18 @@ import { HttpAuthService } from '@backstage/backend-plugin-api';
 import { InputError, NotFoundError } from '@backstage/errors';
 import {
   AggregationsSchema,
+  MarketplaceAggregationApi,
   MarketplaceApi,
   MarketplaceKinds,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export async function createRouter({
   marketplaceApi,
+  marketplaceAggregationApi,
 }: {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
+  marketplaceAggregationApi: MarketplaceAggregationApi;
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -94,7 +97,9 @@ export async function createRouter({
 
     try {
       const aggregatedData =
-        await marketplaceApi.getAggregateData(aggregationsRequest);
+        await marketplaceAggregationApi.fetchAggregatedData(
+          aggregationsRequest,
+        );
       res.json(aggregatedData);
     } catch (error) {
       let sanitizedMessage = error.message;

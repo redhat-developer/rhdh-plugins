@@ -117,9 +117,13 @@ export enum InstallStatus {
 export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";
 
 // @public (undocumented)
-export interface MarketplaceApi {
+export interface MarketplaceAggregationApi {
     // (undocumented)
-    getAggregateData(aggregationsRequest: AggregationsRequest, baseQuery?: Knex.QueryBuilder | null): Promise<Knex.QueryBuilder>;
+    fetchAggregatedData(aggregationsRequest: AggregationsRequest, baseQuery?: Knex.QueryBuilder | null): Promise<Knex.QueryBuilder>;
+}
+
+// @public (undocumented)
+export interface MarketplaceApi {
     // (undocumented)
     getPluginByName(name: string): Promise<MarketplacePlugin>;
     // (undocumented)
@@ -135,7 +139,6 @@ export interface MarketplaceApi {
 // @public (undocumented)
 export class MarketplaceCatalogClient implements MarketplaceApi {
     constructor(options: MarketplaceCatalogClientOptions);
-    getAggregateData(aggregationsRequest: AggregationsRequest, baseQuery?: Knex.QueryBuilder | null): Promise<Knex.QueryBuilder>;
     // (undocumented)
     getPluginByName(name: string): Promise<MarketplacePlugin>;
     // (undocumented)
@@ -152,7 +155,6 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
 export type MarketplaceCatalogClientOptions = {
     auth?: AuthService;
     catalogApi: CatalogApi;
-    client: Knex;
 };
 
 // @public (undocumented)

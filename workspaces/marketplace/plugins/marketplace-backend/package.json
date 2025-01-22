@@ -27,7 +27,7 @@
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
     "lint": "backstage-cli package lint",
-    "test": "backstage-cli package test",
+    "test": "backstage-cli package test --coverage --detectOpenHandles",
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack"
@@ -40,7 +40,8 @@
     "@backstage/plugin-catalog-node": "^1.13.1",
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",
     "express": "^4.17.1",
-    "express-promise-router": "^4.1.0"
+    "express-promise-router": "^4.1.0",
+    "knex": "^3.0.0"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.0.2",

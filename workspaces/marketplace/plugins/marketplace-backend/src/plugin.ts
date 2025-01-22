@@ -27,6 +27,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { createRouter } from './router';
+import { MarketplaceAggregationService } from './service/MarketplaceAggregationService';
 
 /**
  * marketplacePlugin backend plugin
@@ -65,6 +66,9 @@ export const marketplacePlugin = createBackendPlugin({
         const marketplaceApi: MarketplaceApi = new MarketplaceCatalogClient({
           auth,
           catalogApi,
+        });
+
+        const marketplaceAggregationApi = new MarketplaceAggregationService({
           client,
         });
 
@@ -72,6 +76,7 @@ export const marketplacePlugin = createBackendPlugin({
           await createRouter({
             httpAuth,
             marketplaceApi,
+            marketplaceAggregationApi,
           }),
         );
       },
