@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { MarketplacePluginList } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { MarketplacePluginListProcessor } from '../MarketplacePluginListProcessor';
+
+import { MarketplacePluginListProcessor } from './MarketplacePluginListProcessor';
 
 const pluginListEntity: MarketplacePluginList = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
@@ -67,7 +69,7 @@ describe('MarketplacePluginListProcessor', () => {
 
     const emit = jest.fn();
     await processor.postProcessEntity(pluginListEntity, null as any, emit);
-    expect(emit).toHaveBeenCalledTimes(4);
+    expect(emit).toHaveBeenCalledTimes(7);
     expect(emit).toHaveBeenCalledWith({
       type: 'relation',
       relation: {
@@ -79,6 +81,27 @@ describe('MarketplacePluginListProcessor', () => {
         type: 'ownedBy',
         target: { kind: 'Group', namespace: 'default', name: 'test-group' },
       },
+    });
+    const getPluginHasPartOfPluginListRelation = (pluginName: string) => ({
+      source: {
+        kind: 'Plugin',
+        namespace: 'default',
+        name: pluginName,
+      },
+      type: 'hasPart',
+      target: {
+        kind: 'PluginList',
+        namespace: 'default',
+        name: 'testplugin',
+      },
+    });
+    expect(emit).toHaveBeenCalledWith({
+      type: 'relation',
+      relation: getPluginHasPartOfPluginListRelation('plugin-a'),
+    });
+    expect(emit).toHaveBeenCalledWith({
+      type: 'relation',
+      relation: getPluginHasPartOfPluginListRelation('plugin-b'),
     });
   });
 });

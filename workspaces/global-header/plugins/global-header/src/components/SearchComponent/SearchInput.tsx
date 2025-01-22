@@ -49,6 +49,7 @@ export const SearchInput = ({
       pt: '6px',
       input: { color: '#fff' },
       button: { color: '#fff' },
+      '& fieldset': { border: 'none' },
     }}
   />
 );

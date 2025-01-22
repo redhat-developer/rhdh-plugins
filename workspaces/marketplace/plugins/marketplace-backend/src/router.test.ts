@@ -14,50 +14,228 @@
  * limitations under the License.
  */
 
-import { mockErrorHandler, mockServices } from '@backstage/backend-test-utils';
-import express from 'express';
+import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import request from 'supertest';
+import { rest } from 'msw';
+import { setupServer, SetupServer } from 'msw/node';
 
-import { MarketplacePluginEntry } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { createRouter } from './router';
-import { MarketplaceService } from './services/MarketplaceService';
+import { BackendFeature } from '@backstage/backend-plugin-api';
+import { marketplacePlugin } from './plugin';
+import { mockPluginList, mockPlugins } from '../__fixtures__/mockData';
+import { ExtendedHttpServer } from '@backstage/backend-defaults/dist/rootHttpRouter';
+import {
+  MarketplacePlugin,
+  MarketplacePluginList,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-const mockPlugins: MarketplacePluginEntry[] = [
-  {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: 'plugin',
-    metadata: {
-      name: 'plugin-a',
-      title: 'Plugin A',
-    },
-  },
-];
+async function startBackendServer(): Promise<ExtendedHttpServer> {
+  const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
+    marketplacePlugin,
+    mockServices.rootLogger.factory(),
+  ];
 
-// Testing the router directly allows you to write a unit test that mocks the provided options.
-describe('createRouter', () => {
-  let app: express.Express;
-  let marketplaceService: jest.Mocked<MarketplaceService>;
+  return (await startTestBackend({ features })).server;
+}
 
-  beforeEach(async () => {
-    marketplaceService = {
-      getPlugins: jest.fn(),
-      getPluginList: jest.fn(),
-    };
-    const router = await createRouter({
-      httpAuth: mockServices.httpAuth(),
-      marketplaceService,
+const setupTest = () => {
+  let server: SetupServer;
+
+  beforeAll(() => {
+    server = setupServer();
+    server.listen({
+      /*
+       *  This is required so that msw doesn't throw
+       *  warnings when the backend is requesting an endpoint
+       */
+      onUnhandledRequest: (req, print) => {
+        if (req.url.pathname.startsWith('/api/marketplace')) {
+          // bypass
+          return;
+        }
+        print.warning();
+      },
     });
-    app = express();
-    app.use(router);
-    app.use(mockErrorHandler());
   });
 
-  it('should return plugins', async () => {
-    marketplaceService.getPlugins.mockResolvedValue(mockPlugins);
+  afterAll(() => server.close());
 
-    const response = await request(app).get('/plugins');
+  beforeEach(() => {});
 
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual(mockPlugins);
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.restoreAllMocks();
+    server.resetHandlers();
+  });
+
+  return () => {
+    return { server };
+  };
+};
+
+const testSetup = setupTest();
+
+const setupTestWithMockCatalog = async ({
+  mockData,
+  name,
+  kind = 'plugin',
+}: {
+  mockData: MarketplacePlugin[] | MarketplacePluginList[] | {} | null;
+  name?: string;
+  kind?: string;
+}): Promise<{ backendServer: ExtendedHttpServer }> => {
+  const { server } = testSetup();
+  const backendServer: ExtendedHttpServer = await startBackendServer();
+  server.use(
+    rest.get(
+      `http://localhost:${backendServer.port()}/api/catalog/entities/by-query`,
+      (_, res, ctx) => res(ctx.status(200), ctx.json({ items: mockData })),
+    ),
+    rest.get(
+      `http://localhost:${backendServer.port()}/api/catalog/entities/by-name/${kind}/default/${name}`,
+      (_, res, ctx) => res(ctx.status(200), ctx.json(mockData)),
+    ),
+  );
+
+  return { backendServer };
+};
+
+describe('createRouter', () => {
+  it('should get the plugins', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: mockPlugins,
+    });
+    const response = await request(backendServer).get(
+      '/api/marketplace/plugins',
+    );
+    expect(response.status).toEqual(200);
+    expect(response.body).toHaveLength(2);
+  });
+
+  it('should get the plugin by name', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: mockPlugins[0],
+      name: 'plugin1',
+    });
+
+    const response = await request(backendServer).get(
+      '/api/marketplace/plugins/plugin1',
+    );
+
+    expect(response.status).toEqual(200);
+    expect(response.body.metadata.name).toEqual('plugin1');
+  });
+
+  it('should throw error while fetching plugin by name', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: {},
+    });
+    const response = await request(backendServer).get(
+      '/api/marketplace/plugins/test-plugin',
+    );
+
+    expect(response.status).toEqual(404);
+    expect(response.body).toEqual({ error: 'Plugin:test-plugin not found' });
+  });
+
+  it('should get all the pluginlist entities', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: mockPluginList,
+    });
+
+    const response = await request(backendServer).get(
+      '/api/marketplace/pluginlists',
+    );
+
+    expect(response.status).toEqual(200);
+    expect(response.body).toHaveLength(1);
+  });
+
+  it('should get the pluginlist by name', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: mockPluginList[0],
+      name: 'featured-plugins',
+      kind: 'pluginlist',
+    });
+
+    const response = await request(backendServer).get(
+      '/api/marketplace/pluginlists/featured-plugins',
+    );
+
+    expect(response.status).toEqual(200);
+    expect(response.body.metadata.name).toEqual('test-featured-plugins');
+    expect(response.body.spec.plugins).toEqual(['plugin1', 'plugin2']);
+  });
+
+  it('should throw error while fetching pluginlist by name', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: null,
+      name: 'invalid-pluginlist',
+      kind: 'pluginlist',
+    });
+
+    const response = await request(backendServer).get(
+      '/api/marketplace/pluginlists/invalid-pluginlist',
+    );
+
+    expect(response.status).toEqual(404);
+    expect(response.body).toEqual({
+      error: 'PluginList:invalid-pluginlist not found',
+    });
+  });
+
+  it('should return empty array when plugins is not set in the pluginList entity', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: { ...mockPluginList[0], spec: {} },
+      name: 'featured-plugins',
+      kind: 'pluginlist',
+    });
+
+    const response = await request(backendServer).get(
+      '/api/marketplace/pluginlists/featured-plugins/plugins',
+    );
+
+    expect(response.status).toEqual(200);
+    expect(response.body).toEqual([]);
+  });
+
+  it('should return all the plugins by the pluginlist name', async () => {
+    const { server } = testSetup();
+    const backendServer = await startBackendServer();
+    server.use(
+      rest.get(
+        `http://localhost:${backendServer.port()}/api/catalog/entities/by-name/pluginlist/default/featured-plugins`,
+        (_, res, ctx) => res(ctx.status(200), ctx.json(mockPluginList[0])),
+      ),
+      rest.post(
+        `http://localhost:${backendServer.port()}/api/catalog/entities/by-refs`,
+        (_, res, ctx) => res(ctx.status(200), ctx.json({ items: mockPlugins })),
+      ),
+    );
+
+    const response = await request(backendServer).get(
+      '/api/marketplace/pluginlists/featured-plugins/plugins',
+    );
+
+    expect(response.status).toEqual(200);
+    expect(response.body).toHaveLength(2);
+    expect(response.body[0].metadata.name).toBe('plugin1');
+    expect(response.body[1].metadata.name).toBe('plugin2');
+  });
+
+  it('should throw an error when the pluginlist is not available', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: null,
+      name: 'featured-plugins',
+      kind: 'pluginlist',
+    });
+
+    const response = await request(backendServer).get(
+      '/api/marketplace/pluginlists/featured-plugins/plugins',
+    );
+
+    expect(response.status).toEqual(404);
+    expect(response.body).toEqual({
+      error: 'PluginList:featured-plugins not found',
+    });
   });
 });

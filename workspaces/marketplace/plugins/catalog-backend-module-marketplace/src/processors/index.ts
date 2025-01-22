@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export { MarketplacePluginProcessor } from './MarketplacePluginProcessor';
-export { MarketplacePluginListProcessor } from './MarketplacePluginListProcessor';
+export * from './MarketplacePluginProcessor';
+export * from './MarketplacePluginListProcessor';
 export * from './DynamicPluginInstallStatusProcessor';
-export { LocalPluginInstallStatusProcessor as LocalPluginInstallStatusProcessor } from './LocalPluginInstallStatusProcessor';
+export * from './LocalPluginInstallStatusProcessor';

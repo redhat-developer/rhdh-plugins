@@ -19,6 +19,7 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
+
 import { MarketplacePluginProcessor } from './processors/MarketplacePluginProcessor';
 import { MarketplacePluginListProcessor } from './processors/MarketplacePluginListProcessor';
 import { DynamicPluginInstallStatusProcessor } from './processors/DynamicPluginInstallStatusProcessor';

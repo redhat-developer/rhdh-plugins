@@ -20,7 +20,7 @@ import { JsonObject } from '@backstage/types';
 /**
  * @public
  */
-export interface MarketplacePluginEntry extends Entity {
+export interface MarketplacePlugin extends Entity {
   spec?: MarketplacePluginSpec;
 }
 
@@ -82,4 +82,14 @@ export interface MarketplacePluginSpec extends JsonObject {
     markdown?: string;
     appconfig?: string;
   };
+}
+/**
+ * @public
+ */
+export interface MarketplaceApi {
+  getPlugins(): Promise<MarketplacePlugin[]>;
+  getPluginByName(name: string): Promise<MarketplacePlugin>;
+  getPluginLists(): Promise<MarketplacePluginList[]>;
+  getPluginListByName(name: string): Promise<MarketplacePluginList>;
+  getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
 }

@@ -130,19 +130,20 @@ export const WorkflowInstancePageContent: React.FC<{
         </Grid>
 
         <Grid item xs={6}>
-          <WorkflowResult
-            assessedInstance={assessedInstance}
-            className={styles.topRowCard}
-          />
-        </Grid>
-
-        <Grid item xs={6}>
           <WorkflowInputs
-            className={styles.bottomRowCard}
+            className={styles.topRowCard}
             cardClassName={styles.autoOverflow}
             value={value}
             loading={loading}
             responseError={responseError}
+          />
+        </Grid>
+
+        <Grid item xs={6}>
+          <WorkflowResult
+            assessedInstance={assessedInstance}
+            className={styles.bottomRowCard}
+            cardClassName={styles.autoOverflow}
           />
         </Grid>
 
