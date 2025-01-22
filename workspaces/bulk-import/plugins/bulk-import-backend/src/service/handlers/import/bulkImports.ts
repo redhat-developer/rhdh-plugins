@@ -28,10 +28,16 @@ import {
 } from '../../../catalog/catalogUtils';
 import type { Components, Paths } from '../../../generated/openapi';
 import type { GithubApiService } from '../../../github';
-import { logErrorIfNeeded, paginateArray } from '../../../helpers';
+import {
+  getNestedValue,
+  logErrorIfNeeded,
+  paginateArray,
+} from '../../../helpers';
 import {
   DefaultPageNumber,
   DefaultPageSize,
+  DefaultSortColumn,
+  DefaultSortOrder,
   type HandlerResponse,
 } from '../handlers';
 
@@ -45,18 +51,31 @@ type FindAllImportsResponse =
   | Components.Schemas.Import[]
   | Components.Schemas.ImportJobListV2;
 
-function sortImports(imports: Components.Schemas.Import[]) {
+function sortImports(
+  imports: Components.Schemas.Import[],
+  sortColumn: Components.Parameters.SortColumnQueryParam = DefaultSortColumn,
+  sortOrder: Components.Parameters.SortOrderQueryParam = DefaultSortOrder,
+) {
   imports.sort((a, b) => {
-    if (a.repository?.name === undefined && b.repository?.name === undefined) {
-      return 0;
+    const value1 = getNestedValue(a, sortColumn);
+    const value2 = getNestedValue(b, sortColumn);
+    // Handle cases where values are undefined
+    if (value1 === undefined && value2 === undefined) return 0;
+    if (value1 === undefined) return sortOrder === 'asc' ? -1 : 1;
+    if (value2 === undefined) return sortOrder === 'asc' ? 1 : -1;
+
+    if (sortColumn === 'lastUpdate') {
+      const date1 = new Date(value1); // Convert string to Date object
+      const date2 = new Date(value2); // Convert string to Date object
+      // Compare dates
+      return sortOrder === 'asc'
+        ? date2.getTime() - date1.getTime()
+        : date1.getTime() - date2.getTime();
     }
-    if (a.repository?.name === undefined) {
-      return -1;
-    }
-    if (b.repository?.name === undefined) {
-      return 1;
-    }
-    return a.repository.name.localeCompare(b.repository.name);
+    // Compare values based on sort order
+    return sortOrder === 'asc'
+      ? value1.localeCompare(value2)
+      : value2.localeCompare(value1);
   });
 }
 
@@ -74,16 +93,16 @@ export async function findAllImports(
     search?: string;
     pageNumber?: number;
     pageSize?: number;
+    sortColumn?: Components.Parameters.SortColumnQueryParam;
+    sortOrder?: Components.Parameters.SortOrderQueryParam;
   },
 ): Promise<HandlerResponse<FindAllImportsResponse>> {
   const apiVersion = requestHeaders?.apiVersion ?? 'v1';
   const search = queryParams?.search;
   const pageNumber = queryParams?.pageNumber ?? DefaultPageNumber;
   const pageSize = queryParams?.pageSize ?? DefaultPageSize;
-
-  deps.logger.debug(
-    `Getting all bulk import jobs (apiVersion=${apiVersion}, search=${search}, page=${pageNumber}, size=${pageSize})..`,
-  );
+  const sortColumn = queryParams?.sortColumn ?? DefaultSortColumn;
+  const sortOrder = queryParams?.sortOrder ?? DefaultSortOrder;
 
   const catalogFilename = getCatalogFilename(deps.config);
 
@@ -156,8 +175,8 @@ export async function findAllImports(
     });
 
   // sorting the output to make it deterministic and easy to navigate in the UI
-  sortImports(imports);
 
+  sortImports(imports, sortColumn, sortOrder);
   const paginated = paginateArray(imports, pageNumber, pageSize);
   if (apiVersion === 'v1') {
     return {

@@ -664,6 +664,119 @@ describe('bulkimports.ts unit tests', () => {
         }
         expect(resp.responseBody).toEqual(expectedResponse);
 
+        // Unit test for sort if nothing is provided sorting should be based on name in asc order
+        resp = await findAllImports(
+          {
+            logger,
+            config,
+            githubApiService: mockGithubApiService,
+            catalogHttpClient: mockCatalogHttpClient,
+          },
+          {
+            apiVersion,
+          },
+          {
+            pageNumber: 1,
+            pageSize: 6,
+          },
+        );
+        const sortedNames =
+          apiVersion === 'v2'
+            ? (
+                resp?.responseBody as {
+                  imports: { repository: { name: any } }[];
+                }
+              )?.imports?.map(importObj => importObj.repository.name)
+            : (resp?.responseBody as { repository: { name: any } }[])?.map(
+                importObj => importObj.repository.name,
+              );
+        let expectedSortedArray = [
+          'my-repo-11',
+          'my-repo-123',
+          'my-repo-21',
+          'my-repo-22',
+          'my-repo-31',
+          'my-repo-32',
+        ];
+        expect(sortedNames).toEqual(expectedSortedArray);
+
+        // sorting  based on organization in asc order
+        resp = await findAllImports(
+          {
+            logger,
+            config,
+            githubApiService: mockGithubApiService,
+            catalogHttpClient: mockCatalogHttpClient,
+          },
+          {
+            apiVersion,
+          },
+          {
+            pageNumber: 1,
+            pageSize: 6,
+            sortColumn: 'repository.organization',
+            sortOrder: 'asc',
+          },
+        );
+
+        let sortedOrganization =
+          apiVersion === 'v2'
+            ? (
+                resp?.responseBody as {
+                  imports: { repository: { organization: any } }[];
+                }
+              )?.imports?.map(importObj => importObj.repository.organization)
+            : (
+                resp?.responseBody as { repository: { organization: any } }[]
+              )?.map(importObj => importObj.repository.organization);
+        expectedSortedArray = [
+          'my-org-1',
+          'my-org-2',
+          'my-org-2',
+          'my-org-3',
+          'my-org-3',
+          'my-user',
+        ];
+        expect(sortedOrganization).toEqual(expectedSortedArray);
+        // sorting  based on organization in desc order
+        resp = await findAllImports(
+          {
+            logger,
+            config,
+            githubApiService: mockGithubApiService,
+            catalogHttpClient: mockCatalogHttpClient,
+          },
+          {
+            apiVersion,
+          },
+          {
+            pageNumber: 1,
+            pageSize: 6,
+            sortColumn: 'repository.organization',
+            sortOrder: 'desc',
+          },
+        );
+
+        sortedOrganization =
+          apiVersion === 'v2'
+            ? (
+                resp?.responseBody as {
+                  imports: { repository: { organization: any } }[];
+                }
+              )?.imports?.map(importObj => importObj.repository.organization)
+            : (
+                resp?.responseBody as { repository: { organization: any } }[]
+              )?.map(importObj => importObj.repository.organization);
+        expectedSortedArray = [
+          'my-user',
+          'my-org-3',
+          'my-org-3',
+          'my-org-2',
+          'my-org-2',
+          'my-org-1',
+        ];
+        expect(sortedOrganization).toEqual(expectedSortedArray);
+
         // No data for this page
         resp = await findAllImports(
           {
