@@ -84,14 +84,6 @@ export type AbortConfirmationDialogActionsProps = {
   handleCancel: () => void;
 };
 
-export type AbortAlertDialogActionsProps = {
-  handleClose: () => void;
-};
-
-export type AbortAlertDialogContentProps = {
-  message: string;
-};
-
 const AbortConfirmationDialogContent = () => (
   <div>
     <b>
