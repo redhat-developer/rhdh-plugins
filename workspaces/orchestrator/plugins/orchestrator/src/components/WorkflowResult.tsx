@@ -132,7 +132,7 @@ const ResultMessage = ({
           <Box sx={{ width: '100%' }}>
             <Alert severity="success">
               <AlertTitle>Run completed</AlertTitle>
-              The workflow provided no additional info about the status
+              The workflow provided no additional info about the status.
             </Alert>
           </Box>
         ) : (
