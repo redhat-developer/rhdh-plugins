@@ -3,4 +3,4 @@
 '@red-hat-developer-hub/backstage-plugin-bulk-import': patch
 ---
 
-Sort based on column name
+Implemented Server Side Sorting for `GET /imports`
