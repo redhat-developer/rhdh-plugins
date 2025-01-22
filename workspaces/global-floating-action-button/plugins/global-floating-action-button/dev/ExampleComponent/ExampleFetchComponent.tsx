@@ -120,6 +120,7 @@ export const DenseTable = ({ users }: DenseTableProps) => {
 
   const data = users.map(user => {
     return {
+      id: user.name,
       avatar: (
         <img
           src={user.picture}

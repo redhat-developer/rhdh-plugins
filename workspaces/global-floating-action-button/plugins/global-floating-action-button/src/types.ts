@@ -67,3 +67,12 @@ export type FloatingActionButtonWithPositions = Array<{
   slot: Slot;
   actions: FloatingActionButton[];
 }>;
+
+/**
+ * FAB Mount Point
+ *
+ * @public
+ */
+export type FABMountPoint = {
+  config?: FloatingActionButton;
+};
