@@ -13,6 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { GlobalFloatingActionButton } from './GlobalFloatingActionButton';
-export { DynamicGlobalFloatingActionButton } from './DynamicGlobalFloatingActionButton';
-export { NullComponent } from './NullComponent';
+
+import { useScalprum } from '@scalprum/react-core';
+
+import { FABMountPoint } from '../types';
+
+interface ScalprumState {
+  api?: {
+    dynamicRootConfig?: {
+      mountPoints?: {
+        'global.floatingactionbutton/component': FABMountPoint[];
+      };
+    };
+  };
+}
+
+export const useFabMountPoints = (): FABMountPoint[] | undefined => {
+  const scalprum = useScalprum<ScalprumState>();
+  const fabMountPoints =
+    scalprum?.api?.dynamicRootConfig?.mountPoints?.[
+      'global.floatingactionbutton/component'
+    ];
+
+  return fabMountPoints;
+};
