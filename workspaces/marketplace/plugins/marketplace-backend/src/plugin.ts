@@ -19,6 +19,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { CatalogClient } from '@backstage/catalog-client';
+import { DatabaseManager } from '@backstage/backend-defaults/database';
 
 import {
   MarketplaceApi,
@@ -41,12 +42,30 @@ export const marketplacePlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         discovery: coreServices.discovery,
+        config: coreServices.rootConfig,
+        logger: coreServices.logger,
+        lifecycle: coreServices.lifecycle,
       },
-      async init({ auth, httpAuth, httpRouter, discovery }) {
+      async init({
+        auth,
+        httpAuth,
+        httpRouter,
+        discovery,
+        config,
+        logger,
+        lifecycle,
+      }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
+        const db = DatabaseManager.fromConfig(config).forPlugin('catalog', {
+          logger,
+          lifecycle,
+        });
+        const client = await db.getClient();
+
         const marketplaceApi: MarketplaceApi = new MarketplaceCatalogClient({
           auth,
           catalogApi,
+          client,
         });
 
         httpRouter.use(

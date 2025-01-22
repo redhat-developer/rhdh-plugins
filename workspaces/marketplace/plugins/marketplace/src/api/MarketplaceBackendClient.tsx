@@ -17,10 +17,12 @@
 import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 
 import {
+  AggregationsRequest,
   MarketplaceApi,
   MarketplacePlugin,
   MarketplacePluginList,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { Knex } from 'knex';
 
 export type MarketplaceBackendClientOptions = {
   discoveryApi: DiscoveryApi;
@@ -97,6 +99,28 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     const url = `${baseUrl}/pluginlists/${name}/plugins`;
 
     const response = await this.fetchApi.fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Unexpected status code: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  async getAggregateData(
+    aggregationsRequest: AggregationsRequest,
+  ): Promise<Knex.QueryBuilder> {
+    const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
+    const url = `${baseUrl}/aggregations`;
+
+    const response = await this.fetchApi.fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(aggregationsRequest),
+    });
     if (!response.ok) {
       throw new Error(
         `Unexpected status code: ${response.status} ${response.statusText}`,

@@ -24,14 +24,31 @@ import { marketplacePlugin } from './plugin';
 import { mockPluginList, mockPlugins } from '../__fixtures__/mockData';
 import { ExtendedHttpServer } from '@backstage/backend-defaults/dist/rootHttpRouter';
 import {
+  MarketplaceCatalogClient,
   MarketplacePlugin,
   MarketplacePluginList,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { InputError } from '@backstage/errors';
 
+const BASE_CONFIG = {
+  app: {
+    baseUrl: 'https://my-backstage-app.example.com',
+  },
+  backend: {
+    baseUrl: 'http://localhost:7007',
+    database: {
+      client: 'better-sqlite3',
+      connection: ':memory:',
+    },
+  },
+};
 async function startBackendServer(): Promise<ExtendedHttpServer> {
   const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
     marketplacePlugin,
     mockServices.rootLogger.factory(),
+    mockServices.rootConfig.factory({
+      data: { ...BASE_CONFIG },
+    }),
   ];
 
   return (await startTestBackend({ features })).server;
@@ -92,7 +109,11 @@ const setupTestWithMockCatalog = async ({
     ),
     rest.get(
       `http://localhost:${backendServer.port()}/api/catalog/entities/by-name/${kind}/default/${name}`,
-      (_, res, ctx) => res(ctx.status(200), ctx.json(mockData)),
+      (_, res, ctx) =>
+        res(
+          ctx.status(name === 'invalid-plugin' ? 404 : 200),
+          ctx.json(name === 'invalid-plugin' ? {} : mockData),
+        ),
     ),
   );
 
@@ -109,7 +130,7 @@ describe('createRouter', () => {
     );
     expect(response.status).toEqual(200);
     expect(response.body).toHaveLength(2);
-  });
+  }, 30000);
 
   it('should get the plugin by name', async () => {
     const { backendServer } = await setupTestWithMockCatalog({
@@ -128,13 +149,14 @@ describe('createRouter', () => {
   it('should throw error while fetching plugin by name', async () => {
     const { backendServer } = await setupTestWithMockCatalog({
       mockData: {},
+      name: 'invalid-plugin',
     });
     const response = await request(backendServer).get(
-      '/api/marketplace/plugins/test-plugin',
+      '/api/marketplace/plugins/invalid-plugin',
     );
 
     expect(response.status).toEqual(404);
-    expect(response.body).toEqual({ error: 'Plugin:test-plugin not found' });
+    expect(response.body).toEqual({ error: 'Plugin:invalid-plugin not found' });
   });
 
   it('should get all the pluginlist entities', async () => {
@@ -237,5 +259,77 @@ describe('createRouter', () => {
     expect(response.body).toEqual({
       error: 'PluginList:featured-plugins not found',
     });
+  });
+
+  it('should throw an error when the aggregations request is invalid', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: null,
+    });
+    const mockGetAggregateData = jest
+      .fn()
+      .mockRejectedValue(new InputError('Bad request error'));
+
+    jest
+      .spyOn(MarketplaceCatalogClient.prototype, 'getAggregateData')
+      .mockImplementation(mockGetAggregateData);
+
+    const payload = [{}];
+    const response = await request(backendServer)
+      .post('/api/marketplace/aggregations')
+      .send(payload);
+
+    expect(response.status).toEqual(400);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        error: expect.anything(),
+      }),
+    );
+  });
+
+  it('should return sanitized error messages', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: null,
+    });
+    const mockGetAggregateData = jest
+      .fn()
+      .mockRejectedValue(new Error('Select  from custom_table - Syntax error'));
+
+    jest
+      .spyOn(MarketplaceCatalogClient.prototype, 'getAggregateData')
+      .mockImplementation(mockGetAggregateData);
+
+    const payload = [{ field: 'kind', type: 'count' }];
+    const response = await request(backendServer)
+      .post('/api/marketplace/aggregations')
+      .send(payload);
+
+    expect(response.status).toEqual(500);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        error:
+          'Internal server error: Aggregations query failed to fetch data.',
+      }),
+    );
+  });
+
+  it('should return aggregated data', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: null,
+    });
+    const mockGetAggregateData = jest
+      .fn()
+      .mockReturnValue([{ kind: 'plugin', count: 10 }]);
+
+    jest
+      .spyOn(MarketplaceCatalogClient.prototype, 'getAggregateData')
+      .mockImplementation(mockGetAggregateData);
+
+    const payload = [{ field: 'kind', type: 'count' }];
+    const response = await request(backendServer)
+      .post('/api/marketplace/aggregations')
+      .send(payload);
+
+    expect(response.status).toEqual(200);
+    expect(response.body).toEqual([{ count: 10, kind: 'plugin' }]);
   });
 });

@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import { EntityFilterQuery } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
+import { Knex } from 'knex';
 
 /**
  * @public
@@ -92,4 +94,31 @@ export interface MarketplaceApi {
   getPluginLists(): Promise<MarketplacePluginList[]>;
   getPluginListByName(name: string): Promise<MarketplacePluginList>;
   getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
+  getAggregateData(
+    aggregationsRequest: AggregationsRequest,
+    baseQuery?: Knex.QueryBuilder | null,
+  ): Promise<Knex.QueryBuilder>;
 }
+
+/** @public */
+export interface AggregationRequest {
+  name?: string;
+  field: string;
+  value?: string;
+  type: 'count' | 'min' | 'max' | 'avg' | 'sum';
+  orderFields?: {
+    field: 'value' | 'count';
+    order: 'asc' | 'desc';
+  }[];
+  havingFilter?: {
+    field: string;
+    operator: '=' | '!=' | '<>' | '>' | '<' | '>=' | '<=';
+    value: string;
+  };
+  filter?: EntityFilterQuery;
+}
+
+/**
+ * @public
+ */
+export type AggregationsRequest = AggregationRequest[];

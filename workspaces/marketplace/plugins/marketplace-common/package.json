@@ -17,7 +17,7 @@
     "directory": "workspaces/marketplace/plugins/marketplace-common"
   },
   "backstage": {
-    "role": "node-library",
+    "role": "common-library",
     "pluginId": "marketplace",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-marketplace",
@@ -50,6 +50,8 @@
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.0.1",
-    "@backstage/errors": "^1.2.4"
+    "@backstage/errors": "^1.2.4",
+    "knex": "^3.0.0",
+    "zod": "^3.22.4"
   }
 }
