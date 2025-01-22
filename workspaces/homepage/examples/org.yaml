@@ -3,8 +3,11 @@
 apiVersion: backstage.io/v1alpha1
 kind: User
 metadata:
+  namespace: development
   name: guest
 spec:
+  profile:
+    displayName: Guest
   memberOf: [guests]
 ---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-group

@@ -14,57 +14,33 @@
  * limitations under the License.
  */
 
-import React, { useMemo } from 'react';
+import React from 'react';
 
-import { Content, EmptyState, Header, Page } from '@backstage/core-components';
+import type { ClockConfig } from '@backstage/plugin-home';
 
-import { useHomePageMountPoints } from '../hooks/useHomePageMountPoints';
-import { ReadOnlyGrid } from './ReadOnlyGrid';
+import { useDynamicHomePageCards } from '../hooks/useDynamicHomePageCards';
+import { HomePage } from './HomePage';
+import type { LocalClockProps } from './LocalClock';
 
 /**
+ * This type is similar to Omit&lt;HomePageProps, 'cards'&gt;.
+ * We redefine it here to avoid the need to export HomePageProps to the API export!
  * @public
  */
 export interface DynamicHomePageProps {
   title?: string;
+  personalizedTitle?: string;
+  pageTitle?: string;
+  subtitle?: string;
+  localClock?: LocalClockProps;
+  worldClocks?: ClockConfig[];
 }
 
 /**
  * @public
  */
 export const DynamicHomePage = (props: DynamicHomePageProps) => {
-  const allHomePageMountPoints = useHomePageMountPoints();
+  const cards = useDynamicHomePageCards();
 
-  const filteredAndSortedHomePageCards = useMemo(() => {
-    if (!allHomePageMountPoints) {
-      return [];
-    }
-
-    const filteredAndSorted = allHomePageMountPoints.filter(
-      card =>
-        card.enabled !== false &&
-        (!card.config?.priority || card.config.priority >= 0),
-    );
-
-    filteredAndSorted.sort(
-      (a, b) => (b.config?.priority ?? 0) - (a.config?.priority ?? 0),
-    );
-
-    return filteredAndSorted;
-  }, [allHomePageMountPoints]);
-
-  return (
-    <Page themeId="home">
-      <Header title={props.title ?? 'Welcome back!'} />
-      <Content>
-        {filteredAndSortedHomePageCards.length === 0 ? (
-          <EmptyState
-            title="No home page cards (mount points) configured or found."
-            missing="content"
-          />
-        ) : (
-          <ReadOnlyGrid mountPoints={filteredAndSortedHomePageCards} />
-        )}
-      </Content>
-    </Page>
-  );
+  return <HomePage {...props} cards={cards} />;
 };

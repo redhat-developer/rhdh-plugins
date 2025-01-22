@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-import { useScalprum } from '@scalprum/react-core';
+import React from 'react';
+import { render, screen } from '@testing-library/react';
 
-import { HomePageCardMountPoint } from '../types';
+import { Markdown } from './Markdown';
 
-interface ScalprumState {
-  api?: {
-    dynamicRootConfig?: {
-      mountPoints?: {
-        'home.page/cards': HomePageCardMountPoint[];
-      };
-    };
-  };
-}
+describe('Markdown', () => {
+  it('renders successfully', async () => {
+    render(
+      <Markdown
+        title="This is a headline"
+        content={'## This is some markdown\n\nSome content'}
+      />,
+    );
 
-export const useHomePageMountPoints = ():
-  | HomePageCardMountPoint[]
-  | undefined => {
-  const scalprum = useScalprum<ScalprumState>();
-
-  const homePageMountPoints =
-    scalprum?.api?.dynamicRootConfig?.mountPoints?.['home.page/cards'];
-
-  return homePageMountPoints;
-};
+    expect(screen.getByText('This is a headline')).toBeInTheDocument();
+    expect(screen.getByText('This is some markdown')).toBeInTheDocument();
+    expect(screen.getByText('Some content')).toBeInTheDocument();
+  });
+});
