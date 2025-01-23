@@ -25,14 +25,15 @@ import { RouteFunc, useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
 
 import {
+  Box,
   CircularProgress,
   Grid,
   List,
   ListItem,
   makeStyles,
-  Typography,
 } from '@material-ui/core';
 import DotIcon from '@material-ui/icons/FiberManualRecord';
+import { Alert, AlertTitle } from '@material-ui/lab';
 
 import {
   AssessedProcessInstanceDTO,
@@ -93,27 +94,11 @@ const ResultMessage = ({
   const styles = useStyles();
 
   const errorMessage = error?.message || error?.toString();
-  let noResult = <></>;
-  if (!resultMessage && !errorMessage) {
-    if (status && finalStates.includes(status)) {
-      noResult = (
-        <i>The workflow provided no additional info about the status.</i>
-      );
-    } else {
-      noResult = (
-        <Typography>
-          <CircularProgress size="0.75rem" />
-          &nbsp;The workflow has not yet provided additional info about the
-          status.
-        </Typography>
-      );
-    }
-  }
 
   return (
     <>
       {resultMessage && (
-        <Typography>
+        <>
           {completedWith === WorkflowResultDTOCompletedWithEnum.Error && (
             <>
               <DotIcon
@@ -123,11 +108,43 @@ const ResultMessage = ({
               &nbsp;
             </>
           )}
-          {resultMessage}
-        </Typography>
+          <Box sx={{ width: '100%' }}>
+            <Alert severity="success">
+              <AlertTitle>Run completed</AlertTitle>
+              {resultMessage}
+            </Alert>
+          </Box>
+        </>
       )}
-      {errorMessage}
-      {noResult}
+
+      {errorMessage && (
+        <Box sx={{ width: '100%' }}>
+          <Alert severity="error">
+            <AlertTitle>Run has failed</AlertTitle>
+            {errorMessage}
+          </Alert>
+        </Box>
+      )}
+
+      {!resultMessage &&
+        !errorMessage &&
+        (status && finalStates.includes(status) ? (
+          <Box sx={{ width: '100%' }}>
+            <Alert severity="success">
+              <AlertTitle>Run completed</AlertTitle>
+              The workflow provided no additional info about the status.
+            </Alert>
+          </Box>
+        ) : (
+          <Box sx={{ width: '100%' }}>
+            <Alert severity="info">
+              <AlertTitle>
+                <CircularProgress size="0.75rem" /> Workflow is Running...
+              </AlertTitle>
+              Results will be displayed here once the run is complete.
+            </Alert>
+          </Box>
+        ))}
     </>
   );
 };
