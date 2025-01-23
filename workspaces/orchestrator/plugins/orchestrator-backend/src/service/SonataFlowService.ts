@@ -166,6 +166,31 @@ export class SonataFlowService {
     return true;
   }
 
+  public async abortInstance(args: {
+    definitionId: string;
+    instanceId: string;
+    serviceUrl: string;
+  }): Promise<void> {
+    const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}/instances/${args.instanceId}`;
+
+    const response = await fetch(urlToFetch, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const json = await response.json();
+      this.logger.error(`Abort failed with: ${JSON.stringify(json)}`);
+      throw new Error(
+        `${await this.createPrefixFetchErrorMessage(
+          urlToFetch,
+          response,
+          json,
+          'DELETE',
+        )}`,
+      );
+    }
+  }
+
   public async fetchWorkflowOverview(
     definitionId: string,
   ): Promise<WorkflowOverview | undefined> {

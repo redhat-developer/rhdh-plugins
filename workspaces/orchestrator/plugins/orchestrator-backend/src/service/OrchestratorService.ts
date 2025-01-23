@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   Filter,
   ProcessInstance,
@@ -41,18 +42,18 @@ export class OrchestratorService {
   }
 
   public async abortWorkflowInstance(args: {
+    definitionId: string;
     instanceId: string;
+    serviceUrl: string;
     cacheHandler?: CacheHandler;
   }): Promise<void> {
-    const { instanceId, cacheHandler } = args;
-    const definitionId =
-      await this.dataIndexService.fetchDefinitionIdByInstanceId(instanceId);
+    const { definitionId, cacheHandler } = args;
     const isWorkflowAvailable = this.workflowCacheService.isAvailable(
       definitionId,
       cacheHandler,
     );
     return isWorkflowAvailable
-      ? await this.dataIndexService.abortWorkflowInstance(instanceId)
+      ? await this.sonataFlowService.abortInstance(args)
       : undefined;
   }
 

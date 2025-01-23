@@ -548,7 +548,7 @@ describe('abortWorkflow', () => {
     const expectedResult = `Workflow instance ${workflowId} successfully aborted`;
 
     // Act
-    const actualResult: string = await v2.abortWorkflow(workflowId);
+    const actualResult: string = await v2.abortWorkflow('dummy', workflowId);
 
     // Assert
     expect(actualResult).toBeDefined();
@@ -562,7 +562,7 @@ describe('abortWorkflow', () => {
     ).mockRejectedValue(new Error('Simulated abort workflow error'));
 
     // Act
-    const promise = v2.abortWorkflow('instanceId');
+    const promise = v2.abortWorkflow('definitionId', 'instanceId');
 
     // Assert
     await expect(promise).rejects.toThrow('Simulated abort workflow error');

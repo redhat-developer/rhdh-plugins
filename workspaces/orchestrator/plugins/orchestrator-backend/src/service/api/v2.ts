@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { ParsedRequest } from 'openapi-backend';
 
 import {
@@ -230,9 +231,24 @@ export class V2 {
     }
   }
 
-  public async abortWorkflow(instanceId: string): Promise<string> {
+  public async abortWorkflow(
+    workflowId: string,
+    instanceId: string,
+  ): Promise<string> {
+    const definition = await this.orchestratorService.fetchWorkflowInfo({
+      definitionId: workflowId,
+      cacheHandler: 'throw',
+    });
+    if (!definition) {
+      throw new Error(`Couldn't fetch workflow definition for ${workflowId}`);
+    }
+    if (!definition.serviceUrl) {
+      throw new Error(`ServiceURL is not defined for workflow ${workflowId}`);
+    }
     await this.orchestratorService.abortWorkflowInstance({
-      instanceId,
+      definitionId: workflowId,
+      instanceId: instanceId,
+      serviceUrl: definition.serviceUrl,
       cacheHandler: 'throw',
     });
     return `Workflow instance ${instanceId} successfully aborted`;

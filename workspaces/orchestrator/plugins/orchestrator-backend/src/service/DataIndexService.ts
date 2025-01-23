@@ -128,31 +128,6 @@ export class DataIndexService {
     return pairs;
   }
 
-  public async abortWorkflowInstance(instanceId: string): Promise<void> {
-    this.logger.info(`Aborting workflow instance ${instanceId}`);
-    const ProcessInstanceAbortMutationDocument = gql`
-      mutation ProcessInstanceAbortMutation($id: String) {
-        ProcessInstanceAbort(id: $id)
-      }
-    `;
-
-    const result = await this.client.mutation(
-      ProcessInstanceAbortMutationDocument,
-      { id: instanceId },
-    );
-
-    this.logger.debug(
-      `Abort workflow instance result: ${JSON.stringify(result)}`,
-    );
-
-    if (result.error) {
-      throw new Error(
-        `Error aborting workflow instance ${instanceId}: ${result.error}`,
-      );
-    }
-    this.logger.debug(`Successfully aborted workflow instance ${instanceId}`);
-  }
-
   public async fetchWorkflowInfo(
     definitionId: string,
   ): Promise<WorkflowInfo | undefined> {
