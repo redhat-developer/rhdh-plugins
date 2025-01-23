@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 import {
@@ -241,6 +242,9 @@ export class SonataFlowService {
     }
     if (jsonResponse?.message) {
       errorInfo.push(`Message: ${jsonResponse?.message}`);
+    }
+    if (jsonResponse?.failedNodeId) {
+      errorInfo.push(`Failed Node Id: ${jsonResponse?.failedNodeId}`);
     }
     if (errorInfo.length > 0) {
       errorMsg += ` ${errorInfo.join(', ')}`;

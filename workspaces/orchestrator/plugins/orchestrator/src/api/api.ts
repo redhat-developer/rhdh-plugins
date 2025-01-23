@@ -32,6 +32,11 @@ import {
 export interface OrchestratorApi {
   abortWorkflowInstance(instanceId: string): Promise<AxiosResponse<string>>;
 
+  retriggerInstance(
+    workflowId: string,
+    instanceId: string,
+  ): Promise<AxiosResponse<object>>;
+
   executeWorkflow(args: {
     workflowId: string;
     parameters: JsonObject;
