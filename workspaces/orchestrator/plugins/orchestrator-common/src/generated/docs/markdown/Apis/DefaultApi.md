@@ -46,7 +46,7 @@ No authorization required
 
 <a name="executeWorkflow"></a>
 # **executeWorkflow**
-> ExecuteWorkflowResponseDTO executeWorkflow(workflowId, ExecuteWorkflowRequestDTO, businessKey)
+> ExecuteWorkflowResponseDTO executeWorkflow(workflowId, ExecuteWorkflowRequestDTO)
 
 Execute a workflow
 
@@ -58,7 +58,6 @@ Execute a workflow
 |------------- | ------------- | ------------- | -------------|
 | **workflowId** | **String**| ID of the workflow to execute | [default to null] |
 | **ExecuteWorkflowRequestDTO** | [**ExecuteWorkflowRequestDTO**](../Models/ExecuteWorkflowRequestDTO.md)|  | |
-| **businessKey** | **String**| ID of the parent workflow | [optional] [default to null] |
 
 ### Return type
 
