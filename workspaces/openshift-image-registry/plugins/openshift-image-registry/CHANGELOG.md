@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 1.10.5
+
+### Patch Changes
+
+- 0e17490: Updated dependency `@types/node` to `18.19.70`.
+- d1b3b0e: Updated dependency `@types/node` to `18.19.71`.
+
 ## 1.10.4
 
 ### Patch Changes
