@@ -140,7 +140,6 @@ describe('MarketplaceAggregationService', () => {
   });
 
   it('should handle having clauses with count', async () => {
-    const customBaseQuery = mockKnexClient('custom_table');
     const aggregationsRequest: AggregationsRequest = [
       {
         field: 'kind',
@@ -157,25 +156,23 @@ describe('MarketplaceAggregationService', () => {
       },
     ];
 
-    await api.fetchAggregatedData(aggregationsRequest, customBaseQuery);
-    expect(mockKnexClient).toHaveBeenCalledWith('custom_table');
+    await api.fetchAggregatedData(aggregationsRequest);
+    expect(mockKnexClient).toHaveBeenCalledWith('final_entities as fe');
     expect(mockQueryBuilder.having).toHaveBeenCalledWith('COUNT(*)', '>', '10');
   });
 
   it('should use a custom base query if provided', async () => {
-    const customBaseQuery = mockKnexClient('custom_table');
     const aggregationsRequest: AggregationsRequest = [
       { type: 'count', field: 'custom_field' },
     ];
 
-    await api.fetchAggregatedData(aggregationsRequest, customBaseQuery);
+    await api.fetchAggregatedData(aggregationsRequest);
 
-    expect(mockKnexClient).toHaveBeenCalledWith('custom_table');
+    expect(mockKnexClient).toHaveBeenCalledWith('final_entities as fe');
     expect(mockQueryBuilder.count).toHaveBeenCalledWith('* as count');
   });
 
   it('should handle orderFields', async () => {
-    const customBaseQuery = mockKnexClient('custom_table');
     const aggregationsRequest: AggregationsRequest = [
       {
         field: 'kind',
@@ -196,9 +193,9 @@ describe('MarketplaceAggregationService', () => {
       },
     ];
 
-    await api.fetchAggregatedData(aggregationsRequest, customBaseQuery);
+    await api.fetchAggregatedData(aggregationsRequest);
 
-    expect(mockKnexClient).toHaveBeenCalledWith('custom_table');
+    expect(mockKnexClient).toHaveBeenCalledWith('final_entities as fe');
 
     expect(mockQueryBuilder.orderBy).toHaveBeenCalledTimes(3);
 

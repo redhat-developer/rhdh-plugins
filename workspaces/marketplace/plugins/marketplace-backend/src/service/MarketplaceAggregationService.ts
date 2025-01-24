@@ -70,17 +70,16 @@ export class MarketplaceAggregationService
 
   async fetchAggregatedData(
     aggregationsRequest: AggregationsRequest,
-    baseQuery: Knex.QueryBuilder | null = null,
-  ): Promise<Knex.QueryBuilder> {
+  ): Promise<Record<string, any>[]> {
     if (!this.client) {
       throw new Error(
         'Database client is not configured. Please check the MarketplaceCatalogClient configuration.',
       );
     }
     const dbClient = this.client;
-    const query =
-      baseQuery ||
-      dbClient('final_entities as fe').whereNotNull('fe.final_entity');
+    const query = dbClient('final_entities as fe').whereNotNull(
+      'fe.final_entity',
+    );
     aggregationsRequest.forEach((agg, index) => {
       const currentAlias = `s${index + 1}`;
 

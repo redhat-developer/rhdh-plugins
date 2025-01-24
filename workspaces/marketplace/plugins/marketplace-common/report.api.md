@@ -9,7 +9,6 @@ import { CatalogApi } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import { EntityFilterQuery as EntityFilterQuery_2 } from '@backstage/catalog-client';
 import { JsonObject } from '@backstage/types';
-import { Knex } from 'knex';
 import { z } from 'zod';
 
 // @public (undocumented)
@@ -59,11 +58,11 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         value: string;
         field: string;
-        operator: "=" | ">" | ">=" | "<" | "<=" | "<>" | "!=";
+        operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
     }, {
         value: string;
         field: string;
-        operator: "=" | ">" | ">=" | "<" | "<=" | "<>" | "!=";
+        operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
     }>>;
     filter: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
@@ -79,7 +78,7 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
     havingFilter?: {
         value: string;
         field: string;
-        operator: "=" | ">" | ">=" | "<" | "<=" | "<>" | "!=";
+        operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
     } | undefined;
 }, {
     type: "max" | "min" | "sum" | "count" | "avg";
@@ -94,7 +93,7 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
     havingFilter?: {
         value: string;
         field: string;
-        operator: "=" | ">" | ">=" | "<" | "<=" | "<>" | "!=";
+        operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
     } | undefined;
 }>, "many">;
 
@@ -126,7 +125,7 @@ export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";
 // @public (undocumented)
 export interface MarketplaceAggregationApi {
     // (undocumented)
-    fetchAggregatedData(aggregationsRequest: AggregationsRequest, baseQuery?: Knex.QueryBuilder | null): Promise<Knex.QueryBuilder>;
+    fetchAggregatedData(aggregationsRequest: AggregationsRequest): Promise<Record<string, any>[]>;
 }
 
 // @public (undocumented)

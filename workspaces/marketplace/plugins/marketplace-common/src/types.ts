@@ -17,7 +17,6 @@
 import { EntityFilterQuery } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
-import { Knex } from 'knex';
 
 /**
  * @public
@@ -102,8 +101,7 @@ export interface MarketplaceApi {
 export interface MarketplaceAggregationApi {
   fetchAggregatedData(
     aggregationsRequest: AggregationsRequest,
-    baseQuery?: Knex.QueryBuilder | null,
-  ): Promise<Knex.QueryBuilder>;
+  ): Promise<Record<string, any>[]>;
 }
 
 /** @public */

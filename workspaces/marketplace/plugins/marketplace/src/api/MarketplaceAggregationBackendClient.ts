@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Knex } from 'knex';
 import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 import {
   AggregationsRequest,
@@ -38,7 +37,7 @@ export class MarketplaceAggregationBackendClient
 
   async fetchAggregatedData(
     aggregationsRequest: AggregationsRequest,
-  ): Promise<Knex.QueryBuilder> {
+  ): Promise<Record<string, any>[]> {
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
     const url = `${baseUrl}/aggregations`;
 

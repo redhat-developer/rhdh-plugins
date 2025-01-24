@@ -10095,7 +10095,6 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.4.7
     "@tanstack/react-query": ^5.60.5
     "@testing-library/jest-dom": ^6.0.0
-    knex: ^3.0.0
     react: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
   peerDependencies:
