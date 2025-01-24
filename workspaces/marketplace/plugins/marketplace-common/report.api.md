@@ -19,11 +19,7 @@ export interface AggregationRequest {
     // (undocumented)
     filter?: EntityFilterQuery_2;
     // (undocumented)
-    havingFilter?: {
-        field: string;
-        operator: '=' | '!=' | '<>' | '>' | '<' | '>=' | '<=';
-        value: string;
-    };
+    havingFilters?: HavingFilter[];
     // (undocumented)
     name?: string;
     // (undocumented)
@@ -106,12 +102,23 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
 export const EntityFilterQuery: z.ZodRecord<z.ZodString, z.ZodString>;
 
 // @public (undocumented)
+export type HavingFilter = {
+    field: string;
+    operator: '=' | '!=' | '<>' | '>' | '<' | '>=' | '<=';
+    value: string;
+    logicalOperator?: LogicalOperator;
+};
+
+// @public (undocumented)
 export enum InstallStatus {
     // (undocumented)
     Installed = "Installed",
     // (undocumented)
     NotInstalled = "NotInstalled"
 }
+
+// @public (undocumented)
+export type LogicalOperator = 'AND' | 'OR';
 
 // @public (undocumented)
 export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";

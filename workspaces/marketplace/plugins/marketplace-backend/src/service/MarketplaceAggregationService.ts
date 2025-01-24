@@ -157,10 +157,17 @@ export class MarketplaceAggregationService
       }
 
       // Apply HAVING filters
-      if (agg.havingFilter) {
-        const { field, operator, value } = agg.havingFilter;
-        const rawField = field === 'count' ? dbClient.raw('COUNT(*)') : field;
-        query.having(rawField, operator, value);
+      if (agg.havingFilters) {
+        agg.havingFilters.forEach((filter, idx) => {
+          const { field, operator, value, logicalOperator } = filter;
+          const key = field === 'count' ? dbClient.raw('COUNT(*)') : field;
+
+          if (!logicalOperator || logicalOperator === 'AND' || idx === 0) {
+            query.having(key, operator, value);
+          } else if (logicalOperator === 'OR') {
+            query.orHaving(key, operator, value);
+          }
+        });
       }
 
       // Apply ORDER BY clause

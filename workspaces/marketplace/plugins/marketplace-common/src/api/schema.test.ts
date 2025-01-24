@@ -72,7 +72,7 @@ describe('AggregationsSchema', () => {
         type: 'count',
         field: 'kind',
         filter: { kind: 'plugin' },
-        havingFilter: { field: 'count', operator: '>', value: '1' },
+        havingFilters: [{ field: 'count', operator: '>', value: '1' }],
         orderFields: [{ field: 'count', order: 'asc' }],
       },
     ];

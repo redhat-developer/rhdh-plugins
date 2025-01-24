@@ -27,6 +27,7 @@ import {
   MarketplacePlugin,
   MarketplacePluginList,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplaceAggregationService } from './service/MarketplaceAggregationService';
 
 const BASE_CONFIG = {
   app: {
@@ -259,5 +260,79 @@ describe('createRouter', () => {
     expect(response.body).toEqual({
       error: 'PluginList:featured-plugins not found',
     });
+  });
+
+  it('should throw an error when the aggregations request is invalid', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: null,
+    });
+    const mockfetchAggregatedData = jest
+      .fn()
+      .mockRejectedValue(new Error('Bad request error'));
+
+    jest
+      .spyOn(MarketplaceAggregationService.prototype, 'fetchAggregatedData')
+      .mockImplementation(mockfetchAggregatedData);
+
+    const payload = [{}];
+    const response = await request(backendServer)
+      .post('/api/marketplace/aggregations')
+      .send(payload);
+
+    expect(response.status).toEqual(400);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        error: expect.anything(),
+      }),
+    );
+  });
+
+  it('should return sanitized error messages', async () => {
+    jest.clearAllMocks();
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: null,
+    });
+    const mockfetchAggregatedData = jest
+      .fn()
+      .mockRejectedValue(
+        new Error('Select "" from "custom_table" - Syntax error'),
+      );
+
+    jest
+      .spyOn(MarketplaceAggregationService.prototype, 'fetchAggregatedData')
+      .mockImplementation(mockfetchAggregatedData);
+
+    const payload = [{ field: 'kind', type: 'count' }];
+    const response = await request(backendServer)
+      .post('/api/marketplace/aggregations')
+      .send(payload);
+
+    expect(response.status).toEqual(500);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        error: expect.anything(),
+      }),
+    );
+  });
+
+  it('should return aggregated data', async () => {
+    const { backendServer } = await setupTestWithMockCatalog({
+      mockData: null,
+    });
+    const mockfetchAggregatedData = jest
+      .fn()
+      .mockReturnValue([{ kind: 'plugin', count: 10 }]);
+
+    jest
+      .spyOn(MarketplaceAggregationService.prototype, 'fetchAggregatedData')
+      .mockImplementation(mockfetchAggregatedData);
+
+    const payload = [{ field: 'kind', type: 'count' }];
+    const response = await request(backendServer)
+      .post('/api/marketplace/aggregations')
+      .send(payload);
+
+    expect(response.status).toEqual(200);
+    expect(response.body).toEqual([{ count: 10, kind: 'plugin' }]);
   });
 });

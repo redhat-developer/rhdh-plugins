@@ -107,6 +107,17 @@ export interface MarketplaceAggregationApi {
 }
 
 /** @public */
+export type LogicalOperator = 'AND' | 'OR';
+
+/** @public */
+export type HavingFilter = {
+  field: string;
+  operator: '=' | '!=' | '<>' | '>' | '<' | '>=' | '<=';
+  value: string;
+  logicalOperator?: LogicalOperator;
+};
+
+/** @public */
 export interface AggregationRequest {
   name?: string;
   field: string;
@@ -116,12 +127,8 @@ export interface AggregationRequest {
     field: 'value' | 'count';
     order: 'asc' | 'desc';
   }[];
-  havingFilter?: {
-    field: string;
-    operator: '=' | '!=' | '<>' | '>' | '<' | '>=' | '<=';
-    value: string;
-  };
   filter?: EntityFilterQuery;
+  havingFilters?: HavingFilter[];
 }
 
 /**

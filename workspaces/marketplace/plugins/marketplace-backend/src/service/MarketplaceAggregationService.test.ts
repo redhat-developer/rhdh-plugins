@@ -29,6 +29,7 @@ const getMockQueryBuilder = () => ({
   where: jest.fn().mockReturnThis(),
   groupBy: jest.fn().mockReturnThis(),
   having: jest.fn().mockReturnThis(),
+  orHaving: jest.fn().mockReturnThis(),
   orderBy: jest.fn().mockReturnThis(),
 });
 
@@ -102,7 +103,9 @@ describe('MarketplaceAggregationService', () => {
         field: 'amount',
         name: 'total_amount',
         filter: { category: 'electronics' },
-        havingFilter: { field: 'total_amount', operator: '>', value: '1000' },
+        havingFilters: [
+          { field: 'total_amount', operator: '>', value: '1000' },
+        ],
         orderFields: [{ field: 'value', order: 'asc' }],
       },
     ];
@@ -142,7 +145,15 @@ describe('MarketplaceAggregationService', () => {
       {
         field: 'kind',
         type: 'count',
-        havingFilter: { field: 'count', operator: '>', value: '10' },
+        havingFilters: [
+          { field: 'count', operator: '>', value: '10' },
+          {
+            logicalOperator: 'OR',
+            field: 'spec.installs',
+            operator: '>',
+            value: '5',
+          },
+        ],
       },
     ];
 
