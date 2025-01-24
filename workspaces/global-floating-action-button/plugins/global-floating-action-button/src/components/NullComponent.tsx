@@ -13,6 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { GlobalFloatingActionButton } from './GlobalFloatingActionButton';
-export { DynamicGlobalFloatingActionButton } from './DynamicGlobalFloatingActionButton';
-export { NullComponent } from './NullComponent';
+
+/**
+ * Null Component
+ *
+ * Mount point without a component is not considered. So adding this that doesn't return anything.
+ * @public
+ */
+
+export const NullComponent = () => {
+  // eslint-disable-next-line no-console
+  console.info('NullComponent rendered.');
+  return null;
+};

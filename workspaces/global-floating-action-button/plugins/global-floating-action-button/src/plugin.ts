@@ -29,6 +29,15 @@ export const globalFloatingActionButtonPlugin = createPlugin({
 });
 
 /**
+ * Dynamic Global Floating Action Button Plugin
+ *
+ * @public
+ */
+export const dynamicGlobalFloatingActionButtonPlugin = createPlugin({
+  id: 'dynamic-global-floating-action-button',
+});
+
+/**
  * Global Floating Action Button
  *
  * @public
@@ -42,6 +51,40 @@ export const GlobalFloatingActionButton =
           import('./components/GlobalFloatingActionButton').then(
             m => m.GlobalFloatingActionButton,
           ),
+      },
+    }),
+  );
+
+/**
+ * Dynamic Global Floating Action Button
+ *
+ * @public
+ */
+export const DynamicGlobalFloatingActionButton: React.ComponentType =
+  dynamicGlobalFloatingActionButtonPlugin.provide(
+    createComponentExtension({
+      name: 'DynamicGlobalFloatingActionButton',
+      component: {
+        lazy: () =>
+          import('./components/DynamicGlobalFloatingActionButton').then(
+            m => m.DynamicGlobalFloatingActionButton,
+          ),
+      },
+    }),
+  );
+
+/**
+ * Null Component
+ *
+ * @public
+ */
+export const NullComponent: React.ComponentType =
+  dynamicGlobalFloatingActionButtonPlugin.provide(
+    createComponentExtension({
+      name: 'NullComponent',
+      component: {
+        lazy: () =>
+          import('./components/NullComponent').then(m => m.NullComponent),
       },
     }),
   );

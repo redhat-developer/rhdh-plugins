@@ -85,10 +85,29 @@ export const FAB = ({
   const newWindow = isExternal && !!/^https?:/.exec(actionButton.to!);
   const navigateTo = () =>
     actionButton.to && !isExternal ? navigate(actionButton.to) : '';
+
+  if (!actionButton.label) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      'Label is missing from your FAB component. A label is required for the aria-label attribute.',
+      actionButton,
+    );
+  }
+
   const labelText =
-    actionButton.label.length > 20
+    (actionButton.label || '').length > 20
       ? `${actionButton.label.slice(0, actionButton.label.length)}...`
       : actionButton.label;
+
+  if (!actionButton.icon) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      'Icon is missing from your FAB component. An icon is required to render a FAB button.',
+      actionButton,
+    );
+    return null;
+  }
+
   const getColor = () => {
     if (actionButton.color) {
       return actionButton.color;
@@ -119,7 +138,7 @@ export const FAB = ({
           size={size || actionButton.size || 'medium'}
           color={getColor()}
           aria-label={actionButton.label}
-          data-testid={actionButton.label
+          data-testid={(actionButton.label || '')
             .replace(' ', '-')
             .toLocaleLowerCase('en-US')}
           onClick={actionButton.onClick || navigateTo}
