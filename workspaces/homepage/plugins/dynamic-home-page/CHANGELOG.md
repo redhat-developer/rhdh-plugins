@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.1.0
+
+### Minor Changes
+
+- 4d622ad: - Added support to show also the the username (`displayName` from the user catalog entity) in the header title.
+  - Added additional options to show the local time and a worldclock to the header.
+  - Added a new `WorldClock` card based on the Home plugin `HeaderWorldClock` component to show additional clocks/timezones also in the home page content area.
+- c376011: Upgrade Backstage from 0.32.0 to 1.35.0
+
+### Patch Changes
+
+- 34c138c: Updated dependency `react-router-dom` to `6.28.2`.
+- bc85b86: Updated dependency `tss-react` to `4.9.15`.
+
 ## 1.0.3
 
 ### Patch Changes
