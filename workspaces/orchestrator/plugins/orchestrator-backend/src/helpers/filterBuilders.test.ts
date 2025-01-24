@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   FieldFilterOperatorEnum,
   Filter,
@@ -23,7 +24,80 @@ import {
   TypeName,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { buildFilterCondition } from './filterBuilder';
+import {
+  buildFilterCondition,
+  isOperatorAllowedForField,
+} from './filterBuilder';
+
+describe('isOperatorAllowedForField', () => {
+  const testIsValidOperator = (
+    operator: FieldFilterOperatorEnum,
+    fieldDef: IntrospectionField,
+    expected: boolean,
+  ) => {
+    const result = isOperatorAllowedForField(
+      operator,
+      fieldDef,
+      'ProcessInstance',
+    );
+
+    expect(result).toBe(expected);
+  };
+  beforeEach(() => {
+    jest.clearAllMocks(); // Clear mock calls before each test
+  });
+
+  describe('String', () => {
+    const fieldDef: IntrospectionField = {
+      name: 'testField',
+      type: {
+        name: TypeName.String,
+        kind: TypeKind.InputObject,
+        ofType: null,
+      },
+    };
+    it('should return true for valid operator in String type', () => {
+      testIsValidOperator(FieldFilterOperatorEnum.Like, fieldDef, true);
+    });
+    it('should return false for invalid operator in String type', () => {
+      testIsValidOperator(FieldFilterOperatorEnum.Gt, fieldDef, false);
+    });
+  });
+  describe('Id', () => {
+    const fieldDef: IntrospectionField = {
+      name: 'testField',
+      type: {
+        name: TypeName.Id,
+        kind: TypeKind.InputObject,
+        ofType: null,
+      },
+    };
+    it('should return true for valid operator in Id type', () => {
+      testIsValidOperator(FieldFilterOperatorEnum.Eq, fieldDef, true);
+    });
+
+    it('should return false for invalid operator in Id type', () => {
+      testIsValidOperator(FieldFilterOperatorEnum.Like, fieldDef, false);
+    });
+  });
+  describe('Date', () => {
+    const fieldDef: IntrospectionField = {
+      name: 'testField',
+      type: {
+        name: TypeName.Date,
+        kind: TypeKind.InputObject,
+        ofType: null,
+      },
+    };
+    it('should return true for valid operator in Date type', () => {
+      testIsValidOperator(FieldFilterOperatorEnum.Eq, fieldDef, true);
+    });
+
+    it('should return false for invalid operator in Date type', () => {
+      testIsValidOperator(FieldFilterOperatorEnum.Like, fieldDef, false);
+    });
+  });
+});
 
 describe('column filters', () => {
   const createIntrospectionField = (

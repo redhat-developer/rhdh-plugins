@@ -25,6 +25,41 @@ import {
 
 type ProcessType = 'ProcessDefinition' | 'ProcessInstance';
 
+const supportedOperators = [
+  FieldFilterOperatorEnum.Eq,
+  FieldFilterOperatorEnum.Like,
+  FieldFilterOperatorEnum.In,
+  FieldFilterOperatorEnum.IsNull,
+  FieldFilterOperatorEnum.Gt,
+  FieldFilterOperatorEnum.Gte,
+  FieldFilterOperatorEnum.Lt,
+  FieldFilterOperatorEnum.Lte,
+  FieldFilterOperatorEnum.Between,
+];
+
+const supportedOperatorsByType: Record<TypeName, FieldFilterOperatorEnum[]> = {
+  [TypeName.String]: [
+    FieldFilterOperatorEnum.In,
+    FieldFilterOperatorEnum.Like,
+    FieldFilterOperatorEnum.IsNull,
+    FieldFilterOperatorEnum.Eq,
+  ],
+  [TypeName.Id]: [
+    FieldFilterOperatorEnum.In,
+    FieldFilterOperatorEnum.IsNull,
+    FieldFilterOperatorEnum.Eq,
+  ],
+  [TypeName.Date]: [
+    FieldFilterOperatorEnum.IsNull,
+    FieldFilterOperatorEnum.Eq,
+    FieldFilterOperatorEnum.Gt,
+    FieldFilterOperatorEnum.Gte,
+    FieldFilterOperatorEnum.Lt,
+    FieldFilterOperatorEnum.Lte,
+    FieldFilterOperatorEnum.Between,
+  ],
+};
+
 function isLogicalFilter(filter: Filter): filter is LogicalFilter {
   return (filter as LogicalFilter).filters !== undefined;
 }
@@ -113,7 +148,9 @@ export function buildFilterCondition(
   }
 
   if (!isOperatorSupported(filters.operator)) {
-    throw new Error(`Unsupported operator ${filters.operator}`);
+    throw new Error(
+      `Unsupported operator ${filters.operator}. Supported operators are: ${supportedOperators.join(', ')}`,
+    );
   }
 
   const fieldDef = introspection.find(f => f.name === filters.field);
@@ -122,8 +159,9 @@ export function buildFilterCondition(
   }
 
   if (!isOperatorAllowedForField(filters.operator, fieldDef, type)) {
+    const allowedOperators = supportedOperatorsByType[fieldDef.type.name] || [];
     throw new Error(
-      `Unsupported operator ${filters.operator} for field "${fieldDef.name}" of type "${fieldDef.type.name}"`,
+      `Unsupported operator ${filters.operator} for field "${fieldDef.name}" of type "${fieldDef.type.name}". Allowed operators are: ${allowedOperators.join(', ')}`,
     );
   }
 
@@ -147,24 +185,14 @@ export function buildFilterCondition(
 }
 
 function isOperatorSupported(operator: FieldFilterOperatorEnum): boolean {
-  return (
-    operator === FieldFilterOperatorEnum.Eq ||
-    operator === FieldFilterOperatorEnum.Like ||
-    operator === FieldFilterOperatorEnum.In ||
-    operator === FieldFilterOperatorEnum.IsNull ||
-    operator === FieldFilterOperatorEnum.Gt ||
-    operator === FieldFilterOperatorEnum.Gte ||
-    operator === FieldFilterOperatorEnum.Lt ||
-    operator === FieldFilterOperatorEnum.Lte ||
-    operator === FieldFilterOperatorEnum.Between
-  );
+  return supportedOperators.includes(operator);
 }
 
 function isFieldFilterSupported(fieldDef: IntrospectionField): boolean {
   return fieldDef?.type.name === TypeName.String;
 }
 
-function isOperatorAllowedForField(
+export function isOperatorAllowedForField(
   operator: FieldFilterOperatorEnum,
   fieldDef: IntrospectionField,
   type: ProcessType,
@@ -172,30 +200,8 @@ function isOperatorAllowedForField(
   if (isEnumFilter(fieldDef.name, type) && isValidEnumOperator(operator)) {
     return true;
   }
-  const allowedOperators: Record<TypeName, FieldFilterOperatorEnum[]> = {
-    [TypeName.String]: [
-      FieldFilterOperatorEnum.In,
-      FieldFilterOperatorEnum.Like,
-      FieldFilterOperatorEnum.IsNull,
-      FieldFilterOperatorEnum.Eq,
-    ],
-    [TypeName.Id]: [
-      FieldFilterOperatorEnum.In,
-      FieldFilterOperatorEnum.IsNull,
-      FieldFilterOperatorEnum.Eq,
-    ],
-    [TypeName.Date]: [
-      FieldFilterOperatorEnum.IsNull,
-      FieldFilterOperatorEnum.Eq,
-      FieldFilterOperatorEnum.Gt,
-      FieldFilterOperatorEnum.Gte,
-      FieldFilterOperatorEnum.Lt,
-      FieldFilterOperatorEnum.Lte,
-      FieldFilterOperatorEnum.Between,
-    ],
-    [TypeName.StringArray]: [],
-  };
-  const allowedForType = allowedOperators[fieldDef.type.name];
+
+  const allowedForType = supportedOperatorsByType[fieldDef.type.name];
   return allowedForType ? allowedForType.includes(operator) : false;
 }
 
@@ -255,10 +261,6 @@ function getGraphQLOperator(operator: FieldFilterOperatorEnum): string {
       return 'lessThan';
     case 'LTE':
       return 'lessThanEqual';
-    // case 'CONTAINS':
-    //  return "contains"
-    // case 'CONTAINS_ALL':
-    // case 'CONTAINS_ANY':
     case 'BETWEEN':
       return 'between';
     default:

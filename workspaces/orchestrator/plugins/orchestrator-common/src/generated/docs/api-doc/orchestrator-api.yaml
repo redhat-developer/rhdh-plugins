@@ -688,21 +688,7 @@ spec:
               type: string
             operator:
               type: string
-              enum:
-                [
-                  EQ,
-                  GT,
-                  GTE,
-                  LT,
-                  LTE,
-                  IN,
-                  IS_NULL,
-                  CONTAINS,
-                  CONTAINS_ALL,
-                  CONTAINS_ANY,
-                  LIKE,
-                  BETWEEN,
-                ]
+              enum: [EQ, GT, GTE, LT, LTE, IN, IS_NULL, LIKE, BETWEEN]
             # The `value` field should be defined as follows. However, due to a bug (open since May 2023),
             # https://github.com/OpenAPITools/openapi-generator/issues/15701
             # using `oneOf` to specify enum values for a property in the schema doesn't generate the enums correctly.
