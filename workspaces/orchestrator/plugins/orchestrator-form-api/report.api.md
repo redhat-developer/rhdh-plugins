@@ -4,6 +4,8 @@
 
 ```ts
 
+/// <reference types="react" />
+
 import { ApiRef } from '@backstage/core-plugin-api';
 import { ErrorSchema } from '@rjsf/utils';
 import { FormProps } from '@rjsf/core';
