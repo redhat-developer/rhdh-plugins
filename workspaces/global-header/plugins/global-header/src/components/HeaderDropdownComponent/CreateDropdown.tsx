@@ -20,7 +20,7 @@ import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import { MenuItemConfig } from './MenuSection';
 
-interface CreateButtonProps {
+export interface CreateButtonProps {
   handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
   anchorEl: HTMLElement | null;
   setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
@@ -63,11 +63,11 @@ const menuBottomItems: MenuItemConfig[] = [
     link: '/catalog-import',
   },
 ];
-const CreateDropdown: React.FC<CreateButtonProps> = ({
+export const CreateDropdown = ({
   handleMenu,
   anchorEl,
   setAnchorEl,
-}) => {
+}: CreateButtonProps) => {
   const menuSections = [
     {
       sectionKey: 'templates',
@@ -102,5 +102,3 @@ const CreateDropdown: React.FC<CreateButtonProps> = ({
     />
   );
 };
-
-export default CreateDropdown;

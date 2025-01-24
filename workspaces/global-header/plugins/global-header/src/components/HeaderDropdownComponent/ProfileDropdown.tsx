@@ -21,24 +21,24 @@ import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlin
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import Typography from '@mui/material/Typography';
-import SmallIconWrapper from '../HeaderIconButton/SmallIconWrapper';
+import SmallIconWrapper from '../HeaderIconButtonComponent/SmallIconWrapper';
 import {
   identityApiRef,
   errorApiRef,
   useApi,
 } from '@backstage/core-plugin-api';
 
-interface ProfileDropdownProps {
+export interface ProfileDropdownProps {
   handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
   anchorEl: HTMLElement | null;
   setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
 
-const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+export const ProfileDropdown = ({
   handleMenu,
   anchorEl,
   setAnchorEl,
-}) => {
+}: ProfileDropdownProps) => {
   const errorApi = useApi(errorApiRef);
   const identityApi = useApi(identityApiRef);
   const user = 'Guest User';
@@ -92,7 +92,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         sx: {
           display: 'flex',
           alignItems: 'center',
-          ml: 1,
         },
       }}
       buttonClick={handleMenu}
