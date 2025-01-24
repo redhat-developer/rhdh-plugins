@@ -18,18 +18,21 @@ import express from 'express';
 import Router from 'express-promise-router';
 
 import { HttpAuthService } from '@backstage/backend-plugin-api';
-import { NotFoundError } from '@backstage/errors';
-
+import { InputError, NotFoundError } from '@backstage/errors';
 import {
+  AggregationsSchema,
+  MarketplaceAggregationApi,
   MarketplaceApi,
   MarketplaceKinds,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export async function createRouter({
   marketplaceApi,
+  marketplaceAggregationApi,
 }: {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
+  marketplaceAggregationApi: MarketplaceAggregationApi;
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -81,6 +84,34 @@ export async function createRouter({
         res.status(404).json({ error: error.message });
       }
       res.status(500).json({ error: `Internal server error: ${error}` });
+    }
+  });
+
+  router.post('/aggregations', async (req, res) => {
+    const aggregationsRequest = req.body;
+    const { error: validationError } =
+      AggregationsSchema.safeParse(aggregationsRequest);
+    if (validationError) {
+      throw new InputError(validationError.errors[0].message, validationError);
+    }
+
+    try {
+      const aggregatedData =
+        await marketplaceAggregationApi.fetchAggregatedData(
+          aggregationsRequest,
+        );
+      res.json(aggregatedData);
+    } catch (error) {
+      let sanitizedMessage = error.message;
+
+      // Sanitize error message (remove SQL or sensitive details)
+      if (error.message.includes('select') || error.message.includes('from')) {
+        sanitizedMessage = 'Aggregations query failed to fetch data.';
+      }
+
+      res.status(error.statusCode ?? 500).json({
+        error: `Internal server error: ${sanitizedMessage}`,
+      });
     }
   });
 

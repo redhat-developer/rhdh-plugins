@@ -16,7 +16,6 @@
 import { CatalogClient } from '@backstage/catalog-client';
 import { MarketplaceCatalogClient } from './MarketplaceCatalogClient';
 import { MarketplaceKinds } from '../types';
-import { mockServices } from '@backstage/backend-test-utils';
 
 const mockPlugins = [
   {
@@ -54,11 +53,18 @@ const mockCatalogClient = {
   getEntitiesByRefs: mockQueryEntitiesByRefs,
 } as unknown as CatalogClient;
 
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
 const options = {
-  logger: mockServices.logger.mock(),
-  auth: mockServices.auth.mock(),
-  config: mockServices.rootConfig.mock(),
   catalogApi: mockCatalogClient,
+  auth: {
+    getOwnServiceCredentials: jest
+      .fn()
+      .mockResolvedValue('mockedServiceCredentials'),
+    getPluginRequestToken: jest.fn().mockResolvedValue('mockedToken'),
+  } as any,
 };
 
 describe('MarketplaceCatalogClient', () => {
@@ -79,7 +85,7 @@ describe('MarketplaceCatalogClient', () => {
         {
           filter: { kind: 'plugin' },
         },
-        undefined,
+        'mockedToken',
       );
     });
 
