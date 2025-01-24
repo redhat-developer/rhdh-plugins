@@ -46,6 +46,7 @@
     "@mui/icons-material": "5.16.13",
     "@mui/material": "5.16.13",
     "@mui/styled-engine": "5.16.13",
+    "@scalprum/react-core": "0.9.3",
     "react-dom": "18.3.1",
     "react-router-dom": "^6.26.2",
     "react-use": "^17.5.0"
@@ -60,6 +61,7 @@
     "@backstage/dev-utils": "^1.1.4",
     "@backstage/plugin-search-common": "^1.2.16",
     "@backstage/test-utils": "^1.7.2",
+    "@openshift/dynamic-plugin-sdk": "^5.0.1",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",

@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
+import React from 'react';
 import {
   createPlugin,
   createComponentExtension,
 } from '@backstage/core-plugin-api';
+import { CreateButtonProps } from './components/HeaderDropdownComponent/CreateDropdown';
+import { HeaderIconButtonProps } from './components/HeaderIconButtonComponent/HeaderIconButton';
+import { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
+
+export type { CreateButtonProps } from './components/HeaderDropdownComponent/CreateDropdown';
+export type { HeaderIconButtonProps } from './components/HeaderIconButtonComponent/HeaderIconButton';
+export type { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
 
 export type {
   NotificationBannerProps,
@@ -46,6 +54,77 @@ export const GlobalHeader = globalHeaderPlugin.provide(
     },
   }),
 );
+
+/**
+ * Search Component
+ *
+ * @public
+ */
+export const SearchComponent: React.ComponentType = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'SearchComponent',
+    component: {
+      lazy: () =>
+        import('./components/SearchComponent/SearchComponent').then(
+          m => m.SearchComponent,
+        ),
+    },
+  }),
+);
+
+/**
+ * Create Dropdown
+ *
+ * @public
+ */
+export const CreateDropdown: React.ComponentType<CreateButtonProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'CreateDropdown',
+      component: {
+        lazy: () =>
+          import('./components/HeaderDropdownComponent/CreateDropdown').then(
+            m => m.CreateDropdown,
+          ),
+      },
+    }),
+  );
+
+/**
+ * Header Icon Button
+ *
+ * @public
+ */
+export const HeaderIconButton: React.ComponentType<HeaderIconButtonProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'HeaderIconButton',
+      component: {
+        lazy: () =>
+          import(
+            './components/HeaderIconButtonComponent/HeaderIconButton'
+          ).then(m => m.HeaderIconButton),
+      },
+    }),
+  );
+
+/**
+ * Profile Dropdown
+ *
+ * @public
+ */
+export const ProfileDropdown: React.ComponentType<ProfileDropdownProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'ProfileDropdown',
+      component: {
+        lazy: () =>
+          import('./components/HeaderDropdownComponent/ProfileDropdown').then(
+            m => m.ProfileDropdown,
+          ),
+      },
+    }),
+  );
 
 /**
  * NotificationBanner
