@@ -18,7 +18,7 @@ import React from 'react';
 import Typography from '@mui/material/Typography';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 import Box from '@mui/material/Box';
-import SmallIconWrapper from '../HeaderIconButton/SmallIconWrapper';
+import SmallIconWrapper from '../HeaderIconButtonComponent/SmallIconWrapper';
 
 const MenuItemContent: React.FC<{
   Icon?: React.ElementType<SvgIconProps>;

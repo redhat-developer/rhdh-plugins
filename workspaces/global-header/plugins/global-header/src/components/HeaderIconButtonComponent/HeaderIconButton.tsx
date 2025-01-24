@@ -16,17 +16,14 @@
 
 import React from 'react';
 import IconButton from '@mui/material/IconButton';
-import SmallIconWrapper, { IconComponentType } from './SmallIconWrapper';
+import { HeaderIcon } from './HeaderIcon';
 
-interface HeaderIconButtonProps {
-  Icon: IconComponentType;
+export interface HeaderIconButtonProps {
+  icon: string;
   onClick: () => void;
 }
 
-export const HeaderIconButton: React.FC<HeaderIconButtonProps> = ({
-  Icon,
-  onClick,
-}) => {
+export const HeaderIconButton = ({ icon, onClick }: HeaderIconButtonProps) => {
   return (
     <IconButton
       color="inherit"
@@ -34,7 +31,7 @@ export const HeaderIconButton: React.FC<HeaderIconButtonProps> = ({
       sx={{ mr: 1.5 }}
       onClick={onClick}
     >
-      <SmallIconWrapper IconComponent={Icon} />
+      <HeaderIcon icon={icon} />
     </IconButton>
   );
 };

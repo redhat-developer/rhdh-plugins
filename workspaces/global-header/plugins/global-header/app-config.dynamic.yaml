@@ -6,5 +6,47 @@ dynamicPlugins:
         - mountPoint: application/header
           importName: GlobalHeader
           config:
-            layout:
-              position: above-main-content
+            layout:            
+              position: above-main-content # above-main-content | below-main-content
+        - mountPoint: application/header/component
+          importName: SearchComponent
+          config:
+            type: search
+            enabled: true
+            slot: header-start
+            priority: 100
+        - mountPoint: application/header/component
+          importName: CreateDropdown
+          config:
+            type: dropdown_button
+            enabled: true
+            key: create
+            slot: header-start
+            priority: 90
+        - mountPoint: application/header/component
+          importName: HeaderIconButton
+          config:
+            type: icon_button
+            enabled: true
+            icon: help
+            slot: header-start
+            priority: 80
+            props:
+              icon: help
+        - mountPoint: application/header/component
+          importName: HeaderIconButton
+          config:
+            type: icon_button
+            enabled: true
+            slot: header-start
+            priority: 70
+            props:
+              icon: warning
+        - mountPoint: application/header/component
+          importName: ProfileDropdown
+          config:
+            type: dropdown_button
+            enabled: true
+            key: profile
+            slot: header-end
+            priority: 0
