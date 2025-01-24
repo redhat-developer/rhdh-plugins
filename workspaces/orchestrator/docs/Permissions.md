@@ -13,6 +13,23 @@ the RBAC plugin. The result is control over what users can see or execute.
 The user is permitted to do an action if either the generic permission or the specific one allows it.
 In other words, it is not possible to grant generic `orchestrator.workflow` and then selectively disable it for a specific workflow via `orchestrator.workflow.use.[workflowId]` with `deny`.
 
+The `[workflowId]` matches the identifier from the workflow definition.
+For example, in the [workflow definition](https://github.com/rhdhorchestrator/serverless-workflows/blob/main/workflows/greeting/greeting.sw.yaml) below, the identifier is `greeting`:
+
+```yaml greeting.sw.yaml
+id: greeting
+version: '1.0'
+specVersion: '0.8'
+name: Greeting workflow
+description: YAML based greeting workflow
+annotations:
+  - 'workflow-type/infrastructure'
+dataInputSchema: 'schemas/greeting.sw.input-schema.json'
+extensions:
+  - extensionid: workflow-output-schema
+    outputSchema: schemas/workflow-output-schema.json
+```
+
 ## Policy File
 
 To get started with policies, we recommend defining 2 roles and assigning them to groups or users.
