@@ -1,5 +1,20 @@
 ### Dependencies
 
+## 5.2.0
+
+### Minor Changes
+
+- 967c377: Fixed unsupported filter operators
+
+### Patch Changes
+
+- e3ebb0c: replace abort mutation with call to delete
+- 665947d: fix bug in error handling of execute API
+- 4e3ccc2: Add retrigger option to UI using v2 API
+- 10f17e3: Fixed a typo in FilterBuilder error message
+- Updated dependencies [967c377]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.26.0
+
 ## 5.1.1
 
 ### Patch Changes
