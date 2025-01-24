@@ -10665,6 +10665,7 @@ __metadata:
     "@mui/icons-material": 5.16.13
     "@mui/material": 5.16.13
     "@mui/styled-engine": 5.16.13
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
     "@scalprum/react-core": 0.9.3
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
