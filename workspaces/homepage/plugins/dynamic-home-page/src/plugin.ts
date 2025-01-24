@@ -53,6 +53,8 @@ export type { HeadlineProps } from './components/Headline';
 export type { MarkdownProps } from './components/Markdown';
 export type { MarkdownCardProps } from './components/MarkdownCard';
 export type { PlaceholderProps } from './components/Placeholder';
+export type { LocalClockProps } from './components/LocalClock';
+export type { WorldClockProps } from './components/WorldClock';
 
 /**
  * Dynamic Home Page Plugin
@@ -260,6 +262,18 @@ export const VisitListener = dynamicHomePagePlugin.provide(
     component: {
       lazy: () =>
         import('./components/VisitListener').then(m => m.VisitListener),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const WorldClock = dynamicHomePagePlugin.provide(
+  createComponentExtension({
+    name: 'WorldClock',
+    component: {
+      lazy: () => import('./components/WorldClock').then(m => m.WorldClock),
     },
   }),
 );

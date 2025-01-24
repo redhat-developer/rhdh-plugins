@@ -5,6 +5,7 @@
 ```ts
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { ClockConfig } from '@backstage/plugin-home';
 import { FeaturedDocsCardProps } from '@backstage/plugin-home';
 import { default as React_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
@@ -22,10 +23,20 @@ export const dynamicHomePagePlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;
 
-// @public (undocumented)
+// @public
 export interface DynamicHomePageProps {
     // (undocumented)
+    localClock?: LocalClockProps;
+    // (undocumented)
+    pageTitle?: string;
+    // (undocumented)
+    personalizedTitle?: string;
+    // (undocumented)
+    subtitle?: string;
+    // (undocumented)
     title?: string;
+    // (undocumented)
+    worldClocks?: ClockConfig[];
 }
 
 // @public (undocumented)
@@ -46,6 +57,16 @@ export interface HeadlineProps {
 export const JokeCard: React_2.ComponentType<{
     defaultCategory?: 'any' | 'programming';
 }>;
+
+// @public (undocumented)
+export interface LocalClockProps {
+    // (undocumented)
+    format?: 'none' | 'full' | 'date' | 'datewithweekday' | 'time' | 'timewithseconds' | 'both';
+    // (undocumented)
+    label?: string;
+    // (undocumented)
+    lang?: string;
+}
 
 // @public (undocumented)
 export const Markdown: React_2.ComponentType<MarkdownProps>;
@@ -110,5 +131,18 @@ export const TopVisitedCard: React_2.ComponentType<VisitedByTypeProps>;
 
 // @public (undocumented)
 export const VisitListener: () => React_2.JSX.Element | null;
+
+// @public (undocumented)
+export const WorldClock: ({ worldClocks, timeFormat, justifyContent, }: WorldClockProps) => React_2.JSX.Element;
+
+// @public (undocumented)
+export interface WorldClockProps {
+    // (undocumented)
+    justifyContent?: 'space-between' | 'space-around';
+    // (undocumented)
+    timeFormat?: Intl.DateTimeFormatOptions;
+    // (undocumented)
+    worldClocks: ClockConfig[];
+}
 
 ```

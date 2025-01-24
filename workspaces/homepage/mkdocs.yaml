@@ -4,9 +4,12 @@ plugins:
   - techdocs-core
 
 nav:
-  - Customization: customization.md
-  - Layout options: layout-options.md
-  - Cards:
+  - About: index.md
+  - Customization:
+      - Defaults: defaults.md
+      - Header: header.md
+      - Layout options: layout-options.md
+  - Included cards:
       - Search: search.md
       - Quick access: quick-access.md
       - Headline: headline.md
@@ -17,5 +20,6 @@ nav:
       - Top visited: top-visited.md
       - Featured docs: featured-docs.md
       - Jokes: jokes.md
-  - Plugins:
+      - World clock: worldclock.md
+  - Extend with plugins:
       - Create a new card: create-a-new-card.md

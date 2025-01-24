@@ -1,4 +1,4 @@
-# Customization
+# Defaults
 
 The dynamic home page allows admins to customize the homepage in the `app-config`, and plugin authors to extend the home page with additional cards or content.
 

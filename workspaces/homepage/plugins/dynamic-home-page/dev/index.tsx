@@ -44,9 +44,10 @@ import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 
 import { QuickAccessApi, quickAccessApiRef } from '../src/api';
 import {
+  dynamicHomePagePlugin,
   CatalogStarredEntitiesCard,
   DynamicHomePage,
-  dynamicHomePagePlugin,
+  DynamicHomePageProps,
   FeaturedDocsCard,
   Headline,
   JokeCard,
@@ -57,6 +58,7 @@ import {
   RecentlyVisitedCard,
   SearchBar,
   TopVisitedCard,
+  WorldClock,
 } from '../src/plugin';
 import { HomePageCardMountPoint, QuickAccessLink } from '../src/types';
 import defaultQuickAccess from './quickaccess-default.json';
@@ -193,11 +195,13 @@ class MockVisitsApi implements VisitsApi {
 const createPage = ({
   navTitle,
   pageTitle,
+  props,
   pageWidth,
   mountPoints,
 }: {
   navTitle: string;
   pageTitle?: string;
+  props?: DynamicHomePageProps;
   pageWidth?: number;
   mountPoints?: HomePageCardMountPoint[];
 }): DevAppPageOptions => {
@@ -228,7 +232,7 @@ const createPage = ({
     <TestApiProvider apis={backstageApis}>
       <ScalprumContext.Provider value={scalprumState}>
         <div style={{ width: pageWidth }}>
-          <DynamicHomePage title={pageTitle} />
+          <DynamicHomePage title={pageTitle} {...props} />
         </div>
       </ScalprumContext.Provider>
     </TestApiProvider>
@@ -244,24 +248,6 @@ const createPage = ({
 createDevApp()
   .registerPlugin(dynamicHomePagePlugin)
   .addThemes(getAllThemes())
-  .addPage({
-    path: '/catalog',
-    title: 'Catalog',
-    element: <CatalogIndexPage />,
-  })
-  .addPage({
-    path: '/catalog/:namespace/:kind/:name',
-    element: <CatalogEntityPage />,
-    children: (
-      <EntityProvider entity={entity}>
-        <EntityLayout>
-          <EntityLayout.Route path="/" title="Overview">
-            <h1>Overview</h1>
-          </EntityLayout.Route>
-        </EntityLayout>
-      </EntityProvider>
-    ),
-  })
   .addPage(
     createPage({
       navTitle: 'Default',
@@ -286,6 +272,99 @@ createDevApp()
     createPage({
       navTitle: 'Default large',
       pageWidth: 1600,
+      mountPoints: defaultMountPoints,
+    }),
+  )
+  .addPage(
+    createPage({
+      navTitle: 'With title',
+      props: {
+        title: 'Hello {{firstName}}',
+      },
+      mountPoints: defaultMountPoints,
+    }),
+  )
+  .addPage(
+    createPage({
+      navTitle: 'With subtitle',
+      props: {
+        subtitle: 'Hello {{displayName}}',
+      },
+      mountPoints: defaultMountPoints,
+    }),
+  )
+  .addPage(
+    createPage({
+      navTitle: 'With pageTitle',
+      props: {
+        pageTitle: 'Another page title',
+      },
+      mountPoints: defaultMountPoints,
+    }),
+  )
+  .addPage(
+    createPage({
+      navTitle: 'With local clock',
+      props: {
+        localClock: {
+          format: 'full',
+        },
+      },
+      mountPoints: defaultMountPoints,
+    }),
+  )
+  .addPage(
+    createPage({
+      navTitle: 'With world clocks',
+      props: {
+        worldClocks: [
+          {
+            label: 'Raleigh',
+            timeZone: 'EST',
+          },
+          {
+            label: 'London',
+            timeZone: 'GMT',
+          },
+          {
+            label: 'Brno',
+            timeZone: 'CET',
+          },
+          {
+            label: 'Bangalore',
+            timeZone: 'IST',
+          },
+        ],
+      },
+      mountPoints: defaultMountPoints,
+    }),
+  )
+  .addPage(
+    createPage({
+      navTitle: 'With both clocks',
+      props: {
+        localClock: {
+          format: 'time',
+        },
+        worldClocks: [
+          {
+            label: 'Raleigh',
+            timeZone: 'EST',
+          },
+          {
+            label: 'London',
+            timeZone: 'GMT',
+          },
+          {
+            label: 'Brno',
+            timeZone: 'CET',
+          },
+          {
+            label: 'Bangalore',
+            timeZone: 'IST',
+          },
+        ],
+      },
       mountPoints: defaultMountPoints,
     }),
   )
@@ -568,6 +647,45 @@ createDevApp()
   )
   .addPage(
     createPage({
+      navTitle: 'WorldClock',
+      pageTitle: 'WorldClock',
+      mountPoints: [
+        {
+          Component: WorldClock as React.ComponentType,
+          config: {
+            props: {
+              worldClocks: [
+                {
+                  label: 'Raleigh',
+                  timeZone: 'EST',
+                },
+                {
+                  label: 'London',
+                  timeZone: 'GMT',
+                },
+                {
+                  label: 'Brno',
+                  timeZone: 'CET',
+                },
+                {
+                  label: 'Bangalore',
+                  timeZone: 'IST',
+                },
+              ],
+              timeFormat: {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+              },
+            },
+          },
+        },
+      ],
+    }),
+  )
+  .addPage(
+    createPage({
       navTitle: 'Layout test 1',
       pageTitle: 'Layout test 1',
       mountPoints: [
@@ -778,4 +896,22 @@ createDevApp()
       ],
     }),
   )
+  .addPage({
+    path: '/catalog',
+    title: 'Catalog',
+    element: <CatalogIndexPage />,
+  })
+  .addPage({
+    path: '/catalog/:namespace/:kind/:name',
+    element: <CatalogEntityPage />,
+    children: (
+      <EntityProvider entity={entity}>
+        <EntityLayout>
+          <EntityLayout.Route path="/" title="Overview">
+            <h1>Overview</h1>
+          </EntityLayout.Route>
+        </EntityLayout>
+      </EntityProvider>
+    ),
+  })
   .render();

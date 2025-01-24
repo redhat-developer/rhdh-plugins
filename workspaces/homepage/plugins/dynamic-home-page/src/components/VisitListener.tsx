@@ -17,13 +17,13 @@
 import React from 'react';
 
 import { VisitListener as VisitListenerComponent } from '@backstage/plugin-home';
-import { useHomePageMountPoints } from '../hooks/useHomePageMountPoints';
+import { useDynamicHomePageCards } from '../hooks/useDynamicHomePageCards';
 
 export const VisitListener = () => {
-  const allHomePageMountPoints = useHomePageMountPoints();
+  const cards = useDynamicHomePageCards();
 
   const shouldLoadVisitListener = React.useMemo<boolean>(() => {
-    if (!allHomePageMountPoints) {
+    if (!cards) {
       return false;
     }
 
@@ -32,10 +32,10 @@ export const VisitListener = () => {
       'Extension(TopVisitedCard)',
     ];
 
-    return allHomePageMountPoints.some(card =>
+    return cards.some(card =>
       requiresVisitListener.includes(card.Component.displayName!),
     );
-  }, [allHomePageMountPoints]);
+  }, [cards]);
 
   return shouldLoadVisitListener ? <VisitListenerComponent /> : null;
 };
