@@ -81,8 +81,10 @@ auth:
 # permission:
 #   enabled: true
 #   rbac:
-#     policies-csv-file: ../../plugins/orchestrator/docs/rbac-policy.csv
+#     policies-csv-file: ../../docs/rbac-policy.csv
 #     policyFileReload: true
+#     pluginsWithPermission:
+#       - orchestrator
 #     admin:
 #       users:
 #         - name: user:default/mareklibra
