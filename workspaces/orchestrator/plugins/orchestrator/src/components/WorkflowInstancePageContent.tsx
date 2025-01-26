@@ -33,6 +33,7 @@ import {
   AssessedProcessInstanceDTO,
   InputSchemaResponseDTO,
   ProcessInstanceDTO,
+  WorkflowDataDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../src/api/api';
@@ -85,6 +86,18 @@ const useStyles = makeStyles(() => ({
   recommendedLabel: { margin: '0 0.25rem' },
 }));
 
+const VariablesDialogContent = ({
+  instanceVariables,
+}: {
+  instanceVariables: WorkflowDataDTO;
+}) => (
+  <Box sx={{ maxHeight: 300, width: 500, overflow: 'auto' }}>
+    {instanceVariables && (
+      <StructuredMetadataTable dense metadata={instanceVariables} />
+    )}
+  </Box>
+);
+
 export const WorkflowInstancePageContent: React.FC<{
   assessedInstance: AssessedProcessInstanceDTO;
 }> = ({ assessedInstance }) => {
@@ -97,11 +110,7 @@ export const WorkflowInstancePageContent: React.FC<{
   );
 
   const workflowdata = assessedInstance.instance?.workflowdata;
-  let instanceVariables: {
-    [x: string]: any;
-    hasOwnProperty?: any;
-    result?: any;
-  };
+  let instanceVariables: WorkflowDataDTO = {};
   if (workflowdata) {
     instanceVariables = {
       /* Since we are about to remove just the top-level property, shallow copy of the object is sufficient */
@@ -131,20 +140,6 @@ export const WorkflowInstancePageContent: React.FC<{
     setIsVariablesDialogOpen(prev => !prev);
   }, []);
 
-  const VariablesDialogContent = () => (
-    <Box
-      sx={{
-        maxHeight: 300,
-        width: 500,
-        overflow: 'auto',
-      }}
-    >
-      {instanceVariables && (
-        <StructuredMetadataTable dense metadata={instanceVariables} />
-      )}
-    </Box>
-  );
-
   return (
     <Content noPadding>
       <InfoDialog
@@ -156,7 +151,9 @@ export const WorkflowInstancePageContent: React.FC<{
         }
         onClose={toggleVariablesDialog}
         open={isVariablesDialogOpen}
-        children={<VariablesDialogContent />}
+        children={
+          <VariablesDialogContent instanceVariables={instanceVariables} />
+        }
       />
       <Grid container spacing={2}>
         <Grid item xs={6}>
