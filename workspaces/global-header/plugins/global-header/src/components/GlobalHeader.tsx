@@ -21,6 +21,7 @@ import Divider from '@mui/material/Divider';
 import { useDropdownManager } from '../hooks';
 import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints';
 import { ComponentType, GlobalHeaderComponentMountPoint, Slot } from '../types';
+import { ErrorBoundary } from '@backstage/core-components';
 
 export const GlobalHeader = () => {
   const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
@@ -69,24 +70,32 @@ export const GlobalHeader = () => {
     mountPoints.map((mp, index) => {
       switch (mp.config?.type) {
         case ComponentType.SEARCH:
-          // eslint-disable-next-line react/no-array-index-key
-          return <mp.Component key={index} />;
+          return (
+            <ErrorBoundary>
+              {/* eslint-disable-next-line react/no-array-index-key */}
+              <mp.Component key={index} />
+            </ErrorBoundary>
+          );
         case ComponentType.DROPDOWN_BUTTON:
           return (
-            <mp.Component
-              // eslint-disable-next-line react/no-array-index-key
-              key={index}
-              {...getDropdownButtonProps(mp.config?.key ?? index.toString())}
-              {...mp.config?.props}
-            />
+            <ErrorBoundary>
+              <mp.Component
+                // eslint-disable-next-line react/no-array-index-key
+                key={index}
+                {...getDropdownButtonProps(mp.config?.key ?? index.toString())}
+                {...mp.config?.props}
+              />
+            </ErrorBoundary>
           );
         case ComponentType.ICON_BUTTON:
           return (
-            <mp.Component
-              // eslint-disable-next-line react/no-array-index-key
-              key={index}
-              {...getIconButtonProps(mp.config?.props ?? {})}
-            />
+            <ErrorBoundary>
+              <mp.Component
+                // eslint-disable-next-line react/no-array-index-key
+                key={index}
+                {...getIconButtonProps(mp.config?.props ?? {})}
+              />
+            </ErrorBoundary>
           );
         default:
           return null;
