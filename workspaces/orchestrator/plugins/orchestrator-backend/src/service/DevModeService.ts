@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 
@@ -46,6 +47,8 @@ interface DevModeConnectionConfig {
   resourcesPath: string;
   persistencePath: string;
   repoUrl?: string;
+  notificationsBearerToken?: string;
+  notificationsUrl?: string;
 }
 
 export class DevModeService {
@@ -141,6 +144,9 @@ export class DevModeService {
       'host.docker.internal:host-gateway',
     ];
 
+    // TODO: pass automatically a set of env variables from configuration, i.e. all config props with names starting at ENV_:
+    //   config: orchestrator.sonataFlowService.ENV_foo
+
     launcherArgs.push('-e', `QUARKUS_HTTP_PORT=${this.connection.port}`);
 
     launcherArgs.push('-p', `${this.connection.port}:${this.connection.port}`);
@@ -153,6 +159,14 @@ export class DevModeService {
     launcherArgs.push(
       '-e',
       `QUARKUS_EMBEDDED_POSTGRESQL_DATA_DIR=${this.connection.persistencePath}`,
+    );
+    launcherArgs.push(
+      '-e',
+      `NOTIFICATIONS_BEARER_TOKEN=${this.connection.notificationsBearerToken}`,
+    );
+    launcherArgs.push(
+      '-e',
+      `BACKSTAGE_NOTIFICATIONS_URL=${this.connection.notificationsUrl}`,
     );
 
     launcherArgs.push(this.connection.containerImage);
@@ -190,6 +204,16 @@ export class DevModeService {
         'orchestrator.sonataFlowService.workflowsSource.gitRepositoryUrl',
       ) ?? '';
 
+    const notificationsBearerToken =
+      config.getOptionalString(
+        'orchestrator.sonataFlowService.notificationsBearerToken',
+      ) ?? '';
+
+    const notificationsUrl =
+      config.getOptionalString(
+        'orchestrator.sonataFlowService.notificationsUrl',
+      ) ?? '';
+
     return {
       host,
       port,
@@ -197,6 +221,8 @@ export class DevModeService {
       resourcesPath,
       persistencePath,
       repoUrl,
+      notificationsBearerToken,
+      notificationsUrl,
     };
   }
 
