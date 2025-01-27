@@ -140,7 +140,7 @@ orchestrator:
     port: 8899
     autoStart: true
     workflowsSource:
-      gitRepositoryUrl: https://github.com/parodos-dev/backstage-orchestrator-workflows
+      gitRepositoryUrl: https://github.com/rhdhorchestrator/backstage-orchestrator-workflows
       localPath: /tmp/orchestrator/repository
   dataIndexService:
     url: http://localhost:8899
@@ -148,7 +148,7 @@ orchestrator:
 
 This configuration will trigger the following:
 
-1. Cloning https://github.com/parodos-dev/backstage-orchestrator-workflows to /tmp/orchestrator/repository.
+1. Cloning https://github.com/rhdhorchestrator/backstage-orchestrator-workflows to /tmp/orchestrator/repository.
 2. Running the SonataFlow devmode container configured to load the workflows located in /tmp/orchestrator/repository.
 
 > **Note:** /tmp/orchestrator needs to be accessible to docker.
