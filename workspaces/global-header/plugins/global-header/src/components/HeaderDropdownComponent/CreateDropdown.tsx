@@ -14,45 +14,23 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import HeaderDropdownComponent from './HeaderDropdownComponent';
 import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import { MenuItemConfig } from './MenuSection';
+import { useApi } from '@backstage/core-plugin-api';
+import { Entity } from '@backstage/catalog-model';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 export interface CreateButtonProps {
   handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
   anchorEl: HTMLElement | null;
   setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
-
-const models = [
-  {
-    key: 'key-1',
-    value: 'argocd-template',
-    label: 'Add ArgoCD to an existing project',
-  },
-  {
-    key: 'key-2',
-    value: 'create-backend-plugin',
-    label: 'Create Backend Plugin Template',
-  },
-  {
-    key: 'key-3',
-    value: 'create-frontend-plugin',
-    label: 'Create Frontend Plugin Template',
-  },
-  {
-    key: 'key-4',
-    value: 'create-react-app-template-test-annotator',
-    label: 'Create React App Template with annotations',
-  },
-  {
-    key: 'key-5',
-    value: 'define-ansible-job-template',
-    label: 'Ansible Job Template',
-  },
-];
 
 const menuBottomItems: MenuItemConfig[] = [
   {
@@ -68,15 +46,66 @@ export const CreateDropdown = ({
   anchorEl,
   setAnchorEl,
 }: CreateButtonProps) => {
+  const catalogApi = useApi(catalogApiRef);
+  const [entities, setEntities] = useState<Entity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchEntities = async () => {
+      try {
+        const response = await catalogApi.getEntities({
+          filter: { kind: ['Template'] },
+        });
+        setEntities(response.items);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEntities();
+  }, [catalogApi]);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" p={2}>
+        <CircularProgress />
+        <Typography variant="body1" sx={{ ml: 2 }}>
+          Loading templates...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" p={2}>
+        <Typography variant="body1" color="error">
+          Error fetching templates: {error}
+        </Typography>
+      </Box>
+    );
+  }
+
+  const availableTemplates = entities
+    .filter(e => e.kind === 'Template')
+    .map(e => ({
+      key: e.metadata.uid,
+      value: e.metadata.name,
+      label: e.metadata.title,
+    }));
+
   const menuSections = [
     {
       sectionKey: 'templates',
       sectionLabel: 'Use a template',
       optionalLinkLabel: 'All templates',
       optionalLink: '/create',
-      items: models.map(m => ({
-        itemKey: m.key,
-        label: m.label,
+      items: availableTemplates.map((m, index) => ({
+        itemKey: m.key ?? index.toString(),
+        label: m.label ?? m.value,
         link: `/create/templates/default/${m.value}`,
       })),
       handleClose: () => setAnchorEl(null),
