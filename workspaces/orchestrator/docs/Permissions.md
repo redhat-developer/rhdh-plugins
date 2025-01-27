@@ -7,8 +7,8 @@ the RBAC plugin. The result is control over what users can see or execute.
 | ---------------------------------------- | -------------- | ------ | ------------------------------------------------------------------------------------- | ------------ |
 | orchestrator.workflow                    | named resource | read   | Allows the user to list and read _any_ workflow definition and their instances (runs) |              |
 | orchestrator.workflow.[`workflowId`]     | named resource | read   | Allows the user to list and read the details of a _single_ workflow definition        |              |
-| orchestrator.workflow.use                | named resource | read   | Allows the user to run or abort _any_ workflow                                        |              |
-| orchestrator.workflow.use.[`workflowId`] | named resource | read   | Allows the user to run or abort the _single_ workflow                                 |              |
+| orchestrator.workflow.use                | named resource | update | Allows the user to run or abort _any_ workflow                                        |              |
+| orchestrator.workflow.use.[`workflowId`] | named resource | update | Allows the user to run or abort the _single_ workflow                                 |              |
 
 The user is permitted to do an action if either the generic permission or the specific one allows it.
 In other words, it is not possible to grant generic `orchestrator.workflow` and then selectively disable it for a specific workflow via `orchestrator.workflow.use.[workflowId]` with `deny`.
@@ -33,10 +33,10 @@ The users of the `default/workflowAdmin` role have full permissions (can list, r
 p, role:default/workflowUser, orchestrator.workflow.yamlgreet, read, allow
 p, role:default/workflowUser, orchestrator.workflow.wait-or-error, read, allow
 
-p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, use, allow
+p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, update, allow
 
 p, role:default/workflowAdmin, orchestrator.workflow, read, allow
-p, role:default/workflowAdmin, orchestrator.workflow.use, use, allow
+p, role:default/workflowAdmin, orchestrator.workflow.use, update, allow
 
 g, user:development/guest, role:default/workflowUser
 g, user:default/mareklibra, role:default/workflowAdmin
@@ -53,7 +53,12 @@ permission:
   enabled: true
   rbac:
     policies-csv-file: <absolute path to the policy file>
+    pluginsWithPermission:
+      - orchestrator
     policyFileReload: true
+    admin:
+      users:
+        - name: user:default/YOUR_USER
 ```
 
 ## Limitations

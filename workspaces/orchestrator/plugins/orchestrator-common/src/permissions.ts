@@ -33,13 +33,17 @@ export const orchestratorWorkflowSpecificPermission = (workflowId: string) =>
 
 export const orchestratorWorkflowUsePermission = createPermission({
   name: 'orchestrator.workflow.use',
-  attributes: {},
+  attributes: {
+    action: 'update',
+  },
 });
 
 export const orchestratorWorkflowUseSpecificPermission = (workflowId: string) =>
   createPermission({
     name: `orchestrator.workflow.use.${workflowId}`,
-    attributes: {},
+    attributes: {
+      action: 'update',
+    },
   });
 
 export const orchestratorPermissions = [
