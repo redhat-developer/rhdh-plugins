@@ -1,0 +1,10 @@
+# test global-header components. this isn't implemented yet!
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-application-provider-test:
+      dynamicRoutes:
+        - path: /countpage
+          importName: CountPage
+      mountPoints:
+        - mountPoint: application/provider
+          importName: CountProvider
