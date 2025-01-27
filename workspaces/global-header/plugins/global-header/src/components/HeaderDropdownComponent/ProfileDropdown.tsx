@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import HeaderDropdownComponent from './HeaderDropdownComponent';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import Typography from '@mui/material/Typography';
-import SmallIconWrapper from '../HeaderIconButtonComponent/SmallIconWrapper';
 import {
   identityApiRef,
   errorApiRef,
   useApi,
+  ProfileInfo,
 } from '@backstage/core-plugin-api';
 
 export interface ProfileDropdownProps {
@@ -41,7 +41,16 @@ export const ProfileDropdown = ({
 }: ProfileDropdownProps) => {
   const errorApi = useApi(errorApiRef);
   const identityApi = useApi(identityApiRef);
-  const user = 'Guest User';
+  const [user, setUser] = useState<ProfileInfo>();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userProfile = await identityApi.getProfileInfo();
+      setUser(userProfile);
+    };
+
+    fetchUser();
+  }, [identityApi]);
 
   const handleLogout = () => {
     identityApi.signOut().catch(error => errorApi.post(error));
@@ -70,12 +79,9 @@ export const ProfileDropdown = ({
     <HeaderDropdownComponent
       buttonContent={
         <>
-          <SmallIconWrapper
-            IconComponent={AccountCircleOutlinedIcon}
-            sx={{ mx: 1 }}
-          />
+          <AccountCircleOutlinedIcon fontSize="small" sx={{ mx: 1 }} />
           <Typography variant="body2" sx={{ fontWeight: 500, mx: 1 }}>
-            {user ?? 'Guest User'}
+            {user?.displayName ?? 'Guest'}
           </Typography>
           <KeyboardArrowDownOutlinedIcon
             sx={{
