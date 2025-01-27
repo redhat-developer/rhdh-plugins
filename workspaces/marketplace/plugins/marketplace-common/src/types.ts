@@ -62,6 +62,14 @@ export enum MarketplaceKinds {
 /**
  * @public
  */
+export enum SortOrder {
+  asc = 'asc',
+  desc = 'desc',
+}
+
+/**
+ * @public
+ */
 export enum InstallStatus {
   NotInstalled = 'NotInstalled',
   Installed = 'Installed',
@@ -100,10 +108,13 @@ export interface MarketplacePluginSpec extends JsonObject {
  * @public
  */
 export interface MarketplaceApi {
-  getPlugins(
-    limit?: string,
-    cursor?: string,
-  ): Promise<MarketplacePluginWithPageInfo>;
+  getPlugins(params: {
+    limit?: string;
+    cursor?: string;
+    sortByField?: string;
+    sortOrder?: 'asc' | 'desc';
+    searchText?: string;
+  }): Promise<MarketplacePluginWithPageInfo>;
   getPluginByName(name: string): Promise<MarketplacePlugin>;
   getPluginLists(): Promise<MarketplacePluginList[]>;
   getPluginListByName(name: string): Promise<MarketplacePluginList>;

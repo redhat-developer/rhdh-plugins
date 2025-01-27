@@ -24,6 +24,7 @@ import {
   MarketplaceAggregationApi,
   MarketplaceApi,
   MarketplaceKinds,
+  SortOrder,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export async function createRouter({
@@ -38,11 +39,16 @@ export async function createRouter({
   router.use(express.json());
 
   router.get('/plugins', async (_req, res) => {
-    const { cursor, limit } = _req.query;
-    const plugins = await marketplaceApi.getPlugins(
-      cursor as string | undefined,
-      limit as string | undefined,
-    );
+    const { cursor, limit, sortByField, sortOrder, searchText } = _req.query;
+    const plugins = await marketplaceApi.getPlugins({
+      cursor: typeof cursor === 'string' ? cursor : undefined,
+      limit: typeof limit === 'string' ? limit : undefined,
+      sortByField: typeof sortByField === 'string' ? sortByField : undefined,
+      sortOrder:
+        sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : SortOrder.asc,
+      searchText: typeof searchText === 'string' ? searchText : undefined,
+    });
+
     res.json(plugins);
   });
 

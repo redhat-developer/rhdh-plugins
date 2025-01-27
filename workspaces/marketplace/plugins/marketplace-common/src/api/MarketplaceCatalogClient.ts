@@ -16,7 +16,7 @@
 
 import { AuthService } from '@backstage/backend-plugin-api';
 import { stringifyEntityRef } from '@backstage/catalog-model';
-import { CatalogApi } from '@backstage/catalog-client';
+import { CatalogApi, QueryEntitiesRequest } from '@backstage/catalog-client';
 import { NotFoundError } from '@backstage/errors';
 import {
   MarketplaceApi,
@@ -24,6 +24,7 @@ import {
   MarketplacePlugin,
   MarketplacePluginList,
   MarketplacePluginWithPageInfo,
+  SortOrder,
 } from '../types';
 
 /**
@@ -34,6 +35,9 @@ export type MarketplaceCatalogClientOptions = {
   catalogApi: CatalogApi;
 };
 
+type ExtendedQueryEntitiesRequest = QueryEntitiesRequest & {
+  cursor?: string; // Add cursor as an optional property
+};
 /**
  * @public
  */
@@ -56,21 +60,39 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     });
   }
 
-  async getPlugins(
-    cursor: string,
-    limit: string,
-  ): Promise<MarketplacePluginWithPageInfo> {
+  async getPlugins({
+    cursor,
+    limit = '20', // Default value for limit
+    sortByField = 'metadata.name', // Default value for sortByField
+    sortOrder = SortOrder.asc, // Default to 'asc'
+    searchText,
+  }: {
+    cursor?: string;
+    limit?: string;
+    sortByField?: string;
+    sortOrder?: 'asc' | 'desc'; // Enforcing correct sortOrder values
+    searchText?: string;
+  }): Promise<MarketplacePluginWithPageInfo> {
     const token = await this.getServiceToken();
-    const result = await this.catalog.queryEntities(
-      {
-        filter: {
-          kind: 'plugin',
-        },
-        limit: limit ? parseInt(limit as string, 10) : 20,
-        cursor: cursor as string,
-      },
-      token,
-    );
+
+    const payload: ExtendedQueryEntitiesRequest = {
+      filter: { kind: 'plugin' },
+      orderFields: { field: sortByField, order: sortOrder },
+      limit: parseInt(limit, 10), // Convert limit to number
+    };
+
+    // Add optional properties only if they are provided
+    if (cursor) {
+      payload.cursor = cursor;
+    }
+
+    if (searchText) {
+      payload.fullTextFilter = {
+        term: searchText,
+      };
+    }
+    const result = await this.catalog.queryEntities(payload, token);
+
     return {
       items: result.items as MarketplacePlugin[],
       totalItems: result.totalItems,

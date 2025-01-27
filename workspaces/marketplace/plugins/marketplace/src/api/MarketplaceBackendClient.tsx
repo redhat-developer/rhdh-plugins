@@ -20,6 +20,7 @@ import {
   MarketplaceApi,
   MarketplacePlugin,
   MarketplacePluginList,
+  MarketplacePluginWithPageInfo,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export type MarketplaceBackendClientOptions = {
@@ -36,7 +37,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     this.fetchApi = options.fetchApi;
   }
 
-  async getPlugins(): Promise<MarketplacePlugin[]> {
+  async getPlugins(): Promise<MarketplacePluginWithPageInfo> {
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
     const url = `${baseUrl}/plugins`;
 

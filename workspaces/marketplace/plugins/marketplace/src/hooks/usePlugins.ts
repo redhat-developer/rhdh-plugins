@@ -23,6 +23,6 @@ export const usePlugins = () => {
   const marketplaceApi = useApi(marketplaceApiRef);
   return useQuery({
     queryKey: ['plugins'],
-    queryFn: () => marketplaceApi.getPlugins(),
+    queryFn: () => marketplaceApi.getPlugins({}),
   });
 };
