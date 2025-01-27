@@ -28,6 +28,10 @@ import {
   ProfileInfo,
 } from '@backstage/core-plugin-api';
 
+/**
+ * @public
+ * ProfileDropdown component properties
+ */
 export interface ProfileDropdownProps {
   handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
   anchorEl: HTMLElement | null;
