@@ -64,6 +64,7 @@ export const GlobalHeader = () => {
 
   const getIconButtonProps = (props: Record<string, any>) => ({
     icon: props.icon ?? '',
+    tooltip: props.tooltip ?? '',
     onClick: props.onClick ?? (() => {}),
   });
   const renderComponents = (mountPoints: GlobalHeaderComponentMountPoint[]) =>
