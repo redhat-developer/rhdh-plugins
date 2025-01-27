@@ -143,7 +143,7 @@ export type FieldFilterValue = any | boolean | number | string;
  * @type Filter
  * @export
  */
-export type Filter = FieldFilter | LogicalFilter;
+export type Filter = FieldFilter | LogicalFilter | NestedFilter;
 
 /**
  * 
@@ -210,6 +210,31 @@ export const LogicalFilterOperatorEnum = {
 } as const;
 
 export type LogicalFilterOperatorEnum = typeof LogicalFilterOperatorEnum[keyof typeof LogicalFilterOperatorEnum];
+
+/**
+ * 
+ * @export
+ * @interface NestedFilter
+ */
+export interface NestedFilter {
+    /**
+     * 
+     * @type {string}
+     * @memberof NestedFilter
+     */
+    'field': string;
+    /**
+     * 
+     * @type {NestedFilterNested}
+     * @memberof NestedFilter
+     */
+    'nested': NestedFilterNested;
+}
+/**
+ * @type NestedFilterNested
+ * @export
+ */
+export type NestedFilterNested = FieldFilter | NestedFilter;
 
 /**
  * 

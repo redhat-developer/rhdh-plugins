@@ -10,6 +10,8 @@ Models/Filter.md
 Models/GetOverviewsRequestParams.md
 Models/InputSchemaResponseDTO.md
 Models/LogicalFilter.md
+Models/NestedFilter.md
+Models/NestedFilter_nested.md
 Models/NodeInstanceDTO.md
 Models/PaginationInfoDTO.md
 Models/ProcessInstanceDTO.md
