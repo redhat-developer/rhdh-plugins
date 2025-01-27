@@ -10216,23 +10216,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/axios@npm:3.1.1":
-  version: 3.1.1
-  resolution: "@nestjs/axios@npm:3.1.1"
+"@nestjs/axios@npm:3.1.3":
+  version: 3.1.3
+  resolution: "@nestjs/axios@npm:3.1.3"
   peerDependencies:
     "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
     axios: ^1.3.1
     rxjs: ^6.0.0 || ^7.0.0
-  checksum: a224cf85156b6a93ba7e4c15488160f5e904d7522ef63d7eef05a59fe109099117c5d565a8ace11393b01215417375ad1d79160256c7f280c94369f54603006d
+  checksum: e949f664cec5a874b3fd11a193f00b8ddca12fc4b80e23b4e764594a0dccc167db833c1bb2b6cc8e5536bc3bc655bff0196d3efcad5a14a1bd5638a048a80b26
   languageName: node
   linkType: hard
 
-"@nestjs/common@npm:10.4.6":
-  version: 10.4.6
-  resolution: "@nestjs/common@npm:10.4.6"
+"@nestjs/common@npm:10.4.15":
+  version: 10.4.15
+  resolution: "@nestjs/common@npm:10.4.15"
   dependencies:
     iterare: 1.2.1
-    tslib: 2.7.0
+    tslib: 2.8.1
     uid: 2.0.2
   peerDependencies:
     class-transformer: "*"
@@ -10244,19 +10244,19 @@ __metadata:
       optional: true
     class-validator:
       optional: true
-  checksum: 82478ce932867104af9a31b755af369bfb20931eb368874a22abfc553775e2c0fc3e55d07c8c948ab664a15f3ff6193bafb691658054b0b668a40a7e947033a2
+  checksum: fceeee6d0ddf63a8000bea72a488441efac5339ba73d44210a3786fc2334814a2fc3b29ef78becdee0bab8aa5e46894dac005f2717dea836f28feef9b75d678f
   languageName: node
   linkType: hard
 
-"@nestjs/core@npm:10.4.6":
-  version: 10.4.6
-  resolution: "@nestjs/core@npm:10.4.6"
+"@nestjs/core@npm:10.4.15":
+  version: 10.4.15
+  resolution: "@nestjs/core@npm:10.4.15"
   dependencies:
     "@nuxtjs/opencollective": 0.3.2
     fast-safe-stringify: 2.1.1
     iterare: 1.2.1
     path-to-regexp: 3.3.0
-    tslib: 2.7.0
+    tslib: 2.8.1
     uid: 2.0.2
   peerDependencies:
     "@nestjs/common": ^10.0.0
@@ -10272,7 +10272,7 @@ __metadata:
       optional: true
     "@nestjs/websockets":
       optional: true
-  checksum: d7d6e8129c344c3b7d5b41a98846de64614587842dd84b3050438da738530bdbea211efa0a08c65c274d2616ffb560096ab019254710b355ff57d92432ccb0ab
+  checksum: f6fabfb2ee86ff561acef9b5071727099718a56ddf6bedb70b8c6f827fea7e1a6a13b76381077270a2f0190d25a94fb75bbeb4902a4f0fbe87c90fe7a92dab2a
   languageName: node
   linkType: hard
 
@@ -11020,15 +11020,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openapitools/openapi-generator-cli@npm:2.15.3, @openapitools/openapi-generator-cli@npm:^2.7.0":
-  version: 2.15.3
-  resolution: "@openapitools/openapi-generator-cli@npm:2.15.3"
+"@openapitools/openapi-generator-cli@npm:2.16.2, @openapitools/openapi-generator-cli@npm:^2.7.0":
+  version: 2.16.2
+  resolution: "@openapitools/openapi-generator-cli@npm:2.16.2"
   dependencies:
-    "@nestjs/axios": 3.1.1
-    "@nestjs/common": 10.4.6
-    "@nestjs/core": 10.4.6
+    "@nestjs/axios": 3.1.3
+    "@nestjs/common": 10.4.15
+    "@nestjs/core": 10.4.15
     "@nuxtjs/opencollective": 0.3.2
-    axios: 1.7.7
+    axios: 1.7.9
     chalk: 4.1.2
     commander: 8.3.0
     compare-versions: 4.1.4
@@ -11044,7 +11044,7 @@ __metadata:
     tslib: 2.8.1
   bin:
     openapi-generator-cli: main.js
-  checksum: 7aaf394615cccea80ef37184e556134c61dee97ba777aecb3d14ac143f3a7390327511915e85b2e9108e8dbf56444678e8302e06009757581a3a0733531dd654
+  checksum: baa72a5a0cfbca344d625bd50608021ab653a005d0eb9be70aba28ac9453722bca6439a32493b50d23132e66302059914f4133df27de40a1f67a98d3f073f7bf
   languageName: node
   linkType: hard
 
@@ -11996,7 +11996,7 @@ __metadata:
     "@backstage/cli": 0.28.2
     "@backstage/plugin-permission-common": ^0.8.1
     "@backstage/types": ^1.1.1
-    "@openapitools/openapi-generator-cli": 2.15.3
+    "@openapitools/openapi-generator-cli": 2.16.2
     "@severlessworkflow/sdk-typescript": ^3.0.3
     "@types/json-schema": 7.0.15
     axios: ^1.7.9
@@ -17529,14 +17529,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.7.7":
-  version: 1.7.7
-  resolution: "axios@npm:1.7.7"
+"axios@npm:1.7.9, axios@npm:^1.0.0, axios@npm:^1.6.0, axios@npm:^1.7.4, axios@npm:^1.7.7, axios@npm:^1.7.9":
+  version: 1.7.9
+  resolution: "axios@npm:1.7.9"
   dependencies:
     follow-redirects: ^1.15.6
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
-  checksum: 882d4fe0ec694a07c7f5c1f68205eb6dc5a62aecdb632cc7a4a3d0985188ce3030e0b277e1a8260ac3f194d314ae342117660a151fabffdc5081ca0b5a8b47fe
+  checksum: cb8ce291818effda09240cb60f114d5625909b345e10f389a945320e06acf0bc949d0f8422d25720f5dd421362abee302c99f5e97edec4c156c8939814b23d19
   languageName: node
   linkType: hard
 
@@ -17547,17 +17547,6 @@ __metadata:
     follow-redirects: ^1.14.9
     form-data: ^4.0.0
   checksum: 38cb7540465fe8c4102850c4368053c21683af85c5fdf0ea619f9628abbcb59415d1e22ebc8a6390d2bbc9b58a9806c874f139767389c862ec9b772235f06854
-  languageName: node
-  linkType: hard
-
-"axios@npm:^1.0.0, axios@npm:^1.6.0, axios@npm:^1.7.4, axios@npm:^1.7.7, axios@npm:^1.7.9":
-  version: 1.7.9
-  resolution: "axios@npm:1.7.9"
-  dependencies:
-    follow-redirects: ^1.15.6
-    form-data: ^4.0.0
-    proxy-from-env: ^1.1.0
-  checksum: cb8ce291818effda09240cb60f114d5625909b345e10f389a945320e06acf0bc949d0f8422d25720f5dd421362abee302c99f5e97edec4c156c8939814b23d19
   languageName: node
   linkType: hard
 
@@ -36665,13 +36654,6 @@ __metadata:
     minimist: ^1.2.6
     strip-bom: ^3.0.0
   checksum: 59f35407a390d9482b320451f52a411a256a130ff0e7543d18c6f20afab29ac19fbe55c360a93d6476213cc335a4d76ce90f67df54c4e9037f7d240920832201
-  languageName: node
-  linkType: hard
-
-"tslib@npm:2.7.0":
-  version: 2.7.0
-  resolution: "tslib@npm:2.7.0"
-  checksum: 1606d5c89f88d466889def78653f3aab0f88692e80bb2066d090ca6112ae250ec1cfa9dbfaab0d17b60da15a4186e8ec4d893801c67896b277c17374e36e1d28
   languageName: node
   linkType: hard
 
