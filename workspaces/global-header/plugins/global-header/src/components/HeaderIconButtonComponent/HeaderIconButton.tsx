@@ -16,22 +16,30 @@
 
 import React from 'react';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { HeaderIcon } from './HeaderIcon';
 
 export interface HeaderIconButtonProps {
   icon: string;
+  tooltip?: string;
   onClick: () => void;
 }
 
-export const HeaderIconButton = ({ icon, onClick }: HeaderIconButtonProps) => {
+export const HeaderIconButton = ({
+  icon,
+  tooltip,
+  onClick,
+}: HeaderIconButtonProps) => {
   return (
-    <IconButton
-      color="inherit"
-      aria-label="help"
-      sx={{ mr: 1.5 }}
-      onClick={onClick}
-    >
-      <HeaderIcon icon={icon} />
-    </IconButton>
+    <Tooltip title={tooltip ?? icon}>
+      <IconButton
+        color="inherit"
+        aria-label="help"
+        sx={{ mr: 1.5 }}
+        onClick={onClick}
+      >
+        <HeaderIcon icon={icon} />
+      </IconButton>
+    </Tooltip>
   );
 };

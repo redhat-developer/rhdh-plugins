@@ -18,7 +18,8 @@ import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
 import { TestApiProvider } from '@backstage/test-utils';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
-
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
 import Button from '@mui/material/Button';
 
 import { globalHeaderPlugin, NotificationBanner } from '../src/plugin';
@@ -64,7 +65,7 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
         slot: Slot.HEADER_START,
         priority: 80,
         props: {
-          icon: 'help', // TODO: come up with a new icon solution
+          icon: 'support',
           tooltip: 'Support',
           to: '/support',
         },
@@ -79,7 +80,7 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
         priority: 70,
         props: {
           key: 'notifications',
-          icon: 'group', // TODO: come up with a new icon solution
+          icon: 'notifications',
           tooltip: 'Notifications',
           to: '/notifications',
         },
@@ -110,6 +111,43 @@ const mockSearchApi = new MockSearchApi({
   ],
 });
 
+const entities = [
+  {
+    apiVersion: '1',
+    kind: 'Template',
+    metadata: {
+      name: 'mock-starred-template',
+      title: 'Mock Starred Template!',
+    },
+  },
+  {
+    apiVersion: '1',
+    kind: 'Template',
+    metadata: {
+      name: 'mock-starred-template-2',
+      title: 'Mock Starred Template 2!',
+    },
+  },
+  {
+    apiVersion: '1',
+    kind: 'Template',
+    metadata: {
+      name: 'mock-starred-template-3',
+      title: 'Mock Starred Template 3!',
+    },
+  },
+  {
+    apiVersion: '1',
+    kind: 'Template',
+    metadata: {
+      name: 'mock-starred-template-4',
+      title: 'Mock Starred Template 4!',
+    },
+  },
+];
+
+const catalogApi = catalogApiMock({ entities });
+
 const scalprumState: ScalprumState = {
   initialized: true,
   api: {
@@ -128,7 +166,12 @@ createDevApp()
   .registerPlugin(globalHeaderPlugin)
   .addPage({
     element: (
-      <TestApiProvider apis={[[searchApiRef, mockSearchApi]]}>
+      <TestApiProvider
+        apis={[
+          [catalogApiRef, catalogApi],
+          [searchApiRef, mockSearchApi],
+        ]}
+      >
         <ScalprumContext.Provider value={scalprumState}>
           <ExampleComponent />
         </ScalprumContext.Provider>

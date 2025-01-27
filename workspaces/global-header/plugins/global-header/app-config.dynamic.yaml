@@ -28,11 +28,11 @@ dynamicPlugins:
           config:
             type: icon_button
             enabled: true
-            icon: help
             slot: header-start
             priority: 80
             props:
-              icon: help
+              icon: support
+              tooltip: 'Support'
         - mountPoint: application/header/component
           importName: HeaderIconButton
           config:
@@ -41,7 +41,8 @@ dynamicPlugins:
             slot: header-start
             priority: 70
             props:
-              icon: warning
+              icon: notifications
+              tooltip: 'Notifications'
         - mountPoint: application/header/component
           importName: ProfileDropdown
           config:
