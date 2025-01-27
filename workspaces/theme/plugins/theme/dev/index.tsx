@@ -15,14 +15,43 @@
  */
 
 import React from 'react';
+
+import { Header, Page, Content, InfoCard } from '@backstage/core-components';
+import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
+
 import { createDevApp } from '@backstage/dev-utils';
+
+import Grid from '@mui/material/Grid';
+
 import { getAllThemes } from '../src';
 
 createDevApp()
   .addThemes(getAllThemes())
   .addPage({
-    element: <div />,
-    title: 'Root Page',
-    path: '/theme',
+    element: (
+      <Page themeId="tool">
+        <Header title="Theme Test Page">
+          <UserSettingsThemeToggle />
+        </Header>
+        <Content>
+          <Grid container>
+            <Grid item sm={3}>
+              <InfoCard title="InfoCard" />
+            </Grid>
+            <Grid item sm={3}>
+              <InfoCard title="InfoCard" />
+            </Grid>
+            <Grid item sm={3}>
+              <InfoCard title="InfoCard" />
+            </Grid>
+            <Grid item sm={3}>
+              <InfoCard title="InfoCard" />
+            </Grid>
+          </Grid>
+        </Content>
+      </Page>
+    ),
+    title: 'Test page',
+    path: '/',
   })
   .render();
