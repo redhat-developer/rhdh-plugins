@@ -55,3 +55,12 @@ permission:
     policies-csv-file: <absolute path to the policy file>
     policyFileReload: true
 ```
+
+## Limitations
+
+The RBAC UI recently expects all permissions to be statically listed at the application start-up time.
+
+The Orchestrator specific permissions (those with the `workflowId` in their name) are dynamically created and so the RBAC UI can not be used for their management.
+It is recommended to use either the policy CSV file or the RBAC API for their management instead.
+
+The generic permissions (means the `orchestrator.workflow` and `orchestrator.workflow.use`) are statically defined and so work fine within the RBAC UI.
