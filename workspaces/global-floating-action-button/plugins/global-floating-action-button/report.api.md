@@ -28,7 +28,7 @@ export type FloatingActionButton = {
   slot?: Slot;
   label: string;
   showLabel?: boolean;
-  icon: string | React.ReactElement;
+  icon?: string | React.ReactElement;
   size?: 'small' | 'medium' | 'large';
   color?:
     | 'default'
