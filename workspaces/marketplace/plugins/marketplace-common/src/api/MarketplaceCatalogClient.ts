@@ -23,6 +23,7 @@ import {
   MarketplaceKinds,
   MarketplacePlugin,
   MarketplacePluginList,
+  MarketplacePluginWithPageInfo,
 } from '../types';
 
 /**
@@ -55,18 +56,26 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     });
   }
 
-  async getPlugins(): Promise<MarketplacePlugin[]> {
+  async getPlugins(
+    cursor: string,
+    limit: string,
+  ): Promise<MarketplacePluginWithPageInfo> {
     const token = await this.getServiceToken();
     const result = await this.catalog.queryEntities(
       {
         filter: {
           kind: 'plugin',
         },
+        limit: limit ? parseInt(limit as string, 10) : 20,
+        cursor: cursor as string,
       },
       token,
     );
-
-    return result.items as MarketplacePlugin[];
+    return {
+      items: result.items as MarketplacePlugin[],
+      totalItems: result.totalItems,
+      pageInfo: result.pageInfo,
+    };
   }
 
   async getPluginLists(): Promise<MarketplacePluginList[]> {

@@ -28,6 +28,18 @@ export interface MarketplacePlugin extends Entity {
 /**
  * @public
  */
+export interface MarketplacePluginWithPageInfo {
+  items: MarketplacePlugin[];
+  totalItems?: Number;
+  pageInfo?: {
+    nextCursor?: string;
+    prevCursor?: string;
+  };
+}
+
+/**
+ * @public
+ */
 export interface MarketplacePluginList extends Entity {
   spec?: {
     plugins: string[];
@@ -88,7 +100,10 @@ export interface MarketplacePluginSpec extends JsonObject {
  * @public
  */
 export interface MarketplaceApi {
-  getPlugins(): Promise<MarketplacePlugin[]>;
+  getPlugins(
+    limit?: string,
+    cursor?: string,
+  ): Promise<MarketplacePluginWithPageInfo>;
   getPluginByName(name: string): Promise<MarketplacePlugin>;
   getPluginLists(): Promise<MarketplacePluginList[]>;
   getPluginListByName(name: string): Promise<MarketplacePluginList>;

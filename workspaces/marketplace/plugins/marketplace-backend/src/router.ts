@@ -38,7 +38,11 @@ export async function createRouter({
   router.use(express.json());
 
   router.get('/plugins', async (_req, res) => {
-    const plugins = await marketplaceApi.getPlugins();
+    const { cursor, limit } = _req.query;
+    const plugins = await marketplaceApi.getPlugins(
+      cursor as string | undefined,
+      limit as string | undefined,
+    );
     res.json(plugins);
   });
 
