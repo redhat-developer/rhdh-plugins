@@ -26,6 +26,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
+/**
+ * @public
+ * Create button properties
+ */
 export interface CreateButtonProps {
   handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
   anchorEl: HTMLElement | null;
