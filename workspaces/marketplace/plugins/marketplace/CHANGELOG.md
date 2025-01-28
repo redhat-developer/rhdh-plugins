@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.0.5
+
+### Patch Changes
+
+- 381a250: Upgrade Backstage from 1.32.0 to 1.35.0
+- Updated dependencies [381a250]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.0.5
+
 ## 0.0.4
 
 ### Patch Changes
