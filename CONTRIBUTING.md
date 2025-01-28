@@ -136,6 +136,7 @@ Once you have a workspace setup, the creation of new plugins and packages is jus
 
 ```bash
 cd workspaces/openshift-image-registry
+yarn install
 yarn new
 ```
 
