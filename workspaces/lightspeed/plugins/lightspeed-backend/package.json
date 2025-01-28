@@ -69,7 +69,7 @@
   "files": [
     "dist",
     "config.d.ts",
-    "app-config.dynamic.yaml"
+    "app-config.yaml"
   ],
   "configSchema": "config.d.ts",
   "repository": {
