@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-common
 
+## 0.2.1
+
+### Patch Changes
+
+- 8001249: fix dynamic plugins packaging
+
 ## 0.2.0
 
 ### Minor Changes
