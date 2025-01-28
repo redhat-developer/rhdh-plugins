@@ -78,7 +78,7 @@
     "dist",
     "config.d.ts",
     "dist-scalprum",
-    "app-config.dynamic.yaml"
+    "app-config.yaml"
   ],
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-lightspeed",
