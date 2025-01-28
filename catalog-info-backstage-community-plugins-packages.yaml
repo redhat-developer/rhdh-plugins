@@ -1,0 +1,39 @@
+# This list contains the community plugins that we have developed and
+# Which are now available in the Backstage community plugin repository.
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: redhat-backstage-community-packages
+  title: Red Hat developed plugins in Backstage community plugin repository (list of frontend plugns, backend plugins, etc.)
+  description: Backstage Plugins by Red Hat
+spec:
+  type: url
+  targets:
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/3scale/plugins/3scale-backend/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/acr/plugins/acr/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/analytics/plugins/analytics-module-matomo/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/analytics/plugins/analytics-provider-segment/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/ocm/plugins/ocm-backend/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/ocm/plugins/ocm-common/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/ocm/plugins/ocm/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/quay/plugins/quay-actions/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/quay/plugins/quay-common/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/quay/plugins/quay/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/rbac/plugins/rbac-backend/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/rbac/plugins/rbac-common/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/rbac/plugins/rbac-node/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/rbac/plugins/rbac/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/redhat-argocd/plugins/argocd-common/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/redhat-argocd/plugins/argocd/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/redhat-resource-optimization/plugins/redhat-resource-optimization-backend/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/redhat-resource-optimization/plugins/redhat-resource-optimization-common/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/redhat-resource-optimization/plugins/redhat-resource-optimization/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-annotator/plugins/scaffolder-backend-module-annotator/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-kubernetes/plugins/kubernetes-actions/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-regex/plugins/regex-actions/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-servicenow/plugins/scaffolder-backend-module-servicenow/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-sonarqube/plugins/scaffolder-backend-module-sonarqube/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/tekton/plugins/tekton-common/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/tekton/plugins/tekton/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/topology/plugins/topology-common/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/topology/plugins/topology/catalog-info.yaml
