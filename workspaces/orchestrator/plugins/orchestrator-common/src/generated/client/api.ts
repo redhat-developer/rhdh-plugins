@@ -638,6 +638,12 @@ export interface WorkflowOverviewDTO {
      * @memberof WorkflowOverviewDTO
      */
     'description'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof WorkflowOverviewDTO
+     */
+    'isAvailable'?: boolean;
 }
 
 
