@@ -21,11 +21,13 @@ import { HttpAuthService } from '@backstage/backend-plugin-api';
 import { InputError, NotFoundError } from '@backstage/errors';
 import {
   AggregationsSchema,
+  GetPluginsRequest,
   MarketplaceAggregationApi,
   MarketplaceApi,
   MarketplaceKinds,
   SortOrder,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { QueryEntitiesRequest } from '@backstage/catalog-client/index';
 
 export async function createRouter({
   marketplaceApi,
@@ -38,18 +40,53 @@ export async function createRouter({
   const router = Router();
   router.use(express.json());
 
-  router.get('/plugins', async (_req, res) => {
-    const { cursor, limit, sortByField, sortOrder, searchText } = _req.query;
-    const plugins = await marketplaceApi.getPlugins({
-      cursor: typeof cursor === 'string' ? cursor : undefined,
-      limit: typeof limit === 'string' ? limit : undefined,
-      sortByField: typeof sortByField === 'string' ? sortByField : undefined,
-      sortOrder:
-        sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : SortOrder.asc,
-      searchText: typeof searchText === 'string' ? searchText : undefined,
-    });
+  router.get('/plugins', async (req, res) => {
+    const query = req.query as Partial<GetPluginsRequest>;
+    console.log('query1', query.limit);
+    // Parse and validate query params
+    const parseJSON = (param: string | undefined, defaultValue: any) => {
+      console.log('typeof param', param, typeof param);
+      if (param && typeof param === 'string') {
+        try {
+          return JSON.parse(param);
+        } catch (error) {
+          throw new Error(
+            `Invalid parameter ${param}. Must be a valid JSON string.`,
+          );
+        }
+      }
+      return defaultValue;
+    };
 
-    res.json(plugins);
+    const orderFields = parseJSON(query.orderFields as unknown as string, [
+      { field: 'metadata.name', order: 'asc' },
+    ]);
+    const filter = parseJSON(query.filter as unknown as string, {
+      kind: 'plugin',
+    });
+    const fullTextFilter = parseJSON(
+      query.fullTextFilter as unknown as string,
+      undefined,
+    );
+
+    // Construct payload with default values
+    const payload: QueryEntitiesRequest = {
+      filter: { kind: 'plugin', ...filter }, // Default to 'plugin' filter
+      orderFields: orderFields, // Default orderFields
+      limit: query.limit ? Number(query.limit) : 20, // Default limit to 20
+      offset: query.offset ? Number(query.offset) : undefined, // Optional
+      fullTextFilter: fullTextFilter, // Optional full text search
+    };
+
+    // Call the marketplace API with the constructed payload
+    try {
+      const plugins = await marketplaceApi.getPlugins(payload);
+      res.json(plugins);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: 'Failed to fetch plugins', error: error.message });
+    }
   });
 
   router.get('/plugins/:name', async (req, res) => {

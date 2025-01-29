@@ -19,6 +19,7 @@ import { stringifyEntityRef } from '@backstage/catalog-model';
 import { CatalogApi, QueryEntitiesRequest } from '@backstage/catalog-client';
 import { NotFoundError } from '@backstage/errors';
 import {
+  GetPluginsRequest,
   MarketplaceApi,
   MarketplaceKinds,
   MarketplacePlugin,
@@ -60,38 +61,12 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     });
   }
 
-  async getPlugins({
-    cursor,
-    limit = '20', // Default value for limit
-    sortByField = 'metadata.name', // Default value for sortByField
-    sortOrder = SortOrder.asc, // Default to 'asc'
-    searchText,
-  }: {
-    cursor?: string;
-    limit?: string;
-    sortByField?: string;
-    sortOrder?: 'asc' | 'desc'; // Enforcing correct sortOrder values
-    searchText?: string;
-  }): Promise<MarketplacePluginWithPageInfo> {
+  async getPlugins(
+    query?: GetPluginsRequest,
+  ): Promise<MarketplacePluginWithPageInfo> {
     const token = await this.getServiceToken();
 
-    const payload: ExtendedQueryEntitiesRequest = {
-      filter: { kind: 'plugin' },
-      orderFields: { field: sortByField, order: sortOrder },
-      limit: parseInt(limit, 10), // Convert limit to number
-    };
-
-    // Add optional properties only if they are provided
-    if (cursor) {
-      payload.cursor = cursor;
-    }
-
-    if (searchText) {
-      payload.fullTextFilter = {
-        term: searchText,
-      };
-    }
-    const result = await this.catalog.queryEntities(payload, token);
+    const result = await this.catalog.queryEntities(query, token);
 
     return {
       items: result.items as MarketplacePlugin[],

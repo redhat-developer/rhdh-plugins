@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { EntityFilterQuery } from '@backstage/catalog-client';
+import { EntityFilterQuery, EntityOrderQuery } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
@@ -104,17 +104,34 @@ export interface MarketplacePluginSpec extends JsonObject {
     appconfig?: string;
   };
 }
+
+/**
+ * @public
+ */
+export type FullTextFilter = {
+  term: string;
+  fields?: string[];
+};
+
+/**
+ * @public
+ */
+export type GetPluginsRequest = {
+  limit?: number;
+  offset?: number;
+  filter?: EntityFilterQuery;
+  orderFields?: EntityOrderQuery;
+  fullTextFilter?: {
+    term: string;
+    fields?: string[];
+  };
+};
+
 /**
  * @public
  */
 export interface MarketplaceApi {
-  getPlugins(params: {
-    limit?: string;
-    cursor?: string;
-    sortByField?: string;
-    sortOrder?: 'asc' | 'desc';
-    searchText?: string;
-  }): Promise<MarketplacePluginWithPageInfo>;
+  getPlugins(query?: GetPluginsRequest): Promise<MarketplacePluginWithPageInfo>;
   getPluginByName(name: string): Promise<MarketplacePlugin>;
   getPluginLists(): Promise<MarketplacePluginList[]>;
   getPluginListByName(name: string): Promise<MarketplacePluginList>;
