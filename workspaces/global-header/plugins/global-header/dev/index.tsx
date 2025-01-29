@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
-import { TestApiProvider } from '@backstage/test-utils';
+import { mockApis, TestApiProvider } from '@backstage/test-utils';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
@@ -35,6 +35,7 @@ import {
   ComponentType,
   GlobalHeaderComponentMountPoint,
 } from '../src/types';
+import { configApiRef } from '@backstage/core-plugin-api';
 
 const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[] =
   [
@@ -111,6 +112,18 @@ const mockSearchApi = new MockSearchApi({
   ],
 });
 
+const mockConfigApi = mockApis.config({
+  data: {
+    dynamicPlugins: {
+      frontend: {
+        'backstage.plugin-notifications': {
+          dynamicRoutes: [{ path: '/notifications' }],
+        },
+      },
+    },
+  },
+});
+
 const entities = [
   {
     apiVersion: '1',
@@ -170,6 +183,7 @@ createDevApp()
         apis={[
           [catalogApiRef, catalogApi],
           [searchApiRef, mockSearchApi],
+          [configApiRef, mockConfigApi],
         ]}
       >
         <ScalprumContext.Provider value={scalprumState}>
