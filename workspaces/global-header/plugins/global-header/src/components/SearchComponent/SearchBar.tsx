@@ -40,7 +40,7 @@ export const SearchBar = (props: SearchBarProps) => {
         let options: string[] = [];
         if (results.length > 0) {
           options = [
-            ...results.slice(0, 5).map(result => result.document.title),
+            ...results.map(result => result.document.title),
             `${query?.term}`,
           ];
         } else if (query?.term) {

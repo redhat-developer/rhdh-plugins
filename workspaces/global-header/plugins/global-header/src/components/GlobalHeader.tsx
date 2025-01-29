@@ -37,9 +37,7 @@ export const GlobalHeader = () => {
     }
 
     const filteredAndSorted = allGlobalHeaderMountPoints.filter(
-      component =>
-        component.config?.enabled !== false &&
-        (!component.config?.priority || component.config.priority > -1),
+      component => (component.config?.priority ?? 0) > -1,
     );
 
     filteredAndSorted.sort(
