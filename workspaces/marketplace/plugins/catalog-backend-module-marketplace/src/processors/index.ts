@@ -18,3 +18,4 @@ export * from './MarketplacePluginProcessor';
 export * from './MarketplacePluginListProcessor';
 export * from './DynamicPluginInstallStatusProcessor';
 export * from './LocalPluginInstallStatusProcessor';
+export * from './MarketplacePackageProcessor';

@@ -24,6 +24,7 @@ import { MarketplacePluginProcessor } from './processors/MarketplacePluginProces
 import { MarketplacePluginListProcessor } from './processors/MarketplacePluginListProcessor';
 import { DynamicPluginInstallStatusProcessor } from './processors/DynamicPluginInstallStatusProcessor';
 import { LocalPluginInstallStatusProcessor } from './processors/LocalPluginInstallStatusProcessor';
+import { MarketplacePackageProcessor } from './processors/MarketplacePackageProcessor';
 
 /**
  * @public
@@ -44,6 +45,7 @@ export const catalogModuleMarketplace = createBackendModule({
         catalog.addProcessor(new MarketplacePluginProcessor());
         catalog.addProcessor(new MarketplacePluginListProcessor());
         catalog.addProcessor(new LocalPluginInstallStatusProcessor());
+        catalog.addProcessor(new MarketplacePackageProcessor());
         catalog.addProcessor(
           new DynamicPluginInstallStatusProcessor(discovery, auth),
         );
