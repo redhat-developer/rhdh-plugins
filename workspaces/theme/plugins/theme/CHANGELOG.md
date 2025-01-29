@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.5.0
+
+### Minor Changes
+
+- a571f32: Upgrade Backstage from 0.32.0 to 1.35.0
+
 ## 0.4.9
 
 ### Patch Changes
