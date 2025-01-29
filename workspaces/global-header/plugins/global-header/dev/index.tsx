@@ -97,10 +97,9 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
     },
   ];
 
-const defaultProfileMountPoints: ProfileDropdownMountPoint[] = [
+const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
   {
     Component: HeaderLink as React.ComponentType,
-    mountPoint: 'global.header/profile',
     config: {
       type: ComponentType.LINK,
       priority: 10,
@@ -113,7 +112,6 @@ const defaultProfileMountPoints: ProfileDropdownMountPoint[] = [
   },
   {
     Component: LogoutButton as React.ComponentType,
-    mountPoint: 'global.header/profile',
     config: {
       type: ComponentType.LOGOUT,
       priority: 0,
@@ -189,7 +187,7 @@ const scalprumState: ScalprumState = {
     dynamicRootConfig: {
       mountPoints: {
         'global.header/component': defaultGlobalHeaderComponentsMountPoints,
-        'global.header/profile': defaultProfileMountPoints,
+        'global.header/profile': defaultProfileDropdownMountPoints,
       },
     },
   },

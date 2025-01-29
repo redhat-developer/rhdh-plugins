@@ -72,6 +72,19 @@ export interface GlobalHeaderComponentMountPointConfig {
 }
 
 /**
+ * Create Dropdown Config
+ *
+ * @public
+ */
+export interface CreateDropdownMountPointConfig {
+  type: ComponentType;
+  priority?: number;
+  // icon?: string;
+  // title?: string;
+  // link?: string;
+  props?: Record<string, any>;
+}
+/**
  * Profile Dropdown Config
  *
  * @public
@@ -98,13 +111,24 @@ export interface GlobalHeaderComponentMountPoint {
 }
 
 /**
+ * Create Dropdown Mount Point
+ *
+ * @public
+ */
+export interface CreateDropdownMountPoint {
+  Component: React.ComponentType;
+  config?: CreateDropdownMountPointConfig & {
+    props?: Record<string, any>;
+  };
+}
+
+/**
  * Profile Dropdown Mount Point
  *
  * @public
  */
 export interface ProfileDropdownMountPoint {
   Component: React.ComponentType;
-  mountPoint: string;
   config?: ProfileDropdownMountPointConfig & {
     props?: Record<string, any>;
   };

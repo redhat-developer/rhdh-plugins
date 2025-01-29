@@ -56,12 +56,16 @@ export const ProfileDropdown = ({
   }, [identityApi]);
 
   const getMenuSection = (profileDropdownMP: ProfileDropdownMountPoint[]) => {
-    const items = profileDropdownMP.map(mp => ({
-      type: mp.config?.type ?? ComponentType.LINK,
-      icon: mp.config?.props?.icon ?? '',
-      label: mp.config?.props?.title ?? '',
-      link: mp.config?.props?.link ?? '',
-    }));
+    const items = profileDropdownMP
+      .map(mp => ({
+        Component: mp.Component,
+        type: mp.config?.type ?? ComponentType.LINK,
+        priority: mp.config?.priority ?? 0,
+        icon: mp.config?.props?.icon ?? '',
+        label: mp.config?.props?.title ?? '',
+        link: mp.config?.props?.link ?? '',
+      }))
+      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
     return {
       items,
       handleClose: () => setAnchorEl(null),

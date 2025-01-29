@@ -25,6 +25,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { ComponentType } from '../../types';
+import { HeaderLink } from '../HeaderLinkComponent/HeaderLink';
 
 /**
  * @public
@@ -38,6 +39,7 @@ export interface CreateButtonProps {
 
 const menuBottomItems: MenuItemConfig[] = [
   {
+    Component: HeaderLink as React.ComponentType,
     type: ComponentType.LINK,
     icon: 'category',
     label: 'Register a component',
@@ -107,6 +109,7 @@ export const CreateDropdown = ({
       optionalLinkLabel: 'All templates',
       optionalLink: '/create',
       items: availableTemplates.map(m => ({
+        Component: HeaderLink as React.ComponentType,
         type: ComponentType.LINK,
         label: m.label ?? m.value,
         link: `/create/templates/default/${m.value}`,

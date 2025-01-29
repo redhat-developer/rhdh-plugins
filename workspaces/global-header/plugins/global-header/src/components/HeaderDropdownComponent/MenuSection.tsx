@@ -20,10 +20,10 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import { Link } from '@backstage/core-components';
-import { HeaderLink } from '../HeaderLinkComponent/HeaderLink';
-import { LogoutButton } from '../HeaderButtonComponent/LogoutButton';
+import { HeaderLinkProps } from '../HeaderLinkComponent/HeaderLink';
 
 export interface MenuItemConfig {
+  Component: React.ComponentType<HeaderLinkProps | {}>;
   type: string;
   label: string;
   icon?: string;
@@ -84,7 +84,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
       </Box>
     )}
     <ul style={{ padding: 0, listStyle: 'none' }}>
-      {items.map(({ type, icon, label, subLabel, link }, index) => (
+      {items.map(({ type, icon, label, subLabel, link, Component }, index) => (
         <MenuItem
           key={`menu-item-${index.toString()}`}
           disableRipple
@@ -93,14 +93,14 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
           sx={{ py: 0.5, '&:hover': { background: 'transparent' } }}
         >
           {link && (
-            <HeaderLink
+            <Component
               icon={icon}
               to={link}
               title={label}
               subTitle={subLabel}
             />
           )}
-          {type === 'logout' && <LogoutButton />}
+          {type === 'logout' && <Component />}
         </MenuItem>
       ))}
     </ul>
