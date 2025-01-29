@@ -33,7 +33,7 @@ export interface HeaderIconButtonProps {
   // (undocumented)
   icon: string;
   // (undocumented)
-  onClick: () => void;
+  to?: string;
   // (undocumented)
   tooltip?: string;
 }
