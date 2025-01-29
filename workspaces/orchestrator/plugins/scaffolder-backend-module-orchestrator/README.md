@@ -3,3 +3,7 @@
 The orchestrator module for [@backstage/plugin-scaffolder-backend](https://www.npmjs.com/package/@backstage/plugin-scaffolder-backend).
 
 _This plugin was created through the Backstage CLI_
+
+# TODO:
+
+## NODE_OPTIONS="${NODE_OPTIONS:-} --no-node-snapshot"

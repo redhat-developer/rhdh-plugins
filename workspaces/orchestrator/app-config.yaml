@@ -107,9 +107,12 @@ catalog:
       target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
 
     - type: file
-      target: ../../users.yaml
+      target: ../../entities/users.yaml
       rules:
         - allow: [User]
+
+    - type: file
+      target: ../../entities/templates.yaml
 
 dynamicPlugins:
   frontend: {}

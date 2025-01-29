@@ -25,7 +25,11 @@
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.0.2",
-    "@backstage/plugin-scaffolder-node": "^0.6.0"
+    "@backstage/catalog-model": "^1.7.0",
+    "@backstage/plugin-scaffolder-node": "^0.6.0",
+    "@backstage/types": "^1.2.1",
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
+    "axios": "^1.7.7"
   },
   "devDependencies": {
     "@backstage/cli": "^0.29.0",

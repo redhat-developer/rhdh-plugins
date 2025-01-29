@@ -13,23 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createBackendModule } from '@backstage/backend-plugin-api';
+import {
+  coreServices,
+  createBackendModule,
+} from '@backstage/backend-plugin-api';
 import { scaffolderActionsExtensionPoint } from '@backstage/plugin-scaffolder-node/alpha';
-import { createExampleAction } from './actions/example';
+import { createRunWorkflowAction } from './actions/runWorkflow';
 
 /**
  * A backend module that registers the action into the scaffolder
  */
 export const scaffolderModule = createBackendModule({
-  moduleId: 'example-action',
+  moduleId: 'orchestrator',
   pluginId: 'scaffolder',
   register({ registerInit }) {
     registerInit({
       deps: {
         scaffolderActions: scaffolderActionsExtensionPoint,
+        discoveryService: coreServices.discovery,
+        authService: coreServices.auth,
       },
-      async init({ scaffolderActions }) {
-        scaffolderActions.addActions(createExampleAction());
+      async init({ scaffolderActions, discoveryService, authService }) {
+        scaffolderActions.addActions(
+          createRunWorkflowAction(discoveryService, authService),
+        );
       },
     });
   },
