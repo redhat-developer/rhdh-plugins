@@ -34,8 +34,11 @@ import {
   Slot,
   ComponentType,
   GlobalHeaderComponentMountPoint,
+  ProfileDropdownMountPoint,
 } from '../src/types';
 import { configApiRef } from '@backstage/core-plugin-api';
+import { HeaderLink } from '../src/components/HeaderLinkComponent/HeaderLink';
+import { LogoutButton } from '../src/components/HeaderButtonComponent/LogoutButton';
 
 const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[] =
   [
@@ -93,6 +96,30 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
       },
     },
   ];
+
+const defaultProfileMountPoints: ProfileDropdownMountPoint[] = [
+  {
+    Component: HeaderLink as React.ComponentType,
+    mountPoint: 'global.header/profile',
+    config: {
+      type: ComponentType.LINK,
+      priority: 10,
+      props: {
+        title: 'Settings',
+        icon: 'manageAccounts',
+        link: '/settings',
+      },
+    },
+  },
+  {
+    Component: LogoutButton as React.ComponentType,
+    mountPoint: 'global.header/profile',
+    config: {
+      type: ComponentType.LOGOUT,
+      priority: 0,
+    },
+  },
+];
 
 const mockSearchApi = new MockSearchApi({
   results: [
@@ -162,6 +189,7 @@ const scalprumState: ScalprumState = {
     dynamicRootConfig: {
       mountPoints: {
         'global.header/component': defaultGlobalHeaderComponentsMountPoints,
+        'global.header/profile': defaultProfileMountPoints,
       },
     },
   },

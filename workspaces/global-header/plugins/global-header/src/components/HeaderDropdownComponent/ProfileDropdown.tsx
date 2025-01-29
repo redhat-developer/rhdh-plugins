@@ -17,16 +17,15 @@
 import React, { useEffect, useState } from 'react';
 import HeaderDropdownComponent from './HeaderDropdownComponent';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import Typography from '@mui/material/Typography';
 import {
   identityApiRef,
-  errorApiRef,
   useApi,
   ProfileInfo,
 } from '@backstage/core-plugin-api';
+import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
+import { ComponentType, ProfileDropdownMountPoint } from '../../types';
 
 /**
  * @public
@@ -43,9 +42,9 @@ export const ProfileDropdown = ({
   anchorEl,
   setAnchorEl,
 }: ProfileDropdownProps) => {
-  const errorApi = useApi(errorApiRef);
   const identityApi = useApi(identityApiRef);
   const [user, setUser] = useState<ProfileInfo>();
+  const profileDropdownMountPoints = useProfileDropdownMountPoints();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -56,29 +55,18 @@ export const ProfileDropdown = ({
     fetchUser();
   }, [identityApi]);
 
-  const handleLogout = () => {
-    identityApi.signOut().catch(error => errorApi.post(error));
-  };
-  const menuSections = [
-    {
-      sectionKey: 'profile',
-      items: [
-        {
-          itemKey: 'settings',
-          icon: ManageAccountsOutlinedIcon,
-          label: 'Settings',
-          link: '/settings',
-        },
-        {
-          itemKey: 'logout',
-          icon: LogoutOutlinedIcon,
-          label: 'Log out',
-          onClick: handleLogout,
-        },
-      ],
+  const getMenuSection = (profileDropdownMP: ProfileDropdownMountPoint[]) => {
+    const items = profileDropdownMP.map(mp => ({
+      type: mp.config?.type ?? ComponentType.LINK,
+      icon: mp.config?.props?.icon ?? '',
+      label: mp.config?.props?.title ?? '',
+      link: mp.config?.props?.link ?? '',
+    }));
+    return {
+      items,
       handleClose: () => setAnchorEl(null),
-    },
-  ];
+    };
+  };
   return (
     <HeaderDropdownComponent
       buttonContent={
@@ -96,7 +84,7 @@ export const ProfileDropdown = ({
           />
         </>
       }
-      menuSections={menuSections}
+      menuSections={[getMenuSection(profileDropdownMountPoints ?? [])]}
       buttonProps={{
         color: 'inherit',
         sx: {

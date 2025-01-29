@@ -18,13 +18,13 @@ import React, { useEffect, useState } from 'react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import HeaderDropdownComponent from './HeaderDropdownComponent';
 import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
-import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import { MenuItemConfig } from './MenuSection';
 import { useApi } from '@backstage/core-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { ComponentType } from '../../types';
 
 /**
  * @public
@@ -38,8 +38,8 @@ export interface CreateButtonProps {
 
 const menuBottomItems: MenuItemConfig[] = [
   {
-    itemKey: 'custom',
-    icon: CategoryOutlinedIcon,
+    type: ComponentType.LINK,
+    icon: 'category',
     label: 'Register a component',
     subLabel: 'Import it to the catalog page',
     link: '/catalog-import',
@@ -103,12 +103,11 @@ export const CreateDropdown = ({
 
   const menuSections = [
     {
-      sectionKey: 'templates',
       sectionLabel: 'Use a template',
       optionalLinkLabel: 'All templates',
       optionalLink: '/create',
-      items: availableTemplates.map((m, index) => ({
-        itemKey: m.key ?? index.toString(),
+      items: availableTemplates.map(m => ({
+        type: ComponentType.LINK,
         label: m.label ?? m.value,
         link: `/create/templates/default/${m.value}`,
       })),

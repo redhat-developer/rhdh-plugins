@@ -22,6 +22,7 @@ import {
 import { CreateButtonProps } from './components/HeaderDropdownComponent/CreateDropdown';
 import { HeaderIconButtonProps } from './components/HeaderIconButtonComponent/HeaderIconButton';
 import { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
+import { HeaderLinkProps } from './components/HeaderLinkComponent/HeaderLink';
 
 export type { CreateButtonProps } from './components/HeaderDropdownComponent/CreateDropdown';
 export type { HeaderIconButtonProps } from './components/HeaderIconButtonComponent/HeaderIconButton';
@@ -125,6 +126,41 @@ export const ProfileDropdown: React.ComponentType<ProfileDropdownProps> =
       },
     }),
   );
+
+/**
+ * Header Link
+ *
+ * @public
+ */
+export const HeaderLink: React.ComponentType<HeaderLinkProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'HeaderLink',
+      component: {
+        lazy: () =>
+          import('./components/HeaderLinkComponent/HeaderLink').then(
+            m => m.HeaderLink,
+          ),
+      },
+    }),
+  );
+
+/**
+ * Header Logout Button
+ *
+ * @public
+ */
+export const LogoutButton: React.ComponentType = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'LogoutButton',
+    component: {
+      lazy: () =>
+        import('./components/HeaderButtonComponent/LogoutButton').then(
+          m => m.LogoutButton,
+        ),
+    },
+  }),
+);
 
 /**
  * NotificationBanner

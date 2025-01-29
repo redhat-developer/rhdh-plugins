@@ -52,6 +52,10 @@ export enum ComponentType {
    * Global Header Component search
    */
   SEARCH = 'search',
+  /**
+   * Global Header Component logout
+   */
+  LOGOUT = 'logout',
 }
 
 /**
@@ -68,6 +72,20 @@ export interface GlobalHeaderComponentMountPointConfig {
 }
 
 /**
+ * Profile Dropdown Config
+ *
+ * @public
+ */
+export interface ProfileDropdownMountPointConfig {
+  type: ComponentType;
+  priority?: number;
+  icon?: string;
+  title?: string;
+  link?: string;
+  props?: Record<string, any>;
+}
+
+/**
  * Global Header Component Mount Point
  *
  * @public
@@ -75,6 +93,19 @@ export interface GlobalHeaderComponentMountPointConfig {
 export interface GlobalHeaderComponentMountPoint {
   Component: React.ComponentType;
   config?: GlobalHeaderComponentMountPointConfig & {
+    props?: Record<string, any>;
+  };
+}
+
+/**
+ * Profile Dropdown Mount Point
+ *
+ * @public
+ */
+export interface ProfileDropdownMountPoint {
+  Component: React.ComponentType;
+  mountPoint: string;
+  config?: ProfileDropdownMountPointConfig & {
     props?: Record<string, any>;
   };
 }
