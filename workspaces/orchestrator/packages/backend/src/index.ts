@@ -60,4 +60,5 @@ backend.add(import('@backstage/plugin-signals-backend'));
 // permission plugin
 backend.add(import('@backstage-community/plugin-rbac-backend'));
 
+backend.add(import('backstage-plugin-scaffolder-backend-module-orchestrator'));
 backend.start();
