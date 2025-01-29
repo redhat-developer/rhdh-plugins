@@ -49,7 +49,7 @@ export const createRunWorkflowAction = (
   >({
     id: 'orchestrator:workflow:run',
     description: 'Run a SonataFlow workflow.',
-    supportsDryRun: true /* TODO */,
+    supportsDryRun: true,
     schema: {
       input: {
         required: ['parameters'],
@@ -86,6 +86,12 @@ export const createRunWorkflowAction = (
           Authorization: `Bearer ${token}`,
         },
       };
+
+      // If this is a dry run, log and return
+      if (ctx.isDryRun) {
+        ctx.logger.info(`Dry run complete`);
+        return;
+      }
 
       try {
         const { data } = await api.executeWorkflow(
