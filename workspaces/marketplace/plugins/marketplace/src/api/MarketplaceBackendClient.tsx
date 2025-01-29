@@ -17,6 +17,9 @@
 import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 
 import {
+  encodeQueryParams,
+  GetEntityFacetsRequest,
+  GetEntityFacetsResponse,
   MarketplaceApi,
   MarketplacePlugin,
   MarketplacePluginList,
@@ -95,6 +98,24 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   async getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]> {
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
     const url = `${baseUrl}/pluginlists/${name}/plugins`;
+
+    const response = await this.fetchApi.fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Unexpected status code: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  async getEntityFacets(
+    request: GetEntityFacetsRequest,
+  ): Promise<GetEntityFacetsResponse> {
+    const { facets, filter } = request;
+
+    const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
+    const url = `${baseUrl}/aggreations?${encodeQueryParams({ facets, filter })}`;
 
     const response = await this.fetchApi.fetch(url);
     if (!response.ok) {

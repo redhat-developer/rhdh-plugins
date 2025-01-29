@@ -24,10 +24,10 @@ import { marketplacePlugin } from './plugin';
 import { mockPluginList, mockPlugins } from '../__fixtures__/mockData';
 import { ExtendedHttpServer } from '@backstage/backend-defaults/dist/rootHttpRouter';
 import {
+  encodeQueryParams,
   MarketplacePlugin,
   MarketplacePluginList,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { MarketplaceAggregationService } from './service/MarketplaceAggregationService';
 
 const BASE_CONFIG = {
   app: {
@@ -108,6 +108,16 @@ describe('createRouter', () => {
       rest.get(
         `http://localhost:${backendServer.port()}/api/catalog/entities/by-query`,
         (_, res, ctx) => res(ctx.status(200), ctx.json({ items: mockData })),
+      ),
+      rest.get(
+        `http://localhost:${backendServer.port()}/api/catalog/entity-facets`,
+        (_, res, ctx) => {
+          if (!mockData) {
+            throw new Error('Internal server error');
+          }
+
+          return res(ctx.status(200), ctx.json({ facets: mockData }));
+        },
       ),
       rest.get(
         `http://localhost:${backendServer.port()}/api/catalog/entities/by-name/${kind}/default/${name}`,
@@ -262,22 +272,13 @@ describe('createRouter', () => {
     });
   });
 
-  it('should throw an error when the aggregations request is invalid', async () => {
+  it('should throw an error when the aggregations request is missing facets querystring', async () => {
     const { backendServer } = await setupTestWithMockCatalog({
-      mockData: null,
+      mockData: [],
     });
-    const mockfetchAggregatedData = jest
-      .fn()
-      .mockRejectedValue(new Error('Bad request error'));
-
-    jest
-      .spyOn(MarketplaceAggregationService.prototype, 'fetchAggregatedData')
-      .mockImplementation(mockfetchAggregatedData);
-
-    const payload = [{}];
-    const response = await request(backendServer)
-      .post('/api/marketplace/aggregations')
-      .send(payload);
+    const response = await request(backendServer).get(
+      '/api/marketplace/aggregations',
+    );
 
     expect(response.status).toEqual(400);
     expect(response.body).toEqual(
@@ -286,26 +287,13 @@ describe('createRouter', () => {
       }),
     );
   });
-
-  it('should return sanitized error messages', async () => {
-    jest.clearAllMocks();
+  it('should throw an error internal server error', async () => {
     const { backendServer } = await setupTestWithMockCatalog({
       mockData: null,
     });
-    const mockfetchAggregatedData = jest
-      .fn()
-      .mockRejectedValue(
-        new Error('Select "" from "custom_table" - Syntax error'),
-      );
-
-    jest
-      .spyOn(MarketplaceAggregationService.prototype, 'fetchAggregatedData')
-      .mockImplementation(mockfetchAggregatedData);
-
-    const payload = [{ field: 'kind', type: 'count' }];
-    const response = await request(backendServer)
-      .post('/api/marketplace/aggregations')
-      .send(payload);
+    const response = await request(backendServer).get(
+      '/api/marketplace/aggregations?facet=kind',
+    );
 
     expect(response.status).toEqual(500);
     expect(response.body).toEqual(
@@ -317,22 +305,36 @@ describe('createRouter', () => {
 
   it('should return aggregated data', async () => {
     const { backendServer } = await setupTestWithMockCatalog({
-      mockData: null,
+      mockData: {
+        kind: [
+          {
+            value: 'Plugin',
+            count: 8,
+          },
+          {
+            value: 'PluginList',
+            count: 1,
+          },
+        ],
+      },
     });
-    const mockfetchAggregatedData = jest
-      .fn()
-      .mockReturnValue([{ kind: 'plugin', count: 10 }]);
 
-    jest
-      .spyOn(MarketplaceAggregationService.prototype, 'fetchAggregatedData')
-      .mockImplementation(mockfetchAggregatedData);
-
-    const payload = [{ field: 'kind', type: 'count' }];
-    const response = await request(backendServer)
-      .post('/api/marketplace/aggregations')
-      .send(payload);
+    const queryParams = encodeQueryParams({
+      facets: ['kind'],
+      filter: { kind: 'api' },
+    });
+    const response = await request(backendServer).get(
+      `/api/marketplace/aggregations?${queryParams}`,
+    );
 
     expect(response.status).toEqual(200);
-    expect(response.body).toEqual([{ count: 10, kind: 'plugin' }]);
+    expect(response.body).toEqual({
+      facets: {
+        kind: [
+          { count: 8, value: 'Plugin' },
+          { count: 1, value: 'PluginList' },
+        ],
+      },
+    });
   });
 });

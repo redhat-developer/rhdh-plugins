@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { AggregationsRequest } from '../types';
-import { AggregationsSchema, EntityFilterQuery } from './schema';
+import { EntityFilterQuerySchema } from './schema';
 
-describe('EntityFilterQuery schema', () => {
+describe('EntityFilterQuerySchema  schema', () => {
   it('should validate an object with string keys and string values', () => {
     const validData = {
       key1: 'value1',
@@ -24,8 +23,8 @@ describe('EntityFilterQuery schema', () => {
       anotherKey: 'anotherValue',
     };
 
-    expect(() => EntityFilterQuery.parse(validData)).not.toThrow();
-    const result = EntityFilterQuery.parse(validData);
+    expect(() => EntityFilterQuerySchema.parse(validData)).not.toThrow();
+    const result = EntityFilterQuerySchema.parse(validData);
     expect(result).toEqual(validData);
   });
 
@@ -35,7 +34,7 @@ describe('EntityFilterQuery schema', () => {
       key2: 123, // invalid value
     };
 
-    expect(() => EntityFilterQuery.parse(invalidData1)).toThrow();
+    expect(() => EntityFilterQuerySchema.parse(invalidData1)).toThrow();
   });
 
   it('should reject non-object types', () => {
@@ -43,53 +42,16 @@ describe('EntityFilterQuery schema', () => {
     const invalidData2 = 123;
     const invalidData3 = ['array', 'of', 'strings'];
 
-    expect(() => EntityFilterQuery.parse(invalidData1)).toThrow();
-    expect(() => EntityFilterQuery.parse(invalidData2)).toThrow();
-    expect(() => EntityFilterQuery.parse(invalidData3)).toThrow();
+    expect(() => EntityFilterQuerySchema.parse(invalidData1)).toThrow();
+    expect(() => EntityFilterQuerySchema.parse(invalidData2)).toThrow();
+    expect(() => EntityFilterQuerySchema.parse(invalidData3)).toThrow();
   });
 
   it('should allow an empty object', () => {
     const validData = {};
 
-    expect(() => EntityFilterQuery.parse(validData)).not.toThrow();
-    const result = EntityFilterQuery.parse(validData);
+    expect(() => EntityFilterQuerySchema.parse(validData)).not.toThrow();
+    const result = EntityFilterQuerySchema.parse(validData);
     expect(result).toEqual(validData);
-  });
-});
-
-describe('AggregationsSchema', () => {
-  it('should not allow an empty array', () => {
-    const invalidData: AggregationsRequest = [];
-
-    expect(() => AggregationsSchema.parse(invalidData)).toThrow(
-      'Array must contain at least 1 element(s)',
-    );
-  });
-
-  it('should not throw error for valid data', () => {
-    const validData: AggregationsRequest = [
-      {
-        type: 'count',
-        field: 'kind',
-        filter: { kind: 'plugin' },
-        havingFilters: [{ field: 'count', operator: '>', value: '1' }],
-        orderFields: [{ field: 'count', order: 'asc' }],
-      },
-    ];
-
-    expect(() => AggregationsSchema.parse(validData)).not.toThrow();
-  });
-
-  it('should not allow invalid type', () => {
-    const invalidData: AggregationsRequest = [
-      {
-        type: 'invalid' as any,
-        field: 'kind',
-      },
-    ];
-
-    expect(() => AggregationsSchema.parse(invalidData)).toThrow(
-      `Invalid enum value. Expected 'count' | 'min' | 'max' | 'avg' | 'sum', received 'invalid'`,
-    );
   });
 });
