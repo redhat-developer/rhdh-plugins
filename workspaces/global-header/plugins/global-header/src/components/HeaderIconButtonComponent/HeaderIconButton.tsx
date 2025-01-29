@@ -18,6 +18,7 @@ import React from 'react';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { HeaderIcon } from './HeaderIcon';
+import { Link } from 'react-router-dom';
 
 /**
  * @public
@@ -25,14 +26,14 @@ import { HeaderIcon } from './HeaderIcon';
  */
 export interface HeaderIconButtonProps {
   icon: string;
+  to?: string;
   tooltip?: string;
-  onClick: () => void;
 }
 
 export const HeaderIconButton = ({
   icon,
   tooltip,
-  onClick,
+  to,
 }: HeaderIconButtonProps) => {
   return (
     <Tooltip title={tooltip ?? icon}>
@@ -40,9 +41,9 @@ export const HeaderIconButton = ({
         color="inherit"
         aria-label="help"
         sx={{ mr: 1.5 }}
-        onClick={onClick}
+        {...(to ? { component: Link, to } : {})}
       >
-        <HeaderIcon icon={icon} />
+        {tooltip !== 'Support' && <HeaderIcon icon={icon} />}
       </IconButton>
     </Tooltip>
   );

@@ -22,8 +22,13 @@ import { useDropdownManager } from '../hooks';
 import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints';
 import { ComponentType, GlobalHeaderComponentMountPoint, Slot } from '../types';
 import { ErrorBoundary } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 export const GlobalHeader = () => {
+  const config = useApi(configApiRef);
+  const frontendConfig = config.getOptionalConfig('dynamicPlugins.frontend');
+  const frontendData = frontendConfig?.get();
+
   const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
 
   const filteredAndSortedGlobalHeaderComponents = useMemo(() => {
@@ -65,10 +70,25 @@ export const GlobalHeader = () => {
   const getIconButtonProps = (props: Record<string, any>) => ({
     icon: props.icon ?? '',
     tooltip: props.tooltip ?? '',
-    onClick: props.onClick ?? (() => {}),
+    to: props.to ?? '',
   });
   const renderComponents = (mountPoints: GlobalHeaderComponentMountPoint[]) =>
     mountPoints.map((mp, index) => {
+      let displayHeaderIcon = false;
+      if (frontendData) {
+        for (const pluginData of Object.values(frontendData)) {
+          const dynamicRoutes = pluginData.dynamicRoutes ?? [];
+          if (
+            dynamicRoutes.some(
+              (route: { path: string }) => route.path === mp.config?.props?.to,
+            )
+          ) {
+            displayHeaderIcon = true;
+            break;
+          }
+        }
+      }
+
       switch (mp.config?.type) {
         case ComponentType.SEARCH:
           return (
@@ -91,11 +111,13 @@ export const GlobalHeader = () => {
         case ComponentType.ICON_BUTTON:
           return (
             <ErrorBoundary>
-              <mp.Component
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                {...getIconButtonProps(mp.config?.props ?? {})}
-              />
+              {displayHeaderIcon && (
+                <mp.Component
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={index}
+                  {...getIconButtonProps(mp.config?.props ?? {})}
+                />
+              )}
             </ErrorBoundary>
           );
         default:
