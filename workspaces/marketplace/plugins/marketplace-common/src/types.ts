@@ -98,12 +98,12 @@ export interface MarketplacePluginSpec extends JsonObject {
  */
 export interface MarketplacePackageSpec extends JsonObject {
   packageName: string;
-  dynamicArtifact: string;
+  dynamicArtifact?: string;
   author?: string;
   support?: string;
   lifecycle?: string;
   backstage?: MarketplacePackageBackstage;
-  appConfigExample: AppConfigExample;
+  appConfigExample?: AppConfigExample;
 }
 
 /**
