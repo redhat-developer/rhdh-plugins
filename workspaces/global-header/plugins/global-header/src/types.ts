@@ -62,7 +62,6 @@ export enum ComponentType {
 export interface GlobalHeaderComponentMountPointConfig {
   type: ComponentType;
   key?: string;
-  enabled?: boolean;
   slot?: Slot;
   priority?: number;
   size?: 'small' | 'medium' | 'large';

@@ -8,46 +8,41 @@ dynamicPlugins:
           config:
             layout:
               position: above-main-content # above-main-content | below-main-content
-        - mountPoint: application/header/component
+        - mountPoint: global.header/component
           importName: SearchComponent
           config:
             type: search
-            enabled: true
             slot: header-start
             priority: 100
-        - mountPoint: application/header/component
+        - mountPoint: global.header/component
           importName: CreateDropdown
           config:
             type: dropdown_button
-            enabled: true
             key: create
             slot: header-start
             priority: 90
-        - mountPoint: application/header/component
+        - mountPoint: global.header/component
           importName: HeaderIconButton
           config:
             type: icon_button
-            enabled: true
             slot: header-start
             priority: 80
             props:
               icon: support
               tooltip: 'Support'
-        - mountPoint: application/header/component
+        - mountPoint: global.header/component
           importName: HeaderIconButton
           config:
             type: icon_button
-            enabled: true
             slot: header-start
             priority: 70
             props:
               icon: notifications
               tooltip: 'Notifications'
-        - mountPoint: application/header/component
+        - mountPoint: global.header/component
           importName: ProfileDropdown
           config:
             type: dropdown_button
-            enabled: true
             key: profile
             slot: header-end
             priority: 0

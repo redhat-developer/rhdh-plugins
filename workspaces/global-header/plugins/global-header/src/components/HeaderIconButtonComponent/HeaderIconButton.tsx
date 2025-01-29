@@ -21,8 +21,8 @@ import { HeaderIcon } from './HeaderIcon';
 import { Link } from 'react-router-dom';
 
 /**
- * @public
  * Header Icon Button properties
+ * @public
  */
 export interface HeaderIconButtonProps {
   icon: string;

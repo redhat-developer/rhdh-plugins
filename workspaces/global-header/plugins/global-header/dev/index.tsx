@@ -42,7 +42,6 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
     {
       Component: SearchComponent,
       config: {
-        enabled: true,
         type: ComponentType.SEARCH,
         slot: Slot.HEADER_START,
         priority: 100, // the greater the number, the more to the left it will be
@@ -52,7 +51,6 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
       Component: CreateDropdown as React.ComponentType,
       config: {
         type: ComponentType.DROPDOWN_BUTTON,
-        enabled: true,
         slot: Slot.HEADER_START,
         priority: 90,
         key: 'create',
@@ -62,7 +60,6 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
       Component: HeaderIconButton as React.ComponentType,
       config: {
         type: ComponentType.ICON_BUTTON,
-        enabled: true,
         slot: Slot.HEADER_START,
         priority: 80,
         props: {
@@ -76,7 +73,6 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
       Component: HeaderIconButton as React.ComponentType,
       config: {
         type: ComponentType.ICON_BUTTON,
-        enabled: true,
         slot: Slot.HEADER_START,
         priority: 70,
         props: {
@@ -91,7 +87,6 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
       Component: ProfileDropdown as React.ComponentType,
       config: {
         type: ComponentType.DROPDOWN_BUTTON,
-        enabled: true,
         slot: Slot.HEADER_END,
         priority: 0, // the greater the number, the more to the left it will be
         key: 'profile',
@@ -166,8 +161,7 @@ const scalprumState: ScalprumState = {
   api: {
     dynamicRootConfig: {
       mountPoints: {
-        'application/header/component':
-          defaultGlobalHeaderComponentsMountPoints,
+        'global.header/component': defaultGlobalHeaderComponentsMountPoints,
       },
     },
   },

@@ -21,7 +21,7 @@ interface ScalprumState {
   api?: {
     dynamicRootConfig?: {
       mountPoints?: {
-        'application/header/component': GlobalHeaderComponentMountPoint[];
+        'global.header/component': GlobalHeaderComponentMountPoint[];
       };
     };
   };
@@ -33,9 +33,7 @@ export const useGlobalHeaderMountPoints = ():
   const scalprum = useScalprum<ScalprumState>();
 
   const globalHeaderComponentsMountPoints =
-    scalprum?.api?.dynamicRootConfig?.mountPoints?.[
-      'application/header/component'
-    ];
+    scalprum?.api?.dynamicRootConfig?.mountPoints?.['global.header/component'];
 
   return globalHeaderComponentsMountPoints;
 };
