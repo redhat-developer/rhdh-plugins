@@ -663,6 +663,19 @@ spec:
           oneOf:
             - $ref: '#/components/schemas/LogicalFilter'
             - $ref: '#/components/schemas/FieldFilter'
+            - $ref: '#/components/schemas/NestedFilter'
+        NestedFilter:
+          type: object
+          required:
+            - field
+            - nested
+          properties:
+            field:
+              type: string
+            nested:
+              oneOf:
+                - $ref: '#/components/schemas/FieldFilter'
+                - $ref: '#/components/schemas/NestedFilter'
         LogicalFilter:
           type: object
           required:
