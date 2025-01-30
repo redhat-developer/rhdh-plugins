@@ -52,6 +52,16 @@ export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
 }
 
 // @public (undocumented)
+export class MarketplacePackageProcessor implements CatalogProcessor {
+    // (undocumented)
+    getProcessorName(): string;
+    // (undocumented)
+    postProcessEntity(entity: Entity, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
+    // (undocumented)
+    validateEntityKind(entity: Entity): Promise<boolean>;
+}
+
+// @public (undocumented)
 export class MarketplacePluginListProcessor implements CatalogProcessor {
     // (undocumented)
     getProcessorName(): string;

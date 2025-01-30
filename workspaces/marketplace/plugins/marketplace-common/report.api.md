@@ -98,6 +98,14 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
 }>, "many">;
 
 // @public (undocumented)
+export interface AppConfigExample extends JsonObject {
+    // (undocumented)
+    content: string | JsonObject;
+    // (undocumented)
+    title: string;
+}
+
+// @public (undocumented)
 export const EntityFilterQuery: z.ZodRecord<z.ZodString, z.ZodString>;
 
 // @public (undocumented)
@@ -166,21 +174,44 @@ export type MarketplaceCatalogClientOptions = {
 // @public (undocumented)
 export enum MarketplaceKinds {
     // (undocumented)
+    package = "Package",
+    // (undocumented)
     plugin = "Plugin",
     // (undocumented)
     pluginList = "PluginList"
 }
 
 // @public (undocumented)
-export type MarketplacePackage = {
-    name: string;
-    version?: string;
-    backstage?: {
-        role?: string;
-        'supported-versions'?: string;
-    };
-    distribution?: string;
-};
+export interface MarketplacePackage extends Entity {
+    // (undocumented)
+    spec?: MarketplacePackageSpec;
+}
+
+// @public (undocumented)
+export interface MarketplacePackageBackstage extends JsonObject {
+    // (undocumented)
+    'supported-versions'?: string;
+    // (undocumented)
+    role?: string;
+}
+
+// @public (undocumented)
+export interface MarketplacePackageSpec extends JsonObject {
+    // (undocumented)
+    appConfigExamples?: AppConfigExample[];
+    // (undocumented)
+    author?: string;
+    // (undocumented)
+    backstage?: MarketplacePackageBackstage;
+    // (undocumented)
+    dynamicArtifact?: string;
+    // (undocumented)
+    lifecycle?: string;
+    // (undocumented)
+    packageName: string;
+    // (undocumented)
+    support?: string;
+}
 
 // @public (undocumented)
 export interface MarketplacePlugin extends Entity {
@@ -195,6 +226,17 @@ export interface MarketplacePluginList extends Entity {
         plugins: string[];
     } & MarketplacePluginSpec;
 }
+
+// @public (undocumented)
+export type MarketplacePluginPackage = {
+    name: string;
+    version?: string;
+    backstage?: {
+        role?: string;
+        'supported-versions'?: string;
+    };
+    distribution?: string;
+};
 
 // @public (undocumented)
 export interface MarketplacePluginSpec extends JsonObject {
@@ -216,7 +258,7 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     installStatus?: keyof typeof InstallStatus;
     // (undocumented)
-    packages?: (string | MarketplacePackage)[];
+    packages?: (string | MarketplacePluginPackage)[];
 }
 
 ```

@@ -28,6 +28,13 @@ export interface MarketplacePlugin extends Entity {
 /**
  * @public
  */
+export interface MarketplacePackage extends Entity {
+  spec?: MarketplacePackageSpec;
+}
+
+/**
+ * @public
+ */
 export interface MarketplacePluginList extends Entity {
   spec?: {
     plugins: string[];
@@ -45,6 +52,7 @@ export const MARKETPLACE_API_VERSION = 'marketplace.backstage.io/v1alpha1';
 export enum MarketplaceKinds {
   plugin = 'Plugin',
   pluginList = 'PluginList',
+  package = 'Package',
 }
 
 /**
@@ -58,7 +66,7 @@ export enum InstallStatus {
 /**
  * @public
  */
-export type MarketplacePackage = {
+export type MarketplacePluginPackage = {
   name: string;
   version?: string; // from package.json
   backstage?: {
@@ -72,7 +80,7 @@ export type MarketplacePackage = {
  * @public
  */
 export interface MarketplacePluginSpec extends JsonObject {
-  packages?: (string | MarketplacePackage)[];
+  packages?: (string | MarketplacePluginPackage)[];
   installStatus?: keyof typeof InstallStatus;
   icon?: string;
   categories?: string[];
@@ -84,6 +92,36 @@ export interface MarketplacePluginSpec extends JsonObject {
     appconfig?: string;
   };
 }
+
+/**
+ * @public
+ */
+export interface MarketplacePackageSpec extends JsonObject {
+  packageName: string;
+  dynamicArtifact?: string;
+  author?: string;
+  support?: string;
+  lifecycle?: string;
+  backstage?: MarketplacePackageBackstage;
+  appConfigExamples?: AppConfigExample[];
+}
+
+/**
+ * @public
+ */
+export interface AppConfigExample extends JsonObject {
+  title: string;
+  content: string | JsonObject;
+}
+
+/**
+ * @public
+ */
+export interface MarketplacePackageBackstage extends JsonObject {
+  role?: string;
+  'supported-versions'?: string;
+}
+
 /**
  * @public
  */
