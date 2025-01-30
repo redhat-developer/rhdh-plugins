@@ -111,7 +111,7 @@ export interface MarketplacePackageSpec extends JsonObject {
  */
 export interface AppConfigExample extends JsonObject {
   title: string;
-  content: string;
+  content: string | JsonObject;
 }
 
 /**
