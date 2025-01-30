@@ -36,13 +36,16 @@ import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/Chat
 import { DropdownItem, Title } from '@patternfly/react-core';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { useBackstageUserIdentity } from '../hooks/useBackstageUserIdentity';
-import { useConversationMessages } from '../hooks/useConversationMessages';
-import { useConversations } from '../hooks/useConversations';
-import { useCreateConversation } from '../hooks/useCreateConversation';
-import { useDeleteConversation } from '../hooks/useDeleteConversation';
-import { useLastOpenedConversation } from '../hooks/useLastOpenedConversation';
-import { useLightspeedDeletePermission } from '../hooks/useLightspeedDeletePermission';
+import {
+  useBackstageUserIdentity,
+  useConversationMessages,
+  useConversations,
+  useCreateConversation,
+  useDeleteConversation,
+  useIsMobile,
+  useLastOpenedConversation,
+  useLightspeedDeletePermission,
+} from '../hooks';
 import { ConversationSummary } from '../types';
 import {
   getCategorizeMessages,
@@ -84,12 +87,13 @@ export const LightspeedChat = ({
   handleSelectedModel,
   models,
 }: LightspeedChatProps) => {
+  const isMobile = useIsMobile();
   const classes = useStyles();
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = React.useState<string>('');
   const [announcement, setAnnouncement] = React.useState<string>('');
   const [conversationId, setConversationId] = React.useState<string>('');
-  const [isDrawerOpen, setIsDrawerOpen] = React.useState<boolean>(true);
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState<boolean>(!isMobile);
   const [newChatCreated, setNewChatCreated] = React.useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     React.useState<boolean>(false);
@@ -338,6 +342,7 @@ export const LightspeedChat = ({
           />
         </ChatbotHeader>
         <ChatbotConversationHistoryNav
+          drawerPanelContentProps={{ isResizable: true, minSize: '200px' }}
           reverseButtonOrder
           displayMode={ChatbotDisplayMode.embedded}
           onDrawerToggle={onDrawerToggle}
