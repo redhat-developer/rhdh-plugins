@@ -45,11 +45,11 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
         field: z.ZodEnum<["value", "count"]>;
         order: z.ZodEnum<["asc", "desc"]>;
     }, "strip", z.ZodTypeAny, {
+        field: "count" | "value";
         order: "desc" | "asc";
-        field: "value" | "count";
     }, {
+        field: "count" | "value";
         order: "desc" | "asc";
-        field: "value" | "count";
     }>, "many">>;
     havingFilter: z.ZodOptional<z.ZodObject<{
         field: z.ZodString;
@@ -66,14 +66,14 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
     }>>;
     filter: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
-    type: "max" | "min" | "sum" | "count" | "avg";
+    type: "count" | "min" | "max" | "avg" | "sum";
     field: string;
     filter?: Record<string, string> | undefined;
     name?: string | undefined;
     value?: string | undefined;
     orderFields?: {
+        field: "count" | "value";
         order: "desc" | "asc";
-        field: "value" | "count";
     }[] | undefined;
     havingFilter?: {
         value: string;
@@ -81,14 +81,14 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
         operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
     } | undefined;
 }, {
-    type: "max" | "min" | "sum" | "count" | "avg";
+    type: "count" | "min" | "max" | "avg" | "sum";
     field: string;
     filter?: Record<string, string> | undefined;
     name?: string | undefined;
     value?: string | undefined;
     orderFields?: {
+        field: "count" | "value";
         order: "desc" | "asc";
-        field: "value" | "count";
     }[] | undefined;
     havingFilter?: {
         value: string;
@@ -96,6 +96,14 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
         operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
     } | undefined;
 }>, "many">;
+
+// @public (undocumented)
+export interface AppConfigExample extends JsonObject {
+    // (undocumented)
+    content: string;
+    // (undocumented)
+    title: string;
+}
 
 // @public (undocumented)
 export const EntityFilterQuery: z.ZodRecord<z.ZodString, z.ZodString>;
@@ -166,21 +174,44 @@ export type MarketplaceCatalogClientOptions = {
 // @public (undocumented)
 export enum MarketplaceKinds {
     // (undocumented)
+    package = "Package",
+    // (undocumented)
     plugin = "Plugin",
     // (undocumented)
     pluginList = "PluginList"
 }
 
 // @public (undocumented)
-export type MarketplacePackage = {
-    name: string;
-    version?: string;
-    backstage?: {
-        role?: string;
-        'supported-versions'?: string;
-    };
-    distribution?: string;
-};
+export interface MarketplacePackage extends Entity {
+    // (undocumented)
+    spec?: MarketplacePackageSpec;
+}
+
+// @public (undocumented)
+export interface MarketplacePackageBackstage extends JsonObject {
+    // (undocumented)
+    'supported-versions'?: string;
+    // (undocumented)
+    role?: string;
+}
+
+// @public (undocumented)
+export interface MarketplacePackageSpec extends JsonObject {
+    // (undocumented)
+    appConfigExample: AppConfigExample;
+    // (undocumented)
+    author?: string;
+    // (undocumented)
+    backstage?: MarketplacePackageBackstage;
+    // (undocumented)
+    dynamicArtifact: string;
+    // (undocumented)
+    lifecycle?: string;
+    // (undocumented)
+    packageName: string;
+    // (undocumented)
+    support?: string;
+}
 
 // @public (undocumented)
 export interface MarketplacePlugin extends Entity {
@@ -195,6 +226,17 @@ export interface MarketplacePluginList extends Entity {
         plugins: string[];
     } & MarketplacePluginSpec;
 }
+
+// @public (undocumented)
+export type MarketplacePluginPackage = {
+    name: string;
+    version?: string;
+    backstage?: {
+        role?: string;
+        'supported-versions'?: string;
+    };
+    distribution?: string;
+};
 
 // @public (undocumented)
 export interface MarketplacePluginSpec extends JsonObject {
@@ -216,7 +258,7 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     installStatus?: keyof typeof InstallStatus;
     // (undocumented)
-    packages?: (string | MarketplacePackage)[];
+    packages?: (string | MarketplacePluginPackage)[];
 }
 
 ```
