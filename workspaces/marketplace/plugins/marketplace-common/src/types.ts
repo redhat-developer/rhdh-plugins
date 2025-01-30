@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { EntityFilterQuery } from '@backstage/catalog-client';
+import {
+  GetEntityFacetsRequest,
+  GetEntityFacetsResponse,
+} from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
@@ -121,6 +124,12 @@ export interface MarketplacePackageBackstage extends JsonObject {
   role?: string;
   'supported-versions'?: string;
 }
+/** @public */
+export type {
+  GetEntityFacetsRequest,
+  GetEntityFacetsResponse,
+  EntityFilterQuery,
+} from '@backstage/catalog-client';
 
 /**
  * @public
@@ -131,43 +140,7 @@ export interface MarketplaceApi {
   getPluginLists(): Promise<MarketplacePluginList[]>;
   getPluginListByName(name: string): Promise<MarketplacePluginList>;
   getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
+  getEntityFacets(
+    request: GetEntityFacetsRequest,
+  ): Promise<GetEntityFacetsResponse>;
 }
-
-/**
- * @public
- */
-export interface MarketplaceAggregationApi {
-  fetchAggregatedData(
-    aggregationsRequest: AggregationsRequest,
-  ): Promise<Record<string, any>[]>;
-}
-
-/** @public */
-export type LogicalOperator = 'AND' | 'OR';
-
-/** @public */
-export type HavingFilter = {
-  field: string;
-  operator: '=' | '!=' | '<>' | '>' | '<' | '>=' | '<=';
-  value: string;
-  logicalOperator?: LogicalOperator;
-};
-
-/** @public */
-export interface AggregationRequest {
-  name?: string;
-  field: string;
-  value?: string;
-  type: 'count' | 'min' | 'max' | 'avg' | 'sum';
-  orderFields?: {
-    field: 'value' | 'count';
-    order: 'asc' | 'desc';
-  }[];
-  filter?: EntityFilterQuery;
-  havingFilters?: HavingFilter[];
-}
-
-/**
- * @public
- */
-export type AggregationsRequest = AggregationRequest[];

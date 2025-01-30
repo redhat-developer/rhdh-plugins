@@ -16,7 +16,11 @@
 
 import { AuthService } from '@backstage/backend-plugin-api';
 import { stringifyEntityRef } from '@backstage/catalog-model';
-import { CatalogApi } from '@backstage/catalog-client';
+import {
+  CatalogApi,
+  GetEntityFacetsRequest,
+  GetEntityFacetsResponse,
+} from '@backstage/catalog-client';
 import { NotFoundError } from '@backstage/errors';
 import {
   MarketplaceApi,
@@ -135,5 +139,12 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
 
     const result = await this.catalog.getEntitiesByRefs({ entityRefs }, token);
     return result.items.filter(i => !!i) as MarketplacePlugin[];
+  }
+
+  async getEntityFacets(
+    request: GetEntityFacetsRequest,
+  ): Promise<GetEntityFacetsResponse> {
+    const token = await this.getServiceToken();
+    return await this.catalog.getEntityFacets(request, token);
   }
 }

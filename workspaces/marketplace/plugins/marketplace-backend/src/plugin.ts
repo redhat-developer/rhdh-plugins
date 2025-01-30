@@ -19,7 +19,6 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { CatalogClient } from '@backstage/catalog-client';
-import { DatabaseManager } from '@backstage/backend-defaults/database';
 
 import {
   MarketplaceApi,
@@ -27,7 +26,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { createRouter } from './router';
-import { MarketplaceAggregationService } from './service/MarketplaceAggregationService';
 
 /**
  * marketplacePlugin backend plugin
@@ -43,40 +41,19 @@ export const marketplacePlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         discovery: coreServices.discovery,
-        config: coreServices.rootConfig,
-        logger: coreServices.logger,
-        lifecycle: coreServices.lifecycle,
       },
-      async init({
-        auth,
-        httpAuth,
-        httpRouter,
-        discovery,
-        config,
-        logger,
-        lifecycle,
-      }) {
+      async init({ auth, httpAuth, httpRouter, discovery }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
-        const db = DatabaseManager.fromConfig(config).forPlugin('catalog', {
-          logger,
-          lifecycle,
-        });
-        const client = await db.getClient();
 
         const marketplaceApi: MarketplaceApi = new MarketplaceCatalogClient({
           auth,
           catalogApi,
         });
 
-        const marketplaceAggregationApi = new MarketplaceAggregationService({
-          client,
-        });
-
         httpRouter.use(
           await createRouter({
             httpAuth,
             marketplaceApi,
-            marketplaceAggregationApi,
           }),
         );
       },

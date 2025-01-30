@@ -20,19 +20,18 @@ import Router from 'express-promise-router';
 import { HttpAuthService } from '@backstage/backend-plugin-api';
 import { InputError, NotFoundError } from '@backstage/errors';
 import {
-  AggregationsSchema,
-  MarketplaceAggregationApi,
+  decodeQueryParams,
+  EntityFacetSchema,
+  GetEntityFacetsRequest,
   MarketplaceApi,
   MarketplaceKinds,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export async function createRouter({
   marketplaceApi,
-  marketplaceAggregationApi,
 }: {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
-  marketplaceAggregationApi: MarketplaceAggregationApi;
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -87,30 +86,27 @@ export async function createRouter({
     }
   });
 
-  router.post('/aggregations', async (req, res) => {
-    const aggregationsRequest = req.body;
+  router.get('/aggregations', async (req, res) => {
+    const queryString = req.url.split('?')[1] || '';
+    const entityFacetRequest = decodeQueryParams(
+      queryString,
+    ) as GetEntityFacetsRequest;
+
     const { error: validationError } =
-      AggregationsSchema.safeParse(aggregationsRequest);
+      EntityFacetSchema.safeParse(entityFacetRequest);
     if (validationError) {
       throw new InputError(validationError.errors[0].message, validationError);
     }
 
     try {
       const aggregatedData =
-        await marketplaceAggregationApi.fetchAggregatedData(
-          aggregationsRequest,
-        );
+        await marketplaceApi.getEntityFacets(entityFacetRequest);
       res.json(aggregatedData);
     } catch (error) {
-      let sanitizedMessage = error.message;
-
-      // Sanitize error message (remove SQL or sensitive details)
-      if (error.message.includes('select') || error.message.includes('from')) {
-        sanitizedMessage = 'Aggregations query failed to fetch data.';
-      }
+      const errorMesssage = error.message;
 
       res.status(error.statusCode ?? 500).json({
-        error: `Internal server error: ${sanitizedMessage}`,
+        error: `Internal server error: ${errorMesssage}`,
       });
     }
   });
