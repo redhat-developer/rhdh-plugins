@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.0.6
+
+### Patch Changes
+
+- 0bcb97f: add Package entity
+
 ## 0.0.5
 
 ### Patch Changes
