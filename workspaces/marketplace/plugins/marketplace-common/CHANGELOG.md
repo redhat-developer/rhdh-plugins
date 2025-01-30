@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.0.7
+
+### Patch Changes
+
+- 9a3c185: replace custom aggregation api endpoint with catalog entity-facets api
+
 ## 0.0.6
 
 ### Patch Changes
