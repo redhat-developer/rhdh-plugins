@@ -103,7 +103,7 @@ export interface MarketplacePackageSpec extends JsonObject {
   support?: string;
   lifecycle?: string;
   backstage?: MarketplacePackageBackstage;
-  appConfigExample?: AppConfigExample;
+  appConfigExamples?: AppConfigExample[];
 }
 
 /**
