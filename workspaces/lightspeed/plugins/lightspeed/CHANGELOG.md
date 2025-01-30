@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.3.3
+
+### Patch Changes
+
+- 0b0eec1: Make lightspeed conversation drawer resizable and default to closed on smaller screens
+
 ## 0.3.2
 
 ### Patch Changes
