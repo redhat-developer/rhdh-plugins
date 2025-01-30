@@ -45,11 +45,11 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
         field: z.ZodEnum<["value", "count"]>;
         order: z.ZodEnum<["asc", "desc"]>;
     }, "strip", z.ZodTypeAny, {
-        field: "count" | "value";
         order: "desc" | "asc";
+        field: "value" | "count";
     }, {
-        field: "count" | "value";
         order: "desc" | "asc";
+        field: "value" | "count";
     }>, "many">>;
     havingFilter: z.ZodOptional<z.ZodObject<{
         field: z.ZodString;
@@ -66,14 +66,14 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
     }>>;
     filter: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
-    type: "count" | "min" | "max" | "avg" | "sum";
+    type: "max" | "min" | "sum" | "count" | "avg";
     field: string;
     filter?: Record<string, string> | undefined;
     name?: string | undefined;
     value?: string | undefined;
     orderFields?: {
-        field: "count" | "value";
         order: "desc" | "asc";
+        field: "value" | "count";
     }[] | undefined;
     havingFilter?: {
         value: string;
@@ -81,14 +81,14 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
         operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
     } | undefined;
 }, {
-    type: "count" | "min" | "max" | "avg" | "sum";
+    type: "max" | "min" | "sum" | "count" | "avg";
     field: string;
     filter?: Record<string, string> | undefined;
     name?: string | undefined;
     value?: string | undefined;
     orderFields?: {
-        field: "count" | "value";
         order: "desc" | "asc";
+        field: "value" | "count";
     }[] | undefined;
     havingFilter?: {
         value: string;
@@ -100,7 +100,7 @@ export const AggregationsSchema: z.ZodArray<z.ZodObject<{
 // @public (undocumented)
 export interface AppConfigExample extends JsonObject {
     // (undocumented)
-    content: string;
+    content: string | JsonObject;
     // (undocumented)
     title: string;
 }
@@ -198,13 +198,13 @@ export interface MarketplacePackageBackstage extends JsonObject {
 // @public (undocumented)
 export interface MarketplacePackageSpec extends JsonObject {
     // (undocumented)
-    appConfigExample: AppConfigExample;
+    appConfigExamples?: AppConfigExample[];
     // (undocumented)
     author?: string;
     // (undocumented)
     backstage?: MarketplacePackageBackstage;
     // (undocumented)
-    dynamicArtifact: string;
+    dynamicArtifact?: string;
     // (undocumented)
     lifecycle?: string;
     // (undocumented)
