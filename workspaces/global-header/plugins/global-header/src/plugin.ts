@@ -23,8 +23,14 @@ import { CreateButtonProps } from './components/HeaderDropdownComponent/CreateDr
 import { HeaderIconButtonProps } from './components/HeaderIconButtonComponent/HeaderIconButton';
 import { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
 import { HeaderLinkProps } from './components/HeaderLinkComponent/HeaderLink';
+import { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
+import { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
 
 export type { CreateButtonProps } from './components/HeaderDropdownComponent/CreateDropdown';
+export type { HeaderLinkProps } from './components/HeaderLinkComponent/HeaderLink';
+export type { MenuItemConfig } from './components/HeaderDropdownComponent/MenuSection';
+export type { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
+export type { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
 export type { HeaderIconButtonProps } from './components/HeaderIconButtonComponent/HeaderIconButton';
 export type { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
 
@@ -123,6 +129,42 @@ export const ProfileDropdown: React.ComponentType<ProfileDropdownProps> =
           import('./components/HeaderDropdownComponent/ProfileDropdown').then(
             m => m.ProfileDropdown,
           ),
+      },
+    }),
+  );
+
+/**
+ * Software Templates List
+ *
+ * @public
+ */
+export const SoftwareTemplatesSection: React.ComponentType<SoftwareTemplatesSectionProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'SoftwareTemplatesSection',
+      component: {
+        lazy: () =>
+          import(
+            './components/HeaderDropdownComponent/SoftwareTemplatesSection'
+          ).then(m => m.SoftwareTemplatesSection),
+      },
+    }),
+  );
+
+/**
+ * Register A Component Link
+ *
+ * @public
+ */
+export const RegisterAComponentSection: React.ComponentType<RegisterAComponentSectionProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'RegisterAComponentSection',
+      component: {
+        lazy: () =>
+          import(
+            './components/HeaderDropdownComponent/RegisterAComponentSection'
+          ).then(m => m.RegisterAComponentSection),
       },
     }),
   );

@@ -22,6 +22,11 @@ import MenuItem from '@mui/material/MenuItem';
 import { Link } from '@backstage/core-components';
 import { HeaderLinkProps } from '../HeaderLinkComponent/HeaderLink';
 
+/**
+ * Menu item configuration
+ *
+ * @public
+ */
 export interface MenuItemConfig {
   Component: React.ComponentType<HeaderLinkProps | {}>;
   type: string;

@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import { ProfileDropdownMountPoint, ScalprumState } from '../types';
+import { CreateDropdownMountPoint, ScalprumState } from '../types';
 import { useScalprum } from '@scalprum/react-core';
 
-export const useProfileDropdownMountPoints = ():
-  | ProfileDropdownMountPoint[]
+export const useCreateDropdownMountPoints = ():
+  | CreateDropdownMountPoint[]
   | undefined => {
   const scalprum = useScalprum<ScalprumState>();
 
-  const profileDropdownMountPoints =
-    scalprum?.api?.dynamicRootConfig?.mountPoints?.['global.header/profile'];
+  const createDropdownMountPoints =
+    scalprum?.api?.dynamicRootConfig?.mountPoints?.['global.header/create'];
 
-  return profileDropdownMountPoints ?? [];
+  return createDropdownMountPoints ?? [];
 };

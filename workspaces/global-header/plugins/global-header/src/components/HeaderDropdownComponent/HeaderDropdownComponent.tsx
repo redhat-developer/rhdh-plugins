@@ -16,15 +16,14 @@
 
 import React from 'react';
 import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import MenuSection, { MenuItemConfig, MenuSectionConfig } from './MenuSection';
-import { HeaderLink } from '../HeaderLinkComponent/HeaderLink';
+import { MenuItemConfig, MenuSectionConfig } from './MenuSection';
 
 interface HeaderDropdownProps {
   buttonContent: React.ReactNode;
+  children: React.ReactNode;
   menuSections?: MenuSectionConfig[];
   menuBottomItems?: MenuItemConfig[];
   buttonProps?: React.ComponentProps<typeof Button>;
@@ -67,18 +66,12 @@ const Listbox = styled('ul')(
 
 const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
   buttonContent,
-  menuSections = [],
-  menuBottomItems = [],
+  children,
   buttonProps,
   buttonClick,
   anchorEl,
   setAnchorEl,
 }) => {
-  const shouldHideDivider = (index: number) =>
-    menuSections.length === 1 &&
-    index === menuSections.length - 1 &&
-    menuBottomItems.length === 0;
-
   return (
     <Box>
       <Button
@@ -109,32 +102,7 @@ const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
           },
         }}
       >
-        <Listbox role="menu">
-          {menuSections.map((section, index) => (
-            <MenuSection
-              key={`menu-section-${index.toString()}`}
-              {...{ hideDivider: shouldHideDivider(index), ...section }}
-              handleClose={section.handleClose}
-            />
-          ))}
-          {menuBottomItems.map(({ icon, label, subLabel, link }, index) => (
-            <MenuItem
-              key={`menu-item-${index.toString()}`}
-              sx={{ my: '8px', '&:hover': { background: 'transparent' } }}
-              onClick={() => setAnchorEl(null)}
-              disableRipple
-            >
-              {link && (
-                <HeaderLink
-                  icon={icon}
-                  to={link}
-                  title={label}
-                  subTitle={subLabel}
-                />
-              )}
-            </MenuItem>
-          ))}
-        </Listbox>
+        <Listbox role="menu">{children}</Listbox>
       </Menu>
     </Box>
   );

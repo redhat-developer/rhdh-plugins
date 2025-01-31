@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import HeaderDropdownComponent from './HeaderDropdownComponent';
 import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
@@ -26,6 +26,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { ComponentType } from '../../types';
 import { HeaderLink } from '../HeaderLinkComponent/HeaderLink';
+import { useCreateDropdownMountPoints } from '../../hooks/useCreateDropdownMountPoints';
 
 /**
  * @public
@@ -37,16 +38,16 @@ export interface CreateButtonProps {
   setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
 
-const menuBottomItems: MenuItemConfig[] = [
-  {
-    Component: HeaderLink as React.ComponentType,
-    type: ComponentType.LINK,
-    icon: 'category',
-    label: 'Register a component',
-    subLabel: 'Import it to the catalog page',
-    link: '/catalog-import',
-  },
-];
+/**
+ * @public
+ * Props for each dropdown section component
+ */
+interface SectionComponentProps {
+  handleClose: () => void;
+  hideDivider: boolean;
+  items?: MenuItemConfig[];
+}
+
 export const CreateDropdown = ({
   handleMenu,
   anchorEl,
@@ -56,6 +57,7 @@ export const CreateDropdown = ({
   const [entities, setEntities] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const createDropdownMountPoints = useCreateDropdownMountPoints();
 
   useEffect(() => {
     const fetchEntities = async () => {
@@ -73,6 +75,27 @@ export const CreateDropdown = ({
 
     fetchEntities();
   }, [catalogApi]);
+
+  const items = useMemo(() => {
+    return entities
+      .filter(e => e.kind === 'Template')
+      .map(m => ({
+        Component: HeaderLink as React.ComponentType,
+        type: ComponentType.LINK,
+        label: m.metadata.title ?? m.metadata.name,
+        link: `/create/templates/default/${m.metadata.name}`,
+      }));
+  }, [entities]);
+
+  const menuSections = useMemo(() => {
+    return (createDropdownMountPoints ?? [])
+      .map(mp => ({
+        Component: mp.Component as React.ComponentType<SectionComponentProps>,
+        type: mp.config?.type ?? ComponentType.LINK,
+        priority: mp.config?.priority ?? 0,
+      }))
+      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+  }, [createDropdownMountPoints]);
 
   if (loading) {
     return (
@@ -95,28 +118,6 @@ export const CreateDropdown = ({
     );
   }
 
-  const availableTemplates = entities
-    .filter(e => e.kind === 'Template')
-    .map(e => ({
-      key: e.metadata.uid,
-      value: e.metadata.name,
-      label: e.metadata.title,
-    }));
-
-  const menuSections = [
-    {
-      sectionLabel: 'Use a template',
-      optionalLinkLabel: 'All templates',
-      optionalLink: '/create',
-      items: availableTemplates.map(m => ({
-        Component: HeaderLink as React.ComponentType,
-        type: ComponentType.LINK,
-        label: m.label ?? m.value,
-        link: `/create/templates/default/${m.value}`,
-      })),
-      handleClose: () => setAnchorEl(null),
-    },
-  ];
   return (
     <HeaderDropdownComponent
       buttonContent={
@@ -124,8 +125,6 @@ export const CreateDropdown = ({
           Create <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
         </>
       }
-      menuSections={menuSections}
-      menuBottomItems={menuBottomItems}
       buttonProps={{
         color: 'primary',
         variant: 'contained',
@@ -134,6 +133,15 @@ export const CreateDropdown = ({
       buttonClick={handleMenu}
       anchorEl={anchorEl}
       setAnchorEl={setAnchorEl}
-    />
+    >
+      {menuSections.map((section, index) => (
+        <section.Component
+          key={`menu-section-${index.toString()}`}
+          hideDivider={index === menuSections.length - 1}
+          handleClose={() => setAnchorEl(null)}
+          {...(section.type === ComponentType.LIST ? { items } : {})}
+        />
+      ))}
+    </HeaderDropdownComponent>
   );
 };

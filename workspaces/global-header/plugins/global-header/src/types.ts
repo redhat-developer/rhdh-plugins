@@ -49,6 +49,10 @@ export enum ComponentType {
    */
   LINK = 'link',
   /**
+   * Global Header Component list
+   */
+  LIST = 'list',
+  /**
    * Global Header Component search
    */
   SEARCH = 'search',
@@ -79,9 +83,6 @@ export interface GlobalHeaderComponentMountPointConfig {
 export interface CreateDropdownMountPointConfig {
   type: ComponentType;
   priority?: number;
-  // icon?: string;
-  // title?: string;
-  // link?: string;
   props?: Record<string, any>;
 }
 /**
@@ -131,5 +132,22 @@ export interface ProfileDropdownMountPoint {
   Component: React.ComponentType;
   config?: ProfileDropdownMountPointConfig & {
     props?: Record<string, any>;
+  };
+}
+
+/**
+ * ScalprumState
+ *
+ * @public
+ */
+export interface ScalprumState {
+  api?: {
+    dynamicRootConfig?: {
+      mountPoints?: {
+        'global.header/component': GlobalHeaderComponentMountPoint[];
+        'global.header/create': CreateDropdownMountPoint[];
+        'global.header/profile': ProfileDropdownMountPoint[];
+      };
+    };
   };
 }

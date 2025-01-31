@@ -35,10 +35,13 @@ import {
   ComponentType,
   GlobalHeaderComponentMountPoint,
   ProfileDropdownMountPoint,
+  CreateDropdownMountPoint,
 } from '../src/types';
 import { configApiRef } from '@backstage/core-plugin-api';
 import { HeaderLink } from '../src/components/HeaderLinkComponent/HeaderLink';
 import { LogoutButton } from '../src/components/HeaderButtonComponent/LogoutButton';
+import { SoftwareTemplatesSection } from '../src/components/HeaderDropdownComponent/SoftwareTemplatesSection';
+import { RegisterAComponentSection } from '../src/components/HeaderDropdownComponent/RegisterAComponentSection';
 
 const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[] =
   [
@@ -96,6 +99,23 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
       },
     },
   ];
+
+const defaultCreateDropdownMountPoints: CreateDropdownMountPoint[] = [
+  {
+    Component: SoftwareTemplatesSection as React.ComponentType,
+    config: {
+      type: ComponentType.LIST,
+      priority: 10,
+    },
+  },
+  {
+    Component: RegisterAComponentSection as React.ComponentType,
+    config: {
+      type: ComponentType.LINK,
+      priority: 0,
+    },
+  },
+];
 
 const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
   {
@@ -187,6 +207,7 @@ const scalprumState: ScalprumState = {
     dynamicRootConfig: {
       mountPoints: {
         'global.header/component': defaultGlobalHeaderComponentsMountPoints,
+        'global.header/create': defaultCreateDropdownMountPoints,
         'global.header/profile': defaultProfileDropdownMountPoints,
       },
     },

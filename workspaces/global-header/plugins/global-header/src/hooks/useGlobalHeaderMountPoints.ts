@@ -15,17 +15,7 @@
  */
 
 import { useScalprum } from '@scalprum/react-core';
-import { GlobalHeaderComponentMountPoint } from '../types';
-
-interface ScalprumState {
-  api?: {
-    dynamicRootConfig?: {
-      mountPoints?: {
-        'global.header/component': GlobalHeaderComponentMountPoint[];
-      };
-    };
-  };
-}
+import { GlobalHeaderComponentMountPoint, ScalprumState } from '../types';
 
 export const useGlobalHeaderMountPoints = ():
   | GlobalHeaderComponentMountPoint[]

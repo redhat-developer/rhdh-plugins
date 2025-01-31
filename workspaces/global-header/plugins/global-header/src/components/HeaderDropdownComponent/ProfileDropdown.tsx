@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import HeaderDropdownComponent from './HeaderDropdownComponent';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
@@ -25,7 +25,8 @@ import {
   ProfileInfo,
 } from '@backstage/core-plugin-api';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
-import { ComponentType, ProfileDropdownMountPoint } from '../../types';
+import { ComponentType } from '../../types';
+import MenuSection from './MenuSection';
 
 /**
  * @public
@@ -55,22 +56,19 @@ export const ProfileDropdown = ({
     fetchUser();
   }, [identityApi]);
 
-  const getMenuSection = (profileDropdownMP: ProfileDropdownMountPoint[]) => {
-    const items = profileDropdownMP
+  const menuItems = useMemo(() => {
+    return (profileDropdownMountPoints ?? [])
       .map(mp => ({
         Component: mp.Component,
         type: mp.config?.type ?? ComponentType.LINK,
-        priority: mp.config?.priority ?? 0,
         icon: mp.config?.props?.icon ?? '',
         label: mp.config?.props?.title ?? '',
         link: mp.config?.props?.link ?? '',
+        priority: mp.config?.priority ?? 0,
       }))
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-    return {
-      items,
-      handleClose: () => setAnchorEl(null),
-    };
-  };
+  }, [profileDropdownMountPoints]);
+
   return (
     <HeaderDropdownComponent
       buttonContent={
@@ -88,7 +86,6 @@ export const ProfileDropdown = ({
           />
         </>
       }
-      menuSections={[getMenuSection(profileDropdownMountPoints ?? [])]}
       buttonProps={{
         color: 'inherit',
         sx: {
@@ -99,7 +96,13 @@ export const ProfileDropdown = ({
       buttonClick={handleMenu}
       anchorEl={anchorEl}
       setAnchorEl={setAnchorEl}
-    />
+    >
+      <MenuSection
+        hideDivider
+        items={menuItems}
+        handleClose={() => setAnchorEl(null)}
+      />
+    </HeaderDropdownComponent>
   );
 };
 

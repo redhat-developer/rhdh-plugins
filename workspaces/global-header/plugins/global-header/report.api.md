@@ -39,6 +39,42 @@ export interface HeaderIconButtonProps {
 }
 
 // @public
+export const HeaderLink: React_2.ComponentType<HeaderLinkProps>;
+
+// @public
+export interface HeaderLinkProps {
+  // (undocumented)
+  icon?: string;
+  // (undocumented)
+  subTitle?: string;
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  to: string;
+  // (undocumented)
+  tooltip?: string;
+}
+
+// @public
+export const LogoutButton: React_2.ComponentType;
+
+// @public
+export interface MenuItemConfig {
+  // (undocumented)
+  Component: React_2.ComponentType<HeaderLinkProps | {}>;
+  // (undocumented)
+  icon?: string;
+  // (undocumented)
+  label: string;
+  // (undocumented)
+  link?: string;
+  // (undocumented)
+  subLabel?: string;
+  // (undocumented)
+  type: string;
+}
+
+// @public
 export const NotificationBanner: (
   props: NotificationBannerProps,
 ) => React_2.JSX.Element | null;
@@ -80,7 +116,26 @@ export interface ProfileDropdownProps {
 }
 
 // @public
+export const RegisterAComponentSection: React_2.ComponentType<RegisterAComponentSectionProps>;
+
+// @public
+export type RegisterAComponentSectionProps = {
+  hideDivider: boolean;
+  handleClose: () => void;
+};
+
+// @public
 export const SearchComponent: React_2.ComponentType;
+
+// @public
+export const SoftwareTemplatesSection: React_2.ComponentType<SoftwareTemplatesSectionProps>;
+
+// @public
+export type SoftwareTemplatesSectionProps = {
+  items: MenuItemConfig[];
+  handleClose: () => void;
+  hideDivider?: boolean;
+};
 
 // (No @packageDocumentation comment for this package)
 ```
