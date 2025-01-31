@@ -38,15 +38,9 @@ export async function createRouter({
   router.use(express.json());
 
   router.get('/plugins', async (req, res) => {
-    try {
-      const query = req.query as Partial<GetPluginsRequest>;
-      const plugins = await marketplaceApi.getPlugins(query);
-      res.json(plugins);
-    } catch (error) {
-      res
-        .status(500)
-        .json({ message: 'Failed to fetch plugins', error: error.message });
-    }
+    const query = req.query as Partial<GetPluginsRequest>;
+    const plugins = await marketplaceApi.getPlugins(query);
+    res.json(plugins);
   });
 
   router.get('/plugins/:name', async (req, res) => {

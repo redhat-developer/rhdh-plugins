@@ -15,6 +15,7 @@
  */
 
 import {
+  EntityFilterQuery,
   EntityOrderQuery,
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
@@ -131,7 +132,7 @@ export type FullTextFilter = {
 export type GetPluginsRequest = {
   limit?: number;
   offset?: number;
-  filter?: Record<string, string>;
+  filter?: EntityFilterQuery;
   orderFields?: EntityOrderQuery;
   searchTerm?: string;
 };

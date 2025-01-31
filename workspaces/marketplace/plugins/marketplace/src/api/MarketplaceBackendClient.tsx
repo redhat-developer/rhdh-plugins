@@ -47,7 +47,8 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   ): Promise<MarketplacePluginWithPageInfo> {
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
     const params = convertGetPluginRequestToSearchParams(request);
-    const url = `${baseUrl}/plugins?${params.toString()}`;
+    const query = params.toString();
+    const url = `${baseUrl}/plugins${query ? '?' : ''}${query}`;
 
     const response = await this.fetchApi.fetch(url);
     if (!response.ok) {
