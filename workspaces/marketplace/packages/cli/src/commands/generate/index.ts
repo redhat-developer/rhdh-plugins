@@ -152,9 +152,8 @@ export default async (opts: OptionValues) => {
         kind: MarketplaceKinds.package,
         metadata: {
           name: entityName(packageJSON.name),
-          namespace: namespace || undefined,
+          namespace: namespace ?? undefined,
           title: packageName,
-          owner: owner,
           links: links,
           annotations: {
             'backstage.io/source-location': sourceLocation,
@@ -165,6 +164,7 @@ export default async (opts: OptionValues) => {
           ),
         },
         spec: {
+          owner: owner,
           packageName: packageName,
           dynamicArtifact: plugin.package,
           version: packageJSON.version,
@@ -179,7 +179,7 @@ export default async (opts: OptionValues) => {
           lifecycle:
             packageJSON.keywords
               ?.find((k: string) => k.startsWith('lifecycle:'))
-              ?.split(':')[1] || DEFAULT_LIFECYCLE,
+              ?.split(':')[1] ?? DEFAULT_LIFECYCLE,
           partOf: partOf,
           appConfigExamples: appConfigExamples,
         },
