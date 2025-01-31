@@ -1,13 +1,20 @@
-# application-listener-test
+# @red-hat-developer-hub/backstage-plugin-application-listener-test
 
-Welcome to the application-listener-test plugin!
+A test-plugin allows you to test the [dynamic plugin mount point `application/listener`](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/frontend-plugin-wiring.md#adding-application-listeners).
 
-_This plugin was created through the Backstage CLI_
+This listener allows dynamic plugins to add non-UI related features that could (optionally) track the current location.
 
-## Getting started
+This test-plugin exports a `CrashListener` to verify that a listener couldn't crash the complete app.
 
-Your plugin has been added to the example app in this repository, meaning you'll be able to access it by running `yarn start` in the root directory, and then navigating to [/application-listener-test](http://localhost:3000/application-listener-test).
+And a `LocationListener` that will log any URL change to the browser console.
 
-You can also serve the plugin in isolation by running `yarn start` in the plugin directory.
-This method of serving the plugin provides quicker iteration speed and a faster startup and hot reloads.
-It is only meant for local development, and the setup for it can be found inside the [/dev](./dev) directory.
+```yaml
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-application-listener-test:
+      mountPoints:
+        - mountPoint: application/listener
+          importName: CrashListener
+        - mountPoint: application/listener
+          importName: LocationListener
+```

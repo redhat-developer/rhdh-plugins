@@ -29,6 +29,19 @@ export const applicationListenerTestPlugin = createPlugin({
 /**
  * @public
  */
+export const CrashListener = applicationListenerTestPlugin.provide(
+  createComponentExtension({
+    name: 'CrashListener',
+    component: {
+      lazy: () =>
+        import('./components/CrashListener').then(m => m.CrashListener),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
 export const LocationListener = applicationListenerTestPlugin.provide(
   createComponentExtension({
     name: 'LocationListener',

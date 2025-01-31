@@ -9,6 +9,9 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 export const applicationListenerTestPlugin: BackstagePlugin<{}, {}, {}>;
 
 // @public (undocumented)
+export const CrashListener: () => never;
+
+// @public (undocumented)
 export const LocationListener: () => null;
 
 // (No @packageDocumentation comment for this package)
