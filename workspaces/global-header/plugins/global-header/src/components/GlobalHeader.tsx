@@ -23,11 +23,13 @@ import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints'
 import { ComponentType, GlobalHeaderComponentMountPoint, Slot } from '../types';
 import { ErrorBoundary } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import { useTheme } from '@mui/material/styles';
 
 export const GlobalHeader = () => {
   const config = useApi(configApiRef);
   const frontendConfig = config.getOptionalConfig('dynamicPlugins.frontend');
   const frontendData = frontendConfig?.get();
+  const theme = useTheme();
 
   const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
 
@@ -127,7 +129,10 @@ export const GlobalHeader = () => {
     <AppBar
       position="sticky"
       component="nav"
-      sx={{ backgroundColor: '#212427' }}
+      sx={{
+        backgroundColor: theme.palette.mode === 'dark' ? '#1b1d21' : '#212427',
+        backgroundImage: 'none',
+      }}
     >
       <Toolbar>
         {renderComponents(globalHeaderStartComponentsMountPoints)}
