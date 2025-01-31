@@ -5,12 +5,13 @@
 # https://help.github.com/articles/about-codeowners/
 
 *                                                   @bethgriggs @nickboldt @kim-tsao @04kash
+
 /workspaces/bulk-import                             @christoph-jerolimov @debsmita1 @rm3l
-/workspaces/homepage                                @christoph-jerolimov @ciiay @debsmita1
-/workspaces/marketplace                             @christoph-jerolimov @debsmita1 @divyanshiGupta
-/workspaces/openshift-image-registry                @christoph-jerolimov @debsmita1 @divyanshiGupta
-/workspaces/theme                                   @christoph-jerolimov @ciiay @debsmita1
+/workspaces/global-floating-action-button           @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar
+/workspaces/global-header                           @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar
+/workspaces/homepage                                @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar
 /workspaces/lightspeed                              @karthikjeeyar @yangcao77 @rohitkrai03
+/workspaces/marketplace                             @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @karthikjeeyar
+/workspaces/openshift-image-registry                @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @karthikjeeyar
 /workspaces/orchestrator                            @batzionb @mareklibra @gciavarrini
-/workspaces/global-header                           @christoph-jerolimov @ciiay
-/workspaces/global-floating-action-button           @christoph-jerolimov @debsmita1
+/workspaces/theme                                   @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar
