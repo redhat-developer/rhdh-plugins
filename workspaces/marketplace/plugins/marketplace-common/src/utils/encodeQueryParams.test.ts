@@ -13,14 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EntityFilterQuery } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  EntityFilterQuery,
+  GetPluginsRequest,
+  SortOrder,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import {
   encodeFilterParams,
   encodeFacetParams,
   encodeQueryParams,
+  encodeGetPluginsQueryParams,
+  encodeOrderFieldsParams,
 } from './encodeQueryParams';
+import { EntityOrderQuery } from '@backstage/catalog-client/index';
 
 describe('encodeFilterParams', () => {
+  it('should encode single orderFields correctly', () => {
+    const orderFields: EntityOrderQuery = {
+      field: 'metadata.title',
+      order: 'asc' as SortOrder,
+    };
+    const params = encodeOrderFieldsParams(orderFields).toString();
+    expect(params).toBe('orderFields=metadata.title%2Casc');
+  });
+
+  it('should encode multiple orderFields correctly', () => {
+    const orderFields: EntityOrderQuery = [
+      { field: 'metadata.title', order: 'desc' },
+      { field: 'metadata.name', order: 'asc' },
+    ];
+    const params = encodeOrderFieldsParams(orderFields).toString();
+    expect(params).toBe(
+      'orderFields=metadata.title%2Cdesc&orderFields=metadata.name%2Casc',
+    );
+  });
+
+  it('should encode GetPluginsRequest correctly', () => {
+    const params: GetPluginsRequest = {
+      filter: {
+        'metadata.name': 'search',
+        'spec.type': 'backend-plugin',
+      },
+      orderFields: [
+        { field: 'metadata.title', order: 'desc' },
+        { field: 'metadata.name', order: 'asc' },
+      ],
+      searchTerm: 'search',
+      limit: 2,
+      offset: 1,
+    };
+
+    const encodedParams = encodeGetPluginsQueryParams(params).toString();
+    expect(encodedParams).toBe(
+      'limit=2&offset=1&searchTerm=search&orderFields=metadata.title%2Cdesc&orderFields=metadata.name%2Casc&filter=metadata.name%3Dsearch&filter=spec.type%3Dbackend-plugin',
+    );
+  });
+
   it('should encode single filter correctly', () => {
     const filter: EntityFilterQuery = { kind: 'component' };
     const params = encodeFilterParams(filter).toString();
