@@ -119,19 +119,18 @@ export type FullTextFilter = {
 export type GetPluginsRequest = {
   limit?: number;
   offset?: number;
-  filter?: EntityFilterQuery;
+  filter?: Record<string, string>;
   orderFields?: EntityOrderQuery;
-  fullTextFilter?: {
-    term: string;
-    fields?: string[];
-  };
+  searchTerm?: string;
 };
 
 /**
  * @public
  */
 export interface MarketplaceApi {
-  getPlugins(query?: GetPluginsRequest): Promise<MarketplacePluginWithPageInfo>;
+  getPlugins(
+    request?: GetPluginsRequest,
+  ): Promise<MarketplacePluginWithPageInfo>;
   getPluginByName(name: string): Promise<MarketplacePlugin>;
   getPluginLists(): Promise<MarketplacePluginList[]>;
   getPluginListByName(name: string): Promise<MarketplacePluginList>;

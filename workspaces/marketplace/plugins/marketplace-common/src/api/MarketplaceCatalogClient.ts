@@ -16,7 +16,7 @@
 
 import { AuthService } from '@backstage/backend-plugin-api';
 import { stringifyEntityRef } from '@backstage/catalog-model';
-import { CatalogApi, QueryEntitiesRequest } from '@backstage/catalog-client';
+import { CatalogApi } from '@backstage/catalog-client';
 import { NotFoundError } from '@backstage/errors';
 import {
   GetPluginsRequest,
@@ -25,8 +25,8 @@ import {
   MarketplacePlugin,
   MarketplacePluginList,
   MarketplacePluginWithPageInfo,
-  SortOrder,
 } from '../types';
+import { convertGetPluginsRequestToQueryEntitiesRequest } from '../utils';
 
 /**
  * @public
@@ -36,9 +36,6 @@ export type MarketplaceCatalogClientOptions = {
   catalogApi: CatalogApi;
 };
 
-type ExtendedQueryEntitiesRequest = QueryEntitiesRequest & {
-  cursor?: string; // Add cursor as an optional property
-};
 /**
  * @public
  */
@@ -65,8 +62,8 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     query?: GetPluginsRequest,
   ): Promise<MarketplacePluginWithPageInfo> {
     const token = await this.getServiceToken();
-
-    const result = await this.catalog.queryEntities(query, token);
+    const payload = convertGetPluginsRequestToQueryEntitiesRequest(query);
+    const result = await this.catalog.queryEntities(payload, token);
 
     return {
       items: result.items as MarketplacePlugin[],
