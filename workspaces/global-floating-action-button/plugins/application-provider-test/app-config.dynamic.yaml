@@ -1,10 +1,13 @@
-# test global-header components. this isn't implemented yet!
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-application-provider-test:
       dynamicRoutes:
-        - path: /countpage
-          importName: CountPage
+        - path: /application-provider-test-page
+          importName: TestPage
       mountPoints:
         - mountPoint: application/provider
-          importName: CountProvider
+          importName: CrashProvider
+        - mountPoint: application/provider
+          importName: TestProviderOne
+        - mountPoint: application/provider
+          importName: TestProviderTwo

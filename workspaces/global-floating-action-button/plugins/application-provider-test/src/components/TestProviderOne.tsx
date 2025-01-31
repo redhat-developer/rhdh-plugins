@@ -18,11 +18,11 @@ import React from 'react';
 
 import { CountContextValue } from '../types';
 
-export const CountContext = React.createContext<CountContextValue>(
+export const TestContextOne = React.createContext<CountContextValue>(
   {} as CountContextValue,
 );
 
-export const CountProvider = ({ children }: React.PropsWithChildren<{}>) => {
+export const TestProviderOne = ({ children }: React.PropsWithChildren<{}>) => {
   const [count, setCount] = React.useState(0);
   const increment = React.useCallback(() => setCount(c => c + 1), []);
   const decrement = React.useCallback(() => setCount(c => c - 1), []);
@@ -35,6 +35,6 @@ export const CountProvider = ({ children }: React.PropsWithChildren<{}>) => {
     [count, increment, decrement],
   );
   return (
-    <CountContext.Provider value={value}>{children}</CountContext.Provider>
+    <TestContextOne.Provider value={value}>{children}</TestContextOne.Provider>
   );
 };

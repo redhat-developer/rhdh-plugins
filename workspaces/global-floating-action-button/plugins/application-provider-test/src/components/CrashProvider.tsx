@@ -14,25 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
-import {
-  Page,
-  Header,
-  Content,
-  MarkdownContent,
-} from '@backstage/core-components';
-
-import { CountCard } from './CountCard';
-
-export const CountPage = () => {
-  return (
-    <Page themeId="test">
-      <Header title="CountPage" subtitle="A application-provider-test page" />
-      <Content>
-        <MarkdownContent content="This card will work only if you register the `CountProvider` correctly." />
-        <CountCard />
-      </Content>
-    </Page>
-  );
+export const CrashProvider = () => {
+  throw new Error('CrashProvider failed to render (intentional crash)');
 };
