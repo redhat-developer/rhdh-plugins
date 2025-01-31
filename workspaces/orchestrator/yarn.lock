@@ -13909,6 +13909,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@spotify/prettier-config@npm:^15.0.0":
+  version: 15.0.0
+  resolution: "@spotify/prettier-config@npm:15.0.0"
+  peerDependencies:
+    prettier: 2.x
+  checksum: aa5ec5739427f9acdb9d62ae6c04f04a344898567239f7ee45c75c6205ebdffbc61747ea8de6e83baf0bc3785359967de4b7097a8723c4b4063ff57dc5cb6c44
+  languageName: node
+  linkType: hard
+
 "@sqltools/formatter@npm:^1.2.5":
   version: 1.2.5
   resolution: "@sqltools/formatter@npm:1.2.5"
@@ -18316,6 +18325,7 @@ __metadata:
     "@backstage/plugin-scaffolder-node-test-utils": ^0.1.15
     "@backstage/types": ^1.2.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
+    "@spotify/prettier-config": ^15.0.0
     axios: ^1.7.7
   languageName: unknown
   linkType: soft
