@@ -22,41 +22,53 @@ import Grid from '@mui/material/Grid';
 
 import {
   applicationProviderTestPlugin,
-  CountPage,
-  CountProvider,
-  CountCard,
+  TestPage,
+  TestProviderOne,
+  TestProviderTwo,
+  TestCardOne,
+  TestCardTwo,
 } from '../src/plugin';
 
 createDevApp()
   .registerPlugin(applicationProviderTestPlugin)
   .addPage({
     element: (
-      <CountProvider>
-        <CountPage />
-      </CountProvider>
+      <TestProviderOne>
+        <TestProviderTwo>
+          <TestPage />
+        </TestProviderTwo>
+      </TestProviderOne>
     ),
-    title: 'CountPage',
-    path: '/count-page',
+    title: 'TestPage',
+    path: '/test-page',
   })
   .addPage({
     element: (
-      <CountProvider>
-        <Page themeId="home">
-          <Header title="CountProvider" />
-          <Content>
-            <Grid container spacing={2}>
-              <Grid item>
-                <CountCard />
+      <TestProviderOne>
+        <TestProviderTwo>
+          <Page themeId="test">
+            <Header title="Test cards" />
+            <Content>
+              <Grid container spacing={2}>
+                <Grid item sm={6}>
+                  <TestCardOne />
+                </Grid>
+                <Grid item sm={6}>
+                  <TestCardOne />
+                </Grid>
+                <Grid item sm={6}>
+                  <TestCardTwo />
+                </Grid>
+                <Grid item sm={6}>
+                  <TestCardTwo />
+                </Grid>
               </Grid>
-              <Grid item>
-                <CountCard />
-              </Grid>
-            </Grid>
-          </Content>
-        </Page>
-      </CountProvider>
+            </Content>
+          </Page>
+        </TestProviderTwo>
+      </TestProviderOne>
     ),
-    title: 'CountProvider',
-    path: '/count-provider',
+    title: 'TestCards',
+    path: '/test-cards',
   })
   .render();

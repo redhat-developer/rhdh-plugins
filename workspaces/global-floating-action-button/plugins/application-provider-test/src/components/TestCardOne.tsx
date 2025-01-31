@@ -20,12 +20,12 @@ import { InfoCard } from '@backstage/core-components';
 
 import Button from '@mui/material/Button';
 
-import { CountContext } from './CountProvider';
+import { TestContextOne } from './TestProviderOne';
 
-export const CountCard = () => {
-  const value = React.useContext(CountContext);
+export const TestCardOne = () => {
+  const value = React.useContext(TestContextOne);
   return (
-    <InfoCard>
+    <InfoCard title="Context one">
       <div
         style={{
           display: 'flex',

@@ -32,12 +32,12 @@ export const applicationProviderTestPlugin = createPlugin({
 /**
  * @public
  */
-export const CountProvider = applicationProviderTestPlugin.provide(
+export const CrashProvider = applicationProviderTestPlugin.provide(
   createComponentExtension({
-    name: 'CountProvider',
+    name: 'CrashProvider',
     component: {
       lazy: () =>
-        import('./components/CountProvider').then(m => m.CountProvider),
+        import('./components/CrashProvider').then(m => m.CrashProvider),
     },
   }),
 );
@@ -45,11 +45,12 @@ export const CountProvider = applicationProviderTestPlugin.provide(
 /**
  * @public
  */
-export const CountCard = applicationProviderTestPlugin.provide(
+export const TestProviderOne = applicationProviderTestPlugin.provide(
   createComponentExtension({
-    name: 'CountCard',
+    name: 'TestProviderOne',
     component: {
-      lazy: () => import('./components/CountCard').then(m => m.CountCard),
+      lazy: () =>
+        import('./components/TestProviderOne').then(m => m.TestProviderOne),
     },
   }),
 );
@@ -57,10 +58,65 @@ export const CountCard = applicationProviderTestPlugin.provide(
 /**
  * @public
  */
-export const CountPage = applicationProviderTestPlugin.provide(
+export const TestProviderTwo = applicationProviderTestPlugin.provide(
+  createComponentExtension({
+    name: 'TestProviderTwo',
+    component: {
+      lazy: () =>
+        import('./components/TestProviderTwo').then(m => m.TestProviderTwo),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const TestCardOne = applicationProviderTestPlugin.provide(
+  createComponentExtension({
+    name: 'TestCardOne',
+    component: {
+      lazy: () => import('./components/TestCardOne').then(m => m.TestCardOne),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const TestCardTwo = applicationProviderTestPlugin.provide(
+  createComponentExtension({
+    name: 'TestCardTwo',
+    component: {
+      lazy: () => import('./components/TestCardTwo').then(m => m.TestCardTwo),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const TestPage = applicationProviderTestPlugin.provide(
   createRoutableExtension({
-    name: 'CountPage',
-    component: () => import('./components/CountPage').then(m => m.CountPage),
+    name: 'TestPage',
+    component: () => import('./components/TestPage').then(m => m.TestPage),
     mountPoint: rootRouteRef,
   }),
 );
+
+/**
+ * @public
+ * @deprecated please use `TestProviderOne` and `TestProviderTwo` instead
+ */
+export const CountProvider = TestProviderOne;
+
+/**
+ * @public
+ * @deprecated please use `TestCardOne` and `TestCardTwo` instead
+ */
+export const CountCard = TestCardOne;
+
+/**
+ * @public
+ * @deprecated please use `TestPage` instead
+ */
+export const CountPage = TestPage;

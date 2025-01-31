@@ -12,14 +12,40 @@ import { ReactNode } from 'react';
 // @public (undocumented)
 export const applicationProviderTestPlugin: BackstagePlugin<{}, {}, {}>;
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export const CountCard: () => JSX_2.Element;
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export const CountPage: () => JSX_2.Element;
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export const CountProvider: ({
+  children,
+}: {
+  children?: ReactNode;
+}) => JSX_2.Element;
+
+// @public (undocumented)
+export const CrashProvider: () => never;
+
+// @public (undocumented)
+export const TestCardOne: () => JSX_2.Element;
+
+// @public (undocumented)
+export const TestCardTwo: () => JSX_2.Element;
+
+// @public (undocumented)
+export const TestPage: () => JSX_2.Element;
+
+// @public (undocumented)
+export const TestProviderOne: ({
+  children,
+}: {
+  children?: ReactNode;
+}) => JSX_2.Element;
+
+// @public (undocumented)
+export const TestProviderTwo: ({
   children,
 }: {
   children?: ReactNode;
