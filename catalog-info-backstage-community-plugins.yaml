@@ -1,0 +1,24 @@
+# This list contains the community plugins that we have developed and
+# Which are now available in the Backstage community plugin repository.
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: redhat-backstage-community-plugins
+  title: Red Hat developed plugins in Backstage community plugin repository
+  description: Backstage Plugins by Red Hat
+spec:
+  type: url
+  targets:
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/3scale/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/acr/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/ocm/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/quay/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/rbac/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/redhat-argocd/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/redhat-resource-optimization/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-kubernetes/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-regex/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-servicenow/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/scaffolder-backend-module-sonarqube/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/tekton/catalog-info.yaml
+    - https://github.com/backstage/community-plugins/blob/main/workspaces/topology/catalog-info.yaml
