@@ -1,5 +1,18 @@
 ### Dependencies
 
+## 1.11.0
+
+### Minor Changes
+
+- 5fb162c: Update dependencies to Backstage 1.35.0
+
+### Patch Changes
+
+- 0e17490: Updated dependency `@types/node` to `18.19.70`.
+- 5f0fd7d: Updated dependency `@types/node` to `18.19.73`.
+- 161b41f: Updated dependency `@types/node` to `18.19.74`.
+- d1b3b0e: Updated dependency `@types/node` to `18.19.71`.
+
 ## 1.10.4
 
 ### Patch Changes
