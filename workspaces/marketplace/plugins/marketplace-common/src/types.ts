@@ -15,7 +15,6 @@
  */
 
 import {
-  EntityFilterQuery,
   EntityOrderQuery,
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
@@ -35,7 +34,7 @@ export interface MarketplacePlugin extends Entity {
  */
 export interface MarketplacePluginWithPageInfo {
   items: MarketplacePlugin[];
-  totalItems?: Number;
+  totalItems?: number;
   pageInfo?: {
     nextCursor?: string;
     prevCursor?: string;
@@ -118,7 +117,6 @@ export interface MarketplacePluginSpec extends JsonObject {
   };
 }
 
-
 /**
  * @public
  */
@@ -137,19 +135,6 @@ export type GetPluginsRequest = {
   orderFields?: EntityOrderQuery;
   searchTerm?: string;
 };
-
-/**
- * @public
- */
-export interface MarketplaceApi {
-  getPlugins(
-    request?: GetPluginsRequest,
-  ): Promise<MarketplacePluginWithPageInfo>;
-  getPluginByName(name: string): Promise<MarketplacePlugin>;
-  getPluginLists(): Promise<MarketplacePluginList[]>;
-  getPluginListByName(name: string): Promise<MarketplacePluginList>;
-  getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
-}
 
 /**
  * @public
@@ -190,7 +175,9 @@ export type {
  * @public
  */
 export interface MarketplaceApi {
-  getPlugins(): Promise<MarketplacePlugin[]>;
+  getPlugins(
+    request?: GetPluginsRequest,
+  ): Promise<MarketplacePluginWithPageInfo>;
   getPluginByName(name: string): Promise<MarketplacePlugin>;
   getPluginLists(): Promise<MarketplacePluginList[]>;
   getPluginListByName(name: string): Promise<MarketplacePluginList>;

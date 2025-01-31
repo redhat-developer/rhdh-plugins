@@ -80,7 +80,7 @@ describe('MarketplaceCatalogClient', () => {
     it('should call queryEntities function', async () => {
       const api = new MarketplaceCatalogClient(options);
 
-      await api.getPlugins({});
+      await api.getPlugins();
 
       expect(mockQueryEntities).toHaveBeenCalledTimes(1);
       expect(mockQueryEntities).toHaveBeenCalledWith(
@@ -93,13 +93,13 @@ describe('MarketplaceCatalogClient', () => {
 
     it('should return the plugins', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const plugins = await api.getPlugins({});
+      const plugins = await api.getPlugins();
       expect(plugins).toHaveLength(2);
     });
 
     it('should return the plugins when the auth options is not passed', async () => {
       const api = new MarketplaceCatalogClient({ ...options, auth: undefined });
-      const plugins = await api.getPlugins({});
+      const plugins = await api.getPlugins();
       expect(plugins).toHaveLength(2);
     });
   });

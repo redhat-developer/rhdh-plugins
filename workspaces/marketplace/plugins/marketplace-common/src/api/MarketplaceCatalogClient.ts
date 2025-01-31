@@ -30,7 +30,7 @@ import {
   MarketplacePluginList,
   MarketplacePluginWithPageInfo,
 } from '../types';
-import { convertGetPluginsRequestToQueryEntitiesRequest } from '../utils';
+import { convertGetPluginsRequestToQueryEntitiesRequest } from '../util';
 
 /**
  * @public

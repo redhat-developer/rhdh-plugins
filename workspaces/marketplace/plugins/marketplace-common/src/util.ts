@@ -23,8 +23,8 @@ import { GetPluginsRequest, SortOrder } from './types';
 const DefaultOrderFields: EntityOrderQuery = [
   { field: 'metadata.name', order: 'asc' },
 ];
-const DefaultLimit = 20;
-const RequiredFilter = { kind: 'plugin' };
+const defaultLimit = 20;
+const requiredFilter = { kind: 'plugin' };
 
 export const convertGetPluginsRequestToQueryEntitiesRequest = (
   query?: GetPluginsRequest,
@@ -53,13 +53,13 @@ export const convertGetPluginsRequestToQueryEntitiesRequest = (
         ...(typeof query.filter === 'string'
           ? JSON.parse(query.filter)
           : query.filter),
-        ...RequiredFilter,
+        ...requiredFilter,
       }
-    : RequiredFilter;
+    : requiredFilter;
   const payload: QueryEntitiesRequest = {
     filter: filter,
     orderFields: orderFields,
-    limit: query?.limit ? Number(query.limit) : DefaultLimit,
+    limit: query?.limit ? Number(query.limit) : defaultLimit,
     offset: query?.offset ? Number(query.offset) : undefined,
   };
   if (query?.searchTerm) {
