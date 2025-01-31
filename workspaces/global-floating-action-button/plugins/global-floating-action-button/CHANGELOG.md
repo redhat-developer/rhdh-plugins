@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 0.0.6
+
+### Patch Changes
+
+- 27346d4: Update dependencies to Backstage 1.35.0
+
 ## 0.0.5
 
 ### Patch Changes
