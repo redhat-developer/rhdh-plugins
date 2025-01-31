@@ -5,7 +5,6 @@
   "backstage": {
     "role": "cli"
   },
-  "private": true,
   "homepage": "https://red.ht/rhdh",
   "repository": {
     "type": "git",
