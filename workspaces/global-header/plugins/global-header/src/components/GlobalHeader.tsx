@@ -24,12 +24,14 @@ import { ComponentType, GlobalHeaderComponentMountPoint, Slot } from '../types';
 import { ErrorBoundary } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { useTheme } from '@mui/material/styles';
+import { isExternalUrl } from '../utils/stringUtils';
 
 export const GlobalHeader = () => {
   const config = useApi(configApiRef);
   const frontendConfig = config.getOptionalConfig('dynamicPlugins.frontend');
-  const frontendData = frontendConfig?.get();
   const theme = useTheme();
+  const supportUrl = config.getOptionalString('app.support.url');
+  const frontendPackages = frontendConfig?.get();
 
   const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
 
@@ -67,42 +69,63 @@ export const GlobalHeader = () => {
     setAnchorEl: handleClose(key),
   });
 
-  const getIconButtonProps = (props: Record<string, any>) => ({
-    icon: props.icon ?? '',
-    tooltip: props.tooltip ?? '',
-    to: props.to ?? '',
-  });
+  const getIconButtonProps = (props: Record<string, any>) => {
+    const buttonPros = {
+      icon: props.icon ?? '',
+      tooltip: props.tooltip ?? '',
+      to: props.to ?? '',
+    };
+
+    if (props.icon === 'support' && buttonPros.to === '') {
+      buttonPros.to = supportUrl ?? '';
+    }
+    return buttonPros;
+  };
+
+  function matchesFrontendRoute(to: string, frontendPkgs: any): boolean {
+    return Object.values(frontendPkgs).some(pluginData =>
+      ((pluginData as any).dynamicRoutes ?? []).some(
+        (route: { path: string }) => route.path === to,
+      ),
+    );
+  }
+
+  function shouldDisplaySupportIcon(
+    icon?: string,
+    to?: string,
+    supportUrlConfig?: string,
+  ): boolean {
+    return icon === 'support' && (!!to || !!supportUrlConfig);
+  }
+
   const renderComponents = (mountPoints: GlobalHeaderComponentMountPoint[]) =>
     mountPoints.map((mp, index) => {
-      let displayHeaderIcon = false;
-      if (frontendData) {
-        for (const pluginData of Object.values(frontendData)) {
-          const dynamicRoutes = pluginData.dynamicRoutes ?? [];
-          if (
-            dynamicRoutes.some(
-              (route: { path: string }) => route.path === mp.config?.props?.to,
-            )
-          ) {
-            displayHeaderIcon = true;
-            break;
-          }
-        }
-      }
+      const to = mp.config?.props?.to;
+      const icon = mp.config?.props?.icon;
+      const isExternal = to && isExternalUrl(to);
+      const isInternalRoute =
+        to && frontendPackages && matchesFrontendRoute(to, frontendPackages);
+      const shouldShowSupportIcon = shouldDisplaySupportIcon(
+        icon,
+        to,
+        supportUrl,
+      );
+
+      const displayHeaderIcon =
+        isExternal || isInternalRoute || shouldShowSupportIcon;
 
       switch (mp.config?.type) {
         case ComponentType.SEARCH:
           return (
             <ErrorBoundary>
-              {/* eslint-disable-next-line react/no-array-index-key */}
-              <mp.Component key={index} />
+              <mp.Component key={`header-component-${index.toString()}`} />
             </ErrorBoundary>
           );
         case ComponentType.DROPDOWN_BUTTON:
           return (
             <ErrorBoundary>
               <mp.Component
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
+                key={`header-component-${index.toString()}`}
                 {...getDropdownButtonProps(mp.config?.key ?? index.toString())}
                 {...mp.config?.props}
               />
@@ -113,8 +136,7 @@ export const GlobalHeader = () => {
             <ErrorBoundary>
               {displayHeaderIcon && (
                 <mp.Component
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={index}
+                  key={`header-component-${index.toString()}`}
                   {...getIconButtonProps(mp.config?.props ?? {})}
                 />
               )}

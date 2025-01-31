@@ -71,7 +71,7 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
         props: {
           icon: 'support',
           tooltip: 'Support',
-          to: '/support',
+          to: 'https://github.com/redhat-developer/rhdh/issues',
         },
       },
     },
@@ -82,7 +82,6 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
         slot: Slot.HEADER_START,
         priority: 70,
         props: {
-          key: 'notifications',
           icon: 'notifications',
           tooltip: 'Notifications',
           to: '/notifications',
