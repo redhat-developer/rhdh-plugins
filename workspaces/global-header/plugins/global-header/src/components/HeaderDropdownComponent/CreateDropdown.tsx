@@ -14,74 +14,110 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import HeaderDropdownComponent from './HeaderDropdownComponent';
 import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
-import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import { MenuItemConfig } from './MenuSection';
+import { useApi } from '@backstage/core-plugin-api';
+import { Entity } from '@backstage/catalog-model';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { ComponentType } from '../../types';
+import { HeaderLink } from '../HeaderLinkComponent/HeaderLink';
+import { useCreateDropdownMountPoints } from '../../hooks/useCreateDropdownMountPoints';
 
-interface CreateButtonProps {
+/**
+ * @public
+ * Create button properties
+ */
+export interface CreateButtonProps {
   handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
   anchorEl: HTMLElement | null;
   setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
 
-const models = [
-  {
-    key: 'key-1',
-    value: 'argocd-template',
-    label: 'Add ArgoCD to an existing project',
-  },
-  {
-    key: 'key-2',
-    value: 'create-backend-plugin',
-    label: 'Create Backend Plugin Template',
-  },
-  {
-    key: 'key-3',
-    value: 'create-frontend-plugin',
-    label: 'Create Frontend Plugin Template',
-  },
-  {
-    key: 'key-4',
-    value: 'create-react-app-template-test-annotator',
-    label: 'Create React App Template with annotations',
-  },
-  {
-    key: 'key-5',
-    value: 'define-ansible-job-template',
-    label: 'Ansible Job Template',
-  },
-];
+/**
+ * @public
+ * Props for each dropdown section component
+ */
+interface SectionComponentProps {
+  handleClose: () => void;
+  hideDivider: boolean;
+  items?: MenuItemConfig[];
+}
 
-const menuBottomItems: MenuItemConfig[] = [
-  {
-    itemKey: 'custom',
-    icon: CategoryOutlinedIcon,
-    label: 'Register a component',
-    subLabel: 'Import it to the catalog page',
-    link: '/catalog-import',
-  },
-];
-const CreateDropdown: React.FC<CreateButtonProps> = ({
+export const CreateDropdown = ({
   handleMenu,
   anchorEl,
   setAnchorEl,
-}) => {
-  const menuSections = [
-    {
-      sectionKey: 'templates',
-      sectionLabel: 'Use a template',
-      optionalLinkLabel: 'All templates',
-      optionalLink: '/create',
-      items: models.map(m => ({
-        itemKey: m.key,
-        label: m.label,
-        link: `/create/templates/default/${m.value}`,
-      })),
-      handleClose: () => setAnchorEl(null),
-    },
-  ];
+}: CreateButtonProps) => {
+  const catalogApi = useApi(catalogApiRef);
+  const [entities, setEntities] = useState<Entity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const createDropdownMountPoints = useCreateDropdownMountPoints();
+
+  useEffect(() => {
+    const fetchEntities = async () => {
+      try {
+        const response = await catalogApi.getEntities({
+          filter: { kind: ['Template'] },
+        });
+        setEntities(response.items);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEntities();
+  }, [catalogApi]);
+
+  const items = useMemo(() => {
+    return entities
+      .filter(e => e.kind === 'Template')
+      .map(m => ({
+        Component: HeaderLink as React.ComponentType,
+        type: ComponentType.LINK,
+        label: m.metadata.title ?? m.metadata.name,
+        link: `/create/templates/default/${m.metadata.name}`,
+      }));
+  }, [entities]);
+
+  const menuSections = useMemo(() => {
+    return (createDropdownMountPoints ?? [])
+      .map(mp => ({
+        Component: mp.Component as React.ComponentType<SectionComponentProps>,
+        type: mp.config?.type ?? ComponentType.LINK,
+        priority: mp.config?.priority ?? 0,
+      }))
+      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+  }, [createDropdownMountPoints]);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" p={2}>
+        <CircularProgress />
+        <Typography variant="body1" sx={{ ml: 2 }}>
+          Loading templates...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" p={2}>
+        <Typography variant="body1" color="error">
+          Error fetching templates: {error}
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <HeaderDropdownComponent
       buttonContent={
@@ -89,8 +125,6 @@ const CreateDropdown: React.FC<CreateButtonProps> = ({
           Create <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
         </>
       }
-      menuSections={menuSections}
-      menuBottomItems={menuBottomItems}
       buttonProps={{
         color: 'primary',
         variant: 'contained',
@@ -99,8 +133,15 @@ const CreateDropdown: React.FC<CreateButtonProps> = ({
       buttonClick={handleMenu}
       anchorEl={anchorEl}
       setAnchorEl={setAnchorEl}
-    />
+    >
+      {menuSections.map((section, index) => (
+        <section.Component
+          key={`menu-section-${index.toString()}`}
+          hideDivider={index === menuSections.length - 1}
+          handleClose={() => setAnchorEl(null)}
+          {...(section.type === ComponentType.LIST ? { items } : {})}
+        />
+      ))}
+    </HeaderDropdownComponent>
   );
 };
-
-export default CreateDropdown;

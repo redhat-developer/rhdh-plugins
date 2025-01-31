@@ -15,26 +15,20 @@
  */
 
 import React from 'react';
-import IconButton from '@mui/material/IconButton';
-import SmallIconWrapper, { IconComponentType } from './SmallIconWrapper';
+import {
+  errorApiRef,
+  identityApiRef,
+  useApi,
+} from '@backstage/core-plugin-api';
+import { HeaderButton } from './HeaderButton';
 
-interface HeaderIconButtonProps {
-  Icon: IconComponentType;
-  onClick: () => void;
-}
+export const LogoutButton = () => {
+  const errorApi = useApi(errorApiRef);
+  const identityApi = useApi(identityApiRef);
 
-export const HeaderIconButton: React.FC<HeaderIconButtonProps> = ({
-  Icon,
-  onClick,
-}) => {
-  return (
-    <IconButton
-      color="inherit"
-      aria-label="help"
-      sx={{ mr: 1.5 }}
-      onClick={onClick}
-    >
-      <SmallIconWrapper IconComponent={Icon} />
-    </IconButton>
-  );
+  const handleLogout = () => {
+    identityApi.signOut().catch(error => errorApi.post(error));
+  };
+
+  return <HeaderButton title="Logout" icon="logout" onClick={handleLogout} />;
 };

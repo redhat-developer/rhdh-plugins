@@ -16,20 +16,30 @@
 
 import React from 'react';
 import Typography from '@mui/material/Typography';
-import { SvgIconProps } from '@mui/material/SvgIcon';
 import Box from '@mui/material/Box';
+import { HeaderIcon } from '../HeaderIconButtonComponent/HeaderIcon';
 
-const MenuItemContent: React.FC<{
-  Icon?: React.ElementType<SvgIconProps>;
-  label: string;
+interface HeaderItemContentProps {
+  icon?: string;
+  label?: string;
   subLabel?: string;
-}> = ({ Icon, label, subLabel }) => (
+  // styles?: React.CSSProperties; // Allow styles to be passed in
+}
+
+const HeaderItemContent: React.FC<HeaderItemContentProps> = ({
+  icon,
+  label,
+  subLabel,
+}) => (
   <Box sx={{ display: 'flex', alignItems: 'center', margin: '8px 0' }}>
-    {Icon && (
-      <Icon fontSize="small" sx={{ marginRight: '0.5rem', flexShrink: 0 }} />
+    {icon && (
+      <HeaderIcon
+        icon={icon}
+        styles={label ? { marginRight: '0.5rem', flexShrink: 0 } : {}}
+      />
     )}
     <Box>
-      <Typography variant="body2">{label}</Typography>
+      {label && <Typography variant="body2">{label}</Typography>}
       {subLabel && (
         <Typography variant="caption" color="text.secondary">
           {subLabel}
@@ -39,4 +49,4 @@ const MenuItemContent: React.FC<{
   </Box>
 );
 
-export default MenuItemContent;
+export default HeaderItemContent;

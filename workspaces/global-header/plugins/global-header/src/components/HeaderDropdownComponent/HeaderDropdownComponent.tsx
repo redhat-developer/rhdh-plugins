@@ -16,16 +16,14 @@
 
 import React from 'react';
 import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import { Link } from '@backstage/core-components';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import MenuSection, { MenuItemConfig, MenuSectionConfig } from './MenuSection';
+import { MenuItemConfig, MenuSectionConfig } from './MenuSection';
 
 interface HeaderDropdownProps {
   buttonContent: React.ReactNode;
+  children: React.ReactNode;
   menuSections?: MenuSectionConfig[];
   menuBottomItems?: MenuItemConfig[];
   buttonProps?: React.ComponentProps<typeof Button>;
@@ -68,18 +66,12 @@ const Listbox = styled('ul')(
 
 const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
   buttonContent,
-  menuSections = [],
-  menuBottomItems = [],
+  children,
   buttonProps,
   buttonClick,
   anchorEl,
   setAnchorEl,
 }) => {
-  const shouldHideDivider = (index: number) =>
-    menuSections.length === 1 &&
-    index === menuSections.length - 1 &&
-    menuBottomItems.length === 0;
-
   return (
     <Box>
       <Button
@@ -110,56 +102,7 @@ const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
           },
         }}
       >
-        <Listbox role="menu">
-          {menuSections.map((section, index) => (
-            <MenuSection
-              key={`menu-section-${section.sectionKey}`}
-              {...{ hideDivider: shouldHideDivider(index), ...section }}
-              handleClose={section.handleClose}
-            />
-          ))}
-          {menuBottomItems.map(
-            ({ itemKey, icon: Icon, label, subLabel, link }) => (
-              <MenuItem
-                key={`menu-item-${itemKey}`}
-                sx={{ my: '8px', '&:hover': { background: 'transparent' } }}
-                onClick={() => setAnchorEl(null)}
-                disableRipple
-              >
-                {link && (
-                  <Link
-                    to={link}
-                    style={{
-                      display: 'flex',
-                      color: 'inherit',
-                      alignItems: 'center',
-                      textDecoration: 'none',
-                    }}
-                  >
-                    {Icon && (
-                      <Icon
-                        fontSize="small"
-                        style={{
-                          marginRight: '0.5rem',
-                          flexShrink: 0,
-                          color: 'slategray',
-                        }}
-                      />
-                    )}
-                    <Box>
-                      <Typography variant="body2">{label}</Typography>
-                      {subLabel && (
-                        <Typography variant="caption" color="text.secondary">
-                          {subLabel}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Link>
-                )}
-              </MenuItem>
-            ),
-          )}
-        </Listbox>
+        <Listbox role="menu">{children}</Listbox>
       </Menu>
     </Box>
   );

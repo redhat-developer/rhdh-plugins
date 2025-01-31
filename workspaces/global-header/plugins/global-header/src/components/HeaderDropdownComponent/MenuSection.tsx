@@ -15,35 +15,28 @@
  */
 
 import React from 'react';
-import { SvgIconProps } from '@mui/material/SvgIcon';
 import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import { Link } from '@backstage/core-components';
-import MenuItemContent from './MenuItemContent';
+import { HeaderLinkProps } from '../HeaderLinkComponent/HeaderLink';
 
-export interface MenuItemBase {
-  itemKey: string;
-  icon?: React.ElementType<SvgIconProps>;
+/**
+ * Menu item configuration
+ *
+ * @public
+ */
+export interface MenuItemConfig {
+  Component: React.ComponentType<HeaderLinkProps | {}>;
+  type: string;
   label: string;
+  icon?: string;
   subLabel?: string;
+  link?: string;
 }
-
-export interface MenuItemLink extends MenuItemBase {
-  link: string;
-  onClick?: never;
-}
-
-export interface MenuItemAction extends MenuItemBase {
-  onClick: () => void;
-  link?: never;
-}
-
-export type MenuItemConfig = MenuItemLink | MenuItemAction;
 
 export interface MenuSectionConfig {
-  sectionKey: string;
   sectionLabel?: string;
   optionalLink?: string;
   optionalLinkLabel?: string;
@@ -53,7 +46,6 @@ export interface MenuSectionConfig {
 }
 
 const MenuSection: React.FC<MenuSectionConfig> = ({
-  sectionKey,
   sectionLabel,
   optionalLink,
   optionalLinkLabel,
@@ -62,7 +54,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
   handleClose,
 }) => (
   <Box>
-    {sectionLabel && sectionKey && (
+    {sectionLabel && (
       <Box
         sx={{
           display: 'flex',
@@ -97,33 +89,23 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
       </Box>
     )}
     <ul style={{ padding: 0, listStyle: 'none' }}>
-      {items.map(({ itemKey, icon: Icon, label, subLabel, link, onClick }) => (
+      {items.map(({ type, icon, label, subLabel, link, Component }, index) => (
         <MenuItem
-          key={`menu-item-${itemKey}`}
+          key={`menu-item-${index.toString()}`}
           disableRipple
           disableTouchRipple
           onClick={handleClose}
           sx={{ py: 0.5, '&:hover': { background: 'transparent' } }}
         >
-          {link ? (
-            <Link
+          {link && (
+            <Component
+              icon={icon}
               to={link}
-              style={{
-                color: 'inherit',
-                textDecoration: 'none',
-                width: '100%',
-              }}
-            >
-              <MenuItemContent Icon={Icon} label={label} subLabel={subLabel} />
-            </Link>
-          ) : (
-            <Box
-              onClick={onClick}
-              sx={{ cursor: 'pointer', width: '100%', color: 'inherit' }}
-            >
-              <MenuItemContent Icon={Icon} label={label} subLabel={subLabel} />
-            </Box>
+              title={label}
+              subTitle={subLabel}
+            />
           )}
+          {type === 'logout' && <Component />}
         </MenuItem>
       ))}
     </ul>

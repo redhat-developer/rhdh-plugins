@@ -14,68 +14,68 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import HeaderDropdownComponent from './HeaderDropdownComponent';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
-import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import Typography from '@mui/material/Typography';
-import SmallIconWrapper from '../HeaderIconButton/SmallIconWrapper';
 import {
   identityApiRef,
-  errorApiRef,
   useApi,
+  ProfileInfo,
 } from '@backstage/core-plugin-api';
+import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
+import { ComponentType } from '../../types';
+import MenuSection from './MenuSection';
 
-interface ProfileDropdownProps {
+/**
+ * @public
+ * ProfileDropdown component properties
+ */
+export interface ProfileDropdownProps {
   handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
   anchorEl: HTMLElement | null;
   setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
 
-const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+export const ProfileDropdown = ({
   handleMenu,
   anchorEl,
   setAnchorEl,
-}) => {
-  const errorApi = useApi(errorApiRef);
+}: ProfileDropdownProps) => {
   const identityApi = useApi(identityApiRef);
-  const user = 'Guest User';
+  const [user, setUser] = useState<ProfileInfo>();
+  const profileDropdownMountPoints = useProfileDropdownMountPoints();
 
-  const handleLogout = () => {
-    identityApi.signOut().catch(error => errorApi.post(error));
-  };
-  const menuSections = [
-    {
-      sectionKey: 'profile',
-      items: [
-        {
-          itemKey: 'settings',
-          icon: ManageAccountsOutlinedIcon,
-          label: 'Settings',
-          link: '/settings',
-        },
-        {
-          itemKey: 'logout',
-          icon: LogoutOutlinedIcon,
-          label: 'Log out',
-          onClick: handleLogout,
-        },
-      ],
-      handleClose: () => setAnchorEl(null),
-    },
-  ];
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userProfile = await identityApi.getProfileInfo();
+      setUser(userProfile);
+    };
+
+    fetchUser();
+  }, [identityApi]);
+
+  const menuItems = useMemo(() => {
+    return (profileDropdownMountPoints ?? [])
+      .map(mp => ({
+        Component: mp.Component,
+        type: mp.config?.type ?? ComponentType.LINK,
+        icon: mp.config?.props?.icon ?? '',
+        label: mp.config?.props?.title ?? '',
+        link: mp.config?.props?.link ?? '',
+        priority: mp.config?.priority ?? 0,
+      }))
+      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+  }, [profileDropdownMountPoints]);
+
   return (
     <HeaderDropdownComponent
       buttonContent={
         <>
-          <SmallIconWrapper
-            IconComponent={AccountCircleOutlinedIcon}
-            sx={{ mx: 1 }}
-          />
+          <AccountCircleOutlinedIcon fontSize="small" sx={{ mx: 1 }} />
           <Typography variant="body2" sx={{ fontWeight: 500, mx: 1 }}>
-            {user ?? 'Guest User'}
+            {user?.displayName ?? 'Guest'}
           </Typography>
           <KeyboardArrowDownOutlinedIcon
             sx={{
@@ -86,19 +86,23 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
           />
         </>
       }
-      menuSections={menuSections}
       buttonProps={{
         color: 'inherit',
         sx: {
           display: 'flex',
           alignItems: 'center',
-          ml: 1,
         },
       }}
       buttonClick={handleMenu}
       anchorEl={anchorEl}
       setAnchorEl={setAnchorEl}
-    />
+    >
+      <MenuSection
+        hideDivider
+        items={menuItems}
+        handleClose={() => setAnchorEl(null)}
+      />
+    </HeaderDropdownComponent>
   );
 };
 

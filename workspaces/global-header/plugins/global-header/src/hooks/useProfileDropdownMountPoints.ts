@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import { SvgIconProps } from '@mui/material/SvgIcon';
+import { ProfileDropdownMountPoint, ScalprumState } from '../types';
+import { useScalprum } from '@scalprum/react-core';
 
-export type IconComponentType = React.ElementType<SvgIconProps>;
+export const useProfileDropdownMountPoints = ():
+  | ProfileDropdownMountPoint[]
+  | undefined => {
+  const scalprum = useScalprum<ScalprumState>();
 
-interface SmallIconWrapperProps extends SvgIconProps {
-  IconComponent: IconComponentType;
-}
+  const profileDropdownMountPoints =
+    scalprum?.api?.dynamicRootConfig?.mountPoints?.['global.header/profile'];
 
-const SmallIconWrapper: React.FC<SmallIconWrapperProps> = ({
-  IconComponent,
-  ...props
-}) => {
-  return <IconComponent fontSize="small" {...props} />;
+  return profileDropdownMountPoints ?? [];
 };
-
-export default SmallIconWrapper;
