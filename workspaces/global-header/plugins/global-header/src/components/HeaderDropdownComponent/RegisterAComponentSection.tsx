@@ -40,6 +40,7 @@ export const RegisterAComponentSection = ({
         {
           type: ComponentType.LINK,
           label: 'Register a component',
+          subLabel: 'Import it to the catalog page',
           link: '/catalog-import',
           icon: 'category',
           Component: HeaderLink as React.ComponentType,
