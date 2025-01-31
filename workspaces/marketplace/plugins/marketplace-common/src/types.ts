@@ -14,14 +14,27 @@
  * limitations under the License.
  */
 
+import { EntityFilterQuery, EntityOrderQuery } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
 /**
  * @public
  */
-export interface MarketplacePluginEntry extends Entity {
+export interface MarketplacePlugin extends Entity {
   spec?: MarketplacePluginSpec;
+}
+
+/**
+ * @public
+ */
+export interface MarketplacePluginWithPageInfo {
+  items: MarketplacePlugin[];
+  totalItems?: Number;
+  pageInfo?: {
+    nextCursor?: string;
+    prevCursor?: string;
+  };
 }
 
 /**
@@ -44,6 +57,14 @@ export const MARKETPLACE_API_VERSION = 'marketplace.backstage.io/v1alpha1';
 export enum MarketplaceKinds {
   plugin = 'Plugin',
   pluginList = 'PluginList',
+}
+
+/**
+ * @public
+ */
+export enum SortOrder {
+  asc = 'asc',
+  desc = 'desc',
 }
 
 /**
@@ -83,3 +104,74 @@ export interface MarketplacePluginSpec extends JsonObject {
     appconfig?: string;
   };
 }
+
+/**
+ * @public
+ */
+export type FullTextFilter = {
+  term: string;
+  fields?: string[];
+};
+
+/**
+ * @public
+ */
+export type GetPluginsRequest = {
+  limit?: number;
+  offset?: number;
+  filter?: Record<string, string>;
+  orderFields?: EntityOrderQuery;
+  searchTerm?: string;
+};
+
+/**
+ * @public
+ */
+export interface MarketplaceApi {
+  getPlugins(
+    request?: GetPluginsRequest,
+  ): Promise<MarketplacePluginWithPageInfo>;
+  getPluginByName(name: string): Promise<MarketplacePlugin>;
+  getPluginLists(): Promise<MarketplacePluginList[]>;
+  getPluginListByName(name: string): Promise<MarketplacePluginList>;
+  getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
+}
+
+/**
+ * @public
+ */
+export interface MarketplaceAggregationApi {
+  fetchAggregatedData(
+    aggregationsRequest: AggregationsRequest,
+  ): Promise<Record<string, any>[]>;
+}
+
+/** @public */
+export type LogicalOperator = 'AND' | 'OR';
+
+/** @public */
+export type HavingFilter = {
+  field: string;
+  operator: '=' | '!=' | '<>' | '>' | '<' | '>=' | '<=';
+  value: string;
+  logicalOperator?: LogicalOperator;
+};
+
+/** @public */
+export interface AggregationRequest {
+  name?: string;
+  field: string;
+  value?: string;
+  type: 'count' | 'min' | 'max' | 'avg' | 'sum';
+  orderFields?: {
+    field: 'value' | 'count';
+    order: 'asc' | 'desc';
+  }[];
+  filter?: EntityFilterQuery;
+  havingFilters?: HavingFilter[];
+}
+
+/**
+ * @public
+ */
+export type AggregationsRequest = AggregationRequest[];

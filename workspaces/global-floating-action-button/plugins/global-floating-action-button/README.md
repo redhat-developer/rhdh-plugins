@@ -10,7 +10,59 @@ This plugin has been added to the example app in this workspace, meaning it can 
 
 ### Installation
 
-#### Procedure
+#### Installing as a dynamic plugin?
+
+The sections below are relevant for static plugins. If the plugin is expected to be installed as a dynamic one:
+
+- Follow https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/installing-plugins.md
+- Add content of `app-config.dynamic.yaml` into `app-config.local.yaml`.
+- To configure a plugin as a Floating Action Button (FAB), you need to specify the `global.floatingactionbutton/component` mount point in your plugin configuration, as shown below using the bulk-import plugin as an example:
+
+  ```yaml
+  dynamicPlugins:
+    frontend:
+      red-hat-developer-hub.backstage-plugin-bulk-import:
+        # start of fab config
+        mountPoints:
+          - mountPoint: global.floatingactionbutton/component
+            importName: BulkImportPage # It is necessary to specify an importName because mount point without an associated component is not allowed.
+            config:
+              slot: 'page-end'
+              icon: bulkImportIcon
+              label: 'Bulk import'
+              toolTip: 'Register multiple repositories in bulk'
+              to: /bulk-import/repositories
+        # end of fab config
+        appIcons:
+          - name: bulkImportIcon
+            importName: BulkImportIcon
+        dynamicRoutes:
+          - path: /bulk-import/repositories
+            importName: BulkImportPage
+            menuItem:
+              icon: bulkImportIcon
+              text: Bulk import
+  ```
+
+- To configure a Floating Action Button (FAB) that opens an external link, specify the `global.floatingactionbutton/component` mount point in the `backstage-plugin-global-floating-action-button` plugin, as shown below:
+
+  ```yaml
+  dynamicPlugins:
+    frontend:
+      red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+        mountPoints:
+          - mountPoint: application/listener
+            importName: DynamicGlobalFloatingActionButton
+          - mountPoint: global.floatingactionbutton/component
+            importName: NullComponent # It is necessary to specify an importName because mount point without an associated component is not allowed.
+            config:
+              icon: github
+              label: 'Git'
+              toolTip: 'Github'
+              to: https://github.com/redhat-developer/rhdh-plugins
+  ```
+
+#### Static Installation
 
 1. Install the Global floating action button plugin using the following command:
 
@@ -29,7 +81,8 @@ This plugin has been added to the example app in this workspace, meaning it can 
 
    export const Root = ({ children }: PropsWithChildren<{}>) => (
      <SidebarPage>
-       ... /* highlight-add-start */
+       {/* ... */}
+       {/* highlight-add-start */}
        <GlobalFloatingActionButton
          floatingButtons={[
            {
@@ -48,7 +101,8 @@ This plugin has been added to the example app in this workspace, meaning it can 
            },
          ]}
        />
-       /* highlight-add-end */ ...
+       {/* highlight-add-end */}
+       {/* ... */}
      </SidebarPage>
    );
    ```

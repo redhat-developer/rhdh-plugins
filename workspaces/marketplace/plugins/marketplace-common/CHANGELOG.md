@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.0.4
+
+### Patch Changes
+
+- 113ff0d: Add new aggregation api in marketplace
+
+## 0.0.3
+
+### Patch Changes
+
+- 58c2d47: Add new endpoints in marketplace.
+
 ## 0.0.2
 
 ### Patch Changes

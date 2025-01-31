@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.10.8
+
+### Patch Changes
+
+- b47ad99: Implemented Server Side Sorting for `GET /imports`
+
 ## 1.10.7
 
 ### Patch Changes

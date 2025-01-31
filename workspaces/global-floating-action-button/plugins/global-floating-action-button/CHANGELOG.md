@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 0.0.4
+
+### Patch Changes
+
+- d783f6f: created dynamic fab to be integrated in the RHDH app
+
 ## 0.0.3
 
 ### Patch Changes

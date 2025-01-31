@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { createApiRef } from '@backstage/core-plugin-api';
 import type { JsonObject } from '@backstage/types';
 
@@ -31,6 +32,11 @@ import {
 
 export interface OrchestratorApi {
   abortWorkflowInstance(instanceId: string): Promise<AxiosResponse<string>>;
+
+  retriggerInstance(
+    workflowId: string,
+    instanceId: string,
+  ): Promise<AxiosResponse<object>>;
 
   executeWorkflow(args: {
     workflowId: string;

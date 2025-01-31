@@ -73,10 +73,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
           '&:hover': { background: 'transparent' },
         }}
       >
-        <Typography
-          variant="body2"
-          sx={{ ml: 2, fontSize: '0.875em', color: 'text.disabled' }}
-        >
+        <Typography variant="body2" sx={{ pl: 2, color: 'text.disabled' }}>
           {sectionLabel}
         </Typography>
         <MenuItem

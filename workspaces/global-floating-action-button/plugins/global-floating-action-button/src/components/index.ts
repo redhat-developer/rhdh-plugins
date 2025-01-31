@@ -14,3 +14,5 @@
  * limitations under the License.
  */
 export { GlobalFloatingActionButton } from './GlobalFloatingActionButton';
+export { DynamicGlobalFloatingActionButton } from './DynamicGlobalFloatingActionButton';
+export { NullComponent } from './NullComponent';

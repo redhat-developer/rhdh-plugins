@@ -121,9 +121,6 @@ export const FieldFilterOperatorEnum = {
     Lte: 'LTE',
     In: 'IN',
     IsNull: 'IS_NULL',
-    Contains: 'CONTAINS',
-    ContainsAll: 'CONTAINS_ALL',
-    ContainsAny: 'CONTAINS_ANY',
     Like: 'LIKE',
     Between: 'BETWEEN'
 } as const;

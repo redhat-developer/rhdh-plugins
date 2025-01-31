@@ -30,7 +30,10 @@ import { FloatingActionButton, Slot } from '../types';
 const useStyles = makeStyles(theme => ({
   button: {
     paddingTop: '10px',
-    color: theme.palette.grey[500],
+    color:
+      theme && Object.keys(theme).length > 0
+        ? theme.palette.grey[500]
+        : '#9e9e9e',
   },
   menuButtonStyle: {
     color: '#1f1f1f',

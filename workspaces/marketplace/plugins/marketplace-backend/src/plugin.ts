@@ -18,9 +18,17 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { createRouter } from './router';
-import { MarketplaceCatalogService } from './services/MarketplaceCatalogService';
 import { CatalogClient } from '@backstage/catalog-client';
+import { DatabaseManager } from '@backstage/backend-defaults/database';
+
+import {
+  MarketplaceApi,
+  MarketplaceCatalogClient,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
+import { createRouter } from './router';
+import { MarketplaceAggregationService } from './service/MarketplaceAggregationService';
+
 /**
  * marketplacePlugin backend plugin
  *
@@ -31,26 +39,44 @@ export const marketplacePlugin = createBackendPlugin({
   register(env) {
     env.registerInit({
       deps: {
-        logger: coreServices.logger,
         auth: coreServices.auth,
-        config: coreServices.rootConfig,
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         discovery: coreServices.discovery,
+        config: coreServices.rootConfig,
+        logger: coreServices.logger,
+        lifecycle: coreServices.lifecycle,
       },
-      async init({ logger, auth, config, httpAuth, httpRouter, discovery }) {
+      async init({
+        auth,
+        httpAuth,
+        httpRouter,
+        discovery,
+        config,
+        logger,
+        lifecycle,
+      }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
-        const marketplaceService = new MarketplaceCatalogService({
+        const db = DatabaseManager.fromConfig(config).forPlugin('catalog', {
           logger,
+          lifecycle,
+        });
+        const client = await db.getClient();
+
+        const marketplaceApi: MarketplaceApi = new MarketplaceCatalogClient({
           auth,
-          config,
           catalogApi,
+        });
+
+        const marketplaceAggregationApi = new MarketplaceAggregationService({
+          client,
         });
 
         httpRouter.use(
           await createRouter({
             httpAuth,
-            marketplaceService,
+            marketplaceApi,
+            marketplaceAggregationApi,
           }),
         );
       },

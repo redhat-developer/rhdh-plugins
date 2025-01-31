@@ -1,0 +1,25 @@
+site_name: Dynamic Home Page
+
+plugins:
+  - techdocs-core
+
+nav:
+  - About: index.md
+  - Customization:
+      - Defaults: defaults.md
+      - Header: header.md
+      - Layout options: layout-options.md
+  - Included cards:
+      - Search: search.md
+      - Quick access: quick-access.md
+      - Headline: headline.md
+      - Markdown: markdown.md
+      - Placeholder: placeholder.md
+      - Catalog starred entities: catalog-starred.md
+      - Recently visited: recently-visited.md
+      - Top visited: top-visited.md
+      - Featured docs: featured-docs.md
+      - Jokes: jokes.md
+      - World clock: worldclock.md
+  - Extend with plugins:
+      - Create a new card: create-a-new-card.md

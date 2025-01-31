@@ -37,12 +37,12 @@ import Grid from '@mui/material/Grid';
 
 import {
   InstallStatus,
-  MarketplacePluginEntry,
+  MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { usePlugins } from '../hooks/usePlugins';
 import { installRouteRef, rootRouteRef } from '../routes';
 
-const Icon = ({ entry }: { entry: MarketplacePluginEntry }) =>
+const Icon = ({ entry }: { entry: MarketplacePlugin }) =>
   entry.spec?.icon ? (
     <CardMedia
       image={entry.spec.icon}
@@ -97,7 +97,7 @@ const EntryContentSkeleton = () => {
   );
 };
 
-const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
+const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
   const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(installRouteRef);
 
@@ -183,7 +183,7 @@ const EntryContent = ({ entry }: { entry: MarketplacePluginEntry }) => {
 
 const Entry = ({ entryName }: { entryName: string }) => {
   const plugins = usePlugins();
-  const entry = plugins.data?.find(e => e.metadata.name === entryName);
+  const entry = plugins.data?.items?.find(e => e.metadata.name === entryName);
 
   if (plugins.isLoading) {
     return <EntryContentSkeleton />;

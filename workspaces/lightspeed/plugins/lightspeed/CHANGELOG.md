@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.3.1
+
+### Patch Changes
+
+- 66c4da3: Updated dependency `@patternfly/chatbot` to `2.2.0-prerelease.10`.
+
 ## 0.3.0
 
 ### Minor Changes

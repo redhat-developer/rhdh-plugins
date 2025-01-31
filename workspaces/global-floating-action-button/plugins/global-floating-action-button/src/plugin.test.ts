@@ -13,10 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { globalFloatingActionButtonPlugin } from './plugin';
+
+import {
+  dynamicGlobalFloatingActionButtonPlugin,
+  globalFloatingActionButtonPlugin,
+} from './plugin';
 
 describe('global-floating-action-button', () => {
   it('should export plugin', () => {
     expect(globalFloatingActionButtonPlugin).toBeDefined();
+  });
+});
+
+describe('dynamic-global-floating-action-button', () => {
+  it('should export the dynamic plugin', () => {
+    expect(dynamicGlobalFloatingActionButtonPlugin).toBeDefined();
   });
 });

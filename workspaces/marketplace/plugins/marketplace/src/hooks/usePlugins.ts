@@ -18,11 +18,17 @@ import { useApi } from '@backstage/core-plugin-api';
 
 import { useQuery } from '@tanstack/react-query';
 import { marketplaceApiRef } from '../api';
+import {
+  GetPluginsRequest,
+  convertSearchParamsToGetPluginsRequest,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-export const usePlugins = () => {
+export const usePlugins = (params?: URLSearchParams) => {
   const marketplaceApi = useApi(marketplaceApiRef);
+  const request: GetPluginsRequest =
+    convertSearchParamsToGetPluginsRequest(params);
   return useQuery({
-    queryKey: ['plugins'],
-    queryFn: () => marketplaceApi.getPlugins(),
+    queryKey: ['plugins', params],
+    queryFn: () => marketplaceApi.getPlugins(request),
   });
 };

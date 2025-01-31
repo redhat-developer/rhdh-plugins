@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { Request } from 'express';
 
 import {
@@ -548,7 +549,7 @@ describe('abortWorkflow', () => {
     const expectedResult = `Workflow instance ${workflowId} successfully aborted`;
 
     // Act
-    const actualResult: string = await v2.abortWorkflow(workflowId);
+    const actualResult: string = await v2.abortWorkflow('dummy', workflowId);
 
     // Assert
     expect(actualResult).toBeDefined();
@@ -562,7 +563,7 @@ describe('abortWorkflow', () => {
     ).mockRejectedValue(new Error('Simulated abort workflow error'));
 
     // Act
-    const promise = v2.abortWorkflow('instanceId');
+    const promise = v2.abortWorkflow('definitionId', 'instanceId');
 
     // Assert
     await expect(promise).rejects.toThrow('Simulated abort workflow error');

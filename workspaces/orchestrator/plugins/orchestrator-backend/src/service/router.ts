@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import {
   HttpAuthService,
@@ -897,7 +898,7 @@ function setupInternalRoutes(
           manageDenyAuthorization(endpointName, endpoint, _req);
         }
 
-        const result = await routerApi.v2.abortWorkflow(instanceId);
+        const result = await routerApi.v2.abortWorkflow(workflowId, instanceId);
         res.status(200).json(result);
       } catch (error) {
         auditLogRequestError(error, endpointName, endpoint, _req);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useState } from 'react';
+
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -33,6 +34,8 @@ import {
   CircularProgress,
   Grid,
   IconButton,
+  Menu,
+  MenuItem,
   Tooltip,
 } from '@material-ui/core';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -40,6 +43,9 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import ErrorIcon from '@material-ui/icons/Error';
 import Alert from '@material-ui/lab/Alert';
+import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
+import StartIcon from '@mui/icons-material/Start';
+import SwipeRightAltOutlinedIcon from '@mui/icons-material/SwipeRightAltOutlined';
 
 import {
   AssessedProcessInstanceDTO,
@@ -115,8 +121,16 @@ export const WorkflowInstancePage = ({
   const [isAbortSnackbarOpen, setIsAbortSnackbarOpen] = React.useState(false);
   const [abortError, setAbortError] = React.useState('');
 
-  const handleClose = () => {
+  const [isRetrigger, setIsRetrigger] = React.useState(false);
+  const [isRetriggerSnackbarOpen, setIsRerunSnackbarOpen] =
+    React.useState(false);
+  const [retriggerError, setRetriggerError] = React.useState('');
+
+  const handleAbortBarClose = () => {
     setIsAbortSnackbarOpen(false);
+  };
+  const handleRerunBarClose = () => {
+    setIsRerunSnackbarOpen(false);
   };
 
   const AbortConfirmationDialogActions = (
@@ -222,6 +236,43 @@ export const WorkflowInstancePage = ({
     navigate(urlToNavigate);
   }, [value, navigate, executeWorkflowLink]);
 
+  const handleRetrigger = async () => {
+    if (value) {
+      setIsRetrigger(true);
+      try {
+        await orchestratorApi.retriggerInstance(
+          value.instance.processId,
+          value.instance.id,
+        );
+        restart();
+      } catch (retriggerInstanceError) {
+        if (retriggerInstanceError.toString().includes('Failed Node Id')) {
+          setRetriggerError(`Run failed again`);
+        } else setRetriggerError(`Couldn't initiate the run`);
+        setIsRerunSnackbarOpen(true);
+      } finally {
+        setIsRetrigger(false);
+      }
+    }
+  };
+
+  const anchorRef = useRef(null);
+  const [openRerunMenu, setOpenRerunMenu] = useState(false);
+
+  const handleClick = () => {
+    setOpenRerunMenu(prev => !prev);
+  };
+
+  const handleCloseMenu = () => {
+    setOpenRerunMenu(false);
+  };
+
+  const handleOptionClick = (option: 'retrigger' | 'rerun') => {
+    handleCloseMenu();
+    if (option === 'rerun') handleRerun();
+    else if (option === 'retrigger') handleRetrigger();
+  };
+
   return (
     <BaseOrchestratorPage
       title={value?.instance.id}
@@ -274,20 +325,58 @@ export const WorkflowInstancePage = ({
                   disableHoverListener={permittedToUse.allowed}
                 >
                   <Button
+                    ref={anchorRef}
                     variant="contained"
                     color="primary"
+                    startIcon={
+                      isRetrigger ? <CircularProgress size="1rem" /> : null
+                    }
                     disabled={!permittedToUse.allowed || !canRerun}
-                    onClick={handleRerun}
+                    onClick={
+                      value?.instance.state === ProcessInstanceStatusDTO.Error
+                        ? handleClick
+                        : handleRerun
+                    }
+                    endIcon={
+                      value?.instance.state ===
+                      ProcessInstanceStatusDTO.Error ? (
+                        <ArrowDropDown />
+                      ) : null
+                    }
+                    style={{ color: 'white' }}
                   >
                     Rerun
                   </Button>
                 </Tooltip>
+                <Menu
+                  anchorEl={anchorRef.current}
+                  open={openRerunMenu}
+                  onClose={handleCloseMenu}
+                  getContentAnchorEl={null}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                >
+                  <MenuItem onClick={() => handleOptionClick('rerun')}>
+                    <StartIcon />
+                    Entire workflow
+                  </MenuItem>
+                  <MenuItem onClick={() => handleOptionClick('retrigger')}>
+                    <SwipeRightAltOutlinedIcon />
+                    From failure point
+                  </MenuItem>
+                </Menu>
               </Grid>
             </Grid>
           </ContentHeader>
           <Snackbar
             open={isAbortSnackbarOpen}
-            onClose={handleClose}
+            onClose={handleAbortBarClose}
             anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           >
             <Alert
@@ -297,13 +386,34 @@ export const WorkflowInstancePage = ({
                   size="small"
                   aria-label="close"
                   color="inherit"
-                  onClick={handleClose}
+                  onClick={handleAbortBarClose}
                 >
                   <CloseIcon fontSize="small" />
                 </IconButton>
               }
             >
               {abortError}
+            </Alert>
+          </Snackbar>
+          <Snackbar
+            open={isRetriggerSnackbarOpen}
+            onClose={handleRerunBarClose}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          >
+            <Alert
+              severity="error"
+              action={
+                <IconButton
+                  size="small"
+                  aria-label="close"
+                  color="inherit"
+                  onClick={handleRerunBarClose}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              }
+            >
+              {retriggerError}
             </Alert>
           </Snackbar>
           <WorkflowInstancePageContent assessedInstance={value} />
