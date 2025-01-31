@@ -14,53 +14,114 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import { SearchComponent } from './SearchComponent/SearchComponent';
-import { HeaderIconButton } from './HeaderIconButton/HeaderIconButton';
-import CreateDropdown from './HeaderDropdownComponent/CreateDropdown';
-import ProfileDropdown from './HeaderDropdownComponent/ProfileDropdown';
 import Divider from '@mui/material/Divider';
-import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineRounded';
-import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import { useDropdownManager } from '../hooks';
-
-const iconButtons = [
-  {
-    key: 'help',
-    Icon: HelpOutlineOutlinedIcon,
-    onClick: () => {},
-  },
-  {
-    key: 'notification',
-    Icon: NotificationsOutlinedIcon,
-    onClick: () => {},
-  },
-];
+import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints';
+import { ComponentType, GlobalHeaderComponentMountPoint, Slot } from '../types';
+import { ErrorBoundary } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 export const GlobalHeader = () => {
+  const config = useApi(configApiRef);
+  const frontendConfig = config.getOptionalConfig('dynamicPlugins.frontend');
+  const frontendData = frontendConfig?.get();
+
+  const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
+
+  const filteredAndSortedGlobalHeaderComponents = useMemo(() => {
+    if (!allGlobalHeaderMountPoints) {
+      return [];
+    }
+
+    const filteredAndSorted = allGlobalHeaderMountPoints.filter(
+      component => (component.config?.priority ?? 0) > -1,
+    );
+
+    filteredAndSorted.sort(
+      (a, b) => (b.config?.priority ?? 0) - (a.config?.priority ?? 0),
+    );
+
+    return filteredAndSorted;
+  }, [allGlobalHeaderMountPoints]);
+
+  const globalHeaderStartComponentsMountPoints =
+    filteredAndSortedGlobalHeaderComponents.filter(
+      component => component.config?.slot === Slot.HEADER_START,
+    );
+
+  const globalHeaderEndComponentsMountPoints =
+    filteredAndSortedGlobalHeaderComponents.filter(
+      component => component.config?.slot === Slot.HEADER_END,
+    );
+
   const { menuStates, handleOpen, handleClose } = useDropdownManager();
-  const dropdownConfigs = [
-    {
-      key: 'create',
-      component: CreateDropdown,
-      buttonProps: {
-        handleMenu: handleOpen('create'),
-        anchorEl: menuStates.create,
-        setAnchorEl: handleClose('create'),
-      },
-    },
-    {
-      key: 'profile',
-      component: ProfileDropdown,
-      buttonProps: {
-        handleMenu: handleOpen('profile'),
-        anchorEl: menuStates.profile,
-        setAnchorEl: handleClose('profile'),
-      },
-    },
-  ];
+
+  const getDropdownButtonProps = (key: string) => ({
+    handleMenu: handleOpen(key),
+    anchorEl: menuStates[key],
+    setAnchorEl: handleClose(key),
+  });
+
+  const getIconButtonProps = (props: Record<string, any>) => ({
+    icon: props.icon ?? '',
+    tooltip: props.tooltip ?? '',
+    to: props.to ?? '',
+  });
+  const renderComponents = (mountPoints: GlobalHeaderComponentMountPoint[]) =>
+    mountPoints.map((mp, index) => {
+      let displayHeaderIcon = false;
+      if (frontendData) {
+        for (const pluginData of Object.values(frontendData)) {
+          const dynamicRoutes = pluginData.dynamicRoutes ?? [];
+          if (
+            dynamicRoutes.some(
+              (route: { path: string }) => route.path === mp.config?.props?.to,
+            )
+          ) {
+            displayHeaderIcon = true;
+            break;
+          }
+        }
+      }
+
+      switch (mp.config?.type) {
+        case ComponentType.SEARCH:
+          return (
+            <ErrorBoundary>
+              {/* eslint-disable-next-line react/no-array-index-key */}
+              <mp.Component key={index} />
+            </ErrorBoundary>
+          );
+        case ComponentType.DROPDOWN_BUTTON:
+          return (
+            <ErrorBoundary>
+              <mp.Component
+                // eslint-disable-next-line react/no-array-index-key
+                key={index}
+                {...getDropdownButtonProps(mp.config?.key ?? index.toString())}
+                {...mp.config?.props}
+              />
+            </ErrorBoundary>
+          );
+        case ComponentType.ICON_BUTTON:
+          return (
+            <ErrorBoundary>
+              {displayHeaderIcon && (
+                <mp.Component
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={index}
+                  {...getIconButtonProps(mp.config?.props ?? {})}
+                />
+              )}
+            </ErrorBoundary>
+          );
+        default:
+          return null;
+      }
+    });
 
   return (
     <AppBar
@@ -69,27 +130,16 @@ export const GlobalHeader = () => {
       sx={{ backgroundColor: '#212427' }}
     >
       <Toolbar>
-        <SearchComponent />
-        <CreateDropdown
-          key={dropdownConfigs[0].key}
-          {...dropdownConfigs[0].buttonProps}
-        />
-        {iconButtons.map(({ key, Icon, onClick }) => (
-          <HeaderIconButton
-            key={`header-icon-button-${key}`}
-            Icon={Icon}
-            onClick={onClick}
-          />
-        ))}
-        <Divider
-          orientation="vertical"
-          flexItem
-          sx={{ borderColor: '#373A40' }}
-        />
-        <ProfileDropdown
-          key={dropdownConfigs[1].key}
-          {...dropdownConfigs[1].buttonProps}
-        />
+        {renderComponents(globalHeaderStartComponentsMountPoints)}
+        {globalHeaderStartComponentsMountPoints.length > 0 &&
+          globalHeaderEndComponentsMountPoints.length > 0 && (
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ borderColor: '#4F5255', marginX: 1 }}
+            />
+          )}
+        {renderComponents(globalHeaderEndComponentsMountPoints)}
       </Toolbar>
     </AppBar>
   );

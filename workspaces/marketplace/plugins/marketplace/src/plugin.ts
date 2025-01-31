@@ -27,12 +27,7 @@ import {
 import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
 
 import { rootRouteRef } from './routes';
-import {
-  MarketplaceAggregationApiRef,
-  MarketplaceAggregationBackendClient,
-  marketplaceApiRef,
-  MarketplaceBackendClient,
-} from './api';
+import { marketplaceApiRef, MarketplaceBackendClient } from './api';
 
 /**
  * Marketplace Plugin
@@ -52,18 +47,6 @@ export const marketplacePlugin = createPlugin({
       },
       factory: ({ discoveryApi, fetchApi }) =>
         new MarketplaceBackendClient({
-          discoveryApi,
-          fetchApi,
-        }),
-    }),
-    createApiFactory({
-      api: MarketplaceAggregationApiRef,
-      deps: {
-        discoveryApi: discoveryApiRef,
-        fetchApi: fetchApiRef,
-      },
-      factory: ({ discoveryApi, fetchApi }) =>
-        new MarketplaceAggregationBackendClient({
           discoveryApi,
           fetchApi,
         }),

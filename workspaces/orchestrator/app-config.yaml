@@ -118,6 +118,9 @@ orchestrator:
     baseUrl: http://localhost
     port: 8899
     autoStart: true
+    # notsecret
+    notificationsBearerToken: bXljdXJscGFzc3dkCg==
+    notificationsUrl: http://host.docker.internal:7007
     workflowsSource:
       gitRepositoryUrl: https://github.com/parodos-dev/backstage-orchestrator-workflows
       localPath: /tmp/orchestrator/repository

@@ -7,106 +7,65 @@
 import { AuthService } from '@backstage/backend-plugin-api';
 import { CatalogApi } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
-import { EntityFilterQuery as EntityFilterQuery_2 } from '@backstage/catalog-client';
+import { EntityFilterQuery } from '@backstage/catalog-client';
+import { EntityFilterQuery as EntityFilterQuery_2 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { GetEntityFacetsRequest } from '@backstage/catalog-client';
+import { GetEntityFacetsResponse } from '@backstage/catalog-client';
 import { JsonObject } from '@backstage/types';
 import { z } from 'zod';
 
 // @public (undocumented)
-export interface AggregationRequest {
+export interface AppConfigExample extends JsonObject {
     // (undocumented)
-    field: string;
+    content: string | JsonObject;
     // (undocumented)
-    filter?: EntityFilterQuery_2;
-    // (undocumented)
-    havingFilters?: HavingFilter[];
-    // (undocumented)
-    name?: string;
-    // (undocumented)
-    orderFields?: {
-        field: 'value' | 'count';
-        order: 'asc' | 'desc';
-    }[];
-    // (undocumented)
-    type: 'count' | 'min' | 'max' | 'avg' | 'sum';
-    // (undocumented)
-    value?: string;
+    title: string;
 }
 
 // @public (undocumented)
-export type AggregationsRequest = AggregationRequest[];
+export const decodeFacetParams: (searchParams: URLSearchParams) => string[];
 
 // @public (undocumented)
-export const AggregationsSchema: z.ZodArray<z.ZodObject<{
-    name: z.ZodOptional<z.ZodString>;
-    field: z.ZodString;
-    value: z.ZodOptional<z.ZodString>;
-    type: z.ZodEnum<["count", "min", "max", "avg", "sum"]>;
-    orderFields: z.ZodOptional<z.ZodArray<z.ZodObject<{
-        field: z.ZodEnum<["value", "count"]>;
-        order: z.ZodEnum<["asc", "desc"]>;
-    }, "strip", z.ZodTypeAny, {
-        order: "desc" | "asc";
-        field: "value" | "count";
-    }, {
-        order: "desc" | "asc";
-        field: "value" | "count";
-    }>, "many">>;
-    havingFilter: z.ZodOptional<z.ZodObject<{
-        field: z.ZodString;
-        operator: z.ZodEnum<["=", "!=", "<>", ">", "<", ">=", "<="]>;
-        value: z.ZodString;
-    }, "strip", z.ZodTypeAny, {
-        value: string;
-        field: string;
-        operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
-    }, {
-        value: string;
-        field: string;
-        operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
-    }>>;
-    filter: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
-}, "strip", z.ZodTypeAny, {
-    type: "max" | "min" | "sum" | "count" | "avg";
-    field: string;
-    filter?: Record<string, string> | undefined;
-    name?: string | undefined;
-    value?: string | undefined;
-    orderFields?: {
-        order: "desc" | "asc";
-        field: "value" | "count";
-    }[] | undefined;
-    havingFilter?: {
-        value: string;
-        field: string;
-        operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
-    } | undefined;
-}, {
-    type: "max" | "min" | "sum" | "count" | "avg";
-    field: string;
-    filter?: Record<string, string> | undefined;
-    name?: string | undefined;
-    value?: string | undefined;
-    orderFields?: {
-        order: "desc" | "asc";
-        field: "value" | "count";
-    }[] | undefined;
-    havingFilter?: {
-        value: string;
-        field: string;
-        operator: "=" | "!=" | "<>" | ">" | "<" | ">=" | "<=";
-    } | undefined;
-}>, "many">;
+export const decodeFilterParams: (searchParams: URLSearchParams) => Record<string, string[]>;
 
 // @public (undocumented)
-export const EntityFilterQuery: z.ZodRecord<z.ZodString, z.ZodString>;
-
-// @public (undocumented)
-export type HavingFilter = {
-    field: string;
-    operator: '=' | '!=' | '<>' | '>' | '<' | '>=' | '<=';
-    value: string;
-    logicalOperator?: LogicalOperator;
+export const decodeQueryParams: (queryString: string) => {
+    facets?: string[] | undefined;
+    filter?: Record<string, string[]> | undefined;
 };
+
+// @public (undocumented)
+export const encodeFacetParams: (facets: string[]) => URLSearchParams;
+
+// @public (undocumented)
+export const encodeFilterParams: (filter: EntityFilterQuery_2) => URLSearchParams;
+
+// @public (undocumented)
+export const encodeQueryParams: (options?: {
+    filter?: EntityFilterQuery_2;
+    facets?: string[];
+}) => string;
+
+// @public (undocumented)
+export const EntityFacetSchema: z.ZodObject<{
+    filter: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">]>>>;
+    facets: z.ZodArray<z.ZodString, "many">;
+}, "strip", z.ZodTypeAny, {
+    facets: string[];
+    filter?: Record<string, string | string[]> | undefined;
+}, {
+    facets: string[];
+    filter?: Record<string, string | string[]> | undefined;
+}>;
+
+export { EntityFilterQuery }
+
+// @public (undocumented)
+export const EntityFilterQuerySchema: z.ZodRecord<z.ZodString, z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">]>>;
+
+export { GetEntityFacetsRequest }
+
+export { GetEntityFacetsResponse }
 
 // @public (undocumented)
 export enum InstallStatus {
@@ -117,19 +76,12 @@ export enum InstallStatus {
 }
 
 // @public (undocumented)
-export type LogicalOperator = 'AND' | 'OR';
-
-// @public (undocumented)
 export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";
 
 // @public (undocumented)
-export interface MarketplaceAggregationApi {
-    // (undocumented)
-    fetchAggregatedData(aggregationsRequest: AggregationsRequest): Promise<Record<string, any>[]>;
-}
-
-// @public (undocumented)
 export interface MarketplaceApi {
+    // (undocumented)
+    getEntityFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPluginByName(name: string): Promise<MarketplacePlugin>;
     // (undocumented)
@@ -145,6 +97,8 @@ export interface MarketplaceApi {
 // @public (undocumented)
 export class MarketplaceCatalogClient implements MarketplaceApi {
     constructor(options: MarketplaceCatalogClientOptions);
+    // (undocumented)
+    getEntityFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPluginByName(name: string): Promise<MarketplacePlugin>;
     // (undocumented)
@@ -166,21 +120,44 @@ export type MarketplaceCatalogClientOptions = {
 // @public (undocumented)
 export enum MarketplaceKinds {
     // (undocumented)
+    package = "Package",
+    // (undocumented)
     plugin = "Plugin",
     // (undocumented)
     pluginList = "PluginList"
 }
 
 // @public (undocumented)
-export type MarketplacePackage = {
-    name: string;
-    version?: string;
-    backstage?: {
-        role?: string;
-        'supported-versions'?: string;
-    };
-    distribution?: string;
-};
+export interface MarketplacePackage extends Entity {
+    // (undocumented)
+    spec?: MarketplacePackageSpec;
+}
+
+// @public (undocumented)
+export interface MarketplacePackageBackstage extends JsonObject {
+    // (undocumented)
+    'supported-versions'?: string;
+    // (undocumented)
+    role?: string;
+}
+
+// @public (undocumented)
+export interface MarketplacePackageSpec extends JsonObject {
+    // (undocumented)
+    appConfigExamples?: AppConfigExample[];
+    // (undocumented)
+    author?: string;
+    // (undocumented)
+    backstage?: MarketplacePackageBackstage;
+    // (undocumented)
+    dynamicArtifact?: string;
+    // (undocumented)
+    lifecycle?: string;
+    // (undocumented)
+    packageName: string;
+    // (undocumented)
+    support?: string;
+}
 
 // @public (undocumented)
 export interface MarketplacePlugin extends Entity {
@@ -195,6 +172,17 @@ export interface MarketplacePluginList extends Entity {
         plugins: string[];
     } & MarketplacePluginSpec;
 }
+
+// @public (undocumented)
+export type MarketplacePluginPackage = {
+    name: string;
+    version?: string;
+    backstage?: {
+        role?: string;
+        'supported-versions'?: string;
+    };
+    distribution?: string;
+};
 
 // @public (undocumented)
 export interface MarketplacePluginSpec extends JsonObject {
@@ -216,7 +204,7 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     installStatus?: keyof typeof InstallStatus;
     // (undocumented)
-    packages?: (string | MarketplacePackage)[];
+    packages?: (string | MarketplacePluginPackage)[];
 }
 
 ```

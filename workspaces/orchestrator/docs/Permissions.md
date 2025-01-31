@@ -7,11 +7,28 @@ the RBAC plugin. The result is control over what users can see or execute.
 | ---------------------------------------- | -------------- | ------ | ------------------------------------------------------------------------------------- | ------------ |
 | orchestrator.workflow                    | named resource | read   | Allows the user to list and read _any_ workflow definition and their instances (runs) |              |
 | orchestrator.workflow.[`workflowId`]     | named resource | read   | Allows the user to list and read the details of a _single_ workflow definition        |              |
-| orchestrator.workflow.use                | named resource | read   | Allows the user to run or abort _any_ workflow                                        |              |
-| orchestrator.workflow.use.[`workflowId`] | named resource | read   | Allows the user to run or abort the _single_ workflow                                 |              |
+| orchestrator.workflow.use                | named resource | update | Allows the user to run or abort _any_ workflow                                        |              |
+| orchestrator.workflow.use.[`workflowId`] | named resource | update | Allows the user to run or abort the _single_ workflow                                 |              |
 
 The user is permitted to do an action if either the generic permission or the specific one allows it.
 In other words, it is not possible to grant generic `orchestrator.workflow` and then selectively disable it for a specific workflow via `orchestrator.workflow.use.[workflowId]` with `deny`.
+
+The `[workflowId]` matches the identifier from the workflow definition.
+For example, in the [workflow definition](https://github.com/rhdhorchestrator/serverless-workflows/blob/main/workflows/greeting/greeting.sw.yaml) below, the identifier is `greeting`:
+
+```yaml greeting.sw.yaml
+id: greeting
+version: '1.0'
+specVersion: '0.8'
+name: Greeting workflow
+description: YAML based greeting workflow
+annotations:
+  - 'workflow-type/infrastructure'
+dataInputSchema: 'schemas/greeting.sw.input-schema.json'
+extensions:
+  - extensionid: workflow-output-schema
+    outputSchema: schemas/workflow-output-schema.json
+```
 
 ## Policy File
 
@@ -33,10 +50,10 @@ The users of the `default/workflowAdmin` role have full permissions (can list, r
 p, role:default/workflowUser, orchestrator.workflow.yamlgreet, read, allow
 p, role:default/workflowUser, orchestrator.workflow.wait-or-error, read, allow
 
-p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, use, allow
+p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, update, allow
 
 p, role:default/workflowAdmin, orchestrator.workflow, read, allow
-p, role:default/workflowAdmin, orchestrator.workflow.use, use, allow
+p, role:default/workflowAdmin, orchestrator.workflow.use, update, allow
 
 g, user:development/guest, role:default/workflowUser
 g, user:default/mareklibra, role:default/workflowAdmin
@@ -53,5 +70,19 @@ permission:
   enabled: true
   rbac:
     policies-csv-file: <absolute path to the policy file>
+    pluginsWithPermission:
+      - orchestrator
     policyFileReload: true
+    admin:
+      users:
+        - name: user:default/YOUR_USER
 ```
+
+## Limitations
+
+The RBAC UI recently expects all permissions to be statically listed at the application start-up time.
+
+The Orchestrator specific permissions (those with the `workflowId` in their name) are dynamically created and so the RBAC UI can not be used for their management.
+It is recommended to use either the policy CSV file or the RBAC API for their management instead.
+
+The generic permissions (means the `orchestrator.workflow` and `orchestrator.workflow.use`) are statically defined and so work fine within the RBAC UI.

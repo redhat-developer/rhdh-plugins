@@ -18,33 +18,14 @@ import { z } from 'zod';
 /**
  * @public
  */
-export const EntityFilterQuery = z.record(z.string(), z.string());
+export const EntityFilterQuerySchema = z.record(
+  z.string(),
+  z.string().or(z.array(z.string())),
+);
 /**
  * @public
  */
-export const AggregationsSchema = z
-  .array(
-    z.object({
-      name: z.string().optional(),
-      field: z.string(),
-      value: z.string().optional(),
-      type: z.enum(['count', 'min', 'max', 'avg', 'sum']),
-      orderFields: z
-        .array(
-          z.object({
-            field: z.enum(['value', 'count']),
-            order: z.enum(['asc', 'desc']),
-          }),
-        )
-        .optional(),
-      havingFilter: z
-        .object({
-          field: z.string(),
-          operator: z.enum(['=', '!=', '<>', '>', '<', '>=', '<=']),
-          value: z.string(),
-        })
-        .optional(),
-      filter: EntityFilterQuery.optional(),
-    }),
-  )
-  .min(1);
+export const EntityFacetSchema = z.object({
+  filter: EntityFilterQuerySchema.optional(),
+  facets: z.array(z.string()),
+});

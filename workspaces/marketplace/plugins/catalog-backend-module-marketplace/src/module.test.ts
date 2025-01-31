@@ -26,6 +26,6 @@ describe('catalogModuleMarketplace', () => {
       features: [catalogModuleMarketplace],
     });
 
-    expect(extensionPoint.addProcessor).toHaveBeenCalledTimes(4);
+    expect(extensionPoint.addProcessor).toHaveBeenCalledTimes(5);
   });
 });

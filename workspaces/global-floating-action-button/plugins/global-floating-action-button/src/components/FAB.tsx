@@ -39,7 +39,7 @@ const FABLabel = ({
   label: string;
   slot: Slot;
   showExternalIcon: boolean;
-  icon: string | React.ReactElement;
+  icon?: string | React.ReactElement;
   order: { externalIcon?: number; icon?: number };
 }) => {
   const styles = useStyles();
@@ -63,9 +63,11 @@ const FABLabel = ({
           {label}
         </Typography>
       )}
-      <Typography sx={{ mb: -1, order: order.icon }}>
-        <FabIcon icon={icon} />
-      </Typography>
+      {icon && (
+        <Typography sx={{ mb: -1, order: order.icon }}>
+          <FabIcon icon={icon} />
+        </Typography>
+      )}
     </Typography>
   );
 };
@@ -92,21 +94,13 @@ export const FAB = ({
       'Label is missing from your FAB component. A label is required for the aria-label attribute.',
       actionButton,
     );
+    return null;
   }
 
   const labelText =
     (actionButton.label || '').length > 20
       ? `${actionButton.label.slice(0, actionButton.label.length)}...`
       : actionButton.label;
-
-  if (!actionButton.icon) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      'Icon is missing from your FAB component. An icon is required to render a FAB button.',
-      actionButton,
-    );
-    return null;
-  }
 
   const getColor = () => {
     if (actionButton.color) {
@@ -133,7 +127,9 @@ export const FAB = ({
           {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
           style={{ color: '#1f1f1f' }}
           variant={
-            actionButton.showLabel || isExternal ? 'extended' : 'circular'
+            actionButton.showLabel || isExternal || !actionButton.icon
+              ? 'extended'
+              : 'circular'
           }
           size={size || actionButton.size || 'medium'}
           color={getColor()}
@@ -147,7 +143,9 @@ export const FAB = ({
           <FABLabel
             showExternalIcon={isExternal}
             icon={actionButton.icon}
-            label={actionButton.showLabel ? labelText : ''}
+            label={
+              actionButton.showLabel || !actionButton.icon ? labelText : ''
+            }
             order={
               displayOnRight
                 ? { externalIcon: isExternal ? 1 : -1, icon: 3 }

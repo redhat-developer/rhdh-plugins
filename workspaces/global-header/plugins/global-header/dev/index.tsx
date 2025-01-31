@@ -16,13 +16,128 @@
 
 import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
-import { TestApiProvider } from '@backstage/test-utils';
+import { mockApis, TestApiProvider } from '@backstage/test-utils';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
-
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
 import Button from '@mui/material/Button';
 
 import { globalHeaderPlugin, NotificationBanner } from '../src/plugin';
 import { ExampleComponent } from '../src/components/ExampleComponent';
+import { SearchComponent } from '../src/components/SearchComponent/SearchComponent';
+import { CreateDropdown } from '../src/components/HeaderDropdownComponent/CreateDropdown';
+import { HeaderIconButton } from '../src/components/HeaderIconButtonComponent/HeaderIconButton';
+import ProfileDropdown from '../src/components/HeaderDropdownComponent/ProfileDropdown';
+import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
+import { PluginStore } from '@openshift/dynamic-plugin-sdk';
+import {
+  Slot,
+  ComponentType,
+  GlobalHeaderComponentMountPoint,
+  ProfileDropdownMountPoint,
+  CreateDropdownMountPoint,
+} from '../src/types';
+import { configApiRef } from '@backstage/core-plugin-api';
+import { HeaderLink } from '../src/components/HeaderLinkComponent/HeaderLink';
+import { LogoutButton } from '../src/components/HeaderButtonComponent/LogoutButton';
+import { SoftwareTemplatesSection } from '../src/components/HeaderDropdownComponent/SoftwareTemplatesSection';
+import { RegisterAComponentSection } from '../src/components/HeaderDropdownComponent/RegisterAComponentSection';
+
+const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[] =
+  [
+    {
+      Component: SearchComponent,
+      config: {
+        type: ComponentType.SEARCH,
+        slot: Slot.HEADER_START,
+        priority: 100, // the greater the number, the more to the left it will be
+      },
+    },
+    {
+      Component: CreateDropdown as React.ComponentType,
+      config: {
+        type: ComponentType.DROPDOWN_BUTTON,
+        slot: Slot.HEADER_START,
+        priority: 90,
+        key: 'create',
+      },
+    },
+    {
+      Component: HeaderIconButton as React.ComponentType,
+      config: {
+        type: ComponentType.ICON_BUTTON,
+        slot: Slot.HEADER_START,
+        priority: 80,
+        props: {
+          icon: 'support',
+          tooltip: 'Support',
+          to: '/support',
+        },
+      },
+    },
+    {
+      Component: HeaderIconButton as React.ComponentType,
+      config: {
+        type: ComponentType.ICON_BUTTON,
+        slot: Slot.HEADER_START,
+        priority: 70,
+        props: {
+          key: 'notifications',
+          icon: 'notifications',
+          tooltip: 'Notifications',
+          to: '/notifications',
+        },
+      },
+    },
+    {
+      Component: ProfileDropdown as React.ComponentType,
+      config: {
+        type: ComponentType.DROPDOWN_BUTTON,
+        slot: Slot.HEADER_END,
+        priority: 0, // the greater the number, the more to the left it will be
+        key: 'profile',
+      },
+    },
+  ];
+
+const defaultCreateDropdownMountPoints: CreateDropdownMountPoint[] = [
+  {
+    Component: SoftwareTemplatesSection as React.ComponentType,
+    config: {
+      type: ComponentType.LIST,
+      priority: 10,
+    },
+  },
+  {
+    Component: RegisterAComponentSection as React.ComponentType,
+    config: {
+      type: ComponentType.LINK,
+      priority: 0,
+    },
+  },
+];
+
+const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
+  {
+    Component: HeaderLink as React.ComponentType,
+    config: {
+      type: ComponentType.LINK,
+      priority: 10,
+      props: {
+        title: 'Settings',
+        icon: 'manageAccounts',
+        link: '/settings',
+      },
+    },
+  },
+  {
+    Component: LogoutButton as React.ComponentType,
+    config: {
+      type: ComponentType.LOGOUT,
+      priority: 0,
+    },
+  },
+];
 
 const mockSearchApi = new MockSearchApi({
   results: [
@@ -37,12 +152,84 @@ const mockSearchApi = new MockSearchApi({
   ],
 });
 
+const mockConfigApi = mockApis.config({
+  data: {
+    dynamicPlugins: {
+      frontend: {
+        'backstage.plugin-notifications': {
+          dynamicRoutes: [{ path: '/notifications' }],
+        },
+      },
+    },
+  },
+});
+
+const entities = [
+  {
+    apiVersion: '1',
+    kind: 'Template',
+    metadata: {
+      name: 'mock-starred-template',
+      title: 'Mock Starred Template!',
+    },
+  },
+  {
+    apiVersion: '1',
+    kind: 'Template',
+    metadata: {
+      name: 'mock-starred-template-2',
+      title: 'Mock Starred Template 2!',
+    },
+  },
+  {
+    apiVersion: '1',
+    kind: 'Template',
+    metadata: {
+      name: 'mock-starred-template-3',
+      title: 'Mock Starred Template 3!',
+    },
+  },
+  {
+    apiVersion: '1',
+    kind: 'Template',
+    metadata: {
+      name: 'mock-starred-template-4',
+      title: 'Mock Starred Template 4!',
+    },
+  },
+];
+
+const catalogApi = catalogApiMock({ entities });
+
+const scalprumState: ScalprumState = {
+  initialized: true,
+  api: {
+    dynamicRootConfig: {
+      mountPoints: {
+        'global.header/component': defaultGlobalHeaderComponentsMountPoints,
+        'global.header/create': defaultCreateDropdownMountPoints,
+        'global.header/profile': defaultProfileDropdownMountPoints,
+      },
+    },
+  },
+  config: {},
+  pluginStore: new PluginStore(),
+};
+
 createDevApp()
   .registerPlugin(globalHeaderPlugin)
   .addPage({
     element: (
-      <TestApiProvider apis={[[searchApiRef, mockSearchApi]]}>
-        <ExampleComponent />
+      <TestApiProvider
+        apis={[
+          [catalogApiRef, catalogApi],
+          [searchApiRef, mockSearchApi],
+          [configApiRef, mockConfigApi],
+        ]}
+      >
+        <ScalprumContext.Provider value={scalprumState}>
+          <ExampleComponent />
+        </ScalprumContext.Provider>
       </TestApiProvider>
     ),
     title: 'Global Header',

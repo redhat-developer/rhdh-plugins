@@ -45,12 +45,14 @@ const mockQueryEntities = jest.fn();
 const mockGetEntities = jest.fn();
 const mockGetEntityByRef = jest.fn();
 const mockQueryEntitiesByRefs = jest.fn();
+const mockEntityFacets = jest.fn();
 
 const mockCatalogClient = {
   getEntities: mockGetEntities,
   queryEntities: mockQueryEntities,
   getEntityByRef: mockGetEntityByRef,
   getEntitiesByRefs: mockQueryEntitiesByRefs,
+  getEntityFacets: mockEntityFacets,
 } as unknown as CatalogClient;
 
 beforeEach(() => {
@@ -193,6 +195,26 @@ describe('MarketplaceCatalogClient', () => {
         'non-existent-featured-plugins',
       );
       expect(plugins).toHaveLength(0);
+    });
+  });
+
+  describe('getEntityFacets', () => {
+    beforeEach(() => {
+      mockEntityFacets.mockReturnValue({
+        facets: [
+          {
+            kind: 'plugin',
+            count: 1,
+          },
+        ],
+      });
+    });
+
+    it('should return the entity facets', async () => {
+      const api = new MarketplaceCatalogClient(options);
+      const { facets } = await api.getEntityFacets({ facets: ['kind'] });
+
+      expect(facets).toHaveLength(1);
     });
   });
 });

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 0.0.5
+
+### Patch Changes
+
+- bcc4f0a: make the fab icon optional
+
 ## 0.0.4
 
 ### Patch Changes

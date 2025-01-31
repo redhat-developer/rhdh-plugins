@@ -1,0 +1,5 @@
+lightspeed:
+  servers:
+    - id: ${SERVER_ID}
+      url: ${SERVER_URL}
+      token: ${SERVER_TOKEN}

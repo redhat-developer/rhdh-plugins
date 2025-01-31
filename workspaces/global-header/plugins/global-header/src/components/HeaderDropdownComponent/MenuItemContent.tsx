@@ -18,7 +18,6 @@ import React from 'react';
 import Typography from '@mui/material/Typography';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 import Box from '@mui/material/Box';
-import SmallIconWrapper from '../HeaderIconButton/SmallIconWrapper';
 
 const MenuItemContent: React.FC<{
   Icon?: React.ElementType<SvgIconProps>;
@@ -27,10 +26,7 @@ const MenuItemContent: React.FC<{
 }> = ({ Icon, label, subLabel }) => (
   <Box sx={{ display: 'flex', alignItems: 'center', margin: '8px 0' }}>
     {Icon && (
-      <SmallIconWrapper
-        IconComponent={Icon}
-        sx={{ marginRight: '0.5rem', flexShrink: 0 }}
-      />
+      <Icon fontSize="small" sx={{ marginRight: '0.5rem', flexShrink: 0 }} />
     )}
     <Box>
       <Typography variant="body2">{label}</Typography>

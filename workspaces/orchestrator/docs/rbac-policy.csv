@@ -1,12 +1,12 @@
 p, role:default/workflowUser, orchestrator.workflow.yamlgreet, read, allow
 p, role:default/workflowUser, orchestrator.workflow.wait-or-error, read, allow
 
-##p, role:default/workflowUser, orchestrator.workflow.use, use, allow
-p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, use, allow
-##p, role:default/workflowUser, orchestrator.workflow.use.wait-or-error, use, allow
+##p, role:default/workflowUser, orchestrator.workflow.use, update, allow
+p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, update, allow
+##p, role:default/workflowUser, orchestrator.workflow.use.wait-or-error, update, allow
 
 p, role:default/workflowAdmin, orchestrator.workflow, read, allow
-p, role:default/workflowAdmin, orchestrator.workflow.use, use, allow
+p, role:default/workflowAdmin, orchestrator.workflow.use, update, allow
 
 g, user:development/guest, role:default/workflowUser
 g, user:default/rgolangh, role:default/workflowAdmin

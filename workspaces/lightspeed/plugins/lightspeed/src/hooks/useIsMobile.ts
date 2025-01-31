@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import React from 'react';
-import { SvgIconProps } from '@mui/material/SvgIcon';
 
-export type IconComponentType = React.ElementType<SvgIconProps>;
+export const useIsMobile = () => {
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
 
-interface SmallIconWrapperProps extends SvgIconProps {
-  IconComponent: IconComponentType;
-}
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
 
-const SmallIconWrapper: React.FC<SmallIconWrapperProps> = ({
-  IconComponent,
-  ...props
-}) => {
-  return <IconComponent fontSize="small" {...props} />;
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return isMobile;
 };
-
-export default SmallIconWrapper;

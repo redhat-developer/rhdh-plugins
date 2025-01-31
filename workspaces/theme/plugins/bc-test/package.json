@@ -33,19 +33,19 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/core-components": "^0.15.1",
-    "@backstage/core-plugin-api": "^1.10.0",
-    "@backstage/plugin-user-settings": "^0.8.16",
+    "@backstage/core-components": "^0.16.3",
+    "@backstage/core-plugin-api": "^1.10.3",
+    "@backstage/plugin-user-settings": "^0.8.18",
     "@mui/material": "^5"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.28.0",
-    "@backstage/core-app-api": "^1.15.1",
-    "@backstage/dev-utils": "^1.1.2",
-    "@backstage/test-utils": "^1.7.0",
+    "@backstage/cli": "^0.29.5",
+    "@backstage/core-app-api": "^1.15.4",
+    "@backstage/dev-utils": "^1.1.6",
+    "@backstage/test-utils": "^1.7.4",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",

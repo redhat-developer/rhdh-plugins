@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import IconButton from '@mui/material/IconButton';
-import SmallIconWrapper, { IconComponentType } from './SmallIconWrapper';
+import {
+  createComponentExtension,
+  createPlugin,
+} from '@backstage/core-plugin-api';
 
-interface HeaderIconButtonProps {
-  Icon: IconComponentType;
-  onClick: () => void;
-}
+/**
+ * @public
+ */
+export const applicationListenerTestPlugin = createPlugin({
+  id: 'application-listener-test',
+});
 
-export const HeaderIconButton: React.FC<HeaderIconButtonProps> = ({
-  Icon,
-  onClick,
-}) => {
-  return (
-    <IconButton
-      color="inherit"
-      aria-label="help"
-      sx={{ mr: 1.5 }}
-      onClick={onClick}
-    >
-      <SmallIconWrapper IconComponent={Icon} />
-    </IconButton>
-  );
-};
+/**
+ * @public
+ */
+export const LocationListener = applicationListenerTestPlugin.provide(
+  createComponentExtension({
+    name: 'LocationListener',
+    component: {
+      lazy: () =>
+        import('./components/LocationListener').then(m => m.LocationListener),
+    },
+  }),
+);
