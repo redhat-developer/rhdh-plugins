@@ -15,7 +15,7 @@ The sections below are relevant for static plugins. If the plugin is expected to
 
 #### Prerequisites
 
-- Follow the Bulk import backend plugin [README](https://github.com/janus-idp/backstage-plugins/blob/main/plugins/bulk-import-backend/README.md) to integrate bulk import in your Backstage instance.
+- Follow the Bulk import backend plugin [README](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/bulk-import/plugins/bulk-import-backend/README.md) to integrate bulk import in your Backstage instance.
 
 - Follow the [GitHub Locations](https://backstage.io/docs/integrations/github/locations) to integrate GitHub integrations in your Backstage instance. For now, the plugin only supports loading catalog entities from github.com or GitHub Enterprise.
 
