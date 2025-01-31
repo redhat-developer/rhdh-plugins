@@ -4,4 +4,4 @@
 '@red-hat-developer-hub/backstage-plugin-marketplace': patch
 ---
 
-add sorting , filtering , pagination in /plugins api
+add optional sorting, filtering, pagination to marketplace api

@@ -26,6 +26,9 @@ const DefaultOrderFields: EntityOrderQuery = [
 const defaultLimit = 20;
 const requiredFilter = { kind: 'plugin' };
 
+/**
+ * @public
+ */
 export const convertGetPluginsRequestToQueryEntitiesRequest = (
   query?: GetPluginsRequest,
 ): QueryEntitiesRequest => {
@@ -68,6 +71,9 @@ export const convertGetPluginsRequestToQueryEntitiesRequest = (
   return payload;
 };
 
+/**
+ * @public
+ */
 export const convertGetPluginRequestToSearchParams = (
   query?: GetPluginsRequest,
 ): URLSearchParams => {
@@ -89,6 +95,9 @@ export const convertGetPluginRequestToSearchParams = (
   return params;
 };
 
+/**
+ * @public
+ */
 export const convertSearchParamsToGetPluginsRequest = (
   params?: URLSearchParams,
 ): GetPluginsRequest => {
