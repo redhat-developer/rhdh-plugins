@@ -52,10 +52,6 @@ export const registerCommands = (program: Command) => {
       '--namespace [namespace]',
       'metadata.namespace for the generated Package entities',
     )
-    .option(
-      '--owner [owner]',
-      'spec.owner for the generated Package entities',
-      'system/rhdh',
-    )
+    .option('--owner [owner]', 'spec.owner for the generated Package entities')
     .action(lazy(() => import('./generate').then(m => m.default)));
 };
