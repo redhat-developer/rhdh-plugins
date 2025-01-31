@@ -20,6 +20,8 @@ import {
 } from '@backstage/catalog-client/index';
 import { GetPluginsRequest, SortOrder } from '../types';
 
+const requiredFilter = { kind: 'plugin' };
+
 /**
  *
  * @public
@@ -85,9 +87,9 @@ export const convertGetPluginsRequestToQueryEntitiesRequest = (
   query?: GetPluginsRequest,
 ): QueryEntitiesRequest => {
   const entitiesRequest: QueryEntitiesRequest = {};
-  if (query?.filter) {
-    entitiesRequest.filter = query.filter;
-  }
+
+  entitiesRequest.filter = { ...query?.filter, ...requiredFilter };
+
   if (query?.orderFields) {
     entitiesRequest.orderFields = query.orderFields;
   }

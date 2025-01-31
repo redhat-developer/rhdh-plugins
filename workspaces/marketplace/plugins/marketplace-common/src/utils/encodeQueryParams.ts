@@ -19,8 +19,6 @@ import {
   GetPluginsRequest,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-const requiredFilter = { kind: 'plugin' };
-
 /**
  * @public
  */
@@ -82,10 +80,11 @@ export const encodeGetPluginsQueryParams = (
       params.append(key, value);
     });
   }
-
-  encodeFilterParams({ ...filter, ...requiredFilter }).forEach((value, key) =>
-    params.append(key, value),
-  );
+  if (filter) {
+    encodeFilterParams(filter).forEach((value, key) =>
+      params.append(key, value),
+    );
+  }
   return params;
 };
 

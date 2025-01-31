@@ -94,13 +94,13 @@ describe('MarketplaceCatalogClient', () => {
     it('should return the plugins', async () => {
       const api = new MarketplaceCatalogClient(options);
       const plugins = await api.getPlugins();
-      expect(plugins).toHaveLength(2);
+      expect(plugins?.items).toHaveLength(2);
     });
 
     it('should return the plugins when the auth options is not passed', async () => {
       const api = new MarketplaceCatalogClient({ ...options, auth: undefined });
       const plugins = await api.getPlugins();
-      expect(plugins).toHaveLength(2);
+      expect(plugins?.items).toHaveLength(2);
     });
   });
 
