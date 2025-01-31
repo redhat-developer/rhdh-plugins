@@ -30,7 +30,7 @@ import {
   MarketplacePluginList,
   MarketplacePluginWithPageInfo,
 } from '../types';
-import { convertGetPluginsRequestToQueryEntitiesRequest } from '../util';
+import { convertGetPluginsRequestToQueryEntitiesRequest } from '../utils';
 
 /**
  * @public
@@ -63,11 +63,15 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
   }
 
   async getPlugins(
-    query?: GetPluginsRequest,
+    request?: GetPluginsRequest,
   ): Promise<MarketplacePluginWithPageInfo> {
     const token = await this.getServiceToken();
-    const payload = convertGetPluginsRequestToQueryEntitiesRequest(query);
-    const result = await this.catalog.queryEntities(payload, token);
+    const queryEntitiesRequest =
+      convertGetPluginsRequestToQueryEntitiesRequest(request);
+    const result = await this.catalog.queryEntities(
+      queryEntitiesRequest,
+      token,
+    );
 
     return {
       items: result.items as MarketplacePlugin[],

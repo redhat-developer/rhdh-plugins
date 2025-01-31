@@ -25,7 +25,7 @@ import {
   MarketplacePlugin,
   MarketplacePluginList,
   MarketplacePluginWithPageInfo,
-  convertGetPluginRequestToSearchParams,
+  encodeGetPluginsQueryParams,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export type MarketplaceBackendClientOptions = {
@@ -46,7 +46,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     request?: GetPluginsRequest,
   ): Promise<MarketplacePluginWithPageInfo> {
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
-    const params = convertGetPluginRequestToSearchParams(request);
+    const params = encodeGetPluginsQueryParams(request);
     const query = params.toString();
     const url = `${baseUrl}/plugins${query ? '?' : ''}${query}`;
 

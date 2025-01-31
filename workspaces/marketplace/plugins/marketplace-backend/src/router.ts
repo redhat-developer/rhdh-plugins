@@ -20,6 +20,7 @@ import Router from 'express-promise-router';
 import { HttpAuthService } from '@backstage/backend-plugin-api';
 import { InputError, NotFoundError } from '@backstage/errors';
 import {
+  decodeGetPluginsRequest,
   decodeQueryParams,
   EntityFacetSchema,
   GetEntityFacetsRequest,
@@ -38,8 +39,9 @@ export async function createRouter({
   router.use(express.json());
 
   router.get('/plugins', async (req, res) => {
-    const query = req.query as Partial<GetPluginsRequest>;
-    const plugins = await marketplaceApi.getPlugins(query);
+    const query = req.url.split('?')[1] || '';
+    const request: GetPluginsRequest = decodeGetPluginsRequest(query);
+    const plugins = await marketplaceApi.getPlugins(request);
     res.json(plugins);
   });
 
