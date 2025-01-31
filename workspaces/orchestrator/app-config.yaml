@@ -43,6 +43,9 @@ backend:
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
 integrations: {}
+# integrations:
+#   github:
+#     - token: ${GITHUB_TOKEN}
 
 proxy:
   '/quay/api':
@@ -113,6 +116,9 @@ catalog:
 
     - type: file
       target: ../../entities/templates.yaml
+
+    # - type: url
+    #   target: https://github.com/mareklibra/generated-workflow-templates/blob/main/templates.yaml
 
 dynamicPlugins:
   frontend: {}
