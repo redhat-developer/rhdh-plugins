@@ -18,7 +18,11 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scaffolderActionsExtensionPoint } from '@backstage/plugin-scaffolder-node/alpha';
-import { createRunWorkflowAction } from './actions/runWorkflow';
+
+import {
+  createGetWorkflowParamsAction,
+  createRunWorkflowAction,
+} from './actions';
 
 /**
  * A backend module that registers the action into the scaffolder
@@ -36,6 +40,9 @@ export const scaffolderModule = createBackendModule({
       async init({ scaffolderActions, discoveryService, authService }) {
         scaffolderActions.addActions(
           createRunWorkflowAction(discoveryService, authService),
+        );
+        scaffolderActions.addActions(
+          createGetWorkflowParamsAction(discoveryService, authService),
         );
       },
     });

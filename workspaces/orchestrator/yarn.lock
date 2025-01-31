@@ -18327,6 +18327,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     axios: ^1.7.7
+    js-yaml: ^4.1.0
   languageName: unknown
   linkType: soft
 

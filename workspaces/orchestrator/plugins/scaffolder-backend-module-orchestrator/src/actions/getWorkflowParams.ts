@@ -1,0 +1,140 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import { AuthService } from '@backstage/backend-plugin-api';
+import { DiscoveryApi } from '@backstage/plugin-permission-common/index';
+import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
+import { JsonObject } from '@backstage/types/index';
+
+import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
+import { dump } from 'js-yaml';
+
+import {
+  Configuration,
+  DefaultApi,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
+type RunWorkflowTemplateActionInput = { workflow_id: string; indent?: number };
+type RunWorkflowTemplateActionOutput = {
+  title: string;
+  description: string;
+  parameters: string;
+  runWorkflowOutput: string;
+};
+
+const getError = (err: unknown): Error => {
+  if (
+    isAxiosError<{ error: { message: string; name: string } }>(err) &&
+    err.response?.data?.error?.message
+  ) {
+    const error = new Error(err.response?.data?.error?.message);
+    error.name = err.response?.data?.error?.name || 'Error';
+    return error;
+  }
+  return err as Error;
+};
+
+const indentString = (str: string, indent: number) =>
+  indent ? str.replace(/^/gm, ' '.repeat(indent)) : str;
+
+export const createGetWorkflowParamsAction = (
+  discoveryService: DiscoveryApi,
+  authService: AuthService,
+) =>
+  createTemplateAction<
+    RunWorkflowTemplateActionInput,
+    RunWorkflowTemplateActionOutput
+  >({
+    id: 'orchestrator:workflow:get_params',
+    description: 'Collect parameters of a SonataFlow workflow.',
+    supportsDryRun: false,
+    schema: {
+      input: {
+        required: ['workflow_id'],
+        type: 'object',
+        properties: {
+          workflow_id: {
+            type: 'string',
+          },
+        },
+      },
+    },
+    async handler(ctx) {
+      const workflowId = ctx.input?.workflow_id;
+      if (!workflowId) {
+        throw new Error('Missing workflow_id required input parameter.');
+      }
+
+      const baseUrl = await discoveryService.getBaseUrl('orchestrator');
+      const config = new Configuration({});
+
+      const axiosInstance = axios.create({
+        baseURL: baseUrl,
+      });
+      const api = new DefaultApi(config, baseUrl, axiosInstance);
+
+      const { token } = (await authService.getPluginRequestToken({
+        onBehalfOf: await ctx.getInitiatorCredentials(),
+        targetPluginId: 'orchestrator',
+      })) ?? { token: ctx.secrets?.backstageToken };
+      const reqConfigOption: AxiosRequestConfig = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      try {
+        const { data: workflow } = await api.getWorkflowOverviewById(
+          workflowId,
+          reqConfigOption,
+        );
+        if (!workflow) {
+          throw new Error(`Can not find workflow ${workflowId}`);
+        }
+
+        const { data: inputSchemaWrapper } =
+          await api.getWorkflowInputSchemaById(
+            workflowId,
+            undefined,
+            reqConfigOption,
+          );
+        const inputSchema = inputSchemaWrapper.inputSchema as
+          | JsonObject
+          | undefined;
+
+        console.log('-- workflow: ', workflow);
+        console.log('-- inputSchema: ', inputSchema);
+
+        ctx.output('title', workflow.name || workflowId);
+        ctx.output('description', workflow.description || '');
+        ctx.output(
+          'runWorkflowOutput',
+          '${{ steps.runWorkflow.output.instanceUrl }}',
+        );
+
+        if (inputSchema?.properties) {
+          let parametersYaml = dump(inputSchema, { indent: 2 });
+          parametersYaml = indentString(parametersYaml, ctx.input?.indent || 0);
+          parametersYaml = `\n${parametersYaml}`;
+
+          ctx.output('parameters', parametersYaml);
+        } else {
+          ctx.output('parameters', '{}');
+        }
+      } catch (err) {
+        throw getError(err);
+      }
+    },
+  });
