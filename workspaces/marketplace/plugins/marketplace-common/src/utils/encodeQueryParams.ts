@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EntityFilterQuery } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { EntityOrderQuery } from '@backstage/catalog-client/index';
+import {
+  EntityFilterQuery,
+  GetPluginsRequest,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 /**
  * @public
@@ -32,6 +36,55 @@ export const encodeFilterParams = (filter: EntityFilterQuery) => {
     });
   });
 
+  return params;
+};
+
+/**
+ * @public
+ */
+export const encodeOrderFieldsParams = (orderFields: EntityOrderQuery) => {
+  const params = new URLSearchParams();
+  if (Array.isArray(orderFields)) {
+    orderFields.forEach(({ field, order }) => {
+      params.append(
+        'orderFields',
+        `${encodeURIComponent(field)},${encodeURIComponent(order)}`,
+      );
+    });
+  } else {
+    const { field, order } = orderFields;
+    params.append('orderFields', `${field},${order}`);
+  }
+  return params;
+};
+
+/**
+ * @public
+ */
+export const encodeGetPluginsQueryParams = (
+  options?: GetPluginsRequest,
+): URLSearchParams => {
+  const params = new URLSearchParams();
+  const { searchTerm, limit, offset, orderFields, filter } = options || {};
+  if (limit) {
+    params.append('limit', String(limit));
+  }
+  if (offset) {
+    params.append('offset', String(offset));
+  }
+  if (searchTerm) {
+    params.append('searchTerm', encodeURIComponent(searchTerm));
+  }
+  if (orderFields) {
+    encodeOrderFieldsParams(orderFields).forEach((value, key) => {
+      params.append(key, value);
+    });
+  }
+  if (filter) {
+    encodeFilterParams(filter).forEach((value, key) =>
+      params.append(key, value),
+    );
+  }
   return params;
 };
 

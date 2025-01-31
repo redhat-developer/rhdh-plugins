@@ -13,13 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { GetPluginsRequest } from '../types';
 import {
   decodeFacetParams,
   decodeFilterParams,
   decodeQueryParams,
+  decodeGetPluginsRequest,
+  decodeOrderFields,
 } from './decodeQueryParams';
 
 describe('decodeFilterParams', () => {
+  it('should decode single orderFields', () => {
+    const searchParams = new URLSearchParams(
+      'orderFields=metadata.title%2Casc',
+    );
+    expect(decodeOrderFields(searchParams)).toEqual([
+      { field: 'metadata.title', order: 'asc' },
+    ]);
+  });
+
+  it('should decode multiple orderFields', () => {
+    const searchParams = new URLSearchParams(
+      'orderFields=metadata.title%2Cdesc&orderFields=metadata.name%2Casc',
+    );
+    expect(decodeOrderFields(searchParams)).toEqual([
+      { field: 'metadata.title', order: 'desc' },
+      { field: 'metadata.name', order: 'asc' },
+    ]);
+  });
+
+  it('should decode GetPlugins Request', () => {
+    const encodedString =
+      'filter=metadata.name%3Dsearch&filter=spec.type%3Dbackend-plugin&orderFields=metadata.title%2Cdesc&orderFields=metadata.name%2Casc&searchTerm=search&limit=2&offset=1';
+    const params: GetPluginsRequest = {
+      filter: {
+        'metadata.name': ['search'],
+        'spec.type': ['backend-plugin'],
+      },
+      orderFields: [
+        { field: 'metadata.title', order: 'desc' },
+        { field: 'metadata.name', order: 'asc' },
+      ],
+      searchTerm: 'search',
+      limit: 2,
+      offset: 1,
+    };
+    expect(decodeGetPluginsRequest(encodedString)).toEqual(params);
+  });
+
   it('should decode single filter', () => {
     const searchParams = new URLSearchParams('filter=kind%3Dplugin');
     expect(decodeFilterParams(searchParams)).toEqual({ kind: ['plugin'] });

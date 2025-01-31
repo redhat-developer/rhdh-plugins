@@ -9,9 +9,13 @@ import { CatalogApi } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import { EntityFilterQuery } from '@backstage/catalog-client';
 import { EntityFilterQuery as EntityFilterQuery_2 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { EntityOrderQuery } from '@backstage/catalog-client';
+import { EntityOrderQuery as EntityOrderQuery_2 } from '@backstage/catalog-client/index';
 import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 import { GetEntityFacetsResponse } from '@backstage/catalog-client';
+import { GetPluginsRequest as GetPluginsRequest_2 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { JsonObject } from '@backstage/types';
+import { QueryEntitiesRequest } from '@backstage/catalog-client/index';
 import { z } from 'zod';
 
 // @public (undocumented)
@@ -23,10 +27,22 @@ export interface AppConfigExample extends JsonObject {
 }
 
 // @public (undocumented)
+export const convertGetPluginsRequestToQueryEntitiesRequest: (query?: GetPluginsRequest) => QueryEntitiesRequest;
+
+// @public (undocumented)
 export const decodeFacetParams: (searchParams: URLSearchParams) => string[];
 
 // @public (undocumented)
 export const decodeFilterParams: (searchParams: URLSearchParams) => Record<string, string[]>;
+
+// @public (undocumented)
+export const decodeGetPluginsRequest: (queryString: string) => GetPluginsRequest;
+
+// @public (undocumented)
+export const decodeOrderFields: (searchParams: URLSearchParams) => {
+    field: string;
+    order: "desc" | "asc";
+}[];
 
 // @public (undocumented)
 export const decodeQueryParams: (queryString: string) => {
@@ -39,6 +55,12 @@ export const encodeFacetParams: (facets: string[]) => URLSearchParams;
 
 // @public (undocumented)
 export const encodeFilterParams: (filter: EntityFilterQuery_2) => URLSearchParams;
+
+// @public (undocumented)
+export const encodeGetPluginsQueryParams: (options?: GetPluginsRequest_2) => URLSearchParams;
+
+// @public (undocumented)
+export const encodeOrderFieldsParams: (orderFields: EntityOrderQuery_2) => URLSearchParams;
 
 // @public (undocumented)
 export const encodeQueryParams: (options?: {
@@ -63,9 +85,24 @@ export { EntityFilterQuery }
 // @public (undocumented)
 export const EntityFilterQuerySchema: z.ZodRecord<z.ZodString, z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">]>>;
 
+// @public (undocumented)
+export type FullTextFilter = {
+    term: string;
+    fields?: string[];
+};
+
 export { GetEntityFacetsRequest }
 
 export { GetEntityFacetsResponse }
+
+// @public (undocumented)
+export type GetPluginsRequest = {
+    limit?: number;
+    offset?: number;
+    filter?: EntityFilterQuery;
+    orderFields?: EntityOrderQuery;
+    searchTerm?: string;
+};
 
 // @public (undocumented)
 export enum InstallStatus {
@@ -89,7 +126,7 @@ export interface MarketplaceApi {
     // (undocumented)
     getPluginLists(): Promise<MarketplacePluginList[]>;
     // (undocumented)
-    getPlugins(): Promise<MarketplacePlugin[]>;
+    getPlugins(request?: GetPluginsRequest): Promise<MarketplacePluginWithPageInfo>;
     // (undocumented)
     getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
 }
@@ -106,7 +143,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     // (undocumented)
     getPluginLists(): Promise<MarketplacePluginList[]>;
     // (undocumented)
-    getPlugins(): Promise<MarketplacePlugin[]>;
+    getPlugins(request?: GetPluginsRequest): Promise<MarketplacePluginWithPageInfo>;
     // (undocumented)
     getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
 }
@@ -205,6 +242,27 @@ export interface MarketplacePluginSpec extends JsonObject {
     installStatus?: keyof typeof InstallStatus;
     // (undocumented)
     packages?: (string | MarketplacePluginPackage)[];
+}
+
+// @public (undocumented)
+export interface MarketplacePluginWithPageInfo {
+    // (undocumented)
+    items: MarketplacePlugin[];
+    // (undocumented)
+    pageInfo?: {
+        nextCursor?: string;
+        prevCursor?: string;
+    };
+    // (undocumented)
+    totalItems?: number;
+}
+
+// @public (undocumented)
+export enum SortOrder {
+    // (undocumented)
+    asc = "asc",
+    // (undocumented)
+    desc = "desc"
 }
 
 ```

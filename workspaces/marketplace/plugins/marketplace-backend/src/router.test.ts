@@ -140,7 +140,7 @@ describe('createRouter', () => {
       '/api/marketplace/plugins',
     );
     expect(response.status).toEqual(200);
-    expect(response.body).toHaveLength(2);
+    expect(response.body.items).toHaveLength(2);
   });
 
   it('should get the plugin by name', async () => {

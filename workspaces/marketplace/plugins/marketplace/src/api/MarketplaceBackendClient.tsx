@@ -17,12 +17,15 @@
 import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 
 import {
+  GetPluginsRequest,
   encodeQueryParams,
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
   MarketplaceApi,
   MarketplacePlugin,
   MarketplacePluginList,
+  MarketplacePluginWithPageInfo,
+  encodeGetPluginsQueryParams,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export type MarketplaceBackendClientOptions = {
@@ -39,9 +42,13 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     this.fetchApi = options.fetchApi;
   }
 
-  async getPlugins(): Promise<MarketplacePlugin[]> {
+  async getPlugins(
+    request?: GetPluginsRequest,
+  ): Promise<MarketplacePluginWithPageInfo> {
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
-    const url = `${baseUrl}/plugins`;
+    const params = encodeGetPluginsQueryParams(request);
+    const query = params.toString();
+    const url = `${baseUrl}/plugins${query ? '?' : ''}${query}`;
 
     const response = await this.fetchApi.fetch(url);
     if (!response.ok) {

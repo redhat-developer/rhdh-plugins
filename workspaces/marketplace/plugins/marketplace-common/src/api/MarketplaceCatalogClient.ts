@@ -23,11 +23,14 @@ import {
 } from '@backstage/catalog-client';
 import { NotFoundError } from '@backstage/errors';
 import {
+  GetPluginsRequest,
   MarketplaceApi,
   MarketplaceKinds,
   MarketplacePlugin,
   MarketplacePluginList,
+  MarketplacePluginWithPageInfo,
 } from '../types';
+import { convertGetPluginsRequestToQueryEntitiesRequest } from '../utils';
 
 /**
  * @public
@@ -59,18 +62,22 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     });
   }
 
-  async getPlugins(): Promise<MarketplacePlugin[]> {
+  async getPlugins(
+    request?: GetPluginsRequest,
+  ): Promise<MarketplacePluginWithPageInfo> {
     const token = await this.getServiceToken();
+    const queryEntitiesRequest =
+      convertGetPluginsRequestToQueryEntitiesRequest(request);
     const result = await this.catalog.queryEntities(
-      {
-        filter: {
-          kind: 'plugin',
-        },
-      },
+      queryEntitiesRequest,
       token,
     );
 
-    return result.items as MarketplacePlugin[];
+    return {
+      items: result.items as MarketplacePlugin[],
+      totalItems: result.totalItems,
+      pageInfo: result.pageInfo,
+    };
   }
 
   async getPluginLists(): Promise<MarketplacePluginList[]> {

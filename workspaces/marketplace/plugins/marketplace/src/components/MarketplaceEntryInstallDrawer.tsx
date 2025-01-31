@@ -104,7 +104,7 @@ const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
 
 const Entry = ({ entryName }: { entryName: string }) => {
   const plugins = usePlugins();
-  const entry = plugins.data?.find(e => e.metadata.name === entryName);
+  const entry = plugins.data?.items?.find(e => e.metadata.name === entryName);
 
   if (plugins.isLoading) {
     return <EntryContentSkeleton />;
