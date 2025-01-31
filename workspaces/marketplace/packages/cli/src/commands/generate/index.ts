@@ -148,8 +148,8 @@ export default async (opts: OptionValues) => {
       }
 
       const entity: MarketplacePackage = {
-        kind: MarketplaceKinds.package,
         apiVersion: MARKETPLACE_API_VERSION,
+        kind: MarketplaceKinds.package,
         metadata: {
           name: entityName(packageJSON.name),
           namespace: namespace || undefined,
