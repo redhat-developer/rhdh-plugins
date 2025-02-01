@@ -3,7 +3,7 @@ kind: Template
 metadata:
   name: convert-workflow-to-template
   title: Convert serverless workflow to a template
-  description: Creates a software template out of an existing serverless workflow.
+  description: Create a software template out of an existing serverless workflow.
   tags:
     - orchestrator
 
@@ -82,7 +82,6 @@ spec:
           title: ${{ steps.workflow_params.output.title }}
           description: ${{ steps.workflow_params.output.description }}
           parameters: ${{ steps.workflow_params.output.parameters }}
-          runWorkflowOutput: ${{steps.workflow_params.output.runWorkflowOutput}}
           repoUrl: ${{ parameters.repoUrl | parseRepoUrl }}
           owner: ${{ parameters.owner }}
           repoName: ${{ (parameters.repoUrl | parseRepoUrl).repo }}

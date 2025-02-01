@@ -31,7 +31,6 @@ type RunWorkflowTemplateActionOutput = {
   title: string;
   description: string;
   parameters: string;
-  runWorkflowOutput: string;
 };
 
 const getError = (err: unknown): Error => {
@@ -116,13 +115,15 @@ export const createGetWorkflowParamsAction = (
 
         ctx.output('title', workflow.name || workflowId);
         ctx.output('description', workflow.description || '');
-        ctx.output(
-          'runWorkflowOutput',
-          '${{ steps.runWorkflow.output.instanceUrl }}',
-        );
 
         if (inputSchema?.properties) {
-          let parametersYaml = dump(inputSchema, { indent: 2 });
+          let parametersYaml = dump(
+            [
+              // scaffolder expects an array on the top-level
+              inputSchema,
+            ],
+            { indent: 2 },
+          );
           parametersYaml = indentString(parametersYaml, ctx.input?.indent || 0);
           parametersYaml = `\n${parametersYaml}`;
 
