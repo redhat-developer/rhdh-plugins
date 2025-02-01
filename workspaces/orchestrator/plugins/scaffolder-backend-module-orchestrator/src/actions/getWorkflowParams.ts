@@ -114,9 +114,6 @@ export const createGetWorkflowParamsAction = (
           | JsonObject
           | undefined;
 
-        console.log('-- workflow: ', workflow);
-        console.log('-- inputSchema: ', inputSchema);
-
         ctx.output('title', workflow.name || workflowId);
         ctx.output('description', workflow.description || '');
         ctx.output(

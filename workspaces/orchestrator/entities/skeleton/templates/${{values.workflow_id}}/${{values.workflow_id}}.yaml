@@ -19,9 +19,9 @@ spec:
       name: Run workflow
       action: orchestrator:workflow:run
       input:
-        parameters: ${{ values.dollar }}{{ parameters }}
+        parameters: {% raw %}${{ parameters }}{% endraw %}
 
   output:
     links:
       - title: Open workflow run
-        url: ${{ values.dollar }}{{ steps.runWorkflow.output.instanceUrl }}
+        url: "{% raw %}${{ steps.runWorkflow.output.instanceUrl }}{% endraw %}"

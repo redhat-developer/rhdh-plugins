@@ -87,7 +87,6 @@ spec:
           owner: ${{ parameters.owner }}
           repoName: ${{ (parameters.repoUrl | parseRepoUrl).repo }}
           orgName: ${{ (parameters.repoUrl | parseRepoUrl).owner }}
-          dollar: "$"
 
     # This step publishes the contents of the working directory to GitHub if it is a new repository.
     - id: publish
