@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/marketplace-cli
 
+## 0.0.2
+
+### Patch Changes
+
+- Updated dependencies [4e0ec06]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.0.8
+
 ## 0.0.1
 
 ### Patch Changes

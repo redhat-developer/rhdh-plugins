@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.0.8
+
+### Patch Changes
+
+- 4e0ec06: add optional sorting, filtering, pagination to marketplace api
+- Updated dependencies [4e0ec06]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.0.8
+
 ## 0.0.7
 
 ### Patch Changes
