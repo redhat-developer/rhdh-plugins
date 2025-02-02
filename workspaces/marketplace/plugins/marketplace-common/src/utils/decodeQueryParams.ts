@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
+import {
+  EntityOrderQuery,
+  QueryEntitiesRequest,
+} from '@backstage/catalog-client/index';
+import { GetPluginsRequest, SortOrder } from '../types';
+
+const requiredFilter = { kind: 'plugin' };
+
 /**
  *
  * @public
@@ -30,6 +38,73 @@ export const decodeFilterParams = (searchParams: URLSearchParams) => {
   });
 
   return filter;
+};
+
+/**
+ *
+ * @public
+ */
+export const decodeOrderFields = (searchParams: URLSearchParams) => {
+  const orderFields = searchParams.getAll('orderFields');
+  const decodedOrderFields: EntityOrderQuery = orderFields.map(field => {
+    const [key, order] = field.split(',');
+    return { field: key, order: order as SortOrder };
+  });
+  return decodedOrderFields;
+};
+
+/**
+ *
+ * @public
+ */
+export const decodeGetPluginsRequest = (
+  queryString: string,
+): GetPluginsRequest => {
+  const searchParams = new URLSearchParams(queryString);
+  return {
+    orderFields:
+      searchParams.getAll('orderFields').length > 0
+        ? decodeOrderFields(searchParams)
+        : undefined,
+    searchTerm: searchParams.get('searchTerm') || undefined,
+    limit: searchParams.get('limit')
+      ? Number(searchParams.get('limit'))
+      : undefined,
+    offset: searchParams.get('offset')
+      ? Number(searchParams.get('offset'))
+      : undefined,
+    filter:
+      searchParams.getAll('filter').length > 0
+        ? decodeFilterParams(searchParams)
+        : undefined,
+  };
+};
+
+/**
+ * @public
+ */
+export const convertGetPluginsRequestToQueryEntitiesRequest = (
+  query?: GetPluginsRequest,
+): QueryEntitiesRequest => {
+  const entitiesRequest: QueryEntitiesRequest = {};
+
+  entitiesRequest.filter = { ...query?.filter, ...requiredFilter };
+
+  if (query?.orderFields) {
+    entitiesRequest.orderFields = query.orderFields;
+  }
+  if (query?.limit) {
+    entitiesRequest.limit = query.limit;
+  }
+  if (query?.offset) {
+    entitiesRequest.offset = query.offset;
+  }
+  if (query?.searchTerm) {
+    entitiesRequest.fullTextFilter = {
+      term: query.searchTerm,
+    };
+  }
+  return entitiesRequest;
 };
 
 /**

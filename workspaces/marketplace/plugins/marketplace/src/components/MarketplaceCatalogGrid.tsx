@@ -171,10 +171,10 @@ export const MarketplaceCatalogGrid = () => {
 
   const filteredEntries = React.useMemo(() => {
     if (!search || !plugins.data) {
-      return plugins.data;
+      return plugins.data?.items;
     }
     const lowerCaseSearch = search.toLocaleLowerCase('en-US');
-    return plugins.data.filter(entry => {
+    return plugins.data.items.filter(entry => {
       const lowerCaseValue = entry.metadata?.title?.toLocaleLowerCase('en-US');
       return lowerCaseValue?.includes(lowerCaseSearch);
     });

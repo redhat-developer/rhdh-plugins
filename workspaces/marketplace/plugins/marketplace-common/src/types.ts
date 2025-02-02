@@ -15,6 +15,8 @@
  */
 
 import {
+  EntityFilterQuery,
+  EntityOrderQuery,
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
 } from '@backstage/catalog-client';
@@ -26,6 +28,18 @@ import { JsonObject } from '@backstage/types';
  */
 export interface MarketplacePlugin extends Entity {
   spec?: MarketplacePluginSpec;
+}
+
+/**
+ * @public
+ */
+export interface MarketplacePluginWithPageInfo {
+  items: MarketplacePlugin[];
+  totalItems?: number;
+  pageInfo?: {
+    nextCursor?: string;
+    prevCursor?: string;
+  };
 }
 
 /**
@@ -56,6 +70,14 @@ export enum MarketplaceKinds {
   plugin = 'Plugin',
   pluginList = 'PluginList',
   package = 'Package',
+}
+
+/**
+ * @public
+ */
+export enum SortOrder {
+  asc = 'asc',
+  desc = 'desc',
 }
 
 /**
@@ -99,6 +121,25 @@ export interface MarketplacePluginSpec extends JsonObject {
 /**
  * @public
  */
+export type FullTextFilter = {
+  term: string;
+  fields?: string[];
+};
+
+/**
+ * @public
+ */
+export type GetPluginsRequest = {
+  limit?: number;
+  offset?: number;
+  filter?: EntityFilterQuery;
+  orderFields?: EntityOrderQuery;
+  searchTerm?: string;
+};
+
+/**
+ * @public
+ */
 export interface MarketplacePackageSpec extends JsonObject {
   packageName: string;
   dynamicArtifact?: string;
@@ -135,7 +176,9 @@ export type {
  * @public
  */
 export interface MarketplaceApi {
-  getPlugins(): Promise<MarketplacePlugin[]>;
+  getPlugins(
+    request?: GetPluginsRequest,
+  ): Promise<MarketplacePluginWithPageInfo>;
   getPluginByName(name: string): Promise<MarketplacePlugin>;
   getPluginLists(): Promise<MarketplacePluginList[]>;
   getPluginListByName(name: string): Promise<MarketplacePluginList>;
