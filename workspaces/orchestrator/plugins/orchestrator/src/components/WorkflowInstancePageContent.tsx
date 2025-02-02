@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useAsync } from 'react-use';
 
-import { Content, InfoCard } from '@backstage/core-components';
+import {
+  Content,
+  InfoCard,
+  Link,
+  StructuredMetadataTable,
+} from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
-import { Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
+import InfoIcon from '@material-ui/icons/Info';
 import moment from 'moment';
 
 import {
   AssessedProcessInstanceDTO,
   InputSchemaResponseDTO,
   ProcessInstanceDTO,
+  WorkflowDataDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../src/api/api';
 import { VALUE_UNAVAILABLE } from '../constants';
+import { InfoDialog } from './InfoDialog';
 import { WorkflowInputs } from './WorkflowInputs';
 import { WorkflowProgress } from './WorkflowProgress';
 import { WorkflowResult } from './WorkflowResult';
@@ -77,6 +86,18 @@ const useStyles = makeStyles(() => ({
   recommendedLabel: { margin: '0 0.25rem' },
 }));
 
+const VariablesDialogContent = ({
+  instanceVariables,
+}: {
+  instanceVariables: WorkflowDataDTO;
+}) => (
+  <Box sx={{ maxHeight: 300, width: 500, overflow: 'auto' }}>
+    {instanceVariables && (
+      <StructuredMetadataTable dense metadata={instanceVariables} />
+    )}
+  </Box>
+);
+
 export const WorkflowInstancePageContent: React.FC<{
   assessedInstance: AssessedProcessInstanceDTO;
 }> = ({ assessedInstance }) => {
@@ -89,7 +110,7 @@ export const WorkflowInstancePageContent: React.FC<{
   );
 
   const workflowdata = assessedInstance.instance?.workflowdata;
-  let instanceVariables;
+  let instanceVariables: WorkflowDataDTO = {};
   if (workflowdata) {
     instanceVariables = {
       /* Since we are about to remove just the top-level property, shallow copy of the object is sufficient */
@@ -113,14 +134,50 @@ export const WorkflowInstancePageContent: React.FC<{
     return res.data;
   }, [orchestratorApi, workflowId]);
 
+  const [isVariablesDialogOpen, setIsVariablesDialogOpen] = useState(false);
+
+  const toggleVariablesDialog = React.useCallback(() => {
+    setIsVariablesDialogOpen(prev => !prev);
+  }, []);
+
   return (
     <Content noPadding>
+      <InfoDialog
+        title={
+          <Box display="flex" alignItems="center">
+            <InfoIcon color="primary" style={{ marginRight: 8 }} />
+            <b>Run Variables</b>
+          </Box>
+        }
+        onClose={toggleVariablesDialog}
+        open={isVariablesDialogOpen}
+        children={
+          <VariablesDialogContent instanceVariables={instanceVariables} />
+        }
+      />
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <InfoCard
             title="Details"
             divider={false}
             className={styles.topRowCard}
+            icon={
+              <Link
+                to="#"
+                onClick={e => {
+                  e.preventDefault();
+                  toggleVariablesDialog();
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  component="div"
+                  style={{ textAlign: 'right' }}
+                >
+                  <b>View variables</b>
+                </Typography>
+              </Link>
+            }
           >
             <WorkflowRunDetails
               details={details}
