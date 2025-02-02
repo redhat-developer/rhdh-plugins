@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-swf-editor-envelope
 
+## 1.0.3
+
+### Patch Changes
+
+- a87d02d: Updated dependency `start-server-and-test` to `2.0.10`.
+  Updated dependency `sass` to `1.83.4`.
+  Updated dependency `ts-loader` to `9.5.2`.
+
 ## 1.0.2
 
 ### Patch Changes
