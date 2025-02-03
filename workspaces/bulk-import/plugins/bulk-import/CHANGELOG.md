@@ -1,5 +1,20 @@
 ### Dependencies
 
+## 1.11.0
+
+### Minor Changes
+
+- fbbd37f: Backstage version bump to v1.35.0
+
+### Patch Changes
+
+- 28769f6: Update Readme to point to right link
+- a87d02d: Updated dependency `start-server-and-test` to `2.0.10`.
+  Updated dependency `sass` to `1.83.4`.
+  Updated dependency `ts-loader` to `9.5.2`.
+- Updated dependencies [fbbd37f]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.5.0
+
 ## 1.10.8
 
 ### Patch Changes
