@@ -97,17 +97,6 @@ export const CreateDropdown = ({
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
   }, [createDropdownMountPoints]);
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" p={2}>
-        <CircularProgress />
-        <Typography variant="body1" sx={{ ml: 2 }}>
-          Loading templates...
-        </Typography>
-      </Box>
-    );
-  }
-
   if (error) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" p={2}>
@@ -122,13 +111,27 @@ export const CreateDropdown = ({
     <HeaderDropdownComponent
       buttonContent={
         <>
-          Create <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
+          Create{' '}
+          {loading ? (
+            <CircularProgress size={16} sx={{ ml: 2, color: '#fff' }} />
+          ) : (
+            <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
+          )}
         </>
       }
       buttonProps={{
-        color: 'primary',
-        variant: 'contained',
-        sx: { mr: 2 },
+        variant: 'outlined',
+        sx: {
+          mr: 2,
+          color: '#fff',
+          border: '1px solid rgba(255, 255, 255, 0.5)',
+          '&:hover, &.Mui-focusVisible': {
+            border: '1px solid #fff',
+          },
+          '&.MuiButton-root': {
+            border: '1px solid rgba(255, 255, 255, 0.5)',
+          },
+        },
       }}
       buttonClick={handleMenu}
       anchorEl={anchorEl}
