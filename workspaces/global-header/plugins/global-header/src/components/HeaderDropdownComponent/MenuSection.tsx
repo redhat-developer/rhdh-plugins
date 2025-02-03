@@ -109,7 +109,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
         </MenuItem>
       ))}
     </ul>
-    {!hideDivider && <Divider sx={{ margin: '8px 0' }} />}
+    {!hideDivider && <Divider sx={{ my: 0.5 }} />}
   </Box>
 );
 

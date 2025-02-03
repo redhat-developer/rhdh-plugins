@@ -44,9 +44,7 @@ const Listbox = styled('ul')(
   list-style: none;
   overflow: auto;
   outline: 1;
-  background: ${
-    theme.palette.mode === 'dark' ? theme.palette.background.default : '#fff'
-  };
+  background: ${theme.palette.mode === 'dark' ? '#383838' : '#fff'};
   border: 1px solid ${
     theme.palette.mode === 'dark'
       ? theme.palette.divider
