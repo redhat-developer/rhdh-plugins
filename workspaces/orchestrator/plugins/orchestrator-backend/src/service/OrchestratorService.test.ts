@@ -191,6 +191,8 @@ describe('OrchestratorService', () => {
         .fn()
         .mockResolvedValue(workflowOverviews);
 
+      workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(true);
+
       const result = await orchestratorService.fetchWorkflowOverviews({});
 
       expect(result).toHaveLength(workflowOverviews.length);
