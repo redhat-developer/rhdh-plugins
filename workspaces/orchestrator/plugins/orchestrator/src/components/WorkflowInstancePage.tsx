@@ -82,6 +82,9 @@ const useStyles = makeStyles((theme: Theme) =>
 export type AbortConfirmationDialogActionsProps = {
   handleSubmit: () => void;
   handleCancel: () => void;
+  isAborting: boolean;
+  canAbort: boolean;
+  classes: ReturnType<typeof useStyles>;
 };
 
 const AbortConfirmationDialogContent = () => (
@@ -92,6 +95,31 @@ const AbortConfirmationDialogContent = () => (
       incomplete tasks will not be saved.
     </b>
   </div>
+);
+const AbortConfirmationDialogActions = (
+  props: AbortConfirmationDialogActionsProps,
+) => (
+  <>
+    <Button
+      onClick={props.handleSubmit}
+      variant="contained"
+      className={props.classes.abortButton}
+      startIcon={props.isAborting ? <CircularProgress size="1rem" /> : null}
+      disabled={props.isAborting || !props.canAbort}
+    >
+      {' '}
+      Abort
+    </Button>
+    <Button
+      onClick={props.handleCancel}
+      variant="outlined"
+      color="primary"
+      disabled={props.isAborting}
+    >
+      {' '}
+      Cancel
+    </Button>
+  </>
 );
 
 export const WorkflowInstancePage = ({
@@ -124,32 +152,6 @@ export const WorkflowInstancePage = ({
   const handleRerunBarClose = () => {
     setIsRerunSnackbarOpen(false);
   };
-
-  const AbortConfirmationDialogActions = (
-    props: AbortConfirmationDialogActionsProps,
-  ) => (
-    <>
-      <Button
-        onClick={props.handleSubmit}
-        variant="contained"
-        className={classes.abortButton}
-        startIcon={isAborting ? <CircularProgress size="1rem" /> : null}
-        disabled={isAborting}
-      >
-        {' '}
-        Abort
-      </Button>
-      <Button
-        onClick={props.handleCancel}
-        variant="outlined"
-        color="primary"
-        disabled={isAborting}
-      >
-        {' '}
-        Cancel
-      </Button>
-    </>
-  );
 
   const fetchInstance = React.useCallback(async () => {
     if (!instanceId && !queryInstanceId) {
@@ -289,6 +291,9 @@ export const WorkflowInstancePage = ({
                 <AbortConfirmationDialogActions
                   handleCancel={toggleAbortConfirmationDialog}
                   handleSubmit={handleAbort}
+                  isAborting={isAborting}
+                  canAbort={canAbort}
+                  classes={classes}
                 />
               }
               children={<AbortConfirmationDialogContent />}
