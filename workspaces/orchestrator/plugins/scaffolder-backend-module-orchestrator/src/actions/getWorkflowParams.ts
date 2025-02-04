@@ -91,9 +91,8 @@ export const createGetWorkflowParamsAction = (
             undefined,
             reqConfigOption,
           );
-        const inputSchema = inputSchemaWrapper.inputSchema as
-          | JsonObject
-          | undefined;
+        const inputSchema: JsonObject | undefined =
+          inputSchemaWrapper.inputSchema;
 
         ctx.output('title', workflow.name || workflowId);
         ctx.output('description', workflow.description || '');
