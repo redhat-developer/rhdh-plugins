@@ -21,7 +21,6 @@ import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined
 import { MenuItemConfig } from './MenuSection';
 import { useApi } from '@backstage/core-plugin-api';
 import { Entity } from '@backstage/catalog-model';
-import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { ComponentType } from '../../types';
@@ -64,6 +63,7 @@ export const CreateDropdown = ({
       try {
         const response = await catalogApi.getEntities({
           filter: { kind: ['Template'] },
+          limit: 7,
         });
         setEntities(response.items);
       } catch (err) {
@@ -111,19 +111,20 @@ export const CreateDropdown = ({
     <HeaderDropdownComponent
       buttonContent={
         <>
-          Create{' '}
-          {loading ? (
-            <CircularProgress size={16} sx={{ ml: 2, color: '#fff' }} />
-          ) : (
-            <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
-          )}
+          Create <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
         </>
       }
       buttonProps={{
         variant: 'outlined',
+        disabled: loading,
         sx: {
           mr: 2,
           color: '#fff',
+          '&.Mui-disabled': {
+            color: '#aaabac',
+            backgroundColor: '#444548',
+            border: '1px solid #444548',
+          },
           border: '1px solid rgba(255, 255, 255, 0.5)',
           '&:hover, &.Mui-focusVisible': {
             border: '1px solid #fff',
