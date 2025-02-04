@@ -18,35 +18,60 @@ import React from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { HeaderIcon } from '../HeaderIconButtonComponent/HeaderIcon';
+import { useTheme } from '@mui/material/styles';
 
 interface HeaderItemContentProps {
   icon?: string;
   label?: string;
   subLabel?: string;
-  // styles?: React.CSSProperties; // Allow styles to be passed in
 }
 
 const HeaderItemContent: React.FC<HeaderItemContentProps> = ({
   icon,
   label,
   subLabel,
-}) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', margin: '8px 0' }}>
-    {icon && (
-      <HeaderIcon
-        icon={icon}
-        styles={label ? { marginRight: '0.5rem', flexShrink: 0 } : {}}
-      />
-    )}
-    <Box>
-      {label && <Typography variant="body2">{label}</Typography>}
-      {subLabel && (
-        <Typography variant="caption" color="text.secondary">
-          {subLabel}
-        </Typography>
+}) => {
+  const theme = useTheme();
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        margin: '8px 0',
+        color: 'inherit',
+      }}
+    >
+      {icon && (
+        <HeaderIcon
+          icon={icon}
+          styles={
+            label
+              ? {
+                  marginRight: '0.5rem',
+                  flexShrink: 0,
+                  color:
+                    theme.palette.mode === 'dark'
+                      ? theme.palette.text.primary
+                      : theme.palette.text.disabled,
+                }
+              : {}
+          }
+        />
       )}
+      <Box>
+        {label && (
+          <Typography variant="body2" color={theme.palette.text.primary}>
+            {label}
+          </Typography>
+        )}
+        {subLabel && (
+          <Typography variant="caption" color="text.secondary">
+            {subLabel}
+          </Typography>
+        )}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};
 
 export default HeaderItemContent;
