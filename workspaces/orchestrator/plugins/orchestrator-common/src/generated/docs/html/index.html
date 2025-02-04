@@ -927,6 +927,8 @@ ul.nav-tabs {
     "$ref" : "#/components/schemas/LogicalFilter"
   }, {
     "$ref" : "#/components/schemas/FieldFilter"
+  }, {
+    "$ref" : "#/components/schemas/NestedFilter"
   } ]
 };
     defs["GetOverviewsRequestParams"] = {
@@ -963,6 +965,24 @@ ul.nav-tabs {
       }
     }
   }
+};
+    defs["NestedFilter"] = {
+  "required" : [ "field", "nested" ],
+  "properties" : {
+    "field" : {
+      "type" : "string"
+    },
+    "nested" : {
+      "$ref" : "#/components/schemas/NestedFilter_nested"
+    }
+  }
+};
+    defs["NestedFilter_nested"] = {
+  "oneOf" : [ {
+    "$ref" : "#/components/schemas/FieldFilter"
+  }, {
+    "$ref" : "#/components/schemas/NestedFilter"
+  } ]
 };
     defs["NodeInstanceDTO"] = {
   "required" : [ "id" ],

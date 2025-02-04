@@ -459,7 +459,7 @@ export type FieldFilterValue = any | boolean | number | string;
 // Warning: (ae-missing-release-tag) "Filter" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public
-export type Filter = FieldFilter | LogicalFilter;
+export type Filter = FieldFilter | LogicalFilter | NestedFilter;
 
 // Warning: (ae-missing-release-tag) "fromWorkflowSource" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -631,6 +631,31 @@ export enum MilestoneStatus {
     // (undocumented)
     Completed = "COMPLETED"
 }
+
+// Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
+// Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
+// Warning: (ae-missing-release-tag) "NestedFilter" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public
+export interface NestedFilter {
+    // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+    // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+    // Warning: (tsdoc-undefined-tag) The TSDoc tag "@type" is not defined in this configuration
+    // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
+    'field': string;
+    // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+    // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+    // Warning: (tsdoc-undefined-tag) The TSDoc tag "@type" is not defined in this configuration
+    // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
+    'nested': NestedFilterNested;
+}
+
+// Warning: (tsdoc-undefined-tag) The TSDoc tag "@type" is not defined in this configuration
+// Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
+// Warning: (ae-missing-release-tag) "NestedFilterNested" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public
+export type NestedFilterNested = FieldFilter | NestedFilter;
 
 // Warning: (ae-missing-release-tag) "Node" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -1610,79 +1635,51 @@ export interface WorkflowRunStatusDTO {
 // src/generated/client/api.d.ts:116:1 - (ae-undocumented) Missing documentation for "FieldFilterOperatorEnum".
 // src/generated/client/api.d.ts:184:22 - (ae-undocumented) Missing documentation for "LogicalFilterOperatorEnum".
 // src/generated/client/api.d.ts:189:1 - (ae-undocumented) Missing documentation for "LogicalFilterOperatorEnum".
-// src/generated/client/api.d.ts:276:22 - (ae-undocumented) Missing documentation for "PaginationInfoDTOOrderDirectionEnum".
-// src/generated/client/api.d.ts:280:1 - (ae-undocumented) Missing documentation for "PaginationInfoDTOOrderDirectionEnum".
-// src/generated/client/api.d.ts:435:1 - (ae-undocumented) Missing documentation for "ProcessInstanceStatusDTO".
-// src/generated/client/api.d.ts:464:1 - (ae-undocumented) Missing documentation for "WorkflowCategoryDTO".
-// src/generated/client/api.d.ts:530:1 - (ae-undocumented) Missing documentation for "WorkflowFormatDTO".
-// src/generated/client/api.d.ts:722:22 - (ae-undocumented) Missing documentation for "WorkflowResultDTOCompletedWithEnum".
-// src/generated/client/api.d.ts:726:1 - (ae-undocumented) Missing documentation for "WorkflowResultDTOCompletedWithEnum".
-// src/generated/client/api.d.ts:771:22 - (ae-undocumented) Missing documentation for "WorkflowResultDTOOutputsInnerFormatEnum".
-// src/generated/client/api.d.ts:776:1 - (ae-undocumented) Missing documentation for "WorkflowResultDTOOutputsInnerFormatEnum".
-// src/generated/client/api.d.ts:810:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:811:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:811:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:812:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:812:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:812:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:813:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:813:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:815:5 - (ae-forgotten-export) The symbol "RequestArgs" needs to be exported by the entry point index.d.ts
-// src/generated/client/api.d.ts:818:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:819:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:819:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:820:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:820:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:821:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:821:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:821:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:822:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:822:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:822:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:823:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:823:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:828:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:829:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:829:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:830:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:830:25 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:830:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:831:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:831:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:831:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:832:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:832:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:837:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:838:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:838:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:838:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:839:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:839:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:839:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:840:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:840:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:300:22 - (ae-undocumented) Missing documentation for "PaginationInfoDTOOrderDirectionEnum".
+// src/generated/client/api.d.ts:304:1 - (ae-undocumented) Missing documentation for "PaginationInfoDTOOrderDirectionEnum".
+// src/generated/client/api.d.ts:459:1 - (ae-undocumented) Missing documentation for "ProcessInstanceStatusDTO".
+// src/generated/client/api.d.ts:488:1 - (ae-undocumented) Missing documentation for "WorkflowCategoryDTO".
+// src/generated/client/api.d.ts:554:1 - (ae-undocumented) Missing documentation for "WorkflowFormatDTO".
+// src/generated/client/api.d.ts:746:22 - (ae-undocumented) Missing documentation for "WorkflowResultDTOCompletedWithEnum".
+// src/generated/client/api.d.ts:750:1 - (ae-undocumented) Missing documentation for "WorkflowResultDTOCompletedWithEnum".
+// src/generated/client/api.d.ts:795:22 - (ae-undocumented) Missing documentation for "WorkflowResultDTOOutputsInnerFormatEnum".
+// src/generated/client/api.d.ts:800:1 - (ae-undocumented) Missing documentation for "WorkflowResultDTOOutputsInnerFormatEnum".
+// src/generated/client/api.d.ts:834:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:835:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:835:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:836:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:836:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:836:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:837:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:837:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:839:5 - (ae-forgotten-export) The symbol "RequestArgs" needs to be exported by the entry point index.d.ts
+// src/generated/client/api.d.ts:842:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:843:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:843:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:844:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:844:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:845:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:845:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:845:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:846:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:846:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:846:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:846:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:847:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:847:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:847:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:848:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:848:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:853:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:847:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:847:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:852:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:853:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:853:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:854:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:854:25 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:854:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:855:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:855:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:855:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:855:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:856:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:856:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:856:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:857:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:857:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:856:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:856:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:861:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
 // src/generated/client/api.d.ts:862:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:862:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:862:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:863:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:863:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
@@ -1692,97 +1689,97 @@ export interface WorkflowRunStatusDTO {
 // src/generated/client/api.d.ts:869:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:869:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:870:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:870:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:870:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:870:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:871:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:871:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:876:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:877:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:877:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:877:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:878:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:878:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:883:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:883:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:883:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:884:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:884:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:884:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:885:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:885:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:890:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:891:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:891:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:892:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:892:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:871:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:871:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:871:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:872:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:872:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:877:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:878:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:878:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:879:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:879:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:879:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:880:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:880:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:880:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:881:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:881:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:886:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:886:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:887:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:887:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:887:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:888:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:888:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
 // src/generated/client/api.d.ts:893:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:893:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:893:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:894:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:894:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:905:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:906:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:906:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:894:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:894:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:894:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:895:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:895:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:900:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:901:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:901:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:901:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:902:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:902:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
 // src/generated/client/api.d.ts:907:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:907:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:907:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:907:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:908:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:908:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:913:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:914:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:914:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:908:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:908:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:908:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:909:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:909:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:914:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
 // src/generated/client/api.d.ts:915:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:915:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:916:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:916:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:916:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:917:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:917:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:917:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:918:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
 // src/generated/client/api.d.ts:918:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:923:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:924:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:924:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:925:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:925:25 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:925:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:926:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:926:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:926:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:927:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:927:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:932:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:933:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:933:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:933:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:934:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:934:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:934:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:935:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:935:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:929:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:930:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:930:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:931:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:931:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:931:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:932:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:932:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:937:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:938:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:938:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:939:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:939:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:940:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:940:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:940:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:941:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:941:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:941:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:941:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:942:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:942:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:942:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:943:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:943:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:948:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:942:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:942:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:947:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:948:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:948:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:949:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:949:25 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:949:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:950:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:950:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:950:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:950:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:951:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:951:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:951:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:952:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:952:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:951:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:951:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:956:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
 // src/generated/client/api.d.ts:957:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:957:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:957:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:958:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:958:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
@@ -1792,97 +1789,97 @@ export interface WorkflowRunStatusDTO {
 // src/generated/client/api.d.ts:964:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:964:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:965:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:965:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:965:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:965:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:966:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:966:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:971:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:972:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:972:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:972:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:973:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:973:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:978:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:978:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:978:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:979:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:979:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:979:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:980:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:980:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:985:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:986:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:986:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:987:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:987:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:966:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:966:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:966:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:967:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:967:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:972:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:973:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:973:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:974:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:974:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:974:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:975:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:975:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:975:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:976:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:976:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:981:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:981:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:982:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:982:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:982:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:983:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:983:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
 // src/generated/client/api.d.ts:988:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:988:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:988:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:989:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:989:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:1000:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:1001:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1001:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:989:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:989:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:989:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:990:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:990:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:995:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:996:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:996:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:996:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:997:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:997:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
 // src/generated/client/api.d.ts:1002:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1002:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1002:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:1002:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1003:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:1003:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:1008:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:1009:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1009:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1003:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1003:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1003:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1004:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1004:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1009:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
 // src/generated/client/api.d.ts:1010:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:1010:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:1011:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1011:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:1011:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:1012:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:1012:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:1012:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:1013:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
 // src/generated/client/api.d.ts:1013:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:1018:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:1019:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1019:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1020:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1020:25 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:1020:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1021:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1021:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:1021:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1022:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:1022:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:1027:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:1028:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1028:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:1028:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1029:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1029:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:1029:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1030:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:1030:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1024:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:1025:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1025:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1026:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1026:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1026:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1027:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1027:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1032:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:1033:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1033:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1034:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1034:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:1035:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1035:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:1035:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:1036:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1036:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1036:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:1036:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1037:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1037:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:1037:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1038:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:1038:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:1043:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:1037:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1037:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1042:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:1043:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1043:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:1044:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1044:25 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:1044:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:1045:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1045:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1045:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:1045:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1046:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1046:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:1046:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1047:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:1047:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1046:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1046:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1051:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
 // src/generated/client/api.d.ts:1052:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1052:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:1052:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:1053:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:1053:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
@@ -1892,34 +1889,62 @@ export interface WorkflowRunStatusDTO {
 // src/generated/client/api.d.ts:1059:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
 // src/generated/client/api.d.ts:1059:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // src/generated/client/api.d.ts:1060:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1060:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1060:24 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:1060:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1061:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:1061:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:1066:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:1067:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1067:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:1067:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1068:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:1068:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:1073:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1073:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:1073:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1074:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1074:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// src/generated/client/api.d.ts:1074:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1075:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:1075:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/generated/client/api.d.ts:1080:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
-// src/generated/client/api.d.ts:1081:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1081:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1082:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1082:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1061:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1061:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1061:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1062:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1062:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1067:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:1068:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1068:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1069:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1069:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1069:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1070:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1070:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1070:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1071:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1071:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1076:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1076:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1077:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1077:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1077:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1078:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1078:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
 // src/generated/client/api.d.ts:1083:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// src/generated/client/api.d.ts:1083:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
 // src/generated/client/api.d.ts:1083:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// src/generated/client/api.d.ts:1084:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/generated/client/api.d.ts:1084:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1084:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1084:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1084:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1085:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1085:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1090:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:1091:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1091:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1091:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1092:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1092:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1097:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1097:31 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1097:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1098:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1098:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1098:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1099:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1099:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// src/generated/client/api.d.ts:1104:8 - (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
+// src/generated/client/api.d.ts:1105:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1105:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1106:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1106:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1107:8 - (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+// src/generated/client/api.d.ts:1107:19 - (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+// src/generated/client/api.d.ts:1107:15 - (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+// src/generated/client/api.d.ts:1108:30 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+// src/generated/client/api.d.ts:1108:16 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
 // src/generated/client/base.d.ts:27:4 - (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // src/generated/client/base.d.ts:28:4 - (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
 // src/generated/client/base.d.ts:36:4 - (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
