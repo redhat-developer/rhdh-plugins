@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { isAxiosError } from 'axios';
+import { AuthService } from '@backstage/backend-plugin-api';
+import { DiscoveryApi } from '@backstage/plugin-permission-common/index';
+
+import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
+
+import {
+  Configuration,
+  DefaultApi,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 export const getError = (err: unknown): Error => {
   if (
@@ -25,4 +33,35 @@ export const getError = (err: unknown): Error => {
     return error;
   }
   return err as Error;
+};
+
+export const getOrchestratorApi = async (
+  discoveryService: DiscoveryApi,
+): Promise<DefaultApi> => {
+  const baseUrl = await discoveryService.getBaseUrl('orchestrator');
+  const config = new Configuration({});
+
+  const axiosInstance = axios.create({
+    baseURL: baseUrl,
+  });
+  const api = new DefaultApi(config, baseUrl, axiosInstance);
+
+  return api;
+};
+export const getRequestConfigOption = async (
+  authService: AuthService,
+  ctx: any,
+) => {
+  const { token } = (await authService.getPluginRequestToken({
+    onBehalfOf: await ctx.getInitiatorCredentials(),
+    targetPluginId: 'orchestrator',
+  })) ?? { token: ctx.secrets?.backstageToken };
+
+  const reqConfigOption: AxiosRequestConfig = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return reqConfigOption;
 };

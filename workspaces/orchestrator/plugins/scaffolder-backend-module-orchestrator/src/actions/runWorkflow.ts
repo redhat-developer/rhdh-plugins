@@ -19,12 +19,9 @@ import { DiscoveryApi } from '@backstage/plugin-permission-common/index';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { JsonObject } from '@backstage/types';
 
-import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 
-import {
-  Configuration,
-  DefaultApi,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { getOrchestratorApi, getRequestConfigOption } from './utils';
 
 type RunWorkflowTemplateActionInput = { parameters: JsonObject };
 type RunWorkflowTemplateActionOutput = { instanceUrl: string };
@@ -71,23 +68,8 @@ export const createRunWorkflowAction = (
         throw new Error('No template entity');
       }
 
-      const baseUrl = await discoveryService.getBaseUrl('orchestrator');
-      const config = new Configuration({});
-
-      const axiosInstance = axios.create({
-        baseURL: baseUrl,
-      });
-      const api = new DefaultApi(config, baseUrl, axiosInstance);
-
-      const { token } = (await authService.getPluginRequestToken({
-        onBehalfOf: await ctx.getInitiatorCredentials(),
-        targetPluginId: 'orchestrator',
-      })) ?? { token: ctx.secrets?.backstageToken };
-      const reqConfigOption: AxiosRequestConfig = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
+      const api = await getOrchestratorApi(discoveryService);
+      const reqConfigOption = await getRequestConfigOption(authService, ctx);
 
       // If this is a dry run, log and return
       if (ctx.isDryRun) {

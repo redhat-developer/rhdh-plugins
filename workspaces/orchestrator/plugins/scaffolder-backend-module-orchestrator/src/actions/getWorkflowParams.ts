@@ -18,13 +18,10 @@ import { DiscoveryApi } from '@backstage/plugin-permission-common/index';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { JsonObject } from '@backstage/types/index';
 
-import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { dump } from 'js-yaml';
 
-import {
-  Configuration,
-  DefaultApi,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { getOrchestratorApi, getRequestConfigOption } from './utils';
 
 type RunWorkflowTemplateActionInput = { workflow_id: string; indent?: number };
 type RunWorkflowTemplateActionOutput = {
@@ -76,23 +73,8 @@ export const createGetWorkflowParamsAction = (
         throw new Error('Missing workflow_id required input parameter.');
       }
 
-      const baseUrl = await discoveryService.getBaseUrl('orchestrator');
-      const config = new Configuration({});
-
-      const axiosInstance = axios.create({
-        baseURL: baseUrl,
-      });
-      const api = new DefaultApi(config, baseUrl, axiosInstance);
-
-      const { token } = (await authService.getPluginRequestToken({
-        onBehalfOf: await ctx.getInitiatorCredentials(),
-        targetPluginId: 'orchestrator',
-      })) ?? { token: ctx.secrets?.backstageToken };
-      const reqConfigOption: AxiosRequestConfig = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
+      const api = await getOrchestratorApi(discoveryService);
+      const reqConfigOption = await getRequestConfigOption(authService, ctx);
 
       try {
         const { data: workflow } = await api.getWorkflowOverviewById(
