@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { PluginTaskScheduler } from '@backstage/backend-tasks';
 
@@ -26,6 +27,7 @@ export class WorkflowCacheService {
   private readonly DEFAULT_FREQUENCY_IN_SECONDS = 5;
   private readonly DEFAULT_TIMEOUT_IN_MINUTES = 10;
   private readonly definitionIdCache = new Set<string>();
+  private readonly unavailableDefinitionIdCache = new Set<string>();
 
   constructor(
     private readonly logger: LoggerService,
@@ -37,8 +39,15 @@ export class WorkflowCacheService {
     return Array.from(this.definitionIdCache);
   }
 
-  public isEmpty(): boolean {
-    return this.definitionIdCache.size === 0;
+  public get unavailableDefinitionIds(): string[] {
+    return Array.from(this.unavailableDefinitionIdCache);
+  }
+
+  private isEmpty(): boolean {
+    return (
+      this.definitionIdCache.size === 0 &&
+      this.unavailableDefinitionIdCache.size === 0
+    );
   }
 
   public isAvailable(
@@ -86,6 +95,11 @@ export class WorkflowCacheService {
           this.definitionIdCache.delete(definitionId);
         }
       });
+      this.unavailableDefinitionIdCache.forEach(definitionId => {
+        if (!idUrlMap[definitionId]) {
+          this.unavailableDefinitionIdCache.delete(definitionId);
+        }
+      });
       await Promise.all(
         Object.entries(idUrlMap).map(async ([definitionId, serviceUrl]) => {
           let isServiceUp = false;
@@ -101,6 +115,7 @@ export class WorkflowCacheService {
           }
           if (isServiceUp) {
             this.definitionIdCache.add(definitionId);
+            this.unavailableDefinitionIdCache.delete(definitionId);
           } else {
             this.logger.error(
               `Failed to ping service for workflow ${definitionId} at ${serviceUrl}`,
@@ -108,13 +123,16 @@ export class WorkflowCacheService {
             if (this.definitionIdCache.has(definitionId)) {
               this.definitionIdCache.delete(definitionId);
             }
+            this.unavailableDefinitionIdCache.add(definitionId);
           }
         }),
       );
 
       const workflowDefinitionIds = this.isEmpty()
         ? 'empty cache'
-        : Array.from(this.definitionIdCache).join(', ');
+        : Array.from(this.definitionIdCache)
+            .concat(Array.from(this.unavailableDefinitionIdCache))
+            .join(', ');
 
       this.logger.debug(
         `${this.TASK_ID} updated the workflow definition ID cache to: ${workflowDefinitionIds}`,
