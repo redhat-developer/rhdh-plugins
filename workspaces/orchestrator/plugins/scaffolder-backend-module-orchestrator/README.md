@@ -14,10 +14,6 @@ In `packages/backend/src/index.ts`:
 backend.add(import('backstage-plugin-scaffolder-backend-module-orchestrator'));
 ```
 
-### As a dynamic plugin
-
-TODO: as dynamic plugin
-
 # The software template generating templates from workflows - convertWorkflowToTemplate
 
 The `workspaces/orchestrator/entities/convertWorkflowToTemplate.yaml` scaffolder software template is used for generating templates to be used to execute a serverless workflow via the Orchestrator.
@@ -30,7 +26,11 @@ The rest of parameters cover details about the target GitHub repository to eithe
 
 The generated template yaml is accompanied by a README file highlighting instructions how to register the new template in the Backstage catalog.
 
-### What is a workflow ID
+## Important Note on Template Input Structure
+
+The structure of the template input differs from that of the page used for collecting input parameters for workflows, despite some similarities. These two pages are supported by distinct implementations. While the set of parameters should remain consistent, their visual representation and especially grouping into steps may vary.
+
+## What is a workflow ID
 
 The `[workflowId]` matches the identifier from the workflow definition.
 For example, in the [workflow definition](https://github.com/rhdhorchestrator/serverless-workflows/blob/main/workflows/greeting/greeting.sw.yaml) below, the identifier is `greeting`:
@@ -49,7 +49,7 @@ extensions:
     outputSchema: schemas/workflow-output-schema.json
 ```
 
-### GitHub integration
+## GitHub integration
 
 The `convertWorkflowToTemplate.yaml` template push the result into a GitHub repository.
 To make it working, the [Backstage integration with GitHub](https://backstage.io/docs/integrations/github/locations) needs to be properly set.
@@ -67,8 +67,6 @@ In `packages/backend/src/index.ts`:
 ```
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 ```
-
-TODO: add reference to the dynamic plugin for the RHDH
 
 - generate GitHub access token, e.g. via https://github.com/settings/personal-access-tokens and set
 
@@ -88,6 +86,6 @@ integrations:
 
 - [Upstream documentation](https://backstage.io/docs/features/software-templates/builtin-actions)
 
-## Hints
+# Hints
 
 Mind using `export NODE_OPTIONS="${NODE_OPTIONS:-} --no-node-snapshot"` before running the Backstage backend app with Node 20+ (per actual [warning in the upstream documentation](https://backstage.io/docs/features/software-templates/#getting-started)) - this might be changed in the future.

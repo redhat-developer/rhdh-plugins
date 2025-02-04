@@ -108,7 +108,7 @@ spec:
         branchName: ${{ parameters.branchName }}
         targetBranchName: ${{ parameters.targetBranchName }}
         title: Create template ${{ parameters.workflow_id }}
-        description: This pull request creates template for you workflow
+        description: This pull request creates template for running a workflow
 
   output:
     links:
