@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createExampleAction } from './example';
 import { createMockActionContext } from '@backstage/plugin-scaffolder-node-test-utils';
+
+import { createExampleAction } from './example';
 
 describe('createExampleAction', () => {
   it('should call action', async () => {

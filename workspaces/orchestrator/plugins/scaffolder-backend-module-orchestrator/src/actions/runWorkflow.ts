@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { AuthService } from '@backstage/backend-plugin-api';
 import { parseEntityRef } from '@backstage/catalog-model';
 import { DiscoveryApi } from '@backstage/plugin-permission-common/index';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { JsonObject } from '@backstage/types';
-import { AuthService } from '@backstage/backend-plugin-api';
+
 import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
+
 import {
   Configuration,
   DefaultApi,

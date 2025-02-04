@@ -18,16 +18,16 @@ spec:
         - language
       properties:
         language:
-          title: Language          
+          title: Language
           type: string
           ui:autofocus: true
-          enum: 
-            - "English"
-            - "Spanish"
-          default: "English"        
+          enum:
+            - 'English'
+            - 'Spanish'
+          default: 'English'
         name:
           title: Name
-          type: string                    
+          type: string
 
   steps:
     - id: runWorkflow
