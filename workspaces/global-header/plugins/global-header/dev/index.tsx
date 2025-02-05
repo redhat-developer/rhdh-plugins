@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
-import { mockApis, TestApiProvider } from '@backstage/test-utils';
+import { mockApis, MockFetchApi, TestApiProvider } from '@backstage/test-utils';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
@@ -42,6 +42,10 @@ import { HeaderLink } from '../src/components/HeaderLinkComponent/HeaderLink';
 import { LogoutButton } from '../src/components/HeaderButtonComponent/LogoutButton';
 import { SoftwareTemplatesSection } from '../src/components/HeaderDropdownComponent/SoftwareTemplatesSection';
 import { RegisterAComponentSection } from '../src/components/HeaderDropdownComponent/RegisterAComponentSection';
+import {
+  notificationsApiRef,
+  NotificationsClient,
+} from '@backstage/plugin-notifications';
 
 const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[] =
   [
@@ -200,6 +204,11 @@ const entities = [
 
 const catalogApi = catalogApiMock({ entities });
 
+const mockBaseUrl = 'http://backstage/api/notifications';
+const discoveryApi = { getBaseUrl: async () => mockBaseUrl };
+const fetchApi = new MockFetchApi();
+const client = new NotificationsClient({ discoveryApi, fetchApi });
+
 const scalprumState: ScalprumState = {
   initialized: true,
   api: {
@@ -224,6 +233,7 @@ createDevApp()
           [catalogApiRef, catalogApi],
           [searchApiRef, mockSearchApi],
           [configApiRef, mockConfigApi],
+          [notificationsApiRef, client],
         ]}
       >
         <ScalprumContext.Provider value={scalprumState}>
