@@ -42,7 +42,7 @@ export type CachedData = {
 /**
  * @public
  */
-export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
+export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
   private discovery: DiscoveryService;
   private auth: AuthService;
   private readonly cacheTTLMilliseconds = durationToMilliseconds({
@@ -56,13 +56,13 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
 
   // Return processor name
   getProcessorName(): string {
-    return 'DynamicPluginInstallStatusProcessor';
+    return 'DynamicPackageInstallStatusProcessor';
   }
 
   async getInstalledPlugins() {
     const scalprumUrl = await this.discovery.getBaseUrl('scalprum');
 
-    const token = await this.auth.getPluginRequestToken({
+    const { token } = await this.auth.getPluginRequestToken({
       onBehalfOf: await this.auth.getOwnServiceCredentials(),
       targetPluginId: 'catalog',
     });
@@ -118,7 +118,7 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
   ): Promise<MarketplacePlugin> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKind.Plugin
+      entity.kind === MarketplaceKind.Package
     ) {
       if (entity.spec?.installStatus === InstallStatus.Installed) {
         return entity;

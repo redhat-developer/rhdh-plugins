@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,18 @@
 import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
-import { Entity } from '@backstage/catalog-model';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import {
   InstallStatus,
   MARKETPLACE_API_VERSION,
-  MarketplaceKinds,
-  MarketplacePlugin,
+  MarketplaceKind,
+  MarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 /**
  * @public
  */
-export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
+export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
   private workspacesPath = this.findWorkspacesPath();
   private customPaths;
 
@@ -46,7 +45,7 @@ export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
   }
 
   getProcessorName(): string {
-    return 'LocalPluginInstallStatusProcessor';
+    return 'LocalPackageInstallStatusProcessor';
   }
 
   findWorkspacesPath(startPath = process.cwd()) {
@@ -74,7 +73,7 @@ export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
     packageName: string,
     packageJsonPath: string,
     versionRange?: string,
-  ): Boolean {
+  ): boolean {
     try {
       const absolutePackageJsonPath = path.resolve(packageJsonPath);
 
@@ -125,52 +124,20 @@ export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
     }
   }
 
-  isJSON(str: string) {
-    if (typeof str !== 'string') {
-      return false;
-    }
-
-    try {
-      const parsed = JSON.parse(str);
-      return typeof parsed === 'object' && parsed !== null;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  async preProcessEntity(entity: MarketplacePlugin): Promise<Entity> {
+  async preProcessEntity(entity: MarketplacePackage): Promise<MarketplacePackage> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKinds.plugin
+      entity.kind === MarketplaceKind.Package
     ) {
       let installStatus: InstallStatus = InstallStatus.NotInstalled;
 
-      if (entity?.spec?.packages?.length) {
-        const somePackagesInstalled = entity.spec.packages.some(
-          marketplacePackageOrString => {
-            const npmPackage =
-              typeof marketplacePackageOrString === 'string'
-                ? {
-                    name: marketplacePackageOrString,
-                  }
-                : marketplacePackageOrString;
+      if (entity.spec?.packageName) {
+        const packageName = entity.spec?.packageName;
+        // TODO const versions = entity.spec.version;
 
-            const versions = npmPackage?.version?.split(',');
-            return versions
-              ? versions?.every(version =>
-                  this.customPaths.some(cpath =>
-                    this.isPackageInstalled(npmPackage?.name, cpath, version),
-                  ),
-                )
-              : this.customPaths.some(cpath =>
-                  this.isPackageInstalled(npmPackage?.name, cpath),
-                );
-          },
-        );
-
-        installStatus = somePackagesInstalled
-          ? InstallStatus.Installed
-          : InstallStatus.NotInstalled;
+        if (this.customPaths.some((cpath) => this.isPackageInstalled(packageName, cpath))) {
+          installStatus = InstallStatus.Installed;
+        }
       }
 
       return {
