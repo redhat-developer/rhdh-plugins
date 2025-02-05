@@ -1,6 +1,6 @@
 # backstage-plugin-scaffolder-backend-module-orchestrator
 
-The Orchestrator module for [@backstage/plugin-scaffolder-backend](https://www.npmjs.com/package/@backstage/plugin-scaffolder-backend) providing actions callable from the [Backstage templates](https://backstage.io/docs/features/software-templates/).
+The Orchestrator module [@backstage/plugin-scaffolder-backend](https://www.npmjs.com/package/@backstage/plugin-scaffolder-backend) provides actions callable from the [Backstage templates](https://backstage.io/docs/features/software-templates/).
 
 An example of using these actions can be found in the `workspaces/orchestrator/entities/convertWorkflowToTemplate.yaml` template.
 
@@ -18,13 +18,13 @@ backend.add(import('backstage-plugin-scaffolder-backend-module-orchestrator'));
 
 The `workspaces/orchestrator/entities/convertWorkflowToTemplate.yaml` scaffolder software template is used for generating templates to be used to execute a serverless workflow via the Orchestrator.
 
-The generated template is a yaml document which is pushed to a GitHub repository for its later consumption by the Backstage.
+The generated template is a yaml document which is pushed to a GitHub repository for later consumption by the Backstage.
 
 The only specific input parameter is the `workflowId` of the desired workflow.
 
 The rest of parameters cover details about the target GitHub repository to either create a new repo or push a PR to an existing one.
 
-The generated template yaml is accompanied by a README file highlighting instructions how to register the new template in the Backstage catalog.
+The generated yaml template is accompanied by a README file highlighting instructions how to register the new template in the Backstage catalog.
 
 ## Important Note on Template Input Structure
 
@@ -51,8 +51,8 @@ extensions:
 
 ## GitHub integration
 
-The `convertWorkflowToTemplate.yaml` template push the result into a GitHub repository.
-To make it working, the [Backstage integration with GitHub](https://backstage.io/docs/integrations/github/locations) needs to be properly set.
+The `convertWorkflowToTemplate.yaml` template pushes the result into a GitHub repository.
+To make it work, the [Backstage integration with GitHub](https://backstage.io/docs/integrations/github/locations) needs to be properly set.
 
 In a nutshell:
 
@@ -62,7 +62,7 @@ In a nutshell:
 yarn --cwd packages/backend add @backstage/plugin-scaffolder-backend-module-github
 ```
 
-In `packages/backend/src/index.ts`:
+- in `packages/backend/src/index.ts`:
 
 ```
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
@@ -89,3 +89,5 @@ integrations:
 # Hints
 
 Mind using `export NODE_OPTIONS="${NODE_OPTIONS:-} --no-node-snapshot"` before running the Backstage backend app with Node 20+ (per actual [warning in the upstream documentation](https://backstage.io/docs/features/software-templates/#getting-started)) - this might be changed in the future.
+
+Before running the Backstage backend app with **Node 20+**, be sure to execute `export NODE_OPTIONS="${NODE_OPTIONS:-} --no-node-snapshot` as recommended by the [warning in the upstream documentation](https://backstage.io/docs/features/software-templates/#getting-started) (this might be changed in the future).
