@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.1.1
+
+### Patch Changes
+
+- 3dce00f: Updated dependency `react-router-dom` to `6.29.0`.
+
 ## 1.1.0
 
 ### Minor Changes
