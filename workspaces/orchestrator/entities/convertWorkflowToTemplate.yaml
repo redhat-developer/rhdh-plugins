@@ -1,0 +1,118 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: convert-workflow-to-template
+  title: Convert serverless workflow to a template
+  description: Create a software template out of an existing serverless workflow.
+  tags:
+    - orchestrator
+
+spec:
+  owner: red-hat-developer-hub-authors
+  system: red-hat-developer-hub
+  type: service
+
+  # matches workflow's dataInputSchema
+  parameters:
+    - title: Provide inputs
+      required:
+        - workflow_id
+      properties:
+        workflow_id:
+          title: Workflow ID
+          type: string
+          ui:autofocus: true
+
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+        pluginLocation:
+          type: string
+          title: Where to publish this new plugin?
+          ui:widget: radio
+          default: Create a new repository within the specified organization
+          enum:
+            - Submit a pull request to the same repository
+            - Create a new repository within the specified organization
+      dependencies:
+        pluginLocation:
+          allOf:
+            - if:
+                properties:
+                  pluginLocation:
+                    const: Submit a pull request to the same repository
+              then:
+                properties:
+                  branchName:
+                    title: Branch Name
+                    type: string
+                    description: The name for the branch
+                    default: ''
+                  targetBranchName:
+                    title: Target Branch Name
+                    type: string
+                    description: The target branch name of the merge request
+                    default: ''
+                required:
+                  - branchName
+                  - targetBranchName
+  steps:
+    - id: workflow_params
+      name: Retrieve workflow parameters
+      action: orchestrator:workflow:get_params
+      input:
+        workflow_id: ${{ parameters.workflow_id }}
+        indent: 4 # conforms indentation of the template yaml for the "parameters" property
+
+    - id: template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          workflow_id: ${{ parameters.workflow_id }}
+          title: ${{ steps.workflow_params.output.title }}
+          description: ${{ steps.workflow_params.output.description }}
+          parameters: ${{ steps.workflow_params.output.parameters }}
+          repoUrl: ${{ parameters.repoUrl | parseRepoUrl }}
+          owner: ${{ parameters.owner }}
+          repoName: ${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          orgName: ${{ (parameters.repoUrl | parseRepoUrl).owner }}
+
+    # This step publishes the contents of the working directory to GitHub if it is a new repository.
+    - id: publish
+      name: Publish the template in a new repository
+      if: ${{ parameters.pluginLocation === 'Create a new repository within the specified organization' }}
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: This is the template for the ${{ parameters.workflow_id }} workflow.
+        repoUrl: ${{ parameters.repoUrl }}
+        sourcePath: templates/${{parameters.workflow_id}}
+
+    # This step creates a pull request with the contents of the working directory.
+    - id: publishGithub
+      name: Create pull request with the template
+      if: ${{ parameters.pluginLocation  === 'Submit a pull request to the same repository' }}
+      action: publish:github:pull-request
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        branchName: ${{ parameters.branchName }}
+        targetBranchName: ${{ parameters.targetBranchName }}
+        title: Create template ${{ parameters.workflow_id }}
+        description: This pull request creates template for running a workflow
+
+  output:
+    links:
+      - title: View Template
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: View Pull Request
+        url: ${{ steps.publishGithub.output.remoteUrl }}

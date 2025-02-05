@@ -50,14 +50,18 @@ backend.add(import('@backstage/plugin-search-backend-module-pg/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-catalog/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
 
+// permission plugin
+backend.add(import('@backstage-community/plugin-rbac-backend'));
+
+// orchestrator
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-orchestrator-backend'),
 );
-
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
+backend.add(import('backstage-plugin-scaffolder-backend-module-orchestrator'));
 
-// permission plugin
-backend.add(import('@backstage-community/plugin-rbac-backend'));
+// for integrating templates with github
+backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 
 backend.start();

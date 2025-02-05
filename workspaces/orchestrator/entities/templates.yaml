@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: orchestrator-example-templates
+  description: A collection of Example Software Templates for the Orchestrator
+spec:
+  type: file
+  targets:
+    - ./convertWorkflowToTemplate.yaml
+    #- ./yamlgreet.yaml
