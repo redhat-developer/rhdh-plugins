@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.11.1
+
+### Patch Changes
+
+- 187368f: Updated dependency `@janus-idp/shared-react` to `2.15.0`.
+
 ## 1.11.0
 
 ### Minor Changes
