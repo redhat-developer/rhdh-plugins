@@ -74,8 +74,8 @@ const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[
         priority: 80,
         props: {
           icon: 'support',
-          tooltip: 'Support',
-          to: 'https://github.com/redhat-developer/rhdh/issues',
+          tooltip: 'Support (external site)',
+          to: 'https://developers.redhat.com/rhdh/overview',
         },
       },
     },
