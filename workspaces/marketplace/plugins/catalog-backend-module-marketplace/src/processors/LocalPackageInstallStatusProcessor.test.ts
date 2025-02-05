@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,165 +16,154 @@
 
 import {
   InstallStatus,
-  MarketplacePlugin,
+  MarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { LocalPluginInstallStatusProcessor } from './LocalPluginInstallStatusProcessor';
+import { LocalPackageInstallStatusProcessor } from './LocalPackageInstallStatusProcessor';
 
-const pluginEntity: MarketplacePlugin = {
+const packageEntity: MarketplacePackage = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
   metadata: {
-    name: 'testplugin',
-    title: 'APIs with Test plugin',
-    description: 'Test plugin.',
+    name: 'testpackage',
+    title: 'APIs with Test package',
+    description: 'Test package.',
     tags: ['3scale', 'api'],
   },
-  kind: 'Plugin',
+  kind: 'Package',
   spec: {
     categories: ['API Discovery'],
     developer: 'Red Hat',
-    icon: 'https://janus-idp.io/images/plugins/3scale.svg',
-    type: 'frontend-plugin',
+    icon: 'https://janus-idp.io/images/packages/3scale.svg',
+    type: 'frontend-package',
     lifecycle: 'production',
     owner: 'test-group',
-    description: 'Test plugin',
+    description: 'Test package',
     installation: {
-      markdown: '# Installation \n run `yarn add test-plugin`',
+      markdown: '# Installation \n run `yarn add test-package`',
     },
   },
 };
 
-describe('LocalPluginInstallStatusProcessor', () => {
+describe('LocalPackageInstallStatusProcessor', () => {
   it('should return processor name', () => {
-    const processor = new LocalPluginInstallStatusProcessor();
+    const processor = new LocalPackageInstallStatusProcessor();
     expect(processor.getProcessorName()).toBe(
-      'LocalPluginInstallStatusProcessor',
+      'LocalPackageInstallStatusProcessor',
     );
   });
 
   it('should return the workspace path', async () => {
-    const processor = new LocalPluginInstallStatusProcessor();
+    const processor = new LocalPackageInstallStatusProcessor();
 
-    const result = await processor.preProcessEntity(pluginEntity);
+    const result = await processor.preProcessEntity(packageEntity);
     expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
   });
 
   it('should return not installed status', async () => {
-    const processor = new LocalPluginInstallStatusProcessor();
+    const processor = new LocalPackageInstallStatusProcessor();
 
-    const result = await processor.preProcessEntity(pluginEntity);
+    const result = await processor.preProcessEntity(packageEntity);
     expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
   });
 
   it('should return empty string if the root folder does not have workspaces', async () => {
-    const processor = new LocalPluginInstallStatusProcessor();
+    const processor = new LocalPackageInstallStatusProcessor();
 
     const result = processor.findWorkspacesPath('../../../../../../../');
     expect(result).toBe('');
   });
 
   it('should return notInstalled status if the entity does not have package version information', async () => {
-    const processor = new LocalPluginInstallStatusProcessor();
+    const processor = new LocalPackageInstallStatusProcessor();
 
-    const result = await processor.preProcessEntity(pluginEntity);
+    const result = await processor.preProcessEntity(packageEntity);
     expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
   });
 
   it('should return NotInstalled status if the entity has incorrect package installed', async () => {
-    const processor = new LocalPluginInstallStatusProcessor();
+    const processor = new LocalPackageInstallStatusProcessor();
 
-    const searchBackendPlugin = {
-      ...pluginEntity,
+    const searchBackendPackage = {
+      ...packageEntity,
       spec: {
-        ...pluginEntity.spec,
+        ...packageEntity.spec,
         packages: [
           {
-            name: '@backstage/plugin-search-backend',
+            name: '@backstage/package-search-backend',
             version: '^2.0.1',
           },
         ],
       },
     };
-    const result = await processor.preProcessEntity(searchBackendPlugin);
+    const result = await processor.preProcessEntity(searchBackendPackage);
     expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
   });
 
   it('should return Installed status if the entity has incorrect package version installed', async () => {
-    const processor = new LocalPluginInstallStatusProcessor();
+    const processor = new LocalPackageInstallStatusProcessor();
 
-    const searchBackendPlugin = {
-      ...pluginEntity,
+    const searchBackendPackage = {
+      ...packageEntity,
       spec: {
-        ...pluginEntity.spec,
+        ...packageEntity.spec,
         packages: [
           {
-            name: '@backstage/plugin-search-backend',
+            name: '@backstage/package-search-backend',
             version: '^1.0.1',
           },
         ],
       },
     };
-    const result = await processor.preProcessEntity(searchBackendPlugin);
+    const result = await processor.preProcessEntity(searchBackendPackage);
     expect(result?.spec?.installStatus).toBe(InstallStatus.Installed);
   });
 
   it('should return NotInstalled status when invalid workspaces paths', async () => {
-    const processor = new LocalPluginInstallStatusProcessor([
+    const processor = new LocalPackageInstallStatusProcessor([
       'packages/modules',
     ]);
 
-    const searchPlugin = {
-      ...pluginEntity,
+    const searchPackage = {
+      ...packageEntity,
       spec: {
-        ...pluginEntity.spec,
+        ...packageEntity.spec,
         packages: [
           {
-            name: '@backstage/plugin-search-backend',
+            name: '@backstage/package-search-backend',
             version: '^1.0.0 , ^1.0.0',
           },
         ],
       },
     };
-    const result = await processor.preProcessEntity(searchPlugin);
+    const result = await processor.preProcessEntity(searchPackage);
     expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
   });
 
   it('should return Installed status when only package names are passed', async () => {
-    const processor = new LocalPluginInstallStatusProcessor();
+    const processor = new LocalPackageInstallStatusProcessor();
 
-    const searchPlugin = {
-      ...pluginEntity,
+    const searchPackage = {
+      ...packageEntity,
       spec: {
-        ...pluginEntity.spec,
+        ...packageEntity.spec,
         packages: [
-          '@backstage/plugin-search',
-          '@backstage/plugin-search-backend',
+          '@backstage/package-search',
+          '@backstage/package-search-backend',
         ],
       },
     };
-    const result = await processor.preProcessEntity(searchPlugin);
+    const result = await processor.preProcessEntity(searchPackage);
     expect(result?.spec?.installStatus).toBe(InstallStatus.Installed);
   });
 
-  it('should not process any other kind other than plugin', async () => {
-    const processor = new LocalPluginInstallStatusProcessor();
+  it('should not process any other kind other than package', async () => {
+    const processor = new LocalPackageInstallStatusProcessor();
 
     const testEntity = {
-      ...pluginEntity,
+      ...packageEntity,
       kind: 'TestKind',
     };
     const result = await processor.preProcessEntity(testEntity);
     expect(result).toEqual(testEntity);
-  });
-
-  it('should return correct values when isJson method is called', async () => {
-    const processor = new LocalPluginInstallStatusProcessor();
-    expect(processor.isJSON(null as any)).toBe(false);
-    expect(processor.isJSON(undefined as any)).toBe(false);
-    expect(processor.isJSON(123 as any)).toBe(false);
-    expect(processor.isJSON('@backstage/plugin-search')).toBe(false);
-    expect(processor.isJSON('{ "name": "@backstage/plugin-search" }')).toBe(
-      true,
-    );
   });
 });

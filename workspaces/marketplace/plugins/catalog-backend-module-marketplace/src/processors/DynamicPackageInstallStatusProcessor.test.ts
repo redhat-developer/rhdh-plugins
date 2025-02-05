@@ -21,7 +21,7 @@ import {
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { DynamicPluginInstallStatusProcessor } from './DynamicPluginInstallStatusProcessor';
+import { DynamicPackageInstallStatusProcessor } from './DynamicPackageInstallStatusProcessor';
 
 const pluginEntity: MarketplacePlugin = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
@@ -70,19 +70,19 @@ const locationSpec = {
   target: '',
 };
 
-describe('DynamicPluginInstallStatusProcessor', () => {
+describe('DynamicPackageInstallStatusProcessor', () => {
   beforeEach(() => {
     global.fetch = jest.fn().mockResolvedValue({} as any);
   });
 
   it('should return processor name', () => {
-    const processor = new DynamicPluginInstallStatusProcessor(
+    const processor = new DynamicPackageInstallStatusProcessor(
       mockServices.discovery.mock(),
       authService,
     );
 
     expect(processor.getProcessorName()).toBe(
-      'DynamicPluginInstallStatusProcessor',
+      'DynamicPackageInstallStatusProcessor',
     );
   });
 
@@ -94,7 +94,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
         new Response(JSON.stringify(pluginsMock), { status: 200 }),
       );
 
-      const processor = new DynamicPluginInstallStatusProcessor(
+      const processor = new DynamicPackageInstallStatusProcessor(
         discoveryService,
         authService,
       );
@@ -109,7 +109,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
     });
 
     it('should handle non-200 responses gracefully', async () => {
-      const processor = new DynamicPluginInstallStatusProcessor(
+      const processor = new DynamicPackageInstallStatusProcessor(
         discoveryService,
         authService,
       );
@@ -129,7 +129,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
       };
       (cache.get as jest.Mock).mockResolvedValue(cachedData);
 
-      const processor = new DynamicPluginInstallStatusProcessor(
+      const processor = new DynamicPackageInstallStatusProcessor(
         discoveryService,
         authService,
       );
@@ -151,7 +151,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
         new Response(JSON.stringify(pluginsMock), { status: 200 }),
       );
 
-      const processor = new DynamicPluginInstallStatusProcessor(
+      const processor = new DynamicPackageInstallStatusProcessor(
         discoveryService,
         authService,
       );
@@ -172,7 +172,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
     });
 
     it('should not process if the installStatus is already set', async () => {
-      const processor = new DynamicPluginInstallStatusProcessor(
+      const processor = new DynamicPackageInstallStatusProcessor(
         discoveryService,
         authService,
       );
@@ -201,7 +201,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
         new Response(JSON.stringify(pluginsMock), { status: 200 }),
       );
 
-      const processor = new DynamicPluginInstallStatusProcessor(
+      const processor = new DynamicPackageInstallStatusProcessor(
         discoveryService,
         authService,
       );
@@ -229,7 +229,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
         new Response(JSON.stringify(pluginsMock), { status: 200 }),
       );
 
-      const processor = new DynamicPluginInstallStatusProcessor(
+      const processor = new DynamicPackageInstallStatusProcessor(
         discoveryService,
         authService,
       );
@@ -252,7 +252,7 @@ describe('DynamicPluginInstallStatusProcessor', () => {
         spec: {},
       };
 
-      const processor = new DynamicPluginInstallStatusProcessor(
+      const processor = new DynamicPackageInstallStatusProcessor(
         discoveryService,
         authService,
       );

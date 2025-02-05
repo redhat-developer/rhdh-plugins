@@ -141,7 +141,6 @@ export type MarketplacePluginPackage = {
  */
 export interface MarketplacePluginSpec extends JsonObject {
   packages?: (string | MarketplacePluginPackage)[];
-  installStatus?: keyof typeof InstallStatus;
   icon?: string;
   categories?: string[];
   developer?: string;
@@ -180,7 +179,7 @@ export type GetPluginsRequest = {
  * @public
  */
 export interface MarketplacePackageSpec extends JsonObject {
-  packageName: string;
+  packageName?: string;
   dynamicArtifact?: string;
   author?: string;
   support?: string;
@@ -189,6 +188,7 @@ export interface MarketplacePackageSpec extends JsonObject {
   appConfigExamples?: AppConfigExample[];
   owner?: string;
   partOf?: string[];
+  installStatus?: keyof typeof InstallStatus;
 }
 
 /**
