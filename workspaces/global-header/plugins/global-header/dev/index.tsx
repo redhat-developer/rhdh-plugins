@@ -204,7 +204,7 @@ const entities = [
 
 const catalogApi = catalogApiMock({ entities });
 
-const mockBaseUrl = 'http://backstage/api/notifications';
+const mockBaseUrl = 'https://backstage/api/notifications';
 const discoveryApi = { getBaseUrl: async () => mockBaseUrl };
 const fetchApi = new MockFetchApi();
 const client = new NotificationsClient({ discoveryApi, fetchApi });
