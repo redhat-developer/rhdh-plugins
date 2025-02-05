@@ -15,17 +15,17 @@
  */
 import { CatalogClient } from '@backstage/catalog-client';
 import { MarketplaceCatalogClient } from './MarketplaceCatalogClient';
-import { MarketplaceKinds } from '../types';
+import { MarketplaceKind } from '../types';
 
 const mockPlugins = [
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.plugin,
+    kind: MarketplaceKind.Plugin,
     metadata: { name: 'plugin1' },
   },
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.plugin,
+    kind: MarketplaceKind.Plugin,
     metadata: { name: 'plugin2' },
   },
 ];
@@ -33,7 +33,7 @@ const mockPlugins = [
 const mockPluginList = [
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.pluginList,
+    kind: MarketplaceKind.PluginList,
     metadata: { name: 'test-featured-plugins' },
     spec: {
       plugins: ['plugin1', 'plugin2'],
@@ -85,7 +85,7 @@ describe('MarketplaceCatalogClient', () => {
       expect(mockQueryEntities).toHaveBeenCalledTimes(1);
       expect(mockQueryEntities).toHaveBeenCalledWith(
         {
-          filter: { kind: 'plugin' },
+          filter: { kind: 'Plugin' },
         },
         'mockedToken',
       );
@@ -203,7 +203,7 @@ describe('MarketplaceCatalogClient', () => {
       mockEntityFacets.mockReturnValue({
         facets: [
           {
-            kind: 'plugin',
+            kind: 'Plugin',
             count: 1,
           },
         ],

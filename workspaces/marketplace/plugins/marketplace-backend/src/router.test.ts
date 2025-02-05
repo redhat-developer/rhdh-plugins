@@ -187,7 +187,7 @@ describe('createRouter', () => {
     const { backendServer } = await setupTestWithMockCatalog({
       mockData: mockPluginList[0],
       name: 'featured-plugins',
-      kind: 'pluginlist',
+      kind: 'PluginList',
     });
 
     const response = await request(backendServer).get(
@@ -203,7 +203,7 @@ describe('createRouter', () => {
     const { backendServer } = await setupTestWithMockCatalog({
       mockData: null,
       name: 'invalid-pluginlist',
-      kind: 'pluginlist',
+      kind: 'PluginList',
     });
 
     const response = await request(backendServer).get(
@@ -220,7 +220,7 @@ describe('createRouter', () => {
     const { backendServer } = await setupTestWithMockCatalog({
       mockData: { ...mockPluginList[0], spec: {} },
       name: 'featured-plugins',
-      kind: 'pluginlist',
+      kind: 'PluginList',
     });
 
     const response = await request(backendServer).get(
@@ -259,7 +259,7 @@ describe('createRouter', () => {
     const { backendServer } = await setupTestWithMockCatalog({
       mockData: null,
       name: 'featured-plugins',
-      kind: 'pluginlist',
+      kind: 'PluginList',
     });
 
     const response = await request(backendServer).get(

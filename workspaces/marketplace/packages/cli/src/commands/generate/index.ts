@@ -21,7 +21,7 @@ import YAML from 'yaml';
 import {
   AppConfigExample,
   MARKETPLACE_API_VERSION,
-  MarketplaceKinds,
+  MarketplaceKind,
   MarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { EntityLink, LocationEntityV1alpha1 } from '@backstage/catalog-model';
@@ -149,7 +149,7 @@ export default async (opts: OptionValues) => {
 
       const entity: MarketplacePackage = {
         apiVersion: MARKETPLACE_API_VERSION,
-        kind: MarketplaceKinds.package,
+        kind: MarketplaceKind.Package,
         metadata: {
           name: entityName(packageJSON.name),
           namespace: namespace ?? undefined,

@@ -66,10 +66,10 @@ export const MARKETPLACE_API_VERSION = 'marketplace.backstage.io/v1alpha1';
 /**
  * @public
  */
-export enum MarketplaceKinds {
-  plugin = 'Plugin',
-  pluginList = 'PluginList',
-  package = 'Package',
+export enum MarketplaceKind {
+  Plugin = 'Plugin',
+  PluginList = 'PluginList',
+  Package = 'Package',
 }
 
 /**

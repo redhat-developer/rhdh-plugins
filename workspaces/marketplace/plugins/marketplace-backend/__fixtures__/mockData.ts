@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { MarketplaceKinds } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplaceKind } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export const mockPlugins = [
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.plugin,
+    kind: MarketplaceKind.Plugin,
     metadata: { name: 'plugin1' },
   },
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.plugin,
+    kind: MarketplaceKind.Plugin,
     metadata: { name: 'plugin2' },
   },
 ];
@@ -31,7 +31,7 @@ export const mockPlugins = [
 export const mockPluginList = [
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.pluginList,
+    kind: MarketplaceKind.PluginList,
     metadata: { name: 'test-featured-plugins' },
     spec: {
       plugins: ['plugin1', 'plugin2'],
