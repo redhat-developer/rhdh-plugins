@@ -52,7 +52,7 @@ export interface MarketplacePackage extends Entity {
 /**
  * @public
  */
-export interface MarketplacePluginList extends Entity {
+export interface MarketplaceCollection extends Entity {
   spec?: {
     plugins: string[];
   } & MarketplacePluginSpec;
@@ -68,7 +68,7 @@ export const MARKETPLACE_API_VERSION = 'marketplace.backstage.io/v1alpha1';
  */
 export enum MarketplaceKind {
   Plugin = 'Plugin',
-  PluginList = 'PluginList',
+  Collection = 'PluginCollection',
   Package = 'Package',
 }
 
@@ -178,6 +178,17 @@ export type GetPluginsRequest = {
 /**
  * @public
  */
+export type GetPackagesRequest = {
+  limit?: number;
+  offset?: number;
+  filter?: EntityFilterQuery;
+  orderFields?: EntityOrderQuery;
+  searchTerm?: string;
+};
+
+/**
+ * @public
+ */
 export interface MarketplacePackageSpec extends JsonObject {
   packageName?: string;
   dynamicArtifact?: string;
@@ -212,19 +223,3 @@ export type {
   GetEntityFacetsResponse,
   EntityFilterQuery,
 } from '@backstage/catalog-client';
-
-/**
- * @public
- */
-export interface MarketplaceApi {
-  getPlugins(
-    request?: GetPluginsRequest,
-  ): Promise<MarketplacePluginWithPageInfo>;
-  getPluginByName(name: string): Promise<MarketplacePlugin>;
-  getPluginLists(): Promise<MarketplacePluginList[]>;
-  getPluginListByName(name: string): Promise<MarketplacePluginList>;
-  getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
-  getEntityFacets(
-    request: GetEntityFacetsRequest,
-  ): Promise<GetEntityFacetsResponse>;
-}

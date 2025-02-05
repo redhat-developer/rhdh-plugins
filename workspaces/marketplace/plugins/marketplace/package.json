@@ -50,8 +50,12 @@
   "devDependencies": {
     "@backstage/cli": "^0.29.5",
     "@backstage/dev-utils": "^1.1.6",
+    "@backstage/test-utils": "^1.7.4",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.4.7",
     "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "msw": "^1.0.0",
     "react": "^17.0.0 || ^18.0.0",
     "react-router-dom": "^6.3.0"
   },

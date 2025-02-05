@@ -15,161 +15,18 @@
  */
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
-import {
-  useQueryParamState,
-  ItemCardGrid,
-  Link,
-  LinkButton,
-} from '@backstage/core-components';
-import { useRouteRef } from '@backstage/core-plugin-api';
+import { useQueryParamState } from '@backstage/core-components';
 
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-import CardActions from '@mui/material/CardActions';
-import Skeleton from '@mui/material/Skeleton';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-
-import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { usePlugins } from '../hooks/usePlugins';
-import { detailsRouteRef, rootRouteRef } from '../routes';
-
-const Icon = ({ entry }: { entry: MarketplacePlugin }) =>
-  entry.spec?.icon ? (
-    <CardMedia
-      image={entry.spec.icon}
-      sx={{ width: 80, height: 80, flexShrink: 0 }}
-    />
-  ) : null;
-
-const EntrySkeleton = ({
-  animation,
-}: {
-  animation?: 'pulse' | 'wave' | false;
-}) => (
-  <Card variant="outlined">
-    <CardContent>
-      <Stack spacing={2}>
-        <Stack direction="row" spacing={2}>
-          <Skeleton
-            variant="rectangular"
-            animation={animation}
-            sx={{ width: '80px', height: '80px', mr: 2 }}
-          />
-          <Stack spacing={0.5}>
-            <Skeleton animation={animation}>
-              <Typography variant="subtitle1">Entry name</Typography>
-            </Skeleton>
-            <Skeleton animation={animation}>
-              <Typography variant="subtitle2">by someone</Typography>
-            </Skeleton>
-            <Skeleton animation={animation}>
-              <Typography variant="subtitle2">Category</Typography>
-            </Skeleton>
-          </Stack>
-        </Stack>
-        <div>
-          <Skeleton animation={animation} />
-          <Skeleton animation={animation} />
-          <Skeleton animation={animation} />
-        </div>
-      </Stack>
-    </CardContent>
-    <CardActions sx={{ p: 2, justifyContent: 'flex-start' }}>
-      <Skeleton animation={animation}>Read more</Skeleton>
-    </CardActions>
-  </Card>
-);
-
-// TODO: add link around card
-const Entry = ({ entry }: { entry: MarketplacePlugin }) => {
-  const navigate = useNavigate();
-  const getIndexPath = useRouteRef(rootRouteRef);
-  const getDetailsPath = useRouteRef(detailsRouteRef);
-
-  const detailsPath = getDetailsPath({ name: entry.metadata.name });
-  const withSearchParameter = (name: string, value: string) =>
-    `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
-      value,
-    )}`;
-
-  return (
-    <Card
-      variant="outlined"
-      sx={{
-        '&:hover': { backgroundColor: 'background.default', cursor: 'pointer' },
-      }}
-      onClick={() => navigate(detailsPath)}
-    >
-      <CardContent sx={{ backgroundColor: 'transparent' }}>
-        <Stack spacing={2}>
-          <Stack direction="row" spacing={2}>
-            <Icon entry={entry} />
-            <Stack spacing={0.5}>
-              <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
-                {entry.metadata.title}
-              </Typography>
-              {entry.spec?.developer ? (
-                <Typography
-                  variant="subtitle2"
-                  style={{ fontWeight: 'normal' }}
-                >
-                  {' by '}
-                  <Link
-                    to={withSearchParameter('developer', entry.spec.developer)}
-                    color="primary"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    {entry.spec.developer}
-                  </Link>
-                </Typography>
-              ) : null}
-              {entry.spec?.categories && entry.spec.categories.length > 0 ? (
-                <Typography
-                  variant="subtitle2"
-                  style={{ fontWeight: 'normal' }}
-                >
-                  <LinkButton
-                    to={withSearchParameter(
-                      'category',
-                      entry.spec.categories[0],
-                    )}
-                    variant="outlined"
-                    style={{ fontWeight: 'normal', padding: '2px 6px' }}
-                    onClick={e => e.stopPropagation()}
-                  >
-                    {entry.spec.categories[0]}
-                  </LinkButton>
-                </Typography>
-              ) : null}
-            </Stack>
-          </Stack>
-
-          {entry.metadata.description ? (
-            <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-              {entry.metadata.description}
-            </Typography>
-          ) : null}
-        </Stack>
-      </CardContent>
-      <CardActions sx={{ pl: 2, pr: 2, pb: 2, justifyContent: 'flex-start' }}>
-        <Link to={detailsPath} onClick={e => e.stopPropagation()}>
-          Read more
-        </Link>
-      </CardActions>
-    </Card>
-  );
-};
+import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
 
 export const MarketplaceCatalogGrid = () => {
   const plugins = usePlugins();
 
   const [search] = useQueryParamState<string | undefined>('q');
 
-  const filteredEntries = React.useMemo(() => {
+  const filteredPlugins = React.useMemo(() => {
     if (!search || !plugins.data) {
       return plugins.data?.items;
     }
@@ -181,18 +38,18 @@ export const MarketplaceCatalogGrid = () => {
   }, [search, plugins.data]);
 
   return (
-    <ItemCardGrid>
+    <PluginCardGrid>
       {plugins.isLoading ? (
         <>
-          <EntrySkeleton />
-          <EntrySkeleton />
-          <EntrySkeleton />
-          <EntrySkeleton />
+          <PluginCardSkeleton />
+          <PluginCardSkeleton />
+          <PluginCardSkeleton />
+          <PluginCardSkeleton />
         </>
       ) : null}
-      {filteredEntries?.map(entry => (
-        <Entry key={entry.metadata.name} entry={entry} />
+      {filteredPlugins?.map(plugin => (
+        <PluginCard key={plugin.metadata.name} plugin={plugin} />
       ))}
-    </ItemCardGrid>
+    </PluginCardGrid>
   );
 };

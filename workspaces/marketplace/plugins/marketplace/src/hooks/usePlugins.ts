@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import { useApi } from '@backstage/core-plugin-api';
-
 import { useQuery } from '@tanstack/react-query';
-import { marketplaceApiRef } from '../api';
+
 import { GetPluginsRequest } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
+import { useMarketplaceApi } from './useMarketplaceApi';
+
 export const usePlugins = (request?: GetPluginsRequest) => {
-  const marketplaceApi = useApi(marketplaceApiRef);
+  const marketplaceApi = useMarketplaceApi();
   return useQuery({
-    queryKey: ['plugins', request],
+    queryKey: ['marketplaceApi', 'getPlugins', request],
     queryFn: () => marketplaceApi.getPlugins(request),
   });
 };

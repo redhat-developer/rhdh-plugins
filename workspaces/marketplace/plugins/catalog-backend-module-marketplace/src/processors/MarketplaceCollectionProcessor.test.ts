@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { MarketplacePluginList } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { MarketplacePluginListProcessor } from './MarketplacePluginListProcessor';
+import { MarketplaceCollectionProcessor } from './MarketplaceCollectionProcessor';
 
-const pluginListEntity: MarketplacePluginList = {
+const pluginListEntity: MarketplaceCollection = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
   metadata: {
     name: 'testplugin',
@@ -32,15 +32,15 @@ const pluginListEntity: MarketplacePluginList = {
   },
 };
 
-describe('MarketplacePluginListProcessor', () => {
+describe('MarketplaceCollectionProcessor', () => {
   it('should return processor name', () => {
-    const processor = new MarketplacePluginListProcessor();
+    const processor = new MarketplaceCollectionProcessor();
 
-    expect(processor.getProcessorName()).toBe('MarketplacePluginListProcessor');
+    expect(processor.getProcessorName()).toBe('MarketplaceCollectionProcessor');
   });
 
   it('should return pluginList', async () => {
-    const processor = new MarketplacePluginListProcessor();
+    const processor = new MarketplaceCollectionProcessor();
 
     const emit = jest.fn();
     await processor.postProcessEntity(
@@ -56,7 +56,7 @@ describe('MarketplacePluginListProcessor', () => {
   });
 
   it('should return validate the entity', async () => {
-    const processor = new MarketplacePluginListProcessor();
+    const processor = new MarketplaceCollectionProcessor();
 
     expect(
       await processor.validateEntityKind({ ...pluginListEntity, kind: 'test' }),
@@ -65,7 +65,7 @@ describe('MarketplacePluginListProcessor', () => {
   });
 
   it('should return pluginList entity with relation', async () => {
-    const processor = new MarketplacePluginListProcessor();
+    const processor = new MarketplaceCollectionProcessor();
 
     const emit = jest.fn();
     await processor.postProcessEntity(pluginListEntity, null as any, emit);

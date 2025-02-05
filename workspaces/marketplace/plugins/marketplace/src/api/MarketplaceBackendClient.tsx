@@ -23,9 +23,12 @@ import {
   GetEntityFacetsResponse,
   MarketplaceApi,
   MarketplacePlugin,
-  MarketplacePluginList,
+  MarketplaceCollection,
   MarketplacePluginWithPageInfo,
   encodeGetPluginsQueryParams,
+  GetPackagesRequest,
+  PagedResponse,
+  MarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export type MarketplaceBackendClientOptions = {
@@ -42,9 +45,29 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     this.fetchApi = options.fetchApi;
   }
 
+  async getPackages(
+    request?: GetPackagesRequest,
+  ): Promise<PagedResponse<MarketplacePackage>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
+    const params = encodeGetPluginsQueryParams(request);
+    const query = params.toString();
+    const url = `${baseUrl}/packages${query ? '?' : ''}${query}`;
+
+    const response = await this.fetchApi.fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Unexpected status code: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
   async getPlugins(
     request?: GetPluginsRequest,
   ): Promise<MarketplacePluginWithPageInfo> {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
     const params = encodeGetPluginsQueryParams(request);
     const query = params.toString();
@@ -74,7 +97,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     return response.json();
   }
 
-  async getPluginLists(): Promise<MarketplacePluginList[]> {
+  async getPluginLists(): Promise<MarketplaceCollection[]> {
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
     const url = `${baseUrl}/pluginlists`;
 
@@ -88,7 +111,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     return response.json();
   }
 
-  async getPluginListByName(name: string): Promise<MarketplacePluginList> {
+  async getPluginListByName(name: string): Promise<MarketplaceCollection> {
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
     const url = `${baseUrl}/pluginlists/${name}`;
 
@@ -122,7 +145,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     const { facets, filter } = request;
 
     const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
-    const url = `${baseUrl}/aggreations?${encodeQueryParams({ facets, filter })}`;
+    const url = `${baseUrl}/aggregations?${encodeQueryParams({ facets, filter })}`;
 
     const response = await this.fetchApi.fetch(url);
     if (!response.ok) {

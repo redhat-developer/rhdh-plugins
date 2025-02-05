@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,15 @@
  */
 
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 
 import {
   Content,
-  ErrorPanel,
+  ErrorPage,
   Link,
   LinkButton,
-  MarkdownContent,
 } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
-import CardMedia from '@mui/material/CardMedia';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -37,20 +31,14 @@ import Grid from '@mui/material/Grid';
 
 import {
   InstallStatus,
-  MarketplacePlugin,
+  MarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { usePlugins } from '../hooks/usePlugins';
-import { installRouteRef, rootRouteRef } from '../routes';
 
-const Icon = ({ entry }: { entry: MarketplacePlugin }) =>
-  entry.spec?.icon ? (
-    <CardMedia
-      image={entry.spec.icon}
-      sx={{ width: 80, height: 80, flexShrink: 0 }}
-    />
-  ) : null;
+import { rootRouteRef, packageInstallRouteRef } from '../routes';
+import { usePackages } from '../hooks/usePackages';
+import { Markdown } from './Markdown';
 
-const EntryContentSkeleton = () => {
+const MarketplacePackageContentSkeleton = () => {
   return (
     <Content>
       <Stack direction="row" spacing={2}>
@@ -97,16 +85,20 @@ const EntryContentSkeleton = () => {
   );
 };
 
-const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
+const MarketplacePackageContentReal = ({
+  pkg,
+}: {
+  pkg: MarketplacePackage;
+}) => {
   const getIndexPath = useRouteRef(rootRouteRef);
-  const getInstallPath = useRouteRef(installRouteRef);
+  const getInstallPath = useRouteRef(packageInstallRouteRef);
 
   const withSearchParameter = (name: string, value: string) =>
     `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
       value,
     )}`;
 
-  let readme = entry.spec?.description ?? entry.metadata.description ?? '';
+  let readme = pkg.metadata.description ?? '';
   if (!readme.startsWith('#')) {
     readme = `# About\n\n${readme}`;
   }
@@ -114,23 +106,22 @@ const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
   return (
     <Content>
       <Stack direction="row" spacing={2}>
-        <Icon entry={entry} />
         <Stack spacing={0.5}>
           <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
-            {entry.metadata.title || entry.metadata.name}
+            {pkg.metadata.title || pkg.metadata.name}
           </Typography>
-          {entry.spec?.developer ? (
+          {pkg.spec?.developer ? (
             <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
               {' by '}
               <Link
-                to={withSearchParameter('developer', entry.spec.developer)}
+                to={withSearchParameter('developer', pkg.spec.developer)}
                 color="primary"
               >
-                {entry.spec.developer}
+                {pkg.spec.developer}
               </Link>
             </Typography>
           ) : null}
-          {entry.spec?.categories?.map(category => (
+          {pkg.spec?.categories?.map(category => (
             <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
               <LinkButton
                 to={withSearchParameter('category', category)}
@@ -149,94 +140,39 @@ const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
 
       <Grid container>
         <Grid item md={2}>
-          {entry.spec?.highlights && entry.spec?.highlights.length > 0 ? (
-            <>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                Highlights
-              </Typography>
-              <ol>
-                {entry.spec.highlights.map(highlight => (
-                  <li key={highlight}>{highlight}</li>
-                ))}
-              </ol>
-            </>
-          ) : null}
-
           <LinkButton
-            disabled={entry.spec?.installStatus === InstallStatus.Installed}
-            to={getInstallPath({ name: entry.metadata.name })}
+            disabled={pkg.spec?.installStatus === InstallStatus.Installed}
+            to={getInstallPath({ name: pkg.metadata.name })}
             color="primary"
             variant="contained"
           >
-            {entry.spec?.installStatus !== InstallStatus.Installed
+            {pkg.spec?.installStatus !== InstallStatus.Installed
               ? 'Install'
               : InstallStatus.Installed}
           </LinkButton>
         </Grid>
         <Grid item md={10}>
-          <MarkdownContent content={readme} dialect="gfm" />
+          <Markdown content={readme} />
         </Grid>
       </Grid>
     </Content>
   );
 };
 
-const Entry = ({ entryName }: { entryName: string }) => {
-  const plugins = usePlugins();
-  const entry = plugins.data?.items?.find(e => e.metadata.name === entryName);
+export const MarketplacePackageContent = ({
+  pluginName,
+}: {
+  pluginName: string;
+}) => {
+  const packages = usePackages();
+  const pkg = packages.data?.items?.find(p => p.metadata.name === pluginName);
 
-  if (plugins.isLoading) {
-    return <EntryContentSkeleton />;
-  } else if (!entry) {
+  if (packages.isLoading) {
+    return <MarketplacePackageContentSkeleton />;
+  } else if (!pkg) {
     return (
-      <Content>
-        <ErrorPanel
-          error={new Error(`Entry with name ${entryName} not found!`)}
-        />
-      </Content>
+      <ErrorPage statusMessage={`Package with name ${pluginName} not found!`} />
     );
   }
-  return <EntryContent entry={entry} />;
-};
-
-export const MarketplaceEntryAboutDrawer = () => {
-  const params = useParams();
-  const navigate = useNavigate();
-  const getIndexPath = useRouteRef(rootRouteRef);
-
-  // TODO: remove workaround for overlapping subroutes
-  let entryName = params['*'];
-  if (entryName?.includes('/')) {
-    entryName = entryName.substring(0, entryName.indexOf('/'));
-  }
-
-  const open = !!entryName;
-  const handleClose = () => navigate(getIndexPath());
-
-  return (
-    <Drawer
-      open={open}
-      anchor="right"
-      onClose={handleClose}
-      PaperProps={{ sx: { minWidth: '300px', width: '55vw' } }}
-    >
-      {/* about page:
-      <pre>
-        {JSON.stringify(params, null, 2)}
-      </pre> */}
-      <IconButton
-        aria-label="close"
-        onClick={handleClose}
-        sx={{
-          position: 'absolute',
-          right: 16,
-          top: 16,
-          color: theme => theme.palette.grey[500],
-        }}
-      >
-        <CloseIcon />
-      </IconButton>
-      {entryName ? <Entry entryName={entryName} /> : null}
-    </Drawer>
-  );
+  return <MarketplacePackageContentReal pkg={pkg} />;
 };

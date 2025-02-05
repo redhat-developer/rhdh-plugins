@@ -26,7 +26,7 @@ import {
 
 import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
 
-import { rootRouteRef } from './routes';
+import { allRoutes } from './routes';
 import { marketplaceApiRef, MarketplaceBackendClient } from './api';
 
 /**
@@ -35,9 +35,7 @@ import { marketplaceApiRef, MarketplaceBackendClient } from './api';
  */
 export const marketplacePlugin = createPlugin({
   id: 'marketplace',
-  routes: {
-    root: rootRouteRef,
-  },
+  routes: allRoutes,
   apis: [
     createApiFactory({
       api: marketplaceApiRef,
@@ -55,15 +53,30 @@ export const marketplacePlugin = createPlugin({
 });
 
 /**
- * Marketplace page with header and tabs.
+ * Marketplace page with routes for different pages..
  * @public
  */
-export const MarketplacePage = marketplacePlugin.provide(
+export const MarketplaceRouter = marketplacePlugin.provide(
   createRoutableExtension({
     name: 'MarketplacePage',
     component: () =>
-      import('./components/MarketplacePage').then(m => m.MarketplacePage),
-    mountPoint: rootRouteRef,
+      import('./pages/MarketplaceRouter').then(m => m.MarketplaceRouter),
+    mountPoint: allRoutes.rootRouteRef,
+  }),
+);
+
+/**
+ * Marketplace page with header and tabs.
+ * @public
+ */
+export const MarketplaceTabbedPage = marketplacePlugin.provide(
+  createRoutableExtension({
+    name: 'MarketplaceTabbedPage',
+    component: () =>
+      import('./pages/MarketplaceTabbedPage').then(
+        m => m.MarketplaceTabbedPage,
+      ),
+    mountPoint: allRoutes.rootRouteRef,
   }),
 );
 

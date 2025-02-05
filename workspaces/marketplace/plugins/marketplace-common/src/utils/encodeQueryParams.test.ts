@@ -25,7 +25,7 @@ import {
   encodeGetPluginsQueryParams,
   encodeOrderFieldsParams,
 } from './encodeQueryParams';
-import { EntityOrderQuery } from '@backstage/catalog-client/index';
+import { EntityOrderQuery } from '@backstage/catalog-client';
 
 describe('encodeFilterParams', () => {
   it('should encode single orderFields correctly', () => {
@@ -112,7 +112,7 @@ describe('encodeFacetParams', () => {
 
 describe('encodeQueryParams', () => {
   it('should encode filters and facets together', () => {
-    const filter = { kind: ['plugin', 'pluginlist'], 'spec.owner': 'admin' };
+    const filter = { kind: ['Plugin', 'PluginList'], 'spec.owner': 'admin' };
     const facets = ['kind', 'spec.type'];
     const params = encodeQueryParams({ filter, facets });
     expect(params).toBe(
@@ -121,7 +121,7 @@ describe('encodeQueryParams', () => {
   });
 
   it('should handle only filters', () => {
-    const filter = { kind: 'plugin' };
+    const filter = { kind: 'Plugin' };
     const params = encodeQueryParams({ filter });
     expect(params).toBe('filter=kind%3Dplugin');
   });

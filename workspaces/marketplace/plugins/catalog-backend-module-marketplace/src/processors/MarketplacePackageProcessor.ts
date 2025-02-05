@@ -183,7 +183,7 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
       partOfPlugins.forEach((plugin: string) => {
         const pluginRef = parseEntityRef({
           name: plugin,
-          kind: MarketplaceKinds.plugin,
+          kind: MarketplaceKind.Plugin,
         });
         if (pluginRef) {
           emit(

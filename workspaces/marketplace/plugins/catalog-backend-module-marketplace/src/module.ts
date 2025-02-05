@@ -21,7 +21,7 @@ import {
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
 
 import { MarketplacePluginProcessor } from './processors/MarketplacePluginProcessor';
-import { MarketplacePluginListProcessor } from './processors/MarketplacePluginListProcessor';
+import { MarketplaceCollectionProcessor } from './processors/MarketplaceCollectionProcessor';
 import { DynamicPackageInstallStatusProcessor } from './processors/DynamicPackageInstallStatusProcessor';
 import { LocalPackageInstallStatusProcessor } from './processors/LocalPackageInstallStatusProcessor';
 import { MarketplacePackageProcessor } from './processors/MarketplacePackageProcessor';
@@ -43,7 +43,7 @@ export const catalogModuleMarketplace = createBackendModule({
       async init({ logger, catalog, discovery, auth }) {
         logger.info('Adding Marketplace processors to catalog...');
         catalog.addProcessor(new MarketplacePluginProcessor());
-        catalog.addProcessor(new MarketplacePluginListProcessor());
+        catalog.addProcessor(new MarketplaceCollectionProcessor());
         catalog.addProcessor(new LocalPackageInstallStatusProcessor());
         catalog.addProcessor(new MarketplacePackageProcessor());
         catalog.addProcessor(

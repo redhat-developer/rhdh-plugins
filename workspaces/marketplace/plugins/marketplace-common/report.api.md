@@ -164,9 +164,9 @@ export interface MarketplaceApi {
     // (undocumented)
     getPluginByName(name: string): Promise<MarketplacePlugin>;
     // (undocumented)
-    getPluginListByName(name: string): Promise<MarketplacePluginList>;
+    getPluginListByName(name: string): Promise<MarketplaceCollection>;
     // (undocumented)
-    getPluginLists(): Promise<MarketplacePluginList[]>;
+    getPluginLists(): Promise<MarketplaceCollection[]>;
     // (undocumented)
     getPlugins(request?: GetPluginsRequest): Promise<MarketplacePluginWithPageInfo>;
     // (undocumented)
@@ -181,9 +181,9 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     // (undocumented)
     getPluginByName(name: string): Promise<MarketplacePlugin>;
     // (undocumented)
-    getPluginListByName(name: string): Promise<MarketplacePluginList>;
+    getPluginListByName(name: string): Promise<MarketplaceCollection>;
     // (undocumented)
-    getPluginLists(): Promise<MarketplacePluginList[]>;
+    getPluginLists(): Promise<MarketplaceCollection[]>;
     // (undocumented)
     getPlugins(request?: GetPluginsRequest): Promise<MarketplacePluginWithPageInfo>;
     // (undocumented)
@@ -249,7 +249,7 @@ export interface MarketplacePlugin extends Entity {
 }
 
 // @public (undocumented)
-export interface MarketplacePluginList extends Entity {
+export interface MarketplaceCollection extends Entity {
     // (undocumented)
     spec?: {
         plugins: string[];

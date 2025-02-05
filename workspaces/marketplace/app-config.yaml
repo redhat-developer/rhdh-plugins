@@ -83,7 +83,7 @@ catalog:
           API,
           Resource,
           Plugin,
-          PluginList,
+          PluginCollection,
           Package,
           Location,
         ]
@@ -98,9 +98,9 @@ catalog:
       rules:
         - allow: [Plugin]
     - type: file
-      target: ../../examples/all-pluginlists.yaml
+      target: ../../examples/all-collections.yaml
       rules:
-        - allow: [PluginList]
+        - allow: [PluginCollection]
     - type: file
       target: ../../examples/all-packages.yaml
       rules:

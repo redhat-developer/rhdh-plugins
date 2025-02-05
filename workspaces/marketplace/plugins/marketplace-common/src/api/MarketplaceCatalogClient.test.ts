@@ -65,7 +65,9 @@ const options = {
     getOwnServiceCredentials: jest
       .fn()
       .mockResolvedValue('mockedServiceCredentials'),
-    getPluginRequestToken: jest.fn().mockResolvedValue('mockedToken'),
+    getPluginRequestToken: jest
+      .fn()
+      .mockResolvedValue({ token: 'mockedToken' }),
   } as any,
 };
 

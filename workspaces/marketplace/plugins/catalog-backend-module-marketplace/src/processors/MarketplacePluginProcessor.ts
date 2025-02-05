@@ -184,7 +184,7 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
         const pkgName = typeof pkg === 'string' ? pkg : pkg?.name;
         const packageRef = parseEntityRef({
           name: pkgName,
-          kind: MarketplaceKinds.package,
+          kind: MarketplaceKind.Package,
         });
         if (packageRef) {
           emit(

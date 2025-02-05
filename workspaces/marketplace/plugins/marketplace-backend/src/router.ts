@@ -20,11 +20,11 @@ import Router from 'express-promise-router';
 import { HttpAuthService } from '@backstage/backend-plugin-api';
 import { InputError, NotFoundError } from '@backstage/errors';
 import {
+  decodeGetPackagesRequest,
   decodeGetPluginsRequest,
   decodeQueryParams,
   EntityFacetSchema,
   GetEntityFacetsRequest,
-  GetPluginsRequest,
   MarketplaceApi,
   MarketplaceKind,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
@@ -38,9 +38,16 @@ export async function createRouter({
   const router = Router();
   router.use(express.json());
 
+  router.get('/packages', async (req, res) => {
+    const query = req.url.split('?')[1] || '';
+    const request = decodeGetPackagesRequest(query);
+    const plugins = await marketplaceApi.getPackages(request);
+    res.json(plugins);
+  });
+
   router.get('/plugins', async (req, res) => {
     const query = req.url.split('?')[1] || '';
-    const request: GetPluginsRequest = decodeGetPluginsRequest(query);
+    const request = decodeGetPluginsRequest(query);
     const plugins = await marketplaceApi.getPlugins(request);
     res.json(plugins);
   });

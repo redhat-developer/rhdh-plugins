@@ -124,7 +124,9 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
     }
   }
 
-  async preProcessEntity(entity: MarketplacePackage): Promise<MarketplacePackage> {
+  async preProcessEntity(
+    entity: MarketplacePackage,
+  ): Promise<MarketplacePackage> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
       entity.kind === MarketplaceKind.Package
@@ -135,7 +137,11 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
         const packageName = entity.spec?.packageName;
         // TODO const versions = entity.spec.version;
 
-        if (this.customPaths.some((cpath) => this.isPackageInstalled(packageName, cpath))) {
+        if (
+          this.customPaths.some(cpath =>
+            this.isPackageInstalled(packageName, cpath),
+          )
+        ) {
           installStatus = InstallStatus.Installed;
         }
       }
