@@ -31,8 +31,8 @@ import {
 } from '@backstage/plugin-catalog-node';
 import {
   MARKETPLACE_API_VERSION,
-  MarketplaceKinds,
   MarketplacePackage,
+  MarketplaceKind,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 const packageJsonSchema = {
@@ -157,7 +157,7 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
   ): Promise<Entity> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKinds.package
+      entity.kind === MarketplaceKind.Package
     ) {
       const thisEntityRef = getCompoundEntityRef(entity);
       const target = entity?.spec?.owner;

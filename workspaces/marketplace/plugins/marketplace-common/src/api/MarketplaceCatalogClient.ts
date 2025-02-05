@@ -24,8 +24,8 @@ import {
 import { NotFoundError } from '@backstage/errors';
 import {
   GetPluginsRequest,
-  MarketplaceApi,
-  MarketplaceKinds,
+  MarketplaceKind,
+  MarketplacePackage,
   MarketplacePlugin,
   MarketplacePluginList,
   MarketplacePluginWithPageInfo,
@@ -85,7 +85,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     const result = await this.catalog.queryEntities(
       {
         filter: {
-          kind: 'pluginList',
+          kind: 'PluginList',
         },
       },
       token,
@@ -99,7 +99,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     const result = await this.catalog.getEntityByRef(
       stringifyEntityRef({
         name,
-        kind: MarketplaceKinds.pluginList,
+        kind: MarketplaceKind.PluginList,
       }),
       token,
     );
@@ -112,7 +112,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     const result = await this.catalog.getEntityByRef(
       stringifyEntityRef({
         name,
-        kind: MarketplaceKinds.plugin,
+        kind: MarketplaceKind.Plugin,
       }),
       token,
     );
@@ -126,7 +126,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
 
     if (!pluginList) {
       throw new NotFoundError(
-        `${MarketplaceKinds.pluginList}:${name} not found`,
+        `${MarketplaceKind.PluginList}:${name} not found`,
       );
     }
 
@@ -138,7 +138,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
 
     const entityRefs = plugins.map(plugin =>
       stringifyEntityRef({
-        kind: MarketplaceKinds.plugin,
+        kind: MarketplaceKind.Plugin,
         namespace: pluginList.metadata!.namespace,
         name: plugin,
       }),

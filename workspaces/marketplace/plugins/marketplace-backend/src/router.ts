@@ -26,7 +26,7 @@ import {
   GetEntityFacetsRequest,
   GetPluginsRequest,
   MarketplaceApi,
-  MarketplaceKinds,
+  MarketplaceKind,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export async function createRouter({
@@ -52,7 +52,7 @@ export async function createRouter({
     if (!plugin) {
       res
         .status(404)
-        .json({ error: `${MarketplaceKinds.plugin}:${name} not found` });
+        .json({ error: `${MarketplaceKind.Plugin}:${name} not found` });
     }
     res.json(plugin);
   });
@@ -69,7 +69,7 @@ export async function createRouter({
     if (!pluginlist) {
       res
         .status(404)
-        .json({ error: `${MarketplaceKinds.pluginList}:${name} not found` });
+        .json({ error: `${MarketplaceKind.PluginList}:${name} not found` });
     }
     res.json(pluginlist);
   });

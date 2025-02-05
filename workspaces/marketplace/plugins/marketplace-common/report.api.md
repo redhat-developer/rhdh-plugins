@@ -197,7 +197,7 @@ export type MarketplaceCatalogClientOptions = {
 };
 
 // @public (undocumented)
-export enum MarketplaceKinds {
+export enum MarketplaceKind {
     // (undocumented)
     package = "Package",
     // (undocumented)
