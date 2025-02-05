@@ -215,6 +215,7 @@ export async function createBackendRouter(
     permissions,
     httpAuth,
     auditLogger,
+    logger,
   );
   setupExternalRoutes(router, discovery, scaffolderService, auditLogger);
 
@@ -320,6 +321,7 @@ function setupInternalRoutes(
   permissions: PermissionsService,
   httpAuth: HttpAuthService,
   auditLogger: AuditLogger,
+  logger: LoggerService,
 ) {
   function manageDenyAuthorization(
     endpointName: string,
@@ -356,6 +358,9 @@ function setupInternalRoutes(
     endpoint: string,
     req: HttpRequest,
   ) {
+    logger.error(
+      `request to endpoint ${endpoint} failed with error: ${JSON.stringify(error)}. Request headers: ${JSON.stringify(req.headers)}. Request body: ${JSON.stringify(req.body)}. Request query: ${JSON.stringify(req.query)}`,
+    );
     auditLogger.auditLog({
       eventName: `${endpointName}EndpointHit`,
       stage: 'completion',
