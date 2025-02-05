@@ -1,5 +1,18 @@
 ### Dependencies
 
+## 5.3.0
+
+### Minor Changes
+
+- fbbd37f: Backstage version bump to v1.35.0
+
+### Patch Changes
+
+- 05a1ce0: Updated dependency `@openapitools/openapi-generator-cli` to `2.16.3`.
+- 816d8bc: Updated dependency `@openapitools/openapi-generator-cli` to `2.16.2`.
+- Updated dependencies [fbbd37f]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.5.0
+
 ## 5.2.2
 
 ### Patch Changes
