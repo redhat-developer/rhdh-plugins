@@ -27,10 +27,14 @@ import {
   MarketplaceKind,
   MarketplacePackage,
   MarketplacePlugin,
-  MarketplacePluginList,
+  MarketplaceCollection,
   MarketplacePluginWithPageInfo,
 } from '../types';
-import { convertGetPluginsRequestToQueryEntitiesRequest } from '../utils';
+import {
+  convertGetPackagesRequestToQueryEntitiesRequest,
+  convertGetPluginsRequestToQueryEntitiesRequest,
+} from '../utils';
+import { MarketplaceApi, PagedResponse } from './MarketplaceApi';
 
 /**
  * @public
@@ -80,7 +84,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     };
   }
 
-  async getPluginLists(): Promise<MarketplacePluginList[]> {
+  async getPluginLists(): Promise<MarketplaceCollection[]> {
     const token = await this.getServiceToken();
     const result = await this.catalog.queryEntities(
       {
@@ -91,10 +95,32 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
       token,
     );
 
-    return result.items as MarketplacePluginList[];
+    return result.items as MarketplaceCollection[];
   }
 
-  async getPluginListByName(name: string): Promise<MarketplacePluginList> {
+  async getPackages(
+    request?: GetPluginsRequest,
+  ): Promise<PagedResponse<MarketplacePackage>> {
+    const token = await this.getServiceToken();
+    const result = await this.catalog.queryEntities(
+      {
+        ...request,
+        filter: {
+          ...request?.filter,
+          kind: 'Package',
+        },
+      },
+      token,
+    );
+
+    return {
+      items: result.items as MarketplacePackage[],
+      totalItems: result.totalItems,
+      pageInfo: result.pageInfo,
+    };
+  }
+
+  async getPluginListByName(name: string): Promise<MarketplaceCollection> {
     const token = await this.getServiceToken();
     const result = await this.catalog.getEntityByRef(
       stringifyEntityRef({
@@ -104,7 +130,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
       token,
     );
 
-    return result as MarketplacePluginList;
+    return result as MarketplaceCollection;
   }
 
   async getPluginByName(name: string): Promise<MarketplacePlugin> {

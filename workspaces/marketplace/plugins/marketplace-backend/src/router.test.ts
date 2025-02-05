@@ -26,7 +26,7 @@ import { ExtendedHttpServer } from '@backstage/backend-defaults/dist/rootHttpRou
 import {
   encodeQueryParams,
   MarketplacePlugin,
-  MarketplacePluginList,
+  MarketplaceCollection,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 const BASE_CONFIG = {
@@ -98,7 +98,7 @@ describe('createRouter', () => {
     name,
     kind = 'plugin',
   }: {
-    mockData: MarketplacePlugin[] | MarketplacePluginList[] | {} | null;
+    mockData: MarketplacePlugin[] | MarketplaceCollection[] | {} | null;
     name?: string;
     kind?: string;
   }): Promise<{ backendServer: ExtendedHttpServer }> => {

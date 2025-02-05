@@ -18,9 +18,7 @@ import {
   EntityOrderQuery,
   QueryEntitiesRequest,
 } from '@backstage/catalog-client/index';
-import { GetPluginsRequest, SortOrder } from '../types';
-
-const requiredFilter = { kind: 'plugin' };
+import { GetPackagesRequest, GetPluginsRequest, SortOrder } from '../types';
 
 /**
  *
@@ -81,6 +79,33 @@ export const decodeGetPluginsRequest = (
 };
 
 /**
+ *
+ * @public
+ */
+export const decodeGetPackagesRequest = (
+  queryString: string,
+): GetPackagesRequest => {
+  const searchParams = new URLSearchParams(queryString);
+  return {
+    orderFields:
+      searchParams.getAll('orderFields').length > 0
+        ? decodeOrderFields(searchParams)
+        : undefined,
+    searchTerm: searchParams.get('searchTerm') || undefined,
+    limit: searchParams.get('limit')
+      ? Number(searchParams.get('limit'))
+      : undefined,
+    offset: searchParams.get('offset')
+      ? Number(searchParams.get('offset'))
+      : undefined,
+    filter:
+      searchParams.getAll('filter').length > 0
+        ? decodeFilterParams(searchParams)
+        : undefined,
+  };
+};
+
+/**
  * @public
  */
 export const convertGetPluginsRequestToQueryEntitiesRequest = (
@@ -88,22 +113,47 @@ export const convertGetPluginsRequestToQueryEntitiesRequest = (
 ): QueryEntitiesRequest => {
   const entitiesRequest: QueryEntitiesRequest = {};
 
-  entitiesRequest.filter = { ...query?.filter, ...requiredFilter };
+  entitiesRequest.filter = {
+    ...query?.filter,
+    kind: 'Plugin',
+  };
 
-  if (query?.orderFields) {
-    entitiesRequest.orderFields = query.orderFields;
-  }
-  if (query?.limit) {
-    entitiesRequest.limit = query.limit;
-  }
-  if (query?.offset) {
-    entitiesRequest.offset = query.offset;
-  }
+  entitiesRequest.orderFields = query?.orderFields;
+  entitiesRequest.limit = query?.limit;
+  entitiesRequest.offset = query?.offset;
+
   if (query?.searchTerm) {
     entitiesRequest.fullTextFilter = {
       term: query.searchTerm,
     };
   }
+
+  return entitiesRequest;
+};
+
+/**
+ * @public
+ */
+export const convertGetPackagesRequestToQueryEntitiesRequest = (
+  query: GetPluginsRequest,
+): QueryEntitiesRequest => {
+  const entitiesRequest: QueryEntitiesRequest = {};
+
+  entitiesRequest.filter = {
+    ...query?.filter,
+    kind: 'Package',
+  };
+
+  entitiesRequest.orderFields = query?.orderFields;
+  entitiesRequest.limit = query?.limit;
+  entitiesRequest.offset = query?.offset;
+
+  if (query?.searchTerm) {
+    entitiesRequest.fullTextFilter = {
+      term: query.searchTerm,
+    };
+  }
+
   return entitiesRequest;
 };
 

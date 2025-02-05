@@ -127,7 +127,7 @@ const pluginListJsonSchema = {
 /**
  * @public
  */
-export class MarketplacePluginListProcessor implements CatalogProcessor {
+export class MarketplaceCollectionProcessor implements CatalogProcessor {
   private readonly validators = [
     entityKindSchemaValidator(pluginListJsonSchema),
   ];
@@ -147,7 +147,7 @@ export class MarketplacePluginListProcessor implements CatalogProcessor {
 
   // Return processor name
   getProcessorName(): string {
-    return 'MarketplacePluginListProcessor';
+    return 'MarketplaceCollectionProcessor';
   }
 
   async postProcessEntity(

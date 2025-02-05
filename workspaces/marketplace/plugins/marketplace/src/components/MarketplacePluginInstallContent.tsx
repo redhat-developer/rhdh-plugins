@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-import {
-  Content,
-  ErrorPanel,
-  Link,
-  MarkdownContent,
-} from '@backstage/core-components';
+import { Content, ErrorPanel, Link } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
 import Drawer from '@mui/material/Drawer';
@@ -34,7 +29,8 @@ import Typography from '@mui/material/Typography';
 
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { usePlugins } from '../hooks/usePlugins';
-import { detailsRouteRef, rootRouteRef } from '../routes';
+import { rootRouteRef, pluginRouteRef } from '../routes';
+import { Markdown } from './Markdown';
 
 const EntryContentSkeleton = () => {
   return (
@@ -62,7 +58,7 @@ const EntryContentSkeleton = () => {
   );
 };
 
-const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
+const EntryContent = ({ plugin }: { plugin: MarketplacePlugin }) => {
   const getIndexPath = useRouteRef(rootRouteRef);
 
   const withSearchParameter = (name: string, value: string) =>
@@ -70,7 +66,7 @@ const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
       value,
     )}`;
 
-  let installMarkdown = entry.spec?.installation?.markdown ?? '';
+  let installMarkdown = plugin.spec?.installation?.markdown ?? '';
   if (!installMarkdown.startsWith('#')) {
     installMarkdown = `# Installation\n\n${installMarkdown}`;
   }
@@ -79,16 +75,16 @@ const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
     <Content>
       <Stack spacing={0.5}>
         <Typography variant="h2" style={{ fontWeight: '500' }}>
-          Install {entry.metadata.title || entry.metadata.name}
+          Install {plugin.metadata.title || plugin.metadata.name}
         </Typography>
-        {entry.spec?.developer ? (
+        {plugin.spec?.developer ? (
           <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
             {' by '}
             <Link
-              to={withSearchParameter('developer', entry.spec.developer)}
+              to={withSearchParameter('developer', plugin.spec.developer)}
               color="primary"
             >
-              {entry.spec.developer}
+              {plugin.spec.developer}
             </Link>
           </Typography>
         ) : null}
@@ -97,7 +93,7 @@ const EntryContent = ({ entry }: { entry: MarketplacePlugin }) => {
       <br />
       <br />
 
-      <MarkdownContent content={installMarkdown} dialect="gfm" />
+      <Markdown content={installMarkdown} />
     </Content>
   );
 };
@@ -117,13 +113,13 @@ const Entry = ({ entryName }: { entryName: string }) => {
       </Content>
     );
   }
-  return <EntryContent entry={entry} />;
+  return <EntryContent plugin={entry} />;
 };
 
 export const MarketplaceEntryInstallDrawer = () => {
   const params = useParams();
   const navigate = useNavigate();
-  const getDetailsPath = useRouteRef(detailsRouteRef);
+  const getPluginPath = useRouteRef(pluginRouteRef);
 
   // TODO: remove workaround for overlapping subroutes
   let entryName = params['*'];
@@ -133,7 +129,7 @@ export const MarketplaceEntryInstallDrawer = () => {
 
   // TODO: remove workaround for overlapping subroutes
   const open = params['*']?.endsWith('/install');
-  const handleClose = () => navigate(getDetailsPath({ name: entryName! }));
+  const handleClose = () => navigate(getPluginPath({ name: entryName! }));
 
   return (
     <Drawer
