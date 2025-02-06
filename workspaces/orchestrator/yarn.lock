@@ -12324,6 +12324,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator@workspace:^, @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator@workspace:plugins/scaffolder-backend-module-orchestrator":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator@workspace:plugins/scaffolder-backend-module-orchestrator"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.0.2
+    "@backstage/catalog-model": ^1.7.0
+    "@backstage/cli": ^0.29.0
+    "@backstage/plugin-scaffolder-node": ^0.6.0
+    "@backstage/plugin-scaffolder-node-test-utils": ^0.1.15
+    "@backstage/types": ^1.2.1
+    "@janus-idp/cli": 1.19.1
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
+    "@spotify/prettier-config": ^15.0.0
+    axios: ^1.7.7
+    js-yaml: ^4.1.0
+  languageName: unknown
+  linkType: soft
+
 "@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0, @redhat-developer/red-hat-developer-hub-theme@npm:^0.4.0":
   version: 0.4.0
   resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0"
@@ -17998,11 +18016,11 @@ __metadata:
     "@backstage/plugin-signals-backend": ^0.2.3
     "@backstage/plugin-techdocs-backend": ^1.11.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-backend": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator": "workspace:^"
     "@types/express": ^4.17.6
     "@types/express-serve-static-core": ^4.17.5
     "@types/luxon": ^2.0.4
     app: "link:../app"
-    backstage-plugin-scaffolder-backend-module-orchestrator: ^0.1.0
     better-sqlite3: ^9.0.0
     node-gyp: ^10.0.0
     pg: ^8.11.3
@@ -18016,23 +18034,6 @@ __metadata:
   checksum: fda8d0a0f4810068d23715f2f45153146d6ee8f62dd827ce1e0b6cc3c8328e84ad61e11399a83931705cef702fe7cbb457856bf99b9bd10c4ed57b0786252385
   languageName: node
   linkType: hard
-
-"backstage-plugin-scaffolder-backend-module-orchestrator@^0.1.0, backstage-plugin-scaffolder-backend-module-orchestrator@workspace:plugins/scaffolder-backend-module-orchestrator":
-  version: 0.0.0-use.local
-  resolution: "backstage-plugin-scaffolder-backend-module-orchestrator@workspace:plugins/scaffolder-backend-module-orchestrator"
-  dependencies:
-    "@backstage/backend-plugin-api": ^1.0.2
-    "@backstage/catalog-model": ^1.7.0
-    "@backstage/cli": ^0.29.0
-    "@backstage/plugin-scaffolder-node": ^0.6.0
-    "@backstage/plugin-scaffolder-node-test-utils": ^0.1.15
-    "@backstage/types": ^1.2.1
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
-    "@spotify/prettier-config": ^15.0.0
-    axios: ^1.7.7
-    js-yaml: ^4.1.0
-  languageName: unknown
-  linkType: soft
 
 "bail@npm:^2.0.0":
   version: 2.0.2
