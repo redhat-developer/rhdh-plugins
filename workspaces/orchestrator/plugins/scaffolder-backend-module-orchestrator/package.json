@@ -32,7 +32,8 @@
     "prettier:check": "prettier --ignore-unknown --check .",
     "prettier:fix": "prettier --ignore-unknown --write .",
     "lint:check": "backstage-cli package lint",
-    "lint:fix": "backstage-cli package lint --fix"
+    "lint:fix": "backstage-cli package lint --fix",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --no-embed-as-dependencies"
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.0.2",
@@ -46,6 +47,7 @@
   "devDependencies": {
     "@backstage/cli": "^0.29.0",
     "@backstage/plugin-scaffolder-node-test-utils": "^0.1.15",
+    "@janus-idp/cli": "1.19.1",
     "@spotify/prettier-config": "^15.0.0"
   },
   "files": [
