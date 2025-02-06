@@ -1,5 +1,5 @@
 {
-  "name": "backstage-plugin-scaffolder-backend-module-orchestrator",
+  "name": "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator",
   "description": "The orchestrator module for @backstage/plugin-scaffolder-backend",
   "version": "0.1.0",
   "main": "src/index.ts",

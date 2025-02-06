@@ -11,7 +11,7 @@ An example of using these actions can be found in the `workspaces/orchestrator/e
 In `packages/backend/src/index.ts`:
 
 ```
-backend.add(import('backstage-plugin-scaffolder-backend-module-orchestrator'));
+backend.add(import('@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'));
 ```
 
 # The software template generating templates from workflows - convertWorkflowToTemplate
