@@ -5,7 +5,6 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
-  "private": true,
   "publishConfig": {
     "access": "public",
     "main": "dist/index.cjs.js",
@@ -19,7 +18,28 @@
   "backstage": {
     "role": "backend-plugin-module",
     "pluginId": "scaffolder",
+    "supported-versions": "1.32.5",
     "pluginPackage": "@backstage/plugin-scaffolder-backend"
+  },
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
+  "keywords": [
+    "support:tech-preview",
+    "lifecycle:active",
+    "backstage",
+    "plugin",
+    "orchestrator",
+    "workflows"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "package.json": [
+        "package.json"
+      ]
+    }
   },
   "scripts": {
     "start": "backstage-cli package start",
@@ -51,6 +71,15 @@
     "@spotify/prettier-config": "^15.0.0"
   },
   "files": [
-    "dist"
+    "app-config.yaml",
+    "dist",
+    "dist-dynamic/*.*",
+    "dist-dynamic/dist/**",
+    "static"
+  ],
+  "maintainers": [
+    "@mlibra",
+    "@batzionb",
+    "@gciavarrini"
   ]
 }

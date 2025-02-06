@@ -14,7 +14,8 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator",
       "@red-hat-developer-hub/backstage-plugin-orchestrator-backend",
-      "@red-hat-developer-hub/backstage-plugin-orchestrator-common"
+      "@red-hat-developer-hub/backstage-plugin-orchestrator-common",
+      "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator"
     ]
   },
   "exports": {
