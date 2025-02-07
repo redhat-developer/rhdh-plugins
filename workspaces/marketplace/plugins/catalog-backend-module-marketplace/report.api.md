@@ -12,6 +12,7 @@ import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
 import { DiscoveryService } from '@backstage/backend-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
+import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 // @public (undocumented)
@@ -56,7 +57,7 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
     // (undocumented)
     getProcessorName(): string;
     // (undocumented)
-    postProcessEntity(entity: Entity, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
+    postProcessEntity(entity: MarketplacePackage, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
     // (undocumented)
     validateEntityKind(entity: Entity): Promise<boolean>;
 }

@@ -3,7 +3,6 @@ apiVersion: marketplace.backstage.io/v1alpha1
 metadata:
   name: backstage-community-plugin-tekton
   title: '@backstage-community/plugin-tekton'
-  owner: system/rhdh
   links:
     - url: https://red.ht/rhdh
       title: Homepage

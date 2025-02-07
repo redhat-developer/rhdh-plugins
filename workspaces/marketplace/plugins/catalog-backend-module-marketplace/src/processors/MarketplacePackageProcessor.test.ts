@@ -23,7 +23,6 @@ describe('MarketplacePackageProcessor', () => {
     metadata: {
       name: 'backstage-community-plugin-test',
       title: '@backstage-community/plugin-test',
-      owner: 'system/rhdh',
       annotations: {
         'backstage.io/source-location':
           'url https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-test',
@@ -33,14 +32,7 @@ describe('MarketplacePackageProcessor', () => {
       packageName: '@backstage-community/plugin-test',
       dynamicArtifact: './dynamic-plugins/dist/backstage-community-plugin-test',
       version: '3.17.0',
-      backstage: {
-        role: 'frontend-plugin',
-        supportedVersions: '1.35.0',
-      },
-      author: 'Red Hat',
-      support: 'production',
       owner: 'test-group',
-      lifecycle: 'active',
       partOf: ['plugin-a', 'plugin-b'],
     },
   };
