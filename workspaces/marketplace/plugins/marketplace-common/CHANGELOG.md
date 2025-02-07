@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.0.9
+
+### Patch Changes
+
+- f310add: add documentation and asset types
+
 ## 0.0.8
 
 ### Patch Changes
