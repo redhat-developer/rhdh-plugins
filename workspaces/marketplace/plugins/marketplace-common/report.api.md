@@ -191,7 +191,11 @@ export interface MarketplacePackageSpec extends JsonObject {
     // (undocumented)
     lifecycle?: string;
     // (undocumented)
+    owner?: string;
+    // (undocumented)
     packageName: string;
+    // (undocumented)
+    partOf?: string[];
     // (undocumented)
     support?: string;
 }
