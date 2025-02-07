@@ -148,6 +148,8 @@ export interface MarketplacePackageSpec extends JsonObject {
   lifecycle?: string;
   backstage?: MarketplacePackageBackstage;
   appConfigExamples?: AppConfigExample[];
+  owner?: string;
+  partOf?: string[];
 }
 
 /**
