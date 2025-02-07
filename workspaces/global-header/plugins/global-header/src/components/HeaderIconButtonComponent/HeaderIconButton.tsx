@@ -63,7 +63,7 @@ export const HeaderIconButton = ({
         {...buttonProps}
       >
         {showNotifications ? (
-          <Badge badgeContent={unreadCount} color="error">
+          <Badge badgeContent={unreadCount} max={999} color="error">
             <HeaderIcon icon={icon} />
           </Badge>
         ) : (

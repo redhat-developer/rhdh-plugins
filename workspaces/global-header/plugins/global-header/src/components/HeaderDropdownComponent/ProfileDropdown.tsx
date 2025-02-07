@@ -27,6 +27,7 @@ import {
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
 import { ComponentType } from '../../types';
 import MenuSection from './MenuSection';
+import { lighten } from '@mui/material/styles';
 
 /**
  * @public
@@ -46,6 +47,16 @@ export const ProfileDropdown = ({
   const identityApi = useApi(identityApiRef);
   const [user, setUser] = useState<ProfileInfo>();
   const profileDropdownMountPoints = useProfileDropdownMountPoints();
+  const [bgColor, setBgColor] = useState('#3C3F42');
+
+  useEffect(() => {
+    const container = document.getElementById('global-header');
+    if (container) {
+      const computedStyle = window.getComputedStyle(container);
+      const baseColor = computedStyle.backgroundColor;
+      setBgColor(lighten(baseColor, 0.2));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -80,7 +91,7 @@ export const ProfileDropdown = ({
           <KeyboardArrowDownOutlinedIcon
             sx={{
               marginLeft: '1rem',
-              bgcolor: '#383838',
+              bgcolor: bgColor,
               borderRadius: '25%',
             }}
           />

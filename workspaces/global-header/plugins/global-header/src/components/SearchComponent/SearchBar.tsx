@@ -24,6 +24,7 @@ import { createSearchLink } from '../../utils/stringUtils';
 import { useNavigate } from 'react-router-dom';
 import { SearchInput } from './SearchInput';
 import { SearchOption } from './SearchOption';
+import { useTheme } from '@mui/material/styles';
 
 interface SearchBarProps {
   query: SearchResultProps['query'];
@@ -32,6 +33,7 @@ interface SearchBarProps {
 export const SearchBar = (props: SearchBarProps) => {
   const { query, setSearchTerm } = props;
   const navigate = useNavigate();
+  const theme = useTheme();
 
   return (
     <SearchResultState {...props}>
@@ -55,7 +57,22 @@ export const SearchBar = (props: SearchBarProps) => {
             loading={loading}
             getOptionLabel={option => option ?? ''}
             onInputChange={(_, inputValue) => setSearchTerm(inputValue)}
-            sx={{ width: '100%' }}
+            componentsProps={{
+              paper: {
+                sx: {
+                  borderRadius: '4px',
+                  outline: 'unset',
+                  border: `1px solid ${theme.palette.divider}`,
+                  boxShadow:
+                    theme.palette.mode === 'dark'
+                      ? `0 2px 6px 2px rgba(0, 0, 0, 0.50), 0 1px 2px 0 rgba(0, 0, 0, 0.50)`
+                      : '0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.30)',
+                },
+              },
+            }}
+            sx={{
+              width: '100%',
+            }}
             filterOptions={x => x}
             getOptionDisabled={option => option === 'No results found'}
             onKeyDown={event => {
@@ -85,7 +102,7 @@ export const SearchBar = (props: SearchBarProps) => {
               />
             )}
             ListboxProps={{
-              style: { maxHeight: 600 },
+              sx: { maxHeight: '60vh' },
             }}
           />
         );

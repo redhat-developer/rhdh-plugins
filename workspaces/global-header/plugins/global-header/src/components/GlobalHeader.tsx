@@ -23,13 +23,11 @@ import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints'
 import { ComponentType, GlobalHeaderComponentMountPoint, Slot } from '../types';
 import { ErrorBoundary } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
-import { useTheme } from '@mui/material/styles';
 import { isExternalUrl } from '../utils/stringUtils';
 
 export const GlobalHeader = () => {
   const config = useApi(configApiRef);
   const frontendConfig = config.getOptionalConfig('dynamicPlugins.frontend');
-  const theme = useTheme();
   const supportUrl = config.getOptionalString('app.support.url');
   const frontendPackages = frontendConfig?.get();
 
@@ -148,14 +146,7 @@ export const GlobalHeader = () => {
     });
 
   return (
-    <AppBar
-      position="sticky"
-      component="nav"
-      sx={{
-        backgroundColor: theme.palette.mode === 'dark' ? '#1b1d21' : '#212427',
-        backgroundImage: 'none',
-      }}
-    >
+    <AppBar position="sticky" component="nav" id="global-header">
       <Toolbar>
         {renderComponents(globalHeaderStartComponentsMountPoints)}
         {globalHeaderStartComponentsMountPoints.length > 0 &&
@@ -163,7 +154,7 @@ export const GlobalHeader = () => {
             <Divider
               orientation="vertical"
               flexItem
-              sx={{ borderColor: '#4F5255', marginX: 1 }}
+              sx={{ borderColor: theme => theme.palette.divider, marginX: 1 }}
             />
           )}
         {renderComponents(globalHeaderEndComponentsMountPoints)}

@@ -120,17 +120,9 @@ export const CreateDropdown = ({
         sx: {
           mr: 2,
           color: '#fff',
-          '&.Mui-disabled': {
-            color: '#aaabac',
-            backgroundColor: '#444548',
-            border: '1px solid #444548',
-          },
           border: '1px solid rgba(255, 255, 255, 0.5)',
           '&:hover, &.Mui-focusVisible': {
             border: '1px solid #fff',
-          },
-          '&.MuiButton-root': {
-            border: '1px solid rgba(255, 255, 255, 0.5)',
           },
         },
       }}
