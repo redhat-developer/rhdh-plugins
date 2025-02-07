@@ -87,6 +87,41 @@ export enum InstallStatus {
   NotInstalled = 'NotInstalled',
   Installed = 'Installed',
 }
+/**
+ * @public
+ */
+export enum DocumentationType {
+  usage = 'usage',
+  about = 'about',
+  configuration = 'configuration',
+  installation = 'installation',
+}
+
+/**
+ * @public
+ */
+export enum AssetType {
+  image = 'image',
+}
+/**
+ * @public
+ */
+export interface Asset extends JsonObject {
+  type: AssetType;
+  filename: string;
+  originUri: string;
+  encodedData?: string;
+}
+
+/**
+ * @public
+ */
+export interface Documentation extends JsonObject {
+  type: DocumentationType;
+  markdown: string;
+  title?: string;
+  tabTitle?: string;
+}
 
 /**
  * @public
@@ -111,11 +146,15 @@ export interface MarketplacePluginSpec extends JsonObject {
   categories?: string[];
   developer?: string;
   highlights?: string[];
+  /* @deprecated */
   description?: string;
+  /* @deprecated */
   installation?: {
     markdown?: string;
     appconfig?: string;
   };
+  documentation?: Documentation[];
+  assets?: Asset[];
 }
 
 /**

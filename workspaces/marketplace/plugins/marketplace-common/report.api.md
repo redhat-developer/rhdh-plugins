@@ -27,6 +27,24 @@ export interface AppConfigExample extends JsonObject {
 }
 
 // @public (undocumented)
+export interface Asset extends JsonObject {
+    // (undocumented)
+    encodedData?: string;
+    // (undocumented)
+    filename: string;
+    // (undocumented)
+    originUri: string;
+    // (undocumented)
+    type: AssetType;
+}
+
+// @public (undocumented)
+export enum AssetType {
+    // (undocumented)
+    image = "image"
+}
+
+// @public (undocumented)
 export const convertGetPluginsRequestToQueryEntitiesRequest: (query?: GetPluginsRequest) => QueryEntitiesRequest;
 
 // @public (undocumented)
@@ -49,6 +67,30 @@ export const decodeQueryParams: (queryString: string) => {
     facets?: string[] | undefined;
     filter?: Record<string, string[]> | undefined;
 };
+
+// @public (undocumented)
+export interface Documentation extends JsonObject {
+    // (undocumented)
+    markdown: string;
+    // (undocumented)
+    tabTitle?: string;
+    // (undocumented)
+    title?: string;
+    // (undocumented)
+    type: DocumentationType;
+}
+
+// @public (undocumented)
+export enum DocumentationType {
+    // (undocumented)
+    about = "about",
+    // (undocumented)
+    configuration = "configuration",
+    // (undocumented)
+    installation = "installation",
+    // (undocumented)
+    usage = "usage"
+}
 
 // @public (undocumented)
 export const encodeFacetParams: (facets: string[]) => URLSearchParams;
@@ -228,11 +270,15 @@ export type MarketplacePluginPackage = {
 // @public (undocumented)
 export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
+    assets?: Asset[];
+    // (undocumented)
     categories?: string[];
     // (undocumented)
     description?: string;
     // (undocumented)
     developer?: string;
+    // (undocumented)
+    documentation?: Documentation[];
     // (undocumented)
     highlights?: string[];
     // (undocumented)
