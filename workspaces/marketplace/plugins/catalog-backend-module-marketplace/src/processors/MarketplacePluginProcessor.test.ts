@@ -30,6 +30,35 @@ const pluginEntity: MarketplacePlugin = {
     owner: 'test-group',
   },
 };
+
+const getPackagePartOfPluginRelation = (packageName: string) => ({
+  source: {
+    kind: 'Package',
+    namespace: 'default',
+    name: packageName,
+  },
+  type: 'partOf',
+  target: {
+    kind: 'Plugin',
+    namespace: 'default',
+    name: 'testplugin',
+  },
+});
+
+const getPackageHasPartOfPluginRelation = (packageName: string) => ({
+  source: {
+    kind: 'Plugin',
+    namespace: 'default',
+    name: 'testplugin',
+  },
+  type: 'hasPart',
+  target: {
+    kind: 'Package',
+    namespace: 'default',
+    name: packageName,
+  },
+});
+
 describe('MarketplacePluginProcessor', () => {
   it('should return processor name', () => {
     const processor = new MarketplacePluginProcessor();
@@ -60,5 +89,79 @@ describe('MarketplacePluginProcessor', () => {
       await processor.validateEntityKind({ ...pluginEntity, kind: 'test' }),
     ).toBe(false);
     expect(await processor.validateEntityKind(pluginEntity)).toBe(true);
+  });
+
+  it('should return plugin entity with hasPartOf relation with Package entity', async () => {
+    const processor = new MarketplacePluginProcessor();
+
+    const emit = jest.fn();
+    await processor.postProcessEntity(
+      {
+        ...pluginEntity,
+        spec: {
+          ...pluginEntity.spec,
+          owner: undefined,
+          packages: ['package-a', 'package-b'],
+        },
+      },
+      null as any,
+      emit,
+    );
+    expect(emit).toHaveBeenCalledTimes(4);
+
+    // partOf relation test
+    expect(emit).toHaveBeenCalledWith({
+      type: 'relation',
+      relation: getPackagePartOfPluginRelation('package-a'),
+    });
+    expect(emit).toHaveBeenCalledWith({
+      type: 'relation',
+      relation: getPackagePartOfPluginRelation('package-b'),
+    });
+
+    // hasPart relation test
+    expect(emit).toHaveBeenCalledWith({
+      type: 'relation',
+      relation: getPackageHasPartOfPluginRelation('package-a'),
+    });
+    expect(emit).toHaveBeenCalledWith({
+      type: 'relation',
+      relation: getPackageHasPartOfPluginRelation('package-b'),
+    });
+  });
+
+  it('should handle plugin entity with hasPartOf relation with Package entity as MarketplacePluginPackage', async () => {
+    const processor = new MarketplacePluginProcessor();
+
+    const emit = jest.fn();
+    await processor.postProcessEntity(
+      {
+        ...pluginEntity,
+        spec: {
+          ...pluginEntity.spec,
+          owner: undefined,
+          packages: [
+            {
+              name: 'package-a',
+            },
+          ],
+        },
+      },
+      null as any,
+      emit,
+    );
+    expect(emit).toHaveBeenCalledTimes(2);
+
+    // partOf relation test
+    expect(emit).toHaveBeenCalledWith({
+      type: 'relation',
+      relation: getPackagePartOfPluginRelation('package-a'),
+    });
+
+    // hasPart relation test
+    expect(emit).toHaveBeenCalledWith({
+      type: 'relation',
+      relation: getPackageHasPartOfPluginRelation('package-a'),
+    });
   });
 });

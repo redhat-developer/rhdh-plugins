@@ -77,7 +77,7 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
     // (undocumented)
     getProcessorName(): string;
     // (undocumented)
-    postProcessEntity(entity: Entity, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
+    postProcessEntity(entity: MarketplacePlugin, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
     // (undocumented)
     validateEntityKind(entity: Entity): Promise<boolean>;
 }
