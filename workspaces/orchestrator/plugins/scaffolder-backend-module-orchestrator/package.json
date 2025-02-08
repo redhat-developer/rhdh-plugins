@@ -20,7 +20,8 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator-common",
       "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator"
-    ]
+    ],
+    "pluginPackage": "@backstage/plugin-scaffolder-backend"
   },
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "keywords": [
