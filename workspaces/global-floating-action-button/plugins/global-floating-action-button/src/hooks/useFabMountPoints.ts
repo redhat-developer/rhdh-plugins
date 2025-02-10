@@ -22,7 +22,7 @@ interface ScalprumState {
   api?: {
     dynamicRootConfig?: {
       mountPoints?: {
-        'global.floatingactionbutton/component': FABMountPoint[];
+        'global.floatingactionbutton/config': FABMountPoint[];
       };
     };
   };
@@ -32,7 +32,7 @@ export const useFabMountPoints = (): FABMountPoint[] | undefined => {
   const scalprum = useScalprum<ScalprumState>();
   const fabMountPoints =
     scalprum?.api?.dynamicRootConfig?.mountPoints?.[
-      'global.floatingactionbutton/component'
+      'global.floatingactionbutton/config'
     ];
 
   return fabMountPoints;
