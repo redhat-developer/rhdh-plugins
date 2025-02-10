@@ -6,6 +6,7 @@
 /// <reference types="react" />
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { ComponentType as ComponentType_2 } from 'react';
 import { default as React_2 } from 'react';
 
 // @public
@@ -30,6 +31,44 @@ export interface CreateButtonProps {
 
 // @public
 export const CreateDropdown: React_2.ComponentType<CreateButtonProps>;
+
+// @public
+export const defaultGlobalHeaderComponentsMountPoints: (
+  | {
+      Component: ComponentType_2<{}>;
+      config: {
+        type: ComponentType;
+        slot: Slot;
+        priority: number;
+        key?: undefined;
+        props?: undefined;
+      };
+    }
+  | {
+      Component: ComponentType_2<{}>;
+      config: {
+        type: ComponentType;
+        slot: Slot;
+        priority: number;
+        key: string;
+        props?: undefined;
+      };
+    }
+  | {
+      Component: ComponentType_2<{}>;
+      config: {
+        type: ComponentType;
+        slot: Slot;
+        priority: number;
+        props: {
+          icon: string;
+          tooltip: string;
+          to: string;
+        };
+        key?: undefined;
+      };
+    }
+)[];
 
 // @public
 export const GlobalHeader: () => React_2.JSX.Element;

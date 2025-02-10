@@ -24,123 +24,19 @@ import Button from '@mui/material/Button';
 
 import { globalHeaderPlugin, NotificationBanner } from '../src/plugin';
 import { ExampleComponent } from '../src/components/ExampleComponent';
-import { SearchComponent } from '../src/components/SearchComponent/SearchComponent';
-import { CreateDropdown } from '../src/components/HeaderDropdownComponent/CreateDropdown';
-import { HeaderIconButton } from '../src/components/HeaderIconButtonComponent/HeaderIconButton';
-import ProfileDropdown from '../src/components/HeaderDropdownComponent/ProfileDropdown';
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
-import {
-  Slot,
-  ComponentType,
-  GlobalHeaderComponentMountPoint,
-  ProfileDropdownMountPoint,
-  CreateDropdownMountPoint,
-} from '../src/types';
+
 import { configApiRef } from '@backstage/core-plugin-api';
-import { HeaderLink } from '../src/components/HeaderLinkComponent/HeaderLink';
-import { LogoutButton } from '../src/components/HeaderButtonComponent/LogoutButton';
-import { SoftwareTemplatesSection } from '../src/components/HeaderDropdownComponent/SoftwareTemplatesSection';
-import { RegisterAComponentSection } from '../src/components/HeaderDropdownComponent/RegisterAComponentSection';
 import {
   notificationsApiRef,
   NotificationsClient,
 } from '@backstage/plugin-notifications';
-
-const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[] =
-  [
-    {
-      Component: SearchComponent,
-      config: {
-        type: ComponentType.SEARCH,
-        slot: Slot.HEADER_START,
-        priority: 100, // the greater the number, the more to the left it will be
-      },
-    },
-    {
-      Component: CreateDropdown as React.ComponentType,
-      config: {
-        type: ComponentType.DROPDOWN_BUTTON,
-        slot: Slot.HEADER_START,
-        priority: 90,
-        key: 'create',
-      },
-    },
-    {
-      Component: HeaderIconButton as React.ComponentType,
-      config: {
-        type: ComponentType.ICON_BUTTON,
-        slot: Slot.HEADER_START,
-        priority: 80,
-        props: {
-          icon: 'support',
-          tooltip: 'Support (external site)',
-          to: 'https://developers.redhat.com/rhdh/overview',
-        },
-      },
-    },
-    {
-      Component: HeaderIconButton as React.ComponentType,
-      config: {
-        type: ComponentType.ICON_BUTTON,
-        slot: Slot.HEADER_START,
-        priority: 70,
-        props: {
-          icon: 'notifications',
-          tooltip: 'Notifications',
-          to: '/notifications',
-        },
-      },
-    },
-    {
-      Component: ProfileDropdown as React.ComponentType,
-      config: {
-        type: ComponentType.DROPDOWN_BUTTON,
-        slot: Slot.HEADER_END,
-        priority: 0, // the greater the number, the more to the left it will be
-        key: 'profile',
-      },
-    },
-  ];
-
-const defaultCreateDropdownMountPoints: CreateDropdownMountPoint[] = [
-  {
-    Component: SoftwareTemplatesSection as React.ComponentType,
-    config: {
-      type: ComponentType.LIST,
-      priority: 10,
-    },
-  },
-  {
-    Component: RegisterAComponentSection as React.ComponentType,
-    config: {
-      type: ComponentType.LINK,
-      priority: 0,
-    },
-  },
-];
-
-const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
-  {
-    Component: HeaderLink as React.ComponentType,
-    config: {
-      type: ComponentType.LINK,
-      priority: 10,
-      props: {
-        title: 'Settings',
-        icon: 'manageAccounts',
-        link: '/settings',
-      },
-    },
-  },
-  {
-    Component: LogoutButton as React.ComponentType,
-    config: {
-      type: ComponentType.LOGOUT,
-      priority: 0,
-    },
-  },
-];
+import {
+  defaultCreateDropdownMountPoints,
+  defaultGlobalHeaderComponentsMountPoints,
+  defaultProfileDropdownMountPoints,
+} from '../src/defaultMountPoints/defaultMountPoints';
 
 const mockSearchApi = new MockSearchApi({
   results: [

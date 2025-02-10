@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-import { LogoutButton } from '../components/HeaderButtonComponent/LogoutButton';
-import { HeaderLink } from '../components/HeaderLinkComponent/HeaderLink';
-import {
-  ComponentType,
-  ProfileDropdownMountPoint,
-  ScalprumState,
-} from '../types';
+import { defaultProfileDropdownMountPoints } from '../defaultMountPoints/defaultMountPoints';
+import { ProfileDropdownMountPoint, ScalprumState } from '../types';
 import { useScalprum } from '@scalprum/react-core';
 
 export const useProfileDropdownMountPoints = ():
@@ -33,27 +28,7 @@ export const useProfileDropdownMountPoints = ():
 
   // default profile dropdown components for dev env
   if (Object.keys(scalprum?.api || {}).length === 0) {
-    return [
-      {
-        Component: HeaderLink as React.ComponentType,
-        config: {
-          type: ComponentType.LINK,
-          priority: 10,
-          props: {
-            title: 'Settings',
-            icon: 'manageAccounts',
-            link: '/settings',
-          },
-        },
-      },
-      {
-        Component: LogoutButton as React.ComponentType,
-        config: {
-          type: ComponentType.LOGOUT,
-          priority: 0,
-        },
-      },
-    ];
+    return defaultProfileDropdownMountPoints;
   }
 
   return profileDropdownMountPoints ?? [];

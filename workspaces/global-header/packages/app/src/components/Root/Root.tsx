@@ -37,13 +37,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
 import {
-  ComponentType,
-  CreateDropdown,
   GlobalHeaderComponent,
-  HeaderIconButton,
-  ProfileDropdown,
-  SearchComponent,
-  Slot,
+  defaultGlobalHeaderComponentsMountPoints,
 } from '@red-hat-developer-hub/backstage-plugin-global-header';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 
@@ -79,60 +74,7 @@ export const Root = ({ children = null }: PropsWithChildren<{}>) => (
   <SidebarPage>
     {/* update globalHeaderMountPoints config to test Global header */}
     <GlobalHeaderComponent
-      globalHeaderMountPoints={[
-        {
-          Component: SearchComponent,
-          config: {
-            type: ComponentType.SEARCH,
-            slot: Slot.HEADER_START,
-            priority: 100, // the greater the number, the more to the left it will be
-          },
-        },
-        {
-          Component: CreateDropdown as React.ComponentType,
-          config: {
-            type: ComponentType.DROPDOWN_BUTTON,
-            slot: Slot.HEADER_START,
-            priority: 90,
-            key: 'create',
-          },
-        },
-        {
-          Component: HeaderIconButton as React.ComponentType,
-          config: {
-            type: ComponentType.ICON_BUTTON,
-            slot: Slot.HEADER_START,
-            priority: 80,
-            props: {
-              icon: 'support',
-              tooltip: 'Support (external site)',
-              to: 'https://developers.redhat.com/rhdh/overview',
-            },
-          },
-        },
-        {
-          Component: HeaderIconButton as React.ComponentType,
-          config: {
-            type: ComponentType.ICON_BUTTON,
-            slot: Slot.HEADER_START,
-            priority: 70,
-            props: {
-              icon: 'notifications',
-              tooltip: 'Notifications',
-              to: '/notifications',
-            },
-          },
-        },
-        {
-          Component: ProfileDropdown as React.ComponentType,
-          config: {
-            type: ComponentType.DROPDOWN_BUTTON,
-            slot: Slot.HEADER_END,
-            priority: 0, // the greater the number, the more to the left it will be
-            key: 'profile',
-          },
-        },
-      ]}
+      globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
       supportUrl=""
     />
     <Sidebar>

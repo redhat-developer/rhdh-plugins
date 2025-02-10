@@ -40,6 +40,8 @@ export type {
   GlobalHeaderComponentMountPointConfig,
 } from './types';
 
+export { defaultGlobalHeaderComponentsMountPoints } from './defaultMountPoints/defaultMountPoints';
+
 export { ComponentType, Slot } from './types';
 
 export type {

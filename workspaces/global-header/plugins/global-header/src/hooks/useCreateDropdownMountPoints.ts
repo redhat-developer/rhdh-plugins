@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-import { RegisterAComponentSection } from '../components/HeaderDropdownComponent/RegisterAComponentSection';
-import { SoftwareTemplatesSection } from '../components/HeaderDropdownComponent/SoftwareTemplatesSection';
-import {
-  ComponentType,
-  CreateDropdownMountPoint,
-  ScalprumState,
-} from '../types';
+import { defaultCreateDropdownMountPoints } from '../defaultMountPoints/defaultMountPoints';
+import { CreateDropdownMountPoint, ScalprumState } from '../types';
 import { useScalprum } from '@scalprum/react-core';
 
 export const useCreateDropdownMountPoints = ():
@@ -33,22 +28,7 @@ export const useCreateDropdownMountPoints = ():
 
   // default profile dropdown components for dev env
   if (Object.keys(scalprum?.api || {}).length === 0) {
-    return [
-      {
-        Component: SoftwareTemplatesSection as React.ComponentType,
-        config: {
-          type: ComponentType.LIST,
-          priority: 10,
-        },
-      },
-      {
-        Component: RegisterAComponentSection as React.ComponentType,
-        config: {
-          type: ComponentType.LINK,
-          priority: 0,
-        },
-      },
-    ];
+    return defaultCreateDropdownMountPoints;
   }
 
   return createDropdownMountPoints ?? [];

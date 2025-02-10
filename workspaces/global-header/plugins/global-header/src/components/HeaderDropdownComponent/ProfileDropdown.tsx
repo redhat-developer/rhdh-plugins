@@ -116,5 +116,3 @@ export const ProfileDropdown = ({
     </HeaderDropdownComponent>
   );
 };
-
-export default ProfileDropdown;
