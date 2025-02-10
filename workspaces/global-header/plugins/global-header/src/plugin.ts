@@ -19,6 +19,7 @@ import {
   createPlugin,
   createComponentExtension,
 } from '@backstage/core-plugin-api';
+import { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
 import { CreateButtonProps } from './components/HeaderDropdownComponent/CreateDropdown';
 import { HeaderIconButtonProps } from './components/HeaderIconButtonComponent/HeaderIconButton';
 import { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
@@ -26,6 +27,7 @@ import { HeaderLinkProps } from './components/HeaderLinkComponent/HeaderLink';
 import { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
 import { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
 
+export type { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
 export type { CreateButtonProps } from './components/HeaderDropdownComponent/CreateDropdown';
 export type { HeaderLinkProps } from './components/HeaderLinkComponent/HeaderLink';
 export type { MenuItemConfig } from './components/HeaderDropdownComponent/MenuSection';
@@ -33,6 +35,12 @@ export type { SoftwareTemplatesSectionProps } from './components/HeaderDropdownC
 export type { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
 export type { HeaderIconButtonProps } from './components/HeaderIconButtonComponent/HeaderIconButton';
 export type { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
+export type {
+  GlobalHeaderComponentMountPoint,
+  GlobalHeaderComponentMountPointConfig,
+} from './types';
+
+export { ComponentType, Slot } from './types';
 
 export type {
   NotificationBannerProps,
@@ -61,6 +69,24 @@ export const GlobalHeader = globalHeaderPlugin.provide(
     },
   }),
 );
+
+/**
+ * Global Header Component
+ *
+ * @public
+ */
+export const GlobalHeaderComponent: React.ComponentType<GlobalHeaderComponentProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'GlobalHeaderComponent',
+      component: {
+        lazy: () =>
+          import('./components/GlobalHeaderComponent').then(
+            m => m.GlobalHeaderComponent,
+          ),
+      },
+    }),
+  );
 
 /**
  * Search Component
