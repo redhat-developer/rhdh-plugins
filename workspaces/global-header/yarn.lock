@@ -859,7 +859,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/credential-provider-node@npm:3.712.0, @aws-sdk/credential-provider-node@npm:^3.350.0":
+"@aws-sdk/credential-provider-node@npm:3.712.0":
   version: 3.712.0
   resolution: "@aws-sdk/credential-provider-node@npm:3.712.0"
   dependencies:
@@ -879,7 +879,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/credential-provider-node@npm:3.744.0":
+"@aws-sdk/credential-provider-node@npm:3.744.0, @aws-sdk/credential-provider-node@npm:^3.350.0":
   version: 3.744.0
   resolution: "@aws-sdk/credential-provider-node@npm:3.744.0"
   dependencies:
@@ -1386,7 +1386,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/types@npm:3.709.0, @aws-sdk/types@npm:^3.222.0, @aws-sdk/types@npm:^3.347.0":
+"@aws-sdk/types@npm:3.709.0":
   version: 3.709.0
   resolution: "@aws-sdk/types@npm:3.709.0"
   dependencies:
@@ -1396,7 +1396,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/types@npm:3.734.0":
+"@aws-sdk/types@npm:3.734.0, @aws-sdk/types@npm:^3.222.0, @aws-sdk/types@npm:^3.347.0":
   version: 3.734.0
   resolution: "@aws-sdk/types@npm:3.734.0"
   dependencies:
