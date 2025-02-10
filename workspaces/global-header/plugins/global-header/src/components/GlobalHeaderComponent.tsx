@@ -138,7 +138,7 @@ export const GlobalHeaderComponent = ({
             <Divider
               orientation="vertical"
               flexItem
-              sx={{ borderColor: theme => theme.palette.divider, marginX: 1 }}
+              sx={{ borderColor: '#383838', marginX: 1 }}
             />
           )}
         {renderComponents(globalHeaderEndComponentsMountPoints)}
