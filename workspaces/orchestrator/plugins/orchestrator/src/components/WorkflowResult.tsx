@@ -92,7 +92,7 @@ const ResultMessage = ({
   let statusComponent: ReactNode = <></>;
 
   if (error) {
-    // when there is an error resultMessage won't be displayed enen if it's defined
+    // The resultMessage won't be displayed even if it's defined when there's an error.
     statusComponent = (
       <Box sx={{ width: '100%' }}>
         <Alert severity="error">
