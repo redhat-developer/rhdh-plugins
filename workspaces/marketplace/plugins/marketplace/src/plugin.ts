@@ -81,16 +81,31 @@ export const MarketplaceTabbedPage = marketplacePlugin.provide(
 );
 
 /**
- * Marketplace catalog content without header and tabs.
+ * Workaround...
  * @public
  */
-export const MarketplaceCatalogContent = marketplacePlugin.provide(
+export const InternalPluginInfoTab = marketplacePlugin.provide(
+  createRoutableExtension({
+    name: 'InternalPluginInfoTab',
+    component: () =>
+      import('./pages/InternalPluginInfoTab').then(
+        m => m.InternalPluginInfoTab,
+      ),
+    mountPoint: allRoutes.rootRouteRef,
+  }),
+);
+
+/**
+ * Workaround
+ * @public
+ */
+export const InternalPluginInfoTabContent = marketplacePlugin.provide(
   createComponentExtension({
-    name: 'MarketplaceCatalogContent',
+    name: 'InternalPluginInfoTabContent',
     component: {
       lazy: () =>
-        import('./components/MarketplaceCatalogContent').then(
-          m => m.MarketplaceCatalogContent,
+        import('./pages/InternalPluginInfoTab').then(
+          m => m.InternalPluginInfoTabContent,
         ),
     },
   }),
