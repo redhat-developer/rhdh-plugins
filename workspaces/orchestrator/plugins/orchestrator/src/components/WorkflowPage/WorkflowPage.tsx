@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright 2024 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ export const WorkflowPage = () => {
 
   const {
     value: workflowOverviewDTO,
-    loading: loadingWorkflowOverview,
-    error: errorWorkflowOverview,
+    loading,
+    error,
   } = useAsync(() => {
     return orchestratorApi.getWorkflowOverview(workflowId);
   }, []);
@@ -61,20 +61,22 @@ export const WorkflowPage = () => {
       <TabbedLayout>
         <TabbedLayout.Route path="/" title="Workflow details">
           <WorkflowPageTabContent
-            errorWorkflowOverview={errorWorkflowOverview}
+            error={error}
             loadingPermission={loadingPermission}
+            loading={loading}
             canRun={canRun}
           >
             <WorkflowDetailsTabContent
-              loading={loadingWorkflowOverview}
+              loading={loading}
               workflowOverviewDTO={workflowOverviewDTO?.data}
             />
           </WorkflowPageTabContent>
         </TabbedLayout.Route>
         <TabbedLayout.Route path={workflowRunsRoutePath} title="Workflow runs">
           <WorkflowPageTabContent
-            errorWorkflowOverview={errorWorkflowOverview}
+            error={error}
             loadingPermission={loadingPermission}
+            loading={loading}
             canRun={canRun}
           >
             <WorkflowRunsTabContent />
