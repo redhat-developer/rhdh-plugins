@@ -16,26 +16,23 @@
 import React, { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { ResponseErrorPanel } from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 
 import { Button, Grid, Tooltip } from '@material-ui/core';
 
+import {
+  orchestratorWorkflowUsePermission,
+  orchestratorWorkflowUseSpecificPermission,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
+import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
 
 interface Props {
-  errorWorkflowOverview: Error | undefined;
-  loadingPermission: boolean;
-  canRun: boolean;
   children: ReactNode;
 }
 
-export const WorkflowPageTabContent = ({
-  errorWorkflowOverview,
-  loadingPermission,
-  canRun,
-  children,
-}: Props) => {
+export const WorkflowPageTabContent = ({ children }: Props) => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const navigate = useNavigate();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
@@ -43,14 +40,21 @@ export const WorkflowPageTabContent = ({
     navigate(executeWorkflowLink({ workflowId }));
   };
 
+  const { loading: loadingPermission, allowed: canRun } =
+    usePermissionArrayDecision([
+      orchestratorWorkflowUsePermission,
+      orchestratorWorkflowUseSpecificPermission(workflowId),
+    ]);
+
   return (
-    <Grid container spacing={2} direction="column" wrap="nowrap">
-      {errorWorkflowOverview && (
-        <Grid item>
-          <ResponseErrorPanel error={errorWorkflowOverview} />
-        </Grid>
-      )}
-      <Grid container item justifyContent="flex-end" spacing={1}>
+    <Grid
+      container
+      spacing={2}
+      direction="column"
+      wrap="nowrap"
+      justifyContent="flex-end"
+    >
+      <Grid item container justifyContent="flex-end">
         <Grid item>
           {loadingPermission ? null : (
             <Tooltip
@@ -69,7 +73,7 @@ export const WorkflowPageTabContent = ({
           )}
         </Grid>
       </Grid>
-      <Grid item>{children}</Grid>
+      {children}
     </Grid>
   );
 };
