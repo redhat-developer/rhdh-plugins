@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SearchResultState,
   SearchResultProps,
@@ -28,13 +28,19 @@ import { useTheme } from '@mui/material/styles';
 
 interface SearchBarProps {
   query: SearchResultProps['query'];
+  searchTerm: string;
   setSearchTerm: (term: string) => void;
 }
 export const SearchBar = (props: SearchBarProps) => {
-  const { query, setSearchTerm } = props;
+  const { query, searchTerm, setSearchTerm } = props;
   const navigate = useNavigate();
   const theme = useTheme();
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const highlightedIndexRef = useRef(highlightedIndex);
+
+  useEffect(() => {
+    highlightedIndexRef.current = highlightedIndex;
+  }, [highlightedIndex]);
 
   return (
     <SearchResultState {...props}>
@@ -49,13 +55,14 @@ export const SearchBar = (props: SearchBarProps) => {
         } else if (query?.term) {
           options = ['No results found'];
         }
-        const searchLink = createSearchLink(query?.term ?? '');
+        const searchLink = createSearchLink(searchTerm ?? '');
 
         return (
           <Autocomplete
             freeSolo
             options={options}
             loading={loading}
+            value={searchTerm ?? ''}
             getOptionLabel={option => option ?? ''}
             onInputChange={(_, inputValue) => setSearchTerm(inputValue)}
             onHighlightChange={(_, option) =>
@@ -83,15 +90,17 @@ export const SearchBar = (props: SearchBarProps) => {
             filterOptions={x => x}
             getOptionDisabled={option => option === 'No results found'}
             onKeyDown={event => {
+              const currentHighlight = highlightedIndexRef.current;
               if (event.key === 'Enter') {
                 event.preventDefault();
-                if (highlightedIndex === -1 && query?.term) {
+                if (currentHighlight === -1 && query?.term) {
                   navigate(searchLink);
-                } else if (highlightedIndex !== -1) {
+                } else if (currentHighlight !== -1) {
                   navigate(
                     results[highlightedIndex]?.document?.location ?? searchLink,
                   );
                 }
+                setHighlightedIndex(-1);
               }
             }}
             renderInput={params => (
