@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React, { useCallback } from 'react';
 
-import {
-  Content,
-  Progress,
-  ResponseErrorPanel,
-} from '@backstage/core-components';
+import { Content, ResponseErrorPanel } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
 import Grid from '@material-ui/core/Grid/Grid';
@@ -44,19 +41,17 @@ export const WorkflowsTabContent = () => {
     WorkflowOverviewDTO[] | undefined
   >(fetchWorkflowOverviews);
 
-  const isReady = React.useMemo(() => !loading && !error, [loading, error]);
-
   return (
     <Content noPadding>
-      {loading ? <Progress /> : null}
-      {error ? <ResponseErrorPanel error={error} /> : null}
-      {isReady ? (
+      {loading || !error ? (
         <Grid container direction="column">
           <Grid item>
-            <WorkflowsTable items={value ?? []} />
+            <WorkflowsTable items={value ?? []} loading={loading} />
           </Grid>
         </Grid>
-      ) : null}
+      ) : (
+        <ResponseErrorPanel error={error} />
+      )}
     </Content>
   );
 };

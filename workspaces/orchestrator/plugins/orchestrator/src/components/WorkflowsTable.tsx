@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import { WorkflowInstanceStatusIndicator } from './WorkflowInstanceStatusIndicat
 
 export interface WorkflowsTableProps {
   items: WorkflowOverviewDTO[];
+  loading: boolean;
 }
 
 const usePermittedToUseBatch = (
@@ -97,7 +98,7 @@ const usePermittedToViewBatch = (
   };
 };
 
-export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
+export const WorkflowsTable = ({ items, loading }: WorkflowsTableProps) => {
   const navigate = useNavigate();
   const definitionLink = useRouteRef(workflowRouteRef);
   const definitionRunsLink = useRouteRef(workflowRunsRouteRef);
@@ -240,6 +241,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   // use FE pagination otherwise (it means when specific permissions are used)
   return (
     <OverrideBackstageTable<FormattedWorkflowOverview>
+      isLoading={loading}
       title="Workflows"
       options={options}
       columns={columns}
