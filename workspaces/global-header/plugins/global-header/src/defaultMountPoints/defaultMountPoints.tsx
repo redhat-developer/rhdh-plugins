@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  ComponentType,
-  CreateDropdown,
-  HeaderIconButton,
-  HeaderLink,
-  LogoutButton,
-  ProfileDropdown,
-  RegisterAComponentSection,
-  SearchComponent,
-  Slot,
-  SoftwareTemplatesSection,
-} from '../plugin';
+import { LogoutButton } from '../components/HeaderButtonComponent/LogoutButton';
+import { CreateDropdown } from '../components/HeaderDropdownComponent/CreateDropdown';
+import { ProfileDropdown } from '../components/HeaderDropdownComponent/ProfileDropdown';
+import { RegisterAComponentSection } from '../components/HeaderDropdownComponent/RegisterAComponentSection';
+import { SoftwareTemplatesSection } from '../components/HeaderDropdownComponent/SoftwareTemplatesSection';
+import { HeaderIconButton } from '../components/HeaderIconButtonComponent/HeaderIconButton';
+import { HeaderLink } from '../components/HeaderLinkComponent/HeaderLink';
+import { SearchComponent } from '../components/SearchComponent/SearchComponent';
+import { ComponentType, Slot } from '../types';
 
 /**
  * default Global Header Components mount points
