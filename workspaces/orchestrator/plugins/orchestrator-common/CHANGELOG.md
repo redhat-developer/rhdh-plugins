@@ -1,5 +1,19 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 1.26.0
+
+### Minor Changes
+
+- 967c377: Fixed unsupported filter operators
+
+### Patch Changes
+
+- 05a1ce0: Updated dependency `@openapitools/openapi-generator-cli` to `2.16.3`.
+- 816d8bc: Updated dependency `@openapitools/openapi-generator-cli` to `2.16.2`.
+- c7de094: add orchestrator.workflow.use among permissions in the RBAC UI
+- bee24dc: add unavailable workflows to cache and overview
+- d4fa6bf: use 'update' policy for orchestrator.workflow.use
+
 ## 1.25.1
 
 ### Patch Changes

@@ -1,5 +1,27 @@
 ### Dependencies
 
+## 2.6.0
+
+### Minor Changes
+
+- 541d33d: Rearranging Workflow instance page to unify formatting and better visibility of results.
+
+### Patch Changes
+
+- 00f0cea: Improve abort
+- cda86f1: improve details in workflow instance page details card
+- bff51b6: Update Orchestrator icon - plugin
+- 1e498d8: improve results card in workflow instance page
+- 868b6d8: add "view variables" dialog
+- fb5aafd: Standardise the page loading animation
+- Updated dependencies [967c377]
+- Updated dependencies [05a1ce0]
+- Updated dependencies [816d8bc]
+- Updated dependencies [c7de094]
+- Updated dependencies [bee24dc]
+- Updated dependencies [d4fa6bf]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.26.0
+
 ## 2.5.1
 
 ### Patch Changes
