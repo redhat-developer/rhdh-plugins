@@ -35,16 +35,22 @@ export const SearchResultItem = ({
   query,
   result,
   renderProps,
-}: SearchResultItemProps) => (
-  <Link to={result?.document.location ?? '#'} underline="none">
-    <ListItem key={option} {...renderProps} sx={{ cursor: 'pointer', py: 1 }}>
-      <Box sx={{ display: 'flex', width: '100%' }}>
+}: SearchResultItemProps) => {
+  const isNoResultsFound = option === 'No results found';
+  return (
+    <Box
+      component={isNoResultsFound ? 'div' : Link}
+      to={result?.document.location}
+      underline="none"
+      sx={{ width: '100%', ...(isNoResultsFound ? {} : { cursor: 'pointer' }) }}
+    >
+      <ListItem {...renderProps} sx={{ py: 1 }}>
         <Typography sx={{ color: 'text.primary', flexGrow: 1 }}>
-          {option === 'No results found'
+          {isNoResultsFound
             ? option
             : highlightMatch(option, query?.term ?? '')}
         </Typography>
-      </Box>
-    </ListItem>
-  </Link>
-);
+      </ListItem>
+    </Box>
+  );
+};

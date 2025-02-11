@@ -35,11 +35,7 @@ export const SearchComponent = () => {
           mr: 4,
         }}
       >
-        <SearchBar
-          query={{ term: searchTerm }}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-        />
+        <SearchBar query={{ term: searchTerm }} setSearchTerm={setSearchTerm} />
       </Box>
     </SearchContextProvider>
   );

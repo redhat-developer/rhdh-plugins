@@ -26,7 +26,7 @@ import { MemoryRouter, useNavigate } from 'react-router-dom';
 import { configApiRef } from '@backstage/core-plugin-api';
 
 const createInitialState = ({
-  term = '',
+  term = 'term',
   filters = {},
   types = ['*'],
   pageCursor = '',
@@ -59,6 +59,24 @@ const mockConfig = mockApis.config({
   },
 });
 
+let searchTerm = '';
+
+const mockSearchResultState = jest.fn(() => ({
+  loading: false,
+  error: undefined,
+  value: {
+    results:
+      searchTerm === 'example'
+        ? [{ document: { title: 'Example Result', location: '/example-path' } }]
+        : [],
+  },
+}));
+
+jest.mock('@backstage/plugin-search-react', () => ({
+  ...jest.requireActual('@backstage/plugin-search-react'),
+  SearchResultState: ({ children }: any) => children(mockSearchResultState()),
+}));
+
 jest.mock('../../utils/stringUtils', () => ({
   ...jest.requireActual('../../utils/stringUtils'),
   highlightMatch: jest.fn(text => text),
@@ -69,27 +87,60 @@ jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
 }));
 
+const renderSearchBar = (term = 'term', setSearchTerm = jest.fn()) => (
+  <MemoryRouter initialEntries={['/']}>
+    <TestApiProvider
+      apis={[
+        [searchApiRef, mockSearchApi],
+        [configApiRef, mockConfig],
+      ]}
+    >
+      <SearchContextProvider initialState={createInitialState()}>
+        <SearchBar query={{ term }} setSearchTerm={setSearchTerm} />
+      </SearchContextProvider>
+    </TestApiProvider>
+  </MemoryRouter>
+);
+
 describe('SearchBar', () => {
-  const setup = (term = '') => {
+  const setup = () => {
     const setSearchTerm = jest.fn();
     const navigate = jest.fn();
     jest.mocked(useNavigate).mockReturnValue(navigate);
 
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <TestApiProvider
-          apis={[
-            [searchApiRef, mockSearchApi],
-            [configApiRef, mockConfig],
-          ]}
-        >
-          <SearchContextProvider initialState={createInitialState({ term })}>
-            <SearchBar query={{ term }} setSearchTerm={setSearchTerm} />
-          </SearchContextProvider>
-        </TestApiProvider>
-      </MemoryRouter>,
-    );
-    return { setSearchTerm, navigate };
+    const utils = render(renderSearchBar('term', setSearchTerm));
+    return { ...utils, setSearchTerm, navigate };
+  };
+
+  const typeAndSearch = (
+    value: string,
+    rerender: (ui: React.ReactElement) => void,
+  ) => {
+    fireEvent.change(screen.getByPlaceholderText('Search...'), {
+      target: { value },
+    });
+
+    searchTerm = value;
+
+    mockSearchResultState.mockImplementation(() => ({
+      loading: false,
+      error: undefined,
+      value: {
+        results:
+          searchTerm === 'example'
+            ? [
+                {
+                  document: {
+                    title: 'Example Result',
+                    location: '/example-path',
+                  },
+                },
+              ]
+            : [],
+      },
+    }));
+
+    rerender(renderSearchBar(searchTerm));
   };
 
   it('renders the search input', () => {
@@ -98,44 +149,37 @@ describe('SearchBar', () => {
   });
 
   it('calls setSearchTerm on input change', () => {
-    const { setSearchTerm } = setup();
-    fireEvent.change(screen.getByPlaceholderText('Search...'), {
-      target: { value: 'test' },
-    });
+    const { setSearchTerm, rerender } = setup();
+    typeAndSearch('test', rerender);
     expect(setSearchTerm).toHaveBeenCalledWith('test');
   });
 
   it('displays "No results found" when there are no results', async () => {
-    mockSearchApi.query.mockResolvedValueOnce({ results: [] });
-    setup('test');
-    fireEvent.change(screen.getByPlaceholderText('Search...'), {
-      target: { value: 'test' },
-    });
+    const { rerender } = setup();
+    typeAndSearch('test string', rerender);
+
     await waitFor(() => {
       expect(screen.getByText('No results found')).toBeInTheDocument();
     });
   });
 
   it('displays search results', async () => {
-    setup('example');
-    fireEvent.change(screen.getByPlaceholderText('Search...'), {
-      target: { value: 'example' },
-    });
+    const { rerender } = setup();
+    typeAndSearch('example', rerender);
     await waitFor(() => {
       expect(screen.getByText('Example Result')).toBeInTheDocument();
     });
   });
 
   it('navigates to the search page on Enter key press', async () => {
-    const { navigate } = setup('example');
-    fireEvent.change(screen.getByPlaceholderText('Search...'), {
-      target: { value: 'example' },
-    });
+    const { navigate, rerender } = setup();
+    const input = screen.getByPlaceholderText('Search...');
+    typeAndSearch('example', rerender);
     await waitFor(() => {
       expect(screen.getByText('Example Result')).toBeInTheDocument();
     });
 
-    fireEvent.keyDown(screen.getByPlaceholderText('Search...'), {
+    fireEvent.keyDown(input, {
       key: 'Enter',
       code: 'Enter',
     });

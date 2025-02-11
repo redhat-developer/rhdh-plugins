@@ -28,11 +28,10 @@ import { useTheme } from '@mui/material/styles';
 
 interface SearchBarProps {
   query: SearchResultProps['query'];
-  searchTerm: string;
   setSearchTerm: (term: string) => void;
 }
 export const SearchBar = (props: SearchBarProps) => {
-  const { query, searchTerm, setSearchTerm } = props;
+  const { query, setSearchTerm } = props;
   const navigate = useNavigate();
   const theme = useTheme();
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -47,22 +46,23 @@ export const SearchBar = (props: SearchBarProps) => {
       {({ loading, error, value }) => {
         const results = query?.term ? value?.results ?? [] : [];
         let options: string[] = [];
+        if (query?.term && results.length === 0) {
+          options = ['No results found'];
+        }
         if (results.length > 0) {
           options = [
             ...results.map(result => result.document.title),
             `${query?.term}`,
           ];
-        } else if (query?.term) {
-          options = ['No results found'];
         }
-        const searchLink = createSearchLink(searchTerm ?? '');
+        const searchLink = createSearchLink(query?.term ?? '');
 
         return (
           <Autocomplete
             freeSolo
             options={options}
             loading={loading}
-            value={searchTerm ?? ''}
+            value={query?.term ?? ''}
             getOptionLabel={option => option ?? ''}
             onInputChange={(_, inputValue) => setSearchTerm(inputValue)}
             onHighlightChange={(_, option) =>
@@ -88,7 +88,6 @@ export const SearchBar = (props: SearchBarProps) => {
               },
             }}
             filterOptions={x => x}
-            getOptionDisabled={option => option === 'No results found'}
             onKeyDown={event => {
               const currentHighlight = highlightedIndexRef.current;
               if (event.key === 'Enter') {
