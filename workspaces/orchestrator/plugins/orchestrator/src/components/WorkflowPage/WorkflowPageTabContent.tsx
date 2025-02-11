@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,22 +20,19 @@ import { ResponseErrorPanel } from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 
 import { Button, Grid, Tooltip } from '@material-ui/core';
-import { Skeleton } from '@material-ui/lab';
 
 import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
 
 interface Props {
-  error: Error | undefined;
+  errorWorkflowOverview: Error | undefined;
   loadingPermission: boolean;
-  loading: boolean;
   canRun: boolean;
   children: ReactNode;
 }
 
 export const WorkflowPageTabContent = ({
-  error,
+  errorWorkflowOverview,
   loadingPermission,
-  loading,
   canRun,
   children,
 }: Props) => {
@@ -48,16 +45,14 @@ export const WorkflowPageTabContent = ({
 
   return (
     <Grid container spacing={2} direction="column" wrap="nowrap">
-      {error && (
+      {errorWorkflowOverview && (
         <Grid item>
-          <ResponseErrorPanel error={error} />
+          <ResponseErrorPanel error={errorWorkflowOverview} />
         </Grid>
       )}
       <Grid container item justifyContent="flex-end" spacing={1}>
         <Grid item>
-          {loading || loadingPermission ? (
-            <Skeleton variant="text" width="5rem" />
-          ) : (
+          {loadingPermission ? null : (
             <Tooltip
               title="user not authorized to execute workflow"
               disableHoverListener={canRun}
