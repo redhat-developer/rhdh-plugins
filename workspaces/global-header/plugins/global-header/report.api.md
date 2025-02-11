@@ -7,6 +7,7 @@
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { ComponentType as ComponentType_2 } from 'react';
+import { JSX as JSX_2 } from 'react';
 import { default as React_2 } from 'react';
 
 // @public
@@ -35,7 +36,7 @@ export const CreateDropdown: React_2.ComponentType<CreateButtonProps>;
 // @public
 export const defaultGlobalHeaderComponentsMountPoints: (
   | {
-      Component: ComponentType_2<{}>;
+      Component: () => JSX_2.Element;
       config: {
         type: ComponentType;
         slot: Slot;
