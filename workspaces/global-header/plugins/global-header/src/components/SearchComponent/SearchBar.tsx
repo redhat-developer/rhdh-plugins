@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   SearchResultState,
   SearchResultProps,
@@ -34,6 +34,7 @@ export const SearchBar = (props: SearchBarProps) => {
   const { query, setSearchTerm } = props;
   const navigate = useNavigate();
   const theme = useTheme();
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   return (
     <SearchResultState {...props}>
@@ -57,6 +58,9 @@ export const SearchBar = (props: SearchBarProps) => {
             loading={loading}
             getOptionLabel={option => option ?? ''}
             onInputChange={(_, inputValue) => setSearchTerm(inputValue)}
+            onHighlightChange={(_, option) =>
+              setHighlightedIndex(options.indexOf(option ?? ''))
+            }
             componentsProps={{
               paper: {
                 sx: {
@@ -72,14 +76,21 @@ export const SearchBar = (props: SearchBarProps) => {
             }}
             sx={{
               width: '100%',
+              '& [class*="MuiAutocomplete-clearIndicator"]': {
+                visibility: query?.term ? 'visible' : 'hidden',
+              },
             }}
             filterOptions={x => x}
             getOptionDisabled={option => option === 'No results found'}
             onKeyDown={event => {
               if (event.key === 'Enter') {
                 event.preventDefault();
-                if (query?.term) {
+                if (highlightedIndex === -1 && query?.term) {
                   navigate(searchLink);
+                } else if (highlightedIndex !== -1) {
+                  navigate(
+                    results[highlightedIndex]?.document?.location ?? searchLink,
+                  );
                 }
               }
             }}

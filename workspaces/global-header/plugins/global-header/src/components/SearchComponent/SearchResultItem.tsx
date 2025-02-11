@@ -37,9 +37,9 @@ export const SearchResultItem = ({
   renderProps,
 }: SearchResultItemProps) => (
   <Link to={result?.document.location ?? '#'} underline="none">
-    <ListItem key={option} {...renderProps} sx={{ cursor: 'pointer', py: 2 }}>
+    <ListItem key={option} {...renderProps} sx={{ cursor: 'pointer', py: 1 }}>
       <Box sx={{ display: 'flex', width: '100%' }}>
-        <Typography sx={{ color: 'text.primary', py: 0.5, flexGrow: 1 }}>
+        <Typography sx={{ color: 'text.primary', flexGrow: 1 }}>
           {option === 'No results found'
             ? option
             : highlightMatch(option, query?.term ?? '')}
