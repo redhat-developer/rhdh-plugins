@@ -54,4 +54,11 @@ export const registerCommands = (program: Command) => {
     )
     .option('--owner [owner]', 'spec.owner for the generated Package entities')
     .action(lazy(() => import('./generate').then(m => m.default)));
+
+  program
+    .command('verify')
+    .description(
+      'Verify a set of markplate entities. By default, it will read entities from the standard input',
+    )
+    .action(lazy(() => import('./verify').then(m => m.default)));
 };
