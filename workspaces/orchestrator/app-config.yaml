@@ -144,6 +144,7 @@ orchestrator:
     #  path: ./.devModeTemp/db_persistence # this will be under packages/backend
     workflowsSource:
       gitRepositoryUrl: https://github.com/parodos-dev/backstage-orchestrator-workflows
-      localPath: ./.devModeTemp/repository # this will be under packages/backend
+      # Override this in your own app-config.local.yaml; it should refer to a directory in the user's home directory.
+      # localPath: /home/<username>/tmp/orchestrator
   dataIndexService:
     url: http://localhost:8899
