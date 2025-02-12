@@ -39,7 +39,7 @@ export const useThemeConfig = (themeName: string): ThemeConfig => {
       themeConfig.mode = themeName.includes('dark') ? 'dark' : 'light';
     }
 
-    if (Array.isArray(themeConfig?.pageTheme?.default.fontColor)) {
+    if (Array.isArray(themeConfig?.pageTheme?.default?.fontColor)) {
       themeConfig.pageTheme.default.fontColor =
         themeConfig.pageTheme.default.fontColor[0];
     }
