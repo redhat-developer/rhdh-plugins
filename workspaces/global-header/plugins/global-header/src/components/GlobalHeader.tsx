@@ -26,7 +26,7 @@ export const GlobalHeader = () => {
   return (
     <GlobalHeaderComponent
       globalHeaderMountPoints={allGlobalHeaderMountPoints ?? []}
-      supportUrl={supportUrl ?? ''}
+      supportUrl={supportUrl}
     />
   );
 };

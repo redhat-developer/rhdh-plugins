@@ -15,18 +15,23 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useApi } from '@backstage/core-plugin-api';
+import { useApiHolder } from '@backstage/core-plugin-api';
 import { notificationsApiRef } from '@backstage/plugin-notifications';
 import { useSignal } from '@backstage/plugin-signals-react';
 import { NotificationSignal } from '@backstage/plugin-notifications-common';
 
 export const useNotificationCount = (enabled: boolean) => {
-  const notificationsApi = useApi(notificationsApiRef);
+  const apiHolder = useApiHolder();
   const { lastSignal } = useSignal<NotificationSignal>('notifications');
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (!enabled) return;
+
+    const notificationsApi = apiHolder.get(notificationsApiRef);
+    if (!notificationsApi) {
+      return;
+    }
 
     const fetchUnreadCount = async () => {
       try {
@@ -41,7 +46,7 @@ export const useNotificationCount = (enabled: boolean) => {
     };
 
     fetchUnreadCount();
-  }, [notificationsApi, enabled]);
+  }, [apiHolder, enabled]);
 
   useEffect(() => {
     if (!enabled || !lastSignal) return;

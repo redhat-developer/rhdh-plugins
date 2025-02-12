@@ -20,24 +20,21 @@ import {
   createComponentExtension,
 } from '@backstage/core-plugin-api';
 import { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
-import { CreateButtonProps } from './components/HeaderDropdownComponent/CreateDropdown';
-import { HeaderIconButtonProps } from './components/HeaderIconButtonComponent/HeaderIconButton';
-import { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
 import { HeaderLinkProps } from './components/HeaderLinkComponent/HeaderLink';
 import { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
 import { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
+import { HeaderDropdownComponentProps, HeaderIconButtonProps } from './types';
 
 export type { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
-export type { CreateButtonProps } from './components/HeaderDropdownComponent/CreateDropdown';
 export type { HeaderLinkProps } from './components/HeaderLinkComponent/HeaderLink';
 export type { MenuItemConfig } from './components/HeaderDropdownComponent/MenuSection';
 export type { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
 export type { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
-export type { HeaderIconButtonProps } from './components/HeaderIconButtonComponent/HeaderIconButton';
-export type { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
 export type {
   GlobalHeaderComponentMountPoint,
   GlobalHeaderComponentMountPointConfig,
+  HeaderDropdownComponentProps,
+  HeaderIconButtonProps,
 } from './types';
 
 export { defaultGlobalHeaderComponentsMountPoints } from './defaultMountPoints/defaultMountPoints';
@@ -112,7 +109,7 @@ export const SearchComponent: React.ComponentType = globalHeaderPlugin.provide(
  *
  * @public
  */
-export const CreateDropdown: React.ComponentType<CreateButtonProps> =
+export const CreateDropdown: React.ComponentType<HeaderDropdownComponentProps> =
   globalHeaderPlugin.provide(
     createComponentExtension({
       name: 'CreateDropdown',
@@ -148,7 +145,7 @@ export const HeaderIconButton: React.ComponentType<HeaderIconButtonProps> =
  *
  * @public
  */
-export const ProfileDropdown: React.ComponentType<ProfileDropdownProps> =
+export const ProfileDropdown: React.ComponentType<HeaderDropdownComponentProps> =
   globalHeaderPlugin.provide(
     createComponentExtension({
       name: 'ProfileDropdown',

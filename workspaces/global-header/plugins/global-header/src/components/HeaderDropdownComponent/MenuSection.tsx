@@ -76,7 +76,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
           disableTouchRipple
           onClick={handleClose}
         >
-          {optionalLink && optionalLinkLabel && (
+          {optionalLink && optionalLinkLabel && items.length > 0 && (
             <Link
               to={optionalLink}
               underline="none"
@@ -89,25 +89,43 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
       </Box>
     )}
     <ul style={{ padding: 0, listStyle: 'none' }}>
-      {items.map(({ type, icon, label, subLabel, link, Component }, index) => (
-        <MenuItem
-          key={`menu-item-${index.toString()}`}
-          disableRipple
-          disableTouchRipple
-          onClick={handleClose}
-          sx={{ py: 0.5, '&:hover': { background: 'transparent' } }}
-        >
-          {link && (
-            <Component
-              icon={icon}
-              to={link}
-              title={label}
-              subTitle={subLabel}
-            />
+      {items.length > 0
+        ? items.map(
+            ({ type, icon, label, subLabel, link, Component }, index) => (
+              <MenuItem
+                key={`menu-item-${index.toString()}`}
+                disableRipple
+                disableTouchRipple
+                onClick={handleClose}
+                sx={{ py: 0.5, '&:hover': { background: 'transparent' } }}
+              >
+                {link && (
+                  <Component
+                    icon={icon}
+                    to={link}
+                    title={label}
+                    subTitle={subLabel}
+                  />
+                )}
+                {type === 'logout' && <Component />}
+              </MenuItem>
+            ),
+          )
+        : sectionLabel === 'Use a template' && (
+            <MenuItem
+              key="no-templates"
+              disableTouchRipple
+              sx={{
+                py: 0.5,
+                cursor: 'default',
+                '&:hover': { background: 'transparent' },
+              }}
+            >
+              <Typography variant="body2" sx={{ my: 1, color: 'text.primary' }}>
+                No templates available
+              </Typography>
+            </MenuItem>
           )}
-          {type === 'logout' && <Component />}
-        </MenuItem>
-      ))}
     </ul>
     {!hideDivider && <Divider sx={{ my: 0.5 }} />}
   </Box>

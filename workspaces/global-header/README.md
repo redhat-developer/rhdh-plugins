@@ -15,7 +15,7 @@ To generate knip reports for this app, run:
 yarn backstage-repo-tools knip-reports
 ```
 
-To test Global Header with Notifications plugin, you need to set up an external service as described in the [Backstage documentation](https://backstage.io/docs/auth/service-to-service-auth/#static-keys-for-plugin-to-plugin-auth). For example, you can use the following configuration:
+To test Global Header with Notifications plugin, you need to set up an external service as described in the [Backstage documentation](https://backstage.io/docs/auth/service-to-service-auth/#static-keys-for-plugin-to-plugin-auth) and add configuration of Notifications plugin. For example, you can use the following configuration:
 
 ```yaml
 backend:
@@ -25,6 +25,20 @@ backend:
         options:
           token: ${EXTERNAL_SERVICE_TOKEN}
           subject: cicd-system-completion-events
+
+# notifications plugin config
+notifications:
+  processors:
+    email:
+      transportConfig:
+        transport: smtp
+        hostname: smtp.gmail.com
+        port: 587
+        username: test@gmail.com
+        password: test
+      sender: test@gmail.com
+      broadcastConfig:
+        receiver: 'users'
 ```
 
 To send notifications, you can use the following command:

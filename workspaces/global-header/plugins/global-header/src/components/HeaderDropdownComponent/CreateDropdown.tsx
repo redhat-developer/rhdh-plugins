@@ -23,19 +23,9 @@ import { useApi } from '@backstage/core-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ComponentType } from '../../types';
+import { ComponentType, HeaderDropdownComponentProps } from '../../types';
 import { HeaderLink } from '../HeaderLinkComponent/HeaderLink';
 import { useCreateDropdownMountPoints } from '../../hooks/useCreateDropdownMountPoints';
-
-/**
- * @public
- * Create button properties
- */
-export interface CreateButtonProps {
-  handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
-  anchorEl: HTMLElement | null;
-  setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
-}
 
 /**
  * @public
@@ -51,7 +41,7 @@ export const CreateDropdown = ({
   handleMenu,
   anchorEl,
   setAnchorEl,
-}: CreateButtonProps) => {
+}: HeaderDropdownComponentProps) => {
   const catalogApi = useApi(catalogApiRef);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,6 +95,10 @@ export const CreateDropdown = ({
         </Typography>
       </Box>
     );
+  }
+
+  if (menuSections.length === 0) {
+    return null;
   }
 
   return (

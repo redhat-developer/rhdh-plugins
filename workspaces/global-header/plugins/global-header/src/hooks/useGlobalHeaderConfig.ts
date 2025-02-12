@@ -16,28 +16,33 @@
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
+const defaultSidebarItemPaths = [
+  '/',
+  'catalog',
+  'api-docs',
+  'learning-paths',
+  'create',
+];
 export const useGlobalHeaderConfig = () => {
   const config = useApi(configApiRef);
   const frontendConfig = config.getOptionalConfig('dynamicPlugins.frontend');
   const supportUrl = config.getOptionalString('app.support.url');
-  const frontendPackages = frontendConfig?.get();
+  const frontendPackages = frontendConfig?.get() ?? {};
 
-  const matchesFrontendRoute = (to: string) => {
-    // this is for dev env where frontendConfig is undefined
-    if (!frontendConfig) {
-      return true;
-    }
-
-    return Object.values(frontendPackages ?? {}).some(pluginData =>
-      (pluginData.dynamicRoutes ?? []).some(
-        (route: { path: string }) => route.path === to,
+  const matchesFrontendRoute = (to: string) =>
+    defaultSidebarItemPaths.includes(to) ||
+    Object.values(frontendPackages).some(pluginData =>
+      pluginData.dynamicRoutes?.some(
+        ({ path }: { path: string }) => path === to,
       ),
     );
-  };
 
-  const shouldDisplaySupportIcon = (icon?: string, to?: string) => {
-    return icon === 'support' && (!!to || !!supportUrl);
-  };
+  const shouldDisplaySupportIcon = (icon?: string, to?: string) =>
+    icon === 'support' && (to || supportUrl);
 
-  return { supportUrl, matchesFrontendRoute, shouldDisplaySupportIcon };
+  return {
+    supportUrl,
+    matchesFrontendRoute: !frontendConfig ? () => true : matchesFrontendRoute,
+    shouldDisplaySupportIcon,
+  };
 };

@@ -22,16 +22,7 @@ import { HeaderIcon } from './HeaderIcon';
 import { Link } from 'react-router-dom';
 import { isExternalUrl } from '../../utils/stringUtils';
 import { useNotificationCount } from '../../hooks/useNotificationCount';
-
-/**
- * Header Icon Button properties
- * @public
- */
-export interface HeaderIconButtonProps {
-  icon: string;
-  to?: string;
-  tooltip?: string;
-}
+import { HeaderIconButtonProps } from '../../types';
 
 export const HeaderIconButton = ({
   icon,
@@ -58,7 +49,7 @@ export const HeaderIconButton = ({
     <Tooltip title={tooltip ?? icon}>
       <IconButton
         color="inherit"
-        aria-label={icon}
+        aria-label={tooltip ?? icon}
         sx={{ mr: 1.5 }}
         {...buttonProps}
       >

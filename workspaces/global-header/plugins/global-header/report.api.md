@@ -21,17 +21,7 @@ export enum ComponentType {
 }
 
 // @public
-export interface CreateButtonProps {
-  // (undocumented)
-  anchorEl: HTMLElement | null;
-  // (undocumented)
-  handleMenu: (event: React_2.MouseEvent<HTMLElement>) => void;
-  // (undocumented)
-  setAnchorEl: React_2.Dispatch<React_2.SetStateAction<HTMLElement | null>>;
-}
-
-// @public
-export const CreateDropdown: React_2.ComponentType<CreateButtonProps>;
+export const CreateDropdown: React_2.ComponentType<HeaderDropdownComponentProps>;
 
 // @public
 export const defaultGlobalHeaderComponentsMountPoints: (
@@ -80,7 +70,9 @@ export const GlobalHeaderComponent: React_2.ComponentType<GlobalHeaderComponentP
 // @public
 export interface GlobalHeaderComponentMountPoint {
   // (undocumented)
-  Component: React.ComponentType;
+  Component: React.ComponentType<
+    HeaderDropdownComponentProps | HeaderIconButtonProps | {}
+  >;
   // (undocumented)
   config?: GlobalHeaderComponentMountPointConfig & {
     props?: Record<string, any>;
@@ -106,11 +98,21 @@ export interface GlobalHeaderComponentProps {
   // (undocumented)
   globalHeaderMountPoints: GlobalHeaderComponentMountPoint[];
   // (undocumented)
-  supportUrl: string;
+  supportUrl?: string;
 }
 
 // @public
 export const globalHeaderPlugin: BackstagePlugin<{}, {}, {}>;
+
+// @public
+export interface HeaderDropdownComponentProps {
+  // (undocumented)
+  anchorEl: HTMLElement | null;
+  // (undocumented)
+  handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
+  // (undocumented)
+  setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
+}
 
 // @public
 export const HeaderIconButton: React_2.ComponentType<HeaderIconButtonProps>;
@@ -190,17 +192,7 @@ export interface NotificationBannerProps {
 }
 
 // @public
-export const ProfileDropdown: React_2.ComponentType<ProfileDropdownProps>;
-
-// @public
-export interface ProfileDropdownProps {
-  // (undocumented)
-  anchorEl: HTMLElement | null;
-  // (undocumented)
-  handleMenu: (event: React_2.MouseEvent<HTMLElement>) => void;
-  // (undocumented)
-  setAnchorEl: React_2.Dispatch<React_2.SetStateAction<HTMLElement | null>>;
-}
+export const ProfileDropdown: React_2.ComponentType<HeaderDropdownComponentProps>;
 
 // @public
 export const RegisterAComponentSection: React_2.ComponentType<RegisterAComponentSectionProps>;

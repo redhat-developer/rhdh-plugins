@@ -30,7 +30,7 @@ import { ErrorBoundary } from '@backstage/core-components';
  */
 export interface GlobalHeaderComponentProps {
   globalHeaderMountPoints: GlobalHeaderComponentMountPoint[];
-  supportUrl: string;
+  supportUrl?: string;
 }
 
 export const GlobalHeaderComponent = ({
@@ -59,31 +59,31 @@ export const GlobalHeaderComponent = ({
     }
     return buttonPros;
   };
-  const filteredAndSortedGlobalHeaderComponents = useMemo(() => {
+
+  const {
+    globalHeaderStartComponentsMountPoints,
+    globalHeaderEndComponentsMountPoints,
+  } = useMemo(() => {
     if (!globalHeaderMountPoints) {
-      return [];
+      return {
+        globalHeaderStartComponentsMountPoints: [],
+        globalHeaderEndComponentsMountPoints: [],
+      };
     }
 
-    const filteredAndSorted = globalHeaderMountPoints.filter(
-      component => (component.config?.priority ?? 0) > -1,
-    );
+    const filteredAndSorted = globalHeaderMountPoints
+      .filter(component => (component.config?.priority ?? 0) > -1)
+      .sort((a, b) => (b.config?.priority ?? 0) - (a.config?.priority ?? 0));
 
-    filteredAndSorted.sort(
-      (a, b) => (b.config?.priority ?? 0) - (a.config?.priority ?? 0),
-    );
-
-    return filteredAndSorted;
+    return {
+      globalHeaderStartComponentsMountPoints: filteredAndSorted.filter(
+        component => component.config?.slot === Slot.HEADER_START,
+      ),
+      globalHeaderEndComponentsMountPoints: filteredAndSorted.filter(
+        component => component.config?.slot === Slot.HEADER_END,
+      ),
+    };
   }, [globalHeaderMountPoints]);
-
-  const globalHeaderStartComponentsMountPoints =
-    filteredAndSortedGlobalHeaderComponents.filter(
-      component => component.config?.slot === Slot.HEADER_START,
-    );
-
-  const globalHeaderEndComponentsMountPoints =
-    filteredAndSortedGlobalHeaderComponents.filter(
-      component => component.config?.slot === Slot.HEADER_END,
-    );
 
   const renderComponents = (mountPoints: GlobalHeaderComponentMountPoint[]) =>
     mountPoints.map((mp, index) => {
@@ -96,34 +96,29 @@ export const GlobalHeaderComponent = ({
       const displayHeaderIcon =
         isExternal || isInternalRoute || shouldShowSupportIcon;
 
+      const uniqueKey = `header-component-${index}`;
       switch (mp.config?.type) {
         case ComponentType.SEARCH:
           return (
-            <ErrorBoundary>
-              <mp.Component key={`header-component-${index.toString()}`} />
+            <ErrorBoundary key={uniqueKey}>
+              <mp.Component />
             </ErrorBoundary>
           );
         case ComponentType.DROPDOWN_BUTTON:
           return (
-            <ErrorBoundary>
+            <ErrorBoundary key={uniqueKey}>
               <mp.Component
-                key={`header-component-${index.toString()}`}
                 {...getDropdownButtonProps(mp.config?.key ?? index.toString())}
                 {...mp.config?.props}
               />
             </ErrorBoundary>
           );
         case ComponentType.ICON_BUTTON:
-          return (
-            <ErrorBoundary>
-              {displayHeaderIcon && (
-                <mp.Component
-                  key={`header-component-${index.toString()}`}
-                  {...getIconButtonProps(mp.config?.props ?? {})}
-                />
-              )}
+          return displayHeaderIcon ? (
+            <ErrorBoundary key={uniqueKey}>
+              <mp.Component {...getIconButtonProps(mp.config?.props ?? {})} />
             </ErrorBoundary>
-          );
+          ) : null;
         default:
           return null;
       }
