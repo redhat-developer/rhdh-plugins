@@ -249,9 +249,9 @@ export class DevModeService {
   }
 
   public async loadDevWorkflows() {
-    if (!this.connection?.repoUrl) {
+    if (!this.connection?.repoUrl || !this.connection?.resourcesPath) {
       this.logger.info(
-        'No Git repository configured. Skipping dev workflows loading.',
+        'No Git repository or path configured. Skipping dev workflows loading.',
       );
       return;
     }
@@ -264,5 +264,7 @@ export class DevModeService {
     }
 
     await this.gitService.clone(this.connection.repoUrl, localPath);
+    // Remove .git to avoid any submodule issues
+    await fs.rm(join(localPath, '.git'), { recursive: true, force: true });
   }
 }
