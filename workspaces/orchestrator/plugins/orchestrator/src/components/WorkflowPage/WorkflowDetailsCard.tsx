@@ -87,16 +87,16 @@ const WorkflowDefinitionDetailsCard = ({
 
   return (
     <InfoCard title="Details" className={classes.details}>
-      <Grid container spacing={3} alignContent="flex-start">
+      <Grid container spacing={8} alignContent="flex-start" wrap="nowrap">
         {details?.map(({ label, value, children }) => (
-          <Grid item md={3} key={label}>
+          <Grid item key={label}>
             {/* AboutField requires the value to be defined as a prop as well */}
             <AboutField label={label} value={value}>
               {loading ? <Skeleton variant="text" /> : children || value}
             </AboutField>
           </Grid>
         ))}
-        <Grid item md={3}>
+        <Grid item md={5}>
           <AboutField
             label="description"
             value={formattedWorkflowOverview?.description}
