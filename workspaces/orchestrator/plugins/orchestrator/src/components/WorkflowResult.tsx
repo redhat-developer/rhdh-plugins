@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 
 import {
   InfoCard,
@@ -32,7 +32,6 @@ import {
   ListItem,
   makeStyles,
 } from '@material-ui/core';
-import DotIcon from '@material-ui/icons/FiberManualRecord';
 import { Alert, AlertTitle } from '@material-ui/lab';
 
 import {
@@ -42,7 +41,6 @@ import {
   QUERY_PARAM_ASSESSMENT_INSTANCE_ID,
   WorkflowOverviewDTO,
   WorkflowResultDTO,
-  WorkflowResultDTOCompletedWithEnum,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../api';
@@ -84,69 +82,58 @@ const ResultMessage = ({
   status,
   error,
   resultMessage,
-  completedWith,
 }: {
   status?: ProcessInstanceStatusDTO;
   error?: ProcessInstanceErrorDTO;
   resultMessage?: WorkflowResultDTO['message'];
-  completedWith: WorkflowResultDTO['completedWith'];
 }) => {
-  const styles = useStyles();
-
   const errorMessage = error?.message || error?.toString();
 
-  return (
-    <>
-      {resultMessage && (
-        <>
-          {completedWith === WorkflowResultDTOCompletedWithEnum.Error && (
-            <>
-              <DotIcon
-                style={{ fontSize: '0.75rem' }}
-                className={styles.errorIcon}
-              />
-              &nbsp;
-            </>
-          )}
-          <Box sx={{ width: '100%' }}>
-            <Alert severity="success">
-              <AlertTitle>Run completed</AlertTitle>
-              {resultMessage}
-            </Alert>
-          </Box>
-        </>
-      )}
+  let statusComponent: ReactNode = <></>;
 
-      {errorMessage && (
+  if (error) {
+    // The resultMessage won't be displayed even if it's defined when there's an error.
+    statusComponent = (
+      <Box sx={{ width: '100%' }}>
+        <Alert severity="error">
+          <AlertTitle>Run has failed</AlertTitle>
+          {errorMessage}
+        </Alert>
+      </Box>
+    );
+  } else if (!error && resultMessage) {
+    statusComponent = (
+      <Box sx={{ width: '100%' }}>
+        <Alert severity="success">
+          <AlertTitle>Run completed</AlertTitle>
+          {resultMessage}
+        </Alert>
+      </Box>
+    );
+  } else if (!error && !resultMessage) {
+    if (status && finalStates.includes(status)) {
+      statusComponent = (
         <Box sx={{ width: '100%' }}>
-          <Alert severity="error">
-            <AlertTitle>Run has failed</AlertTitle>
-            {errorMessage}
+          <Alert severity="success">
+            <AlertTitle>Run completed</AlertTitle>
+            The workflow provided no additional info about the status.
           </Alert>
         </Box>
-      )}
-
-      {!resultMessage &&
-        !errorMessage &&
-        (status && finalStates.includes(status) ? (
-          <Box sx={{ width: '100%' }}>
-            <Alert severity="success">
-              <AlertTitle>Run completed</AlertTitle>
-              The workflow provided no additional info about the status.
-            </Alert>
-          </Box>
-        ) : (
-          <Box sx={{ width: '100%' }}>
-            <Alert severity="info">
-              <AlertTitle>
-                <CircularProgress size="0.75rem" /> Workflow is Running...
-              </AlertTitle>
-              Results will be displayed here once the run is complete.
-            </Alert>
-          </Box>
-        ))}
-    </>
-  );
+      );
+    } else {
+      statusComponent = (
+        <Box sx={{ width: '100%' }}>
+          <Alert severity="info">
+            <AlertTitle>
+              <CircularProgress size="0.75rem" /> Workflow is Running...
+            </AlertTitle>
+            Results will be displayed here once the run is complete.
+          </Alert>
+        </Box>
+      );
+    }
+  }
+  return statusComponent;
 };
 
 const NextWorkflows = ({
@@ -324,7 +311,6 @@ export const WorkflowResult: React.FC<{
           status={instance.state}
           error={instance.error}
           resultMessage={result?.message}
-          completedWith={result?.completedWith}
         />
       }
       divider={false}
