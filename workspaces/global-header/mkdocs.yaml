@@ -5,3 +5,4 @@ plugins:
 
 nav:
   - About: index.md
+  - Configuration: configuration.md

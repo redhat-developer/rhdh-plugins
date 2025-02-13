@@ -37,6 +37,10 @@ export enum Slot {
  */
 export enum ComponentType {
   /**
+   * Global Header spacer
+   */
+  SPACER = 'spacer',
+  /**
    * Global Header Component dropdown button
    */
   DROPDOWN_BUTTON = 'dropdown_button',
