@@ -15,6 +15,10 @@
  */
 
 import React from 'react';
+
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
+
 import MenuSection, { MenuItemConfig } from './MenuSection';
 
 /**
@@ -33,6 +37,19 @@ export const SoftwareTemplatesSection = ({
   handleClose,
   hideDivider,
 }: SoftwareTemplatesSectionProps) => {
+  if (items.length === 0) {
+    return (
+      <>
+        <Typography
+          variant="body2"
+          sx={{ mx: 2, my: 1, color: 'text.disabled' }}
+        >
+          No templates available
+        </Typography>
+        {!hideDivider && <Divider sx={{ my: 0.5 }} />}
+      </>
+    );
+  }
   return (
     <MenuSection
       hideDivider={hideDivider}

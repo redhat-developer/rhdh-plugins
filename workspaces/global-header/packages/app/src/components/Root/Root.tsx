@@ -75,7 +75,6 @@ export const Root = ({ children = null }: PropsWithChildren<{}>) => (
     {/* update globalHeaderMountPoints config to test Global header */}
     <GlobalHeaderComponent
       globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
-      supportUrl=""
     />
     <Sidebar>
       <SidebarLogo />
