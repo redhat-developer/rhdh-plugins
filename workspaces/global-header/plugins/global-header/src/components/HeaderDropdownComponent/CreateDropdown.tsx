@@ -91,7 +91,7 @@ export const CreateDropdown = ({
     return (
       <Box display="flex" justifyContent="center" alignItems="center" p={2}>
         <Typography variant="body1" color="error">
-          Error fetching templates: {error}
+          Error fetching templates
         </Typography>
       </Box>
     );
