@@ -22,8 +22,11 @@ import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
 import Button from '@mui/material/Button';
 
-import { globalHeaderPlugin, NotificationBanner } from '../src/plugin';
-import { ExampleComponent } from '../src/components/ExampleComponent';
+import {
+  GlobalHeader,
+  globalHeaderPlugin,
+  NotificationBanner,
+} from '../src/plugin';
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 
@@ -133,7 +136,7 @@ createDevApp()
         ]}
       >
         <ScalprumContext.Provider value={scalprumState}>
-          <ExampleComponent />
+          <GlobalHeader />
         </ScalprumContext.Provider>
       </TestApiProvider>
     ),
