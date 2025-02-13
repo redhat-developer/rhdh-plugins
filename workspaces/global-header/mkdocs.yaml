@@ -1,0 +1,7 @@
+site_name: RHDH Global Header
+
+plugins:
+  - techdocs-core
+
+nav:
+  - About: index.md
