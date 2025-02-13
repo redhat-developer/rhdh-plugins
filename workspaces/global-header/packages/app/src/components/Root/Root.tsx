@@ -36,7 +36,11 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
-import { GlobalHeader } from '@red-hat-developer-hub/backstage-plugin-global-header';
+import {
+  GlobalHeaderComponent,
+  defaultGlobalHeaderComponentsMountPoints,
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
+import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -68,7 +72,10 @@ const SidebarLogo = () => {
 
 export const Root = ({ children = null }: PropsWithChildren<{}>) => (
   <SidebarPage>
-    <GlobalHeader />
+    {/* update globalHeaderMountPoints config to test Global header */}
+    <GlobalHeaderComponent
+      globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
+    />
     <Sidebar>
       <SidebarLogo />
       <SidebarGroup label="Menu" icon={<MenuIcon />}>
@@ -81,6 +88,11 @@ export const Root = ({ children = null }: PropsWithChildren<{}>) => (
         />
         <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+        <NotificationsSidebarItem
+          webNotificationsEnabled
+          titleCounterEnabled
+          snackbarEnabled
+        />
         {/* End global nav */}
         <SidebarDivider />
         <SidebarScrollWrapper>

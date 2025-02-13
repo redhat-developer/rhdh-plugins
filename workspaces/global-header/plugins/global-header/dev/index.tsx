@@ -15,129 +15,40 @@
  */
 
 import React from 'react';
+
 import { createDevApp } from '@backstage/dev-utils';
-import { mockApis, TestApiProvider } from '@backstage/test-utils';
+import { mockApis, MockFetchApi, TestApiProvider } from '@backstage/test-utils';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
+import {
+  createUnifiedTheme,
+  UnifiedThemeProvider,
+  palettes as defaultPalettes,
+} from '@backstage/theme';
+import { AppTheme, configApiRef } from '@backstage/core-plugin-api';
+import {
+  notificationsApiRef,
+  NotificationsClient,
+} from '@backstage/plugin-notifications';
+
 import Button from '@mui/material/Button';
 
-import { globalHeaderPlugin, NotificationBanner } from '../src/plugin';
-import { ExampleComponent } from '../src/components/ExampleComponent';
-import { SearchComponent } from '../src/components/SearchComponent/SearchComponent';
-import { CreateDropdown } from '../src/components/HeaderDropdownComponent/CreateDropdown';
-import { HeaderIconButton } from '../src/components/HeaderIconButtonComponent/HeaderIconButton';
-import ProfileDropdown from '../src/components/HeaderDropdownComponent/ProfileDropdown';
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
+
 import {
-  Slot,
   ComponentType,
-  GlobalHeaderComponentMountPoint,
-  ProfileDropdownMountPoint,
-  CreateDropdownMountPoint,
-} from '../src/types';
-import { configApiRef } from '@backstage/core-plugin-api';
-import { HeaderLink } from '../src/components/HeaderLinkComponent/HeaderLink';
-import { LogoutButton } from '../src/components/HeaderButtonComponent/LogoutButton';
-import { SoftwareTemplatesSection } from '../src/components/HeaderDropdownComponent/SoftwareTemplatesSection';
-import { RegisterAComponentSection } from '../src/components/HeaderDropdownComponent/RegisterAComponentSection';
+  GlobalHeader,
+  globalHeaderPlugin,
+  NotificationBanner,
+} from '../src/plugin';
 
-const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[] =
-  [
-    {
-      Component: SearchComponent,
-      config: {
-        type: ComponentType.SEARCH,
-        slot: Slot.HEADER_START,
-        priority: 100, // the greater the number, the more to the left it will be
-      },
-    },
-    {
-      Component: CreateDropdown as React.ComponentType,
-      config: {
-        type: ComponentType.DROPDOWN_BUTTON,
-        slot: Slot.HEADER_START,
-        priority: 90,
-        key: 'create',
-      },
-    },
-    {
-      Component: HeaderIconButton as React.ComponentType,
-      config: {
-        type: ComponentType.ICON_BUTTON,
-        slot: Slot.HEADER_START,
-        priority: 80,
-        props: {
-          icon: 'support',
-          tooltip: 'Support',
-          to: '/support',
-        },
-      },
-    },
-    {
-      Component: HeaderIconButton as React.ComponentType,
-      config: {
-        type: ComponentType.ICON_BUTTON,
-        slot: Slot.HEADER_START,
-        priority: 70,
-        props: {
-          key: 'notifications',
-          icon: 'notifications',
-          tooltip: 'Notifications',
-          to: '/notifications',
-        },
-      },
-    },
-    {
-      Component: ProfileDropdown as React.ComponentType,
-      config: {
-        type: ComponentType.DROPDOWN_BUTTON,
-        slot: Slot.HEADER_END,
-        priority: 0, // the greater the number, the more to the left it will be
-        key: 'profile',
-      },
-    },
-  ];
-
-const defaultCreateDropdownMountPoints: CreateDropdownMountPoint[] = [
-  {
-    Component: SoftwareTemplatesSection as React.ComponentType,
-    config: {
-      type: ComponentType.LIST,
-      priority: 10,
-    },
-  },
-  {
-    Component: RegisterAComponentSection as React.ComponentType,
-    config: {
-      type: ComponentType.LINK,
-      priority: 0,
-    },
-  },
-];
-
-const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
-  {
-    Component: HeaderLink as React.ComponentType,
-    config: {
-      type: ComponentType.LINK,
-      priority: 10,
-      props: {
-        title: 'Settings',
-        icon: 'manageAccounts',
-        link: '/settings',
-      },
-    },
-  },
-  {
-    Component: LogoutButton as React.ComponentType,
-    config: {
-      type: ComponentType.LOGOUT,
-      priority: 0,
-    },
-  },
-];
+import {
+  defaultCreateDropdownMountPoints,
+  defaultGlobalHeaderComponentsMountPoints,
+  defaultProfileDropdownMountPoints,
+} from '../src/defaultMountPoints/defaultMountPoints';
 
 const mockSearchApi = new MockSearchApi({
   results: [
@@ -201,39 +112,130 @@ const entities = [
 
 const catalogApi = catalogApiMock({ entities });
 
-const scalprumState: ScalprumState = {
-  initialized: true,
-  api: {
-    dynamicRootConfig: {
-      mountPoints: {
-        'global.header/component': defaultGlobalHeaderComponentsMountPoints,
-        'global.header/create': defaultCreateDropdownMountPoints,
-        'global.header/profile': defaultProfileDropdownMountPoints,
+const mockBaseUrl = 'https://backstage/api/notifications';
+const discoveryApi = { getBaseUrl: async () => mockBaseUrl };
+const fetchApi = new MockFetchApi();
+const client = new NotificationsClient({ discoveryApi, fetchApi });
+
+const lightTheme = createUnifiedTheme({
+  palette: {
+    ...defaultPalettes.light,
+  },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        colorPrimary: {
+          backgroundColor: '#212427',
+          backgroundImage: 'none',
+        },
       },
     },
   },
-  config: {},
-  pluginStore: new PluginStore(),
+});
+
+const darkTheme = createUnifiedTheme({
+  palette: {
+    ...defaultPalettes.dark,
+  },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        colorPrimary: {
+          backgroundColor: '#1b1d21',
+          backgroundImage: 'none',
+        },
+      },
+    },
+  },
+});
+
+const themes: AppTheme[] = [
+  {
+    id: 'light',
+    title: 'Light Theme',
+    variant: 'light',
+    Provider: ({ children }) => (
+      <UnifiedThemeProvider theme={lightTheme}>{children}</UnifiedThemeProvider>
+    ),
+  },
+  {
+    id: 'dark',
+    title: 'Dark Theme',
+    variant: 'dark',
+    Provider: ({ children }) => (
+      <UnifiedThemeProvider theme={darkTheme}>{children}</UnifiedThemeProvider>
+    ),
+  },
+];
+
+const Providers = ({
+  mountPoints,
+}: React.PropsWithChildren<{ mountPoints: Record<string, any> }>) => {
+  const scalprumState = React.useMemo<ScalprumState>(
+    () => ({
+      initialized: true,
+      api: {
+        dynamicRootConfig: {
+          mountPoints,
+        },
+      },
+      config: {},
+      pluginStore: new PluginStore(),
+    }),
+    [mountPoints],
+  );
+
+  return (
+    <TestApiProvider
+      apis={[
+        [catalogApiRef, catalogApi],
+        [searchApiRef, mockSearchApi],
+        [configApiRef, mockConfigApi],
+        [notificationsApiRef, client],
+      ]}
+    >
+      <ScalprumContext.Provider value={scalprumState}>
+        <GlobalHeader />
+      </ScalprumContext.Provider>
+    </TestApiProvider>
+  );
 };
 
 createDevApp()
   .registerPlugin(globalHeaderPlugin)
+  .addThemes(themes)
   .addPage({
     element: (
-      <TestApiProvider
-        apis={[
-          [catalogApiRef, catalogApi],
-          [searchApiRef, mockSearchApi],
-          [configApiRef, mockConfigApi],
-        ]}
+      <Providers
+        mountPoints={{
+          'global.header/component': defaultGlobalHeaderComponentsMountPoints,
+          'global.header/create': defaultCreateDropdownMountPoints,
+          'global.header/profile': defaultProfileDropdownMountPoints,
+        }}
       >
-        <ScalprumContext.Provider value={scalprumState}>
-          <ExampleComponent />
-        </ScalprumContext.Provider>
-      </TestApiProvider>
+        <GlobalHeader />
+      </Providers>
     ),
-    title: 'Global Header',
-    path: '/global-header',
+    title: 'Default header',
+    path: '/default-header',
+  })
+  .addPage({
+    element: (
+      <Providers
+        mountPoints={{
+          'global.header/component':
+            defaultGlobalHeaderComponentsMountPoints.filter(
+              mp => mp.config.type !== ComponentType.SEARCH,
+            ),
+          'global.header/create': defaultCreateDropdownMountPoints,
+          'global.header/profile': defaultProfileDropdownMountPoints,
+        }}
+      >
+        <GlobalHeader />
+      </Providers>
+    ),
+    title: 'Header without search',
+    path: '/header-without-search',
   })
   .addPage({
     element: (

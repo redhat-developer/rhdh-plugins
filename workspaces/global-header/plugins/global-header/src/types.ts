@@ -63,6 +63,26 @@ export enum ComponentType {
 }
 
 /**
+ * @public
+ * Header Dropdown component properties
+ */
+export interface HeaderDropdownComponentProps {
+  handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
+  anchorEl: HTMLElement | null;
+  setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
+}
+
+/**
+ * Header Icon Button properties
+ * @public
+ */
+export interface HeaderIconButtonProps {
+  icon: string;
+  to?: string;
+  tooltip?: string;
+}
+
+/**
  * Global Header Config
  *
  * @public
@@ -105,7 +125,9 @@ export interface ProfileDropdownMountPointConfig {
  * @public
  */
 export interface GlobalHeaderComponentMountPoint {
-  Component: React.ComponentType;
+  Component: React.ComponentType<
+    HeaderDropdownComponentProps | HeaderIconButtonProps | {}
+  >;
   config?: GlobalHeaderComponentMountPointConfig & {
     props?: Record<string, any>;
   };

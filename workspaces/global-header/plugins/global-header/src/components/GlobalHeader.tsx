@@ -14,138 +14,19 @@
  * limitations under the License.
  */
 
-import React, { useMemo } from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Divider from '@mui/material/Divider';
-import { useDropdownManager } from '../hooks';
+import React from 'react';
 import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints';
-import { ComponentType, GlobalHeaderComponentMountPoint, Slot } from '../types';
-import { ErrorBoundary } from '@backstage/core-components';
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
-import { useTheme } from '@mui/material/styles';
+import { useGlobalHeaderConfig } from '../hooks/useGlobalHeaderConfig';
+import { GlobalHeaderComponent } from './GlobalHeaderComponent';
 
 export const GlobalHeader = () => {
-  const config = useApi(configApiRef);
-  const frontendConfig = config.getOptionalConfig('dynamicPlugins.frontend');
-  const frontendData = frontendConfig?.get();
-  const theme = useTheme();
-
+  const { supportUrl } = useGlobalHeaderConfig();
   const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
 
-  const filteredAndSortedGlobalHeaderComponents = useMemo(() => {
-    if (!allGlobalHeaderMountPoints) {
-      return [];
-    }
-
-    const filteredAndSorted = allGlobalHeaderMountPoints.filter(
-      component => (component.config?.priority ?? 0) > -1,
-    );
-
-    filteredAndSorted.sort(
-      (a, b) => (b.config?.priority ?? 0) - (a.config?.priority ?? 0),
-    );
-
-    return filteredAndSorted;
-  }, [allGlobalHeaderMountPoints]);
-
-  const globalHeaderStartComponentsMountPoints =
-    filteredAndSortedGlobalHeaderComponents.filter(
-      component => component.config?.slot === Slot.HEADER_START,
-    );
-
-  const globalHeaderEndComponentsMountPoints =
-    filteredAndSortedGlobalHeaderComponents.filter(
-      component => component.config?.slot === Slot.HEADER_END,
-    );
-
-  const { menuStates, handleOpen, handleClose } = useDropdownManager();
-
-  const getDropdownButtonProps = (key: string) => ({
-    handleMenu: handleOpen(key),
-    anchorEl: menuStates[key],
-    setAnchorEl: handleClose(key),
-  });
-
-  const getIconButtonProps = (props: Record<string, any>) => ({
-    icon: props.icon ?? '',
-    tooltip: props.tooltip ?? '',
-    to: props.to ?? '',
-  });
-  const renderComponents = (mountPoints: GlobalHeaderComponentMountPoint[]) =>
-    mountPoints.map((mp, index) => {
-      let displayHeaderIcon = false;
-      if (frontendData) {
-        for (const pluginData of Object.values(frontendData)) {
-          const dynamicRoutes = pluginData.dynamicRoutes ?? [];
-          if (
-            dynamicRoutes.some(
-              (route: { path: string }) => route.path === mp.config?.props?.to,
-            )
-          ) {
-            displayHeaderIcon = true;
-            break;
-          }
-        }
-      }
-
-      switch (mp.config?.type) {
-        case ComponentType.SEARCH:
-          return (
-            <ErrorBoundary>
-              {/* eslint-disable-next-line react/no-array-index-key */}
-              <mp.Component key={index} />
-            </ErrorBoundary>
-          );
-        case ComponentType.DROPDOWN_BUTTON:
-          return (
-            <ErrorBoundary>
-              <mp.Component
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                {...getDropdownButtonProps(mp.config?.key ?? index.toString())}
-                {...mp.config?.props}
-              />
-            </ErrorBoundary>
-          );
-        case ComponentType.ICON_BUTTON:
-          return (
-            <ErrorBoundary>
-              {displayHeaderIcon && (
-                <mp.Component
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={index}
-                  {...getIconButtonProps(mp.config?.props ?? {})}
-                />
-              )}
-            </ErrorBoundary>
-          );
-        default:
-          return null;
-      }
-    });
-
   return (
-    <AppBar
-      position="sticky"
-      component="nav"
-      sx={{
-        backgroundColor: theme.palette.mode === 'dark' ? '#1b1d21' : '#212427',
-        backgroundImage: 'none',
-      }}
-    >
-      <Toolbar>
-        {renderComponents(globalHeaderStartComponentsMountPoints)}
-        {globalHeaderStartComponentsMountPoints.length > 0 &&
-          globalHeaderEndComponentsMountPoints.length > 0 && (
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ borderColor: '#4F5255', marginX: 1 }}
-            />
-          )}
-        {renderComponents(globalHeaderEndComponentsMountPoints)}
-      </Toolbar>
-    </AppBar>
+    <GlobalHeaderComponent
+      globalHeaderMountPoints={allGlobalHeaderMountPoints ?? []}
+      supportUrl={supportUrl}
+    />
   );
 };

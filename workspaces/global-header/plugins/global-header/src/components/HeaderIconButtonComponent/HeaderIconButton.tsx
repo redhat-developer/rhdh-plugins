@@ -17,33 +17,49 @@
 import React from 'react';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Badge from '@mui/material/Badge';
 import { HeaderIcon } from './HeaderIcon';
 import { Link } from 'react-router-dom';
-
-/**
- * Header Icon Button properties
- * @public
- */
-export interface HeaderIconButtonProps {
-  icon: string;
-  to?: string;
-  tooltip?: string;
-}
+import { isExternalUrl } from '../../utils/stringUtils';
+import { useNotificationCount } from '../../hooks/useNotificationCount';
+import { HeaderIconButtonProps } from '../../types';
 
 export const HeaderIconButton = ({
   icon,
   tooltip,
   to,
 }: HeaderIconButtonProps) => {
+  const showNotifications = icon === 'notifications';
+  const unreadCount = useNotificationCount(showNotifications);
+  const isExternal = to && isExternalUrl(to);
+  const buttonProps: Record<string, any> = {
+    component: isExternal ? 'a' : Link,
+  };
+
+  if (to) {
+    buttonProps[isExternal ? 'href' : 'to'] = to;
+  }
+
+  if (isExternal) {
+    buttonProps.target = '_blank';
+    buttonProps.rel = 'noopener noreferrer';
+  }
+
   return (
     <Tooltip title={tooltip ?? icon}>
       <IconButton
         color="inherit"
-        aria-label="help"
+        aria-label={tooltip ?? icon}
         sx={{ mr: 1.5 }}
-        {...(to ? { component: Link, to } : {})}
+        {...buttonProps}
       >
-        {tooltip !== 'Support' && <HeaderIcon icon={icon} />}
+        {unreadCount > 0 ? (
+          <Badge badgeContent={unreadCount} max={999} color="error">
+            <HeaderIcon icon={icon} />
+          </Badge>
+        ) : (
+          <HeaderIcon icon={icon} />
+        )}
       </IconButton>
     </Tooltip>
   );
