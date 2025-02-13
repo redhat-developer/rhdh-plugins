@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React, { useState } from 'react';
 
 import {
@@ -64,13 +65,24 @@ const makeSelectItemsFromProcessInstanceValues = () =>
   );
 
 const statuses = makeSelectItemsFromProcessInstanceValues();
+const started = ['Today', 'Yesterday', 'Last 7 days', 'This month'].map(
+  (time): SelectItem => ({
+    label: time,
+    value: time,
+  }),
+);
 
 export const WorkflowRunsTabContent = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
   const workflowPageLink = useRouteRef(workflowRouteRef);
+
+  // selectors
   const [statusSelectorValue, setStatusSelectorValue] = useState<string>(
+    Selector.AllItems,
+  );
+  const [startedSelectorValue, setStartedSelectorValue] = useState<string>(
     Selector.AllItems,
   );
 
@@ -80,6 +92,15 @@ export const WorkflowRunsTabContent = () => {
   const [orderDirection, setOrderDirection] = useState('desc');
 
   const getFilter = React.useCallback((): Filter | undefined => {
+    // runs for specific WF
+    const workflowIdFilter: FieldFilter | undefined = workflowId
+      ? {
+          operator: 'EQ',
+          value: workflowId,
+          field: 'processId',
+        }
+      : undefined;
+
     const statusFilter: FieldFilter | undefined =
       statusSelectorValue !== Selector.AllItems
         ? {
@@ -88,25 +109,86 @@ export const WorkflowRunsTabContent = () => {
             field: 'state',
           }
         : undefined;
-    const workflowIdFilter: FieldFilter | undefined = workflowId
-      ? {
-          operator: 'EQ',
-          value: workflowId,
-          field: 'processId',
+
+    let startedFilter: FieldFilter | undefined = undefined;
+
+    if (startedSelectorValue !== Selector.AllItems) {
+      let dateRange: [string, string] | undefined = undefined;
+
+      const currentDate = new Date();
+      const endOfToday = new Date(currentDate);
+      endOfToday.setHours(23, 59, 59, 999);
+
+      switch (startedSelectorValue) {
+        case 'Today': {
+          const startOfToday = new Date();
+          startOfToday.setHours(0, 0, 0, 0);
+          dateRange = [startOfToday.toISOString(), endOfToday.toISOString()];
+          break;
         }
-      : undefined;
-    if (statusFilter && workflowIdFilter) {
+        case 'Yesterday': {
+          const startOfYesterday = new Date();
+          startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+          startOfYesterday.setHours(0, 0, 0, 0);
+
+          const endOfYesterday = new Date(startOfYesterday);
+          endOfYesterday.setHours(23, 59, 59, 999);
+
+          dateRange = [
+            startOfYesterday.toISOString(),
+            endOfYesterday.toISOString(),
+          ];
+          break;
+        }
+        case 'Last 7 days': {
+          const startOfLast7Days = new Date();
+          startOfLast7Days.setDate(startOfLast7Days.getDate() - 7);
+          startOfLast7Days.setHours(0, 0, 0, 0);
+
+          dateRange = [
+            startOfLast7Days.toISOString(),
+            endOfToday.toISOString(),
+          ];
+          break;
+        }
+        case 'This month': {
+          const startOfCurrentMonth = new Date();
+          startOfCurrentMonth.setDate(1);
+          startOfCurrentMonth.setHours(0, 0, 0, 0);
+
+          dateRange = [
+            startOfCurrentMonth.toISOString(),
+            endOfToday.toISOString(),
+          ];
+          break;
+        }
+        default:
+          dateRange = undefined;
+      }
+
+      startedFilter =
+        startedSelectorValue !== Selector.AllItems
+          ? {
+              operator: 'BETWEEN',
+              value: dateRange,
+              field: 'start',
+            }
+          : undefined;
+    }
+
+    // removes undefined filters
+    const filters = [statusFilter, workflowIdFilter, startedFilter].filter(
+      Boolean,
+    ) as FieldFilter[];
+
+    if (filters.length > 1) {
       return {
         operator: 'AND',
-        filters: [statusFilter, workflowIdFilter],
+        filters,
       };
-    } else if (statusFilter) {
-      return statusFilter;
-    } else if (workflowIdFilter) {
-      return workflowIdFilter;
     }
-    return undefined;
-  }, [statusSelectorValue, workflowId]);
+    return filters[0] || undefined;
+  }, [workflowId, statusSelectorValue, startedSelectorValue]);
 
   const fetchInstances = React.useCallback(async () => {
     const paginationInfo: PaginationInfoDTO = {
@@ -123,6 +205,7 @@ export const WorkflowRunsTabContent = () => {
       paginationInfo,
       filter,
     );
+
     const clonedData: WorkflowRunDetail[] =
       instances.data.items?.map(mapProcessInstanceToDetails) || [];
     return clonedData;
@@ -136,25 +219,6 @@ export const WorkflowRunsTabContent = () => {
   ]);
 
   const { loading, error, value } = usePolling(fetchInstances);
-
-  const selectors = React.useMemo(
-    () => (
-      <Grid container alignItems="center">
-        <Grid item>
-          <Selector
-            label="Status"
-            items={statuses}
-            onChange={value_ => {
-              setStatusSelectorValue(value_);
-              setPage(0);
-            }}
-            selected={statusSelectorValue}
-          />
-        </Grid>
-      </Grid>
-    ),
-    [statusSelectorValue],
-  );
 
   const applyBackendSort = React.useCallback(
     (item1: WorkflowRunDetail, item2: WorkflowRunDetail): number => {
@@ -237,45 +301,79 @@ export const WorkflowRunsTabContent = () => {
   return error ? (
     <ErrorPanel error={error} />
   ) : (
-    <InfoCard noPadding title={selectors}>
-      <OverrideBackstageTable
-        removeOutline
-        isLoading={loading}
-        columns={columns}
-        data={data}
-        options={{
-          paging: false,
-        }}
-        onOrderChange={(orderBy_: number, orderDirection_: 'asc' | 'desc') => {
-          const field = columns[orderBy_].field;
-          if (!field) {
-            throw new Error(`Failed to find column number ${orderBy_}`);
-          }
-          setOrderByField(field);
-          setOrderDirection(orderDirection_);
-        }}
-        components={{
-          Toolbar: () => <></>, // this removes the search filter, which isn't applicable for most fields
-        }}
-      />
-      {enablePaging && (
-        <TablePagination
-          component="div"
-          count={-1}
-          page={page}
-          onPageChange={(_, page_) => setPage(page_)}
-          onRowsPerPageChange={e => {
-            setPageSize(parseInt(e.target.value, 10));
+    <Grid container item justifyContent="flex-end" spacing={1}>
+      <Grid item xs={2}>
+        <Selector
+          label="Status"
+          items={statuses}
+          onChange={value_ => {
+            setStatusSelectorValue(value_);
             setPage(0);
           }}
-          rowsPerPage={pageSize}
-          labelDisplayedRows={({ from }) => {
-            return `${from}-${from + data.length - 1}`;
-          }}
-          rowsPerPageOptions={[5, 10, 20]}
-          nextIconButtonProps={{ disabled: !hasNextPage }}
+          selected={statusSelectorValue}
         />
-      )}
-    </InfoCard>
+        <Selector
+          label="Started"
+          items={started}
+          onChange={value_ => {
+            setStartedSelectorValue(value_);
+            setPage(0);
+          }}
+          selected={startedSelectorValue}
+        />
+      </Grid>
+      <Grid item xs={10}>
+        <InfoCard
+          noPadding
+          title={
+            workflowId
+              ? `Workflow runs (${data.length}) `
+              : `All runs (${data.length}) `
+          }
+        >
+          <OverrideBackstageTable
+            removeOutline
+            isLoading={loading}
+            columns={columns}
+            data={data}
+            options={{
+              paging: false,
+            }}
+            onOrderChange={(
+              orderBy_: number,
+              orderDirection_: 'asc' | 'desc',
+            ) => {
+              const field = columns[orderBy_].field;
+              if (!field) {
+                throw new Error(`Failed to find column number ${orderBy_}`);
+              }
+              setOrderByField(field);
+              setOrderDirection(orderDirection_);
+            }}
+            components={{
+              Toolbar: () => <></>, // this removes the search filter, which isn't applicable for most fields
+            }}
+          />
+          {enablePaging && (
+            <TablePagination
+              component="div"
+              count={-1}
+              page={page}
+              onPageChange={(_, page_) => setPage(page_)}
+              onRowsPerPageChange={e => {
+                setPageSize(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPage={pageSize}
+              labelDisplayedRows={({ from }) => {
+                return `${from}-${from + data.length - 1}`;
+              }}
+              rowsPerPageOptions={[5, 10, 20]}
+              nextIconButtonProps={{ disabled: !hasNextPage }}
+            />
+          )}
+        </InfoCard>
+      </Grid>
+    </Grid>
   );
 };
