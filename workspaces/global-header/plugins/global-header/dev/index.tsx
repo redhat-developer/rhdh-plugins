@@ -15,26 +15,35 @@
  */
 
 import React from 'react';
+
 import { createDevApp } from '@backstage/dev-utils';
 import { mockApis, MockFetchApi, TestApiProvider } from '@backstage/test-utils';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
-import Button from '@mui/material/Button';
-
 import {
-  GlobalHeader,
-  globalHeaderPlugin,
-  NotificationBanner,
-} from '../src/plugin';
-import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
-import { PluginStore } from '@openshift/dynamic-plugin-sdk';
-
-import { configApiRef } from '@backstage/core-plugin-api';
+  createUnifiedTheme,
+  UnifiedThemeProvider,
+  palettes as defaultPalettes,
+} from '@backstage/theme';
+import { AppTheme, configApiRef } from '@backstage/core-plugin-api';
 import {
   notificationsApiRef,
   NotificationsClient,
 } from '@backstage/plugin-notifications';
+
+import Button from '@mui/material/Button';
+
+import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
+import { PluginStore } from '@openshift/dynamic-plugin-sdk';
+
+import {
+  ComponentType,
+  GlobalHeader,
+  globalHeaderPlugin,
+  NotificationBanner,
+} from '../src/plugin';
+
 import {
   defaultCreateDropdownMountPoints,
   defaultGlobalHeaderComponentsMountPoints,
@@ -108,40 +117,125 @@ const discoveryApi = { getBaseUrl: async () => mockBaseUrl };
 const fetchApi = new MockFetchApi();
 const client = new NotificationsClient({ discoveryApi, fetchApi });
 
-const scalprumState: ScalprumState = {
-  initialized: true,
-  api: {
-    dynamicRootConfig: {
-      mountPoints: {
-        'global.header/component': defaultGlobalHeaderComponentsMountPoints,
-        'global.header/create': defaultCreateDropdownMountPoints,
-        'global.header/profile': defaultProfileDropdownMountPoints,
+const lightTheme = createUnifiedTheme({
+  palette: {
+    ...defaultPalettes.light,
+  },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        colorPrimary: {
+          backgroundColor: '#212427',
+          backgroundImage: 'none',
+        },
       },
     },
   },
-  config: {},
-  pluginStore: new PluginStore(),
+});
+
+const darkTheme = createUnifiedTheme({
+  palette: {
+    ...defaultPalettes.dark,
+  },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        colorPrimary: {
+          backgroundColor: '#1b1d21',
+          backgroundImage: 'none',
+        },
+      },
+    },
+  },
+});
+
+const themes: AppTheme[] = [
+  {
+    id: 'light',
+    title: 'Light Theme',
+    variant: 'light',
+    Provider: ({ children }) => (
+      <UnifiedThemeProvider theme={lightTheme}>{children}</UnifiedThemeProvider>
+    ),
+  },
+  {
+    id: 'dark',
+    title: 'Dark Theme',
+    variant: 'dark',
+    Provider: ({ children }) => (
+      <UnifiedThemeProvider theme={darkTheme}>{children}</UnifiedThemeProvider>
+    ),
+  },
+];
+
+const Providers = ({
+  mountPoints,
+}: React.PropsWithChildren<{ mountPoints: Record<string, any> }>) => {
+  const scalprumState = React.useMemo<ScalprumState>(
+    () => ({
+      initialized: true,
+      api: {
+        dynamicRootConfig: {
+          mountPoints,
+        },
+      },
+      config: {},
+      pluginStore: new PluginStore(),
+    }),
+    [mountPoints],
+  );
+
+  return (
+    <TestApiProvider
+      apis={[
+        [catalogApiRef, catalogApi],
+        [searchApiRef, mockSearchApi],
+        [configApiRef, mockConfigApi],
+        [notificationsApiRef, client],
+      ]}
+    >
+      <ScalprumContext.Provider value={scalprumState}>
+        <GlobalHeader />
+      </ScalprumContext.Provider>
+    </TestApiProvider>
+  );
 };
 
 createDevApp()
   .registerPlugin(globalHeaderPlugin)
+  .addThemes(themes)
   .addPage({
     element: (
-      <TestApiProvider
-        apis={[
-          [catalogApiRef, catalogApi],
-          [searchApiRef, mockSearchApi],
-          [configApiRef, mockConfigApi],
-          [notificationsApiRef, client],
-        ]}
+      <Providers
+        mountPoints={{
+          'global.header/component': defaultGlobalHeaderComponentsMountPoints,
+          'global.header/create': defaultCreateDropdownMountPoints,
+          'global.header/profile': defaultProfileDropdownMountPoints,
+        }}
       >
-        <ScalprumContext.Provider value={scalprumState}>
-          <GlobalHeader />
-        </ScalprumContext.Provider>
-      </TestApiProvider>
+        <GlobalHeader />
+      </Providers>
     ),
-    title: 'Global Header',
-    path: '/global-header',
+    title: 'Default header',
+    path: '/default-header',
+  })
+  .addPage({
+    element: (
+      <Providers
+        mountPoints={{
+          'global.header/component':
+            defaultGlobalHeaderComponentsMountPoints.filter(
+              mp => mp.config.type !== ComponentType.SEARCH,
+            ),
+          'global.header/create': defaultCreateDropdownMountPoints,
+          'global.header/profile': defaultProfileDropdownMountPoints,
+        }}
+      >
+        <GlobalHeader />
+      </Providers>
+    ),
+    title: 'Header without search',
+    path: '/header-without-search',
   })
   .addPage({
     element: (
