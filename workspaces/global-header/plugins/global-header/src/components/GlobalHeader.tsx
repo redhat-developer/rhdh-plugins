@@ -16,17 +16,14 @@
 
 import React from 'react';
 import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints';
-import { useGlobalHeaderConfig } from '../hooks/useGlobalHeaderConfig';
 import { GlobalHeaderComponent } from './GlobalHeaderComponent';
 
 export const GlobalHeader = () => {
-  const { supportUrl } = useGlobalHeaderConfig();
   const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
 
   return (
     <GlobalHeaderComponent
       globalHeaderMountPoints={allGlobalHeaderMountPoints ?? []}
-      supportUrl={supportUrl}
     />
   );
 };

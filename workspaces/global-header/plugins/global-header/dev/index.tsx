@@ -67,6 +67,11 @@ const mockSearchApi = new MockSearchApi({
 
 const mockConfigApi = mockApis.config({
   data: {
+    app: {
+      support: {
+        url: 'https://access.redhat.com/products/red-hat-developer-hub',
+      },
+    },
     dynamicPlugins: {
       frontend: {
         'backstage.plugin-notifications': {

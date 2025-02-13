@@ -21,6 +21,7 @@ import { SoftwareTemplatesSection } from '../components/HeaderDropdownComponent/
 import { HeaderIconButton } from '../components/HeaderIconButtonComponent/HeaderIconButton';
 import { HeaderLink } from '../components/HeaderLinkComponent/HeaderLink';
 import { SearchComponent } from '../components/SearchComponent/SearchComponent';
+import { SupportButton } from '../components/SupportButton/SupportButton';
 import { ComponentType, Slot } from '../types';
 
 /**
@@ -47,16 +48,11 @@ export const defaultGlobalHeaderComponentsMountPoints = [
     },
   },
   {
-    Component: HeaderIconButton as React.ComponentType,
+    Component: SupportButton as React.ComponentType,
     config: {
-      type: ComponentType.ICON_BUTTON,
+      type: ComponentType.SUPPORT_BUTTON,
       slot: Slot.HEADER_START,
       priority: 80,
-      props: {
-        icon: 'support',
-        tooltip: 'Support (external site)',
-        to: 'https://developers.redhat.com/rhdh/overview',
-      },
     },
   },
   {

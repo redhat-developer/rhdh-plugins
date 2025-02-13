@@ -1,6 +1,15 @@
 app:
-  title: Scaffolded Backstage App
+  title: RHDH Global Header Test App
   baseUrl: http://localhost:3000
+  support:
+    url: https://access.redhat.com/products/red-hat-developer-hub
+    items:
+      - title: Red Hat Developer Hub
+        links:
+          - url: https://access.redhat.com/products/red-hat-developer-hub
+            title: Product Info
+          - url: https://access.redhat.com/documentation/en-us/red_hat_developer_hub
+            title: Documentation
 
 organization:
   name: My Company

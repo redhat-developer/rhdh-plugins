@@ -26,7 +26,6 @@ const defaultSidebarItemPaths = [
 export const useGlobalHeaderConfig = () => {
   const config = useApi(configApiRef);
   const frontendConfig = config.getOptionalConfig('dynamicPlugins.frontend');
-  const supportUrl = config.getOptionalString('app.support.url');
   const frontendPackages = frontendConfig?.get() ?? {};
 
   const matchesFrontendRoute = (to: string) =>
@@ -37,12 +36,7 @@ export const useGlobalHeaderConfig = () => {
       ),
     );
 
-  const shouldDisplaySupportIcon = (icon?: string, to?: string) =>
-    icon === 'support' && (to || supportUrl);
-
   return {
-    supportUrl,
     matchesFrontendRoute: !frontendConfig ? () => true : matchesFrontendRoute,
-    shouldDisplaySupportIcon,
   };
 };

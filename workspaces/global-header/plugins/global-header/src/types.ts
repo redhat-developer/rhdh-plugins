@@ -41,6 +41,10 @@ export enum ComponentType {
    */
   SPACER = 'spacer',
   /**
+   * Global Header support button
+   */
+  SUPPORT_BUTTON = 'support_button',
+  /**
    * Global Header Component dropdown button
    */
   DROPDOWN_BUTTON = 'dropdown_button',

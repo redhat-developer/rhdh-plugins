@@ -31,6 +31,7 @@ export type { MenuItemConfig } from './components/HeaderDropdownComponent/MenuSe
 export type { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
 export type { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
 export type { SpacerProps } from './components/Spacer/Spacer';
+export type { SupportButtonProps } from './components/SupportButton/SupportButton';
 export type {
   GlobalHeaderComponentMountPoint,
   GlobalHeaderComponentMountPointConfig,
@@ -242,6 +243,21 @@ export const Spacer = globalHeaderPlugin.provide(
     name: 'Spacer',
     component: {
       lazy: () => import('./components/Spacer/Spacer').then(m => m.Spacer),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const SupportButton = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'SupportButton',
+    component: {
+      lazy: () =>
+        import('./components/SupportButton/SupportButton').then(
+          m => m.SupportButton,
+        ),
     },
   }),
 );

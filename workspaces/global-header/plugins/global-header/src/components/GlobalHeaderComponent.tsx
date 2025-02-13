@@ -30,16 +30,13 @@ import { ErrorBoundary } from '@backstage/core-components';
  */
 export interface GlobalHeaderComponentProps {
   globalHeaderMountPoints: GlobalHeaderComponentMountPoint[];
-  supportUrl?: string;
 }
 
 export const GlobalHeaderComponent = ({
   globalHeaderMountPoints,
-  supportUrl,
 }: GlobalHeaderComponentProps) => {
   const { menuStates, handleOpen, handleClose } = useDropdownManager();
-  const { matchesFrontendRoute, shouldDisplaySupportIcon } =
-    useGlobalHeaderConfig();
+  const { matchesFrontendRoute } = useGlobalHeaderConfig();
 
   const getDropdownButtonProps = (key: string) => ({
     handleMenu: handleOpen(key),
@@ -53,10 +50,6 @@ export const GlobalHeaderComponent = ({
       tooltip: props.tooltip ?? '',
       to: props.to ?? '',
     };
-
-    if (props.icon === 'support' && buttonPros.to === '') {
-      buttonPros.to = supportUrl ?? '';
-    }
     return buttonPros;
   };
 
@@ -88,24 +81,13 @@ export const GlobalHeaderComponent = ({
   const renderComponents = (mountPoints: GlobalHeaderComponentMountPoint[]) =>
     mountPoints.map((mp, index) => {
       const to = mp.config?.props?.to;
-      const icon = mp.config?.props?.icon;
       const isExternal = to && isExternalUrl(to);
       const isInternalRoute = to && matchesFrontendRoute(to);
-      const shouldShowSupportIcon = shouldDisplaySupportIcon(icon, to);
 
-      const displayHeaderIcon =
-        isExternal || isInternalRoute || shouldShowSupportIcon;
+      const displayHeaderIcon = isExternal || isInternalRoute;
 
       const uniqueKey = `header-component-${index}`;
       switch (mp.config?.type) {
-        case ComponentType.SPACER:
-          return <mp.Component key={uniqueKey} />;
-        case ComponentType.SEARCH:
-          return (
-            <ErrorBoundary key={uniqueKey}>
-              <mp.Component />
-            </ErrorBoundary>
-          );
         case ComponentType.DROPDOWN_BUTTON:
           return (
             <ErrorBoundary key={uniqueKey}>
@@ -122,7 +104,11 @@ export const GlobalHeaderComponent = ({
             </ErrorBoundary>
           ) : null;
         default:
-          return null;
+          return (
+            <ErrorBoundary key={uniqueKey}>
+              <mp.Component {...mp.config?.props} />
+            </ErrorBoundary>
+          );
       }
     });
 

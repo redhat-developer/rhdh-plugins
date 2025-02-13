@@ -19,6 +19,7 @@ export enum ComponentType {
   LOGOUT = 'logout',
   SEARCH = 'search',
   SPACER = 'spacer',
+  SUPPORT_BUTTON = 'support_button',
 }
 
 // @public
@@ -43,6 +44,16 @@ export const defaultGlobalHeaderComponentsMountPoints: (
         slot: Slot;
         priority: number;
         key: string;
+        props?: undefined;
+      };
+    }
+  | {
+      Component: ComponentType_2<{}>;
+      config: {
+        type: ComponentType;
+        slot: Slot;
+        priority: number;
+        key?: undefined;
         props?: undefined;
       };
     }
@@ -98,8 +109,6 @@ export interface GlobalHeaderComponentMountPointConfig {
 export interface GlobalHeaderComponentProps {
   // (undocumented)
   globalHeaderMountPoints: GlobalHeaderComponentMountPoint[];
-  // (undocumented)
-  supportUrl?: string;
 }
 
 // @public
@@ -235,6 +244,37 @@ export interface SpacerProps {
   growFactor?: number;
   // (undocumented)
   minWidth?: number | string;
+}
+
+// @public (undocumented)
+export const SupportButton: ({
+  title,
+  tooltip,
+  color,
+  size,
+  to,
+}: SupportButtonProps) => React_2.JSX.Element | null;
+
+// @public (undocumented)
+export interface SupportButtonProps {
+  // (undocumented)
+  color?:
+    | 'inherit'
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'info'
+    | 'success'
+    | 'warning';
+  // (undocumented)
+  size?: 'small' | 'medium' | 'large';
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  to?: string;
+  // (undocumented)
+  tooltip?: string;
 }
 
 // (No @packageDocumentation comment for this package)
