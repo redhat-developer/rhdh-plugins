@@ -98,6 +98,8 @@ export const GlobalHeaderComponent = ({
 
       const uniqueKey = `header-component-${index}`;
       switch (mp.config?.type) {
+        case ComponentType.SPACER:
+          return <mp.Component key={uniqueKey} />;
         case ComponentType.SEARCH:
           return (
             <ErrorBoundary key={uniqueKey}>

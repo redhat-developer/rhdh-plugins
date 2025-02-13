@@ -30,6 +30,7 @@ export type { HeaderLinkProps } from './components/HeaderLinkComponent/HeaderLin
 export type { MenuItemConfig } from './components/HeaderDropdownComponent/MenuSection';
 export type { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
 export type { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
+export type { SpacerProps } from './components/Spacer/Spacer';
 export type {
   GlobalHeaderComponentMountPoint,
   GlobalHeaderComponentMountPointConfig,
@@ -225,6 +226,22 @@ export const LogoutButton: React.ComponentType = globalHeaderPlugin.provide(
         import('./components/HeaderButtonComponent/LogoutButton').then(
           m => m.LogoutButton,
         ),
+    },
+  }),
+);
+
+/**
+ * Spacer component that allow users to add a flexibel spacing between components.
+ *
+ * Supports two props: `growFactor` with default 1 and `minWidth` width default 8 pixels.
+ *
+ * @public
+ */
+export const Spacer = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'Spacer',
+    component: {
+      lazy: () => import('./components/Spacer/Spacer').then(m => m.Spacer),
     },
   }),
 );

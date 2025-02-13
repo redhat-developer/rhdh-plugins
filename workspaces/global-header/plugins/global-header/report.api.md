@@ -18,6 +18,7 @@ export enum ComponentType {
   LIST = 'list',
   LOGOUT = 'logout',
   SEARCH = 'search',
+  SPACER = 'spacer',
 }
 
 // @public
@@ -221,6 +222,20 @@ export type SoftwareTemplatesSectionProps = {
   handleClose: () => void;
   hideDivider?: boolean;
 };
+
+// @public
+export const Spacer: ({
+  growFactor,
+  minWidth,
+}: SpacerProps) => React_2.JSX.Element;
+
+// @public (undocumented)
+export interface SpacerProps {
+  // (undocumented)
+  growFactor?: number;
+  // (undocumented)
+  minWidth?: number | string;
+}
 
 // (No @packageDocumentation comment for this package)
 ```

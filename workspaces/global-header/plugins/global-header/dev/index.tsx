@@ -42,6 +42,8 @@ import {
   GlobalHeader,
   globalHeaderPlugin,
   NotificationBanner,
+  Slot,
+  Spacer,
 } from '../src/plugin';
 
 import {
@@ -224,9 +226,19 @@ createDevApp()
       <Providers
         mountPoints={{
           'global.header/component':
-            defaultGlobalHeaderComponentsMountPoints.filter(
-              mp => mp.config.type !== ComponentType.SEARCH,
-            ),
+            defaultGlobalHeaderComponentsMountPoints.map(mp => {
+              if (mp.config.type === ComponentType.SEARCH) {
+                return {
+                  Component: Spacer,
+                  config: {
+                    type: ComponentType.SPACER,
+                    slot: Slot.HEADER_START,
+                    priority: 100, // the greater the number, the more to the left it will be
+                  },
+                };
+              }
+              return mp;
+            }),
           'global.header/create': defaultCreateDropdownMountPoints,
           'global.header/profile': defaultProfileDropdownMountPoints,
         }}
