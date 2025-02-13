@@ -38,8 +38,10 @@ backend:
     externalAccess:
       - type: static
         options:
-          token: ${EXTERNAL_SERVICE_TOKEN}
-          subject: cicd-system-completion-events
+          # Notice: This test-token can be used to add notifications to the backstage demo application.
+          # Production enironments should define a token in a more secure way that supports rotation.
+          token: test-token
+          subject: test-subject
 
 integrations:
   github:
@@ -87,20 +89,6 @@ auth:
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
-
-# notifications plugin config
-notifications:
-  processors:
-    email:
-      transportConfig:
-        transport: smtp
-        hostname: smtp.gmail.com
-        port: 587
-        username: test@gmail.com
-        password: test
-      sender: test@gmail.com
-      broadcastConfig:
-        receiver: 'users'
 
 catalog:
   import:

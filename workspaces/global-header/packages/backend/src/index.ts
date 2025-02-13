@@ -63,7 +63,7 @@ backend.add(import('@backstage/plugin-kubernetes-backend'));
 
 // notifications plugin
 backend.add(import('@backstage/plugin-notifications-backend'));
-backend.add(import('@backstage/plugin-notifications-backend-module-email'));
+// backend.add(import('@backstage/plugin-notifications-backend-module-email'));
 backend.add(import('@backstage/plugin-events-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
