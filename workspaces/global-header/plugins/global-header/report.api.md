@@ -6,8 +6,6 @@
 /// <reference types="react" />
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { ComponentType as ComponentType_2 } from 'react';
-import { JSX as JSX_2 } from 'react';
 import { default as React_2 } from 'react';
 
 // @public
@@ -19,48 +17,17 @@ export enum ComponentType {
   LOGOUT = 'logout',
   SEARCH = 'search',
   SPACER = 'spacer',
+  SUPPORT_BUTTON = 'support_button',
 }
 
 // @public
-export const CreateDropdown: React_2.ComponentType<HeaderDropdownComponentProps>;
+export const CreateDropdown: () => React_2.JSX.Element | null;
 
 // @public
-export const defaultGlobalHeaderComponentsMountPoints: (
-  | {
-      Component: () => JSX_2.Element;
-      config: {
-        type: ComponentType;
-        slot: Slot;
-        priority: number;
-        key?: undefined;
-        props?: undefined;
-      };
-    }
-  | {
-      Component: ComponentType_2<{}>;
-      config: {
-        type: ComponentType;
-        slot: Slot;
-        priority: number;
-        key: string;
-        props?: undefined;
-      };
-    }
-  | {
-      Component: ComponentType_2<{}>;
-      config: {
-        type: ComponentType;
-        slot: Slot;
-        priority: number;
-        props: {
-          icon: string;
-          tooltip: string;
-          to: string;
-        };
-        key?: undefined;
-      };
-    }
-)[];
+export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[];
+
+// @public (undocumented)
+export const Divider: () => React_2.JSX.Element;
 
 // @public
 export const GlobalHeader: () => React_2.JSX.Element;
@@ -71,11 +38,10 @@ export const GlobalHeaderComponent: React_2.ComponentType<GlobalHeaderComponentP
 // @public
 export interface GlobalHeaderComponentMountPoint {
   // (undocumented)
-  Component: React.ComponentType<
-    HeaderDropdownComponentProps | HeaderIconButtonProps | {}
-  >;
+  Component: React.ComponentType<{}>;
   // (undocumented)
   config?: GlobalHeaderComponentMountPointConfig & {
+    layout?: Record<string, any>;
     props?: Record<string, any>;
   };
 }
@@ -83,66 +49,108 @@ export interface GlobalHeaderComponentMountPoint {
 // @public
 export interface GlobalHeaderComponentMountPointConfig {
   // (undocumented)
-  key?: string;
-  // (undocumented)
   priority?: number;
   // (undocumented)
-  size?: 'small' | 'medium' | 'large';
-  // (undocumented)
-  slot?: Slot;
-  // (undocumented)
-  type: ComponentType;
+  type?: ComponentType;
 }
 
 // @public
 export interface GlobalHeaderComponentProps {
   // (undocumented)
   globalHeaderMountPoints: GlobalHeaderComponentMountPoint[];
-  // (undocumented)
-  supportUrl?: string;
 }
 
 // @public
 export const globalHeaderPlugin: BackstagePlugin<{}, {}, {}>;
 
-// @public
-export interface HeaderDropdownComponentProps {
-  // (undocumented)
-  anchorEl: HTMLElement | null;
-  // (undocumented)
-  handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
-  // (undocumented)
-  setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
-}
+// @public (undocumented)
+export const HeaderButton: ({
+  title,
+  tooltip,
+  color,
+  size,
+  variant,
+  ariaLabel,
+  startIcon,
+  endIcon,
+  externalLinkIcon,
+  to,
+  style,
+}: HeaderButtonProps) => React_2.JSX.Element;
 
-// @public
-export const HeaderIconButton: React_2.ComponentType<HeaderIconButtonProps>;
-
-// @public
-export interface HeaderIconButtonProps {
+// @public (undocumented)
+export interface HeaderButtonProps {
   // (undocumented)
-  icon: string;
+  ariaLabel?: string;
   // (undocumented)
-  to?: string;
+  color?: 'inherit' | 'primary' | 'secondary' | 'default';
   // (undocumented)
-  tooltip?: string;
-}
-
-// @public
-export const HeaderLink: React_2.ComponentType<HeaderLinkProps>;
-
-// @public
-export interface HeaderLinkProps {
+  endIcon?: string;
   // (undocumented)
-  icon?: string;
+  externalLinkIcon?: boolean;
   // (undocumented)
-  subTitle?: string;
+  size?: 'small' | 'medium' | 'large';
   // (undocumented)
-  title?: string;
+  startIcon?: string;
+  // (undocumented)
+  style?: React_2.CSSProperties;
+  // (undocumented)
+  title: string;
   // (undocumented)
   to: string;
   // (undocumented)
   tooltip?: string;
+  // (undocumented)
+  variant?: 'text' | 'outlined' | 'contained';
+}
+
+// @public (undocumented)
+export const HeaderIcon: ({
+  icon,
+  size,
+  styles,
+}: HeaderIconProps) => React_2.JSX.Element | null;
+
+// @public (undocumented)
+export const HeaderIconButton: ({
+  title,
+  icon,
+  tooltip,
+  color,
+  size,
+  ariaLabel,
+  to,
+  style,
+}: HeaderIconButtonProps) => React_2.JSX.Element;
+
+// @public (undocumented)
+export interface HeaderIconButtonProps {
+  // (undocumented)
+  ariaLabel?: string;
+  // (undocumented)
+  color?: 'inherit' | 'primary' | 'secondary' | 'default';
+  // (undocumented)
+  icon: string;
+  // (undocumented)
+  size?: 'small' | 'medium' | 'large';
+  // (undocumented)
+  style?: React_2.CSSProperties;
+  // (undocumented)
+  title: string;
+  // (undocumented)
+  to: string;
+  // (undocumented)
+  tooltip?: string;
+}
+
+// @public (undocumented)
+export interface HeaderIconProps {
+  // (undocumented)
+  icon: string;
+  // (undocumented)
+  size?: 'small' | 'medium' | 'large';
+  // (undocumented)
+  styles?: React_2.CSSProperties;
 }
 
 // @public
@@ -151,7 +159,7 @@ export const LogoutButton: React_2.ComponentType;
 // @public
 export interface MenuItemConfig {
   // (undocumented)
-  Component: React_2.ComponentType<HeaderLinkProps | {}>;
+  Component: React_2.ComponentType<MenuItemLinkProps | {}>;
   // (undocumented)
   icon?: string;
   // (undocumented)
@@ -162,6 +170,23 @@ export interface MenuItemConfig {
   subLabel?: string;
   // (undocumented)
   type: string;
+}
+
+// @public
+export const MenuItemLink: React_2.ComponentType<MenuItemLinkProps>;
+
+// @public
+export interface MenuItemLinkProps {
+  // (undocumented)
+  icon?: string;
+  // (undocumented)
+  subTitle?: string;
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  to: string;
+  // (undocumented)
+  tooltip?: string;
 }
 
 // @public
@@ -192,8 +217,49 @@ export interface NotificationBannerProps {
   title: string;
 }
 
+// @public (undocumented)
+export const NotificationButton: ({
+  title,
+  tooltip,
+  color,
+  size,
+  badgeColor,
+  to,
+}: NotificationButtonProps) => React_2.JSX.Element | null;
+
+// @public (undocumented)
+export interface NotificationButtonProps {
+  // (undocumented)
+  badgeColor?:
+    | 'primary'
+    | 'secondary'
+    | 'default'
+    | 'error'
+    | 'info'
+    | 'success'
+    | 'warning';
+  // (undocumented)
+  color?:
+    | 'inherit'
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'info'
+    | 'success'
+    | 'warning';
+  // (undocumented)
+  size?: 'small' | 'medium' | 'large';
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  to?: string;
+  // (undocumented)
+  tooltip?: string;
+}
+
 // @public
-export const ProfileDropdown: React_2.ComponentType<HeaderDropdownComponentProps>;
+export const ProfileDropdown: () => React_2.JSX.Element | null;
 
 // @public
 export const RegisterAComponentSection: React_2.ComponentType<RegisterAComponentSectionProps>;
@@ -208,17 +274,10 @@ export type RegisterAComponentSectionProps = {
 export const SearchComponent: React_2.ComponentType;
 
 // @public
-export enum Slot {
-  HEADER_END = 'header-end',
-  HEADER_START = 'header-start',
-}
-
-// @public
 export const SoftwareTemplatesSection: React_2.ComponentType<SoftwareTemplatesSectionProps>;
 
 // @public
 export type SoftwareTemplatesSectionProps = {
-  items: MenuItemConfig[];
   handleClose: () => void;
   hideDivider?: boolean;
 };
@@ -235,6 +294,37 @@ export interface SpacerProps {
   growFactor?: number;
   // (undocumented)
   minWidth?: number | string;
+}
+
+// @public (undocumented)
+export const SupportButton: ({
+  title,
+  tooltip,
+  color,
+  size,
+  to,
+}: SupportButtonProps) => React_2.JSX.Element | null;
+
+// @public (undocumented)
+export interface SupportButtonProps {
+  // (undocumented)
+  color?:
+    | 'inherit'
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'info'
+    | 'success'
+    | 'warning';
+  // (undocumented)
+  size?: 'small' | 'medium' | 'large';
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  to?: string;
+  // (undocumented)
+  tooltip?: string;
 }
 
 // (No @packageDocumentation comment for this package)

@@ -6,3 +6,7 @@ plugins:
 nav:
   - About: index.md
   - Configuration: configuration.md
+  - Components:
+      - Button and icons: components/button-and-icons.md
+      - Divider: components/divider.md
+      - Spacer: components/spacer.md

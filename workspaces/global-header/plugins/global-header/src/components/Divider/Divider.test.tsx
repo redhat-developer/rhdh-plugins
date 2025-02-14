@@ -15,15 +15,15 @@
  */
 
 import React from 'react';
-import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints';
-import { GlobalHeaderComponent } from './GlobalHeaderComponent';
 
-export const GlobalHeader = () => {
-  const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
+import { render } from '@testing-library/react';
 
-  return (
-    <GlobalHeaderComponent
-      globalHeaderMountPoints={allGlobalHeaderMountPoints ?? []}
-    />
-  );
-};
+import { Divider } from './Divider';
+
+describe('Divider', () => {
+  it('render some default styles', () => {
+    const { debug, container } = render(<Divider />);
+    debug();
+    expect(container.firstElementChild?.nodeName).toEqual('HR');
+  });
+});

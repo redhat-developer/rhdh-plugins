@@ -17,13 +17,13 @@
 import React from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
-import HeaderItemContent from './HeaderItemContent';
+import { MenuItemLinkContent } from './MenuItemLinkContent';
 
 /**
  * Header Icon Button properties
  * @public
  */
-export interface HeaderLinkProps {
+export interface MenuItemLinkProps {
   to: string;
   title?: string;
   subTitle?: string;
@@ -31,13 +31,13 @@ export interface HeaderLinkProps {
   tooltip?: string;
 }
 
-export const HeaderLink = ({
+export const MenuItemLink = ({
   to,
   title,
   subTitle,
   icon,
   tooltip,
-}: HeaderLinkProps) => {
+}: MenuItemLinkProps) => {
   const headerLinkContent = () => (
     <Link
       to={to}
@@ -47,12 +47,16 @@ export const HeaderLink = ({
         width: '100%',
       }}
     >
-      <HeaderItemContent icon={icon} label={title} subLabel={subTitle} />
+      <MenuItemLinkContent icon={icon} label={title} subLabel={subTitle} />
     </Link>
   );
   return (
     <>
-      {tooltip && <Tooltip title={tooltip}>{headerLinkContent()}</Tooltip>}
+      {tooltip && (
+        <Tooltip title={tooltip}>
+          <div>{headerLinkContent()}</div>
+        </Tooltip>
+      )}
       {!tooltip && headerLinkContent()}
     </>
   );

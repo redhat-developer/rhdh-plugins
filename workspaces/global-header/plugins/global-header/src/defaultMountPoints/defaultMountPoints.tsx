@@ -13,99 +13,92 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LogoutButton } from '../components/HeaderButtonComponent/LogoutButton';
+import { LogoutButton } from '../components/LogoutButton/LogoutButton';
 import { CreateDropdown } from '../components/HeaderDropdownComponent/CreateDropdown';
 import { ProfileDropdown } from '../components/HeaderDropdownComponent/ProfileDropdown';
 import { RegisterAComponentSection } from '../components/HeaderDropdownComponent/RegisterAComponentSection';
 import { SoftwareTemplatesSection } from '../components/HeaderDropdownComponent/SoftwareTemplatesSection';
-import { HeaderIconButton } from '../components/HeaderIconButtonComponent/HeaderIconButton';
-import { HeaderLink } from '../components/HeaderLinkComponent/HeaderLink';
 import { SearchComponent } from '../components/SearchComponent/SearchComponent';
-import { ComponentType, Slot } from '../types';
+import { SupportButton } from '../components/SupportButton/SupportButton';
+import {
+  ComponentType,
+  CreateDropdownMountPoint,
+  GlobalHeaderComponentMountPoint,
+  ProfileDropdownMountPoint,
+} from '../types';
+import { NotificationButton } from '../components/NotificationButton/NotificationButton';
+import { Divider } from '../components/Divider/Divider';
+import { MenuItemLink } from '../components/MenuItemLink/MenuItemLink';
 
 /**
  * default Global Header Components mount points
  *
  * @public
  */
-export const defaultGlobalHeaderComponentsMountPoints = [
-  {
-    Component: SearchComponent,
-    config: {
-      type: ComponentType.SEARCH,
-      slot: Slot.HEADER_START,
-      priority: 100, // the greater the number, the more to the left it will be
-    },
-  },
-  {
-    Component: CreateDropdown as React.ComponentType,
-    config: {
-      type: ComponentType.DROPDOWN_BUTTON,
-      slot: Slot.HEADER_START,
-      priority: 90,
-      key: 'create',
-    },
-  },
-  {
-    Component: HeaderIconButton as React.ComponentType,
-    config: {
-      type: ComponentType.ICON_BUTTON,
-      slot: Slot.HEADER_START,
-      priority: 80,
-      props: {
-        icon: 'support',
-        tooltip: 'Support (external site)',
-        to: 'https://developers.redhat.com/rhdh/overview',
+export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[] =
+  [
+    {
+      Component: SearchComponent,
+      config: {
+        type: ComponentType.SEARCH,
+        priority: 1000, // the greater the number, the more to the left it will be
       },
     },
-  },
-  {
-    Component: HeaderIconButton as React.ComponentType,
-    config: {
-      type: ComponentType.ICON_BUTTON,
-      slot: Slot.HEADER_START,
-      priority: 70,
-      props: {
-        icon: 'notifications',
-        tooltip: 'Notifications',
-        to: '/notifications',
+    {
+      Component: CreateDropdown,
+      config: {
+        priority: 900,
       },
     },
-  },
-  {
-    Component: ProfileDropdown as React.ComponentType,
-    config: {
-      type: ComponentType.DROPDOWN_BUTTON,
-      slot: Slot.HEADER_END,
-      priority: 0, // the greater the number, the more to the left it will be
-      key: 'profile',
+    {
+      Component: SupportButton,
+      config: {
+        priority: 800,
+      },
     },
-  },
-];
+    {
+      Component: NotificationButton,
+      config: {
+        priority: 700,
+      },
+    },
+    {
+      Component: Divider,
+      config: {
+        priority: 200,
+      },
+    },
+    {
+      Component: ProfileDropdown,
+      config: {
+        priority: 100, // the greater the number, the more to the left it will be
+      },
+    },
+  ];
 
-export const defaultCreateDropdownMountPoints = [
+export const defaultCreateDropdownMountPoints: CreateDropdownMountPoint[] = [
   {
     Component: SoftwareTemplatesSection as React.ComponentType,
     config: {
       type: ComponentType.LIST,
-      priority: 10,
+      priority: 200,
     },
   },
   {
     Component: RegisterAComponentSection as React.ComponentType,
     config: {
       type: ComponentType.LINK,
-      priority: 0,
+      priority: 100,
     },
   },
 ];
 
-export const defaultProfileDropdownMountPoints = [
+export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
   {
-    Component: HeaderLink as React.ComponentType,
+    Component: MenuItemLink as React.ComponentType,
     config: {
       type: ComponentType.LINK,
-      priority: 10,
+      priority: 200,
       props: {
         title: 'Settings',
         icon: 'manageAccounts',
@@ -117,7 +110,7 @@ export const defaultProfileDropdownMountPoints = [
     Component: LogoutButton,
     config: {
       type: ComponentType.LOGOUT,
-      priority: 0,
+      priority: 100,
     },
   },
 ];

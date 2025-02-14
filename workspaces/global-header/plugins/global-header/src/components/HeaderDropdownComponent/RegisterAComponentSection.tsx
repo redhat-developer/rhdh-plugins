@@ -15,8 +15,8 @@
  */
 
 import React from 'react';
-import MenuSection from './MenuSection';
-import { HeaderLink } from '../HeaderLinkComponent/HeaderLink';
+import { MenuSection } from './MenuSection';
+import { MenuItemLink } from '../MenuItemLink/MenuItemLink';
 import { ComponentType } from '../../types';
 
 /**
@@ -43,7 +43,7 @@ export const RegisterAComponentSection = ({
           subLabel: 'Import it to the catalog page',
           link: '/catalog-import',
           icon: 'category',
-          Component: HeaderLink as React.ComponentType,
+          Component: MenuItemLink as React.ComponentType,
         },
       ]}
       handleClose={handleClose}

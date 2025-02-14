@@ -15,22 +15,6 @@
  */
 
 /**
- * Slot
- *
- * @public
- */
-export enum Slot {
-  /**
-   * Positions the global header component at the start of the global header
-   */
-  HEADER_START = 'header-start',
-  /**
-   * Positions the global header component at the end of the global header
-   */
-  HEADER_END = 'header-end',
-}
-
-/**
  * Component
  *
  * @public
@@ -40,6 +24,10 @@ export enum ComponentType {
    * Global Header spacer
    */
   SPACER = 'spacer',
+  /**
+   * Global Header support button
+   */
+  SUPPORT_BUTTON = 'support_button',
   /**
    * Global Header Component dropdown button
    */
@@ -67,36 +55,13 @@ export enum ComponentType {
 }
 
 /**
- * @public
- * Header Dropdown component properties
- */
-export interface HeaderDropdownComponentProps {
-  handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
-  anchorEl: HTMLElement | null;
-  setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
-}
-
-/**
- * Header Icon Button properties
- * @public
- */
-export interface HeaderIconButtonProps {
-  icon: string;
-  to?: string;
-  tooltip?: string;
-}
-
-/**
  * Global Header Config
  *
  * @public
  */
 export interface GlobalHeaderComponentMountPointConfig {
-  type: ComponentType;
-  key?: string;
-  slot?: Slot;
+  type?: ComponentType;
   priority?: number;
-  size?: 'small' | 'medium' | 'large';
 }
 
 /**
@@ -129,10 +94,9 @@ export interface ProfileDropdownMountPointConfig {
  * @public
  */
 export interface GlobalHeaderComponentMountPoint {
-  Component: React.ComponentType<
-    HeaderDropdownComponentProps | HeaderIconButtonProps | {}
-  >;
+  Component: React.ComponentType<{}>;
   config?: GlobalHeaderComponentMountPointConfig & {
+    layout?: Record<string, any>;
     props?: Record<string, any>;
   };
 }

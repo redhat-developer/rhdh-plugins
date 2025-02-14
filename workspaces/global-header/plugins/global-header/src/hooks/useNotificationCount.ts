@@ -15,23 +15,35 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useApiHolder } from '@backstage/core-plugin-api';
+import { configApiRef, useApi, useApiHolder } from '@backstage/core-plugin-api';
 import { notificationsApiRef } from '@backstage/plugin-notifications';
 import { useSignal } from '@backstage/plugin-signals-react';
 import { NotificationSignal } from '@backstage/plugin-notifications-common';
 
-export const useNotificationCount = (enabled: boolean) => {
+export const useNotificationCount = () => {
   const apiHolder = useApiHolder();
   const { lastSignal } = useSignal<NotificationSignal>('notifications');
+  const [available, setAvailable] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    if (!enabled) return;
+  const config = useApi(configApiRef);
+  const frontendPackages =
+    (config.getOptionalConfig('dynamicPlugins.frontend')?.get() as Record<
+      string,
+      any
+    >) ?? {};
+  const displayNotifications =
+    frontendPackages['backstage.plugin-notifications']?.dynamicRoutes?.some(
+      ({ path }: { path: string }) => path === '/notifications',
+    ) ?? false;
 
+  useEffect(() => {
     const notificationsApi = apiHolder.get(notificationsApiRef);
     if (!notificationsApi) {
       return;
     }
+
+    setAvailable(displayNotifications);
 
     const fetchUnreadCount = async () => {
       try {
@@ -46,10 +58,11 @@ export const useNotificationCount = (enabled: boolean) => {
     };
 
     fetchUnreadCount();
-  }, [apiHolder, enabled]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiHolder]);
 
   useEffect(() => {
-    if (!enabled || !lastSignal) return;
+    if (!lastSignal) return;
 
     switch (lastSignal.action) {
       case 'notification_read':
@@ -66,7 +79,7 @@ export const useNotificationCount = (enabled: boolean) => {
       default:
         break;
     }
-  }, [lastSignal, enabled]);
+  }, [lastSignal]);
 
-  return enabled ? unreadCount : 0;
+  return { available, unreadCount };
 };

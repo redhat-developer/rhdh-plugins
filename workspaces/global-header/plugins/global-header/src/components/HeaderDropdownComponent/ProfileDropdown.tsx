@@ -15,25 +15,24 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import HeaderDropdownComponent from './HeaderDropdownComponent';
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
-import Typography from '@mui/material/Typography';
 import {
   identityApiRef,
   useApi,
   ProfileInfo,
 } from '@backstage/core-plugin-api';
-import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
-import { ComponentType, HeaderDropdownComponentProps } from '../../types';
-import MenuSection from './MenuSection';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
+import Typography from '@mui/material/Typography';
 import { lighten } from '@mui/material/styles';
+import { HeaderDropdownComponent } from './HeaderDropdownComponent';
+import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
+import { ComponentType } from '../../types';
+import { MenuSection } from './MenuSection';
+import { useDropdownManager } from '../../hooks';
 
-export const ProfileDropdown = ({
-  handleMenu,
-  anchorEl,
-  setAnchorEl,
-}: HeaderDropdownComponentProps) => {
+export const ProfileDropdown = () => {
+  const { anchorEl, handleOpen, handleClose } = useDropdownManager();
+
   const identityApi = useApi(identityApiRef);
   const [user, setUser] = useState<ProfileInfo>();
   const profileDropdownMountPoints = useProfileDropdownMountPoints();
@@ -108,15 +107,11 @@ export const ProfileDropdown = ({
           alignItems: 'center',
         },
       }}
-      buttonClick={handleMenu}
+      onOpen={handleOpen}
+      onClose={handleClose}
       anchorEl={anchorEl}
-      setAnchorEl={setAnchorEl}
     >
-      <MenuSection
-        hideDivider
-        items={menuItems}
-        handleClose={() => setAnchorEl(null)}
-      />
+      <MenuSection hideDivider items={menuItems} handleClose={handleClose} />
     </HeaderDropdownComponent>
   );
 };
