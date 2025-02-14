@@ -107,6 +107,7 @@ export interface HeaderButtonProps {
 // @public (undocumented)
 export const HeaderIcon: ({
   icon,
+  size,
   styles,
 }: HeaderIconProps) => React_2.JSX.Element | null;
 
@@ -146,6 +147,8 @@ export interface HeaderIconButtonProps {
 export interface HeaderIconProps {
   // (undocumented)
   icon: string;
+  // (undocumented)
+  size?: 'small' | 'medium' | 'large';
   // (undocumented)
   styles?: React_2.CSSProperties;
 }
@@ -222,7 +225,7 @@ export const NotificationButton: ({
   size,
   badgeColor,
   to,
-}: NotificationButtonProps) => React_2.JSX.Element;
+}: NotificationButtonProps) => React_2.JSX.Element | null;
 
 // @public (undocumented)
 export interface NotificationButtonProps {
@@ -275,7 +278,6 @@ export const SoftwareTemplatesSection: React_2.ComponentType<SoftwareTemplatesSe
 
 // @public
 export type SoftwareTemplatesSectionProps = {
-  items: MenuItemConfig[];
   handleClose: () => void;
   hideDivider?: boolean;
 };
