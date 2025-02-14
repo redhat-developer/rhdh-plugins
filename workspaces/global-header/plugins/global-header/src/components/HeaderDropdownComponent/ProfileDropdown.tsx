@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import HeaderDropdownComponent from './HeaderDropdownComponent';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
@@ -25,27 +25,38 @@ import {
   ProfileInfo,
 } from '@backstage/core-plugin-api';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
-import { ComponentType } from '../../types';
+import { ComponentType, HeaderDropdownComponentProps } from '../../types';
 import MenuSection from './MenuSection';
-
-/**
- * @public
- * ProfileDropdown component properties
- */
-export interface ProfileDropdownProps {
-  handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
-  anchorEl: HTMLElement | null;
-  setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
-}
+import { lighten } from '@mui/material/styles';
 
 export const ProfileDropdown = ({
   handleMenu,
   anchorEl,
   setAnchorEl,
-}: ProfileDropdownProps) => {
+}: HeaderDropdownComponentProps) => {
   const identityApi = useApi(identityApiRef);
   const [user, setUser] = useState<ProfileInfo>();
   const profileDropdownMountPoints = useProfileDropdownMountPoints();
+
+  const headerRef = useRef<HTMLElement | null>(null);
+  const [bgColor, setBgColor] = useState('#3C3F42');
+
+  useEffect(() => {
+    if (headerRef.current) {
+      const computedStyle = window.getComputedStyle(headerRef.current);
+      const baseColor = computedStyle.backgroundColor;
+      setBgColor(lighten(baseColor, 0.2));
+    }
+  }, []);
+
+  useEffect(() => {
+    const container = document.getElementById('global-header');
+    if (container) {
+      const computedStyle = window.getComputedStyle(container);
+      const baseColor = computedStyle.backgroundColor;
+      setBgColor(lighten(baseColor, 0.2));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -69,6 +80,10 @@ export const ProfileDropdown = ({
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
   }, [profileDropdownMountPoints]);
 
+  if (menuItems.length === 0) {
+    return null;
+  }
+
   return (
     <HeaderDropdownComponent
       buttonContent={
@@ -80,7 +95,7 @@ export const ProfileDropdown = ({
           <KeyboardArrowDownOutlinedIcon
             sx={{
               marginLeft: '1rem',
-              bgcolor: '#383838',
+              bgcolor: bgColor,
               borderRadius: '25%',
             }}
           />
@@ -105,5 +120,3 @@ export const ProfileDropdown = ({
     </HeaderDropdownComponent>
   );
 };
-
-export default ProfileDropdown;

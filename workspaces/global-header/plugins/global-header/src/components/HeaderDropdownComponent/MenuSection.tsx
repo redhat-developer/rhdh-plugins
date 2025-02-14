@@ -76,7 +76,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
           disableTouchRipple
           onClick={handleClose}
         >
-          {optionalLink && optionalLinkLabel && (
+          {optionalLink && optionalLinkLabel && items.length > 0 && (
             <Link
               to={optionalLink}
               underline="none"

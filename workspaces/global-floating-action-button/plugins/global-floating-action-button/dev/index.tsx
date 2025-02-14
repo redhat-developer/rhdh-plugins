@@ -98,7 +98,7 @@ const createPage = ({
     api: {
       dynamicRootConfig: {
         mountPoints: {
-          'global.floatingactionbutton/component': [
+          'global.floatingactionbutton/config': [
             {
               staticJSXContent: null,
               config: {

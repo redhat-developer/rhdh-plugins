@@ -14,4 +14,26 @@
  * limitations under the License.
  */
 
-export { ExampleComponent } from './ExampleComponent';
+import React from 'react';
+
+/**
+ * @public
+ */
+export interface SpacerProps {
+  growFactor?: number;
+  minWidth?: number | string;
+}
+
+/**
+ * @public
+ */
+export const Spacer = ({ growFactor = 1, minWidth = 1 }: SpacerProps) => {
+  return (
+    <div
+      style={{
+        flexGrow: growFactor,
+        minWidth: typeof minWidth === 'number' ? minWidth * 8 : minWidth,
+      }}
+    />
+  );
+};

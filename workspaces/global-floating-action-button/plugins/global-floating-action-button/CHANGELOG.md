@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.0.0
+
+### Major Changes
+
+- ca96fed: update the global floating button mountpoint name in the dynamic configuration
+
 ## 0.0.6
 
 ### Patch Changes

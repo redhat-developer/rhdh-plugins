@@ -2,4 +2,4 @@
 '@red-hat-developer-hub/backstage-plugin-orchestrator': patch
 ---
 
-add "view variables" dialog
+[rc9] MTA displays two statuses in results when failing with error

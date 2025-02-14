@@ -39,25 +39,22 @@ const Listbox = styled('ul')(
   padding: 0;
   margin: 0;
   min-width: 160px;
-  border-radius: 3px;
+  border-radius: 4px;
   text-decoration: none;
   list-style: none;
   overflow: auto;
   outline: 1;
-  background: ${theme.palette.mode === 'dark' ? '#383838' : '#fff'};
-  border: 1px solid ${
-    theme.palette.mode === 'dark'
-      ? theme.palette.divider
-      : theme.palette.background.default
-  };
+  background: ${theme.palette.background.paper};
+  border: 1px solid ${theme.palette.divider};
   color: ${
     theme.palette.mode === 'dark'
       ? theme.palette.text.disabled
       : theme.palette.text.primary
   };
-  box-shadow: 0 4px 6px ${
-    theme.palette.mode === 'dark' ? 'rgba(0,0,0, 0.50)' : 'rgba(0,0,0, 0.05)'
-  };
+  boxShadow: theme.palette.mode === 'dark'
+    ? '0 2px 6px 2px rgba(0,0,0,0.50), 0 1px 2px 0 rgba(0,0,0,0.50)'
+    : '0 2px 6px 2px rgba(0,0,0,0.15), 0 1px 2px 0 rgba(0,0,0,0.30)',
+  max-height: 60vh;
   z-index: 1;
   `,
 );
