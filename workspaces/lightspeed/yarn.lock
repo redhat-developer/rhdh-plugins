@@ -7818,17 +7818,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:^0.3.0":
-  version: 0.3.16
-  resolution: "@langchain/openai@npm:0.3.16"
+"@langchain/openai@npm:^0.4.0":
+  version: 0.4.4
+  resolution: "@langchain/openai@npm:0.4.4"
   dependencies:
     js-tiktoken: ^1.0.12
     openai: ^4.77.0
     zod: ^3.22.4
     zod-to-json-schema: ^3.22.3
   peerDependencies:
-    "@langchain/core": ">=0.2.26 <0.4.0"
-  checksum: 98147633629ec918434307de722e9aa7fb018a95d4e443d44d0bc782cc19e77a3a398eb07b691a78ff4a547ed4b707f941627f9a15e4a0803f5c24e0e4eac94b
+    "@langchain/core": ">=0.3.39 <0.4.0"
+  checksum: fb8fe03764637a790b47f4a0c7d7050c796b43a4c03590e77b00c3183c52581f52d4077cec7b57ad4eeb7710d3bbbf1d8286e225da5e844580592d4e3218b1f2
   languageName: node
   linkType: hard
 
@@ -10339,7 +10339,7 @@ __metadata:
     "@backstage/plugin-permission-node": ^0.8.7
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
     "@langchain/core": ^0.3.0
-    "@langchain/openai": ^0.3.0
+    "@langchain/openai": ^0.4.0
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@types/express": 4.17.21
