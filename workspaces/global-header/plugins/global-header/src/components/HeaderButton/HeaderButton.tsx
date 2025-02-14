@@ -71,7 +71,11 @@ export const HeaderButton = ({
   );
 
   if (tooltip) {
-    return <Tooltip title={tooltip}>{button}</Tooltip>;
+    return (
+      <Tooltip title={tooltip}>
+        <div>{button}</div>
+      </Tooltip>
+    );
   }
 
   return button;

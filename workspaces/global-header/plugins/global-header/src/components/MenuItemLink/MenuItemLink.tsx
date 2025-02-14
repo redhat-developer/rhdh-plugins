@@ -52,7 +52,11 @@ export const MenuItemLink = ({
   );
   return (
     <>
-      {tooltip && <Tooltip title={tooltip}>{headerLinkContent()}</Tooltip>}
+      {tooltip && (
+        <Tooltip title={tooltip}>
+          <div>{headerLinkContent()}</div>
+        </Tooltip>
+      )}
       {!tooltip && headerLinkContent()}
     </>
   );

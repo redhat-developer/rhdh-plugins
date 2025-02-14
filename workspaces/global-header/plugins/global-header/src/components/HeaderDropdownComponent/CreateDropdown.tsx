@@ -68,6 +68,7 @@ export const CreateDropdown = () => {
           '&:hover, &.Mui-focusVisible': {
             border: '1px solid #fff',
           },
+          mr: 1.5,
         },
       }}
       onOpen={handleOpen}

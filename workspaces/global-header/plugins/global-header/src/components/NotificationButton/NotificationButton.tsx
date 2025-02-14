@@ -76,21 +76,23 @@ export const NotificationButton = ({
 
   return (
     <Tooltip title={tooltip ?? title}>
-      <IconButton
-        component={Link}
-        color={color}
-        size={size}
-        to={to}
-        aria-label={title}
-      >
-        {unreadCount > 0 ? (
-          <Badge badgeContent={unreadCount} color={badgeColor} max={999}>
+      <div>
+        <IconButton
+          component={Link}
+          color={color}
+          size={size}
+          to={to}
+          aria-label={title}
+        >
+          {unreadCount > 0 ? (
+            <Badge badgeContent={unreadCount} color={badgeColor} max={999}>
+              <NotificationIcon fontSize={size} />
+            </Badge>
+          ) : (
             <NotificationIcon fontSize={size} />
-          </Badge>
-        ) : (
-          <NotificationIcon fontSize={size} />
-        )}
-      </IconButton>
+          )}
+        </IconButton>
+      </div>
     </Tooltip>
   );
 };

@@ -61,16 +61,18 @@ export const HeaderIconButton = ({
 
   return (
     <Tooltip title={tooltip ?? title}>
-      <IconButton
-        LinkComponent={Link}
-        color={color}
-        size={size}
-        aria-label={ariaLabel ?? title}
-        {...linkProps} // to={to} isn't supported
-        sx={style}
-      >
-        <HeaderIcon icon={icon} size={size} />
-      </IconButton>
+      <div>
+        <IconButton
+          LinkComponent={Link}
+          color={color}
+          size={size}
+          aria-label={ariaLabel ?? title}
+          {...linkProps} // to={to} isn't supported
+          sx={style}
+        >
+          <HeaderIcon icon={icon} size={size} />
+        </IconButton>
+      </div>
     </Tooltip>
   );
 };
