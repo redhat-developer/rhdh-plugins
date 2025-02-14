@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
-
-import { catalogApiRef } from '@backstage/plugin-catalog-react';
-import { useApi } from '@backstage/core-plugin-api';
-import { Entity } from '@backstage/catalog-model';
+import React, { useMemo } from 'react';
 
 import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 import { ComponentType } from '../../types';
 import { MenuItemConfig } from './MenuSection';
-import { MenuItemLink } from '../MenuItemLink/MenuItemLink';
 import { useCreateDropdownMountPoints } from '../../hooks/useCreateDropdownMountPoints';
 import { useDropdownManager } from '../../hooks';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
@@ -44,40 +37,7 @@ interface SectionComponentProps {
 export const CreateDropdown = () => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
 
-  const catalogApi = useApi(catalogApiRef);
-  const [entities, setEntities] = useState<Entity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const createDropdownMountPoints = useCreateDropdownMountPoints();
-
-  useEffect(() => {
-    const fetchEntities = async () => {
-      try {
-        const response = await catalogApi.getEntities({
-          filter: { kind: ['Template'] },
-          limit: 7,
-        });
-        setEntities(response.items);
-      } catch (err) {
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEntities();
-  }, [catalogApi]);
-
-  const items = useMemo(() => {
-    return entities
-      .filter(e => e.kind === 'Template')
-      .map(m => ({
-        Component: MenuItemLink as React.ComponentType,
-        type: ComponentType.LINK,
-        label: m.metadata.title ?? m.metadata.name,
-        link: `/create/templates/default/${m.metadata.name}`,
-      }));
-  }, [entities]);
 
   const menuSections = useMemo(() => {
     return (createDropdownMountPoints ?? [])
@@ -88,16 +48,6 @@ export const CreateDropdown = () => {
       }))
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
   }, [createDropdownMountPoints]);
-
-  if (error) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" p={2}>
-        <Typography variant="body1" color="error">
-          Error fetching templates
-        </Typography>
-      </Box>
-    );
-  }
 
   if (menuSections.length === 0) {
     return null;
@@ -112,7 +62,6 @@ export const CreateDropdown = () => {
       }
       buttonProps={{
         variant: 'outlined',
-        disabled: loading,
         sx: {
           color: '#fff',
           border: '1px solid rgba(255, 255, 255, 0.5)',
@@ -130,7 +79,6 @@ export const CreateDropdown = () => {
           key={`menu-section-${index.toString()}`}
           hideDivider={index === menuSections.length - 1}
           handleClose={handleClose}
-          {...(section.type === ComponentType.LIST ? { items } : {})}
         />
       ))}
     </HeaderDropdownComponent>
