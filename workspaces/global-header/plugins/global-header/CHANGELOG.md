@@ -1,5 +1,26 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 0.1.0
+
+### Minor Changes
+
+- f35b797: First version of Global Header plugin with the following components:
+
+  - GlobalHeaderComponent
+  - SearchComponent
+  - CreateDropdown
+    - SoftwareTemplatesSection
+    - RegisterAComponentSection
+  - ProfileDropdown
+    - LogoutButton
+  - HeaderButton
+  - HeaderIcon
+  - HeaderIconButton
+  - MenuItemLink
+  - Spacer
+  - Divider
+  - NotificationBanner
+
 ## 0.0.4
 
 ### Patch Changes
