@@ -23,13 +23,18 @@ import Box from '@mui/material/Box';
  */
 export interface HeaderIconProps {
   icon: string;
+  size?: 'small' | 'medium' | 'large';
   styles?: React.CSSProperties;
 }
 
 /**
  * @public
  */
-export const HeaderIcon = ({ icon, styles }: HeaderIconProps) => {
+export const HeaderIcon = ({
+  icon,
+  size = 'small',
+  styles,
+}: HeaderIconProps) => {
   const app = useApp();
   if (!icon) {
     return null;
@@ -39,7 +44,7 @@ export const HeaderIcon = ({ icon, styles }: HeaderIconProps) => {
   if (SystemIcon) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', ...styles }}>
-        <SystemIcon fontSize="small" />
+        <SystemIcon fontSize={size} />
       </Box>
     );
   }
@@ -47,7 +52,7 @@ export const HeaderIcon = ({ icon, styles }: HeaderIconProps) => {
   if (icon.startsWith('<svg')) {
     const svgDataUri = `data:image/svg+xml;base64,${btoa(icon)}`;
     return (
-      <MuiIcon sx={{ fontSize: 20, ...styles }}>
+      <MuiIcon fontSize={size} sx={{ ...styles }}>
         <img src={svgDataUri} alt="" />
       </MuiIcon>
     );
@@ -60,7 +65,8 @@ export const HeaderIcon = ({ icon, styles }: HeaderIconProps) => {
   ) {
     return (
       <MuiIcon
-        sx={{ fontSize: 20, ...styles }}
+        fontSize={size}
+        sx={styles}
         baseClassName="material-icons-outlined"
       >
         <img src={icon} alt="" />
@@ -69,7 +75,7 @@ export const HeaderIcon = ({ icon, styles }: HeaderIconProps) => {
   }
 
   return (
-    <MuiIcon style={{ fontSize: 20 }} baseClassName="material-icons-outlined">
+    <MuiIcon fontSize={size} baseClassName="material-icons-outlined">
       {icon}
     </MuiIcon>
   );

@@ -45,7 +45,7 @@ export const HeaderButton = ({
   title,
   tooltip,
   color = 'inherit',
-  size,
+  size = 'small',
   variant,
   ariaLabel,
   startIcon,
@@ -60,8 +60,8 @@ export const HeaderButton = ({
       size={size}
       variant={variant}
       aria-label={ariaLabel}
-      startIcon={startIcon ? <HeaderIcon icon={startIcon} /> : null}
-      endIcon={endIcon ? <HeaderIcon icon={endIcon} /> : null}
+      startIcon={startIcon ? <HeaderIcon icon={startIcon} size={size} /> : null}
+      endIcon={endIcon ? <HeaderIcon icon={endIcon} size={size} /> : null}
       externalLinkIcon={externalLinkIcon}
       to={to}
       style={style}

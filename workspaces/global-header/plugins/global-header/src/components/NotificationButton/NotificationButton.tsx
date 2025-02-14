@@ -64,7 +64,7 @@ export const NotificationButton = ({
   title = 'Notifications',
   tooltip,
   color = 'inherit',
-  size = 'medium',
+  size = 'small',
   badgeColor = 'error',
   to = '/notifications',
 }: NotificationButtonProps) => {
@@ -81,10 +81,10 @@ export const NotificationButton = ({
       >
         {unreadCount > 0 ? (
           <Badge badgeContent={unreadCount} color={badgeColor} max={999}>
-            <NotificationIcon />
+            <NotificationIcon fontSize={size} />
           </Badge>
         ) : (
-          <NotificationIcon />
+          <NotificationIcon fontSize={size} />
         )}
       </IconButton>
     </Tooltip>

@@ -44,6 +44,7 @@ export const MenuItemLinkContent: React.FC<MenuItemLinkContentProps> = ({
       {icon && (
         <HeaderIcon
           icon={icon}
+          size="small"
           styles={
             label
               ? {

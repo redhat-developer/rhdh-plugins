@@ -47,7 +47,7 @@ export const HeaderIconButton = ({
   icon,
   tooltip,
   color = 'inherit',
-  size,
+  size = 'small',
   ariaLabel,
   to,
   style,
@@ -69,7 +69,7 @@ export const HeaderIconButton = ({
         {...linkProps} // to={to} isn't supported
         sx={style}
       >
-        <HeaderIcon icon={icon} />
+        <HeaderIcon icon={icon} size={size} />
       </IconButton>
     </Tooltip>
   );
