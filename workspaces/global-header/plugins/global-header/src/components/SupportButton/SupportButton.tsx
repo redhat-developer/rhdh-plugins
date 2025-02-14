@@ -67,15 +67,17 @@ export const SupportButton = ({
 
   return (
     <Tooltip title={tooltip ?? title}>
-      <IconButton
-        component={Link}
-        color={color}
-        size={size}
-        to={supportUrl}
-        aria-label={title}
-      >
-        <HelpIcon fontSize={size} />
-      </IconButton>
+      <div>
+        <IconButton
+          component={Link}
+          color={color}
+          size={size}
+          to={supportUrl}
+          aria-label={title}
+        >
+          <HelpIcon fontSize={size} />
+        </IconButton>
+      </div>
     </Tooltip>
   );
 };
