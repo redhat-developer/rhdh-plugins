@@ -43,9 +43,13 @@ backend:
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
 integrations: {}
-# integrations:
-#   github:
-#     - token: ${GITHUB_TOKEN}
+#integrations:
+#  github:
+#    - host: github.com
+#      token: ${GITHUB_TOKEN}
+#  gitlab:
+#    - host: gitlab.com
+#      token: ${GITLAB_TOKEN}
 
 proxy:
   '/quay/api':

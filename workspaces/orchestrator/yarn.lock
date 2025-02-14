@@ -4636,6 +4636,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-catalog-backend-module-gitlab@npm:^0.6.2":
+  version: 0.6.2
+  resolution: "@backstage/plugin-catalog-backend-module-gitlab@npm:0.6.2"
+  dependencies:
+    "@backstage/backend-defaults": ^0.7.0
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/catalog-model": ^1.7.3
+    "@backstage/config": ^1.3.2
+    "@backstage/integration": ^1.16.1
+    "@backstage/plugin-catalog-common": ^1.1.3
+    "@backstage/plugin-catalog-node": ^1.15.1
+    "@backstage/plugin-events-node": ^0.4.7
+    "@gitbeaker/rest": ^40.0.3
+    lodash: ^4.17.21
+    node-fetch: ^2.7.0
+    uuid: ^11.0.0
+  checksum: a3aa0e31f48dbf4b509efbb399ba3b6020f19594be99dd711657de6c210675658f0aabcbcfb804eb2abec2c518f3e0d40211d13190c9d5867b85c03fe017ac07
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-catalog-backend-module-logs@npm:^0.1.3":
   version: 0.1.4
   resolution: "@backstage/plugin-catalog-backend-module-logs@npm:0.1.4"
@@ -4703,14 +4723,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-common@npm:^1.1.0, @backstage/plugin-catalog-common@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@backstage/plugin-catalog-common@npm:1.1.1"
+"@backstage/plugin-catalog-common@npm:^1.1.0, @backstage/plugin-catalog-common@npm:^1.1.1, @backstage/plugin-catalog-common@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@backstage/plugin-catalog-common@npm:1.1.3"
   dependencies:
-    "@backstage/catalog-model": ^1.7.1
-    "@backstage/plugin-permission-common": ^0.8.2
-    "@backstage/plugin-search-common": ^1.2.15
-  checksum: de2205ef4ab6ce43dd46d20daed31b9fd5d395b0d78d0e579c7269a5be0741f65ccc690c2346b5945fdb1c5a11a384b9745cdaa495997a179bea9ed55fc5df86
+    "@backstage/catalog-model": ^1.7.3
+    "@backstage/plugin-permission-common": ^0.8.4
+    "@backstage/plugin-search-common": ^1.2.17
+  checksum: 320551fc176152d6566cc7dfcd452e9a353119b9415275c7d2cf6bff5a73a82f064a522a397bb1dca9c89301a2c25d7f4412e86fa8f616b420764858aee411ff
   languageName: node
   linkType: hard
 
@@ -4784,19 +4804,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-node@npm:^1.13.1, @backstage/plugin-catalog-node@npm:^1.14.0":
-  version: 1.14.0
-  resolution: "@backstage/plugin-catalog-node@npm:1.14.0"
+"@backstage/plugin-catalog-node@npm:^1.13.1, @backstage/plugin-catalog-node@npm:^1.14.0, @backstage/plugin-catalog-node@npm:^1.15.1":
+  version: 1.15.1
+  resolution: "@backstage/plugin-catalog-node@npm:1.15.1"
   dependencies:
-    "@backstage/backend-plugin-api": ^1.0.2
-    "@backstage/catalog-client": ^1.8.0
-    "@backstage/catalog-model": ^1.7.1
-    "@backstage/errors": ^1.2.5
-    "@backstage/plugin-catalog-common": ^1.1.1
-    "@backstage/plugin-permission-common": ^0.8.2
-    "@backstage/plugin-permission-node": ^0.8.5
-    "@backstage/types": ^1.2.0
-  checksum: a7f88e0a58d9682346a0d54743f954d967fb795c771b75d52c8ce3959a5ece5725f57b8a36d9bae934935c7c5e7ae11822817a8c7cdfde05bb6c532c72b2580c
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/catalog-client": ^1.9.1
+    "@backstage/catalog-model": ^1.7.3
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-catalog-common": ^1.1.3
+    "@backstage/plugin-permission-common": ^0.8.4
+    "@backstage/plugin-permission-node": ^0.8.7
+    "@backstage/types": ^1.2.1
+  checksum: de90ce3a6d3114a2250fe52e4b8e41602c475233d6749fdc8fc151f8d28fb2c71862483489471ddde519b67a337e8e12e352491cf6730605b505b41d0abaed5a
   languageName: node
   linkType: hard
 
@@ -5332,6 +5352,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/plugin-scaffolder-backend-module-gitlab@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "@backstage/plugin-scaffolder-backend-module-gitlab@npm:0.7.1"
+  dependencies:
+    "@backstage/backend-common": ^0.25.0
+    "@backstage/backend-plugin-api": ^1.1.1
+    "@backstage/config": ^1.3.2
+    "@backstage/errors": ^1.2.7
+    "@backstage/integration": ^1.16.1
+    "@backstage/plugin-scaffolder-node": ^0.6.3
+    "@gitbeaker/rest": ^41.2.0
+    luxon: ^3.0.0
+    winston: ^3.2.1
+    yaml: ^2.0.0
+    zod: ^3.22.4
+  checksum: f006a6ee0c9b594341ece5bde5d0c17815edcbcc331209b658a38ccd19d44acc04007b2261f3e3df755f87c8b9a2359fdfd8bf73d27a4945e547f271101cae3d
+  languageName: node
+  linkType: hard
+
 "@backstage/plugin-scaffolder-backend@npm:^1.26.2":
   version: 1.26.2
   resolution: "@backstage/plugin-scaffolder-backend@npm:1.26.2"
@@ -5686,13 +5725,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-common@npm:^1.2.14, @backstage/plugin-search-common@npm:^1.2.15":
-  version: 1.2.15
-  resolution: "@backstage/plugin-search-common@npm:1.2.15"
+"@backstage/plugin-search-common@npm:^1.2.14, @backstage/plugin-search-common@npm:^1.2.15, @backstage/plugin-search-common@npm:^1.2.17":
+  version: 1.2.17
+  resolution: "@backstage/plugin-search-common@npm:1.2.17"
   dependencies:
-    "@backstage/plugin-permission-common": ^0.8.2
-    "@backstage/types": ^1.2.0
-  checksum: 9ea3aafef93074a59127a3e775f82fca1358d330524312c64baaca921baa85e5d80a4042ede050e492ef43c9b6ff9f6eb0a4ea81cb40e09f38834dfc1b57cd57
+    "@backstage/plugin-permission-common": ^0.8.4
+    "@backstage/types": ^1.2.1
+  checksum: 014ac5b4002daa36d2e3c8096d4f64d1ccc9a2b7733de43b6e95bae59e3eaa4f3d32f675b7c02b36b6fbb3c9a3828803fcd4b415bb930db1ac7da5976251de7e
   languageName: node
   linkType: hard
 
@@ -7604,6 +7643,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gitbeaker/core@npm:^40.6.0":
+  version: 40.6.0
+  resolution: "@gitbeaker/core@npm:40.6.0"
+  dependencies:
+    "@gitbeaker/requester-utils": ^40.6.0
+    qs: ^6.12.2
+    xcase: ^2.0.1
+  checksum: 3d75175f8adcf04294b5cfb8f040ad372d218473ec35d02b3b59c0538eb16228fc915a92a8582ecff5cad0a8dddcddb5a90b12cfe2ce5aaf9c3b6fccffe7259b
+  languageName: node
+  linkType: hard
+
+"@gitbeaker/core@npm:^41.3.0":
+  version: 41.3.0
+  resolution: "@gitbeaker/core@npm:41.3.0"
+  dependencies:
+    "@gitbeaker/requester-utils": ^41.3.0
+    qs: ^6.12.2
+    xcase: ^2.0.1
+  checksum: 7b42c2af717002a54a1a6fdaa4056f2dbf6b52c6c33de68d1ad035b301609322f5b980d0da48918518dde105f4d88b39976cf4510a3d19a34e11b991c111e8fc
+  languageName: node
+  linkType: hard
+
 "@gitbeaker/node@npm:^35.8.0":
   version: 35.8.1
   resolution: "@gitbeaker/node@npm:35.8.1"
@@ -7640,6 +7701,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gitbeaker/requester-utils@npm:^40.6.0":
+  version: 40.6.0
+  resolution: "@gitbeaker/requester-utils@npm:40.6.0"
+  dependencies:
+    picomatch-browser: ^2.2.6
+    qs: ^6.12.2
+    rate-limiter-flexible: ^4.0.1
+    xcase: ^2.0.1
+  checksum: 8744487bdba27f2995e483473cb4c3d6926228fa2f0c842bec300e165a09508a5e5ad047d478aeebe226a8f264c92a1dcb0a21f6af316b8fe4ebb679d7283e49
+  languageName: node
+  linkType: hard
+
+"@gitbeaker/requester-utils@npm:^41.3.0":
+  version: 41.3.0
+  resolution: "@gitbeaker/requester-utils@npm:41.3.0"
+  dependencies:
+    picomatch-browser: ^2.2.6
+    qs: ^6.12.2
+    rate-limiter-flexible: ^4.0.1
+    xcase: ^2.0.1
+  checksum: 28dc17e995450988e62f9e76557bf0a2fe0a41db2ffc3e088ed5c71009daaa1f26563ad67b61738c6ca5bfde9d25f067a189f4bc0a7e097d5ffa49991d24cd38
+  languageName: node
+  linkType: hard
+
 "@gitbeaker/rest@npm:^39.25.0":
   version: 39.34.3
   resolution: "@gitbeaker/rest@npm:39.34.3"
@@ -7647,6 +7732,26 @@ __metadata:
     "@gitbeaker/core": ^39.34.3
     "@gitbeaker/requester-utils": ^39.34.3
   checksum: e2a484891b12c71d4218168ab3884af14d036fb16a710ea023556a3d57dd220b13feaebd1f4aa3f61d0180c9f17b66f283650cd543416bb402d3bed8b6eaa465
+  languageName: node
+  linkType: hard
+
+"@gitbeaker/rest@npm:^40.0.3":
+  version: 40.6.0
+  resolution: "@gitbeaker/rest@npm:40.6.0"
+  dependencies:
+    "@gitbeaker/core": ^40.6.0
+    "@gitbeaker/requester-utils": ^40.6.0
+  checksum: e2ae3f460378c0fe226ac13dcc75bcddf44c8bd594c212020d2a088016a2d1735552639cb9a8fe43f85dad0305a918aef485313c5bed8ad62e351affee21da80
+  languageName: node
+  linkType: hard
+
+"@gitbeaker/rest@npm:^41.2.0":
+  version: 41.3.0
+  resolution: "@gitbeaker/rest@npm:41.3.0"
+  dependencies:
+    "@gitbeaker/core": ^41.3.0
+    "@gitbeaker/requester-utils": ^41.3.0
+  checksum: 96aa8d5e7ff3ca0e27f874df8b435fb12d20e6975d2291de26c90b7c2e201c286ffd241884b609b2200ddc4e28a331563b1b2d6767a1dd0160fc341f88761016
   languageName: node
   linkType: hard
 
@@ -17980,6 +18085,7 @@ __metadata:
     "@backstage/plugin-auth-backend-module-guest-provider": ^0.2.1
     "@backstage/plugin-auth-node": ^0.5.3
     "@backstage/plugin-catalog-backend": ^1.27.1
+    "@backstage/plugin-catalog-backend-module-gitlab": ^0.6.2
     "@backstage/plugin-catalog-backend-module-logs": ^0.1.3
     "@backstage/plugin-catalog-backend-module-scaffolder-entity-model": ^0.2.1
     "@backstage/plugin-notifications-backend": ^0.4.3
@@ -17990,6 +18096,7 @@ __metadata:
     "@backstage/plugin-proxy-backend": ^0.5.7
     "@backstage/plugin-scaffolder-backend": ^1.26.2
     "@backstage/plugin-scaffolder-backend-module-github": ^0.5.5
+    "@backstage/plugin-scaffolder-backend-module-gitlab": ^0.7.1
     "@backstage/plugin-search-backend": ^1.6.1
     "@backstage/plugin-search-backend-module-catalog": ^0.2.4
     "@backstage/plugin-search-backend-module-pg": ^0.5.37
@@ -18720,6 +18827,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"call-bind-apply-helpers@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "call-bind-apply-helpers@npm:1.0.1"
+  dependencies:
+    es-errors: ^1.3.0
+    function-bind: ^1.1.2
+  checksum: 3c55343261bb387c58a4762d15ad9d42053659a62681ec5eb50690c6b52a4a666302a01d557133ce6533e8bd04530ee3b209f23dd06c9577a1925556f8fcccdf
+  languageName: node
+  linkType: hard
+
 "call-bind@npm:^1.0.0, call-bind@npm:^1.0.2, call-bind@npm:^1.0.5, call-bind@npm:^1.0.6, call-bind@npm:^1.0.7":
   version: 1.0.7
   resolution: "call-bind@npm:1.0.7"
@@ -18730,6 +18847,16 @@ __metadata:
     get-intrinsic: ^1.2.4
     set-function-length: ^1.2.1
   checksum: 295c0c62b90dd6522e6db3b0ab1ce26bdf9e7404215bda13cfee25b626b5ff1a7761324d58d38b1ef1607fc65aca2d06e44d2e18d0dfc6c14b465b00d8660029
+  languageName: node
+  linkType: hard
+
+"call-bound@npm:^1.0.2":
+  version: 1.0.3
+  resolution: "call-bound@npm:1.0.3"
+  dependencies:
+    call-bind-apply-helpers: ^1.0.1
+    get-intrinsic: ^1.2.6
+  checksum: a93bbe0f2d0a2d6c144a4349ccd0593d5d0d5d9309b69101710644af8964286420062f2cc3114dca120b9bc8cc07507952d4b1b3ea7672e0d7f6f1675efedb32
   languageName: node
   linkType: hard
 
@@ -21412,6 +21539,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dunder-proto@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "dunder-proto@npm:1.0.1"
+  dependencies:
+    call-bind-apply-helpers: ^1.0.1
+    es-errors: ^1.3.0
+    gopd: ^1.2.0
+  checksum: 149207e36f07bd4941921b0ca929e3a28f1da7bd6b6ff8ff7f4e2f2e460675af4576eeba359c635723dc189b64cdd4787e0255897d5b135ccc5d15cb8685fc90
+  languageName: node
+  linkType: hard
+
 "duplexer@npm:^0.1.2":
   version: 0.1.2
   resolution: "duplexer@npm:0.1.2"
@@ -21751,12 +21889,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es-define-property@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "es-define-property@npm:1.0.0"
-  dependencies:
-    get-intrinsic: ^1.2.4
-  checksum: f66ece0a887b6dca71848fa71f70461357c0e4e7249696f81bad0a1f347eed7b31262af4a29f5d726dc026426f085483b6b90301855e647aa8e21936f07293c6
+"es-define-property@npm:^1.0.0, es-define-property@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "es-define-property@npm:1.0.1"
+  checksum: 0512f4e5d564021c9e3a644437b0155af2679d10d80f21adaf868e64d30efdfbd321631956f20f42d655fedb2e3a027da479fad3fa6048f768eb453a80a5f80a
   languageName: node
   linkType: hard
 
@@ -23953,16 +24089,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-intrinsic@npm:^1.1.3, get-intrinsic@npm:^1.2.1, get-intrinsic@npm:^1.2.2, get-intrinsic@npm:^1.2.3, get-intrinsic@npm:^1.2.4":
-  version: 1.2.4
-  resolution: "get-intrinsic@npm:1.2.4"
+"get-intrinsic@npm:^1.1.3, get-intrinsic@npm:^1.2.1, get-intrinsic@npm:^1.2.2, get-intrinsic@npm:^1.2.3, get-intrinsic@npm:^1.2.4, get-intrinsic@npm:^1.2.5, get-intrinsic@npm:^1.2.6":
+  version: 1.2.7
+  resolution: "get-intrinsic@npm:1.2.7"
   dependencies:
+    call-bind-apply-helpers: ^1.0.1
+    es-define-property: ^1.0.1
     es-errors: ^1.3.0
+    es-object-atoms: ^1.0.0
     function-bind: ^1.1.2
-    has-proto: ^1.0.1
-    has-symbols: ^1.0.3
-    hasown: ^2.0.0
-  checksum: 414e3cdf2c203d1b9d7d33111df746a4512a1aa622770b361dadddf8ed0b5aeb26c560f49ca077e24bfafb0acb55ca908d1f709216ccba33ffc548ec8a79a951
+    get-proto: ^1.0.0
+    gopd: ^1.2.0
+    has-symbols: ^1.1.0
+    hasown: ^2.0.2
+    math-intrinsics: ^1.1.0
+  checksum: a1597b3b432074f805b6a0ba1182130dd6517c0ea0c4eecc4b8834c803913e1ea62dfc412865be795b3dacb1555a21775b70cf9af7a18b1454ff3414e5442d4a
   languageName: node
   linkType: hard
 
@@ -23984,6 +24125,16 @@ __metadata:
   version: 5.1.1
   resolution: "get-port@npm:5.1.1"
   checksum: 0162663ffe5c09e748cd79d97b74cd70e5a5c84b760a475ce5767b357fb2a57cb821cee412d646aa8a156ed39b78aab88974eddaa9e5ee926173c036c0713787
+  languageName: node
+  linkType: hard
+
+"get-proto@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "get-proto@npm:1.0.1"
+  dependencies:
+    dunder-proto: ^1.0.1
+    es-object-atoms: ^1.0.0
+  checksum: 4fc96afdb58ced9a67558698b91433e6b037aaa6f1493af77498d7c85b141382cf223c0e5946f334fb328ee85dfe6edd06d218eaf09556f4bc4ec6005d7f5f7b
   languageName: node
   linkType: hard
 
@@ -24329,12 +24480,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gopd@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "gopd@npm:1.0.1"
-  dependencies:
-    get-intrinsic: ^1.1.3
-  checksum: a5ccfb8806e0917a94e0b3de2af2ea4979c1da920bc381667c260e00e7cafdbe844e2cb9c5bcfef4e5412e8bf73bab837285bc35c7ba73aaaf0134d4583393a6
+"gopd@npm:^1.0.1, gopd@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "gopd@npm:1.2.0"
+  checksum: cc6d8e655e360955bdccaca51a12a474268f95bb793fc3e1f2bdadb075f28bfd1fd988dab872daf77a61d78cbaf13744bc8727a17cfb1d150d76047d805375f3
   languageName: node
   linkType: hard
 
@@ -24602,17 +24751,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"has-proto@npm:^1.0.1, has-proto@npm:^1.0.3":
+"has-proto@npm:^1.0.3":
   version: 1.0.3
   resolution: "has-proto@npm:1.0.3"
   checksum: fe7c3d50b33f50f3933a04413ed1f69441d21d2d2944f81036276d30635cad9279f6b43bc8f32036c31ebdfcf6e731150f46c1907ad90c669ffe9b066c3ba5c4
   languageName: node
   linkType: hard
 
-"has-symbols@npm:^1.0.2, has-symbols@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "has-symbols@npm:1.0.3"
-  checksum: a054c40c631c0d5741a8285010a0777ea0c068f99ed43e5d6eb12972da223f8af553a455132fdb0801bdcfa0e0f443c0c03a68d8555aa529b3144b446c3f2410
+"has-symbols@npm:^1.0.2, has-symbols@npm:^1.0.3, has-symbols@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "has-symbols@npm:1.1.0"
+  checksum: b2316c7302a0e8ba3aaba215f834e96c22c86f192e7310bdf689dd0e6999510c89b00fbc5742571507cebf25764d68c988b3a0da217369a73596191ac0ce694b
   languageName: node
   linkType: hard
 
@@ -28519,6 +28668,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"math-intrinsics@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "math-intrinsics@npm:1.1.0"
+  checksum: 0e513b29d120f478c85a70f49da0b8b19bc638975eca466f2eeae0071f3ad00454c621bf66e16dd435896c208e719fc91ad79bbfba4e400fe0b372e7c1c9c9a2
+  languageName: node
+  linkType: hard
+
 "mathjs@npm:^11.11.2":
   version: 11.12.0
   resolution: "mathjs@npm:11.12.0"
@@ -30509,10 +30665,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-inspect@npm:^1.13.1":
-  version: 1.13.2
-  resolution: "object-inspect@npm:1.13.2"
-  checksum: 9f850b3c045db60e0e97746e809ee4090d6ce62195af17dd1e9438ac761394a7d8ec4f7906559aea5424eaf61e35d3e53feded2ccd5f62fcc7d9670d3c8eb353
+"object-inspect@npm:^1.13.1, object-inspect@npm:^1.13.3":
+  version: 1.13.4
+  resolution: "object-inspect@npm:1.13.4"
+  checksum: 582810c6a8d2ef988ea0a39e69e115a138dad8f42dd445383b394877e5816eb4268489f316a6f74ee9c4e0a984b3eab1028e3e79d62b1ed67c726661d55c7a8b
   languageName: node
   linkType: hard
 
@@ -32731,12 +32887,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:6.13.0, qs@npm:^6.10.1, qs@npm:^6.10.3, qs@npm:^6.11.2, qs@npm:^6.12.3, qs@npm:^6.9.3, qs@npm:^6.9.4":
+"qs@npm:6.13.0":
   version: 6.13.0
   resolution: "qs@npm:6.13.0"
   dependencies:
     side-channel: ^1.0.6
   checksum: e9404dc0fc2849245107108ce9ec2766cde3be1b271de0bf1021d049dc5b98d1a2901e67b431ac5509f865420a7ed80b7acb3980099fe1c118a1c5d2e1432ad8
+  languageName: node
+  linkType: hard
+
+"qs@npm:^6.10.1, qs@npm:^6.10.3, qs@npm:^6.11.2, qs@npm:^6.12.2, qs@npm:^6.12.3, qs@npm:^6.9.3, qs@npm:^6.9.4":
+  version: 6.14.0
+  resolution: "qs@npm:6.14.0"
+  dependencies:
+    side-channel: ^1.1.0
+  checksum: 189b52ad4e9a0da1a16aff4c58b2a554a8dad9bd7e287c7da7446059b49ca2e33a49e570480e8be406b87fccebf134f51c373cbce36c8c83859efa0c9b71d635
   languageName: node
   linkType: hard
 
@@ -32891,7 +33056,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rate-limiter-flexible@npm:^4.0.0":
+"rate-limiter-flexible@npm:^4.0.0, rate-limiter-flexible@npm:^4.0.1":
   version: 4.0.1
   resolution: "rate-limiter-flexible@npm:4.0.1"
   checksum: 88cb4ae4c6a94646eb4987f08ae203896fc340d84038e145958607ab711d9c703e47e55f177a4bf9bab4c637c73ee2254fffe2ec4e289d41389c8502194ca868
@@ -35020,15 +35185,51 @@ __metadata:
   languageName: node
   linkType: hard
 
-"side-channel@npm:^1.0.4, side-channel@npm:^1.0.6":
-  version: 1.0.6
-  resolution: "side-channel@npm:1.0.6"
+"side-channel-list@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "side-channel-list@npm:1.0.0"
   dependencies:
-    call-bind: ^1.0.7
     es-errors: ^1.3.0
-    get-intrinsic: ^1.2.4
-    object-inspect: ^1.13.1
-  checksum: bfc1afc1827d712271453e91b7cd3878ac0efd767495fd4e594c4c2afaa7963b7b510e249572bfd54b0527e66e4a12b61b80c061389e129755f34c493aad9b97
+    object-inspect: ^1.13.3
+  checksum: 603b928997abd21c5a5f02ae6b9cc36b72e3176ad6827fab0417ead74580cc4fb4d5c7d0a8a2ff4ead34d0f9e35701ed7a41853dac8a6d1a664fcce1a044f86f
+  languageName: node
+  linkType: hard
+
+"side-channel-map@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "side-channel-map@npm:1.0.1"
+  dependencies:
+    call-bound: ^1.0.2
+    es-errors: ^1.3.0
+    get-intrinsic: ^1.2.5
+    object-inspect: ^1.13.3
+  checksum: 42501371cdf71f4ccbbc9c9e2eb00aaaab80a4c1c429d5e8da713fd4d39ef3b8d4a4b37ed4f275798a65260a551a7131fd87fe67e922dba4ac18586d6aab8b06
+  languageName: node
+  linkType: hard
+
+"side-channel-weakmap@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "side-channel-weakmap@npm:1.0.2"
+  dependencies:
+    call-bound: ^1.0.2
+    es-errors: ^1.3.0
+    get-intrinsic: ^1.2.5
+    object-inspect: ^1.13.3
+    side-channel-map: ^1.0.1
+  checksum: a815c89bc78c5723c714ea1a77c938377ea710af20d4fb886d362b0d1f8ac73a17816a5f6640f354017d7e292a43da9c5e876c22145bac00b76cfb3468001736
+  languageName: node
+  linkType: hard
+
+"side-channel@npm:^1.0.4, side-channel@npm:^1.0.6, side-channel@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "side-channel@npm:1.1.0"
+  dependencies:
+    es-errors: ^1.3.0
+    object-inspect: ^1.13.3
+    side-channel-list: ^1.0.0
+    side-channel-map: ^1.0.1
+    side-channel-weakmap: ^1.0.2
+  checksum: bf73d6d6682034603eb8e99c63b50155017ed78a522d27c2acec0388a792c3ede3238b878b953a08157093b85d05797217d270b7666ba1f111345fbe933380ff
   languageName: node
   linkType: hard
 

@@ -64,4 +64,7 @@ backend.add(import('backstage-plugin-scaffolder-backend-module-orchestrator'));
 // for integrating templates with github
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 
+// for integrating templates with gitlab
+backend.add(import('@backstage/plugin-scaffolder-backend-module-gitlab'));
+
 backend.start();

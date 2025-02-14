@@ -34,6 +34,7 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+              - gitlab.com
         pluginLocation:
           type: string
           title: Where to publish this new plugin?
@@ -87,10 +88,10 @@ spec:
           repoName: ${{ (parameters.repoUrl | parseRepoUrl).repo }}
           orgName: ${{ (parameters.repoUrl | parseRepoUrl).owner }}
 
-    # This step publishes the contents of the working directory to GitHub if it is a new repository.
-    - id: publish
-      name: Publish the template in a new repository
-      if: ${{ parameters.pluginLocation === 'Create a new repository within the specified organization' }}
+    # GitHub: This step publishes the contents of the working directory to GitHub if it is a new repository.
+    - id: publishGithubRepo
+      name: Publish the template in a new GitHub repository
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host === 'github.com' and parameters.pluginLocation === 'Create a new repository within the specified organization' }}
       action: publish:github
       input:
         allowedHosts: ['github.com']
@@ -98,12 +99,37 @@ spec:
         repoUrl: ${{ parameters.repoUrl }}
         sourcePath: templates/${{parameters.workflow_id}}
 
-    # This step creates a pull request with the contents of the working directory.
+    # GitHub: This step creates a pull request with the contents of the working directory.
     - id: publishGithub
-      name: Create pull request with the template
-      if: ${{ parameters.pluginLocation  === 'Submit a pull request to the same repository' }}
+      name: Create GitHub pull request with the template
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host === 'github.com' and parameters.pluginLocation  === 'Submit a pull request to the same repository' }}
       action: publish:github:pull-request
       input:
+        allowedHosts: ['github.com']
+        repoUrl: ${{ parameters.repoUrl }}
+        branchName: ${{ parameters.branchName }}
+        targetBranchName: ${{ parameters.targetBranchName }}
+        title: Create template ${{ parameters.workflow_id }}
+        description: This pull request creates template for running a workflow
+
+    # GitLab
+    - id: publishGitlabRepo
+      name: Publish the template in a new GitLab repository
+      action: publish:gitlab
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host === 'gitlab.com' and parameters.pluginLocation === 'Create a new repository within the specified organization' }}
+      input:
+        allowedHosts: ['gitlab.com']
+        description: This is the template for the ${{ parameters.workflow_id }} workflow.
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+
+    # GitLab
+    - id: publishGitlab
+      name: Create GitLab merge request with the template
+      action: publish:gitlab:merge-request
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host === 'gitlab.com' and parameters.pluginLocation === 'Submit a pull request to the same repository' }}
+      input:
+        allowedHosts: ['gitlab.com']
         repoUrl: ${{ parameters.repoUrl }}
         branchName: ${{ parameters.branchName }}
         targetBranchName: ${{ parameters.targetBranchName }}
@@ -112,7 +138,11 @@ spec:
 
   output:
     links:
-      - title: View Template
-        url: ${{ steps.publish.output.remoteUrl }}
-      - title: View Pull Request
+      - title: View template repository
+        url: ${{ steps.publishGithubRepo.output.remoteUrl }}
+      - title: View template repository
+        url: ${{ steps.publishGitlabRepo.output.remoteUrl }}
+      - title: View pull request with the template
         url: ${{ steps.publishGithub.output.remoteUrl }}
+      - title: View merge request with the template
+        url: ${{ steps.publishGitlab.output.mergeRequestUrl }}
