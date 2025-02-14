@@ -112,7 +112,7 @@ spec:
         title: Create template ${{ parameters.workflow_id }}
         description: This pull request creates template for running a workflow
 
-    # GitLab
+    # GitLab: This step publishes the contents of the working directory to a new repository.
     - id: publishGitlabRepo
       name: Publish the template in a new GitLab repository
       action: publish:gitlab
@@ -123,7 +123,7 @@ spec:
         repoUrl: ${{ parameters.repoUrl }}
         defaultBranch: main
 
-    # GitLab
+    # GitLab: This step creates a pull request with the contents of the working directory.
     - id: publishGitlab
       name: Create GitLab merge request with the template
       action: publish:gitlab:merge-request
