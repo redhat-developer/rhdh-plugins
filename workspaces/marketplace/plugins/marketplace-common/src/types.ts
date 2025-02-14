@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ export interface MarketplacePackage extends Entity {
 /**
  * @public
  */
-export interface MarketplacePluginList extends Entity {
+export interface MarketplaceCollection extends Entity {
   spec?: {
     plugins: string[];
   } & MarketplacePluginSpec;
@@ -66,10 +66,10 @@ export const MARKETPLACE_API_VERSION = 'marketplace.backstage.io/v1alpha1';
 /**
  * @public
  */
-export enum MarketplaceKinds {
-  plugin = 'Plugin',
-  pluginList = 'PluginList',
-  package = 'Package',
+export enum MarketplaceKind {
+  Plugin = 'Plugin',
+  Collection = 'PluginCollection',
+  Package = 'Package',
 }
 
 /**
@@ -141,7 +141,6 @@ export type MarketplacePluginPackage = {
  */
 export interface MarketplacePluginSpec extends JsonObject {
   packages?: (string | MarketplacePluginPackage)[];
-  installStatus?: keyof typeof InstallStatus;
   icon?: string;
   categories?: string[];
   developer?: string;
@@ -179,8 +178,19 @@ export type GetPluginsRequest = {
 /**
  * @public
  */
+export type GetPackagesRequest = {
+  limit?: number;
+  offset?: number;
+  filter?: EntityFilterQuery;
+  orderFields?: EntityOrderQuery;
+  searchTerm?: string;
+};
+
+/**
+ * @public
+ */
 export interface MarketplacePackageSpec extends JsonObject {
-  packageName: string;
+  packageName?: string;
   dynamicArtifact?: string;
   author?: string;
   support?: string;
@@ -189,6 +199,7 @@ export interface MarketplacePackageSpec extends JsonObject {
   appConfigExamples?: AppConfigExample[];
   owner?: string;
   partOf?: string[];
+  installStatus?: keyof typeof InstallStatus;
 }
 
 /**
@@ -212,19 +223,3 @@ export type {
   GetEntityFacetsResponse,
   EntityFilterQuery,
 } from '@backstage/catalog-client';
-
-/**
- * @public
- */
-export interface MarketplaceApi {
-  getPlugins(
-    request?: GetPluginsRequest,
-  ): Promise<MarketplacePluginWithPageInfo>;
-  getPluginByName(name: string): Promise<MarketplacePlugin>;
-  getPluginLists(): Promise<MarketplacePluginList[]>;
-  getPluginListByName(name: string): Promise<MarketplacePluginList>;
-  getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
-  getEntityFacets(
-    request: GetEntityFacetsRequest,
-  ): Promise<GetEntityFacetsResponse>;
-}

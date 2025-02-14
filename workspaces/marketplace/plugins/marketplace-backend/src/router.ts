@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,13 @@ import Router from 'express-promise-router';
 import { HttpAuthService } from '@backstage/backend-plugin-api';
 import { InputError, NotFoundError } from '@backstage/errors';
 import {
+  decodeGetPackagesRequest,
   decodeGetPluginsRequest,
   decodeQueryParams,
   EntityFacetSchema,
   GetEntityFacetsRequest,
-  GetPluginsRequest,
   MarketplaceApi,
-  MarketplaceKinds,
+  MarketplaceKind,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export async function createRouter({
@@ -38,9 +38,16 @@ export async function createRouter({
   const router = Router();
   router.use(express.json());
 
+  router.get('/packages', async (req, res) => {
+    const query = req.url.split('?')[1] || '';
+    const request = decodeGetPackagesRequest(query);
+    const plugins = await marketplaceApi.getPackages(request);
+    res.json(plugins);
+  });
+
   router.get('/plugins', async (req, res) => {
     const query = req.url.split('?')[1] || '';
-    const request: GetPluginsRequest = decodeGetPluginsRequest(query);
+    const request = decodeGetPluginsRequest(query);
     const plugins = await marketplaceApi.getPlugins(request);
     res.json(plugins);
   });
@@ -52,7 +59,7 @@ export async function createRouter({
     if (!plugin) {
       res
         .status(404)
-        .json({ error: `${MarketplaceKinds.plugin}:${name} not found` });
+        .json({ error: `${MarketplaceKind.Plugin}:${name} not found` });
     }
     res.json(plugin);
   });
@@ -69,7 +76,7 @@ export async function createRouter({
     if (!pluginlist) {
       res
         .status(404)
-        .json({ error: `${MarketplaceKinds.pluginList}:${name} not found` });
+        .json({ error: `${MarketplaceKind.PluginList}:${name} not found` });
     }
     res.json(pluginlist);
   });

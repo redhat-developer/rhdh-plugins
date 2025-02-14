@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import { ExtendedHttpServer } from '@backstage/backend-defaults/dist/rootHttpRou
 import {
   encodeQueryParams,
   MarketplacePlugin,
-  MarketplacePluginList,
+  MarketplaceCollection,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 const BASE_CONFIG = {
@@ -98,7 +98,7 @@ describe('createRouter', () => {
     name,
     kind = 'plugin',
   }: {
-    mockData: MarketplacePlugin[] | MarketplacePluginList[] | {} | null;
+    mockData: MarketplacePlugin[] | MarketplaceCollection[] | {} | null;
     name?: string;
     kind?: string;
   }): Promise<{ backendServer: ExtendedHttpServer }> => {
@@ -187,7 +187,7 @@ describe('createRouter', () => {
     const { backendServer } = await setupTestWithMockCatalog({
       mockData: mockPluginList[0],
       name: 'featured-plugins',
-      kind: 'pluginlist',
+      kind: 'PluginList',
     });
 
     const response = await request(backendServer).get(
@@ -203,7 +203,7 @@ describe('createRouter', () => {
     const { backendServer } = await setupTestWithMockCatalog({
       mockData: null,
       name: 'invalid-pluginlist',
-      kind: 'pluginlist',
+      kind: 'PluginList',
     });
 
     const response = await request(backendServer).get(
@@ -220,7 +220,7 @@ describe('createRouter', () => {
     const { backendServer } = await setupTestWithMockCatalog({
       mockData: { ...mockPluginList[0], spec: {} },
       name: 'featured-plugins',
-      kind: 'pluginlist',
+      kind: 'PluginList',
     });
 
     const response = await request(backendServer).get(
@@ -259,7 +259,7 @@ describe('createRouter', () => {
     const { backendServer } = await setupTestWithMockCatalog({
       mockData: null,
       name: 'featured-plugins',
-      kind: 'pluginlist',
+      kind: 'PluginList',
     });
 
     const response = await request(backendServer).get(

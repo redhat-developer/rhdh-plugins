@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,17 @@ import {
 import { NotFoundError } from '@backstage/errors';
 import {
   GetPluginsRequest,
-  MarketplaceApi,
-  MarketplaceKinds,
+  MarketplaceKind,
+  MarketplacePackage,
   MarketplacePlugin,
-  MarketplacePluginList,
+  MarketplaceCollection,
   MarketplacePluginWithPageInfo,
 } from '../types';
-import { convertGetPluginsRequestToQueryEntitiesRequest } from '../utils';
+import {
+  convertGetPackagesRequestToQueryEntitiesRequest,
+  convertGetPluginsRequestToQueryEntitiesRequest,
+} from '../utils';
+import { MarketplaceApi, PagedResponse } from './MarketplaceApi';
 
 /**
  * @public
@@ -80,31 +84,53 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     };
   }
 
-  async getPluginLists(): Promise<MarketplacePluginList[]> {
+  async getPluginLists(): Promise<MarketplaceCollection[]> {
     const token = await this.getServiceToken();
     const result = await this.catalog.queryEntities(
       {
         filter: {
-          kind: 'pluginList',
+          kind: 'PluginList',
         },
       },
       token,
     );
 
-    return result.items as MarketplacePluginList[];
+    return result.items as MarketplaceCollection[];
   }
 
-  async getPluginListByName(name: string): Promise<MarketplacePluginList> {
+  async getPackages(
+    request?: GetPluginsRequest,
+  ): Promise<PagedResponse<MarketplacePackage>> {
+    const token = await this.getServiceToken();
+    const result = await this.catalog.queryEntities(
+      {
+        ...request,
+        filter: {
+          ...request?.filter,
+          kind: 'Package',
+        },
+      },
+      token,
+    );
+
+    return {
+      items: result.items as MarketplacePackage[],
+      totalItems: result.totalItems,
+      pageInfo: result.pageInfo,
+    };
+  }
+
+  async getPluginListByName(name: string): Promise<MarketplaceCollection> {
     const token = await this.getServiceToken();
     const result = await this.catalog.getEntityByRef(
       stringifyEntityRef({
         name,
-        kind: MarketplaceKinds.pluginList,
+        kind: MarketplaceKind.PluginList,
       }),
       token,
     );
 
-    return result as MarketplacePluginList;
+    return result as MarketplaceCollection;
   }
 
   async getPluginByName(name: string): Promise<MarketplacePlugin> {
@@ -112,7 +138,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     const result = await this.catalog.getEntityByRef(
       stringifyEntityRef({
         name,
-        kind: MarketplaceKinds.plugin,
+        kind: MarketplaceKind.Plugin,
       }),
       token,
     );
@@ -126,7 +152,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
 
     if (!pluginList) {
       throw new NotFoundError(
-        `${MarketplaceKinds.pluginList}:${name} not found`,
+        `${MarketplaceKind.PluginList}:${name} not found`,
       );
     }
 
@@ -138,7 +164,7 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
 
     const entityRefs = plugins.map(plugin =>
       stringifyEntityRef({
-        kind: MarketplaceKinds.plugin,
+        kind: MarketplaceKind.Plugin,
         namespace: pluginList.metadata!.namespace,
         name: plugin,
       }),
