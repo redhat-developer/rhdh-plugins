@@ -21,12 +21,7 @@ import { mockApis, MockFetchApi, TestApiProvider } from '@backstage/test-utils';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
-import {
-  createUnifiedTheme,
-  UnifiedThemeProvider,
-  palettes as defaultPalettes,
-} from '@backstage/theme';
-import { AppTheme, configApiRef } from '@backstage/core-plugin-api';
+import { configApiRef } from '@backstage/core-plugin-api';
 import {
   notificationsApiRef,
   NotificationsClient,
@@ -36,6 +31,8 @@ import Button from '@mui/material/Button';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
+
+import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 
 import {
   ComponentType,
@@ -124,57 +121,6 @@ const discoveryApi = { getBaseUrl: async () => mockBaseUrl };
 const fetchApi = new MockFetchApi();
 const client = new NotificationsClient({ discoveryApi, fetchApi });
 
-const lightTheme = createUnifiedTheme({
-  palette: {
-    ...defaultPalettes.light,
-  },
-  components: {
-    MuiAppBar: {
-      styleOverrides: {
-        colorPrimary: {
-          backgroundColor: '#212427',
-          backgroundImage: 'none',
-        },
-      },
-    },
-  },
-});
-
-const darkTheme = createUnifiedTheme({
-  palette: {
-    ...defaultPalettes.dark,
-  },
-  components: {
-    MuiAppBar: {
-      styleOverrides: {
-        colorPrimary: {
-          backgroundColor: '#1b1d21',
-          backgroundImage: 'none',
-        },
-      },
-    },
-  },
-});
-
-const themes: AppTheme[] = [
-  {
-    id: 'light',
-    title: 'Light Theme',
-    variant: 'light',
-    Provider: ({ children }) => (
-      <UnifiedThemeProvider theme={lightTheme}>{children}</UnifiedThemeProvider>
-    ),
-  },
-  {
-    id: 'dark',
-    title: 'Dark Theme',
-    variant: 'dark',
-    Provider: ({ children }) => (
-      <UnifiedThemeProvider theme={darkTheme}>{children}</UnifiedThemeProvider>
-    ),
-  },
-];
-
 const Providers = ({
   mountPoints,
 }: React.PropsWithChildren<{ mountPoints: Record<string, any> }>) => {
@@ -210,7 +156,7 @@ const Providers = ({
 
 createDevApp()
   .registerPlugin(globalHeaderPlugin)
-  .addThemes(themes)
+  .addThemes(getAllThemes())
   .addPage({
     element: (
       <Providers

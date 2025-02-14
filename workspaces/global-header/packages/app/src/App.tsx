@@ -56,6 +56,8 @@ import { SignalsDisplay } from '@backstage/plugin-signals';
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
+import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+
 const app = createApp({
   apis,
   bindRoutes({ bind }) {
@@ -92,6 +94,7 @@ const app = createApp({
       />
     ),
   },
+  themes: getAllThemes(),
 });
 
 const routes = (
