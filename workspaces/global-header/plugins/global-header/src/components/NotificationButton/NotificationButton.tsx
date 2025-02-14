@@ -64,7 +64,7 @@ export const NotificationButton = ({
   title = 'Notifications',
   tooltip,
   color = 'inherit',
-  size = 'large',
+  size = 'medium',
   badgeColor = 'error',
   to = '/notifications',
 }: NotificationButtonProps) => {

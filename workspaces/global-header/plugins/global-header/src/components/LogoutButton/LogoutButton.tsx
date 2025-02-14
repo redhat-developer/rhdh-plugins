@@ -14,23 +14,33 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
 import React from 'react';
-import HeaderItemContent from '../HeaderLinkComponent/HeaderItemContent';
 
-export type HeaderButtonProps = {
-  title: string;
-  icon: string;
-  onClick?: () => void;
-};
+import {
+  errorApiRef,
+  identityApiRef,
+  useApi,
+} from '@backstage/core-plugin-api';
 
-export const HeaderButton = ({ title, icon, onClick }: HeaderButtonProps) => {
+import Box from '@mui/material/Box';
+
+import { MenuItemLinkContent } from '../MenuItemLink/MenuItemLinkContent';
+
+export const LogoutButton = () => {
+  const errorApi = useApi(errorApiRef);
+  const identityApi = useApi(identityApiRef);
+
+  const handleLogout = () => {
+    identityApi.signOut().catch(error => errorApi.post(error));
+  };
+
+  // TODO switch to Button
   return (
     <Box
-      onClick={onClick}
+      onClick={handleLogout}
       sx={{ cursor: 'pointer', width: '100%', color: 'inherit' }}
     >
-      <HeaderItemContent icon={icon} label={title} />
+      <MenuItemLinkContent icon="logout" label="Logout" />
     </Box>
   );
 };

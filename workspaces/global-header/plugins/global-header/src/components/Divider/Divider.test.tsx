@@ -16,21 +16,14 @@
 
 import React from 'react';
 
-export const useDropdownManager = () => {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+import { render } from '@testing-library/react';
 
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+import { Divider } from './Divider';
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  return {
-    anchorEl,
-    open: !!anchorEl,
-    handleOpen,
-    handleClose,
-  };
-};
+describe('Divider', () => {
+  it('render some default styles', () => {
+    const { debug, container } = render(<Divider />);
+    debug();
+    expect(container.firstElementChild?.nodeName).toEqual('HR');
+  });
+});

@@ -19,7 +19,7 @@ import React from 'react';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 
-import MenuSection, { MenuItemConfig } from './MenuSection';
+import { MenuSection, MenuItemConfig } from './MenuSection';
 
 /**
  * Software Templates Section properties

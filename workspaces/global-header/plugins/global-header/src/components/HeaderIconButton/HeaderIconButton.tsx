@@ -16,30 +16,25 @@
 
 import React from 'react';
 
-import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
 import { Link as BackstageLink } from '@backstage/core-components';
 
-import IconButton from '@mui/material/IconButton';
+import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import HelpIcon from '@mui/icons-material/HelpOutline';
+
+import { HeaderIcon } from '../HeaderIcon/HeaderIcon';
 
 /**
  * @public
  */
-export interface SupportButtonProps {
-  title?: string;
+export interface HeaderIconButtonProps {
+  title: string;
+  icon: string;
   tooltip?: string;
-  color?:
-    | 'inherit'
-    | 'default'
-    | 'primary'
-    | 'secondary'
-    | 'error'
-    | 'info'
-    | 'success'
-    | 'warning';
+  color?: 'inherit' | 'primary' | 'secondary' | 'default';
   size?: 'small' | 'medium' | 'large';
-  to?: string;
+  ariaLabel?: string;
+  to: string;
+  style?: React.CSSProperties;
 }
 
 // Backstage Link automatically detects external links and emits analytic events.
@@ -47,34 +42,34 @@ const Link = (props: any) => (
   <BackstageLink {...props} color="inherit" externalLinkIcon={false} />
 );
 
-/**
- * @public
- */
-export const SupportButton = ({
-  title = 'Support',
+export const HeaderIconButton = ({
+  title,
+  icon,
   tooltip,
   color = 'inherit',
-  size = 'medium',
+  size,
+  ariaLabel,
   to,
-}: SupportButtonProps) => {
-  const apiHolder = useApiHolder();
-  const config = apiHolder.get(configApiRef);
-  const supportUrl = to ?? config?.getOptionalString('app.support.url');
-
-  if (!supportUrl) {
-    return null;
+  style,
+}: HeaderIconButtonProps) => {
+  if (!title) {
+    // eslint-disable-next-line no-console
+    console.warn('HeaderIconButton has no title:', { icon, to });
   }
+
+  const linkProps = { to } as IconButtonProps;
 
   return (
     <Tooltip title={tooltip ?? title}>
       <IconButton
-        component={Link}
+        LinkComponent={Link}
         color={color}
         size={size}
-        to={supportUrl}
-        aria-label={title}
+        aria-label={ariaLabel ?? title}
+        {...linkProps} // to={to} isn't supported
+        sx={style}
       >
-        <HelpIcon />
+        <HeaderIcon icon={icon} />
       </IconButton>
     </Tooltip>
   );

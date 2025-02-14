@@ -35,11 +35,9 @@ import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 
 import {
-  ComponentType,
   GlobalHeader,
   globalHeaderPlugin,
   NotificationBanner,
-  Slot,
   Spacer,
 } from '../src/plugin';
 
@@ -48,6 +46,9 @@ import {
   defaultGlobalHeaderComponentsMountPoints,
   defaultProfileDropdownMountPoints,
 } from '../src/defaultMountPoints/defaultMountPoints';
+
+import { HeaderButton } from '../src/components/HeaderButton/HeaderButton';
+import { ComponentType } from '../src/types';
 
 const mockSearchApi = new MockSearchApi({
   results: [
@@ -176,20 +177,18 @@ createDevApp()
     element: (
       <Providers
         mountPoints={{
-          'global.header/component':
-            defaultGlobalHeaderComponentsMountPoints.map(mp => {
-              if (mp.config.type === ComponentType.SEARCH) {
-                return {
-                  Component: Spacer,
-                  config: {
-                    type: ComponentType.SPACER,
-                    slot: Slot.HEADER_START,
-                    priority: 100, // the greater the number, the more to the left it will be
-                  },
-                };
-              }
-              return mp;
-            }),
+          'global.header/component': [
+            ...defaultGlobalHeaderComponentsMountPoints.filter(
+              mp => mp.config?.type !== ComponentType.SEARCH,
+            ),
+            {
+              Component: Spacer,
+              config: {
+                type: ComponentType.SPACER,
+                priority: 10000, // the greater the number, the more to the left it will be
+              },
+            },
+          ],
           'global.header/create': defaultCreateDropdownMountPoints,
           'global.header/profile': defaultProfileDropdownMountPoints,
         }}
@@ -199,6 +198,69 @@ createDevApp()
     ),
     title: 'Header without search',
     path: '/header-without-search',
+  })
+  .addPage({
+    element: (
+      <Providers
+        mountPoints={{
+          'global.header/component': [
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'A button',
+                  variant: 'outlined',
+                  to: '/',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'Another button',
+                  variant: 'outlined',
+                  to: '/',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'Help button',
+                  startIcon: 'help',
+                  to: '/help',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'GitHub button',
+                  to: 'https://github.com/',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'GitHub button',
+                  to: 'https://github.com/',
+                  externalLinkIcon: false,
+                },
+              },
+            },
+          ],
+        }}
+      >
+        <GlobalHeader />
+      </Providers>
+    ),
+    title: 'Header buttons',
+    path: '/header-buttons',
   })
   .addPage({
     element: (

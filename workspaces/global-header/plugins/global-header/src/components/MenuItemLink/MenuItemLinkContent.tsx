@@ -17,16 +17,16 @@
 import React from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { HeaderIcon } from '../HeaderIconButtonComponent/HeaderIcon';
+import { HeaderIcon } from '../HeaderIcon/HeaderIcon';
 import { useTheme } from '@mui/material/styles';
 
-interface HeaderItemContentProps {
+interface MenuItemLinkContentProps {
   icon?: string;
   label?: string;
   subLabel?: string;
 }
 
-const HeaderItemContent: React.FC<HeaderItemContentProps> = ({
+export const MenuItemLinkContent: React.FC<MenuItemLinkContentProps> = ({
   icon,
   label,
   subLabel,
@@ -73,5 +73,3 @@ const HeaderItemContent: React.FC<HeaderItemContentProps> = ({
     </Box>
   );
 };
-
-export default HeaderItemContent;

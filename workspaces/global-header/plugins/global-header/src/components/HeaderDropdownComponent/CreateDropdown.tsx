@@ -15,17 +15,21 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
+
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
-import HeaderDropdownComponent from './HeaderDropdownComponent';
-import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
-import { MenuItemConfig } from './MenuSection';
 import { useApi } from '@backstage/core-plugin-api';
 import { Entity } from '@backstage/catalog-model';
+
+import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ComponentType, HeaderDropdownComponentProps } from '../../types';
-import { HeaderLink } from '../HeaderLinkComponent/HeaderLink';
+
+import { ComponentType } from '../../types';
+import { MenuItemConfig } from './MenuSection';
+import { MenuItemLink } from '../MenuItemLink/MenuItemLink';
 import { useCreateDropdownMountPoints } from '../../hooks/useCreateDropdownMountPoints';
+import { useDropdownManager } from '../../hooks';
+import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 
 /**
  * @public
@@ -37,11 +41,9 @@ interface SectionComponentProps {
   items?: MenuItemConfig[];
 }
 
-export const CreateDropdown = ({
-  handleMenu,
-  anchorEl,
-  setAnchorEl,
-}: HeaderDropdownComponentProps) => {
+export const CreateDropdown = () => {
+  const { anchorEl, handleOpen, handleClose } = useDropdownManager();
+
   const catalogApi = useApi(catalogApiRef);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +72,7 @@ export const CreateDropdown = ({
     return entities
       .filter(e => e.kind === 'Template')
       .map(m => ({
-        Component: HeaderLink as React.ComponentType,
+        Component: MenuItemLink as React.ComponentType,
         type: ComponentType.LINK,
         label: m.metadata.title ?? m.metadata.name,
         link: `/create/templates/default/${m.metadata.name}`,
@@ -112,7 +114,6 @@ export const CreateDropdown = ({
         variant: 'outlined',
         disabled: loading,
         sx: {
-          mr: 2,
           color: '#fff',
           border: '1px solid rgba(255, 255, 255, 0.5)',
           '&:hover, &.Mui-focusVisible': {
@@ -120,15 +121,15 @@ export const CreateDropdown = ({
           },
         },
       }}
-      buttonClick={handleMenu}
+      onOpen={handleOpen}
+      onClose={handleClose}
       anchorEl={anchorEl}
-      setAnchorEl={setAnchorEl}
     >
       {menuSections.map((section, index) => (
         <section.Component
           key={`menu-section-${index.toString()}`}
           hideDivider={index === menuSections.length - 1}
-          handleClose={() => setAnchorEl(null)}
+          handleClose={handleClose}
           {...(section.type === ComponentType.LIST ? { items } : {})}
         />
       ))}
