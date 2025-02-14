@@ -68,7 +68,11 @@ export const NotificationButton = ({
   badgeColor = 'error',
   to = '/notifications',
 }: NotificationButtonProps) => {
-  const unreadCount = useNotificationCount();
+  const { available, unreadCount } = useNotificationCount();
+
+  if (!available) {
+    return null;
+  }
 
   return (
     <Tooltip title={tooltip ?? title}>

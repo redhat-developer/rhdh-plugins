@@ -23,12 +23,16 @@ import { NotificationSignal } from '@backstage/plugin-notifications-common';
 export const useNotificationCount = () => {
   const apiHolder = useApiHolder();
   const { lastSignal } = useSignal<NotificationSignal>('notifications');
+  const [available, setAvailable] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const notificationsApi = apiHolder.get(notificationsApiRef);
     if (!notificationsApi) {
       return;
+    }
+    if (!available) {
+      setAvailable(true);
     }
 
     const fetchUnreadCount = async () => {
@@ -44,6 +48,7 @@ export const useNotificationCount = () => {
     };
 
     fetchUnreadCount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiHolder]);
 
   useEffect(() => {
@@ -66,5 +71,5 @@ export const useNotificationCount = () => {
     }
   }, [lastSignal]);
 
-  return unreadCount;
+  return { available, unreadCount };
 };
