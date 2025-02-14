@@ -303,6 +303,21 @@ export const SupportButton = globalHeaderPlugin.provide(
 );
 
 /**
+ * @public
+ */
+export const NotificationButton = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'NotificationButton',
+    component: {
+      lazy: () =>
+        import('./components/NotificationButton/NotificationButton').then(
+          m => m.NotificationButton,
+        ),
+    },
+  }),
+);
+
+/**
  * NotificationBanner
  *
  * @public

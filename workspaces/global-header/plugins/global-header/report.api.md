@@ -215,6 +215,16 @@ export interface NotificationBannerProps {
 }
 
 // @public (undocumented)
+export const NotificationButton: ({
+  title,
+  tooltip,
+  color,
+  size,
+  badgeColor,
+  to,
+}: NotificationButtonProps) => React_2.JSX.Element;
+
+// @public (undocumented)
 export interface NotificationButtonProps {
   // (undocumented)
   badgeColor?:
