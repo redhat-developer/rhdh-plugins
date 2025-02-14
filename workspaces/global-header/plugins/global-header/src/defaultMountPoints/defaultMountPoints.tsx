@@ -18,11 +18,11 @@ import { CreateDropdown } from '../components/HeaderDropdownComponent/CreateDrop
 import { ProfileDropdown } from '../components/HeaderDropdownComponent/ProfileDropdown';
 import { RegisterAComponentSection } from '../components/HeaderDropdownComponent/RegisterAComponentSection';
 import { SoftwareTemplatesSection } from '../components/HeaderDropdownComponent/SoftwareTemplatesSection';
-import { HeaderIconButton } from '../components/HeaderIconButtonComponent/HeaderIconButton';
 import { HeaderLink } from '../components/HeaderLinkComponent/HeaderLink';
 import { SearchComponent } from '../components/SearchComponent/SearchComponent';
 import { SupportButton } from '../components/SupportButton/SupportButton';
 import { ComponentType, Slot } from '../types';
+import { NotificationButton } from '../components/NotificationButton/NotificationButton';
 
 /**
  * default Global Header Components mount points
@@ -56,7 +56,7 @@ export const defaultGlobalHeaderComponentsMountPoints = [
     },
   },
   {
-    Component: HeaderIconButton as React.ComponentType,
+    Component: NotificationButton as React.ComponentType,
     config: {
       type: ComponentType.ICON_BUTTON,
       slot: Slot.HEADER_START,

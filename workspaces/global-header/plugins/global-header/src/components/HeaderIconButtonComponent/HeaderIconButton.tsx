@@ -17,11 +17,9 @@
 import React from 'react';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import Badge from '@mui/material/Badge';
 import { HeaderIcon } from './HeaderIcon';
 import { Link } from 'react-router-dom';
 import { isExternalUrl } from '../../utils/stringUtils';
-import { useNotificationCount } from '../../hooks/useNotificationCount';
 import { HeaderIconButtonProps } from '../../types';
 
 export const HeaderIconButton = ({
@@ -29,8 +27,6 @@ export const HeaderIconButton = ({
   tooltip,
   to,
 }: HeaderIconButtonProps) => {
-  const showNotifications = icon === 'notifications';
-  const unreadCount = useNotificationCount(showNotifications);
   const isExternal = to && isExternalUrl(to);
   const buttonProps: Record<string, any> = {
     component: isExternal ? 'a' : Link,
@@ -53,13 +49,7 @@ export const HeaderIconButton = ({
         sx={{ mr: 1.5 }}
         {...buttonProps}
       >
-        {unreadCount > 0 ? (
-          <Badge badgeContent={unreadCount} max={999} color="error">
-            <HeaderIcon icon={icon} />
-          </Badge>
-        ) : (
-          <HeaderIcon icon={icon} />
-        )}
+        <HeaderIcon icon={icon} />
       </IconButton>
     </Tooltip>
   );

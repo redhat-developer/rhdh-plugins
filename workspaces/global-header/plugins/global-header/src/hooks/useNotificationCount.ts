@@ -20,14 +20,12 @@ import { notificationsApiRef } from '@backstage/plugin-notifications';
 import { useSignal } from '@backstage/plugin-signals-react';
 import { NotificationSignal } from '@backstage/plugin-notifications-common';
 
-export const useNotificationCount = (enabled: boolean) => {
+export const useNotificationCount = () => {
   const apiHolder = useApiHolder();
   const { lastSignal } = useSignal<NotificationSignal>('notifications');
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    if (!enabled) return;
-
     const notificationsApi = apiHolder.get(notificationsApiRef);
     if (!notificationsApi) {
       return;
@@ -46,10 +44,10 @@ export const useNotificationCount = (enabled: boolean) => {
     };
 
     fetchUnreadCount();
-  }, [apiHolder, enabled]);
+  }, [apiHolder]);
 
   useEffect(() => {
-    if (!enabled || !lastSignal) return;
+    if (!lastSignal) return;
 
     switch (lastSignal.action) {
       case 'notification_read':
@@ -66,7 +64,7 @@ export const useNotificationCount = (enabled: boolean) => {
       default:
         break;
     }
-  }, [lastSignal, enabled]);
+  }, [lastSignal]);
 
-  return enabled ? unreadCount : 0;
+  return unreadCount;
 };
