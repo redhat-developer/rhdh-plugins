@@ -54,7 +54,7 @@ export const SupportButton = ({
   title = 'Support',
   tooltip,
   color = 'inherit',
-  size = 'medium',
+  size = 'small',
   to,
 }: SupportButtonProps) => {
   const apiHolder = useApiHolder();
@@ -74,7 +74,7 @@ export const SupportButton = ({
         to={supportUrl}
         aria-label={title}
       >
-        <HelpIcon />
+        <HelpIcon fontSize={size} />
       </IconButton>
     </Tooltip>
   );
