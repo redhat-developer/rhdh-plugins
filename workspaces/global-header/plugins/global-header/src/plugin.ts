@@ -15,37 +15,43 @@
  */
 
 import React from 'react';
+
 import {
   createPlugin,
   createComponentExtension,
 } from '@backstage/core-plugin-api';
+
 import { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
-import { HeaderLinkProps } from './components/HeaderLinkComponent/HeaderLink';
+import { MenuItemLinkProps } from './components/MenuItemLink/MenuItemLink';
 import { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
 import { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
-import { HeaderDropdownComponentProps, HeaderIconButtonProps } from './types';
 
 export type { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
-export type { HeaderLinkProps } from './components/HeaderLinkComponent/HeaderLink';
+
+export type { HeaderButtonProps } from './components/HeaderButton/HeaderButton';
+export type { HeaderIconProps } from './components/HeaderIcon/HeaderIcon';
+export type { HeaderIconButtonProps } from './components/HeaderIconButton/HeaderIconButton';
+
+export type { MenuItemLinkProps } from './components/MenuItemLink/MenuItemLink';
 export type { MenuItemConfig } from './components/HeaderDropdownComponent/MenuSection';
 export type { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
 export type { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
 export type { SpacerProps } from './components/Spacer/Spacer';
-export type {
-  GlobalHeaderComponentMountPoint,
-  GlobalHeaderComponentMountPointConfig,
-  HeaderDropdownComponentProps,
-  HeaderIconButtonProps,
-} from './types';
-
-export { defaultGlobalHeaderComponentsMountPoints } from './defaultMountPoints/defaultMountPoints';
-
-export { ComponentType, Slot } from './types';
+export type { SupportButtonProps } from './components/SupportButton/SupportButton';
+export type { NotificationButtonProps } from './components/NotificationButton/NotificationButton';
 
 export type {
   NotificationBannerProps,
   NotificationBannerDismiss,
 } from './components/NotificationBanner';
+
+export type {
+  ComponentType,
+  GlobalHeaderComponentMountPoint,
+  GlobalHeaderComponentMountPointConfig,
+} from './types';
+
+export { defaultGlobalHeaderComponentsMountPoints } from './defaultMountPoints/defaultMountPoints';
 
 /**
  * Global Header Plugin
@@ -89,6 +95,49 @@ export const GlobalHeaderComponent: React.ComponentType<GlobalHeaderComponentPro
   );
 
 /**
+ * @public
+ */
+export const HeaderButton = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'HeaderButton',
+    component: {
+      lazy: () =>
+        import('./components/HeaderButton/HeaderButton').then(
+          m => m.HeaderButton,
+        ),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const HeaderIcon = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'HeaderIcon',
+    component: {
+      lazy: () =>
+        import('./components/HeaderIcon/HeaderIcon').then(m => m.HeaderIcon),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const HeaderIconButton = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'HeaderIconButton',
+    component: {
+      lazy: () =>
+        import('./components/HeaderIconButton/HeaderIconButton').then(
+          m => m.HeaderIconButton,
+        ),
+    },
+  }),
+);
+
+/**
  * Search Component
  *
  * @public
@@ -110,54 +159,34 @@ export const SearchComponent: React.ComponentType = globalHeaderPlugin.provide(
  *
  * @public
  */
-export const CreateDropdown: React.ComponentType<HeaderDropdownComponentProps> =
-  globalHeaderPlugin.provide(
-    createComponentExtension({
-      name: 'CreateDropdown',
-      component: {
-        lazy: () =>
-          import('./components/HeaderDropdownComponent/CreateDropdown').then(
-            m => m.CreateDropdown,
-          ),
-      },
-    }),
-  );
-
-/**
- * Header Icon Button
- *
- * @public
- */
-export const HeaderIconButton: React.ComponentType<HeaderIconButtonProps> =
-  globalHeaderPlugin.provide(
-    createComponentExtension({
-      name: 'HeaderIconButton',
-      component: {
-        lazy: () =>
-          import(
-            './components/HeaderIconButtonComponent/HeaderIconButton'
-          ).then(m => m.HeaderIconButton),
-      },
-    }),
-  );
+export const CreateDropdown = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'CreateDropdown',
+    component: {
+      lazy: () =>
+        import('./components/HeaderDropdownComponent/CreateDropdown').then(
+          m => m.CreateDropdown,
+        ),
+    },
+  }),
+);
 
 /**
  * Profile Dropdown
  *
  * @public
  */
-export const ProfileDropdown: React.ComponentType<HeaderDropdownComponentProps> =
-  globalHeaderPlugin.provide(
-    createComponentExtension({
-      name: 'ProfileDropdown',
-      component: {
-        lazy: () =>
-          import('./components/HeaderDropdownComponent/ProfileDropdown').then(
-            m => m.ProfileDropdown,
-          ),
-      },
-    }),
-  );
+export const ProfileDropdown = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'ProfileDropdown',
+    component: {
+      lazy: () =>
+        import('./components/HeaderDropdownComponent/ProfileDropdown').then(
+          m => m.ProfileDropdown,
+        ),
+    },
+  }),
+);
 
 /**
  * Software Templates List
@@ -200,14 +229,14 @@ export const RegisterAComponentSection: React.ComponentType<RegisterAComponentSe
  *
  * @public
  */
-export const HeaderLink: React.ComponentType<HeaderLinkProps> =
+export const MenuItemLink: React.ComponentType<MenuItemLinkProps> =
   globalHeaderPlugin.provide(
     createComponentExtension({
-      name: 'HeaderLink',
+      name: 'MenuItemLink',
       component: {
         lazy: () =>
-          import('./components/HeaderLinkComponent/HeaderLink').then(
-            m => m.HeaderLink,
+          import('./components/MenuItemLink/MenuItemLink').then(
+            m => m.MenuItemLink,
           ),
       },
     }),
@@ -223,7 +252,7 @@ export const LogoutButton: React.ComponentType = globalHeaderPlugin.provide(
     name: 'LogoutButton',
     component: {
       lazy: () =>
-        import('./components/HeaderButtonComponent/LogoutButton').then(
+        import('./components/LogoutButton/LogoutButton').then(
           m => m.LogoutButton,
         ),
     },
@@ -242,6 +271,48 @@ export const Spacer = globalHeaderPlugin.provide(
     name: 'Spacer',
     component: {
       lazy: () => import('./components/Spacer/Spacer').then(m => m.Spacer),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const Divider = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'Divider',
+    component: {
+      lazy: () => import('./components/Divider/Divider').then(m => m.Divider),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const SupportButton = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'SupportButton',
+    component: {
+      lazy: () =>
+        import('./components/SupportButton/SupportButton').then(
+          m => m.SupportButton,
+        ),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const NotificationButton = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'NotificationButton',
+    component: {
+      lazy: () =>
+        import('./components/NotificationButton/NotificationButton').then(
+          m => m.NotificationButton,
+        ),
     },
   }),
 );

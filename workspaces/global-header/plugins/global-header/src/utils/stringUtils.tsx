@@ -61,7 +61,3 @@ export const highlightMatch = (text: string, query: string) => {
 export const createSearchLink = (searchTerm: string) => {
   return `/search?query=${encodeURIComponent(searchTerm)}`;
 };
-
-export const isExternalUrl = (url: string) => {
-  return url.startsWith('http://') || url.startsWith('https://');
-};

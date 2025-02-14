@@ -20,7 +20,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import { Link } from '@backstage/core-components';
-import { HeaderLinkProps } from '../HeaderLinkComponent/HeaderLink';
+import { MenuItemLinkProps } from '../MenuItemLink/MenuItemLink';
 
 /**
  * Menu item configuration
@@ -28,7 +28,7 @@ import { HeaderLinkProps } from '../HeaderLinkComponent/HeaderLink';
  * @public
  */
 export interface MenuItemConfig {
-  Component: React.ComponentType<HeaderLinkProps | {}>;
+  Component: React.ComponentType<MenuItemLinkProps | {}>;
   type: string;
   label: string;
   icon?: string;
@@ -45,7 +45,7 @@ export interface MenuSectionConfig {
   handleClose: () => void;
 }
 
-const MenuSection: React.FC<MenuSectionConfig> = ({
+export const MenuSection: React.FC<MenuSectionConfig> = ({
   sectionLabel,
   optionalLink,
   optionalLinkLabel,
@@ -112,5 +112,3 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
     {!hideDivider && <Divider sx={{ my: 0.5 }} />}
   </Box>
 );
-
-export default MenuSection;

@@ -17,21 +17,19 @@
 import React from 'react';
 
 export const useDropdownManager = () => {
-  const [menuStates, setMenuStates] = React.useState<
-    Record<string, HTMLElement | null>
-  >({});
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
 
-  const handleOpen =
-    (key: string) => (event: React.MouseEvent<HTMLElement>) => {
-      setMenuStates(prev => ({ ...prev, [key]: event.currentTarget }));
-    };
+  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  const handleClose = (key: string) => () => {
-    setMenuStates(prev => ({ ...prev, [key]: null }));
+  const handleClose = () => {
+    setAnchorEl(null);
   };
 
   return {
-    menuStates,
+    anchorEl,
+    open: !!anchorEl,
     handleOpen,
     handleClose,
   };

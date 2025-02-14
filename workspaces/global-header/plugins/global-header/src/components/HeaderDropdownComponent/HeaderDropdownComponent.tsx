@@ -27,9 +27,9 @@ interface HeaderDropdownProps {
   menuSections?: MenuSectionConfig[];
   menuBottomItems?: MenuItemConfig[];
   buttonProps?: React.ComponentProps<typeof Button>;
-  buttonClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  onOpen: (event: React.MouseEvent<HTMLElement>) => void;
+  onClose: () => void;
   anchorEl: HTMLElement | null;
-  setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
 
 const Listbox = styled('ul')(
@@ -59,13 +59,13 @@ const Listbox = styled('ul')(
   `,
 );
 
-const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
+export const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
   buttonContent,
   children,
   buttonProps,
-  buttonClick,
+  onOpen,
+  onClose,
   anchorEl,
-  setAnchorEl,
 }) => {
   return (
     <Box>
@@ -73,7 +73,7 @@ const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
         disableRipple
         disableTouchRipple
         {...buttonProps}
-        onClick={buttonClick}
+        onClick={onOpen}
       >
         {buttonContent}
       </Button>
@@ -82,7 +82,7 @@ const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
         anchorEl={anchorEl}
         keepMounted
         open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
+        onClose={onClose}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'center',
@@ -102,5 +102,3 @@ const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
     </Box>
   );
 };
-
-export default HeaderDropdownComponent;

@@ -15,20 +15,18 @@
  */
 
 import React from 'react';
-import {
-  errorApiRef,
-  identityApiRef,
-  useApi,
-} from '@backstage/core-plugin-api';
-import { HeaderButton } from './HeaderButton';
 
-export const LogoutButton = () => {
-  const errorApi = useApi(errorApiRef);
-  const identityApi = useApi(identityApiRef);
+import MUIDivider from '@mui/material/Divider';
 
-  const handleLogout = () => {
-    identityApi.signOut().catch(error => errorApi.post(error));
-  };
-
-  return <HeaderButton title="Logout" icon="logout" onClick={handleLogout} />;
+/**
+ * @public
+ */
+export const Divider = () => {
+  return (
+    <MUIDivider
+      orientation="vertical"
+      flexItem
+      sx={{ borderColor: '#383838', marginX: 1 }}
+    />
+  );
 };

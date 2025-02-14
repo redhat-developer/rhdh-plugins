@@ -39,8 +39,7 @@ After that customers can implement and install their own header as a dynamic plu
             - mountPoint: application/header
               importName: <Header component name>
               config:
-                layout:
-                  position: above-main-content
+                position: above-main-content
 ```
 
 <!--

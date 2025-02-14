@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-global-header': major
+'@red-hat-developer-hub/backstage-plugin-global-header': minor
 ---
 
 First version of Global Header plugin with the following components:
@@ -11,6 +11,10 @@ First version of Global Header plugin with the following components:
   - RegisterAComponentSection
 - ProfileDropdown
   - LogoutButton
+- HeaderButton
+- HeaderIcon
 - HeaderIconButton
-- HeaderLink
+- MenuItemLink
+- Spacer
+- Divider
 - NotificationBanner

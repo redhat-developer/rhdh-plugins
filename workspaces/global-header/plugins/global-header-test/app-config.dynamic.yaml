@@ -7,14 +7,12 @@ dynamicPlugins:
         - mountPoint: application/header
           importName: TestHeader
           config:
-            layout:
-              position: above-sidebar
+            position: above-sidebar
 
         - mountPoint: application/header
           importName: TestHeader
           config:
-            layout:
-              position: above-main-content
+            position: above-main-content
 
         # Additional header components within the global-header
         - mountPoint: header/component

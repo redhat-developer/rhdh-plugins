@@ -6,20 +6,16 @@ dynamicPlugins:
         - mountPoint: application/header
           importName: GlobalHeader
           config:
-            layout:
-              position: above-main-content # above-main-content | below-main-content
+            position: above-main-content # above-main-content | below-main-content
         - mountPoint: global.header/component
           importName: SearchComponent
           config:
             type: search
-            slot: header-start
             priority: 100
         - mountPoint: global.header/component
           importName: CreateDropdown
           config:
             type: dropdown_button
-            key: create
-            slot: header-start
             priority: 90
         - mountPoint: global.header/create
           importName: SoftwareTemplatesSection
@@ -34,7 +30,6 @@ dynamicPlugins:
           importName: HeaderIconButton
           config:
             type: icon_button
-            slot: header-start
             priority: 80
             props:
               icon: support
@@ -43,7 +38,6 @@ dynamicPlugins:
           importName: HeaderIconButton
           config:
             type: icon_button
-            slot: header-start
             priority: 70
             props:
               icon: notifications
@@ -52,14 +46,12 @@ dynamicPlugins:
           importName: ProfileDropdown
           config:
             type: dropdown_button
-            key: profile
-            slot: header-end
             priority: 0
         - mountPoint: global.header/profile
-          importName: HeaderLink
+          importName: MenuItemLink
           config:
             type: link
-            priority: 10
+            priority: 200
             props:
               title: Settings
               link: /settings
@@ -67,5 +59,4 @@ dynamicPlugins:
         - mountPoint: global.header/profile
           importName: LogoutButton
           config:
-            type: logout
-            priority: 0
+            priority: 100
