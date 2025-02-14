@@ -286,11 +286,13 @@ const WorkflowOutputs = ({
         </Grid>
       )}
 
-      <Grid item md={12} key="__links" className={styles.values}>
-        <AboutField label="Values">
-          <StructuredMetadataTable dense metadata={nonLinks} />
-        </AboutField>
-      </Grid>
+      {nonLinks?.length > 0 && (
+        <Grid item md={12} key="__links" className={styles.values}>
+          <AboutField label="Values">
+            <StructuredMetadataTable dense metadata={nonLinks} />
+          </AboutField>
+        </Grid>
+      )}
     </>
   );
 };
