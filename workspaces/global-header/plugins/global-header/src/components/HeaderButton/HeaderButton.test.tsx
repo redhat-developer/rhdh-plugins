@@ -16,7 +16,7 @@
 
 import React from 'react';
 
-import { renderInTestApp } from '@backstage/frontend-test-utils';
+import { renderInTestApp } from '@backstage/test-utils';
 
 import { HeaderButton } from './HeaderButton';
 

@@ -16,16 +16,41 @@
 
 import React from 'react';
 
-import {
-  renderInTestApp,
-  TestApiProvider,
-} from '@backstage/frontend-test-utils';
+import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
 import { NotificationButton } from './NotificationButton';
+import { useNotificationCount } from '../../hooks/useNotificationCount';
+
+jest.mock('../../hooks/useNotificationCount', () => ({
+  useNotificationCount: jest.fn(),
+}));
+
+const mockUseNotificationCount = jest.mocked(useNotificationCount);
 
 describe('NotificationButton', () => {
-  it('renders a button', async () => {
-    const { getByRole } = await renderInTestApp(
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('does not render a button when not available', async () => {
+    mockUseNotificationCount.mockReturnValue({
+      available: false,
+      unreadCount: 0,
+    });
+    const { queryByRole } = await renderInTestApp(
+      <TestApiProvider apis={[]}>
+        <NotificationButton />
+      </TestApiProvider>,
+    );
+    expect(queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('renders a button without unread count when available but unread count is 0', async () => {
+    mockUseNotificationCount.mockReturnValue({
+      available: true,
+      unreadCount: 0,
+    });
+    const { getByRole, queryByRole } = await renderInTestApp(
       <TestApiProvider apis={[]}>
         <NotificationButton />
       </TestApiProvider>,
@@ -36,5 +61,20 @@ describe('NotificationButton', () => {
     );
     expect(getByRole('link').getAttribute('href')).toEqual('/notifications');
     expect(getByRole('link').getAttribute('target')).not.toEqual('_blank');
+    expect(queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('renders a button with unread count when available and unread count is greater than 0', async () => {
+    mockUseNotificationCount.mockReturnValue({
+      available: true,
+      unreadCount: 5,
+    });
+    const { getByRole, getByText } = await renderInTestApp(
+      <TestApiProvider apis={[]}>
+        <NotificationButton />
+      </TestApiProvider>,
+    );
+    expect(getByRole('link')).toBeInTheDocument();
+    expect(getByText('5')).toBeInTheDocument();
   });
 });
