@@ -34,7 +34,8 @@ import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndica
 const useStyles = makeStyles({
   details: {
     overflowY: 'auto',
-    height: '12rem',
+    minHeight: '10rem',
+    maxHeight: '15rem',
   },
 });
 
@@ -87,7 +88,7 @@ const WorkflowDefinitionDetailsCard = ({
 
   return (
     <InfoCard title="Details" className={classes.details}>
-      <Grid container spacing={8} alignContent="flex-start" wrap="nowrap">
+      <Grid container spacing={7} alignContent="flex-start" wrap="nowrap">
         {details?.map(({ label, value, children }) => (
           <Grid item key={label}>
             {/* AboutField requires the value to be defined as a prop as well */}
@@ -96,7 +97,7 @@ const WorkflowDefinitionDetailsCard = ({
             </AboutField>
           </Grid>
         ))}
-        <Grid item md={5}>
+        <Grid item md={7}>
           <AboutField
             label="description"
             value={formattedWorkflowOverview?.description}
