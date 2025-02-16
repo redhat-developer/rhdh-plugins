@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 import React from 'react';
-import { Box, makeStyles, Theme } from '@material-ui/core';
+import Box from '@mui/material/Box';
+import { Theme } from '@mui/material/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import { Page, Content } from '@backstage/core-components';
 import { SandboxCatalogBanner } from './SandboxCatalogBanner';
 import { SandboxCatalogGrid } from './SandboxCatalogGrid';

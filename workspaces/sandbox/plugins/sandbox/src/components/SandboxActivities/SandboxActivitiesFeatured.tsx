@@ -14,38 +14,35 @@
  * limitations under the License.
  */
 import React from 'react';
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import { useTheme } from '@mui/material/styles';
 import { ItemCardGrid } from '@backstage/core-components';
-import { Box } from '@material-ui/core';
 import { SandboxActivitiesCard } from './SandboxActivitiesCard';
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '36px 240px 48px 60px',
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: theme.shape.borderRadius,
-  },
-}));
-
 export const SandboxActivitiesFeatured: React.FC = () => {
-  const classes = useStyles();
+  const theme = useTheme();
 
   return (
-    <Box className={classes.root}>
+    <Box
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '36px 240px 48px 60px',
+        backgroundColor: theme.palette.background.paper,
+      }}
+    >
       <Typography
         variant="h3"
         color="textPrimary"
-        style={{ fontWeight: 700, marginBottom: '32px' }}
+        sx={{ fontWeight: 700, marginBottom: theme.spacing(4) }}
         gutterBottom
       >
         Featured
       </Typography>
       <ItemCardGrid>
         {[...Array(3).keys()].map(index => (
-          <SandboxActivitiesCard index={index} />
+          <SandboxActivitiesCard key={index} />
         ))}
       </ItemCardGrid>
     </Box>

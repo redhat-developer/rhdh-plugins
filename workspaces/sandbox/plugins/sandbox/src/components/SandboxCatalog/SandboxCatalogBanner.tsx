@@ -14,37 +14,41 @@
  * limitations under the License.
  */
 import React from 'react';
-import { Box, Typography, Card, Grid } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+import Grid from '@mui/material/Grid';
+import { useTheme } from '@mui/material/styles';
 import Image from '../../assets/images/sandbox-banner-image.png';
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: theme.spacing(4),
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: theme.shape.borderRadius,
-  },
-  image: {
-    width: '100%',
-    float: 'right',
-    maxWidth: '207px',
-    height: 'auto',
-    display: 'block',
-  },
-}));
-
 export const SandboxCatalogBanner: React.FC = () => {
-  const classes = useStyles();
+  const theme = useTheme();
 
   return (
-    <Card className={classes.root} elevation={0}>
+    <Card
+      elevation={0}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: theme.spacing(4),
+        backgroundColor: theme.palette.background.paper,
+      }}
+    >
       <Grid container alignItems="center" spacing={4}>
         <Grid item xs={12} sm={12} md={2}>
           <Box>
-            <img src={Image} alt="Red Hat Trial" className={classes.image} />
+            <img
+              src={Image}
+              alt="Red Hat Trial"
+              style={{
+                width: '100%',
+                float: 'right',
+                maxWidth: '207px',
+                height: 'auto',
+                display: 'block',
+              }}
+            />
           </Box>
         </Grid>
         <Grid item xs={12} sm={12} md={10}>

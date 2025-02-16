@@ -13,30 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { makeStyles, Theme } from '@material-ui/core';
+import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
-import React from 'react';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  footer: {
-    padding: theme.spacing(2),
-    backgroundColor: theme.palette.background.paper,
-  },
-}));
+import { useTheme } from '@mui/material/styles';
+import { Link } from '@backstage/core-components';
 
 export const SandboxCatalogFooter = () => {
-  const classes = useStyles();
+  const theme = useTheme();
   return (
-    <Box className={classes.footer} component="footer">
+    <Box
+      component="footer"
+      sx={{
+        padding: theme.spacing(2),
+        backgroundColor: theme.palette.background.paper,
+      }}
+    >
       <Typography variant="body1" color="textPrimary" align="center">
         Have an activation code?
-        <Link
-          href="https://developers.redhat.com/rhdh/overview"
-          target="_blank"
-          underline="none"
-        >
+        <Link to="https://developers.redhat.com/rhdh/overview" underline="none">
           {' '}
           Click here
         </Link>

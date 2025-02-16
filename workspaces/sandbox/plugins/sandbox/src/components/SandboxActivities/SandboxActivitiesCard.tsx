@@ -18,22 +18,29 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CardMedia from '@mui/material/CardMedia';
-import { makeStyles } from '@material-ui/core';
+import { useTheme } from '@mui/material/styles';
 import FeaturedArticleBanner from '../../assets/images/featured-article.png';
 
-const useStyles = makeStyles(theme => ({
-  card: {
-    maxWidth: '326px',
-    minHeight: '368px',
-    borderRadius: 2,
-    backgroundColor: theme.palette.background.default,
-  },
-}));
+type SandboxActivitiesCardProps = {
+  key: number;
+};
 
-export const SandboxActivitiesCard = ({ index }: { index: number }) => {
-  const classes = useStyles();
+export const SandboxActivitiesCard: React.FC<SandboxActivitiesCardProps> = ({
+  key,
+}) => {
+  const theme = useTheme();
+
   return (
-    <Card className={classes.card} key={index} elevation={0}>
+    <Card
+      key={key}
+      elevation={0}
+      sx={{
+        maxWidth: '326px',
+        minHeight: '368px',
+        borderRadius: 2,
+        backgroundColor: theme.palette.background.default,
+      }}
+    >
       <CardMedia
         component="img"
         height="120"
@@ -41,11 +48,11 @@ export const SandboxActivitiesCard = ({ index }: { index: number }) => {
         image={FeaturedArticleBanner}
         alt="Developer working on application"
       />
-      <CardContent style={{ margin: '4px' }}>
+      <CardContent sx={{ margin: theme.spacing(0.5), borderRadius: 2 }}>
         <Typography
           variant="h5"
           color="primary"
-          style={{ fontWeight: 600 }}
+          sx={{ fontWeight: 600 }}
           gutterBottom
         >
           Deploy an application on Developer Sandbox
@@ -53,7 +60,7 @@ export const SandboxActivitiesCard = ({ index }: { index: number }) => {
         <Typography
           variant="body2"
           color="textSecondary"
-          style={{ fontStyle: 'italic' }}
+          sx={{ fontStyle: 'italic' }}
         >
           Enables developers to easily test and refine their applications in a
           safe, isolated environment before launching them to production. This

@@ -14,43 +14,24 @@
  * limitations under the License.
  */
 import React from 'react';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  makeStyles,
-  Theme,
-  CardActions,
-  CardMedia,
-  Link,
-} from '@material-ui/core';
+import Stack from '@mui/material/Stack';
+import Grid from '@mui/material/Grid';
+import Box from '@material-ui/core/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import CardActions from '@mui/material/CardActions';
+import CardMedia from '@mui/material/CardMedia';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { ItemCardGrid } from '@backstage/core-components';
+import { useTheme } from '@mui/material/styles';
+import { Link } from '@backstage/core-components';
 import { productData } from './productData';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  card: {
-    maxWidth: '330px',
-    minHeight: '330px',
-    padding: theme.spacing(2),
-  },
-  title: {
-    padding: theme.spacing(2),
-  },
-  image: {
-    maxWidth: '207px',
-    height: 'auto',
-  },
-}));
 
 interface SandboxCatalogCardProps {
   key: React.Key;
   title: string;
-  image: {
-    icon: string;
-    maxWidth: string;
-  };
+  image: string;
   description: {
     icon: React.ReactNode;
     value: string;
@@ -65,22 +46,37 @@ const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   description,
   link,
 }) => {
-  const classes = useStyles();
+  const theme = useTheme();
   return (
-    <Card className={classes.card} elevation={0} key={key}>
-      <CardMedia className={classes.title}>
-        <img
-          src={image.icon}
-          alt={title}
-          style={{ maxWidth: image.maxWidth, height: 'auto' }}
-        />
+    <Card
+      elevation={0}
+      key={key}
+      sx={{ width: '100%', height: '100%', padding: theme.spacing(2) }}
+    >
+      <CardMedia sx={{ padding: theme.spacing(2) }}>
+        <Stack
+          direction="row"
+          style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+        >
+          <img
+            src={image}
+            alt={title}
+            style={{ width: '48px', height: '48px' }}
+          />
+          <Typography
+            variant="h5"
+            style={{ fontSize: '16px', fontWeight: 700 }}
+          >
+            {title}
+          </Typography>
+        </Stack>
       </CardMedia>
       <CardContent style={{ padding: '0 16px' }}>
-        {description.map((point, index) => (
+        {description?.map(point => (
           <Typography
-            key={index}
+            key={point.value}
             color="textPrimary"
-            style={{ fontSize: '14px' }}
+            style={{ fontSize: '14px', paddingBottom: '8px' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               {point.icon} {point.value}
@@ -89,12 +85,20 @@ const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
         ))}
       </CardContent>
       <CardActions style={{ justifyContent: 'flex-start' }}>
-        <Link href={link} target="_blank" underline="none">
+        <Link to={link} underline="none">
           <Button
             size="medium"
             color="primary"
             variant="outlined"
             endIcon={<OpenInNewIcon />}
+            sx={{
+              border: `1px solid ${theme.palette.primary.main}`,
+              marginTop: theme.spacing(0.5),
+              '&:hover': {
+                backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                borderColor: '#1976d2',
+              },
+            }}
           >
             Try it
           </Button>
@@ -106,16 +110,20 @@ const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
 
 export const SandboxCatalogGrid: React.FC = () => {
   return (
-    <ItemCardGrid>
-      {productData?.map((product, index) => (
-        <SandboxCatalogCard
-          key={index}
-          title={product.title}
-          image={product.image}
-          description={product.description}
-          link={product.link}
-        />
+    <Grid container spacing={3} sx={{ maxWidth: '100%' }}>
+      {productData?.map(product => (
+        <Grid item xs={12} sm="auto" md="auto" key={product.id}>
+          <Box sx={{ width: '330px', height: '416px' }}>
+            <SandboxCatalogCard
+              key={product.id}
+              title={product.title}
+              image={product.image}
+              description={product.description}
+              link={product.link}
+            />
+          </Box>
+        </Grid>
       ))}
-    </ItemCardGrid>
+    </Grid>
   );
 };
