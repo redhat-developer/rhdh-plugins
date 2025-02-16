@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ export const WorkflowPage = () => {
 
   const {
     value: workflowOverviewDTO,
-    loading :loadingWorkflowOverview,
-    error :errorWorkflowOverview,
+    loading: loadingWorkflowOverview,
+    error: errorWorkflowOverview,
   } = useAsync(() => {
     return orchestratorApi.getWorkflowOverview(workflowId);
   }, []);
