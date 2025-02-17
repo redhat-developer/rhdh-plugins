@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,9 @@ import { useAsync } from 'react-use';
 import { TabbedLayout } from '@backstage/core-components';
 import { useApi, useRouteRefParams } from '@backstage/core-plugin-api';
 
-import {
-  orchestratorWorkflowUsePermission,
-  orchestratorWorkflowUseSpecificPermission,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { Grid } from '@material-ui/core';
 
 import { orchestratorApiRef } from '../../api';
-import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import { workflowRouteRef, workflowRunsRoutePath } from '../../routes';
 import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
 import { WorkflowRunsTabContent } from '../WorkflowRunsTabContent';
@@ -37,16 +33,10 @@ export const WorkflowPage = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
 
-  const { loading: loadingPermission, allowed: canRun } =
-    usePermissionArrayDecision([
-      orchestratorWorkflowUsePermission,
-      orchestratorWorkflowUseSpecificPermission(workflowId),
-    ]);
-
   const {
     value: workflowOverviewDTO,
-    loading,
-    error,
+    loading: loadingWorkflowOverview,
+    error: errorWorkflowOverview,
   } = useAsync(() => {
     return orchestratorApi.getWorkflowOverview(workflowId);
   }, []);
@@ -60,26 +50,19 @@ export const WorkflowPage = () => {
     >
       <TabbedLayout>
         <TabbedLayout.Route path="/" title="Workflow details">
-          <WorkflowPageTabContent
-            error={error}
-            loadingPermission={loadingPermission}
-            loading={loading}
-            canRun={canRun}
-          >
+          <WorkflowPageTabContent>
             <WorkflowDetailsTabContent
-              loading={loading}
+              loading={loadingWorkflowOverview}
               workflowOverviewDTO={workflowOverviewDTO?.data}
+              errorWorkflowOverview={errorWorkflowOverview}
             />
           </WorkflowPageTabContent>
         </TabbedLayout.Route>
         <TabbedLayout.Route path={workflowRunsRoutePath} title="Workflow runs">
-          <WorkflowPageTabContent
-            error={error}
-            loadingPermission={loadingPermission}
-            loading={loading}
-            canRun={canRun}
-          >
-            <WorkflowRunsTabContent />
+          <WorkflowPageTabContent>
+            <Grid item>
+              <WorkflowRunsTabContent />
+            </Grid>
           </WorkflowPageTabContent>
         </TabbedLayout.Route>
       </TabbedLayout>
