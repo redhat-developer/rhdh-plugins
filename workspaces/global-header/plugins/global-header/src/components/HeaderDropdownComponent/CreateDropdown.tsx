@@ -22,6 +22,7 @@ import { MenuItemConfig } from './MenuSection';
 import { useCreateDropdownMountPoints } from '../../hooks/useCreateDropdownMountPoints';
 import { useDropdownManager } from '../../hooks';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
+import Box from '@mui/material/Box';
 
 /**
  * @public
@@ -33,7 +34,15 @@ interface SectionComponentProps {
   items?: MenuItemConfig[];
 }
 
-export const CreateDropdown = () => {
+/**
+ * @public
+ * Props for Create Dropdown
+ */
+export interface CreateDropdownProps {
+  layout?: React.CSSProperties;
+}
+
+export const CreateDropdown = ({ layout }: CreateDropdownProps) => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
 
   const createDropdownMountPoints = useCreateDropdownMountPoints();
@@ -54,9 +63,9 @@ export const CreateDropdown = () => {
   return (
     <HeaderDropdownComponent
       buttonContent={
-        <>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
           Create <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
-        </>
+        </Box>
       }
       buttonProps={{
         variant: 'outlined',
@@ -66,6 +75,7 @@ export const CreateDropdown = () => {
           '&:hover, &.Mui-focusVisible': {
             border: '1px solid #fff',
           },
+          ...layout,
         },
       }}
       onOpen={handleOpen}

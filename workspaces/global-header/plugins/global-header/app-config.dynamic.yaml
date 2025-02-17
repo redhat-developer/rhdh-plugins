@@ -20,23 +20,6 @@ dynamicPlugins:
             props:
               growFactor: 0
 
-        # - mountPoint: global.header/component
-        #   importName: CreateDropdown
-        #   config:
-        #     priority: 90
-        #     layout:
-        #       display:
-        #         sm: none
-        #         md: block
-        #       mr: 1.5
-        # - mountPoint: global.header/create
-        #   importName: SoftwareTemplatesSection
-        #   config:
-        #     priority: 100
-        # - mountPoint: global.header/create
-        #   importName: RegisterAComponentSection
-        #   config:
-        #     priority: 50
         - mountPoint: global.header/component
           importName: HeaderIconButton
           config:
@@ -45,11 +28,6 @@ dynamicPlugins:
               title: Create...
               icon: add
               to: create
-            layout:
-              display:
-                xs: none
-                md: block
-              mr: 1.5
 
         - mountPoint: global.header/component
           importName: SupportButton

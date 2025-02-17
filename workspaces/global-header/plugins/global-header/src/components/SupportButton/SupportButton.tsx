@@ -53,7 +53,7 @@ const Link = (props: any) => (
  * @public
  */
 export const SupportButton = ({
-  title = 'Support',
+  title = 'Support (external link)',
   tooltip,
   color = 'inherit',
   size = 'small',

@@ -9,7 +9,13 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { default as React_2 } from 'react';
 
 // @public
-export const CreateDropdown: () => React_2.JSX.Element | null;
+export const CreateDropdown: React_2.ComponentType<CreateDropdownProps>;
+
+// @public
+export interface CreateDropdownProps {
+  // (undocumented)
+  layout?: React_2.CSSProperties;
+}
 
 // @public
 export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[];
@@ -254,7 +260,13 @@ export interface NotificationButtonProps {
 }
 
 // @public
-export const ProfileDropdown: () => React_2.JSX.Element | null;
+export const ProfileDropdown: React_2.ComponentType<ProfileDropdownProps>;
+
+// @public
+export interface ProfileDropdownProps {
+  // (undocumented)
+  layout?: React_2.CSSProperties;
+}
 
 // @public
 export const RegisterAComponentSection: React_2.ComponentType<RegisterAComponentSectionProps>;

@@ -28,8 +28,17 @@ import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
 import { MenuSection } from './MenuSection';
 import { useDropdownManager } from '../../hooks';
+import Box from '@mui/material/Box';
 
-export const ProfileDropdown = () => {
+/**
+ * @public
+ * Props for Profile Dropdown
+ */
+export interface ProfileDropdownProps {
+  layout?: React.CSSProperties;
+}
+
+export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
 
   const identityApi = useApi(identityApiRef);
@@ -84,7 +93,7 @@ export const ProfileDropdown = () => {
   return (
     <HeaderDropdownComponent
       buttonContent={
-        <>
+        <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
           <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
           <Typography
             variant="body2"
@@ -102,7 +111,7 @@ export const ProfileDropdown = () => {
               borderRadius: '25%',
             }}
           />
-        </>
+        </Box>
       }
       buttonProps={{
         color: 'inherit',
