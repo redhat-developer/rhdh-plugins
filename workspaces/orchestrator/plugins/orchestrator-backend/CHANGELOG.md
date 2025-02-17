@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 5.2.1
+
+### Patch Changes
+
+- bad7cb0: updated dev mode to remove git configuration from the workflow repo, added checks for cloning path
+
 ## 5.2.0
 
 ### Minor Changes
