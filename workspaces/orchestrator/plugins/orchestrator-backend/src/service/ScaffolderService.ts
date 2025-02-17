@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { loggerToWinstonLogger } from '@backstage/backend-common';
 import type {
   LoggerService,
@@ -121,9 +122,12 @@ export class ScaffolderService {
           principal: 'mock-principal',
         };
       },
-      checkpoint: async (key, fn) => {
+      checkpoint: async ({ key, fn }) => {
         this.logger.info(`Orchestrator ScaffolderService checkpoint ${key}`);
         return fn();
+      },
+      task: {
+        id: 'task-orchestrator',
       },
     };
     await action.handler(actionContext);
