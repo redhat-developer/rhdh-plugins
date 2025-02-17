@@ -45,7 +45,7 @@ export const MenuItemLinkContent: React.FC<MenuItemLinkContentProps> = ({
         <HeaderIcon
           icon={icon}
           size="small"
-          styles={
+          layout={
             label
               ? {
                   marginRight: '0.5rem',

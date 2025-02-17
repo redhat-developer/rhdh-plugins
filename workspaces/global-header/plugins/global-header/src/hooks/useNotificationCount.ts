@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { configApiRef, useApi, useApiHolder } from '@backstage/core-plugin-api';
+import { useApiHolder } from '@backstage/core-plugin-api';
 import { notificationsApiRef } from '@backstage/plugin-notifications';
 import { useSignal } from '@backstage/plugin-signals-react';
 import { NotificationSignal } from '@backstage/plugin-notifications-common';
@@ -26,24 +26,14 @@ export const useNotificationCount = () => {
   const [available, setAvailable] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const config = useApi(configApiRef);
-  const frontendPackages =
-    (config.getOptionalConfig('dynamicPlugins.frontend')?.get() as Record<
-      string,
-      any
-    >) ?? {};
-  const displayNotifications =
-    frontendPackages['backstage.plugin-notifications']?.dynamicRoutes?.some(
-      ({ path }: { path: string }) => path === '/notifications',
-    ) ?? false;
-
   useEffect(() => {
     const notificationsApi = apiHolder.get(notificationsApiRef);
     if (!notificationsApi) {
       return;
     }
-
-    setAvailable(displayNotifications);
+    if (!available) {
+      setAvailable(true);
+    }
 
     const fetchUnreadCount = async () => {
       try {

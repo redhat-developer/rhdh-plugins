@@ -25,17 +25,22 @@ import { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
 import { MenuItemLinkProps } from './components/MenuItemLink/MenuItemLink';
 import { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
 import { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
+import { CreateDropdownProps } from './components/HeaderDropdownComponent/CreateDropdown';
+import { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
 
 export type { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
 
 export type { HeaderButtonProps } from './components/HeaderButton/HeaderButton';
 export type { HeaderIconProps } from './components/HeaderIcon/HeaderIcon';
 export type { HeaderIconButtonProps } from './components/HeaderIconButton/HeaderIconButton';
+export type { CreateDropdownProps } from './components/HeaderDropdownComponent/CreateDropdown';
+export type { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
 
 export type { MenuItemLinkProps } from './components/MenuItemLink/MenuItemLink';
 export type { MenuItemConfig } from './components/HeaderDropdownComponent/MenuSection';
 export type { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
 export type { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
+export type { DividerProps } from './components/Divider/Divider';
 export type { SpacerProps } from './components/Spacer/Spacer';
 export type { SupportButtonProps } from './components/SupportButton/SupportButton';
 export type { NotificationButtonProps } from './components/NotificationButton/NotificationButton';
@@ -46,7 +51,6 @@ export type {
 } from './components/NotificationBanner';
 
 export type {
-  ComponentType,
   GlobalHeaderComponentMountPoint,
   GlobalHeaderComponentMountPointConfig,
 } from './types';
@@ -159,34 +163,36 @@ export const SearchComponent: React.ComponentType = globalHeaderPlugin.provide(
  *
  * @public
  */
-export const CreateDropdown = globalHeaderPlugin.provide(
-  createComponentExtension({
-    name: 'CreateDropdown',
-    component: {
-      lazy: () =>
-        import('./components/HeaderDropdownComponent/CreateDropdown').then(
-          m => m.CreateDropdown,
-        ),
-    },
-  }),
-);
+export const CreateDropdown: React.ComponentType<CreateDropdownProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'CreateDropdown',
+      component: {
+        lazy: () =>
+          import('./components/HeaderDropdownComponent/CreateDropdown').then(
+            m => m.CreateDropdown,
+          ),
+      },
+    }),
+  );
 
 /**
  * Profile Dropdown
  *
  * @public
  */
-export const ProfileDropdown = globalHeaderPlugin.provide(
-  createComponentExtension({
-    name: 'ProfileDropdown',
-    component: {
-      lazy: () =>
-        import('./components/HeaderDropdownComponent/ProfileDropdown').then(
-          m => m.ProfileDropdown,
-        ),
-    },
-  }),
-);
+export const ProfileDropdown: React.ComponentType<ProfileDropdownProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'ProfileDropdown',
+      component: {
+        lazy: () =>
+          import('./components/HeaderDropdownComponent/ProfileDropdown').then(
+            m => m.ProfileDropdown,
+          ),
+      },
+    }),
+  );
 
 /**
  * Software Templates List

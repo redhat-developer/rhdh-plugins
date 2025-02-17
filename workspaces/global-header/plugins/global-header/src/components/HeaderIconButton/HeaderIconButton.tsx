@@ -18,6 +18,7 @@ import React from 'react';
 
 import { Link as BackstageLink } from '@backstage/core-components';
 
+import Box from '@mui/material/Box';
 import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
@@ -34,7 +35,7 @@ export interface HeaderIconButtonProps {
   size?: 'small' | 'medium' | 'large';
   ariaLabel?: string;
   to: string;
-  style?: React.CSSProperties;
+  layout?: React.CSSProperties;
 }
 
 // Backstage Link automatically detects external links and emits analytic events.
@@ -50,7 +51,7 @@ export const HeaderIconButton = ({
   size = 'small',
   ariaLabel,
   to,
-  style,
+  layout,
 }: HeaderIconButtonProps) => {
   if (!title) {
     // eslint-disable-next-line no-console
@@ -60,19 +61,20 @@ export const HeaderIconButton = ({
   const linkProps = { to } as IconButtonProps;
 
   return (
-    <Tooltip title={tooltip ?? title}>
-      <div>
-        <IconButton
-          LinkComponent={Link}
-          color={color}
-          size={size}
-          aria-label={ariaLabel ?? title}
-          {...linkProps} // to={to} isn't supported
-          sx={style}
-        >
-          <HeaderIcon icon={icon} size={size} />
-        </IconButton>
-      </div>
-    </Tooltip>
+    <Box sx={layout}>
+      <Tooltip title={tooltip ?? title}>
+        <div>
+          <IconButton
+            LinkComponent={Link}
+            color={color}
+            size={size}
+            aria-label={ariaLabel ?? title}
+            {...linkProps} // to={to} isn't supported
+          >
+            <HeaderIcon icon={icon} size={size} />
+          </IconButton>
+        </div>
+      </Tooltip>
+    </Box>
   );
 };

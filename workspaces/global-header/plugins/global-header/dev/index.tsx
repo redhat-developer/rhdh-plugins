@@ -48,7 +48,6 @@ import {
 } from '../src/defaultMountPoints/defaultMountPoints';
 
 import { HeaderButton } from '../src/components/HeaderButton/HeaderButton';
-import { ComponentType } from '../src/types';
 
 const mockSearchApi = new MockSearchApi({
   results: [
@@ -179,13 +178,12 @@ createDevApp()
         mountPoints={{
           'global.header/component': [
             ...defaultGlobalHeaderComponentsMountPoints.filter(
-              mp => mp.config?.type !== ComponentType.SEARCH,
+              (_mp, index) => index > 0,
             ),
             {
               Component: Spacer,
               config: {
-                type: ComponentType.SPACER,
-                priority: 10000, // the greater the number, the more to the left it will be
+                priority: 100, // the greater the number, the more to the left it will be
               },
             },
           ],

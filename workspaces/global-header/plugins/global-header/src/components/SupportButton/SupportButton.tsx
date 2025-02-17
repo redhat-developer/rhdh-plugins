@@ -19,6 +19,7 @@ import React from 'react';
 import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
 import { Link as BackstageLink } from '@backstage/core-components';
 
+import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import HelpIcon from '@mui/icons-material/HelpOutline';
@@ -40,6 +41,7 @@ export interface SupportButtonProps {
     | 'warning';
   size?: 'small' | 'medium' | 'large';
   to?: string;
+  layout?: React.CSSProperties;
 }
 
 // Backstage Link automatically detects external links and emits analytic events.
@@ -56,6 +58,7 @@ export const SupportButton = ({
   color = 'inherit',
   size = 'small',
   to,
+  layout,
 }: SupportButtonProps) => {
   const apiHolder = useApiHolder();
   const config = apiHolder.get(configApiRef);
@@ -65,19 +68,26 @@ export const SupportButton = ({
     return null;
   }
 
+  const isExternalLink =
+    supportUrl.startsWith('http') || supportUrl.startsWith('https');
+
   return (
-    <Tooltip title={tooltip ?? title}>
-      <div>
-        <IconButton
-          component={Link}
-          color={color}
-          size={size}
-          to={supportUrl}
-          aria-label={title}
-        >
-          <HelpIcon fontSize={size} />
-        </IconButton>
-      </div>
-    </Tooltip>
+    <Box sx={layout}>
+      <Tooltip
+        title={tooltip ?? `${title}${isExternalLink ? ' (external link)' : ''}`}
+      >
+        <div>
+          <IconButton
+            component={Link}
+            color={color}
+            size={size}
+            to={supportUrl}
+            aria-label={title}
+          >
+            <HelpIcon fontSize={size} />
+          </IconButton>
+        </div>
+      </Tooltip>
+    </Box>
   );
 };

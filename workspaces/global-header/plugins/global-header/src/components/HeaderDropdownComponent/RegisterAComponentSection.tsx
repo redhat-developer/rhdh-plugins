@@ -17,7 +17,6 @@
 import React from 'react';
 import { MenuSection } from './MenuSection';
 import { MenuItemLink } from '../MenuItemLink/MenuItemLink';
-import { ComponentType } from '../../types';
 
 /**
  * Register A Component Section properties
@@ -38,7 +37,6 @@ export const RegisterAComponentSection = ({
       hideDivider={hideDivider}
       items={[
         {
-          type: ComponentType.LINK,
           label: 'Register a component',
           subLabel: 'Import it to the catalog page',
           link: '/catalog-import',
