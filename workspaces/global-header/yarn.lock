@@ -11042,7 +11042,6 @@ __metadata:
     "@testing-library/user-event": ^14.0.0
     msw: ^1.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-dom: 18.3.1
     react-router-dom: ^6.0.0
     react-use: ^17.5.0
   peerDependencies:
@@ -30644,7 +30643,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:18.3.1, react-dom@npm:^18.0.2":
+"react-dom@npm:^18.0.2":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
   dependencies:

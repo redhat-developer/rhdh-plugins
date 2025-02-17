@@ -200,13 +200,15 @@ export interface NotificationBannerProps {
   // (undocumented)
   backgroundColor?: string;
   // (undocumented)
-  border?: string;
-  // (undocumented)
-  borderRadius?: string;
+  borderColor?: string;
   // (undocumented)
   dismiss?: NotificationBannerDismiss;
   // (undocumented)
+  icon?: string;
+  // (undocumented)
   id?: string;
+  // (undocumented)
+  layout?: React_2.CSSProperties;
   // (undocumented)
   markdown?: boolean;
   // (undocumented)
