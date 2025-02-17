@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 
 import { InfoCard } from '@backstage/core-components';
@@ -33,7 +34,8 @@ import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndica
 const useStyles = makeStyles({
   details: {
     overflowY: 'auto',
-    height: '15rem',
+    minHeight: '10rem',
+    maxHeight: '15rem',
   },
 });
 
@@ -86,16 +88,16 @@ const WorkflowDefinitionDetailsCard = ({
 
   return (
     <InfoCard title="Details" className={classes.details}>
-      <Grid container spacing={3} alignContent="flex-start">
+      <Grid container spacing={7} alignContent="flex-start" wrap="nowrap">
         {details?.map(({ label, value, children }) => (
-          <Grid item md={3} key={label}>
+          <Grid item key={label}>
             {/* AboutField requires the value to be defined as a prop as well */}
             <AboutField label={label} value={value}>
               {loading ? <Skeleton variant="text" /> : children || value}
             </AboutField>
           </Grid>
         ))}
-        <Grid item md={3}>
+        <Grid item md={7}>
           <AboutField
             label="description"
             value={formattedWorkflowOverview?.description}

@@ -200,6 +200,7 @@ export const WorkflowInstancePage = ({
   const handleAbort = React.useCallback(async () => {
     if (value) {
       setIsAborting(true);
+
       try {
         await orchestratorApi.abortWorkflowInstance(value.instance.id);
         restart();
