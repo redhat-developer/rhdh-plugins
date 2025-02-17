@@ -21,7 +21,7 @@ import {
   renderInTestApp,
   mockApis,
   TestApiProvider,
-} from '@backstage/frontend-test-utils';
+} from '@backstage/test-utils';
 
 import { SupportButton } from './SupportButton';
 
