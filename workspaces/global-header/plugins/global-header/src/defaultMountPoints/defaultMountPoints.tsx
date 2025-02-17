@@ -21,7 +21,6 @@ import { SoftwareTemplatesSection } from '../components/HeaderDropdownComponent/
 import { SearchComponent } from '../components/SearchComponent/SearchComponent';
 import { SupportButton } from '../components/SupportButton/SupportButton';
 import {
-  ComponentType,
   CreateDropdownMountPoint,
   GlobalHeaderComponentMountPoint,
   ProfileDropdownMountPoint,
@@ -29,6 +28,7 @@ import {
 import { NotificationButton } from '../components/NotificationButton/NotificationButton';
 import { Divider } from '../components/Divider/Divider';
 import { MenuItemLink } from '../components/MenuItemLink/MenuItemLink';
+import { Spacer } from '../components/Spacer/Spacer';
 
 /**
  * default Global Header Components mount points
@@ -40,38 +40,54 @@ export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMoun
     {
       Component: SearchComponent,
       config: {
-        type: ComponentType.SEARCH,
-        priority: 1000, // the greater the number, the more to the left it will be
+        priority: 100, // the greater the number, the more to the left it will be
       },
     },
     {
+      Component: Spacer,
+      config: {
+        priority: 99, // the greater the number, the more to the left it will be
+        props: {
+          growFactor: 0,
+        },
+      },
+    },
+    // Notice: 1.5 ships with a Create link instead of a dropdown!!!
+    {
       Component: CreateDropdown,
       config: {
-        priority: 900,
+        priority: 90,
+        layout: {
+          display: {
+            sm: 'none',
+            md: 'block',
+          },
+          mr: 1.5,
+        } as any as React.CSSProperties, // I don't used MUI v5 specific `sx` types here to allow us changing the implementation later
       },
     },
     {
       Component: SupportButton,
       config: {
-        priority: 800,
+        priority: 80,
       },
     },
     {
       Component: NotificationButton,
       config: {
-        priority: 700,
+        priority: 70,
       },
     },
     {
       Component: Divider,
       config: {
-        priority: 200,
+        priority: 50,
       },
     },
     {
       Component: ProfileDropdown,
       config: {
-        priority: 100, // the greater the number, the more to the left it will be
+        priority: 10, // the greater the number, the more to the left it will be
       },
     },
   ];
@@ -80,14 +96,12 @@ export const defaultCreateDropdownMountPoints: CreateDropdownMountPoint[] = [
   {
     Component: SoftwareTemplatesSection as React.ComponentType,
     config: {
-      type: ComponentType.LIST,
       priority: 200,
     },
   },
   {
     Component: RegisterAComponentSection as React.ComponentType,
     config: {
-      type: ComponentType.LINK,
       priority: 100,
     },
   },
@@ -97,7 +111,6 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
   {
     Component: MenuItemLink as React.ComponentType,
     config: {
-      type: ComponentType.LINK,
       priority: 200,
       props: {
         title: 'Settings',
@@ -109,7 +122,6 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
   {
     Component: LogoutButton,
     config: {
-      type: ComponentType.LOGOUT,
       priority: 100,
     },
   },

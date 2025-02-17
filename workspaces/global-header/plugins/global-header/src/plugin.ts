@@ -36,6 +36,7 @@ export type { MenuItemLinkProps } from './components/MenuItemLink/MenuItemLink';
 export type { MenuItemConfig } from './components/HeaderDropdownComponent/MenuSection';
 export type { SoftwareTemplatesSectionProps } from './components/HeaderDropdownComponent/SoftwareTemplatesSection';
 export type { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
+export type { DividerProps } from './components/Divider/Divider';
 export type { SpacerProps } from './components/Spacer/Spacer';
 export type { SupportButtonProps } from './components/SupportButton/SupportButton';
 export type { NotificationButtonProps } from './components/NotificationButton/NotificationButton';
@@ -46,7 +47,6 @@ export type {
 } from './components/NotificationBanner';
 
 export type {
-  ComponentType,
   GlobalHeaderComponentMountPoint,
   GlobalHeaderComponentMountPointConfig,
 } from './types';

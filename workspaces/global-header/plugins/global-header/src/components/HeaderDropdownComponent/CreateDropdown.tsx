@@ -18,7 +18,6 @@ import React, { useMemo } from 'react';
 
 import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
 
-import { ComponentType } from '../../types';
 import { MenuItemConfig } from './MenuSection';
 import { useCreateDropdownMountPoints } from '../../hooks/useCreateDropdownMountPoints';
 import { useDropdownManager } from '../../hooks';
@@ -43,7 +42,6 @@ export const CreateDropdown = () => {
     return (createDropdownMountPoints ?? [])
       .map(mp => ({
         Component: mp.Component as React.ComponentType<SectionComponentProps>,
-        type: mp.config?.type ?? ComponentType.LINK,
         priority: mp.config?.priority ?? 0,
       }))
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
@@ -68,7 +66,6 @@ export const CreateDropdown = () => {
           '&:hover, &.Mui-focusVisible': {
             border: '1px solid #fff',
           },
-          mr: 1.5,
         },
       }}
       onOpen={handleOpen}

@@ -29,7 +29,6 @@ import { MenuItemLinkProps } from '../MenuItemLink/MenuItemLink';
  */
 export interface MenuItemConfig {
   Component: React.ComponentType<MenuItemLinkProps | {}>;
-  type: string;
   label: string;
   icon?: string;
   subLabel?: string;
@@ -89,7 +88,7 @@ export const MenuSection: React.FC<MenuSectionConfig> = ({
       </Box>
     )}
     <ul style={{ padding: 0, listStyle: 'none' }}>
-      {items.map(({ type, icon, label, subLabel, link, Component }, index) => (
+      {items.map(({ icon, label, subLabel, link, Component }, index) => (
         <MenuItem
           key={`menu-item-${index.toString()}`}
           disableRipple
@@ -97,15 +96,7 @@ export const MenuSection: React.FC<MenuSectionConfig> = ({
           onClick={handleClose}
           sx={{ py: 0.5, '&:hover': { background: 'transparent' } }}
         >
-          {link && (
-            <Component
-              icon={icon}
-              to={link}
-              title={label}
-              subTitle={subLabel}
-            />
-          )}
-          {type === 'logout' && <Component />}
+          <Component icon={icon} to={link!} title={label} subTitle={subLabel} />
         </MenuItem>
       ))}
     </ul>

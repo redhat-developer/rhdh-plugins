@@ -21,12 +21,19 @@ import MUIDivider from '@mui/material/Divider';
 /**
  * @public
  */
-export const Divider = () => {
+export interface DividerProps {
+  layout?: React.CSSProperties;
+}
+
+/**
+ * @public
+ */
+export const Divider = ({ layout }: DividerProps) => {
   return (
     <MUIDivider
       orientation="vertical"
       flexItem
-      sx={{ borderColor: '#383838', marginX: 1 }}
+      sx={{ borderColor: '#383838', marginX: 1, ...layout }}
     />
   );
 };

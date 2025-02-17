@@ -9,25 +9,19 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { default as React_2 } from 'react';
 
 // @public
-export enum ComponentType {
-  DROPDOWN_BUTTON = 'dropdown_button',
-  ICON_BUTTON = 'icon_button',
-  LINK = 'link',
-  LIST = 'list',
-  LOGOUT = 'logout',
-  SEARCH = 'search',
-  SPACER = 'spacer',
-  SUPPORT_BUTTON = 'support_button',
-}
-
-// @public
 export const CreateDropdown: () => React_2.JSX.Element | null;
 
 // @public
 export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[];
 
 // @public (undocumented)
-export const Divider: () => React_2.JSX.Element;
+export const Divider: ({ layout }: DividerProps) => React_2.JSX.Element;
+
+// @public (undocumented)
+export interface DividerProps {
+  // (undocumented)
+  layout?: React_2.CSSProperties;
+}
 
 // @public
 export const GlobalHeader: () => React_2.JSX.Element;
@@ -38,11 +32,13 @@ export const GlobalHeaderComponent: React_2.ComponentType<GlobalHeaderComponentP
 // @public
 export interface GlobalHeaderComponentMountPoint {
   // (undocumented)
-  Component: React.ComponentType<{}>;
+  Component: React.ComponentType<{
+    layout?: React.CSSProperties;
+  }>;
   // (undocumented)
   config?: GlobalHeaderComponentMountPointConfig & {
-    layout?: Record<string, any>;
     props?: Record<string, any>;
+    layout?: React.CSSProperties;
   };
 }
 
@@ -50,8 +46,6 @@ export interface GlobalHeaderComponentMountPoint {
 export interface GlobalHeaderComponentMountPointConfig {
   // (undocumented)
   priority?: number;
-  // (undocumented)
-  type?: ComponentType;
 }
 
 // @public
@@ -75,7 +69,7 @@ export const HeaderButton: ({
   endIcon,
   externalLinkIcon,
   to,
-  style,
+  layout,
 }: HeaderButtonProps) => React_2.JSX.Element;
 
 // @public (undocumented)
@@ -89,11 +83,11 @@ export interface HeaderButtonProps {
   // (undocumented)
   externalLinkIcon?: boolean;
   // (undocumented)
+  layout?: React_2.CSSProperties;
+  // (undocumented)
   size?: 'small' | 'medium' | 'large';
   // (undocumented)
   startIcon?: string;
-  // (undocumented)
-  style?: React_2.CSSProperties;
   // (undocumented)
   title: string;
   // (undocumented)
@@ -108,7 +102,7 @@ export interface HeaderButtonProps {
 export const HeaderIcon: ({
   icon,
   size,
-  styles,
+  layout,
 }: HeaderIconProps) => React_2.JSX.Element | null;
 
 // @public (undocumented)
@@ -120,7 +114,7 @@ export const HeaderIconButton: ({
   size,
   ariaLabel,
   to,
-  style,
+  layout,
 }: HeaderIconButtonProps) => React_2.JSX.Element;
 
 // @public (undocumented)
@@ -132,9 +126,9 @@ export interface HeaderIconButtonProps {
   // (undocumented)
   icon: string;
   // (undocumented)
-  size?: 'small' | 'medium' | 'large';
+  layout?: React_2.CSSProperties;
   // (undocumented)
-  style?: React_2.CSSProperties;
+  size?: 'small' | 'medium' | 'large';
   // (undocumented)
   title: string;
   // (undocumented)
@@ -148,9 +142,9 @@ export interface HeaderIconProps {
   // (undocumented)
   icon: string;
   // (undocumented)
-  size?: 'small' | 'medium' | 'large';
+  layout?: React_2.CSSProperties;
   // (undocumented)
-  styles?: React_2.CSSProperties;
+  size?: 'small' | 'medium' | 'large';
 }
 
 // @public
@@ -168,8 +162,6 @@ export interface MenuItemConfig {
   link?: string;
   // (undocumented)
   subLabel?: string;
-  // (undocumented)
-  type: string;
 }
 
 // @public
@@ -225,6 +217,7 @@ export const NotificationButton: ({
   size,
   badgeColor,
   to,
+  layout,
 }: NotificationButtonProps) => React_2.JSX.Element | null;
 
 // @public (undocumented)
@@ -248,6 +241,8 @@ export interface NotificationButtonProps {
     | 'info'
     | 'success'
     | 'warning';
+  // (undocumented)
+  layout?: React_2.CSSProperties;
   // (undocumented)
   size?: 'small' | 'medium' | 'large';
   // (undocumented)
@@ -286,12 +281,15 @@ export type SoftwareTemplatesSectionProps = {
 export const Spacer: ({
   growFactor,
   minWidth,
+  layout,
 }: SpacerProps) => React_2.JSX.Element;
 
 // @public (undocumented)
 export interface SpacerProps {
   // (undocumented)
   growFactor?: number;
+  // (undocumented)
+  layout?: React_2.CSSProperties;
   // (undocumented)
   minWidth?: number | string;
 }
@@ -303,6 +301,7 @@ export const SupportButton: ({
   color,
   size,
   to,
+  layout,
 }: SupportButtonProps) => React_2.JSX.Element | null;
 
 // @public (undocumented)
@@ -317,6 +316,8 @@ export interface SupportButtonProps {
     | 'info'
     | 'success'
     | 'warning';
+  // (undocumented)
+  layout?: React_2.CSSProperties;
   // (undocumented)
   size?: 'small' | 'medium' | 'large';
   // (undocumented)

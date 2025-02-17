@@ -32,7 +32,6 @@ export const SearchComponent = () => {
           flexDirection: 'row',
           justifyContent: 'start',
           direction: 'ltr',
-          mr: 4,
         }}
       >
         <SearchBar query={{ term: searchTerm }} setSearchTerm={setSearchTerm} />

@@ -18,6 +18,7 @@ import React from 'react';
 
 import { LinkButton } from '@backstage/core-components';
 
+import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import { HeaderIcon } from '../HeaderIcon/HeaderIcon';
 
@@ -35,7 +36,7 @@ export interface HeaderButtonProps {
   endIcon?: string;
   externalLinkIcon?: boolean;
   to: string;
-  style?: React.CSSProperties;
+  layout?: React.CSSProperties;
 }
 
 /**
@@ -52,7 +53,7 @@ export const HeaderButton = ({
   endIcon,
   externalLinkIcon = true,
   to,
-  style,
+  layout,
 }: HeaderButtonProps) => {
   const button = (
     <LinkButton
@@ -64,7 +65,6 @@ export const HeaderButton = ({
       endIcon={endIcon ? <HeaderIcon icon={endIcon} size={size} /> : null}
       externalLinkIcon={externalLinkIcon}
       to={to}
-      style={style}
     >
       {title}
     </LinkButton>
@@ -72,11 +72,13 @@ export const HeaderButton = ({
 
   if (tooltip) {
     return (
-      <Tooltip title={tooltip}>
-        <div>{button}</div>
-      </Tooltip>
+      <Box sx={layout}>
+        <Tooltip title={tooltip}>
+          <div>{button}</div>
+        </Tooltip>
+      </Box>
     );
   }
 
-  return button;
+  return <Box sx={layout}>{button}</Box>;
 };
