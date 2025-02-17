@@ -53,7 +53,7 @@ const Link = (props: any) => (
  * @public
  */
 export const SupportButton = ({
-  title = 'Support (external link)',
+  title = 'Support',
   tooltip,
   color = 'inherit',
   size = 'small',
@@ -68,9 +68,14 @@ export const SupportButton = ({
     return null;
   }
 
+  const isExternalLink =
+    supportUrl.startsWith('http') || supportUrl.startsWith('https');
+
   return (
     <Box sx={layout}>
-      <Tooltip title={tooltip ?? title}>
+      <Tooltip
+        title={tooltip ?? `${title}${isExternalLink ? ' (external link)' : ''}`}
+      >
         <div>
           <IconButton
             component={Link}
