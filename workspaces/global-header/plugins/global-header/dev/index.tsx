@@ -279,7 +279,7 @@ createDevApp()
           title="A colorized notification: ⚠️ Maintainance planned for this week! ⚠️"
           textColor="blue"
           backgroundColor="yellow"
-          border="2px solid blue"
+          borderColor="blue"
         />
         <NotificationBanner
           title="And a dismissable notification! Will appear after reload!"

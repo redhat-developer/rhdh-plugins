@@ -52,8 +52,6 @@
     "@mui/material": "5.16.13",
     "@mui/styled-engine": "5.16.13",
     "@scalprum/react-core": "0.9.3",
-    "react-dom": "18.3.1",
-    "react-router-dom": "^6.26.2",
     "react-use": "^17.5.0"
   },
   "peerDependencies": {
@@ -77,7 +75,7 @@
     "react-router-dom": "^6.0.0"
   },
   "keywords": [
-    "support:tech-preview",
+    "support:production",
     "lifecycle:active",
     "backstage",
     "plugin"
