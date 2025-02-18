@@ -195,10 +195,6 @@ To call workflows from a [Backstage software template](https://backstage.io/docs
 
 Their implementation lives in the [plugins/scaffolder-backend-module-orchestrator](./plugins/scaffolder-backend-module-orchestrator) module.
 
-## A software template converting workflow into a template
-
-To automatically convert a workflow into a software template, deploy & use the [convertWorkflowToTemplate](entities/convertWorkflowToTemplate.yaml) template.
-
 ## Audit log
 
 The orchestrator backend has audit logs for all incoming requests.
