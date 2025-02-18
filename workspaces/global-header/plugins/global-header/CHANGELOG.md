@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.0.0
+
+### Major Changes
+
+- 005fa36: Release 1.0.0
+
 ## 0.2.0
 
 ### Minor Changes
