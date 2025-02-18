@@ -48,9 +48,9 @@
     "@backstage/plugin-search-react": "^1.8.5",
     "@backstage/plugin-signals-react": "^0.0.9",
     "@backstage/theme": "^0.6.3",
-    "@mui/icons-material": "5.16.13",
-    "@mui/material": "5.16.13",
-    "@mui/styled-engine": "5.16.13",
+    "@mui/icons-material": "5.16.14",
+    "@mui/material": "5.16.14",
+    "@mui/styled-engine": "5.16.14",
     "@scalprum/react-core": "0.9.3",
     "react-use": "^17.5.0"
   },

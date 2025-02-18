@@ -47,7 +47,7 @@
     "@backstage/theme": "^0.6.3",
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
-    "@mui/icons-material": "5.16.13",
+    "@mui/icons-material": "5.16.14",
     "@red-hat-developer-hub/backstage-plugin-global-header": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-global-header-test": "workspace:^",
     "@redhat-developer/red-hat-developer-hub-theme": "^0.5.0",
