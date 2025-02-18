@@ -76,8 +76,8 @@ const useStyles = makeStyles(() => ({
   }),
   bottomRowCard: {
     height: '42rem',
+    overflow: 'auto',
   },
-  autoOverflow: { overflow: 'auto' },
   recommendedLabelContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -187,20 +187,18 @@ export const WorkflowInstancePageContent: React.FC<{
         </Grid>
 
         <Grid item xs={6}>
-          <WorkflowInputs
+          <WorkflowResult
             className={styles.topRowCard}
-            cardClassName={styles.autoOverflow}
-            value={value}
-            loading={loading}
-            responseError={responseError}
+            assessedInstance={assessedInstance}
           />
         </Grid>
 
         <Grid item xs={6}>
-          <WorkflowResult
-            assessedInstance={assessedInstance}
+          <WorkflowInputs
             className={styles.bottomRowCard}
-            cardClassName={styles.autoOverflow}
+            value={value}
+            loading={loading}
+            responseError={responseError}
           />
         </Grid>
 
@@ -209,7 +207,6 @@ export const WorkflowInstancePageContent: React.FC<{
             title="Workflow progress"
             divider={false}
             className={styles.bottomRowCard}
-            cardClassName={styles.autoOverflow}
           >
             <WorkflowProgress
               workflowError={assessedInstance.instance.error}
