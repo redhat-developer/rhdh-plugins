@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React, { forwardRef, ForwardRefRenderFunction } from 'react';
 
 import {
@@ -45,7 +46,13 @@ const useStyles = makeStyles(_theme => ({
   },
   dialogActions: {
     justifyContent: 'flex-start',
-    paddingLeft: _theme.spacing(2),
+    paddingLeft: _theme.spacing(3),
+    paddingBottom: _theme.spacing(2),
+  },
+  title: {
+    position: 'absolute',
+    left: 20,
+    top: 20,
   },
 }));
 
@@ -60,7 +67,9 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
     <Dialog onClose={_ => onClose} open={open} ref={forwardedRef}>
       <DialogTitle>
         <Box>
-          <Typography variant="h5">{title}</Typography>
+          <Typography className={classes.title} variant="h5">
+            {title}
+          </Typography>
           <IconButton
             className={classes.closeBtn}
             aria-label="close"
