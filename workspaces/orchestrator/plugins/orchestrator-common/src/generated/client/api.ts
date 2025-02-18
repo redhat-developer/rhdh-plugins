@@ -742,12 +742,6 @@ export interface WorkflowProgressDTO {
  */
 export interface WorkflowResultDTO {
     /**
-     * The state of workflow completion.
-     * @type {string}
-     * @memberof WorkflowResultDTO
-     */
-    'completedWith'?: WorkflowResultDTOCompletedWithEnum;
-    /**
      * High-level summary of the current status, free-form text, human readable.
      * @type {string}
      * @memberof WorkflowResultDTO
@@ -766,14 +760,6 @@ export interface WorkflowResultDTO {
      */
     'outputs'?: Array<WorkflowResultDTOOutputsInner>;
 }
-
-export const WorkflowResultDTOCompletedWithEnum = {
-    Error: 'error',
-    Success: 'success'
-} as const;
-
-export type WorkflowResultDTOCompletedWithEnum = typeof WorkflowResultDTOCompletedWithEnum[keyof typeof WorkflowResultDTOCompletedWithEnum];
-
 /**
  * 
  * @export
