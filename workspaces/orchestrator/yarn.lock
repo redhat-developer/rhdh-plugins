@@ -8521,7 +8521,7 @@ __metadata:
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
     knip: ^5.40.0
     node-gyp: ^9.0.0
-    prettier: 3.4.2
+    prettier: 3.5.1
     typescript: ~5.3.0
   languageName: unknown
   linkType: soft
@@ -12328,7 +12328,7 @@ __metadata:
     isomorphic-git: ^1.23.0
     moment: ^2.29.4
     openapi-backend: ^5.10.5
-    prettier: 3.4.2
+    prettier: 3.5.1
     yn: ^5.0.0
   peerDependencies:
     "@backstage-community/plugin-rbac-common": ^1.12.1
@@ -12363,7 +12363,7 @@ __metadata:
     "@rjsf/utils": ^5.21.2
     "@types/json-schema": 7.0.15
     "@types/react": ^18.2.58
-    prettier: 3.4.2
+    prettier: 3.5.1
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
@@ -12391,7 +12391,7 @@ __metadata:
     "@types/react": ^18.2.58
     json-schema-library: ^9.0.0
     lodash: ^4.17.21
-    prettier: 3.4.2
+    prettier: 3.5.1
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
@@ -12419,14 +12419,14 @@ __metadata:
     monaco-editor-webpack-plugin: ^7.1.0
     monaco-yaml: ^5.2.3
     node-polyfill-webpack-plugin: 3.0.0
-    prettier: 3.4.2
-    sass: 1.83.4
+    prettier: 3.5.1
+    sass: 1.85.0
     sass-loader: 14.2.1
     style-loader: 3.3.4
     terser-webpack-plugin: 5.3.11
     ts-loader: 9.5.2
     typescript: 5.4.5
-    webpack: 5.97.1
+    webpack: 5.98.0
     webpack-cli: 5.1.4
   languageName: unknown
   linkType: soft
@@ -12460,7 +12460,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "workspace:^"
-    "@redhat-developer/red-hat-developer-hub-theme": 0.4.0
+    "@redhat-developer/red-hat-developer-hub-theme": 0.5.0
     "@testing-library/dom": ^10.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^15.0.0
@@ -12471,7 +12471,7 @@ __metadata:
     axios: ^1.7.7
     moment: ^2.29.4
     monaco-editor: ^0.52.2
-    prettier: 3.4.2
+    prettier: 3.5.1
     react-json-view: ^1.21.3
     react-moment: ^1.1.3
     react-use: ^17.4.0
@@ -12507,7 +12507,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0, @redhat-developer/red-hat-developer-hub-theme@npm:^0.4.0":
+"@redhat-developer/red-hat-developer-hub-theme@npm:0.5.0":
+  version: 0.5.0
+  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.0"
+  peerDependencies:
+    "@backstage/theme": ^0.5.2
+    "@emotion/react": ^11.11.1
+    "@emotion/styled": ^11.11.0
+    "@material-ui/core": ^4.12.4
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.14.19
+    "@mui/material": ^5.14.20
+  checksum: 158667ac33e7b926fec2c7ed9d26c3bd81deafe8b0026316ab171e66dd2f3a36474225e42b7ac8527d0e357c1c11432fe767f0cd46b2cd86464e53e4c146a09c
+  languageName: node
+  linkType: hard
+
+"@redhat-developer/red-hat-developer-hub-theme@npm:^0.4.0":
   version: 0.4.0
   resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0"
   peerDependencies:
@@ -32174,12 +32189,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.4.2":
-  version: 3.4.2
-  resolution: "prettier@npm:3.4.2"
+"prettier@npm:3.5.1":
+  version: 3.5.1
+  resolution: "prettier@npm:3.5.1"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 061c84513db62d3944c8dc8df36584dad82883ce4e49efcdbedd8703dce5b173c33fd9d2a4e1725d642a3b713c932b55418342eaa347479bc4a9cca114a04cd0
+  checksum: a3fc77235b5a30259641547c688a067bd9db10fbf741be2ba94901480937ae8f5d26c8d7b1b688f93091882ec6afb8e48f90b86ddc3deb85a0eed28164680cb2
   languageName: node
   linkType: hard
 
@@ -34435,9 +34450,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.83.4":
-  version: 1.83.4
-  resolution: "sass@npm:1.83.4"
+"sass@npm:1.85.0":
+  version: 1.85.0
+  resolution: "sass@npm:1.85.0"
   dependencies:
     "@parcel/watcher": ^2.4.1
     chokidar: ^4.0.0
@@ -34448,7 +34463,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 500958ea77ceb92db0aaef7e6ee5bc3cc016f4ad42fcad40dd2a2891b758c74538c651c47c01f9c04d9b743453efd5a6ba0caccc679f03c6da47a7bb25b2d30c
+  checksum: 53c70831d1235f9ee40489a8bdde9b3304ba350df78417c4edaa8a8ac79426208054a69ac9b6d53c4dc5837362e552a92e3bcaa975a1a3e8975c0af9fbccfe1c
   languageName: node
   linkType: hard
 
@@ -34488,7 +34503,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"schema-utils@npm:^3.0.0, schema-utils@npm:^3.1.1, schema-utils@npm:^3.2.0":
+"schema-utils@npm:^3.0.0, schema-utils@npm:^3.1.1":
   version: 3.3.0
   resolution: "schema-utils@npm:3.3.0"
   dependencies:
@@ -36187,7 +36202,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"terser-webpack-plugin@npm:5.3.11, terser-webpack-plugin@npm:^5.1.3, terser-webpack-plugin@npm:^5.3.10":
+"terser-webpack-plugin@npm:5.3.11, terser-webpack-plugin@npm:^5.1.3, terser-webpack-plugin@npm:^5.3.11":
   version: 5.3.11
   resolution: "terser-webpack-plugin@npm:5.3.11"
   dependencies:
@@ -38397,9 +38412,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.97.1, webpack@npm:^5.89.0, webpack@npm:^5.94.0":
-  version: 5.97.1
-  resolution: "webpack@npm:5.97.1"
+"webpack@npm:5.98.0, webpack@npm:^5.89.0, webpack@npm:^5.94.0":
+  version: 5.98.0
+  resolution: "webpack@npm:5.98.0"
   dependencies:
     "@types/eslint-scope": ^3.7.7
     "@types/estree": ^1.0.6
@@ -38419,9 +38434,9 @@ __metadata:
     loader-runner: ^4.2.0
     mime-types: ^2.1.27
     neo-async: ^2.6.2
-    schema-utils: ^3.2.0
+    schema-utils: ^4.3.0
     tapable: ^2.1.1
-    terser-webpack-plugin: ^5.3.10
+    terser-webpack-plugin: ^5.3.11
     watchpack: ^2.4.1
     webpack-sources: ^3.2.3
   peerDependenciesMeta:
@@ -38429,7 +38444,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 649065e2258b495ae41a4088be804b4be2ec07d280aa514ebef43da79caf96fa973d26a08826c3902b5676a098d9b37c589f16be7b4da17b68b08b6c76441196
+  checksum: 0de353c694bc4d5af810e4f4d4fd356271b21b2253583a9f618416b5fcbaf8db5a5487c12cc1379778d2a07d56382293334153af6e2ce59ded59488f08015fd1
   languageName: node
   linkType: hard
 
