@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
  */
 import { CatalogClient } from '@backstage/catalog-client';
 import { MarketplaceCatalogClient } from './MarketplaceCatalogClient';
-import { MarketplaceKinds } from '../types';
+import { MarketplaceKind } from '../types';
 
 const mockPlugins = [
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.plugin,
+    kind: MarketplaceKind.Plugin,
     metadata: { name: 'plugin1' },
   },
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.plugin,
+    kind: MarketplaceKind.Plugin,
     metadata: { name: 'plugin2' },
   },
 ];
@@ -33,7 +33,7 @@ const mockPlugins = [
 const mockPluginList = [
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.pluginList,
+    kind: MarketplaceKind.PluginList,
     metadata: { name: 'test-featured-plugins' },
     spec: {
       plugins: ['plugin1', 'plugin2'],
@@ -65,7 +65,9 @@ const options = {
     getOwnServiceCredentials: jest
       .fn()
       .mockResolvedValue('mockedServiceCredentials'),
-    getPluginRequestToken: jest.fn().mockResolvedValue('mockedToken'),
+    getPluginRequestToken: jest
+      .fn()
+      .mockResolvedValue({ token: 'mockedToken' }),
   } as any,
 };
 
@@ -85,7 +87,7 @@ describe('MarketplaceCatalogClient', () => {
       expect(mockQueryEntities).toHaveBeenCalledTimes(1);
       expect(mockQueryEntities).toHaveBeenCalledWith(
         {
-          filter: { kind: 'plugin' },
+          filter: { kind: 'Plugin' },
         },
         'mockedToken',
       );
@@ -203,7 +205,7 @@ describe('MarketplaceCatalogClient', () => {
       mockEntityFacets.mockReturnValue({
         facets: [
           {
-            kind: 'plugin',
+            kind: 'Plugin',
             count: 1,
           },
         ],

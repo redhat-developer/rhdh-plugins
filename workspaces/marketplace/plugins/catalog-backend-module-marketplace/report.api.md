@@ -63,7 +63,7 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
 }
 
 // @public (undocumented)
-export class MarketplacePluginListProcessor implements CatalogProcessor {
+export class MarketplaceCollectionProcessor implements CatalogProcessor {
     // (undocumented)
     getProcessorName(): string;
     // (undocumented)

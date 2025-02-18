@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import {
 } from '@backstage/catalog-model';
 import {
   MARKETPLACE_API_VERSION,
-  MarketplaceKinds,
+  MarketplaceKind,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 const pluginListJsonSchema = {
@@ -127,7 +127,7 @@ const pluginListJsonSchema = {
 /**
  * @public
  */
-export class MarketplacePluginListProcessor implements CatalogProcessor {
+export class MarketplaceCollectionProcessor implements CatalogProcessor {
   private readonly validators = [
     entityKindSchemaValidator(pluginListJsonSchema),
   ];
@@ -147,7 +147,7 @@ export class MarketplacePluginListProcessor implements CatalogProcessor {
 
   // Return processor name
   getProcessorName(): string {
-    return 'MarketplacePluginListProcessor';
+    return 'MarketplaceCollectionProcessor';
   }
 
   async postProcessEntity(
@@ -157,7 +157,7 @@ export class MarketplacePluginListProcessor implements CatalogProcessor {
   ): Promise<Entity> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKinds.pluginList
+      entity.kind === MarketplaceKind.PluginList
     ) {
       const thisEntityRef = getCompoundEntityRef(entity);
       const target = entity?.spec?.owner as string;
@@ -188,7 +188,7 @@ export class MarketplacePluginListProcessor implements CatalogProcessor {
         plugins.forEach((plugin: string) => {
           const pluginRef = parseEntityRef({
             name: plugin,
-            kind: MarketplaceKinds.plugin,
+            kind: MarketplaceKind.Plugin,
           });
           if (pluginRef) {
             emit(

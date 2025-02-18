@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 export * from './MarketplacePluginProcessor';
-export * from './MarketplacePluginListProcessor';
-export * from './DynamicPluginInstallStatusProcessor';
-export * from './LocalPluginInstallStatusProcessor';
+export * from './MarketplaceCollectionProcessor';
+export * from './DynamicPackageInstallStatusProcessor';
+export * from './LocalPackageInstallStatusProcessor';
 export * from './MarketplacePackageProcessor';

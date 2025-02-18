@@ -10,9 +10,9 @@ catalog:
       rules:
         - allow: [Plugin]
     - type: url
-      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/marketplace/examples/all-pluginlists.yaml
+      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/marketplace/examples/all-collections.yaml
       rules:
-        - allow: [PluginList]
+        - allow: [PluginCollection]
 
 dynamicPlugins:
   frontend:

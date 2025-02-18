@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ import {
 } from '@backstage/catalog-model';
 import {
   MARKETPLACE_API_VERSION,
-  MarketplaceKinds,
   MarketplacePlugin,
+  MarketplaceKind,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 const pluginJsonSchema = {
@@ -157,7 +157,7 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
   ): Promise<Entity> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKinds.plugin
+      entity.kind === MarketplaceKind.Plugin
     ) {
       const thisEntityRef = getCompoundEntityRef(entity);
       const target = entity?.spec?.owner;
@@ -184,7 +184,7 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
         const pkgName = typeof pkg === 'string' ? pkg : pkg?.name;
         const packageRef = parseEntityRef({
           name: pkgName,
-          kind: MarketplaceKinds.package,
+          kind: MarketplaceKind.Package,
         });
         if (packageRef) {
           emit(

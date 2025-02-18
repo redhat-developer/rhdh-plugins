@@ -1,5 +1,5 @@
 apiVersion: marketplace.backstage.io/v1alpha1
-kind: PluginList
+kind: PluginCollection
 metadata:
   name: featured-plugins
   title: Featured Plugins
