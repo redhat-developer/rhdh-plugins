@@ -19,10 +19,19 @@ import {
   ScmAuth,
 } from '@backstage/integration-react';
 import {
+  alertApiRef,
+  analyticsApiRef,
   AnyApiFactory,
   configApiRef,
   createApiFactory,
 } from '@backstage/core-plugin-api';
+
+import {
+  AlertApiAnalyticsApi,
+  BrowserLogAnalyticsApi,
+  FilterAnalyticsApi,
+  ProxyAnalyticsApi,
+} from '@red-hat-developer-hub/backstage-plugin-analytics-module-test-utils';
 
 export const apis: AnyApiFactory[] = [
   createApiFactory({
@@ -31,4 +40,17 @@ export const apis: AnyApiFactory[] = [
     factory: ({ configApi }) => ScmIntegrationsApi.fromConfig(configApi),
   }),
   ScmAuth.createDefaultApiFactory(),
+
+  createApiFactory({
+    api: analyticsApiRef,
+    deps: { alertApi: alertApiRef },
+    factory: ({ alertApi }) =>
+      new ProxyAnalyticsApi([
+        new FilterAnalyticsApi(
+          new AlertApiAnalyticsApi(alertApi),
+          event => event.action !== 'navigate',
+        ),
+        new BrowserLogAnalyticsApi(),
+      ]),
+  }),
 ];
