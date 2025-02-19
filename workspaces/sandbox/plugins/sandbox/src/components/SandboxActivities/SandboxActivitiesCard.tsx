@@ -19,14 +19,21 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CardMedia from '@mui/material/CardMedia';
 import { useTheme } from '@mui/material/styles';
-import FeaturedArticleBanner from '../../assets/images/featured-article.png';
+import { Link } from '@backstage/core-components';
 
 type SandboxActivitiesCardProps = {
   key: number;
+  article: {
+    img: string;
+    title: string;
+    description: string;
+    link: string;
+  };
 };
 
 export const SandboxActivitiesCard: React.FC<SandboxActivitiesCardProps> = ({
   key,
+  article: { img, title, description, link },
 }) => {
   const theme = useTheme();
 
@@ -45,27 +52,26 @@ export const SandboxActivitiesCard: React.FC<SandboxActivitiesCardProps> = ({
         component="img"
         height="120"
         width="326"
-        image={FeaturedArticleBanner}
-        alt="Developer working on application"
+        image={img}
+        alt={title}
       />
       <CardContent sx={{ margin: theme.spacing(0.5), borderRadius: 2 }}>
-        <Typography
-          variant="h5"
-          color="primary"
-          sx={{ fontWeight: 600 }}
-          gutterBottom
-        >
-          Deploy an application on Developer Sandbox
-        </Typography>
+        <Link to={link} style={{ textDecoration: 'none' }}>
+          <Typography
+            variant="h5"
+            color="primary"
+            sx={{ fontWeight: 600 }}
+            gutterBottom
+          >
+            {title}
+          </Typography>
+        </Link>
         <Typography
           variant="body2"
           color="textSecondary"
           sx={{ fontStyle: 'italic' }}
         >
-          Enables developers to easily test and refine their applications in a
-          safe, isolated environment before launching them to production. This
-          streamlined process reduces deployment risks and accelerates the
-          development cycle, allowing for quicker iterations and improvements.
+          {description}
         </Typography>
       </CardContent>
     </Card>

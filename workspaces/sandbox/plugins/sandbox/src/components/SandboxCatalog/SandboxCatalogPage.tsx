@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import React, { createContext } from 'react';
 import Box from '@mui/material/Box';
 import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@material-ui/core/styles';
@@ -23,6 +23,8 @@ import { SandboxCatalogGrid } from './SandboxCatalogGrid';
 import { SandboxCatalogFooter } from './SandboxCatalogFooter';
 import { SandboxHeader } from '../SandboxHeader';
 
+export const Context = createContext<any>(null);
+
 const useStyles = makeStyles((theme: Theme) => ({
   content: {
     backgroundColor: theme.palette.background.default,
@@ -31,16 +33,19 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export const SandboxCatalogPage = () => {
   const classes = useStyles();
+  const [buttonClicked, setButtonClicked] = React.useState(false);
   return (
-    <Page themeId="sandbox">
-      <SandboxHeader pageTitle="Developer Sandbox" showSubTitle />
-      <Content className={classes.content} noPadding>
-        <SandboxCatalogBanner />
-        <Box style={{ padding: '48px 240px 48px 60px' }}>
-          <SandboxCatalogGrid />
-        </Box>
-        <SandboxCatalogFooter />
-      </Content>
-    </Page>
+    <Context.Provider value={[buttonClicked, setButtonClicked]}>
+      <Page themeId="sandbox">
+        <SandboxHeader pageTitle="Developer Sandbox" showSubTitle />
+        <Content className={classes.content} noPadding>
+          <SandboxCatalogBanner />
+          <Box style={{ padding: '48px 240px 48px 60px' }}>
+            <SandboxCatalogGrid />
+          </Box>
+          <SandboxCatalogFooter />
+        </Content>
+      </Page>
+    </Context.Provider>
   );
 };

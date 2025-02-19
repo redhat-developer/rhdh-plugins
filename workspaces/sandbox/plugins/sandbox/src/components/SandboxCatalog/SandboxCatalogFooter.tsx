@@ -13,29 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { Link } from '@backstage/core-components';
+import { Context } from './SandboxCatalogPage';
+import { AccessCodeInputModal } from '../Modals/AccessCodeInputModal';
 
 export const SandboxCatalogFooter = () => {
   const theme = useTheme();
+  const [accessCodeModalOpen, setAccessCodeModalOpen] = React.useState(false);
+  const [buttonClicked] = useContext(Context);
+
+  if (buttonClicked) {
+    return null;
+  }
+
+  const handleClick = () => {
+    setAccessCodeModalOpen(true);
+  };
+
   return (
-    <Box
-      component="footer"
-      sx={{
-        padding: theme.spacing(2),
-        backgroundColor: theme.palette.background.paper,
-      }}
-    >
-      <Typography variant="body1" color="textPrimary" align="center">
-        Have an activation code?
-        <Link to="https://developers.redhat.com/rhdh/overview" underline="none">
-          {' '}
-          Click here
-        </Link>
-      </Typography>
-    </Box>
+    <>
+      <Box
+        component="footer"
+        sx={{
+          padding: theme.spacing(2),
+          backgroundColor: theme.palette.background.paper,
+        }}
+      >
+        <Typography variant="body1" color="textPrimary" align="center">
+          Have an activation code?
+          <Link to="#" onClick={handleClick} style={{ cursor: 'pointer' }}>
+            {' '}
+            Click here
+          </Link>
+        </Typography>
+      </Box>
+      <AccessCodeInputModal
+        open={accessCodeModalOpen}
+        setOpen={setAccessCodeModalOpen}
+      />
+    </>
   );
 };

@@ -162,10 +162,6 @@ export const productData: ProductData[] = [
     description: [
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Red Hat Enterprise Linux® KVM hypervisor technology',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('success'),
         value: 'Migrate traditional VM workloads to OpenShift',
       },
       {

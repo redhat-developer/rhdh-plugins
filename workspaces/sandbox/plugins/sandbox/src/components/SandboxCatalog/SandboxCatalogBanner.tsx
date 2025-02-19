@@ -13,16 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
 import Image from '../../assets/images/sandbox-banner-image.png';
+import { Context } from './SandboxCatalogPage';
 
 export const SandboxCatalogBanner: React.FC = () => {
   const theme = useTheme();
+  const [buttonClicked] = useContext(Context);
+  const [loaded, setLoaded] = React.useState(false);
+  const [trialDaysLeft, setTrialDaysLeft] = React.useState(0);
+
+  useEffect(() => {
+    if (buttonClicked) {
+      setTrialDaysLeft(30);
+      setLoaded(true);
+    }
+  }, [buttonClicked, setTrialDaysLeft]);
 
   return (
     <Card
@@ -66,13 +77,25 @@ export const SandboxCatalogBanner: React.FC = () => {
             >
               Explore, experiment, and see what's possible
             </Typography>
-            <Typography
-              color="textPrimary"
-              style={{ fontSize: '16px', marginTop: '10px' }}
-            >
-              Click on "Try it" to initiate your free, no commitment 30-day
-              trial.
-            </Typography>
+            {loaded ? (
+              <Typography
+                color="textPrimary"
+                style={{ fontSize: '16px', marginTop: '10px' }}
+              >
+                Your free trial expires in
+                <Box component="span" sx={{ fontWeight: 700 }}>
+                  {trialDaysLeft} days.{' '}
+                </Box>
+              </Typography>
+            ) : (
+              <Typography
+                color="textPrimary"
+                style={{ fontSize: '16px', marginTop: '10px', fontWeight: 400 }}
+              >
+                Click on "Try it" to initiate your free, no commitment 30-day
+                trial.
+              </Typography>
+            )}
           </Box>
         </Grid>
       </Grid>

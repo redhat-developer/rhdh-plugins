@@ -19,6 +19,7 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { ItemCardGrid } from '@backstage/core-components';
 import { SandboxActivitiesCard } from './SandboxActivitiesCard';
+import { articleData } from './articleData';
 
 export const SandboxActivitiesFeatured: React.FC = () => {
   const theme = useTheme();
@@ -41,8 +42,8 @@ export const SandboxActivitiesFeatured: React.FC = () => {
         Featured
       </Typography>
       <ItemCardGrid>
-        {[...Array(3).keys()].map(index => (
-          <SandboxActivitiesCard key={index} />
+        {articleData?.map((article, index) => (
+          <SandboxActivitiesCard key={index} article={article} />
         ))}
       </ItemCardGrid>
     </Box>
