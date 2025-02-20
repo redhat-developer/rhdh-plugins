@@ -1,10 +1,11 @@
 # Knip report
 
-## Unused dependencies (1)
+## Unused dependencies (2)
 
-| Name         | Location     | Severity |
-| :----------- | :----------- | :------- |
-| react-router | package.json | error    |
+| Name                                                       | Location     | Severity |
+| :--------------------------------------------------------- | :----------- | :------- |
+| @red-hat-developer-hub/backstage-plugin-global-header-test | package.json | error    |
+| react-router                                               | package.json | error    |
 
 ## Unused devDependencies (4)
 
