@@ -1,11 +1,10 @@
 # Knip report
 
-## Unused dependencies (2)
+## Unused dependencies (1)
 
-| Name                                                      | Location     | Severity |
-| :-------------------------------------------------------- | :----------- | :------- |
-| @red-hat-developer-hub/backstage-plugin-dynamic-home-page | package.json | error    |
-| react-router                                              | package.json | error    |
+| Name         | Location     | Severity |
+| :----------- | :----------- | :------- |
+| react-router | package.json | error    |
 
 ## Unused devDependencies (4)
 

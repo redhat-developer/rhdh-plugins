@@ -14,3 +14,9 @@
 | @backstage/test-utils       | package.json | error    |
 | @testing-library/dom        | package.json | error    |
 | cross-env                   | package.json | error    |
+
+## Unlisted dependencies (1)
+
+| Name       | Location                      | Severity |
+| :--------- | :---------------------------- | :------- |
+| playwright | e2e-tests/utils/testHelper.ts | error    |
