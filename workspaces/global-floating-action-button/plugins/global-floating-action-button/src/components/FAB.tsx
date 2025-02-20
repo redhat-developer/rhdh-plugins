@@ -58,6 +58,10 @@ const FABLabel = ({
             ...marginStyle,
             color: '#151515',
             order: 2,
+            textTransform: 'lowercase', // Convert entire text to lowercase
+            '&::first-letter': {
+              textTransform: 'uppercase', // Capitalize first letter
+            },
           }}
         >
           {label}
@@ -76,10 +80,12 @@ export const FAB = ({
   actionButton,
   size,
   className,
+  iconColor,
 }: {
   actionButton: FloatingActionButton;
   size?: 'small' | 'medium' | 'large';
   className?: string;
+  iconColor?: string;
 }) => {
   const navigate = useNavigate();
   const isExternalUri = (uri: string) => /^([a-z+.-]+):/.test(uri);
@@ -106,9 +112,6 @@ export const FAB = ({
     if (actionButton.color) {
       return actionButton.color;
     }
-    if (!className) {
-      return 'info';
-    }
     return undefined;
   };
 
@@ -125,7 +128,10 @@ export const FAB = ({
       <div className={className}>
         <Fab
           {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
-          style={{ color: '#1f1f1f' }}
+          style={{
+            color: iconColor ? iconColor : '#1f1f1f',
+            backgroundColor: !actionButton.color && !className ? 'white' : '',
+          }}
           variant={
             actionButton.showLabel || isExternal || !actionButton.icon
               ? 'extended'

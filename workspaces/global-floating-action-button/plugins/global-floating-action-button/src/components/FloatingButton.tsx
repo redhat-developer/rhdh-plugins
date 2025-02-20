@@ -90,7 +90,7 @@ export const FloatingButton = ({
       {fabs.length > 1 ? (
         <FABWithSubmenu fabs={fabs} slot={slot} />
       ) : (
-        <FAB actionButton={fabs[0]} />
+        <FAB actionButton={{ color: 'info', ...fabs[0] }} iconColor="white" />
       )}
     </div>
   );
