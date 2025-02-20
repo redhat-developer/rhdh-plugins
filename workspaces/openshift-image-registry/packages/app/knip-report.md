@@ -1,14 +1,13 @@
 # Knip report
 
-## Unused dependencies (5)
+## Unused dependencies (4)
 
-| Name                                                             | Location     | Severity |
-| :--------------------------------------------------------------- | :----------- | :------- |
-| @red-hat-developer-hub/backstage-plugin-openshift-image-registry | package.json | error    |
-| react-router                                                     | package.json | error    |
-| react-use                                                        | package.json | error    |
-| @mui/lab                                                         | package.json | error    |
-| history                                                          | package.json | error    |
+| Name         | Location     | Severity |
+| :----------- | :----------- | :------- |
+| react-router | package.json | error    |
+| react-use    | package.json | error    |
+| @mui/lab     | package.json | error    |
+| history      | package.json | error    |
 
 ## Unused devDependencies (4)
 
