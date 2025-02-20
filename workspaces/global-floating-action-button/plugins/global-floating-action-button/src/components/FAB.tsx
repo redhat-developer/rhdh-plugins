@@ -45,7 +45,7 @@ const FABLabel = ({
   const styles = useStyles();
   const marginStyle = slotOptions[slot].margin;
   return (
-    <>
+    <Typography sx={{ display: 'flex' }}>
       {showExternalIcon && (
         <OpenInNewIcon
           className={styles.openInNew}
@@ -68,11 +68,11 @@ const FABLabel = ({
         </Typography>
       )}
       {icon && (
-        <Typography sx={{ order: order.icon }}>
+        <Typography sx={{ mb: -1, order: order.icon }}>
           <FabIcon icon={icon} />
         </Typography>
       )}
-    </>
+    </Typography>
   );
 };
 
