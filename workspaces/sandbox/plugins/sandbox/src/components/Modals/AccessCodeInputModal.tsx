@@ -140,6 +140,7 @@ export const AccessCodeInputModal: React.FC<AccessCodeInputModalProps> = ({
           variant="contained"
           type="submit"
           onClick={handleStartTrialClick}
+          disabled={otp.some(digit => !digit)}
         >
           Start trial
         </Button>

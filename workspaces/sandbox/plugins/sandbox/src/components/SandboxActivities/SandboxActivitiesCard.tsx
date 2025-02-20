@@ -38,25 +38,25 @@ export const SandboxActivitiesCard: React.FC<SandboxActivitiesCardProps> = ({
   const theme = useTheme();
 
   return (
-    <Card
-      key={key}
-      elevation={0}
-      sx={{
-        maxWidth: '326px',
-        minHeight: '368px',
-        borderRadius: 2,
-        backgroundColor: theme.palette.background.default,
-      }}
-    >
-      <CardMedia
-        component="img"
-        height="120"
-        width="326"
-        image={img}
-        alt={title}
-      />
-      <CardContent sx={{ margin: theme.spacing(0.5), borderRadius: 2 }}>
-        <Link to={link} style={{ textDecoration: 'none' }}>
+    <Link to={link} style={{ textDecoration: 'none' }}>
+      <Card
+        key={key}
+        elevation={0}
+        sx={{
+          maxWidth: '326px',
+          minHeight: '368px',
+          borderRadius: 2,
+          backgroundColor: theme.palette.background.default,
+        }}
+      >
+        <CardMedia
+          component="img"
+          height="120"
+          width="326"
+          image={img}
+          alt={title}
+        />
+        <CardContent sx={{ margin: theme.spacing(0.5), borderRadius: 2 }}>
           <Typography
             variant="h5"
             color="primary"
@@ -65,15 +65,15 @@ export const SandboxActivitiesCard: React.FC<SandboxActivitiesCardProps> = ({
           >
             {title}
           </Typography>
-        </Link>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          sx={{ fontStyle: 'italic' }}
-        >
-          {description}
-        </Typography>
-      </CardContent>
-    </Card>
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            sx={{ fontStyle: 'italic' }}
+          >
+            {description}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Link>
   );
 };

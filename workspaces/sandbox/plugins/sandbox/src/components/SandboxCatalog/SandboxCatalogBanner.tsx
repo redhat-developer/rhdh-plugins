@@ -43,7 +43,7 @@ export const SandboxCatalogBanner: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: theme.spacing(4),
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#0E1214',
       }}
     >
       <Grid container alignItems="center" spacing={4}>

@@ -40,7 +40,7 @@ export const SandboxCatalogPage = () => {
         <SandboxHeader pageTitle="Developer Sandbox" showSubTitle />
         <Content className={classes.content} noPadding>
           <SandboxCatalogBanner />
-          <Box style={{ padding: '48px 240px 48px 60px' }}>
+          <Box style={{ padding: '48px 60px 48px 60px' }}>
             <SandboxCatalogGrid />
           </Box>
           <SandboxCatalogFooter />

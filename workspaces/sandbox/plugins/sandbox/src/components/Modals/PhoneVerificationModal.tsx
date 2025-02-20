@@ -15,7 +15,11 @@
  */
 import React, { ForwardedRef, forwardRef, useState } from 'react';
 import { E164Number } from 'libphonenumber-js/types.cjs';
-import { default as RPNInput, Country } from 'react-phone-number-input';
+import {
+  default as RPNInput,
+  Country,
+  getCountryCallingCode,
+} from 'react-phone-number-input';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -30,6 +34,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import InputAdornment from '@mui/material/InputAdornment';
 
 const FLAG_FETCH_URL =
   'https://purecatamphetamine.github.io/country-flag-icons/3x2';
@@ -80,6 +85,15 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
         {...props}
         // eslint-disable-next-line jsx-a11y/no-autofocus
         autoFocus
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Typography color="textPrimary" style={{ fontSize: '16px' }}>
+                +{getCountryCallingCode(countryCode)}
+              </Typography>
+            </InputAdornment>
+          ),
+        }}
       />
     );
   });
@@ -166,7 +180,6 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
         <Box display="flex" gap={1} alignItems="center" sx={{ marginTop: 3 }}>
           <RPNInput
             required
-            international
             defaultCountry="ES"
             label="Phone number"
             placeholder="(000) 000 0000"
@@ -182,6 +195,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
           variant="contained"
           onClick={handlePhoneVerificationSubmit}
           type="submit"
+          disabled={!phoneNumber}
         >
           Send code
         </Button>

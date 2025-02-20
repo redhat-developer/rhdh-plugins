@@ -21,6 +21,7 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
 import DoneIcon from '@mui/icons-material/Done';
 import Typography from '@mui/material/Typography';
 import CardMedia from '@mui/material/CardMedia';
@@ -62,27 +63,30 @@ const CatalogCardGreenCorner = ({ show }: { show: boolean }) => {
     );
   }
   return (
-    <Box
-      style={{
-        width: '32px',
-        height: '32px',
-        backgroundColor: '#73C5C5',
-        clipPath: 'polygon(0 0, 100% 0, 0 100%)', // Creates a triangle
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <DoneIcon
-        sx={{
-          color: theme.palette.common.white,
-          fontSize: '12px',
-          position: 'relative',
-          top: '-6px',
-          left: '-6px',
+    <Tooltip title="Product you tried" placement="top" arrow>
+      <Box
+        style={{
+          width: '32px',
+          height: '32px',
+          backgroundColor:
+            theme.palette.mode === 'light' ? '#73C5C5' : '#009596',
+          clipPath: 'polygon(0 0, 100% 0, 0 100%)', // Creates a triangle
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
-      />
-    </Box>
+      >
+        <DoneIcon
+          sx={{
+            color: theme.palette.common.white,
+            fontSize: '12px',
+            position: 'relative',
+            top: '-6px',
+            left: '-6px',
+          }}
+        />
+      </Box>
+    </Tooltip>
   );
 };
 

@@ -21,7 +21,7 @@ import { ItemCardGrid } from '@backstage/core-components';
 import { SandboxActivitiesCard } from './SandboxActivitiesCard';
 import { articleData } from './articleData';
 
-export const SandboxActivitiesFeatured: React.FC = () => {
+const FeaturedArticles: React.FC = () => {
   const theme = useTheme();
 
   return (
@@ -42,10 +42,40 @@ export const SandboxActivitiesFeatured: React.FC = () => {
         Featured
       </Typography>
       <ItemCardGrid>
-        {articleData?.map((article, index) => (
+        {articleData?.featured?.map((article, index) => (
           <SandboxActivitiesCard key={index} article={article} />
         ))}
       </ItemCardGrid>
     </Box>
+  );
+};
+
+const Articles: React.FC = () => {
+  const theme = useTheme();
+
+  return (
+    <Box
+      sx={{
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '36px 240px 48px 60px',
+        backgroundColor: theme.palette.background.default,
+      }}
+    >
+      <ItemCardGrid>
+        {articleData?.other?.map((article, index) => (
+          <SandboxActivitiesCard key={index} article={article} />
+        ))}
+      </ItemCardGrid>
+    </Box>
+  );
+};
+
+export const SandboxActivitiesGrid: React.FC = () => {
+  return (
+    <>
+      <FeaturedArticles />
+      <Articles />
+    </>
   );
 };

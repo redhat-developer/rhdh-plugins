@@ -178,6 +178,7 @@ export const VerificationCodeInputModal: React.FC<
           variant="contained"
           type="submit"
           onClick={handleStartTrialClick}
+          disabled={otp.some(digit => !digit)}
         >
           Start trial
         </Button>

@@ -40,7 +40,7 @@ export const SandboxCatalogFooter = () => {
         component="footer"
         sx={{
           padding: theme.spacing(2),
-          backgroundColor: theme.palette.background.paper,
+          backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#0E1214',
         }}
       >
         <Typography variant="body1" color="textPrimary" align="center">
