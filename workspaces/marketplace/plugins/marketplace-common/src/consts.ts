@@ -13,19 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { z } from 'zod';
 
 /**
  * @public
  */
-export const EntityFilterQuerySchema = z.record(
-  z.string(),
-  z.string().or(z.array(z.string())),
-);
-/**
- * @public
- */
-export const EntityFacetSchema = z.object({
-  filter: EntityFilterQuerySchema.optional(),
-  facets: z.array(z.string()),
-});
+export const MARKETPLACE_API_VERSION = 'marketplace.backstage.io/v1alpha1';

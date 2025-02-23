@@ -16,11 +16,11 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { GetPluginsRequest } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { GetEntitiesRequest } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
 
-export const usePackages = (request?: GetPluginsRequest) => {
+export const usePackages = (request: GetEntitiesRequest) => {
   const marketplaceApi = useMarketplaceApi();
   return useQuery({
     queryKey: ['marketplaceApi', 'getPackages', request],

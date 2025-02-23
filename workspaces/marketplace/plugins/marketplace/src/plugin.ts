@@ -26,8 +26,10 @@ import {
 
 import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
 
+import { MarketplaceBackendClient } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
+import { marketplaceApiRef } from './api';
 import { allRoutes } from './routes';
-import { marketplaceApiRef, MarketplaceBackendClient } from './api';
 
 /**
  * Marketplace Plugin

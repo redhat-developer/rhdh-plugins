@@ -15,26 +15,31 @@
  */
 
 import { AuthService } from '@backstage/backend-plugin-api';
-import { stringifyEntityRef } from '@backstage/catalog-model';
+import {
+  RELATION_HAS_PART,
+  RELATION_PART_OF,
+  stringifyEntityRef,
+} from '@backstage/catalog-model';
 import {
   CatalogApi,
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
 } from '@backstage/catalog-client';
 import { NotFoundError } from '@backstage/errors';
+
 import {
-  GetPluginsRequest,
   MarketplaceKind,
-  MarketplacePackage,
-  MarketplacePlugin,
-  MarketplaceCollection,
-  MarketplacePluginWithPageInfo,
+  type MarketplacePackage,
+  type MarketplacePlugin,
+  type MarketplaceCollection,
+  isMarketplacePackage,
+  isMarketplacePlugin,
 } from '../types';
-import {
-  convertGetPackagesRequestToQueryEntitiesRequest,
-  convertGetPluginsRequestToQueryEntitiesRequest,
-} from '../utils';
-import { MarketplaceApi, PagedResponse } from './MarketplaceApi';
+import type {
+  MarketplaceApi,
+  GetEntitiesRequest,
+  GetEntitiesResponse,
+} from './MarketplaceApi';
 
 /**
  * @public
@@ -43,6 +48,19 @@ export type MarketplaceCatalogClientOptions = {
   auth?: AuthService;
   catalogApi: CatalogApi;
 };
+
+const enforceKindFilter = <
+  T extends GetEntitiesRequest | GetEntityFacetsRequest,
+>(
+  request: T,
+  kind: MarketplaceKind,
+): T => ({
+  ...request,
+  filter: {
+    ...request.filter,
+    kind,
+  },
+});
 
 /**
  * @public
@@ -66,118 +84,165 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     });
   }
 
-  async getPlugins(
-    request?: GetPluginsRequest,
-  ): Promise<MarketplacePluginWithPageInfo> {
-    const token = await this.getServiceToken();
-    const queryEntitiesRequest =
-      convertGetPluginsRequestToQueryEntitiesRequest(request);
-    const result = await this.catalog.queryEntities(
-      queryEntitiesRequest,
-      token,
-    );
-
-    return {
-      items: result.items as MarketplacePlugin[],
-      totalItems: result.totalItems,
-      pageInfo: result.pageInfo,
-    };
-  }
-
-  async getPluginLists(): Promise<MarketplaceCollection[]> {
+  async getCollections(
+    request: GetEntitiesRequest,
+  ): Promise<GetEntitiesResponse<MarketplaceCollection>> {
     const token = await this.getServiceToken();
     const result = await this.catalog.queryEntities(
-      {
-        filter: {
-          kind: 'PluginList',
-        },
-      },
+      enforceKindFilter(request, MarketplaceKind.Collection),
       token,
     );
-
-    return result.items as MarketplaceCollection[];
+    return result as GetEntitiesResponse<MarketplaceCollection>;
   }
 
-  async getPackages(
-    request?: GetPluginsRequest,
-  ): Promise<PagedResponse<MarketplacePackage>> {
-    const token = await this.getServiceToken();
-    const result = await this.catalog.queryEntities(
-      {
-        ...request,
-        filter: {
-          ...request?.filter,
-          kind: 'Package',
-        },
-      },
-      token,
-    );
-
-    return {
-      items: result.items as MarketplacePackage[],
-      totalItems: result.totalItems,
-      pageInfo: result.pageInfo,
-    };
-  }
-
-  async getPluginListByName(name: string): Promise<MarketplaceCollection> {
-    const token = await this.getServiceToken();
-    const result = await this.catalog.getEntityByRef(
-      stringifyEntityRef({
-        name,
-        kind: MarketplaceKind.PluginList,
-      }),
-      token,
-    );
-
-    return result as MarketplaceCollection;
-  }
-
-  async getPluginByName(name: string): Promise<MarketplacePlugin> {
-    const token = await this.getServiceToken();
-    const result = await this.catalog.getEntityByRef(
-      stringifyEntityRef({
-        name,
-        kind: MarketplaceKind.Plugin,
-      }),
-      token,
-    );
-
-    return result as MarketplacePlugin;
-  }
-
-  async getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]> {
-    const pluginList = await this.getPluginListByName(name);
-    const plugins = pluginList?.spec?.plugins;
-
-    if (!pluginList) {
-      throw new NotFoundError(
-        `${MarketplaceKind.PluginList}:${name} not found`,
-      );
-    }
-
-    if (!plugins) {
-      return [] as MarketplacePlugin[];
-    }
-
-    const token = await this.getServiceToken();
-
-    const entityRefs = plugins.map(plugin =>
-      stringifyEntityRef({
-        kind: MarketplaceKind.Plugin,
-        namespace: pluginList.metadata!.namespace,
-        name: plugin,
-      }),
-    );
-
-    const result = await this.catalog.getEntitiesByRefs({ entityRefs }, token);
-    return result.items.filter(i => !!i) as MarketplacePlugin[];
-  }
-
-  async getEntityFacets(
+  async getCollectionsFacets(
     request: GetEntityFacetsRequest,
   ): Promise<GetEntityFacetsResponse> {
     const token = await this.getServiceToken();
-    return await this.catalog.getEntityFacets(request, token);
+    return await this.catalog.getEntityFacets(
+      enforceKindFilter(request, MarketplaceKind.Collection),
+      token,
+    );
+  }
+
+  async getCollectionByName(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplaceCollection> {
+    const token = await this.getServiceToken();
+    const result = await this.catalog.getEntityByRef(
+      stringifyEntityRef({
+        kind: MarketplaceKind.Collection,
+        namespace,
+        name,
+      }),
+      token,
+    );
+    if (!result) throw new NotFoundError();
+    return result as MarketplaceCollection;
+  }
+
+  async getCollectionPlugins(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePlugin[]> {
+    const collection = await this.getCollectionByName(namespace, name);
+    const relations = collection.relations ?? [];
+
+    // Ensure that we return just Plugins
+    const entityRefs = relations
+      .filter(
+        relation =>
+          (relation.type === RELATION_PART_OF ||
+            relation.type === RELATION_HAS_PART) &&
+          relation.targetRef.startsWith('plugin:'),
+      )
+      .map(relation => relation.targetRef);
+
+    const token = await this.getServiceToken();
+    const result = await this.catalog.getEntitiesByRefs({ entityRefs }, token);
+
+    // Double check that we return (only) the right Plugins
+    return result.items.filter(isMarketplacePlugin);
+  }
+
+  async getPackages(
+    request: GetEntitiesRequest,
+  ): Promise<GetEntitiesResponse<MarketplacePackage>> {
+    const token = await this.getServiceToken();
+    const result = await this.catalog.queryEntities(
+      enforceKindFilter(request, MarketplaceKind.Package),
+      token,
+    );
+    return result as GetEntitiesResponse<MarketplacePackage>;
+  }
+
+  async getPackagesFacets(
+    request: GetEntityFacetsRequest,
+  ): Promise<GetEntityFacetsResponse> {
+    const token = await this.getServiceToken();
+    return await this.catalog.getEntityFacets(
+      enforceKindFilter(request, MarketplaceKind.Package),
+      token,
+    );
+  }
+
+  async getPackageByName(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePackage> {
+    const token = await this.getServiceToken();
+    const result = await this.catalog.getEntityByRef(
+      stringifyEntityRef({
+        kind: MarketplaceKind.Package,
+        namespace,
+        name,
+      }),
+      token,
+    );
+    if (!result) throw new NotFoundError();
+    return result as MarketplaceCollection;
+  }
+
+  async getPlugins(
+    request: GetEntitiesRequest,
+  ): Promise<GetEntitiesResponse<MarketplacePlugin>> {
+    const token = await this.getServiceToken();
+    const result = await this.catalog.queryEntities(
+      enforceKindFilter(request, MarketplaceKind.Plugin),
+      token,
+    );
+    return result as GetEntitiesResponse<MarketplacePlugin>;
+  }
+
+  async getPluginFacets(
+    request: GetEntityFacetsRequest,
+  ): Promise<GetEntityFacetsResponse> {
+    const token = await this.getServiceToken();
+    return await this.catalog.getEntityFacets(
+      enforceKindFilter(request, MarketplaceKind.Plugin),
+      token,
+    );
+  }
+
+  async getPluginByName(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePlugin> {
+    const token = await this.getServiceToken();
+    const result = await this.catalog.getEntityByRef(
+      stringifyEntityRef({
+        kind: MarketplaceKind.Plugin,
+        namespace,
+        name,
+      }),
+      token,
+    );
+    if (!result) throw new NotFoundError();
+    return result as MarketplacePlugin;
+  }
+
+  async getPluginPackages(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePackage[]> {
+    const plugin = await this.getPluginByName(namespace, name);
+    const relations = plugin.relations ?? [];
+
+    // Ensure that we return just Packages
+    const entityRefs = relations
+      .filter(
+        relation =>
+          (relation.type === RELATION_PART_OF ||
+            relation.type === RELATION_HAS_PART) &&
+          relation.targetRef.startsWith('package:'),
+      )
+      .map(relation => relation.targetRef);
+
+    const token = await this.getServiceToken();
+    const result = await this.catalog.getEntitiesByRefs({ entityRefs }, token);
+
+    // Double check that we return (only) the right Packages
+    return result.items.filter(isMarketplacePackage);
   }
 }

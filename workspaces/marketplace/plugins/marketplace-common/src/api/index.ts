@@ -15,5 +15,5 @@
  */
 
 export * from './MarketplaceApi';
+export * from './MarketplaceBackendClient';
 export * from './MarketplaceCatalogClient';
-export * from './schema';

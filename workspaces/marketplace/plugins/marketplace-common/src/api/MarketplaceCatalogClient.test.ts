@@ -21,20 +21,20 @@ const mockPlugins = [
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
     kind: MarketplaceKind.Plugin,
-    metadata: { name: 'plugin1' },
+    metadata: { namespace: 'default', name: 'plugin1' },
   },
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
     kind: MarketplaceKind.Plugin,
-    metadata: { name: 'plugin2' },
+    metadata: { namespace: 'default', name: 'plugin2' },
   },
 ];
 
 const mockPluginList = [
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKind.PluginList,
-    metadata: { name: 'test-featured-plugins' },
+    kind: MarketplaceKind.Collection,
+    metadata: { namespace: 'default', name: 'test-featured-plugins' },
     spec: {
       plugins: ['plugin1', 'plugin2'],
     },
@@ -82,7 +82,7 @@ describe('MarketplaceCatalogClient', () => {
     it('should call queryEntities function', async () => {
       const api = new MarketplaceCatalogClient(options);
 
-      await api.getPlugins();
+      await api.getPlugins({});
 
       expect(mockQueryEntities).toHaveBeenCalledTimes(1);
       expect(mockQueryEntities).toHaveBeenCalledWith(
@@ -95,13 +95,13 @@ describe('MarketplaceCatalogClient', () => {
 
     it('should return the plugins', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const plugins = await api.getPlugins();
+      const plugins = await api.getPlugins({});
       expect(plugins?.items).toHaveLength(2);
     });
 
     it('should return the plugins when the auth options is not passed', async () => {
       const api = new MarketplaceCatalogClient({ ...options, auth: undefined });
-      const plugins = await api.getPlugins();
+      const plugins = await api.getPlugins({});
       expect(plugins?.items).toHaveLength(2);
     });
   });
@@ -113,7 +113,7 @@ describe('MarketplaceCatalogClient', () => {
 
     it('should return the plugin by name', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const plugin = await api.getPluginByName('plugin1');
+      const plugin = await api.getPluginByName('default', 'plugin1');
       expect(plugin).toBeDefined();
       expect(plugin.metadata.name).toBe('plugin1');
     });
@@ -126,7 +126,8 @@ describe('MarketplaceCatalogClient', () => {
 
     it('should return the pluginlist by name', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const featuredPluginList = await api.getPluginListByName(
+      const featuredPluginList = await api.getCollectionByName(
+        'default',
         'test-featured-plugins',
       );
       expect(featuredPluginList).toBeDefined();
@@ -134,7 +135,7 @@ describe('MarketplaceCatalogClient', () => {
     });
   });
 
-  describe('getPluginLists', () => {
+  describe('getCollections', () => {
     beforeEach(() => {
       mockQueryEntities.mockReturnValue({
         items: mockPluginList,
@@ -143,10 +144,10 @@ describe('MarketplaceCatalogClient', () => {
 
     it('should return the pluginlist', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const featuredPluginsList = await api.getPluginLists();
+      const featuredPluginsList = await api.getCollections({});
 
       expect(featuredPluginsList).toHaveLength(1);
-      expect(featuredPluginsList[0].spec?.plugins).toEqual([
+      expect(featuredPluginsList.items[0].spec?.plugins).toEqual([
         'plugin1',
         'plugin2',
       ]);
@@ -168,7 +169,8 @@ describe('MarketplaceCatalogClient', () => {
 
     it('should return all the plugins for the pluginlist name', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const plugins = await api.getPluginsByPluginListName(
+      const plugins = await api.getCollectionPlugins(
+        'default',
         'test-featured-plugins',
       );
       expect(plugins).toHaveLength(2);
@@ -180,7 +182,7 @@ describe('MarketplaceCatalogClient', () => {
       const api = new MarketplaceCatalogClient(options);
 
       await expect(
-        api.getPluginsByPluginListName('non-existent-featured-plugins'),
+        api.getCollectionPlugins('default', 'non-existent-featured-plugins'),
       ).rejects.toThrow('PluginList:non-existent-featured-plugins not found');
     });
     it('should return empty array when the plugins are not set', async () => {
@@ -193,7 +195,8 @@ describe('MarketplaceCatalogClient', () => {
       });
 
       const api = new MarketplaceCatalogClient(options);
-      const plugins = await api.getPluginsByPluginListName(
+      const plugins = await api.getCollectionPlugins(
+        'default',
         'non-existent-featured-plugins',
       );
       expect(plugins).toHaveLength(0);
@@ -214,7 +217,7 @@ describe('MarketplaceCatalogClient', () => {
 
     it('should return the entity facets', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const { facets } = await api.getEntityFacets({ facets: ['kind'] });
+      const { facets } = await api.getPluginFacets({ facets: ['kind'] });
 
       expect(facets).toHaveLength(1);
     });

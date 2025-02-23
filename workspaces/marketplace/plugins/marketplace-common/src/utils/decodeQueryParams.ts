@@ -15,167 +15,89 @@
  */
 
 import {
+  EntityFilterQuery,
   EntityOrderQuery,
+  GetEntityFacetsRequest,
   QueryEntitiesRequest,
-} from '@backstage/catalog-client/index';
-import { GetPackagesRequest, GetPluginsRequest, SortOrder } from '../types';
+} from '@backstage/catalog-client';
 
-/**
- *
- * @public
- */
-export const decodeFilterParams = (searchParams: URLSearchParams) => {
-  const filter: Record<string, string[]> = {};
+import { GetEntitiesRequest } from '../api';
+
+export const decodeEntityFilterQuery = (
+  searchParams: URLSearchParams,
+): EntityFilterQuery | undefined => {
+  if (!searchParams.has('filter')) {
+    return undefined;
+  }
+
+  const filter: Record<string, string | string[]> = {};
 
   searchParams.getAll('filter').forEach(param => {
     const [key, value] = param.split('=').map(decodeURIComponent);
-    if (!filter[key]) {
-      filter[key] = [];
+    if (Array.isArray(filter[key])) {
+      filter[key].push(value);
+    } else if (filter[key]) {
+      filter[key] = [filter[key], value];
+    } else {
+      filter[key] = value;
     }
-    filter[key].push(value);
   });
 
   return filter;
 };
 
-/**
- *
- * @public
- */
-export const decodeOrderFields = (searchParams: URLSearchParams) => {
+export const decodeEntityOrderQuery = (
+  searchParams: URLSearchParams,
+): EntityOrderQuery | undefined => {
+  if (!searchParams.has('orderFields')) {
+    return undefined;
+  }
   const orderFields = searchParams.getAll('orderFields');
   const decodedOrderFields: EntityOrderQuery = orderFields.map(field => {
-    const [key, order] = field.split(',');
-    return { field: key, order: order as SortOrder };
+    const [key, order] = field.split(',').map(decodeURIComponent);
+    return { field: key, order: order as 'asc' | 'desc' };
   });
   return decodedOrderFields;
 };
 
 /**
- *
  * @public
  */
-export const decodeGetPluginsRequest = (
-  queryString: string,
-): GetPluginsRequest => {
-  const searchParams = new URLSearchParams(queryString);
-  return {
-    orderFields:
-      searchParams.getAll('orderFields').length > 0
-        ? decodeOrderFields(searchParams)
-        : undefined,
-    searchTerm: searchParams.get('searchTerm') || undefined,
-    limit: searchParams.get('limit')
-      ? Number(searchParams.get('limit'))
-      : undefined,
-    offset: searchParams.get('offset')
-      ? Number(searchParams.get('offset'))
-      : undefined,
-    filter:
-      searchParams.getAll('filter').length > 0
-        ? decodeFilterParams(searchParams)
-        : undefined,
-  };
-};
+export const decodeGetEntitiesRequest = (
+  searchParams: URLSearchParams,
+): GetEntitiesRequest => {
+  const request: QueryEntitiesRequest = {};
 
-/**
- *
- * @public
- */
-export const decodeGetPackagesRequest = (
-  queryString: string,
-): GetPackagesRequest => {
-  const searchParams = new URLSearchParams(queryString);
-  return {
-    orderFields:
-      searchParams.getAll('orderFields').length > 0
-        ? decodeOrderFields(searchParams)
-        : undefined,
-    searchTerm: searchParams.get('searchTerm') || undefined,
-    limit: searchParams.get('limit')
-      ? Number(searchParams.get('limit'))
-      : undefined,
-    offset: searchParams.get('offset')
-      ? Number(searchParams.get('offset'))
-      : undefined,
-    filter:
-      searchParams.getAll('filter').length > 0
-        ? decodeFilterParams(searchParams)
-        : undefined,
-  };
-};
-
-/**
- * @public
- */
-export const convertGetPluginsRequestToQueryEntitiesRequest = (
-  query?: GetPluginsRequest,
-): QueryEntitiesRequest => {
-  const entitiesRequest: QueryEntitiesRequest = {};
-
-  entitiesRequest.filter = {
-    ...query?.filter,
-    kind: 'Plugin',
-  };
-
-  entitiesRequest.orderFields = query?.orderFields;
-  entitiesRequest.limit = query?.limit;
-  entitiesRequest.offset = query?.offset;
-
-  if (query?.searchTerm) {
-    entitiesRequest.fullTextFilter = {
-      term: query.searchTerm,
+  if (searchParams.has('fields')) {
+    request.fields = searchParams.getAll('fields');
+  }
+  if (searchParams.get('limit')) {
+    request.limit = Number(searchParams.get('limit'));
+  }
+  if (searchParams.get('offset')) {
+    request.offset = Number(searchParams.get('offset'));
+  }
+  request.filter = decodeEntityFilterQuery(searchParams);
+  request.orderFields = decodeEntityOrderQuery(searchParams);
+  if (searchParams.get('fullTextTerm')) {
+    request.fullTextFilter = {
+      term: searchParams.get('fullTextTerm')!,
+      fields: searchParams.has('fullTextFields') ? searchParams.getAll('fullTextFields') : undefined,
     };
   }
 
-  return entitiesRequest;
+  return request;
 };
 
 /**
  * @public
  */
-export const convertGetPackagesRequestToQueryEntitiesRequest = (
-  query: GetPluginsRequest,
-): QueryEntitiesRequest => {
-  const entitiesRequest: QueryEntitiesRequest = {};
-
-  entitiesRequest.filter = {
-    ...query?.filter,
-    kind: 'Package',
-  };
-
-  entitiesRequest.orderFields = query?.orderFields;
-  entitiesRequest.limit = query?.limit;
-  entitiesRequest.offset = query?.offset;
-
-  if (query?.searchTerm) {
-    entitiesRequest.fullTextFilter = {
-      term: query.searchTerm,
-    };
-  }
-
-  return entitiesRequest;
-};
-
-/**
- * @public
- */
-export const decodeFacetParams = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('facet').map(decodeURIComponent);
-};
-
-/**
- * @public
- */
-export const decodeQueryParams = (queryString: string) => {
-  const searchParams = new URLSearchParams(queryString);
-
+export const decodeGetEntityFacetsRequest = (
+  searchParams: URLSearchParams,
+): GetEntityFacetsRequest => {
+  // searchParams.getAll('facet').map(decodeURIComponent)
   return {
-    ...(searchParams.getAll('filter').length > 0
-      ? { filter: decodeFilterParams(searchParams) }
-      : {}),
-    ...(searchParams.getAll('facet').length > 0
-      ? { facets: decodeFacetParams(searchParams) }
-      : {}),
+    facets: searchParams.getAll('facet'),
+    filter: decodeEntityFilterQuery(searchParams),
   };
 };

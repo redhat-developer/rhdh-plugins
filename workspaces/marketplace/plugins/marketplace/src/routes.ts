@@ -28,13 +28,13 @@ export const pluginsRouteRef = createSubRouteRef({
 
 export const pluginRouteRef = createSubRouteRef({
   id: 'marketplace/plugin',
-  path: '/plugins/:name',
+  path: '/plugins/:namespace/:name',
   parent: rootRouteRef,
 });
 
 export const pluginInstallRouteRef = createSubRouteRef({
   id: 'marketplace/plugin/install',
-  path: '/plugins/:name/install',
+  path: '/plugins/:namespace/:name/install',
   parent: rootRouteRef,
 });
 
@@ -46,13 +46,13 @@ export const packagesRouteRef = createSubRouteRef({
 
 export const packageRouteRef = createSubRouteRef({
   id: 'marketplace/package',
-  path: '/packages/:name',
+  path: '/packages/:namespace/:name',
   parent: rootRouteRef,
 });
 
 export const packageInstallRouteRef = createSubRouteRef({
   id: 'marketplace/package/install',
-  path: '/packages/:name/install',
+  path: '/packages/:namespace/:name/install',
   parent: rootRouteRef,
 });
 
@@ -64,7 +64,7 @@ export const collectionsRouteRef = createSubRouteRef({
 
 export const collectionRouteRef = createSubRouteRef({
   id: 'marketplace/collection',
-  path: '/collections/:name',
+  path: '/collections/:namespace/:name',
   parent: rootRouteRef,
 });
 

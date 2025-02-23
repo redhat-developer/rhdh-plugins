@@ -13,5 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './encodeQueryParams';
-export * from './decodeQueryParams';
+
+export {
+  encodeGetEntitiesRequest,
+  encodeGetEntityFacetsRequest,
+} from './encodeQueryParams';
+export {
+  decodeGetEntitiesRequest,
+  decodeGetEntityFacetsRequest,
+} from './decodeQueryParams';

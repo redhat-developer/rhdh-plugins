@@ -110,7 +110,7 @@ const MarketplacePackageContentReal = ({
           <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
             {pkg.metadata.title || pkg.metadata.name}
           </Typography>
-          {pkg.spec?.developer ? (
+          {/* {pkg.spec?.developer ? (
             <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
               {' by '}
               <Link
@@ -120,8 +120,8 @@ const MarketplacePackageContentReal = ({
                 {pkg.spec.developer}
               </Link>
             </Typography>
-          ) : null}
-          {pkg.spec?.categories?.map(category => (
+          ) : null} */}
+          {/* {pkg.spec?.categories?.map(category => (
             <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
               <LinkButton
                 to={withSearchParameter('category', category)}
@@ -131,7 +131,7 @@ const MarketplacePackageContentReal = ({
                 {category}
               </LinkButton>
             </Typography>
-          ))}
+          ))} */}
         </Stack>
       </Stack>
 
@@ -142,7 +142,10 @@ const MarketplacePackageContentReal = ({
         <Grid item md={2}>
           <LinkButton
             disabled={pkg.spec?.installStatus === InstallStatus.Installed}
-            to={getInstallPath({ name: pkg.metadata.name })}
+            to={getInstallPath({
+              namespace: pkg.metadata.namespace!,
+              name: pkg.metadata.name,
+            })}
             color="primary"
             variant="contained"
           >
@@ -164,7 +167,7 @@ export const MarketplacePackageContent = ({
 }: {
   pluginName: string;
 }) => {
-  const packages = usePackages();
+  const packages = usePackages({});
   const pkg = packages.data?.items?.find(p => p.metadata.name === pluginName);
 
   if (packages.isLoading) {

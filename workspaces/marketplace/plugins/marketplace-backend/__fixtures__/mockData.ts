@@ -15,26 +15,42 @@
  */
 import { MarketplaceKind } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
+export const mockCollections = [
+  {
+    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    kind: MarketplaceKind.Collection,
+    metadata: {
+      namespace: 'default',
+      name: 'test-featured-plugins',
+    },
+    spec: {
+      plugins: [
+        'plugin1',
+        'plugin2',
+      ],
+    },
+    relations: [
+      { type: 'hasPart', targetRef: 'plugin:plugin1' },
+      { type: 'hasPart', targetRef: 'plugin:plugin2' },
+    ],
+  },
+];
+
 export const mockPlugins = [
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
     kind: MarketplaceKind.Plugin,
-    metadata: { name: 'plugin1' },
+    metadata: {
+      namespace: 'default',
+      name: 'plugin1',
+    },
   },
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
     kind: MarketplaceKind.Plugin,
-    metadata: { name: 'plugin2' },
-  },
-];
-
-export const mockPluginList = [
-  {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKind.PluginList,
-    metadata: { name: 'test-featured-plugins' },
-    spec: {
-      plugins: ['plugin1', 'plugin2'],
+    metadata: {
+      namespace: 'default',
+      name: 'plugin2',
     },
   },
 ];

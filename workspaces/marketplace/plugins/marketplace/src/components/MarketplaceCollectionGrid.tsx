@@ -17,13 +17,13 @@ import React from 'react';
 
 import { useQueryParamState, ItemCardGrid } from '@backstage/core-components';
 
-import { usePluginLists } from '../hooks/usePluginLists';
+import { useCollections } from '../hooks/useCollections';
 
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
 
 export const MarketplaceCollectionGrid = () => {
-  const collections = usePluginLists();
-  const collection = collections.data?.[0];
+  const collections = useCollections({});
+  const collection = collections.data?.items[0];
 
   const [search] = useQueryParamState<string | undefined>('q');
 

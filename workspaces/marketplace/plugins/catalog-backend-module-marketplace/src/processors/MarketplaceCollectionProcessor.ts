@@ -48,7 +48,7 @@ const pluginListJsonSchema = {
         },
         kind: {
           type: 'string',
-          enum: ['PluginList'],
+          enum: ['PluginCollection'],
         },
         metadata: {
           type: 'object',
@@ -157,7 +157,7 @@ export class MarketplaceCollectionProcessor implements CatalogProcessor {
   ): Promise<Entity> {
     if (
       entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKind.PluginList
+      entity.kind === MarketplaceKind.Collection
     ) {
       const thisEntityRef = getCompoundEntityRef(entity);
       const target = entity?.spec?.owner as string;

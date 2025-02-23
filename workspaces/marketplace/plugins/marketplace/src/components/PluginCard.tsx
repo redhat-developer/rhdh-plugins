@@ -87,7 +87,10 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
   const getIndexPath = useRouteRef(rootRouteRef);
   const getPluginPath = useRouteRef(pluginRouteRef);
 
-  const pluginPath = getPluginPath({ name: plugin.metadata.name });
+  const pluginPath = getPluginPath({
+    namespace: plugin.metadata.namespace!,
+    name: plugin.metadata.name,
+  });
   const withSearchParameter = (name: string, value: string) =>
     `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
       value,
@@ -156,7 +159,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
         </Stack>
       </CardContent>
       <CardActions sx={{ pl: 2, pr: 2, pb: 2, justifyContent: 'flex-start' }}>
-        <Link to="" onClick={e => e.stopPropagation()}>
+        <Link to={pluginPath} onClick={e => e.stopPropagation()}>
           Read more
         </Link>
       </CardActions>

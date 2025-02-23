@@ -52,7 +52,9 @@ export const SelectFilter = (props: SelectFilterProps) => {
       />
 
       <Typography component="label">
-        <Typography variant="body2" color="text.primary" fontWeight="bold">Category</Typography>
+        <Typography variant="body2" color="text.primary" fontWeight="bold">
+          Category
+        </Typography>
 
         <Select2
           // label="Category"
@@ -60,19 +62,21 @@ export const SelectFilter = (props: SelectFilterProps) => {
           size="small"
           // IconComponent={<ExpandMoreIcon data-testid={`${name}-expand`} />}
           // popupIcon={}
-          // PaperProps 
+          // PaperProps
           // MenuProps={}
           sx={{ width: '100%' }}
         >
-          {categories?.map((category) => (
+          {categories?.map(category => (
             <MenuItem key={category.value}>
               <Checkbox checked={false} />
               <ListItemText primary={category.value} />
-              <Typography variant="body2" color="text.secondary">{category.count}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {category.count}
+              </Typography>
             </MenuItem>
           ))}
         </Select2>
       </Typography>
     </Box>
-  )
+  );
 };

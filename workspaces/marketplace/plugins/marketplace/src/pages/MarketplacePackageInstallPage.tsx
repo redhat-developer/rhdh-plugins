@@ -25,11 +25,14 @@ import { usePackage } from '../hooks/usePackage';
 const PackageInstallHeader = () => {
   const params = useRouteRefParams(packageInstallRouteRef);
 
-  const pkg = usePackage(params.name);
+  const pkg = usePackage(params.namespace, params.name);
 
   const displayName = pkg.data?.metadata.title ?? params.name;
   const title = `Install ${displayName}`;
-  const packageLink = useRouteRef(packageRouteRef)({ name: params.name });
+  const packageLink = useRouteRef(packageRouteRef)({
+    namespace: params.namespace,
+    name: params.name,
+  });
 
   return <Header title={title} type="Package" typeLink={packageLink} />;
 };

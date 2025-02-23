@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { Request } from 'express';
 
-import { useMarketplaceApi } from './useMarketplaceApi';
+export const createSearchParams = (req: Request): URLSearchParams => {
+  const searchParams = new URLSearchParams();
 
-export const usePluginLists = () => {
-  const marketplaceApi = useMarketplaceApi();
-  return useQuery({
-    queryKey: ['marketplaceApi', 'getPluginLists'],
-    queryFn: () => marketplaceApi.getPluginLists(),
+  Object.entries(req.query).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach(v => {
+        if (typeof v === 'string') searchParams.append(key, v);
+      });
+    } else if (typeof value === 'string') {
+      searchParams.append(key, value);
+    }
   });
+
+  return searchParams;
 };

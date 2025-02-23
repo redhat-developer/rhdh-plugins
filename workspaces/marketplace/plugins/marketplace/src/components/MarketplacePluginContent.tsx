@@ -150,7 +150,10 @@ export const MarketplacePluginContent = ({
 
           <LinkButton
             disabled={plugin.spec?.installStatus === InstallStatus.Installed}
-            to={getInstallPath({ name: plugin.metadata.name })}
+            to={getInstallPath({
+              namespace: plugin.metadata.namespace!,
+              name: plugin.metadata.name,
+            })}
             color="primary"
             variant="contained"
           >
@@ -169,7 +172,7 @@ export const MarketplacePluginContent = ({
 
 export const MarketplacePluginContentLoader = () => {
   const params = useRouteRefParams(pluginRouteRef);
-  const plugin = usePlugin(params.name);
+  const plugin = usePlugin(params.namespace, params.name);
 
   if (plugin.isLoading) {
     return <MarketplacePluginContentSkeleton />;

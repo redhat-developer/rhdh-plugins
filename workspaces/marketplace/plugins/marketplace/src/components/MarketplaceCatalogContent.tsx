@@ -31,7 +31,7 @@ import { MarketplacePluginFilter } from './MarketplacePluginFilter';
 import { PluginCardSkeleton } from './PluginCard';
 
 export const MarketplaceCatalogContent = () => {
-  const plugins = usePlugins();
+  const plugins = usePlugins({});
 
   return (
     <FilterLayout>

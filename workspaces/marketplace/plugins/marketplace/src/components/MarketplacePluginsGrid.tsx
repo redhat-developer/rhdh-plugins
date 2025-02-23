@@ -31,8 +31,8 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { usePluginLists } from '../hooks/usePluginLists';
-import { pluginDetailRouteRef } from '../routes';
+import { useCollections } from '../hooks/useCollections';
+import { pluginRouteRef } from '../routes';
 
 const EntrySkeleton = ({
   animation,
@@ -77,9 +77,12 @@ const EntrySkeleton = ({
 const Entry = ({ entry }: { entry: MarketplaceCollection }) => {
   const navigate = useNavigate();
   // const getIndexPath = useRouteRef(rootRouteRef);
-  const getDetailsPath = useRouteRef(pluginDetailRouteRef);
+  const getDetailsPath = useRouteRef(pluginRouteRef);
 
-  const detailsPath = getDetailsPath({ name: entry.metadata.name });
+  const detailsPath = getDetailsPath({
+    namespace: entry.metadata.namespace!,
+    name: entry.metadata.name,
+  });
   // const withSearchParameter = (name: string, value: string) =>
   //   `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
   //     value,
@@ -154,25 +157,25 @@ const Entry = ({ entry }: { entry: MarketplaceCollection }) => {
 };
 
 export const MarketplacePluginsGrid = () => {
-  const pluginLists = usePluginLists();
+  const collections = useCollections({});
 
   const [search] = useQueryParamState<string | undefined>('q');
 
   const filteredEntries = React.useMemo(() => {
-    if (!search || !pluginLists.data) {
-      return pluginLists.data;
+    if (!search || !collections.data || !collections.data.items) {
+      return collections.data?.items;
     }
     const lowerCaseSearch = search.toLocaleLowerCase('en-US');
-    return pluginLists.data.filter(pluginList => {
+    return collections.data.items.filter(pluginList => {
       const lowerCaseValue =
         pluginList.metadata?.title?.toLocaleLowerCase('en-US');
       return lowerCaseValue?.includes(lowerCaseSearch);
     });
-  }, [search, pluginLists.data]);
+  }, [search, collections.data]);
 
   return (
     <ItemCardGrid>
-      {pluginLists.isLoading ? (
+      {collections.isLoading ? (
         <>
           <EntrySkeleton />
           <EntrySkeleton />

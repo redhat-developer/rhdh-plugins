@@ -15,24 +15,26 @@
  */
 
 import {
+  QueryEntitiesInitialRequest,
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
-  GetPackagesRequest,
-  GetPluginsRequest,
+} from '@backstage/catalog-client';
+
+import {
+  MarketplaceCollection,
   MarketplacePackage,
   MarketplacePlugin,
-  MarketplaceCollection,
-  MarketplacePluginWithPageInfo,
 } from '../types';
+
+export type GetEntitiesRequest = QueryEntitiesInitialRequest;
 
 /**
  * @public
  */
-export interface PagedResponse<T> {
+export interface GetEntitiesResponse<T> {
   items: T[];
-  // TODO remove optionmal
-  totalItems?: number;
-  pageInfo?: {
+  totalItems: number;
+  pageInfo: {
     nextCursor?: string;
     prevCursor?: string;
   };
@@ -42,24 +44,49 @@ export interface PagedResponse<T> {
  * @public
  */
 export interface MarketplaceApi {
-  getPackages(
-    request?: GetPackagesRequest,
-  ): Promise<PagedResponse<MarketplacePackage>>;
-  getPackagesFacets(): Promise<GetEntityFacetsResponse>;
-  getPackageByName(name: string): Promise<MarketplacePackage>;
+  getCollections(
+    request: GetEntitiesRequest,
+  ): Promise<GetEntitiesResponse<MarketplaceCollection>>;
 
-  getPlugins(
-    request?: GetPluginsRequest,
-  ): Promise<MarketplacePluginWithPageInfo>;
-
-  getPluginByName(name: string): Promise<MarketplacePlugin>;
-
-  getPluginLists(): Promise<MarketplaceCollection[]>;
-  getPluginListByName(name: string): Promise<MarketplaceCollection>;
-  getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
-
-  // TODO: fix types
-  getEntityFacets(
+  getCollectionsFacets(
     request: GetEntityFacetsRequest,
   ): Promise<GetEntityFacetsResponse>;
+
+  getCollectionByName(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplaceCollection>;
+
+  getCollectionPlugins(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePlugin[]>;
+
+  getPackages(
+    request: GetEntitiesRequest,
+  ): Promise<GetEntitiesResponse<MarketplacePackage>>;
+
+  getPackagesFacets(
+    request: GetEntityFacetsRequest,
+  ): Promise<GetEntityFacetsResponse>;
+
+  getPackageByName(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePackage>;
+
+  getPlugins(
+    request: GetEntitiesRequest,
+  ): Promise<GetEntitiesResponse<MarketplacePlugin>>;
+
+  getPluginFacets(
+    request: GetEntityFacetsRequest,
+  ): Promise<GetEntityFacetsResponse>;
+
+  getPluginByName(namespace: string, name: string): Promise<MarketplacePlugin>;
+
+  getPluginPackages(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePackage[]>;
 }

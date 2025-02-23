@@ -23,11 +23,11 @@ import { BackstageSelectFilter } from '../shared-components/BackstageSelectFilte
 
 const CategoryFilter = () => {
   const categoriesFacet = usePluginFacet('spec.categories');
-  const categories = categoriesFacet.data?.facets['spec.categories'];
+  const categories = categoriesFacet.data;
 
   const items = React.useMemo(() => {
     if (!categories) return [];
-    return categories.map((category) => ({
+    return categories.map(category => ({
       label: category.value,
       value: category.value,
     }));
@@ -40,18 +40,18 @@ const CategoryFilter = () => {
       items={items}
       multiple
     />
-  )
-}
+  );
+};
 
 const AuthorFilter = () => {
   const authorsFacet = usePluginFacet('spec.author');
-  const authors = authorsFacet.data?.facets['spec.author'];
+  const authors = authorsFacet.data;
 
   const items = React.useMemo(() => {
     if (!authors) return [];
-    return authors.map((category) => ({
-      label: category.value,
-      value: category.value,
+    return authors.map(author => ({
+      label: author.value,
+      value: author.value,
     }));
   }, [authors]);
 
@@ -62,20 +62,20 @@ const AuthorFilter = () => {
       items={items}
       multiple
     />
-  )
-}
+  );
+};
 
 const SupportTypeFilter = () => {
-  const categoriesFacet = usePluginFacet('spec.categories');
-  const categories = categoriesFacet.data?.facets['spec.categories'];
+  const supportTypesFacet = usePluginFacet('spec.supportType');
+  const supportTypes = supportTypesFacet.data;
 
   const items = React.useMemo(() => {
-    if (!categories) return [];
-    return categories.map((category) => ({
-      label: category.value,
-      value: category.value,
+    if (!supportTypes) return [];
+    return supportTypes.map(supportType => ({
+      label: supportType.value,
+      value: supportType.value,
     }));
-  }, [categories]);
+  }, [supportTypes]);
 
   return (
     <BackstageSelectFilter
@@ -84,8 +84,8 @@ const SupportTypeFilter = () => {
       items={items}
       multiple
     />
-  )
-}
+  );
+};
 
 export const MarketplacePluginFilter = () => {
   return (

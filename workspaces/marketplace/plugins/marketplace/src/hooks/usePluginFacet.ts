@@ -21,9 +21,10 @@ import { useMarketplaceApi } from './useMarketplaceApi';
 export const usePluginFacet = (facet: string) => {
   const marketplaceApi = useMarketplaceApi();
   return useQuery({
-    queryKey: ['marketplaceApi', 'getEntityFacets', facet],
-    queryFn: () => marketplaceApi.getEntityFacets({
-      facets: [facet],
-    }),
+    queryKey: ['marketplaceApi', 'getPluginFacet', facet],
+    queryFn: () =>
+      marketplaceApi
+        .getPluginFacets({ facets: [facet] })
+        .then(data => data.facets[facet]),
   });
 };

@@ -18,14 +18,10 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
 
-export const usePackage = (name: string) => {
+export const usePackage = (namespace: string, name: string) => {
   const marketplaceApi = useMarketplaceApi();
   return useQuery({
-    queryKey: ['marketplaceApi', 'getPackages', name],
-    // TODO: fetch plugin by name
-    queryFn: () =>
-      marketplaceApi
-        .getPackages()
-        .then(response => response.items.find(e => e.metadata.name === name)!),
+    queryKey: ['marketplaceApi', 'getPackageByName', namespace, name],
+    queryFn: () => marketplaceApi.getPackageByName(namespace, name),
   });
 };

@@ -221,7 +221,7 @@ describe('DynamicPackageInstallStatusProcessor', () => {
       const entity: MarketplacePlugin = {
         apiVersion: 'marketplace.backstage.io/v1alpha1',
         kind: 'Plugin',
-        metadata: { name: 'unknown-plugin' },
+        metadata: { namespace: 'default', name: 'unknown-plugin' },
         spec: {},
       };
       const pluginsMock = { plugin1: {}, plugin2: {} };
@@ -248,7 +248,7 @@ describe('DynamicPackageInstallStatusProcessor', () => {
       const entity: MarketplacePlugin = {
         apiVersion: 'other-api/v1',
         kind: 'Component',
-        metadata: { name: 'component1' },
+        metadata: { namespace: 'default', name: 'component1' },
         spec: {},
       };
 

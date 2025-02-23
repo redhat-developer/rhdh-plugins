@@ -24,11 +24,14 @@ import { usePlugin } from '../hooks/usePlugin';
 
 const PluginInstallHeader = () => {
   const params = useRouteRefParams(pluginInstallRouteRef);
-  const plugin = usePlugin(params.name);
+  const plugin = usePlugin(params.namespace, params.name);
 
   const displayName = plugin.data?.metadata?.title ?? params.name;
   const title = `Install ${displayName}`;
-  const pluginLink = useRouteRef(pluginRouteRef)({ name: params.name });
+  const pluginLink = useRouteRef(pluginRouteRef)({
+    namespace: params.namespace,
+    name: params.name,
+  });
 
   return <Header title={title} type="Plugin" typeLink={pluginLink} />;
 };

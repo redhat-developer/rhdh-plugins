@@ -20,6 +20,8 @@ import { glob } from 'glob';
 import yaml from 'yaml';
 
 import {
+  isMarketplacePackage,
+  isMarketplacePlugin,
   MarketplacePackage,
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
@@ -64,32 +66,14 @@ function isEntity(
   return 'apiVersion' in maybe && 'kind' in maybe;
 }
 
-function isPackage(maybe: object): maybe is MarketplacePackage {
-  return (
-    'apiVersion' in maybe &&
-    'kind' in maybe &&
-    maybe.apiVersion === 'marketplace.backstage.io/v1alpha1' &&
-    maybe.kind === 'Package'
-  );
-}
-
-function isPlugin(maybe: object): maybe is MarketplacePlugin {
-  return (
-    'apiVersion' in maybe &&
-    'kind' in maybe &&
-    maybe.apiVersion === 'marketplace.backstage.io/v1alpha1' &&
-    maybe.kind === 'Plugin'
-  );
-}
-
 async function load(filename: string, content: any) {
   if (typeof content !== 'object') {
     throw new Error(`Expected object, got ${typeof content}`);
   }
 
-  if (isPackage(content)) {
+  if (isMarketplacePackage(content)) {
     packages[stringifyEntityRef(content)] = content;
-  } else if (isPlugin(content)) {
+  } else if (isMarketplacePlugin(content)) {
     plugins[stringifyEntityRef(content)] = content;
   } else if (isEntity(content)) {
     console.log(

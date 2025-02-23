@@ -25,7 +25,7 @@ import { usePlugin } from '../hooks/usePlugin';
 
 const PluginHeader = () => {
   const params = useRouteRefParams(pluginRouteRef);
-  const plugin = usePlugin(params.name);
+  const plugin = usePlugin(params.namespace, params.name);
 
   const displayName = plugin.data?.metadata.title ?? params.name;
   const pluginsLink = useRouteRef(pluginsRouteRef)();

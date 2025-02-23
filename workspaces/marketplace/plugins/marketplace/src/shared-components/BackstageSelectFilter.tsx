@@ -32,7 +32,9 @@ export interface BackstageSelectFilterProps {
 }
 
 export const BackstageSelectFilter = (props: BackstageSelectFilterProps) => {
-  const [selected, setSelected] = useQueryParamState<SelectedItems | undefined>(props.name);
+  const [selected, setSelected] = useQueryParamState<SelectedItems | undefined>(
+    props.name,
+  );
 
   const onChange = (newSelected: SelectedItems) => {
     setSelected(newSelected === '' ? undefined : newSelected);

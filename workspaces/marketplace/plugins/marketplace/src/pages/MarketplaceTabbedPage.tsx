@@ -57,8 +57,14 @@ const Tabs = () => {
         </TabbedLayout>
       </Page>
       <Routes>
-        <Route path="/plugins/:name" Component={MarketplacePluginDrawer} />
-        <Route path="/packages/:name" Component={MarketplacePackageDrawer} />
+        <Route
+          path="/plugins/:namespace/:name"
+          Component={MarketplacePluginDrawer}
+        />
+        <Route
+          path="/packages/:namespace/:name"
+          Component={MarketplacePackageDrawer}
+        />
       </Routes>
     </>
   );
@@ -67,13 +73,16 @@ const Tabs = () => {
 export const MarketplaceTabbedPage = () => (
   <ReactQueryProvider>
     <Routes>
-      <Route path="/collections/:name" Component={MarketplaceCollectionPage} />
       <Route
-        path="/plugins/:name/install"
+        path="/collections/:namespace/:name"
+        Component={MarketplaceCollectionPage}
+      />
+      <Route
+        path="/plugins/:namespace/:name/install"
         Component={MarketplacePluginInstallPage}
       />
       <Route
-        path="/packages/:name/install"
+        path="/packages/:namespace/:name/install"
         Component={MarketplacePackageInstallPage}
       />
       <Route path="/*" Component={Tabs} />

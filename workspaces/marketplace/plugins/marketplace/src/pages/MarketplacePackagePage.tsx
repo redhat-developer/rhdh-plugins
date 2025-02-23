@@ -37,7 +37,7 @@ import { usePackage } from '../hooks/usePackage';
 const PackageHeader = () => {
   const params = useRouteRefParams(packageRouteRef);
 
-  const pkg = usePackage(params.name);
+  const pkg = usePackage(params.namespace, params.name);
 
   const displayName = pkg.data?.metadata.title ?? params.name;
   const packagesLink = useRouteRef(packagesRouteRef)();
@@ -58,7 +58,10 @@ export const MarketplacePackagePage = () => {
             <>
               <LinkButton
                 disabled
-                to={getInstallPath({ name: params.name })}
+                to={getInstallPath({
+                  namespace: params.namespace,
+                  name: params.name,
+                })}
                 color="primary"
                 variant="contained"
               >

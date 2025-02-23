@@ -25,7 +25,10 @@ import { pluginRouteRef } from '../routes';
 
 export const PluginLink = ({ plugin }: { plugin: MarketplacePlugin }) => {
   const getPluginPath = useRouteRef(pluginRouteRef);
-  const link = getPluginPath({ name: plugin.metadata.name });
+  const link = getPluginPath({
+    namespace: plugin.metadata.namespace!,
+    name: plugin.metadata.name,
+  });
   const packageName = plugin.metadata.title ?? plugin.metadata.name;
   return <Link to={link}>{packageName}</Link>;
 };

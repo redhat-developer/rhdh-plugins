@@ -71,8 +71,8 @@ const getBadgeOptions = (
 
   return {
     color: colors.custom,
-    label: 'Custom',
-    tooltip: 'Custom',
+    label: 'Custom plugin',
+    tooltip: 'Custom plugin',
   };
 };
 

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  MarketplaceCollection,
+  MarketplaceKind,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { MarketplaceCollectionProcessor } from './MarketplaceCollectionProcessor';
 
@@ -25,7 +28,7 @@ const pluginListEntity: MarketplaceCollection = {
     title: 'APIs with Test plugin',
     description: 'Test plugin.',
   },
-  kind: 'PluginList',
+  kind: MarketplaceKind.Collection,
   spec: {
     owner: 'test-group',
     plugins: ['plugin-a', 'plugin-b', 'plugin-c'],
@@ -74,7 +77,7 @@ describe('MarketplaceCollectionProcessor', () => {
       type: 'relation',
       relation: {
         source: {
-          kind: 'PluginList',
+          kind: MarketplaceKind.Collection,
           namespace: 'default',
           name: 'testplugin',
         },
@@ -90,7 +93,7 @@ describe('MarketplaceCollectionProcessor', () => {
       },
       type: 'hasPart',
       target: {
-        kind: 'PluginList',
+        kind: MarketplaceKind.Collection,
         namespace: 'default',
         name: 'testplugin',
       },

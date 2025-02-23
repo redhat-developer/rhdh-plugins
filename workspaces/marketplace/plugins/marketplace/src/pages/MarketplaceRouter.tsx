@@ -48,7 +48,7 @@ export const MarketplaceRouter = () => {
   const getPluginPath = useRouteRef(pluginRouteRef);
 
   const indexPath = getIndexPath();
-  const pluginPath = getPluginPath({ name: ':name' });
+  const pluginPath = getPluginPath({ namespace: ':namespace', name: ':name' });
 
   console.log('xxx MarketplaceRouter', indexPath, pluginPath);
 
@@ -59,16 +59,22 @@ export const MarketplaceRouter = () => {
       <Route path="/" Component={MarketplaceHomePage} />
 
       <Route path="/plugins" Component={MarketplacePluginsPage} />
-      <Route path="/plugins/:name" Component={MarketplacePluginPage} />
       <Route
-        path="/plugins/:name/install"
+        path="/plugins/:namespace/:name"
+        Component={MarketplacePluginPage}
+      />
+      <Route
+        path="/plugins/:namespace/:name/install"
         Component={MarketplacePluginInstallPage}
       />
 
       <Route path="/packages" Component={MarketplacePackagesPage} />
-      <Route path="/packages/:name" Component={MarketplacePackagePage} />
       <Route
-        path="/packages/:name/install"
+        path="/packages/:namespace/:name"
+        Component={MarketplacePackagePage}
+      />
+      <Route
+        path="/packages/:namespace/:name/install"
         Component={MarketplacePackageInstallPage}
       />
 
