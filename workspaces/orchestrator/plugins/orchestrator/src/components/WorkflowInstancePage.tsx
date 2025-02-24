@@ -42,6 +42,7 @@ import Snackbar from '@material-ui/core/Snackbar';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import ErrorIcon from '@material-ui/icons/Error';
+import { AlertTitle } from '@material-ui/lab';
 import Alert from '@material-ui/lab/Alert';
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 import StartIcon from '@mui/icons-material/Start';
@@ -70,11 +71,18 @@ import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     abortButton: {
-      backgroundColor: theme.palette.error.main,
-      color: theme.palette.getContrastText(theme.palette.error.main),
+      backgroundColor: theme.palette.error.dark,
+      color: theme.palette.getContrastText(theme.palette.error.dark),
       '&:hover': {
         backgroundColor: theme.palette.error.dark,
+        filter: 'brightness(90%)',
       },
+    },
+    modalText: {
+      fontSize: '1.1rem',
+    },
+    errorColor: {
+      color: theme.palette.error.dark,
     },
   }),
 );
@@ -82,24 +90,68 @@ const useStyles = makeStyles((theme: Theme) =>
 export type AbortConfirmationDialogActionsProps = {
   handleSubmit: () => void;
   handleCancel: () => void;
+  isAborting: boolean;
+  canAbort: boolean;
 };
 
-const AbortConfirmationDialogContent = () => (
-  <div>
-    <b>
-      Are you sure you want to abort this workflow run? <br /> <br />
-      Aborting will stop all in-progress and pending steps immediately. Any
-      incomplete tasks will not be saved.
-    </b>
-  </div>
-);
+const AbortConfirmationDialogContent = ({
+  canAbort,
+}: {
+  canAbort: boolean;
+}) => {
+  const classes = useStyles();
+  return (
+    <div>
+      <p className={classes.modalText}>
+        Are you sure you want to abort this workflow run? <br /> <br />
+        Aborting will stop all in-progress and pending steps immediately. Any
+        incomplete tasks will not be saved.
+      </p>
+      {!canAbort && (
+        <Box sx={{ width: '100%' }}>
+          <Alert severity="info">
+            <AlertTitle>Run completed</AlertTitle>
+            It is not possible to abort the run as it has already been
+            completed.
+          </Alert>
+        </Box>
+      )}
+    </div>
+  );
+};
+
+const AbortConfirmationDialogActions = (
+  props: AbortConfirmationDialogActionsProps,
+) => {
+  const classes = useStyles();
+  return (
+    <>
+      <Button
+        onClick={props.handleSubmit}
+        variant="contained"
+        className={classes.abortButton}
+        startIcon={props.isAborting ? <CircularProgress size="1rem" /> : null}
+        disabled={props.isAborting || !props.canAbort}
+      >
+        Abort
+      </Button>
+      <Button
+        onClick={props.handleCancel}
+        variant="outlined"
+        color="primary"
+        disabled={props.isAborting}
+      >
+        Cancel
+      </Button>
+    </>
+  );
+};
 
 export const WorkflowInstancePage = ({
   instanceId,
 }: {
   instanceId?: string;
 }) => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const orchestratorApi = useApi(orchestratorApiRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
@@ -124,32 +176,6 @@ export const WorkflowInstancePage = ({
   const handleRerunBarClose = () => {
     setIsRerunSnackbarOpen(false);
   };
-
-  const AbortConfirmationDialogActions = (
-    props: AbortConfirmationDialogActionsProps,
-  ) => (
-    <>
-      <Button
-        onClick={props.handleSubmit}
-        variant="contained"
-        className={classes.abortButton}
-        startIcon={isAborting ? <CircularProgress size="1rem" /> : null}
-        disabled={isAborting}
-      >
-        {' '}
-        Abort
-      </Button>
-      <Button
-        onClick={props.handleCancel}
-        variant="outlined"
-        color="primary"
-        disabled={isAborting}
-      >
-        {' '}
-        Cancel
-      </Button>
-    </>
-  );
 
   const fetchInstance = React.useCallback(async () => {
     if (!instanceId && !queryInstanceId) {
@@ -266,6 +292,8 @@ export const WorkflowInstancePage = ({
     else if (option === 'retrigger') handleRetrigger();
   };
 
+  const classes = useStyles();
+
   return (
     <BaseOrchestratorPage
       title={value?.instance.id}
@@ -280,8 +308,11 @@ export const WorkflowInstancePage = ({
             <InfoDialog
               title={
                 <Box display="flex" alignItems="center">
-                  <ErrorIcon color="error" style={{ marginRight: 8 }} />
-                  <b>Abort workflow</b>
+                  <ErrorIcon
+                    className={classes.errorColor}
+                    style={{ marginRight: 8 }}
+                  />
+                  <b>Abort workflow run?</b>
                 </Box>
               }
               onClose={toggleAbortConfirmationDialog}
@@ -290,9 +321,11 @@ export const WorkflowInstancePage = ({
                 <AbortConfirmationDialogActions
                   handleCancel={toggleAbortConfirmationDialog}
                   handleSubmit={handleAbort}
+                  isAborting={isAborting}
+                  canAbort={canAbort}
                 />
               }
-              children={<AbortConfirmationDialogContent />}
+              children={<AbortConfirmationDialogContent canAbort={canAbort} />}
             />
             <Grid container item justifyContent="flex-end" spacing={1}>
               <Grid item>
