@@ -22,7 +22,7 @@ import { usePlugins } from '../hooks/usePlugins';
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
 
 export const MarketplaceCatalogGrid = () => {
-  const plugins = usePlugins();
+  const plugins = usePlugins({});
 
   const [search] = useQueryParamState<string | undefined>('q');
 

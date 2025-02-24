@@ -31,9 +31,10 @@ export interface MarketplacePackage extends Entity {
 /**
  * @public
  */
-export enum InstallStatus {
+export enum MarketplacePackageInstallStatus {
   NotInstalled = 'NotInstalled',
   Installed = 'Installed',
+  UpdateAvailable = 'UpdateAvailable',
 }
 
 /**
@@ -45,17 +46,20 @@ export interface MarketplacePackageSpec extends JsonObject {
   author?: string;
   support?: string;
   lifecycle?: string;
+  role?: string;
+  supportedVersions?: string;
+  /** @deprecated */
   backstage?: MarketplacePackageBackstage;
-  appConfigExamples?: AppConfigExample[];
+  appConfigExamples?: MarketplacePackageSpecAppConfigExample[];
   owner?: string;
   partOf?: string[];
-  installStatus?: keyof typeof InstallStatus;
+  installStatus?: MarketplacePackageInstallStatus;
 }
 
 /**
  * @public
  */
-export interface AppConfigExample extends JsonObject {
+export interface MarketplacePackageSpecAppConfigExample extends JsonObject {
   title: string;
   content: string | JsonObject;
 }
@@ -65,7 +69,7 @@ export interface AppConfigExample extends JsonObject {
  */
 export interface MarketplacePackageBackstage extends JsonObject {
   role?: string;
-  'supported-versions'?: string;
+  supportedVersions?: string;
 }
 
 export function isMarketplacePackage(

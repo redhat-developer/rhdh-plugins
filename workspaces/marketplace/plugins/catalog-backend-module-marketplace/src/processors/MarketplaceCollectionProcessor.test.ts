@@ -21,16 +21,16 @@ import {
 
 import { MarketplaceCollectionProcessor } from './MarketplaceCollectionProcessor';
 
-const pluginListEntity: MarketplaceCollection = {
+const testCollection: MarketplaceCollection = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
-  metadata: {
-    name: 'testplugin',
-    title: 'APIs with Test plugin',
-    description: 'Test plugin.',
-  },
   kind: MarketplaceKind.Collection,
+  metadata: {
+    name: 'testcollection',
+    title: 'Test Collection',
+    description: 'A list of awesome plugin!',
+  },
   spec: {
-    owner: 'test-group',
+    type: 'curated',
     plugins: ['plugin-a', 'plugin-b', 'plugin-c'],
   },
 };
@@ -48,8 +48,8 @@ describe('MarketplaceCollectionProcessor', () => {
     const emit = jest.fn();
     await processor.postProcessEntity(
       {
-        ...pluginListEntity,
-        spec: { ...pluginListEntity.spec, plugins: undefined },
+        ...testCollection,
+        spec: { ...testCollection.spec, plugins: undefined },
       },
       null as any,
       emit,
@@ -62,16 +62,16 @@ describe('MarketplaceCollectionProcessor', () => {
     const processor = new MarketplaceCollectionProcessor();
 
     expect(
-      await processor.validateEntityKind({ ...pluginListEntity, kind: 'test' }),
+      await processor.validateEntityKind({ ...testCollection, kind: 'test' }),
     ).toBe(false);
-    expect(await processor.validateEntityKind(pluginListEntity)).toBe(true);
+    expect(await processor.validateEntityKind(testCollection)).toBe(true);
   });
 
   it('should return pluginList entity with relation', async () => {
     const processor = new MarketplaceCollectionProcessor();
 
     const emit = jest.fn();
-    await processor.postProcessEntity(pluginListEntity, null as any, emit);
+    await processor.postProcessEntity(testCollection, null as any, emit);
     expect(emit).toHaveBeenCalledTimes(7);
     expect(emit).toHaveBeenCalledWith({
       type: 'relation',

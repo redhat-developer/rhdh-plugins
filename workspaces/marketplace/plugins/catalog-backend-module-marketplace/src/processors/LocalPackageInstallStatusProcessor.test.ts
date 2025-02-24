@@ -15,8 +15,8 @@
  */
 
 import {
-  InstallStatus,
   MarketplacePackage,
+  MarketplacePackageInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { LocalPackageInstallStatusProcessor } from './LocalPackageInstallStatusProcessor';
@@ -56,14 +56,14 @@ describe('LocalPackageInstallStatusProcessor', () => {
     const processor = new LocalPackageInstallStatusProcessor();
 
     const result = await processor.preProcessEntity(packageEntity);
-    expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
+    expect(result?.spec?.installStatus).toBe(MarketplacePackageInstallStatus.NotInstalled);
   });
 
   it('should return not installed status', async () => {
     const processor = new LocalPackageInstallStatusProcessor();
 
     const result = await processor.preProcessEntity(packageEntity);
-    expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
+    expect(result?.spec?.installStatus).toBe(MarketplacePackageInstallStatus.NotInstalled);
   });
 
   it('should return empty string if the root folder does not have workspaces', async () => {
@@ -77,7 +77,7 @@ describe('LocalPackageInstallStatusProcessor', () => {
     const processor = new LocalPackageInstallStatusProcessor();
 
     const result = await processor.preProcessEntity(packageEntity);
-    expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
+    expect(result?.spec?.installStatus).toBe(MarketplacePackageInstallStatus.NotInstalled);
   });
 
   it('should return NotInstalled status if the entity has incorrect package installed', async () => {
@@ -96,7 +96,7 @@ describe('LocalPackageInstallStatusProcessor', () => {
       },
     };
     const result = await processor.preProcessEntity(searchBackendPackage);
-    expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
+    expect(result?.spec?.installStatus).toBe(MarketplacePackageInstallStatus.NotInstalled);
   });
 
   it('should return Installed status if the entity has incorrect package version installed', async () => {
@@ -115,7 +115,7 @@ describe('LocalPackageInstallStatusProcessor', () => {
       },
     };
     const result = await processor.preProcessEntity(searchBackendPackage);
-    expect(result?.spec?.installStatus).toBe(InstallStatus.Installed);
+    expect(result?.spec?.installStatus).toBe(MarketplacePackageInstallStatus.Installed);
   });
 
   it('should return NotInstalled status when invalid workspaces paths', async () => {
@@ -136,7 +136,7 @@ describe('LocalPackageInstallStatusProcessor', () => {
       },
     };
     const result = await processor.preProcessEntity(searchPackage);
-    expect(result?.spec?.installStatus).toBe(InstallStatus.NotInstalled);
+    expect(result?.spec?.installStatus).toBe(MarketplacePackageInstallStatus.NotInstalled);
   });
 
   it('should return Installed status when only package names are passed', async () => {
@@ -153,7 +153,7 @@ describe('LocalPackageInstallStatusProcessor', () => {
       },
     };
     const result = await processor.preProcessEntity(searchPackage);
-    expect(result?.spec?.installStatus).toBe(InstallStatus.Installed);
+    expect(result?.spec?.installStatus).toBe(MarketplacePackageInstallStatus.Installed);
   });
 
   it('should not process any other kind other than package', async () => {

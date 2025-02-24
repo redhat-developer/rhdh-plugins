@@ -24,8 +24,8 @@ import {
 } from '@backstage/core-components';
 
 import {
-  InstallStatus,
   MarketplacePackage,
+  MarketplacePackageInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { usePackages } from '../hooks/usePackages';
@@ -39,8 +39,9 @@ const mapRoleToLabel: Record<string, string> = {
 };
 
 const mapInstallStatusToLabel = {
-  [InstallStatus.Installed]: 'Installed',
-  [InstallStatus.NotInstalled]: 'Not installed',
+  [MarketplacePackageInstallStatus.Installed]: 'Installed',
+  [MarketplacePackageInstallStatus.NotInstalled]: 'Not installed',
+  [MarketplacePackageInstallStatus.UpdateAvailable]: 'Update available',
 };
 
 const columns: TableColumn<MarketplacePackage>[] = [

@@ -17,8 +17,8 @@
 import { mockServices } from '@backstage/backend-test-utils';
 import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 import {
-  InstallStatus,
   MarketplacePlugin,
+  MarketplacePackageInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { DynamicPackageInstallStatusProcessor } from './DynamicPackageInstallStatusProcessor';
@@ -182,7 +182,7 @@ describe('DynamicPackageInstallStatusProcessor', () => {
           ...pluginEntity,
           spec: {
             ...pluginEntity.spec,
-            installStatus: InstallStatus.Installed,
+            installStatus: MarketplacePackageInstallStatus.Installed,
           },
         },
         locationSpec,
@@ -191,7 +191,7 @@ describe('DynamicPackageInstallStatusProcessor', () => {
         cache,
       );
 
-      expect(entity.spec?.installStatus).toBe(InstallStatus.Installed);
+      expect(entity.spec?.installStatus).toBe(MarketplacePackageInstallStatus.Installed);
     });
 
     it('should return Installed', async () => {
@@ -214,7 +214,7 @@ describe('DynamicPackageInstallStatusProcessor', () => {
         cache,
       );
 
-      expect(entity.spec?.installStatus).toBe(InstallStatus.Installed);
+      expect(entity.spec?.installStatus).toBe(MarketplacePackageInstallStatus.Installed);
     });
 
     it('should set installStatus to NotInstalled if the plugin is not found', async () => {

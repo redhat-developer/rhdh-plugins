@@ -29,123 +29,36 @@ import {
   RELATION_OWNED_BY,
   RELATION_PART_OF,
 } from '@backstage/catalog-model';
+
 import {
-  MARKETPLACE_API_VERSION,
+  isMarketplaceCollection,
   MarketplaceKind,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-const pluginListJsonSchema = {
-  $schema: 'http://json-schema.org/draft-07/schema',
-  $id: 'PluginListV1alpha1',
-  description: 'A PluginList contains a curated list of plugins.',
-  allOf: [
-    {
-      type: 'object',
-      properties: {
-        apiVersion: {
-          type: 'string',
-          enum: ['marketplace.backstage.io/v1alpha1'],
-        },
-        kind: {
-          type: 'string',
-          enum: ['PluginCollection'],
-        },
-        metadata: {
-          type: 'object',
-          properties: {
-            name: {
-              type: 'string',
-            },
-            title: {
-              type: 'string',
-            },
-            description: {
-              type: 'string',
-            },
-            tags: {
-              type: 'array',
-              items: {
-                type: 'string',
-              },
-            },
-            labels: {
-              type: 'object',
-            },
-            annotations: {
-              type: 'object',
-            },
-          },
-          required: ['name', 'title', 'description'],
-        },
-        spec: {
-          type: 'object',
-          properties: {
-            type: {
-              type: 'string',
-            },
-            lifecycle: {
-              type: 'string',
-            },
-            owner: {
-              type: 'string',
-            },
-            plugins: {
-              type: 'array',
-              items: {
-                type: 'string',
-              },
-            },
-          },
-          required: ['plugins'],
-        },
-      },
-      required: ['apiVersion', 'kind', 'metadata', 'spec'],
-    },
-  ],
-  examples: [
-    {
-      apiVersion: {
-        enum: ['marketplace.backstage.io/v1alpha1'],
-      },
-      kind: {
-        enum: ['PluginList'],
-      },
-      metadata: {
-        name: 'testpluginlist',
-        title: 'Test PluginList',
-        description: 'Creates Lorems like a pro.',
-      },
-      spec: {
-        type: 'plugin-list',
-        lifecycle: 'production',
-        owner: 'redhat',
-      },
-    },
-  ],
-};
+import collectionJsonSchema from '../../../../json-schema/collections.json';
 
 /**
  * @public
  */
 export class MarketplaceCollectionProcessor implements CatalogProcessor {
   private readonly validators = [
-    entityKindSchemaValidator(pluginListJsonSchema),
+    entityKindSchemaValidator(collectionJsonSchema),
   ];
 
   // validateEntityKind is responsible for signaling to the catalog processing
   // engine that this entity is valid and should therefore be submitted for
   // further processing.
   async validateEntityKind(entity: Entity): Promise<boolean> {
-    for (const validator of this.validators) {
-      if (validator(entity)) {
-        return true;
+    if (isMarketplaceCollection(entity)) {
+      for (const validator of this.validators) {
+        if (validator(entity)) {
+          return true;
+        }
       }
     }
-
     return false;
   }
 
-  // Return processor name
   getProcessorName(): string {
     return 'MarketplaceCollectionProcessor';
   }
@@ -155,10 +68,7 @@ export class MarketplaceCollectionProcessor implements CatalogProcessor {
     _location: LocationSpec,
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
-    if (
-      entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKind.Collection
-    ) {
+    if (isMarketplaceCollection(entity)) {
       const thisEntityRef = getCompoundEntityRef(entity);
       const target = entity?.spec?.owner as string;
       const plugins = (entity.spec?.plugins as string[]) || [];

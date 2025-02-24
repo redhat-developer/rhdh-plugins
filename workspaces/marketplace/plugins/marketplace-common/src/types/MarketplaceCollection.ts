@@ -32,10 +32,13 @@ export interface MarketplaceCollection extends Entity {
  * @public
  */
 export interface MarketplaceCollectionSpec extends JsonObject {
-  type?: string;
-  plugins: string[];
+  type: 'curated';
+  plugins?: string[];
 }
 
+/**
+ * @public
+ */
 export function isMarketplaceCollection(
   entity?: Entity,
 ): entity is MarketplaceCollection {

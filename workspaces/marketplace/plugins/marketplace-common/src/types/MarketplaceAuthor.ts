@@ -14,24 +14,10 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import { createDevApp } from '@backstage/dev-utils';
-
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-
-import { marketplacePlugin, MarketplaceRouter, MarketplaceTabbedPage } from '../src/plugin';
-
-createDevApp()
-  .registerPlugin(marketplacePlugin)
-  .addThemes(getAllThemes())
-  .addPage({
-    element: <MarketplaceRouter />,
-    title: 'MP Router',
-    path: '/marketplace',
-  })
-  .addPage({
-    element: <MarketplaceTabbedPage />,
-    title: 'MP TabbedPage',
-    path: '/marketplace-tabbed-page',
-  })
-  .render();
+/**
+ * @public
+ */
+export type MarketplaceAuthor = string | {
+  name: string;
+  url?: string;
+};

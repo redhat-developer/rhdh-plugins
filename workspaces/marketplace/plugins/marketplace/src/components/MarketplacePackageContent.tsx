@@ -30,8 +30,8 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 
 import {
-  InstallStatus,
   MarketplacePackage,
+  MarketplacePackageInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { rootRouteRef, packageInstallRouteRef } from '../routes';
@@ -141,7 +141,7 @@ const MarketplacePackageContentReal = ({
       <Grid container>
         <Grid item md={2}>
           <LinkButton
-            disabled={pkg.spec?.installStatus === InstallStatus.Installed}
+            disabled={pkg.spec?.installStatus === MarketplacePackageInstallStatus.Installed}
             to={getInstallPath({
               namespace: pkg.metadata.namespace!,
               name: pkg.metadata.name,
@@ -149,9 +149,9 @@ const MarketplacePackageContentReal = ({
             color="primary"
             variant="contained"
           >
-            {pkg.spec?.installStatus !== InstallStatus.Installed
+            {pkg.spec?.installStatus !== MarketplacePackageInstallStatus.Installed
               ? 'Install'
-              : InstallStatus.Installed}
+              : MarketplacePackageInstallStatus.Installed}
           </LinkButton>
         </Grid>
         <Grid item md={10}>

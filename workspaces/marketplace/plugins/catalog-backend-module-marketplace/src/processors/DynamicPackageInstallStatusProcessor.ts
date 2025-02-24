@@ -24,10 +24,8 @@ import {
 } from '@backstage/plugin-catalog-node';
 import { durationToMilliseconds } from '@backstage/types';
 import {
-  InstallStatus,
-  MARKETPLACE_API_VERSION,
-  MarketplaceKind,
-  MarketplacePlugin,
+  MarketplacePackageInstallStatus,
+  isMarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 /**
@@ -115,12 +113,9 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     _emit: CatalogProcessorEmit,
     _originLocation: LocationSpec,
     cache: CatalogProcessorCache,
-  ): Promise<MarketplacePlugin> {
-    if (
-      entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKind.Package
-    ) {
-      if (entity.spec?.installStatus === InstallStatus.Installed) {
+  ): Promise<Entity> {
+    if (isMarketplacePackage(entity)) {
+      if (entity.spec?.installStatus === MarketplacePackageInstallStatus.Installed) {
         return entity;
       }
 
@@ -135,8 +130,8 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
           installStatus: installedPluginNames.find(plg =>
             plg.toLowerCase().includes(entity.metadata.name),
           )
-            ? InstallStatus.Installed
-            : InstallStatus.NotInstalled,
+            ? MarketplacePackageInstallStatus.Installed
+            : MarketplacePackageInstallStatus.NotInstalled,
         },
       };
     }

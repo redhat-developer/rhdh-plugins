@@ -44,7 +44,7 @@ const CategoryFilter = () => {
 };
 
 const AuthorFilter = () => {
-  const authorsFacet = usePluginFacet('spec.author');
+  const authorsFacet = usePluginFacet('spec.authors.name');
   const authors = authorsFacet.data;
 
   const items = React.useMemo(() => {

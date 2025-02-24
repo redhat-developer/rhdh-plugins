@@ -166,9 +166,9 @@ export const MarketplaceCollectionsGrid = () => {
       return collections.data?.items;
     }
     const lowerCaseSearch = search.toLocaleLowerCase('en-US');
-    return collections.data.items.filter(pluginList => {
+    return collections.data.items.filter(collection => {
       const lowerCaseValue =
-        pluginList.metadata?.title?.toLocaleLowerCase('en-US');
+        collection.metadata?.title?.toLocaleLowerCase('en-US');
       return lowerCaseValue?.includes(lowerCaseSearch);
     });
   }, [search, collections.data]);

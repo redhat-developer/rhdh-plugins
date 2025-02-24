@@ -140,11 +140,7 @@ describe('MarketplacePluginProcessor', () => {
         spec: {
           ...pluginEntity.spec,
           owner: undefined,
-          packages: [
-            {
-              name: 'package-a',
-            },
-          ],
+          packages: ['package-a'],
         },
       },
       null as any,

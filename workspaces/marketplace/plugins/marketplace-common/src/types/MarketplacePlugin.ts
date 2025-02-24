@@ -20,6 +20,7 @@ import { JsonObject } from '@backstage/types';
 import { MARKETPLACE_API_VERSION } from '../consts';
 
 import { MarketplaceKind } from './MarketplaceKind';
+import { MarketplaceAuthor } from './MarketplaceAuthor';
 
 /**
  * @public
@@ -32,26 +33,10 @@ export interface MarketplacePlugin extends Entity {
  * @public
  */
 export enum DocumentationType {
-  usage = 'usage',
   about = 'about',
-  configuration = 'configuration',
+  usage = 'usage',
   installation = 'installation',
-}
-
-/**
- * @public
- */
-export enum AssetType {
-  image = 'image',
-}
-/**
- * @public
- */
-export interface Asset extends JsonObject {
-  type: AssetType;
-  filename: string;
-  originUri: string;
-  encodedData?: string;
+  configuration = 'configuration',
 }
 
 /**
@@ -67,21 +52,55 @@ export interface Documentation extends JsonObject {
 /**
  * @public
  */
+export enum AssetType {
+  icon = 'icon',
+  image = 'image',
+}
+
+/**
+ * @public
+ */
+export interface Asset extends JsonObject {
+  type: AssetType;
+  filename: string;
+  originUri: string;
+  encodedData?: string;
+}
+
+/**
+ * @public
+ */
+export enum MarketplacePluginInstallStatus {
+  NotInstalled = 'NotInstalled',
+  Installed = 'Installed',
+  PartiallyInstalled = 'PartiallyInstalled',
+  UpdateAvailable = 'UpdateAvailable',
+}
+
+/**
+ * @public
+ */
 export interface MarketplacePluginSpec extends JsonObject {
-  packages?: string[];
   icon?: string;
+
+  author?: MarketplaceAuthor;
+  authors?: MarketplaceAuthor[];
+
+  packages?: string[];
   categories?: string[];
   developer?: string;
   highlights?: string[];
+
   /* @deprecated */
   description?: string;
   /* @deprecated */
-  installation?: {
-    markdown?: string;
-    appconfig?: string;
-  };
+  installation?: string;
+
   documentation?: Documentation[];
+
   assets?: Asset[];
+
+  installStatus?: MarketplacePluginInstallStatus;
 }
 
 export function isMarketplacePlugin(

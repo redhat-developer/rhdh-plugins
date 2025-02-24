@@ -62,7 +62,9 @@ export const encodeGetEntitiesRequest = (
   request: GetEntitiesRequest,
 ): URLSearchParams => {
   const params = new URLSearchParams();
-
+  if (!request) {
+    return params;
+  }
   if (request.fields) {
     request.fields.forEach(field => params.append('field', field));
   }
@@ -88,7 +90,6 @@ export const encodeGetEntitiesRequest = (
       params.append('fullTextFields', field),
     );
   }
-
   return params;
 };
 
@@ -99,7 +100,9 @@ export const encodeGetEntityFacetsRequest = (
   request: GetEntityFacetsRequest,
 ) => {
   const params = new URLSearchParams();
-
+  if (!request) {
+    return params;
+  }
   if (request.facets) {
     request.facets.forEach(facet => params.append('facet', facet));
   }
@@ -108,6 +111,5 @@ export const encodeGetEntityFacetsRequest = (
       params.append(key, value),
     );
   }
-
   return params;
 };

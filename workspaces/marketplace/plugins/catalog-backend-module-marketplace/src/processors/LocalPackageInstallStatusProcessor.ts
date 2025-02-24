@@ -19,10 +19,9 @@ import path from 'path';
 import semver from 'semver';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import {
-  InstallStatus,
-  MARKETPLACE_API_VERSION,
-  MarketplaceKind,
+  isMarketplacePackage,
   MarketplacePackage,
+  MarketplacePackageInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 /**
@@ -127,11 +126,8 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
   async preProcessEntity(
     entity: MarketplacePackage,
   ): Promise<MarketplacePackage> {
-    if (
-      entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKind.Package
-    ) {
-      let installStatus: InstallStatus = InstallStatus.NotInstalled;
+    if (isMarketplacePackage(entity)) {
+      let installStatus = MarketplacePackageInstallStatus.NotInstalled;
 
       if (entity.spec?.packageName) {
         const packageName = entity.spec?.packageName;
@@ -142,7 +138,7 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
             this.isPackageInstalled(packageName, cpath),
           )
         ) {
-          installStatus = InstallStatus.Installed;
+          installStatus = MarketplacePackageInstallStatus.Installed;
         }
       }
 

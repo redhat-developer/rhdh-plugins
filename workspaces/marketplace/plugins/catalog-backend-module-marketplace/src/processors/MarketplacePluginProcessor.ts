@@ -30,101 +30,13 @@ import {
   RELATION_PART_OF,
 } from '@backstage/catalog-model';
 import {
-  MARKETPLACE_API_VERSION,
   MarketplacePlugin,
   MarketplaceKind,
+  isMarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-const pluginJsonSchema = {
-  $schema: 'http://json-schema.org/draft-07/schema',
-  $id: 'PluginV1alpha1',
-  description:
-    'A Plugin describes a software component. It is typically intimately linked to the source code that constitutes the component, and should be what a developer may regard a "unit of software", usually with a distinct deployable or linkable artifact.',
-  allOf: [
-    {
-      type: 'object',
-      properties: {
-        apiVersion: {
-          type: 'string',
-          enum: ['marketplace.backstage.io/v1alpha1'],
-        },
-        kind: {
-          type: 'string',
-          enum: ['Plugin'],
-        },
-        metadata: {
-          type: 'object',
-          properties: {
-            name: {
-              type: 'string',
-            },
-            title: {
-              type: 'string',
-            },
-            description: {
-              type: 'string',
-            },
-            tags: {
-              type: 'array',
-              items: {
-                type: 'string',
-              },
-            },
-            labels: {
-              type: 'object',
-            },
-            annotations: {
-              type: 'object',
-            },
-          },
-          required: ['name', 'title', 'description'],
-        },
-        spec: {
-          type: 'object',
-          properties: {
-            type: {
-              type: 'string',
-            },
-            lifecycle: {
-              type: 'string',
-            },
-            owner: {
-              type: 'string',
-            },
-          },
-          // required: ['type', 'lifecycle', 'owner'],
-        },
-      },
-      required: ['apiVersion', 'kind', 'metadata', 'spec'],
-    },
-  ],
-  examples: [
-    {
-      apiVersion: {
-        enum: ['marketplace.backstage.io/v1alpha1'],
-      },
-      kind: {
-        enum: ['Plugin'],
-      },
-      metadata: {
-        name: 'testplugin',
-        title: 'Test Plugin',
-        description: 'Creates Lorems like a pro.',
-        labels: {
-          product_name: 'test-product',
-        },
-        annotations: {
-          docs: 'https://github.com/..../tree/develop/doc',
-        },
-      },
-      spec: {
-        type: 'frontend-plugin',
-        lifecycle: 'production',
-        owner: 'redhat',
-      },
-    },
-  ],
-};
+import pluginJsonSchema from '../../../../json-schema/plugins.json';
+import { MarketplaceAuthor } from '@red-hat-developer-hub/backstage-plugin-marketplace-common/src/types/MarketplaceAuthor';
 
 /**
  * @public
@@ -132,7 +44,6 @@ const pluginJsonSchema = {
 export class MarketplacePluginProcessor implements CatalogProcessor {
   private readonly validators = [entityKindSchemaValidator(pluginJsonSchema)];
 
-  // Return processor name
   getProcessorName(): string {
     return 'MarketplacePluginProcessor';
   }
@@ -141,12 +52,13 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
   // engine that this entity is valid and should therefore be submitted for
   // further processing.
   async validateEntityKind(entity: Entity): Promise<boolean> {
-    for (const validator of this.validators) {
-      if (validator(entity)) {
-        return true;
+    if (isMarketplacePlugin(entity)) {
+      for (const validator of this.validators) {
+        if (validator(entity)) {
+          return true;
+        }
       }
     }
-
     return false;
   }
 
@@ -155,10 +67,33 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
     _location: LocationSpec,
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
-    if (
-      entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKind.Plugin
-    ) {
+    if (isMarketplacePlugin(entity)) {
+
+      const authors: MarketplaceAuthor[] = [];
+      if (typeof entity.spec?.author === 'string') {
+        authors.push({ name: entity.spec.author });
+      }
+      if (Array.isArray(entity.spec?.authors)) {
+        entity.spec.authors.forEach((author) => {
+          if (typeof author === 'string') {
+            authors.push({ name: author });
+          } else {
+            authors.push(author);
+          }
+        });
+      }
+      if (typeof entity.spec?.developer === 'string') {
+        authors.push({ name: entity.spec.developer });
+      }
+
+      delete entity.spec?.author;
+      delete entity.spec?.authors;
+      delete entity.spec?.developer;
+      if (authors.length > 0) {
+        if (!entity.spec) entity.spec = {};
+        entity.spec.authors = authors;
+      }
+
       const thisEntityRef = getCompoundEntityRef(entity);
       const target = entity?.spec?.owner;
       if (target) {
@@ -181,9 +116,8 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
 
       // Relation - Packages
       packages.forEach(pkg => {
-        const pkgName = typeof pkg === 'string' ? pkg : pkg?.name;
         const packageRef = parseEntityRef({
-          name: pkgName,
+          name: pkg,
           kind: MarketplaceKind.Package,
         });
         if (packageRef) {
