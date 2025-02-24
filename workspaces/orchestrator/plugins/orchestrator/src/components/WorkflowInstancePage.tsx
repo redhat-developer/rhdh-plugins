@@ -133,7 +133,6 @@ const AbortConfirmationDialogActions = (
         startIcon={props.isAborting ? <CircularProgress size="1rem" /> : null}
         disabled={props.isAborting || !props.canAbort}
       >
-        {' '}
         Abort
       </Button>
       <Button
@@ -142,7 +141,6 @@ const AbortConfirmationDialogActions = (
         color="primary"
         disabled={props.isAborting}
       >
-        {' '}
         Cancel
       </Button>
     </>
