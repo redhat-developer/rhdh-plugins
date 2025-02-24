@@ -90,6 +90,10 @@ catalog:
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
+      target: ../../catalog-info.yaml
+      rules:
+        - allow: [Component]
+    - type: file
       target: ../../examples/all-orgs.yaml
       rules:
         - allow: [Group]
@@ -105,11 +109,6 @@ catalog:
       target: ../../examples/all-packages.yaml
       rules:
         - allow: [Package]
-
-    - type: file
-      target: ../../examples/catalog-demo.yaml
-      rules:
-        - allow: [User, Group, System, Component, API]
 
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
