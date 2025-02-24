@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 2.6.1
+
+### Patch Changes
+
+- 4f0a326: [rc9] MTA displays two statuses in results when failing with error
+- 7032c17: Update the workflow details screen to match the latest Figma design
+- dcfe477: [UI] Empty values section in Results pane should not be rendered
+
 ## 2.6.0
 
 ### Minor Changes
