@@ -25,11 +25,14 @@ import {
   entityKindSchemaValidator,
   getCompoundEntityRef,
   parseEntityRef,
+  RELATION_HAS_PART,
   RELATION_OWNED_BY,
+  RELATION_PART_OF,
 } from '@backstage/catalog-model';
 import {
   MARKETPLACE_API_VERSION,
   MarketplaceKinds,
+  MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 const pluginJsonSchema = {
@@ -148,7 +151,7 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
   }
 
   async postProcessEntity(
-    entity: Entity,
+    entity: MarketplacePlugin,
     _location: LocationSpec,
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
@@ -173,6 +176,34 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
           }),
         );
       }
+
+      const packages = entity.spec?.packages ?? [];
+
+      // Relation - Packages
+      packages.forEach(pkg => {
+        const pkgName = typeof pkg === 'string' ? pkg : pkg?.name;
+        const packageRef = parseEntityRef({
+          name: pkgName,
+          kind: MarketplaceKinds.package,
+        });
+        if (packageRef) {
+          emit(
+            processingResult.relation({
+              type: RELATION_PART_OF,
+              source: packageRef,
+              target: thisEntityRef,
+            }),
+          );
+
+          emit(
+            processingResult.relation({
+              type: RELATION_HAS_PART,
+              target: packageRef,
+              source: thisEntityRef,
+            }),
+          );
+        }
+      });
     }
 
     return entity;

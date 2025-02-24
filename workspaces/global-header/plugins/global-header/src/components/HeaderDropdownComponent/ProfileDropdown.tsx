@@ -14,38 +14,56 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
-import HeaderDropdownComponent from './HeaderDropdownComponent';
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
-import Typography from '@mui/material/Typography';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   identityApiRef,
   useApi,
   ProfileInfo,
 } from '@backstage/core-plugin-api';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
+import Typography from '@mui/material/Typography';
+import { lighten } from '@mui/material/styles';
+import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
-import { ComponentType } from '../../types';
-import MenuSection from './MenuSection';
+import { MenuSection } from './MenuSection';
+import { useDropdownManager } from '../../hooks';
+import Box from '@mui/material/Box';
 
 /**
  * @public
- * ProfileDropdown component properties
+ * Props for Profile Dropdown
  */
 export interface ProfileDropdownProps {
-  handleMenu: (event: React.MouseEvent<HTMLElement>) => void;
-  anchorEl: HTMLElement | null;
-  setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
+  layout?: React.CSSProperties;
 }
 
-export const ProfileDropdown = ({
-  handleMenu,
-  anchorEl,
-  setAnchorEl,
-}: ProfileDropdownProps) => {
+export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
+  const { anchorEl, handleOpen, handleClose } = useDropdownManager();
+
   const identityApi = useApi(identityApiRef);
   const [user, setUser] = useState<ProfileInfo>();
   const profileDropdownMountPoints = useProfileDropdownMountPoints();
+
+  const headerRef = useRef<HTMLElement | null>(null);
+  const [bgColor, setBgColor] = useState('#3C3F42');
+
+  useEffect(() => {
+    if (headerRef.current) {
+      const computedStyle = window.getComputedStyle(headerRef.current);
+      const baseColor = computedStyle.backgroundColor;
+      setBgColor(lighten(baseColor, 0.2));
+    }
+  }, []);
+
+  useEffect(() => {
+    const container = document.getElementById('global-header');
+    if (container) {
+      const computedStyle = window.getComputedStyle(container);
+      const baseColor = computedStyle.backgroundColor;
+      setBgColor(lighten(baseColor, 0.2));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -60,7 +78,6 @@ export const ProfileDropdown = ({
     return (profileDropdownMountPoints ?? [])
       .map(mp => ({
         Component: mp.Component,
-        type: mp.config?.type ?? ComponentType.LINK,
         icon: mp.config?.props?.icon ?? '',
         label: mp.config?.props?.title ?? '',
         link: mp.config?.props?.link ?? '',
@@ -69,22 +86,32 @@ export const ProfileDropdown = ({
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
   }, [profileDropdownMountPoints]);
 
+  if (menuItems.length === 0) {
+    return null;
+  }
+
   return (
     <HeaderDropdownComponent
       buttonContent={
-        <>
-          <AccountCircleOutlinedIcon fontSize="small" sx={{ mx: 1 }} />
-          <Typography variant="body2" sx={{ fontWeight: 500, mx: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
+          <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
+          <Typography
+            variant="body2"
+            sx={{
+              display: { xs: 'none', md: 'block' },
+              fontWeight: 500,
+              mr: '1rem',
+            }}
+          >
             {user?.displayName ?? 'Guest'}
           </Typography>
           <KeyboardArrowDownOutlinedIcon
             sx={{
-              marginLeft: '1rem',
-              bgcolor: '#383838',
+              bgcolor: bgColor,
               borderRadius: '25%',
             }}
           />
-        </>
+        </Box>
       }
       buttonProps={{
         color: 'inherit',
@@ -93,17 +120,11 @@ export const ProfileDropdown = ({
           alignItems: 'center',
         },
       }}
-      buttonClick={handleMenu}
+      onOpen={handleOpen}
+      onClose={handleClose}
       anchorEl={anchorEl}
-      setAnchorEl={setAnchorEl}
     >
-      <MenuSection
-        hideDivider
-        items={menuItems}
-        handleClose={() => setAnchorEl(null)}
-      />
+      <MenuSection hideDivider items={menuItems} handleClose={handleClose} />
     </HeaderDropdownComponent>
   );
 };
-
-export default ProfileDropdown;

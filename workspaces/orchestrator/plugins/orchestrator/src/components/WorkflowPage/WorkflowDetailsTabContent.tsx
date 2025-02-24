@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 
-import { InfoCard } from '@backstage/core-components';
+import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 
 import { Grid } from '@material-ui/core';
 
@@ -27,14 +28,21 @@ import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
 interface Props {
   loading: boolean;
   workflowOverviewDTO: WorkflowOverviewDTO | undefined;
+  errorWorkflowOverview: Error | undefined;
 }
 
 export const WorkflowDetailsTabContent = ({
   loading,
   workflowOverviewDTO,
+  errorWorkflowOverview,
 }: Props) => {
   return (
     <>
+      {errorWorkflowOverview && (
+        <Grid item>
+          <ResponseErrorPanel error={errorWorkflowOverview} />
+        </Grid>
+      )}
       <Grid item>
         <WorkflowDefinitionDetailsCard
           workflowOverview={workflowOverviewDTO}

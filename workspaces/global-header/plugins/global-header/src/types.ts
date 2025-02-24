@@ -15,64 +15,12 @@
  */
 
 /**
- * Slot
- *
- * @public
- */
-export enum Slot {
-  /**
-   * Positions the global header component at the start of the global header
-   */
-  HEADER_START = 'header-start',
-  /**
-   * Positions the global header component at the end of the global header
-   */
-  HEADER_END = 'header-end',
-}
-
-/**
- * Component
- *
- * @public
- */
-export enum ComponentType {
-  /**
-   * Global Header Component dropdown button
-   */
-  DROPDOWN_BUTTON = 'dropdown_button',
-  /**
-   * Global Header Component icon button
-   */
-  ICON_BUTTON = 'icon_button',
-  /**
-   * Global Header Component link
-   */
-  LINK = 'link',
-  /**
-   * Global Header Component list
-   */
-  LIST = 'list',
-  /**
-   * Global Header Component search
-   */
-  SEARCH = 'search',
-  /**
-   * Global Header Component logout
-   */
-  LOGOUT = 'logout',
-}
-
-/**
  * Global Header Config
  *
  * @public
  */
 export interface GlobalHeaderComponentMountPointConfig {
-  type: ComponentType;
-  key?: string;
-  slot?: Slot;
   priority?: number;
-  size?: 'small' | 'medium' | 'large';
 }
 
 /**
@@ -81,7 +29,6 @@ export interface GlobalHeaderComponentMountPointConfig {
  * @public
  */
 export interface CreateDropdownMountPointConfig {
-  type: ComponentType;
   priority?: number;
   props?: Record<string, any>;
 }
@@ -91,7 +38,6 @@ export interface CreateDropdownMountPointConfig {
  * @public
  */
 export interface ProfileDropdownMountPointConfig {
-  type: ComponentType;
   priority?: number;
   icon?: string;
   title?: string;
@@ -105,9 +51,12 @@ export interface ProfileDropdownMountPointConfig {
  * @public
  */
 export interface GlobalHeaderComponentMountPoint {
-  Component: React.ComponentType;
+  Component: React.ComponentType<{
+    layout?: React.CSSProperties;
+  }>;
   config?: GlobalHeaderComponentMountPointConfig & {
     props?: Record<string, any>;
+    layout?: React.CSSProperties;
   };
 }
 

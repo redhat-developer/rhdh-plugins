@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "18 || 20"
+    "node": "18 || 20 || 22"
   },
   "scripts": {
     "tsc": "tsc",
-    "dev": "yarn workspaces foreach -A --include backend --include app --parallel -v -i run start",
+    "dev": "yarn workspaces foreach -A --include backend --include app --parallel --jobs unlimited -v -i run start",
     "dev:debug": "LOG_LEVEL=debug yarn dev",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
@@ -36,12 +36,11 @@
     "directory": "workspaces/orchestrator"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.29.0",
+    "@backstage/cli": "^0.30.0-next.3",
     "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.10.0",
+    "@backstage/repo-tools": "^0.12.2-next.3",
     "@changesets/cli": "^2.27.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
-    "@spotify/prettier-config": "^12.0.0",
     "knip": "^5.40.0",
     "node-gyp": "^9.0.0",
     "prettier": "3.4.2",
@@ -53,7 +52,7 @@
     "react": "^18",
     "react-dom": "^18"
   },
-  "prettier": "@spotify/prettier-config",
+  "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
       "eslint --fix",

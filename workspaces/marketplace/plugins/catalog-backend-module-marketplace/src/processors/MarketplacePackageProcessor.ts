@@ -15,21 +15,24 @@
  */
 
 import {
-  CatalogProcessor,
-  CatalogProcessorEmit,
-  processingResult,
-} from '@backstage/plugin-catalog-node';
-import { LocationSpec } from '@backstage/plugin-catalog-common';
-import {
   Entity,
   entityKindSchemaValidator,
   getCompoundEntityRef,
   parseEntityRef,
+  RELATION_HAS_PART,
   RELATION_OWNED_BY,
+  RELATION_PART_OF,
 } from '@backstage/catalog-model';
+import { LocationSpec } from '@backstage/plugin-catalog-common';
+import {
+  CatalogProcessor,
+  CatalogProcessorEmit,
+  processingResult,
+} from '@backstage/plugin-catalog-node';
 import {
   MARKETPLACE_API_VERSION,
   MarketplaceKinds,
+  MarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 const packageJsonSchema = {
@@ -148,7 +151,7 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
   }
 
   async postProcessEntity(
-    entity: Entity,
+    entity: MarketplacePackage,
     _location: LocationSpec,
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
@@ -173,6 +176,33 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
           }),
         );
       }
+
+      const partOfPlugins = entity.spec?.partOf ?? [];
+
+      // Relation - Plugins
+      partOfPlugins.forEach((plugin: string) => {
+        const pluginRef = parseEntityRef({
+          name: plugin,
+          kind: MarketplaceKinds.plugin,
+        });
+        if (pluginRef) {
+          emit(
+            processingResult.relation({
+              type: RELATION_PART_OF,
+              target: pluginRef,
+              source: thisEntityRef,
+            }),
+          );
+
+          emit(
+            processingResult.relation({
+              type: RELATION_HAS_PART,
+              target: thisEntityRef,
+              source: pluginRef,
+            }),
+          );
+        }
+      });
     }
 
     return entity;

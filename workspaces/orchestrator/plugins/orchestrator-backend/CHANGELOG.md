@@ -1,5 +1,35 @@
 ### Dependencies
 
+## 5.2.1
+
+### Patch Changes
+
+- bad7cb0: updated dev mode to remove git configuration from the workflow repo, added checks for cloning path
+
+## 5.2.0
+
+### Minor Changes
+
+- 967c377: Fixed unsupported filter operators
+
+### Patch Changes
+
+- e3ebb0c: replace abort mutation with call to delete
+- 665947d: fix bug in error handling of execute API
+- 4e3ccc2: Add retrigger option to UI using v2 API
+- d1010f9: improve logging of router
+- bee24dc: add unavailable workflows to cache and overview
+- b0e3ede: improve data index network error
+- 10f17e3: Fixed a typo in FilterBuilder error message
+- aebd2b0: improved devMode, added podman and macos support
+- Updated dependencies [967c377]
+- Updated dependencies [05a1ce0]
+- Updated dependencies [816d8bc]
+- Updated dependencies [c7de094]
+- Updated dependencies [bee24dc]
+- Updated dependencies [d4fa6bf]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.26.0
+
 ## 5.1.1
 
 ### Patch Changes

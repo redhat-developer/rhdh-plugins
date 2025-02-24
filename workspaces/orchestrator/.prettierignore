@@ -5,3 +5,5 @@ coverage
 .eslintrc.js
 generated
 report.api.md
+
+entities/skeleton/templates/${{values.workflow_id}}/${{values.workflow_id}}.yaml

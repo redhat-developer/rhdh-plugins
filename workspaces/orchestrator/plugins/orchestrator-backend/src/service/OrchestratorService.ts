@@ -164,10 +164,20 @@ export class OrchestratorService {
     pagination?: Pagination;
     filter?: Filter;
   }): Promise<WorkflowOverview[] | undefined> {
-    return await this.sonataFlowService.fetchWorkflowOverviews({
-      definitionIds: this.workflowCacheService.definitionIds,
+    const overviews = await this.sonataFlowService.fetchWorkflowOverviews({
+      definitionIds: this.workflowCacheService.definitionIds?.concat(
+        this.workflowCacheService.unavailableDefinitionIds,
+      ),
       pagination: args.pagination,
       filter: args.filter,
+    });
+
+    return overviews?.map(overview => {
+      const updatedOverview = overview;
+      updatedOverview.isAvailable = this.workflowCacheService.isAvailable(
+        updatedOverview.workflowId,
+      );
+      return updatedOverview;
     });
   }
 

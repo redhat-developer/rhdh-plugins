@@ -4,7 +4,7 @@
 # The last matching pattern takes precedence.
 # https://help.github.com/articles/about-codeowners/
 
-*                                                   @bethgriggs @nickboldt @kim-tsao @04kash
+*                                                   @bethgriggs @nickboldt @kim-tsao @04kash @coreydaley
 
 /workspaces/bulk-import                             @christoph-jerolimov @debsmita1 @rm3l
 /workspaces/global-floating-action-button           @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar

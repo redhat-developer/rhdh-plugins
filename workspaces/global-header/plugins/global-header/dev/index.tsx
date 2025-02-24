@@ -15,129 +15,39 @@
  */
 
 import React from 'react';
+
 import { createDevApp } from '@backstage/dev-utils';
-import { mockApis, TestApiProvider } from '@backstage/test-utils';
+import { mockApis, MockFetchApi, TestApiProvider } from '@backstage/test-utils';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
+import { configApiRef } from '@backstage/core-plugin-api';
+import {
+  notificationsApiRef,
+  NotificationsClient,
+} from '@backstage/plugin-notifications';
+
 import Button from '@mui/material/Button';
 
-import { globalHeaderPlugin, NotificationBanner } from '../src/plugin';
-import { ExampleComponent } from '../src/components/ExampleComponent';
-import { SearchComponent } from '../src/components/SearchComponent/SearchComponent';
-import { CreateDropdown } from '../src/components/HeaderDropdownComponent/CreateDropdown';
-import { HeaderIconButton } from '../src/components/HeaderIconButtonComponent/HeaderIconButton';
-import ProfileDropdown from '../src/components/HeaderDropdownComponent/ProfileDropdown';
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
+
+import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+
 import {
-  Slot,
-  ComponentType,
-  GlobalHeaderComponentMountPoint,
-  ProfileDropdownMountPoint,
-  CreateDropdownMountPoint,
-} from '../src/types';
-import { configApiRef } from '@backstage/core-plugin-api';
-import { HeaderLink } from '../src/components/HeaderLinkComponent/HeaderLink';
-import { LogoutButton } from '../src/components/HeaderButtonComponent/LogoutButton';
-import { SoftwareTemplatesSection } from '../src/components/HeaderDropdownComponent/SoftwareTemplatesSection';
-import { RegisterAComponentSection } from '../src/components/HeaderDropdownComponent/RegisterAComponentSection';
+  GlobalHeader,
+  globalHeaderPlugin,
+  NotificationBanner,
+  Spacer,
+} from '../src/plugin';
 
-const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMountPoint[] =
-  [
-    {
-      Component: SearchComponent,
-      config: {
-        type: ComponentType.SEARCH,
-        slot: Slot.HEADER_START,
-        priority: 100, // the greater the number, the more to the left it will be
-      },
-    },
-    {
-      Component: CreateDropdown as React.ComponentType,
-      config: {
-        type: ComponentType.DROPDOWN_BUTTON,
-        slot: Slot.HEADER_START,
-        priority: 90,
-        key: 'create',
-      },
-    },
-    {
-      Component: HeaderIconButton as React.ComponentType,
-      config: {
-        type: ComponentType.ICON_BUTTON,
-        slot: Slot.HEADER_START,
-        priority: 80,
-        props: {
-          icon: 'support',
-          tooltip: 'Support',
-          to: '/support',
-        },
-      },
-    },
-    {
-      Component: HeaderIconButton as React.ComponentType,
-      config: {
-        type: ComponentType.ICON_BUTTON,
-        slot: Slot.HEADER_START,
-        priority: 70,
-        props: {
-          key: 'notifications',
-          icon: 'notifications',
-          tooltip: 'Notifications',
-          to: '/notifications',
-        },
-      },
-    },
-    {
-      Component: ProfileDropdown as React.ComponentType,
-      config: {
-        type: ComponentType.DROPDOWN_BUTTON,
-        slot: Slot.HEADER_END,
-        priority: 0, // the greater the number, the more to the left it will be
-        key: 'profile',
-      },
-    },
-  ];
+import {
+  defaultCreateDropdownMountPoints,
+  defaultGlobalHeaderComponentsMountPoints,
+  defaultProfileDropdownMountPoints,
+} from '../src/defaultMountPoints/defaultMountPoints';
 
-const defaultCreateDropdownMountPoints: CreateDropdownMountPoint[] = [
-  {
-    Component: SoftwareTemplatesSection as React.ComponentType,
-    config: {
-      type: ComponentType.LIST,
-      priority: 10,
-    },
-  },
-  {
-    Component: RegisterAComponentSection as React.ComponentType,
-    config: {
-      type: ComponentType.LINK,
-      priority: 0,
-    },
-  },
-];
-
-const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
-  {
-    Component: HeaderLink as React.ComponentType,
-    config: {
-      type: ComponentType.LINK,
-      priority: 10,
-      props: {
-        title: 'Settings',
-        icon: 'manageAccounts',
-        link: '/settings',
-      },
-    },
-  },
-  {
-    Component: LogoutButton as React.ComponentType,
-    config: {
-      type: ComponentType.LOGOUT,
-      priority: 0,
-    },
-  },
-];
+import { HeaderButton } from '../src/components/HeaderButton/HeaderButton';
 
 const mockSearchApi = new MockSearchApi({
   results: [
@@ -154,6 +64,11 @@ const mockSearchApi = new MockSearchApi({
 
 const mockConfigApi = mockApis.config({
   data: {
+    app: {
+      support: {
+        url: 'https://access.redhat.com/products/red-hat-developer-hub',
+      },
+    },
     dynamicPlugins: {
       frontend: {
         'backstage.plugin-notifications': {
@@ -201,39 +116,149 @@ const entities = [
 
 const catalogApi = catalogApiMock({ entities });
 
-const scalprumState: ScalprumState = {
-  initialized: true,
-  api: {
-    dynamicRootConfig: {
-      mountPoints: {
-        'global.header/component': defaultGlobalHeaderComponentsMountPoints,
-        'global.header/create': defaultCreateDropdownMountPoints,
-        'global.header/profile': defaultProfileDropdownMountPoints,
+const mockBaseUrl = 'https://backstage/api/notifications';
+const discoveryApi = { getBaseUrl: async () => mockBaseUrl };
+const fetchApi = new MockFetchApi();
+const client = new NotificationsClient({ discoveryApi, fetchApi });
+
+const Providers = ({
+  mountPoints,
+}: React.PropsWithChildren<{ mountPoints: Record<string, any> }>) => {
+  const scalprumState = React.useMemo<ScalprumState>(
+    () => ({
+      initialized: true,
+      api: {
+        dynamicRootConfig: {
+          mountPoints,
+        },
       },
-    },
-  },
-  config: {},
-  pluginStore: new PluginStore(),
+      config: {},
+      pluginStore: new PluginStore(),
+    }),
+    [mountPoints],
+  );
+
+  return (
+    <TestApiProvider
+      apis={[
+        [catalogApiRef, catalogApi],
+        [searchApiRef, mockSearchApi],
+        [configApiRef, mockConfigApi],
+        [notificationsApiRef, client],
+      ]}
+    >
+      <ScalprumContext.Provider value={scalprumState}>
+        <GlobalHeader />
+      </ScalprumContext.Provider>
+    </TestApiProvider>
+  );
 };
 
 createDevApp()
   .registerPlugin(globalHeaderPlugin)
+  .addThemes(getAllThemes())
   .addPage({
     element: (
-      <TestApiProvider
-        apis={[
-          [catalogApiRef, catalogApi],
-          [searchApiRef, mockSearchApi],
-          [configApiRef, mockConfigApi],
-        ]}
+      <Providers
+        mountPoints={{
+          'global.header/component': defaultGlobalHeaderComponentsMountPoints,
+          'global.header/create': defaultCreateDropdownMountPoints,
+          'global.header/profile': defaultProfileDropdownMountPoints,
+        }}
       >
-        <ScalprumContext.Provider value={scalprumState}>
-          <ExampleComponent />
-        </ScalprumContext.Provider>
-      </TestApiProvider>
+        <GlobalHeader />
+      </Providers>
     ),
-    title: 'Global Header',
-    path: '/global-header',
+    title: 'Default header',
+    path: '/default-header',
+  })
+  .addPage({
+    element: (
+      <Providers
+        mountPoints={{
+          'global.header/component': [
+            ...defaultGlobalHeaderComponentsMountPoints.filter(
+              (_mp, index) => index > 0,
+            ),
+            {
+              Component: Spacer,
+              config: {
+                priority: 100, // the greater the number, the more to the left it will be
+              },
+            },
+          ],
+          'global.header/create': defaultCreateDropdownMountPoints,
+          'global.header/profile': defaultProfileDropdownMountPoints,
+        }}
+      >
+        <GlobalHeader />
+      </Providers>
+    ),
+    title: 'Header without search',
+    path: '/header-without-search',
+  })
+  .addPage({
+    element: (
+      <Providers
+        mountPoints={{
+          'global.header/component': [
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'A button',
+                  variant: 'outlined',
+                  to: '/',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'Another button',
+                  variant: 'outlined',
+                  to: '/',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'Help button',
+                  startIcon: 'help',
+                  to: '/help',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'GitHub button',
+                  to: 'https://github.com/',
+                },
+              },
+            },
+            {
+              Component: HeaderButton,
+              config: {
+                props: {
+                  title: 'GitHub button',
+                  to: 'https://github.com/',
+                  externalLinkIcon: false,
+                },
+              },
+            },
+          ],
+        }}
+      >
+        <GlobalHeader />
+      </Providers>
+    ),
+    title: 'Header buttons',
+    path: '/header-buttons',
   })
   .addPage({
     element: (
@@ -254,7 +279,7 @@ createDevApp()
           title="A colorized notification: ⚠️ Maintainance planned for this week! ⚠️"
           textColor="blue"
           backgroundColor="yellow"
-          border="2px solid blue"
+          borderColor="blue"
         />
         <NotificationBanner
           title="And a dismissable notification! Will appear after reload!"

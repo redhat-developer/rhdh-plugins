@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import MenuSection, { MenuItemConfig } from './MenuSection';
+import React, { useEffect, useMemo, useState } from 'react';
+
+import { useApi } from '@backstage/core-plugin-api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import { Entity } from '@backstage/catalog-model';
+
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
+
+import { MenuSection } from './MenuSection';
+import { MenuItemLink } from '../MenuItemLink/MenuItemLink';
 
 /**
  * Software Templates Section properties
@@ -23,16 +33,72 @@ import MenuSection, { MenuItemConfig } from './MenuSection';
  * @public
  */
 export type SoftwareTemplatesSectionProps = {
-  items: MenuItemConfig[];
   handleClose: () => void;
   hideDivider?: boolean;
 };
 
 export const SoftwareTemplatesSection = ({
-  items,
   handleClose,
   hideDivider,
 }: SoftwareTemplatesSectionProps) => {
+  const catalogApi = useApi(catalogApiRef);
+
+  const [entities, setEntities] = useState<Entity[]>([]);
+  // TODO: handle loading
+  const [_loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchEntities = async () => {
+      try {
+        const response = await catalogApi.getEntities({
+          filter: { kind: ['Template'] },
+          limit: 7,
+        });
+        setEntities(response.items);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEntities();
+  }, [catalogApi]);
+
+  const items = useMemo(() => {
+    return entities
+      .filter(e => e.kind === 'Template')
+      .map(m => ({
+        Component: MenuItemLink as React.ComponentType,
+        label: m.metadata.title ?? m.metadata.name,
+        link: `/create/templates/default/${m.metadata.name}`,
+      }));
+  }, [entities]);
+
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" p={2}>
+        <Typography variant="body1" color="error">
+          Error fetching templates
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <>
+        <Typography
+          variant="body2"
+          sx={{ mx: 2, my: 1, color: 'text.disabled' }}
+        >
+          No templates available
+        </Typography>
+        {!hideDivider && <Divider sx={{ my: 0.5 }} />}
+      </>
+    );
+  }
   return (
     <MenuSection
       hideDivider={hideDivider}

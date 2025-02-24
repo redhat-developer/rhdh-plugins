@@ -52,6 +52,11 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
+import { SignalsDisplay } from '@backstage/plugin-signals';
+import { NotificationsPage } from '@backstage/plugin-notifications';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
+
+import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 
 const app = createApp({
   apis,
@@ -73,8 +78,23 @@ const app = createApp({
     });
   },
   components: {
-    SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
+    SignInPage: props => (
+      <SignInPage
+        {...props}
+        auto
+        providers={[
+          'guest',
+          {
+            id: 'github-auth-provider',
+            title: 'GitHub',
+            message: 'Sign in using GitHub',
+            apiRef: githubAuthApiRef,
+          },
+        ]}
+      />
+    ),
   },
+  themes: getAllThemes(),
 });
 
 const routes = (
@@ -98,6 +118,7 @@ const routes = (
     </Route>
     <Route path="/create" element={<ScaffolderPage />} />
     <Route path="/api-docs" element={<ApiExplorerPage />} />
+    <Route path="/notifications" element={<NotificationsPage />} />
     <Route
       path="/catalog-import"
       element={
@@ -118,6 +139,7 @@ export default app.createRoot(
   <>
     <AlertDisplay />
     <OAuthRequestDialog />
+    <SignalsDisplay />
     <AppRouter>
       <Root>{routes}</Root>
     </AppRouter>

@@ -1,0 +1,27 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: ${{values.workflow_id}} # matches the workflow ID, will be used by orchestrator:workflow:run
+  title: ${{values.title}}
+  description: ${{values.description}}
+  tags:
+    - orchestrator
+spec:
+  owner: red-hat-developer-hub-authors
+  system: red-hat-developer-hub
+  type: service
+
+  # matches workflow's dataInputSchema
+  parameters: ${{values.parameters}}
+
+  steps:
+    - id: runWorkflow
+      name: Run workflow
+      action: orchestrator:workflow:run
+      input:
+        parameters: {% raw %}${{ parameters }}{% endraw %}
+
+  output:
+    links:
+      - title: Open workflow run
+        url: "{% raw %}${{ steps.runWorkflow.output.instanceUrl }}{% endraw %}"

@@ -1,0 +1,43 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: yamlgreet # matches workflow ID
+  title: Greeting
+  description: Greeting workflow
+  tags:
+    - orchestrator
+spec:
+  owner: red-hat-developer-hub-authors
+  system: red-hat-developer-hub
+  type: service
+
+  # matches workflow's dataInputSchema
+  parameters:
+    - title: Provide inputs
+      required:
+        - language
+      properties:
+        language:
+          title: Language
+          type: string
+          ui:autofocus: true
+          enum:
+            - 'English'
+            - 'Spanish'
+          default: 'English'
+        name:
+          title: Name
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+
+  steps:
+    - id: runWorkflow
+      name: Run workflow
+      action: orchestrator:workflow:run
+      input:
+        parameters: ${{ parameters }}
+
+  output:
+    links:
+      - title: Open workflow run
+        url: ${{ steps.runWorkflow.output.instanceUrl }}

@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.0.10
+
+### Patch Changes
+
+- 98083c9: emit package relationships with plugin entity.
+- 7e03305: add plugin entity relationship with package entity
+- Updated dependencies [f310add]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.0.9
+
 ## 0.0.9
 
 ### Patch Changes

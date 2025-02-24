@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/marketplace-cli
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [f310add]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.0.9
+
 ## 0.0.2
 
 ### Patch Changes

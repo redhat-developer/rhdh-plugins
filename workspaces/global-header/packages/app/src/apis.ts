@@ -23,7 +23,13 @@ import {
   AnyApiFactory,
   configApiRef,
   createApiFactory,
+  fetchApiRef,
+  discoveryApiRef,
 } from '@backstage/core-plugin-api';
+import {
+  notificationsApiRef,
+  NotificationsClient,
+} from '@backstage/plugin-notifications';
 
 export const apis: AnyApiFactory[] = [
   createApiFactory({
@@ -32,4 +38,10 @@ export const apis: AnyApiFactory[] = [
     factory: ({ configApi }) => ScmIntegrationsApi.fromConfig(configApi),
   }),
   ScmAuth.createDefaultApiFactory(),
+  createApiFactory({
+    api: notificationsApiRef,
+    deps: { fetchApi: fetchApiRef, discoveryApi: discoveryApiRef },
+    factory: ({ fetchApi, discoveryApi }) =>
+      new NotificationsClient({ fetchApi, discoveryApi }),
+  }),
 ];

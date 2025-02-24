@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import type { JsonObject } from '@backstage/types';
 
 import type { Specification } from '@severlessworkflow/sdk-typescript';
@@ -108,6 +109,7 @@ export interface WorkflowOverview {
   category?: string;
   avgDurationMs?: number;
   description?: string;
+  isAvailable?: boolean;
 }
 
 export interface WorkflowInfo {

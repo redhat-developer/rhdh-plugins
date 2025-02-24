@@ -20,7 +20,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import { Link } from '@backstage/core-components';
-import { HeaderLinkProps } from '../HeaderLinkComponent/HeaderLink';
+import { MenuItemLinkProps } from '../MenuItemLink/MenuItemLink';
 
 /**
  * Menu item configuration
@@ -28,8 +28,7 @@ import { HeaderLinkProps } from '../HeaderLinkComponent/HeaderLink';
  * @public
  */
 export interface MenuItemConfig {
-  Component: React.ComponentType<HeaderLinkProps | {}>;
-  type: string;
+  Component: React.ComponentType<MenuItemLinkProps | {}>;
   label: string;
   icon?: string;
   subLabel?: string;
@@ -45,7 +44,7 @@ export interface MenuSectionConfig {
   handleClose: () => void;
 }
 
-const MenuSection: React.FC<MenuSectionConfig> = ({
+export const MenuSection: React.FC<MenuSectionConfig> = ({
   sectionLabel,
   optionalLink,
   optionalLinkLabel,
@@ -76,7 +75,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
           disableTouchRipple
           onClick={handleClose}
         >
-          {optionalLink && optionalLinkLabel && (
+          {optionalLink && optionalLinkLabel && items.length > 0 && (
             <Link
               to={optionalLink}
               underline="none"
@@ -89,7 +88,7 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
       </Box>
     )}
     <ul style={{ padding: 0, listStyle: 'none' }}>
-      {items.map(({ type, icon, label, subLabel, link, Component }, index) => (
+      {items.map(({ icon, label, subLabel, link, Component }, index) => (
         <MenuItem
           key={`menu-item-${index.toString()}`}
           disableRipple
@@ -97,20 +96,10 @@ const MenuSection: React.FC<MenuSectionConfig> = ({
           onClick={handleClose}
           sx={{ py: 0.5, '&:hover': { background: 'transparent' } }}
         >
-          {link && (
-            <Component
-              icon={icon}
-              to={link}
-              title={label}
-              subTitle={subLabel}
-            />
-          )}
-          {type === 'logout' && <Component />}
+          <Component icon={icon} to={link!} title={label} subTitle={subLabel} />
         </MenuItem>
       ))}
     </ul>
-    {!hideDivider && <Divider sx={{ margin: '8px 0' }} />}
+    {!hideDivider && <Divider sx={{ my: 0.5 }} />}
   </Box>
 );
-
-export default MenuSection;

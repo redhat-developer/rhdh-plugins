@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,10 @@ import {
 
 export const WorkflowInputs: React.FC<{
   className: string;
-  cardClassName: string;
   value: any;
   loading: any;
   responseError: any;
-}> = ({ className, cardClassName, value, loading, responseError }) => {
+}> = ({ className, value, loading, responseError }) => {
   const inputs = value?.data;
   return (
     <InfoCard
@@ -41,7 +40,6 @@ export const WorkflowInputs: React.FC<{
       }
       divider={false}
       className={className}
-      cardClassName={cardClassName}
     >
       {loading ? <Progress /> : null}
 
