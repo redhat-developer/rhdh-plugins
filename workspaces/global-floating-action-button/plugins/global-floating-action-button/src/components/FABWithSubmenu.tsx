@@ -34,9 +34,6 @@ const useStyles = makeStyles(theme => ({
       theme && Object.keys(theme).length > 0
         ? theme.palette.grey[500]
         : '#9e9e9e',
-    margin: 0, // Ensures no extra space
-    padding: 0,
-    minHeight: 'auto',
   },
   menuButtonStyle: {
     color: 'white',
@@ -64,15 +61,9 @@ export const FABWithSubmenu = ({
   const handleClick = () => {
     setIsMenuOpen(prev => !prev);
   };
+  const [menuPadding, setMenuPadding] = React.useState(false);
   return (
-    <div
-      style={{
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-      }}
-    >
+    <>
       <Tooltip title="Menu" placement={slotOptions[slot].tooltipDirection}>
         <Fab
           size="medium"
@@ -90,7 +81,11 @@ export const FABWithSubmenu = ({
         </Fab>
       </Tooltip>
       <Collapse
-        style={{ textAlign: slotOptions[slot].textAlign }}
+        style={{
+          textAlign: slotOptions[slot].textAlign,
+          position: 'absolute',
+          bottom: 48,
+        }}
         in={isMenuOpen}
         mountOnEnter
         unmountOnExit
@@ -99,15 +94,15 @@ export const FABWithSubmenu = ({
           enter: theme.transitions.easing.easeOut,
           exit: theme.transitions.easing.sharp,
         }}
-        sx={{
-          position: 'absolute',
-          bottom: isMenuOpen ? '60px' : '50px',
-          width: 'auto',
-          margin: 0,
-          padding: 0,
-        }}
+        onEntered={() => setMenuPadding(true)}
+        onExit={() => setMenuPadding(false)}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <div
+          style={{
+            paddingBottom: menuPadding ? '10px' : '0px',
+            transition: 'padding 0.3s ease-out',
+          }}
+        >
           {fabs?.map(fb => {
             return (
               <FAB
@@ -120,6 +115,6 @@ export const FABWithSubmenu = ({
           })}
         </div>
       </Collapse>
-    </div>
+    </>
   );
 };

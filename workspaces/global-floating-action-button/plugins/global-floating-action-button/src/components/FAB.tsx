@@ -58,17 +58,16 @@ const FABLabel = ({
             ...marginStyle,
             color: '#151515',
             order: 2,
-            textTransform: 'lowercase', // Convert entire text to lowercase
-            '&::first-letter': {
-              textTransform: 'uppercase', // Capitalize first letter
-            },
+            textTransform: 'none',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
           }}
         >
           {label}
         </Typography>
       )}
       {icon && (
-        <Typography sx={{ order: order.icon }}>
+        <Typography sx={{ mb: -1, order: order.icon }}>
           <FabIcon icon={icon} />
         </Typography>
       )}
