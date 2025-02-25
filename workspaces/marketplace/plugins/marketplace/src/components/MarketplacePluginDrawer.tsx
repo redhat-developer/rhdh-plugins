@@ -17,7 +17,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { useRouteRef } from '@backstage/core-plugin-api';
 
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';

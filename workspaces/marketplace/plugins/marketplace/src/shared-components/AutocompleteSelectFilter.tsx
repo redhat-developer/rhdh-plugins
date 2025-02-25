@@ -16,13 +16,18 @@
 
 import React from 'react';
 
-import { useQueryParamState } from '@backstage/core-components';
+import {
+  SelectedItems,
+  SelectItem,
+  useQueryParamState,
+} from '@backstage/core-components';
 
 import Box from '@mui/material/Box';
 import Select2 from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 export interface SelectFilterProps {
   name: string;

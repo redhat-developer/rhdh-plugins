@@ -10460,6 +10460,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@workspace:plugins/marketplace"
   dependencies:
+    "@backstage/catalog-client": ^1.9.1
     "@backstage/cli": ^0.29.5
     "@backstage/core-components": ^0.16.3
     "@backstage/core-plugin-api": ^1.10.3

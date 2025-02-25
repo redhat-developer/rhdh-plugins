@@ -16,7 +16,7 @@
 
 import React from 'react';
 
-import { HorizontalScrollGrid } from '@backstage/core-components';
+// import { HorizontalScrollGrid } from '@backstage/core-components';
 
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -28,7 +28,7 @@ import { SearchTextField } from '../shared-components/SearchTextField';
 import { usePlugins } from '../hooks/usePlugins';
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { MarketplacePluginFilter } from './MarketplacePluginFilter';
-import { PluginCardSkeleton } from './PluginCard';
+// import { PluginCardSkeleton } from './PluginCard';
 
 export const MarketplaceCatalogContent = () => {
   const plugins = usePlugins({});

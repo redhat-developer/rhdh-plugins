@@ -16,7 +16,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { GetEntityFacetsRequest } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
 
@@ -24,6 +24,7 @@ export const usePluginFacets = (request: GetEntityFacetsRequest) => {
   const marketplaceApi = useMarketplaceApi();
   return useQuery({
     queryKey: ['marketplaceApi', 'getPluginFacets', request],
-    queryFn: () => marketplaceApi.getPluginFacets(request),
+    queryFn: () =>
+      marketplaceApi.getPluginFacets(request).then(response => response.facets),
   });
 };

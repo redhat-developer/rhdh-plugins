@@ -16,12 +16,7 @@
 
 import React from 'react';
 
-import {
-  Content,
-  ErrorPage,
-  Link,
-  LinkButton,
-} from '@backstage/core-components';
+import { Content, ErrorPage, LinkButton } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
 import Skeleton from '@mui/material/Skeleton';
@@ -34,7 +29,7 @@ import {
   MarketplacePackageInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { rootRouteRef, packageInstallRouteRef } from '../routes';
+import { packageInstallRouteRef } from '../routes';
 import { usePackages } from '../hooks/usePackages';
 import { Markdown } from './Markdown';
 
@@ -90,13 +85,13 @@ const MarketplacePackageContentReal = ({
 }: {
   pkg: MarketplacePackage;
 }) => {
-  const getIndexPath = useRouteRef(rootRouteRef);
+  // const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(packageInstallRouteRef);
 
-  const withSearchParameter = (name: string, value: string) =>
-    `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
-      value,
-    )}`;
+  // const withSearchParameter = (name: string, value: string) =>
+  //   `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
+  //     value,
+  //   )}`;
 
   let readme = pkg.metadata.description ?? '';
   if (!readme.startsWith('#')) {

@@ -16,21 +16,21 @@
 
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
-import { render } from '@testing-library/react';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { TestApiProvider } from '@backstage/test-utils';
+import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
+
+import { marketplaceApiRef } from '../api';
+import { queryClient } from '../queryclient';
 
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
-import { marketplaceApiRef } from '../api';
 
-const apis = [[marketplaceApiRef, {} as MarketplaceApi]];
+const apis = [[marketplaceApiRef, {} as MarketplaceApi]] as const;
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false } },
+queryClient.setDefaultOptions({
+  queries: { retry: false },
 });
 
 const Providers = ({ children }: React.PropsWithChildren<{}>) => (
@@ -42,8 +42,8 @@ const Providers = ({ children }: React.PropsWithChildren<{}>) => (
 );
 
 describe('MarketplaceCatalogGrid', () => {
-  it('should render without error', () => {
-    render(
+  it('should render without error', async () => {
+    await renderInTestApp(
       <Providers>
         <MarketplaceCatalogGrid />
       </Providers>,
