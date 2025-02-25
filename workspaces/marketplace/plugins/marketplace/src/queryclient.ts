@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { QueryClient } from '@tanstack/react-query';
 
-import { QueryClientProvider } from '@tanstack/react-query';
-
-import { queryClient } from '../queryclient';
-
-export const ReactQueryProvider = ({
-  children,
-}: React.PropsWithChildren<{}>) => {
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
+export const queryClient = new QueryClient();

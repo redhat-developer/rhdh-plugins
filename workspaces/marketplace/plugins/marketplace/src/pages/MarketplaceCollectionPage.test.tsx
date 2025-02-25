@@ -15,38 +15,28 @@
  */
 
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { render } from '@testing-library/react';
+import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
 import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { TestApiProvider } from '@backstage/test-utils';
-
 import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
 import { marketplaceApiRef } from '../api';
+import { queryClient } from '../queryclient';
 
-const apis = [[marketplaceApiRef, {} as MarketplaceApi]];
+const apis = [[marketplaceApiRef, {} as MarketplaceApi]] as const;
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false } },
+queryClient.setDefaultOptions({
+  queries: { retry: false },
 });
 
-const Providers = ({ children }: React.PropsWithChildren<{}>) => (
-  <MemoryRouter>
-    <TestApiProvider apis={apis}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </TestApiProvider>
-  </MemoryRouter>
-);
-
 describe('MarketplaceCollectionPage', () => {
-  it('should render without error', () => {
-    render(
-      <Providers>
+  it('should render without error', async () => {
+    const { getByText } = await renderInTestApp(
+      <TestApiProvider apis={apis}>
         <MarketplaceCollectionPage />
-      </Providers>,
+      </TestApiProvider>,
     );
+    expect(getByText('Collections')).toBeInTheDocument();
   });
 });

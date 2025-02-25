@@ -20,12 +20,12 @@ import { MarketplacePluginProcessor } from './MarketplacePluginProcessor';
 
 const testPlugin: MarketplacePlugin = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
+  kind: 'Plugin',
   metadata: {
     name: 'test-plugin',
     title: 'APIs with Test plugin',
     description: 'Test plugin.',
   },
-  kind: 'Plugin',
   spec: {
     owner: 'test-group',
     packages: ['package-a', 'package-b'],
