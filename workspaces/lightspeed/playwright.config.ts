@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+const devmode = process.env.DEVMODE
+  ? true
+  : !process.env.PLAYWRIGHT_URL && !process.env.CI;
+
 import { defineConfig } from '@playwright/test';
 import { generateProjects } from '@backstage/e2e-test-utils/playwright';
 
@@ -24,7 +28,7 @@ export default defineConfig({
     timeout: 5000,
   },
 
-  webServer: process.env.CI
+  webServer: !devmode
     ? []
     : {
         command: 'yarn dev',
@@ -39,7 +43,7 @@ export default defineConfig({
   use: {
     baseURL:
       process.env.PLAYWRIGHT_URL ??
-      (process.env.CI ? 'http://localhost:7007' : 'http://localhost:3000'),
+      (devmode ? 'http://localhost:3000' : 'http://localhost:7007'),
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },

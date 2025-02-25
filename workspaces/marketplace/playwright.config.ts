@@ -17,6 +17,10 @@
 import { defineConfig } from '@playwright/test';
 import { generateProjects } from '@backstage/e2e-test-utils/playwright';
 
+const devmode = process.env.DEVMODE
+  ? true
+  : !process.env.PLAYWRIGHT_URL && !process.env.CI;
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -28,7 +32,7 @@ export default defineConfig({
   },
 
   // Run your local dev server before starting the tests
-  webServer: process.env.CI
+  webServer: !devmode
     ? []
     : [
         {
@@ -49,7 +53,7 @@ export default defineConfig({
     actionTimeout: 0,
     baseURL:
       process.env.PLAYWRIGHT_URL ??
-      (process.env.CI ? 'http://localhost:7007' : 'http://localhost:3000'),
+      (devmode ? 'http://localhost:3000' : 'http://localhost:7007'),
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },
