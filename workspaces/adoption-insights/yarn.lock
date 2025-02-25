@@ -10206,7 +10206,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@workspace:plugins/analytics-module-adoption-insights":
+"@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@workspace:^, @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@workspace:plugins/analytics-module-adoption-insights":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights@workspace:plugins/analytics-module-adoption-insights"
   dependencies:
@@ -14670,6 +14670,7 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@playwright/test": ^1.32.3
+    "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "workspace:^"
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0

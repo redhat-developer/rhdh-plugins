@@ -13,10 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { analyticsModuleAdoptionInsightsPlugin } from './plugin';
+import React from 'react';
+import { LinkButton } from '@backstage/core-components';
+import { useAnalytics } from '@backstage/core-plugin-api';
 
-describe('analytics-module-adoption-insights', () => {
-  it('should export plugin', () => {
-    expect(analyticsModuleAdoptionInsightsPlugin).toBeDefined();
-  });
-});
+export const Playground = () => {
+  const analyticsApi = useAnalytics();
+
+  const handleEvent = () => {
+    analyticsApi.captureEvent('click', 'Test Button clicked');
+  };
+
+  return (
+    <div style={{ display: 'flex', margin: '4rem' }}>
+      <LinkButton
+        variant="contained"
+        color="primary"
+        to="#clicked"
+        onClick={handleEvent}
+      >
+        Click Here
+      </LinkButton>
+    </div>
+  );
+};

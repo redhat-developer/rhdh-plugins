@@ -13,8 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createRouteRef } from '@backstage/core-plugin-api';
 
-export const rootRouteRef = createRouteRef({
-  id: 'analytics-module-adoption-insights',
-});
+export interface Config {
+  app?: {
+    analytics: {
+      insights: {
+        /**
+         * Maximum buffer size for event batching.
+         * default 20
+         * @visibility frontend
+         */
+        maxBufferSize?: number;
+        /**
+         * Flush interval in millisecond for event batching. All events will be flushed after this interval.
+         * default 5000ms
+         * @visibility frontend
+         */
+        flushInterval?: number;
+      };
+    };
+  };
+}

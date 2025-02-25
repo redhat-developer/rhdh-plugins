@@ -16,15 +16,25 @@
 import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
 import {
-  analyticsModuleAdoptionInsightsPlugin,
-  AnalyticsModuleAdoptionInsightsPage,
-} from '../src/plugin';
+  analyticsApiRef,
+  configApiRef,
+  identityApiRef,
+} from '@backstage/core-plugin-api';
+import { AdoptionInsightsAnalyticsApi } from '../src';
+import { Playground } from './Playground';
 
 createDevApp()
-  .registerPlugin(analyticsModuleAdoptionInsightsPlugin)
+  .registerApi({
+    api: analyticsApiRef,
+    deps: { configApi: configApiRef, identityApi: identityApiRef },
+    factory: ({ configApi, identityApi }) =>
+      AdoptionInsightsAnalyticsApi.fromConfig(configApi, {
+        identityApi,
+      }),
+  })
   .addPage({
-    element: <AnalyticsModuleAdoptionInsightsPage />,
-    title: 'Root Page',
-    path: '/analytics-module-adoption-insights',
+    path: '/insights',
+    title: 'Insights',
+    element: <Playground />,
   })
   .render();
