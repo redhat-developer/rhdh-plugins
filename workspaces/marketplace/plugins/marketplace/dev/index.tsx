@@ -19,7 +19,11 @@ import { createDevApp } from '@backstage/dev-utils';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
-import { marketplacePlugin, MarketplaceRouter, MarketplaceTabbedPage } from '../src/plugin';
+import {
+  marketplacePlugin,
+  MarketplaceRouter,
+  MarketplaceTabbedPage,
+} from '../src/plugin';
 
 createDevApp()
   .registerPlugin(marketplacePlugin)

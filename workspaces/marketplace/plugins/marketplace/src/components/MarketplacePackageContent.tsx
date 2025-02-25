@@ -141,7 +141,10 @@ const MarketplacePackageContentReal = ({
       <Grid container>
         <Grid item md={2}>
           <LinkButton
-            disabled={pkg.spec?.installStatus === MarketplacePackageInstallStatus.Installed}
+            disabled={
+              pkg.spec?.installStatus ===
+              MarketplacePackageInstallStatus.Installed
+            }
             to={getInstallPath({
               namespace: pkg.metadata.namespace!,
               name: pkg.metadata.name,
@@ -149,7 +152,8 @@ const MarketplacePackageContentReal = ({
             color="primary"
             variant="contained"
           >
-            {pkg.spec?.installStatus !== MarketplacePackageInstallStatus.Installed
+            {pkg.spec?.installStatus !==
+            MarketplacePackageInstallStatus.Installed
               ? 'Install'
               : MarketplacePackageInstallStatus.Installed}
           </LinkButton>

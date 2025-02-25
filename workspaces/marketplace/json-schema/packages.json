@@ -20,12 +20,7 @@
           "$ref": "#/$defs/MarketplacePackageSpec"
         }
       },
-      "required": [
-        "apiVersion",
-        "kind",
-        "metadata",
-        "spec"
-      ]
+      "required": ["apiVersion", "kind", "metadata", "spec"]
     },
     "EntityMetadata": {
       "type": "object",
@@ -68,9 +63,7 @@
           }
         }
       },
-      "required": [
-        "name"
-      ]
+      "required": ["name"]
     },
     "EntityMetadataLink": {
       "type": "object",
@@ -89,10 +82,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "title",
-        "url"
-      ]
+      "required": ["title", "url"]
     },
     "MarketplacePackageSpec": {
       "type": "object",
@@ -149,9 +139,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "packageName"
-      ]
+      "required": ["packageName"]
     },
     "MarketplacePackageSpecAppConfigExample": {
       "type": "object",

@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { EntityFilterQuery, GetEntityFacetsRequest } from '@backstage/catalog-client';
+import {
+  EntityFilterQuery,
+  GetEntityFacetsRequest,
+} from '@backstage/catalog-client';
 
 import { GetEntitiesRequest } from '../api';
 
@@ -32,7 +35,9 @@ describe('decodeEntityFilterQuery', () => {
   });
 
   it('should decode single filter', () => {
-    const searchParams = new URLSearchParams('filter=spec.category%3DCI%252FCD');
+    const searchParams = new URLSearchParams(
+      'filter=spec.category%3DCI%252FCD',
+    );
     const expectedRequest: EntityFilterQuery = {
       'spec.category': 'CI/CD',
     };
@@ -58,7 +63,9 @@ describe('decodeEntityOrderQuery', () => {
   });
 
   it('should decode single orderFields', () => {
-    const searchParams = new URLSearchParams('orderFields=metadata.title%2Casc');
+    const searchParams = new URLSearchParams(
+      'orderFields=metadata.title%2Casc',
+    );
     expect(decodeEntityOrderQuery(searchParams)).toEqual([
       { field: 'metadata.title', order: 'asc' },
     ]);
@@ -77,7 +84,9 @@ describe('decodeEntityOrderQuery', () => {
 
 describe('decodeGetEntitiesRequest', () => {
   it('should decode GetEntitiesRequest', () => {
-    const encodedString = new URLSearchParams('limit=2&offset=1&filter=metadata.name%3Dsearch&filter=spec.type%3Dbackend-plugin&orderFields=metadata.title%2Cdesc&orderFields=metadata.name%2Casc&fullTextTerm=search');
+    const encodedString = new URLSearchParams(
+      'limit=2&offset=1&filter=metadata.name%3Dsearch&filter=spec.type%3Dbackend-plugin&orderFields=metadata.title%2Cdesc&orderFields=metadata.name%2Casc&fullTextTerm=search',
+    );
     const expectedRequest: GetEntitiesRequest = {
       limit: 2,
       offset: 1,
@@ -117,7 +126,9 @@ describe('decodeGetEntityFacetsRequest', () => {
   });
 
   it('should encode multiple facets', () => {
-    const searchParams = new URLSearchParams('facet=spec.categories&facet=spec.owner');
+    const searchParams = new URLSearchParams(
+      'facet=spec.categories&facet=spec.owner',
+    );
     const expectedRequest: GetEntityFacetsRequest = {
       facets: ['spec.categories', 'spec.owner'],
     };
@@ -126,7 +137,9 @@ describe('decodeGetEntityFacetsRequest', () => {
   });
 
   it('should encode facets with filter', () => {
-    const searchParams = new URLSearchParams('facet=spec.categories&facet=spec.owner&filter=spec.category%3DCI%252FCD');
+    const searchParams = new URLSearchParams(
+      'facet=spec.categories&facet=spec.owner&filter=spec.category%3DCI%252FCD',
+    );
     const expectedRequest: GetEntityFacetsRequest = {
       facets: ['spec.categories', 'spec.owner'],
       filter: {

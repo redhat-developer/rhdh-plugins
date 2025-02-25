@@ -150,7 +150,10 @@ export const MarketplacePluginContent = ({
           ) : null}
 
           <LinkButton
-            disabled={plugin.spec?.installStatus === MarketplacePluginInstallStatus.Installed}
+            disabled={
+              plugin.spec?.installStatus ===
+              MarketplacePluginInstallStatus.Installed
+            }
             to={getInstallPath({
               namespace: plugin.metadata.namespace!,
               name: plugin.metadata.name,
@@ -158,7 +161,8 @@ export const MarketplacePluginContent = ({
             color="primary"
             variant="contained"
           >
-            {plugin.spec?.installStatus !== MarketplacePluginInstallStatus.Installed
+            {plugin.spec?.installStatus !==
+            MarketplacePluginInstallStatus.Installed
               ? 'Install'
               : MarketplacePluginInstallStatus.Installed}
           </LinkButton>

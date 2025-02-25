@@ -20,12 +20,7 @@
           "$ref": "#/$defs/MarketplacePluginSpec"
         }
       },
-      "required": [
-        "apiVersion",
-        "kind",
-        "metadata",
-        "spec"
-      ]
+      "required": ["apiVersion", "kind", "metadata", "spec"]
     },
     "EntityMetadata": {
       "type": "object",
@@ -68,11 +63,7 @@
           }
         }
       },
-      "required": [
-        "name",
-        "title",
-        "description"
-      ]
+      "required": ["name", "title", "description"]
     },
     "EntityMetadataLink": {
       "type": "object",
@@ -91,10 +82,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "title",
-        "url"
-      ]
+      "required": ["title", "url"]
     },
     "MarketplacePluginSpec": {
       "type": "object",
@@ -164,9 +152,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "name"
-          ]
+          "required": ["name"]
         }
       ]
     },
@@ -184,11 +170,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "filename",
-        "originUri",
-        "type"
-      ]
+      "required": ["filename", "originUri", "type"]
     },
     "Developer": {
       "type": "object",
@@ -198,9 +180,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "name"
-      ]
+      "required": ["name"]
     },
     "Documentation": {
       "type": "object",
@@ -216,10 +196,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "markdown",
-        "type"
-      ]
+      "required": ["markdown", "type"]
     },
     "History": {
       "type": "object",
@@ -229,9 +206,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "added"
-      ]
+      "required": ["added"]
     }
   }
 }

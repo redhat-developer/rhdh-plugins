@@ -37,7 +37,7 @@ describe('encodeEntityFilterQuery', () => {
   });
 
   it('should encode single filter', () => {
-    const filter: EntityFilterQuery = { 'spec.category': 'CI/CD', };
+    const filter: EntityFilterQuery = { 'spec.category': 'CI/CD' };
     const params = encodeEntityFilterQuery(filter).toString();
     expect(params).toBe('filter=spec.category%3DCI%252FCD');
   });
@@ -134,6 +134,8 @@ describe('encodeGetEntityFacetsRequest', () => {
       },
     };
     const params = encodeGetEntityFacetsRequest(request).toString();
-    expect(params).toBe('facet=spec.categories&facet=spec.owner&filter=spec.category%3DCI%252FCD');
+    expect(params).toBe(
+      'facet=spec.categories&facet=spec.owner&filter=spec.category%3DCI%252FCD',
+    );
   });
 });

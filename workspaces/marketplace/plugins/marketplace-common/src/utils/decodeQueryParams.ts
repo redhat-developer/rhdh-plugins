@@ -82,7 +82,9 @@ export const decodeGetEntitiesRequest = (
   if (searchParams.get('fullTextTerm')) {
     request.fullTextFilter = {
       term: searchParams.get('fullTextTerm')!,
-      fields: searchParams.has('fullTextFields') ? searchParams.getAll('fullTextFields') : undefined,
+      fields: searchParams.has('fullTextFields')
+        ? searchParams.getAll('fullTextFields')
+        : undefined,
     };
   }
 

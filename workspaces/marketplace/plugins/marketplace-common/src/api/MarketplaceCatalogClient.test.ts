@@ -15,7 +15,12 @@
  */
 import { CatalogClient } from '@backstage/catalog-client';
 
-import { MarketplaceCollection, MarketplaceKind, MarketplacePackage, MarketplacePlugin } from '../types';
+import {
+  MarketplaceCollection,
+  MarketplaceKind,
+  MarketplacePackage,
+  MarketplacePlugin,
+} from '../types';
 
 import { MarketplaceCatalogClient } from './MarketplaceCatalogClient';
 
@@ -108,7 +113,7 @@ describe('MarketplaceCatalogClient', () => {
         items: mockCollections,
         totalItems: 3,
         pageInfo: {},
-      });    
+      });
     });
 
     it('should call catalog with right kind filter', async () => {
@@ -120,9 +125,9 @@ describe('MarketplaceCatalogClient', () => {
         {
           filter: {
             kind: 'PluginCollection',
-          }
+          },
         },
-        {"token": "mockedToken"}
+        { token: 'mockedToken' },
       );
 
       expect(response).toEqual({
@@ -138,7 +143,7 @@ describe('MarketplaceCatalogClient', () => {
         filter: {
           kind: 'Component',
           'metadata.namespace': 'default',
-        }
+        },
       });
 
       expect(mockQueryEntities).toHaveBeenCalledTimes(1);
@@ -147,9 +152,9 @@ describe('MarketplaceCatalogClient', () => {
           filter: {
             kind: 'PluginCollection',
             'metadata.namespace': 'default',
-          }
+          },
         },
-        {"token": "mockedToken"}
+        { token: 'mockedToken' },
       );
 
       expect(response).toEqual({
@@ -171,14 +176,16 @@ describe('MarketplaceCatalogClient', () => {
           {
             ['metadata.namespace']: 'another-namespace',
             count: 1,
-          }
+          },
         ],
-      });    
+      });
     });
 
     it('should call catalog with right kind filter', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const response = await api.getCollectionsFacets({ facets: ['metadata.namespace'] });
+      const response = await api.getCollectionsFacets({
+        facets: ['metadata.namespace'],
+      });
 
       expect(mockEntityFacets).toHaveBeenCalledTimes(1);
       expect(mockEntityFacets).toHaveBeenCalledWith(
@@ -186,9 +193,9 @@ describe('MarketplaceCatalogClient', () => {
           facets: ['metadata.namespace'],
           filter: {
             kind: 'PluginCollection',
-          }
+          },
         },
-        {"token": "mockedToken"}
+        { token: 'mockedToken' },
       );
 
       expect(response).toEqual({
@@ -201,7 +208,7 @@ describe('MarketplaceCatalogClient', () => {
             ['metadata.namespace']: 'another-namespace',
             count: 1,
           },
-        ]
+        ],
       });
     });
   });
@@ -216,7 +223,7 @@ describe('MarketplaceCatalogClient', () => {
       expect(mockGetEntityByRef).toHaveBeenCalledTimes(1);
       expect(mockGetEntityByRef).toHaveBeenCalledWith(
         'plugincollection:default/featured',
-        {"token": "mockedToken"},
+        { token: 'mockedToken' },
       );
 
       expect(plugin).toEqual(mockCollections[0]);
@@ -247,7 +254,7 @@ describe('MarketplaceCatalogClient', () => {
       expect(mockGetEntityByRef).toHaveBeenCalledTimes(1);
       expect(mockGetEntityByRef).toHaveBeenCalledWith(
         'plugincollection:default/featured',
-        {"token": "mockedToken"},
+        { token: 'mockedToken' },
       );
 
       expect(plugins).toEqual(mockPlugins);
@@ -269,7 +276,7 @@ describe('MarketplaceCatalogClient', () => {
         items: mockPackages,
         totalItems: 3,
         pageInfo: {},
-      });    
+      });
     });
 
     it('should call catalog with right kind filter', async () => {
@@ -281,9 +288,9 @@ describe('MarketplaceCatalogClient', () => {
         {
           filter: {
             kind: 'Package',
-          }
+          },
         },
-        {"token": "mockedToken"}
+        { token: 'mockedToken' },
       );
 
       expect(response).toEqual({
@@ -299,7 +306,7 @@ describe('MarketplaceCatalogClient', () => {
         filter: {
           kind: 'Component',
           'metadata.namespace': 'default',
-        }
+        },
       });
 
       expect(mockQueryEntities).toHaveBeenCalledTimes(1);
@@ -308,9 +315,9 @@ describe('MarketplaceCatalogClient', () => {
           filter: {
             kind: 'Package',
             'metadata.namespace': 'default',
-          }
+          },
         },
-        {"token": "mockedToken"}
+        { token: 'mockedToken' },
       );
 
       expect(response).toEqual({
@@ -332,14 +339,16 @@ describe('MarketplaceCatalogClient', () => {
           {
             ['metadata.namespace']: 'another-namespace',
             count: 1,
-          }
+          },
         ],
-      });    
+      });
     });
 
     it('should call catalog with right kind filter', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const response = await api.getPackagesFacets({ facets: ['metadata.namespace'] });
+      const response = await api.getPackagesFacets({
+        facets: ['metadata.namespace'],
+      });
 
       expect(mockEntityFacets).toHaveBeenCalledTimes(1);
       expect(mockEntityFacets).toHaveBeenCalledWith(
@@ -347,9 +356,9 @@ describe('MarketplaceCatalogClient', () => {
           facets: ['metadata.namespace'],
           filter: {
             kind: 'Package',
-          }
+          },
         },
-        {"token": "mockedToken"}
+        { token: 'mockedToken' },
       );
 
       expect(response).toEqual({
@@ -362,7 +371,7 @@ describe('MarketplaceCatalogClient', () => {
             ['metadata.namespace']: 'another-namespace',
             count: 1,
           },
-        ]
+        ],
       });
     });
   });
@@ -377,7 +386,7 @@ describe('MarketplaceCatalogClient', () => {
       expect(mockGetEntityByRef).toHaveBeenCalledTimes(1);
       expect(mockGetEntityByRef).toHaveBeenCalledWith(
         'package:default/featured',
-        {"token": "mockedToken"},
+        { token: 'mockedToken' },
       );
 
       expect(plugin).toEqual(mockCollections[0]);
@@ -398,7 +407,7 @@ describe('MarketplaceCatalogClient', () => {
         items: mockPlugins,
         totalItems: 3,
         pageInfo: {},
-      });    
+      });
     });
 
     it('should call catalog with right kind filter', async () => {
@@ -410,9 +419,9 @@ describe('MarketplaceCatalogClient', () => {
         {
           filter: {
             kind: 'Plugin',
-          }
+          },
         },
-        {"token": "mockedToken"}
+        { token: 'mockedToken' },
       );
 
       expect(response).toEqual({
@@ -428,7 +437,7 @@ describe('MarketplaceCatalogClient', () => {
         filter: {
           kind: 'Component',
           'metadata.namespace': 'default',
-        }
+        },
       });
 
       expect(mockQueryEntities).toHaveBeenCalledTimes(1);
@@ -437,9 +446,9 @@ describe('MarketplaceCatalogClient', () => {
           filter: {
             kind: 'Plugin',
             'metadata.namespace': 'default',
-          }
+          },
         },
-        {"token": "mockedToken"}
+        { token: 'mockedToken' },
       );
 
       expect(response).toEqual({
@@ -461,14 +470,16 @@ describe('MarketplaceCatalogClient', () => {
           {
             ['metadata.namespace']: 'another-namespace',
             count: 1,
-          }
+          },
         ],
-      });    
+      });
     });
 
     it('should call catalog with right kind filter', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const response = await api.getPluginFacets({ facets: ['metadata.namespace'] });
+      const response = await api.getPluginFacets({
+        facets: ['metadata.namespace'],
+      });
 
       expect(mockEntityFacets).toHaveBeenCalledTimes(1);
       expect(mockEntityFacets).toHaveBeenCalledWith(
@@ -476,9 +487,9 @@ describe('MarketplaceCatalogClient', () => {
           facets: ['metadata.namespace'],
           filter: {
             kind: 'Plugin',
-          }
+          },
         },
-        {"token": "mockedToken"}
+        { token: 'mockedToken' },
       );
 
       expect(response).toEqual({
@@ -491,7 +502,7 @@ describe('MarketplaceCatalogClient', () => {
             ['metadata.namespace']: 'another-namespace',
             count: 1,
           },
-        ]
+        ],
       });
     });
   });
@@ -506,7 +517,7 @@ describe('MarketplaceCatalogClient', () => {
       expect(mockGetEntityByRef).toHaveBeenCalledTimes(1);
       expect(mockGetEntityByRef).toHaveBeenCalledWith(
         'plugin:default/plugin1',
-        {"token": "mockedToken"},
+        { token: 'mockedToken' },
       );
 
       expect(plugin).toEqual(mockCollections[0]);
@@ -516,9 +527,9 @@ describe('MarketplaceCatalogClient', () => {
       mockGetEntityByRef.mockReturnValue(null);
 
       const api = new MarketplaceCatalogClient(options);
-      await expect(
-        api.getPluginByName('default', 'not-found'),
-      ).rejects.toThrow('Plugin default/not-found not found');
+      await expect(api.getPluginByName('default', 'not-found')).rejects.toThrow(
+        'Plugin default/not-found not found',
+      );
     });
   });
 
@@ -537,7 +548,7 @@ describe('MarketplaceCatalogClient', () => {
       expect(mockGetEntityByRef).toHaveBeenCalledTimes(1);
       expect(mockGetEntityByRef).toHaveBeenCalledWith(
         'plugin:default/plugin3',
-        {"token": "mockedToken"},
+        { token: 'mockedToken' },
       );
 
       expect(packages).toEqual(mockPackages);

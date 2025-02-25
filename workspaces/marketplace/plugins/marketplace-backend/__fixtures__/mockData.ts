@@ -24,10 +24,7 @@ export const mockCollections = [
       name: 'test-featured-plugins',
     },
     spec: {
-      plugins: [
-        'plugin1',
-        'plugin2',
-      ],
+      plugins: ['plugin1', 'plugin2'],
     },
     relations: [
       { type: 'hasPart', targetRef: 'plugin:plugin1' },

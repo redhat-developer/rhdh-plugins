@@ -7,7 +7,7 @@ metadata:
   description: Backstage Search lets you find the right information you are looking for in the Backstage ecosystem.
 spec:
   icon: https://janus-idp.io/images/plugins/3scale.svg
-  authors: 
+  authors:
     - Spotify
     - Backstage Community
   lifecycle: production

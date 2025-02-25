@@ -20,12 +20,7 @@
           "$ref": "#/$defs/MarketplaceCollectionSpec"
         }
       },
-      "required": [
-        "apiVersion",
-        "kind",
-        "metadata",
-        "spec"
-      ]
+      "required": ["apiVersion", "kind", "metadata", "spec"]
     },
     "EntityMetadata": {
       "type": "object",
@@ -68,11 +63,7 @@
           }
         }
       },
-      "required": [
-        "name",
-        "title",
-        "description"
-      ]
+      "required": ["name", "title", "description"]
     },
     "EntityMetadataLink": {
       "type": "object",
@@ -91,10 +82,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "title",
-        "url"
-      ]
+      "required": ["title", "url"]
     },
     "MarketplaceCollectionSpec": {
       "type": "object",
@@ -111,9 +99,7 @@
           }
         }
       },
-      "required": [
-        "type"
-      ]
+      "required": ["type"]
     }
   }
 }
