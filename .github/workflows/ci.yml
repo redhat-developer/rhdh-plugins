@@ -115,8 +115,6 @@ jobs:
       - name: run playwright tests
         if: ${{ hashFiles(format('workspaces/{0}/playwright.config.ts', matrix.workspace)) != '' }}
         run: yarn playwright test
-        env:
-          DEVMODE: true
 
       - name: ensure clean working directory
         run: |
