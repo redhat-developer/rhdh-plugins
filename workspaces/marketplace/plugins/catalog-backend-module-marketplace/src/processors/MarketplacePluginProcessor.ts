@@ -30,13 +30,14 @@ import {
   RELATION_PART_OF,
 } from '@backstage/catalog-model';
 import {
+  MarketplaceAuthor,
   MarketplacePlugin,
   MarketplaceKind,
   isMarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
+// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import pluginJsonSchema from '../../../../json-schema/plugins.json';
-import { MarketplaceAuthor } from '@red-hat-developer-hub/backstage-plugin-marketplace-common/src/types/MarketplaceAuthor';
 
 /**
  * @public
@@ -68,13 +69,13 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
     if (isMarketplacePlugin(entity)) {
-
+      // Align authors
       const authors: MarketplaceAuthor[] = [];
       if (typeof entity.spec?.author === 'string') {
         authors.push({ name: entity.spec.author });
       }
       if (Array.isArray(entity.spec?.authors)) {
-        entity.spec.authors.forEach((author) => {
+        entity.spec.authors.forEach(author => {
           if (typeof author === 'string') {
             authors.push({ name: author });
           } else {
@@ -85,7 +86,6 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
       if (typeof entity.spec?.developer === 'string') {
         authors.push({ name: entity.spec.developer });
       }
-
       delete entity.spec?.author;
       delete entity.spec?.authors;
       delete entity.spec?.developer;
@@ -94,50 +94,47 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
         entity.spec.authors = authors;
       }
 
+      // Relation - OWNED_BY
       const thisEntityRef = getCompoundEntityRef(entity);
-      const target = entity?.spec?.owner;
-      if (target) {
-        const targetRef = parseEntityRef(target as string, {
+      if (entity?.spec?.owner) {
+        const ownerRef = parseEntityRef(entity?.spec?.owner as string, {
           defaultKind: 'Group',
-          defaultNamespace: thisEntityRef.namespace,
+          defaultNamespace: entity.metadata.namespace,
         });
-
-        // emit any relations associated with the entity here.
         emit(
           processingResult.relation({
             type: RELATION_OWNED_BY,
-            target: targetRef,
             source: thisEntityRef,
+            target: ownerRef,
           }),
         );
       }
 
-      const packages = entity.spec?.packages ?? [];
-
       // Relation - Packages
-      packages.forEach(pkg => {
-        const packageRef = parseEntityRef({
-          name: pkg,
-          kind: MarketplaceKind.Package,
+      if (entity.spec?.packages && entity.spec.packages.length > 0) {
+        entity.spec.packages.forEach(packageName => {
+          const packageRef = parseEntityRef(packageName, {
+            defaultKind: MarketplaceKind.Package,
+            defaultNamespace: entity.metadata.namespace,
+          });
+          if (packageRef) {
+            emit(
+              processingResult.relation({
+                type: RELATION_PART_OF,
+                source: packageRef,
+                target: thisEntityRef,
+              }),
+            );
+            emit(
+              processingResult.relation({
+                type: RELATION_HAS_PART,
+                target: packageRef,
+                source: thisEntityRef,
+              }),
+            );
+          }
         });
-        if (packageRef) {
-          emit(
-            processingResult.relation({
-              type: RELATION_PART_OF,
-              source: packageRef,
-              target: thisEntityRef,
-            }),
-          );
-
-          emit(
-            processingResult.relation({
-              type: RELATION_HAS_PART,
-              target: packageRef,
-              source: thisEntityRef,
-            }),
-          );
-        }
-      });
+      }
     }
 
     return entity;

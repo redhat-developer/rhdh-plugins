@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './MarketplaceAuthor';
 export * from './MarketplaceCollection';
 export * from './MarketplaceKind';
 export * from './MarketplacePackage';

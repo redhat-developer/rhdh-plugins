@@ -35,7 +35,7 @@ const packageEntity: MarketplacePackage = {
     tags: ['3scale', 'api'],
   },
   spec: {
-    packageName: 'test-package'
+    packageName: 'test-package',
   },
 };
 
@@ -232,7 +232,9 @@ describe('DynamicPackageInstallStatusProcessor', () => {
         cache,
       );
 
-      expect(entity.spec?.installStatus).toBe(MarketplacePackageInstallStatus.Installed);
+      expect(entity.spec?.installStatus).toBe(
+        MarketplacePackageInstallStatus.Installed,
+      );
     });
 
     it('should set undefined if the plugin is not found', async () => {

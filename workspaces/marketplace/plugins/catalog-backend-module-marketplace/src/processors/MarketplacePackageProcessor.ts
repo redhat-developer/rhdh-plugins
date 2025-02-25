@@ -35,6 +35,7 @@ import {
   isMarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
+// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import packageJsonSchema from '../../../../json-schema/packages.json';
 
 /**
@@ -67,50 +68,47 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
     if (isMarketplacePackage(entity)) {
+      // Relation - OWNED_BY
       const thisEntityRef = getCompoundEntityRef(entity);
-      const target = entity?.spec?.owner;
-      if (target) {
-        const targetRef = parseEntityRef(target as string, {
+      if (entity?.spec?.owner) {
+        const ownerRef = parseEntityRef(entity?.spec?.owner, {
           defaultKind: 'Group',
-          defaultNamespace: thisEntityRef.namespace,
+          defaultNamespace: entity.metadata.namespace,
         });
-
-        // emit any relations associated with the entity here.
         emit(
           processingResult.relation({
             type: RELATION_OWNED_BY,
-            target: targetRef,
             source: thisEntityRef,
+            target: ownerRef,
           }),
         );
       }
 
-      const partOfPlugins = entity.spec?.partOf ?? [];
-
       // Relation - Plugins
-      partOfPlugins.forEach((plugin: string) => {
-        const pluginRef = parseEntityRef({
-          name: plugin,
-          kind: MarketplaceKind.Plugin,
+      if (entity.spec?.partOf && entity.spec.partOf.length > 0) {
+        entity.spec.partOf.forEach((pluginName: string) => {
+          const pluginRef = parseEntityRef(pluginName, {
+            defaultKind: MarketplaceKind.Plugin,
+            defaultNamespace: entity.metadata.namespace,
+          });
+          if (pluginRef) {
+            emit(
+              processingResult.relation({
+                type: RELATION_PART_OF,
+                source: thisEntityRef,
+                target: pluginRef,
+              }),
+            );
+            emit(
+              processingResult.relation({
+                type: RELATION_HAS_PART,
+                source: pluginRef,
+                target: thisEntityRef,
+              }),
+            );
+          }
         });
-        if (pluginRef) {
-          emit(
-            processingResult.relation({
-              type: RELATION_PART_OF,
-              target: pluginRef,
-              source: thisEntityRef,
-            }),
-          );
-
-          emit(
-            processingResult.relation({
-              type: RELATION_HAS_PART,
-              target: thisEntityRef,
-              source: pluginRef,
-            }),
-          );
-        }
-      });
+      }
     }
 
     return entity;

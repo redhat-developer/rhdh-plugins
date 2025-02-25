@@ -133,11 +133,16 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
         const packageName = entity.spec.packageName;
         const version = entity.spec.version;
 
-        let installStatus: MarketplacePackageInstallStatus | undefined = undefined;
+        let installStatus: MarketplacePackageInstallStatus | undefined =
+          undefined;
 
-        this.customPaths.forEach((customPaths) => {
+        this.customPaths.forEach(customPaths => {
           if (!installStatus) {
-            let status = this.isPackageInstalled(packageName, customPaths, version);
+            const status = this.isPackageInstalled(
+              packageName,
+              customPaths,
+              version,
+            );
             if (status) {
               installStatus = status;
             }

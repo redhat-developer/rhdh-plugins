@@ -14,29 +14,49 @@
  * limitations under the License.
  */
 import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
 import { MarketplacePackageProcessor } from './MarketplacePackageProcessor';
 
-describe('MarketplacePackageProcessor', () => {
-  const testPackage: MarketplacePackage = {
-    kind: 'Package',
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
-    metadata: {
-      name: 'backstage-community-plugin-test',
-      title: '@backstage-community/plugin-test',
-      annotations: {
-        'backstage.io/source-location':
-          'url https://github.com/redhat-developer/rhdh/tree/main/dynamic-plugins/wrappers/backstage-community-plugin-test',
-      },
-    },
-    spec: {
-      packageName: '@backstage-community/plugin-test',
-      dynamicArtifact: './dynamic-plugins/dist/backstage-community-plugin-test',
-      version: '3.17.0',
-      owner: 'test-group',
-      partOf: ['plugin-a', 'plugin-b'],
-    },
-  };
+const testPackage: MarketplacePackage = {
+  kind: 'Package',
+  apiVersion: 'marketplace.backstage.io/v1alpha1',
+  metadata: {
+    name: 'test-package',
+    title: '@backstage-community/plugin-test',
+  },
+  spec: {
+    packageName: '@backstage-community/plugin-test',
+    dynamicArtifact: './dynamic-plugins/dist/backstage-community-plugin-test',
+    version: '3.17.0',
+    owner: 'test-group',
+    partOf: ['plugin-a', 'plugin-b'],
+  },
+};
 
+const getRelation = (
+  type: string,
+  sourceKind: string,
+  sourceName: string,
+  targetKind: string,
+  targetName: string,
+) => ({
+  type: 'relation',
+  relation: {
+    type,
+    source: {
+      kind: sourceKind,
+      namespace: 'default',
+      name: sourceName,
+    },
+    target: {
+      kind: targetKind,
+      namespace: 'default',
+      name: targetName,
+    },
+  },
+});
+
+describe('MarketplacePackageProcessor', () => {
   it('should return processor name', () => {
     const processor = new MarketplacePackageProcessor();
     expect(processor.getProcessorName()).toBe('MarketplacePackageProcessor');
@@ -65,74 +85,38 @@ describe('MarketplacePackageProcessor', () => {
       null as any,
       emit,
     );
-    expect(emit).toHaveBeenCalledTimes(1);
 
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: {
-        source: {
-          kind: 'Package',
-          namespace: 'default',
-          name: 'backstage-community-plugin-test',
-        },
-        type: 'ownedBy',
-        target: { kind: 'Group', namespace: 'default', name: 'test-group' },
-      },
-    });
+    expect(emit).toHaveBeenCalledTimes(1);
+    expect(emit).toHaveBeenCalledWith(
+      getRelation('ownedBy', 'Package', 'test-package', 'Group', 'test-group'),
+    );
   });
 
   it('should return package entity with partOf relation', async () => {
     const processor = new MarketplacePackageProcessor();
 
     const emit = jest.fn();
-    await processor.postProcessEntity(testPackage, null as any, emit);
-    expect(emit).toHaveBeenCalledTimes(5);
+    await processor.postProcessEntity(
+      {
+        ...testPackage,
+        spec: { ...testPackage.spec, owner: undefined } as any,
+      },
+      null as any,
+      emit,
+    );
 
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: {
-        source: {
-          kind: 'Package',
-          namespace: 'default',
-          name: 'backstage-community-plugin-test',
-        },
-        type: 'ownedBy',
-        target: { kind: 'Group', namespace: 'default', name: 'test-group' },
-      },
-    });
-
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: {
-        source: {
-          kind: 'Package',
-          namespace: 'default',
-          name: 'backstage-community-plugin-test',
-        },
-        type: 'partOf',
-        target: { kind: 'Plugin', namespace: 'default', name: 'plugin-a' },
-      },
-    });
-    const getPluginPartOfPackageRelation = (pluginName: string) => ({
-      source: {
-        kind: 'Package',
-        namespace: 'default',
-        name: 'backstage-community-plugin-test',
-      },
-      type: 'partOf',
-      target: {
-        kind: 'Plugin',
-        namespace: 'default',
-        name: pluginName,
-      },
-    });
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: getPluginPartOfPackageRelation('plugin-a'),
-    });
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: getPluginPartOfPackageRelation('plugin-b'),
-    });
+    expect(emit).toHaveBeenCalledTimes(4);
+    expect(emit).toHaveBeenCalledWith(
+      getRelation('partOf', 'Package', 'test-package', 'Plugin', 'plugin-a'),
+    );
+    expect(emit).toHaveBeenCalledWith(
+      getRelation('hasPart', 'Plugin', 'plugin-a', 'Package', 'test-package'),
+    );
+    expect(emit).toHaveBeenCalledWith(
+      getRelation('partOf', 'Package', 'test-package', 'Plugin', 'plugin-b'),
+    );
+    expect(emit).toHaveBeenCalledWith(
+      getRelation('hasPart', 'Plugin', 'plugin-b', 'Package', 'test-package'),
+    );
   });
 });

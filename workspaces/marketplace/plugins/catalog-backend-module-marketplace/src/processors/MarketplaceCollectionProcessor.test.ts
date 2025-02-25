@@ -25,86 +25,173 @@ const testCollection: MarketplaceCollection = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
   kind: MarketplaceKind.Collection,
   metadata: {
-    name: 'testcollection',
+    name: 'test-collection',
     title: 'Test Collection',
     description: 'A list of awesome plugin!',
   },
   spec: {
     type: 'curated',
-    plugins: ['plugin-a', 'plugin-b', 'plugin-c'],
+    plugins: ['plugin-a', 'plugin-b'],
   },
 };
 
+const getRelation = (
+  type: string,
+  sourceKind: string,
+  sourceName: string,
+  targetKind: string,
+  targetName: string,
+) => ({
+  type: 'relation',
+  relation: {
+    type,
+    source: {
+      kind: sourceKind,
+      namespace: 'default',
+      name: sourceName,
+    },
+    target: {
+      kind: targetKind,
+      namespace: 'default',
+      name: targetName,
+    },
+  },
+});
+
 describe('MarketplaceCollectionProcessor', () => {
-  it('should return processor name', () => {
-    const processor = new MarketplaceCollectionProcessor();
+  describe('getProcessorName', () => {
+    it('should return processor name', () => {
+      const processor = new MarketplaceCollectionProcessor();
 
-    expect(processor.getProcessorName()).toBe('MarketplaceCollectionProcessor');
+      expect(processor.getProcessorName()).toBe(
+        'MarketplaceCollectionProcessor',
+      );
+    });
   });
 
-  it('should return pluginList', async () => {
-    const processor = new MarketplaceCollectionProcessor();
+  describe('validateEntityKind', () => {
+    it('should return validate the entity', async () => {
+      const processor = new MarketplaceCollectionProcessor();
 
-    const emit = jest.fn();
-    await processor.postProcessEntity(
-      {
-        ...testCollection,
-        spec: { ...testCollection.spec, plugins: undefined },
-      },
-      null as any,
-      emit,
-    );
-
-    expect(emit).toHaveBeenCalledTimes(1);
+      expect(
+        await processor.validateEntityKind({ ...testCollection, kind: 'test' }),
+      ).toBe(false);
+      expect(await processor.validateEntityKind(testCollection)).toBe(true);
+    });
   });
 
-  it('should return validate the entity', async () => {
-    const processor = new MarketplaceCollectionProcessor();
+  describe('postProcessEntity', () => {
+    it('should emits bi-directional relations for each plugin', async () => {
+      const processor = new MarketplaceCollectionProcessor();
 
-    expect(
-      await processor.validateEntityKind({ ...testCollection, kind: 'test' }),
-    ).toBe(false);
-    expect(await processor.validateEntityKind(testCollection)).toBe(true);
-  });
+      const emit = jest.fn();
+      await processor.postProcessEntity(testCollection, null as any, emit);
+      expect(emit).toHaveBeenCalledTimes(4);
 
-  it('should return pluginList entity with relation', async () => {
-    const processor = new MarketplaceCollectionProcessor();
+      expect(emit).toHaveBeenCalledWith(
+        getRelation(
+          'partOf',
+          MarketplaceKind.Collection,
+          'test-collection',
+          MarketplaceKind.Plugin,
+          'plugin-a',
+        ),
+      );
+      expect(emit).toHaveBeenCalledWith(
+        getRelation(
+          'hasPart',
+          MarketplaceKind.Plugin,
+          'plugin-a',
+          MarketplaceKind.Collection,
+          'test-collection',
+        ),
+      );
+      expect(emit).toHaveBeenCalledWith(
+        getRelation(
+          'partOf',
+          MarketplaceKind.Collection,
+          'test-collection',
+          MarketplaceKind.Plugin,
+          'plugin-b',
+        ),
+      );
+      expect(emit).toHaveBeenCalledWith(
+        getRelation(
+          'hasPart',
+          MarketplaceKind.Plugin,
+          'plugin-b',
+          MarketplaceKind.Collection,
+          'test-collection',
+        ),
+      );
+    });
 
-    const emit = jest.fn();
-    await processor.postProcessEntity(testCollection, null as any, emit);
-    expect(emit).toHaveBeenCalledTimes(7);
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: {
-        source: {
-          kind: MarketplaceKind.Collection,
-          namespace: 'default',
-          name: 'testplugin',
+    it('should emit no relation when plugins is undefined', async () => {
+      const processor = new MarketplaceCollectionProcessor();
+
+      const emit = jest.fn();
+      await processor.postProcessEntity(
+        {
+          ...testCollection,
+          spec: { ...testCollection.spec, plugins: undefined },
         },
-        type: 'ownedBy',
-        target: { kind: 'Group', namespace: 'default', name: 'test-group' },
-      },
+        null as any,
+        emit,
+      );
+
+      expect(emit).toHaveBeenCalledTimes(0);
     });
-    const getPluginHasPartOfPluginListRelation = (pluginName: string) => ({
-      source: {
-        kind: 'Plugin',
-        namespace: 'default',
-        name: pluginName,
-      },
-      type: 'hasPart',
-      target: {
-        kind: MarketplaceKind.Collection,
-        namespace: 'default',
-        name: 'testplugin',
-      },
+
+    it('should emit no relation when plugins is empty', async () => {
+      const processor = new MarketplaceCollectionProcessor();
+
+      const emit = jest.fn();
+      await processor.postProcessEntity(
+        {
+          ...testCollection,
+          spec: { ...testCollection.spec, plugins: [] },
+        },
+        null as any,
+        emit,
+      );
+
+      expect(emit).toHaveBeenCalledTimes(0);
     });
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: getPluginHasPartOfPluginListRelation('plugin-a'),
-    });
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: getPluginHasPartOfPluginListRelation('plugin-b'),
+
+    it('should emit an owner relation without plugins', async () => {
+      const processor = new MarketplaceCollectionProcessor();
+
+      const emit = jest.fn();
+      await processor.postProcessEntity(
+        {
+          ...testCollection,
+          spec: {
+            ...testCollection.spec,
+            plugins: undefined,
+            owner: 'owner-group',
+          },
+        },
+        null as any,
+        emit,
+      );
+
+      expect(emit).toHaveBeenCalledTimes(1);
+      expect(emit).toHaveBeenCalledWith({
+        type: 'relation',
+        relation: {
+          type: 'ownedBy',
+          source: {
+            kind: MarketplaceKind.Collection,
+            namespace: 'default',
+            name: 'test-collection',
+          },
+          target: {
+            kind: 'Group',
+            namespace: 'default',
+            name: 'owner-group',
+          },
+        },
+      });
     });
   });
 });
