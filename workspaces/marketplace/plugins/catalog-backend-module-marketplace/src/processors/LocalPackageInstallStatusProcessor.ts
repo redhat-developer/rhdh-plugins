@@ -72,7 +72,7 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
     packageName: string,
     packageJsonPath: string,
     versionRange?: string,
-  ): boolean {
+  ): MarketplacePackageInstallStatus | null {
     try {
       const absolutePackageJsonPath = path.resolve(packageJsonPath);
 
@@ -102,8 +102,9 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
 
       if (packageInstalled) {
         if (!versionRange) {
-          return true;
+          return MarketplacePackageInstallStatus.Installed;
         }
+
         // Get installed package from node_modules
         const packagePath = path.resolve(nodeModulesPath, 'package.json');
         const installedPackageJson = JSON.parse(
@@ -112,14 +113,15 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
 
         const installedVersion = installedPackageJson.version;
         if (semver.satisfies(installedVersion, versionRange)) {
-          return true;
+          return MarketplacePackageInstallStatus.Installed;
         }
-        return false;
+        return MarketplacePackageInstallStatus.UpdateAvailable;
       }
 
-      return false;
+      return null;
     } catch (error) {
-      return false;
+      console.warn('xxx', error);
+      return null;
     }
   }
 
@@ -127,28 +129,33 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
     entity: MarketplacePackage,
   ): Promise<MarketplacePackage> {
     if (isMarketplacePackage(entity)) {
-      let installStatus = MarketplacePackageInstallStatus.NotInstalled;
+      if (entity.spec?.packageName && !entity.spec.installStatus) {
+        const packageName = entity.spec.packageName;
+        const version = entity.spec.version;
 
-      if (entity.spec?.packageName) {
-        const packageName = entity.spec?.packageName;
-        // TODO const versions = entity.spec.version;
+        let installStatus: MarketplacePackageInstallStatus | undefined = undefined;
 
-        if (
-          this.customPaths.some(cpath =>
-            this.isPackageInstalled(packageName, cpath),
-          )
-        ) {
-          installStatus = MarketplacePackageInstallStatus.Installed;
+        this.customPaths.forEach((customPaths) => {
+          if (!installStatus) {
+            let status = this.isPackageInstalled(packageName, customPaths, version);
+            if (status) {
+              installStatus = status;
+            }
+          }
+        });
+
+        if (!installStatus) {
+          installStatus = MarketplacePackageInstallStatus.NotInstalled;
         }
-      }
 
-      return {
-        ...entity,
-        spec: {
-          ...entity.spec,
-          installStatus,
-        },
-      };
+        return {
+          ...entity,
+          spec: {
+            ...entity.spec,
+            installStatus,
+          },
+        };
+      }
     }
 
     return entity;

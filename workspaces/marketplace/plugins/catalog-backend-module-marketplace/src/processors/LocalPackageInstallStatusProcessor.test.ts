@@ -23,24 +23,16 @@ import { LocalPackageInstallStatusProcessor } from './LocalPackageInstallStatusP
 
 const packageEntity: MarketplacePackage = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
+  kind: 'Package',
   metadata: {
+    namespace: 'default',
     name: 'testpackage',
     title: 'APIs with Test package',
     description: 'Test package.',
     tags: ['3scale', 'api'],
   },
-  kind: 'Package',
   spec: {
-    categories: ['API Discovery'],
-    developer: 'Red Hat',
-    icon: 'https://janus-idp.io/images/packages/3scale.svg',
-    type: 'frontend-package',
-    lifecycle: 'production',
-    owner: 'test-group',
-    description: 'Test package',
-    installation: {
-      markdown: '# Installation \n run `yarn add test-package`',
-    },
+    packageName: 'test-package'
   },
 };
 
@@ -73,30 +65,26 @@ describe('LocalPackageInstallStatusProcessor', () => {
     expect(result).toBe('');
   });
 
-  it('should return notInstalled status if the entity does not have package version information', async () => {
+  it('should return NotInstalled status if the entity does not have package version information', async () => {
     const processor = new LocalPackageInstallStatusProcessor();
 
     const result = await processor.preProcessEntity(packageEntity);
-    expect(result?.spec?.installStatus).toBe(MarketplacePackageInstallStatus.NotInstalled);
+    expect(result.spec?.installStatus).toBe(MarketplacePackageInstallStatus.NotInstalled);
   });
 
-  it('should return NotInstalled status if the entity has incorrect package installed', async () => {
+  it('should return UpdateAvailable status if the entity has incorrect package installed', async () => {
     const processor = new LocalPackageInstallStatusProcessor();
 
     const searchBackendPackage = {
       ...packageEntity,
       spec: {
         ...packageEntity.spec,
-        packages: [
-          {
-            name: '@backstage/package-search-backend',
-            version: '^2.0.1',
-          },
-        ],
+        packageName: '@backstage/plugin-search-backend',
+        version: '^2.0.1',
       },
     };
     const result = await processor.preProcessEntity(searchBackendPackage);
-    expect(result?.spec?.installStatus).toBe(MarketplacePackageInstallStatus.NotInstalled);
+    expect(result?.spec?.installStatus).toBe(MarketplacePackageInstallStatus.UpdateAvailable);
   });
 
   it('should return Installed status if the entity has incorrect package version installed', async () => {
@@ -106,12 +94,8 @@ describe('LocalPackageInstallStatusProcessor', () => {
       ...packageEntity,
       spec: {
         ...packageEntity.spec,
-        packages: [
-          {
-            name: '@backstage/package-search-backend',
-            version: '^1.0.1',
-          },
-        ],
+        packageName: '@backstage/plugin-search-backend',
+        version: '^1.0.1',
       },
     };
     const result = await processor.preProcessEntity(searchBackendPackage);
@@ -127,12 +111,8 @@ describe('LocalPackageInstallStatusProcessor', () => {
       ...packageEntity,
       spec: {
         ...packageEntity.spec,
-        packages: [
-          {
-            name: '@backstage/package-search-backend',
-            version: '^1.0.0 , ^1.0.0',
-          },
-        ],
+        packageName: '@backstage/plugin-search-backend',
+        version: '^1.0.0 , ^1.0.0',
       },
     };
     const result = await processor.preProcessEntity(searchPackage);
@@ -146,10 +126,7 @@ describe('LocalPackageInstallStatusProcessor', () => {
       ...packageEntity,
       spec: {
         ...packageEntity.spec,
-        packages: [
-          '@backstage/package-search',
-          '@backstage/package-search-backend',
-        ],
+        packageName: '@backstage/plugin-search',
       },
     };
     const result = await processor.preProcessEntity(searchPackage);
@@ -164,6 +141,6 @@ describe('LocalPackageInstallStatusProcessor', () => {
       kind: 'TestKind',
     };
     const result = await processor.preProcessEntity(testEntity);
-    expect(result).toEqual(testEntity);
+    expect(result).toBe(testEntity);
   });
 });

@@ -42,6 +42,8 @@ export enum MarketplacePackageInstallStatus {
  */
 export interface MarketplacePackageSpec extends JsonObject {
   packageName?: string;
+  version?: string;
+
   dynamicArtifact?: string;
   author?: string;
   support?: string;
