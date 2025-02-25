@@ -110,15 +110,15 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     name: string,
   ): Promise<MarketplaceCollection> {
     const token = await this.getServiceToken();
-    const result = await this.catalog.getEntityByRef(
-      stringifyEntityRef({
-        kind: MarketplaceKind.Collection,
-        namespace,
-        name,
-      }),
-      token,
-    );
-    if (!result) throw new NotFoundError();
+    const entityRef = stringifyEntityRef({
+      kind: MarketplaceKind.Collection,
+      namespace,
+      name,
+    });
+    const result = await this.catalog.getEntityByRef(entityRef, token);
+    if (!result) {
+      throw new NotFoundError(`Collection ${namespace}/${name} not found`);
+    }
     return result as MarketplaceCollection;
   }
 
@@ -172,15 +172,15 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     name: string,
   ): Promise<MarketplacePackage> {
     const token = await this.getServiceToken();
-    const result = await this.catalog.getEntityByRef(
-      stringifyEntityRef({
-        kind: MarketplaceKind.Package,
-        namespace,
-        name,
-      }),
-      token,
-    );
-    if (!result) throw new NotFoundError();
+    const entityRef = stringifyEntityRef({
+      kind: MarketplaceKind.Package,
+      namespace,
+      name,
+    });
+    const result = await this.catalog.getEntityByRef(entityRef, token);
+    if (!result) {
+      throw new NotFoundError(`Package ${namespace}/${name} not found`);
+    }
     return result as MarketplaceCollection;
   }
 
@@ -210,15 +210,15 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     name: string,
   ): Promise<MarketplacePlugin> {
     const token = await this.getServiceToken();
-    const result = await this.catalog.getEntityByRef(
-      stringifyEntityRef({
-        kind: MarketplaceKind.Plugin,
-        namespace,
-        name,
-      }),
-      token,
-    );
-    if (!result) throw new NotFoundError();
+    const entityRef = stringifyEntityRef({
+      kind: MarketplaceKind.Plugin,
+      namespace,
+      name,
+    });
+    const result = await this.catalog.getEntityByRef(entityRef, token);
+    if (!result) {
+      throw new NotFoundError(`Plugin ${namespace}/${name} not found`);
+    }
     return result as MarketplacePlugin;
   }
 
