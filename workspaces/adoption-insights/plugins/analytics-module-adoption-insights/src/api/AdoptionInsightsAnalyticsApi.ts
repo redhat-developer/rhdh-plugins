@@ -20,11 +20,17 @@ import {
   AnalyticsEvent,
 } from '@backstage/core-plugin-api';
 
+/**
+ * Analytics API for Adoption Insights
+ *
+ * @public
+ */
 export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
   private eventBuffer: AnalyticsEvent[] = [];
   private readonly backendUrl: string;
   private readonly flushInterval: number;
   private readonly maxBufferSize: number;
+  private readonly debug?: boolean;
   private userId?: string;
   private userToken?: string;
 
@@ -33,10 +39,12 @@ export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
     flushInterval: number,
     maxBufferSize: number,
     identityApi?: IdentityApi,
+    debug?: boolean,
   ) {
     this.backendUrl = backendUrl;
     this.flushInterval = flushInterval;
     this.maxBufferSize = maxBufferSize;
+    this.debug = debug;
 
     if (identityApi) {
       identityApi.getBackstageIdentity().then(async identity => {
@@ -49,27 +57,44 @@ export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
     setInterval(() => this.flushEvents(), this.flushInterval);
   }
 
+  /**
+   * initialize the Analytics API for Adoption Insights fromm config
+   */
   static fromConfig(config: ConfigApi, options: { identityApi?: IdentityApi }) {
-    const backendUrl = `${config.getString('backend.baseUrl')}/api/insights`;
+    const backendUrl = `${config.getString(
+      'backend.baseUrl',
+    )}/api/adoption-insights`;
     const flushInterval =
-      config.getOptionalNumber('app.analytics.inisghts.flushInterval') || 5000;
+      config.getOptionalNumber(
+        'app.analytics.adoptionInsights.flushInterval',
+      ) || 5000;
     const maxBufferSize =
-      config.getOptionalNumber('app.analytics.insights.maxBufferSize') || 20;
+      config.getOptionalNumber(
+        'app.analytics.adoptionInsights.maxBufferSize',
+      ) || 20;
     const debug =
-      config.getOptionalBoolean('app.analytics.insights.debug') || false;
+      config.getOptionalBoolean('app.analytics.adoptionInsights.debug') ||
+      false;
 
     return new AdoptionInsightsAnalyticsApi(
       backendUrl,
       flushInterval,
       maxBufferSize,
       options.identityApi,
+      debug,
     );
   }
-
+  /**
+   *  Capture events being emmited from Analytics API and send to the Adoption Insights Backend
+   */
   async captureEvent(event: AnalyticsEvent) {
     if (this.userId) {
       event.context.userName = this.userId;
       event.context.userId = await this.hash(this.userId);
+    }
+    if (this.debug) {
+      // eslint-disable-next-line no-console
+      console.log('Adoption Insights Analytics Event -', event);
     }
 
     this.eventBuffer.push(event);

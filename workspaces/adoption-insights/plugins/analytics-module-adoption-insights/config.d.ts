@@ -17,7 +17,7 @@
 export interface Config {
   app?: {
     analytics: {
-      insights: {
+      adoptionInsights: {
         /**
          * Maximum buffer size for event batching.
          * default 20
@@ -30,6 +30,12 @@ export interface Config {
          * @visibility frontend
          */
         flushInterval?: number;
+        /**
+         * Flag to enable Debug mode which logs every event in the browser console.
+         * default false
+         * @visibility frontend
+         */
+        debug?: boolean;
       };
     };
   };

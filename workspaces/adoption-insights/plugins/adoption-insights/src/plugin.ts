@@ -20,6 +20,10 @@ import {
 
 import { rootRouteRef } from './routes';
 
+/**
+ * Plugin for Adoption Insights frontend
+ * @public
+ */
 export const adoptionInsightsPlugin = createPlugin({
   id: 'adoption-insights',
   routes: {
@@ -27,6 +31,10 @@ export const adoptionInsightsPlugin = createPlugin({
   },
 });
 
+/**
+ * Frontend page for Adoption Insights
+ * @public
+ */
 export const AdoptionInsightsPage = adoptionInsightsPlugin.provide(
   createRoutableExtension({
     name: 'AdoptionInsightsPage',

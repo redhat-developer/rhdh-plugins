@@ -22,7 +22,7 @@ import {
 import { AdoptionInsightsAnalyticsApi } from './AdoptionInsightsAnalyticsApi';
 
 /**
- * API Factory for Insights Analytics API
+ * API Factory for Adoption Insights Analytics API
  *
  * @public
  */

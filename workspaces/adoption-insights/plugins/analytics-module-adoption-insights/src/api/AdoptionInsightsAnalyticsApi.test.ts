@@ -38,12 +38,13 @@ describe('InsightsAnalyticsApi', () => {
     mockConfigApi = {
       getString: jest.fn().mockReturnValue('http://localhost:3000'),
       getOptionalNumber: jest.fn().mockImplementation((key: string) => {
-        if (key === 'app.analytics.insights.flushInterval')
+        if (key === 'app.analytics.adoptionInsights.flushInterval')
           return flushInterval;
-        if (key === 'app.analytics.insights.maxBufferSize')
+        if (key === 'app.analytics.adoptionInsights.maxBufferSize')
           return maxBufferSize;
         return undefined;
       }),
+      getOptionalBoolean: jest.fn(),
     } as unknown as ConfigApi;
 
     mockIdentityApi = {
@@ -60,6 +61,7 @@ describe('InsightsAnalyticsApi', () => {
       },
     );
     jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true } as Response);
+    jest.spyOn(global.console, 'log');
     jest
       .spyOn(insightsAnalyticsApi as any, 'hash')
       .mockResolvedValue('dummy-hashed-user-id');
@@ -109,5 +111,22 @@ describe('InsightsAnalyticsApi', () => {
     });
     jest.advanceTimersByTime(flushInterval);
     expect(fetch).toHaveLength(0);
+  });
+
+  it('should log events to console if debug mode is enabled', async () => {
+    mockConfigApi.getOptionalBoolean = jest.fn().mockReturnValue(true);
+    insightsAnalyticsApi = AdoptionInsightsAnalyticsApi.fromConfig(
+      mockConfigApi,
+      {
+        identityApi: mockIdentityApi,
+      },
+    );
+    await insightsAnalyticsApi.captureEvent({
+      action: 'event',
+      subject: 'test',
+      context: mockContext,
+    });
+    // eslint-disable-next-line no-console
+    expect(console.log).toHaveBeenCalled();
   });
 });

@@ -2,9 +2,10 @@ app:
   title: Scaffolded Backstage App
   baseUrl: http://localhost:3000
   analytics:
-    insights:
+    adoptionInsights:
       maxBufferSize: 20
       flushInterval: 5000
+      debug: true
 
 organization:
   name: My Company
