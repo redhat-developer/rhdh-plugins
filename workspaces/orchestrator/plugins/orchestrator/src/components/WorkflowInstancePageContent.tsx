@@ -33,7 +33,7 @@ import moment from 'moment';
 import {
   AssessedProcessInstanceDTO,
   InputSchemaResponseDTO,
-  orchestratorAdminView,
+  orchestratorAdminViewPermission,
   ProcessInstanceDTO,
   WorkflowDataDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -142,11 +142,11 @@ export const WorkflowInstancePageContent: React.FC<{
     setIsVariablesDialogOpen(prev => !prev);
   }, []);
 
-  const generic = usePermission({
-    permission: orchestratorAdminView,
+  const adminView = usePermission({
+    permission: orchestratorAdminViewPermission,
   });
 
-  const viewVariables = !generic.loading && generic.allowed && (
+  const viewVariables = adminView.allowed && (
     <Link
       to="#"
       onClick={e => {

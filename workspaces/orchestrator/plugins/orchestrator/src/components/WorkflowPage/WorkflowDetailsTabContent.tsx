@@ -22,7 +22,7 @@ import { usePermission } from '@backstage/plugin-permission-react';
 import { Grid } from '@material-ui/core';
 
 import {
-  orchestratorAdminView,
+  orchestratorAdminViewPermission,
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -40,8 +40,8 @@ export const WorkflowDetailsTabContent = ({
   workflowOverviewDTO,
   errorWorkflowOverview,
 }: Props) => {
-  const generic = usePermission({
-    permission: orchestratorAdminView,
+  const adminView = usePermission({
+    permission: orchestratorAdminViewPermission,
   });
 
   return (
@@ -57,8 +57,8 @@ export const WorkflowDetailsTabContent = ({
           loading={loading}
         />
       </Grid>
-      <Grid item>
-        {workflowOverviewDTO && !generic.loading && generic.allowed && (
+      {workflowOverviewDTO && adminView.allowed && (
+        <Grid item>
           <InfoCard title="Workflow definition">
             <div style={{ height: '600px' }}>
               <WorkflowEditor
@@ -68,8 +68,8 @@ export const WorkflowDetailsTabContent = ({
               />
             </div>
           </InfoCard>
-        )}
-      </Grid>
+        </Grid>
+      )}
     </>
   );
 };
