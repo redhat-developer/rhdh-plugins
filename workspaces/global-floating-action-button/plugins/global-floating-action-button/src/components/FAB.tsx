@@ -124,42 +124,39 @@ export const FAB = ({
         slotOptions[actionButton.slot || Slot.PAGE_END].tooltipDirection
       }
     >
-      <div className={className}>
-        <Fab
-          {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
-          style={{
-            color: iconColor ? iconColor : '#1f1f1f',
-            backgroundColor: !actionButton.color && !className ? 'white' : '',
-          }}
-          variant={
-            actionButton.showLabel || isExternal || !actionButton.icon
-              ? 'extended'
-              : 'circular'
+      <Fab
+        {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
+        className={className}
+        style={{
+          color: iconColor ? iconColor : '#1f1f1f',
+          backgroundColor: !actionButton.color && !className ? 'white' : '',
+        }}
+        variant={
+          actionButton.showLabel || isExternal || !actionButton.icon
+            ? 'extended'
+            : 'circular'
+        }
+        size={size || actionButton.size || 'medium'}
+        color={getColor()}
+        aria-label={actionButton.label}
+        data-testid={(actionButton.label || '')
+          .replace(' ', '-')
+          .toLocaleLowerCase('en-US')}
+        onClick={actionButton.onClick || navigateTo}
+        {...(isExternal ? { href: actionButton.to } : {})}
+      >
+        <FABLabel
+          showExternalIcon={isExternal}
+          icon={actionButton.icon}
+          label={actionButton.showLabel || !actionButton.icon ? labelText : ''}
+          order={
+            displayOnRight
+              ? { externalIcon: isExternal ? 1 : -1, icon: 3 }
+              : { externalIcon: isExternal ? 3 : -1, icon: 1 }
           }
-          size={size || actionButton.size || 'medium'}
-          color={getColor()}
-          aria-label={actionButton.label}
-          data-testid={(actionButton.label || '')
-            .replace(' ', '-')
-            .toLocaleLowerCase('en-US')}
-          onClick={actionButton.onClick || navigateTo}
-          {...(isExternal ? { href: actionButton.to } : {})}
-        >
-          <FABLabel
-            showExternalIcon={isExternal}
-            icon={actionButton.icon}
-            label={
-              actionButton.showLabel || !actionButton.icon ? labelText : ''
-            }
-            order={
-              displayOnRight
-                ? { externalIcon: isExternal ? 1 : -1, icon: 3 }
-                : { externalIcon: isExternal ? 3 : -1, icon: 1 }
-            }
-            slot={actionButton.slot || Slot.PAGE_END}
-          />
-        </Fab>
-      </div>
+          slot={actionButton.slot || Slot.PAGE_END}
+        />
+      </Fab>
     </Tooltip>
   );
 };
