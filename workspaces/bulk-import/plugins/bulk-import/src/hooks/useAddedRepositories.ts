@@ -95,7 +95,7 @@ export const useAddedRepositories = (
         sortColumn,
         sortOrder,
       ),
-    { refetchInterval: pollInterval || 60000 },
+    { refetchInterval: pollInterval || 60000, refetchOnWindowFocus: false },
   );
 
   const prepareData = React.useMemo(() => {
