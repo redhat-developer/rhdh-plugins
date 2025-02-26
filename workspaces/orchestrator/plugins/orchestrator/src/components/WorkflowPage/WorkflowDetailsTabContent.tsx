@@ -17,10 +17,14 @@
 import React from 'react';
 
 import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
+import { usePermission } from '@backstage/plugin-permission-react';
 
 import { Grid } from '@material-ui/core';
 
-import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import {
+  orchestratorAdminView,
+  WorkflowOverviewDTO,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { EditorViewKind, WorkflowEditor } from '../WorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
@@ -36,6 +40,10 @@ export const WorkflowDetailsTabContent = ({
   workflowOverviewDTO,
   errorWorkflowOverview,
 }: Props) => {
+  const generic = usePermission({
+    permission: orchestratorAdminView,
+  });
+
   return (
     <>
       {errorWorkflowOverview && (
@@ -50,7 +58,7 @@ export const WorkflowDetailsTabContent = ({
         />
       </Grid>
       <Grid item>
-        {workflowOverviewDTO && (
+        {workflowOverviewDTO && !generic.loading && generic.allowed && (
           <InfoCard title="Workflow definition">
             <div style={{ height: '600px' }}>
               <WorkflowEditor
