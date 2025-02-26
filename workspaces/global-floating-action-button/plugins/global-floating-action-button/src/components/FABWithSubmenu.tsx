@@ -15,21 +15,34 @@
  */
 
 import * as React from 'react';
+import classnames from 'classnames';
+
 import { useLocation } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
+
 import { useTheme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
-import Collapse from '@mui/material/Collapse';
+import Slide from '@mui/material/Slide';
+
+import Fade from '@mui/material/Fade';
 import { FAB } from './FAB';
 import { slotOptions } from '../utils';
 import { FloatingActionButton, Slot } from '../types';
 
 const useStyles = makeStyles(theme => ({
+  fabContainer: {
+    zIndex: 200,
+    display: 'flex',
+    position: 'fixed',
+    alignItems: 'center',
+    gap: '10px',
+  },
   button: {
-    paddingTop: '10px',
+    zIndex: 205,
     color:
       theme && Object.keys(theme).length > 0
         ? theme.palette.grey[500]
@@ -41,16 +54,20 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const FABWithSubmenu = ({
+  className,
   fabs,
   slot,
 }: {
   fabs: FloatingActionButton[];
   slot: Slot;
+  className?: string;
 }) => {
+  const containerRef = React.useRef<HTMLElement>(null);
   const styles = useStyles();
-  const theme = useTheme();
+  const fab = useStyles();
   const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [fadeOut, setFadeOut] = React.useState(false);
 
   React.useEffect(() => {
     return () => {
@@ -59,11 +76,27 @@ export const FABWithSubmenu = ({
   }, [pathname]);
 
   const handleClick = () => {
-    setIsMenuOpen(prev => !prev);
+    if (isMenuOpen) {
+      setFadeOut(true);
+      setTimeout(() => {
+        setIsMenuOpen(false);
+        setFadeOut(false);
+      }, 300);
+    } else {
+      setIsMenuOpen(true);
+    }
   };
-  const [menuPadding, setMenuPadding] = React.useState(false);
+
   return (
-    <>
+    <Box
+      className={classnames(fab.fabContainer, className)}
+      sx={{
+        flexDirection: 'column-reverse',
+      }}
+      id="floating-button-with-submenu"
+      data-testid="floating-button-with-submenu"
+      ref={containerRef}
+    >
       <Tooltip title="Menu" placement={slotOptions[slot].tooltipDirection}>
         <Fab
           size="medium"
@@ -71,7 +104,7 @@ export const FABWithSubmenu = ({
           onClick={handleClick}
           aria-label="Menu"
           variant="circular"
-          data-testid="fab-with-submenu"
+          sx={{ zIndex: 1000 }}
         >
           {isMenuOpen ? (
             <CloseIcon className={styles.menuButtonStyle} />
@@ -80,41 +113,35 @@ export const FABWithSubmenu = ({
           )}
         </Fab>
       </Tooltip>
-      <Collapse
-        style={{
-          textAlign: slotOptions[slot].textAlign,
-          position: 'absolute',
-          bottom: 48,
-        }}
-        in={isMenuOpen}
-        mountOnEnter
-        unmountOnExit
-        orientation="vertical"
-        easing={{
-          enter: theme.transitions.easing.easeOut,
-          exit: theme.transitions.easing.sharp,
-        }}
-        onEntered={() => setMenuPadding(true)}
-        onExit={() => setMenuPadding(false)}
-      >
-        <div
-          style={{
-            paddingBottom: menuPadding ? '10px' : '0px',
-            transition: 'padding 0.3s ease-out',
-          }}
-        >
-          {fabs?.map(fb => {
-            return (
-              <FAB
+      {fabs?.map(fb => {
+        return (
+          <Fade in={isMenuOpen} timeout={{ enter: 500, exit: 1000 }}>
+            <Slide
+              direction="up"
+              container={containerRef.current}
+              in={isMenuOpen}
+              timeout={{ appear: 1500, enter: 500, exit: 1000 }}
+              mountOnEnter
+              unmountOnExit
+            >
+              {/* <FAB
                 actionButton={fb}
                 size="medium"
                 key={fb.label}
                 className={styles.button}
-              />
-            );
-          })}
-        </div>
-      </Collapse>
-    </>
+              /> */}
+              <Fab
+                size="small"
+                sx={{
+                  zIndex: 205,
+                }}
+              >
+                {fb.icon}
+              </Fab>
+            </Slide>
+          </Fade>
+        );
+      })}
+    </Box>
   );
 };
