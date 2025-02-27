@@ -46,7 +46,15 @@ export const orchestratorWorkflowUseSpecificPermission = (workflowId: string) =>
     },
   });
 
+export const orchestratorAdminViewPermission = createPermission({
+  name: 'orchestrator.workflowAdminView',
+  attributes: {
+    action: 'read',
+  },
+});
+
 export const orchestratorPermissions = [
   orchestratorWorkflowPermission,
   orchestratorWorkflowUsePermission,
+  orchestratorAdminViewPermission,
 ];
