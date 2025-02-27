@@ -21,12 +21,7 @@
 // but without the drag and drop functionality.
 
 import React, { useMemo } from 'react';
-import {
-  Layout,
-  // Layouts,
-  // Responsive,
-  // ResponsiveProps,
-} from 'react-grid-layout';
+import { Layout } from 'react-grid-layout';
 
 import { ErrorBoundary } from '@backstage/core-components';
 import { CustomHomepageGrid } from '@backstage/plugin-home';
@@ -36,8 +31,6 @@ import { makeStyles } from 'tss-react/mui';
 // Removes the doubled scrollbar
 import 'react-grid-layout/css/styles.css';
 
-// import useMeasure from 'react-use/lib/useMeasure';
-
 import { HomePageCardMountPoint } from '../types';
 
 interface Card {
@@ -46,38 +39,6 @@ interface Card {
   props?: Record<string, any>;
   layouts: Record<string, Layout>;
 }
-
-// const gridGap = 16;
-
-// const defaultProps: ResponsiveProps = {
-//   // Aligned with the 1.0-1.2 home page gap.
-//   margin: [gridGap, gridGap],
-//   // Same as in home-plugin CustomHomepageGrid
-//   rowHeight: 60,
-
-//   // We use always a 12-column grid, but each cards can define
-//   // their number of columns (width) and start column (x) per breakpoint.
-//   breakpoints: {
-//     xl: 1600,
-//     lg: 1200,
-//     md: 996,
-//     sm: 768,
-//     xs: 480,
-//     xxs: 0,
-//   },
-//   cols: {
-//     xl: 12,
-//     lg: 12,
-//     md: 12,
-//     sm: 12,
-//     xs: 12,
-//     xxs: 12,
-//   },
-
-//   isDraggable: false,
-//   isResizable: false,
-//   compactType: null,
-// };
 
 const useStyles = makeStyles()({
   // Make card content scrollable (so that cards don't overlap)
@@ -106,7 +67,6 @@ export interface CustomizableGridProps {
  */
 export const CustomizableGrid = (props: CustomizableGridProps) => {
   const { classes } = useStyles();
-  // const [measureRef, measureRect] = useMeasure<HTMLDivElement>();
 
   const cards = useMemo<Card[]>(() => {
     return props.mountPoints.map<Card>((mountPoint, index) => {
@@ -150,21 +110,6 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
       };
     });
   }, [props.mountPoints]);
-
-  // const layouts = useMemo<Layouts>(() => {
-  //   const result: Layouts = {};
-  //   for (const card of cards) {
-  //     for (const [breakpoint, layoutPerBreakpoint] of Object.entries(
-  //       card.layouts,
-  //     )) {
-  //       if (!result[breakpoint]) {
-  //         result[breakpoint] = [];
-  //       }
-  //       result[breakpoint].push(layoutPerBreakpoint);
-  //     }
-  //   }
-  //   return result;
-  // }, [cards]);
 
   const children = useMemo(() => {
     return cards.map(card => (
