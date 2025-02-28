@@ -19,24 +19,18 @@ import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import {
   Page,
   Header,
-  InfoCard,
-  TabbedLayout,
-  LinkButton,
+  Content,
+  ErrorBoundary,
 } from '@backstage/core-components';
 
-import Grid from '@mui/material/Grid';
-
-import {
-  packageInstallRouteRef,
-  packageRouteRef,
-  packagesRouteRef,
-} from '../routes';
+import { themeId } from '../consts';
+import { packageRouteRef, packagesRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePackage } from '../hooks/usePackage';
+import { MarketplacePackageContentLoader } from '../components/MarketplacePackageContent';
 
 const PackageHeader = () => {
   const params = useRouteRefParams(packageRouteRef);
-
   const pkg = usePackage(params.namespace, params.name);
 
   const displayName = pkg.data?.metadata.title ?? params.name;
@@ -45,53 +39,15 @@ const PackageHeader = () => {
   return <Header title={displayName} type="Packages" typeLink={packagesLink} />;
 };
 
-export const MarketplacePackagePage = () => {
-  const params = useRouteRefParams(packageRouteRef);
-  const getInstallPath = useRouteRef(packageInstallRouteRef);
-
-  return (
-    <ReactQueryProvider>
-      <Page themeId="marketplace">
-        <PackageHeader />
-        <TabbedLayout>
-          <TabbedLayout.Route path="/" title="Overview">
-            <>
-              <LinkButton
-                disabled
-                to={getInstallPath({
-                  namespace: params.namespace,
-                  name: params.name,
-                })}
-                color="primary"
-                variant="contained"
-              >
-                Install
-              </LinkButton>
-
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                  <InfoCard title="About">
-                    <p>Entity name: Title || name</p>
-                    <p>Package name</p>
-                    <p>Version</p>
-                    <p>Install status</p>
-                    <p>Plugin role</p>
-                    <p>Supported version</p>
-                    <p>Author</p>
-                    <p>Support</p>
-                    <p>Lifecycle</p>
-                  </InfoCard>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <InfoCard title="Part of">
-                    <p>Part of plugins</p>
-                  </InfoCard>
-                </Grid>
-              </Grid>
-            </>
-          </TabbedLayout.Route>
-        </TabbedLayout>
-      </Page>
-    </ReactQueryProvider>
-  );
-};
+export const MarketplacePackagePage = () => (
+  <ReactQueryProvider>
+    <Page themeId={themeId}>
+      <PackageHeader />
+      <Content>
+        <ErrorBoundary>
+          <MarketplacePackageContentLoader />
+        </ErrorBoundary>
+      </Content>
+    </Page>
+  </ReactQueryProvider>
+);

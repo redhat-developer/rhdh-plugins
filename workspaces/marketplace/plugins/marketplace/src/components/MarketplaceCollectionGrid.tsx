@@ -15,31 +15,39 @@
  */
 import React from 'react';
 
-import { useQueryParamState, ItemCardGrid } from '@backstage/core-components';
+import { useRouteRefParams } from '@backstage/core-plugin-api';
 
-import { useCollections } from '../hooks/useCollections';
+import { useCollection } from '../hooks/useCollection';
+import { useCollectionPlugins } from '../hooks/useCollectionPlugins';
 
+import { collectionRouteRef } from '../routes';
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
+import { Markdown } from './Markdown';
 
-export const MarketplaceCollectionGrid = () => {
-  const collections = useCollections({});
-  const collection = collections.data?.items[0];
-
-  const [search] = useQueryParamState<string | undefined>('q');
+export const MarketplaceCollectionGridLoader = () => {
+  const params = useRouteRefParams(collectionRouteRef);
+  const collection = useCollection(params.namespace, params.name);
+  const plugins = useCollectionPlugins(params.namespace, params.name);
 
   return (
-    <PluginCardGrid>
-      {collections.isLoading ? (
-        <>
-          <PluginCardSkeleton />
-          <PluginCardSkeleton />
-          <PluginCardSkeleton />
-          <PluginCardSkeleton />
-        </>
+    <div>
+      {collection.data?.metadata?.description ? (
+        <Markdown content={collection.data.metadata.description} />
       ) : null}
-      {collection?.map(plugin => (
-        <PluginCard key={plugin.metadata.name} plugin={plugin} />
-      ))}
-    </PluginCardGrid>
+
+      <PluginCardGrid>
+        {plugins.isLoading ? (
+          <>
+            <PluginCardSkeleton />
+            <PluginCardSkeleton />
+            <PluginCardSkeleton />
+            <PluginCardSkeleton />
+          </>
+        ) : null}
+        {plugins.data?.map(plugin => (
+          <PluginCard key={plugin.metadata.name} plugin={plugin} />
+        ))}
+      </PluginCardGrid>
+    </div>
   );
 };

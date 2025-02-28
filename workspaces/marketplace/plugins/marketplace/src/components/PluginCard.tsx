@@ -69,7 +69,7 @@ export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => (
       </Stack>
     </CardContent>
     <CardActions sx={{ p: 2, justifyContent: 'flex-start' }}>
-      <Skeleton animation={animation}>Read more</Skeleton>
+      <Skeleton animation={animation} style={{ width: 50 }} />
     </CardActions>
   </Card>
 );

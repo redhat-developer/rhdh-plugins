@@ -15,24 +15,26 @@
  */
 
 import React from 'react';
-import { useRouteRefParams } from '@backstage/core-plugin-api';
-import { Page, Header, Content } from '@backstage/core-components';
+import {
+  Page,
+  Header,
+  Content,
+  ErrorBoundary,
+} from '@backstage/core-components';
 
-import { collectionRouteRef } from '../routes';
+import { themeId } from '../consts';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { MarketplaceCollectionsGrid } from '../components/MarketplaceCollectionsGrid';
 
 export const MarketplaceCollectionsPage = () => {
-  const params = useRouteRefParams(collectionRouteRef);
-
-  const title = 'MarketplaceCollectionsPage';
-
   return (
     <ReactQueryProvider>
-      <Page themeId="marketplace">
-        <Header title={title} type="Package" />
+      <Page themeId={themeId}>
+        <Header title="Collections" type="Package" />
         <Content>
-          <MarketplaceCollectionsGrid />
+          <ErrorBoundary>
+            <MarketplaceCollectionsGrid />
+          </ErrorBoundary>
         </Content>
       </Page>
     </ReactQueryProvider>

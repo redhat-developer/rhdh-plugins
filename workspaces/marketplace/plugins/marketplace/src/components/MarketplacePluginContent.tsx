@@ -186,7 +186,5 @@ export const MarketplacePluginContentLoader = () => {
   } else if (plugin.error) {
     return <ErrorPage statusMessage={plugin.error.toString()} />;
   }
-  return (
-    <ErrorPage statusMessage={`Plugin with name ${params.name} not found!`} />
-  );
+  return <ErrorPage statusMessage={`Plugin ${params.name} not found!`} />;
 };

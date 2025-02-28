@@ -19,68 +19,32 @@ import { Routes, Route } from 'react-router-dom';
 
 import { Page, Header, TabbedLayout } from '@backstage/core-components';
 
-import { useScalprum } from '@scalprum/react-core';
+import { themeId } from '../consts';
 
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 
 import { MarketplaceCatalogContent } from '../components/MarketplaceCatalogContent';
 
-// import { MarketplaceCollectionsGrid } from '../components/MarketplaceCollectionsGrid';
+import { MarketplaceCollectionsGrid } from '../components/MarketplaceCollectionsGrid';
 import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
 
-// import { MarketplacePluginsTable } from '../components/MarketplacePluginsTable';
+import { MarketplacePluginsTable } from '../components/MarketplacePluginsTable';
 import { MarketplacePluginDrawer } from '../components/MarketplacePluginDrawer';
 import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
 
-// import { MarketplacePackagesTable } from '../components/MarketplacePackagesTable';
+import { MarketplacePackagesTable } from '../components/MarketplacePackagesTable';
 import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer';
 import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
 
-export interface PluginTab {
-  Component: React.ComponentType;
-  config: {
-    path: string;
-    title: string;
-  };
-}
-
-export interface ScalprumState {
-  api?: {
-    dynamicRootConfig?: {
-      mountPoints?: {
-        'internal.plugins/tab': PluginTab[];
-      };
-    };
-  };
-}
-
 const Tabs = () => {
-  const scalprum = useScalprum<ScalprumState>();
-
-  const tabs =
-    scalprum.api?.dynamicRootConfig?.mountPoints?.['internal.plugins/tab'] ||
-    [];
-
   return (
     <>
-      <Page themeId="marketplace">
-        <Header title="Plugin" />
+      <Page themeId={themeId}>
+        <Header title="Marketplace" />
         <TabbedLayout>
-          {/* <TabbedLayout.Route path="/catalog" title="Marketplace">
+          <TabbedLayout.Route path="/catalog" title="Catalog">
             <MarketplaceCatalogContent />
-          </TabbedLayout.Route> */}
-
-          {tabs.map(({ Component, config }) => (
-            <TabbedLayout.Route
-              key={config.path}
-              path={config.path}
-              title={config.title}
-            >
-              <Component />
-            </TabbedLayout.Route>
-          ))}
-
-          {/*       
+          </TabbedLayout.Route>
           <TabbedLayout.Route path="/collections" title="Collections">
             <MarketplaceCollectionsGrid />
           </TabbedLayout.Route>
@@ -90,7 +54,6 @@ const Tabs = () => {
           <TabbedLayout.Route path="/packages" title="Packages">
             <MarketplacePackagesTable />
           </TabbedLayout.Route>
-          */}
         </TabbedLayout>
       </Page>
       <Routes>
@@ -107,7 +70,7 @@ const Tabs = () => {
   );
 };
 
-export const InternalPluginInfoTab = () => (
+export const MarketplaceTabbedPageRouter = () => (
   <ReactQueryProvider>
     <Routes>
       <Route
@@ -124,11 +87,5 @@ export const InternalPluginInfoTab = () => (
       />
       <Route path="/*" Component={Tabs} />
     </Routes>
-  </ReactQueryProvider>
-);
-
-export const InternalPluginInfoTabContent = () => (
-  <ReactQueryProvider>
-    <MarketplaceCatalogContent />
   </ReactQueryProvider>
 );

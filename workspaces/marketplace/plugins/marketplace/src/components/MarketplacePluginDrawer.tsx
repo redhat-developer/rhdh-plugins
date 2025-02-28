@@ -18,6 +18,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useRouteRef } from '@backstage/core-plugin-api';
+import { ErrorBoundary } from '@backstage/core-components';
 
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
@@ -65,7 +66,9 @@ export const MarketplacePluginDrawer = () => {
       >
         <CloseIcon />
       </IconButton>
-      <MarketplacePluginContentLoader />
+      <ErrorBoundary>
+        <MarketplacePluginContentLoader />
+      </ErrorBoundary>
     </Drawer>
   );
 };

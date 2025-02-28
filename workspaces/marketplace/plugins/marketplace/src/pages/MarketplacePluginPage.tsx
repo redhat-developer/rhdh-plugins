@@ -16,8 +16,14 @@
 
 import React from 'react';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
-import { Page, Header, Content } from '@backstage/core-components';
+import {
+  Page,
+  Header,
+  Content,
+  ErrorBoundary,
+} from '@backstage/core-components';
 
+import { themeId } from '../consts';
 import { pluginRouteRef, pluginsRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { MarketplacePluginContentLoader } from '../components/MarketplacePluginContent';
@@ -35,10 +41,12 @@ const PluginHeader = () => {
 
 export const MarketplacePluginPage = () => (
   <ReactQueryProvider>
-    <Page themeId="marketplace">
+    <Page themeId={themeId}>
       <PluginHeader />
       <Content>
-        <MarketplacePluginContentLoader />
+        <ErrorBoundary>
+          <MarketplacePluginContentLoader />
+        </ErrorBoundary>
       </Content>
     </Page>
   </ReactQueryProvider>

@@ -17,20 +17,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { useRouteRef } from '@backstage/core-plugin-api';
+import { ErrorBoundary } from '@backstage/core-components';
 
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 
-import { packagesRouteRef, packageRouteRef } from '../routes';
+import { packagesRouteRef } from '../routes';
 
-import { MarketplacePackageContent } from './MarketplacePackageContent';
+import { MarketplacePackageContentLoader } from './MarketplacePackageContent';
 
 export const MarketplacePackageDrawer = () => {
-  const params = useRouteRefParams(packageRouteRef);
-
   const [open, setOpen] = React.useState(false);
   React.useLayoutEffect(() => {
     setOpen(true);
@@ -40,15 +39,13 @@ export const MarketplacePackageDrawer = () => {
   const packagesPath = useRouteRef(packagesRouteRef)();
   const theme = useTheme();
   const handleClose = () => {
-    // TODO analtics
+    // TODO analytics
     setOpen(false);
     setTimeout(
       () => navigate(packagesPath),
       theme.transitions.duration.leavingScreen,
     );
   };
-
-  const packageName = params.name;
 
   return (
     <Drawer
@@ -69,9 +66,9 @@ export const MarketplacePackageDrawer = () => {
       >
         <CloseIcon />
       </IconButton>
-      {packageName ? (
-        <MarketplacePackageContent pluginName={packageName} />
-      ) : null}
+      <ErrorBoundary>
+        <MarketplacePackageContentLoader />
+      </ErrorBoundary>
     </Drawer>
   );
 };

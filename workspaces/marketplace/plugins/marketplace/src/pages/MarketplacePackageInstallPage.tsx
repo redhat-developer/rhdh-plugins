@@ -16,11 +16,18 @@
 
 import React from 'react';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
-import { Page, Header, Content } from '@backstage/core-components';
+import {
+  Page,
+  Header,
+  Content,
+  ErrorBoundary,
+} from '@backstage/core-components';
 
+import { themeId } from '../consts';
 import { packageInstallRouteRef, packageRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePackage } from '../hooks/usePackage';
+import { MarketplacePackageInstallContentLoader } from '../components/MarketplacePackageInstallContent';
 
 const PackageInstallHeader = () => {
   const params = useRouteRefParams(packageInstallRouteRef);
@@ -39,9 +46,13 @@ const PackageInstallHeader = () => {
 
 export const MarketplacePackageInstallPage = () => (
   <ReactQueryProvider>
-    <Page themeId="marketplace">
+    <Page themeId={themeId}>
       <PackageInstallHeader />
-      <Content>TODO</Content>
+      <Content>
+        <ErrorBoundary>
+          <MarketplacePackageInstallContentLoader />
+        </ErrorBoundary>
+      </Content>
     </Page>
   </ReactQueryProvider>
 );

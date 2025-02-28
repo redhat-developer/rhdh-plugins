@@ -16,7 +16,7 @@
 
 import React from 'react';
 
-import { useTheme, Theme } from '@mui/material';
+import { useTheme, Theme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
@@ -32,10 +32,10 @@ export const FilterLayout = (props: { children: React.ReactNode }) => {
   return <Grid container>{props.children}</Grid>;
 };
 
-FilterLayout.Filter = (props: { children: React.ReactNode }) => {
+const Filter = (props: { children: React.ReactNode }) => {
   const theme = useTheme();
-  const isScreenSmallerThanBreakpoint = useMediaQuery((theme: Theme) =>
-    theme.breakpoints.down('md'),
+  const isScreenSmallerThanBreakpoint = useMediaQuery((t: Theme) =>
+    t.breakpoints.down('lg'),
   );
   const [isDrawerOpen, setDrawerOpen] = React.useState<boolean>(false);
 
@@ -79,10 +79,13 @@ FilterLayout.Filter = (props: { children: React.ReactNode }) => {
   );
 };
 
-FilterLayout.Content = (props: { children: React.ReactNode }) => {
+const Content = (props: { children: React.ReactNode }) => {
   return (
     <Grid item xs={12} lg={10}>
       {props.children}
     </Grid>
   );
 };
+
+FilterLayout.Filter = Filter;
+FilterLayout.Content = Content;

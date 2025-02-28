@@ -15,26 +15,41 @@
  */
 
 import React from 'react';
-import { useRouteRefParams } from '@backstage/core-plugin-api';
-import { Page, Header, Content } from '@backstage/core-components';
+import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import {
+  Page,
+  Header,
+  Content,
+  ErrorBoundary,
+} from '@backstage/core-components';
 
-import { collectionRouteRef } from '../routes';
+import { themeId } from '../consts';
+import { collectionRouteRef, collectionsRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
-import { MarketplaceCollectionGrid } from '../components/MarketplaceCollectionGrid';
+import { useCollection } from '../hooks/useCollection';
+import { MarketplaceCollectionGridLoader } from '../components/MarketplaceCollectionGrid';
 
-export const MarketplaceCollectionPage = () => {
+const CollectionHeader = () => {
   const params = useRouteRefParams(collectionRouteRef);
+  const collection = useCollection(params.namespace, params.name);
 
-  const title = 'MarketplaceCollectionPage';
+  const displayName = collection.data?.metadata.title ?? params.name;
+  const collectionsLink = useRouteRef(collectionsRouteRef)();
 
   return (
-    <ReactQueryProvider>
-      <Page themeId="marketplace">
-        <Header title="Collections" />
-        <Content>
-          <MarketplaceCollectionGrid />
-        </Content>
-      </Page>
-    </ReactQueryProvider>
+    <Header title={displayName} type="Collections" typeLink={collectionsLink} />
   );
 };
+
+export const MarketplaceCollectionPage = () => (
+  <ReactQueryProvider>
+    <Page themeId={themeId}>
+      <CollectionHeader />
+      <Content>
+        <ErrorBoundary>
+          <MarketplaceCollectionGridLoader />
+        </ErrorBoundary>
+      </Content>
+    </Page>
+  </ReactQueryProvider>
+);

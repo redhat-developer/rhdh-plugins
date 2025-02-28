@@ -2,13 +2,12 @@
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: PluginCollection
 metadata:
-  name: featured
-  title: Featured Plugins
-  description: A set of great plugins! :)
+  name: kubernetes
+  title: Kubernetes Plugins
+  description: A set of Kubernetes plugins! :)
 spec:
   type: curated
   plugins:
     - quay
-    - 3scale
     - tekton
     - topology

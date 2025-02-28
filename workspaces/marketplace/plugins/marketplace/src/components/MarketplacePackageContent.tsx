@@ -17,7 +17,7 @@
 import React from 'react';
 
 import { Content, ErrorPage, LinkButton } from '@backstage/core-components';
-import { useRouteRef } from '@backstage/core-plugin-api';
+import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
@@ -30,8 +30,27 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { packageInstallRouteRef } from '../routes';
-import { usePackages } from '../hooks/usePackages';
-import { Markdown } from './Markdown';
+import { usePackage } from '../hooks/usePackage';
+import { Links } from './Links';
+
+const KeyValue = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) => {
+  if (!value) {
+    return null;
+  }
+  return (
+    <div>
+      <strong>{label}</strong>
+      <br />
+      {value}
+    </div>
+  );
+};
 
 const MarketplacePackageContentSkeleton = () => {
   return (
@@ -80,53 +99,16 @@ const MarketplacePackageContentSkeleton = () => {
   );
 };
 
-const MarketplacePackageContentReal = ({
-  pkg,
-}: {
-  pkg: MarketplacePackage;
-}) => {
-  // const getIndexPath = useRouteRef(rootRouteRef);
+const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
   const getInstallPath = useRouteRef(packageInstallRouteRef);
 
-  // const withSearchParameter = (name: string, value: string) =>
-  //   `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
-  //     value,
-  //   )}`;
-
-  let readme = pkg.metadata.description ?? '';
-  if (!readme.startsWith('#')) {
-    readme = `# About\n\n${readme}`;
-  }
-
   return (
-    <Content>
+    <Stack>
       <Stack direction="row" spacing={2}>
         <Stack spacing={0.5}>
           <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
-            {pkg.metadata.title || pkg.metadata.name}
+            {pkg.metadata.title ?? pkg.metadata.name}
           </Typography>
-          {/* {pkg.spec?.developer ? (
-            <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-              {' by '}
-              <Link
-                to={withSearchParameter('developer', pkg.spec.developer)}
-                color="primary"
-              >
-                {pkg.spec.developer}
-              </Link>
-            </Typography>
-          ) : null} */}
-          {/* {pkg.spec?.categories?.map(category => (
-            <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-              <LinkButton
-                to={withSearchParameter('category', category)}
-                variant="outlined"
-                style={{ fontWeight: 'normal', padding: '2px 6px' }}
-              >
-                {category}
-              </LinkButton>
-            </Typography>
-          ))} */}
         </Stack>
       </Stack>
 
@@ -154,27 +136,52 @@ const MarketplacePackageContentReal = ({
           </LinkButton>
         </Grid>
         <Grid item md={10}>
-          <Markdown content={readme} />
+          <Stack gap={2}>
+            <h2>Not implemented yet</h2>
+
+            <KeyValue label="Package name:" value={pkg.spec?.packageName} />
+            <KeyValue label="Version:" value={pkg.spec?.version} />
+            <KeyValue
+              label="Dynamic plugin path:"
+              value={pkg.spec?.dynamicArtifact}
+            />
+            <KeyValue
+              label="Backstage role:"
+              value={pkg.spec?.backstage?.role}
+            />
+            <KeyValue
+              label="Supported versions:"
+              value={pkg.spec?.backstage?.supportedVersions}
+            />
+            <KeyValue label="Author:" value={pkg.spec?.author} />
+            <KeyValue label="Support:" value={pkg.spec?.support} />
+            <KeyValue label="Lifecycle:" value={pkg.spec?.lifecycle} />
+
+            <Links entity={pkg} />
+
+            <div>Package entity:</div>
+            <pre>{JSON.stringify(pkg, null, 2)}</pre>
+          </Stack>
         </Grid>
       </Grid>
-    </Content>
+    </Stack>
   );
 };
 
-export const MarketplacePackageContent = ({
-  pluginName,
-}: {
-  pluginName: string;
-}) => {
-  const packages = usePackages({});
-  const pkg = packages.data?.items?.find(p => p.metadata.name === pluginName);
+export const MarketplacePackageContentLoader = () => {
+  const params = useRouteRefParams(packageInstallRouteRef);
+  const pkg = usePackage(params.namespace, params.name);
 
-  if (packages.isLoading) {
+  if (pkg.isLoading) {
     return <MarketplacePackageContentSkeleton />;
-  } else if (!pkg) {
-    return (
-      <ErrorPage statusMessage={`Package with name ${pluginName} not found!`} />
-    );
+  } else if (pkg.data) {
+    return <MarketplacePackageContent pkg={pkg.data} />;
+  } else if (pkg.error) {
+    return <ErrorPage statusMessage={pkg.error.toString()} />;
   }
-  return <MarketplacePackageContentReal pkg={pkg} />;
+  return (
+    <ErrorPage
+      statusMessage={`Package ${params.namespace}/${params.name} not found!`}
+    />
+  );
 };

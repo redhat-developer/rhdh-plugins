@@ -16,19 +16,26 @@
 
 import React from 'react';
 
-import { Page, Header, Content } from '@backstage/core-components';
+import {
+  Page,
+  Header,
+  Content,
+  ErrorBoundary,
+} from '@backstage/core-components';
 
+import { themeId } from '../consts';
 import { MarketplacePluginsTable } from '../components/MarketplacePluginsTable';
-
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 
 export const MarketplaceHomePage = () => {
   return (
     <ReactQueryProvider>
-      <Page themeId="marketplace">
+      <Page themeId={themeId}>
         <Header title="Marketplace" />
         <Content>
-          <MarketplacePluginsTable />
+          <ErrorBoundary>
+            <MarketplacePluginsTable />
+          </ErrorBoundary>
         </Content>
       </Page>
     </ReactQueryProvider>

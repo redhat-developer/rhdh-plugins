@@ -55,10 +55,10 @@ export const marketplacePlugin = createPlugin({
 });
 
 /**
- * Marketplace page with routes for different pages..
+ * Marketplace page with routes for different pages.
  * @public
  */
-export const MarketplaceRouter = marketplacePlugin.provide(
+export const MarketplaceFullPageRouter = marketplacePlugin.provide(
   createRoutableExtension({
     name: 'MarketplacePage',
     component: () =>
@@ -71,12 +71,12 @@ export const MarketplaceRouter = marketplacePlugin.provide(
  * Marketplace page with header and tabs.
  * @public
  */
-export const MarketplaceTabbedPage = marketplacePlugin.provide(
+export const MarketplaceTabbedPageRouter = marketplacePlugin.provide(
   createRoutableExtension({
-    name: 'MarketplaceTabbedPage',
+    name: 'MarketplaceTabbedPageRouter',
     component: () =>
-      import('./pages/MarketplaceTabbedPage').then(
-        m => m.MarketplaceTabbedPage,
+      import('./pages/MarketplaceTabbedPageRouter').then(
+        m => m.MarketplaceTabbedPageRouter,
       ),
     mountPoint: allRoutes.rootRouteRef,
   }),
@@ -86,12 +86,12 @@ export const MarketplaceTabbedPage = marketplacePlugin.provide(
  * Workaround...
  * @public
  */
-export const InternalPluginInfoTab = marketplacePlugin.provide(
+export const DynamicMarketplacePluginRouter = marketplacePlugin.provide(
   createRoutableExtension({
-    name: 'InternalPluginInfoTab',
+    name: 'DynamicMarketplacePluginRouter',
     component: () =>
-      import('./pages/InternalPluginInfoTab').then(
-        m => m.InternalPluginInfoTab,
+      import('./pages/DynamicMarketplacePluginRouter').then(
+        m => m.DynamicMarketplacePluginRouter,
       ),
     mountPoint: allRoutes.rootRouteRef,
   }),
@@ -101,13 +101,13 @@ export const InternalPluginInfoTab = marketplacePlugin.provide(
  * Workaround
  * @public
  */
-export const InternalPluginInfoTabContent = marketplacePlugin.provide(
+export const DynamicMarketplaceCatalogContent = marketplacePlugin.provide(
   createComponentExtension({
-    name: 'InternalPluginInfoTabContent',
+    name: 'DynamicMarketplaceCatalogContent',
     component: {
       lazy: () =>
-        import('./pages/InternalPluginInfoTab').then(
-          m => m.InternalPluginInfoTabContent,
+        import('./pages/DynamicMarketplacePluginRouter').then(
+          m => m.DynamicMarketplaceCatalogContent,
         ),
     },
   }),

@@ -32,7 +32,7 @@ export interface MarketplaceCollection extends Entity {
  * @public
  */
 export interface MarketplaceCollectionSpec extends JsonObject {
-  type: 'curated';
+  type?: 'curated';
   plugins?: string[];
 }
 

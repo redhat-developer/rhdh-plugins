@@ -16,8 +16,6 @@
 
 import React from 'react';
 
-// import { HorizontalScrollGrid } from '@backstage/core-components';
-
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -25,12 +23,19 @@ import Typography from '@mui/material/Typography';
 import { FilterLayout } from '../shared-components/FilterLayout';
 import { SearchTextField } from '../shared-components/SearchTextField';
 
+import { useCollections } from '../hooks/useCollections';
 import { usePlugins } from '../hooks/usePlugins';
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { MarketplacePluginFilter } from './MarketplacePluginFilter';
-// import { PluginCardSkeleton } from './PluginCard';
+import { CollectionHorizontalScrollRow } from './CollectionHorizontalScrollRow';
 
 export const MarketplaceCatalogContent = () => {
+  const featuredCollections = useCollections({
+    filter: {
+      'metadata.name': 'featured',
+    },
+  });
+
   const plugins = usePlugins({});
 
   return (
@@ -39,163 +44,32 @@ export const MarketplaceCatalogContent = () => {
         <MarketplacePluginFilter />
       </FilterLayout.Filter>
       <FilterLayout.Content>
-        {/* <h1>Featured</h1>
+        <Stack direction="column" gap={3}>
+          {featuredCollections.data?.items?.map(collection => (
+            <CollectionHorizontalScrollRow
+              key={`${collection.metadata.namespace}/${collection.metadata.name}`}
+              collection={collection}
+            />
+          ))}
 
-        <HorizontalScrollGrid>
-          <Stack direction="row" gap={2} sx={{ px: 1, pt: 1, pb: 3 }}>
-            <PluginCardSkeleton />
-            <PluginCardSkeleton />
-            <PluginCardSkeleton />
-            <PluginCardSkeleton />
-            <PluginCardSkeleton />
-            <PluginCardSkeleton />
-            <PluginCardSkeleton />
-            <PluginCardSkeleton />
-          </Stack>
-        </HorizontalScrollGrid> */}
+          <Card>
+            <Stack gap={3} sx={{ p: 2 }}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Typography variant="h5">
+                  Plugins
+                  {plugins.data ? ` (${plugins.data?.items?.length})` : null}
+                </Typography>
+                <SearchTextField variant="search" />
+              </Stack>
 
-        <Card>
-          <Stack gap={3} sx={{ p: 2 }}>
-            {/* <Typography variant="h5">Featured</Typography>
-            <HorizontalScrollGrid>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 300,
-                  margin: 16,
-                  backgroundColor: 'green',
-                }}
-              >
-                a
-              </div>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 200,
-                  margin: 16,
-                  backgroundColor: 'red',
-                }}
-              >
-                a
-              </div>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 300,
-                  margin: 16,
-                  backgroundColor: 'red',
-                }}
-              >
-                a
-              </div>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 200,
-                  margin: 16,
-                  backgroundColor: 'red',
-                }}
-              >
-                a
-              </div>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 300,
-                  margin: 16,
-                  backgroundColor: 'red',
-                }}
-              >
-                a
-              </div>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 200,
-                  margin: 16,
-                  backgroundColor: 'red',
-                }}
-              >
-                a
-              </div>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 300,
-                  margin: 16,
-                  backgroundColor: 'red',
-                }}
-              >
-                a
-              </div>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 200,
-                  margin: 16,
-                  backgroundColor: 'red',
-                }}
-              >
-                a
-              </div>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 300,
-                  margin: 16,
-                  backgroundColor: 'red',
-                }}
-              >
-                a
-              </div>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 200,
-                  margin: 16,
-                  backgroundColor: 'red',
-                }}
-              >
-                a
-              </div>
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 320,
-                  height: 300,
-                  margin: 16,
-                  backgroundColor: 'green',
-                }}
-              >
-                a
-              </div>
-            </HorizontalScrollGrid> */}
-
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography variant="h5">
-                Plugins
-                {plugins.data ? ` (${plugins.data?.items?.length})` : null}
-              </Typography>
-              <SearchTextField variant="search" />
+              <MarketplaceCatalogGrid />
             </Stack>
-
-            <MarketplaceCatalogGrid />
-          </Stack>
-        </Card>
+          </Card>
+        </Stack>
       </FilterLayout.Content>
     </FilterLayout>
   );
