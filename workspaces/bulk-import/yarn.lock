@@ -2720,7 +2720,44 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 76621995e793af3b472dd53e715f9b9ff6155046be0fa6bbd1e5daac5d411bbc91437e21547ab03ab2270378c6b2ef79ef1d10bdad23d1d9135dbbaf5f9f313e
+  checksum: 37e100f525dbffea52ddf0651e4e39cce210316f0de63d5cc46f646f3f5b068568ecc279999b7869f18819fb600c5221cd67fcbac39f21019592481c90462fae
+  languageName: node
+  linkType: hard
+
+"@backstage/backend-app-api@npm:^1.1.1, @backstage/backend-app-api@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@backstage/backend-app-api@npm:1.2.0"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.2.0
+    "@backstage/cli-common": ^0.1.15
+    "@backstage/config": ^1.3.2
+    "@backstage/config-loader": ^1.9.6
+    "@backstage/errors": ^1.2.7
+    "@backstage/plugin-auth-node": ^0.6.0
+    "@backstage/plugin-permission-node": ^0.8.8
+    "@backstage/types": ^1.2.1
+    "@manypkg/get-packages": ^1.1.3
+    compression: ^1.7.4
+    cookie: ^0.7.0
+    cors: ^2.8.5
+    helmet: ^6.0.0
+    jose: ^5.0.0
+    knex: ^3.0.0
+    lodash: ^4.17.21
+    logform: ^2.3.2
+    luxon: ^3.0.0
+    minimatch: ^9.0.0
+    minimist: ^1.2.5
+    morgan: ^1.10.0
+    node-forge: ^1.3.1
+    path-to-regexp: ^8.0.0
+    selfsigned: ^2.0.0
+    stoppable: ^1.1.0
+    triple-beam: ^1.4.1
+    uuid: ^11.0.0
+    winston: ^3.2.1
+    winston-transport: ^4.5.0
+  checksum: 98e20a80ec64575992c03f872311f0f21f3a187ce65a40c030ebfaca8672560bd14b189daf9caf73a357aa192b7ccee6825ea5b4837b271600a91c69f8ca4196
   languageName: node
   linkType: hard
 
@@ -4692,7 +4729,20 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: ad5bac0944b1d7b709880d4093360b1bac0daea3e1dbb3b298317459552293a3be410771d77e7475804477994e5f7d525b48531259e1d8f6ca7352f46168f39c
+  checksum: 54c5e867398b48d591de131d0861a6a600d88e404a192b804b317b825fb80eb7d7da2cc85e524a49be01a3ed52148a103b4492f3cc2127a8152b88512736eb37
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-events-node@npm:^0.4.7, @backstage/plugin-events-node@npm:^0.4.8":
+  version: 0.4.8
+  resolution: "@backstage/plugin-events-node@npm:0.4.8"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.2.0
+    "@backstage/errors": ^1.2.7
+    "@backstage/types": ^1.2.1
+    cross-fetch: ^4.0.0
+    uri-template: ^2.0.0
+  checksum: 8931f8857eefe53dd29204a5a6ca7499a0e46c3ae52017eb2db12d5156c0fff43ac2fec8fa66edfa6eadfa72357de829522442f4117fef5eb313f03020146688
   languageName: node
   linkType: hard
 

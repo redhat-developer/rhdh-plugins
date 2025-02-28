@@ -2802,44 +2802,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-app-api@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@backstage/backend-app-api@npm:1.1.1"
-  dependencies:
-    "@backstage/backend-plugin-api": ^1.1.1
-    "@backstage/cli-common": ^0.1.15
-    "@backstage/config": ^1.3.2
-    "@backstage/config-loader": ^1.9.5
-    "@backstage/errors": ^1.2.7
-    "@backstage/plugin-auth-node": ^0.5.6
-    "@backstage/plugin-permission-node": ^0.8.7
-    "@backstage/types": ^1.2.1
-    "@manypkg/get-packages": ^1.1.3
-    compression: ^1.7.4
-    cookie: ^0.7.0
-    cors: ^2.8.5
-    helmet: ^6.0.0
-    jose: ^5.0.0
-    knex: ^3.0.0
-    lodash: ^4.17.21
-    logform: ^2.3.2
-    luxon: ^3.0.0
-    minimatch: ^9.0.0
-    minimist: ^1.2.5
-    morgan: ^1.10.0
-    node-forge: ^1.3.1
-    path-to-regexp: ^8.0.0
-    selfsigned: ^2.0.0
-    stoppable: ^1.1.0
-    triple-beam: ^1.4.1
-    uuid: ^11.0.0
-    winston: ^3.2.1
-    winston-transport: ^4.5.0
-  checksum: 30f8137acb7e2140f18502f5880dcee153e037d02408a910da5589eb0e0448ccdeb7ba5b60e5a62f67f4bf92be542bb368987fe52aa60f0173e81636418354e5
-  languageName: node
-  linkType: hard
-
-"@backstage/backend-app-api@npm:^1.2.0":
+"@backstage/backend-app-api@npm:^1.1.1, @backstage/backend-app-api@npm:^1.2.0":
   version: 1.2.0
   resolution: "@backstage/backend-app-api@npm:1.2.0"
   dependencies:
@@ -4481,20 +4444,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-events-node@npm:^0.4.7":
-  version: 0.4.7
-  resolution: "@backstage/plugin-events-node@npm:0.4.7"
-  dependencies:
-    "@backstage/backend-plugin-api": ^1.1.1
-    "@backstage/errors": ^1.2.7
-    "@backstage/types": ^1.2.1
-    cross-fetch: ^4.0.0
-    uri-template: ^2.0.0
-  checksum: 7f99c5e91fc0b6199b3e22b5ef40754199f06ba530598fe1d2a7f9b868bb7690c125ae550a363ded860471ddb3df1dbbde53228834e9535eaa5cb29b668f2a02
-  languageName: node
-  linkType: hard
-
-"@backstage/plugin-events-node@npm:^0.4.8":
+"@backstage/plugin-events-node@npm:^0.4.7, @backstage/plugin-events-node@npm:^0.4.8":
   version: 0.4.8
   resolution: "@backstage/plugin-events-node@npm:0.4.8"
   dependencies:
