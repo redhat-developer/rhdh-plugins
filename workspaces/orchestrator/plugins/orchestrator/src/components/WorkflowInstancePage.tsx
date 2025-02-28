@@ -46,7 +46,7 @@ import ErrorIcon from '@material-ui/icons/Error';
 import { AlertTitle } from '@material-ui/lab';
 import Alert from '@material-ui/lab/Alert';
 
-//import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
+// import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 
 // FLPATH-2135
 // import StartIcon from '@mui/icons-material/Start';
@@ -298,8 +298,8 @@ export const WorkflowInstancePage = ({
 
   // For making the linter happy - FLPATH-2135:
   // No-op statements to be removed when the feature is re-enabled.
-  handleOptionClick;
-  openRerunMenu;
+  handleOptionClick; // eslint-disable-line
+  openRerunMenu; // eslint-disable-line
   handleClick; // eslint-disable-line
 
   const classes = useStyles();
