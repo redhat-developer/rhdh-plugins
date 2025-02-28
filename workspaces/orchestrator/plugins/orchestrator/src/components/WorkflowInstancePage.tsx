@@ -46,8 +46,6 @@ import ErrorIcon from '@material-ui/icons/Error';
 import { AlertTitle } from '@material-ui/lab';
 import Alert from '@material-ui/lab/Alert';
 
-// import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
-
 // FLPATH-2135
 // import StartIcon from '@mui/icons-material/Start';
 // import SwipeRightAltOutlinedIcon from '@mui/icons-material/SwipeRightAltOutlined';
