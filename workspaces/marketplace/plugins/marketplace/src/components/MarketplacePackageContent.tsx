@@ -23,12 +23,14 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
+import Tooltip from '@mui/material/Tooltip';
 
 import {
   MarketplacePackage,
   MarketplacePackageInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
+import { mapPackageInstallStatusToButton } from '../labels';
 import { packageInstallRouteRef } from '../routes';
 import { usePackage } from '../hooks/usePackage';
 import { Links } from './Links';
@@ -117,23 +119,30 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
 
       <Grid container>
         <Grid item md={2}>
-          <LinkButton
-            disabled={
-              pkg.spec?.installStatus ===
-              MarketplacePackageInstallStatus.Installed
-            }
-            to={getInstallPath({
-              namespace: pkg.metadata.namespace!,
-              name: pkg.metadata.name,
-            })}
-            color="primary"
-            variant="contained"
+          <Tooltip
+            title={<Typography variant="button">Coming soon!</Typography>}
+            arrow
+            placement="right"
           >
-            {pkg.spec?.installStatus !==
-            MarketplacePackageInstallStatus.Installed
-              ? 'Install'
-              : MarketplacePackageInstallStatus.Installed}
-          </LinkButton>
+            <div style={{ display: 'inline-block' }}>
+              <LinkButton
+                disabled
+                to={getInstallPath({
+                  namespace: pkg.metadata.namespace!,
+                  name: pkg.metadata.name,
+                })}
+                color="primary"
+                variant="contained"
+              >
+                {
+                  mapPackageInstallStatusToButton[
+                    pkg.spec?.installStatus ??
+                      MarketplacePackageInstallStatus.NotInstalled
+                  ]
+                }
+              </LinkButton>
+            </div>
+          </Tooltip>
         </Grid>
         <Grid item md={10}>
           <Stack gap={2}>

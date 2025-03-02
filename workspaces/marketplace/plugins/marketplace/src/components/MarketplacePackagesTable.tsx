@@ -16,33 +16,17 @@
 
 import React from 'react';
 
-import {
-  ErrorPanel,
-  Link,
-  Table,
-  TableColumn,
-} from '@backstage/core-components';
+import { ErrorPanel, Table, TableColumn } from '@backstage/core-components';
 
-import {
-  MarketplacePackage,
-  MarketplacePackageInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { usePackages } from '../hooks/usePackages';
 import { useQueryTableOptions } from '../hooks/useQueryTableOptions';
 import { PackageLink } from './PackageLink';
-
-const mapRoleToLabel: Record<string, string> = {
-  'backend-plugin': 'Backend plugin',
-  'backend-plugin-module': 'Backend plugin module',
-  'frontend-plugin': 'Frontend plugin',
-};
-
-const mapInstallStatusToLabel = {
-  [MarketplacePackageInstallStatus.Installed]: 'Installed',
-  [MarketplacePackageInstallStatus.NotInstalled]: 'Not installed',
-  [MarketplacePackageInstallStatus.UpdateAvailable]: 'Update available',
-};
+import {
+  mapBackstageRoleToLabel,
+  mapPackageInstallStatusToLabel,
+} from '../labels';
 
 const columns: TableColumn<MarketplacePackage>[] = [
   {
@@ -63,7 +47,7 @@ const columns: TableColumn<MarketplacePackage>[] = [
     render(data) {
       return (
         (data.spec?.backstage?.role
-          ? mapRoleToLabel[data.spec.backstage.role]
+          ? mapBackstageRoleToLabel[data.spec.backstage.role]
           : undefined) ??
         data.spec?.backstage?.role ??
         '-'
@@ -81,7 +65,7 @@ const columns: TableColumn<MarketplacePackage>[] = [
     type: 'string',
     render(data) {
       return data.spec?.installStatus
-        ? mapInstallStatusToLabel[data.spec.installStatus]
+        ? mapPackageInstallStatusToLabel[data.spec.installStatus]
         : '-';
     },
   },

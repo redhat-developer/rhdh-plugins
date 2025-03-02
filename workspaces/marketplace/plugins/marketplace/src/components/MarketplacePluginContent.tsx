@@ -28,12 +28,14 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
+import Tooltip from '@mui/material/Tooltip';
 
 import {
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
+import { mapMarketplacePluginInstallStatusToButton } from '../labels';
 import { rootRouteRef, pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 
@@ -149,23 +151,30 @@ export const MarketplacePluginContent = ({
             </>
           ) : null}
 
-          <LinkButton
-            disabled={
-              plugin.spec?.installStatus ===
-              MarketplacePluginInstallStatus.Installed
-            }
-            to={getInstallPath({
-              namespace: plugin.metadata.namespace!,
-              name: plugin.metadata.name,
-            })}
-            color="primary"
-            variant="contained"
+          <Tooltip
+            title={<Typography variant="button">Coming soon!</Typography>}
+            arrow
+            placement="right"
           >
-            {plugin.spec?.installStatus !==
-            MarketplacePluginInstallStatus.Installed
-              ? 'Install'
-              : MarketplacePluginInstallStatus.Installed}
-          </LinkButton>
+            <div style={{ display: 'inline-block' }}>
+              <LinkButton
+                disabled
+                to={getInstallPath({
+                  namespace: plugin.metadata.namespace!,
+                  name: plugin.metadata.name,
+                })}
+                color="primary"
+                variant="contained"
+              >
+                {
+                  mapMarketplacePluginInstallStatusToButton[
+                    plugin.spec?.installStatus ??
+                      MarketplacePluginInstallStatus.NotInstalled
+                  ]
+                }
+              </LinkButton>
+            </div>
+          </Tooltip>
         </Grid>
         <Grid item md={10}>
           <Markdown title="About" content={about} />
