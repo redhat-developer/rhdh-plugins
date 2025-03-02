@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { ErrorBoundary } from '@backstage/core-components';
@@ -36,10 +36,11 @@ export const MarketplacePackageDrawer = () => {
   }, []);
 
   const navigate = useNavigate();
-  const packagesPath = useRouteRef(packagesRouteRef)();
+  const [searchParams] = useSearchParams();
+  const packagesPath = `${useRouteRef(packagesRouteRef)()}${searchParams.size > 0 ? '?' : ''}${searchParams}`;
   const theme = useTheme();
   const handleClose = () => {
-    // TODO analytics
+    // TODO analytics?
     setOpen(false);
     setTimeout(
       () => navigate(packagesPath),

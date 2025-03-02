@@ -98,22 +98,6 @@ export const DynamicMarketplacePluginRouter = marketplacePlugin.provide(
 );
 
 /**
- * Workaround
- * @public
- */
-export const DynamicMarketplaceCatalogContent = marketplacePlugin.provide(
-  createComponentExtension({
-    name: 'DynamicMarketplaceCatalogContent',
-    component: {
-      lazy: () =>
-        import('./pages/DynamicMarketplacePluginRouter').then(
-          m => m.DynamicMarketplaceCatalogContent,
-        ),
-    },
-  }),
-);
-
-/**
  * @public
  */
 export const MarketplaceIcon: IconComponent = MUIMarketplaceIcon;

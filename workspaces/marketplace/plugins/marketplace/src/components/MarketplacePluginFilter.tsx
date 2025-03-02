@@ -16,7 +16,9 @@
 
 import React from 'react';
 
+import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
 
 import { usePluginFacet } from '../hooks/usePluginFacet';
 import { BackstageSelectFilter } from '../shared-components/BackstageSelectFilter';
@@ -90,7 +92,11 @@ const SupportTypeFilter = () => {
 export const MarketplacePluginFilter = () => {
   return (
     <div>
-      <h2>Filters</h2>
+      <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
+        <Typography variant="h4" sx={{ pb: 1 }}>
+          Filters
+        </Typography>
+      </Box>
       <Divider />
       <CategoryFilter />
       <AuthorFilter />

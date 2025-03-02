@@ -16,26 +16,25 @@
 
 import React from 'react';
 
-import { useQueryParamState } from '@backstage/core-components';
-
 import { usePlugins } from '../hooks/usePlugins';
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
+import { useQueryFullTextSearch } from '../hooks/useQueryFullTextSearch';
 
 export const MarketplaceCatalogGrid = () => {
   const plugins = usePlugins({});
 
-  const [search] = useQueryParamState<string | undefined>('q');
+  const fullTextSearch = useQueryFullTextSearch();
 
   const filteredPlugins = React.useMemo(() => {
-    if (!search || !plugins.data) {
+    if (!fullTextSearch.current || !plugins.data) {
       return plugins.data?.items;
     }
-    const lowerCaseSearch = search.toLocaleLowerCase('en-US');
+    const lowerCaseSearch = fullTextSearch.current.toLocaleLowerCase('en-US');
     return plugins.data.items.filter(entry => {
       const lowerCaseValue = entry.metadata?.title?.toLocaleLowerCase('en-US');
       return lowerCaseValue?.includes(lowerCaseSearch);
     });
-  }, [search, plugins.data]);
+  }, [fullTextSearch, plugins.data]);
 
   return (
     <PluginCardGrid>

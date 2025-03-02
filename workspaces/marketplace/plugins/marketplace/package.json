@@ -37,6 +37,7 @@
     "@backstage/catalog-client": "^1.9.1",
     "@backstage/core-components": "^0.16.3",
     "@backstage/core-plugin-api": "^1.10.3",
+    "@backstage/plugin-catalog-react": "^1.15.1",
     "@backstage/theme": "^0.6.3",
     "@mui/icons-material": "^5.16.7",
     "@mui/material": "^5.12.2",

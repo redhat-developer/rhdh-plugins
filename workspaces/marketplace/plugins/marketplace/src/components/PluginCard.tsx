@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { ItemCardGrid, Link, LinkButton } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
@@ -76,23 +76,22 @@ export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => (
 
 // orange: #EC7A08
 
-interface PluginCardBadgeProps {
-  variant: 'custom' | 'certified' | 'verified';
-  tooltip?: string;
-}
-
 // TODO: add link around card
 export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const getIndexPath = useRouteRef(rootRouteRef);
   const getPluginPath = useRouteRef(pluginRouteRef);
 
-  const pluginPath = getPluginPath({
+  const pluginPath = `${getPluginPath({
     namespace: plugin.metadata.namespace!,
     name: plugin.metadata.name,
-  });
-  const withSearchParameter = (name: string, value: string) =>
-    `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
+  })}${searchParams.size > 0 ? '?' : ''}${searchParams}`;
+
+  //  + (searchParams.size > 0 ? `?${searchParams.toString()}` : '')
+
+  const withFilter = (name: string, value: string) =>
+    `${getIndexPath()}?filter=${encodeURIComponent(name)}=${encodeURIComponent(
       value,
     )}`;
 
@@ -121,7 +120,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
                 >
                   {' by '}
                   <Link
-                    to={withSearchParameter('developer', plugin.spec.developer)}
+                    to={withFilter('developer', plugin.spec.developer)}
                     color="primary"
                     onClick={e => e.stopPropagation()}
                   >
@@ -136,10 +135,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
                   style={{ fontWeight: 'normal' }}
                 >
                   <LinkButton
-                    to={withSearchParameter(
-                      'category',
-                      plugin.spec.categories[0],
-                    )}
+                    to={withFilter('category', plugin.spec.categories[0])}
                     variant="outlined"
                     style={{ fontWeight: 'normal', padding: '2px 6px' }}
                     onClick={e => e.stopPropagation()}

@@ -16,8 +16,6 @@
 
 import React from 'react';
 
-import { useQueryParamState } from '@backstage/core-components';
-
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -28,63 +26,50 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 
+import { useQueryFullTextSearch } from '../hooks/useQueryFullTextSearch';
+
 export interface SearchTextFieldProps {
   variant: 'search' | 'filter';
-  filterValue?: string;
-  onFilterChanged?: (value: string | undefined) => void;
 }
 
-// TODO: extract this later into a shared package
 export const SearchTextField = (props: SearchTextFieldProps) => {
-  const [queryParam, setQueryParam] = useQueryParamState<string | undefined>(
-    'q',
-  );
+  const fullTextSearch = useQueryFullTextSearch();
 
-  const labels =
+  const options =
     props.variant === 'search'
       ? {
           placeholder: 'Search',
+          Icon: SearchIcon,
           clear: 'Clear Search',
         }
       : {
           placeholder: 'Filter',
+          Icon: FilterIcon,
           clear: 'Clear Filter',
         };
-  const Icon = props.variant === 'search' ? SearchIcon : FilterIcon;
-
-  const value = props.filterValue || queryParam;
-  const onChange = (newValue: string | undefined) => {
-    if (props.onFilterChanged) {
-      props.onFilterChanged(newValue);
-    } else {
-      setQueryParam(newValue);
-    }
-  };
 
   return (
     <FormControl>
       <TextField
         variant="standard"
         hiddenLabel
-        placeholder={labels.placeholder}
-        value={value}
-        onChange={event =>
-          onChange(event.target.value ? event.target.value : undefined)
-        }
+        placeholder={options.placeholder}
+        value={fullTextSearch.current}
+        onChange={fullTextSearch.onChange}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <Tooltip title={labels.placeholder}>
-                <Icon fontSize="small" />
+              <Tooltip title={options.placeholder}>
+                <options.Icon fontSize="small" />
               </Tooltip>
             </InputAdornment>
           ),
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
-                disabled={!value}
-                onClick={() => onChange(undefined)}
-                aria-label={labels.clear}
+                disabled={!fullTextSearch.current}
+                onClick={fullTextSearch.clear}
+                aria-label={options.clear}
               >
                 <ClearIcon fontSize="small" />
               </IconButton>
@@ -92,7 +77,7 @@ export const SearchTextField = (props: SearchTextFieldProps) => {
           ),
         }}
         inputProps={{
-          'aria-label': labels.placeholder,
+          'aria-label': options.placeholder,
         }}
       />
     </FormControl>

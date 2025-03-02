@@ -33,7 +33,7 @@ export const CollectionHorizontalScrollRowSkeleton = () => {
   return (
     <div>
       <Skeleton>
-        <Typography variant="h2">Entry name</Typography>
+        <Typography variant="h4">Entry name</Typography>
       </Skeleton>
       <Stack
         direction="row"
@@ -85,7 +85,7 @@ export const CollectionHorizontalScrollRow = ({
 
   return (
     <div>
-      <Typography variant="h2">
+      <Typography variant="h4" sx={{ pb: 1 }}>
         <Link to={detailsPath} style={{ color: 'inherit' }}>
           {title}
         </Link>

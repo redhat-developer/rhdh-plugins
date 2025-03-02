@@ -15,17 +15,14 @@
  */
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { useRouteRef } from '@backstage/core-plugin-api';
 import { ErrorBoundary } from '@backstage/core-components';
 
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
-
-import { pluginsRouteRef } from '../routes';
 
 import { MarketplacePluginContentLoader } from './MarketplacePluginContent';
 
@@ -36,10 +33,11 @@ export const MarketplacePluginDrawer = () => {
   }, []);
 
   const navigate = useNavigate();
-  const pluginsPath = useRouteRef(pluginsRouteRef)();
+  const [searchParams] = useSearchParams();
+  const pluginsPath = `{useRouteRef(pluginsRouteRef)()}${searchParams.size > 0 ? '?' : ''}${searchParams}`;
   const theme = useTheme();
   const handleClose = () => {
-    // TODO analtics
+    // TODO analytics?
     setOpen(false);
     setTimeout(
       () => navigate(pluginsPath),

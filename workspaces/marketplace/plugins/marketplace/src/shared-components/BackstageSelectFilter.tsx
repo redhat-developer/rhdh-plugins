@@ -15,14 +15,11 @@
  */
 
 import React from 'react';
-import {
-  SelectItem,
-  SelectedItems,
-  Select,
-  useQueryParamState,
-} from '@backstage/core-components';
+import { SelectItem, Select } from '@backstage/core-components';
 
 import Box from '@mui/material/Box';
+
+import { useQueryArrayFilter } from '../hooks/useQueryArrayFilter';
 
 export interface BackstageSelectFilterProps {
   name: string;
@@ -32,21 +29,15 @@ export interface BackstageSelectFilterProps {
 }
 
 export const BackstageSelectFilter = (props: BackstageSelectFilterProps) => {
-  const [selected, setSelected] = useQueryParamState<SelectedItems | undefined>(
-    props.name,
-  );
-
-  const onChange = (newSelected: SelectedItems) => {
-    setSelected(newSelected === '' ? undefined : newSelected);
-  };
+  const filter = useQueryArrayFilter(props.name);
 
   return (
     <Box pb={1} pt={1}>
       <Select
         label={props.label}
         items={props.items}
-        selected={selected}
-        onChange={onChange}
+        selected={filter.current}
+        onChange={filter.set}
         multiple={props.multiple}
       />
     </Box>

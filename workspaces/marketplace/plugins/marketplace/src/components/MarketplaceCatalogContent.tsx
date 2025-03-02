@@ -16,11 +16,13 @@
 
 import React from 'react';
 
+import { CatalogFilterLayout } from '@backstage/plugin-catalog-react';
+
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { FilterLayout } from '../shared-components/FilterLayout';
+// import { FilterLayout } from '../shared-components/FilterLayout';
 import { SearchTextField } from '../shared-components/SearchTextField';
 
 import { useCollections } from '../hooks/useCollections';
@@ -39,11 +41,11 @@ export const MarketplaceCatalogContent = () => {
   const plugins = usePlugins({});
 
   return (
-    <FilterLayout>
-      <FilterLayout.Filter>
+    <CatalogFilterLayout>
+      <CatalogFilterLayout.Filters>
         <MarketplacePluginFilter />
-      </FilterLayout.Filter>
-      <FilterLayout.Content>
+      </CatalogFilterLayout.Filters>
+      <CatalogFilterLayout.Content>
         <Stack direction="column" gap={3}>
           {featuredCollections.data?.items?.map(collection => (
             <CollectionHorizontalScrollRow
@@ -59,7 +61,7 @@ export const MarketplaceCatalogContent = () => {
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <Typography variant="h5">
+                <Typography variant="h4">
                   Plugins
                   {plugins.data ? ` (${plugins.data?.items?.length})` : null}
                 </Typography>
@@ -70,7 +72,7 @@ export const MarketplaceCatalogContent = () => {
             </Stack>
           </Card>
         </Stack>
-      </FilterLayout.Content>
-    </FilterLayout>
+      </CatalogFilterLayout.Content>
+    </CatalogFilterLayout>
   );
 };
