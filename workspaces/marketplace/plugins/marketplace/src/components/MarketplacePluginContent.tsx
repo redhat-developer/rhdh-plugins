@@ -110,76 +110,78 @@ export const MarketplacePluginContent = ({
 
   return (
     <Content>
-      <Stack direction="row" spacing={2} alignItems="center">
-        <PluginIcon plugin={plugin} size={80} />
-        <Stack spacing={1}>
-          <Typography variant="h3" style={{ fontWeight: '500' }}>
-            {displayName}
-          </Typography>
-          <Stack direction="row" spacing={1} alignItems="center">
-            {plugin.spec?.developer ? (
-              <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-                {' by '}
-                <Link
-                  to={withSearchParameter('developer', plugin.spec.developer)}
-                  color="primary"
+      <Stack direction="column" gap={4}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <PluginIcon plugin={plugin} size={80} />
+          <Stack spacing={1}>
+            <Typography variant="h3" style={{ fontWeight: '500' }}>
+              {displayName}
+            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              {plugin.spec?.developer ? (
+                <Typography
+                  variant="subtitle2"
+                  style={{ fontWeight: 'normal' }}
                 >
-                  {plugin.spec.developer}
-                </Link>
-              </Typography>
-            ) : null}
-            <BadgeChip plugin={plugin} />
+                  {' by '}
+                  <Link
+                    to={withSearchParameter('developer', plugin.spec.developer)}
+                    color="primary"
+                  >
+                    {plugin.spec.developer}
+                  </Link>
+                </Typography>
+              ) : null}
+              <BadgeChip plugin={plugin} />
+            </Stack>
           </Stack>
         </Stack>
+
+        <Grid container>
+          <Grid item md={3}>
+            {highlights.length > 0 ? (
+              <>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                  Highlights
+                </Typography>
+                <ol>
+                  {highlights.map(highlight => (
+                    <li key={highlight}>{highlight}</li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
+
+            <Tooltip
+              title={<Typography variant="button">Coming soon!</Typography>}
+              arrow
+              placement="right"
+            >
+              <div style={{ display: 'inline-block' }}>
+                <LinkButton
+                  disabled
+                  to={getInstallPath({
+                    namespace: plugin.metadata.namespace!,
+                    name: plugin.metadata.name,
+                  })}
+                  color="primary"
+                  variant="contained"
+                >
+                  {
+                    mapMarketplacePluginInstallStatusToButton[
+                      plugin.spec?.installStatus ??
+                        MarketplacePluginInstallStatus.NotInstalled
+                    ]
+                  }
+                </LinkButton>
+              </div>
+            </Tooltip>
+          </Grid>
+          <Grid item md={9}>
+            <Markdown title="About" content={about} />
+          </Grid>
+        </Grid>
       </Stack>
-
-      <br />
-      <br />
-
-      <Grid container>
-        <Grid item md={2}>
-          {highlights.length > 0 ? (
-            <>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                Highlights
-              </Typography>
-              <ol>
-                {highlights.map(highlight => (
-                  <li key={highlight}>{highlight}</li>
-                ))}
-              </ol>
-            </>
-          ) : null}
-
-          <Tooltip
-            title={<Typography variant="button">Coming soon!</Typography>}
-            arrow
-            placement="right"
-          >
-            <div style={{ display: 'inline-block' }}>
-              <LinkButton
-                disabled
-                to={getInstallPath({
-                  namespace: plugin.metadata.namespace!,
-                  name: plugin.metadata.name,
-                })}
-                color="primary"
-                variant="contained"
-              >
-                {
-                  mapMarketplacePluginInstallStatusToButton[
-                    plugin.spec?.installStatus ??
-                      MarketplacePluginInstallStatus.NotInstalled
-                  ]
-                }
-              </LinkButton>
-            </div>
-          </Tooltip>
-        </Grid>
-        <Grid item md={10}>
-          <Markdown title="About" content={about} />
-        </Grid>
-      </Grid>
     </Content>
   );
 };

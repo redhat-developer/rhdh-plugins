@@ -68,7 +68,9 @@ export const MarketplacePluginDrawer = () => {
         <CloseIcon />
       </IconButton>
       <ErrorBoundary>
-        <MarketplacePluginContentLoader />
+        <div style={{ display: 'flex', flexGrow: 1 }}>
+          <MarketplacePluginContentLoader />
+        </div>
       </ErrorBoundary>
     </Drawer>
   );

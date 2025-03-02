@@ -105,75 +105,74 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
   const getInstallPath = useRouteRef(packageInstallRouteRef);
 
   return (
-    <Stack>
-      <Stack direction="row" spacing={2}>
-        <Stack spacing={0.5}>
-          <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
-            {pkg.metadata.title ?? pkg.metadata.name}
-          </Typography>
-        </Stack>
-      </Stack>
-
-      <br />
-      <br />
-
-      <Grid container>
-        <Grid item md={2}>
-          <Tooltip
-            title={<Typography variant="button">Coming soon!</Typography>}
-            arrow
-            placement="right"
-          >
-            <div style={{ display: 'inline-block' }}>
-              <LinkButton
-                disabled
-                to={getInstallPath({
-                  namespace: pkg.metadata.namespace!,
-                  name: pkg.metadata.name,
-                })}
-                color="primary"
-                variant="contained"
-              >
-                {
-                  mapPackageInstallStatusToButton[
-                    pkg.spec?.installStatus ??
-                      MarketplacePackageInstallStatus.NotInstalled
-                  ]
-                }
-              </LinkButton>
-            </div>
-          </Tooltip>
-        </Grid>
-        <Grid item md={10}>
-          <Stack gap={2}>
-            <h2>Not implemented yet</h2>
-
-            <KeyValue label="Package name:" value={pkg.spec?.packageName} />
-            <KeyValue label="Version:" value={pkg.spec?.version} />
-            <KeyValue
-              label="Dynamic plugin path:"
-              value={pkg.spec?.dynamicArtifact}
-            />
-            <KeyValue
-              label="Backstage role:"
-              value={pkg.spec?.backstage?.role}
-            />
-            <KeyValue
-              label="Supported versions:"
-              value={pkg.spec?.backstage?.supportedVersions}
-            />
-            <KeyValue label="Author:" value={pkg.spec?.author} />
-            <KeyValue label="Support:" value={pkg.spec?.support} />
-            <KeyValue label="Lifecycle:" value={pkg.spec?.lifecycle} />
-
-            <Links entity={pkg} />
-
-            <div>Package entity:</div>
-            <pre>{JSON.stringify(pkg, null, 2)}</pre>
+    <Content>
+      <Stack direction="column" gap={4}>
+        <Stack direction="row" spacing={2}>
+          <Stack spacing={0.5}>
+            <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
+              {pkg.metadata.title ?? pkg.metadata.name}
+            </Typography>
           </Stack>
+        </Stack>
+
+        <Grid container>
+          <Grid item md={3}>
+            <Tooltip
+              title={<Typography variant="button">Coming soon!</Typography>}
+              arrow
+              placement="right"
+            >
+              <div style={{ display: 'inline-block' }}>
+                <LinkButton
+                  disabled
+                  to={getInstallPath({
+                    namespace: pkg.metadata.namespace!,
+                    name: pkg.metadata.name,
+                  })}
+                  color="primary"
+                  variant="contained"
+                >
+                  {
+                    mapPackageInstallStatusToButton[
+                      pkg.spec?.installStatus ??
+                        MarketplacePackageInstallStatus.NotInstalled
+                    ]
+                  }
+                </LinkButton>
+              </div>
+            </Tooltip>
+          </Grid>
+          <Grid item md={9}>
+            <Stack gap={2}>
+              <h2>Not implemented yet</h2>
+
+              <KeyValue label="Package name:" value={pkg.spec?.packageName} />
+              <KeyValue label="Version:" value={pkg.spec?.version} />
+              <KeyValue
+                label="Dynamic plugin path:"
+                value={pkg.spec?.dynamicArtifact}
+              />
+              <KeyValue
+                label="Backstage role:"
+                value={pkg.spec?.backstage?.role}
+              />
+              <KeyValue
+                label="Supported versions:"
+                value={pkg.spec?.backstage?.supportedVersions}
+              />
+              <KeyValue label="Author:" value={pkg.spec?.author} />
+              <KeyValue label="Support:" value={pkg.spec?.support} />
+              <KeyValue label="Lifecycle:" value={pkg.spec?.lifecycle} />
+
+              <Links entity={pkg} />
+
+              <div>Package entity:</div>
+              <pre>{JSON.stringify(pkg, null, 2)}</pre>
+            </Stack>
+          </Grid>
         </Grid>
-      </Grid>
-    </Stack>
+      </Stack>
+    </Content>
   );
 };
 
