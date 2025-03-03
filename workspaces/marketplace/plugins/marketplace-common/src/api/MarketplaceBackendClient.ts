@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 import {
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
@@ -35,6 +34,20 @@ import type {
   GetEntitiesRequest,
   GetEntitiesResponse,
 } from './MarketplaceApi';
+
+/**
+ * @public
+ */
+export type DiscoveryApi = {
+  getBaseUrl(pluginId: string): Promise<string>;
+};
+
+/**
+ * @public
+ */
+export type FetchApi = {
+  fetch: typeof fetch;
+};
 
 /**
  * @public
