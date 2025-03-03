@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
  */
 
 import { createApiRef } from '@backstage/core-plugin-api';
-import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-export * from './MarketplaceBackendClient';
+import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export const marketplaceApiRef = createApiRef<MarketplaceApi>({
   id: 'plugin.marketplace.api-ref',

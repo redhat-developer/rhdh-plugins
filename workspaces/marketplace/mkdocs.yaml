@@ -1,0 +1,15 @@
+site_name: Marketplace Plugin
+
+plugins:
+  - techdocs-core
+
+nav:
+  - About: index.md
+  - Catalog:
+      - Relationships: catalog/relationships.md
+      - Plugins: catalog/plugins.md
+      - Packages: catalog/packages.md
+      - Collections: catalog/collections.md
+  - Tools:
+      - CLI: tools/cli.md
+      - JSON schema: tools/json-schema.md

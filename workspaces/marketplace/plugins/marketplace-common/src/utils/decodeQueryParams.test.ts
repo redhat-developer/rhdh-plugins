@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { GetPluginsRequest } from '../types';
+
 import {
-  decodeFacetParams,
-  decodeFilterParams,
-  decodeQueryParams,
-  decodeGetPluginsRequest,
-  decodeOrderFields,
+  EntityFilterQuery,
+  GetEntityFacetsRequest,
+} from '@backstage/catalog-client';
+
+import { GetEntitiesRequest } from '../api';
+
+import {
+  decodeEntityFilterQuery,
+  decodeEntityOrderQuery,
+  decodeGetEntitiesRequest,
+  decodeGetEntityFacetsRequest,
 } from './decodeQueryParams';
 
-describe('decodeFilterParams', () => {
+describe('decodeEntityFilterQuery', () => {
+  it('should decode no filter', () => {
+    const searchParams = new URLSearchParams();
+    expect(decodeEntityFilterQuery(searchParams)).toBe(undefined);
+  });
+
+  it('should decode single filter', () => {
+    const searchParams = new URLSearchParams('filter=spec.category%3DCI%2FCD');
+    const expectedRequest: EntityFilterQuery = {
+      'spec.category': 'CI/CD',
+    };
+    expect(decodeEntityFilterQuery(searchParams)).toEqual(expectedRequest);
+  });
+
+  it('should decode multiple filters', () => {
+    const searchParams = new URLSearchParams(
+      'filter=spec.category%3DCI&filter=spec.category%3DCD&filter=spec.owner%3Dadmin',
+    );
+    const expectedRequest: EntityFilterQuery = {
+      'spec.category': ['CI', 'CD'],
+      'spec.owner': 'admin',
+    };
+    expect(decodeEntityFilterQuery(searchParams)).toEqual(expectedRequest);
+  });
+});
+
+describe('decodeEntityOrderQuery', () => {
+  it('should work without orderFields', () => {
+    const searchParams = new URLSearchParams();
+    expect(decodeEntityOrderQuery(searchParams)).toBe(undefined);
+  });
+
   it('should decode single orderFields', () => {
     const searchParams = new URLSearchParams(
       'orderFields=metadata.title%2Casc',
     );
-    expect(decodeOrderFields(searchParams)).toEqual([
+    expect(decodeEntityOrderQuery(searchParams)).toEqual([
       { field: 'metadata.title', order: 'asc' },
     ]);
   });
@@ -36,97 +73,78 @@ describe('decodeFilterParams', () => {
     const searchParams = new URLSearchParams(
       'orderFields=metadata.title%2Cdesc&orderFields=metadata.name%2Casc',
     );
-    expect(decodeOrderFields(searchParams)).toEqual([
+    expect(decodeEntityOrderQuery(searchParams)).toEqual([
       { field: 'metadata.title', order: 'desc' },
       { field: 'metadata.name', order: 'asc' },
     ]);
   });
+});
 
-  it('should decode GetPlugins Request', () => {
-    const encodedString =
-      'filter=metadata.name%3Dsearch&filter=spec.type%3Dbackend-plugin&orderFields=metadata.title%2Cdesc&orderFields=metadata.name%2Casc&searchTerm=search&limit=2&offset=1';
-    const params: GetPluginsRequest = {
+describe('decodeGetEntitiesRequest', () => {
+  it('should decode GetEntitiesRequest', () => {
+    const encodedString = new URLSearchParams(
+      'limit=2&offset=1&filter=metadata.name%3Dsearch&filter=spec.type%3Dbackend-plugin&orderFields=metadata.title%2Cdesc&orderFields=metadata.name%2Casc&fullTextTerm=search',
+    );
+    const expectedRequest: GetEntitiesRequest = {
+      limit: 2,
+      offset: 1,
       filter: {
-        'metadata.name': ['search'],
-        'spec.type': ['backend-plugin'],
+        'metadata.name': 'search',
+        'spec.type': 'backend-plugin',
       },
       orderFields: [
         { field: 'metadata.title', order: 'desc' },
         { field: 'metadata.name', order: 'asc' },
       ],
-      searchTerm: 'search',
-      limit: 2,
-      offset: 1,
-    };
-    expect(decodeGetPluginsRequest(encodedString)).toEqual(params);
-  });
-
-  it('should decode single filter', () => {
-    const searchParams = new URLSearchParams('filter=kind%3Dplugin');
-    expect(decodeFilterParams(searchParams)).toEqual({ kind: ['plugin'] });
-  });
-
-  it('should decode multiple filters', () => {
-    const searchParams = new URLSearchParams(
-      'filter=kind%3Dplugin&filter=kind%3Dpluginlist&filter=spec.owner%3Dadmin',
-    );
-    expect(decodeFilterParams(searchParams)).toEqual({
-      kind: ['plugin', 'pluginlist'],
-      'spec.owner': ['admin'],
-    });
-  });
-
-  it('should return empty object for no filter', () => {
-    const searchParams = new URLSearchParams('');
-    expect(decodeFilterParams(searchParams)).toEqual({});
-  });
-});
-
-describe('decodeFacetParams', () => {
-  it('should decode single facet', () => {
-    const searchParams = new URLSearchParams('facet=kind');
-    expect(decodeFacetParams(searchParams)).toEqual(['kind']);
-  });
-
-  it('should decode multiple facets', () => {
-    const searchParams = new URLSearchParams('facet=kind&facet=spec.owner');
-    expect(decodeFacetParams(searchParams)).toEqual(['kind', 'spec.owner']);
-  });
-
-  it('should return empty array for no facet', () => {
-    const searchParams = new URLSearchParams('');
-    expect(decodeFacetParams(searchParams)).toEqual([]);
-  });
-});
-
-describe('decodeQueryParams', () => {
-  it('should decode filters and facets together', () => {
-    const queryString =
-      'filter=kind%3Dplugin&filter=kind%3Dpluginlist&filter=spec.owner%3Dadmin&facet=kind&facet=spec.owner';
-    expect(decodeQueryParams(queryString)).toEqual({
-      filter: {
-        kind: ['plugin', 'pluginlist'],
-        'spec.owner': ['admin'],
+      fullTextFilter: {
+        term: 'search',
       },
-      facets: ['kind', 'spec.owner'],
-    });
+    };
+    expect(decodeGetEntitiesRequest(encodedString)).toEqual(expectedRequest);
+  });
+});
+
+describe('decodeGetEntityFacetsRequest', () => {
+  it('should handle no facet param', () => {
+    const searchParams = new URLSearchParams('');
+    const expectedRequest: GetEntityFacetsRequest = {
+      facets: [],
+    };
+    const request = decodeGetEntityFacetsRequest(searchParams);
+    expect(request).toEqual(expectedRequest);
   });
 
-  it('should return only filters', () => {
-    const queryString = 'filter=kind%3Dplugin';
-    expect(decodeQueryParams(queryString)).toEqual({
-      filter: { kind: ['plugin'] },
-    });
+  it('should encode single facet', () => {
+    const searchParams = new URLSearchParams('facet=spec.categories');
+    const expectedRequest: GetEntityFacetsRequest = {
+      facets: ['spec.categories'],
+    };
+    const request = decodeGetEntityFacetsRequest(searchParams);
+    expect(request).toEqual(expectedRequest);
   });
 
-  it('should return only facets', () => {
-    const queryString = 'facet=kind';
-    expect(decodeQueryParams(queryString)).toEqual({
-      facets: ['kind'],
-    });
+  it('should encode multiple facets', () => {
+    const searchParams = new URLSearchParams(
+      'facet=spec.categories&facet=spec.owner',
+    );
+    const expectedRequest: GetEntityFacetsRequest = {
+      facets: ['spec.categories', 'spec.owner'],
+    };
+    const request = decodeGetEntityFacetsRequest(searchParams);
+    expect(request).toEqual(expectedRequest);
   });
 
-  it('should handle empty query', () => {
-    expect(decodeQueryParams('')).toEqual({});
+  it('should encode facets with filter', () => {
+    const searchParams = new URLSearchParams(
+      'facet=spec.categories&facet=spec.owner&filter=spec.category%3DCI%2FCD',
+    );
+    const expectedRequest: GetEntityFacetsRequest = {
+      facets: ['spec.categories', 'spec.owner'],
+      filter: {
+        'spec.category': 'CI/CD',
+      },
+    };
+    const request = decodeGetEntityFacetsRequest(searchParams);
+    expect(request).toEqual(expectedRequest);
   });
 });

@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import request from 'supertest';
 import { rest } from 'msw';
 import { setupServer, SetupServer } from 'msw/node';
 
 import { BackendFeature } from '@backstage/backend-plugin-api';
-import { marketplacePlugin } from './plugin';
-import { mockPluginList, mockPlugins } from '../__fixtures__/mockData';
+import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import { ExtendedHttpServer } from '@backstage/backend-defaults/dist/rootHttpRouter';
+
+import { marketplacePlugin } from './plugin';
+import { mockCollections, mockPlugins } from '../__fixtures__/mockData';
+
 import {
-  encodeQueryParams,
   MarketplacePlugin,
-  MarketplacePluginList,
+  MarketplaceCollection,
+  MarketplaceKind,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 const BASE_CONFIG = {
@@ -90,6 +92,7 @@ const setupTest = () => {
     return { server };
   };
 };
+
 describe('createRouter', () => {
   const testSetup = setupTest();
 
@@ -98,7 +101,7 @@ describe('createRouter', () => {
     name,
     kind = 'plugin',
   }: {
-    mockData: MarketplacePlugin[] | MarketplacePluginList[] | {} | null;
+    mockData: MarketplacePlugin[] | MarketplaceCollection[] | {} | null;
     name?: string;
     kind?: string;
   }): Promise<{ backendServer: ExtendedHttpServer }> => {
@@ -132,209 +135,229 @@ describe('createRouter', () => {
     return { backendServer };
   };
 
-  it('should get the plugins', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: mockPlugins,
+  describe('collections', () => {
+    it('should get all collections', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: mockCollections,
+      });
+
+      const response = await request(backendServer).get(
+        '/api/marketplace/collections',
+      );
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({
+        items: mockCollections,
+      });
     });
-    const response = await request(backendServer).get(
-      '/api/marketplace/plugins',
-    );
-    expect(response.status).toEqual(200);
-    expect(response.body.items).toHaveLength(2);
+
+    it('should get the collection by name', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: mockCollections[0],
+        name: 'featured-plugins',
+        kind: MarketplaceKind.Collection,
+      });
+
+      const response = await request(backendServer).get(
+        '/api/marketplace/collection/default/featured-plugins',
+      );
+
+      expect(response.status).toEqual(200);
+      expect(response.body.metadata.name).toEqual('test-featured-plugins');
+      expect(response.body.spec.plugins).toEqual(['plugin1', 'plugin2']);
+    });
+
+    it('should throw error while fetching collection by name', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: null,
+        name: 'not-found',
+        kind: MarketplaceKind.Collection,
+      });
+
+      const response = await request(backendServer).get(
+        '/api/marketplace/collection/default/not-found',
+      );
+
+      expect(response.status).toEqual(404);
+      expect(response.body).toEqual({
+        error: {
+          message: 'Collection default/not-found not found',
+          name: 'NotFoundError',
+        },
+        request: {
+          method: 'GET',
+          url: '/collection/default/not-found',
+        },
+        response: {
+          statusCode: 404,
+        },
+      });
+    });
+
+    it('should return empty array when plugins is not set in the collection entity', async () => {
+      const { server } = testSetup();
+      const backendServer = await startBackendServer();
+      server.use(
+        rest.get(
+          `http://localhost:${backendServer.port()}/api/catalog/entities/by-name/plugincollection/default/featured-plugins`,
+          (_, res, ctx) =>
+            res(
+              ctx.status(200),
+              ctx.json({ ...mockCollections[0], relations: [] }),
+            ),
+        ),
+        rest.post(
+          `http://localhost:${backendServer.port()}/api/catalog/entities/by-refs`,
+          (_, res, ctx) =>
+            res(ctx.status(200), ctx.json({ items: mockPlugins })),
+        ),
+      );
+
+      const response = await request(backendServer).get(
+        '/api/marketplace/collection/default/featured-plugins/plugins',
+      );
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual([]);
+    });
+
+    it('should return all the plugins by the collection name', async () => {
+      const { server } = testSetup();
+      const backendServer = await startBackendServer();
+      server.use(
+        rest.get(
+          `http://localhost:${backendServer.port()}/api/catalog/entities/by-name/plugincollection/default/featured-plugins`,
+          (_, res, ctx) => res(ctx.status(200), ctx.json(mockCollections[0])),
+        ),
+        rest.post(
+          `http://localhost:${backendServer.port()}/api/catalog/entities/by-refs`,
+          (_, res, ctx) =>
+            res(ctx.status(200), ctx.json({ items: mockPlugins })),
+        ),
+      );
+
+      const response = await request(backendServer).get(
+        '/api/marketplace/collection/default/featured-plugins/plugins',
+      );
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual(mockPlugins);
+    });
+
+    it('should throw an error when the collection is not found', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: null,
+        name: 'not-found',
+        kind: MarketplaceKind.Collection,
+      });
+
+      const response = await request(backendServer).get(
+        '/api/marketplace/collection/default/not-found/plugins',
+      );
+
+      expect(response.status).toEqual(404);
+      expect(response.body).toEqual({
+        error: {
+          message: 'Collection default/not-found not found',
+          name: 'NotFoundError',
+        },
+        request: {
+          method: 'GET',
+          url: '/collection/default/not-found/plugins',
+        },
+        response: {
+          statusCode: 404,
+        },
+      });
+    });
+
+    it('should return facets data', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: {
+          'spec.categories': [
+            {
+              value: 'CI/CD',
+              count: 8,
+            },
+            {
+              value: 'Discovery',
+              count: 1,
+            },
+          ],
+        },
+      });
+
+      const response = await request(backendServer).get(
+        '/api/marketplace/collections/facets?facet=spec.categories',
+      );
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({
+        facets: {
+          'spec.categories': [
+            {
+              value: 'CI/CD',
+              count: 8,
+            },
+            {
+              value: 'Discovery',
+              count: 1,
+            },
+          ],
+        },
+      });
+    });
   });
 
-  it('should get the plugin by name', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: mockPlugins[0],
-      name: 'plugin1',
+  describe('plugins', () => {
+    it('should get the plugins', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: mockPlugins,
+      });
+      const response = await request(backendServer).get(
+        '/api/marketplace/plugins',
+      );
+      expect(response.status).toEqual(200);
+      expect(response.body.items).toHaveLength(2);
     });
 
-    const response = await request(backendServer).get(
-      '/api/marketplace/plugins/plugin1',
-    );
+    it('should get the plugin by name', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: mockPlugins[0],
+        name: 'plugin1',
+      });
 
-    expect(response.status).toEqual(200);
-    expect(response.body.metadata.name).toEqual('plugin1');
-  });
+      const response = await request(backendServer).get(
+        '/api/marketplace/plugin/default/plugin1',
+      );
 
-  it('should throw error while fetching plugin by name', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: {},
-      name: 'invalid-plugin',
-    });
-    const response = await request(backendServer).get(
-      '/api/marketplace/plugins/invalid-plugin',
-    );
-
-    expect(response.status).toEqual(404);
-    expect(response.body).toEqual({ error: 'Plugin:invalid-plugin not found' });
-  });
-
-  it('should get all the pluginlist entities', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: mockPluginList,
+      expect(response.status).toEqual(200);
+      expect(response.body.metadata.name).toEqual('plugin1');
     });
 
-    const response = await request(backendServer).get(
-      '/api/marketplace/pluginlists',
-    );
+    it('should throw error while fetching plugin by name', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: {},
+        name: 'invalid-plugin',
+      });
+      const response = await request(backendServer).get(
+        '/api/marketplace/plugin/default/invalid-plugin',
+      );
 
-    expect(response.status).toEqual(200);
-    expect(response.body).toHaveLength(1);
-  });
-
-  it('should get the pluginlist by name', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: mockPluginList[0],
-      name: 'featured-plugins',
-      kind: 'pluginlist',
-    });
-
-    const response = await request(backendServer).get(
-      '/api/marketplace/pluginlists/featured-plugins',
-    );
-
-    expect(response.status).toEqual(200);
-    expect(response.body.metadata.name).toEqual('test-featured-plugins');
-    expect(response.body.spec.plugins).toEqual(['plugin1', 'plugin2']);
-  });
-
-  it('should throw error while fetching pluginlist by name', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: null,
-      name: 'invalid-pluginlist',
-      kind: 'pluginlist',
-    });
-
-    const response = await request(backendServer).get(
-      '/api/marketplace/pluginlists/invalid-pluginlist',
-    );
-
-    expect(response.status).toEqual(404);
-    expect(response.body).toEqual({
-      error: 'PluginList:invalid-pluginlist not found',
-    });
-  });
-
-  it('should return empty array when plugins is not set in the pluginList entity', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: { ...mockPluginList[0], spec: {} },
-      name: 'featured-plugins',
-      kind: 'pluginlist',
-    });
-
-    const response = await request(backendServer).get(
-      '/api/marketplace/pluginlists/featured-plugins/plugins',
-    );
-
-    expect(response.status).toEqual(200);
-    expect(response.body).toEqual([]);
-  });
-
-  it('should return all the plugins by the pluginlist name', async () => {
-    const { server } = testSetup();
-    const backendServer = await startBackendServer();
-    server.use(
-      rest.get(
-        `http://localhost:${backendServer.port()}/api/catalog/entities/by-name/pluginlist/default/featured-plugins`,
-        (_, res, ctx) => res(ctx.status(200), ctx.json(mockPluginList[0])),
-      ),
-      rest.post(
-        `http://localhost:${backendServer.port()}/api/catalog/entities/by-refs`,
-        (_, res, ctx) => res(ctx.status(200), ctx.json({ items: mockPlugins })),
-      ),
-    );
-
-    const response = await request(backendServer).get(
-      '/api/marketplace/pluginlists/featured-plugins/plugins',
-    );
-
-    expect(response.status).toEqual(200);
-    expect(response.body).toHaveLength(2);
-    expect(response.body[0].metadata.name).toBe('plugin1');
-    expect(response.body[1].metadata.name).toBe('plugin2');
-  });
-
-  it('should throw an error when the pluginlist is not available', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: null,
-      name: 'featured-plugins',
-      kind: 'pluginlist',
-    });
-
-    const response = await request(backendServer).get(
-      '/api/marketplace/pluginlists/featured-plugins/plugins',
-    );
-
-    expect(response.status).toEqual(404);
-    expect(response.body).toEqual({
-      error: 'PluginList:featured-plugins not found',
-    });
-  });
-
-  it('should throw an error when the aggregations request is missing facets querystring', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: [],
-    });
-    const response = await request(backendServer).get(
-      '/api/marketplace/aggregations',
-    );
-
-    expect(response.status).toEqual(400);
-    expect(response.body).toEqual(
-      expect.objectContaining({
-        error: expect.anything(),
-      }),
-    );
-  });
-  it('should throw an error internal server error', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: null,
-    });
-    const response = await request(backendServer).get(
-      '/api/marketplace/aggregations?facet=kind',
-    );
-
-    expect(response.status).toEqual(500);
-    expect(response.body).toEqual(
-      expect.objectContaining({
-        error: expect.anything(),
-      }),
-    );
-  });
-
-  it('should return aggregated data', async () => {
-    const { backendServer } = await setupTestWithMockCatalog({
-      mockData: {
-        kind: [
-          {
-            value: 'Plugin',
-            count: 8,
-          },
-          {
-            value: 'PluginList',
-            count: 1,
-          },
-        ],
-      },
-    });
-
-    const queryParams = encodeQueryParams({
-      facets: ['kind'],
-      filter: { kind: 'api' },
-    });
-    const response = await request(backendServer).get(
-      `/api/marketplace/aggregations?${queryParams}`,
-    );
-
-    expect(response.status).toEqual(200);
-    expect(response.body).toEqual({
-      facets: {
-        kind: [
-          { count: 8, value: 'Plugin' },
-          { count: 1, value: 'PluginList' },
-        ],
-      },
+      expect(response.status).toEqual(404);
+      expect(response.body).toEqual({
+        error: {
+          message: 'Plugin default/invalid-plugin not found',
+          name: 'NotFoundError',
+        },
+        request: {
+          method: 'GET',
+          url: '/plugin/default/invalid-plugin',
+        },
+        response: {
+          statusCode: 404,
+        },
+      });
     });
   });
 });

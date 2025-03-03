@@ -12,6 +12,7 @@ Options:
 
 Commands:
   generate [options]
+  verify
   help [command]
 ```
 
@@ -25,5 +26,14 @@ Options:
   -o, --output-dir [path]
   --namespace [namespace]
   --owner [owner]
+  -h, --help
+```
+
+### `marketplace-cli verify`
+
+```
+Usage: marketplace-cli verify [options]
+
+Options:
   -h, --help
 ```

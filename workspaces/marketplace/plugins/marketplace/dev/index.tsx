@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,23 @@ import { createDevApp } from '@backstage/dev-utils';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
-import { marketplacePlugin, MarketplacePage } from '../src/plugin';
+import {
+  marketplacePlugin,
+  MarketplaceFullPageRouter,
+  MarketplaceTabbedPageRouter,
+} from '../src/plugin';
 
 createDevApp()
   .registerPlugin(marketplacePlugin)
   .addThemes(getAllThemes())
   .addPage({
-    element: <MarketplacePage />,
-    title: 'Root Page',
-    path: '/marketplace',
+    element: <MarketplaceFullPageRouter />,
+    title: 'FullPageRouter',
+    path: '/full-page-router',
+  })
+  .addPage({
+    element: <MarketplaceTabbedPageRouter />,
+    title: 'TabbedPageRouter',
+    path: '/tabbed-page-router',
   })
   .render();

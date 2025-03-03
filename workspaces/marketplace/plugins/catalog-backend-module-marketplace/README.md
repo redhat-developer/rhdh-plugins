@@ -111,6 +111,6 @@ The YAML file is structured into the following sections:
 This module provides different process used to ingest the `plugin` and `pluginList` entity into the software catalog.
 
 - **MarketplacePluginProcessors** - Ingests `Plugin` entity into the catalog.
-- **MarketplacePluginListProcessors** - Ingests `PluginList` entity into the catalog.
+- **MarketplaceCollectionProcessors** - Ingests `PluginList` entity into the catalog.
 - **LocalPluginInstallStatusProcessor** - Add and Update `entity.spec.installStatus` based on the packages installed in backstage workspaces.
 - **DynamicPluginInstallStatusProcessor** - Add and Update `entity.spec.installStatus` based on the dynamic plugin installed in RHDH. This processor will work only when you have [scalprum-backend](https://github.com/janus-idp/backstage-showcase/tree/main/plugins/scalprum-backend) installed in your backstage instance.

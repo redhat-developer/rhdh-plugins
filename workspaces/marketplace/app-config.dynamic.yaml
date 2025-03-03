@@ -10,9 +10,13 @@ catalog:
       rules:
         - allow: [Plugin]
     - type: url
-      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/marketplace/examples/all-pluginlists.yaml
+      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/marketplace/examples/all-packages.yaml
       rules:
-        - allow: [PluginList]
+        - allow: [Package]
+    - type: url
+      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/marketplace/examples/all-collections.yaml
+      rules:
+        - allow: [PluginCollection]
 
 dynamicPlugins:
   frontend:
@@ -21,11 +25,11 @@ dynamicPlugins:
         - name: marketplace
           importName: MarketplaceIcon
       dynamicRoutes:
-        - path: /marketplace
-          importName: MarketplacePage
-          menuItem:
-            icon: marketplace
-            text: Marketplace
+        - path: /plugins/marketplace
+          importName: DynamicMarketplacePluginRouter
       mountPoints:
-        - mountPoint: admin.page.plugins/cards
-          importName: MarketplaceCatalogContent
+        - mountPoint: internal.plugins/tab
+          importName: DynamicMarketplacePluginContent
+          config:
+            path: marketplace
+            title: Marketplace
