@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.1.2
+
+### Patch Changes
+
+- a7e38a9: remove core-plugin-api dependency from common
+
 ## 0.1.1
 
 ### Patch Changes
