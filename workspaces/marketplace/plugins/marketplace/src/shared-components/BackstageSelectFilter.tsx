@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { SelectItem, Select } from '@backstage/core-components';
+import { Select, SelectItem } from '@backstage/core-components';
 
 import Box from '@mui/material/Box';
 

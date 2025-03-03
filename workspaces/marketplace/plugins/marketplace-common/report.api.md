@@ -125,7 +125,7 @@ export interface MarketplaceApi {
 }
 
 // @public (undocumented)
-export type MarketplaceAuthor = string | {
+export type MarketplaceAuthor = {
     name: string;
     url?: string;
 };
@@ -305,7 +305,7 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     assets?: Asset[];
     // (undocumented)
-    author?: MarketplaceAuthor;
+    author?: string;
     // (undocumented)
     authors?: MarketplaceAuthor[];
     // (undocumented)

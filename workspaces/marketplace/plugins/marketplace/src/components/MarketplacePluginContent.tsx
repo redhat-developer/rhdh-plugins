@@ -98,8 +98,8 @@ export const MarketplacePluginContent = ({
   const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(pluginInstallRouteRef);
 
-  const withSearchParameter = (name: string, value: string) =>
-    `${getIndexPath()}?${encodeURIComponent(name)}=${encodeURIComponent(
+  const withFilter = (name: string, value: string) =>
+    `${getIndexPath()}?filter=${encodeURIComponent(name)}=${encodeURIComponent(
       value,
     )}`;
 
@@ -118,20 +118,27 @@ export const MarketplacePluginContent = ({
               {displayName}
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center">
-              {plugin.spec?.developer ? (
+              {plugin.spec?.authors ? (
                 <Typography
                   variant="subtitle2"
                   style={{ fontWeight: 'normal' }}
                 >
-                  {' by '}
-                  <Link
-                    to={withSearchParameter('developer', plugin.spec.developer)}
-                    color="primary"
-                  >
-                    {plugin.spec.developer}
-                  </Link>
+                  {plugin.spec.authors.map((author, index) => (
+                    <React.Fragment key={author.name}>
+                      {index > 0 ? ', ' : ' by '}
+                      <Link
+                        key={author.name}
+                        to={withFilter('spec.authors.name', author.name)}
+                        color="primary"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {author.name}
+                      </Link>
+                    </React.Fragment>
+                  ))}
                 </Typography>
               ) : null}
+
               <BadgeChip plugin={plugin} />
             </Stack>
           </Stack>
@@ -144,11 +151,11 @@ export const MarketplacePluginContent = ({
                 <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                   Highlights
                 </Typography>
-                <ol>
+                <ul>
                   {highlights.map(highlight => (
                     <li key={highlight}>{highlight}</li>
                   ))}
-                </ol>
+                </ul>
               </>
             ) : null}
 

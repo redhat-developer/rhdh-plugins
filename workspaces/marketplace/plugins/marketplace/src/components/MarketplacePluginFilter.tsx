@@ -38,7 +38,7 @@ const CategoryFilter = () => {
   return (
     <BackstageSelectFilter
       label="Category"
-      name="category"
+      name="spec.categories"
       items={items}
       multiple
     />
@@ -60,7 +60,7 @@ const AuthorFilter = () => {
   return (
     <BackstageSelectFilter
       label="Author"
-      name="author"
+      name="spec.authors.name"
       items={items}
       multiple
     />

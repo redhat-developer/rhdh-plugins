@@ -113,19 +113,24 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
                 {plugin.metadata.title ?? plugin.metadata.name}
               </Typography>
 
-              {plugin.spec?.developer ? (
+              {plugin.spec?.authors ? (
                 <Typography
                   variant="subtitle2"
                   style={{ fontWeight: 'normal' }}
                 >
-                  {' by '}
-                  <Link
-                    to={withFilter('developer', plugin.spec.developer)}
-                    color="primary"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    {plugin.spec.developer}
-                  </Link>
+                  {plugin.spec.authors.map((author, index) => (
+                    <React.Fragment key={author.name}>
+                      {index > 0 ? ', ' : ' by '}
+                      <Link
+                        key={author.name}
+                        to={withFilter('spec.authors.name', author.name)}
+                        color="primary"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {author.name}
+                      </Link>
+                    </React.Fragment>
+                  ))}
                 </Typography>
               ) : null}
 
@@ -135,7 +140,10 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
                   style={{ fontWeight: 'normal' }}
                 >
                   <LinkButton
-                    to={withFilter('category', plugin.spec.categories[0])}
+                    to={withFilter(
+                      'spec.categories',
+                      plugin.spec.categories[0],
+                    )}
                     variant="outlined"
                     style={{ fontWeight: 'normal', padding: '2px 6px' }}
                     onClick={e => e.stopPropagation()}

@@ -83,7 +83,7 @@ export enum MarketplacePluginInstallStatus {
 export interface MarketplacePluginSpec extends JsonObject {
   icon?: string;
 
-  author?: MarketplaceAuthor;
+  author?: string;
   authors?: MarketplaceAuthor[];
 
   packages?: string[];
