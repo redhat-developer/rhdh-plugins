@@ -22,6 +22,7 @@ import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketpl
 
 import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
 import { marketplaceApiRef } from '../api';
+import { rootRouteRef } from '../routes';
 import { queryClient } from '../queryclient';
 
 const apis = [[marketplaceApiRef, {} as MarketplaceApi]] as const;
@@ -36,6 +37,11 @@ describe('MarketplaceCollectionPage', () => {
       <TestApiProvider apis={apis}>
         <MarketplaceCollectionPage />
       </TestApiProvider>,
+      {
+        mountedRoutes: {
+          '/marketplace': rootRouteRef,
+        },
+      },
     );
     expect(getByText('Collections')).toBeInTheDocument();
   });

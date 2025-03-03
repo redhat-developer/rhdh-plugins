@@ -15,7 +15,6 @@
  */
 
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
@@ -23,6 +22,7 @@ import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketpl
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
 import { marketplaceApiRef } from '../api';
+import { rootRouteRef } from '../routes';
 import { queryClient } from '../queryclient';
 
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
@@ -34,11 +34,9 @@ queryClient.setDefaultOptions({
 });
 
 const Providers = ({ children }: React.PropsWithChildren<{}>) => (
-  <MemoryRouter>
-    <TestApiProvider apis={apis}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </TestApiProvider>
-  </MemoryRouter>
+  <TestApiProvider apis={apis}>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  </TestApiProvider>
 );
 
 describe('MarketplaceCatalogGrid', () => {
@@ -47,6 +45,11 @@ describe('MarketplaceCatalogGrid', () => {
       <Providers>
         <MarketplaceCatalogGrid />
       </Providers>,
+      {
+        mountedRoutes: {
+          '/marketplace': rootRouteRef,
+        },
+      },
     );
   });
 });
