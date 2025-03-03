@@ -57,7 +57,19 @@ export const useFilteredPlugins = () => {
           );
         }
 
-        // TODO support type
+        const supportTypeAnnotationsFilters = filters
+          .filter(filter =>
+            filter.startsWith('metadata.annotations.marketplace.backstage.io/'),
+          )
+          .map(filter => filter.substring('metadata.annotations.'.length));
+        if (supportTypeAnnotationsFilters.length > 0) {
+          plugins = plugins.filter(plugin =>
+            supportTypeAnnotationsFilters.every(filter => {
+              const [key, value] = filter.split('=');
+              return plugin.metadata?.annotations?.[key] === value;
+            }),
+          );
+        }
       }
 
       if (fullTextSearch) {

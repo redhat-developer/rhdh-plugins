@@ -15,13 +15,11 @@
  */
 
 /**
- * Common functionalities for the marketplace plugin.
- *
- * @packageDocumentation
+ * @public
  */
-
-export * from './annotations';
-export * from './api';
-export * from './consts';
-export * from './types';
-export * from './utils';
+export enum MarketplaceAnnotation {
+  CERTIFIED_BY = 'marketplace.backstage.io/certified-by',
+  VERIFIED_BY = 'marketplace.backstage.io/verified-by',
+  SUPPORT_TYPE = 'marketplace.backstage.io/support-type',
+  PRE_INSTALLED = 'marketplace.backstage.io/pre-installed',
+}

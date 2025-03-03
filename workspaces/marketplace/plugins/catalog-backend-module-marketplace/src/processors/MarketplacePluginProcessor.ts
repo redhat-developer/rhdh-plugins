@@ -30,6 +30,7 @@ import {
   RELATION_PART_OF,
 } from '@backstage/catalog-model';
 import {
+  MarketplaceAnnotation,
   MarketplaceAuthor,
   MarketplacePlugin,
   MarketplaceKind,
@@ -69,6 +70,14 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
     if (isMarketplacePlugin(entity)) {
+      // Automatically enforce annotation pre-installed=false if it's not defined.
+      if (!entity.metadata.annotations?.[MarketplaceAnnotation.PRE_INSTALLED]) {
+        entity.metadata.annotations = {
+          ...entity.metadata.annotations,
+          [MarketplaceAnnotation.PRE_INSTALLED]: 'false',
+        };
+      }
+
       // Align authors
       const authors: MarketplaceAuthor[] = [];
       if (typeof entity.spec?.author === 'string') {
