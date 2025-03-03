@@ -14,6 +14,9 @@ import { RouteRef } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 
 // @public (undocumented)
+export const DynamicMarketplacePluginContent: () => JSX_2.Element;
+
+// @public (undocumented)
 export const DynamicMarketplacePluginRouter: () => JSX_2.Element;
 
 // @public

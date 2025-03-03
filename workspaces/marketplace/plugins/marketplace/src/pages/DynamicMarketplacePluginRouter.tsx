@@ -151,3 +151,9 @@ export const DynamicMarketplacePluginRouter = () => (
     </Routes>
   </ReactQueryProvider>
 );
+
+export const DynamicMarketplacePluginContent = () => (
+  <ReactQueryProvider>
+    <MarketplaceCatalogContent />
+  </ReactQueryProvider>
+);
