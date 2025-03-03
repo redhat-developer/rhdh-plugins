@@ -45,7 +45,10 @@ export const MarketplaceCollectionGridLoader = () => {
           </>
         ) : null}
         {plugins.data?.map(plugin => (
-          <PluginCard key={plugin.metadata.name} plugin={plugin} />
+          <PluginCard
+            key={`${plugin.metadata.namespace}/${plugin.metadata.name}`}
+            plugin={plugin}
+          />
         ))}
       </PluginCardGrid>
     </div>
