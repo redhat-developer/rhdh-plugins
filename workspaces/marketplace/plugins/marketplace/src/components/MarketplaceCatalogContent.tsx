@@ -100,6 +100,10 @@ export const MarketplaceCatalogContent = () => {
     title += ` (${filteredPlugins.data.filteredItems})`;
   }
 
+  if (filteredPlugins.data?.totalItems === 0) {
+    return <NoPluginsFound />;
+  }
+
   return (
     <CatalogFilterLayout>
       <CatalogFilterLayout.Filters>
@@ -114,24 +118,20 @@ export const MarketplaceCatalogContent = () => {
             />
           ))}
 
-          {filteredPlugins.data && filteredPlugins.data.totalItems === 0 ? (
-            <NoPluginsFound />
-          ) : (
-            <Card>
-              <Stack gap={3} sx={{ p: 2 }}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography variant="h4">{title}</Typography>
-                  <SearchTextField variant="search" />
-                </Stack>
-
-                <MarketplaceCatalogGrid />
+          <Card>
+            <Stack gap={3} sx={{ p: 2 }}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Typography variant="h4">{title}</Typography>
+                <SearchTextField variant="search" />
               </Stack>
-            </Card>
-          )}
+
+              <MarketplaceCatalogGrid />
+            </Stack>
+          </Card>
         </Stack>
       </CatalogFilterLayout.Content>
     </CatalogFilterLayout>

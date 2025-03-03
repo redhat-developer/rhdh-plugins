@@ -21,6 +21,7 @@ import {
   createApiFactory,
   discoveryApiRef,
   fetchApiRef,
+  createComponentExtension,
 } from '@backstage/core-plugin-api';
 
 import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
@@ -94,6 +95,21 @@ export const DynamicMarketplacePluginRouter = marketplacePlugin.provide(
         m => m.DynamicMarketplacePluginRouter,
       ),
     mountPoint: allRoutes.rootRouteRef,
+  }),
+);
+
+/**
+ * @public
+ */
+export const DynamicMarketplacePluginContent = marketplacePlugin.provide(
+  createComponentExtension({
+    name: 'DynamicMarketplacePluginContent',
+    component: {
+      lazy: () =>
+        import('./pages/DynamicMarketplacePluginRouter').then(
+          m => m.DynamicMarketplacePluginContent,
+        ),
+    },
   }),
 );
 
