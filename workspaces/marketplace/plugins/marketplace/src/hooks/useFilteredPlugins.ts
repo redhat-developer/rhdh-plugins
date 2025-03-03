@@ -64,7 +64,7 @@ export const useFilteredPlugins = () => {
           .map(filter => filter.substring('metadata.annotations.'.length));
         if (supportTypeAnnotationsFilters.length > 0) {
           plugins = plugins.filter(plugin =>
-            supportTypeAnnotationsFilters.every(filter => {
+            supportTypeAnnotationsFilters.some(filter => {
               const [key, value] = filter.split('=');
               return plugin.metadata?.annotations?.[key] === value;
             }),

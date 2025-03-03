@@ -2,7 +2,7 @@
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: PluginCollection
 metadata:
-  name: featured
+  name: disabled-featured
   title: Featured Plugins
   description: A set of great plugins! :)
 spec:

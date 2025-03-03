@@ -99,6 +99,18 @@ export function isMarketplacePlugin(entity?: Entity): entity is MarketplacePlugi
 export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";
 
 // @public (undocumented)
+export enum MarketplaceAnnotation {
+    // (undocumented)
+    CERTIFIED_BY = "marketplace.backstage.io/certified-by",
+    // (undocumented)
+    PRE_INSTALLED = "marketplace.backstage.io/pre-installed",
+    // (undocumented)
+    SUPPORT_TYPE = "marketplace.backstage.io/support-type",
+    // (undocumented)
+    VERIFIED_BY = "marketplace.backstage.io/verified-by"
+}
+
+// @public (undocumented)
 export interface MarketplaceApi {
     // (undocumented)
     getCollectionByName(namespace: string, name: string): Promise<MarketplaceCollection>;
