@@ -6,9 +6,7 @@
 
 import type { AuthService } from '@backstage/backend-plugin-api';
 import { CatalogApi } from '@backstage/catalog-client';
-import type { DiscoveryApi } from '@backstage/core-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
-import type { FetchApi } from '@backstage/core-plugin-api';
 import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 import { GetEntityFacetsResponse } from '@backstage/catalog-client';
 import { JsonObject } from '@backstage/types';
@@ -41,6 +39,11 @@ export const decodeGetEntitiesRequest: (searchParams: URLSearchParams) => GetEnt
 export const decodeGetEntityFacetsRequest: (searchParams: URLSearchParams) => GetEntityFacetsRequest;
 
 // @public (undocumented)
+export type DiscoveryApi = {
+    getBaseUrl(pluginId: string): Promise<string>;
+};
+
+// @public (undocumented)
 export interface Documentation extends JsonObject {
     // (undocumented)
     markdown: string;
@@ -69,6 +72,11 @@ export const encodeGetEntitiesRequest: (request: GetEntitiesRequest) => URLSearc
 
 // @public (undocumented)
 export const encodeGetEntityFacetsRequest: (request: GetEntityFacetsRequest) => URLSearchParams;
+
+// @public (undocumented)
+export type FetchApi = {
+    fetch: typeof fetch;
+};
 
 // @public (undocumented)
 export type GetEntitiesRequest = QueryEntitiesInitialRequest;
