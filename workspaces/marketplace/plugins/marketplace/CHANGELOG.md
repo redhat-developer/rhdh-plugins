@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.1.1
+
+### Patch Changes
+
+- 0e2f1ac: restore dynamic plugin export
+
 ## 0.1.0
 
 ### Minor Changes
