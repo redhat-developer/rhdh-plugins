@@ -32,8 +32,8 @@ export const useQueryArrayFilter = (filterName: string) => {
         }
         const name = keyValuePair.substring(0, firstEqualIndex);
         const value = keyValuePair.substring(firstEqualIndex + 1);
-        if (decodeURIComponent(name) === filterName) {
-          acc.push(decodeURIComponent(value));
+        if (name === filterName) {
+          acc.push(value);
         }
         return acc;
       }, [] as string[]);

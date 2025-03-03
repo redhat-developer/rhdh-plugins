@@ -27,12 +27,8 @@ export const encodeEntityFilterQuery = (filter: EntityFilterQuery) => {
 
   Object.entries(filter).forEach(([key, value]) => {
     const values = Array.isArray(value) ? value : [value];
-
     values.forEach(v => {
-      params.append(
-        'filter',
-        `${encodeURIComponent(key)}=${encodeURIComponent(v)}`,
-      );
+      params.append('filter', `${key}=${v}`);
     });
   });
 
@@ -43,10 +39,7 @@ export const encodeEntityOrderQuery = (orderFields: EntityOrderQuery) => {
   const params = new URLSearchParams();
   if (Array.isArray(orderFields)) {
     orderFields.forEach(({ field, order }) => {
-      params.append(
-        'orderFields',
-        `${encodeURIComponent(field)},${encodeURIComponent(order)}`,
-      );
+      params.append('orderFields', `${field},${order}`);
     });
   } else {
     const { field, order } = orderFields;

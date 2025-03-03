@@ -91,7 +91,7 @@ const SupportTypeFilter = () => {
 
 export const MarketplacePluginFilter = () => {
   return (
-    <div>
+    <Box sx={{ minWidth: { xs: 200, lg: 'auto' } }}>
       <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
         <Typography variant="h4" sx={{ pb: 1 }}>
           Filters
@@ -101,6 +101,6 @@ export const MarketplacePluginFilter = () => {
       <CategoryFilter />
       <AuthorFilter />
       <SupportTypeFilter />
-    </div>
+    </Box>
   );
 };

@@ -35,9 +35,7 @@ describe('decodeEntityFilterQuery', () => {
   });
 
   it('should decode single filter', () => {
-    const searchParams = new URLSearchParams(
-      'filter=spec.category%3DCI%252FCD',
-    );
+    const searchParams = new URLSearchParams('filter=spec.category%3DCI%2FCD');
     const expectedRequest: EntityFilterQuery = {
       'spec.category': 'CI/CD',
     };
@@ -138,7 +136,7 @@ describe('decodeGetEntityFacetsRequest', () => {
 
   it('should encode facets with filter', () => {
     const searchParams = new URLSearchParams(
-      'facet=spec.categories&facet=spec.owner&filter=spec.category%3DCI%252FCD',
+      'facet=spec.categories&facet=spec.owner&filter=spec.category%3DCI%2FCD',
     );
     const expectedRequest: GetEntityFacetsRequest = {
       facets: ['spec.categories', 'spec.owner'],

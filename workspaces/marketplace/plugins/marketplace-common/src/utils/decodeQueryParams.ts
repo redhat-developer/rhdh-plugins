@@ -32,14 +32,21 @@ export const decodeEntityFilterQuery = (
 
   const filter: Record<string, string | string[]> = {};
 
-  searchParams.getAll('filter').forEach(param => {
-    const [key, value] = param.split('=').map(decodeURIComponent);
-    if (Array.isArray(filter[key])) {
-      filter[key].push(value);
-    } else if (filter[key]) {
-      filter[key] = [filter[key], value];
+  searchParams.getAll('filter').forEach(keyValuePair => {
+    const firstEqualIndex = keyValuePair.indexOf('=');
+    if (firstEqualIndex === -1) {
+      return;
+    }
+    const name = keyValuePair.substring(0, firstEqualIndex);
+    const value = keyValuePair.substring(firstEqualIndex + 1);
+
+    const filterStringOrArray = filter[name];
+    if (Array.isArray(filterStringOrArray)) {
+      filterStringOrArray.push(value);
+    } else if (filterStringOrArray) {
+      filter[name] = [filterStringOrArray, value];
     } else {
-      filter[key] = value;
+      filter[name] = value;
     }
   });
 
@@ -54,7 +61,7 @@ export const decodeEntityOrderQuery = (
   }
   const orderFields = searchParams.getAll('orderFields');
   const decodedOrderFields: EntityOrderQuery = orderFields.map(field => {
-    const [key, order] = field.split(',').map(decodeURIComponent);
+    const [key, order] = field.split(',');
     return { field: key, order: order as 'asc' | 'desc' };
   });
   return decodedOrderFields;
@@ -97,7 +104,6 @@ export const decodeGetEntitiesRequest = (
 export const decodeGetEntityFacetsRequest = (
   searchParams: URLSearchParams,
 ): GetEntityFacetsRequest => {
-  // searchParams.getAll('facet').map(decodeURIComponent)
   return {
     facets: searchParams.getAll('facet'),
     filter: decodeEntityFilterQuery(searchParams),

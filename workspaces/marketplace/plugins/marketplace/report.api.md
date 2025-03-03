@@ -9,21 +9,34 @@
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react';
+import { PathParams } from '@backstage/core-plugin-api';
 import { RouteRef } from '@backstage/core-plugin-api';
+import { SubRouteRef } from '@backstage/core-plugin-api';
+
+// @public (undocumented)
+export const DynamicMarketplacePluginRouter: () => JSX_2.Element;
 
 // @public
-export const MarketplaceCatalogContent: () => JSX_2.Element;
+export const MarketplaceFullPageRouter: () => JSX_2.Element;
 
 // @public (undocumented)
 export const MarketplaceIcon: IconComponent;
 
 // @public
-export const MarketplacePage: () => JSX_2.Element;
+export const marketplacePlugin: BackstagePlugin<    {
+rootRouteRef: RouteRef<undefined>;
+pluginsRouteRef: SubRouteRef<undefined>;
+pluginRouteRef: SubRouteRef<PathParams<"/plugins/:namespace/:name">>;
+pluginInstallRouteRef: SubRouteRef<PathParams<"/plugins/:namespace/:name/install">>;
+packagesRouteRef: SubRouteRef<undefined>;
+packageRouteRef: SubRouteRef<PathParams<"/packages/:namespace/:name">>;
+packageInstallRouteRef: SubRouteRef<PathParams<"/packages/:namespace/:name/install">>;
+collectionsRouteRef: SubRouteRef<undefined>;
+collectionRouteRef: SubRouteRef<PathParams<"/collections/:namespace/:name">>;
+}, {}, {}>;
 
 // @public
-export const marketplacePlugin: BackstagePlugin<    {
-root: RouteRef<undefined>;
-}, {}, {}>;
+export const MarketplaceTabbedPageRouter: () => JSX_2.Element;
 
 // (No @packageDocumentation comment for this package)
 

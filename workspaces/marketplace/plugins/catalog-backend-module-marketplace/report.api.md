@@ -27,7 +27,7 @@ const catalogModuleMarketplace: BackendFeature;
 export default catalogModuleMarketplace;
 
 // @public (undocumented)
-export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
+export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     constructor(discovery: DiscoveryService, auth: AuthService);
     // (undocumented)
     getCachedPlugins(cache: CatalogProcessorCache, entityRef: string): Promise<CachedData>;
@@ -36,30 +36,18 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
     // (undocumented)
     getProcessorName(): string;
     // (undocumented)
-    preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec, cache: CatalogProcessorCache): Promise<MarketplacePlugin>;
+    preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec, cache: CatalogProcessorCache): Promise<Entity>;
 }
 
 // @public (undocumented)
-export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
+export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
     constructor(paths?: string[]);
     // (undocumented)
     findWorkspacesPath(startPath?: string): string;
     // (undocumented)
     getProcessorName(): string;
     // (undocumented)
-    isJSON(str: string): boolean;
-    // (undocumented)
-    preProcessEntity(entity: MarketplacePlugin): Promise<Entity>;
-}
-
-// @public (undocumented)
-export class MarketplacePackageProcessor implements CatalogProcessor {
-    // (undocumented)
-    getProcessorName(): string;
-    // (undocumented)
-    postProcessEntity(entity: MarketplacePackage, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
-    // (undocumented)
-    validateEntityKind(entity: Entity): Promise<boolean>;
+    preProcessEntity(entity: MarketplacePackage): Promise<MarketplacePackage>;
 }
 
 // @public (undocumented)
@@ -68,6 +56,16 @@ export class MarketplaceCollectionProcessor implements CatalogProcessor {
     getProcessorName(): string;
     // (undocumented)
     postProcessEntity(entity: Entity, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
+    // (undocumented)
+    validateEntityKind(entity: Entity): Promise<boolean>;
+}
+
+// @public (undocumented)
+export class MarketplacePackageProcessor implements CatalogProcessor {
+    // (undocumented)
+    getProcessorName(): string;
+    // (undocumented)
+    postProcessEntity(entity: MarketplacePackage, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
     // (undocumented)
     validateEntityKind(entity: Entity): Promise<boolean>;
 }

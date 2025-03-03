@@ -36,11 +36,17 @@ import type {
   GetEntitiesResponse,
 } from './MarketplaceApi';
 
+/**
+ * @public
+ */
 export type MarketplaceBackendClientOptions = {
   discoveryApi: DiscoveryApi;
   fetchApi: FetchApi;
 };
 
+/**
+ * @public
+ */
 export class MarketplaceBackendClient implements MarketplaceApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;

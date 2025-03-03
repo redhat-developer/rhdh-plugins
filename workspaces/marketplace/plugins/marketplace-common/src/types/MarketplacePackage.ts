@@ -50,7 +50,9 @@ export interface MarketplacePackageSpec extends JsonObject {
   lifecycle?: string;
   role?: string;
   supportedVersions?: string;
-  /** @deprecated */
+  /**
+   * @deprecated use role and supportedVersions under spec instead
+   */
   backstage?: MarketplacePackageBackstage;
   appConfigExamples?: MarketplacePackageSpecAppConfigExample[];
   owner?: string;
@@ -74,6 +76,9 @@ export interface MarketplacePackageBackstage extends JsonObject {
   supportedVersions?: string;
 }
 
+/**
+ * @public
+ */
 export function isMarketplacePackage(
   entity?: Entity,
 ): entity is MarketplacePackage {

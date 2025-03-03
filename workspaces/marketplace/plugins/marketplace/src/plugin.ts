@@ -17,7 +17,6 @@
 import {
   createPlugin,
   createRoutableExtension,
-  createComponentExtension,
   type IconComponent,
   createApiFactory,
   discoveryApiRef,

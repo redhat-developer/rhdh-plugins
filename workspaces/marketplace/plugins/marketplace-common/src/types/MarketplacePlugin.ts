@@ -91,18 +91,17 @@ export interface MarketplacePluginSpec extends JsonObject {
   developer?: string;
   highlights?: string[];
 
-  /* @deprecated */
   description?: string;
-  /* @deprecated */
   installation?: string;
-
   documentation?: Documentation[];
-
   assets?: Asset[];
 
   installStatus?: MarketplacePluginInstallStatus;
 }
 
+/**
+ * @public
+ */
 export function isMarketplacePlugin(
   entity?: Entity,
 ): entity is MarketplacePlugin {

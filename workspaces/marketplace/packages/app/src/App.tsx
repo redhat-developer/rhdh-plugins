@@ -49,6 +49,7 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+
 import { DynamicMarketplacePluginRouter as Marketplace } from '@red-hat-developer-hub/backstage-plugin-marketplace';
 
 import { apis } from './apis';

@@ -16,11 +16,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import {
-  useQueryParamState,
-  ItemCardGrid,
-  Link,
-} from '@backstage/core-components';
+import { ItemCardGrid, Link } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
 import Card from '@mui/material/Card';
@@ -31,7 +27,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { useCollections } from '../hooks/useCollections';
+import { usePlugins } from '../hooks/usePlugins';
 import { pluginRouteRef } from '../routes';
 
 const EntrySkeleton = ({
@@ -157,13 +153,11 @@ const Entry = ({ entry }: { entry: MarketplaceCollection }) => {
 };
 
 export const MarketplacePluginsGrid = () => {
-  const collections = useCollections({});
-
-  const [search] = useQueryParamState<string | undefined>('q');
+  const plugins = usePlugins({});
 
   return (
     <ItemCardGrid>
-      {collections.isLoading ? (
+      {plugins.isLoading ? (
         <>
           <EntrySkeleton />
           <EntrySkeleton />
@@ -171,8 +165,11 @@ export const MarketplacePluginsGrid = () => {
           <EntrySkeleton />
         </>
       ) : null}
-      {filteredEntries?.map(entry => (
-        <Entry key={entry.metadata.name} entry={entry} />
+      {plugins.data?.items?.map(plugin => (
+        <Entry
+          key={`${plugin.metadata.namespace}/${plugin.metadata.name}`}
+          entry={plugin}
+        />
       ))}
     </ItemCardGrid>
   );

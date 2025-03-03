@@ -69,7 +69,11 @@ export const useFilteredPlugins = () => {
         });
       }
 
-      return plugins;
+      return {
+        items: plugins,
+        filteredItems: plugins.length,
+        totalItems: data.totalItems,
+      };
     },
   });
 };

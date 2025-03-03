@@ -26,6 +26,9 @@ import {
   MarketplacePlugin,
 } from '../types';
 
+/**
+ * @public
+ */
 export type GetEntitiesRequest = QueryEntitiesInitialRequest;
 
 /**

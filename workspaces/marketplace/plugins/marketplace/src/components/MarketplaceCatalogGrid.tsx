@@ -33,7 +33,7 @@ export const MarketplaceCatalogGrid = () => {
           <PluginCardSkeleton />
         </>
       ) : null}
-      {filteredPlugins.data?.map(plugin => (
+      {filteredPlugins.data?.items.map(plugin => (
         <PluginCard key={plugin.metadata.name} plugin={plugin} />
       ))}
     </PluginCardGrid>

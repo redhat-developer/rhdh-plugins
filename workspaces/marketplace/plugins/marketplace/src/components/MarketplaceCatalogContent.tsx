@@ -16,9 +16,11 @@
 
 import React from 'react';
 
+import { Content, LinkButton } from '@backstage/core-components';
 import { CatalogFilterLayout } from '@backstage/plugin-catalog-react';
 
 import Card from '@mui/material/Card';
+import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -30,6 +32,54 @@ import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { MarketplacePluginFilter } from './MarketplacePluginFilter';
 import { CollectionHorizontalScrollRow } from './CollectionHorizontalScrollRow';
 
+import notFoundImag from '../assets/notfound.png';
+
+const NoPluginsFound = () => (
+  <Content>
+    <Grid
+      container
+      alignItems="center"
+      style={{ maxWidth: 1000, margin: 'auto' }}
+    >
+      <Grid item xs={6}>
+        <Stack gap={3} justifyContent="center">
+          <Typography variant="h1">No plugins found</Typography>
+          <Typography variant="body1">
+            There was an error with loading plugins. Check your configuration or
+            review plugin documentation to resolve. You can also explore other
+            available plugins.
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item>
+              <LinkButton
+                variant="contained"
+                color="primary"
+                to="https://developers.redhat.com/rhdh/plugins#redhatnotpreinstalled"
+                externalLinkIcon
+              >
+                View plugins
+              </LinkButton>
+            </Grid>
+            <Grid item>
+              <LinkButton
+                variant="outlined"
+                color="primary"
+                to="https://docs.redhat.com/en/documentation/red_hat_developer_hub/"
+                externalLinkIcon
+              >
+                View documentation
+              </LinkButton>
+            </Grid>
+          </Grid>
+        </Stack>
+      </Grid>
+      <Grid item xs={6}>
+        <img src={notFoundImag} alt="" style={{ width: '100%' }} />
+      </Grid>
+    </Grid>
+  </Content>
+);
+
 export const MarketplaceCatalogContent = () => {
   const featuredCollections = useCollections({
     filter: {
@@ -38,6 +88,17 @@ export const MarketplaceCatalogContent = () => {
   });
 
   const filteredPlugins = useFilteredPlugins();
+
+  let title = 'Plugins';
+  if (filteredPlugins.data && filteredPlugins.data.totalItems > 0) {
+    // const { filteredItems, totalItems } = filteredPlugins.data;
+    // if (filteredItems !== totalItems) {
+    //   title += ` (${filteredItems} of ${totalItems})`;
+    // } else {
+    //   title += ` (${totalItems})`;
+    // }
+    title += ` (${filteredPlugins.data.filteredItems})`;
+  }
 
   return (
     <CatalogFilterLayout>
@@ -53,25 +114,24 @@ export const MarketplaceCatalogContent = () => {
             />
           ))}
 
-          <Card>
-            <Stack gap={3} sx={{ p: 2 }}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Typography variant="h4">
-                  Plugins
-                  {filteredPlugins.data
-                    ? ` (${filteredPlugins.data?.length})`
-                    : null}
-                </Typography>
-                <SearchTextField variant="search" />
-              </Stack>
+          {filteredPlugins.data && filteredPlugins.data.totalItems === 0 ? (
+            <NoPluginsFound />
+          ) : (
+            <Card>
+              <Stack gap={3} sx={{ p: 2 }}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography variant="h4">{title}</Typography>
+                  <SearchTextField variant="search" />
+                </Stack>
 
-              <MarketplaceCatalogGrid />
-            </Stack>
-          </Card>
+                <MarketplaceCatalogGrid />
+              </Stack>
+            </Card>
+          )}
         </Stack>
       </CatalogFilterLayout.Content>
     </CatalogFilterLayout>
