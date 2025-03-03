@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AuthService } from '@backstage/backend-plugin-api';
+import type { AuthService } from '@backstage/backend-plugin-api';
 import {
   RELATION_HAS_PART,
   RELATION_PART_OF,
