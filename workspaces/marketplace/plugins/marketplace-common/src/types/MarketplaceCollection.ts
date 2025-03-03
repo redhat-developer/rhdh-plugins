@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Entity } from '@backstage/catalog-model';
+import type { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
 import { MARKETPLACE_API_VERSION } from '../consts';

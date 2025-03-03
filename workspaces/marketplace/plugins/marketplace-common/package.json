@@ -36,6 +36,8 @@
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.1.1",
+    "@backstage/catalog-client": "^1.9.1",
+    "@backstage/catalog-model": "^1.7.3",
     "@backstage/core-plugin-api": "^1.10.3",
     "@backstage/errors": "^1.2.7"
   },
@@ -45,9 +47,6 @@
   },
   "peerDependencies": {
     "@backstage/backend-plugin-api": "^1.1.1",
-    "@backstage/catalog-client": "^1.9.1",
-    "@backstage/catalog-model": "^1.7.3",
-    "@backstage/errors": "^1.2.7",
     "@backstage/types": "^1.2.1"
   },
   "files": [
