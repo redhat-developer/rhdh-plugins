@@ -34,8 +34,8 @@ export const useFilteredPlugins = () => {
 
       if (filters) {
         const categories = filters
-          .filter(filter => filter.startsWith('category='))
-          .map(filter => filter.substring('category='.length));
+          .filter(filter => filter.startsWith('spec.categories='))
+          .map(filter => filter.substring('spec.categories='.length));
         if (categories.length > 0) {
           plugins = plugins.filter(plugin =>
             plugin.spec?.categories?.some(category =>
@@ -45,8 +45,8 @@ export const useFilteredPlugins = () => {
         }
 
         const authors = filters
-          .filter(filter => filter.startsWith('author='))
-          .map(filter => filter.substring('author='.length));
+          .filter(filter => filter.startsWith('spec.authors.name='))
+          .map(filter => filter.substring('spec.authors.name='.length));
         if (authors.length > 0) {
           plugins = plugins.filter(plugin =>
             plugin.spec?.authors?.some(author =>
@@ -57,7 +57,19 @@ export const useFilteredPlugins = () => {
           );
         }
 
-        // TODO support type
+        const supportTypeAnnotationsFilters = filters
+          .filter(filter =>
+            filter.startsWith('metadata.annotations.marketplace.backstage.io/'),
+          )
+          .map(filter => filter.substring('metadata.annotations.'.length));
+        if (supportTypeAnnotationsFilters.length > 0) {
+          plugins = plugins.filter(plugin =>
+            supportTypeAnnotationsFilters.some(filter => {
+              const [key, value] = filter.split('=');
+              return plugin.metadata?.annotations?.[key] === value;
+            }),
+          );
+        }
       }
 
       if (fullTextSearch) {

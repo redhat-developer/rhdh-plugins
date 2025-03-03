@@ -5,6 +5,9 @@ metadata:
   name: search
   title: Backstage Search
   description: Backstage Search lets you find the right information you are looking for in the Backstage ecosystem.
+  annotations:
+    marketplace.backstage.io/pre-installed: 'true'
+    marketplace.backstage.io/support-type: Core plugin
 spec:
   icon: https://janus-idp.io/images/plugins/3scale.svg
   authors:

@@ -17,9 +17,7 @@
 /**
  * @public
  */
-export type MarketplaceAuthor =
-  | string
-  | {
-      name: string;
-      url?: string;
-    };
+export type MarketplaceAuthor = {
+  name: string;
+  url?: string;
+};

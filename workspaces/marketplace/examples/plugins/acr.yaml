@@ -5,6 +5,8 @@ metadata:
   name: acr
   title: Container Image Registry for ACR
   description: View container image details from Azure Container Registry in Backstage.
+  annotations:
+    marketplace.backstage.io/verified-by: Red Hat
 spec:
   icon: https://janus-idp.io/images/plugins/oci-acr.svg
   author: Red Hat

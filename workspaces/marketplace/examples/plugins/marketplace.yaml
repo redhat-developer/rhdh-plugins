@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=../../json-schema/plugins.json
+apiVersion: marketplace.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  name: marketplace
+  title: Marketplace
+  description: The Marketplace plugin allows you to discover and install plugins in Backstage.
+  tags:
+    - marketplace
+    - catalog
+  annotations:
+    marketplace.backstage.io/pre-installed: 'true'
+spec:
+  author: Backstage Community
+  categories:
+    - Catalog
+  support: asd
+  lifecycle: production
+  description: todo
+  installation: todo

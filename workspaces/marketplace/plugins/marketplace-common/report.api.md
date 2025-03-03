@@ -99,6 +99,18 @@ export function isMarketplacePlugin(entity?: Entity): entity is MarketplacePlugi
 export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";
 
 // @public (undocumented)
+export enum MarketplaceAnnotation {
+    // (undocumented)
+    CERTIFIED_BY = "marketplace.backstage.io/certified-by",
+    // (undocumented)
+    PRE_INSTALLED = "marketplace.backstage.io/pre-installed",
+    // (undocumented)
+    SUPPORT_TYPE = "marketplace.backstage.io/support-type",
+    // (undocumented)
+    VERIFIED_BY = "marketplace.backstage.io/verified-by"
+}
+
+// @public (undocumented)
 export interface MarketplaceApi {
     // (undocumented)
     getCollectionByName(namespace: string, name: string): Promise<MarketplaceCollection>;
@@ -125,7 +137,7 @@ export interface MarketplaceApi {
 }
 
 // @public (undocumented)
-export type MarketplaceAuthor = string | {
+export type MarketplaceAuthor = {
     name: string;
     url?: string;
 };
@@ -305,14 +317,14 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     assets?: Asset[];
     // (undocumented)
-    author?: MarketplaceAuthor;
+    author?: string;
     // (undocumented)
     authors?: MarketplaceAuthor[];
     // (undocumented)
     categories?: string[];
     // (undocumented)
     description?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     developer?: string;
     // (undocumented)
     documentation?: Documentation[];

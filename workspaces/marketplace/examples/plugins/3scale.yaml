@@ -8,11 +8,16 @@ metadata:
   tags:
     - 3scale
     - api
+  annotations:
+    marketplace.backstage.io/certified-by: Red Hat
+    marketplace.backstage.io/verified-by: Red Hat
 spec:
   icon: https://janus-idp.io/images/plugins/3scale.svg
   author: Red Hat
   categories:
     - API Discovery
+  highlights:
+    - OpenShift support
   support: asd
   lifecycle: production
   description: |

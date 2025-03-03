@@ -16,11 +16,17 @@
 
 import React from 'react';
 
+import { Select, SelectItem } from '@backstage/core-components';
+import { useSearchParams } from 'react-router-dom';
+
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 
+import { MarketplaceAnnotation } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
 import { usePluginFacet } from '../hooks/usePluginFacet';
+import { usePluginFacets } from '../hooks/usePluginFacets';
 import { BackstageSelectFilter } from '../shared-components/BackstageSelectFilter';
 
 const CategoryFilter = () => {
@@ -38,7 +44,7 @@ const CategoryFilter = () => {
   return (
     <BackstageSelectFilter
       label="Category"
-      name="category"
+      name="spec.categories"
       items={items}
       multiple
     />
@@ -60,32 +66,126 @@ const AuthorFilter = () => {
   return (
     <BackstageSelectFilter
       label="Author"
-      name="author"
+      name="spec.authors.name"
       items={items}
       multiple
     />
   );
 };
 
+const facetsKeys = [
+  `metadata.annotations.${MarketplaceAnnotation.CERTIFIED_BY}`,
+  `metadata.annotations.${MarketplaceAnnotation.VERIFIED_BY}`,
+  `metadata.annotations.${MarketplaceAnnotation.PRE_INSTALLED}`,
+  `metadata.annotations.${MarketplaceAnnotation.SUPPORT_TYPE}`,
+];
+
 const SupportTypeFilter = () => {
-  const supportTypesFacet = usePluginFacet('spec.supportType');
-  const supportTypes = supportTypesFacet.data;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pluginFacets = usePluginFacets({ facets: facetsKeys });
+
+  const facets = pluginFacets.data;
 
   const items = React.useMemo(() => {
-    if (!supportTypes) return [];
-    return supportTypes.map(supportType => ({
-      label: supportType.value,
-      value: supportType.value,
-    }));
-  }, [supportTypes]);
+    if (!facets) return [];
+    const allSupportTypeItems: SelectItem[] = [];
+
+    const certified = facets[facetsKeys[0]];
+    certified.forEach(certifiedBy => {
+      allSupportTypeItems.push({
+        label: `Certified by ${certifiedBy.value} (${certifiedBy.count})`,
+        value: `${facetsKeys[0]}=${certifiedBy.value}`,
+      });
+    });
+
+    const verified = facets[facetsKeys[1]];
+    verified.forEach(verifiedBy => {
+      allSupportTypeItems.push({
+        label: `Verified by ${verifiedBy.value} (${verifiedBy.count})`,
+        value: `${facetsKeys[1]}=${verifiedBy.value}`,
+      });
+    });
+
+    const preInstalled = facets[facetsKeys[2]];
+    preInstalled.forEach(preInstall => {
+      if (preInstall.value === 'false') {
+        allSupportTypeItems.push({
+          label: `Custom plugins (${preInstall.count})`,
+          value: `${facetsKeys[2]}=${preInstall.value}`,
+        });
+      }
+    });
+
+    const supportTypes = facets[facetsKeys[3]];
+    supportTypes.forEach(supportType => {
+      allSupportTypeItems.push({
+        label: `${supportType.value} (${supportType.count})`,
+        value: `${facetsKeys[3]}=${supportType.value}`,
+      });
+    });
+
+    return allSupportTypeItems;
+  }, [facets]);
+
+  const selected = React.useMemo(() => {
+    return searchParams
+      .getAll('filter')
+      .filter(filter =>
+        filter.startsWith('metadata.annotations.marketplace.backstage.io/'),
+      );
+  }, [searchParams]);
+
+  const onChange = React.useCallback(
+    (newValue: string | string[] | number | number[]) => {
+      setSearchParams(
+        params => {
+          const newParams = new URLSearchParams();
+
+          let added = false;
+          const add = () => {
+            if (added) return;
+            if (Array.isArray(newValue)) {
+              newValue.forEach(v => newParams.append('filter', String(v)));
+            } else {
+              newParams.append('filter', String(newValue));
+            }
+            added = true;
+          };
+
+          // Try to keep the right position...
+          params.forEach((value, key) => {
+            if (
+              key === 'filter' &&
+              value.startsWith(`metadata.annotations.marketplace.backstage.io/`)
+            ) {
+              add();
+            } else {
+              newParams.append(key, value);
+            }
+          });
+
+          // If not added yet, add it at the end
+          add();
+          return newParams;
+        },
+        {
+          replace: true,
+        },
+      );
+    },
+    [setSearchParams],
+  );
 
   return (
-    <BackstageSelectFilter
-      label="Support type"
-      name="support.type"
-      items={items}
-      multiple
-    />
+    <Box pb={1} pt={1}>
+      <Select
+        label="Support type"
+        items={items}
+        selected={selected}
+        onChange={onChange}
+        multiple
+      />
+    </Box>
   );
 };
 
