@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.1.0
+
+### Minor Changes
+
+- d39d4e3: Initial tech-preview of the marketplace
+
+### Patch Changes
+
+- f16dd69: Refactore and update API, UI, and catalog types
+
 ## 0.0.9
 
 ### Patch Changes
