@@ -10,6 +10,10 @@ catalog:
       rules:
         - allow: [Plugin]
     - type: url
+      target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/marketplace/examples/all-packages.yaml
+      rules:
+        - allow: [Package]
+    - type: url
       target: https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/marketplace/examples/all-collections.yaml
       rules:
         - allow: [PluginCollection]

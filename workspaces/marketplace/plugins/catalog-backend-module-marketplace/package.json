@@ -12,14 +12,11 @@
   },
   "backstage": {
     "role": "backend-plugin-module",
-    "pluginId": "marketplace",
+    "pluginId": "catalog",
+    "pluginPackage": "@backstage/plugin-catalog-backend",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-marketplace",
-      "@red-hat-developer-hub/backstage-plugin-marketplace-backend",
-      "@red-hat-developer-hub/backstage-plugin-marketplace-common",
       "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace"
-    ],
-    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-marketplace-backend"
+    ]
   },
   "repository": {
     "type": "git",

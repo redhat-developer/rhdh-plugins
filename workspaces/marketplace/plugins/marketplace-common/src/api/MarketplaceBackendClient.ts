@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
+import type { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 import {
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,

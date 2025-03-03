@@ -34,7 +34,10 @@ export const MarketplaceCatalogGrid = () => {
         </>
       ) : null}
       {filteredPlugins.data?.items.map(plugin => (
-        <PluginCard key={plugin.metadata.name} plugin={plugin} />
+        <PluginCard
+          key={`${plugin.metadata.namespace}/${plugin.metadata.name}`}
+          plugin={plugin}
+        />
       ))}
     </PluginCardGrid>
   );

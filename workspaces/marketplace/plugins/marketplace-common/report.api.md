@@ -4,11 +4,11 @@
 
 ```ts
 
-import { AuthService } from '@backstage/backend-plugin-api';
+import type { AuthService } from '@backstage/backend-plugin-api';
 import { CatalogApi } from '@backstage/catalog-client';
-import { DiscoveryApi } from '@backstage/core-plugin-api';
-import { Entity } from '@backstage/catalog-model';
-import { FetchApi } from '@backstage/core-plugin-api';
+import type { DiscoveryApi } from '@backstage/core-plugin-api';
+import type { Entity } from '@backstage/catalog-model';
+import type { FetchApi } from '@backstage/core-plugin-api';
 import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 import { GetEntityFacetsResponse } from '@backstage/catalog-client';
 import { JsonObject } from '@backstage/types';

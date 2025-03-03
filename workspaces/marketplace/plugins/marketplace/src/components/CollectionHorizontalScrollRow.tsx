@@ -97,10 +97,7 @@ export const CollectionHorizontalScrollRow = ({
               key={`${plugin.metadata.namespace}/${plugin.metadata.name}`}
               style={{ display: 'flex', width: 340 }}
             >
-              <PluginCard
-                key={`${plugin.metadata.namespace}/${plugin.metadata.name}`}
-                plugin={plugin}
-              />
+              <PluginCard plugin={plugin} />
             </div>
           ))}
         </Stack>
