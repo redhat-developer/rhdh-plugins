@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.1.1
+
+### Patch Changes
+
+- fa70a22: remove unused knex and zod dependency from common package
+
 ## 0.1.0
 
 ### Minor Changes
