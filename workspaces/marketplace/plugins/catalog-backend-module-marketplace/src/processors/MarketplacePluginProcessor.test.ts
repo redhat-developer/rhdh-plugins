@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,44 +18,40 @@ import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marke
 
 import { MarketplacePluginProcessor } from './MarketplacePluginProcessor';
 
-const pluginEntity: MarketplacePlugin = {
+const testPlugin: MarketplacePlugin = {
   apiVersion: 'marketplace.backstage.io/v1alpha1',
+  kind: 'Plugin',
   metadata: {
-    name: 'testplugin',
+    name: 'test-plugin',
     title: 'APIs with Test plugin',
     description: 'Test plugin.',
   },
-  kind: 'Plugin',
   spec: {
     owner: 'test-group',
+    packages: ['package-a', 'package-b'],
   },
 };
 
-const getPackagePartOfPluginRelation = (packageName: string) => ({
-  source: {
-    kind: 'Package',
-    namespace: 'default',
-    name: packageName,
-  },
-  type: 'partOf',
-  target: {
-    kind: 'Plugin',
-    namespace: 'default',
-    name: 'testplugin',
-  },
-});
-
-const getPackageHasPartOfPluginRelation = (packageName: string) => ({
-  source: {
-    kind: 'Plugin',
-    namespace: 'default',
-    name: 'testplugin',
-  },
-  type: 'hasPart',
-  target: {
-    kind: 'Package',
-    namespace: 'default',
-    name: packageName,
+const getRelation = (
+  type: string,
+  sourceKind: string,
+  sourceName: string,
+  targetKind: string,
+  targetName: string,
+) => ({
+  type: 'relation',
+  relation: {
+    type,
+    source: {
+      kind: sourceKind,
+      namespace: 'default',
+      name: sourceName,
+    },
+    target: {
+      kind: targetKind,
+      namespace: 'default',
+      name: targetName,
+    },
   },
 });
 
@@ -65,103 +61,65 @@ describe('MarketplacePluginProcessor', () => {
     expect(processor.getProcessorName()).toBe('MarketplacePluginProcessor');
   });
 
-  it('should return plugin entity with relation', async () => {
-    const processor = new MarketplacePluginProcessor();
-    const emit = jest.fn();
-
-    await processor.postProcessEntity(pluginEntity, undefined as any, emit);
-
-    expect(emit).toHaveBeenCalledTimes(1);
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: {
-        source: { kind: 'Plugin', namespace: 'default', name: 'testplugin' },
-        type: 'ownedBy',
-        target: { kind: 'Group', namespace: 'default', name: 'test-group' },
-      },
-    });
-  });
-
   it('should return validate the entity', async () => {
     const processor = new MarketplacePluginProcessor();
 
     expect(
-      await processor.validateEntityKind({ ...pluginEntity, kind: 'test' }),
+      await processor.validateEntityKind({ ...testPlugin, kind: 'test' }),
     ).toBe(false);
-    expect(await processor.validateEntityKind(pluginEntity)).toBe(true);
+    expect(await processor.validateEntityKind(testPlugin)).toBe(true);
   });
 
-  it('should return plugin entity with hasPartOf relation with Package entity', async () => {
+  it('should emit plugin owner relation', async () => {
+    const processor = new MarketplacePluginProcessor();
+    const emit = jest.fn();
+
+    await processor.postProcessEntity(
+      {
+        ...testPlugin,
+        spec: {
+          ...testPlugin.spec,
+          packages: [],
+        },
+      },
+      undefined as any,
+      emit,
+    );
+
+    expect(emit).toHaveBeenCalledTimes(1);
+    expect(emit).toHaveBeenCalledWith(
+      getRelation('ownedBy', 'Plugin', 'test-plugin', 'Group', 'test-group'),
+    );
+  });
+
+  it('should emit plugin package relations', async () => {
     const processor = new MarketplacePluginProcessor();
 
     const emit = jest.fn();
     await processor.postProcessEntity(
       {
-        ...pluginEntity,
+        ...testPlugin,
         spec: {
-          ...pluginEntity.spec,
+          ...testPlugin.spec,
           owner: undefined,
-          packages: ['package-a', 'package-b'],
         },
       },
       null as any,
       emit,
     );
+
     expect(emit).toHaveBeenCalledTimes(4);
-
-    // partOf relation test
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: getPackagePartOfPluginRelation('package-a'),
-    });
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: getPackagePartOfPluginRelation('package-b'),
-    });
-
-    // hasPart relation test
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: getPackageHasPartOfPluginRelation('package-a'),
-    });
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: getPackageHasPartOfPluginRelation('package-b'),
-    });
-  });
-
-  it('should handle plugin entity with hasPartOf relation with Package entity as MarketplacePluginPackage', async () => {
-    const processor = new MarketplacePluginProcessor();
-
-    const emit = jest.fn();
-    await processor.postProcessEntity(
-      {
-        ...pluginEntity,
-        spec: {
-          ...pluginEntity.spec,
-          owner: undefined,
-          packages: [
-            {
-              name: 'package-a',
-            },
-          ],
-        },
-      },
-      null as any,
-      emit,
+    expect(emit).toHaveBeenCalledWith(
+      getRelation('hasPart', 'Plugin', 'test-plugin', 'Package', 'package-a'),
     );
-    expect(emit).toHaveBeenCalledTimes(2);
-
-    // partOf relation test
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: getPackagePartOfPluginRelation('package-a'),
-    });
-
-    // hasPart relation test
-    expect(emit).toHaveBeenCalledWith({
-      type: 'relation',
-      relation: getPackageHasPartOfPluginRelation('package-a'),
-    });
+    expect(emit).toHaveBeenCalledWith(
+      getRelation('partOf', 'Package', 'package-a', 'Plugin', 'test-plugin'),
+    );
+    expect(emit).toHaveBeenCalledWith(
+      getRelation('hasPart', 'Plugin', 'test-plugin', 'Package', 'package-b'),
+    );
+    expect(emit).toHaveBeenCalledWith(
+      getRelation('partOf', 'Package', 'package-b', 'Plugin', 'test-plugin'),
+    );
   });
 });

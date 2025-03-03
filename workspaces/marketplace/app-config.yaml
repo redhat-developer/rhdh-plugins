@@ -1,9 +1,9 @@
 app:
-  title: Scaffolded Backstage App
+  title: Backstage
   baseUrl: http://localhost:3000
 
-organization:
-  name: My Company
+#organization:
+#  name: My Company
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
@@ -83,12 +83,16 @@ catalog:
           API,
           Resource,
           Plugin,
-          PluginList,
+          PluginCollection,
           Package,
           Location,
         ]
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
+    - type: file
+      target: ../../catalog-info.yaml
+      rules:
+        - allow: [Component]
     - type: file
       target: ../../examples/all-orgs.yaml
       rules:
@@ -98,18 +102,13 @@ catalog:
       rules:
         - allow: [Plugin]
     - type: file
-      target: ../../examples/all-pluginlists.yaml
+      target: ../../examples/all-collections.yaml
       rules:
-        - allow: [PluginList]
+        - allow: [PluginCollection]
     - type: file
       target: ../../examples/all-packages.yaml
       rules:
         - allow: [Package]
-
-    - type: file
-      target: ../../examples/catalog-demo.yaml
-      rules:
-        - allow: [User, Group, System, Component, API]
 
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options

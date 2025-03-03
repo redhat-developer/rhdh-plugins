@@ -37,6 +37,7 @@
     "chalk": "^4.1.2",
     "commander": "^12.0.0",
     "fs-extra": "^11.2.0",
+    "glob": "^9.3.5",
     "yaml": "^2.7.0"
   },
   "nodemonConfig": {

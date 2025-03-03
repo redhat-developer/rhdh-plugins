@@ -6,25 +6,13 @@
 
 import { AuthService } from '@backstage/backend-plugin-api';
 import { CatalogApi } from '@backstage/catalog-client';
+import { DiscoveryApi } from '@backstage/core-plugin-api';
 import { Entity } from '@backstage/catalog-model';
-import { EntityFilterQuery } from '@backstage/catalog-client';
-import { EntityFilterQuery as EntityFilterQuery_2 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { EntityOrderQuery } from '@backstage/catalog-client';
-import { EntityOrderQuery as EntityOrderQuery_2 } from '@backstage/catalog-client/index';
+import { FetchApi } from '@backstage/core-plugin-api';
 import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 import { GetEntityFacetsResponse } from '@backstage/catalog-client';
-import { GetPluginsRequest as GetPluginsRequest_2 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { JsonObject } from '@backstage/types';
-import { QueryEntitiesRequest } from '@backstage/catalog-client/index';
-import { z } from 'zod';
-
-// @public (undocumented)
-export interface AppConfigExample extends JsonObject {
-    // (undocumented)
-    content: string | JsonObject;
-    // (undocumented)
-    title: string;
-}
+import { QueryEntitiesInitialRequest } from '@backstage/catalog-client';
 
 // @public (undocumented)
 export interface Asset extends JsonObject {
@@ -41,32 +29,16 @@ export interface Asset extends JsonObject {
 // @public (undocumented)
 export enum AssetType {
     // (undocumented)
+    icon = "icon",
+    // (undocumented)
     image = "image"
 }
 
 // @public (undocumented)
-export const convertGetPluginsRequestToQueryEntitiesRequest: (query?: GetPluginsRequest) => QueryEntitiesRequest;
+export const decodeGetEntitiesRequest: (searchParams: URLSearchParams) => GetEntitiesRequest;
 
 // @public (undocumented)
-export const decodeFacetParams: (searchParams: URLSearchParams) => string[];
-
-// @public (undocumented)
-export const decodeFilterParams: (searchParams: URLSearchParams) => Record<string, string[]>;
-
-// @public (undocumented)
-export const decodeGetPluginsRequest: (queryString: string) => GetPluginsRequest;
-
-// @public (undocumented)
-export const decodeOrderFields: (searchParams: URLSearchParams) => {
-    field: string;
-    order: "desc" | "asc";
-}[];
-
-// @public (undocumented)
-export const decodeQueryParams: (queryString: string) => {
-    facets?: string[] | undefined;
-    filter?: Record<string, string[]> | undefined;
-};
+export const decodeGetEntityFacetsRequest: (searchParams: URLSearchParams) => GetEntityFacetsRequest;
 
 // @public (undocumented)
 export interface Documentation extends JsonObject {
@@ -93,66 +65,35 @@ export enum DocumentationType {
 }
 
 // @public (undocumented)
-export const encodeFacetParams: (facets: string[]) => URLSearchParams;
+export const encodeGetEntitiesRequest: (request: GetEntitiesRequest) => URLSearchParams;
 
 // @public (undocumented)
-export const encodeFilterParams: (filter: EntityFilterQuery_2) => URLSearchParams;
+export const encodeGetEntityFacetsRequest: (request: GetEntityFacetsRequest) => URLSearchParams;
 
 // @public (undocumented)
-export const encodeGetPluginsQueryParams: (options?: GetPluginsRequest_2) => URLSearchParams;
+export type GetEntitiesRequest = QueryEntitiesInitialRequest;
 
 // @public (undocumented)
-export const encodeOrderFieldsParams: (orderFields: EntityOrderQuery_2) => URLSearchParams;
-
-// @public (undocumented)
-export const encodeQueryParams: (options?: {
-    filter?: EntityFilterQuery_2;
-    facets?: string[];
-}) => string;
-
-// @public (undocumented)
-export const EntityFacetSchema: z.ZodObject<{
-    filter: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">]>>>;
-    facets: z.ZodArray<z.ZodString, "many">;
-}, "strip", z.ZodTypeAny, {
-    facets: string[];
-    filter?: Record<string, string | string[]> | undefined;
-}, {
-    facets: string[];
-    filter?: Record<string, string | string[]> | undefined;
-}>;
-
-export { EntityFilterQuery }
-
-// @public (undocumented)
-export const EntityFilterQuerySchema: z.ZodRecord<z.ZodString, z.ZodUnion<[z.ZodString, z.ZodArray<z.ZodString, "many">]>>;
-
-// @public (undocumented)
-export type FullTextFilter = {
-    term: string;
-    fields?: string[];
-};
-
-export { GetEntityFacetsRequest }
-
-export { GetEntityFacetsResponse }
-
-// @public (undocumented)
-export type GetPluginsRequest = {
-    limit?: number;
-    offset?: number;
-    filter?: EntityFilterQuery;
-    orderFields?: EntityOrderQuery;
-    searchTerm?: string;
-};
-
-// @public (undocumented)
-export enum InstallStatus {
+export interface GetEntitiesResponse<T> {
     // (undocumented)
-    Installed = "Installed",
+    items: T[];
     // (undocumented)
-    NotInstalled = "NotInstalled"
+    pageInfo: {
+        nextCursor?: string;
+        prevCursor?: string;
+    };
+    // (undocumented)
+    totalItems: number;
 }
+
+// @public (undocumented)
+export function isMarketplaceCollection(entity?: Entity): entity is MarketplaceCollection;
+
+// @public (undocumented)
+export function isMarketplacePackage(entity?: Entity): entity is MarketplacePackage;
+
+// @public (undocumented)
+export function isMarketplacePlugin(entity?: Entity): entity is MarketplacePlugin;
 
 // @public (undocumented)
 export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";
@@ -160,34 +101,93 @@ export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";
 // @public (undocumented)
 export interface MarketplaceApi {
     // (undocumented)
-    getEntityFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
+    getCollectionByName(namespace: string, name: string): Promise<MarketplaceCollection>;
     // (undocumented)
-    getPluginByName(name: string): Promise<MarketplacePlugin>;
+    getCollectionPlugins(namespace: string, name: string): Promise<MarketplacePlugin[]>;
     // (undocumented)
-    getPluginListByName(name: string): Promise<MarketplacePluginList>;
+    getCollections(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplaceCollection>>;
     // (undocumented)
-    getPluginLists(): Promise<MarketplacePluginList[]>;
+    getCollectionsFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
-    getPlugins(request?: GetPluginsRequest): Promise<MarketplacePluginWithPageInfo>;
+    getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
-    getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
+    getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
+    // (undocumented)
+    getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
+    // (undocumented)
+    getPluginByName(namespace: string, name: string): Promise<MarketplacePlugin>;
+    // (undocumented)
+    getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
+    // (undocumented)
+    getPluginPackages(namespace: string, name: string): Promise<MarketplacePackage[]>;
+    // (undocumented)
+    getPlugins(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePlugin>>;
 }
+
+// @public (undocumented)
+export type MarketplaceAuthor = string | {
+    name: string;
+    url?: string;
+};
+
+// @public (undocumented)
+export class MarketplaceBackendClient implements MarketplaceApi {
+    constructor(options: MarketplaceBackendClientOptions);
+    // (undocumented)
+    getCollectionByName(namespace: string, name: string): Promise<MarketplaceCollection>;
+    // (undocumented)
+    getCollectionPlugins(namespace: string, name: string): Promise<MarketplacePlugin[]>;
+    // (undocumented)
+    getCollections(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplaceCollection>>;
+    // (undocumented)
+    getCollectionsFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
+    // (undocumented)
+    getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
+    // (undocumented)
+    getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
+    // (undocumented)
+    getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
+    // (undocumented)
+    getPluginByName(namespace: string, name: string): Promise<MarketplacePlugin>;
+    // (undocumented)
+    getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
+    // (undocumented)
+    getPluginPackages(namespace: string, name: string): Promise<MarketplacePackage[]>;
+    // (undocumented)
+    getPlugins(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePlugin>>;
+}
+
+// @public (undocumented)
+export type MarketplaceBackendClientOptions = {
+    discoveryApi: DiscoveryApi;
+    fetchApi: FetchApi;
+};
 
 // @public (undocumented)
 export class MarketplaceCatalogClient implements MarketplaceApi {
     constructor(options: MarketplaceCatalogClientOptions);
     // (undocumented)
-    getEntityFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
+    getCollectionByName(namespace: string, name: string): Promise<MarketplaceCollection>;
     // (undocumented)
-    getPluginByName(name: string): Promise<MarketplacePlugin>;
+    getCollectionPlugins(namespace: string, name: string): Promise<MarketplacePlugin[]>;
     // (undocumented)
-    getPluginListByName(name: string): Promise<MarketplacePluginList>;
+    getCollections(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplaceCollection>>;
     // (undocumented)
-    getPluginLists(): Promise<MarketplacePluginList[]>;
+    getCollectionsFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
-    getPlugins(request?: GetPluginsRequest): Promise<MarketplacePluginWithPageInfo>;
+    getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
-    getPluginsByPluginListName(name: string): Promise<MarketplacePlugin[]>;
+    getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
+    // (undocumented)
+    getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
+    // (undocumented)
+    getPluginByName(namespace: string, name: string): Promise<MarketplacePlugin>;
+    // (undocumented)
+    getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
+    // (undocumented)
+    getPluginPackages(namespace: string, name: string): Promise<MarketplacePackage[]>;
+    // (undocumented)
+    getPlugins(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePlugin>>;
 }
 
 // @public (undocumented)
@@ -197,13 +197,27 @@ export type MarketplaceCatalogClientOptions = {
 };
 
 // @public (undocumented)
-export enum MarketplaceKinds {
+export interface MarketplaceCollection extends Entity {
     // (undocumented)
-    package = "Package",
+    spec?: MarketplaceCollectionSpec;
+}
+
+// @public (undocumented)
+export interface MarketplaceCollectionSpec extends JsonObject {
     // (undocumented)
-    plugin = "Plugin",
+    plugins?: string[];
     // (undocumented)
-    pluginList = "PluginList"
+    type?: 'curated';
+}
+
+// @public (undocumented)
+export enum MarketplaceKind {
+    // (undocumented)
+    Collection = "PluginCollection",
+    // (undocumented)
+    Package = "Package",
+    // (undocumented)
+    Plugin = "Plugin"
 }
 
 // @public (undocumented)
@@ -215,31 +229,57 @@ export interface MarketplacePackage extends Entity {
 // @public (undocumented)
 export interface MarketplacePackageBackstage extends JsonObject {
     // (undocumented)
-    'supported-versions'?: string;
-    // (undocumented)
     role?: string;
+    // (undocumented)
+    supportedVersions?: string;
+}
+
+// @public (undocumented)
+export enum MarketplacePackageInstallStatus {
+    // (undocumented)
+    Installed = "Installed",
+    // (undocumented)
+    NotInstalled = "NotInstalled",
+    // (undocumented)
+    UpdateAvailable = "UpdateAvailable"
 }
 
 // @public (undocumented)
 export interface MarketplacePackageSpec extends JsonObject {
     // (undocumented)
-    appConfigExamples?: AppConfigExample[];
+    appConfigExamples?: MarketplacePackageSpecAppConfigExample[];
     // (undocumented)
     author?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     backstage?: MarketplacePackageBackstage;
     // (undocumented)
     dynamicArtifact?: string;
+    // (undocumented)
+    installStatus?: MarketplacePackageInstallStatus;
     // (undocumented)
     lifecycle?: string;
     // (undocumented)
     owner?: string;
     // (undocumented)
-    packageName: string;
+    packageName?: string;
     // (undocumented)
     partOf?: string[];
     // (undocumented)
+    role?: string;
+    // (undocumented)
     support?: string;
+    // (undocumented)
+    supportedVersions?: string;
+    // (undocumented)
+    version?: string;
+}
+
+// @public (undocumented)
+export interface MarketplacePackageSpecAppConfigExample extends JsonObject {
+    // (undocumented)
+    content: string | JsonObject;
+    // (undocumented)
+    title: string;
 }
 
 // @public (undocumented)
@@ -249,28 +289,25 @@ export interface MarketplacePlugin extends Entity {
 }
 
 // @public (undocumented)
-export interface MarketplacePluginList extends Entity {
+export enum MarketplacePluginInstallStatus {
     // (undocumented)
-    spec?: {
-        plugins: string[];
-    } & MarketplacePluginSpec;
+    Installed = "Installed",
+    // (undocumented)
+    NotInstalled = "NotInstalled",
+    // (undocumented)
+    PartiallyInstalled = "PartiallyInstalled",
+    // (undocumented)
+    UpdateAvailable = "UpdateAvailable"
 }
-
-// @public (undocumented)
-export type MarketplacePluginPackage = {
-    name: string;
-    version?: string;
-    backstage?: {
-        role?: string;
-        'supported-versions'?: string;
-    };
-    distribution?: string;
-};
 
 // @public (undocumented)
 export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     assets?: Asset[];
+    // (undocumented)
+    author?: MarketplaceAuthor;
+    // (undocumented)
+    authors?: MarketplaceAuthor[];
     // (undocumented)
     categories?: string[];
     // (undocumented)
@@ -284,35 +321,11 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     icon?: string;
     // (undocumented)
-    installation?: {
-        markdown?: string;
-        appconfig?: string;
-    };
+    installation?: string;
     // (undocumented)
-    installStatus?: keyof typeof InstallStatus;
+    installStatus?: MarketplacePluginInstallStatus;
     // (undocumented)
-    packages?: (string | MarketplacePluginPackage)[];
-}
-
-// @public (undocumented)
-export interface MarketplacePluginWithPageInfo {
-    // (undocumented)
-    items: MarketplacePlugin[];
-    // (undocumented)
-    pageInfo?: {
-        nextCursor?: string;
-        prevCursor?: string;
-    };
-    // (undocumented)
-    totalItems?: number;
-}
-
-// @public (undocumented)
-export enum SortOrder {
-    // (undocumented)
-    asc = "asc",
-    // (undocumented)
-    desc = "desc"
+    packages?: string[];
 }
 
 ```

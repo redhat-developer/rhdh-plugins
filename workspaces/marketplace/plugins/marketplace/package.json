@@ -34,12 +34,15 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
+    "@backstage/catalog-client": "^1.9.1",
     "@backstage/core-components": "^0.16.3",
     "@backstage/core-plugin-api": "^1.10.3",
+    "@backstage/plugin-catalog-react": "^1.15.1",
     "@backstage/theme": "^0.6.3",
     "@mui/icons-material": "^5.16.7",
     "@mui/material": "^5.12.2",
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",
+    "@scalprum/react-core": "0.9.3",
     "@tanstack/react-query": "^5.60.5"
   },
   "peerDependencies": {
@@ -50,8 +53,12 @@
   "devDependencies": {
     "@backstage/cli": "^0.29.5",
     "@backstage/dev-utils": "^1.1.6",
+    "@backstage/test-utils": "^1.7.4",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.4.7",
     "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "msw": "^1.0.0",
     "react": "^17.0.0 || ^18.0.0",
     "react-router-dom": "^6.3.0"
   },

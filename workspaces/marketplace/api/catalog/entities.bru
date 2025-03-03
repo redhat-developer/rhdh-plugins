@@ -1,0 +1,20 @@
+meta {
+  name: entities
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/api/catalog/entities?offset=0&limit=3
+  body: none
+  auth: bearer
+}
+
+params:query {
+  offset: 0
+  limit: 3
+}
+
+auth:bearer {
+  token: {{token}}
+}

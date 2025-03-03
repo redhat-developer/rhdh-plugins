@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 import {
   createPlugin,
   createRoutableExtension,
-  createComponentExtension,
   type IconComponent,
   createApiFactory,
   discoveryApiRef,
@@ -26,8 +25,10 @@ import {
 
 import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
 
-import { rootRouteRef } from './routes';
-import { marketplaceApiRef, MarketplaceBackendClient } from './api';
+import { MarketplaceBackendClient } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
+import { marketplaceApiRef } from './api';
+import { allRoutes } from './routes';
 
 /**
  * Marketplace Plugin
@@ -35,9 +36,7 @@ import { marketplaceApiRef, MarketplaceBackendClient } from './api';
  */
 export const marketplacePlugin = createPlugin({
   id: 'marketplace',
-  routes: {
-    root: rootRouteRef,
-  },
+  routes: allRoutes,
   apis: [
     createApiFactory({
       api: marketplaceApiRef,
@@ -55,31 +54,46 @@ export const marketplacePlugin = createPlugin({
 });
 
 /**
- * Marketplace page with header and tabs.
+ * Marketplace page with routes for different pages.
  * @public
  */
-export const MarketplacePage = marketplacePlugin.provide(
+export const MarketplaceFullPageRouter = marketplacePlugin.provide(
   createRoutableExtension({
     name: 'MarketplacePage',
     component: () =>
-      import('./components/MarketplacePage').then(m => m.MarketplacePage),
-    mountPoint: rootRouteRef,
+      import('./pages/MarketplaceFullPageRouter').then(
+        m => m.MarketplaceFullPageRouter,
+      ),
+    mountPoint: allRoutes.rootRouteRef,
   }),
 );
 
 /**
- * Marketplace catalog content without header and tabs.
+ * Marketplace page with header and tabs.
  * @public
  */
-export const MarketplaceCatalogContent = marketplacePlugin.provide(
-  createComponentExtension({
-    name: 'MarketplaceCatalogContent',
-    component: {
-      lazy: () =>
-        import('./components/MarketplaceCatalogContent').then(
-          m => m.MarketplaceCatalogContent,
-        ),
-    },
+export const MarketplaceTabbedPageRouter = marketplacePlugin.provide(
+  createRoutableExtension({
+    name: 'MarketplaceTabbedPageRouter',
+    component: () =>
+      import('./pages/MarketplaceTabbedPageRouter').then(
+        m => m.MarketplaceTabbedPageRouter,
+      ),
+    mountPoint: allRoutes.rootRouteRef,
+  }),
+);
+
+/**
+ * @public
+ */
+export const DynamicMarketplacePluginRouter = marketplacePlugin.provide(
+  createRoutableExtension({
+    name: 'DynamicMarketplacePluginRouter',
+    component: () =>
+      import('./pages/DynamicMarketplacePluginRouter').then(
+        m => m.DynamicMarketplacePluginRouter,
+      ),
+    mountPoint: allRoutes.rootRouteRef,
   }),
 );
 
