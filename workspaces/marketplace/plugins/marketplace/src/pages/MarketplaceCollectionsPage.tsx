@@ -30,7 +30,7 @@ export const MarketplaceCollectionsPage = () => {
   return (
     <ReactQueryProvider>
       <Page themeId={themeId}>
-        <Header title="Collections" type="Package" />
+        <Header title="Collections" />
         <Content>
           <ErrorBoundary>
             <MarketplaceCollectionsGrid />

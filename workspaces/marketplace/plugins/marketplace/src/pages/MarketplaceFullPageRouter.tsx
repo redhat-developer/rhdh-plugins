@@ -17,13 +17,7 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
-import {
-  useApp,
-  useRouteRef,
-  useRouteRefParams,
-} from '@backstage/core-plugin-api';
-
-import { rootRouteRef, pluginRouteRef } from '../routes';
+import { useApp } from '@backstage/core-plugin-api';
 
 import { MarketplaceHomePage } from './MarketplaceHomePage';
 
@@ -43,17 +37,7 @@ const NotFound = () => {
   return <NotFoundErrorPage />;
 };
 
-export const MarketplaceRouter = () => {
-  const getIndexPath = useRouteRef(rootRouteRef);
-  const getPluginPath = useRouteRef(pluginRouteRef);
-
-  const indexPath = getIndexPath();
-  const pluginPath = getPluginPath({ namespace: ':namespace', name: ':name' });
-
-  console.log('xxx MarketplaceRouter', indexPath, pluginPath);
-
-  console.log('xxx params', useRouteRefParams(rootRouteRef));
-
+export const MarketplaceFullPageRouter = () => {
   return (
     <Routes>
       <Route path="/" Component={MarketplaceHomePage} />

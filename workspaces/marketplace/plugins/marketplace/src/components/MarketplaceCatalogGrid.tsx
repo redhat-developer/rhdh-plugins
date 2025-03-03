@@ -16,29 +16,16 @@
 
 import React from 'react';
 
-import { usePlugins } from '../hooks/usePlugins';
+import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
+
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
-import { useQueryFullTextSearch } from '../hooks/useQueryFullTextSearch';
 
 export const MarketplaceCatalogGrid = () => {
-  const plugins = usePlugins({});
-
-  const fullTextSearch = useQueryFullTextSearch();
-
-  const filteredPlugins = React.useMemo(() => {
-    if (!fullTextSearch.current || !plugins.data) {
-      return plugins.data?.items;
-    }
-    const lowerCaseSearch = fullTextSearch.current.toLocaleLowerCase('en-US');
-    return plugins.data.items.filter(entry => {
-      const lowerCaseValue = entry.metadata?.title?.toLocaleLowerCase('en-US');
-      return lowerCaseValue?.includes(lowerCaseSearch);
-    });
-  }, [fullTextSearch, plugins.data]);
+  const filteredPlugins = useFilteredPlugins();
 
   return (
     <PluginCardGrid>
-      {plugins.isLoading ? (
+      {filteredPlugins.isLoading ? (
         <>
           <PluginCardSkeleton />
           <PluginCardSkeleton />
@@ -46,7 +33,7 @@ export const MarketplaceCatalogGrid = () => {
           <PluginCardSkeleton />
         </>
       ) : null}
-      {filteredPlugins?.map(plugin => (
+      {filteredPlugins.data?.map(plugin => (
         <PluginCard key={plugin.metadata.name} plugin={plugin} />
       ))}
     </PluginCardGrid>

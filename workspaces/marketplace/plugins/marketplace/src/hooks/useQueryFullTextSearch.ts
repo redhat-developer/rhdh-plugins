@@ -23,7 +23,7 @@ const clearOtherParams = ['page'];
 export const useQueryFullTextSearch = (debounce?: number) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const current = searchParams.get('q') ?? '';
+  const current = searchParams.get(fullTextSearchParam) ?? '';
 
   const onChangeDebounceTimeout = React.useRef<ReturnType<typeof setTimeout>>();
 

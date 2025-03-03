@@ -24,7 +24,7 @@ import {
 } from '@backstage/core-components';
 
 import { themeId } from '../consts';
-import { MarketplacePluginsTable } from '../components/MarketplacePluginsTable';
+import { MarketplaceCatalogContent } from '../components/MarketplaceCatalogContent';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 
 export const MarketplaceHomePage = () => {
@@ -34,7 +34,7 @@ export const MarketplaceHomePage = () => {
         <Header title="Marketplace" />
         <Content>
           <ErrorBoundary>
-            <MarketplacePluginsTable />
+            <MarketplaceCatalogContent />
           </ErrorBoundary>
         </Content>
       </Page>

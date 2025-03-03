@@ -161,18 +161,6 @@ export const MarketplacePluginsGrid = () => {
 
   const [search] = useQueryParamState<string | undefined>('q');
 
-  const filteredEntries = React.useMemo(() => {
-    if (!search || !collections.data || !collections.data.items) {
-      return collections.data?.items;
-    }
-    const lowerCaseSearch = search.toLocaleLowerCase('en-US');
-    return collections.data.items.filter(pluginList => {
-      const lowerCaseValue =
-        pluginList.metadata?.title?.toLocaleLowerCase('en-US');
-      return lowerCaseValue?.includes(lowerCaseSearch);
-    });
-  }, [search, collections.data]);
-
   return (
     <ItemCardGrid>
       {collections.isLoading ? (

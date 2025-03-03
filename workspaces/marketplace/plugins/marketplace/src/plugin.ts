@@ -62,7 +62,9 @@ export const MarketplaceFullPageRouter = marketplacePlugin.provide(
   createRoutableExtension({
     name: 'MarketplacePage',
     component: () =>
-      import('./pages/MarketplaceRouter').then(m => m.MarketplaceRouter),
+      import('./pages/MarketplaceFullPageRouter').then(
+        m => m.MarketplaceFullPageRouter,
+      ),
     mountPoint: allRoutes.rootRouteRef,
   }),
 );
@@ -83,7 +85,6 @@ export const MarketplaceTabbedPageRouter = marketplacePlugin.provide(
 );
 
 /**
- * Workaround...
  * @public
  */
 export const DynamicMarketplacePluginRouter = marketplacePlugin.provide(

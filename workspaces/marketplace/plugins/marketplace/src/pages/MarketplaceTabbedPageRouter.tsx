@@ -34,9 +34,14 @@ import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
 
 import { MarketplacePackagesTable } from '../components/MarketplacePackagesTable';
 import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer';
+
+import { useCollections } from '../hooks/useCollections';
+
 import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
 
 const Tabs = () => {
+  const showCollections = !!useCollections({}).data?.items?.length;
+
   return (
     <>
       <Page themeId={themeId}>
@@ -45,9 +50,11 @@ const Tabs = () => {
           <TabbedLayout.Route path="/catalog" title="Catalog">
             <MarketplaceCatalogContent />
           </TabbedLayout.Route>
-          <TabbedLayout.Route path="/collections" title="Collections">
-            <MarketplaceCollectionsGrid />
-          </TabbedLayout.Route>
+          {showCollections && (
+            <TabbedLayout.Route path="/collections" title="Collections">
+              <MarketplaceCollectionsGrid />
+            </TabbedLayout.Route>
+          )}
           <TabbedLayout.Route path="/plugins" title="Plugins">
             <MarketplacePluginsTable />
           </TabbedLayout.Route>

@@ -22,11 +22,10 @@ import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-// import { FilterLayout } from '../shared-components/FilterLayout';
 import { SearchTextField } from '../shared-components/SearchTextField';
 
 import { useCollections } from '../hooks/useCollections';
-import { usePlugins } from '../hooks/usePlugins';
+import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { MarketplacePluginFilter } from './MarketplacePluginFilter';
 import { CollectionHorizontalScrollRow } from './CollectionHorizontalScrollRow';
@@ -38,7 +37,7 @@ export const MarketplaceCatalogContent = () => {
     },
   });
 
-  const plugins = usePlugins({});
+  const filteredPlugins = useFilteredPlugins();
 
   return (
     <CatalogFilterLayout>
@@ -63,7 +62,9 @@ export const MarketplaceCatalogContent = () => {
               >
                 <Typography variant="h4">
                   Plugins
-                  {plugins.data ? ` (${plugins.data?.items?.length})` : null}
+                  {filteredPlugins.data
+                    ? ` (${filteredPlugins.data?.length})`
+                    : null}
                 </Typography>
                 <SearchTextField variant="search" />
               </Stack>

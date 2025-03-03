@@ -21,21 +21,21 @@ import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import {
   marketplacePlugin,
-  MarketplaceRouter,
-  MarketplaceTabbedPage,
+  MarketplaceFullPageRouter,
+  MarketplaceTabbedPageRouter,
 } from '../src/plugin';
 
 createDevApp()
   .registerPlugin(marketplacePlugin)
   .addThemes(getAllThemes())
   .addPage({
-    element: <MarketplaceRouter />,
-    title: 'MP Router',
-    path: '/marketplace',
+    element: <MarketplaceFullPageRouter />,
+    title: 'FullPageRouter',
+    path: '/full-page-router',
   })
   .addPage({
-    element: <MarketplaceTabbedPage />,
-    title: 'MP TabbedPage',
-    path: '/marketplace-tabbed-page',
+    element: <MarketplaceTabbedPageRouter />,
+    title: 'TabbedPageRouter',
+    path: '/tabbed-page-router',
   })
   .render();
