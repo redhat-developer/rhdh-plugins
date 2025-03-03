@@ -21,6 +21,8 @@ import {
   ErrorPage,
   Link,
   LinkButton,
+  Table,
+  TableColumn,
 } from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 
@@ -31,17 +33,24 @@ import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
 
 import {
+  MarketplacePackage,
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { mapMarketplacePluginInstallStatusToButton } from '../labels';
+import {
+  mapBackstageRoleToLabel,
+  mapMarketplacePluginInstallStatusToButton,
+  mapPackageInstallStatusToLabel,
+} from '../labels';
 import { rootRouteRef, pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 
 import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
+import { usePluginPackages } from '../hooks/usePluginPackages';
+import { Links } from './Links';
 
 export const MarketplacePluginContentSkeleton = () => {
   return (
@@ -87,6 +96,78 @@ export const MarketplacePluginContentSkeleton = () => {
         </Grid>
       </Grid>
     </Content>
+  );
+};
+
+const columns: TableColumn<MarketplacePackage>[] = [
+  {
+    title: 'Package name',
+    field: 'spec.packageName',
+    type: 'string',
+  },
+  {
+    title: 'Version',
+    field: 'spec.version',
+    type: 'string',
+  },
+  {
+    title: 'Role',
+    field: 'spec.backstage.role',
+    type: 'string',
+    render(data) {
+      return (
+        (data.spec?.backstage?.role
+          ? mapBackstageRoleToLabel[data.spec.backstage.role]
+          : undefined) ??
+        data.spec?.backstage?.role ??
+        '-'
+      );
+    },
+  },
+  {
+    title: 'Supported version',
+    field: 'spec.backstage.supportedVersions',
+    type: 'string',
+  },
+  {
+    title: 'Status',
+    field: 'spec.installStatus',
+    type: 'string',
+    render(data) {
+      return data.spec?.installStatus
+        ? mapPackageInstallStatusToLabel[data.spec.installStatus]
+        : '-';
+    },
+  },
+];
+
+const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const packages = usePluginPackages(
+    plugin.metadata.namespace!,
+    plugin.metadata.name,
+  );
+
+  if (!packages.data?.length) {
+    return null;
+  }
+
+  return (
+    <div>
+      <Typography variant="h5" sx={{ pt: 2 }}>
+        Versions
+      </Typography>
+      <Table
+        columns={columns}
+        data={packages.data}
+        options={{
+          toolbar: false,
+          paging: false,
+          search: false,
+          padding: 'dense',
+        }}
+        style={{ outline: 'none' }}
+      />
+    </div>
   );
 };
 
@@ -186,6 +267,10 @@ export const MarketplacePluginContent = ({
           </Grid>
           <Grid item md={9}>
             <Markdown title="About" content={about} />
+
+            <Links entity={plugin} />
+
+            <PluginPackageTable plugin={plugin} />
           </Grid>
         </Grid>
       </Stack>

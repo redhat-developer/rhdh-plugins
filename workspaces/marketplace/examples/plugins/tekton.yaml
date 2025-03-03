@@ -5,6 +5,9 @@ metadata:
   name: tekton
   title: Pipelines with Tekton
   description: Easily view Tekton PipelineRun status for your services in Backstage.
+  links:
+    - url: https://tekton.dev
+      title: Tekton
 spec:
   icon: https://janus-idp.io/images/plugins/tekton.svg
   developer: Red Hat

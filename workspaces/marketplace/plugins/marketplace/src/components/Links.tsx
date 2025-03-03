@@ -18,6 +18,8 @@ import React from 'react';
 
 import { Link } from '@backstage/core-components';
 
+import Typography from '@mui/material/Typography';
+
 import {
   MarketplaceCollection,
   MarketplacePackage,
@@ -37,13 +39,14 @@ export const Links = ({
 
   return (
     <div>
-      <strong>Links:</strong>
-      <br />
+      <Typography variant="h5" sx={{ pt: 2 }}>
+        Links
+      </Typography>
       <ul>
         {links.map(link => (
           <li key={link.url}>
             <Link to={link.url} externalLinkIcon>
-              {link.title}
+              {link.title ?? link.url}
             </Link>
           </li>
         ))}

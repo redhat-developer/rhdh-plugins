@@ -20,9 +20,9 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export const mapBackstageRoleToLabel: Record<string, string> = {
-  'backend-plugin': 'Backend plugin',
-  'backend-plugin-module': 'Backend plugin module',
-  'frontend-plugin': 'Frontend plugin',
+  'backend-plugin': 'Backend',
+  'backend-plugin-module': 'Backend module',
+  'frontend-plugin': 'Frontend',
 };
 
 export const mapMarketplacePluginInstallStatusToLabel: Record<

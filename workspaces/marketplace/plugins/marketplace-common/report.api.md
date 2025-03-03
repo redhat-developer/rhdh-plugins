@@ -324,7 +324,7 @@ export interface MarketplacePluginSpec extends JsonObject {
     categories?: string[];
     // (undocumented)
     description?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     developer?: string;
     // (undocumented)
     documentation?: Documentation[];
