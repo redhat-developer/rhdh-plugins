@@ -13,4 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { ExampleComponent } from './ExampleComponent';
+export default {
+  data: [
+    {
+      entityref: 'techdocs:index-page',
+      count: 2,
+      last_used: '2025-03-06T06:25:16.708Z',
+    },
+    {
+      entityref: 'techdocs:insights',
+      count: 4,
+      last_used: '2025-03-06T06:25:16.708Z',
+    },
+    {
+      entityref: 'techdocs:argocd',
+      count: 7,
+      last_used: '2025-03-06T06:25:16.708Z',
+    },
+  ],
+};
