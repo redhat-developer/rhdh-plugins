@@ -35,7 +35,7 @@ createDevApp()
   })
   .addPage({
     element: <SandboxActivitiesPage />,
-    title: 'Sandbox activities',
+    title: 'Activities',
     icon: StarOutlineOutlinedIcon,
     path: '/activities',
   })

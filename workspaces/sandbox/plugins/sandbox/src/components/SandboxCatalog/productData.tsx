@@ -16,115 +16,65 @@
 import React from 'react';
 import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
-import DeveloperHubIcon from '../../assets/images/developer-hub.png';
-import OpenShiftIcon from '../../assets/images/openshift.png';
-import AnsibleIcon from '../../assets/images/ansible.png';
-import OpenShiftAIIcon from '../../assets/images/openshift-ai.png';
-import DevSpacesIcon from '../../assets/images/dev-spaces.png';
-import DataScienceIcon from '../../assets/images/data-science.png';
+import OpenShiftIcon from '../../assets/logos/openshift.png';
+import AnsibleIcon from '../../assets/logos/ansible.png';
+import OpenShiftAIIcon from '../../assets/logos/openshift-ai.png';
+import DevSpacesIcon from '../../assets/logos/devspaces.png';
+import OpenshiftVirtualizationIcon from '../../assets/logos/openshift-virtualization.png';
 
-const getSandboxCatalogCardIcon = (type: 'success' | 'warning') => {
-  const iconProps = { style: { width: '16px' } };
-  switch (type) {
-    case 'success':
-      return <TaskAltRoundedIcon htmlColor="#8476D1" {...iconProps} />;
-    case 'warning':
-      return <ErrorOutlineRoundedIcon htmlColor="#009596" {...iconProps} />;
-    default:
-      return <TaskAltRoundedIcon htmlColor="#8476D1" {...iconProps} />;
-  }
+const iconProps = { sx: { width: '16px' } };
+
+const iconMap: Record<'success' | 'warning', JSX.Element> = {
+  success: <TaskAltRoundedIcon htmlColor="#8476D1" {...iconProps} />,
+  warning: <ErrorOutlineRoundedIcon htmlColor="#009596" {...iconProps} />,
 };
+
+const getSandboxCatalogCardIcon = (type: 'success' | 'warning') =>
+  iconMap[type] || iconMap.success;
 
 type ProductDescription = {
   icon: JSX.Element;
   value: string;
 };
 
-type ProductData = {
+export type ProductData = {
+  id: number;
   title: string;
-  image: {
-    icon: string;
-    maxWidth: string;
-  };
+  image: string;
   description: ProductDescription[];
   link: string;
 };
 
 export const productData: ProductData[] = [
   {
-    title: 'Red Hat Developer Hub',
-    image: {
-      icon: DeveloperHubIcon,
-      maxWidth: '207px',
-    },
+    id: 1,
+    title: 'OpenShift',
+    image: OpenShiftIcon,
     description: [
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Speeds up building and deployment',
+        value: 'Comprehensive cloud-native application platform',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'One-stop API access for developers',
+        value: 'Consistently develop and deploy applications at scale',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Enables single sign-on (SSO)',
+        value: 'Streamline application development with CI/CD tools',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Supports organizational growth',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Integrates GitLab for source control',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Simplifies resource access',
+        value:
+          'Manage containers, VMs, and serverless workloads across the hybrid cloud',
       },
     ],
     link: '#',
   },
   {
-    title: 'Red Hat Ansible Automation Platform',
-    image: {
-      icon: AnsibleIcon,
-      maxWidth: '207px',
-    },
-    description: [
-      {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Across on-premise, cloud, and hybrid',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Manages workflows at scale',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Enforces policies across systems',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Reduces manual tasks',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Easy UI for design and monitoring',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('warning'),
-        value: "It'll take up to 20 minutes to provision",
-      },
-    ],
-    link: '#',
-  },
-  {
-    title: 'Red Hat OpenShift AI',
-    image: {
-      icon: OpenShiftAIIcon,
-      maxWidth: '190px',
-    },
+    id: 2,
+    title: 'OpenShift AI',
+    image: OpenShiftAIIcon,
     description: [
       {
         icon: getSandboxCatalogCardIcon('success'),
@@ -136,109 +86,95 @@ export const productData: ProductData[] = [
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Easy model management',
+        value: 'Train, serve and monitor models',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Supports multiple AI frameworks',
+        value: 'Supports predictive and generative AI',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Built-in AI workload security',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Integration with OpenShift',
+        value: 'Scales across the hybrid cloud',
       },
     ],
     link: '#',
   },
   {
-    title: 'Red Hat OpenShift',
-    image: {
-      icon: OpenShiftIcon,
-      maxWidth: '180px',
-    },
+    id: 3,
+    title: 'Dev Spaces',
+    image: DevSpacesIcon,
     description: [
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'A cloud-native application platform',
+        value: 'Cloud Development Environment',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Manage development securely',
+        value: 'Developer workspaces defined as code',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Standardize CI/CD workflows',
+        value: 'Kubernetes development made easy',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Supports organizational growth',
+        value: 'Near instant onboarding',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Support for multiple environments',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Trial without commitment',
+        value: 'VS Code and JetBrains IDEs',
       },
     ],
     link: '#',
   },
   {
-    title: 'Red Hat Dev Spaces',
-    image: {
-      icon: DevSpacesIcon,
-      maxWidth: '190px',
-    },
+    id: 4,
+    title: 'Ansible Automation Platform',
+    image: AnsibleIcon,
     description: [
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Kubernetes-native collaboration',
+        value: 'Scalable, centralized automation solution',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Speeds up app development',
+        value: 'Available on-prem, cloud, and hybrid',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Consistent OpenShift environments',
+        value: 'Manage and monitor workflows, content, and execution',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Start coding in under 2 minutes',
+        value: 'Enforce policies and consistent configurations',
       },
       {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Code from any browser',
-      },
-      {
-        icon: getSandboxCatalogCardIcon('success'),
-        value: 'Trial without commitment',
+        icon: getSandboxCatalogCardIcon('warning'),
+        value: '20-minute environment provisioning',
       },
     ],
     link: '#',
   },
   {
-    title: 'Red Hat Data Science',
-    image: {
-      icon: DataScienceIcon,
-      maxWidth: '190px',
-    },
+    id: 5,
+    title: 'OpenShift Virtualization',
+    image: OpenshiftVirtualizationIcon,
     description: [
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Part of the Red Hat OpenShift AI portfolio',
+        value: 'Migrate traditional VM workloads to OpenShift',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Provides tools for the AI/ML lifecycle',
+        value: 'Unified platform for VMs, containers, and serverless workloads',
       },
       {
         icon: getSandboxCatalogCardIcon('success'),
-        value: 'Trial without commitment',
+        value: 'Supports modernizing application development',
+      },
+      {
+        icon: getSandboxCatalogCardIcon('success'),
+        value: 'Comprehensive development and operations tools',
       },
     ],
     link: '#',

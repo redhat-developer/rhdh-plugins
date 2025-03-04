@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 import React from 'react';
-import { Typography, Button, makeStyles, Link, Theme } from '@material-ui/core';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import { useTheme } from '@mui/material/styles';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
-import { Header } from '@backstage/core-components';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  link: {
-    fontSize: '12px',
-  },
-  button: {
-    textTransform: 'none',
-    marginRight: theme.spacing(2),
-  },
-}));
+import { Header, Link } from '@backstage/core-components';
 
 interface SandboxHeaderProps {
   pageTitle: string;
@@ -38,7 +30,7 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
   pageTitle,
   showSubTitle,
 }) => {
-  const classes = useStyles();
+  const theme = useTheme();
   return (
     <Header
       title={
@@ -55,8 +47,7 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
           <Typography variant="body1" color="textSecondary">
             powered by{' '}
             <Link
-              href="https://developers.redhat.com/rhdh/overview"
-              target="_blank"
+              to="https://developers.redhat.com/rhdh/overview"
               underline="none"
             >
               Red Hat Developer Hub{' '}
@@ -64,7 +55,7 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
             <OpenInNewIcon
               fontSize="small"
               color="primary"
-              className={classes.link}
+              sx={{ fontSize: '12px' }}
             />
           </Typography>
         )
@@ -76,7 +67,15 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
         color="primary"
         startIcon={<SupportAgentIcon />}
         endIcon={<OpenInNewIcon />}
-        className={classes.button}
+        sx={{
+          textTransform: 'none',
+          marginRight: theme.spacing(2),
+          border: `1px solid ${theme.palette.primary.main}`,
+          '&:hover': {
+            backgroundColor: 'rgba(25, 118, 210, 0.04)',
+            borderColor: '#1976d2',
+          },
+        }}
       >
         Contact Red Hat Sales
       </Button>
