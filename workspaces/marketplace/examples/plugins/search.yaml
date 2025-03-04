@@ -15,5 +15,4 @@ spec:
     - Backstage Community
   lifecycle: production
   packages:
-    - name: '@backstage/plugin-search-backend'
-      version: '^1.0.0, ^1.1.1'
+    - '@backstage/plugin-search-backend'
