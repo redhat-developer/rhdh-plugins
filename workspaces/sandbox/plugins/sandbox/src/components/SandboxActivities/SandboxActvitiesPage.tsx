@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 import React from 'react';
-import { makeStyles, Theme } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
+import { Theme } from '@mui/material/styles';
 import { Page, Content } from '@backstage/core-components';
 import { SandboxHeader } from '../SandboxHeader';
-import { SandboxActivitiesFeatured } from './SandboxActivitiesFeatured';
+import { SandboxActivitiesGrid } from './SandboxActivitiesGrid';
 
 const useStyles = makeStyles((theme: Theme) => ({
   content: {
@@ -30,8 +31,8 @@ export const SandboxActivitiesPage = () => {
   return (
     <Page themeId="sandbox">
       <SandboxHeader pageTitle="Sandbox activities" />
-      <Content className={classes.content} noPadding>
-        <SandboxActivitiesFeatured />
+      <Content noPadding className={classes.content}>
+        <SandboxActivitiesGrid />
       </Content>
     </Page>
   );

@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+export const getCookie = (name: string) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()!.split(';').shift();
+  return '';
+};
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
-
-export * from './plugin';
+export const setCookie = (name: string, value: string, days = 365) => {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+};

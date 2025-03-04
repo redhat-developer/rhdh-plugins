@@ -13,34 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { makeStyles, Theme } from '@material-ui/core';
+import React, { useContext } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
-import React from 'react';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  footer: {
-    padding: theme.spacing(2),
-    backgroundColor: theme.palette.background.paper,
-  },
-}));
+import { useTheme } from '@mui/material/styles';
+import { Link } from '@backstage/core-components';
+import { Context } from './SandboxCatalogPage';
+import { AccessCodeInputModal } from '../Modals/AccessCodeInputModal';
 
 export const SandboxCatalogFooter = () => {
-  const classes = useStyles();
+  const theme = useTheme();
+  const [accessCodeModalOpen, setAccessCodeModalOpen] = React.useState(false);
+  const [buttonClicked] = useContext(Context);
+
+  if (buttonClicked) {
+    return null;
+  }
+
+  const handleClick = () => {
+    setAccessCodeModalOpen(true);
+  };
+
   return (
-    <Box className={classes.footer} component="footer">
-      <Typography variant="body1" color="textPrimary" align="center">
-        Have an activation code?
-        <Link
-          href="https://developers.redhat.com/rhdh/overview"
-          target="_blank"
-          underline="none"
-        >
-          {' '}
-          Click here
-        </Link>
-      </Typography>
-    </Box>
+    <>
+      <Box
+        component="footer"
+        sx={{
+          padding: theme.spacing(2),
+          backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#0E1214',
+        }}
+      >
+        <Typography variant="body1" color="textPrimary" align="center">
+          Have an activation code?
+          <Link to="#" onClick={handleClick} style={{ cursor: 'pointer' }}>
+            {' '}
+            Click here
+          </Link>
+        </Typography>
+      </Box>
+      <AccessCodeInputModal
+        open={accessCodeModalOpen}
+        setOpen={setAccessCodeModalOpen}
+      />
+    </>
   );
 };

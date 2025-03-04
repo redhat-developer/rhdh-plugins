@@ -16,9 +16,11 @@
 import {
   createPlugin,
   createRoutableExtension,
+  IconComponent,
 } from '@backstage/core-plugin-api';
-
 import { rootRouteRef } from './routes';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
 
 export const sandboxPlugin = createPlugin({
   id: 'sandbox',
@@ -27,6 +29,10 @@ export const sandboxPlugin = createPlugin({
   },
 });
 
+/**
+ * Sandbox Page
+ * @public
+ */
 export const SandboxPage = sandboxPlugin.provide(
   createRoutableExtension({
     name: 'SandboxPage',
@@ -38,6 +44,10 @@ export const SandboxPage = sandboxPlugin.provide(
   }),
 );
 
+/**
+ * Sandbox Activities Page
+ * @public
+ */
 export const SandboxActivitiesPage = sandboxPlugin.provide(
   createRoutableExtension({
     name: 'SandboxActivitiesPage',
@@ -48,3 +58,13 @@ export const SandboxActivitiesPage = sandboxPlugin.provide(
     mountPoint: rootRouteRef,
   }),
 );
+
+/**
+ * @public
+ */
+export const SandboxHomeIcon: IconComponent = HomeOutlinedIcon;
+
+/**
+ * @public
+ */
+export const SandboxActivitiesIcon: IconComponent = StarOutlineOutlinedIcon;

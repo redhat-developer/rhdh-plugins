@@ -14,108 +14,40 @@
  * limitations under the License.
  */
 import React from 'react';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  makeStyles,
-  Theme,
-  CardActions,
-  CardMedia,
-  Link,
-} from '@material-ui/core';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { ItemCardGrid } from '@backstage/core-components';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 import { productData } from './productData';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  card: {
-    maxWidth: '330px',
-    minHeight: '330px',
-    padding: theme.spacing(2),
-  },
-  title: {
-    padding: theme.spacing(2),
-  },
-  image: {
-    maxWidth: '207px',
-    height: 'auto',
-  },
-}));
-
-interface SandboxCatalogCardProps {
-  key: React.Key;
-  title: string;
-  image: {
-    icon: string;
-    maxWidth: string;
-  };
-  description: {
-    icon: React.ReactNode;
-    value: string;
-  }[];
-  link: string;
-}
-
-const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
-  key,
-  title,
-  image,
-  description,
-  link,
-}) => {
-  const classes = useStyles();
-  return (
-    <Card className={classes.card} elevation={0} key={key}>
-      <CardMedia className={classes.title}>
-        <img
-          src={image.icon}
-          alt={title}
-          style={{ maxWidth: image.maxWidth, height: 'auto' }}
-        />
-      </CardMedia>
-      <CardContent style={{ padding: '0 16px' }}>
-        {description.map((point, index) => (
-          <Typography
-            key={index}
-            color="textPrimary"
-            style={{ fontSize: '14px' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              {point.icon} {point.value}
-            </div>
-          </Typography>
-        ))}
-      </CardContent>
-      <CardActions style={{ justifyContent: 'flex-start' }}>
-        <Link href={link} target="_blank" underline="none">
-          <Button
-            size="medium"
-            color="primary"
-            variant="outlined"
-            endIcon={<OpenInNewIcon />}
-          >
-            Try it
-          </Button>
-        </Link>
-      </CardActions>
-    </Card>
-  );
-};
+import useGreenCorners from '../../hooks/useGreenCorners';
+import { SandboxCatalogCard } from './SandboxCatalogCard';
 
 export const SandboxCatalogGrid: React.FC = () => {
+  const { greenCorners, setGreenCorners } = useGreenCorners(productData);
+
+  const showGreenCorner = (id: number) => {
+    setGreenCorners(prev =>
+      prev.map(gc => (gc.id === id ? { ...gc, show: true } : gc)),
+    );
+  };
+
   return (
-    <ItemCardGrid>
-      {productData?.map((product, index) => (
-        <SandboxCatalogCard
-          key={index}
-          title={product.title}
-          image={product.image}
-          description={product.description}
-          link={product.link}
-        />
+    <Grid container spacing={3} sx={{ maxWidth: '100%' }}>
+      {productData?.map(product => (
+        <Grid item xs={12} sm="auto" md="auto" key={product.id}>
+          <Box sx={{ width: '330px', height: '372px' }}>
+            <SandboxCatalogCard
+              key={product.id}
+              title={product.title}
+              image={product.image}
+              description={product.description}
+              link={product.link}
+              greenCorner={
+                greenCorners?.find(gc => gc.id === product.id)?.show || false
+              }
+              showGreenCorner={() => showGreenCorner(product.id)}
+            />
+          </Box>
+        </Grid>
       ))}
-    </ItemCardGrid>
+    </Grid>
   );
 };

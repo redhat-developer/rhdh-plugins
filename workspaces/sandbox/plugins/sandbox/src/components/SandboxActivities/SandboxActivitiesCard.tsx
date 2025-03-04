@@ -18,49 +18,64 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CardMedia from '@mui/material/CardMedia';
-import { makeStyles } from '@material-ui/core';
-import FeaturedArticleBanner from '../../assets/images/featured-article.png';
+import { useTheme } from '@mui/material/styles';
+import { Link } from '@backstage/core-components';
 
-const useStyles = makeStyles(theme => ({
-  card: {
-    maxWidth: '326px',
-    minHeight: '368px',
-    borderRadius: 2,
-    backgroundColor: theme.palette.background.default,
-  },
-}));
+type SandboxActivitiesCardProps = {
+  key: number;
+  article: {
+    img: string;
+    title: string;
+    description: string;
+    link: string;
+  };
+};
 
-export const SandboxActivitiesCard = ({ index }: { index: number }) => {
-  const classes = useStyles();
+export const SandboxActivitiesCard: React.FC<SandboxActivitiesCardProps> = ({
+  key,
+  article: { img, title, description, link },
+}) => {
+  const theme = useTheme();
+
   return (
-    <Card className={classes.card} key={index} elevation={0}>
-      <CardMedia
-        component="img"
-        height="120"
-        width="326"
-        image={FeaturedArticleBanner}
-        alt="Developer working on application"
-      />
-      <CardContent style={{ margin: '4px' }}>
-        <Typography
-          variant="h5"
-          color="primary"
-          style={{ fontWeight: 600 }}
-          gutterBottom
-        >
-          Deploy an application on Developer Sandbox
-        </Typography>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          style={{ fontStyle: 'italic' }}
-        >
-          Enables developers to easily test and refine their applications in a
-          safe, isolated environment before launching them to production. This
-          streamlined process reduces deployment risks and accelerates the
-          development cycle, allowing for quicker iterations and improvements.
-        </Typography>
-      </CardContent>
-    </Card>
+    <Link to={link} style={{ textDecoration: 'none' }}>
+      <Card
+        key={key}
+        elevation={0}
+        sx={{
+          maxWidth: '326px',
+          minHeight: '368px',
+          borderRadius: 2,
+          border: `1px solid ${
+            theme.palette.mode === 'dark' ? '#57585a' : '#E4E4E4'
+          }`,
+        }}
+      >
+        <CardMedia
+          component="img"
+          height="120"
+          width="326"
+          image={img}
+          alt={title}
+        />
+        <CardContent sx={{ margin: theme.spacing(0.5), borderRadius: 2 }}>
+          <Typography
+            variant="h5"
+            color="primary"
+            sx={{ fontWeight: 600 }}
+            gutterBottom
+          >
+            {title}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            sx={{ fontStyle: 'italic' }}
+          >
+            {description}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Link>
   );
 };
