@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.1.4
+
+### Patch Changes
+
+- c977dbc: fix mount points in app-config.dynamic.yaml
+
 ## 0.1.3
 
 ### Patch Changes
