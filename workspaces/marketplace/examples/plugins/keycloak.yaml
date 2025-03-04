@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../json-schema/plugin.json
 apiVersion: marketplace.backstage.io/v1alpha1
 kind: Plugin
 metadata:
@@ -5,13 +6,11 @@ metadata:
   title: Authentication and Authorization with Keycloak
   description: Load users and groups from Keycloak, enabling use of multiple authentication providers to be applied to Backstage entities.
 spec:
-  type: backend-plugin
+  icon: https://janus-idp.io/images/plugins/keycloak.svg
+  developer: Red Hat
   lifecycle: production
-  owner: redhat
   categories:
     - Auth
-  developer: Red Hat
-  icon: https://janus-idp.io/images/plugins/keycloak.svg
   description: |
     # Keycloak backend plugin for Backstage
 

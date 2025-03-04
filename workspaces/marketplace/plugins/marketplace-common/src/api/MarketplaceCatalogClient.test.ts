@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,45 +14,80 @@
  * limitations under the License.
  */
 import { CatalogClient } from '@backstage/catalog-client';
+
+import {
+  MarketplaceCollection,
+  MarketplaceKind,
+  MarketplacePackage,
+  MarketplacePlugin,
+} from '../types';
+
 import { MarketplaceCatalogClient } from './MarketplaceCatalogClient';
-import { MarketplaceKinds } from '../types';
 
-const mockPlugins = [
+const mockCollections: MarketplaceCollection[] = [
   {
     apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.plugin,
-    metadata: { name: 'plugin1' },
-  },
-  {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.plugin,
-    metadata: { name: 'plugin2' },
-  },
-];
-
-const mockPluginList = [
-  {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
-    kind: MarketplaceKinds.pluginList,
-    metadata: { name: 'test-featured-plugins' },
+    kind: MarketplaceKind.Collection,
+    metadata: { namespace: 'default', name: 'featured' },
     spec: {
+      type: 'curated',
       plugins: ['plugin1', 'plugin2'],
     },
   },
 ];
 
+const mockPackages: MarketplacePackage[] = [
+  {
+    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    kind: MarketplaceKind.Package,
+    metadata: { namespace: 'default', name: 'package1' },
+    spec: {},
+  },
+  {
+    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    kind: MarketplaceKind.Package,
+    metadata: { namespace: 'default', name: 'package2' },
+    spec: {},
+  },
+];
+
+const mockPlugins: MarketplacePlugin[] = [
+  {
+    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    kind: MarketplaceKind.Plugin,
+    metadata: { namespace: 'default', name: 'plugin1' },
+    spec: {
+      packages: ['package1'],
+    },
+  },
+  {
+    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    kind: MarketplaceKind.Plugin,
+    metadata: { namespace: 'default', name: 'plugin2' },
+    spec: {
+      packages: ['package2'],
+    },
+  },
+  {
+    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    kind: MarketplaceKind.Plugin,
+    metadata: { namespace: 'another-namespace', name: 'plugin3' },
+    spec: {
+      packages: ['package1', 'package2'],
+    },
+  },
+];
+
 const mockQueryEntities = jest.fn();
-const mockGetEntities = jest.fn();
+const mockEntityFacets = jest.fn();
 const mockGetEntityByRef = jest.fn();
 const mockQueryEntitiesByRefs = jest.fn();
-const mockEntityFacets = jest.fn();
 
 const mockCatalogClient = {
-  getEntities: mockGetEntities,
   queryEntities: mockQueryEntities,
+  getEntityFacets: mockEntityFacets,
   getEntityByRef: mockGetEntityByRef,
   getEntitiesByRefs: mockQueryEntitiesByRefs,
-  getEntityFacets: mockEntityFacets,
 } as unknown as CatalogClient;
 
 beforeEach(() => {
@@ -65,156 +100,467 @@ const options = {
     getOwnServiceCredentials: jest
       .fn()
       .mockResolvedValue('mockedServiceCredentials'),
-    getPluginRequestToken: jest.fn().mockResolvedValue('mockedToken'),
+    getPluginRequestToken: jest
+      .fn()
+      .mockResolvedValue({ token: 'mockedToken' }),
   } as any,
 };
 
 describe('MarketplaceCatalogClient', () => {
-  describe('getPlugins', () => {
+  describe('getCollections', () => {
     beforeEach(() => {
       mockQueryEntities.mockReturnValue({
-        items: mockPlugins,
+        items: mockCollections,
+        totalItems: 3,
+        pageInfo: {},
       });
     });
 
-    it('should call queryEntities function', async () => {
+    it('should call catalog with right kind filter', async () => {
       const api = new MarketplaceCatalogClient(options);
-
-      await api.getPlugins();
+      const response = await api.getCollections({});
 
       expect(mockQueryEntities).toHaveBeenCalledTimes(1);
       expect(mockQueryEntities).toHaveBeenCalledWith(
         {
-          filter: { kind: 'plugin' },
+          filter: {
+            kind: 'PluginCollection',
+          },
         },
-        'mockedToken',
+        { token: 'mockedToken' },
       );
-    });
 
-    it('should return the plugins', async () => {
-      const api = new MarketplaceCatalogClient(options);
-      const plugins = await api.getPlugins();
-      expect(plugins?.items).toHaveLength(2);
-    });
-
-    it('should return the plugins when the auth options is not passed', async () => {
-      const api = new MarketplaceCatalogClient({ ...options, auth: undefined });
-      const plugins = await api.getPlugins();
-      expect(plugins?.items).toHaveLength(2);
-    });
-  });
-
-  describe('getPluginByName', () => {
-    beforeEach(() => {
-      mockGetEntityByRef.mockReturnValue(mockPlugins[0]);
-    });
-
-    it('should return the plugin by name', async () => {
-      const api = new MarketplaceCatalogClient(options);
-      const plugin = await api.getPluginByName('plugin1');
-      expect(plugin).toBeDefined();
-      expect(plugin.metadata.name).toBe('plugin1');
-    });
-  });
-
-  describe('getPluginListByName', () => {
-    beforeEach(() => {
-      mockGetEntityByRef.mockReturnValue(mockPluginList[0]);
-    });
-
-    it('should return the pluginlist by name', async () => {
-      const api = new MarketplaceCatalogClient(options);
-      const featuredPluginList = await api.getPluginListByName(
-        'test-featured-plugins',
-      );
-      expect(featuredPluginList).toBeDefined();
-      expect(featuredPluginList.metadata.name).toBe('test-featured-plugins');
-    });
-  });
-
-  describe('getPluginLists', () => {
-    beforeEach(() => {
-      mockQueryEntities.mockReturnValue({
-        items: mockPluginList,
+      expect(response).toEqual({
+        items: mockCollections,
+        totalItems: 3,
+        pageInfo: {},
       });
     });
 
-    it('should return the pluginlist', async () => {
+    it('should not allow another kind filter', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const featuredPluginsList = await api.getPluginLists();
+      const response = await api.getCollections({
+        filter: {
+          kind: 'Component',
+          'metadata.namespace': 'default',
+        },
+      });
 
-      expect(featuredPluginsList).toHaveLength(1);
-      expect(featuredPluginsList[0].spec?.plugins).toEqual([
-        'plugin1',
-        'plugin2',
-      ]);
+      expect(mockQueryEntities).toHaveBeenCalledTimes(1);
+      expect(mockQueryEntities).toHaveBeenCalledWith(
+        {
+          filter: {
+            kind: 'PluginCollection',
+            'metadata.namespace': 'default',
+          },
+        },
+        { token: 'mockedToken' },
+      );
+
+      expect(response).toEqual({
+        items: mockCollections,
+        totalItems: 3,
+        pageInfo: {},
+      });
     });
   });
 
-  describe('getPluginsByPluginListName', () => {
-    beforeEach(() => {
-      mockGetEntityByRef.mockImplementation(entityRef => {
-        return entityRef.includes('test-featured-plugins')
-          ? mockPluginList[0]
-          : undefined;
-      });
-
-      mockQueryEntitiesByRefs.mockResolvedValue({
-        items: mockPlugins,
-      });
-    });
-
-    it('should return all the plugins for the pluginlist name', async () => {
-      const api = new MarketplaceCatalogClient(options);
-      const plugins = await api.getPluginsByPluginListName(
-        'test-featured-plugins',
-      );
-      expect(plugins).toHaveLength(2);
-      expect(plugins[0].metadata.name).toBe('plugin1');
-      expect(plugins[1].metadata.name).toBe('plugin2');
-    });
-
-    it('should throw not found error for the non-existent pluginlist name', async () => {
-      const api = new MarketplaceCatalogClient(options);
-
-      await expect(
-        api.getPluginsByPluginListName('non-existent-featured-plugins'),
-      ).rejects.toThrow('PluginList:non-existent-featured-plugins not found');
-    });
-    it('should return empty array when the plugins are not set', async () => {
-      jest.resetAllMocks();
-      jest.clearAllMocks();
-
-      mockGetEntityByRef.mockResolvedValue({
-        ...mockPluginList,
-        spec: { plugins: undefined },
-      });
-
-      const api = new MarketplaceCatalogClient(options);
-      const plugins = await api.getPluginsByPluginListName(
-        'non-existent-featured-plugins',
-      );
-      expect(plugins).toHaveLength(0);
-    });
-  });
-
-  describe('getEntityFacets', () => {
+  describe('getCollectionsFacets', () => {
     beforeEach(() => {
       mockEntityFacets.mockReturnValue({
         facets: [
           {
-            kind: 'plugin',
+            ['metadata.namespace']: 'default',
+            count: 2,
+          },
+          {
+            ['metadata.namespace']: 'another-namespace',
             count: 1,
           },
         ],
       });
     });
 
-    it('should return the entity facets', async () => {
+    it('should call catalog with right kind filter', async () => {
       const api = new MarketplaceCatalogClient(options);
-      const { facets } = await api.getEntityFacets({ facets: ['kind'] });
+      const response = await api.getCollectionsFacets({
+        facets: ['metadata.namespace'],
+      });
 
-      expect(facets).toHaveLength(1);
+      expect(mockEntityFacets).toHaveBeenCalledTimes(1);
+      expect(mockEntityFacets).toHaveBeenCalledWith(
+        {
+          facets: ['metadata.namespace'],
+          filter: {
+            kind: 'PluginCollection',
+          },
+        },
+        { token: 'mockedToken' },
+      );
+
+      expect(response).toEqual({
+        facets: [
+          {
+            ['metadata.namespace']: 'default',
+            count: 2,
+          },
+          {
+            ['metadata.namespace']: 'another-namespace',
+            count: 1,
+          },
+        ],
+      });
+    });
+  });
+
+  describe('getCollectionByName', () => {
+    it('should call catalog with right kind filter', async () => {
+      mockGetEntityByRef.mockReturnValue(mockCollections[0]);
+
+      const api = new MarketplaceCatalogClient(options);
+      const plugin = await api.getCollectionByName('default', 'featured');
+
+      expect(mockGetEntityByRef).toHaveBeenCalledTimes(1);
+      expect(mockGetEntityByRef).toHaveBeenCalledWith(
+        'plugincollection:default/featured',
+        { token: 'mockedToken' },
+      );
+
+      expect(plugin).toEqual(mockCollections[0]);
+    });
+
+    it('should throw not found error for the non-existent collection name', async () => {
+      mockGetEntityByRef.mockReturnValue(null);
+
+      const api = new MarketplaceCatalogClient(options);
+      await expect(
+        api.getCollectionByName('default', 'not-found'),
+      ).rejects.toThrow('Collection default/not-found not found');
+    });
+  });
+
+  describe('getCollectionPlugins', () => {
+    beforeEach(() => {
+      mockGetEntityByRef.mockReturnValue(mockCollections[0]);
+      mockQueryEntitiesByRefs.mockResolvedValue({
+        items: mockPlugins,
+      });
+    });
+
+    it('should call catalog with right kind filter', async () => {
+      const api = new MarketplaceCatalogClient(options);
+      const plugins = await api.getCollectionPlugins('default', 'featured');
+
+      expect(mockGetEntityByRef).toHaveBeenCalledTimes(1);
+      expect(mockGetEntityByRef).toHaveBeenCalledWith(
+        'plugincollection:default/featured',
+        { token: 'mockedToken' },
+      );
+
+      expect(plugins).toEqual(mockPlugins);
+    });
+
+    it('should throw not found error for the non-existent collection name', async () => {
+      mockGetEntityByRef.mockReturnValue(null);
+
+      const api = new MarketplaceCatalogClient(options);
+      await expect(
+        api.getCollectionPlugins('default', 'not-found'),
+      ).rejects.toThrow('Collection default/not-found not found');
+    });
+  });
+
+  describe('getPackages', () => {
+    beforeEach(() => {
+      mockQueryEntities.mockReturnValue({
+        items: mockPackages,
+        totalItems: 3,
+        pageInfo: {},
+      });
+    });
+
+    it('should call catalog with right kind filter', async () => {
+      const api = new MarketplaceCatalogClient(options);
+      const response = await api.getPackages({});
+
+      expect(mockQueryEntities).toHaveBeenCalledTimes(1);
+      expect(mockQueryEntities).toHaveBeenCalledWith(
+        {
+          filter: {
+            kind: 'Package',
+          },
+        },
+        { token: 'mockedToken' },
+      );
+
+      expect(response).toEqual({
+        items: mockPackages,
+        totalItems: 3,
+        pageInfo: {},
+      });
+    });
+
+    it('should not allow another kind filter', async () => {
+      const api = new MarketplaceCatalogClient(options);
+      const response = await api.getPackages({
+        filter: {
+          kind: 'Component',
+          'metadata.namespace': 'default',
+        },
+      });
+
+      expect(mockQueryEntities).toHaveBeenCalledTimes(1);
+      expect(mockQueryEntities).toHaveBeenCalledWith(
+        {
+          filter: {
+            kind: 'Package',
+            'metadata.namespace': 'default',
+          },
+        },
+        { token: 'mockedToken' },
+      );
+
+      expect(response).toEqual({
+        items: mockPackages,
+        totalItems: 3,
+        pageInfo: {},
+      });
+    });
+  });
+
+  describe('getPackagesFacets', () => {
+    beforeEach(() => {
+      mockEntityFacets.mockReturnValue({
+        facets: [
+          {
+            ['metadata.namespace']: 'default',
+            count: 2,
+          },
+          {
+            ['metadata.namespace']: 'another-namespace',
+            count: 1,
+          },
+        ],
+      });
+    });
+
+    it('should call catalog with right kind filter', async () => {
+      const api = new MarketplaceCatalogClient(options);
+      const response = await api.getPackagesFacets({
+        facets: ['metadata.namespace'],
+      });
+
+      expect(mockEntityFacets).toHaveBeenCalledTimes(1);
+      expect(mockEntityFacets).toHaveBeenCalledWith(
+        {
+          facets: ['metadata.namespace'],
+          filter: {
+            kind: 'Package',
+          },
+        },
+        { token: 'mockedToken' },
+      );
+
+      expect(response).toEqual({
+        facets: [
+          {
+            ['metadata.namespace']: 'default',
+            count: 2,
+          },
+          {
+            ['metadata.namespace']: 'another-namespace',
+            count: 1,
+          },
+        ],
+      });
+    });
+  });
+
+  describe('getPackageByName', () => {
+    it('should call catalog with right kind filter', async () => {
+      mockGetEntityByRef.mockReturnValue(mockCollections[0]);
+
+      const api = new MarketplaceCatalogClient(options);
+      const plugin = await api.getPackageByName('default', 'featured');
+
+      expect(mockGetEntityByRef).toHaveBeenCalledTimes(1);
+      expect(mockGetEntityByRef).toHaveBeenCalledWith(
+        'package:default/featured',
+        { token: 'mockedToken' },
+      );
+
+      expect(plugin).toEqual(mockCollections[0]);
+    });
+
+    it('should throw not found error for the non-existent package name', async () => {
+      mockGetEntityByRef.mockReturnValue(null);
+
+      const api = new MarketplaceCatalogClient(options);
+      await expect(
+        api.getPackageByName('default', 'not-found'),
+      ).rejects.toThrow('Package default/not-found not found');
+    });
+  });
+  describe('getPlugins', () => {
+    beforeEach(() => {
+      mockQueryEntities.mockReturnValue({
+        items: mockPlugins,
+        totalItems: 3,
+        pageInfo: {},
+      });
+    });
+
+    it('should call catalog with right kind filter', async () => {
+      const api = new MarketplaceCatalogClient(options);
+      const response = await api.getPlugins({});
+
+      expect(mockQueryEntities).toHaveBeenCalledTimes(1);
+      expect(mockQueryEntities).toHaveBeenCalledWith(
+        {
+          filter: {
+            kind: 'Plugin',
+          },
+        },
+        { token: 'mockedToken' },
+      );
+
+      expect(response).toEqual({
+        items: mockPlugins,
+        totalItems: 3,
+        pageInfo: {},
+      });
+    });
+
+    it('should not allow another kind filter', async () => {
+      const api = new MarketplaceCatalogClient(options);
+      const response = await api.getPlugins({
+        filter: {
+          kind: 'Component',
+          'metadata.namespace': 'default',
+        },
+      });
+
+      expect(mockQueryEntities).toHaveBeenCalledTimes(1);
+      expect(mockQueryEntities).toHaveBeenCalledWith(
+        {
+          filter: {
+            kind: 'Plugin',
+            'metadata.namespace': 'default',
+          },
+        },
+        { token: 'mockedToken' },
+      );
+
+      expect(response).toEqual({
+        items: mockPlugins,
+        totalItems: 3,
+        pageInfo: {},
+      });
+    });
+  });
+
+  describe('getPluginFacets', () => {
+    beforeEach(() => {
+      mockEntityFacets.mockReturnValue({
+        facets: [
+          {
+            ['metadata.namespace']: 'default',
+            count: 2,
+          },
+          {
+            ['metadata.namespace']: 'another-namespace',
+            count: 1,
+          },
+        ],
+      });
+    });
+
+    it('should call catalog with right kind filter', async () => {
+      const api = new MarketplaceCatalogClient(options);
+      const response = await api.getPluginFacets({
+        facets: ['metadata.namespace'],
+      });
+
+      expect(mockEntityFacets).toHaveBeenCalledTimes(1);
+      expect(mockEntityFacets).toHaveBeenCalledWith(
+        {
+          facets: ['metadata.namespace'],
+          filter: {
+            kind: 'Plugin',
+          },
+        },
+        { token: 'mockedToken' },
+      );
+
+      expect(response).toEqual({
+        facets: [
+          {
+            ['metadata.namespace']: 'default',
+            count: 2,
+          },
+          {
+            ['metadata.namespace']: 'another-namespace',
+            count: 1,
+          },
+        ],
+      });
+    });
+  });
+
+  describe('getPluginByName', () => {
+    it('should call catalog with right kind filter', async () => {
+      mockGetEntityByRef.mockReturnValue(mockCollections[0]);
+
+      const api = new MarketplaceCatalogClient(options);
+      const plugin = await api.getPluginByName('default', 'plugin1');
+
+      expect(mockGetEntityByRef).toHaveBeenCalledTimes(1);
+      expect(mockGetEntityByRef).toHaveBeenCalledWith(
+        'plugin:default/plugin1',
+        { token: 'mockedToken' },
+      );
+
+      expect(plugin).toEqual(mockCollections[0]);
+    });
+
+    it('should throw not found error for the non-existent plugin name', async () => {
+      mockGetEntityByRef.mockReturnValue(null);
+
+      const api = new MarketplaceCatalogClient(options);
+      await expect(api.getPluginByName('default', 'not-found')).rejects.toThrow(
+        'Plugin default/not-found not found',
+      );
+    });
+  });
+
+  describe('getPluginPackages', () => {
+    beforeEach(() => {
+      mockGetEntityByRef.mockReturnValue(mockPlugins[0]);
+      mockQueryEntitiesByRefs.mockResolvedValue({
+        items: mockPackages,
+      });
+    });
+
+    it('should call catalog with right kind filter', async () => {
+      const api = new MarketplaceCatalogClient(options);
+      const packages = await api.getPluginPackages('default', 'plugin3');
+
+      expect(mockGetEntityByRef).toHaveBeenCalledTimes(1);
+      expect(mockGetEntityByRef).toHaveBeenCalledWith(
+        'plugin:default/plugin3',
+        { token: 'mockedToken' },
+      );
+
+      expect(packages).toEqual(mockPackages);
+    });
+
+    it('should throw not found error for the non-existent plugin name', async () => {
+      mockGetEntityByRef.mockReturnValue(null);
+
+      const api = new MarketplaceCatalogClient(options);
+      await expect(
+        api.getPluginPackages('default', 'not-found'),
+      ).rejects.toThrow('Plugin default/not-found not found');
     });
   });
 });

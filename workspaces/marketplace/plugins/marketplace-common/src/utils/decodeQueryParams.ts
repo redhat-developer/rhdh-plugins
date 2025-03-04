@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,117 +15,97 @@
  */
 
 import {
+  EntityFilterQuery,
   EntityOrderQuery,
+  GetEntityFacetsRequest,
   QueryEntitiesRequest,
-} from '@backstage/catalog-client/index';
-import { GetPluginsRequest, SortOrder } from '../types';
+} from '@backstage/catalog-client';
 
-const requiredFilter = { kind: 'plugin' };
+import { GetEntitiesRequest } from '../api';
 
-/**
- *
- * @public
- */
-export const decodeFilterParams = (searchParams: URLSearchParams) => {
-  const filter: Record<string, string[]> = {};
+export const decodeEntityFilterQuery = (
+  searchParams: URLSearchParams,
+): EntityFilterQuery | undefined => {
+  if (!searchParams.has('filter')) {
+    return undefined;
+  }
 
-  searchParams.getAll('filter').forEach(param => {
-    const [key, value] = param.split('=').map(decodeURIComponent);
-    if (!filter[key]) {
-      filter[key] = [];
+  const filter: Record<string, string | string[]> = {};
+
+  searchParams.getAll('filter').forEach(keyValuePair => {
+    const firstEqualIndex = keyValuePair.indexOf('=');
+    if (firstEqualIndex === -1) {
+      return;
     }
-    filter[key].push(value);
+    const name = keyValuePair.substring(0, firstEqualIndex);
+    const value = keyValuePair.substring(firstEqualIndex + 1);
+
+    const filterStringOrArray = filter[name];
+    if (Array.isArray(filterStringOrArray)) {
+      filterStringOrArray.push(value);
+    } else if (filterStringOrArray) {
+      filter[name] = [filterStringOrArray, value];
+    } else {
+      filter[name] = value;
+    }
   });
 
   return filter;
 };
 
-/**
- *
- * @public
- */
-export const decodeOrderFields = (searchParams: URLSearchParams) => {
+export const decodeEntityOrderQuery = (
+  searchParams: URLSearchParams,
+): EntityOrderQuery | undefined => {
+  if (!searchParams.has('orderFields')) {
+    return undefined;
+  }
   const orderFields = searchParams.getAll('orderFields');
   const decodedOrderFields: EntityOrderQuery = orderFields.map(field => {
     const [key, order] = field.split(',');
-    return { field: key, order: order as SortOrder };
+    return { field: key, order: order as 'asc' | 'desc' };
   });
   return decodedOrderFields;
 };
 
 /**
- *
  * @public
  */
-export const decodeGetPluginsRequest = (
-  queryString: string,
-): GetPluginsRequest => {
-  const searchParams = new URLSearchParams(queryString);
-  return {
-    orderFields:
-      searchParams.getAll('orderFields').length > 0
-        ? decodeOrderFields(searchParams)
+export const decodeGetEntitiesRequest = (
+  searchParams: URLSearchParams,
+): GetEntitiesRequest => {
+  const request: QueryEntitiesRequest = {};
+
+  if (searchParams.has('fields')) {
+    request.fields = searchParams.getAll('fields');
+  }
+  if (searchParams.get('limit')) {
+    request.limit = Number(searchParams.get('limit'));
+  }
+  if (searchParams.get('offset')) {
+    request.offset = Number(searchParams.get('offset'));
+  }
+  request.filter = decodeEntityFilterQuery(searchParams);
+  request.orderFields = decodeEntityOrderQuery(searchParams);
+  if (searchParams.get('fullTextTerm')) {
+    request.fullTextFilter = {
+      term: searchParams.get('fullTextTerm')!,
+      fields: searchParams.has('fullTextFields')
+        ? searchParams.getAll('fullTextFields')
         : undefined,
-    searchTerm: searchParams.get('searchTerm') || undefined,
-    limit: searchParams.get('limit')
-      ? Number(searchParams.get('limit'))
-      : undefined,
-    offset: searchParams.get('offset')
-      ? Number(searchParams.get('offset'))
-      : undefined,
-    filter:
-      searchParams.getAll('filter').length > 0
-        ? decodeFilterParams(searchParams)
-        : undefined,
-  };
-};
-
-/**
- * @public
- */
-export const convertGetPluginsRequestToQueryEntitiesRequest = (
-  query?: GetPluginsRequest,
-): QueryEntitiesRequest => {
-  const entitiesRequest: QueryEntitiesRequest = {};
-
-  entitiesRequest.filter = { ...query?.filter, ...requiredFilter };
-
-  if (query?.orderFields) {
-    entitiesRequest.orderFields = query.orderFields;
-  }
-  if (query?.limit) {
-    entitiesRequest.limit = query.limit;
-  }
-  if (query?.offset) {
-    entitiesRequest.offset = query.offset;
-  }
-  if (query?.searchTerm) {
-    entitiesRequest.fullTextFilter = {
-      term: query.searchTerm,
     };
   }
-  return entitiesRequest;
+
+  return request;
 };
 
 /**
  * @public
  */
-export const decodeFacetParams = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('facet').map(decodeURIComponent);
-};
-
-/**
- * @public
- */
-export const decodeQueryParams = (queryString: string) => {
-  const searchParams = new URLSearchParams(queryString);
-
+export const decodeGetEntityFacetsRequest = (
+  searchParams: URLSearchParams,
+): GetEntityFacetsRequest => {
   return {
-    ...(searchParams.getAll('filter').length > 0
-      ? { filter: decodeFilterParams(searchParams) }
-      : {}),
-    ...(searchParams.getAll('facet').length > 0
-      ? { facets: decodeFacetParams(searchParams) }
-      : {}),
+    facets: searchParams.getAll('facet'),
+    filter: decodeEntityFilterQuery(searchParams),
   };
 };

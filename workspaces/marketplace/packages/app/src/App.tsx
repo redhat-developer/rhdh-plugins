@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,8 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { MarketplacePage } from '@red-hat-developer-hub/backstage-plugin-marketplace';
+
+import { DynamicMarketplacePluginRouter as Marketplace } from '@red-hat-developer-hub/backstage-plugin-marketplace';
 
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
@@ -115,7 +116,8 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/marketplace" element={<MarketplacePage />} />
+
+    <Route path="/marketplace" element={<Marketplace />} />
   </FlatRoutes>
 );
 

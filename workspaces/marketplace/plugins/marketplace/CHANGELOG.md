@@ -1,5 +1,46 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.1.4
+
+### Patch Changes
+
+- c977dbc: fix mount points in app-config.dynamic.yaml
+
+## 0.1.3
+
+### Patch Changes
+
+- a7e38a9: remove core-plugin-api dependency from common
+- Updated dependencies [a7e38a9]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.1.2
+
+## 0.1.2
+
+### Patch Changes
+
+- fa70a22: remove unused knex and zod dependency from common package
+- Updated dependencies [fa70a22]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.1.1
+
+## 0.1.1
+
+### Patch Changes
+
+- 0e2f1ac: restore dynamic plugin export
+
+## 0.1.0
+
+### Minor Changes
+
+- d39d4e3: Initial tech-preview of the marketplace
+
+### Patch Changes
+
+- f16dd69: Refactore and update API, UI, and catalog types
+- Updated dependencies [d39d4e3]
+- Updated dependencies [f16dd69]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.1.0
+
 ## 0.0.9
 
 ### Patch Changes
