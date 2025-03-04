@@ -53,25 +53,6 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
     }));
   }
 
-  // getDynamicDateGrouping(): string {
-  //   // Group the date based on the date_range difference, eg. "daily", "weekly" or "monthly".
-  //   const { start_date, end_date } = this.filters!;
-
-  //   return this.db
-  //     .raw<QueryBuilder>(
-  //       `CASE
-  //         WHEN (julianday(?) - julianday(?)) <= 7
-  //           THEN strftime('%Y-%m-%d', created_at)
-  //         WHEN (julianday(?) - julianday(?)) <= strftime('%Y-%m', ?) = strftime('%Y-%m', ?)
-  //           THEN strftime('%Y-%m-%d', date(created_at, 'weekday 0', '-7 days'))
-  //         ELSE
-  //           strftime('%Y-%m-%d', date(created_at, 'localtime'))
-  //         END as date`,
-  //       [end_date, start_date, end_date, start_date, end_date, start_date],
-  //     )
-  //     .toQuery();
-  // }
-
   getDynamicDateGrouping(onlyText: boolean = false): string {
     const { start_date, end_date } = this.filters!;
     const dateDiff = calculateDateRange(start_date, end_date);
