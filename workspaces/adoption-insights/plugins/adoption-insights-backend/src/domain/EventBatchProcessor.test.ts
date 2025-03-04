@@ -214,13 +214,14 @@ describe('EventBatchProcessor', () => {
     );
   });
 
-  it('should call logQueueStats every 5 seconds', () => {
+  it('should call logQueueStats every 5 seconds', async () => {
     jest.useFakeTimers();
-    // eslint-disable-next-line no-new
-    new EventBatchProcessor(mockEventDatabase, mockLogger, {
+    const processor = new EventBatchProcessor(mockEventDatabase, mockLogger, {
       batchSize: 10,
       debug: true,
     });
+    const event = new Event(mockEvent);
+    await processor.storeFailedEvent(event, 'Test error message');
 
     jest.advanceTimersByTime(5000);
     expect(mockLogger.info).toHaveBeenCalled();

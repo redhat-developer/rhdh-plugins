@@ -24,15 +24,15 @@ export type ProcessorConfigOptions = {
   batchInterval?: number;
 };
 export class EventBatchProcessor {
-  private queue: Event[];
+  private readonly queue: Event[];
   private processing: boolean;
-  private batchSize: number;
-  private batchInterval: number;
-  private maxRetries: number;
-  private failedEvents: any;
-  private database: EventDatabase;
-  private logger: LoggerService;
-  private debug: boolean;
+  private readonly batchSize: number;
+  private readonly batchInterval: number;
+  private readonly maxRetries: number;
+  private readonly failedEvents: any;
+  private readonly database: EventDatabase;
+  private readonly logger: LoggerService;
+  private readonly debug: boolean;
 
   constructor(
     database: EventDatabase,

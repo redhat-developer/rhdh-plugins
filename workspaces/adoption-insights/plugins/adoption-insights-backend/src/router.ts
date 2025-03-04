@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 import { HttpAuthService } from '@backstage/backend-plugin-api';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 import EventApiController from './controllers/EventApiController';
-import { Request, Response } from 'express';
 import { QueryParams } from './types/event-request';
 
 export async function createRouter({

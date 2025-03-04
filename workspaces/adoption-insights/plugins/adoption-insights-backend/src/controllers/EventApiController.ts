@@ -29,9 +29,9 @@ import { RootConfigService } from '@backstage/backend-plugin-api/index';
 import { getLicensedUsersCount } from '../utils/config';
 
 class EventApiController {
-  private database: EventDatabase;
-  private config: RootConfigService;
-  private processor: EventBatchProcessor;
+  private readonly database: EventDatabase;
+  private readonly config: RootConfigService;
+  private readonly processor: EventBatchProcessor;
 
   constructor(
     eventDatabase: EventDatabase,
@@ -48,7 +48,7 @@ class EventApiController {
       .filter(e => !!e.context?.userId)
       .map(event => new Event(event, this.database.isJsonSupported()));
 
-    proccessedEvents.map(event => {
+    proccessedEvents.forEach(event => {
       const result = EventSchema.safeParse(event);
 
       if (!result.success) {

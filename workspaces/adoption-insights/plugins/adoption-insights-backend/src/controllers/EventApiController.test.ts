@@ -213,14 +213,11 @@ describe('GetInsights', () => {
   });
 
   it('should return return validation errors', () => {
-    // mockProcessIncomingEvents.mockImplementation(() => {});
-
     controller.getInsights(
       req as unknown as Request<{}, {}, {}, QueryParams>,
       res as Response,
     );
 
-    // expect(mockProcessIncomingEvents).toHaveBeenCalledWith(req.body);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       errors: {

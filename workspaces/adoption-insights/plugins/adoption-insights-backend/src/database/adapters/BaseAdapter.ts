@@ -20,7 +20,7 @@ import { LoggerService } from '@backstage/backend-plugin-api';
 
 export abstract class BaseDatabaseAdapter implements EventDatabase {
   protected db: Knex;
-  private logger: LoggerService;
+  private readonly logger: LoggerService;
   protected filters?: Filters;
   protected config?: UserConfig;
 
