@@ -14,13 +14,54 @@
  * limitations under the License.
  */
 import React from 'react';
+
 import { createDevApp } from '@backstage/dev-utils';
+import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { TestApiProvider } from '@backstage/test-utils';
+
 import { adoptionInsightsPlugin, AdoptionInsightsPage } from '../src/plugin';
+import { adoptionInsightsApiRef } from '../src/api';
+import {
+  AdoptionInsightsApi,
+  CatalogEntitiesOptions,
+  PluginViewsOptions,
+  TechdocsOptions,
+  TemplatesOptions,
+} from '../src/types';
+import { mockPluginViews } from './__data__/pluginViews';
+import { mockCatalogEntities } from './__data__/catalogEntities';
+import { mockTemplates } from './__data__/templates';
+import { mockTechdocs } from './__data__/techdocs';
+
+export class MockAdoptionInsightsApiClient implements AdoptionInsightsApi {
+  async getPluginViews(_options: PluginViewsOptions): Promise<any> {
+    return mockPluginViews;
+  }
+
+  async getCatalogEntities(_options: CatalogEntitiesOptions): Promise<any> {
+    return mockCatalogEntities;
+  }
+
+  async getTemplates(_options: TemplatesOptions): Promise<any> {
+    return mockTemplates;
+  }
+
+  async getTechdocs(_options: TechdocsOptions): Promise<any> {
+    return mockTechdocs;
+  }
+}
 
 createDevApp()
   .registerPlugin(adoptionInsightsPlugin)
+  .addThemes(getAllThemes())
   .addPage({
-    element: <AdoptionInsightsPage />,
+    element: (
+      <TestApiProvider
+        apis={[[adoptionInsightsApiRef, new MockAdoptionInsightsApiClient()]]}
+      >
+        <AdoptionInsightsPage />
+      </TestApiProvider>
+    ),
     title: 'Root Page',
     path: '/adoption-insights',
   })
