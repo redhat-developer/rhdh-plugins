@@ -255,6 +255,14 @@ export interface MarketplacePackageBackstage extends JsonObject {
 }
 
 // @public (undocumented)
+export interface MarketplacePackageDependency extends JsonObject {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    version: string;
+}
+
+// @public (undocumented)
 export enum MarketplacePackageInstallStatus {
     // (undocumented)
     Installed = "Installed",
@@ -345,7 +353,7 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     installStatus?: MarketplacePluginInstallStatus;
     // (undocumented)
-    packages?: string[];
+    packages?: MarketplacePackageDependency[] | string[];
 }
 
 ```
