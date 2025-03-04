@@ -1,5 +1,15 @@
 ### Dependencies
 
+## 1.11.1
+
+### Patch Changes
+
+- 4a1f79b: fixing extra apis call on added repository list
+- 680ede5: Updated dependency `@mui/icons-material` to `5.16.14`.
+  Updated dependency `@mui/styles` to `5.16.14`.
+  Updated dependency `@mui/material` to `5.16.14`.
+  Updated dependency `@mui/styled-engine` to `5.16.14`.
+
 ## 1.11.0
 
 ### Minor Changes
