@@ -13,4 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { createTodoListService } from './createTodoListService';
+export const QUERY_TYPES = [
+  'total_users',
+  'daily_users',
+  'top_plugin_views',
+  'top_templates_views',
+  'top_techdocs_views',
+  'top_searches',
+  'top_catalog_entities',
+] as const;
+
+export type QueryType = (typeof QUERY_TYPES)[number];
+
+export interface QueryParams {
+  type: QueryType;
+  start_date: string;
+  end_date: string;
+  limit?: string;
+  kind?: string;
+  format?: string;
+  licensedUsers?: number;
+}
