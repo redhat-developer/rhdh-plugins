@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "https://marketplace.backstage.io/v1alpha1/collections",
+  "$id": "https://extensions.backstage.io/v1alpha1/collections",
   "$ref": "#/$defs/MarketplaceCollection",
   "$defs": {
     "MarketplaceCollection": {

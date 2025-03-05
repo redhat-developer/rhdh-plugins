@@ -117,7 +117,7 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
 
-    <Route path="/marketplace" element={<Marketplace />} />
+    <Route path="/extensions" element={<Marketplace />} />
   </FlatRoutes>
 );
 
