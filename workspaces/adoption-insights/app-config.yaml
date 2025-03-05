@@ -6,6 +6,7 @@ app:
       maxBufferSize: 20
       flushInterval: 5000
       debug: true
+      licensedUsers: 100
 
 organization:
   name: My Company

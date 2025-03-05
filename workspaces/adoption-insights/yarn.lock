@@ -10161,22 +10161,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-adoption-insights-backend@workspace:plugins/adoption-insights-backend":
+"@red-hat-developer-hub/backstage-plugin-adoption-insights-backend@workspace:*, @red-hat-developer-hub/backstage-plugin-adoption-insights-backend@workspace:plugins/adoption-insights-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend@workspace:plugins/adoption-insights-backend"
   dependencies:
     "@backstage/backend-defaults": ^0.8.0
     "@backstage/backend-plugin-api": ^1.2.0
     "@backstage/backend-test-utils": ^1.3.0
-    "@backstage/catalog-client": ^1.9.1
     "@backstage/cli": ^0.30.0
-    "@backstage/errors": ^1.2.7
+    "@backstage/core-plugin-api": ^1.10.4
     "@backstage/plugin-catalog-node": ^1.16.0
     "@types/express": ^4.17.6
     "@types/supertest": ^2.0.12
     express: ^4.17.1
     express-promise-router: ^4.1.0
+    json-2-csv: ^5.5.8
+    knex: ^3.1.0
+    luxon: ^3.5.0
     supertest: ^6.2.4
+    uuid: ^11.1.0
     zod: ^3.22.4
   languageName: unknown
   linkType: soft
@@ -15352,6 +15355,7 @@ __metadata:
     "@backstage/plugin-search-backend-module-techdocs": ^0.3.6
     "@backstage/plugin-search-backend-node": ^1.3.8
     "@backstage/plugin-techdocs-backend": ^1.11.6
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend": "workspace:*"
     app: "link:../app"
     better-sqlite3: ^9.0.0
     node-gyp: ^10.0.0
@@ -17804,6 +17808,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"deeks@npm:3.1.0":
+  version: 3.1.0
+  resolution: "deeks@npm:3.1.0"
+  checksum: d4b92aea7bee3a77adad0d84da67c8afe9693cc22c89bf10e01bc30eb0dd5e53a7958ce12f6f0b5f1cbb0f54f0a7aa603555725688fc0eb3a6ce80e6950be05a
+  languageName: node
+  linkType: hard
+
 "deep-equal@npm:^2.0.5":
   version: 2.2.3
   resolution: "deep-equal@npm:2.2.3"
@@ -18132,6 +18143,13 @@ __metadata:
   dependencies:
     "@leichtgewicht/ip-codec": ^2.0.1
   checksum: 64c06457f0c6e143f7a0946e0aeb8de1c5f752217cfa143ef527467c00a6d78db1835cfdb6bb68333d9f9a4963cf23f410439b5262a8935cce1236f45e344b81
+  languageName: node
+  linkType: hard
+
+"doc-path@npm:4.1.1":
+  version: 4.1.1
+  resolution: "doc-path@npm:4.1.1"
+  checksum: 41e7d59cb460073e1bc1ede88117e885d3e2fc53218cdc176820660465ebda59330355d12605b96fb13b88754826b471bfec2ec832f145d2f561f53ec3066a0f
   languageName: node
   linkType: hard
 
@@ -23462,6 +23480,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json-2-csv@npm:^5.5.8":
+  version: 5.5.8
+  resolution: "json-2-csv@npm:5.5.8"
+  dependencies:
+    deeks: 3.1.0
+    doc-path: 4.1.1
+  checksum: 0c8b247c7351c20ff79c775e0fdea923874f029c1b6b45f86d8719db3f34e60c72b753c682fcbdd77ae51a48c83bfce84ce11e739b442dcf2edaae47c404fe9b
+  languageName: node
+  linkType: hard
+
 "json-bigint@npm:^1.0.0":
   version: 1.0.0
   resolution: "json-bigint@npm:1.0.0"
@@ -23943,7 +23971,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:3, knex@npm:^3.0.0":
+"knex@npm:3, knex@npm:^3.0.0, knex@npm:^3.1.0":
   version: 3.1.0
   resolution: "knex@npm:3.1.0"
   dependencies:
@@ -24609,7 +24637,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:^3.0.0, luxon@npm:^3.2.1, luxon@npm:~3.5.0":
+"luxon@npm:^3.0.0, luxon@npm:^3.2.1, luxon@npm:^3.5.0, luxon@npm:~3.5.0":
   version: 3.5.0
   resolution: "luxon@npm:3.5.0"
   checksum: f290fe5788c8e51e748744f05092160d4be12150dca70f9fadc0d233e53d60ce86acd82e7d909a114730a136a77e56f0d3ebac6141bbb82fd310969a4704825b
@@ -33555,7 +33583,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^11.0.0, uuid@npm:^11.0.2":
+"uuid@npm:^11.0.0, uuid@npm:^11.0.2, uuid@npm:^11.1.0":
   version: 11.1.0
   resolution: "uuid@npm:11.1.0"
   bin:

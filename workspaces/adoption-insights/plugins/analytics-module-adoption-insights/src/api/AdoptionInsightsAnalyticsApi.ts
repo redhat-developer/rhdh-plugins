@@ -91,6 +91,7 @@ export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
     if (this.userId) {
       event.context.userName = this.userId;
       event.context.userId = await this.hash(this.userId);
+      event.context.timestamp = new Date().toISOString();
     }
     if (this.debug) {
       // eslint-disable-next-line no-console
