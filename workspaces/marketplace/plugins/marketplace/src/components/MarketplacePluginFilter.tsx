@@ -131,7 +131,7 @@ const SupportTypeFilter = () => {
     return searchParams
       .getAll('filter')
       .filter(filter =>
-        filter.startsWith('metadata.annotations.marketplace.backstage.io/'),
+        filter.startsWith('metadata.annotations.extensions.backstage.io/'),
       );
   }, [searchParams]);
 
@@ -156,7 +156,7 @@ const SupportTypeFilter = () => {
           params.forEach((value, key) => {
             if (
               key === 'filter' &&
-              value.startsWith(`metadata.annotations.marketplace.backstage.io/`)
+              value.startsWith(`metadata.annotations.extensions.backstage.io/`)
             ) {
               add();
             } else {
