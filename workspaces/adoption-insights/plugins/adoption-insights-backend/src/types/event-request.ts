@@ -15,10 +15,10 @@
  */
 export const QUERY_TYPES = [
   'total_users',
-  'daily_users',
-  'top_plugin_views',
-  'top_templates_views',
-  'top_techdocs_views',
+  'active_users',
+  'top_plugins',
+  'top_templates',
+  'top_techdocs',
   'top_searches',
   'top_catalog_entities',
 ] as const;

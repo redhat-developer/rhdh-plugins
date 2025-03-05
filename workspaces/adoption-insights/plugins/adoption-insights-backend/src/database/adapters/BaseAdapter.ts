@@ -54,7 +54,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
 
       this.logger.info(`[DB] Failed event logged: ${event}`);
     } catch (error) {
-      console.error(`[DB] Error inserting failed event:`, error);
+      this.logger.error(`[DB] Error inserting failed event:`, error);
     }
   }
 
@@ -62,13 +62,13 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     try {
       await this.db.transaction(async trx => {
         const evts = events.map(event => event.toJSON());
-        await trx('events').insert(evts); // Bulk insert into events table
+        await trx('events').insert(evts); // Bulk insert into events table ('events')
       });
       this.logger.info(
         `[DB] Successfully inserted ${events.length} events in bulk`,
       );
     } catch (error) {
-      console.error(`[DB] Error inserting batch:`, error);
+      this.logger.error(`[DB] Error inserting batch:`, error);
       throw error; // Re-throw the error for retry handling
     }
   }
@@ -125,12 +125,18 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
             'ge.date',
           )} THEN 1 ELSE 0 END) as returning_users`,
         ),
-        db.raw(`'${this.getDynamicDateGrouping(true)}' as grouping`),
       )
       .groupBy('ge.date')
       .orderBy('ge.date');
 
-    return query;
+    return query.then(data => {
+      return {
+        ...(data.length > 0
+          ? { grouping: this.getDynamicDateGrouping(true) }
+          : {}),
+        data,
+      };
+    });
   }
 
   async getUsers(): Promise<Knex.QueryBuilder> {
@@ -150,7 +156,9 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     return query.then(result => {
       const { licensedUsers } = this.config!;
       result[0] = { ...result[0], licensed_users: licensedUsers } as any;
-      return result;
+      return {
+        data: result,
+      };
     });
   }
 
@@ -173,7 +181,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .orderBy('count', 'desc')
       .limit(Number(limit) || 3);
 
-    return query;
+    return query.then(data => ({ data }));
   }
 
   async getTopSearches(): Promise<Knex.QueryBuilder> {
@@ -191,7 +199,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .orderBy('date', 'asc')
       .limit(Number(limit) || 3);
 
-    return query;
+    return query.then(data => ({ data }));
   }
 
   async getTopTechDocsViews(): Promise<Knex.QueryBuilder> {
@@ -211,7 +219,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .groupByRaw('entityRef')
       .limit(Number(limit) || 3);
 
-    return query;
+    return query.then(data => ({ data }));
   }
 
   async getTopCatalogEntitiesViews(): Promise<Knex.QueryBuilder> {
@@ -231,15 +239,14 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .andWhere(db.raw(`attributes->>'kind' IS NOT NULL`))
       .andWhere('action', 'navigate')
       .andWhere('plugin_id', 'catalog')
-      .groupByRaw('plugin_id, kind, name')
+      .groupByRaw('plugin_id, kind, name, namespace')
       .orderBy('count', 'desc')
       .limit(Number(limit) || 3);
 
     if (kind) {
       query.andWhere(db.raw(`attributes->>'kind' = ?`, [kind]));
     }
-
-    return query;
+    return query.then(data => ({ data }));
   }
 
   async getTopPluginViews(): Promise<Knex.QueryBuilder> {
@@ -311,7 +318,12 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .orderBy('p.visit_count', 'desc')
       .limit(limit);
 
-    return query.then(data => this.transformJson(data, 'trend'));
+    return query.then(data => ({
+      ...(data.length > 0
+        ? { grouping: this.getDynamicDateGrouping(true) }
+        : {}),
+      data: this.transformJson(data, 'trend'),
+    }));
   }
 
   abstract getDate(): string;

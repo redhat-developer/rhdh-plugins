@@ -76,4 +76,13 @@ describe('createRouter', () => {
 
     expect(response.status).toBe(401);
   });
+  it('should return 400 for invalid request', async () => {
+    const response = await request(app).get('/events');
+    expect(response.status).toBe(400);
+  });
+
+  it('should return the health of the API service', async () => {
+    const response = await request(app).get('/health');
+    expect(response.body).toEqual({ status: 'ok' });
+  });
 });

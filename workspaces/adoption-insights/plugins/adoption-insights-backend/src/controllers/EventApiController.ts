@@ -98,26 +98,25 @@ class EventApiController {
     db.setConfig({ licensedUsers });
     const queryHandlers: Record<QueryType, () => Promise<Knex.QueryBuilder>> = {
       total_users: () => db.getUsers(),
-      daily_users: () => db.getDailyUsers(),
+      active_users: () => db.getDailyUsers(),
       top_searches: () => db.getTopSearches(),
-      top_plugin_views: () => db.getTopPluginViews(),
-      top_techdocs_views: () => db.getTopTechDocsViews(),
-      top_templates_views: () => db.getTopTemplateViews(),
+      top_plugins: () => db.getTopPluginViews(),
+      top_techdocs: () => db.getTopTechDocsViews(),
+      top_templates: () => db.getTopTemplateViews(),
       top_catalog_entities: () => db.getTopCatalogEntitiesViews(),
     };
 
     try {
       const result = await queryHandlers[type as QueryType]();
-      if (format === 'csv') {
+      if (format === 'csv' && result) {
         const csv = Parser(result);
         res.header('Content-Type', 'text/csv');
-        res.attachment('analytics.csv');
+        res.attachment(`adoption_insights_${type}.csv`);
         res.send(csv);
         return;
       }
       res.json(result);
     } catch (error) {
-      console.log({ error });
       res.status(500).json({ error: 'Internal Server Error' });
       return;
     }

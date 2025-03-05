@@ -22,11 +22,12 @@ import { mockServices } from '@backstage/backend-test-utils';
 
 describe('BaseAdapter', () => {
   let infoLog: jest.SpyInstance;
-
+  let errorLog: jest.SpyInstance;
   const logger = mockServices.logger.mock();
   const mockKnex = {
     returning: jest.fn().mockReturnThis(),
     first: jest.fn().mockResolvedValue({ id: 1, name: 'Mocked' }),
+    as: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     from: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
@@ -40,6 +41,7 @@ describe('BaseAdapter', () => {
     update: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),
     raw: jest.fn().mockReturnValue('mocked_raw_sql'),
+    with: jest.fn().mockReturnThis(),
     transaction: jest.fn().mockResolvedValue({
       commit: jest.fn(),
       rollback: jest.fn(),
@@ -47,6 +49,30 @@ describe('BaseAdapter', () => {
       returning: jest.fn().mockResolvedValue([{ id: 1 }]),
     }),
   } as unknown as jest.Mocked<Knex>;
+
+  const mockDb = jest.fn().mockReturnValue({
+    ...mockKnex,
+  }) as any;
+
+  const setupDb = (db = mockDb) => {
+    db.as = jest.fn().mockReturnThis();
+    db.groupByRaw = jest.fn();
+    db.toQuery = jest.fn();
+    db.from = jest.fn().mockReturnThis();
+    db.with = jest.fn().mockReturnThis();
+    db.select = jest.fn().mockReturnThis();
+    db.andWhere = jest.fn().mockReturnThis();
+    db.whereBetween = jest.fn().mockReturnThis();
+    db.leftJoin = jest.fn().mockReturnThis();
+    db.groupBy = jest.fn().mockReturnThis();
+    db.orderBy = jest.fn().mockReturnThis();
+    db.limit = jest.fn().mockReturnThis();
+    db.toQuery = jest.fn().mockReturnThis();
+    db.then = jest.fn().mockReturnThis();
+    db.raw = jest.fn().mockReturnThis();
+    db.toQuery = jest.fn().mockReturnThis();
+    return db;
+  };
 
   const mockContext = {
     routeRef: 'unknown',
@@ -71,6 +97,13 @@ describe('BaseAdapter', () => {
 
   it('should insert the event to the database', async () => {
     infoLog = jest.spyOn(logger, 'info');
+    mockKnex.transaction = jest.fn();
+    const mockTrx = jest.fn().mockReturnValue({
+      insert: jest.fn().mockResolvedValue([1]),
+    });
+    mockKnex.transaction.mockImplementation(async callback => {
+      return callback(mockTrx as any);
+    });
     const db = new PostgresAdapter(mockKnex, logger);
 
     const event = new Event(mockEvent);
@@ -80,13 +113,49 @@ describe('BaseAdapter', () => {
       '[DB] Successfully inserted 1 events in bulk',
     );
   });
+  it('should throw error the user about the failed to insert into to database', async () => {
+    infoLog = jest.spyOn(logger, 'info');
+    const mockTrx = jest.fn().mockReturnValue({
+      insert: jest.fn().mockRejectedValue(new Error('Database insert failed')),
+    }) as any;
+    mockKnex.transaction.mockImplementation(async callback => {
+      await callback(mockTrx);
+    });
+    const db = new PostgresAdapter(mockKnex, logger);
+
+    const event = new Event(mockEvent);
+
+    await expect(db.insertEvents([event])).rejects.toThrow(
+      'Database insert failed',
+    );
+  });
+
+  it('should throw error the user about the failed to insert failed event into to database', async () => {
+    errorLog = jest.spyOn(logger, 'error');
+    mockKnex.insert.mockRejectedValue(new Error('Failed to insert'));
+
+    const mockDatabase = jest.fn(() => mockKnex) as any;
+
+    const db = new PostgresAdapter(mockDatabase, logger);
+    const event = new Event(mockEvent);
+
+    await db.insertFailedEvent(
+      JSON.stringify(event),
+      'invalid syntax error',
+      3,
+    );
+
+    expect(errorLog).toHaveBeenCalledWith(
+      `[DB] Error inserting failed event:`,
+      expect.any(Error),
+    );
+    mockKnex.insert.mockReturnThis();
+  });
 
   it('should insert the failed event to the database', async () => {
     infoLog = jest.spyOn(logger, 'info');
-    const mockDb = jest.fn(() => mockKnex) as any;
-
-    const db = new PostgresAdapter(mockDb, logger);
-
+    const mockPostgresDb = setupDb();
+    const db = new PostgresAdapter(mockPostgresDb, logger);
     const event = new Event(mockEvent);
 
     await db.insertFailedEvent(
@@ -101,20 +170,24 @@ describe('BaseAdapter', () => {
   });
 
   it('should return the daily users', async () => {
-    const mockDb = jest.fn(() => mockKnex) as any;
-    mockDb.raw = jest.fn().mockReturnValue('mocked_raw_sql').mockReturnThis();
-    mockDb.groupByRaw = jest.fn();
-    mockDb.toQuery = jest.fn();
-    mockDb.from = jest.fn().mockReturnThis();
-    mockDb.select = jest.fn().mockReturnThis();
-    mockDb.leftJoin = jest.fn().mockReturnThis();
-    mockDb.groupBy = jest.fn().mockReturnThis();
-    mockDb.orderBy = jest.fn().mockReturnThis();
+    const dbAdapter = jest.fn(() => mockKnex) as any;
+    dbAdapter.raw = jest
+      .fn()
+      .mockReturnValue('mocked_raw_sql')
+      .mockReturnThis();
+    dbAdapter.groupByRaw = jest.fn();
+    dbAdapter.toQuery = jest.fn();
+    dbAdapter.from = jest.fn().mockReturnThis();
+    dbAdapter.select = jest.fn().mockReturnThis();
+    dbAdapter.leftJoin = jest.fn().mockReturnThis();
+    dbAdapter.groupBy = jest.fn().mockReturnThis();
+    dbAdapter.orderBy = jest.fn().mockReturnThis();
+    dbAdapter.then = jest.fn().mockResolvedValue({});
 
-    const db = new PostgresAdapter(mockDb, logger);
+    const db = new PostgresAdapter(dbAdapter, logger);
 
     const filters = {
-      type: 'daily_users',
+      type: 'active_users',
       start_date: '2024-03-01',
       end_date: '2024-03-31',
     };
@@ -125,7 +198,73 @@ describe('BaseAdapter', () => {
       filters.start_date,
       filters.end_date,
     ]);
-    expect(mockDb.groupBy).toHaveBeenCalledWith('ge.date');
-    expect(mockDb.orderBy).toHaveBeenCalledWith('ge.date');
+    expect(dbAdapter.groupBy).toHaveBeenCalledWith('ge.date');
+    expect(dbAdapter.orderBy).toHaveBeenCalledWith('ge.date');
+  });
+
+  describe('getTopPluginViews', () => {
+    it('should return the top plugins count without any errors', async () => {
+      infoLog = jest.spyOn(logger, 'info');
+      const p_db = setupDb();
+      p_db.with = jest.fn().mockImplementation((_: any, callback: any) => {
+        return callback(p_db);
+      });
+
+      const mockPluginCount = [
+        {
+          plugin_id: 'catalog',
+          visit_count: '27',
+          trend: [
+            {
+              date: '2025-03-01',
+              count: 10,
+            },
+            {
+              date: '2025-03-02',
+              count: 17,
+            },
+          ],
+          trend_percentage: '70.00',
+        },
+      ];
+      p_db.then = jest.fn().mockImplementation(() => mockPluginCount);
+      const db = new PostgresAdapter(p_db, logger);
+      db.setFilters({
+        start_date: new Date('2025-03-01').toISOString(),
+        end_date: new Date('2025-03-02').toISOString(),
+      });
+
+      const result = await db.getTopPluginViews();
+      expect(result).toEqual(mockPluginCount);
+    });
+  });
+
+  describe('getUsers', () => {
+    it('should return the users count', async () => {
+      const usersCount = [
+        {
+          logged_in_users: 1,
+          licensed_users: 100,
+        },
+      ];
+
+      const mockpostgresDb = jest.fn().mockReturnValue({
+        ...mockKnex,
+        then: jest.fn().mockImplementation(cb => cb(usersCount)),
+      }) as any;
+
+      mockpostgresDb.raw = jest
+        .fn()
+        .mockReturnValue('COUNT(*) as logged_in_users');
+
+      const db = new PostgresAdapter(mockpostgresDb, logger);
+      db.setConfig({ licensedUsers: 10 });
+      db.setFilters({
+        start_date: new Date('2025-03-02').toISOString(),
+        end_date: new Date('2025-03-05').toISOString(),
+      });
+      const result = await db.getUsers();
+      expect(result).toEqual({ data: usersCount });
+    });
   });
 });

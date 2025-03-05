@@ -23,6 +23,7 @@ import {
   AnalyticsEvent,
 } from '@backstage/core-plugin-api';
 import { QUERY_TYPES, QueryParams } from '../types/event-request';
+import { toEndOfDayUTC, toStartOfDayUTC } from '../utils/date';
 
 let controller: EventApiController;
 let req: Partial<Request>;
@@ -30,6 +31,15 @@ let res: Partial<Response>;
 
 const mockEventDb = {
   isJsonSupported: jest.fn(),
+  setFilters: jest.fn(),
+  setConfig: jest.fn(),
+  getUsers: jest.fn(),
+  getDailyUsers: jest.fn(),
+  getTopSearches: jest.fn(),
+  getTopPluginViews: jest.fn(),
+  getTopTechDocsViews: jest.fn(),
+  getTopTemplateViews: jest.fn(),
+  getTopCatalogEntitiesViews: jest.fn(),
 } as unknown as jest.Mocked<EventDatabase>;
 
 const mockProcessor = {
@@ -212,7 +222,7 @@ describe('GetInsights', () => {
     jest.restoreAllMocks();
   });
 
-  it('should return return validation errors', () => {
+  it('should return validation errors', () => {
     controller.getInsights(
       req as unknown as Request<{}, {}, {}, QueryParams>,
       res as Response,
@@ -225,5 +235,89 @@ describe('GetInsights', () => {
       },
       message: 'Invalid query',
     });
+  });
+
+  it('should set configuration and filters', async () => {
+    req.query = {
+      ...req.query,
+      type: 'total_users',
+    };
+    await controller.getInsights(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      res as Response,
+    );
+
+    expect(mockEventDb.setFilters).toHaveBeenCalledWith({
+      start_date: toStartOfDayUTC(req.query?.start_date as string),
+      end_date: toEndOfDayUTC(req.query?.end_date as string),
+    });
+
+    expect(mockEventDb.setConfig).toHaveBeenCalledWith({
+      licensedUsers: 100,
+    });
+  });
+
+  it('should call the api endpoints based on type', () => {
+    QUERY_TYPES.forEach(type => {
+      req.query = {
+        ...req.query,
+        type: type,
+      };
+
+      controller.getInsights(
+        req as unknown as Request<{}, {}, {}, QueryParams>,
+        res as Response,
+      );
+    });
+
+    expect(mockEventDb.getUsers).toHaveBeenCalled();
+    expect(mockEventDb.getDailyUsers).toHaveBeenCalled();
+    expect(mockEventDb.getTopSearches).toHaveBeenCalled();
+    expect(mockEventDb.getTopPluginViews).toHaveBeenCalled();
+    expect(mockEventDb.getTopTemplateViews).toHaveBeenCalled();
+    expect(mockEventDb.getTopTechDocsViews).toHaveBeenCalled();
+    expect(mockEventDb.getTopCatalogEntitiesViews).toHaveBeenCalled();
+  });
+
+  it('should return the csv file with correct filename', async () => {
+    req.query = {
+      ...req.query,
+      type: 'total_users',
+      format: 'csv',
+    };
+    res.header = jest.fn();
+    res.attachment = jest.fn();
+    res.send = jest.fn();
+
+    mockEventDb.getUsers.mockResolvedValue([
+      { logged_in_users: 1, licensed_users: 100 },
+    ] as any);
+
+    await controller.getInsights(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      res as Response,
+    );
+
+    expect(res.header).toHaveBeenCalledWith('Content-Type', 'text/csv');
+    expect(res.attachment).toHaveBeenCalledWith(
+      'adoption_insights_total_users.csv',
+    );
+  });
+
+  it('should throw 500 error', async () => {
+    mockEventDb.getUsers.mockClear();
+    req.query = {
+      ...req.query,
+      type: 'total_users',
+    };
+
+    mockEventDb.getUsers.mockRejectedValue(new Error('Something went wrong'));
+
+    await controller.getInsights(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      res as Response,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(500);
   });
 });

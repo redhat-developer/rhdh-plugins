@@ -22,7 +22,6 @@ interface DailyUser {
   total_users: number;
   new_users: number;
   returning_users: number;
-  grouping: string;
 }
 
 interface TotalUser {
@@ -46,14 +45,23 @@ interface CatalogEntityCount {
   plugin_id: string;
   kind: string;
   name: string;
+  namespace: string;
   last_used: string; // ISO 8601 format (e.g., 2025-03-02T16:25:32.819Z);
   count: string;
 }
 
-export type DailyUsers = DailyUser[];
-export type TotalUsers = TotalUser[];
-export type TopSearches = DateCount[];
-export type TopPluginCount = PluginCount[];
-export type TopTechDocsCount = EntityRefCount[];
-export type TopTemplatesCount = EntityRefCount[];
-export type TopCatalogEntitiesCount = CatalogEntityCount[];
+type ResponseData<T> = {
+  data: T;
+};
+
+type ResponseWithGrouping<T> = {
+  grouping: 'daily' | 'weekly' | 'monthly';
+  data: T;
+};
+export type DailyUsers = ResponseWithGrouping<DailyUser[]>;
+export type TotalUsers = ResponseData<TotalUser[]>;
+export type TopSearches = ResponseData<DateCount[]>;
+export type TopPluginCount = ResponseWithGrouping<PluginCount[]>;
+export type TopTechDocsCount = ResponseData<EntityRefCount[]>;
+export type TopTemplatesCount = ResponseData<EntityRefCount[]>;
+export type TopCatalogEntitiesCount = ResponseData<CatalogEntityCount[]>;
