@@ -71,7 +71,7 @@ const Tabs = () => {
       Component: MarketplaceCatalogContent,
       config: {
         path: '',
-        title: 'Marketplace',
+        title: 'Catalog',
       },
     },
   ];
@@ -79,7 +79,7 @@ const Tabs = () => {
   return (
     <>
       <Page themeId={themeId}>
-        <Header title="Plugin" />
+        <Header title="Extenions" />
         <TabbedLayout>
           {/* <TabbedLayout.Route path="/catalog" title="Marketplace">
             <ErrorBoundary>

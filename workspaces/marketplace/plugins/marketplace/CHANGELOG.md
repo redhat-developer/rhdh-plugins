@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.1.5
+
+### Patch Changes
+
+- 6f9686f: rename plugin/marketplace to extensions/catalog
+- 9073ab8: apply default sorting to filtered plugins api call
+
+## 0.1.4
+
+### Patch Changes
+
+- c977dbc: fix mount points in app-config.dynamic.yaml
+
 ## 0.1.3
 
 ### Patch Changes

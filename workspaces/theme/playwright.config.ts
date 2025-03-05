@@ -28,7 +28,7 @@ export default defineConfig({
   },
 
   // Run your local dev server before starting the tests
-  webServer: process.env.CI
+  webServer: process.env.PLAYWRIGHT_URL
     ? []
     : [
         {
@@ -47,9 +47,7 @@ export default defineConfig({
 
   use: {
     actionTimeout: 0,
-    baseURL:
-      process.env.PLAYWRIGHT_URL ??
-      (process.env.CI ? 'http://localhost:7007' : 'http://localhost:3000'),
+    baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },
