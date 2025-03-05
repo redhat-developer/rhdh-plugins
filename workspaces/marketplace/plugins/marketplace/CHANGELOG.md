@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.1.6
+
+### Patch Changes
+
+- a199551: fix typo
+- 0c578a7: fix drawer background color
+
 ## 0.1.5
 
 ### Patch Changes
