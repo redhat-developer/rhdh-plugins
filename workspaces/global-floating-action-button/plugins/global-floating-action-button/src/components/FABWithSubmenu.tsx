@@ -23,15 +23,13 @@ import Fab from '@mui/material/Fab';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 
-import { useTheme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
 import Slide from '@mui/material/Slide';
-
-import Fade from '@mui/material/Fade';
 import { FAB } from './FAB';
 import { slotOptions } from '../utils';
 import { FloatingActionButton, Slot } from '../types';
+import Typography from '@mui/material/Typography';
 
 const useStyles = makeStyles(theme => ({
   fabContainer: {
@@ -67,7 +65,6 @@ export const FABWithSubmenu = ({
   const fab = useStyles();
   const { pathname } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [fadeOut, setFadeOut] = React.useState(false);
 
   React.useEffect(() => {
     return () => {
@@ -77,10 +74,8 @@ export const FABWithSubmenu = ({
 
   const handleClick = () => {
     if (isMenuOpen) {
-      setFadeOut(true);
       setTimeout(() => {
         setIsMenuOpen(false);
-        setFadeOut(false);
       }, 300);
     } else {
       setIsMenuOpen(true);
@@ -95,51 +90,44 @@ export const FABWithSubmenu = ({
       }}
       id="floating-button-with-submenu"
       data-testid="floating-button-with-submenu"
-      ref={containerRef}
     >
       <Tooltip title="Menu" placement={slotOptions[slot].tooltipDirection}>
-        <Fab
-          size="medium"
-          color="info"
-          onClick={handleClick}
-          aria-label="Menu"
-          variant="circular"
-          sx={{ zIndex: 1000 }}
-        >
-          {isMenuOpen ? (
-            <CloseIcon className={styles.menuButtonStyle} />
-          ) : (
-            <MenuIcon className={styles.menuButtonStyle} />
-          )}
-        </Fab>
+        <Typography>
+          <Box ref={containerRef} sx={{ overflow: 'hidden' }} />
+          <Fab
+            size="medium"
+            color="info"
+            onClick={handleClick}
+            aria-label="Menu"
+            variant="circular"
+            sx={{ zIndex: 1000 }}
+          >
+            {isMenuOpen ? (
+              <CloseIcon className={styles.menuButtonStyle} />
+            ) : (
+              <MenuIcon className={styles.menuButtonStyle} />
+            )}
+          </Fab>
+        </Typography>
       </Tooltip>
       {fabs?.map(fb => {
         return (
-          <Fade in={isMenuOpen} timeout={{ enter: 500, exit: 1000 }}>
-            <Slide
-              direction="up"
-              container={containerRef.current}
-              in={isMenuOpen}
-              timeout={{ appear: 1500, enter: 500, exit: 1000 }}
-              mountOnEnter
-              unmountOnExit
-            >
-              {/* <FAB
+          <Slide
+            direction="up"
+            container={containerRef?.current}
+            in={isMenuOpen}
+            mountOnEnter
+            unmountOnExit
+          >
+            <Box>
+              <FAB
                 actionButton={fb}
                 size="medium"
                 key={fb.label}
                 className={styles.button}
-              /> */}
-              <Fab
-                size="small"
-                sx={{
-                  zIndex: 205,
-                }}
-              >
-                {fb.icon}
-              </Fab>
-            </Slide>
-          </Fade>
+              />
+            </Box>
+          </Slide>
         );
       })}
     </Box>

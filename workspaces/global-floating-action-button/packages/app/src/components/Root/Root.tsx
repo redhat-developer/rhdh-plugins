@@ -99,8 +99,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           {
             slot: Slot.BOTTOM_LEFT,
             icon: <ExtensionIcon />,
-            label: 'Apis',
-            toolTip: 'Apis',
+            label: 'APIs',
+            toolTip: 'APIs',
             to: '/api-docs',
           },
           {
