@@ -8521,7 +8521,7 @@ __metadata:
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
     knip: ^5.40.0
     node-gyp: ^9.0.0
-    prettier: 3.4.2
+    prettier: 3.5.2
     typescript: ~5.3.0
   languageName: unknown
   linkType: soft
@@ -11367,9 +11367,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openapitools/openapi-generator-cli@npm:2.16.3, @openapitools/openapi-generator-cli@npm:^2.7.0":
-  version: 2.16.3
-  resolution: "@openapitools/openapi-generator-cli@npm:2.16.3"
+"@openapitools/openapi-generator-cli@npm:2.17.0, @openapitools/openapi-generator-cli@npm:^2.7.0":
+  version: 2.17.0
+  resolution: "@openapitools/openapi-generator-cli@npm:2.17.0"
   dependencies:
     "@nestjs/axios": 3.1.3
     "@nestjs/common": 10.4.15
@@ -11391,7 +11391,7 @@ __metadata:
     tslib: 2.8.1
   bin:
     openapi-generator-cli: main.js
-  checksum: 614904e08f1285dd6b7e0d2d2c5fb62afbeb24cb66a636d5525ecc2c5ce7b3281e1eba0fce15c98768d0d746b16e6902b430f3ff521c8a30f75dfa1f1295c336
+  checksum: d62c644b91815cf86e8e5c02bcff7fb2384131e3b185f9ce67535f8efafa3a8b80f954610da5e26143658dd3c017800e4944fe3ad338cbe96743426f82550eb7
   languageName: node
   linkType: hard
 
@@ -12328,7 +12328,7 @@ __metadata:
     isomorphic-git: ^1.23.0
     moment: ^2.29.4
     openapi-backend: ^5.10.5
-    prettier: 3.4.2
+    prettier: 3.5.2
     yn: ^5.0.0
   peerDependencies:
     "@backstage-community/plugin-rbac-common": ^1.12.1
@@ -12343,7 +12343,7 @@ __metadata:
     "@backstage/cli": ^0.30.0-next.3
     "@backstage/plugin-permission-common": ^0.8.4
     "@backstage/types": ^1.2.1
-    "@openapitools/openapi-generator-cli": 2.16.3
+    "@openapitools/openapi-generator-cli": 2.17.0
     "@severlessworkflow/sdk-typescript": ^3.0.3
     "@types/json-schema": 7.0.15
     axios: ^1.7.9
@@ -12363,7 +12363,7 @@ __metadata:
     "@rjsf/utils": ^5.21.2
     "@types/json-schema": 7.0.15
     "@types/react": ^18.2.58
-    prettier: 3.4.2
+    prettier: 3.5.2
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
@@ -12391,7 +12391,7 @@ __metadata:
     "@types/react": ^18.2.58
     json-schema-library: ^9.0.0
     lodash: ^4.17.21
-    prettier: 3.4.2
+    prettier: 3.5.2
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
@@ -12419,14 +12419,14 @@ __metadata:
     monaco-editor-webpack-plugin: ^7.1.0
     monaco-yaml: ^5.2.3
     node-polyfill-webpack-plugin: 3.0.0
-    prettier: 3.4.2
-    sass: 1.83.4
+    prettier: 3.5.2
+    sass: 1.85.1
     sass-loader: 14.2.1
     style-loader: 3.3.4
     terser-webpack-plugin: 5.3.11
     ts-loader: 9.5.2
     typescript: 5.4.5
-    webpack: 5.97.1
+    webpack: 5.98.0
     webpack-cli: 5.1.4
   languageName: unknown
   linkType: soft
@@ -12460,7 +12460,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "workspace:^"
-    "@redhat-developer/red-hat-developer-hub-theme": 0.4.0
+    "@redhat-developer/red-hat-developer-hub-theme": 0.5.0
     "@testing-library/dom": ^10.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^15.0.0
@@ -12471,7 +12471,7 @@ __metadata:
     axios: ^1.7.7
     moment: ^2.29.4
     monaco-editor: ^0.52.2
-    prettier: 3.4.2
+    prettier: 3.5.2
     react-json-view: ^1.21.3
     react-moment: ^1.1.3
     react-use: ^17.4.0
@@ -12507,22 +12507,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0"
-  peerDependencies:
-    "@backstage/theme": ^0.5.2
-    "@emotion/react": ^11.11.1
-    "@emotion/styled": ^11.11.0
-    "@material-ui/core": ^4.12.4
-    "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.14.19
-    "@mui/material": ^5.14.20
-  checksum: 8684f8faa2fe87100dba2c19f1e1a306e808cf98bc65da829c3203a325ea6520a93e54c174e25a220ccf8280ecc2750a178a0d18b12f5ba354c7c415e8a9dc7b
-  languageName: node
-  linkType: hard
-
-"@redhat-developer/red-hat-developer-hub-theme@npm:^0.5.0":
+"@redhat-developer/red-hat-developer-hub-theme@npm:0.5.0, @redhat-developer/red-hat-developer-hub-theme@npm:^0.5.0":
   version: 0.5.0
   resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.0"
   peerDependencies:
@@ -32189,12 +32174,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.4.2":
-  version: 3.4.2
-  resolution: "prettier@npm:3.4.2"
+"prettier@npm:3.5.2":
+  version: 3.5.2
+  resolution: "prettier@npm:3.5.2"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 061c84513db62d3944c8dc8df36584dad82883ce4e49efcdbedd8703dce5b173c33fd9d2a4e1725d642a3b713c932b55418342eaa347479bc4a9cca114a04cd0
+  checksum: 77adb755fca32a4f4176d02f69766e3a1ced9dd7e8df721c9aa0daee3328c2ab3845ae56fa2cda0c37936f5ff4f3cf4c3cf4dfcbc0d021192356b2af1c5cb7f0
   languageName: node
   linkType: hard
 
@@ -34450,9 +34435,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.83.4":
-  version: 1.83.4
-  resolution: "sass@npm:1.83.4"
+"sass@npm:1.85.1":
+  version: 1.85.1
+  resolution: "sass@npm:1.85.1"
   dependencies:
     "@parcel/watcher": ^2.4.1
     chokidar: ^4.0.0
@@ -34463,7 +34448,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 500958ea77ceb92db0aaef7e6ee5bc3cc016f4ad42fcad40dd2a2891b758c74538c651c47c01f9c04d9b743453efd5a6ba0caccc679f03c6da47a7bb25b2d30c
+  checksum: e38fa3992c99aa0270cc7577c9b38f576907a11ea01571d8e4ff2cb11b00606b33f650344d21082aba1c9ef6588ca088a5b84f82a8f8c32f9865c3159161ab89
   languageName: node
   linkType: hard
 
@@ -34503,7 +34488,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"schema-utils@npm:^3.0.0, schema-utils@npm:^3.1.1, schema-utils@npm:^3.2.0":
+"schema-utils@npm:^3.0.0, schema-utils@npm:^3.1.1":
   version: 3.3.0
   resolution: "schema-utils@npm:3.3.0"
   dependencies:
@@ -36202,7 +36187,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"terser-webpack-plugin@npm:5.3.11, terser-webpack-plugin@npm:^5.1.3, terser-webpack-plugin@npm:^5.3.10":
+"terser-webpack-plugin@npm:5.3.11":
   version: 5.3.11
   resolution: "terser-webpack-plugin@npm:5.3.11"
   dependencies:
@@ -36221,6 +36206,28 @@ __metadata:
     uglify-js:
       optional: true
   checksum: c84c005d4041ad2e2eed0c9059b52a50ffd27f1e2afca7d34864a2b4b2bb1295405bc7578eeb25bae732e358339954d8cb6fbf6d83df52e8aa9333e8bf409ebe
+  languageName: node
+  linkType: hard
+
+"terser-webpack-plugin@npm:^5.1.3, terser-webpack-plugin@npm:^5.3.11":
+  version: 5.3.13
+  resolution: "terser-webpack-plugin@npm:5.3.13"
+  dependencies:
+    "@jridgewell/trace-mapping": ^0.3.25
+    jest-worker: ^27.4.5
+    schema-utils: ^4.3.0
+    serialize-javascript: ^6.0.2
+    terser: ^5.31.1
+  peerDependencies:
+    webpack: ^5.1.0
+  peerDependenciesMeta:
+    "@swc/core":
+      optional: true
+    esbuild:
+      optional: true
+    uglify-js:
+      optional: true
+  checksum: 47f5297fd000d1be17ee8df5f0b5c56a31ff5441ade4fb42a6979b695e45313f2e84a59dc74a362a0faee2078b09bdad1d080ecec53a20d61030e56787959142
   languageName: node
   linkType: hard
 
@@ -38412,9 +38419,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.97.1, webpack@npm:^5.89.0, webpack@npm:^5.94.0":
-  version: 5.97.1
-  resolution: "webpack@npm:5.97.1"
+"webpack@npm:5.98.0, webpack@npm:^5.89.0, webpack@npm:^5.94.0":
+  version: 5.98.0
+  resolution: "webpack@npm:5.98.0"
   dependencies:
     "@types/eslint-scope": ^3.7.7
     "@types/estree": ^1.0.6
@@ -38434,9 +38441,9 @@ __metadata:
     loader-runner: ^4.2.0
     mime-types: ^2.1.27
     neo-async: ^2.6.2
-    schema-utils: ^3.2.0
+    schema-utils: ^4.3.0
     tapable: ^2.1.1
-    terser-webpack-plugin: ^5.3.10
+    terser-webpack-plugin: ^5.3.11
     watchpack: ^2.4.1
     webpack-sources: ^3.2.3
   peerDependenciesMeta:
@@ -38444,7 +38451,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 649065e2258b495ae41a4088be804b4be2ec07d280aa514ebef43da79caf96fa973d26a08826c3902b5676a098d9b37c589f16be7b4da17b68b08b6c76441196
+  checksum: 0de353c694bc4d5af810e4f4d4fd356271b21b2253583a9f618416b5fcbaf8db5a5487c12cc1379778d2a07d56382293334153af6e2ce59ded59488f08015fd1
   languageName: node
   linkType: hard
 
