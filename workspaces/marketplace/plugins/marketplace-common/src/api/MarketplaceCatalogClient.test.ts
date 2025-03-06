@@ -26,7 +26,7 @@ import { MarketplaceCatalogClient } from './MarketplaceCatalogClient';
 
 const mockCollections: MarketplaceCollection[] = [
   {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: MarketplaceKind.Collection,
     metadata: { namespace: 'default', name: 'featured' },
     spec: {
@@ -38,13 +38,13 @@ const mockCollections: MarketplaceCollection[] = [
 
 const mockPackages: MarketplacePackage[] = [
   {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: MarketplaceKind.Package,
     metadata: { namespace: 'default', name: 'package1' },
     spec: {},
   },
   {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: MarketplaceKind.Package,
     metadata: { namespace: 'default', name: 'package2' },
     spec: {},
@@ -53,7 +53,7 @@ const mockPackages: MarketplacePackage[] = [
 
 const mockPlugins: MarketplacePlugin[] = [
   {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: MarketplaceKind.Plugin,
     metadata: { namespace: 'default', name: 'plugin1' },
     spec: {
@@ -61,7 +61,7 @@ const mockPlugins: MarketplacePlugin[] = [
     },
   },
   {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: MarketplaceKind.Plugin,
     metadata: { namespace: 'default', name: 'plugin2' },
     spec: {
@@ -69,7 +69,7 @@ const mockPlugins: MarketplacePlugin[] = [
     },
   },
   {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: MarketplaceKind.Plugin,
     metadata: { namespace: 'another-namespace', name: 'plugin3' },
     spec: {

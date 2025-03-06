@@ -20,6 +20,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { ErrorBoundary } from '@backstage/core-components';
 
+import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
@@ -68,9 +69,9 @@ export const MarketplacePluginDrawer = () => {
         <CloseIcon />
       </IconButton>
       <ErrorBoundary>
-        <div style={{ display: 'flex', flexGrow: 1 }}>
+        <Box sx={{ '> article': { backgroundColor: 'transparent' } }}>
           <MarketplacePluginContentLoader />
-        </div>
+        </Box>
       </ErrorBoundary>
     </Drawer>
   );

@@ -1,12 +1,12 @@
 # yaml-language-server: $schema=../../json-schema/plugins.json
-apiVersion: marketplace.backstage.io/v1alpha1
+apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: acr
   title: Container Image Registry for ACR
   description: View container image details from Azure Container Registry in Backstage.
   annotations:
-    marketplace.backstage.io/verified-by: Red Hat
+    extensions.backstage.io/verified-by: Red Hat
 spec:
   icon: https://janus-idp.io/images/plugins/oci-acr.svg
   author: Red Hat

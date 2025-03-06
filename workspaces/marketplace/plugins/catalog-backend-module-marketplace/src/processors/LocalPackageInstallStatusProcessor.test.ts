@@ -22,7 +22,7 @@ import {
 import { LocalPackageInstallStatusProcessor } from './LocalPackageInstallStatusProcessor';
 
 const packageEntity: MarketplacePackage = {
-  apiVersion: 'marketplace.backstage.io/v1alpha1',
+  apiVersion: 'extensions.backstage.io/v1alpha1',
   kind: 'Package',
   metadata: {
     namespace: 'default',

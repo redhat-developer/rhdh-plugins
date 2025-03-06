@@ -19,7 +19,7 @@ import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marke
 import { MarketplacePluginProcessor } from './MarketplacePluginProcessor';
 
 const testPlugin: MarketplacePlugin = {
-  apiVersion: 'marketplace.backstage.io/v1alpha1',
+  apiVersion: 'extensions.backstage.io/v1alpha1',
   kind: 'Plugin',
   metadata: {
     name: 'test-plugin',

@@ -22,7 +22,7 @@ import {
 import { MarketplaceCollectionProcessor } from './MarketplaceCollectionProcessor';
 
 const testCollection: MarketplaceCollection = {
-  apiVersion: 'marketplace.backstage.io/v1alpha1',
+  apiVersion: 'extensions.backstage.io/v1alpha1',
   kind: MarketplaceKind.Collection,
   metadata: {
     name: 'test-collection',

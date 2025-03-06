@@ -40,7 +40,7 @@ catalog:
 This YAML file is used to add marketplace plugin to the Software catalog in your backstage application.
 
 ```yaml
-apiVersion: marketplace.backstage.io/v1alpha1
+apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: tekton
@@ -81,7 +81,7 @@ The YAML file is structured into the following sections:
 This entity allows you to create a curated list of plugins. This YAML file is used to add marketplace `PluginList` to the Software catalog in your backstage application.
 
 ```yaml
-apiVersion: marketplace.backstage.io/v1alpha1
+apiVersion: extensions.backstage.io/v1alpha1
 kind: PluginList
 metadata:
   name: featured-plugins

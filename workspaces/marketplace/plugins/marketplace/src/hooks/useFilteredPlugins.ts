@@ -74,7 +74,7 @@ export const useFilteredPlugins = () => {
 
         const supportTypeAnnotationsFilters = filters
           .filter(filter =>
-            filter.startsWith('metadata.annotations.marketplace.backstage.io/'),
+            filter.startsWith('metadata.annotations.extensions.backstage.io/'),
           )
           .map(filter => filter.substring('metadata.annotations.'.length));
         if (supportTypeAnnotationsFilters.length > 0) {

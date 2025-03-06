@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.2.0
+
+### Minor Changes
+
+- d3bcc76: rename apiVersion and annotations to extensions.backstage.io
+
+### Patch Changes
+
+- Updated dependencies [d3bcc76]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.2.0
+
 ## 0.1.2
 
 ### Patch Changes

@@ -74,6 +74,9 @@ export const encodeGetEntitiesRequest: (request: GetEntitiesRequest) => URLSearc
 export const encodeGetEntityFacetsRequest: (request: GetEntityFacetsRequest) => URLSearchParams;
 
 // @public (undocumented)
+export const EXTENSIONS_API_VERSION = "extensions.backstage.io/v1alpha1";
+
+// @public (undocumented)
 export type FetchApi = {
     fetch: typeof fetch;
 };
@@ -104,18 +107,15 @@ export function isMarketplacePackage(entity?: Entity): entity is MarketplacePack
 export function isMarketplacePlugin(entity?: Entity): entity is MarketplacePlugin;
 
 // @public (undocumented)
-export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";
-
-// @public (undocumented)
 export enum MarketplaceAnnotation {
     // (undocumented)
-    CERTIFIED_BY = "marketplace.backstage.io/certified-by",
+    CERTIFIED_BY = "extensions.backstage.io/certified-by",
     // (undocumented)
-    PRE_INSTALLED = "marketplace.backstage.io/pre-installed",
+    PRE_INSTALLED = "extensions.backstage.io/pre-installed",
     // (undocumented)
-    SUPPORT_TYPE = "marketplace.backstage.io/support-type",
+    SUPPORT_TYPE = "extensions.backstage.io/support-type",
     // (undocumented)
-    VERIFIED_BY = "marketplace.backstage.io/verified-by"
+    VERIFIED_BY = "extensions.backstage.io/verified-by"
 }
 
 // @public (undocumented)

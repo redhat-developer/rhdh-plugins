@@ -19,7 +19,7 @@ import { MarketplacePackageProcessor } from './MarketplacePackageProcessor';
 
 const testPackage: MarketplacePackage = {
   kind: 'Package',
-  apiVersion: 'marketplace.backstage.io/v1alpha1',
+  apiVersion: 'extensions.backstage.io/v1alpha1',
   metadata: {
     name: 'test-package',
     title: '@backstage-community/plugin-test',

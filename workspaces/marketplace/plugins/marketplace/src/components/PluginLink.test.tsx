@@ -28,7 +28,7 @@ import { rootRouteRef } from '../routes';
 import { PluginLink } from './PluginLink';
 
 const testPlugin: MarketplacePlugin = {
-  apiVersion: 'marketplace.backstage.io/v1alpha1',
+  apiVersion: 'extensions.backstage.io/v1alpha1',
   kind: 'Plugin',
   metadata: {
     namespace: 'default',

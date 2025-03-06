@@ -79,7 +79,7 @@ const Tabs = () => {
   return (
     <>
       <Page themeId={themeId}>
-        <Header title="Extenions" />
+        <Header title="Extensions" />
         <TabbedLayout>
           {/* <TabbedLayout.Route path="/catalog" title="Marketplace">
             <ErrorBoundary>

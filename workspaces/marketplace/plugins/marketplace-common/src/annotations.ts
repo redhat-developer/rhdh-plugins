@@ -18,8 +18,8 @@
  * @public
  */
 export enum MarketplaceAnnotation {
-  CERTIFIED_BY = 'marketplace.backstage.io/certified-by',
-  VERIFIED_BY = 'marketplace.backstage.io/verified-by',
-  SUPPORT_TYPE = 'marketplace.backstage.io/support-type',
-  PRE_INSTALLED = 'marketplace.backstage.io/pre-installed',
+  CERTIFIED_BY = 'extensions.backstage.io/certified-by',
+  VERIFIED_BY = 'extensions.backstage.io/verified-by',
+  SUPPORT_TYPE = 'extensions.backstage.io/support-type',
+  PRE_INSTALLED = 'extensions.backstage.io/pre-installed',
 }

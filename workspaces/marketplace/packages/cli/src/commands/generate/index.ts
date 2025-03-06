@@ -19,7 +19,7 @@ import { OptionValues } from 'commander';
 import path from 'path';
 import YAML from 'yaml';
 import {
-  MARKETPLACE_API_VERSION,
+  EXTENSIONS_API_VERSION,
   MarketplaceKind,
   MarketplacePackage,
   MarketplacePackageSpecAppConfigExample,
@@ -148,7 +148,7 @@ export default async (opts: OptionValues) => {
       }
 
       const entity: MarketplacePackage = {
-        apiVersion: MARKETPLACE_API_VERSION,
+        apiVersion: EXTENSIONS_API_VERSION,
         kind: MarketplaceKind.Package,
         metadata: {
           name: entityName(packageJSON.name),

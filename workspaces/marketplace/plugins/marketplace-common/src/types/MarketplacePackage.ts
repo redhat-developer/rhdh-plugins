@@ -17,7 +17,7 @@
 import type { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
-import { MARKETPLACE_API_VERSION } from '../consts';
+import { EXTENSIONS_API_VERSION } from '../consts';
 
 import { MarketplaceKind } from './MarketplaceKind';
 
@@ -84,7 +84,8 @@ export function isMarketplacePackage(
 ): entity is MarketplacePackage {
   return (
     !!entity &&
-    entity.apiVersion === MARKETPLACE_API_VERSION &&
+    (entity.apiVersion === EXTENSIONS_API_VERSION ||
+      entity.apiVersion === 'marketplace.backstage.io/v1alpha1') &&
     entity.kind === MarketplaceKind.Package
   );
 }
