@@ -101,7 +101,10 @@ describe('trackEvents', () => {
 
     expect(mockProcessIncomingEvents).toHaveBeenCalledWith(req.body);
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Event received' });
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      message: 'Event received',
+    });
   });
 
   it('should throw validation error if the request is missing some fields', () => {
@@ -166,7 +169,10 @@ describe('trackEvents', () => {
 
     expect(mockProcessorAddEvent).toHaveBeenCalledTimes(0);
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Event received' });
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      message: 'Event received',
+    });
   });
 
   it('should process events only with user information', () => {
@@ -193,7 +199,10 @@ describe('trackEvents', () => {
 
     expect(mockProcessorAddEvent).toHaveBeenCalledTimes(1);
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Event received' });
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      message: 'Event received',
+    });
   });
 });
 
@@ -289,9 +298,9 @@ describe('GetInsights', () => {
     res.attachment = jest.fn();
     res.send = jest.fn();
 
-    mockEventDb.getUsers.mockResolvedValue([
-      { logged_in_users: 1, licensed_users: 100 },
-    ] as any);
+    mockEventDb.getUsers.mockResolvedValue({
+      data: [{ logged_in_users: 1, licensed_users: 100 }],
+    } as any);
 
     await controller.getInsights(
       req as unknown as Request<{}, {}, {}, QueryParams>,

@@ -64,7 +64,7 @@ class EventApiController {
 
     try {
       this.processIncomingEvents(events);
-      res.status(200).json({ message: 'Event received' });
+      res.status(200).json({ success: true, message: 'Event received' });
     } catch (error) {
       res
         .status(400)
@@ -108,8 +108,8 @@ class EventApiController {
 
     try {
       const result = await queryHandlers[type as QueryType]();
-      if (format === 'csv' && result) {
-        const csv = Parser(result);
+      if (format === 'csv' && result.data) {
+        const csv = Parser(result.data);
         res.header('Content-Type', 'text/csv');
         res.attachment(`adoption_insights_${type}.csv`);
         res.send(csv);

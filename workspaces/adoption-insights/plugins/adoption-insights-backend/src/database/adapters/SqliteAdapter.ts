@@ -75,7 +75,7 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
       case 'weekly':
         return `strftime('%Y-%m-%d', date(created_at, 'weekday 0', '-7 days'))`;
       case 'monthly':
-        return `strftime('%Y-%m-%d', date(created_at, 'localtime'))`;
+        return `strftime('%Y-%m-01', date(created_at, 'localtime'))`;
       default:
         throw new Error('Invalid date grouping');
     }

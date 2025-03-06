@@ -92,8 +92,15 @@ export class PostgresAdapter extends BaseDatabaseAdapter {
         );
       case 'monthly':
         return rawQuery(
-          `to_char(date_trunc('month', created_at AT TIME ZONE 'UTC' AT TIME ZONE ?), 'YYYY-MM-DD')`,
-          [timeZone],
+          `to_char(
+           LEAST (
+              (date_trunc('month', created_at AT TIME ZONE 'UTC' AT TIME ZONE ?) 
+              + interval '1 month' - interval '1 day'), 
+              ?::date
+              ),
+              'YYYY-MM-DD'
+          )`,
+          [timeZone, this.filters?.end_date],
         );
       default:
         throw new Error('Invalid date grouping');

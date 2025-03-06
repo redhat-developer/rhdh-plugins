@@ -61,7 +61,7 @@ describe('createRouter', () => {
     const response = await request(app).post('/events').send([mockEvent]);
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ message: 'Event received' });
+    expect(response.body).toEqual({ success: true, message: 'Event received' });
   });
 
   it('should not allow unauthenticated requests to track Events', async () => {

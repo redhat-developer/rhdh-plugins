@@ -17,21 +17,15 @@ import { z } from 'zod';
 import { DateTime } from 'luxon';
 import { QUERY_TYPES } from '../types/event-request';
 
-const date_regex = /^\d{4}-\d{2}-\d{2}$/;
-
-const dateSchema = (fieldName: string) =>
-  z
-    .string({
-      required_error: `${fieldName} is required. Use YYYY-MM-DD (e.g., 2025-03-02)`,
-    })
-    .regex(date_regex, {
-      message: 'Invalid date format. Use YYYY-MM-DD (e.g., 2025-03-02)',
-    });
+const dateRequiredSchema = (fieldName: string) =>
+  z.string({
+    required_error: `${fieldName} is required. Use YYYY-MM-DD (e.g., 2025-03-02)`,
+  });
 
 export const EventRequestSchema = z
   .object({
-    start_date: dateSchema('start_date'),
-    end_date: dateSchema('end_date'),
+    start_date: dateRequiredSchema('start_date'),
+    end_date: dateRequiredSchema('end_date'),
     limit: z.string().regex(/^\d+$/).transform(Number).optional(),
     kind: z.string().optional(),
     type: z.enum(QUERY_TYPES, {
@@ -47,12 +41,33 @@ export const EventRequestSchema = z
       })
       .optional(),
   })
-  .refine(
-    data =>
-      DateTime.fromISO(data.start_date) <= DateTime.fromISO(data.end_date),
-    {
-      message:
-        'start_date should not be greater than end_date or invalid date format',
-      path: ['start_date'],
-    },
-  );
+  .superRefine((data, ctx) => {
+    const startDate = DateTime.fromISO(data.start_date);
+    const endDate = DateTime.fromISO(data.end_date);
+
+    if (!startDate.isValid) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          'Invalid date format for start_date. Expected YYYY-MM-DD (e.g., 2025-03-02)',
+        path: ['start_date'],
+      });
+    }
+
+    if (!endDate.isValid) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          'Invalid date format for end_date. Expected YYYY-MM-DD (e.g., 2025-03-02)',
+        path: ['end_date'],
+      });
+    }
+
+    if (startDate.isValid && endDate.isValid && startDate > endDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'start_date should not be greater than end_date',
+        path: ['end_date'],
+      });
+    }
+  });

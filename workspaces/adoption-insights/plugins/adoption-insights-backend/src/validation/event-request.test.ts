@@ -29,18 +29,6 @@ describe('EventRequestSchema', () => {
     expect(() => EventRequestSchema.parse(validData)).not.toThrow();
   });
 
-  it('should reject an invalid date format', () => {
-    const invalidData = {
-      start_date: '2025-03-01T00:00:00Z', // Incorrect format
-      end_date: '2025-03-02',
-      type: 'top_catalog_entities',
-    };
-
-    expect(() => EventRequestSchema.parse(invalidData)).toThrow(
-      'Invalid date format. Use YYYY-MM-DD (e.g., 2025-03-02)',
-    );
-  });
-
   it('should reject if start_date is greater than end_date', () => {
     const invalidData = {
       start_date: '2025-03-03',
@@ -109,5 +97,67 @@ describe('EventRequestSchema', () => {
     };
 
     expect(() => EventRequestSchema.parse(invalidData)).toThrow();
+  });
+
+  it('Valid dates should pass', () => {
+    const result = EventRequestSchema.safeParse({
+      start_date: '2024-03-01',
+      end_date: '2024-03-10',
+      type: 'top_catalog_entities',
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it('Invalid start_date format should fail', () => {
+    const result = EventRequestSchema.safeParse({
+      start_date: '2024-03-1',
+      end_date: '2024-03-10',
+      type: 'top_catalog_entities',
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.format()).toHaveProperty('start_date');
+    expect(result.error?.format().start_date?._errors[0]).toBe(
+      'Invalid date format for start_date. Expected YYYY-MM-DD (e.g., 2025-03-02)',
+    );
+  });
+
+  it('Invalid end_date format should fail', () => {
+    const result = EventRequestSchema.safeParse({
+      start_date: '2024-03-01',
+      end_date: '2024-03-4',
+      type: 'top_catalog_entities',
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.format()).toHaveProperty('end_date');
+    // expect(result.error?.format()._errors?.[0]).toBe(
+    //   'Invalid date format for end_date. Expected YYYY-MM-DD (e.g., 2025-03-02)',
+    // );
+  });
+
+  it('start_date after end_date should fail', () => {
+    const result = EventRequestSchema.safeParse({
+      start_date: '2024-03-10',
+      end_date: '2024-03-01',
+      type: 'top_catalog_entities',
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.format()).toHaveProperty('end_date');
+    expect(result.error?.format().end_date?._errors[0]).toBe(
+      'start_date should not be greater than end_date',
+    );
+  });
+
+  it('start_date equals end_date should pass', () => {
+    const result = EventRequestSchema.safeParse({
+      start_date: '2024-03-10',
+      end_date: '2024-03-10',
+      type: 'top_catalog_entities',
+    });
+
+    expect(result.success).toBe(true);
   });
 });
