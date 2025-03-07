@@ -13,4 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { createTodoListService } from './createTodoListService';
+
+export class ValidationError extends Error {
+  public details: any;
+
+  constructor(message: string, details: any) {
+    super(message);
+    this.name = 'ValidationError';
+    this.details = details;
+  }
+}

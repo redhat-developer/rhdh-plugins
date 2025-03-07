@@ -35,11 +35,14 @@
   "dependencies": {
     "@backstage/backend-defaults": "^0.8.0",
     "@backstage/backend-plugin-api": "^1.2.0",
-    "@backstage/catalog-client": "^1.9.1",
-    "@backstage/errors": "^1.2.7",
+    "@backstage/core-plugin-api": "^1.10.4",
     "@backstage/plugin-catalog-node": "^1.16.0",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
+    "json-2-csv": "^5.5.8",
+    "knex": "^3.1.0",
+    "luxon": "^3.5.0",
+    "uuid": "^11.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -50,6 +53,8 @@
     "supertest": "^6.2.4"
   },
   "files": [
-    "dist"
-  ]
+    "dist",
+    "config.d.ts"
+  ],
+  "configSchema": "config.d.ts"
 }
