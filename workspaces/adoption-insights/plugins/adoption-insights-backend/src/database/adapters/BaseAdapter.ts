@@ -170,6 +170,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .select(
         db.raw(`context->>'entityRef' AS entityRef`),
         db.raw('COUNT(*) AS count'),
+        db.raw(this.getLastUsedDate()),
       )
       .where({
         action: 'click',
@@ -210,6 +211,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .select(
         db.raw(`context->>'routeRef' AS entityRef`),
         db.raw('COUNT(*) AS count'),
+        db.raw(this.getLastUsedDate()),
       )
       .where({
         action: 'navigate',

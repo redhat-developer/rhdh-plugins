@@ -39,6 +39,7 @@ interface PluginCount {
 interface EntityRefCount {
   entityref: string;
   count: string;
+  last_used: string;
 }
 
 interface CatalogEntityCount {
