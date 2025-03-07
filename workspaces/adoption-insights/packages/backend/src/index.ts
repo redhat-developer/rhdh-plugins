@@ -60,4 +60,8 @@ backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 // kubernetes
 backend.add(import('@backstage/plugin-kubernetes-backend'));
 
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-adoption-insights-backend'),
+);
+
 backend.start();

@@ -14,29 +14,21 @@
  * limitations under the License.
  */
 import {
-  BackstageCredentials,
-  BackstageUserPrincipal,
+  DatabaseService,
+  resolvePackagePath,
 } from '@backstage/backend-plugin-api';
 
-export interface TodoItem {
-  title: string;
-  id: string;
-  createdBy: string;
-  createdAt: string;
-}
+const migrationsDir = resolvePackagePath(
+  '@red-hat-developer-hub/backstage-plugin-adoption-insights-backend',
+  'migrations',
+);
 
-export interface TodoListService {
-  createTodo(
-    input: {
-      title: string;
-      entityRef?: string;
-    },
-    options: {
-      credentials: BackstageCredentials<BackstageUserPrincipal>;
-    },
-  ): Promise<TodoItem>;
+export async function migrate(databaseManager: DatabaseService) {
+  const knex = await databaseManager.getClient();
 
-  listTodos(): Promise<{ items: TodoItem[] }>;
-
-  getTodo(request: { id: string }): Promise<TodoItem>;
+  if (!databaseManager.migrations?.skip) {
+    await knex.migrate.latest({
+      directory: migrationsDir,
+    });
+  }
 }
