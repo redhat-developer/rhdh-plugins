@@ -20,7 +20,10 @@ import { startTestBackend } from '@backstage/backend-test-utils';
 
 describe('catalogModuleMarketplace', () => {
   it('should register the extension point', async () => {
-    const extensionPoint = { addProcessor: jest.fn() };
+    const extensionPoint = {
+      addProcessor: jest.fn(),
+      addEntityProvider: jest.fn(),
+    };
     await startTestBackend({
       extensionPoints: [[catalogProcessingExtensionPoint, extensionPoint]],
       features: [catalogModuleMarketplace],

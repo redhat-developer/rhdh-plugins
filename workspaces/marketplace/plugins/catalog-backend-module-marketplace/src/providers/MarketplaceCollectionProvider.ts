@@ -1,5 +1,5 @@
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {
+  MarketplaceCollection,
+  MarketplaceKind,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { BaseEntityProvider } from './BaseEntityProvider';
 
 /**
- * The marketplace backend module for the catalog plugin.
- *
- * @packageDocumentation
+ * @public
  */
+export class MarketplaceCollectionProvider extends BaseEntityProvider<MarketplaceCollection> {
+  getKind(): string {
+    return MarketplaceKind.Collection;
+  }
 
-export { catalogModuleMarketplace as default } from './module';
-
-export * from './processors';
-export * from './providers';
-export * from './types';
+  getProviderName(): string {
+    return 'marketplace-collection-provider';
+  }
+}
