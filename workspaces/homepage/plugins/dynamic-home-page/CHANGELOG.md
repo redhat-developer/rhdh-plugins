@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.1.1
+
+### Patch Changes
+
+- 1a25bba: Updated dependency `react-router-dom` to `6.30.0`.
+- 3dce00f: Updated dependency `react-router-dom` to `6.29.0`.
+- 680ede5: Updated dependency `@mui/icons-material` to `5.16.14`.
+  Updated dependency `@mui/styles` to `5.16.14`.
+  Updated dependency `@mui/material` to `5.16.14`.
+  Updated dependency `@mui/styled-engine` to `5.16.14`.
+
 ## 1.1.0
 
 ### Minor Changes
