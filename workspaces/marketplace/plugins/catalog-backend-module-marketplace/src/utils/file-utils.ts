@@ -57,10 +57,6 @@ export const readYamlFiles = <T extends Entity>(
   folderPath: string,
 ): JsonFileData<T>[] => {
   const yamlFiles = glob.sync(path.join(folderPath, '**/*.@(yaml|yml)'));
-  // const yamlFiles = globbySync(path.join(folderPath, '**/*.@(yaml|yml)'), {
-  //   ignore: ['node_modules/**'],
-  //   absolute: true,
-  // });
   const jsonFiles: JsonFileData<T>[] = [];
 
   yamlFiles.forEach(filePath => {
