@@ -32,11 +32,7 @@ const Techdocs = () => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
 
-  const { techdocs, loading } = useTechdocs({
-    start_date: '2021-01-01',
-    end_date: '2021-12-31',
-    limit: 5,
-  });
+  const { techdocs, loading } = useTechdocs({ limit: rowsPerPage });
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -54,7 +50,10 @@ const Techdocs = () => {
   );
 
   const visibleTechdocs = React.useMemo(() => {
-    return techdocs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    return techdocs.data?.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage,
+    );
   }, [techdocs, page, rowsPerPage]);
 
   return (
@@ -83,18 +82,17 @@ const Techdocs = () => {
               </TableCell>
             </TableRow>
           ) : (
-            visibleTechdocs.map(techdoc => (
+            visibleTechdocs?.map(techdoc => (
               <TableRow
-                key={techdoc.id}
+                key={techdoc.entityref}
                 sx={{
                   '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell>{techdoc.name}</TableCell>
-                <TableCell>{techdoc.entity}</TableCell>
-                <TableCell>{techdoc.last_used}</TableCell>
-                <TableCell>{techdoc.views}</TableCell>
+                <TableCell>{techdoc.entityref}</TableCell>
+                <TableCell>{techdoc.entityref}</TableCell>
+                <TableCell>{Number(techdoc.count).toLocaleString()}</TableCell>
               </TableRow>
             ))
           )}
@@ -106,7 +104,7 @@ const Techdocs = () => {
               sx={{ padding: 0 }}
             >
               <TableFooterPagination
-                count={techdocs.length}
+                count={techdocs.data?.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 handleChangePage={handleChangePage}

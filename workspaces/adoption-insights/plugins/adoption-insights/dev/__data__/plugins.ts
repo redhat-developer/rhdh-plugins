@@ -1,0 +1,79 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import { format, subDays } from 'date-fns';
+import { PluginTrend } from '../../src/types';
+
+const generateLast30DaysData = () => {
+  return Array.from({ length: 30 }, (_, i) => {
+    const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
+    const count = Math.floor(Math.random() * (100 - 50 + 1)) + 50;
+    return { date, count };
+  }).reverse();
+};
+
+export const mockPluginView: PluginTrend = {
+  plugin_id: 'catalog',
+  count: '77',
+  trend_percentage: '18.67',
+  trend: generateLast30DaysData(),
+};
+
+export const mockPluginViewTwo: PluginTrend = {
+  plugin_id: 'ansible',
+  count: '77',
+  trend_percentage: '18.67',
+  trend: generateLast30DaysData(),
+};
+
+export const mockPluginViewThree: PluginTrend = {
+  plugin_id: 'argoCD',
+  count: '7792',
+  trend_percentage: '-18.67',
+  trend: generateLast30DaysData(),
+};
+
+export const mockPluginViewFour: PluginTrend = {
+  plugin_id: 'argoCD Scaffolder',
+  count: '77',
+  trend_percentage: '18.67',
+  trend: generateLast30DaysData(),
+};
+
+export const mockPluginViewFive: PluginTrend = {
+  plugin_id: 'tech docs',
+  count: '77',
+  trend_percentage: '18.67',
+  trend: generateLast30DaysData(),
+};
+
+export const mockPluginViewSix: PluginTrend = {
+  plugin_id: 'catalog info',
+  count: '44',
+  trend_percentage: '-66.67',
+  trend: generateLast30DaysData(),
+};
+
+export const mockPluginViews = {
+  grouping: 'monthly',
+  data: [
+    mockPluginView,
+    mockPluginViewTwo,
+    mockPluginViewThree,
+    mockPluginViewFour,
+    mockPluginViewFive,
+    mockPluginViewSix,
+  ],
+};

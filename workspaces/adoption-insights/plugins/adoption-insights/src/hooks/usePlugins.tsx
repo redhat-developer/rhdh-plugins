@@ -16,42 +16,45 @@
 import React from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
-import { useAsyncRetry, useInterval } from 'react-use';
+import { useAsyncRetry } from 'react-use';
+import { format } from 'date-fns';
 
 import { adoptionInsightsApiRef } from '../api';
-import { PluginTrend, PluginViewsOptions } from '../types';
+import { APIsViewOptions, PluginTrendResponse } from '../types';
+import { useDateRange } from '../components/Header/DateRangeContext';
 
 export const usePluginViews = ({
-  start_date,
-  end_date,
   limit = 3,
-  intervalMs = 10000,
-}: PluginViewsOptions): {
-  plugins: PluginTrend[];
+}: APIsViewOptions): {
+  plugins: PluginTrendResponse;
   error: Error | undefined;
   loading: boolean;
 } => {
   const [loadingData, setLoadingData] = React.useState<boolean>(true);
-  const [plugins, setPlugins] = React.useState<PluginTrend[]>([]);
+  const [plugins, setPlugins] = React.useState<PluginTrendResponse>({
+    data: [],
+  });
+
+  const { startDateRange, endDateRange } = useDateRange();
 
   const api = useApi(adoptionInsightsApiRef);
 
-  const getPluginViews = React.useCallback(async () => {
+  const getPlugins = React.useCallback(async () => {
     return await api
-      .getPluginViews({
-        type: 'top_plugin_views',
-        start_date,
-        end_date,
+      .getPlugins({
+        type: 'top_plugins',
+        start_date: startDateRange
+          ? format(startDateRange, 'yyyy-MM-dd')
+          : undefined,
+        end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
         limit,
       })
-      .then(response => setPlugins(response ?? []));
-  }, [api, start_date, end_date, limit]);
+      .then(response => setPlugins(response ?? { data: [] }));
+  }, [api, limit, startDateRange, endDateRange]);
 
-  const { error, loading, retry } = useAsyncRetry(async () => {
-    return await getPluginViews();
-  }, [getPluginViews]);
-
-  useInterval(() => retry(), intervalMs);
+  const { error, loading } = useAsyncRetry(async () => {
+    return await getPlugins();
+  }, [getPlugins]);
 
   React.useEffect(() => {
     let mounted = true;

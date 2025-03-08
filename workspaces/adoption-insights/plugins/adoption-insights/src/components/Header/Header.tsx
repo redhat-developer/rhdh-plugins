@@ -27,7 +27,7 @@ import Button from '@mui/material/Button';
 import DateRangePicker from './DateRangePicker';
 import { useDateRange } from './DateRangeContext';
 import { DATE_RANGE_OPTIONS } from '../../utils/constants';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { getDateRange } from '../../utils/utils';
 
 interface InsightsHeaderProps extends React.HTMLProps<HTMLDivElement> {
@@ -43,6 +43,14 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
 
   const { startDateRange, setStartDateRange, endDateRange, setEndDateRange } =
     useDateRange();
+
+  React.useEffect(() => {
+    const today = new Date();
+    const initStartDate = subDays(today, 27);
+
+    setStartDateRange(initStartDate);
+    setEndDateRange(today);
+  }, [setEndDateRange, setStartDateRange]);
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     const value = event.target.value;
@@ -69,11 +77,13 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
   };
 
   const handleDateRange = () => {
-    setStartDateRange(startDate);
-    setEndDateRange(endDate);
-    setSelectedOption('dateRange');
-    handleClose();
-    setMenuOpen(false);
+    if (startDate && endDate) {
+      setStartDateRange(startDate);
+      setEndDateRange(endDate);
+      setSelectedOption('dateRange');
+      handleClose();
+      setMenuOpen(false);
+    }
   };
 
   const getLabel = (value: string) => {
@@ -88,7 +98,7 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
     <Header
       title={
         <Typography
-          variant="h1"
+          variant="h3"
           color="textPrimary"
           sx={{ fontWeight: 'bold' }}
         >

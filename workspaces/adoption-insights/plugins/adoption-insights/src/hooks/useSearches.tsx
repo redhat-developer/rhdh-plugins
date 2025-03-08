@@ -19,45 +19,41 @@ import { useApi } from '@backstage/core-plugin-api';
 import { useAsyncRetry } from 'react-use';
 import { format } from 'date-fns';
 
+import { SearchesResponse } from '../types';
 import { adoptionInsightsApiRef } from '../api';
-import { APIsViewOptions, CatalogEntitiesResponse } from '../types';
 import { useDateRange } from '../components/Header/DateRangeContext';
 
-export const useCatalogEntities = ({
-  limit = 3,
-  kind = '',
-}: APIsViewOptions): {
-  catalogEntities: CatalogEntitiesResponse;
+export const useSearches = (): {
+  searches: SearchesResponse;
   error: Error | undefined;
   loading: boolean;
 } => {
   const [loadingData, setLoadingData] = React.useState<boolean>(true);
-  const [catalogEntities, setCatalogEntities] =
-    React.useState<CatalogEntitiesResponse>({ data: [] });
+  const [searches, setSearches] = React.useState<SearchesResponse>({
+    data: [],
+  });
 
   const { startDateRange, endDateRange } = useDateRange();
 
   const api = useApi(adoptionInsightsApiRef);
 
-  const getCatalogEntities = React.useCallback(async () => {
+  const getSearches = React.useCallback(async () => {
     return await api
-      .getCatalogEntities({
-        type: 'top_catalog_entities',
+      .getSearches({
+        type: 'top_searches',
         start_date: startDateRange
           ? format(startDateRange, 'yyyy-MM-dd')
           : undefined,
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
-        limit,
-        kind,
       })
-      .then((response: CatalogEntitiesResponse) =>
-        setCatalogEntities(response ?? { data: [] }),
+      .then(response =>
+        setSearches(response ?? { grouping: undefined, data: [] }),
       );
-  }, [api, kind, limit, startDateRange, endDateRange]);
+  }, [api, startDateRange, endDateRange]);
 
   const { error, loading } = useAsyncRetry(async () => {
-    return await getCatalogEntities();
-  }, [getCatalogEntities]);
+    return await getSearches();
+  }, [getSearches]);
 
   React.useEffect(() => {
     let mounted = true;
@@ -69,5 +65,5 @@ export const useCatalogEntities = ({
     };
   }, [loading]);
 
-  return { catalogEntities, error, loading: loadingData };
+  return { searches, error, loading: loadingData };
 };

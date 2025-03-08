@@ -22,21 +22,21 @@ import TableFooter from '@mui/material/TableFooter';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import Typography from '@mui/material/Typography';
 
 import CardWrapper from '../CardWrapper';
 import { PLUGINS_TABLE_HEADERS } from '../../utils/constants';
-import { usePluginViews } from '../../hooks/usePluginViews';
+import { usePluginViews } from '../../hooks/usePlugins';
 import TableFooterPagination from '../CardFooter';
+import { Line, LineChart, ResponsiveContainer } from 'recharts';
 
-const PluginViews = () => {
+const Plugins = () => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
 
-  const { plugins, loading } = usePluginViews({
-    start_date: '2021-01-01',
-    end_date: '2021-12-31',
-    limit: 5,
-  });
+  const { plugins, loading } = usePluginViews({ limit: rowsPerPage });
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -54,7 +54,10 @@ const PluginViews = () => {
   );
 
   const visiblePlugins = React.useMemo(() => {
-    return plugins.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    return plugins.data?.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage,
+    );
   }, [plugins, page, rowsPerPage]);
 
   return (
@@ -83,7 +86,7 @@ const PluginViews = () => {
               </TableCell>
             </TableRow>
           ) : (
-            visiblePlugins.map(plugin => (
+            visiblePlugins?.map(plugin => (
               <TableRow
                 key={plugin.plugin_id}
                 sx={{
@@ -92,9 +95,32 @@ const PluginViews = () => {
                 }}
               >
                 <TableCell>{plugin.plugin_id}</TableCell>
-                <TableCell>{plugin.plugin_id}</TableCell>
-                <TableCell>{plugin.trend_percentage}</TableCell>
-                <TableCell>{plugin.count}</TableCell>
+                <TableCell>
+                  <ResponsiveContainer width={250} height={50}>
+                    <LineChart data={plugin.trend}>
+                      <Line
+                        type="monotone"
+                        dataKey="count"
+                        stroke="#9370DB"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </TableCell>
+                <TableCell
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                >
+                  {Math.round(Number(plugin.trend_percentage)) < 0 ? (
+                    <TrendingDownIcon sx={{ color: 'red' }} />
+                  ) : (
+                    <TrendingUpIcon sx={{ color: 'green' }} />
+                  )}
+                  <Typography variant="body2">
+                    {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
+                  </Typography>
+                </TableCell>
+                <TableCell>{Number(plugin.count).toLocaleString()}</TableCell>
               </TableRow>
             ))
           )}
@@ -106,7 +132,7 @@ const PluginViews = () => {
               sx={{ padding: 0 }}
             >
               <TableFooterPagination
-                count={plugins.length}
+                count={plugins.data?.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 handleChangePage={handleChangePage}
@@ -120,4 +146,4 @@ const PluginViews = () => {
   );
 };
 
-export default PluginViews;
+export default Plugins;

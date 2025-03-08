@@ -29,91 +29,68 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MuiTooltip from '@mui/material/Tooltip';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import IconButton from '@mui/material/IconButton';
-import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/material/styles';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import CardWrapper from '../CardWrapper';
-
-const totalUsers = 4578;
-const loggedInUsers = 1789;
-const loggedInPercentage = Math.round((loggedInUsers / totalUsers) * 100);
-
-const data = [
-  { name: 'Logged-in users', value: 4578, color: '#00AEEF' },
-  { name: 'Licensed', value: 4578 - 1789, color: '#E5E5E5' },
-];
-
-const CustomTooltip = ({ active, payload, percentage }: any) => {
-  if (active && payload?.length) {
-    const { name, value } = payload[0];
-
-    return (
-      <Paper
-        elevation={1}
-        sx={{
-          backgroundColor: 'white',
-          padding: '8px',
-          borderRadius: '4px',
-          boxShadow: '0px 0px 6px rgba(0, 0, 0, 0.1)',
-          border: '1px solid #ddd',
-        }}
-      >
-        <Typography style={{ fontSize: '14px', fontWeight: 600, margin: 0 }}>
-          {name}
-        </Typography>
-        <Typography style={{ fontSize: '12px', margin: 0 }}>
-          {value.toLocaleString()} users
-        </Typography>
-        <Typography style={{ fontSize: '12px', margin: 0 }}>
-          {percentage}%
-        </Typography>
-      </Paper>
-    );
-  }
-  return null;
-};
-
-const InfoComponent = () => {
-  const theme = useTheme();
-
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', mr: 2 }}>
-      <MuiTooltip
-        title={
-          <Box sx={{ textAlign: 'center', width: '238px' }}>
-            Set the number of licensed users in the app-config.yaml
-          </Box>
-        }
-        placement="left"
-        componentsProps={{
-          tooltip: {
-            sx: {
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              bgcolor: '#151515',
-              color: 'white',
-              fontSize: 14,
-              p: 1.5,
-            },
-          },
-        }}
-      >
-        <IconButton>
-          <InfoOutlinedIcon
-            sx={{ color: theme.palette.text.secondary, fontSize: 28 }}
-          />
-        </IconButton>
-      </MuiTooltip>
-    </Box>
-  );
-};
+import InfoComponent from './Info';
+import CustomTooltip from './Tooltip';
+import { useUsers } from '../../hooks/useUsers';
 
 const Users = () => {
   const theme = useTheme();
+
+  const { users, loading } = useUsers();
+
+  if (loading) {
+    return (
+      <CardWrapper title="Total number of users" filter={<InfoComponent />}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <CircularProgress />
+        </Box>
+      </CardWrapper>
+    );
+  }
+
+  if (!users || users.data?.length === 0 || !users.data?.[0]) {
+    return (
+      <CardWrapper title="Total number of users" filter={<InfoComponent />}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <Typography>No data available</Typography>
+        </Box>
+      </CardWrapper>
+    );
+  }
+
+  const { logged_in_users = '0', licensed_users = 0 } = users.data[0];
+
+  const loggedInPercentage =
+    Number(logged_in_users) && licensed_users
+      ? Math.round(
+          (Number(logged_in_users) /
+            (licensed_users + Number(logged_in_users))) *
+            100,
+        )
+      : 0;
+
+  const data = [
+    {
+      name: 'Logged-in users',
+      value: Number(logged_in_users),
+      color: '#00AEEF',
+    },
+    { name: 'Licensed', value: licensed_users, color: '#E5E5E5' },
+  ];
 
   return (
     <CardWrapper title="Total number of users" filter={<InfoComponent />}>
@@ -142,7 +119,7 @@ const Users = () => {
                   ))}
 
                   <Label
-                    value={loggedInUsers.toLocaleString()}
+                    value={logged_in_users.toLocaleString()}
                     position="center"
                     style={{
                       fontSize: '24px',
@@ -151,7 +128,9 @@ const Users = () => {
                     }}
                   />
                   <Label
-                    value={`of ${totalUsers.toLocaleString()}`}
+                    value={`of ${(
+                      Number(logged_in_users) + licensed_users
+                    ).toLocaleString()}`}
                     position="center"
                     dy={20}
                     style={{
@@ -162,7 +141,11 @@ const Users = () => {
                   />
                 </Pie>
                 <Tooltip
-                  content={<CustomTooltip percentage={loggedInPercentage} />}
+                  content={
+                    <CustomTooltip
+                      sumUsers={Number(logged_in_users) + licensed_users}
+                    />
+                  }
                 />
               </PieChart>
             </ResponsiveContainer>

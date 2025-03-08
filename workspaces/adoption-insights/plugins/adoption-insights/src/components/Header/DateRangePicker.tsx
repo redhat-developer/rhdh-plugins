@@ -117,7 +117,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box>
-        <Typography variant="h3" p={2} pb={0}>
+        <Typography variant="h5" p={2} pb={0}>
           Date range
         </Typography>
         <Divider sx={{ mt: 2 }} />

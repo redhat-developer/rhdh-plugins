@@ -13,6 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ * API
+ */
+export interface AdoptionInsightsApi {
+  getPlugins(options: APIsViewOptions): Promise<PluginTrendResponse>;
+  getCatalogEntities(
+    options: APIsViewOptions,
+  ): Promise<CatalogEntitiesResponse>;
+  getTemplates(options: APIsViewOptions): Promise<TemplatesResponse>;
+  getTechdocs(options: APIsViewOptions): Promise<TechdocsResponse>;
+  getActiveUsers(options: APIsViewOptions): Promise<ActiveUsersResponse>;
+  getSearches(options: APIsViewOptions): Promise<SearchesResponse>;
+  getUsers(options: APIsViewOptions): Promise<UsersResponse>;
+}
+
+export type APIsViewOptions = {
+  type?: string;
+  start_date?: string;
+  end_date?: string;
+  limit?: number;
+  intervalMs?: number;
+  kind?: string;
+};
 
 /**
  * Plugin Views
@@ -29,81 +52,85 @@ export interface PluginTrend {
   trend: TrendData[];
 }
 
-export type PluginViewsOptions = {
-  type?: string;
-  start_date: string;
-  end_date: string;
-  limit?: number;
-  intervalMs?: number;
+export type PluginTrendResponse = {
+  data: PluginTrend[];
 };
-
 /**
  * Catalog Entities
  */
 export type CatalogEntities = {
-  id: string;
-  name: string;
+  plugin_id: string;
   kind: string;
+  name: string;
+  namespace: string;
   last_used: string;
-  views: string;
+  count: string;
 };
 
-export type CatalogEntitiesOptions = {
-  type?: string;
-  start_date: string;
-  end_date: string;
-  limit?: number;
-  intervalMs?: number;
+export type CatalogEntitiesResponse = {
+  data: CatalogEntities[];
 };
-
-/**
- * API
- */
-export interface AdoptionInsightsApi {
-  getPluginViews(options: PluginViewsOptions): Promise<PluginTrend[]>;
-
-  getCatalogEntities(
-    options: CatalogEntitiesOptions,
-  ): Promise<CatalogEntities[]>;
-
-  getTemplates(options: TemplatesOptions): Promise<Templates[]>;
-
-  getTechdocs(options: TechdocsOptions): Promise<Techdocs[]>;
-}
 
 /**
  * Templates
  */
-export type TemplatesOptions = {
-  type?: string;
-  start_date: string;
-  end_date: string;
-  limit?: number;
-  intervalMs?: number;
+export type Templates = {
+  entityRef: string;
+  count: string;
 };
 
-export type Templates = {
-  id: string;
-  name: string;
-  useBy: string;
-  executions: string;
+export type TemplatesResponse = {
+  data: Templates[];
 };
 
 /**
  * Techdocs
  */
-export type TechdocsOptions = {
-  type?: string;
-  start_date: string;
-  end_date: string;
-  limit?: number;
-  intervalMs?: number;
+export type Techdocs = {
+  entityref: string;
+  count: string;
 };
 
-export type Techdocs = {
-  id: string;
-  name: string;
-  entity: string;
-  last_used: string;
-  views: string;
+export type TechdocsResponse = {
+  data: Techdocs[];
+};
+
+/**
+ * Searches
+ */
+export type Searches = {
+  date: string;
+  count: string | number;
+};
+
+export type SearchesResponse = {
+  grouping?: string;
+  data: Searches[];
+};
+
+/**
+ * ActiveUsers
+ */
+export type ActiveUsers = {
+  date: string;
+  total_users: string | number;
+  new_users: string | number;
+  returning_users: string | number;
+};
+
+export type ActiveUsersResponse = {
+  grouping?: string;
+  data: ActiveUsers[];
+};
+
+/**
+ * Users
+ */
+export type Users = {
+  logged_in_users: string;
+  licensed_users: number;
+};
+
+export type UsersResponse = {
+  data: Users[];
 };

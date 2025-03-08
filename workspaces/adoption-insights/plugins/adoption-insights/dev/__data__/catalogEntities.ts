@@ -13,47 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const mockCatalogEntities = [
-  {
-    id: '1',
-    name: 'devhub',
-    kind: 'Component',
-    lastUsed: 'Today',
-    views: '2233',
-  },
-  {
-    id: '2',
-    name: 'hg-dev-hub-starter',
-    kind: 'Component',
-    lastUsed: 'Today',
-    views: '1974',
-  },
-  {
-    id: '3',
-    name: 'netbox',
-    kind: 'API',
-    lastUsed: 'Yesterday',
-    views: '1863',
-  },
-  {
-    id: '4',
-    name: 'devhub',
-    kind: 'Component',
-    lastUsed: 'Today',
-    views: '2233',
-  },
-  {
-    id: '5',
-    name: 'hg-dev-hub-starter',
-    kind: 'Component',
-    astUsed: 'Today',
-    views: '1974',
-  },
-  {
-    id: '6',
-    name: 'netbox',
-    kind: 'API',
-    lastUsed: 'Yesterday',
-    views: '1863',
-  },
-];
+export default {
+  data: [
+    {
+      plugin_id: '1',
+      name: 'devhub',
+      kind: 'Component',
+      last_used: '2025-03-06T06:25:16.708Z',
+      count: '2233',
+      namespace: 'default',
+    },
+    {
+      plugin_id: '2',
+      name: 'hg-dev-hub-starter',
+      kind: 'Component',
+      last_used: '2025-03-05T06:25:16.708Z',
+      count: '1974',
+      namespace: 'default',
+    },
+    {
+      plugin_id: '3',
+      name: 'netbox',
+      kind: 'API',
+      last_used: '2025-03-04T06:25:16.708Z',
+      count: '1863',
+      namespace: 'default',
+    },
+    {
+      plugin_id: '4',
+      name: 'devhub',
+      kind: 'Component',
+      last_used: '2025-03-01T06:25:16.708Z',
+      count: '2233',
+      namespace: 'default',
+    },
+    {
+      plugin_id: '5',
+      name: 'hg-dev-hub-starter',
+      kind: 'Component',
+      last_used: '2025-03-06T06:25:16.708Z',
+      count: '1974',
+      namespace: 'default',
+    },
+    {
+      plugin_id: '6',
+      name: 'netbox',
+      kind: 'API',
+      last_used: '2025-03-06T06:25:16.708Z',
+      count: '1863',
+      namespace: 'default',
+    },
+  ],
+};

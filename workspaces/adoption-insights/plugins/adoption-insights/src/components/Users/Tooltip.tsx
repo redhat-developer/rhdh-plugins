@@ -17,51 +17,34 @@ import React from 'react';
 
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { format } from 'date-fns';
 
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}) => {
+const Tooltip = ({ active, payload, sumUsers }: any) => {
   if (active && payload?.length) {
-    const date = label ? new Date(label) : new Date();
+    const percent = Math.round((payload[0].value / sumUsers) * 100);
+    const { value } = payload[0];
+
     return (
       <Paper
         elevation={1}
         sx={{
           padding: '8px',
-          boxShadow: 3,
-          borderRadius: 2,
+          borderRadius: '4px',
+          boxShadow: '0px 0px 6px rgba(0, 0, 0, 0.1)',
           border: theme => `1px solid ${theme.palette.grey[300]}`,
         }}
       >
         <Typography style={{ fontSize: '14px', margin: 0, fontWeight: '500' }}>
-          {format(date, 'dd MMMM yyyy')}
+          {value.toLocaleString()}
         </Typography>
         <Typography
-          style={{ fontSize: '14px', fontWeight: '500', marginTop: '8px' }}
+          style={{
+            fontSize: '32px',
+            margin: 0,
+            color: '#009596',
+            fontWeight: '500',
+          }}
         >
-          Returning users:
-        </Typography>
-        <Typography
-          style={{ fontSize: '32px', fontWeight: '500', color: '#009596' }}
-        >
-          {payload[0]?.value}
-        </Typography>
-        <Typography
-          style={{ fontSize: '14px', fontWeight: '500', marginTop: '8px' }}
-        >
-          New users:
-        </Typography>
-        <Typography
-          style={{ fontSize: '32px', fontWeight: '500', color: '#009596' }}
-        >
-          {payload[1]?.value}
+          {percent}%
         </Typography>
       </Paper>
     );
@@ -69,4 +52,4 @@ const CustomTooltip = ({
   return null;
 };
 
-export default CustomTooltip;
+export default Tooltip;

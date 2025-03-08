@@ -16,42 +16,45 @@
 import React from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
-import { useAsyncRetry, useInterval } from 'react-use';
+import { useAsyncRetry } from 'react-use';
+import { format } from 'date-fns';
 
 import { adoptionInsightsApiRef } from '../api';
-import { Techdocs, TechdocsOptions } from '../types';
+import { APIsViewOptions, TechdocsResponse } from '../types';
+import { useDateRange } from '../components/Header/DateRangeContext';
 
 export const useTechdocs = ({
-  start_date,
-  end_date,
   limit = 3,
-  intervalMs = 10000,
-}: TechdocsOptions): {
-  techdocs: Techdocs[];
+}: APIsViewOptions): {
+  techdocs: TechdocsResponse;
   error: Error | undefined;
   loading: boolean;
 } => {
   const [loadingData, setLoadingData] = React.useState<boolean>(true);
-  const [techdocs, setTechdocs] = React.useState<Techdocs[]>([]);
+  const [techdocs, setTechdocs] = React.useState<TechdocsResponse>({
+    data: [],
+  });
+
+  const { startDateRange, endDateRange } = useDateRange();
 
   const api = useApi(adoptionInsightsApiRef);
 
   const getTechdocs = React.useCallback(async () => {
     return await api
       .getTechdocs({
-        type: 'top_catalog_entities',
-        start_date,
-        end_date,
+        type: 'top_techdocs',
+        start_date: startDateRange
+          ? format(startDateRange, 'yyyy-MM-dd')
+          : undefined,
+        end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
         limit,
       })
-      .then(response => setTechdocs(response ?? []));
-  }, [api, start_date, end_date, limit]);
+      .then(response => setTechdocs(response ?? { data: [] }));
+  }, [api, limit, startDateRange, endDateRange]);
 
-  const { error, loading, retry } = useAsyncRetry(async () => {
+  const { error, loading } = useAsyncRetry(async () => {
     return await getTechdocs();
   }, [getTechdocs]);
-
-  useInterval(() => retry(), intervalMs);
 
   React.useEffect(() => {
     let mounted = true;

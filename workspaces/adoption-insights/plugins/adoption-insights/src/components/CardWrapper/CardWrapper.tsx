@@ -38,7 +38,7 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Typography
-          variant="h3"
+          variant="h5"
           sx={{
             p: 3,
             display: 'flex',

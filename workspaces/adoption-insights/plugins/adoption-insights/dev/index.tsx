@@ -22,32 +22,49 @@ import { TestApiProvider } from '@backstage/test-utils';
 import { adoptionInsightsPlugin, AdoptionInsightsPage } from '../src/plugin';
 import { adoptionInsightsApiRef } from '../src/api';
 import {
+  ActiveUsersResponse,
   AdoptionInsightsApi,
-  CatalogEntitiesOptions,
-  PluginViewsOptions,
-  TechdocsOptions,
-  TemplatesOptions,
+  APIsViewOptions,
+  CatalogEntitiesResponse,
+  PluginTrendResponse,
+  SearchesResponse,
+  TechdocsResponse,
+  TemplatesResponse,
+  UsersResponse,
 } from '../src/types';
-import { mockPluginViews } from './__data__/pluginViews';
-import { mockCatalogEntities } from './__data__/catalogEntities';
-import { mockTemplates } from './__data__/templates';
-import { mockTechdocs } from './__data__/techdocs';
+import { mockPluginViews } from './__data__/plugins';
+import mockCatalogEntities from './__data__/catalogEntities';
+import mockTemplates from './__data__/templates';
+import mockActiveUsers from './__data__/activeUsers';
+import mockTechdocs from './__data__/techdocs';
+import mockSearches from './__data__/searches';
+import mockUsers from './__data__/users';
 
 export class MockAdoptionInsightsApiClient implements AdoptionInsightsApi {
-  async getPluginViews(_options: PluginViewsOptions): Promise<any> {
+  async getPlugins(_options: APIsViewOptions): Promise<PluginTrendResponse> {
     return mockPluginViews;
   }
-
-  async getCatalogEntities(_options: CatalogEntitiesOptions): Promise<any> {
+  async getCatalogEntities(
+    _options: APIsViewOptions,
+  ): Promise<CatalogEntitiesResponse> {
     return mockCatalogEntities;
   }
-
-  async getTemplates(_options: TemplatesOptions): Promise<any> {
+  async getTemplates(_options: APIsViewOptions): Promise<TemplatesResponse> {
     return mockTemplates;
   }
-
-  async getTechdocs(_options: TechdocsOptions): Promise<any> {
+  async getTechdocs(_options: APIsViewOptions): Promise<TechdocsResponse> {
     return mockTechdocs;
+  }
+  async getActiveUsers(
+    _options: APIsViewOptions,
+  ): Promise<ActiveUsersResponse> {
+    return mockActiveUsers;
+  }
+  async getSearches(_options: APIsViewOptions): Promise<SearchesResponse> {
+    return mockSearches;
+  }
+  async getUsers(_options: APIsViewOptions): Promise<UsersResponse> {
+    return mockUsers;
   }
 }
 

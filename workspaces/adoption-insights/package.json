@@ -61,5 +61,8 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "@backstage/plugin-auth-backend-module-github-provider": "^0.3.0"
   }
 }

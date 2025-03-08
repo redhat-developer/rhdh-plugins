@@ -41,27 +41,17 @@ const CustomTooltip = ({
         }}
       >
         <Typography style={{ fontSize: '14px', margin: 0, fontWeight: '500' }}>
-          {format(date, 'dd MMMM yyyy')}
+          {format(date, 'MMMM yyyy')}
         </Typography>
         <Typography
           style={{ fontSize: '14px', fontWeight: '500', marginTop: '8px' }}
         >
-          Returning users:
+          Searches:
         </Typography>
         <Typography
           style={{ fontSize: '32px', fontWeight: '500', color: '#009596' }}
         >
           {payload[0]?.value}
-        </Typography>
-        <Typography
-          style={{ fontSize: '14px', fontWeight: '500', marginTop: '8px' }}
-        >
-          New users:
-        </Typography>
-        <Typography
-          style={{ fontSize: '32px', fontWeight: '500', color: '#009596' }}
-        >
-          {payload[1]?.value}
         </Typography>
       </Paper>
     );

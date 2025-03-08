@@ -15,6 +15,7 @@
  */
 import React from 'react';
 
+import { parseEntityRef } from '@backstage/catalog-model';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -32,11 +33,7 @@ const Templates = () => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
 
-  const { templates, loading } = useTemplates({
-    start_date: '2021-01-01',
-    end_date: '2021-12-31',
-    limit: 5,
-  });
+  const { templates, loading } = useTemplates({ limit: rowsPerPage });
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -54,7 +51,7 @@ const Templates = () => {
   );
 
   const visibleTemplates = React.useMemo(() => {
-    return templates.slice(
+    return templates.data?.slice(
       page * rowsPerPage,
       page * rowsPerPage + rowsPerPage,
     );
@@ -86,17 +83,16 @@ const Templates = () => {
               </TableCell>
             </TableRow>
           ) : (
-            visibleTemplates.map(template => (
+            visibleTemplates?.map(template => (
               <TableRow
-                key={template.id}
+                key={template.entityRef}
                 sx={{
                   '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell>{template.name}</TableCell>
-                <TableCell>{template.useBy}</TableCell>
-                <TableCell>{template.executions}</TableCell>
+                <TableCell>{parseEntityRef(template.entityRef).name}</TableCell>
+                <TableCell>{Number(template.count).toLocaleString()}</TableCell>
               </TableRow>
             ))
           )}
@@ -108,7 +104,7 @@ const Templates = () => {
               sx={{ padding: 0 }}
             >
               <TableFooterPagination
-                count={templates.length}
+                count={templates.data?.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 handleChangePage={handleChangePage}

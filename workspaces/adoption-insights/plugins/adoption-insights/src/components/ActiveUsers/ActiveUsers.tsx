@@ -17,6 +17,7 @@ import React from 'react';
 
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
+import CircularProgress from '@mui/material/CircularProgress';
 import {
   AreaChart,
   CartesianGrid,
@@ -33,74 +34,110 @@ import CustomTooltip from './CustomTooltip';
 import CustomCursor from './CustomCursor';
 import CustomLegend from './CustomLegend';
 import {
-  dummyData,
+  getAverage,
   getXAxisformat,
   getXAxisTickValues,
 } from '../../utils/utils';
+import { useActiveUsers } from '../../hooks/useActiveUsers';
+import { Typography } from '@material-ui/core';
 
 const ActiveUsers = () => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
 
+  const { activeUsers, loading } = useActiveUsers();
+  const { data, grouping = 'daily' } = activeUsers;
+
   return (
     <CardWrapper title="Active Users">
-      <Box sx={{ height: 310, mt: 4, mb: 4, ml: 2, mr: 2 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={dummyData}
-            margin={{ top: 10, right: 40, left: 10, bottom: 0 }}
-          >
-            <defs>
-              <linearGradient id="newUsers" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#1976d2" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#1976d2" stopOpacity={0.2} />
-              </linearGradient>
-              <linearGradient id="returningUsers" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#B8BBBE" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#B8BBBE" stopOpacity={0.2} />
-              </linearGradient>
-            </defs>
+      {loading ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          <Typography style={{ margin: '20px 36px' }}>
+            <b>
+              {Math.round(getAverage(data, 'total_users')).toLocaleString()}{' '}
+              active users per day
+            </b>{' '}
+            were conducted during this period.
+          </Typography>
+          <Box sx={{ height: 310, mt: 4, mb: 4, ml: 0, mr: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={data}
+                margin={{ top: 10, right: 50, left: 20, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="new_users" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#1976d2" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#1976d2" stopOpacity={0.2} />
+                  </linearGradient>
+                  <linearGradient
+                    id="returning_users"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor="#B8BBBE" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#B8BBBE" stopOpacity={0.2} />
+                  </linearGradient>
+                </defs>
 
-            <CartesianGrid
-              stroke={isDarkMode ? '#666' : '#E5E7EB'}
-              strokeDasharray={0}
-              vertical={false}
-            />
+                <CartesianGrid
+                  stroke={isDarkMode ? '#666' : '#E5E7EB'}
+                  strokeDasharray={0}
+                  vertical={false}
+                />
 
-            <XAxis
-              dataKey="date"
-              tickFormatter={getXAxisformat}
-              ticks={getXAxisTickValues(dummyData)}
-              tick={{ fill: theme.palette.text.primary }}
-              axisLine={false}
-              tickLine={false}
-              padding={{ left: 30, right: 30 }}
-            />
-            <YAxis
-              tick={{ fill: theme.palette.text.primary }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={value => value.toLocaleString()}
-            />
-            <Tooltip cursor={<CustomCursor />} content={<CustomTooltip />} />
-            <Area
-              type="linear"
-              dataKey="newUsers"
-              stroke="#1976d2"
-              fill="url(#newUsers)"
-              strokeWidth={1}
-            />
-            <Area
-              type="linear"
-              dataKey="returningUsers"
-              stroke="#555"
-              fill="url(#returningUsers)"
-              strokeWidth={1}
-            />
-            <Legend content={<CustomLegend />} />
-          </AreaChart>
-        </ResponsiveContainer>
-      </Box>
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={date => getXAxisformat(date, grouping)}
+                  ticks={getXAxisTickValues(data, grouping)}
+                  tick={{ fill: theme.palette.text.primary }}
+                  axisLine={false}
+                  tickLine={false}
+                  padding={{ left: 30, right: 30 }}
+                  tickMargin={10}
+                />
+                <YAxis
+                  tick={{ fill: theme.palette.text.primary }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={value => value.toLocaleString()}
+                  tickMargin={20}
+                />
+                <Tooltip
+                  cursor={<CustomCursor />}
+                  content={<CustomTooltip />}
+                />
+                <Area
+                  type="linear"
+                  dataKey="new_users"
+                  stroke="#1976d2"
+                  fill="url(#new_users)"
+                  strokeWidth={1}
+                />
+                <Area
+                  type="linear"
+                  dataKey="returning_users"
+                  stroke="#555"
+                  fill="url(#returning_users)"
+                  strokeWidth={1}
+                />
+                <Legend content={<CustomLegend />} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Box>
+        </>
+      )}
     </CardWrapper>
   );
 };

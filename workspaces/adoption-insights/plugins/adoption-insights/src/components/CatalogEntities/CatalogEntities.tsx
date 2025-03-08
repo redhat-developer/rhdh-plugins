@@ -35,14 +35,20 @@ import {
 } from '../../utils/constants';
 import { useCatalogEntities } from '../../hooks/useCatalogEntities';
 import TableFooterPagination from '../CardFooter';
+import { getCatalogEntityKinds, getLastUsedDay } from '../../utils/utils';
+import { CatalogEntities as CatalogEntitiesType } from '../../types';
 
 const Filter = ({
   selectedOption,
   handleChange,
+  catalogEntitiesData,
 }: {
   selectedOption: string;
   handleChange: (event: SelectChangeEvent<string>) => void;
+  catalogEntitiesData: CatalogEntitiesType[];
 }) => {
+  const menuItems = getCatalogEntityKinds(catalogEntitiesData);
+
   return (
     <Box sx={{ m: 2, minWidth: 160 }}>
       <FormControl fullWidth>
@@ -56,8 +62,11 @@ const Filter = ({
           onChange={handleChange}
           label="Select kind"
         >
-          <MenuItem value="component">Component</MenuItem>
-          <MenuItem value="api">API</MenuItem>
+          {menuItems.map(kind => (
+            <MenuItem key={kind} value={kind}>
+              {kind}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
     </Box>
@@ -70,9 +79,8 @@ const CatalogEntities = () => {
   const [selectedOption, setSelectedOption] = React.useState('');
 
   const { catalogEntities, loading } = useCatalogEntities({
-    start_date: '2021-01-01',
-    end_date: '2021-12-31',
-    limit: 5,
+    limit: rowsPerPage,
+    kind: selectedOption,
   });
 
   const handleChangePage = React.useCallback(
@@ -95,7 +103,7 @@ const CatalogEntities = () => {
   }, []);
 
   const visibleCatalogEntities = React.useMemo(() => {
-    return catalogEntities.slice(
+    return catalogEntities.data?.slice(
       page * rowsPerPage,
       page * rowsPerPage + rowsPerPage,
     );
@@ -105,7 +113,11 @@ const CatalogEntities = () => {
     <CardWrapper
       title={CATALOG_ENTITIES_TITLE}
       filter={
-        <Filter selectedOption={selectedOption} handleChange={handleChange} />
+        <Filter
+          selectedOption={selectedOption}
+          handleChange={handleChange}
+          catalogEntitiesData={visibleCatalogEntities}
+        />
       }
     >
       <Table aria-labelledby="Catalog entities" sx={{ width: '100%' }}>
@@ -135,9 +147,9 @@ const CatalogEntities = () => {
               </TableCell>
             </TableRow>
           ) : (
-            visibleCatalogEntities.map(entity => (
+            visibleCatalogEntities?.map(entity => (
               <TableRow
-                key={entity.id}
+                key={entity.name}
                 sx={{
                   '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
@@ -145,8 +157,8 @@ const CatalogEntities = () => {
               >
                 <TableCell>{entity.name}</TableCell>
                 <TableCell>{entity.kind}</TableCell>
-                <TableCell>{entity.last_used}</TableCell>
-                <TableCell>{entity.views}</TableCell>
+                <TableCell>{getLastUsedDay(entity.last_used)}</TableCell>
+                <TableCell>{Number(entity.count).toLocaleString()}</TableCell>
               </TableRow>
             ))
           )}
@@ -158,7 +170,7 @@ const CatalogEntities = () => {
               sx={{ padding: 0 }}
             >
               <TableFooterPagination
-                count={catalogEntities.length}
+                count={catalogEntities.data?.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 handleChangePage={handleChangePage}

@@ -18,6 +18,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import CircularProgress from '@mui/material/CircularProgress';
 import {
   LineChart,
   Line,
@@ -29,62 +30,90 @@ import {
 } from 'recharts';
 
 import CardWrapper from '../CardWrapper';
-
-const data = [
-  { date: 'January 24', searches: 500 },
-  { date: 'June 24', searches: 450 },
-  { date: 'December 24', searches: 700 },
-  { date: 'January 24', searches: 600 },
-  { date: 'June 24', searches: 550 },
-  { date: 'December 24', searches: 800 },
-  { date: 'January 24', searches: 500 },
-  { date: 'June 24', searches: 650 },
-  { date: 'December 24', searches: 900 },
-  { date: 'January 24', searches: 400 },
-  { date: 'June 24', searches: 620 },
-  { date: 'December 24', searches: 500 },
-];
+import { useSearches } from '../../hooks/useSearches';
+import {
+  getAverage,
+  getTotal,
+  getXAxisformat,
+  getXAxisTickValues,
+} from '../../utils/utils';
+import CustomCursor from './CustomCursor';
+import CustomTooltip from './CustomTooltip';
 
 const Searches = () => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
 
+  const { searches, loading } = useSearches();
+  const { grouping, data } = searches;
+
   return (
-    <CardWrapper title="0 searches">
-      <Typography variant="body1" sx={{ mb: 2, textAlign: 'left' }}>
-        An average of <b>621 searches per day</b> were conducted during this
-        period.
-      </Typography>
-      <Box sx={{ height: 310, mt: 2 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
-            <CartesianGrid
-              stroke={isDarkMode ? '#666' : '#E5E7EB'}
-              strokeDasharray={0}
-              vertical={false}
-            />
-            <XAxis
-              dataKey="date"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: theme.palette.text.primary }}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: theme.palette.text.primary }}
-            />
-            <Tooltip />
-            <Line
-              type="linear"
-              dataKey="searches"
-              stroke="#00838F"
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </Box>
+    <CardWrapper
+      title={`${getTotal(data, 'count')?.toLocaleString()} searches`}
+    >
+      {loading ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          <Typography style={{ margin: '20px 36px' }}>
+            An average of{' '}
+            <b>
+              {Math.round(getAverage(data, 'count')).toLocaleString()} searches
+              per day
+            </b>{' '}
+            were conducted during this period.
+          </Typography>
+          <Box sx={{ height: 310, mt: 4, mb: 4, ml: 0, mr: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={data}
+                margin={{ top: 10, right: 50, left: 20, bottom: 0 }}
+              >
+                <CartesianGrid
+                  stroke={isDarkMode ? '#666' : '#E5E7EB'}
+                  strokeDasharray={0}
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={date => getXAxisformat(date, grouping || '')}
+                  ticks={getXAxisTickValues(data, grouping || '')}
+                  tick={{ fill: theme.palette.text.primary }}
+                  axisLine={false}
+                  tickLine={false}
+                  padding={{ left: 30, right: 30 }}
+                  tickMargin={10}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: theme.palette.text.primary }}
+                  tickFormatter={value => value.toLocaleString()}
+                  tickMargin={20}
+                />
+                <Tooltip
+                  cursor={<CustomCursor />}
+                  content={<CustomTooltip />}
+                />
+                <Line
+                  type="linear"
+                  dataKey="count"
+                  stroke="#00838F"
+                  strokeWidth={1.5}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
+        </>
+      )}
     </CardWrapper>
   );
 };

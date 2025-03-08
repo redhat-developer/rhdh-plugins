@@ -24,7 +24,7 @@ import CatalogEntities from '../CatalogEntities';
 import Templates from '../Templates';
 import Techdocs from '../Techdocs';
 import ActiveUsers from '../ActiveUsers';
-import PluginViews from '../PluginViews';
+import Plugins from '../Plugins';
 import Searches from '../Searches';
 import Users from '../Users';
 import { DateRangeProvider } from '../Header/DateRangeContext';
@@ -43,7 +43,7 @@ export const AdoptionInsightsPage = () => {
             <Users />
             <Templates />
             <CatalogEntities />
-            <PluginViews />
+            <Plugins />
             <Techdocs />
             <Searches />
           </Masonry>

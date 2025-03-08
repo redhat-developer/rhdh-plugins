@@ -16,8 +16,8 @@
 import { useApi } from '@backstage/core-plugin-api';
 import { renderHook, waitFor } from '@testing-library/react';
 
-import { mockPluginView } from '../../../dev/__data__/pluginViews';
-import { usePluginViews } from '../usePluginViews';
+import { mockPluginView } from '../../../dev/__data__/plugins';
+import { usePluginViews } from '../usePlugins';
 
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
@@ -28,7 +28,7 @@ describe('usePluginViews', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useApi as jest.Mock).mockReturnValue({
-      getPluginViews: jest.fn().mockResolvedValue({ items: mockPluginView }),
+      getPlugins: jest.fn().mockResolvedValue({ items: mockPluginView }),
     });
   });
 
@@ -47,7 +47,7 @@ describe('usePluginViews', () => {
 
   test('should return empty if start date or end date is not passed', async () => {
     (useApi as any).mockReturnValue({
-      getPluginViews: async () => {
+      getPlugins: async () => {
         return Promise.resolve([]);
       },
     });

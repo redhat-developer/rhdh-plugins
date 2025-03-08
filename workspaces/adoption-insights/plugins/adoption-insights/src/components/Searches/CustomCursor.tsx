@@ -13,13 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export default {
-  data: [
-    { entityRef: 'template:default/example-go-template-1', count: '10' },
-    { entityRef: 'template:default/example-go-template-2', count: '20' },
-    { entityRef: 'template:default/example-go-template-3', count: '30' },
-    { entityRef: 'template:default/example-go-template-4', count: '40' },
-    { entityRef: 'template:default/example-go-template-5', count: '50' },
-    { entityRef: 'template:default/example-go-template-6', count: '60' },
-  ],
+import React from 'react';
+
+const CustomCursor = (props: any) => {
+  const { points } = props;
+  return (
+    <line
+      x1={points[0].x}
+      y1={10}
+      x2={points[0].x}
+      y2={280}
+      stroke="gray"
+      strokeWidth={1}
+      strokeDasharray="3 3"
+    />
+  );
 };
+
+export default CustomCursor;

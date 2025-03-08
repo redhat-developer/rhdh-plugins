@@ -18,9 +18,8 @@ import {
   startOfToday,
   startOfYear,
   subDays,
-  eachMonthOfInterval,
-  startOfMonth,
-  endOfYear,
+  isToday,
+  isYesterday,
 } from 'date-fns';
 
 export const getDateRange = (value: string) => {
@@ -58,46 +57,118 @@ export const getDateRange = (value: string) => {
   }
 };
 
-type UserStats = {
-  date: string;
-  returningUsers: number;
-  newUsers: number;
-  total: number;
+export const getXAxisTickValues = (data: any, grouping: string): string[] => {
+  if (!data) return [];
+  if (data.length === 0) return [];
+  if (data.length === 1) return [data[0].date];
+  if (data.length === 2) return [data[0].date, data[1].date];
+
+  const first = data[0].date;
+  const last = data[data.length - 1].date;
+  const selectedDates: string[] = [];
+
+  if (grouping === 'daily' || grouping === 'weekly') {
+    const selectedUnits = new Set<number>();
+
+    if (data.length <= 4) {
+      data.forEach((d: { date: string }) => {
+        const weekDay = new Date(d.date).getDay();
+        if (!selectedUnits.has(weekDay)) {
+          selectedUnits.add(weekDay);
+          selectedDates.push(d.date);
+        }
+      });
+    } else if (data.length === 6) {
+      selectedDates.push(data[2].date, data[3].date);
+    } else if (data.length === 9) {
+      selectedDates.push(data[3].date, data[5].date);
+    } else {
+      const interval = Math.floor((data.length - 1) / 3);
+      if (data.length !== 5) {
+        selectedDates.push(data[interval].date);
+      }
+      selectedDates.push(data[interval * 2].date);
+    }
+  }
+
+  if (grouping === 'monthly') {
+    const selectedMonths = new Set<number>();
+    selectedMonths.add(new Date(first).getMonth());
+    selectedMonths.add(new Date(last).getMonth());
+
+    if (data.length <= 4) {
+      data.forEach((d: { date: string }) => {
+        const month = new Date(d.date).getMonth();
+        if (!selectedMonths.has(month)) {
+          selectedMonths.add(month);
+          selectedDates.push(d.date);
+        }
+      });
+    } else if (data.length === 6) {
+      selectedDates.push(data[2].date, data[3].date); // Fix: Always include indexes 2 and 3
+    } else if (data.length === 9) {
+      selectedDates.push(data[3].date, data[5].date);
+    } else {
+      const interval = Math.floor((data.length - 1) / 3);
+      if (data.length !== 5) {
+        selectedDates.push(data[interval].date);
+      }
+      selectedDates.push(data[interval * 2].date);
+    }
+  }
+
+  return [first, ...selectedDates, last];
 };
 
-export const getXAxisTickValues = (data: UserStats[]) => {
-  // Needs to add X Axis labels logic
-  if (data.length < 2) return data.map(item => item.date);
+export const getXAxisformat = (date: string, grouping: string) => {
+  const dateObj = new Date(date);
 
-  return [
-    data[0].date,
-    data[Math.floor(data.length / 2 - 1)].date,
-    data[data.length - 1].date,
-  ];
+  if (grouping === 'daily' || grouping === 'weekly') {
+    return format(dateObj, 'd MMMM yy');
+  }
+
+  if (grouping === 'monthly') {
+    return format(dateObj, 'MMM yyyy');
+  }
+
+  return date;
 };
 
-export const getXAxisformat = (tickItem: string) => {
-  const date = new Date(tickItem);
-  return format(date, 'MMMM yy');
+export const getLastUsedDay = (timestamp: string) => {
+  const date = new Date(timestamp);
+
+  if (isToday(date)) {
+    return 'Today';
+  } else if (isYesterday(date)) {
+    return 'Yesterday';
+  }
+  return format(date, 'dd MMM yyyy');
 };
 
-// Dummy Data Generator. Needs to remove
-const generateYearsData = () => {
-  const start = startOfYear(new Date());
-  const end = endOfYear(new Date());
-
-  return eachMonthOfInterval({ start, end }).map(date => {
-    const returningUsers = Math.floor(Math.random() * 300) + 300;
-    const newUsers = Math.floor(Math.random() * 300);
-
-    return {
-      date: format(startOfMonth(date), 'yyyy-MM-dd'),
-      returningUsers,
-      newUsers,
-      total: returningUsers + newUsers,
-    };
-  });
+export const getCatalogEntityKinds = (data: { kind: string }[]) => {
+  return [...new Set(data?.map(item => item.kind))];
 };
 
-// Needs to remove once actuall data started fetched
-export const dummyData = generateYearsData();
+export const getAverage = <T extends Record<string, any>>(
+  data: T[],
+  key: keyof T,
+) => {
+  if (!data || data.length === 0) return 0;
+
+  const totalSum = data.reduce(
+    (sum, entry) => sum + Number(entry[key] || 0),
+    0,
+  );
+  return totalSum / data.length;
+};
+
+export const getTotal = <T extends Record<string, any>>(
+  data: T[],
+  key: keyof T,
+) => {
+  const totalSum = data?.reduce(
+    (sum, entry) => sum + Number(entry[key] || 0),
+    0,
+  );
+  return totalSum;
+};

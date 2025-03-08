@@ -16,26 +16,26 @@
 import { createApiRef, ConfigApi, FetchApi } from '@backstage/core-plugin-api';
 import {
   AdoptionInsightsApi,
-  CatalogEntities,
-  CatalogEntitiesOptions,
-  PluginTrend,
-  PluginViewsOptions,
-  Techdocs,
-  TechdocsOptions,
-  Templates,
-  TemplatesOptions,
+  APIsViewOptions,
+  TemplatesResponse,
+  CatalogEntitiesResponse,
+  PluginTrendResponse,
+  UsersResponse,
+  TechdocsResponse,
+  ActiveUsersResponse,
+  SearchesResponse,
 } from '../types';
 
 export interface InsightsApi {
-  getPluginViews(options: PluginViewsOptions): Promise<PluginTrend[]>;
-
+  getActiveUsers(options: APIsViewOptions): Promise<ActiveUsersResponse>;
+  getUsers(options: APIsViewOptions): Promise<UsersResponse>;
   getCatalogEntities(
-    options: CatalogEntitiesOptions,
-  ): Promise<CatalogEntities[]>;
-
-  getTemplates(options: TemplatesOptions): Promise<Templates[]>;
-
-  getTechdocs(options: TechdocsOptions): Promise<Techdocs[]>;
+    options: APIsViewOptions,
+  ): Promise<CatalogEntitiesResponse>;
+  getTemplates(options: APIsViewOptions): Promise<TemplatesResponse>;
+  getTechdocs(options: APIsViewOptions): Promise<TechdocsResponse>;
+  getPlugins(options: APIsViewOptions): Promise<PluginTrendResponse>;
+  getSearches(options: APIsViewOptions): Promise<SearchesResponse>;
 }
 
 export const adoptionInsightsApiRef = createApiRef<AdoptionInsightsApi>({
@@ -57,60 +57,104 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
   }
 
   async getBaseUrl() {
-    return `${this.configApi.getString('backend.baseUrl')}/api/insights`;
+    return `${this.configApi.getString(
+      'backend.baseUrl',
+    )}/api/adoption-insights`;
   }
 
-  async getPluginViews(options: PluginViewsOptions): Promise<PluginTrend[]> {
+  async getActiveUsers(options: APIsViewOptions): Promise<ActiveUsersResponse> {
     if (!options.start_date || !options.end_date) {
-      return Promise.resolve([]);
+      return Promise.resolve({ grouping: undefined, data: [] });
     }
 
     const baseUrl = await this.getBaseUrl();
     const response = await this.fetchApi.fetch(
-      `${baseUrl}/plugin-views?start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
+      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}`,
     );
     const data = await response.json();
-    return data as PluginTrend[];
+    return data as ActiveUsersResponse;
+  }
+
+  async getUsers(options: APIsViewOptions): Promise<UsersResponse> {
+    if (!options.start_date || !options.end_date) {
+      return Promise.resolve({ data: [] });
+    }
+
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}`,
+    );
+    const data = await response.json();
+    return data as UsersResponse;
   }
 
   async getCatalogEntities(
-    options: CatalogEntitiesOptions,
-  ): Promise<CatalogEntities[]> {
+    options: APIsViewOptions,
+  ): Promise<CatalogEntitiesResponse> {
     if (!options.start_date || !options.end_date) {
-      return Promise.resolve([]);
+      return Promise.resolve({ data: [] });
     }
 
     const baseUrl = await this.getBaseUrl();
-    const response = await this.fetchApi.fetch(
-      `${baseUrl}/catalog-entities?start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
-    );
+    let url = `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`;
+    if (options.kind) {
+      url += `&kind=${options.kind}`;
+    }
+
+    const response = await this.fetchApi.fetch(url);
     const data = await response.json();
-    return data as CatalogEntities[];
+    return data as CatalogEntitiesResponse;
   }
 
-  async getTemplates(options: TemplatesOptions): Promise<Templates[]> {
+  async getTemplates(options: APIsViewOptions): Promise<TemplatesResponse> {
     if (!options.start_date || !options.end_date) {
-      return Promise.resolve([]);
+      return Promise.resolve({ data: [] });
     }
 
     const baseUrl = await this.getBaseUrl();
     const response = await this.fetchApi.fetch(
-      `${baseUrl}/templates?start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
+      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
     );
     const data = await response.json();
-    return data as Templates[];
+    return data as TemplatesResponse;
   }
 
-  async getTechdocs(options: TechdocsOptions): Promise<Techdocs[]> {
+  async getTechdocs(options: APIsViewOptions): Promise<TechdocsResponse> {
     if (!options.start_date || !options.end_date) {
-      return Promise.resolve([]);
+      return Promise.resolve({ data: [] });
     }
 
     const baseUrl = await this.getBaseUrl();
     const response = await this.fetchApi.fetch(
-      `${baseUrl}/techdocs?start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
+      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
     );
     const data = await response.json();
-    return data as Techdocs[];
+    return data as TechdocsResponse;
+  }
+
+  async getPlugins(options: APIsViewOptions): Promise<PluginTrendResponse> {
+    if (!options.start_date || !options.end_date) {
+      return Promise.resolve({ data: [] });
+    }
+
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/events?type=active_users&start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
+    );
+    const data = await response.json();
+    return data as PluginTrendResponse;
+  }
+
+  async getSearches(options: APIsViewOptions): Promise<SearchesResponse> {
+    if (!options.start_date || !options.end_date) {
+      return Promise.resolve({ grouping: undefined, data: [] });
+    }
+
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}`,
+    );
+    const data = await response.json();
+    return data as SearchesResponse;
   }
 }

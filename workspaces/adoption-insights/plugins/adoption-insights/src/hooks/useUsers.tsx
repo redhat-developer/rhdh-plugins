@@ -19,45 +19,37 @@ import { useApi } from '@backstage/core-plugin-api';
 import { useAsyncRetry } from 'react-use';
 import { format } from 'date-fns';
 
+import { UsersResponse } from '../types';
 import { adoptionInsightsApiRef } from '../api';
-import { APIsViewOptions, CatalogEntitiesResponse } from '../types';
 import { useDateRange } from '../components/Header/DateRangeContext';
 
-export const useCatalogEntities = ({
-  limit = 3,
-  kind = '',
-}: APIsViewOptions): {
-  catalogEntities: CatalogEntitiesResponse;
+export const useUsers = (): {
+  users: UsersResponse;
   error: Error | undefined;
   loading: boolean;
 } => {
   const [loadingData, setLoadingData] = React.useState<boolean>(true);
-  const [catalogEntities, setCatalogEntities] =
-    React.useState<CatalogEntitiesResponse>({ data: [] });
+  const [users, setUsers] = React.useState<UsersResponse>({ data: [] });
 
   const { startDateRange, endDateRange } = useDateRange();
 
   const api = useApi(adoptionInsightsApiRef);
 
-  const getCatalogEntities = React.useCallback(async () => {
+  const getUsers = React.useCallback(async () => {
     return await api
-      .getCatalogEntities({
-        type: 'top_catalog_entities',
+      .getUsers({
+        type: 'total_users',
         start_date: startDateRange
           ? format(startDateRange, 'yyyy-MM-dd')
           : undefined,
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
-        limit,
-        kind,
       })
-      .then((response: CatalogEntitiesResponse) =>
-        setCatalogEntities(response ?? { data: [] }),
-      );
-  }, [api, kind, limit, startDateRange, endDateRange]);
+      .then(response => setUsers(response ?? { data: [] }));
+  }, [api, startDateRange, endDateRange]);
 
   const { error, loading } = useAsyncRetry(async () => {
-    return await getCatalogEntities();
-  }, [getCatalogEntities]);
+    return await getUsers();
+  }, [getUsers]);
 
   React.useEffect(() => {
     let mounted = true;
@@ -69,5 +61,5 @@ export const useCatalogEntities = ({
     };
   }, [loading]);
 
-  return { catalogEntities, error, loading: loadingData };
+  return { users, error, loading: loadingData };
 };

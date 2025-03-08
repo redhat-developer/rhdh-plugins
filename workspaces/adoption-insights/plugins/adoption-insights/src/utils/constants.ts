@@ -39,12 +39,10 @@ export const PLUGINS_TABLE_HEADERS = [
 export const TECHDOCS_TABLE_HEADERS = [
   { id: 'name', title: 'Name' },
   { id: 'entity', title: 'Entity' },
-  { id: 'last-used', title: 'Last used' },
   { id: 'views', title: 'Views' },
 ];
 
 export const TEMPLATE_TABLE_HEADERS = [
   { id: 'name', title: 'Name' },
-  { id: 'mostly-use-by', title: 'Mostly in use by' },
   { id: 'executions', title: 'Executions' },
 ];

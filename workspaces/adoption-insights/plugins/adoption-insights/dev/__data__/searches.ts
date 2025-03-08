@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { format, subDays } from 'date-fns';
+
+export const generateDaysData = () => {
+  return Array.from({ length: 28 }, (_, i) => {
+    const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
+    const count = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
+    return { date, count };
+  }).reverse();
+};
+
 export default {
-  data: [
-    { entityRef: 'template:default/example-go-template-1', count: '10' },
-    { entityRef: 'template:default/example-go-template-2', count: '20' },
-    { entityRef: 'template:default/example-go-template-3', count: '30' },
-    { entityRef: 'template:default/example-go-template-4', count: '40' },
-    { entityRef: 'template:default/example-go-template-5', count: '50' },
-    { entityRef: 'template:default/example-go-template-6', count: '60' },
-  ],
+  grouping: 'daily',
+  data: generateDaysData(),
 };

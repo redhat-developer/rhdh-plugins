@@ -52,7 +52,7 @@ const CustomLegend = (props: any) => {
             variant="body2"
             style={{ color: theme.palette.text.primary, fontSize: '14px' }}
           >
-            {entry.value === 'newUsers' ? 'New users' : 'Returing users'}
+            {entry.value === 'new_users' ? 'New users' : 'Returing users'}
           </Typography>
         </div>
       ))}
