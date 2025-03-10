@@ -1,5 +1,5 @@
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,6 @@
  */
 
 /**
- * The marketplace backend module for the catalog plugin.
- *
- * @packageDocumentation
+ * @public
  */
-
-export { catalogModuleMarketplace as default } from './module';
-
-export * from './processors';
-export * from './providers';
-export * from './types';
+export type JsonFileData<T> = { filePath: string; content: T };
