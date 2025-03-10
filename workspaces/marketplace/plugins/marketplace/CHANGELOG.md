@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.2.1
+
+### Patch Changes
+
+- 08a15e5: Remove Filters text and divider
+
 ## 0.2.0
 
 ### Minor Changes
