@@ -30,10 +30,7 @@ import { setupServer } from 'msw/node';
 import request from 'supertest';
 
 import { handlers, LOCAL_AI_ADDR } from '../../__fixtures__/handlers';
-import { deleteHistory, saveHistory } from '../handlers/chatHistory';
 import { lightspeedPlugin } from '../plugin';
-import { Roles } from '../service/types';
-import { ConversationSummary } from './types';
 
 const mockUserId = `user: default/user1`;
 const mockConversationId = `${mockUserId}+1q2w3e4r-qwer1234`;
