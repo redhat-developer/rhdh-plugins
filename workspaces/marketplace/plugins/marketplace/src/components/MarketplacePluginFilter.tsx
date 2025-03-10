@@ -20,8 +20,6 @@ import { Select, SelectItem } from '@backstage/core-components';
 import { useSearchParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import Typography from '@mui/material/Typography';
 
 import { MarketplaceAnnotation } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
@@ -192,12 +190,6 @@ const SupportTypeFilter = () => {
 export const MarketplacePluginFilter = () => {
   return (
     <Box sx={{ minWidth: { xs: 200, lg: 'auto' } }}>
-      <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-        <Typography variant="h4" sx={{ pb: 1 }}>
-          Filters
-        </Typography>
-      </Box>
-      <Divider />
       <CategoryFilter />
       <AuthorFilter />
       <SupportTypeFilter />

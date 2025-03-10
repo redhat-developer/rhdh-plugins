@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.2.1
+
+### Patch Changes
+
+- fab1471: Add marketplace providers to add entities into catalog
+
 ## 0.2.0
 
 ### Minor Changes
