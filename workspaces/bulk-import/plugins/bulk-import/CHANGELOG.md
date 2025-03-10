@@ -1,5 +1,21 @@
 ### Dependencies
 
+## 1.12.0
+
+### Minor Changes
+
+- 95b14e6: Backstage version bump to v1.36.1
+
+### Patch Changes
+
+- 4a1f79b: fixing extra apis call on added repository list
+- 680ede5: Updated dependency `@mui/icons-material` to `5.16.14`.
+  Updated dependency `@mui/styles` to `5.16.14`.
+  Updated dependency `@mui/material` to `5.16.14`.
+  Updated dependency `@mui/styled-engine` to `5.16.14`.
+- Updated dependencies [95b14e6]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.6.0
+
 ## 1.11.0
 
 ### Minor Changes
