@@ -13,10 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { adoptionInsightsPlugin } from './plugin';
+import {
+  configApiRef,
+  fetchApiRef,
+  createApiFactory,
+  createPlugin,
+  createRoutableExtension,
+} from '@backstage/core-plugin-api';
+import { adoptionInsightsApiRef } from './api';
+import { adoptionInsightsPlugin, AdoptionInsightsPage } from './plugin';
+import { rootRouteRef } from './routes';
+
+jest.mock('@backstage/core-plugin-api', () => {
+  const actual = jest.requireActual('@backstage/core-plugin-api');
+  return {
+    ...actual,
+    createPlugin: jest.fn(actual.createPlugin),
+    createApiFactory: jest.fn(actual.createApiFactory),
+    createRoutableExtension: jest.fn(actual.createRoutableExtension),
+  };
+});
 
 describe('adoption-insights', () => {
   it('should export plugin', () => {
     expect(adoptionInsightsPlugin).toBeDefined();
+  });
+
+  it('should create the plugin with correct id and routes', () => {
+    expect(createPlugin).toHaveBeenCalledWith({
+      id: 'adoption-insights',
+      routes: { root: rootRouteRef },
+      apis: expect.any(Array),
+    });
+  });
+
+  it('should define an API factory with correct dependencies', () => {
+    expect(createApiFactory).toHaveBeenCalledWith({
+      api: adoptionInsightsApiRef,
+      deps: {
+        configApi: configApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: expect.any(Function),
+    });
+  });
+
+  it('should provide AdoptionInsightsPage as a routable extension', () => {
+    expect(createRoutableExtension).toHaveBeenCalledWith({
+      name: 'AdoptionInsightsPage',
+      component: expect.any(Function),
+      mountPoint: rootRouteRef,
+    });
+  });
+
+  it('should export AdoptionInsightsPage', () => {
+    expect(AdoptionInsightsPage).toBeDefined();
   });
 });

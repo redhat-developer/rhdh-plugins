@@ -18,10 +18,15 @@ import React from 'react';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
-const Tooltip = ({ active, payload, sumUsers }: any) => {
+const Tooltip = ({ active, payload, licensed_users, logged_in_users }: any) => {
   if (active && payload?.length) {
-    const percent = Math.round((payload[0].value / sumUsers) * 100);
-    const { value } = payload[0];
+    const percent = Math.round(
+      (payload[0].name === 'Licensed'
+        ? (payload[0].value - logged_in_users) / licensed_users
+        : payload[0].value / licensed_users) * 100,
+    );
+
+    const { value, name } = payload[0];
 
     return (
       <Paper
@@ -34,7 +39,9 @@ const Tooltip = ({ active, payload, sumUsers }: any) => {
         }}
       >
         <Typography style={{ fontSize: '14px', margin: 0, fontWeight: '500' }}>
-          {value.toLocaleString()}
+          {name === 'Licensed'
+            ? (value - logged_in_users).toLocaleString()
+            : value.toLocaleString()}
         </Typography>
         <Typography
           style={{

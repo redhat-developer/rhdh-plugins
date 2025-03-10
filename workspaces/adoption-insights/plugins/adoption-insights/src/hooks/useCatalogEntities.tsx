@@ -24,7 +24,7 @@ import { APIsViewOptions, CatalogEntitiesResponse } from '../types';
 import { useDateRange } from '../components/Header/DateRangeContext';
 
 export const useCatalogEntities = ({
-  limit = 3,
+  limit = 20,
   kind = '',
 }: APIsViewOptions): {
   catalogEntities: CatalogEntitiesResponse;

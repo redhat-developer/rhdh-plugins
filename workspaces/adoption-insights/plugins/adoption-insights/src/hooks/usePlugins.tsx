@@ -23,8 +23,8 @@ import { adoptionInsightsApiRef } from '../api';
 import { APIsViewOptions, PluginTrendResponse } from '../types';
 import { useDateRange } from '../components/Header/DateRangeContext';
 
-export const usePluginViews = ({
-  limit = 3,
+export const usePlugins = ({
+  limit = 20,
 }: APIsViewOptions): {
   plugins: PluginTrendResponse;
   error: Error | undefined;

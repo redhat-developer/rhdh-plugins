@@ -24,7 +24,7 @@ import { APIsViewOptions, TechdocsResponse } from '../types';
 import { useDateRange } from '../components/Header/DateRangeContext';
 
 export const useTechdocs = ({
-  limit = 3,
+  limit = 20,
 }: APIsViewOptions): {
   techdocs: TechdocsResponse;
   error: Error | undefined;

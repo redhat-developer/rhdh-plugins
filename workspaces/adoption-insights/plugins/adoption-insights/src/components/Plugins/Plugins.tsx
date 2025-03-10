@@ -25,18 +25,21 @@ import CircularProgress from '@mui/material/CircularProgress';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
 
 import CardWrapper from '../CardWrapper';
 import { PLUGINS_TABLE_HEADERS } from '../../utils/constants';
-import { usePluginViews } from '../../hooks/usePlugins';
+import { usePlugins } from '../../hooks/usePlugins';
 import TableFooterPagination from '../CardFooter';
 import { Line, LineChart, ResponsiveContainer } from 'recharts';
 
 const Plugins = () => {
   const [page, setPage] = React.useState(0);
+  const [limit] = React.useState(20);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
 
-  const { plugins, loading } = usePluginViews({ limit: rowsPerPage });
+  const { plugins, loading } = usePlugins({ limit });
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -59,6 +62,21 @@ const Plugins = () => {
       page * rowsPerPage + rowsPerPage,
     );
   }, [plugins, page, rowsPerPage]);
+
+  if (!visiblePlugins || visiblePlugins?.length === 0) {
+    return (
+      <CardWrapper title="Top plugins">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <Typography>No data available</Typography>
+        </Box>
+      </CardWrapper>
+    );
+  }
 
   return (
     <CardWrapper title={`Top ${rowsPerPage} plugins`}>
@@ -94,7 +112,22 @@ const Plugins = () => {
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell>{plugin.plugin_id}</TableCell>
+                <TableCell>
+                  <Link
+                    component="a"
+                    href={`/${plugin.plugin_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'none',
+                      },
+                    }}
+                  >
+                    {plugin.plugin_id}
+                  </Link>
+                </TableCell>
                 <TableCell>
                   <ResponsiveContainer width={250} height={50}>
                     <LineChart data={plugin.trend}>
@@ -120,7 +153,9 @@ const Plugins = () => {
                     {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
                   </Typography>
                 </TableCell>
-                <TableCell>{Number(plugin.count).toLocaleString()}</TableCell>
+                <TableCell>
+                  {Number(plugin.visit_count).toLocaleString()}
+                </TableCell>
               </TableRow>
             ))
           )}

@@ -23,6 +23,11 @@ import TableFooter from '@mui/material/TableFooter';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { entityRouteRef } from '@backstage/plugin-catalog-react';
+import { useRouteRef } from '@backstage/core-plugin-api';
+import Link from '@mui/material/Link';
 
 import CardWrapper from '../CardWrapper';
 import { TEMPLATE_TABLE_HEADERS } from '../../utils/constants';
@@ -31,9 +36,11 @@ import { useTemplates } from '../../hooks/useTemplates';
 
 const Templates = () => {
   const [page, setPage] = React.useState(0);
+  const [limit] = React.useState(20);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
+  const entityLink = useRouteRef(entityRouteRef);
 
-  const { templates, loading } = useTemplates({ limit: rowsPerPage });
+  const { templates, loading } = useTemplates({ limit });
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -56,6 +63,21 @@ const Templates = () => {
       page * rowsPerPage + rowsPerPage,
     );
   }, [templates, page, rowsPerPage]);
+
+  if (!visibleTemplates || visibleTemplates?.length === 0) {
+    return (
+      <CardWrapper title="Top templates">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <Typography>No data available</Typography>
+        </Box>
+      </CardWrapper>
+    );
+  }
 
   return (
     <CardWrapper title={`Top ${rowsPerPage} templates`}>
@@ -91,7 +113,26 @@ const Templates = () => {
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell>{parseEntityRef(template.entityRef).name}</TableCell>
+                <TableCell>
+                  <Link
+                    component="a"
+                    href={entityLink({
+                      kind: parseEntityRef(template.entityRef).kind,
+                      namespace: 'default',
+                      name: parseEntityRef(template.entityRef)?.name,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'none',
+                      },
+                    }}
+                  >
+                    {parseEntityRef(template.entityRef).name}
+                  </Link>
+                </TableCell>
                 <TableCell>{Number(template.count).toLocaleString()}</TableCell>
               </TableRow>
             ))

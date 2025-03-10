@@ -16,8 +16,19 @@
 export default {
   data: [
     {
-      entityref: 'techdocs:index-page',
+      entityRef: 'techdocs:index-page',
       count: '2',
+      last_used: '2025-03-06T06:25:16.708Z',
+    },
+    {
+      entityRef: 'techdocs:insights',
+      count: '4',
+      last_used: '2025-03-06T06:25:16.708Z',
+    },
+    {
+      entityRef: 'techdocs:argocd',
+      count: '7',
+      last_used: '2025-03-06T06:25:16.708Z',
     },
   ],
 };

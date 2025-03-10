@@ -130,6 +130,7 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
             disableScrollLock: true,
           },
           MenuListProps: {
+            autoFocusItem: false,
             sx: { display: 'block', flexDirection: 'column' },
           },
         }}

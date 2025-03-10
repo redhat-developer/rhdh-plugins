@@ -16,10 +16,7 @@
 import React from 'react';
 
 import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { SelectChangeEvent } from '@mui/material/Select';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -27,6 +24,10 @@ import TableFooter from '@mui/material/TableFooter';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
+import { entityRouteRef } from '@backstage/plugin-catalog-react';
+import { useRouteRef } from '@backstage/core-plugin-api';
 
 import CardWrapper from '../CardWrapper';
 import {
@@ -35,53 +36,26 @@ import {
 } from '../../utils/constants';
 import { useCatalogEntities } from '../../hooks/useCatalogEntities';
 import TableFooterPagination from '../CardFooter';
-import { getCatalogEntityKinds, getLastUsedDay } from '../../utils/utils';
-import { CatalogEntities as CatalogEntitiesType } from '../../types';
-
-const Filter = ({
-  selectedOption,
-  handleChange,
-  catalogEntitiesData,
-}: {
-  selectedOption: string;
-  handleChange: (event: SelectChangeEvent<string>) => void;
-  catalogEntitiesData: CatalogEntitiesType[];
-}) => {
-  const menuItems = getCatalogEntityKinds(catalogEntitiesData);
-
-  return (
-    <Box sx={{ m: 2, minWidth: 160 }}>
-      <FormControl fullWidth>
-        <InputLabel id="kind-select">Select kind</InputLabel>
-        <Select
-          labelId="kind-select"
-          renderValue={(selected: string) =>
-            selected.length === 0 ? 'Select kind' : selected
-          }
-          value={selectedOption}
-          onChange={handleChange}
-          label="Select kind"
-        >
-          {menuItems.map(kind => (
-            <MenuItem key={kind} value={kind}>
-              {kind}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </Box>
-  );
-};
+import { getLastUsedDay, setCatalogEntitieskinds } from '../../utils/utils';
+import FilterDropdown from './FilterDropdown';
 
 const CatalogEntities = () => {
   const [page, setPage] = React.useState(0);
+  const [limit] = React.useState(20);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
   const [selectedOption, setSelectedOption] = React.useState('');
+  const entityLink = useRouteRef(entityRouteRef);
 
   const { catalogEntities, loading } = useCatalogEntities({
-    limit: rowsPerPage,
+    limit,
     kind: selectedOption,
   });
+
+  React.useEffect(() => {
+    return () => {
+      setCatalogEntitieskinds([]);
+    };
+  }, []);
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -103,20 +77,39 @@ const CatalogEntities = () => {
   }, []);
 
   const visibleCatalogEntities = React.useMemo(() => {
-    return catalogEntities.data?.slice(
-      page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage,
+    return catalogEntities.data
+      ?.filter(entity => {
+        if (selectedOption) {
+          return entity.kind === selectedOption;
+        }
+        return true;
+      })
+      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [catalogEntities, page, rowsPerPage, selectedOption]);
+
+  if (!visibleCatalogEntities || visibleCatalogEntities?.length === 0) {
+    return (
+      <CardWrapper title={CATALOG_ENTITIES_TITLE}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <Typography>No data available</Typography>
+        </Box>
+      </CardWrapper>
     );
-  }, [catalogEntities, page, rowsPerPage]);
+  }
 
   return (
     <CardWrapper
       title={CATALOG_ENTITIES_TITLE}
       filter={
-        <Filter
+        <FilterDropdown
           selectedOption={selectedOption}
           handleChange={handleChange}
-          catalogEntitiesData={visibleCatalogEntities}
+          catalogEntitiesData={catalogEntities.data}
         />
       }
     >
@@ -155,7 +148,26 @@ const CatalogEntities = () => {
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell>{entity.name}</TableCell>
+                <TableCell>
+                  <Link
+                    component="a"
+                    href={entityLink({
+                      kind: entity.kind,
+                      namespace: entity.namespace,
+                      name: entity.name,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'none',
+                      },
+                    }}
+                  >
+                    {entity.name}
+                  </Link>
+                </TableCell>
                 <TableCell>{entity.kind}</TableCell>
                 <TableCell>{getLastUsedDay(entity.last_used)}</TableCell>
                 <TableCell>{Number(entity.count).toLocaleString()}</TableCell>

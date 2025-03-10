@@ -72,7 +72,7 @@ export const getXAxisTickValues = (data: any, grouping: string): string[] => {
 
     if (data.length <= 4) {
       data.forEach((d: { date: string }) => {
-        const weekDay = new Date(d.date).getDay();
+        const weekDay = new Date(d.date).getDate();
         if (!selectedUnits.has(weekDay)) {
           selectedUnits.add(weekDay);
           selectedDates.push(d.date);
@@ -145,10 +145,6 @@ export const getLastUsedDay = (timestamp: string) => {
   return format(date, 'dd MMM yyyy');
 };
 
-export const getCatalogEntityKinds = (data: { kind: string }[]) => {
-  return [...new Set(data?.map(item => item.kind))];
-};
-
 export const getAverage = <T extends Record<string, any>>(
   data: T[],
   key: keyof T,
@@ -171,4 +167,20 @@ export const getTotal = <T extends Record<string, any>>(
     0,
   );
   return totalSum;
+};
+
+export const setCatalogEntitieskinds = (kinds: string[] = []) => {
+  localStorage.setItem('entityKinds', JSON.stringify(kinds));
+};
+
+export const getCatalogEntitieskinds = () => {
+  return JSON.parse(localStorage.getItem('entityKinds') || '[]');
+};
+
+export const catalogEntityKinds = (data: { kind: string }[]) => {
+  const existingKinds = getCatalogEntitieskinds();
+  const newKinds = data.map(item => item.kind);
+  const mergedKinds = Array.from(new Set([...existingKinds, ...newKinds]));
+  setCatalogEntitieskinds(mergedKinds);
+  return mergedKinds;
 };

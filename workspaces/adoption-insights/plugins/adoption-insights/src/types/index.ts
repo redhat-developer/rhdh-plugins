@@ -17,6 +17,7 @@
  * API
  */
 export interface AdoptionInsightsApi {
+  downloadBlob(options: APIsViewOptions): Promise<any>;
   getPlugins(options: APIsViewOptions): Promise<PluginTrendResponse>;
   getCatalogEntities(
     options: APIsViewOptions,
@@ -35,6 +36,8 @@ export type APIsViewOptions = {
   limit?: number;
   intervalMs?: number;
   kind?: string;
+  format?: string | null;
+  blobName?: string;
 };
 
 /**
@@ -47,7 +50,7 @@ export interface TrendData {
 
 export interface PluginTrend {
   plugin_id: string;
-  count: string;
+  visit_count: string;
   trend_percentage: string;
   trend: TrendData[];
 }
@@ -87,8 +90,9 @@ export type TemplatesResponse = {
  * Techdocs
  */
 export type Techdocs = {
-  entityref: string;
+  entityRef: string;
   count: string;
+  last_used: string;
 };
 
 export type TechdocsResponse = {

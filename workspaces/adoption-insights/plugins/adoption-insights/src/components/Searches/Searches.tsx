@@ -47,6 +47,21 @@ const Searches = () => {
   const { searches, loading } = useSearches();
   const { grouping, data } = searches;
 
+  if (!data || data?.length === 0 || (!data?.[0] && !loading)) {
+    return (
+      <CardWrapper title="Searches">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <Typography>No data available</Typography>
+        </Box>
+      </CardWrapper>
+    );
+  }
+
   return (
     <CardWrapper
       title={`${getTotal(data, 'count')?.toLocaleString()} searches`}

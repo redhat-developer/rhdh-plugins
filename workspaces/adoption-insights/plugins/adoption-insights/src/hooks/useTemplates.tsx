@@ -24,7 +24,7 @@ import { APIsViewOptions, TemplatesResponse } from '../types';
 import { useDateRange } from '../components/Header/DateRangeContext';
 
 export const useTemplates = ({
-  limit = 3,
+  limit = 20,
 }: APIsViewOptions): {
   templates: TemplatesResponse;
   error: Error | undefined;

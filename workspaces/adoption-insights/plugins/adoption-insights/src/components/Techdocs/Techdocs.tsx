@@ -22,17 +22,26 @@ import TableFooter from '@mui/material/TableFooter';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { parseEntityRef } from '@backstage/catalog-model';
+import { entityRouteRef } from '@backstage/plugin-catalog-react';
+import { useRouteRef } from '@backstage/core-plugin-api';
+import Link from '@mui/material/Link';
 
 import CardWrapper from '../CardWrapper';
 import { TECHDOCS_TABLE_HEADERS } from '../../utils/constants';
 import TableFooterPagination from '../CardFooter';
 import { useTechdocs } from '../../hooks/useTechdocs';
+import { getLastUsedDay } from '../../utils/utils';
 
 const Techdocs = () => {
   const [page, setPage] = React.useState(0);
+  const [limit] = React.useState(20);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
+  const entityLink = useRouteRef(entityRouteRef);
 
-  const { techdocs, loading } = useTechdocs({ limit: rowsPerPage });
+  const { techdocs, loading } = useTechdocs({ limit });
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -55,6 +64,21 @@ const Techdocs = () => {
       page * rowsPerPage + rowsPerPage,
     );
   }, [techdocs, page, rowsPerPage]);
+
+  if (!visibleTechdocs || visibleTechdocs?.length === 0) {
+    return (
+      <CardWrapper title="Top techdocs">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <Typography>No data available</Typography>
+        </Box>
+      </CardWrapper>
+    );
+  }
 
   return (
     <CardWrapper title={`Top ${rowsPerPage} techdocs`}>
@@ -84,14 +108,34 @@ const Techdocs = () => {
           ) : (
             visibleTechdocs?.map(techdoc => (
               <TableRow
-                key={techdoc.entityref}
+                key={techdoc.entityRef}
                 sx={{
                   '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell>{techdoc.entityref}</TableCell>
-                <TableCell>{techdoc.entityref}</TableCell>
+                <TableCell>
+                  <Link
+                    component="a"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={entityLink({
+                      kind: parseEntityRef(techdoc.entityRef)?.kind,
+                      namespace: 'default',
+                      name: parseEntityRef(techdoc.entityRef)?.name,
+                    })}
+                    sx={{
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'none',
+                      },
+                    }}
+                  >
+                    {parseEntityRef(techdoc.entityRef)?.name}
+                  </Link>
+                </TableCell>
+                <TableCell>{parseEntityRef(techdoc.entityRef)?.kind}</TableCell>
+                <TableCell>{getLastUsedDay(techdoc.last_used)}</TableCell>
                 <TableCell>{Number(techdoc.count).toLocaleString()}</TableCell>
               </TableRow>
             ))

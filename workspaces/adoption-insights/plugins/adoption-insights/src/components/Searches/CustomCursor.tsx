@@ -17,8 +17,11 @@ import React from 'react';
 
 const CustomCursor = (props: any) => {
   const { points } = props;
+  if (!points || points.length === 0) return null;
+
   return (
     <line
+      data-testid="custom-cursor-line"
       x1={points[0].x}
       y1={10}
       x2={points[0].x}

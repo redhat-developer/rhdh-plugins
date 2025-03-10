@@ -27,6 +27,7 @@ import {
 } from '../types';
 
 export interface InsightsApi {
+  downloadBlob(options: APIsViewOptions): Promise<any>;
   getActiveUsers(options: APIsViewOptions): Promise<ActiveUsersResponse>;
   getUsers(options: APIsViewOptions): Promise<UsersResponse>;
   getCatalogEntities(
@@ -139,7 +140,7 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
 
     const baseUrl = await this.getBaseUrl();
     const response = await this.fetchApi.fetch(
-      `${baseUrl}/events?type=active_users&start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
+      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
     );
     const data = await response.json();
     return data as PluginTrendResponse;
@@ -156,5 +157,20 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     );
     const data = await response.json();
     return data as SearchesResponse;
+  }
+
+  async downloadBlob(options: APIsViewOptions): Promise<void> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&format=${options.format}`,
+    );
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = options.blobName ?? 'active-users';
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode?.removeChild(link);
   }
 }

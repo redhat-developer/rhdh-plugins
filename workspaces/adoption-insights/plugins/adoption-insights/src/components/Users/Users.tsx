@@ -42,22 +42,7 @@ const Users = () => {
 
   const { users, loading } = useUsers();
 
-  if (loading) {
-    return (
-      <CardWrapper title="Total number of users" filter={<InfoComponent />}>
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          height={200}
-        >
-          <CircularProgress />
-        </Box>
-      </CardWrapper>
-    );
-  }
-
-  if (!users || users.data?.length === 0 || !users.data?.[0]) {
+  if (!users || users.data?.length === 0 || (!users.data?.[0] && !loading)) {
     return (
       <CardWrapper title="Total number of users" filter={<InfoComponent />}>
         <Box
@@ -76,11 +61,7 @@ const Users = () => {
 
   const loggedInPercentage =
     Number(logged_in_users) && licensed_users
-      ? Math.round(
-          (Number(logged_in_users) /
-            (licensed_users + Number(logged_in_users))) *
-            100,
-        )
+      ? Math.round((Number(logged_in_users) / licensed_users) * 100)
       : 0;
 
   const data = [
@@ -94,102 +75,116 @@ const Users = () => {
 
   return (
     <CardWrapper title="Total number of users" filter={<InfoComponent />}>
-      <Box
-        display="flex"
-        alignItems="center"
-        gap={2}
-        justifyContent="flex-start"
-      >
-        <Box display="flex" alignItems="center" flex={7}>
-          <Box sx={{ width: '100%', maxWidth: '240px' }}>
-            <ResponsiveContainer width="100%" height={240}>
-              <PieChart>
-                <Pie
-                  data={data}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius="60%"
-                  outerRadius="70%"
-                  startAngle={90}
-                  endAngle={-270}
-                  stroke="none"
-                >
-                  {data.map(entry => (
-                    <Cell key={entry.name} fill={entry.color} />
-                  ))}
+      {loading ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box
+          display="flex"
+          alignItems="center"
+          gap={2}
+          justifyContent="flex-start"
+        >
+          <Box display="flex" alignItems="center" flex={7}>
+            <Box sx={{ width: '100%', maxWidth: '240px' }}>
+              <ResponsiveContainer width="100%" height={240}>
+                <PieChart>
+                  <Pie
+                    data={data}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius="60%"
+                    outerRadius="70%"
+                    startAngle={90}
+                    endAngle={-270}
+                    stroke="none"
+                  >
+                    {data.map(entry => (
+                      <Cell key={entry.name} fill={entry.color} />
+                    ))}
 
-                  <Label
-                    value={logged_in_users.toLocaleString()}
-                    position="center"
-                    style={{
-                      fontSize: '24px',
-                      fill: theme.palette.text.primary,
-                      textAnchor: 'middle',
-                    }}
-                  />
-                  <Label
-                    value={`of ${(
-                      Number(logged_in_users) + licensed_users
-                    ).toLocaleString()}`}
-                    position="center"
-                    dy={20}
-                    style={{
-                      fontSize: '14px',
-                      textAnchor: 'middle',
-                      fill: theme.palette.text.secondary,
-                    }}
-                  />
-                </Pie>
-                <Tooltip
-                  content={
-                    <CustomTooltip
-                      sumUsers={Number(logged_in_users) + licensed_users}
+                    <Label
+                      value={logged_in_users.toLocaleString()}
+                      position="center"
+                      style={{
+                        fontSize: '24px',
+                        fill: theme.palette.text.primary,
+                        textAnchor: 'middle',
+                      }}
                     />
-                  }
-                />
-              </PieChart>
-            </ResponsiveContainer>
+                    <Label
+                      value={`of ${licensed_users.toLocaleString()}`}
+                      position="center"
+                      dy={20}
+                      style={{
+                        fontSize: '14px',
+                        textAnchor: 'middle',
+                        fill: theme.palette.text.secondary,
+                      }}
+                    />
+                  </Pie>
+                  <Tooltip
+                    content={
+                      <CustomTooltip
+                        licensed_users={licensed_users}
+                        logged_in_users={logged_in_users}
+                      />
+                    }
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </Box>
+
+            <List dense>
+              <ListItem key="logged-in users" disableGutters>
+                <ListItemIcon sx={{ minWidth: 24 }}>
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      bgcolor: '#00AEEF',
+                      borderRadius: '2px',
+                    }}
+                  />
+                </ListItemIcon>
+                <ListItemText primary="Logged-in users" />
+              </ListItem>
+              <ListItem key="licensed users" disableGutters>
+                <ListItemIcon sx={{ minWidth: 24 }}>
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      bgcolor: '#E5E5E5',
+                      borderRadius: '2px',
+                    }}
+                  />
+                </ListItemIcon>
+                <ListItemText primary="Licensed" />
+              </ListItem>
+            </List>
           </Box>
 
-          <List dense>
-            <ListItem key="logged-in users" disableGutters>
-              <ListItemIcon sx={{ minWidth: 24 }}>
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    bgcolor: '#00AEEF',
-                    borderRadius: '2px',
-                  }}
-                />
-              </ListItemIcon>
-              <ListItemText primary="Logged-in users" />
-            </ListItem>
-            <ListItem key="licensed users" disableGutters>
-              <ListItemIcon sx={{ minWidth: 24 }}>
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    bgcolor: '#E5E5E5',
-                    borderRadius: '2px',
-                  }}
-                />
-              </ListItemIcon>
-              <ListItemText primary="Licensed" />
-            </ListItem>
-          </List>
+          <Box flex={3} gap={2}>
+            <Typography
+              variant="h1"
+              fontWeight="bold"
+              sx={{ fontSize: '54px' }}
+            >
+              {loggedInPercentage}%
+            </Typography>
+            <Typography variant="body1" color="textSecondary">
+              have logged in
+            </Typography>
+          </Box>
         </Box>
-
-        <Box flex={3} gap={2}>
-          <Typography variant="h1" fontWeight="bold" sx={{ fontSize: '54px' }}>
-            {loggedInPercentage}%
-          </Typography>
-          <Typography variant="body1" color="textSecondary">
-            have logged in
-          </Typography>
-        </Box>
-      </Box>
+      )}
     </CardWrapper>
   );
 };

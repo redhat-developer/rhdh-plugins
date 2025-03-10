@@ -40,6 +40,7 @@ import {
 } from '../../utils/utils';
 import { useActiveUsers } from '../../hooks/useActiveUsers';
 import { Typography } from '@material-ui/core';
+import ExportCSVButton from './ExportCSVButton';
 
 const ActiveUsers = () => {
   const theme = useTheme();
@@ -48,8 +49,23 @@ const ActiveUsers = () => {
   const { activeUsers, loading } = useActiveUsers();
   const { data, grouping = 'daily' } = activeUsers;
 
+  if (!data || data?.length === 0 || (!data?.[0] && !loading)) {
+    return (
+      <CardWrapper title="Active users">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={200}
+        >
+          <Typography>No data available</Typography>
+        </Box>
+      </CardWrapper>
+    );
+  }
+
   return (
-    <CardWrapper title="Active Users">
+    <CardWrapper title="Active Users" filter={<ExportCSVButton />}>
       {loading ? (
         <Box
           display="flex"

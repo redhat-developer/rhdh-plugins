@@ -71,6 +71,9 @@ const TableFooterPagination: React.FC<TableFooterPaginationProps> = ({
         slotProps={{
           select: {
             MenuProps: {
+              MenuListProps: {
+                autoFocusItem: false,
+              },
               PaperProps: {
                 sx: {
                   width: 190,
