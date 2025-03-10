@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-application-provider-test
 
+## 0.0.3
+
+### Patch Changes
+
+- 680ede5: Updated dependency `@mui/icons-material` to `5.16.14`.
+  Updated dependency `@mui/styles` to `5.16.14`.
+  Updated dependency `@mui/material` to `5.16.14`.
+  Updated dependency `@mui/styled-engine` to `5.16.14`.
+
 ## 0.0.2
 
 ### Patch Changes
