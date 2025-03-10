@@ -26,7 +26,6 @@ import { DynamicPackageInstallStatusProcessor } from './processors/DynamicPackag
 import { LocalPackageInstallStatusProcessor } from './processors/LocalPackageInstallStatusProcessor';
 import { MarketplacePackageProcessor } from './processors/MarketplacePackageProcessor';
 import { MarketplacePluginProvider } from './providers/MarketplacePluginProvider';
-import { MarketplaceCollectionProvider } from './providers/MarketplaceCollectionProvider';
 import { MarketplacePackageProvider } from './providers/MarketplacePackageProvider';
 
 /**
@@ -55,9 +54,10 @@ export const catalogModuleMarketplace = createBackendModule({
 
         catalog.addEntityProvider(new MarketplacePackageProvider(taskRunner));
         catalog.addEntityProvider(new MarketplacePluginProvider(taskRunner));
-        catalog.addEntityProvider(
-          new MarketplaceCollectionProvider(taskRunner),
-        );
+        // Disabling the collection provider as collections/all.yaml is already commented in RHDH 1.5 image.
+        // catalog.addEntityProvider(
+        //   new MarketplaceCollectionProvider(taskRunner),
+        // );
         catalog.addProcessor(new MarketplacePluginProcessor());
         catalog.addProcessor(new MarketplaceCollectionProcessor());
         catalog.addProcessor(new LocalPackageInstallStatusProcessor());
