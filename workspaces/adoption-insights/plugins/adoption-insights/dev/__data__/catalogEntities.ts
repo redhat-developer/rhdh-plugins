@@ -13,55 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+export const generateCatalogEntitiesData = (n: number): any[] => {
+  const kinds = ['Component', 'API', 'System', 'Resource'];
+  const names = ['devhub', 'hg-dev-hub-starter', 'netbox', 'sample-plugin'];
+  const namespaces = ['default', 'internal', 'external'];
+
+  return Array.from({ length: n }, (_, i) => ({
+    plugin_id: (i + 1).toString(),
+    name: names[i % names.length],
+    kind: kinds[i % kinds.length],
+    last_used: new Date(
+      Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 10,
+    ).toISOString(),
+    count: Math.floor(Math.random() * 3000),
+    namespace: namespaces[i % namespaces.length],
+  }));
+};
+
 export default {
-  data: [
-    {
-      plugin_id: '1',
-      name: 'devhub',
-      kind: 'Component',
-      last_used: '2025-03-06T06:25:16.708Z',
-      count: 2233,
-      namespace: 'default',
-    },
-    {
-      plugin_id: '2',
-      name: 'hg-dev-hub-starter',
-      kind: 'Component',
-      last_used: '2025-03-05T06:25:16.708Z',
-      count: 1974,
-      namespace: 'default',
-    },
-    {
-      plugin_id: '3',
-      name: 'netbox',
-      kind: 'API',
-      last_used: '2025-03-04T06:25:16.708Z',
-      count: 1863,
-      namespace: 'default',
-    },
-    {
-      plugin_id: '4',
-      name: 'devhub',
-      kind: 'Component',
-      last_used: '2025-03-01T06:25:16.708Z',
-      count: 2233,
-      namespace: 'default',
-    },
-    {
-      plugin_id: '5',
-      name: 'hg-dev-hub-starter',
-      kind: 'Component',
-      last_used: '2025-03-06T06:25:16.708Z',
-      count: 1974,
-      namespace: 'default',
-    },
-    {
-      plugin_id: '6',
-      name: 'netbox',
-      kind: 'API',
-      last_used: '2025-03-06T06:25:16.708Z',
-      count: 1863,
-      namespace: 'default',
-    },
-  ],
+  data: generateCatalogEntitiesData(9),
 };

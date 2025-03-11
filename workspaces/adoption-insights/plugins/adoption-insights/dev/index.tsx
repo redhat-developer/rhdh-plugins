@@ -66,7 +66,9 @@ export class MockAdoptionInsightsApiClient implements AdoptionInsightsApi {
   async getUsers(_options: APIsViewOptions): Promise<UsersResponse> {
     return mockUsers;
   }
-  async downloadBlob(_options: APIsViewOptions): Promise<void> {}
+  async downloadBlob(_options: APIsViewOptions): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 createDevApp()

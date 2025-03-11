@@ -59,63 +59,47 @@ export const getDateRange = (value: string) => {
 };
 
 export const getXAxisTickValues = (data: any, grouping: string): string[] => {
-  if (!data) return [];
-  if (data.length === 0) return [];
-  if (data.length === 1) return [data[0].date];
-  if (data.length === 2) return [data[0].date, data[1].date];
+  if (!data || data.length === 0) return [];
+  if (data.length <= 2) return data.map((d: { date: string }) => d.date);
 
   const first = data[0].date;
   const last = data[data.length - 1].date;
   const selectedDates: string[] = [];
 
+  const processGrouping = (unitExtractor: (date: string) => number) => {
+    const selectedUnits = new Set<number>([
+      unitExtractor(first),
+      unitExtractor(last),
+    ]);
+
+    if (data.length <= 4) {
+      data.forEach((d: { date: string }) => {
+        const unit = unitExtractor(d.date);
+        if (!selectedUnits.has(unit)) {
+          selectedUnits.add(unit);
+          selectedDates.push(d.date);
+        }
+      });
+    } else if (data.length === 6) {
+      selectedDates.push(data[2].date);
+      selectedDates.push(data[3].date);
+    } else if (data.length === 9) {
+      selectedDates.push(data[3].date);
+      selectedDates.push(data[5].date);
+    } else {
+      const intervals = [];
+      if (data.length !== 5) {
+        intervals.push(Math.floor((data.length - 1) / 3));
+      }
+      intervals.push(Math.floor(((data.length - 1) * 2) / 3));
+      intervals.forEach(i => selectedDates.push(data[i].date));
+    }
+  };
+
   if (grouping === 'daily' || grouping === 'weekly') {
-    const selectedUnits = new Set<number>();
-
-    if (data.length <= 4) {
-      data.forEach((d: { date: string }) => {
-        const weekDay = new Date(d.date).getDate();
-        if (!selectedUnits.has(weekDay)) {
-          selectedUnits.add(weekDay);
-          selectedDates.push(d.date);
-        }
-      });
-    } else if (data.length === 6) {
-      selectedDates.push(data[2].date, data[3].date);
-    } else if (data.length === 9) {
-      selectedDates.push(data[3].date, data[5].date);
-    } else {
-      const interval = Math.floor((data.length - 1) / 3);
-      if (data.length !== 5) {
-        selectedDates.push(data[interval].date);
-      }
-      selectedDates.push(data[interval * 2].date);
-    }
-  }
-
-  if (grouping === 'monthly') {
-    const selectedMonths = new Set<number>();
-    selectedMonths.add(new Date(first).getMonth());
-    selectedMonths.add(new Date(last).getMonth());
-
-    if (data.length <= 4) {
-      data.forEach((d: { date: string }) => {
-        const month = new Date(d.date).getMonth();
-        if (!selectedMonths.has(month)) {
-          selectedMonths.add(month);
-          selectedDates.push(d.date);
-        }
-      });
-    } else if (data.length === 6) {
-      selectedDates.push(data[2].date, data[3].date); // Fix: Always include indexes 2 and 3
-    } else if (data.length === 9) {
-      selectedDates.push(data[3].date, data[5].date);
-    } else {
-      const interval = Math.floor((data.length - 1) / 3);
-      if (data.length !== 5) {
-        selectedDates.push(data[interval].date);
-      }
-      selectedDates.push(data[interval * 2].date);
-    }
+    processGrouping(date => new Date(date).getDate());
+  } else if (grouping === 'monthly') {
+    processGrouping(date => new Date(date).getMonth());
   }
 
   return [first, ...selectedDates, last];
