@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,43 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { EntityOrderQuery } from '@backstage/catalog-client/index';
+
 import {
   EntityFilterQuery,
-  GetPluginsRequest,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+  EntityOrderQuery,
+  GetEntityFacetsRequest,
+} from '@backstage/catalog-client';
 
-/**
- * @public
- */
-export const encodeFilterParams = (filter: EntityFilterQuery) => {
+import { GetEntitiesRequest } from '../api';
+
+export const encodeEntityFilterQuery = (filter: EntityFilterQuery) => {
   const params = new URLSearchParams();
 
   Object.entries(filter).forEach(([key, value]) => {
     const values = Array.isArray(value) ? value : [value];
-
     values.forEach(v => {
-      params.append(
-        'filter',
-        `${encodeURIComponent(key)}=${encodeURIComponent(v)}`,
-      );
+      params.append('filter', `${key}=${v}`);
     });
   });
 
   return params;
 };
 
-/**
- * @public
- */
-export const encodeOrderFieldsParams = (orderFields: EntityOrderQuery) => {
+export const encodeEntityOrderQuery = (orderFields: EntityOrderQuery) => {
   const params = new URLSearchParams();
   if (Array.isArray(orderFields)) {
     orderFields.forEach(({ field, order }) => {
-      params.append(
-        'orderFields',
-        `${encodeURIComponent(field)},${encodeURIComponent(order)}`,
-      );
+      params.append('orderFields', `${field},${order}`);
     });
   } else {
     const { field, order } = orderFields;
@@ -61,28 +51,36 @@ export const encodeOrderFieldsParams = (orderFields: EntityOrderQuery) => {
 /**
  * @public
  */
-export const encodeGetPluginsQueryParams = (
-  options?: GetPluginsRequest,
+export const encodeGetEntitiesRequest = (
+  request: GetEntitiesRequest,
 ): URLSearchParams => {
   const params = new URLSearchParams();
-  const { searchTerm, limit, offset, orderFields, filter } = options || {};
-  if (limit) {
-    params.append('limit', String(limit));
+  if (!request) {
+    return params;
   }
-  if (offset) {
-    params.append('offset', String(offset));
+  if (request.fields) {
+    request.fields.forEach(field => params.append('field', field));
   }
-  if (searchTerm) {
-    params.append('searchTerm', encodeURIComponent(searchTerm));
+  if (request.limit) {
+    params.append('limit', String(request.limit));
   }
-  if (orderFields) {
-    encodeOrderFieldsParams(orderFields).forEach((value, key) => {
-      params.append(key, value);
-    });
+  if (request.offset) {
+    params.append('offset', String(request.offset));
   }
-  if (filter) {
-    encodeFilterParams(filter).forEach((value, key) =>
+  if (request.filter) {
+    encodeEntityFilterQuery(request.filter).forEach((value, key) =>
       params.append(key, value),
+    );
+  }
+  if (request.orderFields) {
+    encodeEntityOrderQuery(request.orderFields).forEach((value, key) =>
+      params.append(key, value),
+    );
+  }
+  if (request.fullTextFilter?.term) {
+    params.append('fullTextTerm', request.fullTextFilter.term);
+    request.fullTextFilter.fields?.forEach(field =>
+      params.append('fullTextFields', field),
     );
   }
   return params;
@@ -91,34 +89,20 @@ export const encodeGetPluginsQueryParams = (
 /**
  * @public
  */
-export const encodeFacetParams = (facets: string[]) => {
+export const encodeGetEntityFacetsRequest = (
+  request: GetEntityFacetsRequest,
+) => {
   const params = new URLSearchParams();
-  facets.forEach(f => params.append('facet', encodeURIComponent(f)));
+  if (!request) {
+    return params;
+  }
+  if (request.facets) {
+    request.facets.forEach(facet => params.append('facet', facet));
+  }
+  if (request.filter) {
+    encodeEntityFilterQuery(request.filter).forEach((value, key) =>
+      params.append(key, value),
+    );
+  }
   return params;
-};
-
-/**
- * @public
- */
-export const encodeQueryParams = (options?: {
-  filter?: EntityFilterQuery;
-  facets?: string[];
-}) => {
-  const params = new URLSearchParams();
-
-  const { filter, facets } = options || {};
-
-  if (filter) {
-    encodeFilterParams(filter).forEach((value, key) =>
-      params.append(key, value),
-    );
-  }
-
-  if (facets) {
-    encodeFacetParams(facets).forEach((value, key) =>
-      params.append(key, value),
-    );
-  }
-
-  return params.toString();
 };

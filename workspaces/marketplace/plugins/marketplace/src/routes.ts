@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,62 @@ export const rootRouteRef = createRouteRef({
   id: 'marketplace',
 });
 
-export const detailsRouteRef = createSubRouteRef({
-  id: 'details-page',
+export const pluginsRouteRef = createSubRouteRef({
+  id: 'marketplace/plugins',
+  path: '/plugins',
   parent: rootRouteRef,
-  path: '/:name',
 });
 
-export const installRouteRef = createSubRouteRef({
-  id: 'install-page',
+export const pluginRouteRef = createSubRouteRef({
+  id: 'marketplace/plugin',
+  path: '/plugins/:namespace/:name',
   parent: rootRouteRef,
-  path: '/:name/install',
 });
+
+export const pluginInstallRouteRef = createSubRouteRef({
+  id: 'marketplace/plugin/install',
+  path: '/plugins/:namespace/:name/install',
+  parent: rootRouteRef,
+});
+
+export const packagesRouteRef = createSubRouteRef({
+  id: 'marketplace/packages',
+  path: '/packages',
+  parent: rootRouteRef,
+});
+
+export const packageRouteRef = createSubRouteRef({
+  id: 'marketplace/package',
+  path: '/packages/:namespace/:name',
+  parent: rootRouteRef,
+});
+
+export const packageInstallRouteRef = createSubRouteRef({
+  id: 'marketplace/package/install',
+  path: '/packages/:namespace/:name/install',
+  parent: rootRouteRef,
+});
+
+export const collectionsRouteRef = createSubRouteRef({
+  id: 'marketplace/collections',
+  path: '/collections',
+  parent: rootRouteRef,
+});
+
+export const collectionRouteRef = createSubRouteRef({
+  id: 'marketplace/collection',
+  path: '/collections/:namespace/:name',
+  parent: rootRouteRef,
+});
+
+export const allRoutes = {
+  rootRouteRef,
+  pluginsRouteRef,
+  pluginRouteRef,
+  pluginInstallRouteRef,
+  packagesRouteRef,
+  packageRouteRef,
+  packageInstallRouteRef,
+  collectionsRouteRef,
+  collectionRouteRef,
+};

@@ -26,11 +26,19 @@ import Typography from '@mui/material/Typography';
 import { lighten } from '@mui/material/styles';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
-import { ComponentType } from '../../types';
 import { MenuSection } from './MenuSection';
 import { useDropdownManager } from '../../hooks';
+import Box from '@mui/material/Box';
 
-export const ProfileDropdown = () => {
+/**
+ * @public
+ * Props for Profile Dropdown
+ */
+export interface ProfileDropdownProps {
+  layout?: React.CSSProperties;
+}
+
+export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
 
   const identityApi = useApi(identityApiRef);
@@ -70,7 +78,6 @@ export const ProfileDropdown = () => {
     return (profileDropdownMountPoints ?? [])
       .map(mp => ({
         Component: mp.Component,
-        type: mp.config?.type ?? ComponentType.LINK,
         icon: mp.config?.props?.icon ?? '',
         label: mp.config?.props?.title ?? '',
         link: mp.config?.props?.link ?? '',
@@ -86,19 +93,25 @@ export const ProfileDropdown = () => {
   return (
     <HeaderDropdownComponent
       buttonContent={
-        <>
-          <AccountCircleOutlinedIcon fontSize="small" sx={{ mx: 1 }} />
-          <Typography variant="body2" sx={{ fontWeight: 500, mx: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
+          <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
+          <Typography
+            variant="body2"
+            sx={{
+              display: { xs: 'none', md: 'block' },
+              fontWeight: 500,
+              mr: '1rem',
+            }}
+          >
             {user?.displayName ?? 'Guest'}
           </Typography>
           <KeyboardArrowDownOutlinedIcon
             sx={{
-              marginLeft: '1rem',
               bgcolor: bgColor,
               borderRadius: '25%',
             }}
           />
-        </>
+        </Box>
       }
       buttonProps={{
         color: 'inherit',

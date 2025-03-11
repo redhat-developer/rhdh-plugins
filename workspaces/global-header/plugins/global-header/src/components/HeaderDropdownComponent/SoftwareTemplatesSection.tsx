@@ -26,7 +26,6 @@ import Typography from '@mui/material/Typography';
 
 import { MenuSection } from './MenuSection';
 import { MenuItemLink } from '../MenuItemLink/MenuItemLink';
-import { ComponentType } from '../../types';
 
 /**
  * Software Templates Section properties
@@ -72,7 +71,6 @@ export const SoftwareTemplatesSection = ({
       .filter(e => e.kind === 'Template')
       .map(m => ({
         Component: MenuItemLink as React.ComponentType,
-        type: ComponentType.LINK,
         label: m.metadata.title ?? m.metadata.name,
         link: `/create/templates/default/${m.metadata.name}`,
       }));

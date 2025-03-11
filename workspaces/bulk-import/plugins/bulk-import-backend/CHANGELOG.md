@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 5.4.0
+
+### Minor Changes
+
+- 95b14e6: Backstage version bump to v1.36.1
+
+### Patch Changes
+
+- Updated dependencies [95b14e6]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.6.0
+
 ## 5.3.0
 
 ### Minor Changes

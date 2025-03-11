@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,11 +93,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
-        <SidebarItem
-          icon={MarketplaceIcon}
-          to="marketplace"
-          text="Marketplace"
-        />
+        <SidebarItem icon={MarketplaceIcon} to="extensions" text="Extensions" />
         {/* End global nav */}
         <SidebarDivider />
         <SidebarScrollWrapper>

@@ -11,9 +11,28 @@ import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
 import { DiscoveryService } from '@backstage/backend-plugin-api';
 import { Entity } from '@backstage/catalog-model';
+import { EntityProvider } from '@backstage/plugin-catalog-node';
+import { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
+import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
+
+// @public (undocumented)
+export abstract class BaseEntityProvider<T extends Entity> implements EntityProvider {
+    constructor(taskRunner: SchedulerServiceTaskRunner);
+    // (undocumented)
+    connect(connection: EntityProviderConnection): Promise<void>;
+    // (undocumented)
+    getEntities(allEntities: JsonFileData<T>[]): T[];
+    // (undocumented)
+    abstract getKind(): string;
+    // (undocumented)
+    abstract getProviderName(): string;
+    // (undocumented)
+    run(): Promise<void>;
+}
 
 // @public (undocumented)
 export type CachedData = {
@@ -27,7 +46,7 @@ const catalogModuleMarketplace: BackendFeature;
 export default catalogModuleMarketplace;
 
 // @public (undocumented)
-export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
+export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     constructor(discovery: DiscoveryService, auth: AuthService);
     // (undocumented)
     getCachedPlugins(cache: CatalogProcessorCache, entityRef: string): Promise<CachedData>;
@@ -36,20 +55,42 @@ export class DynamicPluginInstallStatusProcessor implements CatalogProcessor {
     // (undocumented)
     getProcessorName(): string;
     // (undocumented)
-    preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec, cache: CatalogProcessorCache): Promise<MarketplacePlugin>;
+    preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec, cache: CatalogProcessorCache): Promise<Entity>;
 }
 
 // @public (undocumented)
-export class LocalPluginInstallStatusProcessor implements CatalogProcessor {
+export type JsonFileData<T> = {
+    filePath: string;
+    content: T;
+};
+
+// @public (undocumented)
+export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
     constructor(paths?: string[]);
     // (undocumented)
     findWorkspacesPath(startPath?: string): string;
     // (undocumented)
     getProcessorName(): string;
     // (undocumented)
-    isJSON(str: string): boolean;
+    preProcessEntity(entity: MarketplacePackage): Promise<MarketplacePackage>;
+}
+
+// @public (undocumented)
+export class MarketplaceCollectionProcessor implements CatalogProcessor {
     // (undocumented)
-    preProcessEntity(entity: MarketplacePlugin): Promise<Entity>;
+    getProcessorName(): string;
+    // (undocumented)
+    postProcessEntity(entity: Entity, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
+    // (undocumented)
+    validateEntityKind(entity: Entity): Promise<boolean>;
+}
+
+// @public (undocumented)
+export class MarketplaceCollectionProvider extends BaseEntityProvider<MarketplaceCollection> {
+    // (undocumented)
+    getKind(): string;
+    // (undocumented)
+    getProviderName(): string;
 }
 
 // @public (undocumented)
@@ -63,13 +104,11 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
 }
 
 // @public (undocumented)
-export class MarketplacePluginListProcessor implements CatalogProcessor {
+export class MarketplacePackageProvider extends BaseEntityProvider<MarketplacePackage> {
     // (undocumented)
-    getProcessorName(): string;
+    getKind(): string;
     // (undocumented)
-    postProcessEntity(entity: Entity, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
-    // (undocumented)
-    validateEntityKind(entity: Entity): Promise<boolean>;
+    getProviderName(): string;
 }
 
 // @public (undocumented)
@@ -80,6 +119,14 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
     postProcessEntity(entity: MarketplacePlugin, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
     // (undocumented)
     validateEntityKind(entity: Entity): Promise<boolean>;
+}
+
+// @public (undocumented)
+export class MarketplacePluginProvider extends BaseEntityProvider<MarketplacePlugin> {
+    // (undocumented)
+    getKind(): string;
+    // (undocumented)
+    getProviderName(): string;
 }
 
 ```

@@ -1,24 +1,23 @@
 workspace=marketplace
 
-# This variables defines the showcase and dynamic-plugins-root paths.
+# This variables defines the rhdh and dynamic-plugins-root paths.
 #
-# The default expects that you have this redhat-developer/rhdh-plugins
-# repo and janus-idp/backstage-showcase repo side by side incl. the
-# org structure.
+# The default expects that you have this rhdh-plugins and the rhdh
+# repo are cloned close to each other.
 #
 # If you don't have the org structure locally you can override this
 # with make arguments like this:
 #
-#   make showcase=../../../backstage-showcase <command like copy>
+#   make rhdh=../../../rhdh <command like copy>
 #
 # Or use an absolute path:
 #
-#   make showcase=~/git/backstage-showcase <command like copy>
-showcase=../../../../janus-idp/backstage-showcase
+#   make rhdh=~/git/rhdh <command like copy>
+rhdh=../../../rhdh
 
 # The dynamic-plugins-root has two more ../.. because it's relative
 # to the plugins/* folders
-dproot=../../${showcase}/dynamic-plugins-root
+dproot=../../${rhdh}/dynamic-plugins-root
 
 clean=true
 
@@ -31,40 +30,40 @@ fix:
 	yarn tsc:full
 	yarn build:api-reports:only
 
-add-to-showcase: add-frontend-to-showcase add-backend-to-showcase add-catalog-modules-to-showcase copy-config-to-showcase
+add-to-rhdh: add-frontend-to-rhdh add-backend-to-rhdh add-catalog-modules-to-rhdh copy-config-to-rhdh
 
-add-frontend-to-showcase:
+add-frontend-to-rhdh:
 	@echo
-	@echo Will build and install ${workspace} frontend into ${showcase}
+	@echo Will build and install ${workspace} frontend into ${rhdh}
 	@echo
 	cd plugins/marketplace && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
 
-add-backend-to-showcase:
+add-backend-to-rhdh:
 	@echo
-	@echo Will build and install ${workspace} backend into ${showcase}
+	@echo Will build and install ${workspace} backend into ${rhdh}
 	@echo
 	cd plugins/marketplace-backend && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
 
-add-catalog-modules-to-showcase:
+add-catalog-modules-to-rhdh:
 	@echo
-	@echo Will build and install catalog modules into ${showcase}
+	@echo Will build and install catalog modules into ${rhdh}
 	@echo
 	cd plugins/catalog-backend-module-marketplace && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}" --embed-package "@red-hat-developer-hub/backstage-plugin-marketplace-common"
 
-copy-config-to-showcase:
+copy-config-to-rhdh:
 	@echo
-	@echo Copy app-config.dynamic.yaml into ${showcase}
+	@echo Copy app-config.dynamic.yaml into ${rhdh}
 	@echo
-	cp app-config.dynamic.yaml "${showcase}/app-config-marketplace.local.yaml"
+	cp app-config.dynamic.yaml "${rhdh}/app-config-marketplace.local.yaml"
 	@echo
-	@echo You can start your showcase now with
+	@echo You can start your rhdh now with
 	@echo
 	@echo yarn dev
 	@echo
 
-remove-from-showcase:
+remove-from-rhdh:
 	@echo
-	@echo Remove packages from ${showcase}
+	@echo Remove packages from ${rhdh}
 	@echo
 	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-marketplace"
 	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic"

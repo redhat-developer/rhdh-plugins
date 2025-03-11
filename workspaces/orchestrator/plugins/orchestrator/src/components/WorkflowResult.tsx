@@ -93,14 +93,27 @@ const ResultMessage = ({
 
   if (error) {
     // The resultMessage won't be displayed even if it's defined when there's an error.
-    statusComponent = (
-      <Box sx={{ width: '100%' }}>
-        <Alert severity="error">
-          <AlertTitle>Run has failed</AlertTitle>
-          {errorMessage}
-        </Alert>
-      </Box>
-    );
+
+    if (status === ProcessInstanceStatusDTO.Completed) {
+      // we are receiving confusing data from the backend - Completed but with error message
+      statusComponent = (
+        <Box sx={{ width: '100%' }}>
+          <Alert severity="warning">
+            <AlertTitle>Run completed with message</AlertTitle>
+            {errorMessage}
+          </Alert>
+        </Box>
+      );
+    } else {
+      statusComponent = (
+        <Box sx={{ width: '100%' }}>
+          <Alert severity="error">
+            <AlertTitle>Run has failed</AlertTitle>
+            {errorMessage}
+          </Alert>
+        </Box>
+      );
+    }
   } else if (!error && resultMessage) {
     statusComponent = (
       <Box sx={{ width: '100%' }}>

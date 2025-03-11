@@ -15,52 +15,11 @@
  */
 
 /**
- * Component
- *
- * @public
- */
-export enum ComponentType {
-  /**
-   * Global Header spacer
-   */
-  SPACER = 'spacer',
-  /**
-   * Global Header support button
-   */
-  SUPPORT_BUTTON = 'support_button',
-  /**
-   * Global Header Component dropdown button
-   */
-  DROPDOWN_BUTTON = 'dropdown_button',
-  /**
-   * Global Header Component icon button
-   */
-  ICON_BUTTON = 'icon_button',
-  /**
-   * Global Header Component link
-   */
-  LINK = 'link',
-  /**
-   * Global Header Component list
-   */
-  LIST = 'list',
-  /**
-   * Global Header Component search
-   */
-  SEARCH = 'search',
-  /**
-   * Global Header Component logout
-   */
-  LOGOUT = 'logout',
-}
-
-/**
  * Global Header Config
  *
  * @public
  */
 export interface GlobalHeaderComponentMountPointConfig {
-  type?: ComponentType;
   priority?: number;
 }
 
@@ -70,7 +29,6 @@ export interface GlobalHeaderComponentMountPointConfig {
  * @public
  */
 export interface CreateDropdownMountPointConfig {
-  type: ComponentType;
   priority?: number;
   props?: Record<string, any>;
 }
@@ -80,7 +38,6 @@ export interface CreateDropdownMountPointConfig {
  * @public
  */
 export interface ProfileDropdownMountPointConfig {
-  type: ComponentType;
   priority?: number;
   icon?: string;
   title?: string;
@@ -94,10 +51,12 @@ export interface ProfileDropdownMountPointConfig {
  * @public
  */
 export interface GlobalHeaderComponentMountPoint {
-  Component: React.ComponentType<{}>;
+  Component: React.ComponentType<{
+    layout?: React.CSSProperties;
+  }>;
   config?: GlobalHeaderComponentMountPointConfig & {
-    layout?: Record<string, any>;
     props?: Record<string, any>;
+    layout?: React.CSSProperties;
   };
 }
 

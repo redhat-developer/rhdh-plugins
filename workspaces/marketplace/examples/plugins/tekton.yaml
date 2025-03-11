@@ -1,17 +1,20 @@
-apiVersion: marketplace.backstage.io/v1alpha1
+# yaml-language-server: $schema=../../json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: tekton
   title: Pipelines with Tekton
   description: Easily view Tekton PipelineRun status for your services in Backstage.
+  links:
+    - url: https://tekton.dev
+      title: Tekton
 spec:
-  type: frontend-plugin
+  icon: https://janus-idp.io/images/plugins/tekton.svg
+  developer: Red Hat
   lifecycle: production
   owner: redhat
   categories:
     - CI/CD
-  developer: Red Hat
-  icon: https://janus-idp.io/images/plugins/tekton.svg
   description: |
     # Tekton plugin for Backstage
 

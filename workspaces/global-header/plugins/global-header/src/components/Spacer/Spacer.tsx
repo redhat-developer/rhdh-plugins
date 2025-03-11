@@ -22,17 +22,23 @@ import React from 'react';
 export interface SpacerProps {
   growFactor?: number;
   minWidth?: number | string;
+  layout?: React.CSSProperties;
 }
 
 /**
  * @public
  */
-export const Spacer = ({ growFactor = 1, minWidth = 1 }: SpacerProps) => {
+export const Spacer = ({
+  growFactor = 1,
+  minWidth = 1,
+  layout,
+}: SpacerProps) => {
   return (
     <div
       style={{
         flexGrow: growFactor,
         minWidth: typeof minWidth === 'number' ? minWidth * 8 : minWidth,
+        ...layout,
       }}
     />
   );

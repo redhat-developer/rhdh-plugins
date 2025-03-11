@@ -1,5 +1,77 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.2.1
+
+### Patch Changes
+
+- 08a15e5: Remove Filters text and divider
+
+## 0.2.0
+
+### Minor Changes
+
+- d3bcc76: rename apiVersion and annotations to extensions.backstage.io
+
+### Patch Changes
+
+- Updated dependencies [d3bcc76]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.2.0
+
+## 0.1.6
+
+### Patch Changes
+
+- a199551: fix typo
+- 0c578a7: fix drawer background color
+
+## 0.1.5
+
+### Patch Changes
+
+- 6f9686f: rename plugin/marketplace to extensions/catalog
+- 9073ab8: apply default sorting to filtered plugins api call
+
+## 0.1.4
+
+### Patch Changes
+
+- c977dbc: fix mount points in app-config.dynamic.yaml
+
+## 0.1.3
+
+### Patch Changes
+
+- a7e38a9: remove core-plugin-api dependency from common
+- Updated dependencies [a7e38a9]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.1.2
+
+## 0.1.2
+
+### Patch Changes
+
+- fa70a22: remove unused knex and zod dependency from common package
+- Updated dependencies [fa70a22]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.1.1
+
+## 0.1.1
+
+### Patch Changes
+
+- 0e2f1ac: restore dynamic plugin export
+
+## 0.1.0
+
+### Minor Changes
+
+- d39d4e3: Initial tech-preview of the marketplace
+
+### Patch Changes
+
+- f16dd69: Refactore and update API, UI, and catalog types
+- Updated dependencies [d39d4e3]
+- Updated dependencies [f16dd69]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.1.0
+
 ## 0.0.9
 
 ### Patch Changes

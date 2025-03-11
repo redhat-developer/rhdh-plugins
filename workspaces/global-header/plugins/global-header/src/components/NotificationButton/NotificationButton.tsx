@@ -19,6 +19,7 @@ import React from 'react';
 import { Link as BackstageLink } from '@backstage/core-components';
 
 import Badge from '@mui/material/Badge';
+import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import NotificationIcon from '@mui/icons-material/NotificationsOutlined';
@@ -50,6 +51,7 @@ export interface NotificationButtonProps {
     | 'success'
     | 'warning';
   to?: string;
+  layout?: React.CSSProperties;
 }
 
 // Backstage Link automatically detects external links and emits analytic events.
@@ -67,6 +69,7 @@ export const NotificationButton = ({
   size = 'small',
   badgeColor = 'error',
   to = '/notifications',
+  layout,
 }: NotificationButtonProps) => {
   const { available, unreadCount } = useNotificationCount();
 
@@ -75,24 +78,26 @@ export const NotificationButton = ({
   }
 
   return (
-    <Tooltip title={tooltip ?? title}>
-      <div>
-        <IconButton
-          component={Link}
-          color={color}
-          size={size}
-          to={to}
-          aria-label={title}
-        >
-          {unreadCount > 0 ? (
-            <Badge badgeContent={unreadCount} color={badgeColor} max={999}>
+    <Box sx={layout}>
+      <Tooltip title={tooltip ?? title}>
+        <div>
+          <IconButton
+            component={Link}
+            color={color}
+            size={size}
+            to={to}
+            aria-label={title}
+          >
+            {unreadCount > 0 ? (
+              <Badge badgeContent={unreadCount} color={badgeColor} max={999}>
+                <NotificationIcon fontSize={size} />
+              </Badge>
+            ) : (
               <NotificationIcon fontSize={size} />
-            </Badge>
-          ) : (
-            <NotificationIcon fontSize={size} />
-          )}
-        </IconButton>
-      </div>
-    </Tooltip>
+            )}
+          </IconButton>
+        </div>
+      </Tooltip>
+    </Box>
   );
 };

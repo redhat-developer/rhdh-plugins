@@ -24,8 +24,8 @@ import Toolbar from '@mui/material/Toolbar';
 import { GlobalHeaderComponentMountPoint } from '../types';
 
 /**
- * @public
  * Global Header Component properties
+ * @public
  */
 export interface GlobalHeaderComponentProps {
   globalHeaderMountPoints: GlobalHeaderComponentMountPoint[];
@@ -53,7 +53,7 @@ export const GlobalHeaderComponent = ({
           <ErrorBoundary key={`header-component-${index}`}>
             <mountPoint.Component
               {...mountPoint.config?.props}
-              // sx={mountPoint.config.layout}
+              layout={mountPoint.config?.layout}
             />
           </ErrorBoundary>
         ))}

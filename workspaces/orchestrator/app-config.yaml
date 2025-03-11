@@ -147,7 +147,7 @@ orchestrator:
     # persistence:
     #  path: ./.devModeTemp/db_persistence # this will be under packages/backend
     workflowsSource:
-      gitRepositoryUrl: https://github.com/parodos-dev/backstage-orchestrator-workflows
+      gitRepositoryUrl: https://github.com/rhdhorchestrator/backstage-orchestrator-workflows.git
       localPath: ./.devModeTemp/repository # this will be under packages/backend
   dataIndexService:
     url: http://localhost:8899

@@ -523,12 +523,6 @@ spec:
           description: Result of a workflow execution
           type: object
           properties:
-            completedWith:
-              description: The state of workflow completion.
-              type: string
-              enum:
-                - error
-                - success
             message:
               description: High-level summary of the current status, free-form text, human readable.
               type: string

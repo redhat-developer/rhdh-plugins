@@ -6,5 +6,4 @@ metadata:
 spec:
   type: file
   targets:
-    - ./convertWorkflowToTemplate.yaml
-    #- ./yamlgreet.yaml
+    - ./yamlgreet.yaml

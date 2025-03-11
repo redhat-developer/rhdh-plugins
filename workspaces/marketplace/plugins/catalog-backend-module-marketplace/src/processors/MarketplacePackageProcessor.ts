@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,101 +30,13 @@ import {
   processingResult,
 } from '@backstage/plugin-catalog-node';
 import {
-  MARKETPLACE_API_VERSION,
-  MarketplaceKinds,
   MarketplacePackage,
+  MarketplaceKind,
+  isMarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-const packageJsonSchema = {
-  $schema: 'http://json-schema.org/draft-07/schema',
-  $id: 'PackageV1alpha1',
-  description:
-    'A Package describes a software component. It is typically intimately linked to the source code that constitutes the component, and should be what a developer may regard a "unit of software", usually with a distinct deployable or linkable artifact.',
-  allOf: [
-    {
-      type: 'object',
-      properties: {
-        apiVersion: {
-          type: 'string',
-          enum: ['marketplace.backstage.io/v1alpha1'],
-        },
-        kind: {
-          type: 'string',
-          enum: ['Package'],
-        },
-        metadata: {
-          type: 'object',
-          properties: {
-            name: {
-              type: 'string',
-            },
-            title: {
-              type: 'string',
-            },
-            description: {
-              type: 'string',
-            },
-            tags: {
-              type: 'array',
-              items: {
-                type: 'string',
-              },
-            },
-            labels: {
-              type: 'object',
-            },
-            annotations: {
-              type: 'object',
-            },
-          },
-          required: ['name'],
-        },
-        spec: {
-          type: 'object',
-          properties: {
-            type: {
-              type: 'string',
-            },
-            lifecycle: {
-              type: 'string',
-            },
-            owner: {
-              type: 'string',
-            },
-          },
-          // required: ['type', 'lifecycle', 'owner'],
-        },
-      },
-      required: ['apiVersion', 'kind', 'metadata', 'spec'],
-    },
-  ],
-  examples: [
-    {
-      apiVersion: {
-        enum: ['marketplace.backstage.io/v1alpha1'],
-      },
-      kind: {
-        enum: ['Package'],
-      },
-      metadata: {
-        name: 'testplugin',
-        title: 'Test Package',
-        description: 'Creates Lorems like a pro.',
-        labels: {
-          product_name: 'test-product',
-        },
-        annotations: {
-          docs: 'https://github.com/..../tree/develop/doc',
-        },
-      },
-      spec: {
-        type: 'frontend-plugin',
-        lifecycle: 'production',
-        owner: 'redhat',
-      },
-    },
-  ],
-};
+// eslint-disable-next-line @backstage/no-relative-monorepo-imports
+import packageJsonSchema from '../../../../json-schema/packages.json';
 
 /**
  * @public
@@ -132,7 +44,6 @@ const packageJsonSchema = {
 export class MarketplacePackageProcessor implements CatalogProcessor {
   private readonly validators = [entityKindSchemaValidator(packageJsonSchema)];
 
-  // Return processor name
   getProcessorName(): string {
     return 'MarketplacePackageProcessor';
   }
@@ -141,12 +52,13 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
   // engine that this entity is valid and should therefore be submitted for
   // further processing.
   async validateEntityKind(entity: Entity): Promise<boolean> {
-    for (const validator of this.validators) {
-      if (validator(entity)) {
-        return true;
+    if (isMarketplacePackage(entity)) {
+      for (const validator of this.validators) {
+        if (validator(entity)) {
+          return true;
+        }
       }
     }
-
     return false;
   }
 
@@ -155,54 +67,48 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
     _location: LocationSpec,
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
-    if (
-      entity.apiVersion === MARKETPLACE_API_VERSION &&
-      entity.kind === MarketplaceKinds.package
-    ) {
+    if (isMarketplacePackage(entity)) {
+      // Relation - OWNED_BY
       const thisEntityRef = getCompoundEntityRef(entity);
-      const target = entity?.spec?.owner;
-      if (target) {
-        const targetRef = parseEntityRef(target as string, {
+      if (entity?.spec?.owner) {
+        const ownerRef = parseEntityRef(entity?.spec?.owner, {
           defaultKind: 'Group',
-          defaultNamespace: thisEntityRef.namespace,
+          defaultNamespace: entity.metadata.namespace,
         });
-
-        // emit any relations associated with the entity here.
         emit(
           processingResult.relation({
             type: RELATION_OWNED_BY,
-            target: targetRef,
             source: thisEntityRef,
+            target: ownerRef,
           }),
         );
       }
 
-      const partOfPlugins = entity.spec?.partOf ?? [];
-
       // Relation - Plugins
-      partOfPlugins.forEach((plugin: string) => {
-        const pluginRef = parseEntityRef({
-          name: plugin,
-          kind: MarketplaceKinds.plugin,
+      if (entity.spec?.partOf && entity.spec.partOf.length > 0) {
+        entity.spec.partOf.forEach((pluginName: string) => {
+          const pluginRef = parseEntityRef(pluginName, {
+            defaultKind: MarketplaceKind.Plugin,
+            defaultNamespace: entity.metadata.namespace,
+          });
+          if (pluginRef) {
+            emit(
+              processingResult.relation({
+                type: RELATION_PART_OF,
+                source: thisEntityRef,
+                target: pluginRef,
+              }),
+            );
+            emit(
+              processingResult.relation({
+                type: RELATION_HAS_PART,
+                source: pluginRef,
+                target: thisEntityRef,
+              }),
+            );
+          }
         });
-        if (pluginRef) {
-          emit(
-            processingResult.relation({
-              type: RELATION_PART_OF,
-              target: pluginRef,
-              source: thisEntityRef,
-            }),
-          );
-
-          emit(
-            processingResult.relation({
-              type: RELATION_HAS_PART,
-              target: thisEntityRef,
-              source: pluginRef,
-            }),
-          );
-        }
-      });
+      }
     }
 
     return entity;

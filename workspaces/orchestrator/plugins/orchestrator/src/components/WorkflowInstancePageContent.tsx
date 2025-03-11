@@ -24,6 +24,7 @@ import {
   StructuredMetadataTable,
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
 
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import InfoIcon from '@material-ui/icons/Info';
@@ -32,6 +33,7 @@ import moment from 'moment';
 import {
   AssessedProcessInstanceDTO,
   InputSchemaResponseDTO,
+  orchestratorAdminViewPermission,
   ProcessInstanceDTO,
   WorkflowDataDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -76,8 +78,8 @@ const useStyles = makeStyles(() => ({
   }),
   bottomRowCard: {
     height: '42rem',
+    overflow: 'auto',
   },
-  autoOverflow: { overflow: 'auto' },
   recommendedLabelContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -91,7 +93,7 @@ const VariablesDialogContent = ({
 }: {
   instanceVariables: WorkflowDataDTO;
 }) => (
-  <Box sx={{ maxHeight: 300, width: 500, overflow: 'auto' }}>
+  <Box sx={{ maxHeight: 300, marginTop: 20, width: 500, overflow: 'auto' }}>
     {instanceVariables && (
       <StructuredMetadataTable dense metadata={instanceVariables} />
     )}
@@ -140,6 +142,28 @@ export const WorkflowInstancePageContent: React.FC<{
     setIsVariablesDialogOpen(prev => !prev);
   }, []);
 
+  const adminView = usePermission({
+    permission: orchestratorAdminViewPermission,
+  });
+
+  const viewVariables = adminView.allowed && (
+    <Link
+      to="#"
+      onClick={e => {
+        e.preventDefault();
+        toggleVariablesDialog();
+      }}
+    >
+      <Typography
+        variant="subtitle2"
+        component="div"
+        style={{ textAlign: 'right' }}
+      >
+        <b>View variables</b>
+      </Typography>
+    </Link>
+  );
+
   return (
     <Content noPadding>
       <InfoDialog
@@ -161,23 +185,7 @@ export const WorkflowInstancePageContent: React.FC<{
             title="Details"
             divider={false}
             className={styles.topRowCard}
-            icon={
-              <Link
-                to="#"
-                onClick={e => {
-                  e.preventDefault();
-                  toggleVariablesDialog();
-                }}
-              >
-                <Typography
-                  variant="subtitle2"
-                  component="div"
-                  style={{ textAlign: 'right' }}
-                >
-                  <b>View variables</b>
-                </Typography>
-              </Link>
-            }
+            icon={viewVariables}
           >
             <WorkflowRunDetails
               details={details}
@@ -187,20 +195,18 @@ export const WorkflowInstancePageContent: React.FC<{
         </Grid>
 
         <Grid item xs={6}>
-          <WorkflowInputs
+          <WorkflowResult
             className={styles.topRowCard}
-            cardClassName={styles.autoOverflow}
-            value={value}
-            loading={loading}
-            responseError={responseError}
+            assessedInstance={assessedInstance}
           />
         </Grid>
 
         <Grid item xs={6}>
-          <WorkflowResult
-            assessedInstance={assessedInstance}
+          <WorkflowInputs
             className={styles.bottomRowCard}
-            cardClassName={styles.autoOverflow}
+            value={value}
+            loading={loading}
+            responseError={responseError}
           />
         </Grid>
 
@@ -209,7 +215,6 @@ export const WorkflowInstancePageContent: React.FC<{
             title="Workflow progress"
             divider={false}
             className={styles.bottomRowCard}
-            cardClassName={styles.autoOverflow}
           >
             <WorkflowProgress
               workflowError={assessedInstance.instance.error}
