@@ -134,9 +134,15 @@ const Techdocs = () => {
                     {parseEntityRef(techdoc.entityRef)?.name}
                   </Link>
                 </TableCell>
-                <TableCell>{parseEntityRef(techdoc.entityRef)?.kind}</TableCell>
-                <TableCell>{getLastUsedDay(techdoc.last_used)}</TableCell>
-                <TableCell>{Number(techdoc.count).toLocaleString()}</TableCell>
+                <TableCell>
+                  {parseEntityRef(techdoc.entityRef)?.kind ?? '--'}
+                </TableCell>
+                <TableCell>
+                  {getLastUsedDay(techdoc.last_used) ?? '--'}
+                </TableCell>
+                <TableCell>
+                  {Number(techdoc.count).toLocaleString() ?? '--'}
+                </TableCell>
               </TableRow>
             ))
           )}

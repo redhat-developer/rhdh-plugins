@@ -133,7 +133,9 @@ const Templates = () => {
                     {parseEntityRef(template.entityRef).name}
                   </Link>
                 </TableCell>
-                <TableCell>{Number(template.count).toLocaleString()}</TableCell>
+                <TableCell>
+                  {Number(template.count).toLocaleString() ?? '--'}
+                </TableCell>
               </TableRow>
             ))
           )}

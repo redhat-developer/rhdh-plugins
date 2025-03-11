@@ -40,6 +40,18 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   endDate,
   setEndDate,
 }) => {
+  const startDateRef = React.useRef<HTMLInputElement | null>(null);
+  const endDateRef = React.useRef<HTMLInputElement | null>(null);
+
+  React.useEffect(() => {
+    if (!startDate && startDateRef.current) {
+      startDateRef.current.focus();
+    }
+    if (startDate && !endDate && endDateRef.current) {
+      endDateRef.current.focus();
+    }
+  }, [startDate, endDate]);
+
   const handleDateChange = (date: Date | null) => {
     if (!date) return;
 
@@ -117,7 +129,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box>
-        <Typography variant="h5" p={2} pb={0}>
+        <Typography variant="h5" p={2} pb={0} fontWeight="400">
           Date range
         </Typography>
         <Divider sx={{ mt: 2 }} />
@@ -132,7 +144,11 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
               value={startDate}
               onChange={handleStartDateChange}
               renderInput={params => (
-                <TextField {...params} sx={{ width: 172 }} />
+                <TextField
+                  {...params}
+                  sx={{ width: 172 }}
+                  inputRef={startDateRef}
+                />
               )}
               maxDate={new Date()}
               views={['day']}
@@ -145,7 +161,11 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
               value={endDate}
               onChange={handleEndDateChange}
               renderInput={params => (
-                <TextField {...params} sx={{ width: 172 }} />
+                <TextField
+                  {...params}
+                  sx={{ width: 172 }}
+                  inputRef={endDateRef}
+                />
               )}
               maxDate={new Date()}
               views={['day']}

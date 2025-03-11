@@ -112,12 +112,12 @@ describe('InsightsHeader', () => {
     expect(screen.getByText('Last year')).toBeInTheDocument();
   });
 
-  it('should open date range picker when "Date Range..." is clicked', async () => {
+  it('should open date range picker when "Date range..." is clicked', async () => {
     renderComponent();
     const select = screen.getByRole('combobox');
     await user.click(select);
 
-    const dateRangeOption = screen.getByText('Date Range...');
+    const dateRangeOption = screen.getByText('Date range...');
     await user.click(dateRangeOption);
 
     expect(screen.getByTestId('date-range-picker')).toBeInTheDocument();
@@ -140,7 +140,7 @@ describe('InsightsHeader', () => {
 
     const select = screen.getByRole('combobox');
     await user.click(select);
-    await user.click(screen.getByText('Date Range...'));
+    await user.click(screen.getByText('Date range...'));
 
     expect(screen.getByTestId('date-range-picker')).toBeInTheDocument();
 
@@ -156,7 +156,7 @@ describe('InsightsHeader', () => {
 
     const select = screen.getByRole('combobox');
     await user.click(select);
-    await user.click(screen.getByText('Date Range...'));
+    await user.click(screen.getByText('Date range...'));
 
     expect(screen.getByTestId('date-range-picker')).toBeInTheDocument();
   });

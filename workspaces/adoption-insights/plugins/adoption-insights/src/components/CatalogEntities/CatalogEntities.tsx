@@ -165,12 +165,16 @@ const CatalogEntities = () => {
                       },
                     }}
                   >
-                    {entity.name}
+                    {entity.name ?? '--'}
                   </Link>
                 </TableCell>
-                <TableCell>{entity.kind}</TableCell>
-                <TableCell>{getLastUsedDay(entity.last_used)}</TableCell>
-                <TableCell>{Number(entity.count).toLocaleString()}</TableCell>
+                <TableCell>{entity.kind ?? '--'}</TableCell>
+                <TableCell>
+                  {getLastUsedDay(entity.last_used) ?? '--'}
+                </TableCell>
+                <TableCell>
+                  {Number(entity.count).toLocaleString() ?? '--'}
+                </TableCell>
               </TableRow>
             ))
           )}

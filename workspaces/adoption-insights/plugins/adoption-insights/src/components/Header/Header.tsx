@@ -152,7 +152,7 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
             handleDateRangeClick(event);
           }}
         >
-          Date Range...
+          Date range...
         </MenuItem>
       </Select>
 

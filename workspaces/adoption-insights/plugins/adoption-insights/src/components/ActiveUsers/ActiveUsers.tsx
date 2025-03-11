@@ -65,7 +65,7 @@ const ActiveUsers = () => {
   }
 
   return (
-    <CardWrapper title="Active Users" filter={<ExportCSVButton />}>
+    <CardWrapper title="Active users" filter={<ExportCSVButton />}>
       {loading ? (
         <Box
           display="flex"

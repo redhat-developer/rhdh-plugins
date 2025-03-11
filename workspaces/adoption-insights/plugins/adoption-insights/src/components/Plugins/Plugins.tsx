@@ -125,21 +125,25 @@ const Plugins = () => {
                       },
                     }}
                   >
-                    {plugin.plugin_id}
+                    {plugin.plugin_id ?? '--'}
                   </Link>
                 </TableCell>
                 <TableCell>
-                  <ResponsiveContainer width={250} height={50}>
-                    <LineChart data={plugin.trend}>
-                      <Line
-                        type="monotone"
-                        dataKey="count"
-                        stroke="#9370DB"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {plugin.trend?.length > 0 ? (
+                    <ResponsiveContainer width={250} height={50}>
+                      <LineChart data={plugin.trend}>
+                        <Line
+                          type="monotone"
+                          dataKey="count"
+                          stroke="#9370DB"
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    '--'
+                  )}
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -154,7 +158,7 @@ const Plugins = () => {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  {Number(plugin.visit_count).toLocaleString()}
+                  {Number(plugin.visit_count).toLocaleString() ?? '--'}
                 </TableCell>
               </TableRow>
             ))
