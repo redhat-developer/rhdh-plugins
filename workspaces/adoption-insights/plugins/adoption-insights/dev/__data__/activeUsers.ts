@@ -16,7 +16,7 @@
 import { format, subDays, subMonths } from 'date-fns';
 
 export const generateDaysData = () => {
-  return Array.from({ length: 12 }, (_, i) => {
+  return Array.from({ length: 28 }, (_, i) => {
     const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
     const new_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
     const returning_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
@@ -37,6 +37,6 @@ export const generateMonthsData = () => {
 };
 
 export default {
-  grouping: 'daily',
-  data: generateDaysData(),
+  grouping: 'monthly',
+  data: generateMonthsData(),
 };

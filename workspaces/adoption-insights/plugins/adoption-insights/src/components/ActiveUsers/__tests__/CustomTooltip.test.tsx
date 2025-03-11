@@ -24,14 +24,14 @@ const mockPayload = [{ value: 10 }, { value: 5 }];
 describe('CustomTooltip Component', () => {
   it('should render tooltip with correct data when active', () => {
     const label = '2024-03-09T00:00:00.000Z';
-    const formattedDate = format(new Date(label), 'dd MMMM yyyy');
+    const formattedDate = format(new Date(label), 'MMMM, dd yyyy');
 
     render(<CustomTooltip active payload={mockPayload} label={label} />);
 
     expect(screen.getByText(formattedDate)).toBeInTheDocument();
-    expect(screen.getByText('Returning users:')).toBeInTheDocument();
+    expect(screen.getByText('Returning users')).toBeInTheDocument();
     expect(screen.getByText('10')).toBeInTheDocument();
-    expect(screen.getByText('New users:')).toBeInTheDocument();
+    expect(screen.getByText('New users')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
   });
 
@@ -44,7 +44,7 @@ describe('CustomTooltip Component', () => {
 
   it('should handle missing payload safely', () => {
     render(<CustomTooltip active payload={[]} label="" />);
-    expect(screen.queryByText('Returning users:')).not.toBeInTheDocument();
-    expect(screen.queryByText('New users:')).not.toBeInTheDocument();
+    expect(screen.queryByText('Returning users')).not.toBeInTheDocument();
+    expect(screen.queryByText('New users')).not.toBeInTheDocument();
   });
 });

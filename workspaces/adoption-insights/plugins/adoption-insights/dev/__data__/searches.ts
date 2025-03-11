@@ -13,17 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { format, subDays } from 'date-fns';
+import { format, subDays, subMonths } from 'date-fns';
 
 export const generateDaysData = () => {
-  return Array.from({ length: 28 }, (_, i) => {
+  return Array.from({ length: 12 }, (_, i) => {
     const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
     const count = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
     return { date, count };
   }).reverse();
 };
 
+export const generateMonthsData = () => {
+  return Array.from({ length: 12 }, (_, i) => {
+    const date = format(subMonths(new Date(), i), 'yyyy-MM-dd');
+    const count = Math.floor(Math.random() * (3000 - 1500 + 1)) + 1500;
+    return { date, count };
+  }).reverse();
+};
+
 export default {
-  grouping: 'daily',
-  data: generateDaysData(),
+  grouping: 'monthly',
+  data: generateMonthsData(),
 };

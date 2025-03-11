@@ -21,20 +21,15 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 
-import { CatalogEntities as CatalogEntitiesType } from '../../types';
-import { catalogEntityKinds } from '../../utils/utils';
-
 const FilterDropdown = ({
   selectedOption,
   handleChange,
-  catalogEntitiesData,
+  uniqueCatalogEntityKinds,
 }: {
   selectedOption: string;
   handleChange: (event: SelectChangeEvent<string>) => void;
-  catalogEntitiesData: CatalogEntitiesType[];
+  uniqueCatalogEntityKinds: string[];
 }) => {
-  const menuItems = catalogEntityKinds(catalogEntitiesData);
-
   return (
     <Box sx={{ m: 2, minWidth: 160 }}>
       <FormControl fullWidth>
@@ -53,7 +48,10 @@ const FilterDropdown = ({
             },
           }}
         >
-          {menuItems.map(kind => (
+          <MenuItem key="All" value="All">
+            All
+          </MenuItem>
+          {uniqueCatalogEntityKinds?.map(kind => (
             <MenuItem key={kind} value={kind}>
               {kind}
             </MenuItem>

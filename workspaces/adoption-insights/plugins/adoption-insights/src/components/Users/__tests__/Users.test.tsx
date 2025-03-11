@@ -47,7 +47,7 @@ describe('Users Component', () => {
     cleanup();
   });
 
-  it('should display "No data available" when users data is empty', () => {
+  it('should display "No results for this time range." when users data is empty', () => {
     (useUsers as jest.Mock).mockReturnValue({
       users: { data: [] },
       loading: false,
@@ -59,7 +59,9 @@ describe('Users Component', () => {
       </ThemeProvider>,
     );
 
-    expect(screen.getByText('No data available')).toBeInTheDocument();
+    expect(
+      screen.getByText('No results for this time range.'),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('card-wrapper')).toBeInTheDocument();
   });
 

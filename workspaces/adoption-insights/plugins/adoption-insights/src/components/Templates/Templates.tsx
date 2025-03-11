@@ -73,7 +73,7 @@ const Templates = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No data available</Typography>
+          <Typography>No results for this time range.</Typography>
         </Box>
       </CardWrapper>
     );
@@ -113,7 +113,7 @@ const Templates = () => {
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell>
+                <TableCell sx={{ width: '50%' }}>
                   <Link
                     component="a"
                     href={entityLink({
@@ -133,7 +133,7 @@ const Templates = () => {
                     {parseEntityRef(template.entityRef).name}
                   </Link>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '50%' }}>
                   {Number(template.count).toLocaleString() ?? '--'}
                 </TableCell>
               </TableRow>

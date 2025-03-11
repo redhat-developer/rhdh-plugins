@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import React from 'react';
+
 import {
   render,
   screen,
@@ -21,10 +22,10 @@ import {
   fireEvent,
   waitFor,
 } from '@testing-library/react';
+import '@testing-library/jest-dom';
+
 import { usePlugins } from '../../../hooks/usePlugins';
 import Plugins from '../Plugins';
-import { PLUGINS_TABLE_HEADERS } from '../../../utils/constants';
-import '@testing-library/jest-dom';
 
 // Mock the usePlugins hook
 jest.mock('../../../hooks/usePlugins', () => ({
@@ -74,7 +75,7 @@ describe('Plugins Component', () => {
     ],
   };
 
-  it('should render "No data available" when there is no data', () => {
+  it('should render "No results for this time range." when there is no data', () => {
     (usePlugins as jest.Mock).mockReturnValue({
       plugins: { data: [] },
       loading: false,
@@ -82,7 +83,9 @@ describe('Plugins Component', () => {
 
     render(<Plugins />);
 
-    expect(screen.getByText('No data available')).toBeInTheDocument();
+    expect(
+      screen.getByText('No results for this time range.'),
+    ).toBeInTheDocument();
   });
 
   it('should render table with plugin data', async () => {

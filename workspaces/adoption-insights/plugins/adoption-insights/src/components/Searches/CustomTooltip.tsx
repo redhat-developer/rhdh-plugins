@@ -17,6 +17,7 @@ import React from 'react';
 
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 import { format } from 'date-fns';
 
 const CustomTooltip = ({
@@ -34,25 +35,44 @@ const CustomTooltip = ({
       <Paper
         elevation={1}
         sx={{
-          padding: '8px',
-          boxShadow: 3,
+          padding: '12px 16px',
+          boxShadow: 4,
           borderRadius: 2,
           border: theme => `1px solid ${theme.palette.grey[300]}`,
+          backgroundColor: 'white',
         }}
       >
-        <Typography style={{ fontSize: '14px', margin: 0, fontWeight: '500' }}>
-          {format(date, 'MMMM yyyy')}
-        </Typography>
         <Typography
-          style={{ fontSize: '14px', fontWeight: '500', marginTop: '8px' }}
+          sx={{
+            fontSize: '14px',
+            fontWeight: 500,
+            marginBottom: '12px',
+          }}
         >
-          Searches:
+          {format(date, 'MMMM, dd yyyy')}
         </Typography>
-        <Typography
-          style={{ fontSize: '32px', fontWeight: '500', color: '#009596' }}
-        >
-          {payload[0]?.value}
-        </Typography>
+
+        <Box mr={3}>
+          <Typography
+            sx={{
+              fontSize: '14px',
+              fontWeight: 500,
+              color: '#6A6E73',
+            }}
+          >
+            Number of searches
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: '40px',
+              fontWeight: 500,
+              color: '#009596',
+              lineHeight: 1.2,
+            }}
+          >
+            {payload[0]?.value}
+          </Typography>
+        </Box>
       </Paper>
     );
   }

@@ -58,7 +58,7 @@ const ActiveUsers = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No data available</Typography>
+          <Typography>No results for this time range.</Typography>
         </Box>
       </CardWrapper>
     );

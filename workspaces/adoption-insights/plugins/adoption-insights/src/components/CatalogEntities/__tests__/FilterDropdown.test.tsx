@@ -18,45 +18,16 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 import FilterDropdown from '../FilterDropdown';
-import { catalogEntityKinds } from '../../../utils/utils';
-import { CatalogEntities } from '../../../types';
-
-jest.mock('../../../utils/utils', () => ({
-  catalogEntityKinds: jest.fn(),
-}));
 
 describe('FilterDropdown Component', () => {
   const mockHandleChange = jest.fn();
-
-  const mockCatalogEntities: CatalogEntities[] = [
-    {
-      plugin_id: 'plugin-1',
-      name: 'Component',
-      kind: 'Component',
-      namespace: 'default',
-      last_used: '2024-03-01',
-      count: 10,
-    },
-    {
-      plugin_id: 'plugin-2',
-      name: 'Service',
-      kind: 'Service',
-      namespace: 'default',
-      last_used: '2024-03-02',
-      count: 15,
-    },
-  ];
-
-  beforeEach(() => {
-    (catalogEntityKinds as jest.Mock).mockReturnValue(['Component', 'Service']);
-  });
 
   test('should render the dropdown with default value', () => {
     render(
       <FilterDropdown
         selectedOption=""
         handleChange={mockHandleChange}
-        catalogEntitiesData={mockCatalogEntities}
+        uniqueCatalogEntityKinds={['Kind', 'Component']}
       />,
     );
 
@@ -68,7 +39,7 @@ describe('FilterDropdown Component', () => {
       <FilterDropdown
         selectedOption=""
         handleChange={mockHandleChange}
-        catalogEntitiesData={mockCatalogEntities}
+        uniqueCatalogEntityKinds={['Component', 'Service']}
       />,
     );
 

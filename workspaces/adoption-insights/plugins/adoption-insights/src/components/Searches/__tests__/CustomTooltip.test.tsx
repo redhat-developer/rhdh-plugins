@@ -26,9 +26,9 @@ describe('CustomTooltip Component', () => {
   it('should render tooltip when active with correct data', () => {
     render(<CustomTooltip active payload={mockPayload} label={mockLabel} />);
 
-    const formattedDate = format(new Date(mockLabel), 'MMMM yyyy');
+    const formattedDate = format(new Date(mockLabel), 'MMMM, dd yyyy');
     expect(screen.getByText(formattedDate)).toBeInTheDocument();
-    expect(screen.getByText('Searches:')).toBeInTheDocument();
+    expect(screen.getByText('Number of searches')).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
   });
 
@@ -41,13 +41,13 @@ describe('CustomTooltip Component', () => {
 
   it('should handle empty payload safely', () => {
     render(<CustomTooltip active payload={[]} label={mockLabel} />);
-    expect(screen.queryByText('Searches:')).not.toBeInTheDocument();
+    expect(screen.queryByText('Number of searches')).not.toBeInTheDocument();
   });
 
   it('should render current month when label is missing', () => {
     render(<CustomTooltip active payload={mockPayload} />);
 
-    const currentDate = format(new Date(), 'MMMM yyyy');
+    const currentDate = format(new Date(), 'MMMM, dd yyyy');
     expect(screen.getByText(currentDate)).toBeInTheDocument();
   });
 });

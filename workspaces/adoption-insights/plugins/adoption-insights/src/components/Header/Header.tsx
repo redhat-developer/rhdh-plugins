@@ -91,7 +91,7 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
       return `${format(startDateRange, 'PP')} - ${format(endDateRange, 'PP')}`;
 
     const option = DATE_RANGE_OPTIONS.find(opt => opt.value === value);
-    return option ? option.label : 'All time';
+    return option ? option.label : 'Last 28 days';
   };
 
   return (

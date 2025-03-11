@@ -45,7 +45,7 @@ const Searches = () => {
   const isDarkMode = theme.palette.mode === 'dark';
 
   const { searches, loading } = useSearches();
-  const { grouping, data } = searches;
+  const { data, grouping = 'daily' } = searches;
 
   if (!data || data?.length === 0 || (!data?.[0] && !loading)) {
     return (
@@ -56,7 +56,7 @@ const Searches = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No data available</Typography>
+          <Typography>No results for this time range.</Typography>
         </Box>
       </CardWrapper>
     );
@@ -98,8 +98,8 @@ const Searches = () => {
                 />
                 <XAxis
                   dataKey="date"
-                  tickFormatter={date => getXAxisformat(date, grouping || '')}
-                  ticks={getXAxisTickValues(data, grouping || '')}
+                  tickFormatter={date => getXAxisformat(date, grouping)}
+                  ticks={getXAxisTickValues(data, grouping)}
                   tick={{ fill: theme.palette.text.primary }}
                   axisLine={false}
                   tickLine={false}

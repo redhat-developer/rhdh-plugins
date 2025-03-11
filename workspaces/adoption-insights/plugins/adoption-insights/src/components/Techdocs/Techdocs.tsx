@@ -74,7 +74,7 @@ const Techdocs = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No data available</Typography>
+          <Typography>No results for this time range.</Typography>
         </Box>
       </CardWrapper>
     );
@@ -121,7 +121,9 @@ const Techdocs = () => {
                     rel="noopener noreferrer"
                     href={entityLink({
                       kind: parseEntityRef(techdoc.entityRef)?.kind,
-                      namespace: 'default',
+                      namespace:
+                        parseEntityRef(techdoc.entityRef)?.namespace ??
+                        'default',
                       name: parseEntityRef(techdoc.entityRef)?.name,
                     })}
                     sx={{
@@ -135,7 +137,26 @@ const Techdocs = () => {
                   </Link>
                 </TableCell>
                 <TableCell>
-                  {parseEntityRef(techdoc.entityRef)?.kind ?? '--'}
+                  <Link
+                    component="a"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={entityLink({
+                      kind: parseEntityRef(techdoc.entityRef)?.kind,
+                      namespace:
+                        parseEntityRef(techdoc.entityRef)?.namespace ??
+                        'default',
+                      name: parseEntityRef(techdoc.entityRef)?.name,
+                    })}
+                    sx={{
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'none',
+                      },
+                    }}
+                  >
+                    {parseEntityRef(techdoc.entityRef)?.kind ?? '--'}
+                  </Link>
                 </TableCell>
                 <TableCell>
                   {getLastUsedDay(techdoc.last_used) ?? '--'}

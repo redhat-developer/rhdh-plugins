@@ -36,7 +36,7 @@ import {
 } from '../../utils/constants';
 import { useCatalogEntities } from '../../hooks/useCatalogEntities';
 import TableFooterPagination from '../CardFooter';
-import { getLastUsedDay, setCatalogEntitieskinds } from '../../utils/utils';
+import { getLastUsedDay, getUniqueCatalogEntityKinds } from '../../utils/utils';
 import FilterDropdown from './FilterDropdown';
 
 const CatalogEntities = () => {
@@ -44,18 +44,25 @@ const CatalogEntities = () => {
   const [limit] = React.useState(20);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
   const [selectedOption, setSelectedOption] = React.useState('');
+  const [uniqueCatalogEntityKinds, setUniqueCatalogEntityKinds] =
+    React.useState<string[]>([]);
+
   const entityLink = useRouteRef(entityRouteRef);
 
   const { catalogEntities, loading } = useCatalogEntities({
     limit,
-    kind: selectedOption,
+    kind: selectedOption === 'All' ? '' : selectedOption.toLocaleLowerCase(),
   });
 
   React.useEffect(() => {
-    return () => {
-      setCatalogEntitieskinds([]);
-    };
-  }, []);
+    if (
+      catalogEntities?.data?.length > 0 &&
+      uniqueCatalogEntityKinds?.length === 0
+    ) {
+      const uniqueKinds = getUniqueCatalogEntityKinds(catalogEntities.data);
+      setUniqueCatalogEntityKinds(uniqueKinds);
+    }
+  }, [catalogEntities, uniqueCatalogEntityKinds]);
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -79,8 +86,11 @@ const CatalogEntities = () => {
   const visibleCatalogEntities = React.useMemo(() => {
     return catalogEntities.data
       ?.filter(entity => {
-        if (selectedOption) {
-          return entity.kind === selectedOption;
+        if (selectedOption && selectedOption !== 'All') {
+          return (
+            entity.kind.toLocaleLowerCase() ===
+            selectedOption.toLocaleLowerCase()
+          );
         }
         return true;
       })
@@ -96,7 +106,7 @@ const CatalogEntities = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No data available</Typography>
+          <Typography>No results for this time range.</Typography>
         </Box>
       </CardWrapper>
     );
@@ -109,7 +119,7 @@ const CatalogEntities = () => {
         <FilterDropdown
           selectedOption={selectedOption}
           handleChange={handleChange}
-          catalogEntitiesData={catalogEntities.data}
+          uniqueCatalogEntityKinds={uniqueCatalogEntityKinds}
         />
       }
     >
@@ -168,7 +178,10 @@ const CatalogEntities = () => {
                     {entity.name ?? '--'}
                   </Link>
                 </TableCell>
-                <TableCell>{entity.kind ?? '--'}</TableCell>
+                <TableCell>
+                  {entity.kind?.charAt(0).toLocaleUpperCase('en-US') +
+                    entity.kind?.slice(1) || '--'}
+                </TableCell>
                 <TableCell>
                   {getLastUsedDay(entity.last_used) ?? '--'}
                 </TableCell>

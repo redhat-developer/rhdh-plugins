@@ -18,13 +18,17 @@ import {
   getXAxisTickValues,
   getXAxisformat,
   getLastUsedDay,
-  catalogEntityKinds,
   getAverage,
   getTotal,
-  setCatalogEntitieskinds,
-  getCatalogEntitieskinds,
 } from '../utils';
-import { format, startOfToday, subDays, startOfYear } from 'date-fns';
+import {
+  format,
+  startOfToday,
+  subDays,
+  startOfYear,
+  startOfWeek,
+  startOfMonth,
+} from 'date-fns';
 
 describe('getDateRange', () => {
   it('should return correct range for today', () => {
@@ -34,7 +38,7 @@ describe('getDateRange', () => {
 
   it('should return correct range for last-week', () => {
     const today = format(startOfToday(), 'yyyy-MM-dd');
-    const lastWeek = format(subDays(startOfToday(), 7), 'yyyy-MM-dd');
+    const lastWeek = format(startOfWeek(startOfToday()), 'yyyy-MM-dd');
     expect(getDateRange('last-week')).toEqual({
       startDate: lastWeek,
       endDate: today,
@@ -43,7 +47,7 @@ describe('getDateRange', () => {
 
   it('should return correct range for last-month', () => {
     const today = format(startOfToday(), 'yyyy-MM-dd');
-    const lastMonth = format(subDays(startOfToday(), 30), 'yyyy-MM-dd');
+    const lastMonth = format(startOfMonth(startOfToday()), 'yyyy-MM-dd');
     expect(getDateRange('last-month')).toEqual({
       startDate: lastMonth,
       endDate: today,
@@ -309,67 +313,5 @@ describe('getTotal', () => {
   it('should handle missing keys gracefully', () => {
     const data = [{ value: 10 }, { someOtherKey: 20 }];
     expect(getTotal(data, 'value')).toBe(10);
-  });
-});
-
-describe('Catalog Entities Kinds - LocalStorage Management', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it('should setCatalogEntitieskinds store entity kinds in localStorage', () => {
-    const kinds = ['Component', 'Service'];
-    setCatalogEntitieskinds(kinds);
-
-    expect(localStorage.getItem('entityKinds')).toBe(JSON.stringify(kinds));
-  });
-
-  it('should getCatalogEntitieskinds retrieve entity kinds from localStorage', () => {
-    const kinds = ['Component', 'Service'];
-    localStorage.setItem('entityKinds', JSON.stringify(kinds));
-
-    expect(getCatalogEntitieskinds()).toEqual(kinds);
-  });
-
-  it('should getCatalogEntitieskinds return an empty array if localStorage is empty', () => {
-    expect(getCatalogEntitieskinds()).toEqual([]);
-  });
-
-  it('should catalogEntityKinds merge new entity kinds with existing ones', () => {
-    localStorage.setItem('entityKinds', JSON.stringify(['Component']));
-
-    const data = [{ kind: 'Service' }, { kind: 'Component' }];
-    const result = catalogEntityKinds(data);
-
-    expect(result).toEqual(['Component', 'Service']);
-    expect(JSON.parse(localStorage.getItem('entityKinds')!)).toEqual([
-      'Component',
-      'Service',
-    ]);
-  });
-
-  it('should catalogEntityKinds ensure uniqueness when merging with existing kinds', () => {
-    localStorage.setItem('entityKinds', JSON.stringify(['Component', 'API']));
-
-    const data = [{ kind: 'Service' }, { kind: 'API' }, { kind: 'Component' }];
-    const result = catalogEntityKinds(data);
-
-    expect(result).toEqual(['Component', 'API', 'Service']);
-    expect(JSON.parse(localStorage.getItem('entityKinds')!)).toEqual([
-      'Component',
-      'API',
-      'Service',
-    ]);
-  });
-
-  it('should catalogEntityKinds store new kinds if localStorage is initially empty', () => {
-    const data = [{ kind: 'Service' }, { kind: 'Database' }];
-    const result = catalogEntityKinds(data);
-
-    expect(result).toEqual(['Service', 'Database']);
-    expect(JSON.parse(localStorage.getItem('entityKinds')!)).toEqual([
-      'Service',
-      'Database',
-    ]);
   });
 });

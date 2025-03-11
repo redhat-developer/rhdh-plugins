@@ -17,9 +17,10 @@ import {
   format,
   startOfToday,
   startOfYear,
-  subDays,
   isToday,
   isYesterday,
+  startOfMonth,
+  startOfWeek,
 } from 'date-fns';
 
 export const getDateRange = (value: string) => {
@@ -36,13 +37,13 @@ export const getDateRange = (value: string) => {
 
     case 'last-week':
       return {
-        startDate: format(subDays(today, 7), 'yyyy-MM-dd'),
+        startDate: format(startOfWeek(today), 'yyyy-MM-dd'),
         endDate: format(today, 'yyyy-MM-dd'),
       };
 
     case 'last-month':
       return {
-        startDate: format(subDays(today, 30), 'yyyy-MM-dd'),
+        startDate: format(startOfMonth(today), 'yyyy-MM-dd'),
         endDate: format(today, 'yyyy-MM-dd'),
       };
 
@@ -169,18 +170,10 @@ export const getTotal = <T extends Record<string, any>>(
   return totalSum;
 };
 
-export const setCatalogEntitieskinds = (kinds: string[] = []) => {
-  localStorage.setItem('entityKinds', JSON.stringify(kinds));
-};
-
-export const getCatalogEntitieskinds = () => {
-  return JSON.parse(localStorage.getItem('entityKinds') || '[]');
-};
-
-export const catalogEntityKinds = (data: { kind: string }[]) => {
-  const existingKinds = getCatalogEntitieskinds();
-  const newKinds = data.map(item => item.kind);
-  const mergedKinds = Array.from(new Set([...existingKinds, ...newKinds]));
-  setCatalogEntitieskinds(mergedKinds);
-  return mergedKinds;
+export const getUniqueCatalogEntityKinds = (data: { kind: string }[]) => {
+  const allKinds = data.map(
+    item => item.kind.charAt(0).toLocaleUpperCase('en-US') + item.kind.slice(1),
+  );
+  const uniqueKinds = Array.from(new Set([...allKinds]));
+  return uniqueKinds;
 };

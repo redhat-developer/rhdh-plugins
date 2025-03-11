@@ -107,7 +107,7 @@ jest.mock('../../../utils/constants', () => ({
 
 jest.mock('../../../utils/utils', () => ({
   getLastUsedDay: () => 'Yesterday',
-  setCatalogEntitieskinds: jest.fn(),
+  getUniqueCatalogEntityKinds: jest.fn(),
 }));
 
 jest.mock('../../CardWrapper', () => ({
