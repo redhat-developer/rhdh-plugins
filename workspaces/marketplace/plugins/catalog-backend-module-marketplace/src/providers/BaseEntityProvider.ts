@@ -54,6 +54,7 @@ export abstract class BaseEntityProvider<T extends Entity>
         metadata: {
           ...file.content.metadata,
           annotations: {
+            ...file.content.metadata.annotations,
             [ANNOTATION_LOCATION]: `file:${this.getProviderName()}`,
             [ANNOTATION_ORIGIN_LOCATION]: `file:${this.getProviderName()}`,
           },
