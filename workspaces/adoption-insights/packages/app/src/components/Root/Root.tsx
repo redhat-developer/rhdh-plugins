@@ -19,7 +19,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import LibraryBooks from '@material-ui/icons/LibraryBooks';
 import CreateComponentIcon from '@material-ui/icons/AddCircleOutline';
-import QueryStatsIcon from '@mui/icons-material';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 import {

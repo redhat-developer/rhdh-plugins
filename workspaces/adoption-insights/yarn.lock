@@ -14941,6 +14941,7 @@ __metadata:
     "@backstage/theme": ^0.6.4
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
+    "@mui/icons-material": 5.16.4
     "@playwright/test": ^1.32.3
     "@red-hat-developer-hub/backstage-plugin-adoption-insights": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "workspace:^"
