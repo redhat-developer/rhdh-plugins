@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.2.2
+
+### Patch Changes
+
+- 791a6d4: Fix certified badge in marketplace
+
 ## 0.2.1
 
 ### Patch Changes
