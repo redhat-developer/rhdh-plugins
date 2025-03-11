@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { DateTime } from 'luxon';
+import { Grouping } from '../types/event';
 
 export const toStartOfDayUTC = (dateString: string, timezone = 'UTC') =>
   DateTime.fromFormat(dateString, 'yyyy-MM-dd', { zone: timezone })
@@ -48,8 +49,30 @@ export const getDateGroupingType = (
   dateDiff: number,
   start_date: string,
   end_date: string,
-): 'daily' | 'weekly' | 'monthly' => {
+): Grouping => {
+  if (dateDiff === 0) return 'hourly';
   if (dateDiff <= 7) return 'daily';
   if (dateDiff <= 30 && isSameMonth(start_date, end_date)) return 'weekly';
   return 'monthly';
+};
+
+export const hasZFormat = (dateStr: string): boolean => {
+  return dateStr.includes('Z') || dateStr.includes('T');
+};
+
+export const convertToLocalTimezone = (date: string) => {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const parsedDate = hasZFormat(date.toString())
+    ? new Date(date).toISOString()
+    : date;
+
+  if (DateTime.fromISO(parsedDate, { zone: timeZone }).isValid) {
+    return DateTime.fromISO(parsedDate, { zone: timeZone }).toFormat(
+      'yyyy-MM-dd HH:mm:ss ZZZZ',
+    );
+  }
+  return DateTime.fromFormat(parsedDate, 'yyyy-MM-dd HH:mm:ss', {
+    zone: timeZone,
+  }).toFormat('yyyy-MM-dd HH:mm:ss ZZZZ');
 };

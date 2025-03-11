@@ -17,6 +17,13 @@ import { Knex } from 'knex';
 import { Filters, EventDatabase, UserConfig } from '../event-database';
 import { Event } from '../../models/Event';
 import { LoggerService } from '@backstage/backend-plugin-api';
+import {
+  DailyUser,
+  Grouping,
+  ResponseData,
+  ResponseWithGrouping,
+} from '../../types/event';
+import { convertToLocalTimezone } from '../../utils/date';
 
 export abstract class BaseDatabaseAdapter implements EventDatabase {
   protected db: Knex;
@@ -129,14 +136,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .groupBy('ge.date')
       .orderBy('ge.date');
 
-    return query.then(data => {
-      return {
-        ...(data.length > 0
-          ? { grouping: this.getDynamicDateGrouping(true) }
-          : {}),
-        data,
-      };
-    });
+    return query.then(data => this.getResponseWithGrouping<DailyUser[]>(data));
   }
 
   async getUsers(): Promise<Knex.QueryBuilder> {
@@ -156,9 +156,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     return query.then(result => {
       const { licensedUsers } = this.config!;
       result[0] = { ...result[0], licensed_users: licensedUsers } as any;
-      return {
-        data: result,
-      };
+      return this.getResponseData(result);
     });
   }
 
@@ -182,7 +180,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .orderBy('count', 'desc')
       .limit(Number(limit) || 3);
 
-    return query.then(data => ({ data }));
+    return query.then(data => this.getResponseData(data, 'last_used'));
   }
 
   async getTopSearches(): Promise<Knex.QueryBuilder> {
@@ -200,7 +198,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .orderBy('date', 'asc')
       .limit(Number(limit) || 3);
 
-    return query.then(data => ({ data }));
+    return query.then(data => this.getResponseWithGrouping(data));
   }
 
   async getTopTechDocsViews(): Promise<Knex.QueryBuilder> {
@@ -221,7 +219,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .groupByRaw('entityRef')
       .limit(Number(limit) || 3);
 
-    return query.then(data => ({ data }));
+    return query.then(data => this.getResponseData(data, 'last_used'));
   }
 
   async getTopCatalogEntitiesViews(): Promise<Knex.QueryBuilder> {
@@ -248,7 +246,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     if (kind) {
       query.andWhere(db.raw(`attributes->>'kind' = ?`, [kind]));
     }
-    return query.then(data => ({ data }));
+    return query.then(data => this.getResponseData(data, 'last_used'));
   }
 
   async getTopPluginViews(): Promise<Knex.QueryBuilder> {
@@ -291,8 +289,8 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
           'plugin_id',
           db.raw(`
                 json(${this.getJsonAggregationQuery('date', 'count')}) AS trend,
-                (SELECT count FROM trend_data td WHERE td.plugin_id = t.plugin_id ORDER BY date LIMIT 1) AS first_count,
-                (SELECT count FROM trend_data td WHERE td.plugin_id = t.plugin_id ORDER BY date DESC LIMIT 1) AS last_count
+                COALESCE((SELECT count FROM trend_data td WHERE td.plugin_id = t.plugin_id ORDER BY date LIMIT 1),0) AS first_count,
+                COALESCE((SELECT count FROM trend_data td WHERE td.plugin_id = t.plugin_id ORDER BY date DESC LIMIT 1),0) AS last_count
                 `),
         ])
         .from('trend_data AS t')
@@ -320,12 +318,12 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .orderBy('p.visit_count', 'desc')
       .limit(limit);
 
-    return query.then(data => ({
-      ...(data.length > 0
-        ? { grouping: this.getDynamicDateGrouping(true) }
-        : {}),
-      data: this.transformJson(data, 'trend'),
-    }));
+    return query.then(data => {
+      return this.getResponseWithGrouping(
+        this.transformJson(data, 'trend'),
+        'trend',
+      );
+    });
   }
 
   abstract getDate(): string;
@@ -333,7 +331,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
   abstract isJsonSupported(): boolean;
   abstract isPartitionSupported(): boolean;
   abstract getDateBetweenQuery(): string;
-  abstract getDynamicDateGrouping(onlyText?: boolean): string;
+  abstract getDynamicDateGrouping(onlyText?: boolean): Grouping | string;
   abstract getFormatedDate(column: string): string;
   abstract getJsonAggregationQuery(...args: any[]): string;
 
@@ -351,7 +349,68 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     }));
   }
 
-  private ensureFiltersSet() {
+  modifyDateInObject<T extends any>(
+    obj: T & { [key: string]: string | number },
+    datePath: string = 'date',
+  ) {
+    if (obj[datePath]) {
+      return {
+        ...obj,
+        [datePath]: convertToLocalTimezone(obj[datePath] as string),
+      };
+    }
+    return obj;
+  }
+
+  getResponseData<T extends any[]>(
+    data: T,
+    datePath: string = 'date',
+  ): ResponseData<T> {
+    return {
+      data: data.map(d => {
+        if (Array.isArray(d[datePath])) {
+          return {
+            ...d,
+            [datePath]: d[datePath].map((dp: any) =>
+              this.modifyDateInObject(dp),
+            ),
+          };
+        }
+        return this.modifyDateInObject(d, datePath);
+      }) as T,
+    };
+  }
+
+  getResponseWithGrouping = <T extends any[]>(
+    data: T,
+    datePath: string = 'date',
+  ): ResponseWithGrouping<T> => {
+    const grouping = this.getDynamicDateGrouping(true) as Grouping;
+
+    if (grouping === 'hourly') {
+      return {
+        grouping,
+        data: data.map(d => {
+          if (Array.isArray(d[datePath])) {
+            return {
+              ...d,
+              [datePath]: d[datePath].map((dp: any) =>
+                this.modifyDateInObject(dp),
+              ),
+            };
+          }
+          return this.modifyDateInObject(d, datePath);
+        }) as T,
+      };
+    }
+
+    return {
+      grouping,
+      data,
+    };
+  };
+
+  ensureFiltersSet() {
     if (!this.filters) {
       throw new Error(
         'Filters must be set using setFilters() before calling methods.',

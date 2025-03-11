@@ -267,4 +267,167 @@ describe('BaseAdapter', () => {
       expect(result).toEqual({ data: usersCount });
     });
   });
+
+  describe('modifyDateInObject', () => {
+    it('should modify the date in the given object', async () => {
+      const object = {
+        date: '2025-03-02 23:30:00',
+        count: 100,
+      };
+      const db = new PostgresAdapter(mockKnex, logger);
+      expect(db.modifyDateInObject(object)).toEqual({
+        count: 100,
+        date: '2025-03-02 23:30:00 UTC',
+      });
+    });
+    it('should return the original object if the date is not present in the given object', async () => {
+      const object = {
+        count: 100,
+        grouping: 'daily',
+      };
+      const db = new PostgresAdapter(mockKnex, logger);
+      expect(db.modifyDateInObject(object)).toEqual(object);
+    });
+  });
+
+  describe('getResponseData', () => {
+    it('should return the object wrapped in data and date should be converted to timestamp', async () => {
+      const object = [
+        {
+          date: '2025-03-02 23:30:00',
+          count: 100,
+        },
+      ];
+      const db = new PostgresAdapter(mockKnex, logger);
+      expect(db.getResponseData(object)).toEqual({
+        data: [
+          {
+            ...object[0],
+            date: '2025-03-02 23:30:00 UTC',
+          },
+        ],
+      });
+    });
+
+    it('should handle the custom path', async () => {
+      jest
+        .spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
+        .mockReturnValue({
+          timeZone: 'Asia/Kolkata',
+        } as Intl.ResolvedDateTimeFormatOptions);
+      const object = [
+        {
+          trend: [
+            {
+              date: '2025-03-02T18:00:00.000Z',
+              count: 100,
+            },
+          ],
+        },
+      ];
+      const db = new PostgresAdapter(mockKnex, logger);
+      expect(db.getResponseData(object, 'trend')).toEqual({
+        data: [
+          {
+            trend: [
+              {
+                ...object[0].trend[0],
+                date: '2025-03-02 23:30:00 GMT+5:30',
+              },
+            ],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('getResponseWithGrouping', () => {
+    it('should return data and grouping strategy information', () => {
+      const data = [
+        {
+          date: '2025-03-02T18:00:00.000Z',
+          count: 1,
+        },
+      ];
+
+      const db = new PostgresAdapter(mockKnex, logger);
+      db.setFilters({
+        start_date: new Date('2025-03-02').toISOString(),
+        end_date: new Date('2025-03-05').toISOString(),
+      });
+      expect(db.getResponseWithGrouping(data)).toEqual({
+        grouping: 'daily',
+        data,
+      });
+    });
+
+    it('should honour the grouping strategy passed by the user', () => {
+      const data = [
+        {
+          date: '2025-03-02T18:00:00.000Z',
+          count: 1,
+        },
+      ];
+
+      const db = new PostgresAdapter(mockKnex, logger);
+      db.setFilters({
+        start_date: new Date('2025-03-02').toISOString(),
+        end_date: new Date('2025-03-05').toISOString(),
+        grouping: 'hourly',
+      });
+      expect(db.getResponseWithGrouping(data)).toEqual({
+        grouping: 'hourly',
+        data: [
+          {
+            ...data[0],
+            date: '2025-03-02 23:30:00 GMT+5:30',
+          },
+        ],
+      });
+    });
+
+    it('should work with the custom path', () => {
+      const data = [
+        {
+          trend: [
+            {
+              date: '2025-03-02T18:00:00.000Z',
+              count: 1,
+            },
+          ],
+        },
+      ];
+
+      const db = new PostgresAdapter(mockKnex, logger);
+      db.setFilters({
+        start_date: new Date('2025-03-02').toISOString(),
+        end_date: new Date('2025-03-05').toISOString(),
+        grouping: 'hourly',
+      });
+
+      expect(db.getResponseWithGrouping(data, 'trend')).toEqual({
+        grouping: 'hourly',
+        data: [
+          {
+            trend: [
+              {
+                ...data[0].trend[0],
+                date: '2025-03-02 23:30:00 GMT+5:30',
+              },
+            ],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('ensureFiltersSet', () => {
+    it('should throw error if the filters are not', () => {
+      const db = new PostgresAdapter(mockKnex, logger);
+
+      expect(() => db.ensureFiltersSet()).toThrow(
+        'Filters must be set using setFilters() before calling methods',
+      );
+    });
+  });
 });

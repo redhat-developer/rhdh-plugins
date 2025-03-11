@@ -30,7 +30,7 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
   }
 
   getLastUsedDate(): string {
-    return 'MAX(created_at) AS last_used';
+    return `strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at), 'localtime') AS last_used`;
   }
 
   getFormatedDate(column: string): string {
@@ -54,10 +54,11 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
   }
 
   getDynamicDateGrouping(onlyText: boolean = false): string {
-    const { start_date, end_date } = this.filters!;
+    const { start_date, end_date, grouping: groupingStrategy } = this.filters!;
     const dateDiff = calculateDateRange(start_date, end_date);
 
-    const grouping = getDateGroupingType(dateDiff, start_date, end_date);
+    const grouping =
+      groupingStrategy || getDateGroupingType(dateDiff, start_date, end_date);
 
     if (onlyText) {
       return grouping;
@@ -70,6 +71,8 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
 
   private getDateGroupingQuery(grouping: string): string {
     switch (grouping) {
+      case 'hourly':
+        return `strftime('%Y-%m-%d %H:00:00', created_at, 'localtime')`;
       case 'daily':
         return `strftime('%Y-%m-%d', created_at, 'localtime')`;
       case 'weekly':
