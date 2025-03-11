@@ -50,7 +50,7 @@ export interface TrendData {
 
 export interface PluginTrend {
   plugin_id: string;
-  visit_count: string;
+  visit_count: number;
   trend_percentage: string;
   trend: TrendData[];
 }
@@ -67,7 +67,7 @@ export type CatalogEntities = {
   name: string;
   namespace: string;
   last_used: string;
-  count: string;
+  count: number;
 };
 
 export type CatalogEntitiesResponse = {
@@ -79,7 +79,7 @@ export type CatalogEntitiesResponse = {
  */
 export type Templates = {
   entityRef: string;
-  count: string;
+  count: number;
 };
 
 export type TemplatesResponse = {
@@ -131,7 +131,7 @@ export type ActiveUsersResponse = {
  * Users
  */
 export type Users = {
-  logged_in_users: string;
+  logged_in_users: number;
   licensed_users: number;
 };
 

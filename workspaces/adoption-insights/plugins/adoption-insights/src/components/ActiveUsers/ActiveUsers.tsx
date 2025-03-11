@@ -31,7 +31,7 @@ import {
 
 import CardWrapper from '../CardWrapper';
 import CustomTooltip from './CustomTooltip';
-import CustomCursor from './CustomCursor';
+import CustomCursor from '../Common/CustomCursor';
 import CustomLegend from './CustomLegend';
 import {
   getAverage,
@@ -131,21 +131,21 @@ const ActiveUsers = () => {
                   tickMargin={20}
                 />
                 <Tooltip
-                  cursor={<CustomCursor />}
+                  cursor={<CustomCursor cursorHeight={250} />}
                   content={<CustomTooltip />}
-                />
-                <Area
-                  type="linear"
-                  dataKey="new_users"
-                  stroke="#1976d2"
-                  fill="url(#new_users)"
-                  strokeWidth={1}
                 />
                 <Area
                   type="linear"
                   dataKey="returning_users"
                   stroke="#555"
                   fill="url(#returning_users)"
+                  strokeWidth={1}
+                />
+                <Area
+                  type="linear"
+                  dataKey="new_users"
+                  stroke="#1976d2"
+                  fill="url(#new_users)"
                   strokeWidth={1}
                 />
                 <Legend content={<CustomLegend />} />

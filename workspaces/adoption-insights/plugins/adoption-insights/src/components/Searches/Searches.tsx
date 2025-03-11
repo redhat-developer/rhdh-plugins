@@ -37,7 +37,7 @@ import {
   getXAxisformat,
   getXAxisTickValues,
 } from '../../utils/utils';
-import CustomCursor from './CustomCursor';
+import CustomCursor from '../Common/CustomCursor';
 import CustomTooltip from './CustomTooltip';
 
 const Searches = () => {
@@ -114,7 +114,7 @@ const Searches = () => {
                   tickMargin={20}
                 />
                 <Tooltip
-                  cursor={<CustomCursor />}
+                  cursor={<CustomCursor cursorHeight={280} />}
                   content={<CustomTooltip />}
                 />
                 <Line

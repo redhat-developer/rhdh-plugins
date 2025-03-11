@@ -60,7 +60,7 @@ describe('AdoptionInsightsApiClient', () => {
   ];
 
   testCases.forEach(({ method, response }) => {
-    test(`${method} returns expected response`, async () => {
+    test(`should ${method} return expected response`, async () => {
       const options: APIsViewOptions = {
         start_date: '2024-01-01',
         end_date: '2024-01-31',
@@ -77,7 +77,7 @@ describe('AdoptionInsightsApiClient', () => {
       expect(mockFetch).toHaveBeenCalled();
     });
 
-    test(`${method} returns default response if no dates provided`, async () => {
+    test(`should ${method} return default response if no dates provided`, async () => {
       const options: APIsViewOptions = { type: 'test' };
       const result = await (
         apiClient[method as keyof AdoptionInsightsApiClient] as Function
@@ -87,7 +87,7 @@ describe('AdoptionInsightsApiClient', () => {
     });
   });
 
-  test('downloadBlob triggers download with correct URL', async () => {
+  test('should downloadBlob triggers download with correct URL', async () => {
     const options: APIsViewOptions = {
       start_date: '2024-01-01',
       end_date: '2024-01-31',
@@ -107,6 +107,7 @@ describe('AdoptionInsightsApiClient', () => {
       .spyOn(document.body, 'removeChild')
       .mockImplementation();
     const mockLink = document.createElement('a');
+    const clickSpy = jest.spyOn(mockLink, 'click');
     jest.spyOn(document, 'createElement').mockReturnValue(mockLink);
     createElementSpy.mockReturnValue(mockLink);
 
@@ -116,7 +117,7 @@ describe('AdoptionInsightsApiClient', () => {
     expect(createElementSpy).toHaveBeenCalledWith('a');
     expect(mockLink.href).toBeTruthy();
     expect(mockLink.download).toBe('test-file.csv');
-    expect(mockLink.click).toHaveBeenCalled();
+    expect(clickSpy).toHaveBeenCalled();
 
     createElementSpy.mockRestore();
     appendChildSpy.mockRestore();

@@ -57,17 +57,17 @@ const Users = () => {
     );
   }
 
-  const { logged_in_users = '0', licensed_users = 0 } = users.data[0];
+  const { logged_in_users = 0, licensed_users = 0 } = users.data[0];
 
   const loggedInPercentage =
-    Number(logged_in_users) && licensed_users
-      ? Math.round((Number(logged_in_users) / licensed_users) * 100)
+    logged_in_users && licensed_users
+      ? Math.round((logged_in_users / licensed_users) * 100)
       : 0;
 
   const data = [
     {
       name: 'Logged-in users',
-      value: Number(logged_in_users),
+      value: logged_in_users,
       color: '#00AEEF',
     },
     { name: 'Licensed', value: licensed_users, color: '#E5E5E5' },

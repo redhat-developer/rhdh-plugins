@@ -65,7 +65,7 @@ describe('Users Component', () => {
 
   it('should calculate and display the correct logged-in percentage', () => {
     (useUsers as jest.Mock).mockReturnValue({
-      users: { data: [{ logged_in_users: '25', licensed_users: 100 }] },
+      users: { data: [{ logged_in_users: 25, licensed_users: 100 }] },
       loading: false,
     });
 
@@ -81,7 +81,7 @@ describe('Users Component', () => {
 
   it('should display "0%" when no users have logged in', () => {
     (useUsers as jest.Mock).mockReturnValue({
-      users: { data: [{ logged_in_users: '0', licensed_users: 100 }] },
+      users: { data: [{ logged_in_users: 0, licensed_users: 100 }] },
       loading: false,
     });
 
@@ -97,7 +97,7 @@ describe('Users Component', () => {
 
   it('should handle missing or zero licensed users gracefully', () => {
     (useUsers as jest.Mock).mockReturnValue({
-      users: { data: [{ logged_in_users: '10', licensed_users: 0 }] },
+      users: { data: [{ logged_in_users: 10, licensed_users: 0 }] },
       loading: false,
     });
 
@@ -107,6 +107,6 @@ describe('Users Component', () => {
       </ThemeProvider>,
     );
 
-    expect(screen.getByText('0%')).toBeInTheDocument(); // Avoid division by zero errors
+    expect(screen.getByText('0%')).toBeInTheDocument();
   });
 });

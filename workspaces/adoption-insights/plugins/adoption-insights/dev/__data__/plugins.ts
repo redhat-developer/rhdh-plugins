@@ -26,42 +26,42 @@ const generateLast30DaysData = () => {
 
 export const mockPluginView: PluginTrend = {
   plugin_id: 'catalog',
-  visit_count: '77',
+  visit_count: 77,
   trend_percentage: '18.67',
   trend: generateLast30DaysData(),
 };
 
 export const mockPluginViewTwo: PluginTrend = {
   plugin_id: 'ansible',
-  visit_count: '77',
+  visit_count: 77,
   trend_percentage: '18.67',
   trend: generateLast30DaysData(),
 };
 
 export const mockPluginViewThree: PluginTrend = {
   plugin_id: 'argoCD',
-  visit_count: '7792',
+  visit_count: 7792,
   trend_percentage: '-18.67',
   trend: generateLast30DaysData(),
 };
 
 export const mockPluginViewFour: PluginTrend = {
   plugin_id: 'argoCD Scaffolder',
-  visit_count: '77',
+  visit_count: 77,
   trend_percentage: '18.67',
   trend: generateLast30DaysData(),
 };
 
 export const mockPluginViewFive: PluginTrend = {
   plugin_id: 'tech docs',
-  visit_count: '77',
+  visit_count: 77,
   trend_percentage: '18.67',
   trend: generateLast30DaysData(),
 };
 
 export const mockPluginViewSix: PluginTrend = {
   plugin_id: 'catalog info',
-  visit_count: '44',
+  visit_count: 44,
   trend_percentage: '-66.67',
   trend: generateLast30DaysData(),
 };

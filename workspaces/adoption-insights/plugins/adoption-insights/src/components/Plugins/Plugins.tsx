@@ -141,17 +141,17 @@ const Plugins = () => {
                     </LineChart>
                   </ResponsiveContainer>
                 </TableCell>
-                <TableCell
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                >
-                  {Math.round(Number(plugin.trend_percentage)) < 0 ? (
-                    <TrendingDownIcon sx={{ color: 'red' }} />
-                  ) : (
-                    <TrendingUpIcon sx={{ color: 'green' }} />
-                  )}
-                  <Typography variant="body2">
-                    {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
-                  </Typography>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {Math.round(Number(plugin.trend_percentage)) < 0 ? (
+                      <TrendingDownIcon sx={{ color: 'red' }} />
+                    ) : (
+                      <TrendingUpIcon sx={{ color: 'green' }} />
+                    )}
+                    <Typography variant="body2">
+                      {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
+                    </Typography>
+                  </Box>
                 </TableCell>
                 <TableCell>
                   {Number(plugin.visit_count).toLocaleString()}

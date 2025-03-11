@@ -1,0 +1,146 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import React from 'react';
+
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+import Templates from '../Templates';
+
+jest.mock('../../../hooks/useTemplates', () => ({
+  useTemplates: () => ({
+    templates: {
+      data: [
+        { entityRef: 'template:default/example-go-template-1', count: 10 },
+        { entityRef: 'template:default/example-go-template-2', count: 20 },
+        { entityRef: 'template:default/example-go-template-3', count: 30 },
+        { entityRef: 'template:default/example-go-template-4', count: 40 },
+        { entityRef: 'template:default/example-go-template-5', count: 50 },
+        { entityRef: 'template:default/example-go-template-6', count: 60 },
+      ],
+    },
+    loading: false,
+  }),
+}));
+
+jest.mock('@backstage/catalog-model', () => ({
+  parseEntityRef: (ref: string) => {
+    const [kind, name] = ref.split(':')[0].split('/');
+    return { kind, name: name || ref.split('/')[1] };
+  },
+}));
+
+jest.mock('@backstage/plugin-catalog-react', () => ({
+  entityRouteRef: 'entityRouteRef',
+}));
+
+jest.mock('@backstage/core-plugin-api', () => ({
+  useRouteRef: () => (params: any) =>
+    `/catalog/${params.kind}/${params.namespace}/${params.name}`,
+}));
+
+jest.mock('../../../utils/constants', () => ({
+  TEMPLATE_TABLE_HEADERS: [
+    { id: 'name', title: 'Name' },
+    { id: 'executions', title: 'Executions' },
+  ],
+}));
+
+jest.mock('../../CardWrapper', () => ({
+  __esModule: true,
+  default: ({
+    children,
+    title,
+  }: {
+    children: React.ReactNode;
+    title: string;
+  }) => (
+    <div data-testid="card-wrapper">
+      <h2>{title}</h2>
+      {children}
+    </div>
+  ),
+}));
+
+describe('Templates', () => {
+  const theme = createTheme();
+  const user = userEvent.setup();
+
+  const renderComponent = () => {
+    return render(
+      <ThemeProvider theme={theme}>
+        <Templates />
+      </ThemeProvider>,
+    );
+  };
+
+  it('should render the component with initial data', () => {
+    renderComponent();
+    expect(screen.getByText('Top 3 templates')).toBeInTheDocument();
+    expect(screen.getAllByRole('row')).toHaveLength(5);
+  });
+
+  it('should display correct table headers', () => {
+    renderComponent();
+    const headers = screen.getAllByRole('columnheader');
+    expect(headers).toHaveLength(2);
+    expect(headers[0]).toHaveTextContent('Name');
+    expect(headers[1]).toHaveTextContent('Executions');
+  });
+
+  it('should display correct data in table rows', () => {
+    renderComponent();
+    const rows = screen.getAllByRole('row').slice(1);
+
+    expect(
+      within(rows[0]).getByText('example-go-template-1'),
+    ).toBeInTheDocument();
+    expect(within(rows[0]).getByText('10')).toBeInTheDocument();
+  });
+
+  it('should handle pagination correctly', async () => {
+    renderComponent();
+    const select = screen.getByRole('combobox');
+
+    await user.click(select);
+    await user.click(screen.getByText('Top 5'));
+
+    expect(screen.getByText('Top 5 templates')).toBeInTheDocument();
+  });
+
+  it('should create correct entity links', () => {
+    renderComponent();
+    const links = screen.getAllByRole('link');
+    expect(links[0]).toHaveAttribute(
+      'href',
+      '/catalog/template/default/example-go-template-1',
+    );
+  });
+
+  it('should format view counts correctly', () => {
+    renderComponent();
+    const rows = screen.getAllByRole('row').slice(1);
+    expect(within(rows[0]).getByText('10')).toBeInTheDocument();
+    expect(within(rows[1]).getByText('20')).toBeInTheDocument();
+  });
+
+  it('should apply correct styling to table rows', () => {
+    renderComponent();
+    const rows = screen.getAllByRole('row').slice(1);
+    expect(rows[0]).toHaveStyle({ backgroundColor: 'inherit' });
+  });
+});

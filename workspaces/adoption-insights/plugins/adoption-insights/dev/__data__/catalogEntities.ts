@@ -20,7 +20,7 @@ export default {
       name: 'devhub',
       kind: 'Component',
       last_used: '2025-03-06T06:25:16.708Z',
-      count: '2233',
+      count: 2233,
       namespace: 'default',
     },
     {
@@ -28,7 +28,7 @@ export default {
       name: 'hg-dev-hub-starter',
       kind: 'Component',
       last_used: '2025-03-05T06:25:16.708Z',
-      count: '1974',
+      count: 1974,
       namespace: 'default',
     },
     {
@@ -36,7 +36,7 @@ export default {
       name: 'netbox',
       kind: 'API',
       last_used: '2025-03-04T06:25:16.708Z',
-      count: '1863',
+      count: 1863,
       namespace: 'default',
     },
     {
@@ -44,7 +44,7 @@ export default {
       name: 'devhub',
       kind: 'Component',
       last_used: '2025-03-01T06:25:16.708Z',
-      count: '2233',
+      count: 2233,
       namespace: 'default',
     },
     {
@@ -52,7 +52,7 @@ export default {
       name: 'hg-dev-hub-starter',
       kind: 'Component',
       last_used: '2025-03-06T06:25:16.708Z',
-      count: '1974',
+      count: 1974,
       namespace: 'default',
     },
     {
@@ -60,7 +60,7 @@ export default {
       name: 'netbox',
       kind: 'API',
       last_used: '2025-03-06T06:25:16.708Z',
-      count: '1863',
+      count: 1863,
       namespace: 'default',
     },
   ],

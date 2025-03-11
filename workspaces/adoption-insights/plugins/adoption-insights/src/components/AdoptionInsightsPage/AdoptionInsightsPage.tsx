@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import React from 'react';
+
 import { Content, Page } from '@backstage/core-components';
 import Masonry from '@mui/lab/Masonry';
 import useMediaQuery from '@mui/material/useMediaQuery';

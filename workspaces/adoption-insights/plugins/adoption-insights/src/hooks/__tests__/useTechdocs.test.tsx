@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useApi } from '@backstage/core-plugin-api';
 
 import { useDateRange } from '../../components/Header/DateRangeContext';
@@ -53,11 +53,8 @@ describe('useTechdocs', () => {
 
     mockApi.getTechdocs.mockResolvedValueOnce({ data: [] });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useTechdocs({ limit: 3 }),
-    );
+    const { result } = renderHook(() => useTechdocs({ limit: 3 }));
     expect(result.current.loading).toBe(true);
-    await waitForNextUpdate();
   });
 
   it('should return plugins data after API resolves', async () => {
@@ -69,14 +66,13 @@ describe('useTechdocs', () => {
     const mockResponse = { data: [{ name: 'plugin-1' }, { name: 'plugin-2' }] };
     mockApi.getTechdocs.mockResolvedValueOnce(mockResponse);
 
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useTechdocs({ limit: 3 }),
-    );
-    await waitForNextUpdate();
+    const { result } = renderHook(() => useTechdocs({ limit: 3 }));
 
-    expect(result.current.techdocs).toEqual(mockResponse);
-    expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBeUndefined();
+    await waitFor(() => {
+      expect(result.current.techdocs).toEqual(mockResponse);
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBeUndefined();
+    });
   });
 
   it('should handle API failure', async () => {
@@ -88,12 +84,11 @@ describe('useTechdocs', () => {
     const mockError = new Error('API Error');
     mockApi.getTechdocs.mockRejectedValueOnce(mockError);
 
-    const { result, waitForNextUpdate } = renderHook(() =>
-      useTechdocs({ limit: 3 }),
-    );
-    await waitForNextUpdate();
+    const { result } = renderHook(() => useTechdocs({ limit: 3 }));
 
-    expect(result.current.error).toEqual(mockError);
-    expect(result.current.loading).toBe(false);
+    await waitFor(() => {
+      expect(result.current.error).toEqual(mockError);
+      expect(result.current.loading).toBe(false);
+    });
   });
 });

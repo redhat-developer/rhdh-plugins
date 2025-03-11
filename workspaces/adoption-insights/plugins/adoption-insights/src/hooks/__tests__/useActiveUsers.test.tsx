@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useApi } from '@backstage/core-plugin-api';
 
 import { useDateRange } from '../../components/Header/DateRangeContext';
@@ -53,9 +53,8 @@ describe('useActiveUsers', () => {
 
     mockApi.getActiveUsers.mockResolvedValueOnce({ data: [] });
 
-    const { result, waitForNextUpdate } = renderHook(() => useActiveUsers());
+    const { result } = renderHook(() => useActiveUsers());
     expect(result.current.loading).toBe(true);
-    await waitForNextUpdate();
   });
 
   it('should return plugins data after API resolves', async () => {
@@ -83,12 +82,13 @@ describe('useActiveUsers', () => {
     };
     mockApi.getActiveUsers.mockResolvedValueOnce(mockResponse);
 
-    const { result, waitForNextUpdate } = renderHook(() => useActiveUsers());
-    await waitForNextUpdate();
+    const { result } = renderHook(() => useActiveUsers());
 
-    expect(result.current.activeUsers).toEqual(mockResponse);
-    expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBeUndefined();
+    await waitFor(() => {
+      expect(result.current.activeUsers).toEqual(mockResponse);
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBeUndefined();
+    });
   });
 
   it('should handle API failure', async () => {
@@ -100,10 +100,10 @@ describe('useActiveUsers', () => {
     const mockError = new Error('API Error');
     mockApi.getActiveUsers.mockRejectedValueOnce(mockError);
 
-    const { result, waitForNextUpdate } = renderHook(() => useActiveUsers());
-    await waitForNextUpdate();
-
-    expect(result.current.error).toEqual(mockError);
-    expect(result.current.loading).toBe(false);
+    const { result } = renderHook(() => useActiveUsers());
+    await waitFor(() => {
+      expect(result.current.error).toEqual(mockError);
+      expect(result.current.loading).toBe(false);
+    });
   });
 });

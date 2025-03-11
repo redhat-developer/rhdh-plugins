@@ -24,7 +24,13 @@ const CustomLegend = (props: any) => {
 
   return (
     <div
-      style={{ display: 'flex', gap: 16, alignItems: 'center', marginLeft: 50 }}
+      style={{
+        display: 'flex',
+        gap: 16,
+        alignItems: 'center',
+        marginLeft: 50,
+        paddingTop: 10,
+      }}
     >
       {payload.map((entry: any) => (
         <div

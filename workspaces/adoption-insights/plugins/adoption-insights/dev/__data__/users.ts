@@ -17,8 +17,8 @@
 export default {
   data: [
     {
-      logged_in_users: '2448',
-      licensed_users: 1004,
+      logged_in_users: 244,
+      licensed_users: 1000,
     },
   ],
 };

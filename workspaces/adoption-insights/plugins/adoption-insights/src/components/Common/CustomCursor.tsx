@@ -16,7 +16,7 @@
 import React from 'react';
 
 const CustomCursor = (props: any) => {
-  const { points } = props;
+  const { points, cursorHeight = 250 } = props;
   if (!points || points.length === 0) return null;
 
   return (
@@ -25,7 +25,7 @@ const CustomCursor = (props: any) => {
       x1={points[0].x}
       y1={10}
       x2={points[0].x}
-      y2={260}
+      y2={cursorHeight}
       stroke="gray"
       strokeWidth={1}
       strokeDasharray="3 3"

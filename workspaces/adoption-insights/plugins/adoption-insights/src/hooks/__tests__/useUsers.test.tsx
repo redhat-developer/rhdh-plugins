@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useApi } from '@backstage/core-plugin-api';
 
 import { useDateRange } from '../../components/Header/DateRangeContext';
@@ -51,9 +51,8 @@ describe('useUsers', () => {
 
     mockApi.getUsers.mockResolvedValueOnce({ data: [] });
 
-    const { result, waitForNextUpdate } = renderHook(() => useUsers());
+    const { result } = renderHook(() => useUsers());
     expect(result.current.loading).toBe(true);
-    await waitForNextUpdate();
   });
 
   it('should return plugins data after API resolves', async () => {
@@ -65,12 +64,12 @@ describe('useUsers', () => {
     const mockResponse = { data: [{ name: 'plugin-1' }, { name: 'plugin-2' }] };
     mockApi.getUsers.mockResolvedValueOnce(mockResponse);
 
-    const { result, waitForNextUpdate } = renderHook(() => useUsers());
-    await waitForNextUpdate();
-
-    expect(result.current.users).toEqual(mockResponse);
-    expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBeUndefined();
+    const { result } = renderHook(() => useUsers());
+    await waitFor(() => {
+      expect(result.current.users).toEqual(mockResponse);
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBeUndefined();
+    });
   });
 
   it('should handle API failure', async () => {
@@ -82,10 +81,10 @@ describe('useUsers', () => {
     const mockError = new Error('API Error');
     mockApi.getUsers.mockRejectedValueOnce(mockError);
 
-    const { result, waitForNextUpdate } = renderHook(() => useUsers());
-    await waitForNextUpdate();
-
-    expect(result.current.error).toEqual(mockError);
-    expect(result.current.loading).toBe(false);
+    const { result } = renderHook(() => useUsers());
+    await waitFor(() => {
+      expect(result.current.error).toEqual(mockError);
+      expect(result.current.loading).toBe(false);
+    });
   });
 });
