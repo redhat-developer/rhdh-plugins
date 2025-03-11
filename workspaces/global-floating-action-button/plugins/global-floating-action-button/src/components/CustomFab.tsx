@@ -75,7 +75,7 @@ const FABLabel = ({
   );
 };
 
-export const FAB = ({
+export const CustomFab = ({
   actionButton,
   size,
   className,
@@ -128,7 +128,7 @@ export const FAB = ({
         {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
         className={className}
         style={{
-          color: iconColor ? iconColor : '#1f1f1f',
+          color: iconColor || '#1f1f1f',
           backgroundColor: !actionButton.color && !className ? 'white' : '',
         }}
         variant={

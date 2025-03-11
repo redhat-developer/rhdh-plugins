@@ -26,7 +26,7 @@ import Box from '@mui/material/Box';
 import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
 import Slide from '@mui/material/Slide';
-import { FAB } from './FAB';
+import { CustomFab } from './CustomFab';
 import { slotOptions } from '../utils';
 import { FloatingActionButton, Slot } from '../types';
 import Typography from '@mui/material/Typography';
@@ -113,6 +113,7 @@ export const FABWithSubmenu = ({
       {fabs?.map(fb => {
         return (
           <Slide
+            key={fb.label}
             direction="up"
             container={containerRef?.current}
             in={isMenuOpen}
@@ -121,7 +122,7 @@ export const FABWithSubmenu = ({
             timeout={300}
           >
             <Box>
-              <FAB
+              <CustomFab
                 actionButton={fb}
                 size="medium"
                 key={fb.label}

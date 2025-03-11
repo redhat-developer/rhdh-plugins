@@ -20,7 +20,7 @@ import classnames from 'classnames';
 
 import { makeStyles } from '@mui/styles';
 import { FABWithSubmenu } from './FABWithSubmenu';
-import { FAB } from './FAB';
+import { CustomFab } from './CustomFab';
 import { FloatingActionButton, Slot } from '../types';
 import { filterAndSortButtons } from '../utils';
 
@@ -74,7 +74,10 @@ export const FloatingButton = ({
       id="floating-button"
       data-testid="floating-button"
     >
-      <FAB actionButton={{ color: 'info', ...fabs[0] }} iconColor="white" />
+      <CustomFab
+        actionButton={{ color: 'info', ...fabs[0] }}
+        iconColor="white"
+      />
     </div>
   );
 };
