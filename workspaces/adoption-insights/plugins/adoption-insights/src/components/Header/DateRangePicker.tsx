@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/no-autofocus */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -40,18 +41,6 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   endDate,
   setEndDate,
 }) => {
-  const startDateRef = React.useRef<HTMLInputElement | null>(null);
-  const endDateRef = React.useRef<HTMLInputElement | null>(null);
-
-  React.useEffect(() => {
-    if (!startDate && startDateRef.current) {
-      startDateRef.current.focus();
-    }
-    if (startDate && !endDate && endDateRef.current) {
-      endDateRef.current.focus();
-    }
-  }, [startDate, endDate]);
-
   const handleDateChange = (date: Date | null) => {
     if (!date) return;
 
@@ -67,18 +56,30 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
   const handleStartDateChange = (date: Date | null) => {
     if (!date) return;
-    if (endDate && isAfter(date, endDate)) {
-      setEndDate(null);
+
+    if (date) {
+      const year = date.getFullYear();
+      if (year >= 1900 && year <= 2100) {
+        if (endDate && isAfter(date, endDate)) {
+          setEndDate(null);
+        }
+        setStartDate(date);
+      }
     }
-    setStartDate(date);
   };
 
   const handleEndDateChange = (date: Date | null) => {
     if (!date) return;
-    if (startDate && isBefore(date, startDate)) {
-      setStartDate(null);
+
+    if (date) {
+      const year = date.getFullYear();
+      if (year >= 1900 && year <= 2100) {
+        if (startDate && isBefore(date, startDate)) {
+          setStartDate(null);
+        }
+        setEndDate(date);
+      }
     }
-    setEndDate(date);
   };
 
   const renderDay = (
@@ -147,7 +148,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 <TextField
                   {...params}
                   sx={{ width: 172 }}
-                  inputRef={startDateRef}
+                  autoFocus={Boolean(!startDate)}
                 />
               )}
               maxDate={new Date()}
@@ -164,7 +165,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 <TextField
                   {...params}
                   sx={{ width: 172 }}
-                  inputRef={endDateRef}
+                  focused={Boolean(startDate && !endDate)}
                 />
               )}
               maxDate={new Date()}
