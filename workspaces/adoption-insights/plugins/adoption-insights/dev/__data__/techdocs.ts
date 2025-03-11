@@ -17,17 +17,17 @@ export default {
   data: [
     {
       entityRef: 'techdocs:index-page',
-      count: '2',
+      count: 2,
       last_used: '2025-03-06T06:25:16.708Z',
     },
     {
       entityRef: 'techdocs:insights',
-      count: '4',
+      count: 4,
       last_used: '2025-03-06T06:25:16.708Z',
     },
     {
       entityRef: 'techdocs:argocd',
-      count: '7',
+      count: 7,
       last_used: '2025-03-06T06:25:16.708Z',
     },
   ],
