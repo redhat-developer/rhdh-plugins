@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { format, subDays, subMonths } from 'date-fns';
+import { format, subDays, subMonths, subHours } from 'date-fns';
+
+export const generateHourlyData = () => {
+  return Array.from({ length: 24 }, (_, i) => {
+    const date = format(subHours(new Date(), i), 'yyyy-MM-dd HH:00');
+    const count = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
+    return { date, count };
+  }).reverse();
+};
 
 export const generateDaysData = () => {
   return Array.from({ length: 12 }, (_, i) => {
@@ -32,6 +40,6 @@ export const generateMonthsData = () => {
 };
 
 export default {
-  grouping: 'monthly',
-  data: generateMonthsData(),
+  grouping: 'hourly',
+  data: generateHourlyData(),
 };

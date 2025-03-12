@@ -19,6 +19,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import Button from '@mui/material/Button';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
 
 import { adoptionInsightsApiRef } from '../../api';
@@ -28,6 +29,7 @@ const ExportCSVButton = () => {
   const [loading, setLoading] = React.useState(false);
   const api = useApi(adoptionInsightsApiRef);
   const { startDateRange, endDateRange } = useDateRange();
+  const theme = useTheme();
 
   const handleCSVDownload = async () => {
     setLoading(true);
@@ -40,6 +42,9 @@ const ExportCSVButton = () => {
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
         format: 'csv',
       });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('CSV Download failed:', error);
     } finally {
       setLoading(false);
     }
@@ -60,7 +65,7 @@ const ExportCSVButton = () => {
         startIcon={<FileDownloadOutlinedIcon />}
         onClick={handleCSVDownload}
         sx={{
-          color: '#1976D2',
+          color: theme.palette.primary.main,
           textTransform: 'none',
           fontSize: '16px',
           fontWeight: 400,

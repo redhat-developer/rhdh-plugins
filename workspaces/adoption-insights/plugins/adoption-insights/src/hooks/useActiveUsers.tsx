@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { ActiveUsersResponse } from '../types';
 import { adoptionInsightsApiRef } from '../api';
 import { useDateRange } from '../components/Header/DateRangeContext';
+import { determineGrouping } from '../utils/utils';
 
 export const useActiveUsers = (): {
   activeUsers: ActiveUsersResponse;
@@ -35,6 +36,7 @@ export const useActiveUsers = (): {
   });
 
   const { startDateRange, endDateRange } = useDateRange();
+  const grouping = determineGrouping(startDateRange, endDateRange);
 
   const api = useApi(adoptionInsightsApiRef);
 
@@ -46,11 +48,12 @@ export const useActiveUsers = (): {
           ? format(startDateRange, 'yyyy-MM-dd')
           : undefined,
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
+        grouping,
       })
       .then(response =>
         setActiveUsers(response ?? { grouping: undefined, data: [] }),
       );
-  }, [api, startDateRange, endDateRange]);
+  }, [api, startDateRange, endDateRange, grouping]);
 
   const { error, loading } = useAsyncRetry(async () => {
     return await getActiveUsers();

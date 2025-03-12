@@ -79,8 +79,11 @@ const ActiveUsers = () => {
         <>
           <Typography style={{ margin: '20px 36px' }}>
             <b>
-              {Math.round(getAverage(data, 'total_users')).toLocaleString()}{' '}
-              active users per day
+              {`${Math.round(
+                getAverage(data, 'total_users'),
+              ).toLocaleString()} active users per ${
+                grouping === 'hourly' ? 'hour' : 'day'
+              }`}
             </b>{' '}
             were conducted during this period.
           </Typography>
@@ -132,7 +135,7 @@ const ActiveUsers = () => {
                 />
                 <Tooltip
                   cursor={<CustomCursor cursorHeight={250} />}
-                  content={<CustomTooltip />}
+                  content={<CustomTooltip grouping={grouping} />}
                 />
                 <Area
                   type="linear"

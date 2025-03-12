@@ -41,46 +41,55 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   endDate,
   setEndDate,
 }) => {
-  const handleDateChange = (date: Date | null) => {
-    if (!date) return;
+  const handleDateChange = React.useCallback(
+    (date: Date | null) => {
+      if (!date) return;
 
-    if (!startDate || (startDate && endDate)) {
-      setStartDate(date);
-      setEndDate(null);
-    } else if (isBefore(date, startDate)) {
-      setStartDate(date);
-    } else {
-      setEndDate(date);
-    }
-  };
-
-  const handleStartDateChange = (date: Date | null) => {
-    if (!date) return;
-
-    if (date) {
-      const year = date.getFullYear();
-      if (year >= 1900 && year <= 2100) {
-        if (endDate && isAfter(date, endDate)) {
-          setEndDate(null);
-        }
+      if (!startDate || (startDate && endDate)) {
         setStartDate(date);
-      }
-    }
-  };
-
-  const handleEndDateChange = (date: Date | null) => {
-    if (!date) return;
-
-    if (date) {
-      const year = date.getFullYear();
-      if (year >= 1900 && year <= 2100) {
-        if (startDate && isBefore(date, startDate)) {
-          setStartDate(null);
-        }
+        setEndDate(null);
+      } else if (isBefore(date, startDate)) {
+        setStartDate(date);
+      } else {
         setEndDate(date);
       }
-    }
-  };
+    },
+    [startDate, endDate, setStartDate, setEndDate],
+  );
+
+  const handleStartDateChange = React.useCallback(
+    (date: Date | null) => {
+      if (!date) return;
+
+      if (date) {
+        const year = date.getFullYear();
+        if (year >= 1900 && year <= 2100) {
+          if (endDate && isAfter(date, endDate)) {
+            setEndDate(null);
+          }
+          setStartDate(date);
+        }
+      }
+    },
+    [endDate, setStartDate, setEndDate],
+  );
+
+  const handleEndDateChange = React.useCallback(
+    (date: Date | null) => {
+      if (!date) return;
+
+      if (date) {
+        const year = date.getFullYear();
+        if (year >= 1900 && year <= 2100) {
+          if (startDate && isBefore(date, startDate)) {
+            setStartDate(null);
+          }
+          setEndDate(date);
+        }
+      }
+    },
+    [startDate, setStartDate, setEndDate],
+  );
 
   const renderDay = (
     day: Date,

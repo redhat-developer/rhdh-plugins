@@ -112,7 +112,7 @@ const Plugins = () => {
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell>
+                <TableCell sx={{ width: '20%' }}>
                   <Link
                     component="a"
                     href={`/${plugin.plugin_id}`}
@@ -128,7 +128,7 @@ const Plugins = () => {
                     {plugin.plugin_id ?? '--'}
                   </Link>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '40%' }}>
                   {plugin.trend?.length > 0 ? (
                     <ResponsiveContainer width={250} height={50}>
                       <LineChart data={plugin.trend}>
@@ -145,7 +145,7 @@ const Plugins = () => {
                     '--'
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '20%' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {Math.round(Number(plugin.trend_percentage)) < 0 ? (
                       <TrendingDownIcon sx={{ color: 'red' }} />
@@ -157,7 +157,7 @@ const Plugins = () => {
                     </Typography>
                   </Box>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '20%' }}>
                   {Number(plugin.visit_count).toLocaleString() ?? '--'}
                 </TableCell>
               </TableRow>

@@ -20,6 +20,9 @@ import {
   getLastUsedDay,
   getAverage,
   getTotal,
+  generateEventsUrl,
+  determineGrouping,
+  getUniqueCatalogEntityKinds,
 } from '../utils';
 import {
   format,
@@ -72,6 +75,20 @@ describe('getXAxisTickValues', () => {
   it('should return empty array for undefined or empty data', () => {
     expect(getXAxisTickValues(undefined, 'daily')).toEqual([]);
     expect(getXAxisTickValues([], 'daily')).toEqual([]);
+  });
+
+  it('should return correct tick value for hourly', () => {
+    const data1 = [
+      { date: '2025-03-01 00:00' },
+      { date: '2025-03-01 12:00' },
+      { date: '2025-03-01 18:00' },
+    ];
+    expect(getXAxisTickValues(data1, 'hourly')).toEqual([
+      '2025-03-01 00:00',
+      '2025-03-01 12:00',
+      '2025-03-01 18:00',
+    ]);
+    expect(getXAxisTickValues([], 'hourly')).toEqual([]);
   });
 
   it('should return correct tick values for small datasets', () => {
@@ -247,6 +264,12 @@ describe('getXAxisTickValues', () => {
 });
 
 describe('getXAxisformat', () => {
+  it('should format hourly correctly', () => {
+    expect(getXAxisformat('2025-03-01', 'hourly')).toMatch(
+      /\d{1,2}:\d{2} [APM]{2}/,
+    );
+  });
+
   it('should format daily dates correctly', () => {
     expect(getXAxisformat('2025-03-01', 'daily')).toMatch(
       /\d{1,2} March \d{2}/,
@@ -280,7 +303,7 @@ describe('getLastUsedDay', () => {
   });
 
   it('should return formatted date for older dates', () => {
-    expect(getLastUsedDay('2024-02-15T00:00:00Z')).toMatch(/\d{2} Feb 2024/);
+    expect(getLastUsedDay('2025-02-15T00:00:00Z')).toMatch(/\d{2} Feb 2024/);
   });
 });
 
@@ -313,5 +336,112 @@ describe('getTotal', () => {
   it('should handle missing keys gracefully', () => {
     const data = [{ value: 10 }, { someOtherKey: 20 }];
     expect(getTotal(data, 'value')).toBe(10);
+  });
+});
+
+describe('getUniqueCatalogEntityKinds', () => {
+  test('should return unique kinds with first letter capitalized', () => {
+    const data = [
+      { kind: 'component' },
+      { kind: 'service' },
+      { kind: 'component' },
+      { kind: 'resource' },
+    ];
+    expect(getUniqueCatalogEntityKinds(data)).toEqual([
+      'Component',
+      'Service',
+      'Resource',
+    ]);
+  });
+
+  test('should handle an empty array', () => {
+    expect(getUniqueCatalogEntityKinds([])).toEqual([]);
+  });
+
+  test('should handle already capitalized kinds', () => {
+    const data = [
+      { kind: 'Component' },
+      { kind: 'Service' },
+      { kind: 'Resource' },
+    ];
+    expect(getUniqueCatalogEntityKinds(data)).toEqual([
+      'Component',
+      'Service',
+      'Resource',
+    ]);
+  });
+
+  test('should handle mixed-case kinds', () => {
+    const data = [{ kind: 'component' }, { kind: 'Component' }];
+    expect(getUniqueCatalogEntityKinds(data)).toEqual(['Component']);
+  });
+
+  test('should handle single item arrays', () => {
+    const data = [{ kind: 'pipeline' }];
+    expect(getUniqueCatalogEntityKinds(data)).toEqual(['Pipeline']);
+  });
+});
+
+describe('generateEventsUrl', () => {
+  it('should generate a correct URL with given parameters', () => {
+    const baseUrl = 'https://api.example.com/events';
+    const options = {
+      type: 'active_users',
+      start_date: '2025-03-10',
+      end_date: '2025-03-15',
+    };
+    const result = generateEventsUrl(baseUrl, options);
+    expect(result).toBe(
+      'https://api.example.com/events?type=active_users&start_date=2025-03-10&end_date=2025-03-15',
+    );
+  });
+
+  it('should exclude undefined or empty values', () => {
+    const baseUrl = 'https://api.example.com/events';
+    const options = { type: 'webinar', start_date: '', end_date: undefined };
+    const result = generateEventsUrl(baseUrl, options);
+    expect(result).toBe('https://api.example.com/events?type=webinar');
+  });
+
+  it('should return base URL when options are empty', () => {
+    const baseUrl = 'https://api.example.com/events';
+    const options = {};
+    const result = generateEventsUrl(baseUrl, options);
+    expect(result).toBe('https://api.example.com/events?');
+  });
+});
+
+describe('determineGrouping', () => {
+  it('should return hourly for 1-day difference', () => {
+    const startDate = new Date('2025-03-10');
+    const endDate = new Date('2025-03-11');
+    expect(determineGrouping(startDate, endDate)).toBe('hourly');
+  });
+
+  it('should return daily for up to 7-day difference', () => {
+    const startDate = new Date('2025-03-10');
+    const endDate = new Date('2025-03-17');
+    expect(determineGrouping(startDate, endDate)).toBe('daily');
+  });
+
+  it('should return weekly for up to 30-day difference', () => {
+    const startDate = new Date('2025-03-01');
+    const endDate = new Date('2025-03-30');
+    expect(determineGrouping(startDate, endDate)).toBe('weekly');
+  });
+
+  it('should return monthly for more than 30 days', () => {
+    const startDate = new Date('2025-01-01');
+    const endDate = new Date('2025-03-05');
+    expect(determineGrouping(startDate, endDate)).toBe('monthly');
+  });
+
+  it('should throw an error for invalid date formats', () => {
+    expect(() =>
+      determineGrouping(new Date('invalid'), new Date('2025-03-05')),
+    ).toThrow('Invalid date format');
+    expect(() =>
+      determineGrouping(new Date('2025-03-05'), new Date('invalid')),
+    ).toThrow('Invalid date format');
   });
 });

@@ -23,7 +23,7 @@ const mockPayload = [{ value: 10 }, { value: 5 }];
 
 describe('CustomTooltip Component', () => {
   it('should render tooltip with correct data when active', () => {
-    const label = '2024-03-09T00:00:00.000Z';
+    const label = '2025-03-09T00:00:00.000Z';
     const formattedDate = format(new Date(label), 'MMMM, dd yyyy');
 
     render(<CustomTooltip active payload={mockPayload} label={label} />);

@@ -80,8 +80,11 @@ const Searches = () => {
           <Typography style={{ margin: '20px 36px' }}>
             An average of{' '}
             <b>
-              {Math.round(getAverage(data, 'count')).toLocaleString()} searches
-              per day
+              {`${Math.round(
+                getAverage(data, 'count'),
+              ).toLocaleString()} searches per ${
+                grouping === 'hourly' ? 'hour' : 'day'
+              }`}
             </b>{' '}
             were conducted during this period.
           </Typography>
@@ -115,7 +118,7 @@ const Searches = () => {
                 />
                 <Tooltip
                   cursor={<CustomCursor cursorHeight={280} />}
-                  content={<CustomTooltip />}
+                  content={<CustomTooltip grouping={grouping} />}
                 />
                 <Line
                   type="linear"

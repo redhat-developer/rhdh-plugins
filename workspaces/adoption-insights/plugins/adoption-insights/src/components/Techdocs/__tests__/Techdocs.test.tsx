@@ -28,22 +28,22 @@ jest.mock('../../../hooks/useTechdocs', () => ({
         {
           entityRef: 'component:default/test-doc-1',
           count: 100,
-          last_used: '2024-02-20T10:00:00Z',
+          last_used: '2025-02-20T10:00:00Z',
         },
         {
           entityRef: 'component:default/test-doc-2',
           count: 75,
-          last_used: '2024-02-19T15:30:00Z',
+          last_used: '2025-02-19T15:30:00Z',
         },
         {
           entityRef: 'service:default/test-doc-3',
           count: 50,
-          last_used: '2024-02-18T09:15:00Z',
+          last_used: '2025-02-18T09:15:00Z',
         },
         {
           entityRef: 'website:default/test-doc-4',
           count: 25,
-          last_used: '2024-02-17T14:45:00Z',
+          last_used: '2025-02-17T14:45:00Z',
         },
       ],
     },

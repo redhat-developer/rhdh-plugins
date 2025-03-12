@@ -54,11 +54,11 @@ describe('DateRangeContext', () => {
     );
 
     act(() => {
-      const newDate = new Date('2024-03-04');
+      const newDate = new Date('2025-03-04');
       contextValue.setStartDateRange(newDate);
     });
 
-    expect(contextValue.startDateRange).toEqual(new Date('2024-03-04'));
+    expect(contextValue.startDateRange).toEqual(new Date('2025-03-04'));
   });
 
   it('should update endDateRange correctly', () => {
@@ -76,11 +76,11 @@ describe('DateRangeContext', () => {
     );
 
     act(() => {
-      const newDate = new Date('2024-03-05');
+      const newDate = new Date('2025-03-05');
       contextValue.setEndDateRange(newDate);
     });
 
-    expect(contextValue.endDateRange).toEqual(new Date('2024-03-05'));
+    expect(contextValue.endDateRange).toEqual(new Date('2025-03-05'));
   });
 
   it('should throw an error if useDateRange is used outside the provider', () => {

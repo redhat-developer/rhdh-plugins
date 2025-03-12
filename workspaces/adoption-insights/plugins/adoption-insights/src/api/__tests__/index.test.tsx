@@ -62,8 +62,8 @@ describe('AdoptionInsightsApiClient', () => {
   testCases.forEach(({ method, response }) => {
     test(`should ${method} return expected response`, async () => {
       const options: APIsViewOptions = {
-        start_date: '2024-01-01',
-        end_date: '2024-01-31',
+        start_date: '2025-01-01',
+        end_date: '2025-01-31',
         type: 'test',
       };
       mockFetch.mockResolvedValue({
@@ -89,8 +89,8 @@ describe('AdoptionInsightsApiClient', () => {
 
   test('should downloadBlob triggers download with correct URL', async () => {
     const options: APIsViewOptions = {
-      start_date: '2024-01-01',
-      end_date: '2024-01-31',
+      start_date: '2025-01-01',
+      end_date: '2025-01-31',
       type: 'test',
       format: 'csv',
       blobName: 'test-file.csv',

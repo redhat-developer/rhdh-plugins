@@ -13,10 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { format, subDays } from 'date-fns';
+import { format, subDays, subHours } from 'date-fns';
 import { PluginTrend } from '../../src/types';
 
-const generateLast30DaysData = () => {
+export const generateHourlyData = () => {
+  return Array.from({ length: 24 }, (_, i) => {
+    const date = format(subHours(new Date(), i), 'yyyy-MM-dd HH:00');
+    const count = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
+    return { date, count };
+  }).reverse();
+};
+
+export const generateLast30DaysData = () => {
   return Array.from({ length: 30 }, (_, i) => {
     const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
     const count = Math.floor(Math.random() * (100 - 50 + 1)) + 50;
@@ -24,52 +32,52 @@ const generateLast30DaysData = () => {
   }).reverse();
 };
 
-export const mockPluginView: PluginTrend = {
+export const mockPluginViewOne: PluginTrend = {
   plugin_id: 'catalog',
   visit_count: 77,
   trend_percentage: '18.67',
-  trend: generateLast30DaysData(),
+  trend: generateHourlyData(),
 };
 
 export const mockPluginViewTwo: PluginTrend = {
   plugin_id: 'ansible',
   visit_count: 77,
   trend_percentage: '18.67',
-  trend: generateLast30DaysData(),
+  trend: generateHourlyData(),
 };
 
 export const mockPluginViewThree: PluginTrend = {
   plugin_id: 'argoCD',
   visit_count: 7792,
   trend_percentage: '-18.67',
-  trend: generateLast30DaysData(),
+  trend: generateHourlyData(),
 };
 
 export const mockPluginViewFour: PluginTrend = {
   plugin_id: 'argoCD Scaffolder',
   visit_count: 77,
   trend_percentage: '18.67',
-  trend: generateLast30DaysData(),
+  trend: generateHourlyData(),
 };
 
 export const mockPluginViewFive: PluginTrend = {
   plugin_id: 'tech docs',
   visit_count: 77,
   trend_percentage: '18.67',
-  trend: generateLast30DaysData(),
+  trend: generateHourlyData(),
 };
 
 export const mockPluginViewSix: PluginTrend = {
   plugin_id: 'catalog info',
   visit_count: 44,
   trend_percentage: '-66.67',
-  trend: generateLast30DaysData(),
+  trend: generateHourlyData(),
 };
 
 export const mockPluginViews = {
-  grouping: 'monthly',
+  grouping: 'hourly',
   data: [
-    mockPluginView,
+    mockPluginViewOne,
     mockPluginViewTwo,
     mockPluginViewThree,
     mockPluginViewFour,

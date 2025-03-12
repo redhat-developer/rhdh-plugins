@@ -24,10 +24,12 @@ const CustomTooltip = ({
   active,
   payload,
   label,
+  grouping,
 }: {
   active?: boolean;
   payload?: any[];
   label?: string;
+  grouping?: string;
 }) => {
   if (active && payload?.length) {
     const date = label ? new Date(label) : new Date();
@@ -49,7 +51,9 @@ const CustomTooltip = ({
             marginBottom: '12px',
           }}
         >
-          {format(date, 'MMMM, dd yyyy')}
+          {grouping === 'hourly'
+            ? format(date, 'MMMM dd, yyyy hh:mm a')
+            : format(date, 'MMMM, dd yyyy')}
         </Typography>
 
         <Box mr={3}>

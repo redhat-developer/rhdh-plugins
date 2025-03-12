@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { adoptionInsightsApiRef } from '../api';
 import { APIsViewOptions, PluginTrendResponse } from '../types';
 import { useDateRange } from '../components/Header/DateRangeContext';
+import { determineGrouping } from '../utils/utils';
 
 export const usePlugins = ({
   limit = 20,
@@ -36,6 +37,7 @@ export const usePlugins = ({
   });
 
   const { startDateRange, endDateRange } = useDateRange();
+  const grouping = determineGrouping(startDateRange, endDateRange);
 
   const api = useApi(adoptionInsightsApiRef);
 
@@ -48,9 +50,10 @@ export const usePlugins = ({
           : undefined,
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
         limit,
+        grouping,
       })
       .then(response => setPlugins(response ?? { data: [] }));
-  }, [api, limit, startDateRange, endDateRange]);
+  }, [api, limit, startDateRange, endDateRange, grouping]);
 
   const { error, loading } = useAsyncRetry(async () => {
     return await getPlugins();

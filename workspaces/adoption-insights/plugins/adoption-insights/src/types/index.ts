@@ -38,6 +38,7 @@ export type APIsViewOptions = {
   kind?: string;
   format?: string | null;
   blobName?: string;
+  grouping?: string;
 };
 
 /**

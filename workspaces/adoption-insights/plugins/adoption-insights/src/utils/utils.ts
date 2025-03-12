@@ -22,6 +22,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
+import { APIsViewOptions } from '../types';
 
 export const getDateRange = (value: string) => {
   const startDate: Date | null = null;
@@ -96,7 +97,9 @@ export const getXAxisTickValues = (data: any, grouping: string): string[] => {
     }
   };
 
-  if (grouping === 'daily' || grouping === 'weekly') {
+  if (grouping === 'hourly') {
+    processGrouping(date => new Date(date).getHours());
+  } else if (grouping === 'daily' || grouping === 'weekly') {
     processGrouping(date => new Date(date).getDate());
   } else if (grouping === 'monthly') {
     processGrouping(date => new Date(date).getMonth());
@@ -107,6 +110,10 @@ export const getXAxisTickValues = (data: any, grouping: string): string[] => {
 
 export const getXAxisformat = (date: string, grouping: string) => {
   const dateObj = new Date(date);
+
+  if (grouping === 'hourly') {
+    return format(dateObj, 'hh:mm a');
+  }
 
   if (grouping === 'daily' || grouping === 'weekly') {
     return format(dateObj, 'd MMMM yy');
@@ -160,4 +167,43 @@ export const getUniqueCatalogEntityKinds = (data: { kind: string }[]) => {
   );
   const uniqueKinds = Array.from(new Set([...allKinds]));
   return uniqueKinds;
+};
+
+export const generateEventsUrl = (
+  baseUrl: string,
+  options: APIsViewOptions,
+): string => {
+  const params = new URLSearchParams();
+
+  Object.entries(options).forEach(([key, value]) => {
+    if (value && value !== undefined) {
+      params.append(key, String(value));
+    }
+  });
+
+  return `${baseUrl}?${params.toString()}`;
+};
+
+export const determineGrouping = (
+  startDate: Date | null,
+  endDate: Date | null,
+): string => {
+  if (
+    startDate &&
+    endDate &&
+    (isNaN(startDate.getTime()) || isNaN(endDate.getTime()))
+  ) {
+    throw new Error('Invalid date format');
+  }
+
+  if (startDate && endDate) {
+    const diffInMs = endDate.getTime() - startDate.getTime();
+    const daysDiff = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (daysDiff <= 1) return 'hourly';
+    if (daysDiff <= 7) return 'daily';
+    if (daysDiff <= 30) return 'weekly';
+  }
+
+  return 'monthly';
 };

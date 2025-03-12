@@ -46,37 +46,38 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
 
   React.useEffect(() => {
     const today = new Date();
-    const initStartDate = subDays(today, 27);
-
-    setStartDateRange(initStartDate);
+    setStartDateRange(subDays(today, 27));
     setEndDateRange(today);
-  }, [setEndDateRange, setStartDateRange]);
+  }, [setStartDateRange, setEndDateRange]);
 
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    const value = event.target.value;
-    if (value === 'all-time' || !value) return;
+  const handleChange = React.useCallback(
+    (event: SelectChangeEvent<string>) => {
+      const value = event.target.value;
+      if (value === 'all-time' || !value) return;
 
-    const { startDate: newStartDate, endDate: newEndDate } =
-      getDateRange(value);
-    if (newStartDate && newEndDate) {
-      setStartDateRange(new Date(newStartDate));
-      setEndDateRange(new Date(newEndDate));
-    }
-    setStartDate(null);
-    setEndDate(null);
+      const { startDate: newStartDate, endDate: newEndDate } =
+        getDateRange(value);
+      if (newStartDate && newEndDate) {
+        setStartDateRange(new Date(newStartDate));
+        setEndDateRange(new Date(newEndDate));
+      }
+      setStartDate(null);
+      setEndDate(null);
 
-    setSelectedOption(value);
-  };
+      setSelectedOption(value);
+    },
+    [setStartDateRange, setEndDateRange],
+  );
 
   const handleDateRangeClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleClose = React.useCallback(() => {
     setAnchorEl(null);
-  };
+  }, []);
 
-  const handleDateRange = () => {
+  const handleDateRange = React.useCallback(() => {
     if (startDate && endDate) {
       setStartDateRange(startDate);
       setEndDateRange(endDate);
@@ -84,15 +85,20 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
       handleClose();
       setMenuOpen(false);
     }
-  };
+  }, [startDate, endDate, setStartDateRange, setEndDateRange, handleClose]);
 
-  const getLabel = (value: string) => {
-    if (value === 'dateRange' && startDateRange && endDateRange)
-      return `${format(startDateRange, 'PP')} - ${format(endDateRange, 'PP')}`;
+  const getLabel = React.useMemo(() => {
+    return (value: string) => {
+      if (value === 'dateRange' && startDateRange && endDateRange)
+        return `${format(startDateRange, 'PP')} - ${format(
+          endDateRange,
+          'PP',
+        )}`;
 
-    const option = DATE_RANGE_OPTIONS.find(opt => opt.value === value);
-    return option ? option.label : 'Last 28 days';
-  };
+      const option = DATE_RANGE_OPTIONS.find(opt => opt.value === value);
+      return option ? option.label : 'Last 28 days';
+    };
+  }, [startDateRange, endDateRange]);
 
   return (
     <Header

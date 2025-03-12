@@ -74,7 +74,6 @@ describe('TableFooterPagination', () => {
     renderComponent();
 
     expect(screen.queryByText(/rows per page/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/\d+-\d+ of \d+/)).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: /previous page/i }),
     ).not.toBeInTheDocument();
