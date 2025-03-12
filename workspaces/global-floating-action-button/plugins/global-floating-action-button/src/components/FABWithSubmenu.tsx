@@ -119,7 +119,7 @@ export const FABWithSubmenu = ({
             in={isMenuOpen}
             mountOnEnter
             unmountOnExit
-            timeout={300}
+            timeout={500}
           >
             <Box>
               <CustomFab
