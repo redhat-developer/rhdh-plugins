@@ -15,6 +15,7 @@
  */
 import {
   calculateDateRange,
+  convertToLocalTimezone,
   getDateGroupingType,
   isSameMonth,
   toEndOfDayUTC,
@@ -64,6 +65,10 @@ describe('isSameMonth', () => {
 });
 
 describe('getDateGroupingType', () => {
+  it('should return "hourly" if dateDiff is 0', () => {
+    expect(getDateGroupingType(0, '2024-03-11', '2024-03-11')).toBe('hourly');
+  });
+
   it('should return "daily" if dateDiff is 7 or less', () => {
     expect(getDateGroupingType(3, '2024-03-01', '2024-03-04')).toBe('daily');
     expect(getDateGroupingType(7, '2024-03-01', '2024-03-08')).toBe('daily');
@@ -77,5 +82,30 @@ describe('getDateGroupingType', () => {
   it('should return "monthly" if dateDiff is greater than 30 or in different months', () => {
     expect(getDateGroupingType(31, '2024-03-01', '2024-04-01')).toBe('monthly');
     expect(getDateGroupingType(10, '2024-03-25', '2024-04-04')).toBe('monthly');
+  });
+});
+
+describe('convertToLocalTimezone', () => {
+  it('should return the date time converted to local timestamp', () => {
+    jest
+      .spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
+      .mockReturnValue({
+        timeZone: 'Asia/Kolkata',
+      } as Intl.ResolvedDateTimeFormatOptions);
+
+    expect(convertToLocalTimezone('2025-03-02 23:30:00')).toBe(
+      '2025-03-02 23:30:00 GMT+5:30',
+    );
+  });
+  it('should return the UTC date converted to local timezone', () => {
+    jest
+      .spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
+      .mockReturnValue({
+        timeZone: 'Asia/Kolkata',
+      } as Intl.ResolvedDateTimeFormatOptions);
+
+    expect(convertToLocalTimezone('2025-03-02T18:00:00.000Z')).toBe(
+      '2025-03-02 23:30:00 GMT+5:30',
+    );
   });
 });

@@ -16,6 +16,7 @@
 import { Knex } from 'knex';
 import {
   DailyUsers,
+  Grouping,
   TopCatalogEntitiesCount,
   TopPluginCount,
   TopSearches,
@@ -28,8 +29,9 @@ import { Event } from '../models/Event';
 export interface Filters {
   start_date: string;
   end_date: string;
-  limit?: number;
-  kind?: string;
+  limit?: number | undefined;
+  kind?: string | undefined;
+  grouping?: Grouping | undefined;
 }
 
 export type UserConfig = {
