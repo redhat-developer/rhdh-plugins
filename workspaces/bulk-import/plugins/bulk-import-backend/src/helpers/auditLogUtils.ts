@@ -14,141 +14,31 @@
  * limitations under the License.
  */
 
-import { NotFoundError, type NotAllowedError } from '@backstage/errors';
+import type {
+  AuditorService,
+  AuditorServiceEvent,
+} from '@backstage/backend-plugin-api';
 
-import type { AuditLogger } from '@janus-idp/backstage-plugin-audit-log-node';
 import express from 'express';
+import kebabCase from 'just-kebab-case';
 
-const EVENT_PREFIX = 'BulkImport';
-const UNKNOWN_ENDPOINT_EVENT = `${EVENT_PREFIX}UnknownEndpoint`;
+const UNKNOWN_ENDPOINT_EVENT = `unknown-endpoint`;
 
-export async function auditLogRequestSuccess(
-  auditLogger: AuditLogger,
+export async function auditLogCreateEvent(
+  auditLogger: AuditorService,
   openApiOperationId: string | undefined,
   req: express.Request,
-  responseStatus: number,
-) {
+): Promise<AuditorServiceEvent> {
   if (!openApiOperationId) {
-    auditLogUnknownEndpoint(auditLogger, req);
-    return;
+    return await auditLogger.createEvent({
+      eventId: UNKNOWN_ENDPOINT_EVENT,
+      severityLevel: 'medium',
+      request: req,
+    });
   }
-  auditLogger.auditLog({
-    eventName: operationIdToEventName(openApiOperationId),
-    stage: 'completion',
-    status: 'succeeded',
-    level: 'info',
+  return await auditLogger.createEvent({
+    eventId: kebabCase(openApiOperationId),
+    severityLevel: 'medium',
     request: req,
-    response: {
-      status: responseStatus,
-    },
-    message: `'${req.method} ${
-      req.path
-    }' endpoint hit by ${await auditLogger.getActorId(req)}`,
   });
-}
-
-export async function auditLogRequestError(
-  auditLogger: AuditLogger,
-  openApiOperationId: string | undefined,
-  req: express.Request,
-  error: any,
-) {
-  if (!openApiOperationId) {
-    auditLogUnknownEndpoint(auditLogger, req);
-    return;
-  }
-  auditLogger.auditLog({
-    eventName: operationIdToEventName(openApiOperationId),
-    stage: 'completion',
-    status: 'failed',
-    level: 'error',
-    request: req,
-    response: {
-      status: 500,
-      body: {
-        errors: [
-          {
-            name: error.name,
-            message: error.message || 'internal server error',
-          },
-        ],
-      },
-    },
-    errors: [error],
-    message: `Error while requesting the '${req.method} ${
-      req.path
-    }' endpoint (request from ${await auditLogger.getActorId(req)})`,
-  });
-}
-
-export async function auditLogUnknownEndpoint(
-  auditLogger: AuditLogger,
-  req: express.Request,
-) {
-  const error = new NotFoundError(`'${req.method} ${req.path}' not found`);
-  auditLogger.auditLog({
-    eventName: UNKNOWN_ENDPOINT_EVENT,
-    stage: 'initiation',
-    status: 'failed',
-    level: 'info',
-    request: req,
-    response: {
-      status: 404,
-      body: {
-        errors: [
-          {
-            name: error.name,
-            message: error.message,
-          },
-        ],
-      },
-    },
-    errors: [error],
-    message: `${await auditLogger.getActorId(req)} requested the unknown '${
-      req.method
-    } ${req.path}' endpoint`,
-  });
-}
-
-export async function auditLogAuthError(
-  auditLogger: AuditLogger,
-  openApiOperationId: string | undefined,
-  req: express.Request,
-  error: NotAllowedError,
-) {
-  if (!openApiOperationId) {
-    auditLogUnknownEndpoint(auditLogger, req);
-    return;
-  }
-  auditLogger.auditLog({
-    eventName: operationIdToEventName(openApiOperationId),
-    stage: 'authorization',
-    status: 'failed',
-    level: 'warn',
-    request: req,
-    response: {
-      status: 403,
-      body: {
-        errors: [
-          {
-            name: error.name,
-            message: error.message,
-          },
-        ],
-      },
-    },
-    errors: [error],
-    message: `${await auditLogger.getActorId(
-      req,
-    )} not authorized to request the '${req.method} ${req.path}' endpoint`,
-  });
-}
-
-function operationIdToEventName(openApiOperationId: string): string {
-  if (openApiOperationId.length === 0) {
-    return EVENT_PREFIX;
-  }
-  return `${EVENT_PREFIX}${openApiOperationId
-    .charAt(0)
-    .toUpperCase()}${openApiOperationId.slice(1)}`;
 }
