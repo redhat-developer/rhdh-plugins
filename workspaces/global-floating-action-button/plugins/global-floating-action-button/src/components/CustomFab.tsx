@@ -79,12 +79,10 @@ export const CustomFab = ({
   actionButton,
   size,
   className,
-  iconColor,
 }: {
   actionButton: FloatingActionButton;
   size?: 'small' | 'medium' | 'large';
   className?: string;
-  iconColor?: string;
 }) => {
   const navigate = useNavigate();
   const isExternalUri = (uri: string) => /^([a-z+.-]+):/.test(uri);
@@ -128,7 +126,7 @@ export const CustomFab = ({
         {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
         className={className}
         style={{
-          color: iconColor || '#1f1f1f',
+          color: actionButton?.iconColor || '#1f1f1f',
           backgroundColor: !actionButton.color && !className ? 'white' : '',
         }}
         variant={

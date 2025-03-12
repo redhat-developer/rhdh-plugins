@@ -75,8 +75,7 @@ export const FloatingButton = ({
       data-testid="floating-button"
     >
       <CustomFab
-        actionButton={{ color: 'info', ...fabs[0] }}
-        iconColor="white"
+        actionButton={{ color: 'info', iconColor: 'white', ...fabs[0] }}
       />
     </div>
   );
