@@ -17,7 +17,7 @@ interface DateCount {
   date: string; // YYYY-MM-DD format
   count: string;
 }
-interface DailyUser {
+export interface DailyUser {
   date: string;
   total_users: number;
   new_users: number;
@@ -29,7 +29,7 @@ interface TotalUser {
   licensed_users: number;
 }
 
-interface PluginCount {
+export interface PluginCount {
   plugin_id: string;
   visit_count: string;
   trend: DateCount[];
@@ -51,12 +51,13 @@ interface CatalogEntityCount {
   count: string;
 }
 
-type ResponseData<T> = {
+export type ResponseData<T> = {
   data: T;
 };
 
-type ResponseWithGrouping<T> = {
-  grouping: 'daily' | 'weekly' | 'monthly';
+export type Grouping = 'hourly' | 'daily' | 'weekly' | 'monthly';
+export type ResponseWithGrouping<T> = {
+  grouping: Grouping;
   data: T;
 };
 export type DailyUsers = ResponseWithGrouping<DailyUser[]>;

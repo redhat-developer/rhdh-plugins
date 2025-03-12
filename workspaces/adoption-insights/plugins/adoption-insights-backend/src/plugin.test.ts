@@ -72,6 +72,6 @@ describe('plugin', () => {
       .get(
         '/api/adoption-insights/events?type=active_users&start_date=1990-03-02&end_date=1990-03-04',
       )
-      .expect(200, { data: [] });
+      .expect(200, { grouping: 'daily', data: [] });
   });
 });

@@ -24,6 +24,7 @@ const dateRequiredSchema = (fieldName: string) =>
 
 export const EventRequestSchema = z
   .object({
+    grouping: z.enum(['hourly', 'weekly', 'daily', 'monthly']).optional(),
     start_date: dateRequiredSchema('start_date'),
     end_date: dateRequiredSchema('end_date'),
     limit: z.string().regex(/^\d+$/).transform(Number).optional(),
