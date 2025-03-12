@@ -466,6 +466,12 @@ function setupInternalRoutes(
       const workflowId = c.request.params.workflowId as string;
       const endpointName = 'executeWorkflow';
       const endpoint = `/v2/workflows/${workflowId}/execute`;
+      // Extract authentication details from headers
+      const authProvider = req.headers.authProvider as string; // Case-sensitive
+      const authToken = req.headers[
+        `X-Authentication-${authProvider}`
+      ] as string;
+      console.log(`Registering endpoint: POST ${endpoint}`);
 
       auditLogger.auditLog({
         eventName: endpointName,
@@ -497,7 +503,13 @@ function setupInternalRoutes(
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
-        .executeWorkflow(executeWorkflowRequestDTO, workflowId, businessKey)
+        .executeWorkflow(
+          executeWorkflowRequestDTO,
+          workflowId,
+          businessKey,
+          authProvider,
+          authToken,
+        )
         .then(result => res.status(200).json(result))
         .catch(error => {
           auditLogRequestError(error, endpointName, endpoint, req);

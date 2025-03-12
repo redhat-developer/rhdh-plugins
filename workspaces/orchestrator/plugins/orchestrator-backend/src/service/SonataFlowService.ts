@@ -101,15 +101,25 @@ export class SonataFlowService {
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
     businessKey?: string;
+    authProvider: string; // Specify provider (e.g., 'Google', 'GitHub')
+    authToken?: string; // Accept authToken as an argument
   }): Promise<WorkflowExecutionResponse | undefined> {
     const urlToFetch = args.businessKey
       ? `${args.serviceUrl}/${args.definitionId}?businessKey=${args.businessKey}`
       : `${args.serviceUrl}/${args.definitionId}`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Dynamically add X-Authentication-<provider> header if token exists
+    if (args.authToken && args.authProvider) {
+      headers[`X-Authentication-${args.authProvider}`] = args.authToken;
+    }
 
     const response = await fetch(urlToFetch, {
       method: 'POST',
       body: JSON.stringify(args.inputData || {}),
-      headers: { 'content-type': 'application/json' },
+      headers,
     });
 
     const json = await response.json();

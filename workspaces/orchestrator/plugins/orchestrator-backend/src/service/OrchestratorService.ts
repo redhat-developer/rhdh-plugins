@@ -187,6 +187,8 @@ export class OrchestratorService {
     inputData?: ProcessInstanceVariables;
     businessKey?: string;
     cacheHandler?: CacheHandler;
+    authProvider: string;
+    authToken: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
     const { definitionId, cacheHandler } = args;
     const isWorkflowAvailable = this.workflowCacheService.isAvailable(

@@ -161,6 +161,8 @@ export class V2 {
     executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO,
     workflowId: string,
     businessKey: string | undefined,
+    authProvider: string,
+    authToken: string,
   ): Promise<ExecuteWorkflowResponseDTO> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
@@ -172,6 +174,7 @@ export class V2 {
     if (!definition.serviceUrl) {
       throw new Error(`ServiceURL is not defined for workflow ${workflowId}`);
     }
+
     const executionResponse = await this.orchestratorService.executeWorkflow({
       definitionId: workflowId,
       inputData:
@@ -179,6 +182,8 @@ export class V2 {
       serviceUrl: definition.serviceUrl,
       businessKey,
       cacheHandler: 'throw',
+      authProvider, // Pass to orchestrator
+      authToken, // Pass to orchestrator
     });
 
     if (!executionResponse) {
