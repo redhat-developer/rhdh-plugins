@@ -16,6 +16,7 @@
 
 import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import type {
+  AuditorService,
   AuthService,
   CacheService,
   DiscoveryService,
@@ -27,10 +28,6 @@ import type { Config } from '@backstage/config';
 import type { PermissionEvaluator } from '@backstage/plugin-permission-common';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
-import {
-  DefaultAuditLogger,
-  type AuditLogger,
-} from '@janus-idp/backstage-plugin-audit-log-node';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import express, { Router, type Request, type Response } from 'express';
 import {
@@ -47,10 +44,7 @@ import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
 import { permissionCheck } from '../helpers';
-import {
-  auditLogRequestError,
-  auditLogRequestSuccess,
-} from '../helpers/auditLogUtils';
+import { auditLogCreateEvent } from '../helpers/auditLogUtils';
 import {
   createImportJobs,
   deleteImportByRepo,
@@ -77,6 +71,7 @@ export interface RouterOptions {
   httpAuth: HttpAuthService;
   auth: AuthService;
   catalogApi: CatalogApi;
+  auditLogger: AuditorService;
 }
 
 /**
@@ -95,13 +90,8 @@ export async function createRouter(
     cache,
     discovery,
     catalogApi,
+    auditLogger,
   } = options;
-
-  const auditLogger: AuditLogger = new DefaultAuditLogger({
-    logger: logger,
-    authService: auth,
-    httpAuthService: httpAuth,
-  });
 
   const githubApiService = new GithubApiService(logger, config, cache);
   const catalogHttpClient = new CatalogHttpClient({
@@ -383,17 +373,19 @@ export async function createRouter(
   router.use(async (req, res, next) => {
     const reqCast = req as OpenAPIRequest;
     const operationId = api.matchOperation(reqCast)?.operationId;
+    const auditorEvent = await auditLogCreateEvent(
+      auditLogger,
+      operationId,
+      req,
+    );
     try {
       const response = (await api.handleRequest(reqCast, req, res)) as Response;
-      auditLogRequestSuccess(
-        auditLogger,
-        operationId,
-        req,
-        response.statusCode,
-      );
+      await auditorEvent.success({
+        meta: { responseStatus: response.statusCode },
+      });
       next();
     } catch (err: any) {
-      auditLogRequestError(auditLogger, operationId, req, err);
+      await auditorEvent.fail({ error: err, meta: { responseStatus: 500 } });
       next(err);
     }
   });
