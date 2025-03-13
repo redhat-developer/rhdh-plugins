@@ -166,7 +166,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const db = this.db;
     const query = db('events')
       .select(
-        db.raw(`context->>'entityRef' AS entityRef`),
+        db.raw(`context->>'entityRef' AS entityref`),
         db.raw('COUNT(*) AS count'),
         db.raw(this.getLastUsedDate()),
       )
@@ -176,7 +176,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
         plugin_id: 'scaffolder',
       })
       .whereBetween('created_at', [start_date, end_date])
-      .groupByRaw('entityRef')
+      .groupByRaw('entityref')
       .orderBy('count', 'desc')
       .limit(Number(limit) || 3);
 
@@ -207,7 +207,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const db = this.db;
     const query = db('events')
       .select(
-        db.raw(`context->>'routeRef' AS entityRef`),
+        db.raw(`context->>'routeRef' AS entityref`),
         db.raw('COUNT(*) AS count'),
         db.raw(this.getLastUsedDate()),
       )
@@ -216,7 +216,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
         plugin_id: 'techdocs',
       })
       .whereBetween('created_at', [start_date, end_date])
-      .groupByRaw('entityRef')
+      .groupByRaw('entityref')
       .limit(Number(limit) || 3);
 
     return query.then(data => this.getResponseData(data, 'last_used'));
