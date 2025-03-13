@@ -15,6 +15,7 @@
  */
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import classnames from 'classnames';
 
@@ -30,6 +31,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     position: 'fixed',
     gap: '10px',
+    flexDirection: 'column-reverse',
   },
   'page-end': {
     bottom: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
@@ -52,22 +54,22 @@ export const FloatingButton = ({
   slot: Slot;
 }) => {
   const { pathname } = useLocation();
-  const [subMenuDirection, setSubMenuDirection] = React.useState<
-    'column' | 'column-reverse'
-  >('column');
   const fabButton = useStyles();
+  const [targetElement, setTargetElement] = React.useState<Element | null>(
+    null,
+  );
 
   React.useEffect(() => {
-    const floatingButtonElement = document.getElementById('floating-button');
-    const screenHeight = window.innerHeight;
-    if (floatingButtonElement) {
-      const { top } = floatingButtonElement?.getBoundingClientRect();
-      if (top < screenHeight / 2) {
-        setSubMenuDirection('column');
+    const checkTargetElement = () => {
+      const element = document.querySelector('[class^="BackstagePage-root"]');
+      if (element) {
+        setTargetElement(element);
       } else {
-        setSubMenuDirection('column-reverse');
+        setTimeout(checkTargetElement);
       }
-    }
+    };
+
+    checkTargetElement();
   }, [pathname]);
 
   const fabs = React.useMemo(
@@ -78,12 +80,13 @@ export const FloatingButton = ({
   if (fabs?.length === 0) {
     return null;
   }
-  return (
+
+  if (!targetElement) {
+    return null;
+  }
+  const fabDiv = (
     <div
       className={classnames(fabButton.fabContainer, fabButton[slot])}
-      style={{
-        flexDirection: subMenuDirection,
-      }}
       id="floating-button"
       data-testId="floating-button"
     >
@@ -94,4 +97,5 @@ export const FloatingButton = ({
       )}
     </div>
   );
+  return createPortal(fabDiv, targetElement);
 };
