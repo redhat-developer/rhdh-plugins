@@ -50,6 +50,7 @@ export type FloatingActionButton = {
     | 'secondary'
     | 'success'
     | 'warning';
+  iconColor?: string;
   onClick?: React.MouseEventHandler;
   to?: string;
   toolTip?: string;
