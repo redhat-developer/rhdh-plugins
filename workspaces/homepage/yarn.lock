@@ -19585,11 +19585,11 @@ __metadata:
   linkType: hard
 
 "fastq@npm:^1.15.0, fastq@npm:^1.6.0":
-  version: 1.19.0
-  resolution: "fastq@npm:1.19.0"
+  version: 1.19.1
+  resolution: "fastq@npm:1.19.1"
   dependencies:
     reusify: ^1.0.4
-  checksum: c9203c9e485f5d1c5243e8807b15054533338242af632817f8d65bed6e46488e5b27cea75dfc110cc4c029137381e4d650449428bc42cc8712180f27a6bace9f
+  checksum: 7691d1794fb84ad0ec2a185f10e00f0e1713b894e2c9c4d42f0bc0ba5f8c00e6e655a202074ca0b91b9c3d977aab7c30c41a8dc069fb5368576ac0054870a0e6
   languageName: node
   linkType: hard
 
@@ -23673,8 +23673,8 @@ __metadata:
   linkType: hard
 
 "knip@npm:^5.27.4, knip@npm:^5.42.0":
-  version: 5.44.4
-  resolution: "knip@npm:5.44.4"
+  version: 5.46.0
+  resolution: "knip@npm:5.46.0"
   dependencies:
     "@nodelib/fs.walk": 3.0.1
     "@snyk/github-codeowners": 1.1.0
@@ -23698,7 +23698,7 @@ __metadata:
   bin:
     knip: bin/knip.js
     knip-bun: bin/knip-bun.js
-  checksum: ca83a4fd16c0a9968e7e6c712361262edd83663c6eff76cdc271bf4fb147aa6aba6d22bbdc401cb065669b8e97181343ca158808460f98cec7a5790417df1bc1
+  checksum: 308e36787829e44e2cd32623deb8c88721e1eede300c4946a36f58065ba99b519c547202877d6c3d00d068bbeb0a0de8a63ecd5b09057670a6260a5fd82ca6ab
   languageName: node
   linkType: hard
 
