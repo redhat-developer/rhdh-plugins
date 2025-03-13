@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.4.1
+
+### Patch Changes
+
+- 5d5904b: Remove CSS resets from PatternFly CSS import
+
 ## 0.4.0
 
 ### Minor Changes
