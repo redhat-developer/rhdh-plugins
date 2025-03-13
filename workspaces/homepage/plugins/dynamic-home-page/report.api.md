@@ -16,6 +16,25 @@ import { VisitedByTypeProps } from '@backstage/plugin-home';
 export const CatalogStarredEntitiesCard: React_2.ComponentType<StarredEntitiesProps>;
 
 // @public
+export const DynamicCustomizableHomePage: React_2.ComponentType<DynamicCustomizableHomePageProps>;
+
+// @public
+export interface DynamicCustomizableHomePageProps {
+    // (undocumented)
+    localClock?: LocalClockProps;
+    // (undocumented)
+    pageTitle?: string;
+    // (undocumented)
+    personalizedTitle?: string;
+    // (undocumented)
+    subtitle?: string;
+    // (undocumented)
+    title?: string;
+    // (undocumented)
+    worldClocks?: ClockConfig[];
+}
+
+// @public
 export const DynamicHomePage: React_2.ComponentType<DynamicHomePageProps>;
 
 // @public
