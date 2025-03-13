@@ -39,6 +39,7 @@ import {
 } from '../../utils/utils';
 import CustomCursor from '../Common/CustomCursor';
 import CustomTooltip from './CustomTooltip';
+import EmptyChartState from '../Common/EmptyChartState';
 
 const Searches = () => {
   const theme = useTheme();
@@ -56,7 +57,7 @@ const Searches = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No results for this time range.</Typography>
+          <EmptyChartState />
         </Box>
       </CardWrapper>
     );

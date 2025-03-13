@@ -17,6 +17,7 @@ import React from 'react';
 
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import { format } from 'date-fns';
 
@@ -31,6 +32,8 @@ const CustomTooltip = ({
   label?: string;
   grouping?: string;
 }) => {
+  const theme = useTheme();
+
   if (active && payload?.length) {
     const date = label ? new Date(label) : new Date();
     return (
@@ -40,13 +43,11 @@ const CustomTooltip = ({
           padding: '12px 16px',
           boxShadow: 4,
           borderRadius: 2,
-          border: theme => `1px solid ${theme.palette.grey[300]}`,
-          backgroundColor: 'white',
         }}
       >
         <Typography
           sx={{
-            fontSize: '14px',
+            fontSize: '0.875rem',
             fontWeight: 500,
             marginBottom: '12px',
           }}
@@ -60,16 +61,16 @@ const CustomTooltip = ({
           <Box mr={3}>
             <Typography
               sx={{
-                fontSize: '14px',
+                fontSize: '0.875rem',
                 fontWeight: 500,
-                color: '#6A6E73',
+                color: theme.palette.text.secondary,
               }}
             >
               Returning users
             </Typography>
             <Typography
               sx={{
-                fontSize: '40px',
+                fontSize: '2.5rem',
                 fontWeight: 500,
                 color: '#009596',
                 lineHeight: 1.2,
@@ -82,16 +83,16 @@ const CustomTooltip = ({
           <Box>
             <Typography
               sx={{
-                fontSize: '14px',
+                fontSize: '0.875rem',
                 fontWeight: 500,
-                color: '#6A6E73',
+                color: theme.palette.text.secondary,
               }}
             >
               New users
             </Typography>
             <Typography
               sx={{
-                fontSize: '40px',
+                fontSize: '2.5rem',
                 fontWeight: 500,
                 color: '#009596',
                 lineHeight: 1.2,

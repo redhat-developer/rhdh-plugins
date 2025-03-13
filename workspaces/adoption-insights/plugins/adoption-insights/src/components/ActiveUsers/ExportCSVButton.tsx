@@ -30,9 +30,9 @@ const ExportCSVButton = () => {
   const api = useApi(adoptionInsightsApiRef);
   const { startDateRange, endDateRange } = useDateRange();
   const theme = useTheme();
+  const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleCSVDownload = async () => {
-    setLoading(true);
     try {
       await api.downloadBlob({
         type: 'active_users',
@@ -50,6 +50,16 @@ const ExportCSVButton = () => {
     }
   };
 
+  const debouncedHandleCSVDownload = () => {
+    setLoading(true);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      handleCSVDownload();
+    }, 500);
+  };
+
   return (
     <Box
       sx={{
@@ -63,11 +73,11 @@ const ExportCSVButton = () => {
       <Button
         variant="text"
         startIcon={<FileDownloadOutlinedIcon />}
-        onClick={handleCSVDownload}
+        onClick={debouncedHandleCSVDownload}
         sx={{
           color: theme.palette.primary.main,
           textTransform: 'none',
-          fontSize: '16px',
+          fontSize: '1rem',
           fontWeight: 400,
           textDecoration: 'none',
           '&:hover': {

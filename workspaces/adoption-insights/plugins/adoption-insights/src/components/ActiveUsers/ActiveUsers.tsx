@@ -41,6 +41,7 @@ import {
 import { useActiveUsers } from '../../hooks/useActiveUsers';
 import { Typography } from '@material-ui/core';
 import ExportCSVButton from './ExportCSVButton';
+import EmptyChartState from '../Common/EmptyChartState';
 
 const ActiveUsers = () => {
   const theme = useTheme();
@@ -58,7 +59,7 @@ const ActiveUsers = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No results for this time range.</Typography>
+          <EmptyChartState />
         </Box>
       </CardWrapper>
     );

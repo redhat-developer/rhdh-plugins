@@ -13,22 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export default {
-  data: [
-    {
-      entityref: 'techdocs:index-page',
-      count: 2,
-      last_used: '2025-03-06T06:25:16.708Z',
-    },
-    {
-      entityref: 'techdocs:insights',
-      count: 4,
-      last_used: '2025-03-06T06:25:16.708Z',
-    },
-    {
-      entityref: 'techdocs:argocd',
-      count: 7,
-      last_used: '2025-03-06T06:25:16.708Z',
-    },
-  ],
+import React from 'react';
+import Typography from '@mui/material/Typography';
+
+const EmptyChartState = () => {
+  return <Typography>No results for this time range.</Typography>;
 };
+
+export default EmptyChartState;

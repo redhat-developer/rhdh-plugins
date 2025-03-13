@@ -24,14 +24,10 @@ import Templates from '../Templates';
 jest.mock('../../../hooks/useTemplates', () => ({
   useTemplates: () => ({
     templates: {
-      data: [
-        { entityRef: 'template:default/example-go-template-1', count: 10 },
-        { entityRef: 'template:default/example-go-template-2', count: 20 },
-        { entityRef: 'template:default/example-go-template-3', count: 30 },
-        { entityRef: 'template:default/example-go-template-4', count: 40 },
-        { entityRef: 'template:default/example-go-template-5', count: 50 },
-        { entityRef: 'template:default/example-go-template-6', count: 60 },
-      ],
+      data: Array.from({ length: 6 }, (_, i) => ({
+        entityref: `template:default/example-go-template-${i + 1}`,
+        count: (i + 1) * 10,
+      })),
     },
     loading: false,
   }),
@@ -97,19 +93,27 @@ describe('Templates', () => {
   it('should display correct table headers', () => {
     renderComponent();
     const headers = screen.getAllByRole('columnheader');
-    expect(headers).toHaveLength(2);
-    expect(headers[0]).toHaveTextContent('Name');
-    expect(headers[1]).toHaveTextContent('Executions');
+    const expectedHeaders = ['Name', 'Executions'];
+
+    expect(headers).toHaveLength(expectedHeaders.length);
+    expectedHeaders.forEach((header, index) => {
+      expect(headers[index]).toHaveTextContent(header);
+    });
   });
 
   it('should display correct data in table rows', () => {
     renderComponent();
     const rows = screen.getAllByRole('row').slice(1);
+    const expectedData = [
+      ['example-go-template-1', '10'],
+      ['example-go-template-2', '20'],
+    ];
 
-    expect(
-      within(rows[0]).getByText('example-go-template-1'),
-    ).toBeInTheDocument();
-    expect(within(rows[0]).getByText('10')).toBeInTheDocument();
+    expectedData.forEach((rowData, rowIndex) => {
+      rowData.forEach(text => {
+        expect(within(rows[rowIndex]).getByText(text)).toBeInTheDocument();
+      });
+    });
   });
 
   it('should handle pagination correctly', async () => {
@@ -125,17 +129,14 @@ describe('Templates', () => {
   it('should create correct entity links', () => {
     renderComponent();
     const links = screen.getAllByRole('link');
-    expect(links[0]).toHaveAttribute(
-      'href',
+    const expectedLinks = [
       '/catalog/template/default/example-go-template-1',
-    );
-  });
+      '/catalog/template/default/example-go-template-2',
+    ];
 
-  it('should format view counts correctly', () => {
-    renderComponent();
-    const rows = screen.getAllByRole('row').slice(1);
-    expect(within(rows[0]).getByText('10')).toBeInTheDocument();
-    expect(within(rows[1]).getByText('20')).toBeInTheDocument();
+    expectedLinks.forEach((link, index) => {
+      expect(links[index]).toHaveAttribute('href', link);
+    });
   });
 
   it('should apply correct styling to table rows', () => {

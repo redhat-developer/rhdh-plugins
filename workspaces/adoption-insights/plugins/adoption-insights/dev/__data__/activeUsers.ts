@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { format, subDays, subHours, subMonths } from 'date-fns';
+import { format, subDays, subHours, subMonths, subWeeks } from 'date-fns';
 
 export const generateHourlyData = () => {
   return Array.from({ length: 24 }, (_, i) => {
@@ -26,10 +26,21 @@ export const generateHourlyData = () => {
 };
 
 export const generateDaysData = () => {
-  return Array.from({ length: 7 }, (_, i) => {
+  return Array.from({ length: 5 }, (_, i) => {
     const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
     const new_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150; // NOSONAR
     const returning_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150; // NOSONAR
+    const total_users = new_users + returning_users;
+    return { date, total_users, new_users, returning_users };
+  }).reverse();
+};
+
+export const generateWeeksData = () => {
+  return Array.from({ length: 4 }, (_, i) => {
+    const date = format(subWeeks(new Date(), i), 'yyyy-MM-dd');
+    const new_users = Math.floor(Math.random() * (3000 - 1500 + 1)) + 1500; // NOSONAR
+    const returning_users =
+      Math.floor(Math.random() * (3000 - 1500 + 1)) + 1500; // NOSONAR
     const total_users = new_users + returning_users;
     return { date, total_users, new_users, returning_users };
   }).reverse();
@@ -47,6 +58,6 @@ export const generateMonthsData = () => {
 };
 
 export default {
-  grouping: 'hourly',
-  data: generateHourlyData(),
+  grouping: 'weekly',
+  data: generateWeeksData(),
 };

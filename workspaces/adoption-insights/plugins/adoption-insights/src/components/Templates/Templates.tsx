@@ -24,7 +24,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { entityRouteRef } from '@backstage/plugin-catalog-react';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import Link from '@mui/material/Link';
@@ -33,6 +32,7 @@ import CardWrapper from '../CardWrapper';
 import { TEMPLATE_TABLE_HEADERS } from '../../utils/constants';
 import TableFooterPagination from '../CardFooter';
 import { useTemplates } from '../../hooks/useTemplates';
+import EmptyChartState from '../Common/EmptyChartState';
 
 const Templates = () => {
   const [page, setPage] = React.useState(0);
@@ -73,7 +73,7 @@ const Templates = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No results for this time range.</Typography>
+          <EmptyChartState />
         </Box>
       </CardWrapper>
     );
@@ -105,39 +105,44 @@ const Templates = () => {
               </TableCell>
             </TableRow>
           ) : (
-            visibleTemplates?.map(template => (
-              <TableRow
-                key={template.entityRef}
-                sx={{
-                  '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
-                  borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
-                }}
-              >
-                <TableCell sx={{ width: '50%' }}>
-                  <Link
-                    component="a"
-                    href={entityLink({
-                      kind: parseEntityRef(template.entityRef).kind,
-                      namespace: 'default',
-                      name: parseEntityRef(template.entityRef)?.name,
-                    })}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      textDecoration: 'none',
-                      '&:hover': {
+            visibleTemplates?.map(template => {
+              const {
+                name,
+                namespace = 'default',
+                kind,
+              } = parseEntityRef(template?.entityref);
+
+              return (
+                <TableRow
+                  key={template.entityref}
+                  sx={{
+                    '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
+                    borderBottom: theme =>
+                      `1px solid ${theme.palette.grey[300]}`,
+                  }}
+                >
+                  <TableCell sx={{ width: '50%' }}>
+                    <Link
+                      component="a"
+                      href={entityLink({ kind, namespace, name })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{
                         textDecoration: 'none',
-                      },
-                    }}
-                  >
-                    {parseEntityRef(template.entityRef).name}
-                  </Link>
-                </TableCell>
-                <TableCell sx={{ width: '50%' }}>
-                  {Number(template.count).toLocaleString() ?? '--'}
-                </TableCell>
-              </TableRow>
-            ))
+                        '&:hover': {
+                          textDecoration: 'none',
+                        },
+                      }}
+                    >
+                      {name ?? '--'}
+                    </Link>
+                  </TableCell>
+                  <TableCell sx={{ width: '50%' }}>
+                    {Number(template.count).toLocaleString() ?? '--'}
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
         <TableFooter>

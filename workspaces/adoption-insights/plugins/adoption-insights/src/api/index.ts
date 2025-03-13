@@ -25,6 +25,7 @@ import {
   ActiveUsersResponse,
   SearchesResponse,
 } from '../types';
+import { generateEventsUrl } from '../utils/utils';
 
 export interface InsightsApi {
   downloadBlob(options: APIsViewOptions): Promise<any>;
@@ -69,9 +70,10 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     }
 
     const baseUrl = await this.getBaseUrl();
-    const response = await this.fetchApi.fetch(
-      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}`,
-    );
+    const url = generateEventsUrl(`${baseUrl}/events`, options);
+
+    const response = await this.fetchApi.fetch(url);
+
     const data = await response.json();
     return data as ActiveUsersResponse;
   }
@@ -82,9 +84,10 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     }
 
     const baseUrl = await this.getBaseUrl();
-    const response = await this.fetchApi.fetch(
-      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}`,
-    );
+    const url = generateEventsUrl(`${baseUrl}/events`, options);
+
+    const response = await this.fetchApi.fetch(url);
+
     const data = await response.json();
     return data as UsersResponse;
   }
@@ -97,12 +100,10 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     }
 
     const baseUrl = await this.getBaseUrl();
-    let url = `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`;
-    if (options.kind) {
-      url += `&kind=${options.kind}`;
-    }
+    const url = generateEventsUrl(`${baseUrl}/events`, options);
 
     const response = await this.fetchApi.fetch(url);
+
     const data = await response.json();
     return data as CatalogEntitiesResponse;
   }
@@ -113,9 +114,10 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     }
 
     const baseUrl = await this.getBaseUrl();
-    const response = await this.fetchApi.fetch(
-      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
-    );
+    const url = generateEventsUrl(`${baseUrl}/events`, options);
+
+    const response = await this.fetchApi.fetch(url);
+
     const data = await response.json();
     return data as TemplatesResponse;
   }
@@ -126,9 +128,10 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     }
 
     const baseUrl = await this.getBaseUrl();
-    const response = await this.fetchApi.fetch(
-      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
-    );
+    const url = generateEventsUrl(`${baseUrl}/events`, options);
+
+    const response = await this.fetchApi.fetch(url);
+
     const data = await response.json();
     return data as TechdocsResponse;
   }
@@ -139,9 +142,10 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     }
 
     const baseUrl = await this.getBaseUrl();
-    const response = await this.fetchApi.fetch(
-      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&limit=${options.limit}`,
-    );
+    const url = generateEventsUrl(`${baseUrl}/events`, options);
+
+    const response = await this.fetchApi.fetch(url);
+
     const data = await response.json();
     return data as PluginTrendResponse;
   }
@@ -152,9 +156,10 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     }
 
     const baseUrl = await this.getBaseUrl();
-    const response = await this.fetchApi.fetch(
-      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}`,
-    );
+    const url = generateEventsUrl(`${baseUrl}/events`, options);
+
+    const response = await this.fetchApi.fetch(url);
+
     const data = await response.json();
     return data as SearchesResponse;
   }

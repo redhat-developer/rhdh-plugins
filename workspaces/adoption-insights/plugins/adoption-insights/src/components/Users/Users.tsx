@@ -36,6 +36,7 @@ import CardWrapper from '../CardWrapper';
 import InfoComponent from './Info';
 import CustomTooltip from './Tooltip';
 import { useUsers } from '../../hooks/useUsers';
+import EmptyChartState from '../Common/EmptyChartState';
 
 const Users = () => {
   const theme = useTheme();
@@ -51,7 +52,7 @@ const Users = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No results for this time range.</Typography>
+          <EmptyChartState />
         </Box>
       </CardWrapper>
     );

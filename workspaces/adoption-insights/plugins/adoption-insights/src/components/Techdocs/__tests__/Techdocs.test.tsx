@@ -21,31 +21,24 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import Techdocs from '../Techdocs';
 
+const types = ['component', 'component', 'service', 'website'];
+const names = ['test-doc-1', 'test-doc-2', 'test-doc-3', 'test-doc-4'];
+const counts = [100, 75, 50, 25];
+const lastUsedDates = [
+  '2025-02-20T10:00:00Z',
+  '2025-02-19T15:30:00Z',
+  '2025-02-18T09:15:00Z',
+  '2025-02-17T14:45:00Z',
+];
+
 jest.mock('../../../hooks/useTechdocs', () => ({
   useTechdocs: () => ({
     techdocs: {
-      data: [
-        {
-          entityRef: 'component:default/test-doc-1',
-          count: 100,
-          last_used: '2025-02-20T10:00:00Z',
-        },
-        {
-          entityRef: 'component:default/test-doc-2',
-          count: 75,
-          last_used: '2025-02-19T15:30:00Z',
-        },
-        {
-          entityRef: 'service:default/test-doc-3',
-          count: 50,
-          last_used: '2025-02-18T09:15:00Z',
-        },
-        {
-          entityRef: 'website:default/test-doc-4',
-          count: 25,
-          last_used: '2025-02-17T14:45:00Z',
-        },
-      ],
+      data: types.map((type, i) => ({
+        entityref: `${type}:default/${names[i]}`,
+        count: counts[i],
+        last_used: lastUsedDates[i],
+      })),
     },
     loading: false,
   }),
@@ -100,42 +93,41 @@ describe('Techdocs', () => {
   const theme = createTheme();
   const user = userEvent.setup();
 
-  const renderComponent = () => {
-    return render(
+  beforeEach(() => {
+    render(
       <ThemeProvider theme={theme}>
         <Techdocs />
       </ThemeProvider>,
     );
-  };
+  });
 
   it('should render the component with initial data', () => {
-    renderComponent();
     expect(screen.getByText('Top 3 techdocs')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(5);
   });
 
   it('should display correct table headers', () => {
-    renderComponent();
     const headers = screen.getAllByRole('columnheader');
-    expect(headers).toHaveLength(4);
-    expect(headers[0]).toHaveTextContent('Name');
-    expect(headers[1]).toHaveTextContent('Kind');
-    expect(headers[2]).toHaveTextContent('Last Used');
-    expect(headers[3]).toHaveTextContent('Views');
+    const expectedHeaders = ['Name', 'Kind', 'Last Used', 'Views'];
+
+    expect(headers).toHaveLength(expectedHeaders.length);
+
+    expectedHeaders.forEach((text, index) => {
+      expect(headers[index]).toHaveTextContent(text);
+    });
   });
 
   it('should display correct data in table rows', () => {
-    renderComponent();
     const rows = screen.getAllByRole('row').slice(1);
 
-    expect(within(rows[0]).getByText('test-doc-1')).toBeInTheDocument();
-    expect(within(rows[0]).getByText('component')).toBeInTheDocument();
-    expect(within(rows[0]).getByText('Yesterday')).toBeInTheDocument();
-    expect(within(rows[0]).getByText('100')).toBeInTheDocument();
+    const expectedRowData = ['test-doc-1', 'component', 'Yesterday', '100'];
+
+    expectedRowData.forEach(text => {
+      expect(within(rows[0]).getByText(text)).toBeInTheDocument();
+    });
   });
 
   it('should handle pagination correctly', async () => {
-    renderComponent();
     const select = screen.getByRole('combobox');
 
     await user.click(select);
@@ -146,7 +138,6 @@ describe('Techdocs', () => {
   });
 
   it('should create correct entity links', () => {
-    renderComponent();
     const links = screen.getAllByRole('link');
     expect(links[0]).toHaveAttribute(
       'href',
@@ -155,14 +146,15 @@ describe('Techdocs', () => {
   });
 
   it('should format view counts correctly', () => {
-    renderComponent();
     const rows = screen.getAllByRole('row').slice(1);
-    expect(within(rows[0]).getByText('100')).toBeInTheDocument();
-    expect(within(rows[1]).getByText('75')).toBeInTheDocument();
+    const expectedRowData = ['100', '75'];
+
+    expectedRowData.forEach((text, index) => {
+      expect(within(rows[index]).getByText(text)).toBeInTheDocument();
+    });
   });
 
   it('should apply correct styling to table rows', () => {
-    renderComponent();
     const rows = screen.getAllByRole('row').slice(1);
     expect(rows[0]).toHaveStyle({ backgroundColor: 'inherit' });
   });

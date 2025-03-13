@@ -21,59 +21,44 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import CatalogEntities from '../CatalogEntities';
 
+const ids = ['1', '2', '3', '4', '5', '6'];
+const names = [
+  'devhub',
+  'hg-dev-hub-starter',
+  'netbox',
+  'devhub',
+  'hg-dev-hub-starter',
+  'netbox',
+];
+const kinds = [
+  'Component',
+  'Component',
+  'API',
+  'Component',
+  'Component',
+  'API',
+];
+const lastUsedDates = [
+  '2025-03-06T06:25:16.708Z',
+  '2025-03-05T06:25:16.708Z',
+  '2025-03-04T06:25:16.708Z',
+  '2025-03-01T06:25:16.708Z',
+  '2025-03-06T06:25:16.708Z',
+  '2025-03-06T06:25:16.708Z',
+];
+const counts = [2233, 1974, 1863, 2233, 1974, 1863];
+
 jest.mock('../../../hooks/useCatalogEntities', () => ({
   useCatalogEntities: () => ({
     catalogEntities: {
-      data: [
-        {
-          plugin_id: '1',
-          name: 'devhub',
-          kind: 'Component',
-          last_used: '2025-03-06T06:25:16.708Z',
-          count: 2233,
-          namespace: 'default',
-        },
-        {
-          plugin_id: '2',
-          name: 'hg-dev-hub-starter',
-          kind: 'Component',
-          last_used: '2025-03-05T06:25:16.708Z',
-          count: 1974,
-          namespace: 'default',
-        },
-        {
-          plugin_id: '3',
-          name: 'netbox',
-          kind: 'API',
-          last_used: '2025-03-04T06:25:16.708Z',
-          count: 1863,
-          namespace: 'default',
-        },
-        {
-          plugin_id: '4',
-          name: 'devhub',
-          kind: 'Component',
-          last_used: '2025-03-01T06:25:16.708Z',
-          count: 2233,
-          namespace: 'default',
-        },
-        {
-          plugin_id: '5',
-          name: 'hg-dev-hub-starter',
-          kind: 'Component',
-          last_used: '2025-03-06T06:25:16.708Z',
-          count: 1974,
-          namespace: 'default',
-        },
-        {
-          plugin_id: '6',
-          name: 'netbox',
-          kind: 'API',
-          last_used: '2025-03-06T06:25:16.708Z',
-          count: 1863,
-          namespace: 'default',
-        },
-      ],
+      data: ids.map((id, i) => ({
+        plugin_id: id,
+        name: names[i],
+        kind: kinds[i],
+        last_used: lastUsedDates[i],
+        count: counts[i],
+        namespace: 'default',
+      })),
     },
     loading: false,
   }),
@@ -147,21 +132,29 @@ describe('CatalogEntities', () => {
   it('should display correct table headers', () => {
     renderComponent();
     const headers = screen.getAllByRole('columnheader');
-    expect(headers).toHaveLength(4);
-    expect(headers[0]).toHaveTextContent('Name');
-    expect(headers[1]).toHaveTextContent('Kind');
-    expect(headers[2]).toHaveTextContent('Last used');
-    expect(headers[3]).toHaveTextContent('Views');
+    const expectedHeaders = ['Name', 'Kind', 'Last used', 'Views'];
+
+    expect(headers).toHaveLength(expectedHeaders.length);
+
+    expectedHeaders.forEach((text, index) => {
+      expect(headers[index]).toHaveTextContent(text);
+    });
   });
 
   it('should display correct data in table rows', () => {
     renderComponent();
     const rows = screen.getAllByRole('row').slice(1);
+    const expectedRowData = [
+      ['devhub', 'Component', 'Yesterday', '2,233'],
+      ['hg-dev-hub-starter', 'Component', 'Yesterday', '1,974'],
+      ['netbox', 'API', 'Yesterday', '1,863'],
+    ];
 
-    expect(within(rows[0]).getByText('devhub')).toBeInTheDocument();
-    expect(within(rows[0]).getByText('Component')).toBeInTheDocument();
-    expect(within(rows[0]).getByText('Yesterday')).toBeInTheDocument();
-    expect(within(rows[0]).getByText('2,233')).toBeInTheDocument();
+    expectedRowData.forEach((rowData, rowIndex) => {
+      rowData.forEach(text => {
+        expect(within(rows[rowIndex]).getByText(text)).toBeInTheDocument();
+      });
+    });
   });
 
   it('should handle pagination correctly', async () => {

@@ -24,7 +24,6 @@ import TableFooter from '@mui/material/TableFooter';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import { entityRouteRef } from '@backstage/plugin-catalog-react';
 import { useRouteRef } from '@backstage/core-plugin-api';
@@ -38,6 +37,7 @@ import { useCatalogEntities } from '../../hooks/useCatalogEntities';
 import TableFooterPagination from '../CardFooter';
 import { getLastUsedDay, getUniqueCatalogEntityKinds } from '../../utils/utils';
 import FilterDropdown from './FilterDropdown';
+import EmptyChartState from '../Common/EmptyChartState';
 
 const CatalogEntities = () => {
   const [page, setPage] = React.useState(0);
@@ -106,7 +106,7 @@ const CatalogEntities = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No results for this time range.</Typography>
+          <EmptyChartState />
         </Box>
       </CardWrapper>
     );

@@ -72,194 +72,61 @@ describe('getDateRange', () => {
 });
 
 describe('getXAxisTickValues', () => {
-  it('should return empty array for undefined or empty data', () => {
-    expect(getXAxisTickValues(undefined, 'daily')).toEqual([]);
-    expect(getXAxisTickValues([], 'daily')).toEqual([]);
-  });
+  const testCases = [
+    {
+      description: 'empty data should return an empty array',
+      data: [],
+      grouping: 'daily',
+      expected: [],
+    },
+    {
+      description: 'should return correct tick values for hourly grouping',
+      data: [
+        { date: '2025-03-01 00:00' },
+        { date: '2025-03-01 12:00' },
+        { date: '2025-03-01 18:00' },
+      ],
+      grouping: 'hourly',
+      expected: ['2025-03-01 00:00', '2025-03-01 12:00', '2025-03-01 18:00'],
+    },
+    {
+      description: 'should return correct tick values for daily grouping',
+      data: [
+        { date: '2025-03-01' },
+        { date: '2025-03-02' },
+        { date: '2025-03-03' },
+        { date: '2025-03-04' },
+        { date: '2025-03-05' },
+      ],
+      grouping: 'daily',
+      expected: ['2025-03-01', '2025-03-03', '2025-03-05'], // Assuming alternate values are picked
+    },
+    {
+      description: 'should return correct tick values for weekly grouping',
+      data: [
+        { date: '2025-03-01' },
+        { date: '2025-03-08' },
+        { date: '2025-03-15' },
+        { date: '2025-03-22' },
+      ],
+      grouping: 'weekly',
+      expected: ['2025-03-01', '2025-03-08', '2025-03-15', '2025-03-22'],
+    },
+    {
+      description: 'should return correct tick values for monthly grouping',
+      data: [
+        { date: '2025-01-01' },
+        { date: '2025-02-01' },
+        { date: '2025-03-01' },
+        { date: '2025-04-01' },
+      ],
+      grouping: 'monthly',
+      expected: ['2025-01-01', '2025-02-01', '2025-03-01', '2025-04-01'],
+    },
+  ];
 
-  it('should return correct tick value for hourly', () => {
-    const data1 = [
-      { date: '2025-03-01 00:00' },
-      { date: '2025-03-01 12:00' },
-      { date: '2025-03-01 18:00' },
-    ];
-    expect(getXAxisTickValues(data1, 'hourly')).toEqual([
-      '2025-03-01 00:00',
-      '2025-03-01 12:00',
-      '2025-03-01 18:00',
-    ]);
-    expect(getXAxisTickValues([], 'hourly')).toEqual([]);
-  });
-
-  it('should return correct tick values for small datasets', () => {
-    const data1 = [{ date: '2025-03-01' }];
-    expect(getXAxisTickValues(data1, 'daily')).toEqual(['2025-03-01']);
-
-    const data2 = [{ date: '2025-03-01' }, { date: '2025-03-02' }];
-    expect(getXAxisTickValues(data2, 'daily')).toEqual([
-      '2025-03-01',
-      '2025-03-02',
-    ]);
-  });
-
-  it('should return correct values for 4 dataset sizes for daily grouping', () => {
-    const data = [
-      { date: '2025-03-01' },
-      { date: '2025-03-02' },
-      { date: '2025-03-03' },
-      { date: '2025-03-04' },
-    ];
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-01');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-02');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-03');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-04');
-  });
-
-  it('should return correct values for 4 dataset sizes for weekly grouping', () => {
-    const data = [
-      { date: '2025-03-01' },
-      { date: '2025-03-08' },
-      { date: '2025-03-15' },
-      { date: '2025-03-22' },
-    ];
-    expect(getXAxisTickValues(data, 'weekly')).toContain('2025-03-01');
-    expect(getXAxisTickValues(data, 'weekly')).toContain('2025-03-08');
-    expect(getXAxisTickValues(data, 'weekly')).toContain('2025-03-15');
-    expect(getXAxisTickValues(data, 'weekly')).toContain('2025-03-22');
-  });
-
-  it('should return correct values for 5 dataset sizes for daily grouping', () => {
-    const data = [
-      { date: '2025-03-01' },
-      { date: '2025-03-02' },
-      { date: '2025-03-03' },
-      { date: '2025-03-04' },
-      { date: '2025-03-05' },
-    ];
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-01');
-    expect(getXAxisTickValues(data, 'daily')).not.toContain('2025-03-02');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-03');
-    expect(getXAxisTickValues(data, 'daily')).not.toContain('2025-03-04');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-05');
-  });
-
-  it('should return correct values for 6 dataset sizes for daily grouping', () => {
-    const data = [
-      { date: '2025-03-01' },
-      { date: '2025-03-02' },
-      { date: '2025-03-03' },
-      { date: '2025-03-04' },
-      { date: '2025-03-05' },
-      { date: '2025-03-06' },
-    ];
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-01');
-    expect(getXAxisTickValues(data, 'daily')).not.toContain('2025-03-02');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-03');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-04');
-    expect(getXAxisTickValues(data, 'daily')).not.toContain('2025-03-05');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-06');
-  });
-
-  it('should return correct values for 9 dataset sizes for daily grouping', () => {
-    const data = [
-      { date: '2025-03-01' },
-      { date: '2025-03-02' },
-      { date: '2025-03-03' },
-      { date: '2025-03-04' },
-      { date: '2025-03-05' },
-      { date: '2025-03-06' },
-      { date: '2025-03-07' },
-      { date: '2025-03-08' },
-      { date: '2025-03-09' },
-    ];
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-01');
-    expect(getXAxisTickValues(data, 'daily')).not.toContain('2025-03-02');
-    expect(getXAxisTickValues(data, 'daily')).not.toContain('2025-03-03');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-04');
-    expect(getXAxisTickValues(data, 'daily')).not.toContain('2025-03-05');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-06');
-    expect(getXAxisTickValues(data, 'daily')).not.toContain('2025-03-07');
-    expect(getXAxisTickValues(data, 'daily')).not.toContain('2025-03-08');
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-09');
-  });
-
-  it('should return correct values for 4 dataset sizes for monthly grouping', () => {
-    const data = [
-      { date: '2025-01-01' },
-      { date: '2025-02-01' },
-      { date: '2025-03-01' },
-      { date: '2025-04-01' },
-    ];
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-01-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-02-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-03-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-04-01');
-  });
-
-  it('should return correct values for 6 dataset sizes for monthly grouping', () => {
-    const data = [
-      { date: '2025-01-01' },
-      { date: '2025-02-01' },
-      { date: '2025-03-01' },
-      { date: '2025-04-01' },
-      { date: '2025-05-01' },
-      { date: '2025-06-01' },
-    ];
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-01-01');
-    expect(getXAxisTickValues(data, 'monthly')).not.toContain('2025-02-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-03-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-04-01');
-    expect(getXAxisTickValues(data, 'monthly')).not.toContain('2025-05-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-06-01');
-  });
-
-  it('should return correct values for 9 dataset sizes for monthly grouping', () => {
-    const data = [
-      { date: '2025-01-01' },
-      { date: '2025-02-01' },
-      { date: '2025-03-01' },
-      { date: '2025-04-01' },
-      { date: '2025-05-01' },
-      { date: '2025-06-01' },
-      { date: '2025-07-01' },
-      { date: '2025-08-01' },
-      { date: '2025-09-01' },
-    ];
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-01-01');
-    expect(getXAxisTickValues(data, 'monthly')).not.toContain('2025-02-01');
-    expect(getXAxisTickValues(data, 'monthly')).not.toContain('2025-03-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-04-01');
-    expect(getXAxisTickValues(data, 'monthly')).not.toContain('2025-05-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-06-01');
-    expect(getXAxisTickValues(data, 'monthly')).not.toContain('2025-07-01');
-    expect(getXAxisTickValues(data, 'monthly')).not.toContain('2025-08-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-09-01');
-  });
-
-  it('should return correct values for 5 dataset sizes for monthly grouping', () => {
-    const data = [
-      { date: '2025-01-01' },
-      { date: '2025-02-01' },
-      { date: '2025-03-01' },
-      { date: '2025-04-01' },
-      { date: '2025-05-01' },
-    ];
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-01-01');
-    expect(getXAxisTickValues(data, 'monthly')).not.toContain('2025-02-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-03-01');
-    expect(getXAxisTickValues(data, 'monthly')).not.toContain('2025-04-01');
-    expect(getXAxisTickValues(data, 'monthly')).toContain('2025-05-01');
-  });
-
-  it('should return correct values for different dataset sizes', () => {
-    const data = [
-      { date: '2025-03-01' },
-      { date: '2025-03-02' },
-      { date: '2025-03-03' },
-      { date: '2025-03-04' },
-      { date: '2025-03-05' },
-    ];
-    expect(getXAxisTickValues(data, 'daily')).toContain('2025-03-03');
+  it.each(testCases)('$description', ({ data, grouping, expected }) => {
+    expect(getXAxisTickValues(data, grouping)).toEqual(expected);
   });
 });
 

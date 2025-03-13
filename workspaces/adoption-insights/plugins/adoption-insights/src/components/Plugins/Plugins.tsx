@@ -26,13 +26,13 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 
 import CardWrapper from '../CardWrapper';
 import { PLUGINS_TABLE_HEADERS } from '../../utils/constants';
 import { usePlugins } from '../../hooks/usePlugins';
 import TableFooterPagination from '../CardFooter';
 import { Line, LineChart, ResponsiveContainer } from 'recharts';
+import EmptyChartState from '../Common/EmptyChartState';
 
 const Plugins = () => {
   const [page, setPage] = React.useState(0);
@@ -72,7 +72,7 @@ const Plugins = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No results for this time range.</Typography>
+          <EmptyChartState />
         </Box>
       </CardWrapper>
     );
@@ -113,20 +113,7 @@ const Plugins = () => {
                 }}
               >
                 <TableCell sx={{ width: '20%' }}>
-                  <Link
-                    component="a"
-                    href={`/${plugin.plugin_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      textDecoration: 'none',
-                      '&:hover': {
-                        textDecoration: 'none',
-                      },
-                    }}
-                  >
-                    {plugin.plugin_id ?? '--'}
-                  </Link>
+                  {plugin.plugin_id ?? '--'}
                 </TableCell>
                 <TableCell sx={{ width: '40%' }}>
                   {plugin.trend?.length > 0 ? (

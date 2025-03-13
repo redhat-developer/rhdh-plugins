@@ -79,7 +79,7 @@ export type CatalogEntitiesResponse = {
  * Templates
  */
 export type Templates = {
-  entityRef: string;
+  entityref: string;
   count: number;
 };
 
@@ -91,7 +91,7 @@ export type TemplatesResponse = {
  * Techdocs
  */
 export type Techdocs = {
-  entityRef: string;
+  entityref: string;
   count: number;
   last_used: string;
 };

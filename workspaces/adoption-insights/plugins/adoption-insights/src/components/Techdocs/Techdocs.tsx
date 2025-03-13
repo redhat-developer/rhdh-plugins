@@ -23,7 +23,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { parseEntityRef } from '@backstage/catalog-model';
 import { entityRouteRef } from '@backstage/plugin-catalog-react';
 import { useRouteRef } from '@backstage/core-plugin-api';
@@ -34,6 +33,7 @@ import { TECHDOCS_TABLE_HEADERS } from '../../utils/constants';
 import TableFooterPagination from '../CardFooter';
 import { useTechdocs } from '../../hooks/useTechdocs';
 import { getLastUsedDay } from '../../utils/utils';
+import EmptyChartState from '../Common/EmptyChartState';
 
 const Techdocs = () => {
   const [page, setPage] = React.useState(0);
@@ -74,7 +74,7 @@ const Techdocs = () => {
           alignItems="center"
           height={200}
         >
-          <Typography>No results for this time range.</Typography>
+          <EmptyChartState />
         </Box>
       </CardWrapper>
     );
@@ -106,66 +106,71 @@ const Techdocs = () => {
               </TableCell>
             </TableRow>
           ) : (
-            visibleTechdocs?.map(techdoc => (
-              <TableRow
-                key={techdoc.entityRef}
-                sx={{
-                  '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
-                  borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
-                }}
-              >
-                <TableCell>
-                  <Link
-                    component="a"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href={entityLink({
-                      kind: parseEntityRef(techdoc.entityRef)?.kind,
-                      namespace:
-                        parseEntityRef(techdoc.entityRef)?.namespace ??
-                        'default',
-                      name: parseEntityRef(techdoc.entityRef)?.name,
-                    })}
-                    sx={{
-                      textDecoration: 'none',
-                      '&:hover': {
+            visibleTechdocs?.map(techdoc => {
+              const {
+                kind,
+                namespace = 'default',
+                name,
+              } = parseEntityRef(techdoc.entityref);
+
+              return (
+                <TableRow
+                  key={techdoc.entityref}
+                  sx={{
+                    '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
+                    borderBottom: theme =>
+                      `1px solid ${theme.palette.grey[300]}`,
+                  }}
+                >
+                  <TableCell>
+                    <Link
+                      component="a"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={
+                        name === 'index-page'
+                          ? '/doc'
+                          : entityLink({ kind, namespace, name })
+                      }
+                      sx={{
                         textDecoration: 'none',
-                      },
-                    }}
-                  >
-                    {parseEntityRef(techdoc.entityRef)?.name}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Link
-                    component="a"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href={entityLink({
-                      kind: parseEntityRef(techdoc.entityRef)?.kind,
-                      namespace:
-                        parseEntityRef(techdoc.entityRef)?.namespace ??
-                        'default',
-                      name: parseEntityRef(techdoc.entityRef)?.name,
-                    })}
-                    sx={{
-                      textDecoration: 'none',
-                      '&:hover': {
+                        '&:hover': {
+                          textDecoration: 'none',
+                        },
+                      }}
+                    >
+                      {name ?? '--'}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      component="a"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={
+                        name === 'index-page'
+                          ? '/doc'
+                          : entityLink({ kind, namespace, name })
+                      }
+                      sx={{
                         textDecoration: 'none',
-                      },
-                    }}
-                  >
-                    {parseEntityRef(techdoc.entityRef)?.kind ?? '--'}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  {getLastUsedDay(techdoc.last_used) ?? '--'}
-                </TableCell>
-                <TableCell>
-                  {Number(techdoc.count).toLocaleString() ?? '--'}
-                </TableCell>
-              </TableRow>
-            ))
+                        '&:hover': {
+                          textDecoration: 'none',
+                        },
+                      }}
+                    >
+                      {kind ?? '--'}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    {getLastUsedDay(techdoc.last_used) ?? '--'}
+                  </TableCell>
+                  <TableCell>
+                    {Number(techdoc.count).toLocaleString() ?? '--'}
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
         <TableFooter>

@@ -39,7 +39,7 @@ describe('CustomLegend Component', () => {
     renderComponent(mockPayload);
 
     expect(screen.getByText('New users')).toBeInTheDocument();
-    expect(screen.getByText('Returing users')).toBeInTheDocument();
+    expect(screen.getByText('Returning users')).toBeInTheDocument();
   });
 
   it('should apply the correct styles for legend markers', () => {

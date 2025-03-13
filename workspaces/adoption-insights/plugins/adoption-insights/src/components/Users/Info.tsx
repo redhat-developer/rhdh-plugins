@@ -41,7 +41,7 @@ const InfoComponent = () => {
               alignItems: 'center',
               bgcolor: '#151515',
               color: 'white',
-              fontSize: 14,
+              fontSize: '0.875rem',
               p: 1.5,
             },
           },
@@ -49,7 +49,7 @@ const InfoComponent = () => {
       >
         <IconButton>
           <InfoOutlinedIcon
-            sx={{ color: theme.palette.text.secondary, fontSize: 28 }}
+            sx={{ color: theme.palette.text.secondary, fontSize: '1.75rem' }}
           />
         </IconButton>
       </MuiTooltip>

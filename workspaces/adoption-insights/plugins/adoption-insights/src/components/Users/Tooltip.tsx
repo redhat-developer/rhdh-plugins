@@ -38,14 +38,16 @@ const Tooltip = ({ active, payload, licensed_users, logged_in_users }: any) => {
           border: theme => `1px solid ${theme.palette.grey[300]}`,
         }}
       >
-        <Typography style={{ fontSize: '14px', margin: 0, fontWeight: '500' }}>
+        <Typography
+          style={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}
+        >
           {name === 'Licensed'
             ? (value - logged_in_users).toLocaleString()
             : value.toLocaleString()}
         </Typography>
         <Typography
           style={{
-            fontSize: '32px',
+            fontSize: '2rem',
             margin: 0,
             color: '#009596',
             fontWeight: '500',
