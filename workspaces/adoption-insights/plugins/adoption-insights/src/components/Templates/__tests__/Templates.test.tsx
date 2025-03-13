@@ -84,36 +84,52 @@ describe('Templates', () => {
     );
   };
 
+  /** Helper function to verify table headers */
+  const verifyHeaders = (expectedHeaders: string[]) => {
+    const headers = screen.getAllByRole('columnheader');
+    expect(headers).toHaveLength(expectedHeaders.length);
+    expectedHeaders.forEach((header, index) => {
+      expect(headers[index]).toHaveTextContent(header);
+    });
+  };
+
+  /** Helper function to verify table row data */
+  const verifyTableData = (expectedData: string[][]) => {
+    const rows = screen.getAllByRole('row').slice(1);
+    expectedData.forEach((rowData, rowIndex) => {
+      rowData.forEach(text => {
+        expect(within(rows[rowIndex]).getByText(text)).toBeInTheDocument();
+      });
+    });
+  };
+
+  /** Helper function to verify entity links */
+  const verifyEntityLinks = (expectedLinks: string[]) => {
+    const links = screen.getAllByRole('link');
+    expectedLinks.forEach((link, index) => {
+      expect(links[index]).toHaveAttribute('href', link);
+    });
+  };
+
   it('should render the component with initial data', () => {
     renderComponent();
     expect(screen.getByText('Top 3 templates')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(5);
   });
 
+  // eslint-disable-next-line jest/expect-expect
   it('should display correct table headers', () => {
     renderComponent();
-    const headers = screen.getAllByRole('columnheader');
-    const expectedHeaders = ['Name', 'Executions'];
-
-    expect(headers).toHaveLength(expectedHeaders.length);
-    expectedHeaders.forEach((header, index) => {
-      expect(headers[index]).toHaveTextContent(header);
-    });
+    verifyHeaders(['Name', 'Executions']);
   });
 
+  // eslint-disable-next-line jest/expect-expect
   it('should display correct data in table rows', () => {
     renderComponent();
-    const rows = screen.getAllByRole('row').slice(1);
-    const expectedData = [
+    verifyTableData([
       ['example-go-template-1', '10'],
       ['example-go-template-2', '20'],
-    ];
-
-    expectedData.forEach((rowData, rowIndex) => {
-      rowData.forEach(text => {
-        expect(within(rows[rowIndex]).getByText(text)).toBeInTheDocument();
-      });
-    });
+    ]);
   });
 
   it('should handle pagination correctly', async () => {
@@ -126,17 +142,13 @@ describe('Templates', () => {
     expect(screen.getByText('Top 5 templates')).toBeInTheDocument();
   });
 
+  // eslint-disable-next-line jest/expect-expect
   it('should create correct entity links', () => {
     renderComponent();
-    const links = screen.getAllByRole('link');
-    const expectedLinks = [
+    verifyEntityLinks([
       '/catalog/template/default/example-go-template-1',
       '/catalog/template/default/example-go-template-2',
-    ];
-
-    expectedLinks.forEach((link, index) => {
-      expect(links[index]).toHaveAttribute('href', link);
-    });
+    ]);
   });
 
   it('should apply correct styling to table rows', () => {
