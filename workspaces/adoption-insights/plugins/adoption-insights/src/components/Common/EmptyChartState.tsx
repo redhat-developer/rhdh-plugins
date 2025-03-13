@@ -17,7 +17,7 @@ import React from 'react';
 import Typography from '@mui/material/Typography';
 
 const EmptyChartState = () => {
-  return <Typography>No results for this time range.</Typography>;
+  return <Typography>No results for this date range.</Typography>;
 };
 
 export default EmptyChartState;

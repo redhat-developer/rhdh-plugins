@@ -75,7 +75,7 @@ describe('Plugins Component', () => {
     ],
   };
 
-  it('should render "No results for this time range." when there is no data', () => {
+  it('should render "No results for this date range." when there is no data', () => {
     (usePlugins as jest.Mock).mockReturnValue({
       plugins: { data: [] },
       loading: false,
@@ -84,7 +84,7 @@ describe('Plugins Component', () => {
     render(<Plugins />);
 
     expect(
-      screen.getByText('No results for this time range.'),
+      screen.getByText('No results for this date range.'),
     ).toBeInTheDocument();
   });
 

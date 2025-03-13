@@ -45,7 +45,7 @@ describe('Searches Component', () => {
     });
     render(<Searches />);
     expect(
-      screen.getByText('No results for this time range.'),
+      screen.getByText('No results for this date range.'),
     ).toBeInTheDocument();
   });
 
