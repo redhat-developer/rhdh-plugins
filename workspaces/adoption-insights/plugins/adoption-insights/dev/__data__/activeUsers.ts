@@ -18,8 +18,8 @@ import { format, subDays, subHours, subMonths } from 'date-fns';
 export const generateHourlyData = () => {
   return Array.from({ length: 24 }, (_, i) => {
     const date = format(subHours(new Date(), i), 'yyyy-MM-dd HH:00');
-    const new_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
-    const returning_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
+    const new_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150; // NOSONAR
+    const returning_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150; // NOSONAR
     const total_users = new_users + returning_users;
     return { date, total_users, new_users, returning_users };
   }).reverse();
@@ -28,8 +28,8 @@ export const generateHourlyData = () => {
 export const generateDaysData = () => {
   return Array.from({ length: 7 }, (_, i) => {
     const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
-    const new_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
-    const returning_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
+    const new_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150; // NOSONAR
+    const returning_users = Math.floor(Math.random() * (300 - 150 + 1)) + 150; // NOSONAR
     const total_users = new_users + returning_users;
     return { date, total_users, new_users, returning_users };
   }).reverse();
@@ -38,9 +38,9 @@ export const generateDaysData = () => {
 export const generateMonthsData = () => {
   return Array.from({ length: 9 }, (_, i) => {
     const date = format(subMonths(new Date(), i), 'yyyy-MM-dd');
-    const new_users = Math.floor(Math.random() * (9000 - 4500 + 1)) + 4500;
+    const new_users = Math.floor(Math.random() * (9000 - 4500 + 1)) + 4500; // NOSONAR
     const returning_users =
-      Math.floor(Math.random() * (9000 - 4500 + 1)) + 4500;
+      Math.floor(Math.random() * (9000 - 4500 + 1)) + 4500; // NOSONAR
     const total_users = new_users + returning_users;
     return { date, total_users, new_users, returning_users };
   }).reverse();

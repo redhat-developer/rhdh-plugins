@@ -18,7 +18,7 @@ import { format, subDays, subMonths, subHours } from 'date-fns';
 export const generateHourlyData = () => {
   return Array.from({ length: 24 }, (_, i) => {
     const date = format(subHours(new Date(), i), 'yyyy-MM-dd HH:00');
-    const count = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
+    const count = Math.floor(Math.random() * (300 - 150 + 1)) + 150; // NOSONAR
     return { date, count };
   }).reverse();
 };
@@ -26,7 +26,7 @@ export const generateHourlyData = () => {
 export const generateDaysData = () => {
   return Array.from({ length: 12 }, (_, i) => {
     const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
-    const count = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
+    const count = Math.floor(Math.random() * (300 - 150 + 1)) + 150; // NOSONAR
     return { date, count };
   }).reverse();
 };
@@ -34,7 +34,7 @@ export const generateDaysData = () => {
 export const generateMonthsData = () => {
   return Array.from({ length: 12 }, (_, i) => {
     const date = format(subMonths(new Date(), i), 'yyyy-MM-dd');
-    const count = Math.floor(Math.random() * (3000 - 1500 + 1)) + 1500;
+    const count = Math.floor(Math.random() * (3000 - 1500 + 1)) + 1500; // NOSONAR
     return { date, count };
   }).reverse();
 };

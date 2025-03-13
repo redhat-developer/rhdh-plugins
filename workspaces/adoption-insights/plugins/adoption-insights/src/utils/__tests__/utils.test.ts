@@ -303,7 +303,7 @@ describe('getLastUsedDay', () => {
   });
 
   it('should return formatted date for older dates', () => {
-    expect(getLastUsedDay('2025-02-15T00:00:00Z')).toMatch(/\d{2} Feb 2024/);
+    expect(getLastUsedDay('2025-02-15T00:00:00Z')).toMatch(/\d{2} Feb 2025/);
   });
 });
 

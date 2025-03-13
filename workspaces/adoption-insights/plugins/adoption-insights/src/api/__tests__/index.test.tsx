@@ -29,7 +29,7 @@ describe('AdoptionInsightsApiClient', () => {
 
   beforeEach(() => {
     mockConfigApi = {
-      getString: jest.fn().mockReturnValue('http://mock-backend'),
+      getString: jest.fn().mockReturnValue('http://mock-backend'), // NOSONAR
       has: jest.fn().mockReturnValue(true),
       get: jest.fn(),
       getOptional: jest.fn(),
@@ -45,7 +45,7 @@ describe('AdoptionInsightsApiClient', () => {
 
   test('getBaseUrl returns correct URL', async () => {
     await expect(apiClient.getBaseUrl()).resolves.toBe(
-      'http://mock-backend/api/adoption-insights',
+      'http://mock-backend/api/adoption-insights', // NOSONAR
     );
   });
 

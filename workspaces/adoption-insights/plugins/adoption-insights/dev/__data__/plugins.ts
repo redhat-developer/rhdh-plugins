@@ -19,7 +19,7 @@ import { PluginTrend } from '../../src/types';
 export const generateHourlyData = () => {
   return Array.from({ length: 24 }, (_, i) => {
     const date = format(subHours(new Date(), i), 'yyyy-MM-dd HH:00');
-    const count = Math.floor(Math.random() * (300 - 150 + 1)) + 150;
+    const count = Math.floor(Math.random() * (300 - 150 + 1)) + 150; // NOSONAR
     return { date, count };
   }).reverse();
 };
@@ -27,7 +27,7 @@ export const generateHourlyData = () => {
 export const generateLast30DaysData = () => {
   return Array.from({ length: 30 }, (_, i) => {
     const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
-    const count = Math.floor(Math.random() * (100 - 50 + 1)) + 50;
+    const count = Math.floor(Math.random() * (100 - 50 + 1)) + 50; // NOSONAR
     return { date, count };
   }).reverse();
 };

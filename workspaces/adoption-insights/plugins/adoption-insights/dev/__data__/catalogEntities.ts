@@ -23,9 +23,9 @@ export const generateCatalogEntitiesData = (n: number): any[] => {
     name: names[i % names.length],
     kind: kinds[i % kinds.length],
     last_used: new Date(
-      Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 10,
+      Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 10, // NOSONAR
     ).toISOString(),
-    count: Math.floor(Math.random() * 3000),
+    count: Math.floor(Math.random() * 3000), // NOSONAR
     namespace: namespaces[i % namespaces.length],
   }));
 };
