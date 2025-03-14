@@ -112,6 +112,7 @@ const Techdocs = () => {
                 namespace = 'default',
                 name,
               } = parseEntityRef(techdoc.entityref);
+              const entityHrefLink = entityLink({ kind, namespace, name });
 
               return (
                 <TableRow
@@ -127,11 +128,7 @@ const Techdocs = () => {
                       component="a"
                       target="_blank"
                       rel="noopener noreferrer"
-                      href={
-                        name === 'index-page'
-                          ? '/doc'
-                          : entityLink({ kind, namespace, name })
-                      }
+                      href={name === 'index-page' ? '/docs' : entityHrefLink}
                       sx={{
                         textDecoration: 'none',
                         '&:hover': {
@@ -147,11 +144,7 @@ const Techdocs = () => {
                       component="a"
                       target="_blank"
                       rel="noopener noreferrer"
-                      href={
-                        name === 'index-page'
-                          ? '/doc'
-                          : entityLink({ kind, namespace, name })
-                      }
+                      href={name === 'index-page' ? '/docs' : entityHrefLink}
                       sx={{
                         textDecoration: 'none',
                         '&:hover': {

@@ -24,8 +24,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import { entityRouteRef } from '@backstage/plugin-catalog-react';
-import { useRouteRef } from '@backstage/core-plugin-api';
 import Link from '@mui/material/Link';
 
 import CardWrapper from '../CardWrapper';
@@ -38,7 +36,6 @@ const Templates = () => {
   const [page, setPage] = React.useState(0);
   const [limit] = React.useState(20);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
-  const entityLink = useRouteRef(entityRouteRef);
 
   const { templates, loading } = useTemplates({ limit });
 
@@ -106,11 +103,10 @@ const Templates = () => {
             </TableRow>
           ) : (
             visibleTemplates?.map(template => {
-              const {
-                name,
-                namespace = 'default',
-                kind,
-              } = parseEntityRef(template?.entityref);
+              const { name, namespace = 'default' } = parseEntityRef(
+                template?.entityref,
+              );
+              const entityHrefLink = `/create/templates/${namespace}/${name}`;
 
               return (
                 <TableRow
@@ -124,7 +120,7 @@ const Templates = () => {
                   <TableCell sx={{ width: '50%' }}>
                     <Link
                       component="a"
-                      href={entityLink({ kind, namespace, name })}
+                      href={entityHrefLink}
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{
