@@ -80,6 +80,14 @@ export enum MarketplacePluginInstallStatus {
 /**
  * @public
  */
+export interface MarketplacePackageDependency extends JsonObject {
+  name: string;
+  version: string;
+}
+
+/**
+ * @public
+ */
 export interface MarketplacePluginSpec extends JsonObject {
   icon?: string;
 
@@ -90,7 +98,7 @@ export interface MarketplacePluginSpec extends JsonObject {
   author?: string;
   authors?: MarketplaceAuthor[];
 
-  packages?: string[];
+  packages?: MarketplacePackageDependency[] | string[];
   categories?: string[];
   highlights?: string[];
 
