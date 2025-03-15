@@ -14,13 +14,74 @@
  * limitations under the License.
  */
 import React from 'react';
+
 import { createDevApp } from '@backstage/dev-utils';
+import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { TestApiProvider } from '@backstage/test-utils';
+
 import { adoptionInsightsPlugin, AdoptionInsightsPage } from '../src/plugin';
+import { adoptionInsightsApiRef } from '../src/api';
+import {
+  ActiveUsersResponse,
+  AdoptionInsightsApi,
+  APIsViewOptions,
+  CatalogEntitiesResponse,
+  PluginTrendResponse,
+  SearchesResponse,
+  TechdocsResponse,
+  TemplatesResponse,
+  UsersResponse,
+} from '../src/types';
+import { mockPluginViews } from './__data__/plugins';
+import mockCatalogEntities from './__data__/catalogEntities';
+import mockTemplates from './__data__/templates';
+import mockActiveUsers from './__data__/activeUsers';
+import mockTechdocs from './__data__/techdocs';
+import mockSearches from './__data__/searches';
+import mockUsers from './__data__/users';
+
+export class MockAdoptionInsightsApiClient implements AdoptionInsightsApi {
+  async getPlugins(_options: APIsViewOptions): Promise<PluginTrendResponse> {
+    return mockPluginViews;
+  }
+  async getCatalogEntities(
+    _options: APIsViewOptions,
+  ): Promise<CatalogEntitiesResponse> {
+    return mockCatalogEntities;
+  }
+  async getTemplates(_options: APIsViewOptions): Promise<TemplatesResponse> {
+    return mockTemplates;
+  }
+  async getTechdocs(_options: APIsViewOptions): Promise<TechdocsResponse> {
+    return mockTechdocs;
+  }
+  async getActiveUsers(
+    _options: APIsViewOptions,
+  ): Promise<ActiveUsersResponse> {
+    return mockActiveUsers;
+  }
+  async getSearches(_options: APIsViewOptions): Promise<SearchesResponse> {
+    return mockSearches;
+  }
+  async getUsers(_options: APIsViewOptions): Promise<UsersResponse> {
+    return mockUsers;
+  }
+  async downloadBlob(_options: APIsViewOptions): Promise<void> {
+    return Promise.resolve();
+  }
+}
 
 createDevApp()
   .registerPlugin(adoptionInsightsPlugin)
+  .addThemes(getAllThemes())
   .addPage({
-    element: <AdoptionInsightsPage />,
+    element: (
+      <TestApiProvider
+        apis={[[adoptionInsightsApiRef, new MockAdoptionInsightsApiClient()]]}
+      >
+        <AdoptionInsightsPage />
+      </TestApiProvider>
+    ),
     title: 'Root Page',
     path: '/adoption-insights',
   })
