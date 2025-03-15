@@ -41,8 +41,13 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
   const [endDate, setEndDate] = React.useState<Date | null>(null);
   const [menuOpen, setMenuOpen] = React.useState(false);
 
-  const { startDateRange, setStartDateRange, endDateRange, setEndDateRange } =
-    useDateRange();
+  const {
+    startDateRange,
+    setStartDateRange,
+    endDateRange,
+    setEndDateRange,
+    setIsDefaultDateRange,
+  } = useDateRange();
 
   React.useEffect(() => {
     const today = new Date();
@@ -60,13 +65,14 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
       if (newStartDate && newEndDate) {
         setStartDateRange(new Date(newStartDate));
         setEndDateRange(new Date(newEndDate));
+        setIsDefaultDateRange(false);
       }
       setStartDate(null);
       setEndDate(null);
 
       setSelectedOption(value);
     },
-    [setStartDateRange, setEndDateRange],
+    [setStartDateRange, setEndDateRange, setIsDefaultDateRange],
   );
 
   const handleDateRangeClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -81,11 +87,19 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
     if (startDate && endDate) {
       setStartDateRange(startDate);
       setEndDateRange(endDate);
+      setIsDefaultDateRange(false);
       setSelectedOption('dateRange');
       handleClose();
       setMenuOpen(false);
     }
-  }, [startDate, endDate, setStartDateRange, setEndDateRange, handleClose]);
+  }, [
+    startDate,
+    endDate,
+    setStartDateRange,
+    setEndDateRange,
+    handleClose,
+    setIsDefaultDateRange,
+  ]);
 
   const getLabel = React.useMemo(() => {
     return (value: string) => {

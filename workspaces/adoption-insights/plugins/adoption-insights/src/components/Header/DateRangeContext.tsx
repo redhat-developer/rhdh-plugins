@@ -20,6 +20,8 @@ interface DateRange {
   endDateRange: Date | null;
   setStartDateRange: (date: Date | null) => void;
   setEndDateRange: (date: Date | null) => void;
+  isDefaultDateRange: boolean;
+  setIsDefaultDateRange: (val: boolean) => void;
 }
 
 export const DateRangeContext = createContext<DateRange | undefined>(
@@ -31,15 +33,19 @@ export const DateRangeProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [startDateRange, setStartDateRange] = React.useState<Date | null>(null);
   const [endDateRange, setEndDateRange] = React.useState<Date | null>(null);
+  const [isDefaultDateRange, setIsDefaultDateRange] =
+    React.useState<boolean>(true);
 
   const value = React.useMemo(
     () => ({
       startDateRange,
       endDateRange,
+      isDefaultDateRange,
       setStartDateRange,
       setEndDateRange,
+      setIsDefaultDateRange,
     }),
-    [startDateRange, endDateRange],
+    [startDateRange, endDateRange, isDefaultDateRange],
   );
 
   return (

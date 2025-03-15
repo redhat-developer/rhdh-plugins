@@ -33,12 +33,14 @@ import { usePlugins } from '../../hooks/usePlugins';
 import TableFooterPagination from '../CardFooter';
 import { Line, LineChart, ResponsiveContainer } from 'recharts';
 import EmptyChartState from '../Common/EmptyChartState';
+import { useDateRange } from '../Header/DateRangeContext';
 
 const Plugins = () => {
   const [page, setPage] = React.useState(0);
   const [limit] = React.useState(20);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
 
+  const { isDefaultDateRange } = useDateRange();
   const { plugins, loading } = usePlugins({ limit });
 
   const handleChangePage = React.useCallback(
@@ -83,17 +85,21 @@ const Plugins = () => {
       <Table aria-labelledby="Catalog entities" sx={{ width: '100%' }}>
         <TableHead>
           <TableRow>
-            {PLUGINS_TABLE_HEADERS.map(header => (
-              <TableCell
-                key={header.id}
-                align="left"
-                sx={{
-                  borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
-                }}
-              >
-                {header.title}
-              </TableCell>
-            ))}
+            {PLUGINS_TABLE_HEADERS.map(header => {
+              if (isDefaultDateRange && header.id === 'percent') return null;
+              return (
+                <TableCell
+                  key={header.id}
+                  align="left"
+                  sx={{
+                    borderBottom: theme =>
+                      `1px solid ${theme.palette.grey[300]}`,
+                  }}
+                >
+                  {header.title}
+                </TableCell>
+              );
+            })}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -112,7 +118,7 @@ const Plugins = () => {
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell sx={{ width: '20%' }}>
+                <TableCell sx={isDefaultDateRange ? {} : { width: '20%' }}>
                   {plugin.plugin_id ?? '--'}
                 </TableCell>
                 <TableCell sx={{ width: '40%' }}>
@@ -132,19 +138,21 @@ const Plugins = () => {
                     '--'
                   )}
                 </TableCell>
-                <TableCell sx={{ width: '20%' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {Math.round(Number(plugin.trend_percentage)) < 0 ? (
-                      <TrendingDownIcon sx={{ color: 'red' }} />
-                    ) : (
-                      <TrendingUpIcon sx={{ color: 'green' }} />
-                    )}
-                    <Typography variant="body2">
-                      {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell sx={{ width: '20%' }}>
+                {!isDefaultDateRange && (
+                  <TableCell sx={isDefaultDateRange ? {} : { width: '20%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {Math.round(Number(plugin.trend_percentage)) < 0 ? (
+                        <TrendingDownIcon sx={{ color: 'red' }} />
+                      ) : (
+                        <TrendingUpIcon sx={{ color: 'green' }} />
+                      )}
+                      <Typography variant="body2">
+                        {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                )}
+                <TableCell sx={isDefaultDateRange ? {} : { width: '20%' }}>
                   {Number(plugin.visit_count).toLocaleString() ?? '--'}
                 </TableCell>
               </TableRow>
