@@ -141,6 +141,33 @@ const parseYamls = async (yamls: string[], recurse = false) => {
   ).then(plugins => plugins.flat());
 };
 
+const getPackagesOfType = (
+  packages: string[],
+  allPackages: Record<string, MarketplacePackage>,
+  types: string[],
+): string => {
+  return packages
+    .map(name => {
+      const pkg = allPackages[name];
+      if (!pkg) {
+        console.error(`Package ${name} not found in the list of packages`);
+        return '';
+      }
+
+      const version = pkg.metadata.version
+        ? `(${pkg.metadata.version})`
+        : '(no version)';
+
+      if (types.includes(pkg?.spec?.backstage?.role || '')) {
+        return `${pkg.metadata.name}${version}`;
+      }
+
+      return '';
+    })
+    .filter(Boolean)
+    .join(', ');
+};
+
 export default async ({
   outputFile,
   pluginsYamlPath,
@@ -167,7 +194,12 @@ export default async ({
     'lifecycle',
     'packages',
     'role',
+    'backend plugins',
+    'frontend plugins',
   ];
+
+  /** A hashmap of packages for the plugins CSV generator */
+  const packages: Record<string, MarketplacePackage> = {};
 
   /** The generator for backstage marketplace Packages */
   const packageCSV = new CSVGenerator<MarketplacePackage>(
@@ -185,6 +217,8 @@ export default async ({
       yaml => yaml?.spec?.lifecycle,
       yaml => (yaml?.spec?.partOf || []).join(', '),
       yaml => yaml?.spec?.role || yaml?.spec?.backstage?.role,
+      () => undefined, // packages don't have backend plugins in their type
+      () => undefined, // packages don't have frontend plugins in their type
     ]),
   );
 
@@ -204,12 +238,22 @@ export default async ({
       p => p?.spec?.lifecycle,
       p => (p?.spec?.packages || []).join(', '),
       () => undefined, // plugins don't have a role in their type
+      p =>
+        getPackagesOfType(p?.spec?.packages || [], packages, [
+          'backend-plugin',
+          'backend-plugin-module',
+        ]),
+      p =>
+        getPackagesOfType(p?.spec?.packages || [], packages, [
+          'frontend-plugin',
+        ]),
     ]),
   );
 
   /** Process each YAML file */
   for (const yaml of await yamls) {
     if (isMarketplacePackage(yaml)) {
+      packages[yaml.metadata.name] = yaml;
       packageCSV.addRow(yaml);
     } else if (isMarketplacePlugin(yaml)) {
       pluginCSV.addRow(yaml);

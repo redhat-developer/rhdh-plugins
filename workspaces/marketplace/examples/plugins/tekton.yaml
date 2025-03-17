@@ -13,6 +13,8 @@ spec:
   developer: Red Hat
   lifecycle: production
   owner: redhat
+  packages:
+    - 'backstage-community-plugin-tekton'
   categories:
     - CI/CD
   description: |
