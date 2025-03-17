@@ -13,4 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { ExampleComponent } from './ExampleComponent';
+export default {
+  data: [
+    {
+      entityref: 'techdocs:index-page',
+      count: 2,
+      last_used: '2025-03-06T06:25:16.708Z',
+      kind: '',
+      name: '',
+      namespace: '',
+    },
+    {
+      entityref: 'techdocs:catalog-reader-view',
+      count: 2,
+      last_used: '2025-03-17 20:22:09 GMT+5:30',
+      kind: 'component',
+      name: 'nationalparks-py',
+      namespace: 'default',
+    },
+  ],
+};
