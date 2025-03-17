@@ -81,6 +81,8 @@ describe('ExportCSVButton', () => {
     fireEvent.click(button);
 
     await waitFor(() => expect(mockDownloadBlob).toHaveBeenCalled());
-    expect(screen.getByText('Export CSV')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByText('Export CSV')).toBeInTheDocument(),
+    );
   });
 });

@@ -104,17 +104,9 @@ const Techdocs = () => {
             </TableRow>
           ) : (
             visibleTechdocs?.map(techdoc => {
-              if (
-                !techdoc.entityref ||
-                Object.keys(techdoc.entityref).length === 0
-              )
-                return null;
-
-              const { name } = parseEntityRef(techdoc.entityref);
-
               return (
                 <TableRow
-                  key={techdoc.entityref}
+                  key={techdoc.name ?? 'index-page'}
                   sx={{
                     '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
                     borderBottom: theme =>
@@ -127,7 +119,7 @@ const Techdocs = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       href={
-                        name === 'index-page'
+                        !techdoc?.name
                           ? '/docs'
                           : `/docs/${techdoc?.namespace}/${techdoc?.kind}/${techdoc?.name}`
                       }
@@ -138,9 +130,7 @@ const Techdocs = () => {
                         },
                       }}
                     >
-                      {name === 'index-page'
-                        ? 'index-page'
-                        : techdoc?.name || '--'}
+                      {!techdoc?.name ? 'index-page' : techdoc?.name || '--'}
                     </Link>
                   </TableCell>
                   <TableCell>
@@ -150,7 +140,7 @@ const Techdocs = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         href={
-                          name === 'index-page'
+                          !techdoc?.name
                             ? '/docs'
                             : `/catalog/${techdoc?.namespace}/${techdoc?.kind}/${techdoc?.name}`
                         }

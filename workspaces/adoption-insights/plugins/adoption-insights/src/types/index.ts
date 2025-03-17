@@ -91,7 +91,6 @@ export type TemplatesResponse = {
  * Techdocs
  */
 export type Techdocs = {
-  entityref: string;
   count: number;
   last_used: string;
   kind: string;
