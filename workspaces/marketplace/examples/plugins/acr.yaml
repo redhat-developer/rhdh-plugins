@@ -117,3 +117,6 @@ spec:
           annotations:
             'azure-container-registry/repository-name': `<REPOSITORY-NAME>',
         ```
+
+  packages:
+    - backstage-community-plugin-acr

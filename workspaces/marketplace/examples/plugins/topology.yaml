@@ -419,3 +419,6 @@ spec:
           </EntityLayout>
         );
         ```
+
+  packages:
+    - backstage-community-plugin-topology

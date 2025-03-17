@@ -6,4 +6,11 @@ metadata:
   description: A collection of all the marketplace packages
 spec:
   targets:
-    - ./packages/tekton.yaml
+    - ./packages/backstage-community-plugin-3scale-backend.yaml
+    - ./packages/backstage-community-plugin-acr.yaml
+    - ./packages/backstage-community-plugin-catalog-backend-module-keycloak.yaml
+    - ./packages/backstage-community-plugin-quay.yaml
+    - ./packages/backstage-community-plugin-tekton.yaml
+    - ./packages/backstage-community-plugin-topology.yaml
+    - ./packages/red-hat-developer-hub-backstage-plugin-marketplace-backend.yaml
+    - ./packages/red-hat-developer-hub-backstage-plugin-marketplace.yaml
