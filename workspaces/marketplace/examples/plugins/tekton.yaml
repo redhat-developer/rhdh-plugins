@@ -2,6 +2,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
+  namespace: marketplace-plugin-demo
   name: tekton
   title: Pipelines with Tekton
   description: Easily view Tekton PipelineRun status for your services in Backstage.

@@ -1,6 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Location
 metadata:
+  namespace: marketplace-plugin-demo
   name: all-packages
   description: A collection of all the marketplace packages
 spec:

@@ -2,6 +2,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
+  namespace: marketplace-plugin-demo
   name: search
   title: Backstage Search
   description: Backstage Search lets you find the right information you are looking for in the Backstage ecosystem.

@@ -2,6 +2,7 @@
 kind: Package
 apiVersion: extensions.backstage.io/v1alpha1
 metadata:
+  namespace: marketplace-plugin-demo
   name: backstage-community-plugin-tekton
   title: '@backstage-community/plugin-tekton'
   links:

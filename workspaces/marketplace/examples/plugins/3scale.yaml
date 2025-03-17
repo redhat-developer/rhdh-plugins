@@ -2,6 +2,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
+  namespace: marketplace-plugin-demo
   name: 3scale
   title: APIs with 3scale
   description: Synchronize 3scale content into the Backstage catalog.

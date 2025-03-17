@@ -1,6 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Location
 metadata:
+  namespace: marketplace-plugin-demo
   name: all-plugins
   description: A collection of all the marketplace plugins
 spec:
@@ -8,6 +9,8 @@ spec:
     - ./plugins/3scale.yaml
     - ./plugins/acr.yaml
     - ./plugins/keycloak.yaml
+    - ./plugins/marketplace.yaml
+    - ./plugins/no-icon-no-description.yaml
     - ./plugins/quay.yaml
     - ./plugins/tekton.yaml
     - ./plugins/topology.yaml

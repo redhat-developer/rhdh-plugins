@@ -2,6 +2,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
+  namespace: marketplace-plugin-demo
   name: topology
   title: Application Topology for Kubernetes
   description: Visualize the deployment status and related resources of your applications deployed on any Kubernetes cluster.
