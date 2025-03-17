@@ -59,8 +59,6 @@ const FABLabel = ({
             color: '#151515',
             order: 2,
             textTransform: 'none',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
           }}
         >
           {label}
@@ -127,7 +125,7 @@ export const CustomFab = ({
         className={className}
         style={{
           color: actionButton?.iconColor || '#1f1f1f',
-          backgroundColor: !actionButton.color && !className ? 'white' : '',
+          backgroundColor: actionButton.color ? '' : 'white',
         }}
         variant={
           actionButton.showLabel || isExternal || !actionButton.icon
