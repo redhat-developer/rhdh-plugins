@@ -20,16 +20,15 @@ import classnames from 'classnames';
 
 import { makeStyles } from '@mui/styles';
 import { FABWithSubmenu } from './FABWithSubmenu';
-import { FAB } from './FAB';
+import { CustomFab } from './CustomFab';
 import { FloatingActionButton, Slot } from '../types';
 import { filterAndSortButtons } from '../utils';
 
 const useStyles = makeStyles(theme => ({
-  fabContainer: {
+  fabButton: {
     zIndex: 200,
     display: 'flex',
     position: 'fixed',
-    gap: '10px',
   },
   'page-end': {
     bottom: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
@@ -52,23 +51,7 @@ export const FloatingButton = ({
   slot: Slot;
 }) => {
   const { pathname } = useLocation();
-  const [subMenuDirection, setSubMenuDirection] = React.useState<
-    'column' | 'column-reverse'
-  >('column');
   const fabButton = useStyles();
-
-  React.useEffect(() => {
-    const floatingButtonElement = document.getElementById('floating-button');
-    const screenHeight = window.innerHeight;
-    if (floatingButtonElement) {
-      const { top } = floatingButtonElement?.getBoundingClientRect();
-      if (top < screenHeight / 2) {
-        setSubMenuDirection('column');
-      } else {
-        setSubMenuDirection('column-reverse');
-      }
-    }
-  }, [pathname]);
 
   const fabs = React.useMemo(
     () => filterAndSortButtons(floatingButtons, pathname),
@@ -78,20 +61,22 @@ export const FloatingButton = ({
   if (fabs?.length === 0) {
     return null;
   }
+
+  if (fabs.length > 1) {
+    return (
+      <FABWithSubmenu className={fabButton[slot]} fabs={fabs} slot={slot} />
+    );
+  }
+
   return (
     <div
-      className={classnames(fabButton.fabContainer, fabButton[slot])}
-      style={{
-        flexDirection: subMenuDirection,
-      }}
+      className={classnames(fabButton.fabButton, fabButton[slot])}
       id="floating-button"
-      data-testId="floating-button"
+      data-testid="floating-button"
     >
-      {fabs.length > 1 ? (
-        <FABWithSubmenu fabs={fabs} slot={slot} />
-      ) : (
-        <FAB actionButton={fabs[0]} />
-      )}
+      <CustomFab
+        actionButton={{ color: 'info', iconColor: 'white', ...fabs[0] }}
+      />
     </div>
   );
 };

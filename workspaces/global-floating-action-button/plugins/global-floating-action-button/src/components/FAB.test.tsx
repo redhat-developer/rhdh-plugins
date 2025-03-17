@@ -16,7 +16,7 @@
 import { render, screen } from '@testing-library/react';
 import GitIcon from '@mui/icons-material/GitHub';
 import * as React from 'react';
-import { FAB } from './FAB';
+import { CustomFab } from './CustomFab';
 
 jest.mock('react-router-dom', () => ({
   useNavigate: jest.fn(),
@@ -44,7 +44,7 @@ jest.mock('@backstage/core-plugin-api', () => ({
 describe('Floating Action Button', () => {
   it('should render the floating action button with icon and label', () => {
     render(
-      <FAB
+      <CustomFab
         actionButton={{
           color: 'success',
           icon: <GitIcon />,
@@ -63,7 +63,7 @@ describe('Floating Action Button', () => {
 
   it('should render the floating action button with icon', () => {
     render(
-      <FAB
+      <CustomFab
         actionButton={{
           color: 'success',
           icon: <GitIcon />,

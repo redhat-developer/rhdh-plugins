@@ -45,7 +45,7 @@ const FABLabel = ({
   const styles = useStyles();
   const marginStyle = slotOptions[slot].margin;
   return (
-    <Typography sx={{ display: 'flex' }}>
+    <>
       {showExternalIcon && (
         <OpenInNewIcon
           className={styles.openInNew}
@@ -58,6 +58,7 @@ const FABLabel = ({
             ...marginStyle,
             color: '#151515',
             order: 2,
+            textTransform: 'none',
           }}
         >
           {label}
@@ -68,11 +69,11 @@ const FABLabel = ({
           <FabIcon icon={icon} />
         </Typography>
       )}
-    </Typography>
+    </>
   );
 };
 
-export const FAB = ({
+export const CustomFab = ({
   actionButton,
   size,
   className,
@@ -106,9 +107,6 @@ export const FAB = ({
     if (actionButton.color) {
       return actionButton.color;
     }
-    if (!className) {
-      return 'info';
-    }
     return undefined;
   };
 
@@ -122,39 +120,39 @@ export const FAB = ({
         slotOptions[actionButton.slot || Slot.PAGE_END].tooltipDirection
       }
     >
-      <div className={className}>
-        <Fab
-          {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
-          style={{ color: '#1f1f1f' }}
-          variant={
-            actionButton.showLabel || isExternal || !actionButton.icon
-              ? 'extended'
-              : 'circular'
+      <Fab
+        {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
+        className={className}
+        style={{
+          color: actionButton?.iconColor || '#1f1f1f',
+          backgroundColor: actionButton.color ? '' : 'white',
+        }}
+        variant={
+          actionButton.showLabel || isExternal || !actionButton.icon
+            ? 'extended'
+            : 'circular'
+        }
+        size={size || actionButton.size || 'medium'}
+        color={getColor()}
+        aria-label={actionButton.label}
+        data-testid={(actionButton.label || '')
+          .replace(' ', '-')
+          .toLocaleLowerCase('en-US')}
+        onClick={actionButton.onClick || navigateTo}
+        {...(isExternal ? { href: actionButton.to } : {})}
+      >
+        <FABLabel
+          showExternalIcon={isExternal}
+          icon={actionButton.icon}
+          label={actionButton.showLabel || !actionButton.icon ? labelText : ''}
+          order={
+            displayOnRight
+              ? { externalIcon: isExternal ? 1 : -1, icon: 3 }
+              : { externalIcon: isExternal ? 3 : -1, icon: 1 }
           }
-          size={size || actionButton.size || 'medium'}
-          color={getColor()}
-          aria-label={actionButton.label}
-          data-testid={(actionButton.label || '')
-            .replace(' ', '-')
-            .toLocaleLowerCase('en-US')}
-          onClick={actionButton.onClick || navigateTo}
-          {...(isExternal ? { href: actionButton.to } : {})}
-        >
-          <FABLabel
-            showExternalIcon={isExternal}
-            icon={actionButton.icon}
-            label={
-              actionButton.showLabel || !actionButton.icon ? labelText : ''
-            }
-            order={
-              displayOnRight
-                ? { externalIcon: isExternal ? 1 : -1, icon: 3 }
-                : { externalIcon: isExternal ? 3 : -1, icon: 1 }
-            }
-            slot={actionButton.slot || Slot.PAGE_END}
-          />
-        </Fab>
-      </div>
+          slot={actionButton.slot || Slot.PAGE_END}
+        />
+      </Fab>
     </Tooltip>
   );
 };
