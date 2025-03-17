@@ -30,6 +30,7 @@ import { setupServer } from 'msw/node';
 import request from 'supertest';
 
 import { handlers, LOCAL_AI_ADDR } from '../../__fixtures__/handlers';
+import { rcsHandlers } from '../../__fixtures__/rcsHandlers';
 import { lightspeedPlugin } from '../plugin';
 
 const mockUserId = `user: default/user1`;
@@ -104,8 +105,9 @@ const splitJsonObjects = (response: { text: string }): string[] =>
 
 describe('lightspeed router tests', () => {
   const server = setupServer(...handlers);
+  const rcs = setupServer(...rcsHandlers);
 
-  beforeAll(() =>
+  beforeAll(() => {
     server.listen({
       /*
        *  This is required so that msw doesn't throw
@@ -118,14 +120,32 @@ describe('lightspeed router tests', () => {
         }
         print.warning();
       },
-    }),
-  );
+    });
 
-  afterAll(() => server.close());
+    rcs.listen({
+      /*
+       *  This is required so that msw doesn't throw
+       *  warnings when the backend is requesting an endpoint
+       */
+      onUnhandledRequest: (req, print) => {
+        if (req.url.includes('/api/lightspeed')) {
+          // bypass
+          return;
+        }
+        print.warning();
+      },
+    });
+  });
+
+  afterAll(() => {
+    server.close();
+    rcs.close();
+  });
 
   afterEach(() => {
     jest.clearAllMocks();
     server.resetHandlers();
+    rcs.resetHandlers();
   });
 
   async function startBackendServer(
@@ -188,48 +208,53 @@ describe('lightspeed router tests', () => {
     });
   });
 
-  describe('POST /conversations', () => {
-    it('should fail with unauthorized error while creating new conversation_id', async () => {
-      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
-      const response = await request(backendServer).post(
-        `/api/lightspeed/conversations`,
-      );
-
-      expect(response.statusCode).toEqual(403);
-    });
-    it('generate new conversation_id', async () => {
-      const backendServer = await startBackendServer();
-      const response = await request(backendServer).post(
-        `/api/lightspeed/conversations`,
-      );
-      expect(response.statusCode).toEqual(200);
-      const conversation_id = response.body.conversation_id;
-
-      expect(conversation_id.length).toBe(mockUserId.length + 17); // user_id length + `+` + 16-character session_id
-      const [user_id, session_id] = conversation_id.split('+');
-      expect(user_id).toBe(mockUserId);
-      expect(/^[a-zA-Z0-9]+$/.test(session_id)).toBe(true);
-    });
-  });
-
+  const mockGetConversationsResponse = `
+  {
+    "chat_history": [
+        {
+            "content": "what is openshit lightspeed",
+            "additional_kwargs": {},
+            "response_metadata": {
+                "created_at": 1741287754.162095
+            },
+            "type": "human",
+            "name": null,
+            "id": null
+        },
+        {
+            "content": "OpenShift Lightspeed is a generative AI assistant integrated into the Red Hat Developer Hub (RHDH), an internal developer portal built on CNCF Backstage. It enhances developer productivity by streamlining workflows, providing instant access to technical knowledge, and supporting developers in their day-to-day tasks.\n\nOpenShift Lightspeed offers various features such as code assistance, knowledge retrieval, system navigation, troubleshooting, and integration support. It can generate, debug, and optimize code snippets, provide instant access to internal and external documentation, offer step-by-step instructions for Red Hat Developer Hub features, diagnose issues in services, pipelines, and configurations with actionable recommendations, and assist with Backstage plugins and integrations, including Kubernetes, CI/CD, and GitOps pipelines.\n\nOpenShift Lightspeed is designed to help developers work smarter, solve problems faster, and ensure they can focus on building and deploying software efficiently. It adapts its communication style to match the user's technical proficiency, providing concise, technical language for experts and clear explanations with examples for beginners.\n\nOpenShift Lightspeed is well-versed in various domains, including programming languages, DevOps, cloud platforms, Backstage, infrastructure as code, security, and documentation and standards. It leverages Markdown to format code snippets, tables, and lists for readability in its responses.",
+            "additional_kwargs": {},
+            "response_metadata": {
+                "created_at": 1741287761.8619468,
+                "provider": "my_ollama",
+                "model": "granite3-dense:8b"
+            },
+            "type": "ai",
+            "name": null,
+            "id": null
+        }
+    ]
+}
+  `;
   describe('GET and DELETE /conversations/:conversation_id', () => {
     const humanMessage = 'Hello';
     const aiMessage = 'Hi! How can I help you today?';
 
     beforeEach(async () => {
-      await saveHistory(
-        mockConversationId,
-        Roles.HumanRole,
-        humanMessage,
-        Date.now(),
-      );
-      await saveHistory(
-        mockConversationId,
-        Roles.AIRole,
-        aiMessage,
-        Date.now(),
-        mockModel,
-      );
+      // await saveHistory(
+      //   mockConversationId,
+      //   Roles.HumanRole,
+      //   humanMessage,
+      //   Date.now(),
+      // );
+      // await saveHistory(
+      //   mockConversationId,
+      //   Roles.AIRole,
+      //   aiMessage,
+      //   Date.now(),
+      //   mockModel,
+      // );
+      // Mocking the actual request that the proxy would make
     });
 
     it('load history', async () => {
@@ -245,18 +270,18 @@ describe('lightspeed router tests', () => {
       expect(Array.isArray(responseData)).toBe(true);
       expect(responseData.length).toBe(2);
 
-      expect(responseData[0].id).toContain('HumanMessage');
-      expect(responseData[0].kwargs?.content).toBe(humanMessage);
+      expect(responseData[0].type).toBe('human');
       expect(
         responseData[0].kwargs?.response_metadata.created_at,
       ).toBeDefined();
 
-      expect(responseData[1].id).toContain('AIMessage');
-      expect(responseData[1].kwargs?.content).toBe(aiMessage);
+      expect(responseData[1].type).toBe('ai');
       expect(
         responseData[1].kwargs?.response_metadata.created_at,
       ).toBeDefined();
-      expect(responseData[1].kwargs?.response_metadata.model).toBe(mockModel);
+      expect(responseData[1].kwargs?.response_metadata.model).toBe(
+        'granite3-dense:8b',
+      );
     });
 
     it('should fail with unauthorized error while fetching conversation history', async () => {

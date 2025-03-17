@@ -82,36 +82,19 @@ export async function createRouter(
         res.status(403).json({ error: error.message });
       }
     }
-    let target = 'http://0.0.0.0:8080';
-    if (req.path === '/models') {
-      target = `${config.getConfigArray('lightspeed.servers')[0].getString('url')}`;
-      // For all other /v1/* requests, use the proxy
-      const apiToken = config
-        .getConfigArray('lightspeed.servers')[0]
-        .getOptionalString('token'); // currently only single llm server is supported
-      req.headers.authorization = `Bearer ${apiToken}`;
-    } else if (req.path.includes('/query')) {
-      target = `${target}/v1`;
-    }
+    // let target = 'http://0.0.0.0:8080';
+    // if (req.path === '/models') {
+    // const target = `${config.getConfigArray('lightspeed.servers')[0].getString('url')}`;
+    // For all other /v1/* requests, use the proxy to llm server
+    const apiToken = config
+      .getConfigArray('lightspeed.servers')[0]
+      .getOptionalString('token'); // currently only single llm server is supported
+    req.headers.authorization = `Bearer ${apiToken}`;
+    // }
     // Proxy middleware configuration
     const apiProxy = createProxyMiddleware({
-      // target: config.getConfigArray('lightspeed.servers')[0].getString('url'), // currently only single llm server is supported
-      target: target,
+      target: config.getConfigArray('lightspeed.servers')[0].getString('url'), // currently only single llm server is supported
       changeOrigin: true,
-      pathRewrite: (path, _) => {
-        if (req.path === '/models') {
-          return path;
-        }
-        // Add user query parameter from the authenticated user
-        const userQueryParam = `user_id=${encodeURIComponent(userEntity)}`;
-
-        // Check if there are already query parameters
-        const newPath = path.includes('?')
-          ? `${path}&${userQueryParam}`
-          : `${path}?${userQueryParam}`;
-        logger.info(`Rewriting path from ${path} to ${newPath}`);
-        return newPath;
-      },
     });
     console.log(req);
     return apiProxy(req, res, next);
