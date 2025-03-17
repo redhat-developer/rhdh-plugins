@@ -2,6 +2,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
+  namespace: marketplace-plugin-demo
   name: marketplace
   title: Marketplace
   description: The Marketplace plugin allows you to discover and install plugins in Backstage.

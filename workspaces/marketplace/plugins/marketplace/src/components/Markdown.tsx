@@ -24,14 +24,14 @@ export interface MarkdownProps {
 }
 
 export const Markdown = (props: MarkdownProps) => {
-  let content = props.content ?? '';
+  let content = props.content ?? '**no description provided**';
   if (props.title && !content.startsWith('# ')) {
     content = `# ${props.title}\n\n${content}`;
   }
 
   // TODO load images from marketplace assets endpoint ???
   const transformImageUri = (href: string): string => {
-    console.log('xxx Markdown transformImageUri href', href);
+    // console.log('Markdown transformImageUri href', href);
     return href;
   };
 

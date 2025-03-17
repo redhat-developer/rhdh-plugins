@@ -2,6 +2,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
+  namespace: marketplace-plugin-demo
   name: keycloak
   title: Authentication and Authorization with Keycloak
   description: Load users and groups from Keycloak, enabling use of multiple authentication providers to be applied to Backstage entities.

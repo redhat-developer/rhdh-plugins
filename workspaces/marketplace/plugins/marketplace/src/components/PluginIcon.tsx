@@ -28,10 +28,15 @@ export const PluginIcon = ({
   size: number;
 }) => {
   const icon = plugin?.spec?.icon;
-  if (!icon) {
-    return null;
-  }
   return (
-    <CardMedia image={icon} sx={{ width: size, height: size, flexShrink: 0 }} />
+    <CardMedia
+      image={icon}
+      sx={{
+        width: size,
+        height: size,
+        flexShrink: 0,
+        backgroundColor: icon ? undefined : 'grey.400',
+      }}
+    />
   );
 };

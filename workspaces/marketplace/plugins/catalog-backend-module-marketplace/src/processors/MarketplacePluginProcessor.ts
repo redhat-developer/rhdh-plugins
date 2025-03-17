@@ -70,6 +70,12 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
     emit: CatalogProcessorEmit,
   ): Promise<Entity> {
     if (isMarketplacePlugin(entity)) {
+      // Automatically set title to name if it's not defined
+      // so that sorting and searching works as expected.
+      if (!entity.metadata.title) {
+        entity.metadata.title = entity.metadata.name;
+      }
+
       // Automatically enforce annotation pre-installed=false if it's not defined.
       if (!entity.metadata.annotations?.[MarketplaceAnnotation.PRE_INSTALLED]) {
         entity.metadata.annotations = {
