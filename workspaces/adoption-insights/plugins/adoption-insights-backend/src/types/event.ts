@@ -41,6 +41,13 @@ interface EntityRefCount {
   count: string;
   last_used: string;
 }
+interface TechDocsCount {
+  kind: string;
+  name: string;
+  namespace: string;
+  count: string;
+  last_used: string;
+}
 
 interface CatalogEntityCount {
   plugin_id: string;
@@ -64,6 +71,6 @@ export type DailyUsers = ResponseWithGrouping<DailyUser[]>;
 export type TotalUsers = ResponseData<TotalUser[]>;
 export type TopSearches = ResponseData<DateCount[]>;
 export type TopPluginCount = ResponseWithGrouping<PluginCount[]>;
-export type TopTechDocsCount = ResponseData<EntityRefCount[]>;
+export type TopTechDocsCount = ResponseData<TechDocsCount[]>;
 export type TopTemplatesCount = ResponseData<EntityRefCount[]>;
 export type TopCatalogEntitiesCount = ResponseData<CatalogEntityCount[]>;
