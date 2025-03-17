@@ -38,6 +38,7 @@
     "commander": "^12.0.0",
     "fs-extra": "^11.2.0",
     "glob": "^9.3.5",
+    "inquirer": "^12.4.3",
     "yaml": "^2.7.0"
   },
   "nodemonConfig": {

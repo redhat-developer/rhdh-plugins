@@ -36,6 +36,11 @@ function lazy(
 
 export const registerCommands = (program: Command) => {
   program
+    .command('init')
+    .description('init')
+    .action(lazy(() => import('./init').then(m => m.default)));
+
+  program
     .command('generate')
     .description(
       'Generate a Plugin entities for the marketplace. By default, it will output entities to the standard output',
