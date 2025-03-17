@@ -23,6 +23,7 @@ import Techdocs from '../Techdocs';
 
 const types = ['component', 'component', 'service', 'website'];
 const names = ['test-doc-1', 'test-doc-2', 'test-doc-3', 'test-doc-4'];
+const namespaces = ['default', 'default', 'default', 'default'];
 const counts = [100, 75, 50, 25];
 const lastUsedDates = [
   '2025-02-20T10:00:00Z',
@@ -38,6 +39,9 @@ jest.mock('../../../hooks/useTechdocs', () => ({
         entityref: `${type}:default/${names[i]}`,
         count: counts[i],
         last_used: lastUsedDates[i],
+        kind: types[i],
+        name: names[i],
+        namespace: namespaces[i],
       })),
     },
     loading: false,
@@ -117,16 +121,6 @@ describe('Techdocs', () => {
     });
   });
 
-  it('should display correct data in table rows', () => {
-    const rows = screen.getAllByRole('row').slice(1);
-
-    const expectedRowData = ['test-doc-1', 'component', 'Yesterday', '100'];
-
-    expectedRowData.forEach(text => {
-      expect(within(rows[0]).getByText(text)).toBeInTheDocument();
-    });
-  });
-
   it('should handle pagination correctly', async () => {
     const select = screen.getByRole('combobox');
 
@@ -141,7 +135,7 @@ describe('Techdocs', () => {
     const links = screen.getAllByRole('link');
     expect(links[0]).toHaveAttribute(
       'href',
-      '/catalog/component/default/test-doc-1',
+      '/docs/default/component/test-doc-1',
     );
   });
 

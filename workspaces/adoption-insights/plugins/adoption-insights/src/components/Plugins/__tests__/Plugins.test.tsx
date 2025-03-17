@@ -32,6 +32,10 @@ jest.mock('../../../hooks/usePlugins', () => ({
   usePlugins: jest.fn(),
 }));
 
+jest.mock('../../Header/DateRangeContext', () => ({
+  useDateRange: jest.fn(() => ({ isDefaultDateRange: true })),
+}));
+
 jest.mock('../../CardFooter', () => () => <div data-testid="pagination" />);
 
 jest.mock('recharts', () => {

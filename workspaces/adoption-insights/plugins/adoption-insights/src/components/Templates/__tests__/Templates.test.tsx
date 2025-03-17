@@ -46,7 +46,7 @@ jest.mock('@backstage/plugin-catalog-react', () => ({
 
 jest.mock('@backstage/core-plugin-api', () => ({
   useRouteRef: () => (params: any) =>
-    `/catalog/${params.kind}/${params.namespace}/${params.name}`,
+    `/create/${params.kind}/${params.namespace}/${params.name}`,
 }));
 
 jest.mock('../../../utils/constants', () => ({
@@ -146,8 +146,8 @@ describe('Templates', () => {
   it('should create correct entity links', () => {
     renderComponent();
     verifyEntityLinks([
-      '/catalog/template/default/example-go-template-1',
-      '/catalog/template/default/example-go-template-2',
+      '/create/templates/default/example-go-template-1',
+      '/create/templates/default/example-go-template-2',
     ]);
   });
 

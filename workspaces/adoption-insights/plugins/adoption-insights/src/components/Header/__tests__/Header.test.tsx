@@ -59,13 +59,16 @@ jest.mock('../../../utils/utils', () => ({
 
 const mockSetStartDateRange = jest.fn();
 const mockSetEndDateRange = jest.fn();
+const mockSetIsDefaultDateRange = jest.fn();
 
 jest.mock('../DateRangeContext', () => ({
   useDateRange: () => ({
     startDateRange: new Date('2025-01-01'),
     endDateRange: new Date('2025-01-31'),
+    isDefaultDateRange: false,
     setStartDateRange: mockSetStartDateRange,
     setEndDateRange: mockSetEndDateRange,
+    setIsDefaultDateRange: mockSetIsDefaultDateRange,
   }),
   DateRangeProvider: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>
