@@ -121,16 +121,16 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       )
       .select(
         'ge.date',
-        db.raw('COUNT(*) as total_users'),
+        db.raw('CAST(COUNT(*) as INTEGER) as total_users'),
         db.raw(
-          `SUM(CASE WHEN fs.first_seen >= ${this.getFormatedDate(
+          `CAST(SUM(CASE WHEN fs.first_seen >= ${this.getFormatedDate(
             'ge.date',
-          )} THEN 1 ELSE 0 END) as new_users`,
+          )} THEN 1 ELSE 0 END) as INTEGER) as new_users`,
         ),
         db.raw(
-          `SUM(CASE WHEN fs.first_seen < ${this.getFormatedDate(
+          `CAST(SUM(CASE WHEN fs.first_seen < ${this.getFormatedDate(
             'ge.date',
-          )} THEN 1 ELSE 0 END) as returning_users`,
+          )} THEN 1 ELSE 0 END) as INTEGER) as returning_users`,
         ),
       )
       .groupBy('ge.date')
@@ -144,7 +144,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const { start_date, end_date } = this.filters!;
     const db = this.db;
     const query = db('events')
-      .select(db.raw('COUNT(*) as logged_in_users'))
+      .select(db.raw('CAST(COUNT(*) as INTEGER) as logged_in_users'))
       .from(
         db('events')
           .select('user_ref')
@@ -167,7 +167,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const query = db('events')
       .select(
         db.raw(`context->>'entityRef' AS entityref`),
-        db.raw('COUNT(*) AS count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS count'),
         db.raw(this.getLastUsedDate()),
       )
       .where({
@@ -190,7 +190,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const query = db('events')
       .select(
         db.raw(this.getDynamicDateGrouping()),
-        db.raw('COUNT(*) AS count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS count'),
       )
       .whereBetween('created_at', [start_date, end_date])
       .andWhere('action', 'search')
@@ -208,15 +208,18 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const query = db('events')
       .select(
         db.raw(`context->>'routeRef' AS entityref`),
-        db.raw('COUNT(*) AS count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS count'),
         db.raw(this.getLastUsedDate()),
+        db.raw(`COALESCE(attributes->>'kind', '') AS kind`),
+        db.raw(`COALESCE(attributes->>'name', '') AS name`),
+        db.raw(`COALESCE(attributes->>'namespace', '') AS namespace`),
       )
       .where({
         action: 'navigate',
         plugin_id: 'techdocs',
       })
       .whereBetween('created_at', [start_date, end_date])
-      .groupByRaw('entityref')
+      .groupByRaw(`entityref, name, kind, namespace`)
       .limit(Number(limit) || 3);
 
     return query.then(data => this.getResponseData(data, 'last_used'));
@@ -233,7 +236,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
         db.raw(`attributes->>'name' AS name`),
         db.raw(`attributes->>'namespace' AS namespace`),
         db.raw(this.getLastUsedDate()),
-        db.raw('COUNT(*) AS count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS count'),
       )
       .whereBetween('created_at', [start_date, end_date])
       .andWhere(db.raw(`attributes->>'kind' IS NOT NULL`))
@@ -260,7 +263,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       const trend_data_columns = [
         'plugin_id',
         db.raw(this.getDynamicDateGrouping()),
-        db.raw('COUNT(*) AS count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS count'),
       ];
 
       return this.selectFromEvents(qb, trend_data_columns, dateRange).groupBy(
@@ -273,7 +276,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const getPluginCountsQuery = (qb: Knex.QueryBuilder) => {
       const plugin_counts_columns = [
         'plugin_id',
-        db.raw('COUNT(*) AS visit_count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS visit_count'),
       ];
       return this.selectFromEvents(
         qb,
