@@ -1,9 +1,8 @@
-# yaml-language-server: $schema=../../json-schema/packages.json
-kind: Package
 apiVersion: extensions.backstage.io/v1alpha1
+kind: Package
 metadata:
-  namespace: marketplace-plugin-demo
   name: backstage-community-plugin-tekton
+  namespace: marketplace-plugin-demo
   title: '@backstage-community/plugin-tekton'
   links:
     - url: https://red.ht/rhdh
@@ -19,10 +18,10 @@ metadata:
 spec:
   packageName: '@backstage-community/plugin-tekton'
   dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-tekton
-  version: 3.17.0
+  version: 3.19.0
   backstage:
     role: frontend-plugin
-    supportedVersions: 1.35.0
+    supportedVersions: 1.35.1
   author: Red Hat
   support: production
   lifecycle: active

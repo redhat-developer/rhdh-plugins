@@ -19,3 +19,7 @@ spec:
   lifecycle: production
   description: todo
   installation: todo
+  packages:
+    # for testing purposes, we are using two different package references here
+    - marketplace-plugin-demo/red-hat-developer-hub-backstage-plugin-marketplace
+    - package:marketplace-plugin-demo/red-hat-developer-hub-backstage-plugin-marketplace-backend

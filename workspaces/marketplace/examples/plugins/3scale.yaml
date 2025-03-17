@@ -69,3 +69,6 @@ spec:
 
       backend.start();
       ```
+
+  packages:
+    - backstage-community-plugin-3scale-backend
