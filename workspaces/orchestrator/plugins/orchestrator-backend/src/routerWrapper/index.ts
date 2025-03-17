@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import type {
   AuthService,
   DiscoveryService,
@@ -21,6 +22,7 @@ import type {
   PermissionsService,
   SchedulerService,
   UrlReaderService,
+  UserInfoService,
 } from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
@@ -40,6 +42,7 @@ export interface RouterOptions {
   permissions: PermissionsService;
   httpAuth: HttpAuthService;
   auth: AuthService;
+  userInfo: UserInfoService;
 }
 
 export async function createRouter(
@@ -70,5 +73,6 @@ export async function createRouter(
     permissions: args.permissions,
     httpAuth: args.httpAuth,
     auth: args.auth,
+    userInfo: args.userInfo,
   });
 }

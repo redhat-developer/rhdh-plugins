@@ -166,6 +166,7 @@ export class V2 {
   public async executeWorkflow(
     executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO,
     workflowId: string,
+    initiator: string,
   ): Promise<ExecuteWorkflowResponseDTO> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
@@ -183,6 +184,7 @@ export class V2 {
         workflowdata: executeWorkflowRequestDTO.inputData,
         orchestratorAssessmentInstanceId:
           executeWorkflowRequestDTO.orchestratorAssessmentInstanceId,
+        initiatorEntity: initiator,
       },
       serviceUrl: definition.serviceUrl,
       cacheHandler: 'throw',

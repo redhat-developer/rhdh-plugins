@@ -21,6 +21,7 @@ import {
   PermissionsService,
   resolvePackagePath,
   SchedulerService,
+  UserInfoService,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import type { DiscoveryApi } from '@backstage/core-plugin-api';
@@ -45,7 +46,10 @@ import { OpenAPIBackend, Request } from 'openapi-backend';
 
 import {
   Filter,
+  NestedFilter,
+  NestedFilterNested,
   openApiDocument,
+  orchestratorInstancesAdminViewPermission,
   orchestratorPermissions,
   orchestratorWorkflowPermission,
   orchestratorWorkflowSpecificPermission,
@@ -102,6 +106,20 @@ const authorize = async (
       result: AuthorizeResult.DENY,
     }
   );
+};
+
+const isUserAuthorizedForInstancesAdminViewPermission = async (
+  request: HttpRequest,
+  permissionsSvc: PermissionsService,
+  httpAuth: HttpAuthService,
+): Promise<boolean> => {
+  const credentials = await httpAuth.credentials(request);
+  const [decision] = await permissionsSvc.authorize(
+    [{ permission: orchestratorInstancesAdminViewPermission }],
+    { credentials },
+  );
+
+  return decision.result === AuthorizeResult.ALLOW;
 };
 
 const filterAuthorizedWorkflowIds = async (
@@ -177,6 +195,7 @@ export async function createBackendRouter(
     permissions,
     auth,
     httpAuth,
+    userInfo,
   } = options;
   const publicServices = initPublicServices(logger, config, scheduler);
 
@@ -215,6 +234,7 @@ export async function createBackendRouter(
     httpAuth,
     auditLogger,
     logger,
+    userInfo,
   );
   setupExternalRoutes(router, discovery, scaffolderService, auditLogger);
 
@@ -321,6 +341,7 @@ function setupInternalRoutes(
   httpAuth: HttpAuthService,
   auditLogger: AuditLogger,
   logger: LoggerService,
+  userInfo: UserInfoService,
 ) {
   function manageDenyAuthorization(
     endpointName: string,
@@ -465,6 +486,10 @@ function setupInternalRoutes(
       const workflowId = c.request.params.workflowId as string;
       const endpointName = 'executeWorkflow';
       const endpoint = `/v2/workflows/${workflowId}/execute`;
+      const credentials = await httpAuth.credentials(req);
+      const initiator = await (
+        await userInfo.getUserInfo(credentials)
+      ).userEntityRef;
 
       auditLogger.auditLog({
         eventName: endpointName,
@@ -491,7 +516,7 @@ function setupInternalRoutes(
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
-        .executeWorkflow(executeWorkflowRequestDTO, workflowId)
+        .executeWorkflow(executeWorkflowRequestDTO, workflowId, initiator)
         .then(result => res.status(200).json(result))
         .catch(error => {
           auditLogRequestError(error, endpointName, endpoint, req);
@@ -777,6 +802,8 @@ function setupInternalRoutes(
     async (_c, req: express.Request, res: express.Response, next) => {
       const endpointName = 'getInstances';
       const endpoint = `/v2/workflows/instances`;
+      const credentials = await httpAuth.credentials(req);
+      const entity = (await userInfo.getUserInfo(credentials)).userEntityRef;
 
       auditLogger.auditLog({
         eventName: endpointName,
@@ -798,9 +825,42 @@ function setupInternalRoutes(
             allWorkflowIds,
           );
 
+        const isUserAuthorizedForInstancesAdminView: boolean = // This permission will let user see All instances (including ones others created)
+          await isUserAuthorizedForInstancesAdminViewPermission(
+            req,
+            permissions,
+            httpAuth,
+          );
+
+        const requestFilters = getRequestFilters(req);
+
+        let filters: Filter | undefined = requestFilters;
+
+        if (!isUserAuthorizedForInstancesAdminView) {
+          const EntityFilter: NestedFilterNested = {
+            operator: 'EQ',
+            value: entity,
+            field: 'initiatorEntity',
+          };
+          const nestedEntityFilter: NestedFilter = {
+            field: 'variables',
+            nested: EntityFilter,
+          };
+
+          if (requestFilters === undefined) {
+            filters = nestedEntityFilter;
+          } else {
+            // combineFilters
+            filters = {
+              operator: 'AND',
+              filters: [nestedEntityFilter, requestFilters],
+            };
+          }
+        }
+
         const result = await routerApi.v2.getInstances(
           buildPagination(req),
-          getRequestFilters(req),
+          filters,
           authorizedWorkflowIds,
         );
 
