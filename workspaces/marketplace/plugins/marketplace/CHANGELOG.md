@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.3.0
+
+### Minor Changes
+
+- 9217bc0: add manaco editor for the upcoming installation page
+
 ## 0.2.2
 
 ### Patch Changes
