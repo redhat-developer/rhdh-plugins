@@ -23,7 +23,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import { parseEntityRef } from '@backstage/catalog-model';
 import Link from '@mui/material/Link';
 
 import CardWrapper from '../CardWrapper';
