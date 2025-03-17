@@ -63,7 +63,7 @@
           }
         }
       },
-      "required": ["name", "title", "description"]
+      "required": ["name"]
     },
     "EntityMetadataLink": {
       "type": "object",
