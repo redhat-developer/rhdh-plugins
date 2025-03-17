@@ -24,7 +24,7 @@ export default defineConfig({
     timeout: 5000,
   },
 
-  webServer: process.env.CI
+  webServer: process.env.PLAYWRIGHT_URL
     ? []
     : {
         command: 'yarn dev',
@@ -37,9 +37,7 @@ export default defineConfig({
   reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
 
   use: {
-    baseURL:
-      process.env.PLAYWRIGHT_URL ??
-      (process.env.CI ? 'http://localhost:7007' : 'http://localhost:3000'),
+    baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },

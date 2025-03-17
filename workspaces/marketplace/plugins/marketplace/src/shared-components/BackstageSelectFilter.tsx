@@ -32,7 +32,7 @@ export const BackstageSelectFilter = (props: BackstageSelectFilterProps) => {
   const filter = useQueryArrayFilter(props.name);
 
   return (
-    <Box pb={1} pt={1}>
+    <Box pb={1}>
       <Select
         label={props.label}
         items={props.items}

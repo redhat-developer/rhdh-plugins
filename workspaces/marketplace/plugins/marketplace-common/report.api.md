@@ -6,9 +6,7 @@
 
 import type { AuthService } from '@backstage/backend-plugin-api';
 import { CatalogApi } from '@backstage/catalog-client';
-import type { DiscoveryApi } from '@backstage/core-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
-import type { FetchApi } from '@backstage/core-plugin-api';
 import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 import { GetEntityFacetsResponse } from '@backstage/catalog-client';
 import { JsonObject } from '@backstage/types';
@@ -41,6 +39,11 @@ export const decodeGetEntitiesRequest: (searchParams: URLSearchParams) => GetEnt
 export const decodeGetEntityFacetsRequest: (searchParams: URLSearchParams) => GetEntityFacetsRequest;
 
 // @public (undocumented)
+export type DiscoveryApi = {
+    getBaseUrl(pluginId: string): Promise<string>;
+};
+
+// @public (undocumented)
 export interface Documentation extends JsonObject {
     // (undocumented)
     markdown: string;
@@ -71,6 +74,14 @@ export const encodeGetEntitiesRequest: (request: GetEntitiesRequest) => URLSearc
 export const encodeGetEntityFacetsRequest: (request: GetEntityFacetsRequest) => URLSearchParams;
 
 // @public (undocumented)
+export const EXTENSIONS_API_VERSION = "extensions.backstage.io/v1alpha1";
+
+// @public (undocumented)
+export type FetchApi = {
+    fetch: typeof fetch;
+};
+
+// @public (undocumented)
 export type GetEntitiesRequest = QueryEntitiesInitialRequest;
 
 // @public (undocumented)
@@ -96,18 +107,15 @@ export function isMarketplacePackage(entity?: Entity): entity is MarketplacePack
 export function isMarketplacePlugin(entity?: Entity): entity is MarketplacePlugin;
 
 // @public (undocumented)
-export const MARKETPLACE_API_VERSION = "marketplace.backstage.io/v1alpha1";
-
-// @public (undocumented)
 export enum MarketplaceAnnotation {
     // (undocumented)
-    CERTIFIED_BY = "marketplace.backstage.io/certified-by",
+    CERTIFIED_BY = "extensions.backstage.io/certified-by",
     // (undocumented)
-    PRE_INSTALLED = "marketplace.backstage.io/pre-installed",
+    PRE_INSTALLED = "extensions.backstage.io/pre-installed",
     // (undocumented)
-    SUPPORT_TYPE = "marketplace.backstage.io/support-type",
+    SUPPORT_TYPE = "extensions.backstage.io/support-type",
     // (undocumented)
-    VERIFIED_BY = "marketplace.backstage.io/verified-by"
+    VERIFIED_BY = "extensions.backstage.io/verified-by"
 }
 
 // @public (undocumented)

@@ -1,9 +1,9 @@
 app:
-  title: Backstage
+  title: Backstage App
   baseUrl: http://localhost:3000
 
-#organization:
-#  name: My Company
+organization:
+  name: My Company
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins

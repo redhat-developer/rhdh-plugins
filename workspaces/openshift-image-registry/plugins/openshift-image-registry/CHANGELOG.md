@@ -1,5 +1,14 @@
 ### Dependencies
 
+## 1.11.2
+
+### Patch Changes
+
+- 707da0e: Updated dependency `@janus-idp/shared-react` to `2.16.0`.
+- 0fa1d3a: Updated dependency `@types/node` to `18.19.79`.
+- 5b20c97: Updated dependency `@types/node` to `18.19.78`.
+- 9e6f561: Updated dependency `@types/node` to `18.19.76`.
+
 ## 1.11.1
 
 ### Patch Changes

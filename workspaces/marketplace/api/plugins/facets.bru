@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseURL}}/api/marketplace/plugins/facets?facet=metadata.name&facet=metadata.namespace&facet=metadata.annotations.marketplace.backstage.io/certified-by
+  url: {{baseURL}}/api/marketplace/plugins/facets?facet=metadata.name&facet=metadata.namespace&facet=metadata.annotations.extensions.backstage.io/certified-by
   body: none
   auth: bearer
 }
@@ -13,7 +13,7 @@ get {
 params:query {
   facet: metadata.name
   facet: metadata.namespace
-  facet: metadata.annotations.marketplace.backstage.io/certified-by
+  facet: metadata.annotations.extensions.backstage.io/certified-by
 }
 
 auth:bearer {

@@ -56,8 +56,22 @@ import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 
 const useStyles = makeStyles(theme => ({
+  body: {
+    // remove default margin and padding from common elements
+    '& h1, & h2, & h3, & h4, & h5, & h6, & p, & ul, & ol, & li': {
+      margin: 0,
+      padding: 0,
+    },
+  },
   header: {
     padding: `${theme.spacing(3)}px !important`,
+  },
+  headerMenu: {
+    // align hamburger icon with title
+    '& .pf-v6-c-button': {
+      display: 'flex',
+      alignItems: 'center',
+    },
   },
   headerTitle: {
     justifyContent: 'left !important',
@@ -321,12 +335,16 @@ export const LightspeedChat = ({
           onConfirm={handleDeleteConversation}
         />
       )}
-      <Chatbot displayMode={ChatbotDisplayMode.embedded}>
+      <Chatbot
+        displayMode={ChatbotDisplayMode.embedded}
+        className={classes.body}
+      >
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
             <ChatbotHeaderMenu
               aria-expanded={isDrawerOpen}
               onMenuToggle={() => setIsDrawerOpen(!isDrawerOpen)}
+              className={classes.headerMenu}
             />
             <ChatbotHeaderTitle className={classes.headerTitle}>
               <Title headingLevel="h1" size="3xl">

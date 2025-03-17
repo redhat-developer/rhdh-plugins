@@ -17,4 +17,4 @@
 /**
  * @public
  */
-export const MARKETPLACE_API_VERSION = 'marketplace.backstage.io/v1alpha1';
+export const EXTENSIONS_API_VERSION = 'extensions.backstage.io/v1alpha1';

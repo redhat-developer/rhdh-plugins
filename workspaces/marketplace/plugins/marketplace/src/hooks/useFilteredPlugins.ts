@@ -18,7 +18,22 @@ import { useSearchParams } from 'react-router-dom';
 
 import { useQuery } from '@tanstack/react-query';
 
+import { GetEntitiesRequest } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
 import { useMarketplaceApi } from './useMarketplaceApi';
+
+const filteredPluginsRequest: GetEntitiesRequest = {
+  orderFields: [
+    {
+      field: 'metadata.title',
+      order: 'asc',
+    },
+    {
+      field: 'metadata.name',
+      order: 'asc',
+    },
+  ],
+};
 
 export const useFilteredPlugins = () => {
   const [searchParams] = useSearchParams();
@@ -27,8 +42,8 @@ export const useFilteredPlugins = () => {
 
   const marketplaceApi = useMarketplaceApi();
   return useQuery({
-    queryKey: ['marketplaceApi', 'getPlugins', {}],
-    queryFn: () => marketplaceApi.getPlugins({}),
+    queryKey: ['marketplaceApi', 'getPlugins', filteredPluginsRequest],
+    queryFn: () => marketplaceApi.getPlugins(filteredPluginsRequest),
     select: data => {
       let plugins = data.items;
 
@@ -59,7 +74,7 @@ export const useFilteredPlugins = () => {
 
         const supportTypeAnnotationsFilters = filters
           .filter(filter =>
-            filter.startsWith('metadata.annotations.marketplace.backstage.io/'),
+            filter.startsWith('metadata.annotations.extensions.backstage.io/'),
           )
           .map(filter => filter.substring('metadata.annotations.'.length));
         if (supportTypeAnnotationsFilters.length > 0) {
