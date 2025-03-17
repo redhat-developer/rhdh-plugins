@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.2.3
+
+### Patch Changes
+
+- 4f2bf81: make title and description optional
+
 ## 0.2.2
 
 ### Patch Changes
