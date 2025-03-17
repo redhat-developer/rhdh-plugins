@@ -207,7 +207,6 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const db = this.db;
     const query = db('events')
       .select(
-        db.raw(`context->>'routeRef' AS entityref`),
         db.raw('CAST(COUNT(*) as INTEGER) AS count'),
         db.raw(this.getLastUsedDate()),
         db.raw(`COALESCE(attributes->>'kind', '') AS kind`),
@@ -219,7 +218,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
         plugin_id: 'techdocs',
       })
       .whereBetween('created_at', [start_date, end_date])
-      .groupByRaw(`entityref, name, kind, namespace`)
+      .groupByRaw(`name, kind, namespace`)
       .limit(Number(limit) || 3);
 
     return query.then(data => this.getResponseData(data, 'last_used'));
