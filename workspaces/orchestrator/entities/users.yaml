@@ -8,14 +8,4 @@ spec:
     displayName: Marek Libra
     email: foo@xyzbar.cz
   memberOf: []
----
-apiVersion: backstage.io/v1alpha1
-kind: User
-metadata:
-  name: liorsoffer
-spec:
-  profile:
-    displayName: Lior Soffer
-    email: foo@gmail.com
-  memberOf: []
 

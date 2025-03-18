@@ -45,6 +45,7 @@ import { Request as HttpRequest } from 'express-serve-static-core';
 import { OpenAPIBackend, Request } from 'openapi-backend';
 
 import {
+  FieldFilter,
   Filter,
   NestedFilter,
   NestedFilterNested,
@@ -487,7 +488,7 @@ function setupInternalRoutes(
       const endpointName = 'executeWorkflow';
       const endpoint = `/v2/workflows/${workflowId}/execute`;
       const credentials = await httpAuth.credentials(req);
-      const initiator = await (
+      const initiatorEntity = await (
         await userInfo.getUserInfo(credentials)
       ).userEntityRef;
 
@@ -516,7 +517,7 @@ function setupInternalRoutes(
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
-        .executeWorkflow(executeWorkflowRequestDTO, workflowId, initiator)
+        .executeWorkflow(executeWorkflowRequestDTO, workflowId, initiatorEntity)
         .then(result => res.status(200).json(result))
         .catch(error => {
           auditLogRequestError(error, endpointName, endpoint, req);
@@ -803,7 +804,8 @@ function setupInternalRoutes(
       const endpointName = 'getInstances';
       const endpoint = `/v2/workflows/instances`;
       const credentials = await httpAuth.credentials(req);
-      const entity = (await userInfo.getUserInfo(credentials)).userEntityRef;
+      const initiatorEntity = (await userInfo.getUserInfo(credentials))
+        .userEntityRef;
 
       auditLogger.auditLog({
         eventName: endpointName,
@@ -825,7 +827,7 @@ function setupInternalRoutes(
             allWorkflowIds,
           );
 
-        const isUserAuthorizedForInstancesAdminView: boolean = // This permission will let user see All instances (including ones others created)
+        const isUserAuthorizedForInstancesAdminView: boolean = // This permission will let user see ALL instances (including ones others created)
           await isUserAuthorizedForInstancesAdminViewPermission(
             req,
             permissions,
@@ -834,26 +836,27 @@ function setupInternalRoutes(
 
         const requestFilters = getRequestFilters(req);
 
-        let filters: Filter | undefined = requestFilters;
+        let filters = requestFilters;
 
         if (!isUserAuthorizedForInstancesAdminView) {
-          const EntityFilter: NestedFilterNested = {
+          const initiatorEntityFilter: FieldFilter = {
             operator: 'EQ',
-            value: entity,
+            value: initiatorEntity,
             field: 'initiatorEntity',
           };
-          const nestedEntityFilter: NestedFilter = {
+
+          const nestedVariablesFilter: NestedFilter = {
             field: 'variables',
-            nested: EntityFilter,
+            nested: initiatorEntityFilter,
           };
 
           if (requestFilters === undefined) {
-            filters = nestedEntityFilter;
+            filters = nestedVariablesFilter;
           } else {
-            // combineFilters
+            // combine filters
             filters = {
               operator: 'AND',
-              filters: [nestedEntityFilter, requestFilters],
+              filters: [nestedVariablesFilter, requestFilters],
             };
           }
         }
