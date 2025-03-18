@@ -113,6 +113,7 @@ export class SonataFlowService {
 
     // Dynamically add X-Authentication-<provider> header if token exists
     if (args.authToken && args.authProvider) {
+      headers.authprovider = args.authProvider;
       headers[`X-Authentication-${args.authProvider}`] = args.authToken;
     }
 
