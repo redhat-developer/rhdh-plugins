@@ -13,28 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useContext, useState } from 'react';
-import { E164Number } from 'libphonenumber-js/types.cjs';
+import React, { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
-import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import DoneIcon from '@mui/icons-material/Done';
 import Typography from '@mui/material/Typography';
 import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { Link } from '@backstage/core-components';
-import { PhoneVerificationModal } from '../Modals/PhoneVerificationModal';
-import { VerificationCodeInputModal } from '../Modals/VerificationCodeInputModal';
-import { AnsibleLaunchInfoModal } from '../Modals/AnsibleLaunchInfoModal';
-import { Context } from './SandboxCatalogPage';
+import { SandboxCatalogCardButton } from './SandboxCatalogCardButton';
+import { SandboxCatalogCardDeleteButton } from './SandboxCatalogCardDeleteButton';
+import {
+  AnsibleDeleteInstanceModal,
+  AnsibleLaunchInfoModal,
+  PhoneVerificationModal,
+} from '../Modals';
+import { useRegContext } from '../../utils/RegContext';
+import { AnsibleStatus } from '../../utils/aap-utils';
+import { useApi } from '@backstage/core-plugin-api';
+import { registerApiRef } from '../../api';
+import { Product } from './productData';
 
 type SandboxCatalogCardProps = {
-  key: React.Key;
+  id: Product;
   title: string;
   image: string;
   description: {
@@ -92,7 +96,7 @@ const CatalogCardGreenCorner = ({ show }: { show: boolean }) => {
 };
 
 export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
-  key,
+  id,
   title,
   image,
   description,
@@ -101,27 +105,110 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   showGreenCorner,
 }) => {
   const theme = useTheme();
-  const [, setButtonClicked] = useContext(Context);
-  const [buttonText, setButtonText] = useState<string>('Try it');
-  const [phoneVerificationModalOpen, setPhoneVerificationModalOpen] =
-    React.useState(false);
-  const [verificationCodeModalOpen, setVerificationCodeModalOpen] =
-    React.useState(false);
+  const registerApi = useApi(registerApiRef);
+  const {
+    userData,
+    ansibleData,
+    ansibleStatus,
+    signupUser,
+    userFound,
+    verificationRequired,
+    refetchUserData,
+    refetchAAP,
+  } = useRegContext();
   const [ansibleCredsModalOpen, setAnsibleCredsModalOpen] =
     React.useState(false);
-  const [phoneNumber, setPhoneNumber] = useState<E164Number | undefined>();
+  const [verifyPhoneModalOpen, setVerifyPhoneModalOpen] = useState(false);
 
-  const handleTryButtonClick = () => {
-    setButtonText('Provisioning...');
-    setButtonClicked(true);
+  const [deleteAnsibleModalOpen, setDeleteAnsibleModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleAAPInstance: () => Promise<void> = async () => {
+    refetchAAP();
+
+    if (
+      ansibleStatus === AnsibleStatus.PROVISIONING ||
+      ansibleStatus === AnsibleStatus.READY
+    ) {
+      return;
+    }
+
+    if (
+      ansibleStatus === AnsibleStatus.IDLED &&
+      ansibleData &&
+      ansibleData?.items?.length > 0
+    ) {
+      try {
+        await registerApi.unIdleAAP(userData?.defaultUserNamespace || '');
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      }
+      return;
+    }
+    try {
+      await registerApi.createAAP(userData?.defaultUserNamespace || '');
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
+  };
+
+  const handleTryButtonClick = async (pdt: Product) => {
+    if (!userFound) {
+      signupUser();
+      refetchUserData();
+      if (verificationRequired) {
+        setVerifyPhoneModalOpen(true);
+      }
+    } else {
+      if (pdt === Product.AAP) {
+        await handleAAPInstance();
+        refetchAAP();
+        setAnsibleCredsModalOpen(true);
+      }
+    }
     showGreenCorner();
-    setPhoneVerificationModalOpen(true);
-    // setAnsibleCredsModalOpen(true);
+  };
+
+  const handleDeleteButtonClick = async (pdt: Product) => {
+    if (deleting) {
+      return;
+    }
+
+    setDeleteAnsibleModalOpen(false);
+    setDeleting(true);
+    if (pdt === Product.AAP) {
+      refetchAAP();
+      const userNamespace = userData?.defaultUserNamespace || '';
+      const aapLabelSelector =
+        'app.kubernetes.io%2Fmanaged-by+in+%28aap-gateway-operator%2Caap-operator%2Cautomationcontroller-operator%2Cautomationhub-operator%2Ceda-operator%2Clightspeed-operator%29&limit=50';
+
+      try {
+        const aapDeployments = await registerApi.getDeployments(
+          userNamespace,
+          aapLabelSelector,
+        );
+        const aapStatefulSets = await registerApi.getStatefulSets(
+          userNamespace,
+          aapLabelSelector,
+        );
+        await registerApi.deleteAAPCR(userData?.defaultUserNamespace || '');
+        await registerApi.deleteSecretsAndPVCs(aapDeployments, userNamespace);
+        await registerApi.deleteSecretsAndPVCs(aapStatefulSets, userNamespace);
+        await registerApi.deletePVCsForSTS(aapStatefulSets, userNamespace);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      }
+    }
+    refetchAAP();
+    setDeleting(false);
   };
 
   return (
     <>
-      <Card elevation={0} key={key} sx={{ width: '100%', height: '100%' }}>
+      <Card elevation={0} key={id} sx={{ width: '100%', height: '100%' }}>
         <CatalogCardGreenCorner show={greenCorner} />
         <CardMedia
           sx={{
@@ -170,43 +257,32 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
             )}`,
           }}
         >
-          <Link to={link} underline="none">
-            <Button
-              size="medium"
-              color="primary"
-              variant="outlined"
-              endIcon={<OpenInNewIcon />}
-              onClick={handleTryButtonClick}
-              sx={{
-                border: `1px solid ${theme.palette.primary.main}`,
-                marginTop: theme.spacing(0.5),
-                '&:hover': {
-                  backgroundColor: 'rgba(25, 118, 210, 0.04)',
-                  borderColor: '#1976d2',
-                },
-              }}
-            >
-              {buttonText}
-            </Button>
-          </Link>
+          <SandboxCatalogCardButton
+            link={link}
+            id={id}
+            handleTryButtonClick={handleTryButtonClick}
+            theme={theme}
+          />
+          <SandboxCatalogCardDeleteButton
+            id={id}
+            theme={theme}
+            handleDeleteButtonClick={() => setDeleteAnsibleModalOpen(true)}
+            isDeleting={deleting}
+          />
         </CardActions>
       </Card>
       <PhoneVerificationModal
-        open={phoneVerificationModalOpen}
-        setOpen={setPhoneVerificationModalOpen}
-        showOtpModal={setVerificationCodeModalOpen}
-        setPhoneNumber={setPhoneNumber}
-        phoneNumber={phoneNumber}
-      />
-      <VerificationCodeInputModal
-        open={verificationCodeModalOpen}
-        setOpen={setVerificationCodeModalOpen}
-        showPhoneModal={setPhoneVerificationModalOpen}
-        phoneNumber={phoneNumber}
+        modalOpen={verifyPhoneModalOpen}
+        setOpen={setVerifyPhoneModalOpen}
       />
       <AnsibleLaunchInfoModal
-        open={ansibleCredsModalOpen}
+        modalOpen={ansibleCredsModalOpen}
         setOpen={setAnsibleCredsModalOpen}
+      />
+      <AnsibleDeleteInstanceModal
+        modalOpen={deleteAnsibleModalOpen}
+        setOpen={setDeleteAnsibleModalOpen}
+        handleAnsibleDeleteInstance={() => handleDeleteButtonClick(id)}
       />
     </>
   );

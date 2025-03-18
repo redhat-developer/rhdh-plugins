@@ -13,50 +13,68 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { E164Number, parsePhoneNumber } from 'libphonenumber-js/min';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
+import ErrorIcon from '@mui/icons-material/Error';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
-import { Link } from '@backstage/core-components';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CircularProgress from '@mui/material/CircularProgress';
+import { isValidOTP } from '../../../utils/phone-utils';
 
-type VerificationCodeInputModalProps = {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  showPhoneModal: React.Dispatch<React.SetStateAction<boolean>>;
+type VerificationCodeProps = {
+  otp: string[];
+  setOtp: React.Dispatch<React.SetStateAction<string[]>>;
+  handleResendCode: () => void;
+  codeResent: boolean;
   phoneNumber: E164Number | undefined;
+  handleEditPhoneNumber: () => void;
+  handleStartTrialClick: () => void;
+  handleClose: () => void;
+  loading?: boolean;
+  error?: string;
 };
 
-export const VerificationCodeInputModal: React.FC<
-  VerificationCodeInputModalProps
-> = ({ open, setOpen, showPhoneModal, phoneNumber }) => {
+export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
+  otp,
+  setOtp,
+  handleResendCode,
+  codeResent,
+  phoneNumber,
+  handleEditPhoneNumber,
+  handleStartTrialClick,
+  handleClose,
+  loading,
+  error,
+}) => {
   const theme = useTheme();
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+
   const inputRefs = useRef<any>([]);
 
   useEffect(() => {
-    if (open) {
+    if (!otp[0]) {
       // Focus on the first input box when modal opens
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     }
-  }, [open]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [window.open]);
 
   const handleChange = (
     index: number,
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const value = event.target.value;
-    if (!/^[a-zA-Z0-9]*$/.test(value)) return; // Allow only alphanumeric characters
+    if (!isValidOTP(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
@@ -78,21 +96,6 @@ export const VerificationCodeInputModal: React.FC<
     }
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setOtp(['', '', '', '', '', '']);
-  };
-
-  const handleStartTrialClick = () => {
-    setOpen(false);
-    setOtp(['', '', '', '', '', '']);
-  };
-
-  const handleEditPhoneNumber = () => {
-    setOpen(false);
-    showPhoneModal(true);
-  };
-
   const createPhoneString = (phone: E164Number | undefined) => {
     if (!phone) return '';
     try {
@@ -104,7 +107,7 @@ export const VerificationCodeInputModal: React.FC<
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <>
       <DialogTitle
         variant="h5"
         sx={{ fontWeight: 700, padding: '32px 24px 0 24px' }}
@@ -166,28 +169,55 @@ export const VerificationCodeInputModal: React.FC<
             ))}
           </Stack>
         </div>
-        <Link to="#">
+
+        <Typography
+          variant="body2"
+          color="primary"
+          sx={{
+            mt: 2,
+            cursor: 'pointer',
+            justifyContent: 'left',
+            fontSize: '16px',
+            fontWeight: 400,
+          }}
+          onClick={() => {
+            handleResendCode();
+            inputRefs.current[0]?.focus();
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            {codeResent ? (
+              <>
+                Resent successful
+                <CheckCircleIcon color="primary" style={{ fontSize: '16px' }} />
+              </>
+            ) : (
+              'Resend code'
+            )}
+          </div>
+        </Typography>
+
+        {error && (
           <Typography
-            variant="body2"
-            color="primary"
-            sx={{
-              mt: 2,
-              cursor: 'pointer',
-              justifyContent: 'left',
-              fontSize: '16px',
-              fontWeight: 400,
-            }}
+            color="error"
+            style={{ fontSize: '16px', fontWeight: 400, marginTop: '16px' }}
           >
-            Resend code
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <ErrorIcon color="error" style={{ fontSize: '16px' }} />
+              {error}
+            </div>
           </Typography>
-        </Link>
+        )}
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'flex-start', padding: '24px' }}>
         <Button
           variant="contained"
           type="submit"
           onClick={handleStartTrialClick}
-          disabled={otp.some(digit => !digit)}
+          disabled={otp.some(digit => !digit) || loading || !!error}
+          endIcon={
+            loading && <CircularProgress size={20} sx={{ color: '#AFAFAF' }} />
+          }
         >
           Start trial
         </Button>
@@ -205,6 +235,8 @@ export const VerificationCodeInputModal: React.FC<
           Cancel
         </Button>
       </DialogActions>
-    </Dialog>
+    </>
   );
 };
+
+export default VerificationCodeStep;

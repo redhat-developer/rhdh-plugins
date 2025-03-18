@@ -22,6 +22,14 @@ import OpenShiftAIIcon from '../../assets/logos/openshift-ai.png';
 import DevSpacesIcon from '../../assets/logos/devspaces.png';
 import OpenshiftVirtualizationIcon from '../../assets/logos/openshift-virtualization.png';
 
+export enum Product {
+  OPENSHIFT_CONSOLE = 'openshift-console',
+  OPENSHIFT_AI = 'red-hat-data-science',
+  DEVSPACES = 'devspaces',
+  AAP = 'ansible-automation-platform',
+  OPENSHIFT_VIRT = 'openshift-virtualization',
+}
+
 const iconProps = { sx: { width: '16px' } };
 
 const iconMap: Record<'success' | 'warning', JSX.Element> = {
@@ -38,16 +46,15 @@ type ProductDescription = {
 };
 
 export type ProductData = {
-  id: number;
+  id: Product;
   title: string;
   image: string;
   description: ProductDescription[];
-  link: string;
 };
 
 export const productData: ProductData[] = [
   {
-    id: 1,
+    id: Product.OPENSHIFT_CONSOLE,
     title: 'OpenShift',
     image: OpenShiftIcon,
     description: [
@@ -69,10 +76,9 @@ export const productData: ProductData[] = [
           'Manage containers, VMs, and serverless workloads across the hybrid cloud',
       },
     ],
-    link: '#',
   },
   {
-    id: 2,
+    id: Product.OPENSHIFT_AI,
     title: 'OpenShift AI',
     image: OpenShiftAIIcon,
     description: [
@@ -97,10 +103,9 @@ export const productData: ProductData[] = [
         value: 'Scales across the hybrid cloud',
       },
     ],
-    link: '#',
   },
   {
-    id: 3,
+    id: Product.DEVSPACES,
     title: 'Dev Spaces',
     image: DevSpacesIcon,
     description: [
@@ -125,10 +130,9 @@ export const productData: ProductData[] = [
         value: 'VS Code and JetBrains IDEs',
       },
     ],
-    link: '#',
   },
   {
-    id: 4,
+    id: Product.AAP,
     title: 'Ansible Automation Platform',
     image: AnsibleIcon,
     description: [
@@ -153,10 +157,9 @@ export const productData: ProductData[] = [
         value: '20-minute environment provisioning',
       },
     ],
-    link: '#',
   },
   {
-    id: 5,
+    id: Product.OPENSHIFT_VIRT,
     title: 'OpenShift Virtualization',
     image: OpenshiftVirtualizationIcon,
     description: [
@@ -177,6 +180,5 @@ export const productData: ProductData[] = [
         value: 'Comprehensive development and operations tools',
       },
     ],
-    link: '#',
   },
 ];

@@ -14,19 +14,36 @@
  * limitations under the License.
  */
 import {
+  createApiFactory,
   createPlugin,
   createRoutableExtension,
   IconComponent,
+  discoveryApiRef,
+  fetchApiRef,
+  configApiRef,
 } from '@backstage/core-plugin-api';
 import { rootRouteRef } from './routes';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
+import { registerApiRef, RegistrationBackendClient } from './api';
 
 export const sandboxPlugin = createPlugin({
   id: 'sandbox',
   routes: {
     root: rootRouteRef,
   },
+  apis: [
+    createApiFactory({
+      api: registerApiRef,
+      deps: {
+        configApi: configApiRef,
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ configApi, discoveryApi, fetchApi }) =>
+        new RegistrationBackendClient({ configApi, discoveryApi, fetchApi }),
+    }),
+  ],
 });
 
 /**
