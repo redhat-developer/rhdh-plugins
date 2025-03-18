@@ -223,7 +223,6 @@ export const MarketplacePluginInstallContent = ({
           });
       });
 
-      // Make <pre> position relative so button is placed inside it
       pre.style.position = 'relative';
       pre.appendChild(button);
     });
@@ -236,7 +235,7 @@ export const MarketplacePluginInstallContent = ({
   return (
     <Box
       sx={{
-        height: '80vh',
+        height: 'calc(100vh - 160px)',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -301,11 +300,11 @@ export const MarketplacePluginInstallContent = ({
                 action={
                   <Typography
                     component="a"
-                    href="/path-to-file.zip" // TOTO
+                    href="/path-to-file.zip" // update this
                     download
                     sx={{
                       fontSize: 16,
-                      display: 'flex',
+                      display: 'none', // change to 'flex' when ready
                       alignItems: 'center',
                       gap: 0.5,
                       color: 'primary.main',
@@ -370,16 +369,16 @@ export const MarketplacePluginInstallContent = ({
           </Grid>
         )}
       </Grid>
-      <Box sx={{ flexShrink: 0, mt: 1, mb: 6 }}>
-        <CheckboxList packages={packages} />
-      </Box>
+
       <Box
         sx={{
-          position: 'fixed',
-          bottom: 24,
+          flexShrink: 0,
           backgroundColor: 'background.paper',
         }}
       >
+        <Box sx={{ mt: 1, mb: 2 }}>
+          <CheckboxList packages={packages} />
+        </Box>
         <Button variant="contained" color="primary" disabled>
           Install
         </Button>
