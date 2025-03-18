@@ -27,40 +27,57 @@ import {
  */
 export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
   private eventBuffer: AnalyticsEvent[] = [];
+  private pendingEvents: AnalyticsEvent[] = [];
   private readonly backendUrl: string;
   private readonly flushInterval: number;
   private readonly maxBufferSize: number;
   private readonly debug?: boolean;
   private userId?: string;
   private userToken?: string;
+  private isUserIdentityAvailable?: boolean;
 
   private constructor(
     backendUrl: string,
     flushInterval: number,
     maxBufferSize: number,
-    identityApi?: IdentityApi,
+    identityApi: IdentityApi,
     debug?: boolean,
   ) {
     this.backendUrl = backendUrl;
     this.flushInterval = flushInterval;
     this.maxBufferSize = maxBufferSize;
     this.debug = debug;
+    this.isUserIdentityAvailable = false;
 
-    if (identityApi) {
-      identityApi.getBackstageIdentity().then(async identity => {
-        const { token } = await identityApi.getCredentials();
-        this.userToken = token;
-        this.userId = identity.userEntityRef;
-      });
-    }
+    identityApi.getBackstageIdentity().then(async identity => {
+      const { token } = await identityApi.getCredentials();
+      this.userToken = token;
+      this.userId = identity.userEntityRef;
+      this.isUserIdentityAvailable = true;
+
+      await Promise.all(
+        this.pendingEvents.map(event => this.setUserIdToEvent(event)),
+      );
+
+      this.eventBuffer.push(...this.pendingEvents);
+
+      this.pendingEvents = [];
+    });
 
     setInterval(() => this.flushEvents(), this.flushInterval);
   }
 
+  private async setUserIdToEvent(event: AnalyticsEvent) {
+    if (this.userId) {
+      event.context.userName = this.userId;
+      event.context.userId = await this.hash(this.userId);
+    }
+    return event;
+  }
   /**
    * initialize the Analytics API for Adoption Insights fromm config
    */
-  static fromConfig(config: ConfigApi, options: { identityApi?: IdentityApi }) {
+  static fromConfig(config: ConfigApi, options: { identityApi: IdentityApi }) {
     const backendUrl = `${config.getString(
       'backend.baseUrl',
     )}/api/adoption-insights`;
@@ -91,14 +108,18 @@ export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
     if (this.userId) {
       event.context.userName = this.userId;
       event.context.userId = await this.hash(this.userId);
-      event.context.timestamp = new Date().toISOString();
     }
+    event.context.timestamp = new Date().toISOString();
+
     if (this.debug) {
       // eslint-disable-next-line no-console
       console.log('Adoption Insights Analytics Event -', event);
     }
-
-    this.eventBuffer.push(event);
+    if (this.isUserIdentityAvailable) {
+      this.eventBuffer.push(event);
+    } else {
+      this.pendingEvents.push(event);
+    }
 
     // Flush immediately if buffer reaches threshold
     if (this.eventBuffer.length >= this.maxBufferSize) {
