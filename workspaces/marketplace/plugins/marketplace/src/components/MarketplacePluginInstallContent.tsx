@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import { ErrorPage, Progress } from '@backstage/core-components';
 import { useRouteRefParams } from '@backstage/core-plugin-api';
 
-import Button from '@mui/material/Button';
 import yaml from 'yaml';
 import { useCopyToClipboard } from 'react-use';
 
@@ -36,6 +35,86 @@ import {
   CodeEditor,
   useCodeEditor,
 } from './CodeEditor';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import ReactMarkdown from 'react-markdown';
+import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
+
+const generateCheckboxList = (packages: MarketplacePackage[]) => {
+  const hasFrontend = packages.some(
+    pkg => pkg.spec?.backstage?.role === 'frontend-plugin',
+  );
+  const hasBackend = packages.some(
+    pkg => pkg.spec?.backstage?.role === 'backend-plugin',
+  );
+
+  const checkboxes = [
+    { label: 'Install front-end plugin', show: hasFrontend },
+    { label: 'Install back-end plugin', show: hasBackend },
+    { label: 'Install software templates', show: true }, // TODO, now always show
+  ];
+
+  return checkboxes.filter(cb => cb.show);
+};
+
+const CheckboxList = ({ packages }: { packages: MarketplacePackage[] }) => {
+  const checkboxes = generateCheckboxList(packages);
+  const [checked, setChecked] = useState<{ [key: string]: boolean }>({});
+
+  const handleChange = (label: string) => {
+    setChecked(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  return (
+    <FormGroup>
+      {checkboxes.map((cb, index) => (
+        <FormControlLabel
+          key={index}
+          control={
+            <Checkbox
+              checked={checked[cb.label] ?? false}
+              onChange={() => handleChange(cb.label)}
+            />
+          }
+          label={cb.label}
+        />
+      ))}
+    </FormGroup>
+  );
+};
+
+interface TabPanelProps {
+  children: string;
+  index: number;
+  value: number;
+}
+
+const TabPanel = ({ children, index, value }: TabPanelProps) => {
+  if (value !== index) return null;
+
+  return (
+    <Box
+      role="tabpanel"
+      sx={{ flex: 1, overflow: 'auto', p: 2, scrollbarWidth: 'thin' }}
+    >
+      <Typography component="div">
+        <ReactMarkdown>{children}</ReactMarkdown>
+      </Typography>
+    </Box>
+  );
+};
 
 export const MarketplacePluginInstallContent = ({
   plugin,
@@ -69,17 +148,171 @@ export const MarketplacePluginInstallContent = ({
     }
   }, [codeEditor, copyToClipboard]);
 
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const borderColor = theme.palette.mode === 'dark' ? '#a3a3a3' : '#c7c7c7';
+  const installationInstructions = plugin.spec?.installation;
+  const examples = packages[0]?.spec?.appConfigExamples;
+  const showRightCard = installationInstructions || examples;
+  // const [yamlText, setYamlText] = useState('');
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const handleTabChange = (_: any, newValue: React.SetStateAction<number>) => {
+    setTabIndex(newValue);
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ flex: 1 }}>
-        <CodeEditor defaultLanguage="yaml" onLoaded={onLoaded} />
-      </div>
-      <div style={{ paddingTop: 16 }}>
+    <Box
+      sx={{
+        height: '80vh',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <Grid
+        container
+        spacing={3}
+        sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
+      >
+        <Grid
+          item
+          xs={12}
+          md={6.5}
+          sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+        >
+          <Card
+            sx={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              borderRadius: 0,
+            }}
+          >
+            <CardContent
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'auto',
+                scrollbarWidth: 'thin',
+              }}
+            >
+              <CodeEditor defaultLanguage="yaml" onLoaded={onLoaded} />
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {showRightCard && (
+          <Grid
+            item
+            xs={12}
+            md={5.5}
+            sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+          >
+            <Card
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                borderRadius: 0,
+                borderRight: `1px solid ${borderColor}`,
+              }}
+            >
+              <CardHeader
+                title={
+                  <Typography variant="h3">
+                    Installation instructions
+                  </Typography>
+                }
+                action={
+                  <Typography
+                    component="a"
+                    href="/path-to-file.zip" // TOTO
+                    download
+                    sx={{
+                      fontSize: 16,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      color: 'primary.main',
+                      textDecoration: 'none',
+                      m: 1,
+                    }}
+                  >
+                    <FileDownloadOutlinedIcon fontSize="small" />
+                    Download
+                  </Typography>
+                }
+                sx={{ pb: 0 }}
+              />
+              <CardContent
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
+                }}
+              >
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <Tabs
+                    value={tabIndex}
+                    onChange={handleTabChange}
+                    aria-label="Plugin tabs"
+                  >
+                    {installationInstructions && (
+                      <Tab
+                        label={`Setting up the ${plugin.metadata.name} plugin`}
+                      />
+                    )}
+                    {examples && <Tab label="Examples" />}
+                  </Tabs>
+                </Box>
+                <Box
+                  sx={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  {tabIndex === 0 && (
+                    <TabPanel value={tabIndex} index={0}>
+                      {plugin.spec?.installation ??
+                        'No installation instructions provided'}
+                    </TabPanel>
+                  )}
+
+                  {tabIndex === 1 && (
+                    <TabPanel value={tabIndex} index={1}>
+                      test
+                    </TabPanel>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+      </Grid>
+      <Box sx={{ flexShrink: 0, mt: 1, mb: 6 }}>
+        <CheckboxList packages={packages} />
+      </Box>
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          backgroundColor: 'background.paper',
+        }}
+      >
+        <Button variant="contained" color="primary">
+          Install
+        </Button>
         <Button
           variant="contained"
           color="primary"
           onClick={onLoaded}
-          sx={{ mr: 1 }}
+          sx={{ ml: 2 }}
         >
           Reset
         </Button>
@@ -87,7 +320,7 @@ export const MarketplacePluginInstallContent = ({
           variant="contained"
           color="primary"
           onClick={showFullPlugin}
-          sx={{ mr: 1 }}
+          sx={{ mx: 2 }}
         >
           Show full plugin
         </Button>
@@ -98,8 +331,16 @@ export const MarketplacePluginInstallContent = ({
         >
           Copy
         </Button>
-      </div>
-    </div>
+        <Button
+          variant="outlined"
+          color="primary"
+          sx={{ ml: 2 }}
+          onClick={() => navigate(-1)}
+        >
+          Cancel
+        </Button>
+      </Box>
+    </Box>
   );
 };
 

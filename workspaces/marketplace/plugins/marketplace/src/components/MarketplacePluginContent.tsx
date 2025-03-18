@@ -247,7 +247,6 @@ export const MarketplacePluginContent = ({
             >
               <div style={{ display: 'inline-block' }}>
                 <LinkButton
-                  disabled
                   to={getInstallPath({
                     namespace: plugin.metadata.namespace!,
                     name: plugin.metadata.name,
