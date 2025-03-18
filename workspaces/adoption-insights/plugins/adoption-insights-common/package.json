@@ -19,9 +19,8 @@
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-adoption-insights-common",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-adoption-insights",
-      "@red-hat-developer-hub/backstage-plugin-adoption-insights-common",
       "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend",
-      "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights"
+      "@red-hat-developer-hub/backstage-plugin-adoption-insights-common"
     ]
   },
   "sideEffects": false,
