@@ -24,6 +24,7 @@ import { useCopyToClipboard } from 'react-use';
 
 import {
   MarketplacePackage,
+  MarketplacePackageSpecAppConfigExample,
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
@@ -48,9 +49,17 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles';
+import { Markdown } from './Markdown';
+
+const copyIconSvg = `
+  <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#6a6e73">
+    <g><rect fill="none" height="24" width="24"/></g>
+    <g>
+      <path d="M15,20H5V7c0-0.55-0.45-1-1-1h0C3.45,6,3,6.45,3,7v13c0,1.1,0.9,2,2,2h10c0.55,0,1-0.45,1-1v0C16,20.45,15.55,20,15,20z M20,16V4c0-1.1-0.9-2-2-2H9C7.9,2,7,2.9,7,4v12c0,1.1,0.9,2,2,2h9C19.1,18,20,17.1,20,16z M18,16H9V4h9V16z"/>
+    </g>
+  </svg>
+`;
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -96,12 +105,18 @@ const CheckboxList = ({ packages }: { packages: MarketplacePackage[] }) => {
 };
 
 interface TabPanelProps {
-  children: string;
+  markdownContent: string | MarketplacePackageSpecAppConfigExample[];
   index: number;
   value: number;
 }
 
-const TabPanel = ({ children, index, value }: TabPanelProps) => {
+interface TabPanelProps {
+  markdownContent: string | MarketplacePackageSpecAppConfigExample[];
+  index: number;
+  value: number;
+}
+
+const TabPanel = ({ markdownContent, index, value }: TabPanelProps) => {
   if (value !== index) return null;
 
   return (
@@ -110,7 +125,24 @@ const TabPanel = ({ children, index, value }: TabPanelProps) => {
       sx={{ flex: 1, overflow: 'auto', p: 2, scrollbarWidth: 'thin' }}
     >
       <Typography component="div">
-        <ReactMarkdown>{children}</ReactMarkdown>
+        {Array.isArray(markdownContent) ? (
+          markdownContent.map((item, idx) => (
+            <Box key={idx} sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                {item.title}
+              </Typography>
+              <Markdown
+                content={
+                  typeof item.content === 'string'
+                    ? item.content
+                    : JSON.stringify(item.content, null, 2)
+                }
+              />
+            </Box>
+          ))
+        ) : (
+          <Markdown content={markdownContent} />
+        )}
       </Typography>
     </Box>
   );
@@ -135,7 +167,6 @@ export const MarketplacePluginInstallContent = ({
     codeEditor.setValue(yaml.stringify(dynamicPluginYaml));
   }, [codeEditor, packages]);
 
-  // Just a demo
   const showFullPlugin = React.useCallback(() => {
     codeEditor.setValue(yaml.stringify(plugin));
   }, [codeEditor, plugin]);
@@ -149,13 +180,54 @@ export const MarketplacePluginInstallContent = ({
   }, [codeEditor, copyToClipboard]);
 
   const navigate = useNavigate();
-  const theme = useTheme();
-  const borderColor = theme.palette.mode === 'dark' ? '#a3a3a3' : '#c7c7c7';
   const installationInstructions = plugin.spec?.installation;
   const examples = packages[0]?.spec?.appConfigExamples;
   const showRightCard = installationInstructions || examples;
-  // const [yamlText, setYamlText] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
+
+  React.useEffect(() => {
+    document.querySelectorAll('pre code').forEach(codeBlock => {
+      const pre = codeBlock.parentElement;
+
+      if (!pre) return;
+      if (pre.querySelector('.copy-button')) return;
+
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      Object.assign(button.style, {
+        position: 'absolute',
+        top: '8px',
+        right: '8px',
+        padding: '2px',
+        color: '#6a6e73',
+        cursor: 'pointer',
+        border: 'none',
+        background: 'transparent',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '24px',
+        height: '24px',
+      });
+
+      button.innerHTML = copyIconSvg;
+
+      button.addEventListener('click', () => {
+        window.navigator.clipboard
+          .writeText((codeBlock as HTMLElement).innerText)
+          .then(() => {
+            button.innerText = '✔';
+            setTimeout(() => {
+              button.innerHTML = copyIconSvg;
+            }, 2000);
+          });
+      });
+
+      // Make <pre> position relative so button is placed inside it
+      pre.style.position = 'relative';
+      pre.appendChild(button);
+    });
+  }, [installationInstructions]);
 
   const handleTabChange = (_: any, newValue: React.SetStateAction<number>) => {
     setTabIndex(newValue);
@@ -217,7 +289,7 @@ export const MarketplacePluginInstallContent = ({
                 display: 'flex',
                 flexDirection: 'column',
                 borderRadius: 0,
-                borderRight: `1px solid ${borderColor}`,
+                width: '99.8%', // workaround for 'overflow: hidden' causing card to be missing a border
               }}
             >
               <CardHeader
@@ -278,16 +350,19 @@ export const MarketplacePluginInstallContent = ({
                   }}
                 >
                   {tabIndex === 0 && (
-                    <TabPanel value={tabIndex} index={0}>
-                      {plugin.spec?.installation ??
-                        'No installation instructions provided'}
-                    </TabPanel>
+                    <TabPanel
+                      value={tabIndex}
+                      index={0}
+                      markdownContent={installationInstructions ?? ''}
+                    />
                   )}
 
                   {tabIndex === 1 && (
-                    <TabPanel value={tabIndex} index={1}>
-                      test
-                    </TabPanel>
+                    <TabPanel
+                      value={tabIndex}
+                      index={1}
+                      markdownContent={examples ?? ''}
+                    />
                   )}
                 </Box>
               </CardContent>
@@ -305,7 +380,7 @@ export const MarketplacePluginInstallContent = ({
           backgroundColor: 'background.paper',
         }}
       >
-        <Button variant="contained" color="primary">
+        <Button variant="contained" color="primary" disabled>
           Install
         </Button>
         <Button
@@ -335,7 +410,7 @@ export const MarketplacePluginInstallContent = ({
           variant="outlined"
           color="primary"
           sx={{ ml: 2 }}
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/extensions/plugins')}
         >
           Cancel
         </Button>

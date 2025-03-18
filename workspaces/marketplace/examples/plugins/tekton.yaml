@@ -243,8 +243,6 @@ spec:
     ![tekton-pipelinerun-report](https://github.com/backstage/community-plugins/raw/main/workspaces/tekton/plugins/tekton/docs/images/tekton-plugin-pipelinerun-output.png)
 
   installation: |
-    # Setting up the Tekton plugin
-
     ## Prerequisites
 
     - The Kubernetes backend plugin `@backstage/plugin-kubernetes-backend` is installed and configured by following the [installation](https://backstage.io/docs/features/kubernetes/installation) and [configuration](https://backstage.io/docs/features/kubernetes/configuration) guides.
