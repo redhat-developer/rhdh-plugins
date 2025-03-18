@@ -35,9 +35,12 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
     <Header
       title={
         <Typography
-          variant="h1"
           color="textPrimary"
-          style={{ fontWeight: 700 }}
+          style={{
+            fontWeight: 700,
+            fontSize: theme.typography.h1.fontSize,
+            fontFamily: theme.typography.h1.fontFamily,
+          }}
         >
           {pageTitle}
         </Typography>

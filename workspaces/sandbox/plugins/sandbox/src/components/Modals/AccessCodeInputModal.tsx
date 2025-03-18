@@ -13,81 +13,76 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import ErrorIcon from '@mui/icons-material/Error';
 import TextField from '@mui/material/TextField';
-import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { Context } from '../SandboxCatalog/SandboxCatalogPage';
+import { useApi } from '@backstage/core-plugin-api';
+import { registerApiRef } from '../../api';
+import { useRegContext } from '../../utils/RegContext';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import { errorMessage } from '../../utils/common';
+
+const ACCESS_CODE_LENGTH = 5;
 
 type AccessCodeInputModalProps = {
-  open: boolean;
+  modalOpen: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const AccessCodeInputModal: React.FC<AccessCodeInputModalProps> = ({
-  open,
+  modalOpen,
   setOpen,
 }) => {
   const theme = useTheme();
-  const [, setButtonClicked] = useContext(Context);
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const inputRefs = useRef<any>([]);
+  const registerApi = useApi(registerApiRef);
+  const { refetchUserData } = useRegContext();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [accessCode, setAccessCode] = useState<string>('');
+  const [accessCodeError, setAccessCodeError] = React.useState<
+    string | undefined
+  >();
+  const inputRefs = useRef<any>();
 
   useEffect(() => {
-    if (open) {
-      // Focus on the first input box when modal opens
-      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    if (modalOpen) {
+      // Focus on the text field when modal opens
+      setTimeout(() => inputRefs.current.focus(), 100);
     }
-  }, [open]);
-
-  const handleChange = (
-    index: number,
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const value = event.target.value;
-    if (!/^[a-zA-Z0-9]*$/.test(value)) return; // Allow only alphanumeric characters
-
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-
-    // Move focus to next input
-    if (value && index < otp.length - 1) {
-      inputRefs.current[index + 1].focus();
-    }
-  };
-
-  // Handle Backspace: Move focus to previous box if empty
-  const handleKeyDown = (
-    index: number,
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (event.key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [window.open]);
 
   const handleClose = () => {
     setOpen(false);
-    setOtp(['', '', '', '', '', '']);
+    setAccessCode('');
   };
 
-  const handleStartTrialClick = () => {
-    setOpen(false);
-    setOtp(['', '', '', '', '', '']);
-    setButtonClicked(true);
+  const handleStartTrialClick = async () => {
+    try {
+      setAccessCodeError(undefined);
+      setLoading(true);
+      await registerApi.verifyActivationCode(accessCode);
+      refetchUserData();
+      handleClose();
+    } catch (e) {
+      setAccessCodeError(errorMessage(e));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog open={modalOpen} onClose={handleClose} fullWidth>
       <DialogTitle
         variant="h5"
         sx={{ fontWeight: 700, padding: '32px 24px 0 24px' }}
@@ -124,35 +119,41 @@ export const AccessCodeInputModal: React.FC<AccessCodeInputModalProps> = ({
             backgroundColor: theme.palette.mode === 'dark' ? '#47494b' : '#fff',
           }}
         >
-          <Stack direction="row" spacing={2} sx={{ mt: 2, marginRight: 20 }}>
-            {otp.map((digit, index) => (
-              <TextField
-                key={index}
-                value={digit}
-                onChange={e => handleChange(index, e)}
-                onKeyDown={e =>
-                  handleKeyDown(
-                    index,
-                    e as React.KeyboardEvent<HTMLInputElement>,
-                  )
-                }
-                inputRef={el => (inputRefs.current[index] = el)}
-                variant="outlined"
-                inputProps={{
-                  maxLength: 1,
-                  style: { textAlign: 'center', fontWeight: 400 },
-                }}
-              />
-            ))}
-          </Stack>
+          <Box sx={{ mt: 2, marginRight: 20 }}>
+            <TextField
+              sx={{ width: '16rem' }}
+              value={accessCode}
+              onChange={e => setAccessCode(e.target.value)}
+              inputRef={inputRefs}
+              variant="outlined"
+              inputProps={{
+                maxLength: ACCESS_CODE_LENGTH,
+                style: { fontWeight: 400 },
+              }}
+            />
+          </Box>
         </div>
+        {accessCodeError && (
+          <Typography
+            color="error"
+            style={{ fontSize: '16px', fontWeight: 400, marginTop: '16px' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <ErrorIcon color="error" style={{ fontSize: '16px' }} />
+              {accessCodeError}
+            </div>
+          </Typography>
+        )}
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'flex-start', padding: '24px' }}>
         <Button
           variant="contained"
           type="submit"
           onClick={handleStartTrialClick}
-          disabled={otp.some(digit => !digit)}
+          disabled={accessCode.length !== 5}
+          endIcon={
+            loading && <CircularProgress size={20} sx={{ color: '#AFAFAF' }} />
+          }
         >
           Start trial
         </Button>
@@ -173,3 +174,5 @@ export const AccessCodeInputModal: React.FC<AccessCodeInputModalProps> = ({
     </Dialog>
   );
 };
+
+export default AccessCodeInputModal;

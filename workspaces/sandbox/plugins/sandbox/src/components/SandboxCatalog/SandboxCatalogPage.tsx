@@ -22,6 +22,7 @@ import { SandboxCatalogBanner } from './SandboxCatalogBanner';
 import { SandboxCatalogGrid } from './SandboxCatalogGrid';
 import { SandboxCatalogFooter } from './SandboxCatalogFooter';
 import { SandboxHeader } from '../SandboxHeader';
+import { SignupProvider } from '../../utils/RegContext';
 
 export const Context = createContext<any>(null);
 
@@ -33,9 +34,9 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export const SandboxCatalogPage = () => {
   const classes = useStyles();
-  const [buttonClicked, setButtonClicked] = React.useState(false);
+
   return (
-    <Context.Provider value={[buttonClicked, setButtonClicked]}>
+    <SignupProvider>
       <Page themeId="sandbox">
         <SandboxHeader pageTitle="Developer Sandbox" showSubTitle />
         <Content className={classes.content} noPadding>
@@ -46,6 +47,6 @@ export const SandboxCatalogPage = () => {
           <SandboxCatalogFooter />
         </Content>
       </Page>
-    </Context.Provider>
+    </SignupProvider>
   );
 };

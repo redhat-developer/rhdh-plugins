@@ -15,11 +15,11 @@
  */
 import { useState, useEffect } from 'react';
 import { getCookie, setCookie } from '../utils/cookie-utils';
-import { ProductData } from '../components/SandboxCatalog/productData';
+import { Product, ProductData } from '../components/SandboxCatalog/productData';
 
 type GreenCorner = {
   show: boolean;
-  id: number;
+  id: Product;
 };
 
 const useGreenCorners = (productData: ProductData[]) => {

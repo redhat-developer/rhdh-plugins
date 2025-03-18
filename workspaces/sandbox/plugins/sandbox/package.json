@@ -17,19 +17,26 @@
   "backstage": {
     "role": "frontend-plugin",
     "pluginId": "sandbox",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-sandbox",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-sandbox"
     ]
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./**/*.css"
+  ],
   "scripts": {
-    "start": "backstage-cli package start",
     "build": "backstage-cli package build",
-    "lint": "backstage-cli package lint",
-    "test": "backstage-cli package test",
     "clean": "backstage-cli package clean",
+    "lint:check": "backstage-cli package lint",
+    "lint:fix": "backstage-cli package lint --fix",
+    "postpack": "backstage-cli package postpack",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack"
+    "start": "backstage-cli package start",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "tsc": "tsc",
+    "prettier:check": "prettier --ignore-unknown --check .",
+    "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
     "@backstage/core-components": "^0.16.3",
@@ -39,6 +46,7 @@
     "@mui/icons-material": "^5.16.14",
     "@mui/material": "^5.16.14",
     "libphonenumber-js": "^1.11.20",
+    "lodash": "^4.17.21",
     "react-phone-number-input": "^3.4.11",
     "react-use": "^17.2.4"
   },
@@ -64,6 +72,32 @@
     "react-router-dom": "^6.3.0"
   },
   "files": [
-    "dist"
-  ]
+    "dist",
+    "config.d.ts",
+    "dist-scalprum",
+    "dist-dynamic/*.*",
+    "dist-dynamic/dist/*.*",
+    "dist-dynamic/dist-dynamic/*.*",
+    "dist-dynamic/dist-scalprum/*.*",
+    "app-config.dynamic.yaml"
+  ],
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-sandbox",
+    "exposedModules": {
+      "PluginRoot": "./src/index.ts"
+    }
+  },
+  "configSchema": "config.d.ts",
+  "keywords": [
+    "lifecycle:active",
+    "backstage",
+    "plugin"
+  ],
+  "homepage": "https://red.ht/rhdh",
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
+  "maintainers": [
+    "@lucifergene",
+    "@rohitkrai03"
+  ],
+  "author": "Red Hat"
 }

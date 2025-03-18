@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useContext } from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { Link } from '@backstage/core-components';
-import { Context } from './SandboxCatalogPage';
 import { AccessCodeInputModal } from '../Modals/AccessCodeInputModal';
+import { useRegContext } from '../../utils/RegContext';
 
 export const SandboxCatalogFooter = () => {
   const theme = useTheme();
   const [accessCodeModalOpen, setAccessCodeModalOpen] = React.useState(false);
-  const [buttonClicked] = useContext(Context);
+  const { userData } = useRegContext();
 
-  if (buttonClicked) {
+  // Hide the footer if the user has started trial
+  if (userData) {
     return null;
   }
 
@@ -52,7 +53,7 @@ export const SandboxCatalogFooter = () => {
         </Typography>
       </Box>
       <AccessCodeInputModal
-        open={accessCodeModalOpen}
+        modalOpen={accessCodeModalOpen}
         setOpen={setAccessCodeModalOpen}
       />
     </>

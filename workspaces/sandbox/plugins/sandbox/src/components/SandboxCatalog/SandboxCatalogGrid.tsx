@@ -16,14 +16,16 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import { productData } from './productData';
+import { Product, productData } from './productData';
 import useGreenCorners from '../../hooks/useGreenCorners';
 import { SandboxCatalogCard } from './SandboxCatalogCard';
+import useProductURLs from '../../hooks/useProductURLs';
 
 export const SandboxCatalogGrid: React.FC = () => {
   const { greenCorners, setGreenCorners } = useGreenCorners(productData);
+  const productURLs = useProductURLs();
 
-  const showGreenCorner = (id: number) => {
+  const showGreenCorner = (id: Product) => {
     setGreenCorners(prev =>
       prev.map(gc => (gc.id === id ? { ...gc, show: true } : gc)),
     );
@@ -35,11 +37,11 @@ export const SandboxCatalogGrid: React.FC = () => {
         <Grid item xs={12} sm="auto" md="auto" key={product.id}>
           <Box sx={{ width: '330px', height: '372px' }}>
             <SandboxCatalogCard
-              key={product.id}
+              id={product.id}
               title={product.title}
               image={product.image}
               description={product.description}
-              link={product.link}
+              link={productURLs.find(pu => pu.id === product.id)?.url || ''}
               greenCorner={
                 greenCorners?.find(gc => gc.id === product.id)?.show || false
               }
