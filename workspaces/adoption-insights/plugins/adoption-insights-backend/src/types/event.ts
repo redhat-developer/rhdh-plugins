@@ -17,7 +17,7 @@ interface DateCount {
   date: string; // YYYY-MM-DD format
   count: string;
 }
-interface DailyUser {
+export interface DailyUser {
   date: string;
   total_users: number;
   new_users: number;
@@ -29,7 +29,7 @@ interface TotalUser {
   licensed_users: number;
 }
 
-interface PluginCount {
+export interface PluginCount {
   plugin_id: string;
   visit_count: string;
   trend: DateCount[];
@@ -38,6 +38,13 @@ interface PluginCount {
 
 interface EntityRefCount {
   entityref: string;
+  count: string;
+  last_used: string;
+}
+interface TechDocsCount {
+  kind: string;
+  name: string;
+  namespace: string;
   count: string;
   last_used: string;
 }
@@ -51,18 +58,19 @@ interface CatalogEntityCount {
   count: string;
 }
 
-type ResponseData<T> = {
+export type ResponseData<T> = {
   data: T;
 };
 
-type ResponseWithGrouping<T> = {
-  grouping: 'daily' | 'weekly' | 'monthly';
+export type Grouping = 'hourly' | 'daily' | 'weekly' | 'monthly';
+export type ResponseWithGrouping<T> = {
+  grouping: Grouping;
   data: T;
 };
 export type DailyUsers = ResponseWithGrouping<DailyUser[]>;
 export type TotalUsers = ResponseData<TotalUser[]>;
 export type TopSearches = ResponseData<DateCount[]>;
 export type TopPluginCount = ResponseWithGrouping<PluginCount[]>;
-export type TopTechDocsCount = ResponseData<EntityRefCount[]>;
+export type TopTechDocsCount = ResponseData<TechDocsCount[]>;
 export type TopTemplatesCount = ResponseData<EntityRefCount[]>;
 export type TopCatalogEntitiesCount = ResponseData<CatalogEntityCount[]>;

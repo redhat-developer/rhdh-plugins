@@ -17,6 +17,13 @@ import { Knex } from 'knex';
 import { Filters, EventDatabase, UserConfig } from '../event-database';
 import { Event } from '../../models/Event';
 import { LoggerService } from '@backstage/backend-plugin-api';
+import {
+  DailyUser,
+  Grouping,
+  ResponseData,
+  ResponseWithGrouping,
+} from '../../types/event';
+import { convertToLocalTimezone } from '../../utils/date';
 
 export abstract class BaseDatabaseAdapter implements EventDatabase {
   protected db: Knex;
@@ -114,29 +121,22 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       )
       .select(
         'ge.date',
-        db.raw('COUNT(*) as total_users'),
+        db.raw('CAST(COUNT(*) as INTEGER) as total_users'),
         db.raw(
-          `SUM(CASE WHEN fs.first_seen >= ${this.getFormatedDate(
+          `CAST(SUM(CASE WHEN fs.first_seen >= ${this.getFormatedDate(
             'ge.date',
-          )} THEN 1 ELSE 0 END) as new_users`,
+          )} THEN 1 ELSE 0 END) as INTEGER) as new_users`,
         ),
         db.raw(
-          `SUM(CASE WHEN fs.first_seen < ${this.getFormatedDate(
+          `CAST(SUM(CASE WHEN fs.first_seen < ${this.getFormatedDate(
             'ge.date',
-          )} THEN 1 ELSE 0 END) as returning_users`,
+          )} THEN 1 ELSE 0 END) as INTEGER) as returning_users`,
         ),
       )
       .groupBy('ge.date')
       .orderBy('ge.date');
 
-    return query.then(data => {
-      return {
-        ...(data.length > 0
-          ? { grouping: this.getDynamicDateGrouping(true) }
-          : {}),
-        data,
-      };
-    });
+    return query.then(data => this.getResponseWithGrouping<DailyUser[]>(data));
   }
 
   async getUsers(): Promise<Knex.QueryBuilder> {
@@ -144,7 +144,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const { start_date, end_date } = this.filters!;
     const db = this.db;
     const query = db('events')
-      .select(db.raw('COUNT(*) as logged_in_users'))
+      .select(db.raw('CAST(COUNT(*) as INTEGER) as logged_in_users'))
       .from(
         db('events')
           .select('user_ref')
@@ -156,9 +156,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     return query.then(result => {
       const { licensedUsers } = this.config!;
       result[0] = { ...result[0], licensed_users: licensedUsers } as any;
-      return {
-        data: result,
-      };
+      return this.getResponseData(result);
     });
   }
 
@@ -168,8 +166,8 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const db = this.db;
     const query = db('events')
       .select(
-        db.raw(`context->>'entityRef' AS entityRef`),
-        db.raw('COUNT(*) AS count'),
+        db.raw(`context->>'entityRef' AS entityref`),
+        db.raw('CAST(COUNT(*) as INTEGER) AS count'),
         db.raw(this.getLastUsedDate()),
       )
       .where({
@@ -178,11 +176,11 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
         plugin_id: 'scaffolder',
       })
       .whereBetween('created_at', [start_date, end_date])
-      .groupByRaw('entityRef')
+      .groupByRaw('entityref')
       .orderBy('count', 'desc')
       .limit(Number(limit) || 3);
 
-    return query.then(data => ({ data }));
+    return query.then(data => this.getResponseData(data, 'last_used'));
   }
 
   async getTopSearches(): Promise<Knex.QueryBuilder> {
@@ -192,7 +190,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const query = db('events')
       .select(
         db.raw(this.getDynamicDateGrouping()),
-        db.raw('COUNT(*) AS count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS count'),
       )
       .whereBetween('created_at', [start_date, end_date])
       .andWhere('action', 'search')
@@ -200,7 +198,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .orderBy('date', 'asc')
       .limit(Number(limit) || 3);
 
-    return query.then(data => ({ data }));
+    return query.then(data => this.getResponseWithGrouping(data));
   }
 
   async getTopTechDocsViews(): Promise<Knex.QueryBuilder> {
@@ -209,19 +207,21 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const db = this.db;
     const query = db('events')
       .select(
-        db.raw(`context->>'routeRef' AS entityRef`),
-        db.raw('COUNT(*) AS count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS count'),
         db.raw(this.getLastUsedDate()),
+        db.raw(`COALESCE(attributes->>'kind', '') AS kind`),
+        db.raw(`COALESCE(attributes->>'name', '') AS name`),
+        db.raw(`COALESCE(attributes->>'namespace', '') AS namespace`),
       )
       .where({
         action: 'navigate',
         plugin_id: 'techdocs',
       })
       .whereBetween('created_at', [start_date, end_date])
-      .groupByRaw('entityRef')
+      .groupByRaw(`name, kind, namespace`)
       .limit(Number(limit) || 3);
 
-    return query.then(data => ({ data }));
+    return query.then(data => this.getResponseData(data, 'last_used'));
   }
 
   async getTopCatalogEntitiesViews(): Promise<Knex.QueryBuilder> {
@@ -235,7 +235,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
         db.raw(`attributes->>'name' AS name`),
         db.raw(`attributes->>'namespace' AS namespace`),
         db.raw(this.getLastUsedDate()),
-        db.raw('COUNT(*) AS count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS count'),
       )
       .whereBetween('created_at', [start_date, end_date])
       .andWhere(db.raw(`attributes->>'kind' IS NOT NULL`))
@@ -248,7 +248,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     if (kind) {
       query.andWhere(db.raw(`attributes->>'kind' = ?`, [kind]));
     }
-    return query.then(data => ({ data }));
+    return query.then(data => this.getResponseData(data, 'last_used'));
   }
 
   async getTopPluginViews(): Promise<Knex.QueryBuilder> {
@@ -262,7 +262,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       const trend_data_columns = [
         'plugin_id',
         db.raw(this.getDynamicDateGrouping()),
-        db.raw('COUNT(*) AS count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS count'),
       ];
 
       return this.selectFromEvents(qb, trend_data_columns, dateRange).groupBy(
@@ -275,7 +275,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const getPluginCountsQuery = (qb: Knex.QueryBuilder) => {
       const plugin_counts_columns = [
         'plugin_id',
-        db.raw('COUNT(*) AS visit_count'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS visit_count'),
       ];
       return this.selectFromEvents(
         qb,
@@ -291,8 +291,8 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
           'plugin_id',
           db.raw(`
                 json(${this.getJsonAggregationQuery('date', 'count')}) AS trend,
-                (SELECT count FROM trend_data td WHERE td.plugin_id = t.plugin_id ORDER BY date LIMIT 1) AS first_count,
-                (SELECT count FROM trend_data td WHERE td.plugin_id = t.plugin_id ORDER BY date DESC LIMIT 1) AS last_count
+                COALESCE((SELECT count FROM trend_data td WHERE td.plugin_id = t.plugin_id ORDER BY date LIMIT 1),0) AS first_count,
+                COALESCE((SELECT count FROM trend_data td WHERE td.plugin_id = t.plugin_id ORDER BY date DESC LIMIT 1),0) AS last_count
                 `),
         ])
         .from('trend_data AS t')
@@ -320,12 +320,12 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .orderBy('p.visit_count', 'desc')
       .limit(limit);
 
-    return query.then(data => ({
-      ...(data.length > 0
-        ? { grouping: this.getDynamicDateGrouping(true) }
-        : {}),
-      data: this.transformJson(data, 'trend'),
-    }));
+    return query.then(data => {
+      return this.getResponseWithGrouping(
+        this.transformJson(data, 'trend'),
+        'trend',
+      );
+    });
   }
 
   abstract getDate(): string;
@@ -333,7 +333,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
   abstract isJsonSupported(): boolean;
   abstract isPartitionSupported(): boolean;
   abstract getDateBetweenQuery(): string;
-  abstract getDynamicDateGrouping(onlyText?: boolean): string;
+  abstract getDynamicDateGrouping(onlyText?: boolean): Grouping | string;
   abstract getFormatedDate(column: string): string;
   abstract getJsonAggregationQuery(...args: any[]): string;
 
@@ -351,7 +351,68 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     }));
   }
 
-  private ensureFiltersSet() {
+  modifyDateInObject<T extends any>(
+    obj: T & { [key: string]: string | number },
+    datePath: string = 'date',
+  ) {
+    if (obj[datePath]) {
+      return {
+        ...obj,
+        [datePath]: convertToLocalTimezone(obj[datePath] as string),
+      };
+    }
+    return obj;
+  }
+
+  getResponseData<T extends any[]>(
+    data: T,
+    datePath: string = 'date',
+  ): ResponseData<T> {
+    return {
+      data: data.map(d => {
+        if (Array.isArray(d[datePath])) {
+          return {
+            ...d,
+            [datePath]: d[datePath].map((dp: any) =>
+              this.modifyDateInObject(dp),
+            ),
+          };
+        }
+        return this.modifyDateInObject(d, datePath);
+      }) as T,
+    };
+  }
+
+  getResponseWithGrouping = <T extends any[]>(
+    data: T,
+    datePath: string = 'date',
+  ): ResponseWithGrouping<T> => {
+    const grouping = this.getDynamicDateGrouping(true) as Grouping;
+
+    if (grouping === 'hourly') {
+      return {
+        grouping,
+        data: data.map(d => {
+          if (Array.isArray(d[datePath])) {
+            return {
+              ...d,
+              [datePath]: d[datePath].map((dp: any) =>
+                this.modifyDateInObject(dp),
+              ),
+            };
+          }
+          return this.modifyDateInObject(d, datePath);
+        }) as T,
+      };
+    }
+
+    return {
+      grouping,
+      data,
+    };
+  };
+
+  ensureFiltersSet() {
     if (!this.filters) {
       throw new Error(
         'Filters must be set using setFilters() before calling methods.',

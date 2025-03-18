@@ -64,7 +64,7 @@ export const CreateDropdown = ({ layout }: CreateDropdownProps) => {
     <HeaderDropdownComponent
       buttonContent={
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          Create <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
+          Self-service <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
         </Box>
       }
       buttonProps={{

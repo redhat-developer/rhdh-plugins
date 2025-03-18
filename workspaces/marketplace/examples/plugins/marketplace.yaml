@@ -2,6 +2,7 @@
 apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
+  namespace: marketplace-plugin-demo
   name: marketplace
   title: Marketplace
   description: The Marketplace plugin allows you to discover and install plugins in Backstage.
@@ -18,3 +19,7 @@ spec:
   lifecycle: production
   description: todo
   installation: todo
+  packages:
+    # for testing purposes, we are using two different package references here
+    - marketplace-plugin-demo/red-hat-developer-hub-backstage-plugin-marketplace
+    - package:marketplace-plugin-demo/red-hat-developer-hub-backstage-plugin-marketplace-backend

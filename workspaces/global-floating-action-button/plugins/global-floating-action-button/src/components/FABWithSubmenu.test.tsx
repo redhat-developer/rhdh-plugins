@@ -76,7 +76,9 @@ describe('Floating Button with submenu', () => {
         ]}
       />,
     );
-    expect(screen.getByTestId('fab-with-submenu')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('floating-button-with-submenu'),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('MenuIcon')).toBeInTheDocument();
     const button = screen.getByTestId('MenuIcon');
     fireEvent.click(button);

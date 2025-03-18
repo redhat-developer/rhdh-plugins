@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.3.0
+
+### Minor Changes
+
+- 9217bc0: add manaco editor for the upcoming installation page
+
+## 0.2.2
+
+### Patch Changes
+
+- 4f2bf81: render a grey placeholder icon when there is no icon defined
+- 4f2bf81: render no description available when there is no description
+
 ## 0.2.1
 
 ### Patch Changes

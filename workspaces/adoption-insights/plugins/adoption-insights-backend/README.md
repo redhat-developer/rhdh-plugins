@@ -56,6 +56,7 @@ If you want to run the entire project, including the frontend, run `yarn dev` fr
 | `end_date`   | string (YYYY-MM-DD) | Yes      | Fetch events up to this date.                                                                                                                   |
 | `limit`      | integer             | No       | Limit the number of events returned (default: `3`).                                                                                             |
 | `kind`       | string              | No       | Filter the entities by kind.                                                                                                                    |
+| `grouping`   | string              | No       | Group API endpoint `(active_users,top_plugins and top_searches)` response by `hourly`, `daily`, `weekly`, and `monthly`.                        |
 | `format`     | string              | No       | Response format, either `json` (default) or `csv`.                                                                                              |
 
 ## Example Request
