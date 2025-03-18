@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.1.0
+
+### Minor Changes
+
+- 612bc20: Renaming the 'Create' to 'Self-service'
+
+### Patch Changes
+
+- 680ede5: Updated dependency `@mui/icons-material` to `5.16.14`.
+  Updated dependency `@mui/styles` to `5.16.14`.
+  Updated dependency `@mui/material` to `5.16.14`.
+  Updated dependency `@mui/styled-engine` to `5.16.14`.
+
 ## 1.0.0
 
 ### Major Changes

@@ -1,7 +1,8 @@
 # yaml-language-server: $schema=../../json-schema/collections.json
-apiVersion: marketplace.backstage.io/v1alpha1
+apiVersion: extensions.backstage.io/v1alpha1
 kind: PluginCollection
 metadata:
+  namespace: marketplace-plugin-demo
   name: kubernetes
   title: Kubernetes Plugins
   description: A set of Kubernetes plugins! :)

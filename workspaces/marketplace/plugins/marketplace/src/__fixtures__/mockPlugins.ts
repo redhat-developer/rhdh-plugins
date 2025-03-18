@@ -15,14 +15,14 @@
  */
 
 import {
-  MARKETPLACE_API_VERSION,
+  EXTENSIONS_API_VERSION,
   MarketplacePlugin,
   MarketplaceKind,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export const mockPlugins: MarketplacePlugin[] = [
   {
-    apiVersion: MARKETPLACE_API_VERSION,
+    apiVersion: EXTENSIONS_API_VERSION,
     kind: MarketplaceKind.Plugin,
     metadata: {
       namespace: 'default',
@@ -30,7 +30,7 @@ export const mockPlugins: MarketplacePlugin[] = [
     },
   },
   {
-    apiVersion: MARKETPLACE_API_VERSION,
+    apiVersion: EXTENSIONS_API_VERSION,
     kind: MarketplaceKind.Plugin,
     metadata: {
       namespace: 'default',

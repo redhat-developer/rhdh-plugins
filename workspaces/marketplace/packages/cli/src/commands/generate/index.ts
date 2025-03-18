@@ -17,9 +17,9 @@
 import fs from 'fs-extra';
 import { OptionValues } from 'commander';
 import path from 'path';
-import YAML from 'yaml';
+import yaml from 'yaml';
 import {
-  MARKETPLACE_API_VERSION,
+  EXTENSIONS_API_VERSION,
   MarketplaceKind,
   MarketplacePackage,
   MarketplacePackageSpecAppConfigExample,
@@ -51,7 +51,7 @@ export default async (opts: OptionValues) => {
       defaultDynamicPluginsPath,
       'utf8',
     );
-    const defaultPluginsConfig = YAML.parse(
+    const defaultPluginsConfig = yaml.parse(
       defaultDynamicPluginsContent,
     ) as DynamicPluginsConfig;
 
@@ -148,7 +148,7 @@ export default async (opts: OptionValues) => {
       }
 
       const entity: MarketplacePackage = {
-        apiVersion: MARKETPLACE_API_VERSION,
+        apiVersion: EXTENSIONS_API_VERSION,
         kind: MarketplaceKind.Package,
         metadata: {
           name: entityName(packageJSON.name),
@@ -207,16 +207,16 @@ export default async (opts: OptionValues) => {
     for (const entity of entities) {
       const filename = `${entity.metadata.name}.yaml`;
       const entityPath = path.join(outputDirPath, filename);
-      await fs.writeFile(entityPath, YAML.stringify(entity));
+      await fs.writeFile(entityPath, yaml.stringify(entity));
       location.spec.targets?.push(`./${filename}`);
     }
     await fs.writeFile(
       path.join(outputDirPath, 'all.yaml'),
-      YAML.stringify(location),
+      yaml.stringify(location),
     );
   } else {
     for (const entity of entities) {
-      console.log(YAML.stringify(entity));
+      console.log(yaml.stringify(entity));
       console.log('---');
     }
   }

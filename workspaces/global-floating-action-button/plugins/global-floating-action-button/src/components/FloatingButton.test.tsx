@@ -107,7 +107,9 @@ describe('Floating Button', () => {
         slot={Slot.BOTTOM_LEFT}
       />,
     );
-    expect(screen.getByTestId('floating-button')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('floating-button-with-submenu'),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('MenuIcon')).toBeInTheDocument();
     const button = screen.getByTestId('MenuIcon');
     fireEvent.click(button);

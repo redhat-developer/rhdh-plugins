@@ -11,9 +11,28 @@ import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
 import { DiscoveryService } from '@backstage/backend-plugin-api';
 import { Entity } from '@backstage/catalog-model';
+import { EntityProvider } from '@backstage/plugin-catalog-node';
+import { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
+import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
+
+// @public (undocumented)
+export abstract class BaseEntityProvider<T extends Entity> implements EntityProvider {
+    constructor(taskRunner: SchedulerServiceTaskRunner);
+    // (undocumented)
+    connect(connection: EntityProviderConnection): Promise<void>;
+    // (undocumented)
+    getEntities(allEntities: JsonFileData<T>[]): T[];
+    // (undocumented)
+    abstract getKind(): string;
+    // (undocumented)
+    abstract getProviderName(): string;
+    // (undocumented)
+    run(): Promise<void>;
+}
 
 // @public (undocumented)
 export type CachedData = {
@@ -40,6 +59,12 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
 }
 
 // @public (undocumented)
+export type JsonFileData<T> = {
+    filePath: string;
+    content: T;
+};
+
+// @public (undocumented)
 export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
     constructor(paths?: string[]);
     // (undocumented)
@@ -61,6 +86,14 @@ export class MarketplaceCollectionProcessor implements CatalogProcessor {
 }
 
 // @public (undocumented)
+export class MarketplaceCollectionProvider extends BaseEntityProvider<MarketplaceCollection> {
+    // (undocumented)
+    getKind(): string;
+    // (undocumented)
+    getProviderName(): string;
+}
+
+// @public (undocumented)
 export class MarketplacePackageProcessor implements CatalogProcessor {
     // (undocumented)
     getProcessorName(): string;
@@ -71,6 +104,14 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
 }
 
 // @public (undocumented)
+export class MarketplacePackageProvider extends BaseEntityProvider<MarketplacePackage> {
+    // (undocumented)
+    getKind(): string;
+    // (undocumented)
+    getProviderName(): string;
+}
+
+// @public (undocumented)
 export class MarketplacePluginProcessor implements CatalogProcessor {
     // (undocumented)
     getProcessorName(): string;
@@ -78,6 +119,14 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
     postProcessEntity(entity: MarketplacePlugin, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
     // (undocumented)
     validateEntityKind(entity: Entity): Promise<boolean>;
+}
+
+// @public (undocumented)
+export class MarketplacePluginProvider extends BaseEntityProvider<MarketplacePlugin> {
+    // (undocumented)
+    getKind(): string;
+    // (undocumented)
+    getProviderName(): string;
 }
 
 ```

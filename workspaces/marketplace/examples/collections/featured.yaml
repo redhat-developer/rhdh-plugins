@@ -1,8 +1,9 @@
 # yaml-language-server: $schema=../../json-schema/collections.json
-apiVersion: marketplace.backstage.io/v1alpha1
+apiVersion: extensions.backstage.io/v1alpha1
 kind: PluginCollection
 metadata:
-  name: disabled-featured
+  namespace: marketplace-plugin-demo
+  name: featured
   title: Featured Plugins
   description: A set of great plugins! :)
 spec:

@@ -20,7 +20,7 @@
 ```yaml
 metadata:
   annotations:
-    marketplace.backstage.io/certified-by: Company name
+    extensions.backstage.io/certified-by: Company name
 ```
 
 ### Verification
@@ -28,7 +28,7 @@ metadata:
 ```yaml
 metadata:
   annotations:
-    marketplace.backstage.io/verified-by: Company name
+    extensions.backstage.io/verified-by: Company name
 ```
 
 ### Support type for Core and Community plugins
@@ -36,7 +36,7 @@ metadata:
 ```yaml
 metadata:
   annotations:
-    marketplace.backstage.io/support-type: Core plugins | Community plugins
+    extensions.backstage.io/support-type: Core plugins | Community plugins
 ```
 
 ### Pre-installed / custom plugin
@@ -44,5 +44,5 @@ metadata:
 ```yaml
 metadata:
   annotations:
-    marketplace.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/pre-installed: 'true'
 ```

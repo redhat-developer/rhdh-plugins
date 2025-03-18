@@ -1,5 +1,49 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.3.0
+
+### Minor Changes
+
+- 9217bc0: add manaco editor for the upcoming installation page
+
+## 0.2.2
+
+### Patch Changes
+
+- 4f2bf81: render a grey placeholder icon when there is no icon defined
+- 4f2bf81: render no description available when there is no description
+
+## 0.2.1
+
+### Patch Changes
+
+- 08a15e5: Remove Filters text and divider
+
+## 0.2.0
+
+### Minor Changes
+
+- d3bcc76: rename apiVersion and annotations to extensions.backstage.io
+
+### Patch Changes
+
+- Updated dependencies [d3bcc76]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.2.0
+
+## 0.1.6
+
+### Patch Changes
+
+- a199551: fix typo
+- 0c578a7: fix drawer background color
+
+## 0.1.5
+
+### Patch Changes
+
+- 6f9686f: rename plugin/marketplace to extensions/catalog
+- 9073ab8: apply default sorting to filtered plugins api call
+
 ## 0.1.4
 
 ### Patch Changes

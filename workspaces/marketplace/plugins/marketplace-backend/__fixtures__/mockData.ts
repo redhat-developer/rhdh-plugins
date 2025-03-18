@@ -17,7 +17,7 @@ import { MarketplaceKind } from '@red-hat-developer-hub/backstage-plugin-marketp
 
 export const mockCollections = [
   {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: MarketplaceKind.Collection,
     metadata: {
       namespace: 'default',
@@ -35,7 +35,7 @@ export const mockCollections = [
 
 export const mockPlugins = [
   {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: MarketplaceKind.Plugin,
     metadata: {
       namespace: 'default',
@@ -43,7 +43,7 @@ export const mockPlugins = [
     },
   },
   {
-    apiVersion: 'marketplace.backstage.io/v1alpha1',
+    apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: MarketplaceKind.Plugin,
     metadata: {
       namespace: 'default',

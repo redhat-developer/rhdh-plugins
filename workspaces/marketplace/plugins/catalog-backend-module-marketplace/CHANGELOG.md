@@ -1,5 +1,34 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.2.3
+
+### Patch Changes
+
+- 4f2bf81: make title and description optional
+
+## 0.2.2
+
+### Patch Changes
+
+- 791a6d4: Fix certified badge in marketplace
+
+## 0.2.1
+
+### Patch Changes
+
+- fab1471: Add marketplace providers to add entities into catalog
+
+## 0.2.0
+
+### Minor Changes
+
+- d3bcc76: rename apiVersion and annotations to extensions.backstage.io
+
+### Patch Changes
+
+- Updated dependencies [d3bcc76]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.2.0
+
 ## 0.1.2
 
 ### Patch Changes
