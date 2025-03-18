@@ -24,7 +24,7 @@ import {
 } from '@backstage/core-plugin-api';
 import { QUERY_TYPES, QueryParams } from '../types/event-request';
 import { toEndOfDayUTC, toStartOfDayUTC } from '../utils/date';
-import { TechDocsCount } from '../types/event';
+import { TechDocsCount, TopTechDocsCount } from '../types/event';
 
 let controller: EventApiController;
 let req: Partial<Request>;
@@ -209,8 +209,6 @@ describe('trackEvents', () => {
 });
 
 describe('GetInsights', () => {
-  let mockTechdocsMetadata: jest.SpyInstance;
-
   beforeEach(() => {
     controller = new EventApiController(
       mockEventDb,
@@ -219,11 +217,6 @@ describe('GetInsights', () => {
     );
 
     global.fetch = jest.fn().mockResolvedValue({} as any);
-
-    mockTechdocsMetadata = jest.spyOn(
-      controller,
-      'getTechdocsMetadata' as keyof EventApiController,
-    );
 
     req = {
       query: {
@@ -332,20 +325,23 @@ describe('GetInsights', () => {
       }),
     );
   };
-
-  it('should append site_name metadata for a valid document', async () => {
-    setupTechdocsTest('app-docs');
-    const result = {
+  const getTechdocsResult = (name: string): TopTechDocsCount => {
+    return {
       data: [
         {
           count: 1,
           last_used: new Date().toISOString(),
-          name: 'test-component',
+          name,
           kind: 'component',
           namespace: 'default',
         } as TechDocsCount,
       ],
     };
+  };
+
+  it('should append site_name metadata for a valid document', async () => {
+    setupTechdocsTest('app-docs');
+    const result = getTechdocsResult('test-component');
 
     await controller.getTechdocsMetadata(
       req as unknown as Request<{}, {}, {}, QueryParams>,
@@ -357,18 +353,7 @@ describe('GetInsights', () => {
 
   it('should return empty site_name for document root page', async () => {
     setupTechdocsTest('app-docs');
-
-    const result = {
-      data: [
-        {
-          count: 1,
-          last_used: new Date().toISOString(),
-          name: '',
-          kind: '',
-          namespace: '',
-        } as TechDocsCount,
-      ],
-    };
+    const result = getTechdocsResult('');
 
     await controller.getTechdocsMetadata(
       req as unknown as Request<{}, {}, {}, QueryParams>,
@@ -380,17 +365,7 @@ describe('GetInsights', () => {
 
   it('should return component name as site_name for non-existing or deleted document', async () => {
     setupTechdocsTest(undefined);
-    const result = {
-      data: [
-        {
-          count: 1,
-          last_used: new Date().toISOString(),
-          name: 'deleted-document',
-          kind: 'component',
-          namespace: 'default',
-        } as TechDocsCount,
-      ],
-    };
+    const result = getTechdocsResult('deleted-document');
 
     await controller.getTechdocsMetadata(
       req as unknown as Request<{}, {}, {}, QueryParams>,
