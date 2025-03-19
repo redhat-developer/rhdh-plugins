@@ -30,7 +30,6 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import Tooltip from '@mui/material/Tooltip';
 
 import {
   MarketplacePackage,
@@ -240,30 +239,23 @@ export const MarketplacePluginContent = ({
               </>
             ) : null}
 
-            <Tooltip
-              title={<Typography variant="button">Coming soon!</Typography>}
-              arrow
-              placement="right"
-            >
-              <div style={{ display: 'inline-block' }}>
-                <LinkButton
-                  disabled
-                  to={getInstallPath({
-                    namespace: plugin.metadata.namespace!,
-                    name: plugin.metadata.name,
-                  })}
-                  color="primary"
-                  variant="contained"
-                >
-                  {
-                    mapMarketplacePluginInstallStatusToButton[
-                      plugin.spec?.installStatus ??
-                        MarketplacePluginInstallStatus.NotInstalled
-                    ]
-                  }
-                </LinkButton>
-              </div>
-            </Tooltip>
+            <div style={{ display: 'inline-block' }}>
+              <LinkButton
+                to={getInstallPath({
+                  namespace: plugin.metadata.namespace!,
+                  name: plugin.metadata.name,
+                })}
+                color="primary"
+                variant="contained"
+              >
+                {
+                  mapMarketplacePluginInstallStatusToButton[
+                    plugin.spec?.installStatus ??
+                      MarketplacePluginInstallStatus.NotInstalled
+                  ]
+                }
+              </LinkButton>
+            </div>
           </Grid>
           <Grid item md={9}>
             <Markdown title="About" content={about} />
