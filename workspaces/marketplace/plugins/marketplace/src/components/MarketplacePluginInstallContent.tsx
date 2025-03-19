@@ -1,5 +1,5 @@
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,15 @@ import { useRouteRefParams } from '@backstage/core-plugin-api';
 
 import yaml from 'yaml';
 import { useCopyToClipboard } from 'react-use';
+import { useNavigate } from 'react-router-dom';
 
 import {
   MarketplacePackage,
   MarketplacePackageSpecAppConfigExample,
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { JsonObject } from '@backstage/types';
 
-import { pluginInstallRouteRef } from '../routes';
-import { usePlugin } from '../hooks/usePlugin';
-import { usePluginPackages } from '../hooks/usePluginPackages';
-import {
-  CodeEditorContextProvider,
-  CodeEditor,
-  useCodeEditor,
-} from './CodeEditor';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
@@ -49,7 +43,17 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { useNavigate } from 'react-router-dom';
+
+import { pluginInstallRouteRef } from '../routes';
+import { usePlugin } from '../hooks/usePlugin';
+import { usePluginPackages } from '../hooks/usePluginPackages';
+import { applyContent, getYamlContent } from '../utils';
+
+import {
+  CodeEditorContextProvider,
+  CodeEditor,
+  useCodeEditor,
+} from './CodeEditor';
 import { Markdown } from './Markdown';
 
 const copyIconSvg = `
@@ -108,16 +112,32 @@ interface TabPanelProps {
   markdownContent: string | MarketplacePackageSpecAppConfigExample[];
   index: number;
   value: number;
+  others?: { [key: string]: any };
 }
 
-interface TabPanelProps {
-  markdownContent: string | MarketplacePackageSpecAppConfigExample[];
-  index: number;
-  value: number;
-}
-
-const TabPanel = ({ markdownContent, index, value }: TabPanelProps) => {
+const TabPanel = ({ markdownContent, index, value, others }: TabPanelProps) => {
+  const codeEditor = useCodeEditor();
   if (value !== index) return null;
+
+  const handleApplyContent = (content: string) => {
+    const codeEditorContent = codeEditor.getValue();
+    const appliedContent = applyContent(
+      codeEditorContent || '',
+      content,
+      others?.packageName,
+    );
+    const selection = codeEditor.getSelection();
+    const position = codeEditor.getPosition();
+    if (appliedContent) {
+      codeEditor.setValue(appliedContent);
+      if (selection) {
+        codeEditor.setSelection(selection);
+      }
+      if (position) {
+        codeEditor.setPosition(position);
+      }
+    }
+  };
 
   return (
     <Box
@@ -130,12 +150,24 @@ const TabPanel = ({ markdownContent, index, value }: TabPanelProps) => {
             <Box key={idx} sx={{ mb: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
                 {item.title}
+                {item.content !== 'string' && (
+                  <Button
+                    sx={{ float: 'right' }}
+                    onClick={() =>
+                      handleApplyContent(
+                        getYamlContent(item.content as JsonObject),
+                      )
+                    }
+                  >
+                    Apply
+                  </Button>
+                )}
               </Typography>
               <Markdown
                 content={
                   typeof item.content === 'string'
                     ? item.content
-                    : JSON.stringify(item.content, null, 2)
+                    : getYamlContent(item.content)
                 }
               />
             </Box>
@@ -361,6 +393,9 @@ export const MarketplacePluginInstallContent = ({
                       value={tabIndex}
                       index={1}
                       markdownContent={examples ?? ''}
+                      others={{
+                        packageName: packages[0].spec?.dynamicArtifact,
+                      }}
                     />
                   )}
                 </Box>
