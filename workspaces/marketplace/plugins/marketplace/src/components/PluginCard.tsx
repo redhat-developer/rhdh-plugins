@@ -155,11 +155,15 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
             </Stack>
           </Stack>
 
-          {plugin.metadata.description ? (
-            <Typography variant="subtitle2" style={{ fontWeight: 'normal' }}>
-              {plugin.metadata.description}
-            </Typography>
-          ) : null}
+          <Typography
+            variant="subtitle2"
+            sx={{
+              fontWeight: 'normal',
+              fontStyle: plugin.metadata.description ? undefined : 'italic',
+            }}
+          >
+            {plugin.metadata.description ?? 'no description available'}
+          </Typography>
         </Stack>
       </CardContent>
       <CardActions sx={{ pl: 2, pr: 2, pb: 2, justifyContent: 'flex-start' }}>

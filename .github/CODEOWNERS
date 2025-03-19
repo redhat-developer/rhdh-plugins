@@ -8,11 +8,11 @@
 
 /workspaces/adoption-insights                       @rohitkrai03 @karthikjeeyar 
 /workspaces/bulk-import                             @christoph-jerolimov @debsmita1 @rm3l
-/workspaces/global-floating-action-button           @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar
-/workspaces/global-header                           @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar
-/workspaces/homepage                                @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar
+/workspaces/global-floating-action-button           @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff
+/workspaces/global-header                           @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff
+/workspaces/homepage                                @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff
 /workspaces/lightspeed                              @karthikjeeyar @yangcao77 @rohitkrai03
-/workspaces/marketplace                             @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @karthikjeeyar
-/workspaces/openshift-image-registry                @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @karthikjeeyar
+/workspaces/marketplace                             @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff @karthikjeeyar
+/workspaces/openshift-image-registry                @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff @karthikjeeyar
 /workspaces/orchestrator                            @batzionb @mareklibra @gciavarrini
-/workspaces/theme                                   @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar
+/workspaces/theme                                   @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff
