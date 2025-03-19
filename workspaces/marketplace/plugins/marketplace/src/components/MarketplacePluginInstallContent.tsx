@@ -102,6 +102,7 @@ interface TabItem {
   label: string;
   content: string | MarketplacePackageSpecAppConfigExample[];
   key: string;
+  others?: { [key: string]: any };
 }
 
 interface TabPanelProps {
@@ -206,7 +207,12 @@ export const MarketplacePluginInstallContent = ({
   const installationInstructions = plugin.spec?.installation;
   const aboutMarkdown = plugin.spec?.description;
   const availableTabs = [
-    examples && { label: 'Examples', content: examples, key: 'examples' },
+    examples && {
+      label: 'Examples',
+      content: examples,
+      key: 'examples',
+      others: { packageName: packages[0].spec?.dynamicArtifact },
+    },
     installationInstructions && {
       label: 'Setting up the plugin',
       content: installationInstructions,
@@ -351,6 +357,7 @@ export const MarketplacePluginInstallContent = ({
                           value={tabIndex}
                           index={index}
                           markdownContent={tab.content ?? ''}
+                          others={tab.others}
                         />
                       ),
                   )}
