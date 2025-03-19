@@ -58,7 +58,8 @@
   },
   "files": [
     "dist",
-    "config.d.ts"
+    "config.d.ts",
+    "migrations"
   ],
   "configSchema": "config.d.ts"
 }
