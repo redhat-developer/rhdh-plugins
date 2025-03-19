@@ -19,7 +19,7 @@ import {
   createPlugin,
   createRoutableExtension,
   fetchApiRef,
-  IconComponent,
+  type IconComponent,
 } from '@backstage/core-plugin-api';
 
 import MUIAdoptionInsightsIcon from '@mui/icons-material/QueryStatsOutlined';
@@ -62,14 +62,6 @@ export const AdoptionInsightsPage = adoptionInsightsPlugin.provide(
     mountPoint: rootRouteRef,
   }),
 );
-
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
 
 /**
  * @public
