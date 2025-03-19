@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import chalk from 'chalk';
 import { Entity } from '@backstage/catalog-model/index';
 import {
   isMarketplacePackage,
@@ -25,6 +26,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import YAML from 'yaml';
 import glob from 'glob';
+import { JsonValue } from '@backstage/types/index';
 
 /** A simple helper class to generate CSV files */
 class CSVGenerator<T> {
@@ -34,11 +36,12 @@ class CSVGenerator<T> {
      * The column key to be used in the CSV header. It must not contain commas,
      * newlines, quotes, or anything else that could break the CSV format. It
      * does not have to be unique.
+     *
+     * Each column key stores a getter function that takes a row and returns
+     * the value to be included in the CSV.
      */
-    key: string;
-    /** The getter function for each cell. */
-    getter: (cell: T) => string | number | undefined | null;
-  }[];
+    [key: string]: (cell: T) => JsonValue | undefined;
+  };
 
   /** The rows to be included in the CSV */
   private readonly rows: T[];
@@ -74,13 +77,13 @@ class CSVGenerator<T> {
    * @returns A CSV generated from the rows and columns provided
    */
   generate(includeHeader = true): string {
-    const header = this.columns.map(column => column.key).join(',');
+    const header = Object.keys(this.columns)
+      .map(key => CSVGenerator.escapeCSVCell(key))
+      .join(',');
     const rows = this.rows
       .map(row =>
-        this.columns
-          .map(column =>
-            CSVGenerator.escapeCSVCell(String(column.getter(row) || '')),
-          )
+        Object.values(this.columns)
+          .map(column => CSVGenerator.escapeCSVCell(String(column(row) || '')))
           .join(','),
       )
       .join('\n');
@@ -88,17 +91,6 @@ class CSVGenerator<T> {
     return includeHeader ? `${header}\n${rows}` : rows;
   }
 }
-
-/**
- * Zips two arrays `keys` and `getters` into an array of CSVGenerator columns.
- *
- * `keys` and `getters` must have the same length.
- *
- * @param keys The keys to be used in the CSV header
- * @param getters The getter functions for each cell
- */
-const getColumns = <T = any>(keys: string[], getters: ((obj: T) => any)[]) =>
-  keys.map((key, index) => ({ key, getter: getters[index] }));
 
 /**
  * A type guard for Entity
@@ -150,12 +142,14 @@ const getPackagesOfType = (
     .map(name => {
       const pkg = allPackages[name];
       if (!pkg) {
-        console.error(`Package ${name} not found in the list of packages`);
+        console.error(
+          chalk.red(`Package ${name} not found in the list of packages`),
+        );
         return '';
       }
 
-      const version = pkg.metadata.version
-        ? `(${pkg.metadata.version})`
+      const version = pkg.spec?.version
+        ? `(${pkg.spec?.version})`
         : '(no version)';
 
       if (types.includes(pkg?.spec?.backstage?.role || '')) {
@@ -172,6 +166,7 @@ export default async ({
   outputFile,
   pluginsYamlPath,
   recursive,
+  type,
 }: OptionValues) => {
   if (!pluginsYamlPath) {
     console.error(
@@ -183,72 +178,46 @@ export default async ({
   /** Parse the YAML files into entities */
   const yamls = parseYamls(pluginsYamlPath.split(','), recursive);
 
-  /** The headers we want to include in the CSV */
-  const headers = [
-    'type',
-    'name',
-    'title',
-    'description',
-    'author',
-    'categories',
-    'lifecycle',
-    'packages',
-    'role',
-    'backend plugins',
-    'frontend plugins',
-  ];
-
-  /** A hashmap of packages for the plugins CSV generator */
+  /** A map of all packages */
   const packages: Record<string, MarketplacePackage> = {};
 
   /** The generator for backstage marketplace Packages */
-  const packageCSV = new CSVGenerator<MarketplacePackage>(
-    getColumns<MarketplacePackage>(headers, [
-      () => 'Package',
-      yaml => yaml?.metadata?.name,
-      yaml => yaml?.metadata?.title,
-      () => undefined, // packages don't have a description in their type
-      yaml =>
-        yaml?.spec?.developer ||
-        yaml?.spec?.author ||
-        yaml?.spec?.owner ||
-        ((yaml?.spec?.authors as string[]) || []).join(','),
-      () => undefined, // packages don't have categories in their type
-      yaml => yaml?.spec?.lifecycle,
-      yaml => (yaml?.spec?.partOf || []).join(', '),
-      yaml => yaml?.spec?.role || yaml?.spec?.backstage?.role,
-      () => undefined, // packages don't have backend plugins in their type
-      () => undefined, // packages don't have frontend plugins in their type
-    ]),
-  );
+  const packageCSV = new CSVGenerator<MarketplacePackage>({
+    name: yaml => yaml?.metadata?.name,
+    title: yaml => yaml?.metadata?.title,
+    version: yaml => yaml?.spec?.version,
+    author: yaml =>
+      yaml?.spec?.developer ||
+      yaml?.spec?.author ||
+      yaml?.spec?.owner ||
+      ((yaml?.spec?.authors as string[]) || []).join(','),
+
+    lifecycle: yaml => yaml?.spec?.lifecycle,
+    packages: yaml => (yaml?.spec?.partOf || []).join(', '),
+    role: yaml => yaml?.spec?.role || yaml?.spec?.backstage?.role,
+  });
 
   /** The generator for backstage marketplace Plugins */
-  const pluginCSV = new CSVGenerator<MarketplacePlugin>(
-    getColumns<MarketplacePlugin>(headers, [
-      () => 'Plugin',
-      p => p?.metadata?.name,
-      p => p?.metadata?.title,
-      p => p?.metadata?.description,
-      p =>
-        p?.spec?.developer ||
-        p?.spec?.author ||
-        p?.spec?.owner ||
-        (p?.spec?.authors || []).join(','),
-      p => ((p?.spec?.categories as string[]) || []).join(', '),
-      p => p?.spec?.lifecycle,
-      p => (p?.spec?.packages || []).join(', '),
-      () => undefined, // plugins don't have a role in their type
-      p =>
-        getPackagesOfType(p?.spec?.packages || [], packages, [
-          'backend-plugin',
-          'backend-plugin-module',
-        ]),
-      p =>
-        getPackagesOfType(p?.spec?.packages || [], packages, [
-          'frontend-plugin',
-        ]),
-    ]),
-  );
+  const pluginCSV = new CSVGenerator<MarketplacePlugin>({
+    name: p => p?.metadata?.name,
+    title: p => p?.metadata?.title,
+    description: p => p?.metadata?.description,
+    author: p =>
+      p?.spec?.developer ||
+      p?.spec?.author ||
+      p?.spec?.owner ||
+      (p?.spec?.authors || []).join(','),
+    categories: p => ((p?.spec?.categories as string[]) || []).join(', '),
+    lifecycle: p => p?.spec?.lifecycle,
+    packages: p => (p?.spec?.packages || []).join(', '),
+    'backend packages': p =>
+      getPackagesOfType(p?.spec?.packages || [], packages, [
+        'backend-plugin',
+        'backend-plugin-module',
+      ]),
+    'frontend packages': p =>
+      getPackagesOfType(p?.spec?.packages || [], packages, ['frontend-plugin']),
+  });
 
   /** Process each YAML file */
   for (const yaml of await yamls) {
@@ -261,12 +230,29 @@ export default async ({
   }
 
   /** Generate the final CSV */
-  const finalCSV = `${packageCSV.generate()}${pluginCSV.generate(false)}`;
+  const csvs: Record<string, string> = {};
 
-  if (!outputFile) {
-    console.log(finalCSV);
-  } else {
-    await fs.writeFile(outputFile, finalCSV);
+  switch (type) {
+    case 'plugin':
+      csvs['-plugins.csv'] = pluginCSV.generate();
+      break;
+    case 'package':
+      csvs['-packages.csv'] = packageCSV.generate();
+      break;
+    case 'all':
+    default:
+      csvs['-plugins.csv'] = pluginCSV.generate();
+      csvs['-packages.csv'] = packageCSV.generate();
+      break;
+  }
+
+  for (const [suffix, csv] of Object.entries(csvs)) {
+    if (!outputFile) {
+      console.log(csv);
+      continue;
+    }
+
+    await fs.writeFile(`${outputFile}${suffix}`, csv);
   }
 
   process.exit(0);

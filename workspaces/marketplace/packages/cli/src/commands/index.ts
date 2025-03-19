@@ -67,7 +67,7 @@ export const registerCommands = (program: Command) => {
     .description('Export a folder of marketplace plugin YAMLs to a CSV file')
     .option(
       '-o, --output-file [path]',
-      'Path to the output CSV file. By default, it will output to the standard output',
+      'Path to the output CSV file. By default, it will output to the standard output. When a file is specified, the "csv" file extension will be added automatically',
     )
     .option(
       '-p, --plugins-yaml-path [path]',
@@ -76,6 +76,11 @@ export const registerCommands = (program: Command) => {
     .option(
       '-r, --recursive',
       'Recursively search for YAML files in each directory provided in plugins-yaml-path',
+    )
+    .option(
+      '-t, --type [type]',
+      'The type of CSV to export. Can be one of: "plugin", "package", or "all". "all" will generate two files.',
+      'all',
     )
     .action(lazy(() => import('./export-csv').then(m => m.default)));
 };

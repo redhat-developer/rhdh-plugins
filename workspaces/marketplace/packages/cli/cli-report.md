@@ -26,6 +26,7 @@ Options:
   -o, --output-file [path]
   -p, --plugins-yaml-path [path]
   -r, --recursive
+  -t, --type [type]
   -h, --help
 ```
 
