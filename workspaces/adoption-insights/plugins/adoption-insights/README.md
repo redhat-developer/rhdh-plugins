@@ -24,6 +24,30 @@ To install the Adoption Insights plugin, run the following command:
 yarn workspace app add @red-hat-developer-hub/backstage-plugin-adoption-insights
 ```
 
+**Note**
+
+### Permission Framework Support
+
+The Adoption Insights plugin has support for the permission framework.
+
+- When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access adoption insights UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
+
+```CSV
+p, role:default/team_a, adoption-insights.events.read, read, ALLOW
+
+g, user:default/<your-user-name>, role:default/team_a
+```
+
+You can specify the path to this configuration file in your application configuration:
+
+```yaml
+permission:
+  enabled: true
+  rbac:
+    policies-csv-file: /some/path/rbac-policy.csv
+    policyFileReload: true
+```
+
 ### Configuration
 
 1. Add the **Adoption Insights** page to your Backstage application by modifying `packages/app/src/App.tsx`:

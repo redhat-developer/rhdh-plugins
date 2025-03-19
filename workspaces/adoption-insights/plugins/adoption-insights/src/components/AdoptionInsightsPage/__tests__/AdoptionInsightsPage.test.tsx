@@ -15,9 +15,11 @@
  */
 import React from 'react';
 
-import { render, screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import { IdentityApi, identityApiRef } from '@backstage/core-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
+import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
 import { AdoptionInsightsPage } from '../AdoptionInsightsPage';
 
@@ -77,6 +79,28 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
+jest.mock('@backstage/plugin-permission-react', () => ({
+  usePermission: jest.fn(),
+  RequirePermission: jest.fn(),
+}));
+
+jest.mock('../../Common/PermissionRequiredState', () => ({
+  __esModule: true,
+  default: () => (
+    <div data-testid="mock-permission-state">Missing permissions</div>
+  ),
+}));
+
+const identityApi = {
+  async getCredentials() {
+    return { token: 'test-token' };
+  },
+} as IdentityApi;
+
+const mockUsePermission = usePermission as jest.MockedFunction<
+  typeof usePermission
+>;
+
 describe('AdoptionInsightsPage', () => {
   const mockTheme = {
     breakpoints: {
@@ -88,37 +112,55 @@ describe('AdoptionInsightsPage', () => {
     (useTheme as jest.Mock).mockReturnValue(mockTheme);
   });
 
-  it('should render all components in desktop layout', () => {
-    (useMediaQuery as jest.Mock).mockReturnValue(false);
+  it('should not display components if permission checks are in loading phase', async () => {
+    mockUsePermission.mockReturnValue({ loading: true, allowed: true });
 
-    render(<AdoptionInsightsPage />);
+    await renderInTestApp(
+      <TestApiProvider apis={[[identityApiRef, identityApi]]}>
+        <AdoptionInsightsPage />
+      </TestApiProvider>,
+    );
 
-    expect(screen.getByTestId('mock-page')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-content')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-header')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-active-users')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-users')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-templates')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-catalog-entities')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-plugins')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-techdocs')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-searches')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByTestId('Adoption Insights')).not.toBeInTheDocument();
+    });
   });
 
-  it('should render all components in mobile layout', () => {
-    (useMediaQuery as jest.Mock).mockReturnValue(true);
+  it('should display missing permissions alert', async () => {
+    mockUsePermission.mockReturnValue({ loading: false, allowed: false });
 
-    render(<AdoptionInsightsPage />);
+    await renderInTestApp(
+      <TestApiProvider apis={[[identityApiRef, identityApi]]}>
+        <AdoptionInsightsPage />
+      </TestApiProvider>,
+    );
 
-    expect(screen.getByTestId('mock-page')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-content')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-header')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-active-users')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-users')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-templates')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-catalog-entities')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-plugins')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-techdocs')).toBeInTheDocument();
-    expect(screen.getByTestId('mock-searches')).toBeInTheDocument();
+    screen.debug();
+    await waitFor(() => {
+      expect(screen.getByText('Missing permissions')).toBeInTheDocument();
+    });
+  });
+
+  it('should display all components', async () => {
+    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+
+    await renderInTestApp(
+      <TestApiProvider apis={[[identityApiRef, identityApi]]}>
+        <AdoptionInsightsPage />
+      </TestApiProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('mock-page')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-content')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-header')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-active-users')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-users')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-templates')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-catalog-entities')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-plugins')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-techdocs')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-searches')).toBeInTheDocument();
+    });
   });
 });
