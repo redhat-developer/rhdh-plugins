@@ -33,7 +33,7 @@ import { auditCreateEvent } from './auditorUtils';
  * This will resolve to { result: AuthorizeResult.ALLOW } if the permission framework is disabled
  */
 export async function permissionCheck(
-  auditLogger: AuditorService,
+  auditor: AuditorService,
   openApiOperationId: string | undefined,
   permissions: PermissionsService,
   httpAuth: HttpAuthService,
@@ -56,7 +56,7 @@ export async function permissionCheck(
   if (decision.result === AuthorizeResult.DENY) {
     const err = new NotAllowedError('Unauthorized');
     const auditorEvent = await auditCreateEvent(
-      auditLogger,
+      auditor,
       openApiOperationId,
       req,
     );

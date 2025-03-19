@@ -26,7 +26,7 @@ export function createRouter(options: RouterOptions): Promise<express.Router>;
 // @public
 export interface RouterOptions {
     // (undocumented)
-    auditLogger: AuditorService;
+    auditor: AuditorService;
     // (undocumented)
     auth: AuthService;
     // (undocumented)
