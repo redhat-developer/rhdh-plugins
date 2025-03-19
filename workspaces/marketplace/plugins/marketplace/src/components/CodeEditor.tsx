@@ -32,6 +32,12 @@ const defaultOptions: MonacoEditor.editor.IEditorConstructionOptions = {
 interface CodeEditorContextValue {
   getEditor: () => MonacoEditor.editor.ICodeEditor | null;
   setEditor: (editor: MonacoEditor.editor.ICodeEditor) => void;
+
+  getSelection: () => monacoEditor.Selection | null;
+  setSelection: (editorSelection: monacoEditor.Selection) => void;
+
+  getPosition: () => monacoEditor.Position | null;
+  setPosition: (cursorPosition: monacoEditor.Position) => void;
   /** short for getEditor()?.getValue() */
   getValue: () => string | undefined;
   /** short for getEditor()?.setValue() and getEditor()?.focus() */
@@ -51,6 +57,14 @@ export const CodeEditorContextProvider = (props: {
       getEditor: () => editorRef.current,
       setEditor: (editor: MonacoEditor.editor.ICodeEditor) => {
         editorRef.current = editor;
+      },
+      getPosition: () => editorRef.current?.getPosition() || null,
+      setPosition: (cursorPosition: monacoEditor.Position) => {
+        editorRef.current?.setPosition(cursorPosition);
+      },
+      getSelection: () => editorRef.current?.getSelection() || null,
+      setSelection: (editorSelection: monacoEditor.Selection) => {
+        editorRef.current?.setSelection(editorSelection);
       },
       getValue: () => editorRef.current?.getValue(),
       setValue: (value: string, autoFocus = true) => {
