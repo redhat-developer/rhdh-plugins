@@ -24,19 +24,19 @@ import kebabCase from 'just-kebab-case';
 
 const UNKNOWN_ENDPOINT_EVENT = `unknown-endpoint`;
 
-export async function auditLogCreateEvent(
-  auditLogger: AuditorService,
+export async function auditCreateEvent(
+  auditor: AuditorService,
   openApiOperationId: string | undefined,
   req: express.Request,
 ): Promise<AuditorServiceEvent> {
   if (!openApiOperationId) {
-    return await auditLogger.createEvent({
+    return await auditor.createEvent({
       eventId: UNKNOWN_ENDPOINT_EVENT,
       severityLevel: 'medium',
       request: req,
     });
   }
-  return await auditLogger.createEvent({
+  return await auditor.createEvent({
     eventId: kebabCase(openApiOperationId),
     severityLevel: 'medium',
     request: req,

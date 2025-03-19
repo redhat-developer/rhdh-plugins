@@ -44,7 +44,7 @@ import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
 import { permissionCheck } from '../helpers';
-import { auditLogCreateEvent } from '../helpers/auditLogUtils';
+import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
   createImportJobs,
   deleteImportByRepo,
@@ -71,7 +71,7 @@ export interface RouterOptions {
   httpAuth: HttpAuthService;
   auth: AuthService;
   catalogApi: CatalogApi;
-  auditLogger: AuditorService;
+  auditor: AuditorService;
 }
 
 /**
@@ -90,7 +90,7 @@ export async function createRouter(
     cache,
     discovery,
     catalogApi,
-    auditLogger,
+    auditor: auditor,
   } = options;
 
   const githubApiService = new GithubApiService(logger, config, cache);
@@ -360,7 +360,7 @@ export async function createRouter(
   router.use(async (req, _res, next) => {
     if (req.path !== '/ping') {
       await permissionCheck(
-        auditLogger,
+        auditor,
         api.matchOperation(req as OpenAPIRequest)?.operationId,
         permissions,
         httpAuth,
@@ -373,11 +373,7 @@ export async function createRouter(
   router.use(async (req, res, next) => {
     const reqCast = req as OpenAPIRequest;
     const operationId = api.matchOperation(reqCast)?.operationId;
-    const auditorEvent = await auditLogCreateEvent(
-      auditLogger,
-      operationId,
-      req,
-    );
+    const auditorEvent = await auditCreateEvent(auditor, operationId, req);
     try {
       const response = (await api.handleRequest(reqCast, req, res)) as Response;
       await auditorEvent.success({

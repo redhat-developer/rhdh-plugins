@@ -27,7 +27,7 @@ import express from 'express';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
-import { auditLogCreateEvent } from './auditLogUtils';
+import { auditCreateEvent } from './auditorUtils';
 
 /**
  * This will resolve to { result: AuthorizeResult.ALLOW } if the permission framework is disabled
@@ -55,7 +55,7 @@ export async function permissionCheck(
 
   if (decision.result === AuthorizeResult.DENY) {
     const err = new NotAllowedError('Unauthorized');
-    const auditorEvent = await auditLogCreateEvent(
+    const auditorEvent = await auditCreateEvent(
       auditLogger,
       openApiOperationId,
       req,
