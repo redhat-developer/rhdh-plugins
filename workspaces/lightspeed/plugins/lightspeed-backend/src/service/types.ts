@@ -48,7 +48,7 @@ export interface QueryRequestBody {
   provider: string;
 
   // Conversation session id
-  conversation_id: string;
+  conversation_id?: string;
 
   // System prompt to override the default value
   system_prompt?: string;

@@ -16,12 +16,56 @@
 
 import { http, HttpResponse } from 'msw';
 
-const localHostAndPort = '0.0.0.0:8080';
-export const LOCAL_RCS_ADDR = `http://${localHostAndPort}/`;
+export const LOCAL_RCS_ADDR = 'http://0.0.0.0:8080';
 
 function loadTestFixture(filePathFromFixturesDir: string) {
   return require(`${__dirname}/${filePathFromFixturesDir}`);
 }
+
+const mockConversationId = 'conversation-id-1';
+const mockConversationId2 = `conversation-id-2`;
+const conversation1History = [
+  {
+    content: 'what is openshit lightspeed',
+    response_metadata: {
+      created_at: 1741287754.162095,
+    },
+    type: 'human',
+  },
+  {
+    content:
+      "OpenShift Lightspeed is a generative AI assistant integrated into the Red Hat Developer Hub (RHDH), an internal developer portal built on CNCF Backstage. It enhances developer productivity by streamlining workflows, providing instant access to technical knowledge, and supporting developers in their day-to-day tasks.\n\nOpenShift Lightspeed offers various features such as code assistance, knowledge retrieval, system navigation, troubleshooting, and integration support. It can generate, debug, and optimize code snippets, provide instant access to internal and external documentation, offer step-by-step instructions for Red Hat Developer Hub features, diagnose issues in services, pipelines, and configurations with actionable recommendations, and assist with Backstage plugins and integrations, including Kubernetes, CI/CD, and GitOps pipelines.\n\nOpenShift Lightspeed is designed to help developers work smarter, solve problems faster, and ensure they can focus on building and deploying software efficiently. It adapts its communication style to match the user's technical proficiency, providing concise, technical language for experts and clear explanations with examples for beginners.\n\nOpenShift Lightspeed is well-versed in various domains, including programming languages, DevOps, cloud platforms, Backstage, infrastructure as code, security, and documentation and standards. It leverages Markdown to format code snippets, tables, and lists for readability in its responses.",
+    response_metadata: {
+      created_at: 1741287761.8619468,
+      provider: 'my_ollama',
+      model: 'granite3-dense:8b',
+    },
+    type: 'ai',
+  },
+];
+
+const conversation2History = [
+  {
+    content: 'Hello',
+    response_metadata: {
+      created_at: 1741287754.162095,
+    },
+    type: 'human',
+  },
+  {
+    content: 'ai dummy response for test purpose',
+    response_metadata: {
+      created_at: 1741287761.8619468,
+      provider: 'my_ollama',
+      model: 'granite3-dense:8b',
+    },
+    type: 'ai',
+  },
+];
+
+export const chatHistory: any = {};
+chatHistory[mockConversationId] = conversation1History;
+chatHistory[mockConversationId2] = conversation2History;
 
 export const rcsHandlers = [
   http.post(`${LOCAL_RCS_ADDR}/v1/streaming_query`, () => {
@@ -47,30 +91,61 @@ export const rcsHandlers = [
   }),
 
   http.get(`${LOCAL_RCS_ADDR}/conversations/:conversation_id`, ({ params }) => {
-    const conversation_id = params.conversation_id;
-    const mockModelRes = {
-      chat_history: [
-        {
-          content: 'what is openshit lightspeed',
-          response_metadata: {
-            created_at: 1741287754.162095,
-          },
-          type: 'human',
-        },
-        {
-          content:
-            "OpenShift Lightspeed is a generative AI assistant integrated into the Red Hat Developer Hub (RHDH), an internal developer portal built on CNCF Backstage. It enhances developer productivity by streamlining workflows, providing instant access to technical knowledge, and supporting developers in their day-to-day tasks.\n\nOpenShift Lightspeed offers various features such as code assistance, knowledge retrieval, system navigation, troubleshooting, and integration support. It can generate, debug, and optimize code snippets, provide instant access to internal and external documentation, offer step-by-step instructions for Red Hat Developer Hub features, diagnose issues in services, pipelines, and configurations with actionable recommendations, and assist with Backstage plugins and integrations, including Kubernetes, CI/CD, and GitOps pipelines.\n\nOpenShift Lightspeed is designed to help developers work smarter, solve problems faster, and ensure they can focus on building and deploying software efficiently. It adapts its communication style to match the user's technical proficiency, providing concise, technical language for experts and clear explanations with examples for beginners.\n\nOpenShift Lightspeed is well-versed in various domains, including programming languages, DevOps, cloud platforms, Backstage, infrastructure as code, security, and documentation and standards. It leverages Markdown to format code snippets, tables, and lists for readability in its responses.",
-          response_metadata: {
-            created_at: 1741287761.8619468,
-            provider: 'my_ollama',
-            model: 'granite3-dense:8b',
-          },
-          type: 'ai',
-        },
-      ],
-    };
-    return HttpResponse.json(mockModelRes);
+    const conversation_id = params.conversation_id as string;
+    if (conversation_id in chatHistory) {
+      const mockHistoryRes = {
+        chat_history: chatHistory[conversation_id],
+      };
+      return HttpResponse.json(mockHistoryRes);
+    }
+    return new HttpResponse(
+      JSON.stringify({
+        error: `Conversation ${conversation_id} not found`,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
   }),
+
+  http.get(`${LOCAL_RCS_ADDR}/conversations`, () => {
+    const conversations = [];
+    const ids = Object.keys(chatHistory);
+    for (const id of ids) {
+      const conversation = {
+        conversation_id: id,
+        topic_summary: 'dummy summary',
+        last_message_timestamp: 1742237500.516723,
+      };
+      conversations.push(conversation);
+    }
+    const mockConversations = {
+      conversations: conversations,
+    };
+
+    return HttpResponse.json(mockConversations);
+  }),
+
+  http.delete(
+    `${LOCAL_RCS_ADDR}/conversations/:conversation_id`,
+    ({ params }) => {
+      const conversation_id = params.conversation_id as string;
+      if (conversation_id in chatHistory) {
+        delete chatHistory[conversation_id];
+        return HttpResponse.json('ok', { status: 200 });
+      }
+      return new HttpResponse(
+        JSON.stringify({
+          error: `Conversation ${conversation_id} not found`,
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    },
+  ),
 
   http.get(`${LOCAL_RCS_ADDR}/conversations`, () => {
     const mockModelRes = {
@@ -100,7 +175,7 @@ export const rcsHandlers = [
     console.log(`Caught request to unknown path: ${request.url}`);
 
     // Return a 404 response
-    return new Response(
+    return new HttpResponse(
       JSON.stringify({
         error: 'Not found',
         message: `The requested resource at ${request.url} was not found`,

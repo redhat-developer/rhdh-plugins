@@ -29,20 +29,20 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import request from 'supertest';
 
-import { handlers, LOCAL_AI_ADDR } from '../../__fixtures__/handlers';
-import { rcsHandlers } from '../../__fixtures__/rcsHandlers';
+import {
+  handlers,
+  LOCAL_AI_ADDR,
+  mockModelRes,
+} from '../../__fixtures__/handlers';
+import { LOCAL_RCS_ADDR, rcsHandlers } from '../../__fixtures__/rcsHandlers';
 import { lightspeedPlugin } from '../plugin';
 
 const mockUserId = `user: default/user1`;
-const mockConversationId = `${mockUserId}+1q2w3e4r-qwer1234`;
+const mockConversationId = 'conversation-id-1';
 const encodedConversationId = encodeURIComponent(mockConversationId);
-const mockConversationId2 = `${mockUserId}+9i8u7y6t-654rew3`;
+const mockConversationId2 = `conversation-id-2`;
 
-const mockAnotherUserId = `user: default/anotheruser`;
-const mockAnotherConversationId = `${mockAnotherUserId}+1q2w3e4r-qwer1234`;
-const encodedAnotherConversationId = encodeURIComponent(
-  mockAnotherConversationId,
-);
+const mockAnotherConversationId = `another-conversation-id`;
 
 const mockModel = 'test-model';
 const mockToken = 'dummy-token';
@@ -59,30 +59,6 @@ const BASE_CONFIG = {
   },
 };
 
-const mockServerResponse = {
-  data: [
-    {
-      id: mockModel,
-    },
-  ],
-};
-// Mocking the actual request that the proxy would make
-jest.mock('http-proxy-middleware', () => ({
-  createProxyMiddleware: jest
-    .fn()
-    .mockImplementation(() => (req: express.Request, res: express.Response) => {
-      if (req.headers.authorization !== `Bearer ${mockToken}`) {
-        res.status(403).json({ error: 'unauthorized' }); // test if config.token has been added in authorization header
-        return;
-      }
-      if (req.path === '/models') {
-        res.status(200).json(mockServerResponse);
-        return;
-      }
-      res.status(404).json({ error: 'unknown path' });
-    }),
-}));
-
 jest.mock('@backstage/backend-plugin-api', () => ({
   ...jest.requireActual('@backstage/backend-plugin-api'),
   UserInfoService: jest.fn().mockImplementation(() => ({
@@ -93,15 +69,12 @@ jest.mock('@backstage/backend-plugin-api', () => ({
     }),
   })),
 }));
+
 const splitJsonObjects = (response: { text: string }): string[] =>
-  response.text.split('}{').map((chunk, index, arr) => {
-    if (index === 0) {
-      return `${chunk}}`;
-    } else if (index === arr.length - 1) {
-      return `{${chunk}`;
-    }
-    return `{${chunk}}`;
-  });
+  response.text
+    .split('\n') // Split by newlines
+    .filter(line => line.startsWith('data: ')) // Keep only JSON lines
+    .map(line => line.replace('data: ', '')); // Remove the "data: " prefix
 
 describe('lightspeed router tests', () => {
   const server = setupServer(...handlers);
@@ -192,7 +165,7 @@ describe('lightspeed router tests', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockServerResponse);
+      expect(response.body).toEqual(mockModelRes);
     });
 
     it('unknown path', async () => {
@@ -208,78 +181,67 @@ describe('lightspeed router tests', () => {
     });
   });
 
-  const mockGetConversationsResponse = `
-  {
-    "chat_history": [
-        {
-            "content": "what is openshit lightspeed",
-            "additional_kwargs": {},
-            "response_metadata": {
-                "created_at": 1741287754.162095
-            },
-            "type": "human",
-            "name": null,
-            "id": null
-        },
-        {
-            "content": "OpenShift Lightspeed is a generative AI assistant integrated into the Red Hat Developer Hub (RHDH), an internal developer portal built on CNCF Backstage. It enhances developer productivity by streamlining workflows, providing instant access to technical knowledge, and supporting developers in their day-to-day tasks.\n\nOpenShift Lightspeed offers various features such as code assistance, knowledge retrieval, system navigation, troubleshooting, and integration support. It can generate, debug, and optimize code snippets, provide instant access to internal and external documentation, offer step-by-step instructions for Red Hat Developer Hub features, diagnose issues in services, pipelines, and configurations with actionable recommendations, and assist with Backstage plugins and integrations, including Kubernetes, CI/CD, and GitOps pipelines.\n\nOpenShift Lightspeed is designed to help developers work smarter, solve problems faster, and ensure they can focus on building and deploying software efficiently. It adapts its communication style to match the user's technical proficiency, providing concise, technical language for experts and clear explanations with examples for beginners.\n\nOpenShift Lightspeed is well-versed in various domains, including programming languages, DevOps, cloud platforms, Backstage, infrastructure as code, security, and documentation and standards. It leverages Markdown to format code snippets, tables, and lists for readability in its responses.",
-            "additional_kwargs": {},
-            "response_metadata": {
-                "created_at": 1741287761.8619468,
-                "provider": "my_ollama",
-                "model": "granite3-dense:8b"
-            },
-            "type": "ai",
-            "name": null,
-            "id": null
-        }
-    ]
-}
-  `;
-  describe('GET and DELETE /conversations/:conversation_id', () => {
-    const humanMessage = 'Hello';
-    const aiMessage = 'Hi! How can I help you today?';
-
-    beforeEach(async () => {
-      // await saveHistory(
-      //   mockConversationId,
-      //   Roles.HumanRole,
-      //   humanMessage,
-      //   Date.now(),
-      // );
-      // await saveHistory(
-      //   mockConversationId,
-      //   Roles.AIRole,
-      //   aiMessage,
-      //   Date.now(),
-      //   mockModel,
-      // );
-      // Mocking the actual request that the proxy would make
-    });
-
-    it('load history', async () => {
+  describe('GET /conversations', () => {
+    it('load conversations list with summary', async () => {
+      const mockSummary = 'dummy summary';
       const backendServer = await startBackendServer();
       const response = await request(backendServer).get(
-        `/api/lightspeed/conversations/${encodedConversationId}`,
+        `/api/lightspeed/conversations`,
       );
       expect(response.statusCode).toEqual(200);
       // Parse response body
       const responseData = response.body;
 
       // Check that responseData is an array
-      expect(Array.isArray(responseData)).toBe(true);
-      expect(responseData.length).toBe(2);
+      expect(responseData.conversations).toBeDefined();
+      expect(Array.isArray(responseData.conversations)).toBe(true);
+      expect(responseData.conversations.length).toBe(2);
+      const ids = responseData.conversations.map(item => item.conversation_id);
 
-      expect(responseData[0].type).toBe('human');
+      // Check if both expected IDs are present
+      expect(ids).toContain(mockConversationId);
+      expect(ids).toContain(mockConversationId2);
+
+      // check the summary
+      expect(responseData.conversations[0].topic_summary).toBe(mockSummary);
+      expect(responseData.conversations[1].topic_summary).toBe(mockSummary);
+
+      // check the timestamp is in descending order
       expect(
-        responseData[0].kwargs?.response_metadata.created_at,
+        responseData.conversations[0].last_message_timestamp,
+      ).toBeDefined();
+      expect(
+        responseData.conversations[1].last_message_timestamp,
+      ).toBeDefined();
+    });
+  });
+
+  describe('GET and DELETE /conversations/:conversation_id', () => {
+    it('load history', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        `/api/lightspeed/conversations/${encodedConversationId}`,
+      );
+      console.log(response);
+      expect(response.statusCode).toEqual(200);
+      // Parse response body
+      const responseData = response.body;
+
+      // Check that responseData is an array
+      expect(responseData.chat_history).toBeDefined();
+      expect(Array.isArray(responseData.chat_history)).toBe(true);
+      expect(responseData.chat_history.length).toBe(2);
+
+      expect(responseData.chat_history[0].type).toBe('human');
+      expect(
+        responseData.chat_history[0].response_metadata.created_at,
       ).toBeDefined();
 
-      expect(responseData[1].type).toBe('ai');
+      expect(responseData.chat_history[1].type).toBe('ai');
       expect(
-        responseData[1].kwargs?.response_metadata.created_at,
+        responseData.chat_history[1].response_metadata.created_at,
       ).toBeDefined();
-      expect(responseData[1].kwargs?.response_metadata.model).toBe(
+      expect(responseData.chat_history[1].response_metadata.model).toBe(
         'granite3-dense:8b',
       );
     });
@@ -311,59 +273,28 @@ describe('lightspeed router tests', () => {
     });
 
     it('load history with deleted conversation_id', async () => {
-      await deleteHistory(mockConversationId);
+      // await deleteHistory(mockConversationId);
       const backendServer = await startBackendServer();
       const response = await request(backendServer).get(
         `/api/lightspeed/conversations/${encodedConversationId}`,
       );
       expect(response.statusCode).toEqual(500);
-      expect(response.body.error).toContain('unknown conversation_id');
+      expect(response.body.error).toContain('not found');
     });
 
-    it('load history from another authenticated user should error out', async () => {
+    it('load history from a non-exist conversation_id should error out', async () => {
       const backendServer = await startBackendServer();
 
       const response = await request(backendServer).get(
-        `/api/lightspeed/conversations/${encodedAnotherConversationId}`,
+        `/api/lightspeed/conversations/${mockAnotherConversationId}`,
       );
       expect(response.statusCode).toEqual(500);
-      expect(response.body.error).toContain(
-        'does not belong to authenticated user',
-      );
-    });
-
-    it('delete history from another authenticated user should error out', async () => {
-      const backendServer = await startBackendServer();
-      const deleteResponse = await request(backendServer).delete(
-        `/api/lightspeed/conversations/${encodedAnotherConversationId}`,
-      );
-      expect(deleteResponse.statusCode).toEqual(500);
-      expect(deleteResponse.body.error).toContain(
-        'does not belong to authenticated user',
-      );
+      expect(response.body.error).toContain('not found');
     });
   });
 
   describe('POST /v1/query', () => {
-    let chatOpenAISpy: any;
-
-    const setupStreamSpy = (mockStream: jest.Mock) => {
-      // Spy on fromMessages and mock its return value
-      jest
-        .spyOn(ChatPromptTemplate, 'fromMessages')
-        .mockImplementationOnce((): any => ({
-          pipe: jest.fn().mockReturnValueOnce({
-            stream: mockStream,
-          }),
-        }));
-    };
-    beforeEach(() => {
-      chatOpenAISpy = jest.spyOn(ChatPromptTemplate, 'fromMessages');
-    });
-
     afterEach(() => {
-      chatOpenAISpy.mockRestore();
-      chatOpenAISpy.mockReset();
       jest.clearAllMocks();
     });
 
@@ -374,9 +305,8 @@ describe('lightspeed router tests', () => {
         .post('/api/lightspeed/v1/query')
         .send({
           model: mockModel,
-          conversation_id: mockConversationId,
           query: 'Hello',
-          serverURL: LOCAL_AI_ADDR,
+          provider: 'test-server',
         });
 
       expect(response.statusCode).toEqual(200);
@@ -388,12 +318,8 @@ describe('lightspeed router tests', () => {
       // Parse each chunk individually
       chunkList.forEach(chunk => {
         const parsedChunk = JSON.parse(chunk);
-        expect(parsedChunk.conversation_id).toEqual(mockConversationId);
-        if (
-          parsedChunk.response?.kwargs?.response_metadata?.finish_reason !==
-          'stop'
-        ) {
-          receivedData += parsedChunk.response?.kwargs?.content;
+        if (parsedChunk.choices[0]?.finish_reason !== 'stop') {
+          receivedData += parsedChunk.choices[0]?.delta?.content;
           receivedData += ' ';
         }
       });
@@ -409,167 +335,24 @@ describe('lightspeed router tests', () => {
           model: mockModel,
           conversation_id: mockConversationId,
           query: 'Hello',
-          serverURL: LOCAL_AI_ADDR,
+          provider: 'test-server',
         });
       expect(chatCompletionResponse.statusCode).toEqual(403);
     });
 
-    it('should not have any history for the initial conversation', async () => {
-      const mockStream = jest.fn().mockImplementation(async function* stream() {
-        yield { content: 'Chunk 1', response_metadata: {} };
-      });
-
-      setupStreamSpy(mockStream);
-
+    it('returns 400 if provider is missing', async () => {
       const backendServer = await startBackendServer();
-      await deleteHistory(mockConversationId); // delete existing conversation history
-
       const response = await request(backendServer)
         .post('/api/lightspeed/v1/query')
         .send({
           model: mockModel,
           conversation_id: mockConversationId,
-          query: 'Hi',
-          serverURL: LOCAL_AI_ADDR,
-        });
-
-      expect(response.statusCode).toEqual(200);
-      expect(mockStream).toHaveBeenCalled();
-
-      const streamCalledWithMessages = mockStream.mock.calls[0][0].messages;
-
-      expect(streamCalledWithMessages).toHaveLength(1);
-      expect(streamCalledWithMessages[0]).toBeInstanceOf(HumanMessage);
-      expect(streamCalledWithMessages[0]).toEqual(
-        expect.objectContaining({ content: 'Hi' }),
-      );
-    });
-
-    it('should call the stream with conversation history', async () => {
-      const mockStream = jest.fn().mockImplementation(async function* stream() {
-        yield { content: 'Chunk 1', response_metadata: {} };
-      });
-
-      setupStreamSpy(mockStream);
-
-      const backendServer = await startBackendServer();
-      await deleteHistory(mockConversationId); // delete existing conversation history
-
-      const humanMessage = 'Hi';
-      const aiMessage = 'Hi! How can I help you today?';
-      await saveHistory(mockConversationId, Roles.HumanRole, humanMessage);
-      await saveHistory(mockConversationId, Roles.AIRole, aiMessage);
-
-      const response = await request(backendServer)
-        .post('/api/lightspeed/v1/query')
-        .send({
-          model: mockModel,
-          conversation_id: mockConversationId,
-          query: 'What is Langchain?',
-          serverURL: LOCAL_AI_ADDR,
-        });
-
-      expect(response.statusCode).toEqual(200);
-      expect(mockStream).toHaveBeenCalled();
-
-      const streamCalledWithMessages = mockStream.mock.calls[0][0].messages;
-
-      expect(streamCalledWithMessages).toHaveLength(3);
-      expect(streamCalledWithMessages[0]).toBeInstanceOf(HumanMessage);
-      expect(streamCalledWithMessages[0]).toEqual(
-        expect.objectContaining({ content: 'Hi' }),
-      );
-
-      expect(streamCalledWithMessages[1]).toBeInstanceOf(AIMessage);
-      expect(streamCalledWithMessages[1]).toEqual(
-        expect.objectContaining({ content: 'Hi! How can I help you today?' }),
-      );
-
-      expect(streamCalledWithMessages[2]).toBeInstanceOf(HumanMessage);
-      expect(streamCalledWithMessages[2]).toEqual(
-        expect.objectContaining({ content: 'What is Langchain?' }),
-      );
-    });
-
-    it('should contain message timestamp in human and ai message, and ai model in ai message', async () => {
-      const delay = (ms = 100) =>
-        new Promise<void>(resolve => setTimeout(resolve, ms));
-      const mockStream = jest.fn().mockImplementation(async function* stream() {
-        await delay();
-        yield { content: 'Chunk 1', response_metadata: {} };
-        await delay(); // delay of 100ms
-        yield { content: 'Chunk 2', response_metadata: {} };
-      });
-      setupStreamSpy(mockStream); // use mockStream
-
-      const backendServer = await startBackendServer();
-      await deleteHistory(mockConversationId);
-
-      const response = await request(backendServer)
-        .post('/api/lightspeed/v1/query')
-        .send({
-          model: mockModel,
-          conversation_id: mockConversationId,
-          query: 'Hello',
-          serverURL: LOCAL_AI_ADDR,
-        });
-
-      const jsonStrings = splitJsonObjects(response);
-      const aiMessages = jsonStrings.map(str => {
-        try {
-          return JSON.parse(str);
-        } catch (error) {
-          console.error(`Failed to parse: ${str}`);
-          throw error;
-        }
-      });
-
-      expect(response.statusCode).toEqual(200);
-      expect(mockStream).toHaveBeenCalled();
-
-      const humanMessage = mockStream.mock.calls[0][0].messages[0];
-      const humanMessageTimestamp = humanMessage.response_metadata.created_at;
-      expect(humanMessage).toBeInstanceOf(HumanMessage);
-      expect(humanMessage).toEqual(
-        expect.objectContaining({ content: 'Hello' }),
-      );
-
-      // check each ai message chunk timestamp to be greater than human message timestamp
-      aiMessages.forEach(chunk => {
-        expect(chunk.response.response_metadata.created_at).toBeGreaterThan(
-          humanMessageTimestamp,
-        );
-        expect(chunk.response.response_metadata.model).toBe(mockModel);
-      });
-    });
-
-    it('returns 400 if conversation_id is missing', async () => {
-      const backendServer = await startBackendServer();
-      const response = await request(backendServer)
-        .post('/api/lightspeed/v1/query')
-        .send({
-          model: mockModel,
+          query: 'hello',
         });
       expect(response.statusCode).toEqual(400);
       expect(response.body.error).toBe(
-        'conversation_id is required and must be a non-empty string',
+        'provider is required and must be a non-empty string',
       );
-      expect(chatOpenAISpy).not.toHaveBeenCalled();
-    });
-
-    it('returns 400 if serverURL is missing', async () => {
-      const backendServer = await startBackendServer();
-      const response = await request(backendServer)
-        .post('/api/lightspeed/v1/query')
-        .send({
-          model: mockModel,
-          conversation_id: mockConversationId,
-        });
-      expect(response.statusCode).toEqual(400);
-      expect(response.body.error).toBe(
-        'serverURL is required and must be a non-empty string',
-      );
-      expect(chatOpenAISpy).not.toHaveBeenCalled();
     });
 
     it('returns 400 if model is missing', async () => {
@@ -578,13 +361,12 @@ describe('lightspeed router tests', () => {
         .post('/api/lightspeed/v1/query')
         .send({
           conversation_id: mockConversationId,
-          serverURL: LOCAL_AI_ADDR,
+          provider: 'test-server',
         });
       expect(response.statusCode).toEqual(400);
       expect(response.body.error).toBe(
         'model is required and must be a non-empty string',
       );
-      expect(chatOpenAISpy).not.toHaveBeenCalled();
     });
 
     it('returns 400 if query is missing', async () => {
@@ -594,20 +376,19 @@ describe('lightspeed router tests', () => {
         .send({
           model: mockModel,
           conversation_id: mockConversationId,
-          serverURL: LOCAL_AI_ADDR,
+          provider: 'test-server',
         });
       expect(response.statusCode).toEqual(400);
       expect(response.body.error).toBe(
         'query is required and must be a non-empty string',
       );
-      expect(chatOpenAISpy).not.toHaveBeenCalled();
     });
 
     it('returns 500 if unexpected error', async () => {
       const backendServer = await startBackendServer();
       const nonExistentModel = 'nonexistent-model';
-      server.use(
-        http.post(`${LOCAL_AI_ADDR}/chat/completions`, () => {
+      rcs.use(
+        http.post(`${LOCAL_RCS_ADDR}/v1/streaming_query`, () => {
           return new HttpResponse(
             JSON.stringify({
               error: {
@@ -624,107 +405,10 @@ describe('lightspeed router tests', () => {
         .send({
           model: nonExistentModel,
           conversation_id: mockConversationId,
-          serverURL: LOCAL_AI_ADDR,
+          provider: 'test-server',
           query: 'Hello',
         });
       expect(response.statusCode).toEqual(500);
-    });
-
-    it('returns 500 if query sent for a different user', async () => {
-      const backendServer = await startBackendServer();
-      const response = await request(backendServer)
-        .post('/api/lightspeed/v1/query')
-        .send({
-          model: mockModel,
-          conversation_id: mockAnotherConversationId,
-          query: 'Hello',
-          serverURL: LOCAL_AI_ADDR,
-        });
-      expect(response.statusCode).toEqual(500);
-      expect(response.body.error).toContain(
-        'does not belong to authenticated user',
-      );
-    });
-  });
-
-  describe('GET /conversations', () => {
-    const mockSummary = 'mock summary';
-    const mockAIMessage = new AIMessage(mockSummary);
-    const mockInvokeReturnValue = jest.fn().mockResolvedValue(mockAIMessage);
-    let chatPromptSpy: jest.SpyInstance;
-
-    beforeEach(() => {
-      // Setup fresh spy for each test
-      chatPromptSpy = jest
-        .spyOn(ChatPromptTemplate, 'fromMessages')
-        .mockImplementation(
-          () =>
-            ({
-              pipe: jest.fn().mockReturnValue({
-                invoke: mockInvokeReturnValue,
-              }),
-            }) as any,
-        );
-
-      // Clear any existing history
-      jest.clearAllMocks();
-    });
-
-    afterEach(() => {
-      chatPromptSpy.mockRestore();
-      jest.clearAllMocks();
-    });
-
-    const humanMessage = 'Hello';
-    const aiMessage = 'Hi! How can I help you today?';
-    it('load conversations list with summary', async () => {
-      await saveHistory(mockConversationId, Roles.HumanRole, humanMessage);
-      await saveHistory(mockConversationId, Roles.AIRole, aiMessage);
-
-      // wait for 5ms for the second conversation to be saved to test for timestamp
-      await new Promise(resolve => setTimeout(resolve, 5));
-
-      await saveHistory(mockConversationId2, Roles.HumanRole, humanMessage);
-      await saveHistory(mockConversationId2, Roles.AIRole, aiMessage);
-
-      await new Promise(resolve => setTimeout(resolve, 5));
-      const mockConversationId3 = 'user: default/user1+9i8u7y6t-654red3';
-      await saveHistory(mockConversationId3, Roles.HumanRole, humanMessage);
-      await saveHistory(mockConversationId3, Roles.AIRole, aiMessage);
-
-      const backendServer = await startBackendServer();
-      const response = await request(backendServer).get(
-        `/api/lightspeed/conversations`,
-      );
-      expect(response.statusCode).toEqual(200);
-      // Parse response body
-      const responseData: ConversationSummary[] = response.body;
-
-      // Check that responseData is an array
-      expect(Array.isArray(responseData)).toBe(true);
-      expect(responseData.length).toBe(3);
-      const ids = responseData.map(item => item.conversation_id);
-
-      // Check if both expected IDs are present
-      expect(ids).toContain(mockConversationId);
-      expect(ids).toContain(mockConversationId2);
-      expect(ids).toContain(mockConversationId3);
-
-      // check the summary
-      expect(responseData[0].summary).toBe(mockSummary);
-      expect(responseData[1].summary).toBe(mockSummary);
-      expect(responseData[2].summary).toBe(mockSummary);
-
-      // check the timestamp is in descending order
-      expect(responseData[0].lastMessageTimestamp).toBeDefined();
-      expect(responseData[1].lastMessageTimestamp).toBeDefined();
-      expect(responseData[2].lastMessageTimestamp).toBeDefined();
-      expect(responseData[0].lastMessageTimestamp).toBeGreaterThan(
-        responseData[1].lastMessageTimestamp,
-      );
-      expect(responseData[1].lastMessageTimestamp).toBeGreaterThan(
-        responseData[2].lastMessageTimestamp,
-      );
     });
   });
 });

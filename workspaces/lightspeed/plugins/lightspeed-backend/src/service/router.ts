@@ -22,6 +22,8 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import fetch from 'node-fetch';
 
+// const fetch = (await import('node-fetch')).default;
+
 import {
   lightspeedConversationsCreatePermission,
   lightspeedConversationsDeletePermission,
@@ -36,6 +38,7 @@ import {
   QueryRequestBody,
   RouterOptions,
 } from './types';
+import { validateCompletionsRequest } from './validation';
 
 /**
  * @public
@@ -79,12 +82,10 @@ export async function createRouter(
     } catch (error) {
       if (error instanceof NotAllowedError) {
         logger.error(error.message);
-        res.status(403).json({ error: error.message });
+        return res.status(403).json({ error: error.message });
       }
     }
-    // let target = 'http://0.0.0.0:8080';
-    // if (req.path === '/models') {
-    // const target = `${config.getConfigArray('lightspeed.servers')[0].getString('url')}`;
+
     // For all other /v1/* requests, use the proxy to llm server
     const apiToken = config
       .getConfigArray('lightspeed.servers')[0]
@@ -126,7 +127,7 @@ export async function createRouter(
     } catch (error) {
       if (error instanceof NotAllowedError) {
         logger.error(error.message);
-        res.status(403).json({ error: error.message });
+        return res.status(403).json({ error: error.message });
       }
     }
     // Proxy middleware configuration
@@ -153,53 +154,69 @@ export async function createRouter(
     return apiProxy(req, res, next);
   });
 
-  router.post('/v1/query', async (request, response) => {
-    const {
-      conversation_id,
-      model,
-      query,
-      provider,
-      system_prompt,
-    }: QueryRequestBody = request.body;
-    try {
-      const credentials = await httpAuth.credentials(request);
-      const userEntity = await userInfo.getUserInfo(credentials);
-      const user_id = userEntity.userEntityRef;
+  router.post(
+    '/v1/query',
+    validateCompletionsRequest,
+    async (request, response) => {
+      const {
+        conversation_id,
+        model,
+        query,
+        provider,
+        system_prompt,
+      }: QueryRequestBody = request.body;
+      try {
+        const credentials = await httpAuth.credentials(request);
+        const userEntity = await userInfo.getUserInfo(credentials);
+        const user_id = userEntity.userEntityRef;
 
-      logger.info(`/v1/query receives call from user: ${user_id}`);
+        logger.info(`/v1/query receives call from user: ${user_id}`);
 
-      await authorizer.authorizeUser(
-        lightspeedConversationsCreatePermission,
-        credentials,
-      );
-      const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
-      if (!system_prompt) {
-        request.body.system_prompt = QUERY_SYSTEM_INSTRUCTION;
-      }
-      const fetchResponse = await fetch(
-        `http://0.0.0.0:8080/v1/streaming_query?${userQueryParam}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        await authorizer.authorizeUser(
+          lightspeedConversationsCreatePermission,
+          credentials,
+        );
+        const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
+        if (!system_prompt) {
+          request.body.system_prompt = QUERY_SYSTEM_INSTRUCTION;
+        }
+        const fetchResponse = await fetch(
+          `http://0.0.0.0:8080/v1/streaming_query?${userQueryParam}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(request.body), // directly pipe the original request body
           },
-          body: JSON.stringify(request.body), // directly pipe the original request body
-        },
-      );
+        );
 
-      // Pipe the response back to the original response
-      fetchResponse.body.pipe(response);
-    } catch (error) {
-      const errormsg = `Error fetching completions from ${provider}: ${error}`;
-      logger.error(errormsg);
+        if (!fetchResponse.ok) {
+          // Read the error body
+          const errorBody = await fetchResponse.json();
+          const errormsg = `Error from road-core server: ${errorBody.error?.message || 'Unknown error'}`;
+          logger.error(errormsg);
 
-      if (error instanceof NotAllowedError) {
-        response.status(403).json({ error: error.message });
-      } else {
-        response.status(500).json({ error: errormsg });
+          // Return a 500 status for any upstream error
+          response.status(500).json({
+            error: errormsg,
+          });
+        }
+
+        // Pipe the response back to the original response
+        fetchResponse.body.pipe(response);
+      } catch (error) {
+        const errormsg = `Error fetching completions from ${provider}: ${error}`;
+        logger.error(errormsg);
+
+        if (error instanceof NotAllowedError) {
+          response.status(403).json({ error: error.message });
+        } else {
+          response.status(500).json({ error: errormsg });
+        }
       }
-    }
-  });
+    },
+  );
 
   const middleware = MiddlewareFactory.create({ logger, config });
 
