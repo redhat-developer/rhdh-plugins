@@ -223,7 +223,7 @@ export const MarketplacePluginInstallContent = ({
       content: aboutMarkdown,
       key: 'about',
     },
-  ].filter(tab => tab !== undefined) as TabItem[];
+  ].filter(tab => tab) as TabItem[];
 
   const showRightCard = examples || installationInstructions || aboutMarkdown;
   const [tabIndex, setTabIndex] = useState(0);
