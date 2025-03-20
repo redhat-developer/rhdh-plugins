@@ -17,10 +17,9 @@
 import React, { useState } from 'react';
 
 import { ErrorPage, Progress } from '@backstage/core-components';
-import { useRouteRefParams } from '@backstage/core-plugin-api';
+import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 
 import yaml from 'yaml';
-import { useCopyToClipboard } from 'react-use';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -44,7 +43,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
-import { pluginInstallRouteRef } from '../routes';
+import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
 import { applyContent, getYamlContent } from '../utils';
@@ -55,15 +54,6 @@ import {
   useCodeEditor,
 } from './CodeEditor';
 import { Markdown } from './Markdown';
-
-const copyIconSvg = `
-  <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#6a6e73">
-    <g><rect fill="none" height="24" width="24"/></g>
-    <g>
-      <path d="M15,20H5V7c0-0.55-0.45-1-1-1h0C3.45,6,3,6.45,3,7v13c0,1.1,0.9,2,2,2h10c0.55,0,1-0.45,1-1v0C16,20.45,15.55,20,15,20z M20,16V4c0-1.1-0.9-2-2-2H9C7.9,2,7,2.9,7,4v12c0,1.1,0.9,2,2,2h9C19.1,18,20,17.1,20,16z M18,16H9V4h9V16z"/>
-    </g>
-  </svg>
-`;
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -107,6 +97,13 @@ const CheckboxList = ({ packages }: { packages: MarketplacePackage[] }) => {
     </FormGroup>
   );
 };
+
+interface TabItem {
+  label: string;
+  content: string | MarketplacePackageSpecAppConfigExample[];
+  key: string;
+  others?: { [key: string]: any };
+}
 
 interface TabPanelProps {
   markdownContent: string | MarketplacePackageSpecAppConfigExample[];
@@ -188,6 +185,12 @@ export const MarketplacePluginInstallContent = ({
   packages: MarketplacePackage[];
 }) => {
   const codeEditor = useCodeEditor();
+  const params = useRouteRefParams(pluginInstallRouteRef);
+
+  const pluginLink = useRouteRef(pluginRouteRef)({
+    namespace: params.namespace,
+    name: params.name,
+  });
 
   const onLoaded = React.useCallback(() => {
     const dynamicPluginYaml = {
@@ -199,66 +202,31 @@ export const MarketplacePluginInstallContent = ({
     codeEditor.setValue(yaml.stringify(dynamicPluginYaml));
   }, [codeEditor, packages]);
 
-  const showFullPlugin = React.useCallback(() => {
-    codeEditor.setValue(yaml.stringify(plugin));
-  }, [codeEditor, plugin]);
-
-  const [, copyToClipboard] = useCopyToClipboard();
-  const handleCopyToClipboard = React.useCallback(() => {
-    const value = codeEditor.getValue();
-    if (value) {
-      copyToClipboard(value);
-    }
-  }, [codeEditor, copyToClipboard]);
-
   const navigate = useNavigate();
-  const installationInstructions = plugin.spec?.installation;
   const examples = packages[0]?.spec?.appConfigExamples;
-  const showRightCard = installationInstructions || examples;
+  const installationInstructions = plugin.spec?.installation;
+  const aboutMarkdown = plugin.spec?.description;
+  const availableTabs = [
+    examples && {
+      label: 'Examples',
+      content: examples,
+      key: 'examples',
+      others: { packageName: packages[0].spec?.dynamicArtifact },
+    },
+    installationInstructions && {
+      label: 'Setting up the plugin',
+      content: installationInstructions,
+      key: 'installation',
+    },
+    aboutMarkdown && {
+      label: 'About the plugin',
+      content: aboutMarkdown,
+      key: 'about',
+    },
+  ].filter(tab => tab) as TabItem[];
+
+  const showRightCard = examples || installationInstructions || aboutMarkdown;
   const [tabIndex, setTabIndex] = useState(0);
-
-  React.useEffect(() => {
-    document.querySelectorAll('pre code').forEach(codeBlock => {
-      const pre = codeBlock.parentElement;
-
-      if (!pre) return;
-      if (pre.querySelector('.copy-button')) return;
-
-      const button = document.createElement('button');
-      button.className = 'copy-button';
-      Object.assign(button.style, {
-        position: 'absolute',
-        top: '8px',
-        right: '8px',
-        padding: '2px',
-        color: '#6a6e73',
-        cursor: 'pointer',
-        border: 'none',
-        background: 'transparent',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '24px',
-        height: '24px',
-      });
-
-      button.innerHTML = copyIconSvg;
-
-      button.addEventListener('click', () => {
-        window.navigator.clipboard
-          .writeText((codeBlock as HTMLElement).innerText)
-          .then(() => {
-            button.innerText = '✔';
-            setTimeout(() => {
-              button.innerHTML = copyIconSvg;
-            }, 2000);
-          });
-      });
-
-      pre.style.position = 'relative';
-      pre.appendChild(button);
-    });
-  }, [installationInstructions]);
 
   const handleTabChange = (_: any, newValue: React.SetStateAction<number>) => {
     setTabIndex(newValue);
@@ -364,12 +332,13 @@ export const MarketplacePluginInstallContent = ({
                     onChange={handleTabChange}
                     aria-label="Plugin tabs"
                   >
-                    {installationInstructions && (
+                    {availableTabs.map((tab, index) => (
                       <Tab
-                        label={`Setting up the ${plugin.metadata.name} plugin`}
+                        key={tab.key}
+                        value={index}
+                        label={tab.label ?? ''}
                       />
-                    )}
-                    {examples && <Tab label="Examples" />}
+                    ))}
                   </Tabs>
                 </Box>
                 <Box
@@ -380,23 +349,17 @@ export const MarketplacePluginInstallContent = ({
                     flexDirection: 'column',
                   }}
                 >
-                  {tabIndex === 0 && (
-                    <TabPanel
-                      value={tabIndex}
-                      index={0}
-                      markdownContent={installationInstructions ?? ''}
-                    />
-                  )}
-
-                  {tabIndex === 1 && (
-                    <TabPanel
-                      value={tabIndex}
-                      index={1}
-                      markdownContent={examples ?? ''}
-                      others={{
-                        packageName: packages[0].spec?.dynamicArtifact,
-                      }}
-                    />
+                  {availableTabs.map(
+                    (tab, index) =>
+                      tabIndex === index && (
+                        <TabPanel
+                          key={tab.key}
+                          value={tabIndex}
+                          index={index}
+                          markdownContent={tab.content ?? ''}
+                          others={tab.others}
+                        />
+                      ),
                   )}
                 </Box>
               </CardContent>
@@ -407,46 +370,32 @@ export const MarketplacePluginInstallContent = ({
 
       <Box
         sx={{
+          mt: 4,
           flexShrink: 0,
           backgroundColor: 'background.paper',
         }}
       >
-        <Box sx={{ mt: 1, mb: 2 }}>
+        <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
           <CheckboxList packages={packages} />
         </Box>
         <Button variant="contained" color="primary" disabled>
           Install
         </Button>
         <Button
-          variant="contained"
-          color="primary"
-          onClick={onLoaded}
-          sx={{ ml: 2 }}
-        >
-          Reset
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={showFullPlugin}
-          sx={{ mx: 2 }}
-        >
-          Show full plugin
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCopyToClipboard}
-        >
-          Copy
-        </Button>
-        <Button
           variant="outlined"
           color="primary"
           sx={{ ml: 2 }}
-          onClick={() => navigate('/extensions/plugins')}
+          onClick={() => navigate(pluginLink)}
         >
           Cancel
+        </Button>
+        <Button
+          variant="text"
+          color="primary"
+          onClick={onLoaded}
+          sx={{ ml: 3 }}
+        >
+          Reset
         </Button>
       </Box>
     </Box>
