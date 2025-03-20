@@ -153,7 +153,7 @@ const getPackagesOfType = (
         : '(no version)';
 
       if (types.includes(pkg?.spec?.backstage?.role || '')) {
-        return `${pkg.metadata.name}${version}`;
+        return `${pkg.spec?.packageName} ${version}`;
       }
 
       return '';
