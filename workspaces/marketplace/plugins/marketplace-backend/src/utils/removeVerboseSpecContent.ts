@@ -16,7 +16,7 @@
 
 import { Entity } from '@backstage/catalog-model';
 
-const specFields = ['appConfigExamples', 'description', 'installation'];
+const specFields = ['description', 'installation'];
 
 export const removeVerboseSpecContent = (entities: Entity[]) => {
   entities.forEach(entity => {
