@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 import { WorkflowExecutionResponse } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -192,26 +193,6 @@ describe('SonataFlowService', () => {
       expect(loggerMock.child).not.toHaveBeenCalled();
     });
 
-    it('should include businessKey in the URL if provided', async () => {
-      // Given
-      const businessKey = 'key-123';
-      setupTest({ ok: true, json: { id: definitionId, status: 'completed' } });
-
-      // When
-      const result = await sonataFlowService.executeWorkflow({
-        definitionId,
-        serviceUrl,
-        inputData,
-        businessKey,
-      });
-
-      // Then
-      expect(fetch).toHaveBeenCalledWith(
-        `${serviceUrl}/${definitionId}?businessKey=${businessKey}`,
-        expectedFetchRequestInit(),
-      );
-      expect(result).toEqual({ id: definitionId, status: 'completed' });
-    });
     it('should propagate thrown error when the fetch response is not ok without extra info', async () => {
       // When
       setupTest({

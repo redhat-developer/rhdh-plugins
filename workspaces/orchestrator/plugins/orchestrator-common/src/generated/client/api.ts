@@ -73,6 +73,12 @@ export interface ExecuteWorkflowRequestDTO {
      * @memberof ExecuteWorkflowRequestDTO
      */
     'inputData'?: object;
+    /**
+     * 
+     * @type {string}
+     * @memberof ExecuteWorkflowRequestDTO
+     */
+    'orchestratorAssessmentInstanceId'?: string;
 }
 /**
  * 
@@ -137,7 +143,7 @@ export type FieldFilterValue = any | boolean | number | string;
  * @type Filter
  * @export
  */
-export type Filter = FieldFilter | LogicalFilter;
+export type Filter = FieldFilter | LogicalFilter | NestedFilter;
 
 /**
  * 
@@ -204,6 +210,31 @@ export const LogicalFilterOperatorEnum = {
 } as const;
 
 export type LogicalFilterOperatorEnum = typeof LogicalFilterOperatorEnum[keyof typeof LogicalFilterOperatorEnum];
+
+/**
+ * 
+ * @export
+ * @interface NestedFilter
+ */
+export interface NestedFilter {
+    /**
+     * 
+     * @type {string}
+     * @memberof NestedFilter
+     */
+    'field': string;
+    /**
+     * 
+     * @type {NestedFilterNested}
+     * @memberof NestedFilter
+     */
+    'nested': NestedFilterNested;
+}
+/**
+ * @type NestedFilterNested
+ * @export
+ */
+export type NestedFilterNested = FieldFilter | NestedFilter;
 
 /**
  * 
@@ -382,7 +413,7 @@ export interface ProcessInstanceDTO {
      * @type {string}
      * @memberof ProcessInstanceDTO
      */
-    'businessKey'?: string;
+    'assessmentInstanceId'?: string;
     /**
      * 
      * @type {Array<NodeInstanceDTO>}
@@ -885,11 +916,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @summary Execute a workflow
          * @param {string} workflowId ID of the workflow to execute
          * @param {ExecuteWorkflowRequestDTO} executeWorkflowRequestDTO 
-         * @param {string} [businessKey] ID of the parent workflow
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        executeWorkflow: async (workflowId: string, executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO, businessKey?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        executeWorkflow: async (workflowId: string, executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workflowId' is not null or undefined
             assertParamExists('executeWorkflow', 'workflowId', workflowId)
             // verify required parameter 'executeWorkflowRequestDTO' is not null or undefined
@@ -906,10 +936,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
-
-            if (businessKey !== undefined) {
-                localVarQueryParameter['businessKey'] = businessKey;
-            }
 
 
     
@@ -1269,12 +1295,11 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @summary Execute a workflow
          * @param {string} workflowId ID of the workflow to execute
          * @param {ExecuteWorkflowRequestDTO} executeWorkflowRequestDTO 
-         * @param {string} [businessKey] ID of the parent workflow
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async executeWorkflow(workflowId: string, executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO, businessKey?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ExecuteWorkflowResponseDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.executeWorkflow(workflowId, executeWorkflowRequestDTO, businessKey, options);
+        async executeWorkflow(workflowId: string, executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ExecuteWorkflowResponseDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.executeWorkflow(workflowId, executeWorkflowRequestDTO, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.executeWorkflow']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1420,12 +1445,11 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @summary Execute a workflow
          * @param {string} workflowId ID of the workflow to execute
          * @param {ExecuteWorkflowRequestDTO} executeWorkflowRequestDTO 
-         * @param {string} [businessKey] ID of the parent workflow
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        executeWorkflow(workflowId: string, executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO, businessKey?: string, options?: any): AxiosPromise<ExecuteWorkflowResponseDTO> {
-            return localVarFp.executeWorkflow(workflowId, executeWorkflowRequestDTO, businessKey, options).then((request) => request(axios, basePath));
+        executeWorkflow(workflowId: string, executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO, options?: any): AxiosPromise<ExecuteWorkflowResponseDTO> {
+            return localVarFp.executeWorkflow(workflowId, executeWorkflowRequestDTO, options).then((request) => request(axios, basePath));
         },
         /**
          * Get a workflow execution/run (instance)
@@ -1543,13 +1567,12 @@ export class DefaultApi extends BaseAPI {
      * @summary Execute a workflow
      * @param {string} workflowId ID of the workflow to execute
      * @param {ExecuteWorkflowRequestDTO} executeWorkflowRequestDTO 
-     * @param {string} [businessKey] ID of the parent workflow
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public executeWorkflow(workflowId: string, executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO, businessKey?: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).executeWorkflow(workflowId, executeWorkflowRequestDTO, businessKey, options).then((request) => request(this.axios, this.basePath));
+    public executeWorkflow(workflowId: string, executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).executeWorkflow(workflowId, executeWorkflowRequestDTO, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

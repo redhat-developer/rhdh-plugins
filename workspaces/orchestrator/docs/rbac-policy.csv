@@ -8,6 +8,7 @@ p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, update, allow
 p, role:default/workflowAdmin, orchestrator.workflow, read, allow
 p, role:default/workflowAdmin, orchestrator.workflow.use, update, allow
 p, role:default/workflowAdmin, orchestrator.workflowAdminView, read, allow
+p, role:default/workflowAdmin, orchestrator.instancesAdminView, read, allow 
 
 g, user:development/guest, role:default/workflowUser
 g, user:default/rgolangh, role:default/workflowAdmin
