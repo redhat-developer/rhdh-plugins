@@ -32,7 +32,6 @@ interface SearchBarProps {
   query: SearchResultProps['query'];
   setSearchTerm: (term: string) => void;
 }
-
 export const SearchBar = (props: SearchBarProps) => {
   const { query, setSearchTerm } = props;
   const navigate = useNavigate();

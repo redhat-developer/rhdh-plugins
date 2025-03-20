@@ -50,11 +50,12 @@ export const SearchResultItem = ({
       <ListItem
         {...renderProps}
         sx={{ py: 1 }}
-        onClick={() => {
+        onClick={e => {
           analytics.captureEvent('discover', result?.document.title ?? '', {
             attributes: { to: result?.document.location ?? '#' },
             value: result?.rank,
           });
+          renderProps?.onClick?.(e);
         }}
       >
         <Typography sx={{ color: 'text.primary', flexGrow: 1 }}>
