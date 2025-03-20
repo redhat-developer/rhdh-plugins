@@ -18,6 +18,9 @@ import { Pair, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
 import { JsonObject } from '@backstage/types';
 
 export const getYamlContent = (content: JsonObject) => {
+  if (!content || Object.entries(content).length === 0) {
+    return '';
+  }
   const yamlString = stringify(content);
   return `\`\`\`yaml\n${yamlString}\n\`\`\``;
 };
