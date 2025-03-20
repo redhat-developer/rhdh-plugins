@@ -44,7 +44,10 @@ import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
 import { permissionCheck } from '../helpers';
-import { auditCreateEvent } from '../helpers/auditorUtils';
+import {
+  auditCreateEvent,
+  UNKNOWN_ENDPOINT_EVENT,
+} from '../helpers/auditorUtils';
 import {
   createImportJobs,
   deleteImportByRepo,
@@ -128,109 +131,154 @@ export async function createRouter(
 
   await api.init();
 
-  api.register('ping', async (_c: Context, _req: Request, res: Response) => {
+  api.register('ping', async (_c: Context, req: Request, res: Response) => {
+    const auditorEvent = await auditCreateEvent(auditor, 'ping', req);
     const result = await ping(logger);
+    await auditorEvent.success({ meta: { responseStatus: res.statusCode } });
     return res.status(result.statusCode).json(result.responseBody);
   });
 
   api.register(
     'findAllOrganizations',
-    async (c: Context, _req: Request, res: Response) => {
+    async (c: Context, req: Request, res: Response) => {
       const q: Paths.FindAllOrganizations.QueryParameters = {
         ...c.request.query,
       };
-      // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
-      q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
-      q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
-      const response = await findAllOrganizations(
-        logger,
-        githubApiService,
-        q.search,
-        q.pagePerIntegration,
-        q.sizePerIntegration,
-      );
-      return res.status(response.statusCode).json({
-        errors: response.responseBody?.errors,
-        organizations: response.responseBody?.organizations,
-        totalCount: response.responseBody?.totalCount,
-        pagePerIntegration: response.responseBody?.pagePerIntegration,
-        sizePerIntegration: response.responseBody?.sizePerIntegration,
-      } as Components.Schemas.OrganizationList);
+      const auditorEvent = await auditCreateEvent(auditor, 'org-fetch', req, {
+        queryType: q.search ? 'by-query' : 'all',
+        search: q.search,
+      });
+
+      try {
+        // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
+        q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
+        q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
+        const response = await findAllOrganizations(
+          logger,
+          githubApiService,
+          q.search,
+          q.pagePerIntegration,
+          q.sizePerIntegration,
+        );
+
+        await auditorEvent.success({
+          meta: { responseStatus: response.statusCode },
+        });
+
+        return res.status(response.statusCode).json({
+          errors: response.responseBody?.errors,
+          organizations: response.responseBody?.organizations,
+          totalCount: response.responseBody?.totalCount,
+          pagePerIntegration: response.responseBody?.pagePerIntegration,
+          sizePerIntegration: response.responseBody?.sizePerIntegration,
+        } as Components.Schemas.OrganizationList);
+      } catch (err: any) {
+        await auditorEvent.fail({ error: err, meta: { responseStatus: 500 } });
+        throw err;
+      }
     },
   );
 
   api.register(
     'findAllRepositories',
-    async (c: Context, _req: Request, res: Response) => {
+    async (c: Context, req: Request, res: Response) => {
       const q: Paths.FindAllRepositories.QueryParameters = {
         ...c.request.query,
       };
-      // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
-      q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
-      q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
-      q.checkImportStatus = stringToBoolean(q.checkImportStatus);
-      const response = await findAllRepositories(
-        {
-          logger,
-          config,
-          githubApiService,
-          catalogHttpClient,
-        },
-        {
-          search: q.search,
-          checkStatus: q.checkImportStatus,
-          pageNumber: q.pagePerIntegration,
-          pageSize: q.sizePerIntegration,
-        },
-      );
-      const repos = response.responseBody?.repositories;
-      return res.status(response.statusCode).json({
-        errors: response.responseBody?.errors,
-        repositories: repos,
-        totalCount: response.responseBody?.totalCount,
-        pagePerIntegration: q.pagePerIntegration,
-        sizePerIntegration: q.sizePerIntegration,
-      } as Components.Schemas.RepositoryList);
+      const auditorEvent = await auditCreateEvent(auditor, 'repo-fetch', req, {
+        queryType: q.search ? 'by-query' : 'all',
+        search: q.search,
+      });
+      try {
+        // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
+        q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
+        q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
+        q.checkImportStatus = stringToBoolean(q.checkImportStatus);
+        const response = await findAllRepositories(
+          {
+            logger,
+            config,
+            githubApiService,
+            catalogHttpClient,
+          },
+          {
+            search: q.search,
+            checkStatus: q.checkImportStatus,
+            pageNumber: q.pagePerIntegration,
+            pageSize: q.sizePerIntegration,
+          },
+        );
+        const repos = response.responseBody?.repositories;
+
+        await auditorEvent.success({
+          meta: { responseStatus: response.statusCode },
+        });
+
+        return res.status(response.statusCode).json({
+          errors: response.responseBody?.errors,
+          repositories: repos,
+          totalCount: response.responseBody?.totalCount,
+          pagePerIntegration: q.pagePerIntegration,
+          sizePerIntegration: q.sizePerIntegration,
+        } as Components.Schemas.RepositoryList);
+      } catch (err) {
+        await auditorEvent.fail({ error: err, meta: { responseStatus: 500 } });
+        throw err;
+      }
     },
   );
 
   api.register(
     'findRepositoriesByOrganization',
-    async (c: Context, _req: Request, res: Response) => {
+    async (c: Context, req: Request, res: Response) => {
       const q: Paths.FindRepositoriesByOrganization.QueryParameters = {
         ...c.request.query,
       };
-      // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
-      q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
-      q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
-      q.checkImportStatus = stringToBoolean(q.checkImportStatus);
-      const response = await findRepositoriesByOrganization(
-        {
-          logger,
-          config,
-          githubApiService,
-          catalogHttpClient,
-        },
-        c.request.params.organizationName?.toString(),
-        q.search,
-        q.checkImportStatus,
-        q.pagePerIntegration,
-        q.sizePerIntegration,
-      );
-      const repos = response.responseBody?.repositories;
-      return res.status(response.statusCode).json({
-        errors: response.responseBody?.errors,
-        repositories: repos,
-        totalCount: response.responseBody?.totalCount,
-        pagePerIntegration: q.pagePerIntegration,
-        sizePerIntegration: q.sizePerIntegration,
-      } as Components.Schemas.RepositoryList);
+      const auditorEvent = await auditCreateEvent(auditor, 'repo-fetch', req, {
+        queryType: 'by-org',
+        organizationName: c.request.params.organizationName?.toString(),
+      });
+      try {
+        // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
+        q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
+        q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
+        q.checkImportStatus = stringToBoolean(q.checkImportStatus);
+        const response = await findRepositoriesByOrganization(
+          {
+            logger,
+            config,
+            githubApiService,
+            catalogHttpClient,
+          },
+          c.request.params.organizationName?.toString(),
+          q.search,
+          q.checkImportStatus,
+          q.pagePerIntegration,
+          q.sizePerIntegration,
+        );
+        const repos = response.responseBody?.repositories;
+
+        await auditorEvent.success({
+          meta: { responseStatus: response.statusCode },
+        });
+
+        return res.status(response.statusCode).json({
+          errors: response.responseBody?.errors,
+          repositories: repos,
+          totalCount: response.responseBody?.totalCount,
+          pagePerIntegration: q.pagePerIntegration,
+          sizePerIntegration: q.sizePerIntegration,
+        } as Components.Schemas.RepositoryList);
+      } catch (err) {
+        await auditorEvent.fail({ error: err, meta: { responseStatus: 500 } });
+        throw err;
+      }
     },
   );
 
   api.register(
     'findAllImports',
-    async (c: Context, _req: Request, res: Response) => {
+    async (c: Context, req: Request, res: Response) => {
       const h: Paths.FindAllImports.HeaderParameters = {
         ...c.request.headers,
       };
@@ -238,37 +286,56 @@ export async function createRouter(
       const q: Paths.FindAllImports.QueryParameters = {
         ...c.request.query,
       };
-      // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
-      let page: number | undefined;
-      let size: number | undefined;
-      if (apiVersion === undefined || apiVersion === 'v1') {
-        // pagePerIntegration and sizePerIntegration deprecated in v1. 'page' and 'size' take precedence.
-        page = stringToNumber(q.page || q.pagePerIntegration);
-        size = stringToNumber(q.size || q.sizePerIntegration);
-      } else {
-        // pagePerIntegration and sizePerIntegration removed in v2+ and replaced by 'page' and 'size'.
-        page = stringToNumber(q.page);
-        size = stringToNumber(q.size);
-      }
-      const response = await findAllImports(
+      const auditorEvent = await auditCreateEvent(
+        auditor,
+        'import-fetch',
+        req,
         {
-          logger,
-          config,
-          githubApiService,
-          catalogHttpClient,
-        },
-        {
-          apiVersion,
-        },
-        {
+          queryType: q.search ? 'by-query' : 'all',
           search: q.search,
-          pageNumber: page,
-          pageSize: size,
-          sortColumn: q.sortColumn,
-          sortOrder: q.sortOrder,
         },
       );
-      return res.status(response.statusCode).json(response.responseBody);
+      try {
+        // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
+        let page: number | undefined;
+        let size: number | undefined;
+        if (apiVersion === undefined || apiVersion === 'v1') {
+          // pagePerIntegration and sizePerIntegration deprecated in v1. 'page' and 'size' take precedence.
+          page = stringToNumber(q.page || q.pagePerIntegration);
+          size = stringToNumber(q.size || q.sizePerIntegration);
+        } else {
+          // pagePerIntegration and sizePerIntegration removed in v2+ and replaced by 'page' and 'size'.
+          page = stringToNumber(q.page);
+          size = stringToNumber(q.size);
+        }
+        const response = await findAllImports(
+          {
+            logger,
+            config,
+            githubApiService,
+            catalogHttpClient,
+          },
+          {
+            apiVersion,
+          },
+          {
+            search: q.search,
+            pageNumber: page,
+            pageSize: size,
+            sortColumn: q.sortColumn,
+            sortOrder: q.sortOrder,
+          },
+        );
+
+        await auditorEvent.success({
+          meta: { responseStatus: response.statusCode },
+        });
+
+        return res.status(response.statusCode).json(response.responseBody);
+      } catch (err) {
+        await auditorEvent.fail({ error: err, meta: { responseStatus: 500 } });
+        throw err;
+      }
     },
   );
 
@@ -276,76 +343,139 @@ export async function createRouter(
     'createImportJobs',
     async (
       c: Context<Paths.CreateImportJobs.RequestBody>,
-      _req: Request,
+      req: Request,
       res: Response,
     ) => {
       const q: Paths.CreateImportJobs.QueryParameters = {
         ...c.request.query,
       };
       q.dryRun = stringToBoolean(q.dryRun);
-      const response = await createImportJobs(
+      const auditorEvent = await auditCreateEvent(
+        auditor,
+        'import-mutate',
+        req,
         {
-          logger,
-          config,
-          auth,
-          catalogApi,
-          githubApiService,
-          catalogInfoGenerator,
-          catalogHttpClient,
-        },
-        {
-          importRequests: c.request.requestBody,
+          actionType: 'create',
           dryRun: q.dryRun,
         },
       );
-      return res.status(response.statusCode).json(response.responseBody);
+      try {
+        const response = await createImportJobs(
+          {
+            logger,
+            config,
+            auth,
+            catalogApi,
+            githubApiService,
+            catalogInfoGenerator,
+            catalogHttpClient,
+          },
+          {
+            importRequests: c.request.requestBody,
+            dryRun: q.dryRun,
+          },
+        );
+
+        await auditorEvent.success({
+          meta: { responseStatus: response.statusCode },
+        });
+
+        return res.status(response.statusCode).json(response.responseBody);
+      } catch (err) {
+        await auditorEvent.fail({
+          error: err,
+          meta: { actionType: 'create', responseStatus: 500 },
+        });
+        throw err;
+      }
     },
   );
 
   api.register(
     'findImportStatusByRepo',
-    async (c: Context, _req: Request, res: Response) => {
+    async (c: Context, req: Request, res: Response) => {
       const q: Paths.FindImportStatusByRepo.QueryParameters = {
         ...c.request.query,
       };
-      if (!q.repo?.trim()) {
-        throw new Error('missing or blank parameter');
-      }
-      const response = await findImportStatusByRepo(
+      const auditorEvent = await auditCreateEvent(
+        auditor,
+        'import-status-fetch',
+        req,
         {
-          logger,
-          config,
-          githubApiService,
-          catalogHttpClient,
+          queryType: 'by-query',
+          repo: q.repo,
         },
-        q.repo,
-        q.defaultBranch,
-        true,
       );
-      return res.status(response.statusCode).json(response.responseBody);
+      try {
+        if (!q.repo?.trim()) {
+          throw new Error('missing or blank parameter');
+        }
+        const response = await findImportStatusByRepo(
+          {
+            logger,
+            config,
+            githubApiService,
+            catalogHttpClient,
+          },
+          q.repo,
+          q.defaultBranch,
+          true,
+        );
+
+        await auditorEvent.success({
+          meta: { responseStatus: response.statusCode },
+        });
+
+        return res.status(response.statusCode).json(response.responseBody);
+      } catch (err) {
+        await auditorEvent.fail({ error: err, meta: { responseStatus: 500 } });
+        throw err;
+      }
     },
   );
 
   api.register(
     'deleteImportByRepo',
-    async (c: Context, _req: Request, res: Response) => {
+    async (c: Context, req: Request, res: Response) => {
       const q: Paths.DeleteImportByRepo.QueryParameters = {
         ...c.request.query,
       };
-      if (!q.repo?.trim()) {
-        throw new Error('missing or blank "repo" parameter');
-      }
-      const response = await deleteImportByRepo(
+      const auditorEvent = await auditCreateEvent(
+        auditor,
+        'import-mutate',
+        req,
         {
-          logger,
-          config,
-          githubApiService,
-          catalogHttpClient,
+          actionType: 'delete',
+          repository: q.repo,
         },
-        q.repo,
-        q.defaultBranch,
       );
-      return res.status(response.statusCode).json(response.responseBody);
+      try {
+        if (!q.repo?.trim()) {
+          throw new Error('missing or blank "repo" parameter');
+        }
+        const response = await deleteImportByRepo(
+          {
+            logger,
+            config,
+            githubApiService,
+            catalogHttpClient,
+          },
+          q.repo,
+          q.defaultBranch,
+        );
+
+        await auditorEvent.success({
+          meta: { responseStatus: response.statusCode },
+        });
+
+        return res.status(response.statusCode).json(response.responseBody);
+      } catch (err) {
+        await auditorEvent.fail({
+          error: err,
+          meta: { actionType: 'delete', responseStatus: 500 },
+        });
+        throw err;
+      }
     },
   );
 
@@ -373,15 +503,21 @@ export async function createRouter(
   router.use(async (req, res, next) => {
     const reqCast = req as OpenAPIRequest;
     const operationId = api.matchOperation(reqCast)?.operationId;
-    const auditorEvent = await auditCreateEvent(auditor, operationId, req);
+    let auditorEvent;
+    if (!operationId) {
+      auditorEvent = await auditCreateEvent(
+        auditor,
+        UNKNOWN_ENDPOINT_EVENT,
+        req,
+      );
+    }
+
     try {
       const response = (await api.handleRequest(reqCast, req, res)) as Response;
-      await auditorEvent.success({
-        meta: { responseStatus: response.statusCode },
-      });
+      auditorEvent?.success({ meta: { responseStatus: response.statusCode } });
       next();
     } catch (err: any) {
-      await auditorEvent.fail({ error: err, meta: { responseStatus: 500 } });
+      auditorEvent?.fail({ error: err, meta: { responseStatus: 500 } });
       next(err);
     }
   });

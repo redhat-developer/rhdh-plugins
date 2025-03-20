@@ -91,30 +91,54 @@ backend.add(import('@backstage/plugin-permission-backend/alpha'));
 
 ### Audit Logging
 
-Audit logging is backed by the [`@backstage/backend-plugin-api`](https://www.npmjs.com/package/@backstage/backend-plugin-api) package. The Bulk Import Backend plugin adds the following events to the backend audit logs:
+Audit logging is backed by the [`@backstage/backend-plugin-api`](https://www.npmjs.com/package/@backstage/backend-plugin-api) package.
+The Bulk Import Backend plugin emits audit events for various operations. Events are grouped logically by `eventId`.
 
-- **unknown-endpoint**: tracks requests to unknown endpoints.
+**Bulk import Events:**
 
-- **ping**: tracks `GET` requests to the `/ping` endpoint, which allows to make sure the bulk import backend is up and running.
+- **`unknown-endpoint`**: tracks requests to unknown endpoints.
 
-- **find-all-organizations**: tracks `GET` requests to the `/organizations` endpoint, which returns the list of organizations accessible from all configured GitHub Integrations.
+- **`ping`**: tracks `GET` requests to the `/ping` endpoint, which allows to make sure the bulk import backend is up and running.
 
-- **find-repositories-by-organization**: tracks `GET` requests to the `/organizations/:orgName/repositories` endpoint, which returns the list of repositories for the specified organization (accessible from any of the configured GitHub Integrations).
+- **`org-fetch`**: tracks `GET` requests to the `/organizations` endpoint, which returns the list of organizations accessible from all configured GitHub Integrations.
 
-- **find-all-repositories**: tracks `GET` requests to the `/repositories` endpoint, which returns the list of repositories accessible from all configured GitHub Integrations.
+Filter on `queryType`.
 
-- **find-all-imports**: tracks `GET` requests to the `/imports` endpoint, which returns the list of existing import jobs along with their statuses.
+- **`all`**: tracks fetching all organizations. (GET `/organizations`)
+- **`by-query`**: tracks fetching organization filtered by the query parameter 'search'. (GET `/organizations`)
 
-- **create-import-jobs**: tracks `POST` requests to the `/imports` endpoint, which allows to submit requests to bulk-import one or many repositories into the Backstage Catalog, by eventually creating import Pull Requests in the target repositories.
+- **`repo-fetch`**: tracks `GET` requests to the endpoint, which returns the list of repositories accessible from all configured GitHub Integrations.
 
-- **find-import-status-by-repo**: tracks `GET` requests to the `/import/by-repo` endpoint, which fetches details about the import job for the specified repository.
+Filter on `queryType`.
 
-- **delete-import-by-repo**: tracks `DELETE` requests to the `/import/by-repo` endpoint, which deletes any existing import job for the specified repository, by closing any open import Pull Request that could have been created.
+- **`all`**: tracks fetching a list of all repositories accessible by Backstage Github Integrations. (GET `/repositories`)
+- **`by-query`**: tracks fetching a list of repositories filtered by the query parameter 'search'. (GET `/repositories`)
+- **`by-org`**: tracks `GET` requests to the `/organizations/:orgName/repositories` endpoint, which returns the list of repositories for the specified organization (accessible from any of the configured GitHub Integrations)
+
+- **`import-fetch`**: tracks `GET` requests to the `/imports` endpoint, which returns the list of existing import jobs along with their statuses.
+
+Filter on `queryType`.
+
+- **`all`**: tracks fetching all imports.
+- **`by-query`**: tracks fetching imports filtered by the query parameter 'search'.
+
+- **`import-status-fetch`**: tracks `GET` requests to the `/import/by-repo` endpoint, which fetches details about the import job for the specified repository.
+
+Filter on `queryType`.
+
+- **`by-query`**: tracks fetching import status filtered by the query parameter 'repo'. (GET `/import/by-repo`).
+
+- **`import-mutate`** tracks events about midification imports.
+
+Filter on `actionType`.
+
+- **`create`**: tracks creating import job. Event submitted on `POST` `/imports`, which allows to submit requests to bulk-import one or many repositories into the Backstage Catalog, by eventually creating import Pull Requests in the target repositories.
+- **`delete`**: tracks deleting import by query parameter 'repo'. Event submitted on `DELETE` `/import/by-repo` requests, which deletes any existing import job for the specified repository, by closing any open import Pull Request that could have been created.
 
 Example:
 
 ```text
-YN0000: [backend]: 2025-03-12T14:48:21.524Z bulk-import info bulk-import.find-all-organizations isAuditEvent=true eventId="find-all-organizations" severityLevel="medium" actor={"actorId":"user:default/some-user","ip":"::1","hostname":"localhost","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"} request={"url":"/api/bulk-import/organizations?pagePerIntegration=1&sizePerIntegration=5&search=","method":"GET"} meta={"responseStatus":304} status="succeeded"
+➤ YN0000: [backend]: 2025-03-20T17:12:34.754Z bulk-import info bulk-import.org-fetch isAuditEvent=true eventId="org-fetch" severityLevel="medium" actor={"ip":"::1","hostname":"localhost","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"} request={"url":"/api/bulk-import/organizations?pagePerIntegration=1&sizePerIntegration=5&search=","method":"GET"} meta={"queryType":"all","search":"redhat-developer","responseStatus":200} status="succeeded"
 ```
 
 ## For Users

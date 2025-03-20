@@ -18,27 +18,23 @@ import type {
   AuditorService,
   AuditorServiceEvent,
 } from '@backstage/backend-plugin-api';
+import { JsonObject } from '@backstage/types';
 
 import express from 'express';
 import kebabCase from 'just-kebab-case';
 
-const UNKNOWN_ENDPOINT_EVENT = `unknown-endpoint`;
+export const UNKNOWN_ENDPOINT_EVENT = `unknown-endpoint`;
 
 export async function auditCreateEvent(
   auditor: AuditorService,
-  openApiOperationId: string | undefined,
+  eventId: string,
   req: express.Request,
+  meta?: JsonObject,
 ): Promise<AuditorServiceEvent> {
-  if (!openApiOperationId) {
-    return await auditor.createEvent({
-      eventId: UNKNOWN_ENDPOINT_EVENT,
-      severityLevel: 'medium',
-      request: req,
-    });
-  }
   return await auditor.createEvent({
-    eventId: kebabCase(openApiOperationId),
+    eventId: kebabCase(eventId),
     severityLevel: 'medium',
     request: req,
+    meta,
   });
 }
