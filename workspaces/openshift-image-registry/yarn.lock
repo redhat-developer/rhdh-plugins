@@ -5243,16 +5243,16 @@ __metadata:
   linkType: hard
 
 "@backstage/repo-tools@npm:^0.13.0":
-  version: 0.13.1
-  resolution: "@backstage/repo-tools@npm:0.13.1"
+  version: 0.13.0
+  resolution: "@backstage/repo-tools@npm:0.13.0"
   dependencies:
     "@apidevtools/swagger-parser": ^10.1.0
     "@apisyouwonthate/style-guide": ^1.4.0
-    "@backstage/backend-plugin-api": ^1.2.1
+    "@backstage/backend-plugin-api": ^1.2.0
     "@backstage/catalog-model": ^1.7.3
     "@backstage/cli-common": ^0.1.15
     "@backstage/cli-node": ^0.2.13
-    "@backstage/config-loader": ^1.10.0
+    "@backstage/config-loader": ^1.9.6
     "@backstage/errors": ^1.2.7
     "@electric-sql/pglite": ^0.2.15
     "@manypkg/get-packages": ^1.1.3
@@ -5302,7 +5302,7 @@ __metadata:
       optional: true
   bin:
     backstage-repo-tools: bin/backstage-repo-tools
-  checksum: b3add230d480d0dbcee39c5378b2c9a925cb8e6130e23abfe780c1b5c28f525b6f4051d63fb29daef797ab580aaab43168e22d9f96f629e8efb3d6dbfebd441c
+  checksum: c459212b0b33e247435ce3c485f8dd76a58e848e47ef2a815d75d594dda5930d83c6303a8ccddcacf5e937e4a43c9da39aad752c2303309390b4b997392d5bb9
   languageName: node
   linkType: hard
 
@@ -20536,11 +20536,11 @@ __metadata:
   linkType: hard
 
 "fastq@npm:^1.15.0, fastq@npm:^1.6.0":
-  version: 1.19.1
-  resolution: "fastq@npm:1.19.1"
+  version: 1.19.0
+  resolution: "fastq@npm:1.19.0"
   dependencies:
     reusify: ^1.0.4
-  checksum: 7691d1794fb84ad0ec2a185f10e00f0e1713b894e2c9c4d42f0bc0ba5f8c00e6e655a202074ca0b91b9c3d977aab7c30c41a8dc069fb5368576ac0054870a0e6
+  checksum: c9203c9e485f5d1c5243e8807b15054533338242af632817f8d65bed6e46488e5b27cea75dfc110cc4c029137381e4d650449428bc42cc8712180f27a6bace9f
   languageName: node
   linkType: hard
 
@@ -24751,8 +24751,8 @@ __metadata:
   linkType: hard
 
 "knip@npm:^5.27.4, knip@npm:^5.42.0":
-  version: 5.46.0
-  resolution: "knip@npm:5.46.0"
+  version: 5.44.4
+  resolution: "knip@npm:5.44.4"
   dependencies:
     "@nodelib/fs.walk": 3.0.1
     "@snyk/github-codeowners": 1.1.0
@@ -24776,7 +24776,7 @@ __metadata:
   bin:
     knip: bin/knip.js
     knip-bun: bin/knip-bun.js
-  checksum: 308e36787829e44e2cd32623deb8c88721e1eede300c4946a36f58065ba99b519c547202877d6c3d00d068bbeb0a0de8a63ecd5b09057670a6260a5fd82ca6ab
+  checksum: ca83a4fd16c0a9968e7e6c712361262edd83663c6eff76cdc271bf4fb147aa6aba6d22bbdc401cb065669b8e97181343ca158808460f98cec7a5790417df1bc1
   languageName: node
   linkType: hard
 
