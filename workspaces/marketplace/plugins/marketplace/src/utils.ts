@@ -45,9 +45,11 @@ export const applyContent = (
         );
 
         if (pluginPackage) {
-          const formatContent = newContent
-            .replace(/^```yaml\s+/, '')
-            .replace(/[ \t\r\n\f\v]*```$/, '');
+          let formatContent = newContent.replace(/^```yaml\s+/, '');
+
+          if (/\s*```$/.test(formatContent)) {
+            formatContent = formatContent.replace(/```$/, '').trimEnd();
+          }
           plugin.set('pluginConfig', formatContent);
         }
       }
