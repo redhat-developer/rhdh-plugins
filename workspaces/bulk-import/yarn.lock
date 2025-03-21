@@ -7191,15 +7191,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/backstage-plugin-audit-log-node@npm:^1.7.1":
-  version: 1.7.1
-  resolution: "@janus-idp/backstage-plugin-audit-log-node@npm:1.7.1"
-  dependencies:
-    lodash: ^4.17.21
-  checksum: 1d8861a8bdb88aabfd39493077f360d505dc110b310f079d64fc48f1896037afe0b7f991f9541f02437f6011d1e45ddaf42f7d9e8698c57a3e662687f2dd186a
-  languageName: node
-  linkType: hard
-
 "@janus-idp/shared-react@npm:^2.13.1":
   version: 2.13.1
   resolution: "@janus-idp/shared-react@npm:2.13.1"
@@ -10764,7 +10755,7 @@ __metadata:
     "@backstage/plugin-catalog-node": ^1.16.0
     "@backstage/plugin-permission-common": ^0.8.4
     "@backstage/plugin-permission-node": ^0.8.8
-    "@janus-idp/backstage-plugin-audit-log-node": ^1.7.1
+    "@backstage/types": ^1.2.1
     "@octokit/auth-app": ^6.0.3
     "@octokit/rest": ^20.0.2
     "@openapitools/openapi-generator-cli": 2.16.3
@@ -10779,6 +10770,7 @@ __metadata:
     git-url-parse: ^14.0.0
     js-yaml: ^4.1.0
     js-yaml-cli: 0.6.0
+    just-kebab-case: 4.2.0
     luxon: ^3.4.4
     msw: 1.3.5
     node-fetch: ^2.6.7
@@ -25168,6 +25160,13 @@ __metadata:
   version: 6.0.2
   resolution: "just-diff@npm:6.0.2"
   checksum: 1a0c7524f640cb88ab013862733e710f840927834208fd3b85cbc5da2ced97acc75e7dcfe493268ac6a6514c51dd8624d2fd9d057050efba3c02b81a6dcb7ff9
+  languageName: node
+  linkType: hard
+
+"just-kebab-case@npm:4.2.0":
+  version: 4.2.0
+  resolution: "just-kebab-case@npm:4.2.0"
+  checksum: 3f8b1041a56bfb7dd9d789ba4da8c244fa10775c7ed900440eb6c9002292caa3dbb6c88792907c830fea328db85a92ba2c302c31dbd740a58d81fd364423db4c
   languageName: node
   linkType: hard
 

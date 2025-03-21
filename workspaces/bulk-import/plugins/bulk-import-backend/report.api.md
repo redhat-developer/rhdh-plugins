@@ -4,6 +4,7 @@
 
 ```ts
 
+import type { AuditorService } from '@backstage/backend-plugin-api';
 import type { AuthService } from '@backstage/backend-plugin-api';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import type { CacheService } from '@backstage/backend-plugin-api';
@@ -24,6 +25,8 @@ export function createRouter(options: RouterOptions): Promise<express.Router>;
 
 // @public
 export interface RouterOptions {
+    // (undocumented)
+    auditor: AuditorService;
     // (undocumented)
     auth: AuthService;
     // (undocumented)
