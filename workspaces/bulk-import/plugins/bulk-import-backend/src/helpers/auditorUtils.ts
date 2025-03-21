@@ -23,16 +23,16 @@ import { JsonObject } from '@backstage/types';
 import express from 'express';
 import kebabCase from 'just-kebab-case';
 
-export const UNKNOWN_ENDPOINT_EVENT = `unknown-endpoint`;
+const UNKNOWN_ENDPOINT_EVENT = `unknown-endpoint`;
 
 export async function auditCreateEvent(
   auditor: AuditorService,
-  eventId: string,
+  eventId: string | undefined,
   req: express.Request,
   meta?: JsonObject,
 ): Promise<AuditorServiceEvent> {
   return await auditor.createEvent({
-    eventId: kebabCase(eventId),
+    eventId: eventId ? kebabCase(eventId) : UNKNOWN_ENDPOINT_EVENT,
     severityLevel: 'medium',
     request: req,
     meta,

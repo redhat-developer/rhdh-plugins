@@ -10755,7 +10755,6 @@ __metadata:
     "@backstage/plugin-catalog-node": ^1.16.0
     "@backstage/plugin-permission-common": ^0.8.4
     "@backstage/plugin-permission-node": ^0.8.8
-    "@backstage/types": ^1.2.1
     "@octokit/auth-app": ^6.0.3
     "@octokit/rest": ^20.0.2
     "@openapitools/openapi-generator-cli": 2.16.3

@@ -45,10 +45,7 @@ import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
 import { permissionCheck } from '../helpers';
-import {
-  auditCreateEvent,
-  UNKNOWN_ENDPOINT_EVENT,
-} from '../helpers/auditorUtils';
+import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
   createImportJobs,
   deleteImportByRepo,
@@ -485,11 +482,7 @@ async function createAuditorEventByOperationId(
       });
       break;
     case undefined:
-      auditorEvent = await auditCreateEvent(
-        auditor,
-        UNKNOWN_ENDPOINT_EVENT,
-        req,
-      );
+      auditorEvent = await auditCreateEvent(auditor, operationId, req);
       break;
     default:
       // do nothing
