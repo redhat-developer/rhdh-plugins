@@ -16,7 +16,7 @@ export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
   static fromConfig(
     config: ConfigApi,
     options: {
-      identityApi?: IdentityApi;
+      identityApi: IdentityApi;
     },
   ): AdoptionInsightsAnalyticsApi;
 }
