@@ -1,4 +1,4 @@
-site_name: Dynamic Home Page
+site_name: RHDH Home Page plugin
 
 plugins:
   - techdocs-core
@@ -9,17 +9,18 @@ nav:
       - Defaults: defaults.md
       - Header: header.md
       - Layout options: layout-options.md
+  - User Customization: user-customization.md
   - Included cards:
-      - Search: search.md
-      - Quick access: quick-access.md
-      - Headline: headline.md
-      - Markdown: markdown.md
-      - Placeholder: placeholder.md
-      - Catalog starred entities: catalog-starred.md
-      - Recently visited: recently-visited.md
-      - Top visited: top-visited.md
-      - Featured docs: featured-docs.md
-      - Jokes: jokes.md
-      - World clock: worldclock.md
+      - Search: cards/search.md
+      - Quick access: cards/quick-access.md
+      - Headline: cards/headline.md
+      - Markdown: cards/markdown.md
+      - Placeholder: cards/placeholder.md
+      - Catalog starred entities: cards/catalog-starred.md
+      - Recently visited: cards/recently-visited.md
+      - Top visited: cards/top-visited.md
+      - Featured docs: cards/featured-docs.md
+      - Jokes: cards/jokes.md
+      - World clock: cards/worldclock.md
   - Extend with plugins:
       - Create a new card: create-a-new-card.md
