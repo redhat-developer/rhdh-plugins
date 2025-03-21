@@ -21,13 +21,13 @@ import { Content, EmptyState, Page } from '@backstage/core-components';
 import { HomePageCardMountPoint } from '../types';
 
 import { Header, HeaderProps } from './Header';
-import { ReadOnlyGrid } from './ReadOnlyGrid';
+import { CustomizableGrid } from './CustomizableGrid';
 
 export interface HomePageProps extends HeaderProps {
   cards?: HomePageCardMountPoint[];
 }
 
-export const HomePage = (props: HomePageProps) => {
+export const CustomizableHomePage = (props: HomePageProps) => {
   const filteredAndSortedHomePageCards = useMemo(() => {
     if (!props.cards) {
       return [];
@@ -56,7 +56,7 @@ export const HomePage = (props: HomePageProps) => {
             missing="content"
           />
         ) : (
-          <ReadOnlyGrid mountPoints={filteredAndSortedHomePageCards} />
+          <CustomizableGrid mountPoints={filteredAndSortedHomePageCards} />
         )}
       </Content>
     </Page>
