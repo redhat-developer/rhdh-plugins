@@ -466,12 +466,6 @@ function setupInternalRoutes(
       const workflowId = c.request.params.workflowId as string;
       const endpointName = 'executeWorkflow';
       const endpoint = `/v2/workflows/${workflowId}/execute`;
-      // Extract authentication details from headers
-      const authProvider = req.headers.authprovider as string; // Case-sensitive
-      const authToken = req.headers[
-        `x-authentication-${authProvider?.toLowerCase()}`
-      ] as string;
-
       auditLogger.auditLog({
         eventName: endpointName,
         stage: 'start',
@@ -506,8 +500,6 @@ function setupInternalRoutes(
           executeWorkflowRequestDTO,
           workflowId,
           businessKey,
-          authProvider,
-          authToken,
         )
         .then(result => res.status(200).json(result))
         .catch(error => {
