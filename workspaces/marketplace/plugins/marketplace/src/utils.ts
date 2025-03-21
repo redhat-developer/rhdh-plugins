@@ -47,7 +47,7 @@ export const applyContent = (
         if (pluginPackage) {
           const formatContent = newContent
             .replace(/^```yaml\s+/, '')
-            .replace(/\s+```$/, '');
+            .replace(/[ \t\r\n\f\v]*```$/, '');
           plugin.set('pluginConfig', formatContent);
         }
       }
