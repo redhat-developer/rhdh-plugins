@@ -74,7 +74,13 @@ export const filterAndSortButtons = (
   return sortedButtons;
 };
 
-export const slotOptions = {
+type SlotOption = {
+  tooltipDirection: 'left' | 'right';
+  textAlign: 'left' | 'right';
+  margin: { ml?: number; mr?: number };
+};
+
+const slotOptions: Record<Slot, SlotOption> = {
   [Slot.BOTTOM_LEFT]: {
     tooltipDirection: 'right',
     textAlign: 'left',
@@ -85,4 +91,8 @@ export const slotOptions = {
     textAlign: 'right',
     margin: { mr: 1 },
   },
-} as const;
+};
+
+/** Get some layout options for a slot. Automatically fallbacks to PAGE_END */
+export const getSlotOptions = (slot: Slot | undefined) =>
+  slotOptions[slot ?? Slot.PAGE_END] ?? slotOptions[Slot.PAGE_END];

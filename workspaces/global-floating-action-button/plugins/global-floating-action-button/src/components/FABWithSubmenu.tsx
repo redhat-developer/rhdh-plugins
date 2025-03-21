@@ -27,7 +27,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
 import Slide from '@mui/material/Slide';
 import { CustomFab } from './CustomFab';
-import { slotOptions } from '../utils';
+import { getSlotOptions } from '../utils';
 import { FloatingActionButton, Slot } from '../types';
 import Typography from '@mui/material/Typography';
 
@@ -91,7 +91,7 @@ export const FABWithSubmenu = ({
       id="floating-button-with-submenu"
       data-testid="floating-button-with-submenu"
     >
-      <Tooltip title="Menu" placement={slotOptions[slot].tooltipDirection}>
+      <Tooltip title="Menu" placement={getSlotOptions(slot).tooltipDirection}>
         <Typography>
           <Box ref={containerRef} sx={{ overflow: 'hidden' }} />
           <Fab
