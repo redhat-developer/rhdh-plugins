@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.3.0
+
+### Minor Changes
+
+- d602553: Backstage version bump to v1.36.1
+
 ## 1.2.0
 
 ### Minor Changes
