@@ -1,8 +1,9 @@
 # Knip report
 
-## Unused dependencies (1)
+## Unused devDependencies (2)
 
-| Name                                                       | Location     | Severity |
-| :--------------------------------------------------------- | :----------- | :------- |
-| @red-hat-developer-hub/backstage-plugin-marketplace-common | package.json | error    |
+| Name                        | Location          | Severity |
+| :-------------------------- | :---------------- | :------- |
+| @testing-library/user-event | package.json:64:6 | error    |
+| msw                         | package.json:65:6 | error    |
 
