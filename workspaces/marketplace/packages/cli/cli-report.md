@@ -11,6 +11,7 @@ Options:
   -h, --help
 
 Commands:
+  init
   generate [options]
   verify
   help [command]
@@ -26,6 +27,15 @@ Options:
   -o, --output-dir [path]
   --namespace [namespace]
   --owner [owner]
+  -h, --help
+```
+
+### `marketplace-cli init`
+
+```
+Usage: marketplace-cli init [options]
+
+Options:
   -h, --help
 ```
 
