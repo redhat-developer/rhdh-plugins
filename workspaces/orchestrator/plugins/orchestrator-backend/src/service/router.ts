@@ -496,10 +496,7 @@ function setupInternalRoutes(
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
-        .executeWorkflow(
-          executeWorkflowRequestDTO,
-          workflowId,
-          businessKey,
+        .executeWorkflow(executeWorkflowRequestDTO, workflowId, businessKey,
         )
         .then(result => res.status(200).json(result))
         .catch(error => {
