@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.2.0
+
+### Minor Changes
+
+- 3099c9c: Added a new starred dropdown to global header which shows all the starred entities.
+
+### Patch Changes
+
+- c658469: Emit search analytics events for search and discover events
+
 ## 1.1.0
 
 ### Minor Changes
