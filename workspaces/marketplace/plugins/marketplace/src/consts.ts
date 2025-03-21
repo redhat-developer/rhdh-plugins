@@ -15,4 +15,3 @@
  */
 
 export const themeId = 'marketplace';
-export const copyButtonColor = '#6a6e73';

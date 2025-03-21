@@ -26,7 +26,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import Typography from '@mui/material/Typography';
-import { copyButtonColor } from '../consts';
 
 loader.config({ monaco: monacoEditor });
 
@@ -118,7 +117,8 @@ export const CodeEditor = ({
   onLoaded,
   ...otherProps
 }: CodeEditorProps) => {
-  const theme = useTheme().palette.mode === 'dark' ? 'vs-dark' : 'vs-light';
+  const theme = useTheme();
+  const paletteMode = theme.palette.mode === 'dark' ? 'vs-dark' : 'vs-light';
 
   const codeEditor = useCodeEditor();
   const [copied, setCopied] = React.useState(false);
@@ -157,17 +157,17 @@ export const CodeEditor = ({
         }}
       >
         {copied ? (
-          <Typography color={copyButtonColor}>✔</Typography>
+          <Typography color={theme.palette.text.secondary}>✔</Typography>
         ) : (
           <ContentCopyRoundedIcon
             fontSize="small"
-            sx={{ mx: 1, color: copyButtonColor }}
+            sx={{ mx: 1, color: theme.palette.text.secondary }}
           />
         )}
       </Button>
 
       <Editor
-        theme={theme}
+        theme={paletteMode}
         defaultLanguage={defaultLanguage}
         onChange={onChange}
         onMount={onMount}
