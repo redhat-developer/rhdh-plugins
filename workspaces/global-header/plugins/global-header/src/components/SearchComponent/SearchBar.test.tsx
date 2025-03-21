@@ -25,6 +25,10 @@ import { mockApis, TestApiProvider } from '@backstage/test-utils';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 import { configApiRef } from '@backstage/core-plugin-api';
 
+jest.mock('../../hooks/useDebouncedCallback', () => ({
+  useDebouncedCallback: (fn: (...args: any[]) => void) => fn,
+}));
+
 const createInitialState = ({
   term = 'term',
   filters = {},

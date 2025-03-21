@@ -20,6 +20,8 @@ import {
   ScmAuth,
 } from '@backstage/integration-react';
 import {
+  analyticsApiRef,
+  AnalyticsEvent,
   AnyApiFactory,
   configApiRef,
   createApiFactory,
@@ -43,5 +45,12 @@ export const apis: AnyApiFactory[] = [
     deps: { fetchApi: fetchApiRef, discoveryApi: discoveryApiRef },
     factory: ({ fetchApi, discoveryApi }) =>
       new NotificationsClient({ fetchApi, discoveryApi }),
+  }),
+
+  createApiFactory(analyticsApiRef, {
+    captureEvent: (event: AnalyticsEvent) => {
+      // eslint-disable-next-line no-console
+      console.log('Captured event:', event);
+    },
   }),
 ];

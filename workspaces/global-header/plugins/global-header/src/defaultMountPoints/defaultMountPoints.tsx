@@ -29,6 +29,7 @@ import { NotificationButton } from '../components/NotificationButton/Notificatio
 import { Divider } from '../components/Divider/Divider';
 import { MenuItemLink } from '../components/MenuItemLink/MenuItemLink';
 import { Spacer } from '../components/Spacer/Spacer';
+import { StarredDropdown } from '../components/HeaderDropdownComponent/StarredDropdown';
 
 /**
  * default Global Header Components mount points
@@ -64,6 +65,12 @@ export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMoun
           },
           mr: 1.5,
         } as any as React.CSSProperties, // I don't used MUI v5 specific `sx` types here to allow us changing the implementation later
+      },
+    },
+    {
+      Component: StarredDropdown,
+      config: {
+        priority: 85,
       },
     },
     {
