@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/marketplace-cli
 
+## 0.3.0
+
+### Minor Changes
+
+- efc1592: add new marketplace-cli init command
+- a4b60fd: Added a new command: `export-csv`, which generates a CSV file given a folder of plugin YAML files
+
 ## 0.2.0
 
 ### Minor Changes

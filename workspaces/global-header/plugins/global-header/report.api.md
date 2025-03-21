@@ -308,6 +308,9 @@ export interface SpacerProps {
   minWidth?: number | string;
 }
 
+// @public
+export const StarredDropdown: () => React_2.JSX.Element;
+
 // @public (undocumented)
 export const SupportButton: ({
   title,
