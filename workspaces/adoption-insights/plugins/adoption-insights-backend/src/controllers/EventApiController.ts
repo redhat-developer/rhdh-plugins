@@ -25,8 +25,9 @@ import { toEndOfDayUTC, toStartOfDayUTC } from '../utils/date';
 import { EventSchema } from '../validation/event';
 import { EventRequestSchema } from '../validation/event-request';
 import { ValidationError } from '../validation/ValidationError';
-import { RootConfigService } from '@backstage/backend-plugin-api/index';
+import { RootConfigService } from '@backstage/backend-plugin-api';
 import { getLicensedUsersCount } from '../utils/config';
+import { TechDocsCount, TopTechDocsCount } from '../types/event';
 
 class EventApiController {
   private readonly database: EventDatabase;
@@ -41,6 +42,10 @@ class EventApiController {
     this.database = eventDatabase;
     this.processor = processor;
     this.config = config;
+  }
+
+  async getBaseUrl(pluginId: string): Promise<string> {
+    return `${this.config.getString('backend.baseUrl')}/api/${pluginId}`;
   }
 
   private processIncomingEvents(events: AnalyticsEvent[]): void {
@@ -108,6 +113,11 @@ class EventApiController {
 
     try {
       const result = await queryHandlers[type as QueryType]();
+
+      if (type === 'top_techdocs') {
+        await this.getTechdocsMetadata(req, result);
+      }
+
       if (format === 'csv' && result.data) {
         const csv = Parser(result.data);
         res.header('Content-Type', 'text/csv');
@@ -120,6 +130,42 @@ class EventApiController {
       res.status(500).json({ error: 'Internal Server Error' });
       return;
     }
+  }
+
+  async getTechdocsMetadata(
+    req: Request<{}, {}, {}, QueryParams>,
+    result: TopTechDocsCount,
+  ) {
+    const promises: Promise<void>[] = [];
+    const baseUrl = await this.getBaseUrl('techdocs');
+
+    result.data.forEach((row: TechDocsCount) => {
+      if (!row.namespace || !row.kind || !row.name) {
+        row.site_name = '';
+      } else {
+        promises.push(
+          fetch(
+            `${baseUrl}/metadata/techdocs/${row.namespace}/${row.kind}/${row.name}`,
+            {
+              headers: {
+                Accept: 'application/json',
+                Authorization: req.headers.authorization as string,
+              },
+            },
+          )
+            .then(async response => {
+              const data = await response.json();
+              row.site_name = data.site_name ?? row.name;
+            })
+            .catch(e => {
+              console.warn(e);
+              row.site_name = row.name;
+            }),
+        );
+      }
+    });
+
+    await Promise.all(promises);
   }
 }
 

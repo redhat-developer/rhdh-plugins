@@ -30,7 +30,7 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
   }
 
   getLastUsedDate(): string {
-    return `strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at), 'localtime') AS last_used`;
+    return `strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) AS last_used`;
   }
 
   getFormatedDate(column: string): string {

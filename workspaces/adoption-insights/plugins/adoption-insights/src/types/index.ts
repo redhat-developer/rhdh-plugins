@@ -91,6 +91,7 @@ export type TemplatesResponse = {
  * Techdocs
  */
 export type Techdocs = {
+  site_name: string;
   count: number;
   last_used: string;
   kind: string;

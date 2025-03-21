@@ -15,7 +15,7 @@
  */
 interface DateCount {
   date: string; // YYYY-MM-DD format
-  count: string;
+  count: number;
 }
 export interface DailyUser {
   date: string;
@@ -31,21 +31,22 @@ interface TotalUser {
 
 export interface PluginCount {
   plugin_id: string;
-  visit_count: string;
+  visit_count: number;
   trend: DateCount[];
   trend_percentage: string;
 }
 
 interface EntityRefCount {
   entityref: string;
-  count: string;
+  count: number;
   last_used: string;
 }
-interface TechDocsCount {
+export interface TechDocsCount {
+  site_name: string;
   kind: string;
   name: string;
   namespace: string;
-  count: string;
+  count: number;
   last_used: string;
 }
 
@@ -55,7 +56,7 @@ interface CatalogEntityCount {
   name: string;
   namespace: string;
   last_used: string; // ISO 8601 format (e.g., 2025-03-02T16:25:32.819Z);
-  count: string;
+  count: number;
 }
 
 export type ResponseData<T> = {

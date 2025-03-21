@@ -219,6 +219,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       })
       .whereBetween('created_at', [start_date, end_date])
       .groupByRaw(`name, kind, namespace`)
+      .orderBy('count', 'desc')
       .limit(Number(limit) || 3);
 
     return query.then(data => this.getResponseData(data, 'last_used'));

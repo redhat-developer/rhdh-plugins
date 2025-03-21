@@ -129,7 +129,9 @@ const Techdocs = () => {
                         },
                       }}
                     >
-                      {!techdoc?.name ? 'index-page' : techdoc?.name || '--'}
+                      {!techdoc?.site_name
+                        ? 'docs'
+                        : techdoc?.site_name || '--'}
                     </Link>
                   </TableCell>
                   <TableCell>
