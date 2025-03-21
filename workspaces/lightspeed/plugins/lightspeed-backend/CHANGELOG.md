@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 0.5.0
+
+### Minor Changes
+
+- 0d6deb0: Updated @backstage/backend-test-utils to 1.3.0 and @backstage/repo-tools to 1.13.0
+
 ## 0.4.1
 
 ### Patch Changes
