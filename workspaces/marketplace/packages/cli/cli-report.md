@@ -14,7 +14,21 @@ Commands:
   init
   generate [options]
   verify
+  export-csv [options]
   help [command]
+```
+
+### `marketplace-cli export-csv`
+
+```
+Usage: marketplace-cli export-csv [options]
+
+Options:
+  -o, --output-file [path]
+  -p, --plugins-yaml-path [path]
+  -r, --recursive
+  -t, --type [type]
+  -h, --help
 ```
 
 ### `marketplace-cli generate`

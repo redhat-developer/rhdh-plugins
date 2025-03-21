@@ -63,7 +63,29 @@ export const registerCommands = (program: Command) => {
   program
     .command('verify')
     .description(
-      'Verify a set of markplate entities. By default, it will read entities from the standard input',
+      'Verify a set of marketplace entities. By default, it will read entities from the standard input',
     )
     .action(lazy(() => import('./verify').then(m => m.default)));
+
+  program
+    .command('export-csv')
+    .description('Export a folder of marketplace plugin YAMLs to a CSV file')
+    .option(
+      '-o, --output-file [path]',
+      'Path to the output CSV file. By default, it will output to the standard output. When a file is specified, the "csv" file extension will be added automatically',
+    )
+    .option(
+      '-p, --plugins-yaml-path [path]',
+      'Path to the default plugins folder, containing marketplace plugin YAML files. Multiple paths can be provided, separated by commas',
+    )
+    .option(
+      '-r, --recursive',
+      'Recursively search for YAML files in each directory provided in plugins-yaml-path',
+    )
+    .option(
+      '-t, --type [type]',
+      'The type of CSV to export. Can be one of: "plugin", "package", or "all". "all" will generate two files.',
+      'all',
+    )
+    .action(lazy(() => import('./export-csv').then(m => m.default)));
 };
