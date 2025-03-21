@@ -155,7 +155,6 @@ export async function createRouter(
       const q: Paths.FindAllOrganizations.QueryParameters = {
         ...c.request.query,
       };
-
       // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
       q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
       q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
@@ -166,7 +165,6 @@ export async function createRouter(
         q.pagePerIntegration,
         q.sizePerIntegration,
       );
-
       return res.status(response.statusCode).json({
         errors: response.responseBody?.errors,
         organizations: response.responseBody?.organizations,
@@ -183,7 +181,6 @@ export async function createRouter(
       const q: Paths.FindAllRepositories.QueryParameters = {
         ...c.request.query,
       };
-
       // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
       q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
       q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
@@ -203,7 +200,6 @@ export async function createRouter(
         },
       );
       const repos = response.responseBody?.repositories;
-
       return res.status(response.statusCode).json({
         errors: response.responseBody?.errors,
         repositories: repos,
@@ -220,7 +216,6 @@ export async function createRouter(
       const q: Paths.FindRepositoriesByOrganization.QueryParameters = {
         ...c.request.query,
       };
-
       // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
       q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
       q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
@@ -239,7 +234,6 @@ export async function createRouter(
         q.sizePerIntegration,
       );
       const repos = response.responseBody?.repositories;
-
       return res.status(response.statusCode).json({
         errors: response.responseBody?.errors,
         repositories: repos,
@@ -260,7 +254,6 @@ export async function createRouter(
       const q: Paths.FindAllImports.QueryParameters = {
         ...c.request.query,
       };
-
       // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
       let page: number | undefined;
       let size: number | undefined;
@@ -291,7 +284,6 @@ export async function createRouter(
           sortOrder: q.sortOrder,
         },
       );
-
       return res.status(response.statusCode).json(response.responseBody);
     },
   );
@@ -307,7 +299,6 @@ export async function createRouter(
         ...c.request.query,
       };
       q.dryRun = stringToBoolean(q.dryRun);
-
       const response = await createImportJobs(
         {
           logger,
@@ -323,7 +314,6 @@ export async function createRouter(
           dryRun: q.dryRun,
         },
       );
-
       return res.status(response.statusCode).json(response.responseBody);
     },
   );
@@ -334,7 +324,6 @@ export async function createRouter(
       const q: Paths.FindImportStatusByRepo.QueryParameters = {
         ...c.request.query,
       };
-
       if (!q.repo?.trim()) {
         throw new Error('missing or blank parameter');
       }
@@ -349,7 +338,6 @@ export async function createRouter(
         q.defaultBranch,
         true,
       );
-
       return res.status(response.statusCode).json(response.responseBody);
     },
   );
@@ -360,7 +348,6 @@ export async function createRouter(
       const q: Paths.DeleteImportByRepo.QueryParameters = {
         ...c.request.query,
       };
-
       if (!q.repo?.trim()) {
         throw new Error('missing or blank "repo" parameter');
       }
@@ -374,7 +361,6 @@ export async function createRouter(
         q.repo,
         q.defaultBranch,
       );
-
       return res.status(response.statusCode).json(response.responseBody);
     },
   );
