@@ -26,6 +26,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import Typography from '@mui/material/Typography';
+import { copyButtonColor } from '../consts';
 
 loader.config({ monaco: monacoEditor });
 
@@ -156,11 +157,11 @@ export const CodeEditor = ({
         }}
       >
         {copied ? (
-          <Typography color="#6a6e73">✔</Typography>
+          <Typography color={copyButtonColor}>✔</Typography>
         ) : (
           <ContentCopyRoundedIcon
             fontSize="small"
-            sx={{ mx: 1, color: '#6a6e73' }}
+            sx={{ mx: 1, color: copyButtonColor }}
           />
         )}
       </Button>
