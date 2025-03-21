@@ -22,6 +22,7 @@ import Typography from '@mui/material/Typography';
 import { highlightMatch } from '../../utils/stringUtils';
 import { SearchResultProps } from '@backstage/plugin-search-react';
 import { Result, SearchDocument } from '@backstage/plugin-search-common';
+import { useAnalytics } from '@backstage/core-plugin-api';
 
 interface SearchResultItemProps {
   option: string;
@@ -37,6 +38,8 @@ export const SearchResultItem = ({
   renderProps,
 }: SearchResultItemProps) => {
   const isNoResultsFound = option === 'No results found';
+  const analytics = useAnalytics();
+
   return (
     <Box
       component={isNoResultsFound ? 'div' : Link}
@@ -44,7 +47,17 @@ export const SearchResultItem = ({
       underline="none"
       sx={{ width: '100%', ...(isNoResultsFound ? {} : { cursor: 'pointer' }) }}
     >
-      <ListItem {...renderProps} sx={{ py: 1 }}>
+      <ListItem
+        {...renderProps}
+        sx={{ py: 1 }}
+        onClick={e => {
+          analytics.captureEvent('discover', result?.document.title ?? '', {
+            attributes: { to: result?.document.location ?? '#' },
+            value: result?.rank,
+          });
+          renderProps?.onClick?.(e);
+        }}
+      >
         <Typography sx={{ color: 'text.primary', flexGrow: 1 }}>
           {isNoResultsFound
             ? option

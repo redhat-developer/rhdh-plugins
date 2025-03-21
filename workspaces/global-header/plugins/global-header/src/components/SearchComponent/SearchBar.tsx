@@ -18,6 +18,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   SearchResultState,
   SearchResultProps,
+  useSearch,
 } from '@backstage/plugin-search-react';
 import Autocomplete from '@mui/material/Autocomplete';
 import { createSearchLink } from '../../utils/stringUtils';
@@ -25,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { SearchInput } from './SearchInput';
 import { SearchOption } from './SearchOption';
 import { useTheme } from '@mui/material/styles';
+import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 
 interface SearchBarProps {
   query: SearchResultProps['query'];
@@ -36,6 +38,12 @@ export const SearchBar = (props: SearchBarProps) => {
   const theme = useTheme();
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const highlightedIndexRef = useRef(highlightedIndex);
+  const { setTerm } = useSearch();
+
+  const onInputChange = useDebouncedCallback((_, inputValue) => {
+    setSearchTerm(inputValue);
+    setTerm(inputValue);
+  }, 300);
 
   useEffect(() => {
     highlightedIndexRef.current = highlightedIndex;
@@ -64,7 +72,7 @@ export const SearchBar = (props: SearchBarProps) => {
             loading={loading}
             value={query?.term ?? ''}
             getOptionLabel={option => option ?? ''}
-            onInputChange={(_, inputValue) => setSearchTerm(inputValue)}
+            onInputChange={onInputChange}
             onHighlightChange={(_, option) =>
               setHighlightedIndex(options.indexOf(option ?? ''))
             }
