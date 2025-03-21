@@ -339,3 +339,20 @@ export const NotificationBanner = globalHeaderPlugin.provide(
     },
   }),
 );
+
+/**
+ * Starred Dropdown
+ *
+ * @public
+ */
+export const StarredDropdown = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'StarredDropdown',
+    component: {
+      lazy: () =>
+        import('./components/HeaderDropdownComponent/StarredDropdown').then(
+          m => m.StarredDropdown,
+        ),
+    },
+  }),
+);

@@ -19,7 +19,11 @@ import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
 import { mockApis, MockFetchApi, TestApiProvider } from '@backstage/test-utils';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
-import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import {
+  catalogApiRef,
+  MockStarredEntitiesApi,
+  starredEntitiesApiRef,
+} from '@backstage/plugin-catalog-react';
 import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
 import { configApiRef } from '@backstage/core-plugin-api';
 import {
@@ -116,6 +120,8 @@ const entities = [
 
 const catalogApi = catalogApiMock({ entities });
 
+const starredEntitiesApi = new MockStarredEntitiesApi();
+
 const mockBaseUrl = 'https://backstage/api/notifications';
 const discoveryApi = { getBaseUrl: async () => mockBaseUrl };
 const fetchApi = new MockFetchApi();
@@ -137,11 +143,13 @@ const Providers = ({
     }),
     [mountPoints],
   );
+  starredEntitiesApi.toggleStarred('template:default/mock-starred-template');
 
   return (
     <TestApiProvider
       apis={[
         [catalogApiRef, catalogApi],
+        [starredEntitiesApiRef, starredEntitiesApi],
         [searchApiRef, mockSearchApi],
         [configApiRef, mockConfigApi],
         [notificationsApiRef, client],
