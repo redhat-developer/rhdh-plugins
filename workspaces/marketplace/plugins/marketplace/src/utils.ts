@@ -45,10 +45,12 @@ export const applyContent = (
         );
 
         if (pluginPackage) {
-          let formatContent = newContent.replace(/^```yaml\s+/, '');
+          let formatContent = newContent.replace(/^```yaml\s+/, '').trimEnd();
 
-          if (/\s*```$/.test(formatContent)) {
-            formatContent = formatContent.replace(/```$/, '').trimEnd();
+          if (formatContent.endsWith('```')) {
+            const index = formatContent.lastIndexOf('```');
+            const beforeBackticks = formatContent.slice(0, index).trimEnd();
+            formatContent = beforeBackticks;
           }
           plugin.set('pluginConfig', formatContent);
         }
