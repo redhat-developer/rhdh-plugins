@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,13 +53,13 @@ key2: value2
       `plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
     disabled: false
-    pluginConfig: |
+    pluginConfig:
       catalog:
-                providers:
-                  threeScaleApiEntity:
-                    default:
-                      baseUrl: fd
-                      accessToken: ffd
+        providers:
+          threeScaleApiEntity:
+            default:
+              baseUrl: fd
+              accessToken: ffd
 `,
     );
   });
@@ -81,13 +81,13 @@ plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
     # some more comment
     disabled: false
-    pluginConfig: |
+    pluginConfig:
       catalog:
-                providers:
-                  threeScaleApiEntity:
-                    default:
-                      baseUrl: fd
-                      accessToken: ffd
+        providers:
+          threeScaleApiEntity:
+            default:
+              baseUrl: fd
+              accessToken: ffd
 `,
     );
   });
@@ -109,13 +109,13 @@ plugins:
     disabled: false
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
     disabled: false
-    pluginConfig: |
+    pluginConfig:
       catalog:
-                providers:
-                  threeScaleApiEntity:
-                    default:
-                      baseUrl: fd
-                      accessToken: ffd
+        providers:
+          threeScaleApiEntity:
+            default:
+              baseUrl: fd
+              accessToken: ffd
 `,
     );
   });
