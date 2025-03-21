@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.2.0
+
+### Minor Changes
+
+- a75760c: add the ability to let users customize their homepage grid layout using the [Backstage Customizable homepage component](https://github.com/backstage/backstage/blob/master/plugins/home/README.md#customizable-home-page).
+
+  This change does not affect the original `HomePage` as it introduces this new capability through new components. So, the user has a choice of choosing its HomePage implementation via the plugin configuration (dynamic routes).
+
+### Patch Changes
+
+- 1a25bba: Updated dependency `react-router-dom` to `6.30.0`.
+- 3dce00f: Updated dependency `react-router-dom` to `6.29.0`.
+- 680ede5: Updated dependency `@mui/icons-material` to `5.16.14`.
+  Updated dependency `@mui/styles` to `5.16.14`.
+  Updated dependency `@mui/material` to `5.16.14`.
+  Updated dependency `@mui/styled-engine` to `5.16.14`.
+
 ## 1.1.0
 
 ### Minor Changes
