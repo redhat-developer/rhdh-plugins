@@ -15,6 +15,7 @@
  */
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import classnames from 'classnames';
 
@@ -31,14 +32,13 @@ const useStyles = makeStyles(theme => ({
     position: 'fixed',
   },
   'page-end': {
-    bottom: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
-    right: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
+    bottom: theme?.spacing?.(2) ?? '16px',
+    right: theme?.spacing?.(2) ?? '16px',
     alignItems: 'end',
   },
   'bottom-left': {
-    bottom: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
-    paddingLeft:
-      theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
+    bottom: theme?.spacing?.(2) ?? '16px',
+    paddingLeft: theme?.spacing?.(2) ?? '16px',
     alignItems: 'start',
   },
 }));
@@ -52,6 +52,22 @@ export const FloatingButton = ({
 }) => {
   const { pathname } = useLocation();
   const fabButton = useStyles();
+  const [targetElement, setTargetElement] = React.useState<Element | null>(
+    null,
+  );
+
+  React.useEffect(() => {
+    const checkTargetElement = () => {
+      const element = document.querySelector('[class^="BackstagePage-root"]');
+      if (element) {
+        setTargetElement(element);
+      } else {
+        setTimeout(checkTargetElement);
+      }
+    };
+
+    checkTargetElement();
+  }, [pathname]);
 
   const fabs = React.useMemo(
     () => filterAndSortButtons(floatingButtons, pathname),
@@ -61,22 +77,26 @@ export const FloatingButton = ({
   if (fabs?.length === 0) {
     return null;
   }
-
+  if (!targetElement) {
+    return null;
+  }
+  let fabDiv;
   if (fabs.length > 1) {
-    return (
+    fabDiv = (
       <FABWithSubmenu className={fabButton[slot]} fabs={fabs} slot={slot} />
     );
+  } else {
+    fabDiv = (
+      <div
+        className={classnames(fabButton.fabButton, fabButton[slot])}
+        id="floating-button"
+        data-testid="floating-button"
+      >
+        <CustomFab
+          actionButton={{ color: 'info', iconColor: 'white', ...fabs[0] }}
+        />
+      </div>
+    );
   }
-
-  return (
-    <div
-      className={classnames(fabButton.fabButton, fabButton[slot])}
-      id="floating-button"
-      data-testid="floating-button"
-    >
-      <CustomFab
-        actionButton={{ color: 'info', iconColor: 'white', ...fabs[0] }}
-      />
-    </div>
-  );
+  return createPortal(fabDiv, targetElement);
 };
