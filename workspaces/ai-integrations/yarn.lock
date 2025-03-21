@@ -2970,7 +2970,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-plugin-api@npm:^1.0.0, @backstage/backend-plugin-api@npm:^1.0.1, @backstage/backend-plugin-api@npm:^1.1.1, @backstage/backend-plugin-api@npm:^1.2.1":
+"@backstage/backend-plugin-api@npm:^1.0.0, @backstage/backend-plugin-api@npm:^1.1.1, @backstage/backend-plugin-api@npm:^1.2.1":
   version: 1.2.1
   resolution: "@backstage/backend-plugin-api@npm:1.2.1"
   dependencies:
@@ -3055,7 +3055,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/catalog-model@npm:^1.7.0, @backstage/catalog-model@npm:^1.7.3":
+"@backstage/catalog-model@npm:^1.7.3":
   version: 1.7.3
   resolution: "@backstage/catalog-model@npm:1.7.3"
   dependencies:
@@ -3074,7 +3074,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/cli-node@npm:^0.2.13, @backstage/cli-node@npm:^0.2.9":
+"@backstage/cli-node@npm:^0.2.13":
   version: 0.2.13
   resolution: "@backstage/cli-node@npm:0.2.13"
   dependencies:
@@ -5348,18 +5348,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/repo-tools@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "@backstage/repo-tools@npm:0.10.0"
+"@backstage/repo-tools@npm:^0.13.1":
+  version: 0.13.1
+  resolution: "@backstage/repo-tools@npm:0.13.1"
   dependencies:
     "@apidevtools/swagger-parser": ^10.1.0
     "@apisyouwonthate/style-guide": ^1.4.0
-    "@backstage/backend-plugin-api": ^1.0.1
-    "@backstage/catalog-model": ^1.7.0
-    "@backstage/cli-common": ^0.1.14
-    "@backstage/cli-node": ^0.2.9
-    "@backstage/config-loader": ^1.9.1
-    "@backstage/errors": ^1.2.4
+    "@backstage/backend-plugin-api": ^1.2.1
+    "@backstage/catalog-model": ^1.7.3
+    "@backstage/cli-common": ^0.1.15
+    "@backstage/cli-node": ^0.2.13
+    "@backstage/config-loader": ^1.10.0
+    "@backstage/errors": ^1.2.7
+    "@electric-sql/pglite": ^0.2.15
     "@manypkg/get-packages": ^1.1.3
     "@microsoft/api-documenter": ^7.25.7
     "@microsoft/api-extractor": ^7.47.2
@@ -5373,6 +5374,7 @@ __metadata:
     "@stoplight/types": ^14.0.0
     "@useoptic/openapi-utilities": ^0.55.0
     chalk: ^4.0.0
+    chokidar: ^3.5.3
     codeowners-utils: ^1.0.2
     command-exists: ^1.2.9
     commander: ^12.0.0
@@ -5380,11 +5382,16 @@ __metadata:
     glob: ^8.0.3
     is-glob: ^4.0.3
     js-yaml: ^4.1.0
+    just-diff: ^6.0.2
+    knex: ^3.0.0
+    knex-pglite: ^0.11.0
+    knip: ^5.42.0
     lodash: ^4.17.21
     minimatch: ^9.0.0
     p-limit: ^3.0.2
     portfinder: ^1.0.32
-    ts-morph: ^23.0.0
+    tar: ^6.1.12
+    ts-morph: ^24.0.0
     yaml-diff-patch: ^2.0.0
   peerDependencies:
     "@microsoft/api-extractor-model": "*"
@@ -5392,13 +5399,16 @@ __metadata:
     "@microsoft/tsdoc-config": "*"
     "@useoptic/optic": ^1.0.0
     prettier: ^2.8.1
+    typedoc: ^0.27.0
     typescript: "> 3.0.0"
   peerDependenciesMeta:
     prettier:
       optional: true
+    typedoc:
+      optional: true
   bin:
     backstage-repo-tools: bin/backstage-repo-tools
-  checksum: 8a68c69f053edadd087d829823880902d8e6d55e77d756d6b4ba4640af29493036ac5fa08cec08666b59ddfb27cacf4975fd24ac7ba785dab5b1d8a96df62bec
+  checksum: b3add230d480d0dbcee39c5378b2c9a925cb8e6130e23abfe780c1b5c28f525b6f4051d63fb29daef797ab580aaab43168e22d9f96f629e8efb3d6dbfebd441c
   languageName: node
   linkType: hard
 
@@ -5959,6 +5969,13 @@ __metadata:
     pkginfo: ^0.4.1
     uid2: ^1.0.0
   checksum: 0bd7c33ffd34a7fed4c6a43704792817b8ea6d0783060c32a55619d50b05c79db6f0a8e23b15327a4c7ce0cd8ea2d7486f320eebae3d4ca73e36baa415802ec4
+  languageName: node
+  linkType: hard
+
+"@electric-sql/pglite@npm:^0.2.14, @electric-sql/pglite@npm:^0.2.15":
+  version: 0.2.17
+  resolution: "@electric-sql/pglite@npm:0.2.17"
+  checksum: 4c78d2beea408209cbd00e2cd888daa1def35ba406d2195d32acf8bad6d404df3215e0739bfd7f246c0c98e19fb2f0bded87736767fe8fc10d78789b565dfa93
   languageName: node
   linkType: hard
 
@@ -7078,7 +7095,7 @@ __metadata:
   dependencies:
     "@backstage/cli": ^0.31.0
     "@backstage/e2e-test-utils": ^0.1.1
-    "@backstage/repo-tools": ^0.10.0
+    "@backstage/repo-tools": ^0.13.1
     "@changesets/cli": ^2.27.1
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
@@ -12777,18 +12794,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ts-morph/common@npm:~0.24.0":
-  version: 0.24.0
-  resolution: "@ts-morph/common@npm:0.24.0"
-  dependencies:
-    fast-glob: ^3.3.2
-    minimatch: ^9.0.4
-    mkdirp: ^3.0.1
-    path-browserify: ^1.0.1
-  checksum: 793bc8a47c93ab55c6c036f94480d3b0e948661aef4bb7dbc29279b1dda2fc4fce809a88e221537867a313541842e12d1ecbd32b4769688abe1303807ec09db6
-  languageName: node
-  linkType: hard
-
 "@ts-morph/common@npm:~0.25.0":
   version: 0.25.0
   resolution: "@ts-morph/common@npm:0.25.0"
@@ -16471,7 +16476,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"code-block-writer@npm:^13.0.1, code-block-writer@npm:^13.0.3":
+"code-block-writer@npm:^13.0.3":
   version: 13.0.3
   resolution: "code-block-writer@npm:13.0.3"
   checksum: 8e234f0ec2db9625d5efb9f05bdae79da6559bb4d9df94a6aa79a89a7b5ae25093b70d309fc5122840c9c07995cb14b4dd3f98a30f8878e3a3372e177df79454
@@ -23770,6 +23775,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"just-diff@npm:^6.0.2":
+  version: 6.0.2
+  resolution: "just-diff@npm:6.0.2"
+  checksum: 1a0c7524f640cb88ab013862733e710f840927834208fd3b85cbc5da2ced97acc75e7dcfe493268ac6a6514c51dd8624d2fd9d057050efba3c02b81a6dcb7ff9
+  languageName: node
+  linkType: hard
+
 "jwa@npm:^1.4.1":
   version: 1.4.1
   resolution: "jwa@npm:1.4.1"
@@ -23860,7 +23872,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:3, knex@npm:^3.0.0":
+"knex-pglite@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "knex-pglite@npm:0.11.0"
+  dependencies:
+    "@electric-sql/pglite": ^0.2.14
+    knex: 3.1.0
+  checksum: 680de87b9c567bfc3009c81e85584e4e634ede8b98f14acd4d4463e1eae084cdfc0eed05979db742ee2af1bd6f857bb23ca28c4175abdf27b3d6e3e2dfcba4df
+  languageName: node
+  linkType: hard
+
+"knex@npm:3, knex@npm:3.1.0, knex@npm:^3.0.0":
   version: 3.1.0
   resolution: "knex@npm:3.1.0"
   dependencies:
@@ -23899,7 +23921,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knip@npm:^5.27.4":
+"knip@npm:^5.27.4, knip@npm:^5.42.0":
   version: 5.46.0
   resolution: "knip@npm:5.46.0"
   dependencies:
@@ -32427,16 +32449,6 @@ __metadata:
   version: 6.0.4
   resolution: "ts-mixer@npm:6.0.4"
   checksum: 36b1af526befd74345e736e9aa16f5c28876ebcea07784da14d929149fd7e6028cfd2fe9304c8efe8cb91b588443a9cc9e991df58e4c6e602326edbaae2af3ab
-  languageName: node
-  linkType: hard
-
-"ts-morph@npm:^23.0.0":
-  version: 23.0.0
-  resolution: "ts-morph@npm:23.0.0"
-  dependencies:
-    "@ts-morph/common": ~0.24.0
-    code-block-writer: ^13.0.1
-  checksum: 3282eb0f8bd4577770874736c3259b97501da9a86137160b5d68f106b7848ea7b1fbccf9e198a3d930ec40c993e9951d4bfae31e2562dac8f3de0d7bb0e23615
   languageName: node
   linkType: hard
 
