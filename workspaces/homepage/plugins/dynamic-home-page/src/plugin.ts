@@ -111,7 +111,7 @@ export const DynamicHomePage: React.ComponentType<DynamicHomePageProps> =
 export const DynamicCustomizableHomePage: React.ComponentType<DynamicCustomizableHomePageProps> =
   dynamicHomePagePlugin.provide(
     createRoutableExtension({
-      name: 'CustomizableDynamicHomePage',
+      name: 'DynamicCustomizableHomePage',
       component: () =>
         import('./components/DynamicCustomizableHomePage').then(
           m => m.DynamicCustomizableHomePage,
