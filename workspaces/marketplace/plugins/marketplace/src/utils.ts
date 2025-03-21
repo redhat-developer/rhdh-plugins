@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +45,9 @@ export const applyContent = (
         );
 
         if (pluginPackage) {
-          const formatContent = newContent
-            .replace(/^```yaml\s+/, '')
-            .replace(/\s+```$/, '');
+          const formatContent = parseDocument(
+            newContent.replace(/^```yaml\s+/, '').replace(/\s+```$/, ''),
+          ).toJS();
           plugin.set('pluginConfig', formatContent);
         }
       }
