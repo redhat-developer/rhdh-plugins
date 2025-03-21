@@ -37,7 +37,7 @@ export const AdoptionInsightsPage = () => {
   return (
     <DateRangeProvider>
       <Page themeId="home">
-        <InsightsHeader title="Insights" />
+        <InsightsHeader title="Adoption Insights" />
         <Content>
           <Masonry columns={isSmallScreen ? 1 : 2} spacing={2}>
             <ActiveUsers />
