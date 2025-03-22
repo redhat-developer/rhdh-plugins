@@ -91,13 +91,11 @@ export async function createRouter(
       .getConfigArray('lightspeed.servers')[0]
       .getOptionalString('token'); // currently only single llm server is supported
     req.headers.authorization = `Bearer ${apiToken}`;
-    // }
     // Proxy middleware configuration
     const apiProxy = createProxyMiddleware({
       target: config.getConfigArray('lightspeed.servers')[0].getString('url'), // currently only single llm server is supported
       changeOrigin: true,
     });
-    console.log(req);
     return apiProxy(req, res, next);
   });
 
@@ -150,7 +148,6 @@ export async function createRouter(
         return newPath;
       },
     });
-    console.log(req);
     return apiProxy(req, res, next);
   });
 
@@ -180,6 +177,8 @@ export async function createRouter(
         if (!system_prompt) {
           request.body.system_prompt = QUERY_SYSTEM_INSTRUCTION;
         }
+        request.body.media_type = 'application/json'; // set media_type to receive start and end event
+        const requestBody = JSON.stringify(request.body);
         const fetchResponse = await fetch(
           `http://0.0.0.0:8080/v1/streaming_query?${userQueryParam}`,
           {
@@ -187,7 +186,7 @@ export async function createRouter(
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(request.body), // directly pipe the original request body
+            body: requestBody,
           },
         );
 
