@@ -4,11 +4,11 @@ This plugin builds the backend for Adoption Insights Plugin. It helps store anal
 
 ## Installation
 
-This plugin is installed via the `@@red-hat-developer-hub/backstage-plugin-adoption-insights-backend` package. To install it to your backend package, run the following command:
+This plugin is installed via the `@red-hat-developer-hub/backstage-plugin-adoption-insights-backend` package. To install it to your backend package, run the following command:
 
 ```bash
 # From your root directory
-yarn --cwd packages/backend add @@red-hat-developer-hub/backstage-plugin-adoption-insights-backend
+yarn --cwd packages/backend add @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 ```
 
 Then add the plugin to your backend in `packages/backend/src/index.ts`:
@@ -17,7 +17,7 @@ Then add the plugin to your backend in `packages/backend/src/index.ts`:
 const backend = createBackend();
 // ...
 backend.add(
-  import('@@red-hat-developer-hub/backstage-plugin-adoption-insights-backend'),
+  import('@red-hat-developer-hub/backstage-plugin-adoption-insights-backend'),
 );
 ```
 
@@ -32,6 +32,61 @@ app:
       debug: false # enable this to debug
       licensedUsers: 100 # Administrators can set this value to see the user adoption metrics.
 ```
+
+#### Permission Framework Support
+
+The Adoption Insights Backend plugin has support for the permission framework.
+
+- When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access Adoption Insights backend API, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
+
+  ```CSV
+  p, role:default/team_a, adoption-insights.events.read, read, allow
+
+  g, user:default/<your-user-name>, role:default/team_a
+
+  ```
+
+  You can specify the path to this configuration file in your application configuration:
+
+  ```yaml
+  permission:
+    enabled: true
+    rbac:
+      policies-csv-file: /some/path/rbac-policy.csv
+      policyFileReload: true
+  ```
+
+- When using the [permission policy](https://backstage.io/docs/permissions/writing-a-policy/) framework. To test the permission policy, we have created a AdoptionInsightsTestPermissionPolicy and a permissionsPolicyExtension.
+
+  1. add the policy extension module in the `workspaces/adoption-insights/packages/backend/src/index.ts` and comment the Allow all Permission policy module as shown below.
+
+     ```diff
+     backend.add(import('@backstage/plugin-permission-backend'));
+     // See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
+     -backend.add(
+     -  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
+     -);
+
+     +backend.add(import('./extensions/PermissionPolicyExtension'));
+
+     // search plugin
+     backend.add(import('@backstage/plugin-search-backend'));
+     ```
+
+  2. Make a simple change to our [AdoptionInsightsTestPermissionPolicy](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/adoption-insights/packages/backend/src/extensions/PermissionPolicyExtension.ts) to confirm that policy is indeed wired up correctly. With the below change all the event API requests will fail with `Unauthorized` error.
+
+     ```diff
+     class AdoptionInsightsTestPermissionPolicy implements PermissionPolicy {
+           isPermission(request.permission, adoptionInsightsEventsReadPermission)
+         ) {
+           return {
+     -        result: AuthorizeResult.ALLOW,
+     +        result: AuthorizeResult.DENY,
+           };
+         }
+     ```
+
+  3. start the application by running `yarn dev` from `workspaces/adoption-insights` directory.
 
 ## Development
 

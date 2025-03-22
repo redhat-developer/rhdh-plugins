@@ -20,7 +20,8 @@
     "pluginId": "adoption-insights",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-adoption-insights",
-      "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend"
+      "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend",
+      "@red-hat-developer-hub/backstage-plugin-adoption-insights-common"
     ]
   },
   "scripts": {
@@ -36,7 +37,10 @@
     "@backstage/backend-defaults": "^0.8.0",
     "@backstage/backend-plugin-api": "^1.2.0",
     "@backstage/core-plugin-api": "^1.10.4",
+    "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^1.16.0",
+    "@backstage/plugin-permission-common": "^0.8.4",
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "json-2-csv": "^5.5.8",

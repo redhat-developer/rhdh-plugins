@@ -1,3 +1,5 @@
+import express, { Request, Response } from 'express';
+import Router from 'express-promise-router';
 /*
  * Copyright Red Hat, Inc.
  *
@@ -13,30 +15,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { HttpAuthService } from '@backstage/backend-plugin-api';
-import express, { Request, Response } from 'express';
-import Router from 'express-promise-router';
+import {
+  HttpAuthService,
+  PermissionsService,
+} from '@backstage/backend-plugin-api';
+import { NotAllowedError } from '@backstage/errors';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
 import EventApiController from './controllers/EventApiController';
 import { QueryParams } from './types/event-request';
 
 export async function createRouter({
   httpAuth,
+  permissions,
   eventApiController,
 }: {
   httpAuth: HttpAuthService;
+  permissions: PermissionsService;
   eventApiController: EventApiController;
 }): Promise<express.Router> {
   const router = Router();
 
   router.use(express.json());
 
+  const authorizeUser = async (
+    req: Request<{}, {}, {}, QueryParams>,
+  ): Promise<void> => {
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const decision = (
+      await permissions.authorize(
+        [{ permission: adoptionInsightsEventsReadPermission }],
+        { credentials },
+      )
+    )[0];
+
+    if (decision.result === AuthorizeResult.DENY) {
+      throw new NotAllowedError('Unauthorized');
+    }
+  };
   const getUserEntityRef = async (req: Request): Promise<string> => {
     const credentials = await httpAuth.credentials(req, {
       allow: ['user'],
     });
     return credentials.principal.userEntityRef;
   };
-  // TODO: remove it and add permission support
   router.use(async (req, _, next) => {
     await getUserEntityRef(req);
     next();
@@ -44,8 +66,10 @@ export async function createRouter({
 
   router.get(
     '/events',
-    async (req: Request<{}, {}, {}, QueryParams>, res: Response) =>
-      eventApiController.getInsights(req, res),
+    async (req: Request<{}, {}, {}, QueryParams>, res: Response) => {
+      await authorizeUser(req);
+      return eventApiController.getInsights(req, res);
+    },
   );
 
   router.post('/events', async (req, res) => {

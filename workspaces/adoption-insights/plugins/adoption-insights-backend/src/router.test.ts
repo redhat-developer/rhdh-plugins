@@ -23,6 +23,7 @@ import {
 import { AnalyticsEvent } from '@backstage/core-plugin-api';
 import EventApiController from './controllers/EventApiController';
 import { createRouter } from './router';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 // TEMPLATE NOTE:
 // Testing the router directly allows you to write a unit test that mocks the provided options.
@@ -42,7 +43,10 @@ describe('createRouter', () => {
     },
     attributes: { key: 'value' },
   };
-  beforeEach(async () => {
+
+  const setupApp = async (
+    authorizeResult: AuthorizeResult.ALLOW | AuthorizeResult.DENY,
+  ) => {
     const eventApiController = new EventApiController(
       jest.fn() as any,
       jest.fn() as any,
@@ -51,10 +55,22 @@ describe('createRouter', () => {
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
       eventApiController,
+      permissions: mockServices.permissions.mock({
+        authorize: async () => [{ result: authorizeResult }],
+      }),
     });
     app = express();
     app.use(router);
     app.use(mockErrorHandler());
+  };
+
+  beforeEach(async () => {
+    await setupApp(AuthorizeResult.ALLOW);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   it('should track an event', async () => {
@@ -76,6 +92,13 @@ describe('createRouter', () => {
 
     expect(response.status).toBe(401);
   });
+
+  it('should return 403 for unAuthorized request', async () => {
+    await setupApp(AuthorizeResult.DENY);
+    const response = await request(app).get('/events');
+    expect(response.status).toBe(403);
+  });
+
   it('should return 400 for invalid request', async () => {
     const response = await request(app).get('/events');
     expect(response.status).toBe(400);
