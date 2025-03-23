@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.5.0
+
+### Minor Changes
+
+- 0f6f539: Add UI to preview and edit plugin configuration
+
+  This update adds a UI that lets users view and edit dynamic plugin configuration. Users can switch between the default config and example configs from the Marketplace Plugin or Package YAML. Changes are not saved yet — this is for preview and exploration only.
+
 ## 0.4.0
 
 ### Minor Changes

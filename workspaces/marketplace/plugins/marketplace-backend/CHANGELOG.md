@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.3.1
+
+### Patch Changes
+
+- 0f6f539: Allows packages API to return 'spec.appConfigExamples' data.
+
 ## 0.3.0
 
 ### Minor Changes
