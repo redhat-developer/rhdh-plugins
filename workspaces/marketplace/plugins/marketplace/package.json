@@ -39,6 +39,7 @@
     "@backstage/core-plugin-api": "^1.10.4",
     "@backstage/plugin-catalog-react": "^1.15.2",
     "@backstage/theme": "^0.6.4",
+    "@backstage/types": "^1.2.1",
     "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^5.16.7",
     "@mui/material": "^5.12.2",
