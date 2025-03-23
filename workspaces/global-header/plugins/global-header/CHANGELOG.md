@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.3.0
+
+### Minor Changes
+
+- d49d965: Backstage version bump to v1.36.1
+
+### Patch Changes
+
+- 9562fd9: changing `Logout` text to `Sign Out`
+
 ## 1.2.0
 
 ### Minor Changes
