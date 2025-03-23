@@ -22,7 +22,7 @@ export const getExampleAsMarkdown = (content: string | JsonObject) => {
     return '';
   }
   if (typeof content === 'string') {
-    return `\`\`\`\n${content}\n\`\`\``;
+    return `\`\`\`yaml\n${content}\n\`\`\``;
   }
   if (Object.entries(content).length === 0) {
     return '';
@@ -50,7 +50,11 @@ export const applyContent = (
             i.key.value === 'package' && i.value?.value === packageName,
         );
         if (pluginPackage) {
-          plugin.set('pluginConfig', newContent);
+          if (typeof newContent === 'string') {
+            plugin.set('pluginConfig', parseDocument(newContent));
+          } else {
+            plugin.set('pluginConfig', newContent);
+          }
         }
       }
     });
