@@ -33,9 +33,9 @@
     "ui-test": "start-server-and-test start localhost:3000 'playwright test'"
   },
   "dependencies": {
-    "@backstage/core-components": "^0.16.3",
-    "@backstage/core-plugin-api": "^1.10.3",
-    "@backstage/theme": "^0.6.3",
+    "@backstage/core-components": "^0.16.4",
+    "@backstage/core-plugin-api": "^1.10.4",
+    "@backstage/theme": "^0.6.4",
     "@mui/icons-material": "^5.15.17",
     "@mui/material": "^5.15.17",
     "@mui/styles": "5.16.14",
@@ -48,8 +48,8 @@
     "react-router-dom": "^6.0.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.29.5",
-    "@backstage/dev-utils": "^1.1.6",
+    "@backstage/cli": "^0.30.0",
+    "@backstage/dev-utils": "^1.1.7",
     "@openshift/dynamic-plugin-sdk": "5.0.1",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
