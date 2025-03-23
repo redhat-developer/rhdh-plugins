@@ -17,8 +17,14 @@
 import { Pair, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
 import { JsonObject } from '@backstage/types';
 
-export const getYamlContent = (content: JsonObject) => {
-  if (!content || Object.entries(content).length === 0) {
+export const getExampleAsMarkdown = (content: string | JsonObject) => {
+  if (!content) {
+    return '';
+  }
+  if (typeof content === 'string') {
+    return `\`\`\`\n${content}\n\`\`\``;
+  }
+  if (Object.entries(content).length === 0) {
     return '';
   }
   const yamlString = stringify(content);
@@ -27,8 +33,8 @@ export const getYamlContent = (content: JsonObject) => {
 
 export const applyContent = (
   editorContent: string,
-  newContent: string,
   packageName: string,
+  newContent: string | JsonObject,
 ) => {
   if (!editorContent) {
     return null;
@@ -43,15 +49,8 @@ export const applyContent = (
           (i: Pair<Scalar, Scalar>) =>
             i.key.value === 'package' && i.value?.value === packageName,
         );
-
         if (pluginPackage) {
-          let document = newContent.replace(/^```yaml\s+/, '').trimEnd();
-          if (document.endsWith('```')) {
-            const index = document.lastIndexOf('```');
-            document = document.slice(0, index).trimEnd();
-          }
-          const formatContent = parseDocument(document).toJS();
-          plugin.set('pluginConfig', formatContent);
+          plugin.set('pluginConfig', newContent);
         }
       }
     });

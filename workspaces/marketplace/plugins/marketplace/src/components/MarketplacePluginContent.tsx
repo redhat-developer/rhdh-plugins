@@ -239,23 +239,21 @@ export const MarketplacePluginContent = ({
               </>
             ) : null}
 
-            <div style={{ display: 'inline-block' }}>
-              <LinkButton
-                to={getInstallPath({
-                  namespace: plugin.metadata.namespace!,
-                  name: plugin.metadata.name,
-                })}
-                color="primary"
-                variant="contained"
-              >
-                {
-                  mapMarketplacePluginInstallStatusToButton[
-                    plugin.spec?.installStatus ??
-                      MarketplacePluginInstallStatus.NotInstalled
-                  ]
-                }
-              </LinkButton>
-            </div>
+            <LinkButton
+              to={getInstallPath({
+                namespace: plugin.metadata.namespace!,
+                name: plugin.metadata.name,
+              })}
+              color="primary"
+              variant="contained"
+            >
+              {
+                mapMarketplacePluginInstallStatusToButton[
+                  plugin.spec?.installStatus ??
+                    MarketplacePluginInstallStatus.NotInstalled
+                ]
+              }
+            </LinkButton>
           </Grid>
           <Grid item md={9}>
             <Markdown title="About" content={about} />

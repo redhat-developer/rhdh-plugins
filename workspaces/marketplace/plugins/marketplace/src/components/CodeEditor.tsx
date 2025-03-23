@@ -18,14 +18,15 @@ import React from 'react';
 
 import { Progress } from '@backstage/core-components';
 
-import { useTheme } from '@mui/material/styles';
-import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
-import * as monacoEditor from 'monaco-editor';
-import type MonacoEditor from 'monaco-editor';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+
+import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
+import * as monacoEditor from 'monaco-editor';
+import type MonacoEditor from 'monaco-editor';
 
 loader.config({ monaco: monacoEditor });
 

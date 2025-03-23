@@ -36,6 +36,7 @@
     "@backstage/backend-defaults": "^0.8.1",
     "@backstage/backend-plugin-api": "^1.2.0",
     "@backstage/catalog-client": "^1.9.1",
+    "@backstage/catalog-model": "^1.7.3",
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^1.16.0",
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",

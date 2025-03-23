@@ -13,44 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { applyContent, getYamlContent } from './utils';
+import { applyContent, getExampleAsMarkdown } from './utils';
 
 describe('marketplace utils', () => {
-  const newContent = `catalog:
-          providers:
-            threeScaleApiEntity:
-              default:
-                baseUrl: fd
-                accessToken: ffd
-`;
-  it('should return the YAML content', () => {
-    const content = getYamlContent({
-      key1: 'value1',
-      key2: 'value2',
-    });
-    expect(content).toEqual(`\`\`\`yaml
-key1: value1
-key2: value2
+  describe('applyContent', () => {
+    const newContent = {
+      catalog: {
+        providers: {
+          threeScaleApiEntity: {
+            default: {
+              baseUrl: 'fd',
+              accessToken: 'ffd',
+            },
+          },
+        },
+      },
+    };
 
-\`\`\``);
-  });
-
-  it('should return empty string when JSON object is empty', () => {
-    const content = getYamlContent({});
-    expect(content).toEqual('');
-  });
-
-  it('should apply the app-config example', () => {
-    const content = applyContent(
-      `plugins:
-        - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
-          disabled: false
-`,
-      newContent,
-      './dynamic-plugins/dist/backstage-community-plugin-quay',
-    );
-    expect(content).toEqual(
-      `plugins:
+    it('should apply the app-config example', () => {
+      const content = applyContent(
+        `plugins:
+          - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
+            disabled: false
+  `,
+        './dynamic-plugins/dist/backstage-community-plugin-quay',
+        newContent,
+      );
+      expect(content).toEqual(
+        `plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
     disabled: false
     pluginConfig:
@@ -61,22 +51,22 @@ key2: value2
               baseUrl: fd
               accessToken: ffd
 `,
-    );
-  });
+      );
+    });
 
-  it('should apply the app-config example with comments', () => {
-    const content = applyContent(
-      `# This is my config
+    it('should apply the app-config example with comments', () => {
+      const content = applyContent(
+        `# This is my config
       plugins:
         - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
           # some more comment
           disabled: false
 `,
-      newContent,
-      './dynamic-plugins/dist/backstage-community-plugin-quay',
-    );
-    expect(content).toEqual(
-      `# This is my config
+        './dynamic-plugins/dist/backstage-community-plugin-quay',
+        newContent,
+      );
+      expect(content).toEqual(
+        `# This is my config
 plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
     # some more comment
@@ -89,22 +79,22 @@ plugins:
               baseUrl: fd
               accessToken: ffd
 `,
-    );
-  });
+      );
+    });
 
-  it('should apply the app-config example to the appropriate plugin', () => {
-    const content = applyContent(
-      `plugins:
-        - package: ./dynamic-plugins/dist/backstage-community-plugin-sonarcloud
-          disabled: false
-        - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
-          disabled: false
-`,
-      newContent,
-      './dynamic-plugins/dist/backstage-community-plugin-quay',
-    );
-    expect(content).toEqual(
-      `plugins:
+    it('should apply the app-config example to the appropriate plugin', () => {
+      const content = applyContent(
+        `plugins:
+          - package: ./dynamic-plugins/dist/backstage-community-plugin-sonarcloud
+            disabled: false
+          - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
+            disabled: false
+  `,
+        './dynamic-plugins/dist/backstage-community-plugin-quay',
+        newContent,
+      );
+      expect(content).toEqual(
+        `plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-sonarcloud
     disabled: false
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
@@ -117,6 +107,26 @@ plugins:
               baseUrl: fd
               accessToken: ffd
 `,
-    );
+      );
+    });
+  });
+
+  describe('getExampleAsMarkdown', () => {
+    it('should return the YAML content', () => {
+      const content = getExampleAsMarkdown({
+        key1: 'value1',
+        key2: 'value2',
+      });
+      expect(content).toEqual(`\`\`\`yaml
+key1: value1
+key2: value2
+
+\`\`\``);
+    });
+
+    it('should return empty string when JSON object is empty', () => {
+      const content = getExampleAsMarkdown({});
+      expect(content).toEqual('');
+    });
   });
 });

@@ -244,6 +244,7 @@ spec:
 
   installation: |
     # Setting up the Tekton plugin
+
     ## Prerequisites
 
     - The Kubernetes backend plugin `@backstage/plugin-kubernetes-backend` is installed and configured by following the [installation](https://backstage.io/docs/features/kubernetes/installation) and [configuration](https://backstage.io/docs/features/kubernetes/configuration) guides.

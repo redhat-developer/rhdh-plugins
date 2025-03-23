@@ -46,7 +46,7 @@ import Typography from '@mui/material/Typography';
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
-import { applyContent, getYamlContent } from '../utils';
+import { applyContent, getExampleAsMarkdown } from '../utils';
 
 import {
   CodeEditorContextProvider,
@@ -116,12 +116,12 @@ const TabPanel = ({ markdownContent, index, value, others }: TabPanelProps) => {
   const codeEditor = useCodeEditor();
   if (value !== index) return null;
 
-  const handleApplyContent = (content: string) => {
+  const handleApplyContent = (content: string | JsonObject) => {
     const codeEditorContent = codeEditor.getValue();
     const appliedContent = applyContent(
       codeEditorContent || '',
-      content,
       others?.packageName,
+      content,
     );
     const selection = codeEditor.getSelection();
     const position = codeEditor.getPosition();
@@ -150,23 +150,13 @@ const TabPanel = ({ markdownContent, index, value, others }: TabPanelProps) => {
                 {item.content !== 'string' && (
                   <Button
                     sx={{ float: 'right' }}
-                    onClick={() =>
-                      handleApplyContent(
-                        getYamlContent(item.content as JsonObject),
-                      )
-                    }
+                    onClick={() => handleApplyContent(item.content)}
                   >
                     Apply
                   </Button>
                 )}
               </Typography>
-              <Markdown
-                content={
-                  typeof item.content === 'string'
-                    ? item.content
-                    : getYamlContent(item.content)
-                }
-              />
+              <Markdown content={getExampleAsMarkdown(item.content)} />
             </Box>
           ))
         ) : (
