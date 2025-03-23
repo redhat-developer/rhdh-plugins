@@ -40,7 +40,7 @@ export const LogoutButton = () => {
       onClick={handleLogout}
       sx={{ cursor: 'pointer', width: '100%', color: 'inherit' }}
     >
-      <MenuItemLinkContent icon="logout" label="Sign Out" />
+      <MenuItemLinkContent icon="logout" label="Sign out" />
     </Box>
   );
 };
