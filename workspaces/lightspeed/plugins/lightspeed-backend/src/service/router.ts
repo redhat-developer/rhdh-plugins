@@ -140,7 +140,10 @@ export async function createRouter(
         let newPath = path.includes('?')
           ? `${path}&${userQueryParam}`
           : `${path}?${userQueryParam}`;
-        if (!path.includes('history_length')) {
+        if (
+          !path.includes('history_length') &&
+          path.includes('conversation_id')
+        ) {
           const historyLengthQuery = `history_length=${DEFAULT_HISTORY_LENGTH}`;
           newPath = `${newPath}&${historyLengthQuery}`;
         }
