@@ -23,7 +23,6 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import Tooltip from '@mui/material/Tooltip';
 
 import {
   MarketplacePackage,
@@ -117,35 +116,24 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
 
         <Grid container>
           <Grid item md={3}>
-            <Tooltip
-              title={<Typography variant="button">Coming soon!</Typography>}
-              arrow
-              placement="right"
+            <LinkButton
+              to={getInstallPath({
+                namespace: pkg.metadata.namespace!,
+                name: pkg.metadata.name,
+              })}
+              color="primary"
+              variant="contained"
             >
-              <div style={{ display: 'inline-block' }}>
-                <LinkButton
-                  disabled
-                  to={getInstallPath({
-                    namespace: pkg.metadata.namespace!,
-                    name: pkg.metadata.name,
-                  })}
-                  color="primary"
-                  variant="contained"
-                >
-                  {
-                    mapPackageInstallStatusToButton[
-                      pkg.spec?.installStatus ??
-                        MarketplacePackageInstallStatus.NotInstalled
-                    ]
-                  }
-                </LinkButton>
-              </div>
-            </Tooltip>
+              {
+                mapPackageInstallStatusToButton[
+                  pkg.spec?.installStatus ??
+                    MarketplacePackageInstallStatus.NotInstalled
+                ]
+              }
+            </LinkButton>
           </Grid>
           <Grid item md={9}>
             <Stack gap={2}>
-              <h2>Not implemented yet</h2>
-
               <KeyValue label="Package name:" value={pkg.spec?.packageName} />
               <KeyValue label="Version:" value={pkg.spec?.version} />
               <KeyValue
@@ -165,9 +153,6 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
               <KeyValue label="Lifecycle:" value={pkg.spec?.lifecycle} />
 
               <Links entity={pkg} />
-
-              <div>Package entity:</div>
-              <pre>{JSON.stringify(pkg, null, 2)}</pre>
             </Stack>
           </Grid>
         </Grid>

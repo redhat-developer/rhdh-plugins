@@ -20,7 +20,7 @@ import { setupServer, SetupServer } from 'msw/node';
 
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
-import { ExtendedHttpServer } from '@backstage/backend-defaults/dist/rootHttpRouter';
+import { ExtendedHttpServer } from '@backstage/backend-defaults/rootHttpRouter';
 
 import { marketplacePlugin } from './plugin';
 import { mockCollections, mockPlugins } from '../__fixtures__/mockData';

@@ -45,3 +45,14 @@ spec:
               mountPoints:
                 - mountPoint: admin.page.plugins/cards
                   importName: MarketplaceCatalogContent
+    - title: Another example
+      content:
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-marketplace: {}
+    - title: Example with some comments
+      content: |-
+        # a comment
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-marketplace: {}

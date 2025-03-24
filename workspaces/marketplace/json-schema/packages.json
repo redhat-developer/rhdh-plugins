@@ -149,7 +149,14 @@
           "type": "string"
         },
         "content": {
-          "type": "object"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ]
         }
       }
     }
