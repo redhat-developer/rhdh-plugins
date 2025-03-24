@@ -109,15 +109,19 @@ export class SonataFlowService {
       'Content-Type': 'application/json',
     };
 
-  // Add X-Authentication headers from authTokens
-  if (args.inputData && Array.isArray(args.inputData.authTokens)) {
-    args.inputData.authTokens.forEach((tokenObj: Record<string, unknown>) => {
-      if (tokenObj.provider && tokenObj.token) {
+  	// Add X-Authentication headers from authTokens
+  	if (args.inputData && Array.isArray(args.inputData.authTokens)) {
+    	args.inputData.authTokens.forEach((tokenObj: Record<string, unknown>) => {
+      	if (tokenObj.provider && tokenObj.token) {
         const headerKey = `X-Authentication-${tokenObj.provider}`;
         headers[headerKey] = String(tokenObj.token); // Ensure token is a string
-      }
-    });
-  }
+      	}
+      });
+  	}
+  	
+  	else {
+    	this.logger.debug('No authTokens provided or authTokens is not an array.');
+  	}
 
     const response = await fetch(urlToFetch, {
       method: 'POST',
