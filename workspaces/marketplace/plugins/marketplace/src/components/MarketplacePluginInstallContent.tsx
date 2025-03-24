@@ -17,7 +17,12 @@
 import React, { useState } from 'react';
 
 import { ErrorPage, Progress } from '@backstage/core-components';
-import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import {
+  alertApiRef,
+  useApi,
+  useRouteRef,
+  useRouteRefParams,
+} from '@backstage/core-plugin-api';
 
 import yaml from 'yaml';
 import { useNavigate } from 'react-router-dom';
@@ -113,26 +118,35 @@ interface TabPanelProps {
 }
 
 const TabPanel = ({ markdownContent, index, value, others }: TabPanelProps) => {
+  const alertApi = useApi(alertApiRef);
   const codeEditor = useCodeEditor();
   if (value !== index) return null;
 
   const handleApplyContent = (content: string | JsonObject) => {
-    const codeEditorContent = codeEditor.getValue();
-    const appliedContent = applyContent(
-      codeEditorContent || '',
-      others?.packageName,
-      content,
-    );
-    const selection = codeEditor.getSelection();
-    const position = codeEditor.getPosition();
-    if (appliedContent) {
-      codeEditor.setValue(appliedContent);
-      if (selection) {
-        codeEditor.setSelection(selection);
+    try {
+      const codeEditorContent = codeEditor.getValue();
+      const newContent = applyContent(
+        codeEditorContent || '',
+        others?.packageName,
+        content,
+      );
+      const selection = codeEditor.getSelection();
+      const position = codeEditor.getPosition();
+      if (newContent) {
+        codeEditor.setValue(newContent);
+        if (selection) {
+          codeEditor.setSelection(selection);
+        }
+        if (position) {
+          codeEditor.setPosition(position);
+        }
       }
-      if (position) {
-        codeEditor.setPosition(position);
-      }
+    } catch (error) {
+      alertApi.post({
+        display: 'transient',
+        severity: 'warning',
+        message: `Could not apply YAML: ${error}`,
+      });
     }
   };
 
