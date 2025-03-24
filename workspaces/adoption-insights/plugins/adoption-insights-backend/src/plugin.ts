@@ -24,6 +24,7 @@ import { EventBatchProcessor } from './domain/EventBatchProcessor';
 import EventApiController from './controllers/EventApiController';
 import { schedulePartition } from './database/partition';
 import { getConfigurationOptions } from './utils/config';
+import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
 
 /**
  * adoptionInsightsPlugin backend plugin
@@ -41,6 +42,8 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         database: coreServices.database,
         scheduler: coreServices.scheduler,
+        permissions: coreServices.permissions,
+        permissionsRegistry: coreServices.permissionsRegistry,
       },
       async init({
         config,
@@ -49,6 +52,8 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         httpRouter,
         database,
         scheduler,
+        permissions,
+        permissionsRegistry,
       }) {
         // Queue configuration
         const options = getConfigurationOptions(config);
@@ -61,6 +66,10 @@ export const adoptionInsightsPlugin = createBackendPlugin({
           config,
         );
 
+        permissionsRegistry.addPermissions([
+          adoptionInsightsEventsReadPermission,
+        ]);
+
         // Migrate database
         await migrate(database);
 
@@ -72,6 +81,7 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         httpRouter.use(
           await createRouter({
             httpAuth,
+            permissions,
             eventApiController,
           }),
         );

@@ -113,7 +113,6 @@ export async function createRouter({
       req.params.namespace,
       req.params.name,
     );
-    removeVerboseSpecContent(packages);
     res.json(packages);
   });
 
