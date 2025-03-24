@@ -109,23 +109,19 @@ export class SonataFlowService {
       'Content-Type': 'application/json',
     };
 
-	// Transform inputData to rename 'token' to 'X-Authemtication-{Provider}' in authTokens array
-  	const transformedInputData = args.inputData
-    ? {
-        ...args.inputData,
-        authTokens: Array.isArray(args.inputData.authTokens)
-          ? args.inputData.authTokens.map((tokenObj: Record<string, unknown>) => ({
-              provider: tokenObj.provider,
-              [`X-Authentication-${tokenObj.provider}`]: tokenObj.token, // Rename 'token' to 'X-Authemtication-{Provider}'
-            }))
-          : args.inputData.authTokens,
+  // Add X-Authentication headers from authTokens
+  if (args.inputData && Array.isArray(args.inputData.authTokens)) {
+    args.inputData.authTokens.forEach((tokenObj: Record<string, unknown>) => {
+      if (tokenObj.provider && tokenObj.token) {
+        const headerKey = `X-Authentication-${tokenObj.provider}`;
+        headers[headerKey] = String(tokenObj.token); // Ensure token is a string
       }
-    : {};
+    });
+  }
 
-	
     const response = await fetch(urlToFetch, {
       method: 'POST',
-      body: JSON.stringify(transformedInputData || {}),
+      body: JSON.stringify(args.inputData || {}),
       headers,
     });
 
