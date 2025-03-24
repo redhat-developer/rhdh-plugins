@@ -18,7 +18,12 @@ import React from 'react';
 
 import { Progress } from '@backstage/core-components';
 
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
+import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 import * as monacoEditor from 'monaco-editor';
 import type MonacoEditor from 'monaco-editor';
@@ -32,6 +37,12 @@ const defaultOptions: MonacoEditor.editor.IEditorConstructionOptions = {
 interface CodeEditorContextValue {
   getEditor: () => MonacoEditor.editor.ICodeEditor | null;
   setEditor: (editor: MonacoEditor.editor.ICodeEditor) => void;
+
+  getSelection: () => monacoEditor.Selection | null;
+  setSelection: (editorSelection: monacoEditor.Selection) => void;
+
+  getPosition: () => monacoEditor.Position | null;
+  setPosition: (cursorPosition: monacoEditor.Position) => void;
   /** short for getEditor()?.getValue() */
   getValue: () => string | undefined;
   /** short for getEditor()?.setValue() and getEditor()?.focus() */
@@ -51,6 +62,14 @@ export const CodeEditorContextProvider = (props: {
       getEditor: () => editorRef.current,
       setEditor: (editor: MonacoEditor.editor.ICodeEditor) => {
         editorRef.current = editor;
+      },
+      getPosition: () => editorRef.current?.getPosition() || null,
+      setPosition: (cursorPosition: monacoEditor.Position) => {
+        editorRef.current?.setPosition(cursorPosition);
+      },
+      getSelection: () => editorRef.current?.getSelection() || null,
+      setSelection: (editorSelection: monacoEditor.Selection) => {
+        editorRef.current?.setSelection(editorSelection);
       },
       getValue: () => editorRef.current?.getValue(),
       setValue: (value: string, autoFocus = true) => {
@@ -99,9 +118,11 @@ export const CodeEditor = ({
   onLoaded,
   ...otherProps
 }: CodeEditorProps) => {
-  const theme = useTheme().palette.mode === 'dark' ? 'vs-dark' : 'vs-light';
+  const theme = useTheme();
+  const paletteMode = theme.palette.mode === 'dark' ? 'vs-dark' : 'vs-light';
 
   const codeEditor = useCodeEditor();
+  const [copied, setCopied] = React.useState(false);
 
   const onMount = React.useCallback<OnMount>(
     (editor, _monaco) => {
@@ -111,15 +132,50 @@ export const CodeEditor = ({
     [codeEditor, onLoaded],
   );
 
+  const handleCopy = async () => {
+    const text = codeEditor.getValue();
+    if (text) {
+      await window.navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
-    <Editor
-      theme={theme}
-      defaultLanguage={defaultLanguage}
-      onChange={onChange}
-      onMount={onMount}
-      loading={<Progress />}
-      options={defaultOptions}
-      {...otherProps}
-    />
+    <Box position="relative" sx={{ width: '100%', height: '100%' }}>
+      <Button
+        variant="text"
+        onClick={handleCopy}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          right: 10,
+          zIndex: 1,
+          minWidth: '32px',
+          minHeight: '32px',
+          p: 0,
+          '&:hover': { bgcolor: 'transparent' },
+        }}
+      >
+        {copied ? (
+          <Typography color={theme.palette.text.secondary}>✔</Typography>
+        ) : (
+          <ContentCopyRoundedIcon
+            fontSize="small"
+            sx={{ mx: 1, color: theme.palette.text.secondary }}
+          />
+        )}
+      </Button>
+
+      <Editor
+        theme={paletteMode}
+        defaultLanguage={defaultLanguage}
+        onChange={onChange}
+        onMount={onMount}
+        loading={<Progress />}
+        options={defaultOptions}
+        {...otherProps}
+      />
+    </Box>
   );
 };

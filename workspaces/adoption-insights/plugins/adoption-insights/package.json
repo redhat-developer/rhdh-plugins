@@ -20,7 +20,8 @@
     "pluginId": "adoption-insights",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-adoption-insights",
-      "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend"
+      "@red-hat-developer-hub/backstage-plugin-adoption-insights-backend",
+      "@red-hat-developer-hub/backstage-plugin-adoption-insights-common"
     ]
   },
   "sideEffects": false,
