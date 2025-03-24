@@ -24,14 +24,17 @@ export const evaluateFloatingButtonsWithPositions = (
 ): FloatingActionButtonWithPositions =>
   floatingButtons.reduce(
     (acc: FloatingActionButtonWithPositions, fb: FloatingActionButton) => {
-      const slot = fb.slot ?? Slot.PAGE_END;
+      const slot =
+        fb.slot && Object.values(Slot).includes(fb.slot)
+          ? fb.slot
+          : Slot.PAGE_END;
       const slotWithActions = acc.find(a => a.slot === slot);
       if (slotWithActions) {
-        slotWithActions.actions.push(fb);
+        slotWithActions.actions.push({ ...fb, slot });
       } else {
         acc.push({
           slot,
-          actions: [fb],
+          actions: [{ ...fb, slot }],
         });
       }
       return acc;
