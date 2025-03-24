@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.5.1
+
+### Patch Changes
+
+- ecf3b3e: show error message when the YAML example could not be applied
+- ecf3b3e: reduce code editor bundled size (js and js.map)
+
 ## 0.5.0
 
 ### Minor Changes

@@ -25,7 +25,12 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
-import * as monacoEditor from 'monaco-editor';
+
+// TODO: Load the CodeEditor or the pages that uses the CodeEditor lazy!
+// Currently manaco is loaded when the main extensions page is opened.
+import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution';
+// @ts-ignore
+import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 import type MonacoEditor from 'monaco-editor';
 
 loader.config({ monaco: monacoEditor });
@@ -38,11 +43,11 @@ interface CodeEditorContextValue {
   getEditor: () => MonacoEditor.editor.ICodeEditor | null;
   setEditor: (editor: MonacoEditor.editor.ICodeEditor) => void;
 
-  getSelection: () => monacoEditor.Selection | null;
-  setSelection: (editorSelection: monacoEditor.Selection) => void;
+  getSelection: () => MonacoEditor.Selection | null;
+  setSelection: (editorSelection: MonacoEditor.Selection) => void;
 
-  getPosition: () => monacoEditor.Position | null;
-  setPosition: (cursorPosition: monacoEditor.Position) => void;
+  getPosition: () => MonacoEditor.Position | null;
+  setPosition: (cursorPosition: MonacoEditor.Position) => void;
   /** short for getEditor()?.getValue() */
   getValue: () => string | undefined;
   /** short for getEditor()?.setValue() and getEditor()?.focus() */
@@ -64,11 +69,11 @@ export const CodeEditorContextProvider = (props: {
         editorRef.current = editor;
       },
       getPosition: () => editorRef.current?.getPosition() || null,
-      setPosition: (cursorPosition: monacoEditor.Position) => {
+      setPosition: (cursorPosition: MonacoEditor.Position) => {
         editorRef.current?.setPosition(cursorPosition);
       },
       getSelection: () => editorRef.current?.getSelection() || null,
-      setSelection: (editorSelection: monacoEditor.Selection) => {
+      setSelection: (editorSelection: MonacoEditor.Selection) => {
         editorRef.current?.setSelection(editorSelection);
       },
       getValue: () => editorRef.current?.getValue(),
