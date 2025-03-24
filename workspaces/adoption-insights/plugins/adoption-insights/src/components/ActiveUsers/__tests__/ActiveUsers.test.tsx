@@ -16,7 +16,7 @@
 import React from 'react';
 
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
+
 import ActiveUsers from '../ActiveUsers';
 import { useActiveUsers } from '../../../hooks/useActiveUsers';
 
@@ -24,12 +24,17 @@ jest.mock('../../../hooks/useActiveUsers', () => ({
   useActiveUsers: jest.fn(),
 }));
 
-jest.mock('../../CardWrapper', () => ({ title, children }: any) => (
-  <div data-testid="card-wrapper">
-    <h1>{title}</h1>
-    {children}
-  </div>
-));
+jest.mock(
+  '../../CardWrapper',
+  () =>
+    ({ title, children }: { title: string; children: React.ReactNode }) =>
+      (
+        <div data-testid="card-wrapper">
+          <h1>{title}</h1>
+          {children}
+        </div>
+      ),
+);
 
 jest.mock('../../Common/EmptyChartState', () => () => (
   <div data-testid="empty-state">No Data</div>
@@ -38,6 +43,7 @@ jest.mock('@mui/material/CircularProgress', () => () => (
   <div data-testid="loading-spinner">Loading</div>
 ));
 jest.mock('../ExportCSVButton', () => () => <button>Export</button>);
+
 jest.mock('recharts', () => {
   const OriginalRecharts = jest.requireActual('recharts');
   return {
@@ -57,17 +63,18 @@ describe('ActiveUsers Component', () => {
     }));
   });
 
-  test('should render empty state when no data is available', () => {
-    (useActiveUsers as jest.Mock).mockReturnValue({
-      activeUsers: { data: [] },
-      loading: false,
-    });
+  const renderActiveUsers = (mockData: any) => {
+    (useActiveUsers as jest.Mock).mockReturnValue(mockData);
     render(<ActiveUsers />);
+  };
+
+  test('should render empty state when no data is available', () => {
+    renderActiveUsers({ activeUsers: { data: [] }, loading: false });
     expect(screen.getByTestId('empty-state')).toBeInTheDocument();
   });
 
   test('should render chart when data is available', () => {
-    (useActiveUsers as jest.Mock).mockReturnValue({
+    renderActiveUsers({
       activeUsers: {
         data: [
           { date: '2023-03-10', new_users: 10, returning_users: 5 },
@@ -77,7 +84,7 @@ describe('ActiveUsers Component', () => {
       },
       loading: false,
     });
-    render(<ActiveUsers />);
+
     expect(screen.getByText(/active users per day/i)).toBeInTheDocument();
   });
 });
