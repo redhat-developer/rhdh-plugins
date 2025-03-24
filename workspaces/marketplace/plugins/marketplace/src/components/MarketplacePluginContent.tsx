@@ -73,7 +73,7 @@ export const MarketplacePluginContentSkeleton = () => {
       </Stack>
       <br />
       <br />
-      <Grid container>
+      <Grid container spacing={2}>
         <Grid item md={2}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
             Highlights
@@ -224,7 +224,7 @@ export const MarketplacePluginContent = ({
           </Stack>
         </Stack>
 
-        <Grid container>
+        <Grid container spacing={2}>
           <Grid item md={3}>
             {highlights.length > 0 ? (
               <>
