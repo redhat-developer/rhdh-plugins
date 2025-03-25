@@ -100,14 +100,14 @@ The Bulk Import Backend plugin emits audit events for various operations. Events
 
 - **`ping`**: tracks `GET` requests to the `/ping` endpoint, which allows to make sure the bulk import backend is up and running.
 
-- **`org-fetch`**: tracks `GET` requests to the `/organizations` endpoint, which returns the list of organizations accessible from all configured GitHub Integrations.
+- **`org-read`**: tracks `GET` requests to the `/organizations` endpoint, which returns the list of organizations accessible from all configured GitHub Integrations.
 
 Filter on `queryType`.
 
 - **`all`**: tracks fetching all organizations. (GET `/organizations`)
 - **`by-query`**: tracks fetching organization filtered by the query parameter 'search'. (GET `/organizations`)
 
-- **`repo-fetch`**: tracks `GET` requests to the endpoint, which returns the list of repositories accessible from all configured GitHub Integrations.
+- **`repo-read`**: tracks `GET` requests to the endpoint, which returns the list of repositories accessible from all configured GitHub Integrations.
 
 Filter on `queryType`.
 
@@ -115,20 +115,20 @@ Filter on `queryType`.
 - **`by-query`**: tracks fetching a list of repositories filtered by the query parameter 'search'. (GET `/repositories`)
 - **`by-org`**: tracks `GET` requests to the `/organizations/:orgName/repositories` endpoint, which returns the list of repositories for the specified organization (accessible from any of the configured GitHub Integrations)
 
-- **`import-fetch`**: tracks `GET` requests to the `/imports` endpoint, which returns the list of existing import jobs along with their statuses.
+- **`import-read`**: tracks `GET` requests to the `/imports` endpoint, which returns the list of existing import jobs along with their statuses.
 
 Filter on `queryType`.
 
 - **`all`**: tracks fetching all imports.
 - **`by-query`**: tracks fetching imports filtered by the query parameter 'search'.
 
-- **`import-status-fetch`**: tracks `GET` requests to the `/import/by-repo` endpoint, which fetches details about the import job for the specified repository.
+- **`import-status-read`**: tracks `GET` requests to the `/import/by-repo` endpoint, which fetches details about the import job for the specified repository.
 
 Filter on `queryType`.
 
 - **`by-query`**: tracks fetching import status filtered by the query parameter 'repo'. (GET `/import/by-repo`).
 
-- **`import-mutate`** tracks events about midification imports.
+- **`import-write`** tracks events about midification imports.
 
 Filter on `actionType`.
 
@@ -138,7 +138,7 @@ Filter on `actionType`.
 Example:
 
 ```text
-➤ YN0000: [backend]: 2025-03-20T17:12:34.754Z bulk-import info bulk-import.org-fetch isAuditEvent=true eventId="org-fetch" severityLevel="medium" actor={"ip":"::1","hostname":"localhost","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"} request={"url":"/api/bulk-import/organizations?pagePerIntegration=1&sizePerIntegration=5&search=","method":"GET"} meta={"queryType":"all","search":"redhat-developer","responseStatus":200} status="succeeded"
+➤ YN0000: [backend]: 2025-03-20T17:12:34.754Z bulk-import info bulk-import.org-read isAuditEvent=true eventId="org-read" severityLevel="medium" actor={"ip":"::1","hostname":"localhost","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"} request={"url":"/api/bulk-import/organizations?pagePerIntegration=1&sizePerIntegration=5&search=","method":"GET"} meta={"queryType":"all","search":"redhat-developer","responseStatus":200} status="succeeded"
 ```
 
 ## For Users

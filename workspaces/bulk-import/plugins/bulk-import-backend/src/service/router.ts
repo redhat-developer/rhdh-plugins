@@ -422,33 +422,33 @@ async function createAuditorEventByOperationId(
       auditorEvent = await auditCreateEvent(auditor, 'ping', req);
       break;
     case Operations.FIND_ALL_ORGANIZATIONS:
-      auditorEvent = await auditCreateEvent(auditor, 'org-fetch', req, {
+      auditorEvent = await auditCreateEvent(auditor, 'org-read', req, {
         queryType: req.query.search ? 'by-query' : 'all',
         search: req.query?.search,
       });
       break;
     case Operations.FIND_ALL_REPOSITORIES:
-      auditorEvent = await auditCreateEvent(auditor, 'repo-fetch', req, {
+      auditorEvent = await auditCreateEvent(auditor, 'repo-read', req, {
         queryType: req.query.search ? 'by-query' : 'all',
         search: req.query.search,
       });
       break;
     case Operations.FIND_REPOSITORIES_BY_ORGANIZATION: {
       const organizationName = req.params.organizationName?.toString();
-      auditorEvent = await auditCreateEvent(auditor, 'repo-fetch', req, {
+      auditorEvent = await auditCreateEvent(auditor, 'repo-read', req, {
         queryType: 'by-org',
         organizationName,
       });
       break;
     }
     case Operations.FIND_ALL_IMPORTS:
-      auditorEvent = await auditCreateEvent(auditor, 'import-fetch', req, {
+      auditorEvent = await auditCreateEvent(auditor, 'import-read', req, {
         queryType: req.query.search ? 'by-query' : 'all',
         search: req.query.search,
       });
       break;
     case Operations.CREATE_IMPORT_JOBS:
-      auditorEvent = await auditCreateEvent(auditor, 'import-mutate', req, {
+      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'create',
         dryRun: req.query.dryRun,
       });
@@ -456,13 +456,13 @@ async function createAuditorEventByOperationId(
     case Operations.FIND_IMPORT_STATUS_BY_REPO:
       auditorEvent = await auditCreateEvent(
         auditor,
-        'import-status-fetch',
+        'import-status-read',
         req,
         { queryType: 'by-query', repo: req.query.repo },
       );
       break;
     case Operations.DELETE_IMPORT_BY_REPO:
-      auditorEvent = await auditCreateEvent(auditor, 'import-mutate', req, {
+      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'delete',
         repository: req.query.repo,
       });
