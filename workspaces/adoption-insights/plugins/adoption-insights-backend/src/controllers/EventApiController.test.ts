@@ -24,6 +24,7 @@ import {
 } from '@backstage/core-plugin-api';
 import { QUERY_TYPES, QueryParams } from '../types/event-request';
 import { toEndOfDayUTC, toStartOfDayUTC } from '../utils/date';
+import { TechDocsCount, TopTechDocsCount } from '../types/event';
 
 let controller: EventApiController;
 let req: Partial<Request>;
@@ -40,6 +41,7 @@ const mockEventDb = {
   getTopTechDocsViews: jest.fn(),
   getTopTemplateViews: jest.fn(),
   getTopCatalogEntitiesViews: jest.fn(),
+  getTechdocsMetadata: jest.fn(),
 } as unknown as jest.Mocked<EventDatabase>;
 
 const mockProcessor = {
@@ -214,6 +216,8 @@ describe('GetInsights', () => {
       mockServices.rootConfig.mock(),
     );
 
+    global.fetch = jest.fn().mockResolvedValue({} as any);
+
     req = {
       query: {
         start_date: '2025-02-03',
@@ -286,6 +290,116 @@ describe('GetInsights', () => {
     expect(mockEventDb.getTopTemplateViews).toHaveBeenCalled();
     expect(mockEventDb.getTopTechDocsViews).toHaveBeenCalled();
     expect(mockEventDb.getTopCatalogEntitiesViews).toHaveBeenCalled();
+  });
+
+  it('should call getTechdocsMetadata method', async () => {
+    req.query = {
+      ...req.query,
+      type: 'top_techdocs',
+    };
+
+    const getTechdocsMetadata = jest.fn();
+
+    controller.getTechdocsMetadata = getTechdocsMetadata;
+    await controller.getInsights(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      res as Response,
+    );
+
+    expect(mockEventDb.getTopTechDocsViews).toHaveBeenCalled();
+    expect(getTechdocsMetadata).toHaveBeenCalled();
+  });
+
+  const setupTechdocsTest = (site_name: string | undefined) => {
+    req.query = {
+      ...req.query,
+      type: 'top_techdocs',
+    };
+    req.headers = {
+      authorization: 'Bearer test-token',
+    };
+
+    (fetch as jest.Mock).mockResolvedValue(
+      new global.Response(JSON.stringify({ site_name }), {
+        status: 200,
+      }),
+    );
+  };
+  const getTechdocsResult = (name: string): TopTechDocsCount => {
+    return {
+      data: [
+        {
+          count: 1,
+          last_used: new Date().toISOString(),
+          name,
+          kind: 'component',
+          namespace: 'default',
+        } as TechDocsCount,
+      ],
+    };
+  };
+
+  it('should append site_name metadata for a valid document', async () => {
+    setupTechdocsTest('app-docs');
+    const result = getTechdocsResult('test-component');
+
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
+
+    expect(result.data[0].site_name).toBe('app-docs');
+  });
+
+  it('should return empty site_name for document root page', async () => {
+    setupTechdocsTest('app-docs');
+    const result = getTechdocsResult('');
+
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
+
+    expect(result.data[0].site_name).toBe('');
+  });
+
+  it('should return component name as site_name for non-existing or deleted document', async () => {
+    setupTechdocsTest(undefined);
+    const result = getTechdocsResult('deleted-document');
+
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
+
+    expect(result.data[0].site_name).toBe('deleted-document');
+  });
+
+  it('should handle techdocs metadata API gracefully', async () => {
+    setupTechdocsTest('deleted-document');
+
+    (fetch as jest.Mock).mockRejectedValue(
+      new Error('Failed to fetch techdocs metadata'),
+    );
+
+    const result = {
+      data: [
+        {
+          count: 1,
+          last_used: new Date().toISOString(),
+          name: 'app-docs',
+          kind: 'component',
+          namespace: 'default',
+        } as TechDocsCount,
+      ],
+    };
+
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
+
+    expect(result.data[0].site_name).toBe('app-docs');
   });
 
   it('should return the csv file with correct filename', async () => {
