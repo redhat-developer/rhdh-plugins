@@ -231,12 +231,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: businessKey
-          in: query
-          description: ID of the parent workflow
-          required: false
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -488,7 +482,7 @@ components:
           type: string
         workflowdata:
           $ref: '#/components/schemas/WorkflowDataDTO'
-        businessKey:
+        assessmentInstanceId:
           type: string
         nodes:
           type: array
@@ -575,6 +569,8 @@ components:
         inputData:
           type: object
           additionalProperties: true
+        orchestratorAssessmentInstanceId:
+          type: string
     ExecuteWorkflowResponseDTO:
       type: object
       properties:
@@ -647,6 +643,19 @@ components:
       oneOf:
         - $ref: '#/components/schemas/LogicalFilter'
         - $ref: '#/components/schemas/FieldFilter'
+        - $ref: '#/components/schemas/NestedFilter'
+    NestedFilter:
+      type: object
+      required:
+        - field
+        - nested
+      properties:
+        field:
+          type: string
+        nested:
+          oneOf:
+            - $ref: '#/components/schemas/FieldFilter'
+            - $ref: '#/components/schemas/NestedFilter'
     LogicalFilter:
       type: object
       required:

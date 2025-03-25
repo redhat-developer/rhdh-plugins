@@ -33,6 +33,8 @@ All URIs are relative to *http://localhost*
  - [GetOverviewsRequestParams](./Models/GetOverviewsRequestParams.md)
  - [InputSchemaResponseDTO](./Models/InputSchemaResponseDTO.md)
  - [LogicalFilter](./Models/LogicalFilter.md)
+ - [NestedFilter](./Models/NestedFilter.md)
+ - [NestedFilter_nested](./Models/NestedFilter_nested.md)
  - [NodeInstanceDTO](./Models/NodeInstanceDTO.md)
  - [PaginationInfoDTO](./Models/PaginationInfoDTO.md)
  - [ProcessInstanceDTO](./Models/ProcessInstanceDTO.md)
