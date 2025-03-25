@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
@@ -30,11 +30,7 @@ import {
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
 
-interface Props {
-  children: ReactNode;
-}
-
-export const WorkflowPageTabContent = ({ children }: Props) => {
+export const RunButton = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const navigate = useNavigate();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
@@ -49,35 +45,26 @@ export const WorkflowPageTabContent = ({ children }: Props) => {
     ]);
 
   return (
-    <Grid
-      container
-      spacing={2}
-      direction="column"
-      wrap="nowrap"
-      justifyContent="flex-end"
-    >
-      <Grid item container justifyContent="flex-end">
-        <Grid item>
-          {loadingPermission ? (
-            <Skeleton variant="text" width="5rem" />
-          ) : (
-            <Tooltip
-              title="user not authorized to execute workflow"
-              disableHoverListener={canRun}
+    <Grid item container justifyContent="flex-end" xs={12} spacing={2}>
+      <Grid item>
+        {loadingPermission ? (
+          <Skeleton variant="text" width="5rem" />
+        ) : (
+          <Tooltip
+            title="user not authorized to execute workflow"
+            disableHoverListener={canRun}
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleExecute}
+              disabled={!canRun}
             >
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleExecute}
-                disabled={!canRun}
-              >
-                Run
-              </Button>
-            </Tooltip>
-          )}
-        </Grid>
+              Run
+            </Button>
+          </Tooltip>
+        )}
       </Grid>
-      {children}
     </Grid>
   );
 };

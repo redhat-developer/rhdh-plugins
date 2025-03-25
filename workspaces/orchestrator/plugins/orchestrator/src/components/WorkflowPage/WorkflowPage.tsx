@@ -26,8 +26,8 @@ import { orchestratorApiRef } from '../../api';
 import { workflowRouteRef, workflowRunsRoutePath } from '../../routes';
 import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
 import { WorkflowRunsTabContent } from '../WorkflowRunsTabContent';
+import { RunButton } from './RunButton';
 import { WorkflowDetailsTabContent } from './WorkflowDetailsTabContent';
-import { WorkflowPageTabContent } from './WorkflowPageTabContent';
 
 export const WorkflowPage = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
@@ -50,20 +50,20 @@ export const WorkflowPage = () => {
     >
       <TabbedLayout>
         <TabbedLayout.Route path="/" title="Workflow details">
-          <WorkflowPageTabContent>
+          <Grid container spacing={2}>
+            <RunButton />
             <WorkflowDetailsTabContent
               loading={loadingWorkflowOverview}
               workflowOverviewDTO={workflowOverviewDTO?.data}
               errorWorkflowOverview={errorWorkflowOverview}
             />
-          </WorkflowPageTabContent>
+          </Grid>
         </TabbedLayout.Route>
         <TabbedLayout.Route path={workflowRunsRoutePath} title="Workflow runs">
-          <WorkflowPageTabContent>
-            <Grid item>
-              <WorkflowRunsTabContent />
-            </Grid>
-          </WorkflowPageTabContent>
+          <Grid container spacing={2}>
+            <RunButton />
+            <WorkflowRunsTabContent />
+          </Grid>
         </TabbedLayout.Route>
       </TabbedLayout>
     </BaseOrchestratorPage>

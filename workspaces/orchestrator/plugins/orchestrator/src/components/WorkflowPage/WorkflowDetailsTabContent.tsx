@@ -45,7 +45,7 @@ export const WorkflowDetailsTabContent = ({
   });
 
   return (
-    <>
+    <Grid container item direction="column" xs={12} spacing={2}>
       {errorWorkflowOverview && (
         <Grid item>
           <ResponseErrorPanel error={errorWorkflowOverview} />
@@ -70,6 +70,6 @@ export const WorkflowDetailsTabContent = ({
           </InfoCard>
         </Grid>
       )}
-    </>
+    </Grid>
   );
 };
