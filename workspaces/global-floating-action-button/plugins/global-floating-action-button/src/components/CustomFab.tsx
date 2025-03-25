@@ -23,7 +23,7 @@ import Typography from '@mui/material/Typography';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { FabIcon } from './FabIcon';
 import { FloatingActionButton, Slot } from '../types';
-import { slotOptions } from '../utils';
+import { getSlotOptions } from '../utils';
 
 const useStyles = makeStyles(() => ({
   openInNew: { paddingBottom: '5px', paddingTop: '3px' },
@@ -43,7 +43,7 @@ const FABLabel = ({
   order: { externalIcon?: number; icon?: number };
 }) => {
   const styles = useStyles();
-  const marginStyle = slotOptions[slot].margin;
+  const marginStyle = getSlotOptions(slot).margin;
   return (
     <>
       {showExternalIcon && (
@@ -116,9 +116,7 @@ export const CustomFab = ({
   return (
     <Tooltip
       title={actionButton.toolTip}
-      placement={
-        slotOptions[actionButton.slot || Slot.PAGE_END].tooltipDirection
-      }
+      placement={getSlotOptions(actionButton.slot).tooltipDirection}
     >
       <Fab
         {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
