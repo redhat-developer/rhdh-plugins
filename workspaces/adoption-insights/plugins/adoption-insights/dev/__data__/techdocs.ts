@@ -22,6 +22,7 @@ export default {
       kind: '',
       name: '',
       namespace: '',
+      site_name: '',
     },
     {
       entityref: 'techdocs:catalog-reader-view',
@@ -30,6 +31,7 @@ export default {
       kind: 'component',
       name: 'nationalparks-py',
       namespace: 'default',
+      site_name: 'nationalparks-doc',
     },
   ],
 };
