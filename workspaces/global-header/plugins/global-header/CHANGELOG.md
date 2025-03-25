@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.4.0
+
+### Minor Changes
+
+- ba8628d: Added a new application launcher dropdown to the global header which can be used to configure application links and quick links.
+
 ## 1.3.0
 
 ### Minor Changes
