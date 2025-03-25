@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.5.2
+
+### Patch Changes
+
+- ff849f7: Minor UI issues fixed
+
 ## 0.5.1
 
 ### Patch Changes
