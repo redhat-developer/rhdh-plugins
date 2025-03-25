@@ -183,12 +183,12 @@ export const LightspeedChat = ({
     // eslint-disable-next-line
   }, [messages, scrollToBottomRef.current]);
 
-  const sendMessage = (message: string) => {
+  const sendMessage = (message: string | number) => {
     setNewChatCreated(false);
     setAnnouncement(
       `Message from User: ${prompt}. Message from Bot is loading.`,
     );
-    handleInputPrompt(message);
+    handleInputPrompt(message.toString());
     setIsSendButtonDisabled(true);
   };
 

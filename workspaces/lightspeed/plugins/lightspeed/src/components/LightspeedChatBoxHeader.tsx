@@ -16,6 +16,7 @@
 
 import React from 'react';
 
+import { createStyles, makeStyles } from '@material-ui/core';
 import { ChatbotHeaderActions } from '@patternfly/chatbot';
 import {
   Dropdown,
@@ -31,12 +32,25 @@ type LightspeedChatBoxHeaderProps = {
   models: { label: string; value: string }[];
 };
 
+const useStyles = makeStyles(() =>
+  createStyles({
+    dropdown: {
+      '& ul, & li': {
+        padding: 0,
+        margin: 0,
+      },
+    },
+  }),
+);
+
 export const LightspeedChatBoxHeader = ({
   selectedModel,
   handleSelectedModel,
   models,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = React.useState(false);
+
+  const styles = useStyles();
 
   const toggle = (toggleRef: React.Ref<MenuToggleElement>) => (
     <MenuToggle
@@ -53,6 +67,7 @@ export const LightspeedChatBoxHeader = ({
   return (
     <ChatbotHeaderActions>
       <Dropdown
+        className={styles.dropdown}
         isOpen={isOptionsMenuOpen}
         onSelect={(_e, value) => {
           handleSelectedModel(value as string);
