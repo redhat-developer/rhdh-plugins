@@ -69,7 +69,7 @@ export const HeaderIcon = ({
         baseClassName="material-icons-outlined"
         sx={layout}
       >
-        <img src={icon} alt="" />
+        <img src={icon} alt="" height="100%" width="100%" />
       </MuiIcon>
     );
   }

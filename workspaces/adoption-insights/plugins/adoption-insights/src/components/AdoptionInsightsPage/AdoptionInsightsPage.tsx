@@ -29,27 +29,41 @@ import Plugins from '../Plugins';
 import Searches from '../Searches';
 import Users from '../Users';
 import { DateRangeProvider } from '../Header/DateRangeContext';
+import { useAdoptionInsightsEventsReadPermission } from '../../hooks/useAdoptionInsightsEventsReadPermission';
+import PermissionRequiredState from '../Common/PermissionRequiredState';
 
 export const AdoptionInsightsPage = () => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const { allowed: hasEventsReadPermission, loading } =
+    useAdoptionInsightsEventsReadPermission();
+
+  if (loading) {
+    return null;
+  }
 
   return (
-    <DateRangeProvider>
-      <Page themeId="home">
-        <InsightsHeader title="Insights" />
+    <Page themeId="home">
+      {!hasEventsReadPermission ? (
         <Content>
-          <Masonry columns={isSmallScreen ? 1 : 2} spacing={2}>
-            <ActiveUsers />
-            <Users />
-            <Templates />
-            <CatalogEntities />
-            <Plugins />
-            <Techdocs />
-            <Searches />
-          </Masonry>
+          <PermissionRequiredState />
         </Content>
-      </Page>
-    </DateRangeProvider>
+      ) : (
+        <DateRangeProvider>
+          <InsightsHeader title="Adoption Insights" />
+          <Content>
+            <Masonry columns={isSmallScreen ? 1 : 2} spacing={2}>
+              <ActiveUsers />
+              <Users />
+              <Templates />
+              <CatalogEntities />
+              <Plugins />
+              <Techdocs />
+              <Searches />
+            </Masonry>
+          </Content>
+        </DateRangeProvider>
+      )}
+    </Page>
   );
 };

@@ -21,6 +21,7 @@ import { SoftwareTemplatesSection } from '../components/HeaderDropdownComponent/
 import { SearchComponent } from '../components/SearchComponent/SearchComponent';
 import { SupportButton } from '../components/SupportButton/SupportButton';
 import {
+  ApplicationLauncherDropdownMountPoint,
   CreateDropdownMountPoint,
   GlobalHeaderComponentMountPoint,
   ProfileDropdownMountPoint,
@@ -30,6 +31,7 @@ import { Divider } from '../components/Divider/Divider';
 import { MenuItemLink } from '../components/MenuItemLink/MenuItemLink';
 import { Spacer } from '../components/Spacer/Spacer';
 import { StarredDropdown } from '../components/HeaderDropdownComponent/StarredDropdown';
+import { ApplicationLauncherDropdown } from '../components/HeaderDropdownComponent/ApplicationLauncherDropdown';
 
 /**
  * default Global Header Components mount points
@@ -71,6 +73,12 @@ export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMoun
       Component: StarredDropdown,
       config: {
         priority: 85,
+      },
+    },
+    {
+      Component: ApplicationLauncherDropdown,
+      config: {
+        priority: 82,
       },
     },
     {
@@ -133,3 +141,57 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
     },
   },
 ];
+
+export const defaultApplicationLauncherDropdownMountPoints: ApplicationLauncherDropdownMountPoint[] =
+  [
+    {
+      Component: MenuItemLink as React.ComponentType,
+      config: {
+        section: 'Red Hat AI',
+        sectionLink: 'https://www.redhat.com/en/products/ai',
+        sectionLinkLabel: 'Read more',
+        priority: 200,
+        props: {
+          title: 'Podman Desktop',
+          icon: 'https://podman-desktop.io/img/logo.svg',
+          link: 'https://podman-desktop.io/',
+        },
+      },
+    },
+    {
+      Component: MenuItemLink as React.ComponentType,
+      config: {
+        section: 'Red Hat AI',
+        priority: 180,
+        props: {
+          title: 'OpenShift AI',
+          icon: 'https://upload.wikimedia.org/wikipedia/commons/d/d8/Red_Hat_logo.svg',
+          link: 'https://www.redhat.com/en/technologies/cloud-computing/openshift/openshift-ai',
+        },
+      },
+    },
+    {
+      Component: MenuItemLink as React.ComponentType,
+      config: {
+        section: 'Quick Links',
+        priority: 150,
+        props: {
+          title: 'Slack',
+          icon: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg',
+          link: 'https://slack.com/',
+        },
+      },
+    },
+    {
+      Component: MenuItemLink as React.ComponentType,
+      config: {
+        section: 'Quick Links',
+        priority: 130,
+        props: {
+          title: 'ArgoCD',
+          icon: 'https://argo-cd.readthedocs.io/en/stable/assets/logo.png',
+          link: 'https://argo-cd.readthedocs.io/en/stable/',
+        },
+      },
+    },
+  ];

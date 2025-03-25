@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.1.1
+
+### Patch Changes
+
+- 822185a: add MUI v5 workaround to fix local design issues
+- 822185a: fix crash if slot name contains a typo
+
 ## 1.1.0
 
 ### Minor Changes

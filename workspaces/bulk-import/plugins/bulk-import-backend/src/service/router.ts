@@ -16,6 +16,8 @@
 
 import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import type {
+  AuditorService,
+  AuditorServiceEvent,
   AuthService,
   CacheService,
   DiscoveryService,
@@ -27,10 +29,6 @@ import type { Config } from '@backstage/config';
 import type { PermissionEvaluator } from '@backstage/plugin-permission-common';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
-import {
-  DefaultAuditLogger,
-  type AuditLogger,
-} from '@janus-idp/backstage-plugin-audit-log-node';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import express, { Router, type Request, type Response } from 'express';
 import {
@@ -47,10 +45,7 @@ import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
 import { permissionCheck } from '../helpers';
-import {
-  auditLogRequestError,
-  auditLogRequestSuccess,
-} from '../helpers/auditLogUtils';
+import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
   createImportJobs,
   deleteImportByRepo,
@@ -77,6 +72,19 @@ export interface RouterOptions {
   httpAuth: HttpAuthService;
   auth: AuthService;
   catalogApi: CatalogApi;
+  auditor: AuditorService;
+}
+
+namespace Operations {
+  export const PING = 'ping';
+  export const FIND_ALL_ORGANIZATIONS = 'findAllOrganizations';
+  export const FIND_ALL_REPOSITORIES = 'findAllRepositories';
+  export const FIND_REPOSITORIES_BY_ORGANIZATION =
+    'findRepositoriesByOrganization';
+  export const FIND_ALL_IMPORTS = 'findAllImports';
+  export const CREATE_IMPORT_JOBS = 'createImportJobs';
+  export const FIND_IMPORT_STATUS_BY_REPO = 'findImportStatusByRepo';
+  export const DELETE_IMPORT_BY_REPO = 'deleteImportByRepo';
 }
 
 /**
@@ -95,13 +103,8 @@ export async function createRouter(
     cache,
     discovery,
     catalogApi,
+    auditor: auditor,
   } = options;
-
-  const auditLogger: AuditLogger = new DefaultAuditLogger({
-    logger: logger,
-    authService: auth,
-    httpAuthService: httpAuth,
-  });
 
   const githubApiService = new GithubApiService(logger, config, cache);
   const catalogHttpClient = new CatalogHttpClient({
@@ -138,13 +141,16 @@ export async function createRouter(
 
   await api.init();
 
-  api.register('ping', async (_c: Context, _req: Request, res: Response) => {
-    const result = await ping(logger);
-    return res.status(result.statusCode).json(result.responseBody);
-  });
+  api.register(
+    Operations.PING,
+    async (_c: Context, _req: Request, res: Response) => {
+      const result = await ping(logger);
+      return res.status(result.statusCode).json(result.responseBody);
+    },
+  );
 
   api.register(
-    'findAllOrganizations',
+    Operations.FIND_ALL_ORGANIZATIONS,
     async (c: Context, _req: Request, res: Response) => {
       const q: Paths.FindAllOrganizations.QueryParameters = {
         ...c.request.query,
@@ -170,7 +176,7 @@ export async function createRouter(
   );
 
   api.register(
-    'findAllRepositories',
+    Operations.FIND_ALL_REPOSITORIES,
     async (c: Context, _req: Request, res: Response) => {
       const q: Paths.FindAllRepositories.QueryParameters = {
         ...c.request.query,
@@ -205,7 +211,7 @@ export async function createRouter(
   );
 
   api.register(
-    'findRepositoriesByOrganization',
+    Operations.FIND_REPOSITORIES_BY_ORGANIZATION,
     async (c: Context, _req: Request, res: Response) => {
       const q: Paths.FindRepositoriesByOrganization.QueryParameters = {
         ...c.request.query,
@@ -239,7 +245,7 @@ export async function createRouter(
   );
 
   api.register(
-    'findAllImports',
+    Operations.FIND_ALL_IMPORTS,
     async (c: Context, _req: Request, res: Response) => {
       const h: Paths.FindAllImports.HeaderParameters = {
         ...c.request.headers,
@@ -283,7 +289,7 @@ export async function createRouter(
   );
 
   api.register(
-    'createImportJobs',
+    Operations.CREATE_IMPORT_JOBS,
     async (
       c: Context<Paths.CreateImportJobs.RequestBody>,
       _req: Request,
@@ -313,7 +319,7 @@ export async function createRouter(
   );
 
   api.register(
-    'findImportStatusByRepo',
+    Operations.FIND_IMPORT_STATUS_BY_REPO,
     async (c: Context, _req: Request, res: Response) => {
       const q: Paths.FindImportStatusByRepo.QueryParameters = {
         ...c.request.query,
@@ -337,7 +343,7 @@ export async function createRouter(
   );
 
   api.register(
-    'deleteImportByRepo',
+    Operations.DELETE_IMPORT_BY_REPO,
     async (c: Context, _req: Request, res: Response) => {
       const q: Paths.DeleteImportByRepo.QueryParameters = {
         ...c.request.query,
@@ -370,7 +376,7 @@ export async function createRouter(
   router.use(async (req, _res, next) => {
     if (req.path !== '/ping') {
       await permissionCheck(
-        auditLogger,
+        auditor,
         api.matchOperation(req as OpenAPIRequest)?.operationId,
         permissions,
         httpAuth,
@@ -383,17 +389,18 @@ export async function createRouter(
   router.use(async (req, res, next) => {
     const reqCast = req as OpenAPIRequest;
     const operationId = api.matchOperation(reqCast)?.operationId;
+
+    const auditorEvent = await createAuditorEventByOperationId(
+      operationId,
+      req,
+      auditor,
+    );
     try {
       const response = (await api.handleRequest(reqCast, req, res)) as Response;
-      auditLogRequestSuccess(
-        auditLogger,
-        operationId,
-        req,
-        response.statusCode,
-      );
+      auditorEvent?.success({ meta: { responseStatus: response.statusCode } });
       next();
     } catch (err: any) {
-      auditLogRequestError(auditLogger, operationId, req, err);
+      auditorEvent?.fail({ error: err, meta: { responseStatus: 500 } });
       next(err);
     }
   });
@@ -402,6 +409,72 @@ export async function createRouter(
   router.use(middleware.error());
 
   return router;
+}
+
+async function createAuditorEventByOperationId(
+  operationId: string | undefined,
+  req: Request,
+  auditor: AuditorService,
+): Promise<AuditorServiceEvent | undefined> {
+  let auditorEvent;
+  switch (operationId) {
+    case Operations.PING:
+      auditorEvent = await auditCreateEvent(auditor, 'ping', req);
+      break;
+    case Operations.FIND_ALL_ORGANIZATIONS:
+      auditorEvent = await auditCreateEvent(auditor, 'org-read', req, {
+        queryType: req.query.search ? 'by-query' : 'all',
+        search: req.query?.search,
+      });
+      break;
+    case Operations.FIND_ALL_REPOSITORIES:
+      auditorEvent = await auditCreateEvent(auditor, 'repo-read', req, {
+        queryType: req.query.search ? 'by-query' : 'all',
+        search: req.query.search,
+      });
+      break;
+    case Operations.FIND_REPOSITORIES_BY_ORGANIZATION: {
+      const organizationName = req.params.organizationName?.toString();
+      auditorEvent = await auditCreateEvent(auditor, 'repo-read', req, {
+        queryType: 'by-org',
+        organizationName,
+      });
+      break;
+    }
+    case Operations.FIND_ALL_IMPORTS:
+      auditorEvent = await auditCreateEvent(auditor, 'import-read', req, {
+        queryType: req.query.search ? 'by-query' : 'all',
+        search: req.query.search,
+      });
+      break;
+    case Operations.CREATE_IMPORT_JOBS:
+      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
+        actionType: 'create',
+        dryRun: req.query.dryRun,
+      });
+      break;
+    case Operations.FIND_IMPORT_STATUS_BY_REPO:
+      auditorEvent = await auditCreateEvent(
+        auditor,
+        'import-status-read',
+        req,
+        { queryType: 'by-query', repo: req.query.repo },
+      );
+      break;
+    case Operations.DELETE_IMPORT_BY_REPO:
+      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
+        actionType: 'delete',
+        repository: req.query.repo,
+      });
+      break;
+    case undefined:
+      auditorEvent = await auditCreateEvent(auditor, operationId, req);
+      break;
+    default:
+      // do nothing
+      break;
+  }
+  return auditorEvent;
 }
 
 function stringToNumber(s: number | undefined): number | undefined {

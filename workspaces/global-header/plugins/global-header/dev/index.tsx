@@ -46,6 +46,7 @@ import {
 } from '../src/plugin';
 
 import {
+  defaultApplicationLauncherDropdownMountPoints,
   defaultCreateDropdownMountPoints,
   defaultGlobalHeaderComponentsMountPoints,
   defaultProfileDropdownMountPoints,
@@ -172,6 +173,8 @@ createDevApp()
           'global.header/component': defaultGlobalHeaderComponentsMountPoints,
           'global.header/create': defaultCreateDropdownMountPoints,
           'global.header/profile': defaultProfileDropdownMountPoints,
+          'global.header/application-launcher':
+            defaultApplicationLauncherDropdownMountPoints,
         }}
       >
         <GlobalHeader />
@@ -197,6 +200,8 @@ createDevApp()
           ],
           'global.header/create': defaultCreateDropdownMountPoints,
           'global.header/profile': defaultProfileDropdownMountPoints,
+          'global.header/application-launcher':
+            defaultApplicationLauncherDropdownMountPoints,
         }}
       >
         <GlobalHeader />

@@ -15,6 +15,7 @@
  */
 
 import type {
+  AuditorService,
   AuthService,
   HttpAuthService,
   PermissionsService,
@@ -22,18 +23,17 @@ import type {
 import { NotAllowedError } from '@backstage/errors';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
-import type { AuditLogger } from '@janus-idp/backstage-plugin-audit-log-node';
 import express from 'express';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
-import { auditLogAuthError } from './auditLogUtils';
+import { auditCreateEvent } from './auditorUtils';
 
 /**
  * This will resolve to { result: AuthorizeResult.ALLOW } if the permission framework is disabled
  */
 export async function permissionCheck(
-  auditLogger: AuditLogger,
+  auditor: AuditorService,
   openApiOperationId: string | undefined,
   permissions: PermissionsService,
   httpAuth: HttpAuthService,
@@ -55,7 +55,12 @@ export async function permissionCheck(
 
   if (decision.result === AuthorizeResult.DENY) {
     const err = new NotAllowedError('Unauthorized');
-    auditLogAuthError(auditLogger, openApiOperationId, req, err);
+    const auditorEvent = await auditCreateEvent(
+      auditor,
+      openApiOperationId,
+      req,
+    );
+    await auditorEvent.fail({ error: err, meta: { responseStatus: 403 } });
     throw err;
   }
 }
