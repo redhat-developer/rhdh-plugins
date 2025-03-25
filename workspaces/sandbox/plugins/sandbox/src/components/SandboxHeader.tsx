@@ -65,23 +65,29 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
       }
       style={{ background: 'none' }}
     >
-      <Button
-        variant="outlined"
-        color="primary"
-        startIcon={<SupportAgentIcon />}
-        endIcon={<OpenInNewIcon />}
-        sx={{
-          textTransform: 'none',
-          marginRight: theme.spacing(2),
-          border: `1px solid ${theme.palette.primary.main}`,
-          '&:hover': {
-            backgroundColor: 'rgba(25, 118, 210, 0.04)',
-            borderColor: '#1976d2',
-          },
-        }}
+      <Link
+        to="https://www.redhat.com/en/contact"
+        underline="none"
+        target="_blank"
       >
-        Contact Red Hat Sales
-      </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<SupportAgentIcon />}
+          endIcon={<OpenInNewIcon />}
+          sx={{
+            textTransform: 'none',
+            marginRight: theme.spacing(2),
+            border: `1px solid ${theme.palette.primary.main}`,
+            '&:hover': {
+              backgroundColor: 'rgba(25, 118, 210, 0.04)',
+              borderColor: '#1976d2',
+            },
+          }}
+        >
+          Contact Red Hat Sales
+        </Button>
+      </Link>
     </Header>
   );
 };
