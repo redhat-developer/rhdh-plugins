@@ -6,8 +6,12 @@
 /// <reference types="react" />
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
+
+// @public (undocumented)
+export const AdoptionInsightsIcon: IconComponent;
 
 // @public
 export const AdoptionInsightsPage: () => JSX_2.Element | null;
