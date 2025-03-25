@@ -22,9 +22,6 @@ import {
 } from '@backstage/backend-test-utils';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
-import { AIMessage, HumanMessage } from '@langchain/core/messages';
-import { ChatPromptTemplate } from '@langchain/core/prompts';
-import express from 'express';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import request from 'supertest';
@@ -196,7 +193,9 @@ describe('lightspeed router tests', () => {
       expect(responseData.conversations).toBeDefined();
       expect(Array.isArray(responseData.conversations)).toBe(true);
       expect(responseData.conversations.length).toBe(2);
-      const ids = responseData.conversations.map(item => item.conversation_id);
+      const ids = responseData.conversations.map(
+        (item: any) => item.conversation_id,
+      );
 
       // Check if both expected IDs are present
       expect(ids).toContain(mockConversationId);

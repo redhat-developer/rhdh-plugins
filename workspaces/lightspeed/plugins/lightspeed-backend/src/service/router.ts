@@ -159,12 +159,9 @@ export async function createRouter(
     validateCompletionsRequest,
     async (request, response) => {
       const {
-        conversation_id,
-        model,
-        query,
         provider,
         system_prompt,
-      }: QueryRequestBody = request.body;
+      }: Pick<QueryRequestBody, 'provider' | 'system_prompt'> = request.body;
       try {
         const credentials = await httpAuth.credentials(request);
         const userEntity = await userInfo.getUserInfo(credentials);
