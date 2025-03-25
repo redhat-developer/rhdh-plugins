@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 1.26.1
+
+### Patch Changes
+
+- 29cf5fb: Limit viewable component to specific roles
+- 754a051: Adapt UI for completedWith field removal
+
 ## 1.26.0
 
 ### Minor Changes
