@@ -71,6 +71,40 @@ describe('InsightsAnalyticsApi', () => {
     expect(insightsAnalyticsApi).toBeDefined();
   });
 
+  it('should add events to the pending buffer until user identity is available', async () => {
+    const event: AnalyticsEvent = {
+      action: 'click',
+      subject: 'button',
+      context: mockContext,
+    };
+
+    mockIdentityApi = {
+      getBackstageIdentity: jest
+        .fn()
+        .mockResolvedValue({ userEntityRef: 'user:test' }),
+      getCredentials: jest.fn().mockResolvedValue({ token: 'dummy-token' }),
+    } as unknown as IdentityApi;
+
+    insightsAnalyticsApi = AdoptionInsightsAnalyticsApi.fromConfig(
+      mockConfigApi,
+      {
+        identityApi: mockIdentityApi,
+      },
+    );
+
+    jest
+      .spyOn(insightsAnalyticsApi as any, 'hash')
+      .mockResolvedValue('dummy-hashed-user-id');
+
+    await insightsAnalyticsApi.captureEvent(event);
+    const pendingEvents = Object.getOwnPropertyDescriptor(
+      insightsAnalyticsApi,
+      'pendingEvents',
+    )?.value;
+
+    expect(pendingEvents).toHaveLength(1);
+  });
+
   it('should buffer events before flushing', async () => {
     const event: AnalyticsEvent = {
       action: 'click',
@@ -121,6 +155,9 @@ describe('InsightsAnalyticsApi', () => {
         identityApi: mockIdentityApi,
       },
     );
+    jest
+      .spyOn(insightsAnalyticsApi as any, 'hash')
+      .mockResolvedValue('dummy-hashed-user-id');
     await insightsAnalyticsApi.captureEvent({
       action: 'event',
       subject: 'test',
