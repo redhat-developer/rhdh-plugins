@@ -19,15 +19,15 @@ export const signupDataToStatus = (signupData?: SignupData): Status => {
   let status: Status;
   if (!signupData) {
     status = 'new';
-  } else if (signupData.status.ready === true) {
+  } else if (signupData.status.ready) {
     status = 'ready';
   } else if (
-    signupData.status.ready === false &&
+    !signupData.status.ready &&
     signupData.status.verificationRequired
   ) {
     status = 'verify';
   } else if (
-    signupData.status.ready === false &&
+    !signupData.status.ready &&
     signupData.status.reason === 'Provisioning'
   ) {
     status = 'provisioning';

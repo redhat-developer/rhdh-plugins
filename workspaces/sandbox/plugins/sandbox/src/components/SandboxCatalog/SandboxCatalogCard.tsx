@@ -31,10 +31,10 @@ import {
   AnsibleLaunchInfoModal,
   PhoneVerificationModal,
 } from '../Modals';
-import { useRegContext } from '../../utils/RegContext';
+import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { AnsibleStatus } from '../../utils/aap-utils';
 import { useApi } from '@backstage/core-plugin-api';
-import { registerApiRef } from '../../api';
+import { aapApiRef, kubeApiRef } from '../../api';
 import { Product } from './productData';
 
 type SandboxCatalogCardProps = {
@@ -105,7 +105,8 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   showGreenCorner,
 }) => {
   const theme = useTheme();
-  const registerApi = useApi(registerApiRef);
+  const kubeApi = useApi(kubeApiRef);
+  const aapApi = useApi(aapApiRef);
   const {
     userData,
     ansibleData,
@@ -115,7 +116,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
     verificationRequired,
     refetchUserData,
     refetchAAP,
-  } = useRegContext();
+  } = useSandboxContext();
   const [ansibleCredsModalOpen, setAnsibleCredsModalOpen] =
     React.useState(false);
   const [verifyPhoneModalOpen, setVerifyPhoneModalOpen] = useState(false);
@@ -139,7 +140,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
       ansibleData?.items?.length > 0
     ) {
       try {
-        await registerApi.unIdleAAP(userData?.defaultUserNamespace || '');
+        await aapApi.unIdleAAP(userData?.defaultUserNamespace || '');
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error(e);
@@ -147,7 +148,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
       return;
     }
     try {
-      await registerApi.createAAP(userData?.defaultUserNamespace || '');
+      await aapApi.createAAP(userData?.defaultUserNamespace || '');
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
@@ -185,18 +186,18 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
         'app.kubernetes.io%2Fmanaged-by+in+%28aap-gateway-operator%2Caap-operator%2Cautomationcontroller-operator%2Cautomationhub-operator%2Ceda-operator%2Clightspeed-operator%29&limit=50';
 
       try {
-        const aapDeployments = await registerApi.getDeployments(
+        const aapDeployments = await kubeApi.getDeployments(
           userNamespace,
           aapLabelSelector,
         );
-        const aapStatefulSets = await registerApi.getStatefulSets(
+        const aapStatefulSets = await kubeApi.getStatefulSets(
           userNamespace,
           aapLabelSelector,
         );
-        await registerApi.deleteAAPCR(userData?.defaultUserNamespace || '');
-        await registerApi.deleteSecretsAndPVCs(aapDeployments, userNamespace);
-        await registerApi.deleteSecretsAndPVCs(aapStatefulSets, userNamespace);
-        await registerApi.deletePVCsForSTS(aapStatefulSets, userNamespace);
+        await aapApi.deleteAAPCR(userData?.defaultUserNamespace || '');
+        await kubeApi.deleteSecretsAndPVCs(aapDeployments, userNamespace);
+        await kubeApi.deleteSecretsAndPVCs(aapStatefulSets, userNamespace);
+        await kubeApi.deletePVCsForSTS(aapStatefulSets, userNamespace);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error(e);

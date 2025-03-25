@@ -28,7 +28,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useApi } from '@backstage/core-plugin-api';
 import { registerApiRef } from '../../api';
-import { useRegContext } from '../../utils/RegContext';
+import { useSandboxContext } from '../../hooks/useSandboxContext';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { errorMessage } from '../../utils/common';
@@ -46,7 +46,7 @@ export const AccessCodeInputModal: React.FC<AccessCodeInputModalProps> = ({
 }) => {
   const theme = useTheme();
   const registerApi = useApi(registerApiRef);
-  const { refetchUserData } = useRegContext();
+  const { refetchUserData } = useSandboxContext();
   const [loading, setLoading] = useState<boolean>(false);
   const [accessCode, setAccessCode] = useState<string>('');
   const [accessCodeError, setAccessCodeError] = React.useState<

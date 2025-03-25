@@ -25,7 +25,14 @@ import {
 import { rootRouteRef } from './routes';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
-import { registerApiRef, RegistrationBackendClient } from './api';
+import {
+  registerApiRef,
+  RegistrationBackendClient,
+  KubeBackendClient,
+  kubeApiRef,
+  aapApiRef,
+  AAPBackendClient,
+} from './api';
 
 export const sandboxPlugin = createPlugin({
   id: 'sandbox',
@@ -42,6 +49,24 @@ export const sandboxPlugin = createPlugin({
       },
       factory: ({ configApi, discoveryApi, fetchApi }) =>
         new RegistrationBackendClient({ configApi, discoveryApi, fetchApi }),
+    }),
+    createApiFactory({
+      api: kubeApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ discoveryApi, fetchApi }) =>
+        new KubeBackendClient({ discoveryApi, fetchApi }),
+    }),
+    createApiFactory({
+      api: aapApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ discoveryApi, fetchApi }) =>
+        new AAPBackendClient({ discoveryApi, fetchApi }),
     }),
   ],
 });

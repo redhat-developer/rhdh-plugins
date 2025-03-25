@@ -17,14 +17,14 @@ import { isEqual } from 'lodash';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AAPData, SignupData } from '../types';
 import { useApi } from '@backstage/core-plugin-api';
-import { registerApiRef } from '../api';
-import { useRecaptcha } from '../hooks/useRecaptcha';
-import { LONG_INTERVAL, SHORT_INTERVAL } from './const';
-import { signupDataToStatus } from './register-utils';
-import { AnsibleStatus, decode, getReadyCondition } from './aap-utils';
-import { errorMessage } from './common';
+import { aapApiRef, kubeApiRef, registerApiRef } from '../api';
+import { useRecaptcha } from './useRecaptcha';
+import { LONG_INTERVAL, SHORT_INTERVAL } from '../const';
+import { signupDataToStatus } from '../utils/register-utils';
+import { AnsibleStatus, decode, getReadyCondition } from '../utils/aap-utils';
+import { errorMessage } from '../utils/common';
 
-interface RegContextType {
+interface SandboxContextType {
   userFound: boolean;
   userReady: boolean;
   verificationRequired: boolean;
@@ -43,21 +43,24 @@ interface RegContextType {
   ansibleStatus: AnsibleStatus;
 }
 
-const RegContext = createContext<RegContextType | undefined>(undefined);
+const SandboxContext = createContext<SandboxContextType | undefined>(undefined);
 
-export const useRegContext = (): RegContextType => {
-  const context = useContext(RegContext);
+export const useSandboxContext = (): SandboxContextType => {
+  const context = useContext(SandboxContext);
   if (!context) {
-    throw new Error('Context useRegContext is not defined');
+    throw new Error('Context useSandboxContext is not defined');
   }
   return context;
 };
 
-export const SignupProvider: React.FC<{ children: React.ReactNode }> = ({
+export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   useRecaptcha();
+  const aapApi = useApi(aapApiRef);
+  const kubeApi = useApi(kubeApiRef);
   const registerApi = useApi(registerApiRef);
+
   const [statusUnknown, setStatusUnknown] = React.useState(true);
   const [userFound, setUserFound] = useState<boolean>(false);
   const [userData, setData] = useState<SignupData | undefined>(undefined);
@@ -146,9 +149,7 @@ export const SignupProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const getAAPData = async () => {
     try {
-      const data = await registerApi.getAAP(
-        userData?.defaultUserNamespace ?? '',
-      );
+      const data = await aapApi.getAAP(userData?.defaultUserNamespace ?? '');
       setAnsibleData(data);
       const st = getReadyCondition(data, e => setAnsibleError(errorMessage(e)));
       setAnsibleStatus(st);
@@ -160,7 +161,7 @@ export const SignupProvider: React.FC<{ children: React.ReactNode }> = ({
           setAnsibleUIUser(data?.items[0]?.status?.adminUser);
         }
         if (data?.items[0]?.status?.adminPasswordSecret) {
-          const adminSecret = await registerApi.getSecret(
+          const adminSecret = await kubeApi.getSecret(
             userData?.defaultUserNamespace ?? '',
             data?.items[0]?.status?.adminPasswordSecret,
           );
@@ -180,7 +181,9 @@ export const SignupProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
-    getAAPData();
+    if (userData?.defaultUserNamespace) {
+      getAAPData();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData]);
 
@@ -214,7 +217,7 @@ export const SignupProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [userReady, ansibleStatus]);
 
   return (
-    <RegContext.Provider
+    <SandboxContext.Provider
       value={{
         userFound,
         userReady,
@@ -235,6 +238,6 @@ export const SignupProvider: React.FC<{ children: React.ReactNode }> = ({
       }}
     >
       {children}
-    </RegContext.Provider>
+    </SandboxContext.Provider>
   );
 };

@@ -18,7 +18,7 @@ import React from 'react';
 import Button from '@mui/material/Button';
 import { Theme } from '@mui/material/styles';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useRegContext } from '../../utils/RegContext';
+import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { AnsibleStatus } from '../../utils/aap-utils';
 import { Product } from './productData';
 
@@ -32,7 +32,7 @@ type SandboxCatalogCardDeleteButtonProps = {
 export const SandboxCatalogCardDeleteButton: React.FC<
   SandboxCatalogCardDeleteButtonProps
 > = ({ id, handleDeleteButtonClick, theme, isDeleting }) => {
-  const { ansibleStatus } = useRegContext();
+  const { ansibleStatus } = useSandboxContext();
 
   if (
     id === Product.AAP &&

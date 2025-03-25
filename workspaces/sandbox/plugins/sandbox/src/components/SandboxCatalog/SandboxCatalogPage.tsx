@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { createContext } from 'react';
+import React from 'react';
 import Box from '@mui/material/Box';
 import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@material-ui/core/styles';
@@ -21,10 +21,8 @@ import { Page, Content } from '@backstage/core-components';
 import { SandboxCatalogBanner } from './SandboxCatalogBanner';
 import { SandboxCatalogGrid } from './SandboxCatalogGrid';
 import { SandboxCatalogFooter } from './SandboxCatalogFooter';
+import { SandboxProvider } from '../../hooks/useSandboxContext';
 import { SandboxHeader } from '../SandboxHeader';
-import { SignupProvider } from '../../utils/RegContext';
-
-export const Context = createContext<any>(null);
 
 const useStyles = makeStyles((theme: Theme) => ({
   content: {
@@ -36,7 +34,7 @@ export const SandboxCatalogPage = () => {
   const classes = useStyles();
 
   return (
-    <SignupProvider>
+    <SandboxProvider>
       <Page themeId="sandbox">
         <SandboxHeader pageTitle="Developer Sandbox" showSubTitle />
         <Content className={classes.content} noPadding>
@@ -47,6 +45,6 @@ export const SandboxCatalogPage = () => {
           <SandboxCatalogFooter />
         </Content>
       </Page>
-    </SignupProvider>
+    </SandboxProvider>
   );
 };

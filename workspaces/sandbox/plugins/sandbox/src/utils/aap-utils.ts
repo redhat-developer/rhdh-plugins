@@ -40,6 +40,7 @@ export enum AnsibleStatus {
    * has been idled and it's not available to be used.
    */
   IDLED = 'idled',
+  NOT_DEPLOYED = 'NOT_DEPLOYED',
 }
 
 /** isConditionTrue checks if a given condition type exists and it's status is set to True */

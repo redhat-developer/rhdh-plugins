@@ -19,12 +19,12 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { Link } from '@backstage/core-components';
 import { AccessCodeInputModal } from '../Modals/AccessCodeInputModal';
-import { useRegContext } from '../../utils/RegContext';
+import { useSandboxContext } from '../../hooks/useSandboxContext';
 
 export const SandboxCatalogFooter = () => {
   const theme = useTheme();
   const [accessCodeModalOpen, setAccessCodeModalOpen] = React.useState(false);
-  const { userData } = useRegContext();
+  const { userData } = useSandboxContext();
 
   // Hide the footer if the user has started trial
   if (userData) {

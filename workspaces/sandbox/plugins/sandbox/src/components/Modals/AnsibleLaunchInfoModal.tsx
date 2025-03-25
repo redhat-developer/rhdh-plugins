@@ -37,7 +37,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Link } from '@backstage/core-components';
-import { useRegContext } from '../../utils/RegContext';
+import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { AnsibleStatus } from '../../utils/aap-utils';
 
 type AnsibleLaunchInfoModalProps = {
@@ -56,7 +56,7 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
     ansibleUIPassword,
     ansibleError,
     ansibleStatus,
-  } = useRegContext();
+  } = useSandboxContext();
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleClose = () => {

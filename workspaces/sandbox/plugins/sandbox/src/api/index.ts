@@ -14,10 +14,22 @@
  * limitations under the License.
  */
 import { createApiRef } from '@backstage/core-plugin-api';
-import { RegistrationService } from '../types';
+import { RegistrationService } from './RegistrationBackendClient';
+import { KubeAPIService } from './KubeBackendClient';
+import { AAPService } from './AAPBackendClient';
 
 export * from './RegistrationBackendClient';
+export * from './KubeBackendClient';
+export * from './AAPBackendClient';
 
 export const registerApiRef = createApiRef<RegistrationService>({
-  id: 'plugin.sandbox.api-ref',
+  id: 'plugin.sandbox.registration.api-ref',
+});
+
+export const kubeApiRef = createApiRef<KubeAPIService>({
+  id: 'plugin.sandbox.kube.api-ref',
+});
+
+export const aapApiRef = createApiRef<AAPService>({
+  id: 'plugin.sandbox.aap.api-ref',
 });

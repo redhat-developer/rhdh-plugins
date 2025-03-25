@@ -16,25 +16,26 @@
 
 /// <reference path="../../@types/index.d.ts" />
 import { ConfigApi, DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
-import {
-  AAPData,
-  CommonResponse,
-  DeploymentData,
-  PersistentVolumeClaimData,
-  RegistrationService,
-  SecretItem,
-  SignupData,
-  StatefulSetData,
-} from '../types';
 import { isValidCountryCode, isValidPhoneNumber } from '../utils/phone-utils';
-import { errorMessage } from '../utils/common';
-import { AAPObject } from '../utils/aap-utils';
+import { CommonResponse, SignupData } from '../types';
 
 export type RegistrationBackendClientOptions = {
   configApi: ConfigApi;
   discoveryApi: DiscoveryApi;
   fetchApi: FetchApi;
 };
+
+export interface RegistrationService {
+  getRecaptchaAPIKey(): string;
+  getSignUpData(): Promise<SignupData | undefined>;
+  signup(): Promise<void>;
+  initiatePhoneVerification(
+    countryCode: string,
+    phoneNumber: string,
+  ): Promise<void>;
+  completePhoneVerification(code: string): Promise<void>;
+  verifyActivationCode(code: string): Promise<void>;
+}
 
 export class RegistrationBackendClient implements RegistrationService {
   private readonly discoveryApi: DiscoveryApi;
@@ -47,45 +48,8 @@ export class RegistrationBackendClient implements RegistrationService {
     this.configApi = options.configApi;
   }
 
-  private getProxyBaseURL = async (): Promise<string> => {
-    return this.discoveryApi.getBaseUrl('proxy');
-  };
-
-  private kubeAPI = async (): Promise<string> => {
-    return `${await this.getProxyBaseURL()}/kube-api`;
-  };
-
-  private projectPersistentVolumeClaimUrl = (
-    namespace: string,
-    labelSelector?: string,
-  ): string => {
-    let url = `/api/v1/namespaces/${namespace}/persistentvolumeclaims`;
-    if (labelSelector) {
-      url += `?labelSelector=${labelSelector}`;
-    }
-    return url;
-  };
-
-  private projectDeploymentUrl = (
-    namespace: string,
-    labelSelector?: string,
-  ) => {
-    let url = `/apis/apps/v1/namespaces/${namespace}/deployments`;
-    if (labelSelector) {
-      url += `?labelSelector=${labelSelector}`;
-    }
-    return url;
-  };
-
-  private projectStatefulSetUrl = (
-    namespace: string,
-    labelSelector?: string,
-  ) => {
-    let url = `/apis/apps/v1/namespaces/${namespace}/statefulsets`;
-    if (labelSelector) {
-      url += `?labelSelector=${labelSelector}`;
-    }
-    return url;
+  private signupAPI = async (): Promise<string> => {
+    return `${await this.discoveryApi.getBaseUrl('proxy')}/signup`;
   };
 
   getRecaptchaAPIKey = (): string => {
@@ -96,7 +60,7 @@ export class RegistrationBackendClient implements RegistrationService {
   };
 
   getSignUpData = async (): Promise<SignupData | undefined> => {
-    const signupURL = `${await this.getProxyBaseURL()}/signup`;
+    const signupURL = await this.signupAPI();
     const response = await this.fetchApi.fetch(signupURL);
     if (!response.ok) {
       if (response.status === 404) {
@@ -145,7 +109,7 @@ export class RegistrationBackendClient implements RegistrationService {
     } catch (err) {
       throw new Error(`Error getting recaptcha token: ${err}`);
     }
-    const signupURL = `${await this.getProxyBaseURL()}/signup`;
+    const signupURL = await this.signupAPI();
     await this.fetchApi.fetch(signupURL, {
       method: 'POST',
       headers: {
@@ -159,7 +123,7 @@ export class RegistrationBackendClient implements RegistrationService {
     countryCode: string,
     phoneNumber: string,
   ): Promise<void> => {
-    const verificationURL = `${await this.getProxyBaseURL()}/verification`;
+    const verificationURL = `${await this.signupAPI()}/verification`;
     if (!isValidCountryCode(countryCode)) {
       throw new Error('Invalid country code.');
     }
@@ -181,7 +145,7 @@ export class RegistrationBackendClient implements RegistrationService {
   };
 
   completePhoneVerification = async (code: string): Promise<void> => {
-    const verificationURL = `${await this.getProxyBaseURL()}/verification`;
+    const verificationURL = `${await this.signupAPI()}/verification`;
     const response = await this.fetchApi.fetch(`${verificationURL}/${code}`, {
       method: 'GET',
     });
@@ -193,7 +157,7 @@ export class RegistrationBackendClient implements RegistrationService {
   };
 
   verifyActivationCode = async (code: string): Promise<void> => {
-    const verificationURL = `${await this.getProxyBaseURL()}/activation-code`;
+    const verificationURL = `${await this.signupAPI()}/verification/activation-code`;
     const response = await this.fetchApi.fetch(verificationURL, {
       method: 'POST',
       body: JSON.stringify({
@@ -205,221 +169,5 @@ export class RegistrationBackendClient implements RegistrationService {
       const error: CommonResponse = await response.json();
       throw new Error(error?.message);
     }
-  };
-
-  getAAP = async (namespace: string): Promise<AAPData | undefined> => {
-    const kubeApi = await this.kubeAPI();
-    const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(errorMessage(error));
-    }
-    return response.json();
-  };
-
-  createAAP = async (namespace: string): Promise<void> => {
-    const kubeApi = await this.kubeAPI();
-    const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'POST',
-      body: AAPObject,
-      headers: {
-        'Content-Type': 'application/yaml',
-      },
-    });
-
-    if (!response.ok && response.status !== 409) {
-      const error = await response.json();
-      throw new Error(errorMessage(error));
-    }
-  };
-
-  unIdleAAP = async (namespace: string): Promise<void> => {
-    const kubeApi = await this.kubeAPI();
-    const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms/sandbox-aap`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'PATCH',
-      body: JSON.stringify({
-        spec: {
-          idle_aap: false,
-        },
-      }),
-      headers: {
-        'Content-Type': 'application/merge-patch+json',
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(errorMessage(error));
-    }
-  };
-
-  deleteSecretsAndPVCs = async (
-    k8sObjects: StatefulSetData | DeploymentData | void,
-    userNamespace: string,
-  ): Promise<void> => {
-    if (k8sObjects && k8sObjects.items.length > 0) {
-      const kubeApi = await this.kubeAPI();
-
-      for (const k8sObject of k8sObjects.items) {
-        const volumes = k8sObject?.spec?.template?.spec?.volumes;
-        if (!volumes) continue;
-
-        for (const volume of volumes) {
-          // delete pvc if any
-          if (volume.persistentVolumeClaim?.claimName) {
-            const pvcURL = `/api/v1/namespaces/${userNamespace}/persistentvolumeclaims/${volume.persistentVolumeClaim.claimName}`;
-            const response = await this.fetchApi.fetch(`${kubeApi}${pvcURL}`, {
-              method: 'DELETE',
-            });
-            if (!response.ok && response.status !== 404) {
-              const error = await response.json();
-              throw new Error(errorMessage(error));
-            }
-          }
-
-          // delete secret if any
-          if (volume.secret?.secretName) {
-            const secretURL = `/api/v1/namespaces/${userNamespace}/secrets/${volume.secret.secretName}`;
-            const response = await this.fetchApi.fetch(
-              `${kubeApi}${secretURL}`,
-              {
-                method: 'DELETE',
-              },
-            );
-            if (!response.ok && response.status !== 404) {
-              const error = await response.json();
-              throw new Error(errorMessage(error));
-            }
-          }
-        }
-      }
-    }
-  };
-
-  deletePVCsForSTS = async (
-    k8sObjects: StatefulSetData | void,
-    userNamespace: string,
-  ): Promise<void> => {
-    if (k8sObjects && k8sObjects.items.length > 0) {
-      const kubeApi = await this.kubeAPI();
-
-      for (const k8sObject of k8sObjects.items) {
-        const volumeClaimTemplates = k8sObject?.spec?.volumeClaimTemplates;
-        if (!volumeClaimTemplates) continue;
-
-        for (const volumeClaim of volumeClaimTemplates) {
-          const pvcs = await this.getPersistentVolumeClaims(
-            userNamespace,
-            `app.kubernetes.io%2Fname%3D${volumeClaim.metadata.name}`,
-          );
-
-          if (pvcs && pvcs.items.length > 0) {
-            for (const pvc of pvcs.items) {
-              const pvcURL = `/api/v1/namespaces/${userNamespace}/persistentvolumeclaims/${pvc.metadata.name}`;
-              const response = await this.fetchApi.fetch(
-                `${kubeApi}${pvcURL}`,
-                {
-                  method: 'DELETE',
-                },
-              );
-              if (!response.ok && response.status !== 404) {
-                const error = await response.json();
-                throw new Error(errorMessage(error));
-              }
-            }
-          }
-        }
-      }
-    }
-  };
-
-  deleteAAPCR = async (namespace: string): Promise<void> => {
-    const kubeApi = await this.kubeAPI();
-    const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms/sandbox-aap`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok && response.status !== 404) {
-      const error = await response.json();
-      throw new Error(errorMessage(error));
-    }
-  };
-
-  getSecret = async (
-    namespace: string,
-    secretName: string,
-  ): Promise<SecretItem | undefined> => {
-    const kubeApi = await this.kubeAPI();
-    const projectSecretURL = `/api/v1/namespaces/${namespace}/secrets/${secretName}`;
-    const response = await this.fetchApi.fetch(
-      `${kubeApi}${projectSecretURL}`,
-      {
-        method: 'GET',
-      },
-    );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(errorMessage(error));
-    }
-    return response.json();
-  };
-
-  getPersistentVolumeClaims = async (
-    namespace: string,
-    labels?: string,
-  ): Promise<PersistentVolumeClaimData | undefined> => {
-    const kubeApi = await this.kubeAPI();
-    const url = this.projectPersistentVolumeClaimUrl(namespace, labels);
-    const response = await this.fetchApi.fetch(`${kubeApi}${url}`, {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(errorMessage(error));
-    }
-    return response.json();
-  };
-
-  getDeployments = async (
-    namespace: string,
-    labels?: string,
-  ): Promise<DeploymentData | undefined> => {
-    const kubeApi = await this.kubeAPI();
-    const url = this.projectDeploymentUrl(namespace, labels);
-    const response = await this.fetchApi.fetch(`${kubeApi}${url}`, {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(errorMessage(error));
-    }
-    return response.json();
-  };
-
-  getStatefulSets = async (
-    namespace: string,
-    labels?: string,
-  ): Promise<StatefulSetData | undefined> => {
-    const kubeApi = await this.kubeAPI();
-    const url = this.projectStatefulSetUrl(namespace, labels);
-    const response = await this.fetchApi.fetch(`${kubeApi}${url}`, {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(errorMessage(error));
-    }
-    return response.json();
   };
 }

@@ -23,7 +23,7 @@ import {
   PhoneNumberStep,
   VerificationCodeStep,
 } from './PhoneVerificationSteps';
-import { useRegContext } from '../../utils/RegContext';
+import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { errorMessage } from '../../utils/common';
 
 type PhoneVerificationModalProps = {
@@ -37,7 +37,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
 }) => {
   const registerApi = useApi(registerApiRef);
   const [enterOTP, setEnterOTP] = useState<boolean>(false);
-  const { refetchUserData } = useRegContext();
+  const { refetchUserData } = useSandboxContext();
   const [phoneNumber, setPhoneNumber] = useState<E164Number | undefined>();
   const [country, setCountry] = useState<Country>('ES');
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);

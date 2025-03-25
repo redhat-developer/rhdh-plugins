@@ -20,7 +20,7 @@ import { Theme } from '@mui/material/styles';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from '@backstage/core-components';
-import { useRegContext } from '../../utils/RegContext';
+import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { AnsibleStatus } from '../../utils/aap-utils';
 import { Product } from './productData';
 
@@ -34,7 +34,7 @@ type SandboxCatalogCardButtonProps = {
 export const SandboxCatalogCardButton: React.FC<
   SandboxCatalogCardButtonProps
 > = ({ link, id, handleTryButtonClick, theme }) => {
-  const { loading, userFound, userReady, ansibleStatus } = useRegContext();
+  const { loading, userFound, userReady, ansibleStatus } = useSandboxContext();
 
   const label = (() => {
     switch (id) {

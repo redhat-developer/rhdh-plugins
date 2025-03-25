@@ -13,15 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as React from 'react';
-import { useApi } from '@backstage/core-plugin-api';
-import { loadRecaptchaScript } from '../utils/recaptcha';
-import { registerApiRef } from '../api';
-
-export const useRecaptcha = () => {
-  const registerApi = useApi(registerApiRef);
-  React.useEffect(() => {
-    loadRecaptchaScript(registerApi.getRecaptchaAPIKey());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-};
+export * from './aap';
+export * from './kube';
+export * from './registration';

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { useState, useEffect } from 'react';
-import { useRegContext } from '../utils/RegContext';
+import { useSandboxContext } from './useSandboxContext';
 import { Product } from '../components/SandboxCatalog/productData';
 
 interface ProductURL {
@@ -44,7 +44,7 @@ const getAppsURL = (
 };
 
 const useProductURLs = (): ProductURL[] => {
-  const { userData } = useRegContext();
+  const { userData } = useSandboxContext();
   const [productURLs, setProductURLs] = useState<ProductURL[]>([]);
   const defaultUserNamespace =
     userData?.defaultUserNamespace ?? `${userData?.username}-dev`;

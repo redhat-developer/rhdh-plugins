@@ -21,13 +21,13 @@ import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
 import Image from '../../assets/images/sandbox-banner-image.png';
-import { useRegContext } from '../../utils/RegContext';
+import { useSandboxContext } from '../../hooks/useSandboxContext';
 
 const TRIAL_DURATION_DAYS = 30;
 
 export const SandboxCatalogBanner: React.FC = () => {
   const theme = useTheme();
-  const { userData, loading } = useRegContext();
+  const { userData, loading } = useSandboxContext();
 
   const calculateDaysLeft = React.useCallback(() => {
     const currentDate = new Date();
