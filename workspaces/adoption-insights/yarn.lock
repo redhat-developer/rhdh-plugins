@@ -7305,6 +7305,7 @@ __metadata:
     "@backstage/e2e-test-utils": ^0.1.1
     "@backstage/repo-tools": ^0.13.0
     "@changesets/cli": ^2.27.1
+    "@playwright/test": 1.50.1
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -9696,7 +9697,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.32.3":
+"@playwright/test@npm:1.50.1":
   version: 1.50.1
   resolution: "@playwright/test@npm:1.50.1"
   dependencies:
@@ -14979,7 +14980,7 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@mui/icons-material": 5.16.4
-    "@playwright/test": ^1.32.3
+    "@playwright/test": 1.50.1
     "@red-hat-developer-hub/backstage-plugin-adoption-insights": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "workspace:^"
     "@testing-library/dom": ^9.0.0
