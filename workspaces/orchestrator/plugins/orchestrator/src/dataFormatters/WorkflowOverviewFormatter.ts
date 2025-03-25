@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import moment from 'moment';
 
 import {
@@ -32,6 +33,7 @@ export interface FormattedWorkflowOverview {
   readonly category: string;
   readonly description: string;
   readonly format: WorkflowFormatDTO;
+  readonly availablity?: string;
 }
 
 const WorkflowOverviewFormatter: DataFormatter<
@@ -50,6 +52,7 @@ const WorkflowOverviewFormatter: DataFormatter<
       category: data.category ?? VALUE_UNAVAILABLE,
       description: data.description ?? VALUE_UNAVAILABLE,
       format: data.format,
+      availablity: data.isAvailable ? 'Available' : 'Unavailable',
     };
   },
 };
