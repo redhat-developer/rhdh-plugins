@@ -10,7 +10,7 @@ import { JSX as JSX_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
 
 // @public
-export const AdoptionInsightsPage: () => JSX_2.Element;
+export const AdoptionInsightsPage: () => JSX_2.Element | null;
 
 // @public
 export const adoptionInsightsPlugin: BackstagePlugin<
