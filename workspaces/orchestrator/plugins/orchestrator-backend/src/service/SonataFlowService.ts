@@ -157,6 +157,7 @@ export class SonataFlowService {
       throw new Error('Execute workflow did not return a workflow instance ID');
     }
   }
+  
   public async retriggerInstance(args: {
     definitionId: string;
     instanceId: string;

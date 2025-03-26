@@ -466,7 +466,6 @@ function setupInternalRoutes(
       const workflowId = c.request.params.workflowId as string;
       const endpointName = 'executeWorkflow';
       const endpoint = `/v2/workflows/${workflowId}/execute`;
-     
       auditLogger.auditLog({
         eventName: endpointName,
         stage: 'start',
@@ -497,7 +496,7 @@ function setupInternalRoutes(
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
-        .executeWorkflow(executeWorkflowRequestDTO, workflowId, businessKey,)
+        .executeWorkflow(executeWorkflowRequestDTO, workflowId, businessKey)
         .then(result => res.status(200).json(result))
         .catch(error => {
           auditLogRequestError(error, endpointName, endpoint, req);
