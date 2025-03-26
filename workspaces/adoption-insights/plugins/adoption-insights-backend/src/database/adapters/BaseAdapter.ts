@@ -209,7 +209,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .select(
         db.raw('CAST(COUNT(*) as INTEGER) AS count'),
         db.raw(this.getLastUsedDate()),
-        db.raw(`COALESCE(attributes->>'kind', '') AS kind`),
+        db.raw(`COALESCE(LOWER(attributes->>'kind'), '') AS kind`),
         db.raw(`COALESCE(attributes->>'name', '') AS name`),
         db.raw(`COALESCE(attributes->>'namespace', '') AS namespace`),
       )
@@ -232,7 +232,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const query = db('events')
       .select(
         'plugin_id',
-        db.raw(`attributes->>'kind' AS kind`),
+        db.raw(`LOWER(attributes->>'kind') AS kind`),
         db.raw(`attributes->>'name' AS name`),
         db.raw(`attributes->>'namespace' AS namespace`),
         db.raw(this.getLastUsedDate()),
@@ -247,7 +247,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       .limit(Number(limit) || 3);
 
     if (kind) {
-      query.andWhere(db.raw(`attributes->>'kind' = ?`, [kind]));
+      query.andWhere(db.raw(`LOWER(attributes->>'kind') = ?`, [kind]));
     }
     return query.then(data => this.getResponseData(data, 'last_used'));
   }
