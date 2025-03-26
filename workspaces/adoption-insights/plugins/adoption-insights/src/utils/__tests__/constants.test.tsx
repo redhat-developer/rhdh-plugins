@@ -28,6 +28,7 @@ describe('Constants', () => {
       { value: 'today', label: 'Today' },
       { value: 'last-week', label: 'Last week' },
       { value: 'last-month', label: 'Last month' },
+      { value: 'last-28-days', label: 'Last 28 days' },
       { value: 'last-year', label: 'Last year' },
     ]);
   });
