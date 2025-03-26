@@ -63,6 +63,8 @@ export const useCatalogEntities = ({
     let mounted = true;
     if (!loading && mounted) {
       setLoadingData(false);
+    } else {
+      setLoadingData(true);
     }
     return () => {
       mounted = false;
