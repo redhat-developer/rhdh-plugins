@@ -466,6 +466,7 @@ function setupInternalRoutes(
       const workflowId = c.request.params.workflowId as string;
       const endpointName = 'executeWorkflow';
       const endpoint = `/v2/workflows/${workflowId}/execute`;
+
       auditLogger.auditLog({
         eventName: endpointName,
         stage: 'start',
