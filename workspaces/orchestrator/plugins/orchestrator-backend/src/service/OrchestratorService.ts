@@ -15,6 +15,7 @@
  */
 
 import {
+    AuthTokenVariables,
   Filter,
   ProcessInstance,
   ProcessInstanceVariables,
@@ -185,6 +186,7 @@ export class OrchestratorService {
     definitionId: string;
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
+    authTokens?: AuthTokenVariables;
     businessKey?: string;
     cacheHandler?: CacheHandler;
   }): Promise<WorkflowExecutionResponse | undefined> {
@@ -192,7 +194,7 @@ export class OrchestratorService {
     const isWorkflowAvailable = this.workflowCacheService.isAvailable(
       definitionId,
       cacheHandler,
-    );     
+    );  
     return isWorkflowAvailable
       ? await this.sonataFlowService.executeWorkflow(args)
       : undefined;

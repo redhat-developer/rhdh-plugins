@@ -23,6 +23,7 @@ import {
   getWorkflowCategory,
   ProcessInstanceStateValues,
   ProcessInstanceVariables,
+  AuthTokenVariables,
   WorkflowDefinition,
   WorkflowExecutionResponse,
   WorkflowInfo,
@@ -100,6 +101,7 @@ export class SonataFlowService {
     definitionId: string;
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
+    authTokens?: AuthTokenVariables;
     businessKey?: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
     const urlToFetch = args.businessKey
@@ -110,8 +112,8 @@ export class SonataFlowService {
     };
 
   	// Add X-Authentication headers from authTokens
-  	if (Array.isArray(args.inputData?.authTokens)) {
-    	args.inputData.authTokens.forEach((tokenObj: Record<string, unknown>) => {
+  	if (args.authTokens && Array.isArray(args.authTokens)) {
+    	args.authTokens.forEach((tokenObj: Record<string, unknown>) => {
       	if (tokenObj.provider && tokenObj.token) {
         const headerKey = `X-Authentication-${tokenObj.provider}`;
         headers[headerKey] = String(tokenObj.token); // Ensure token is a string
@@ -155,7 +157,7 @@ export class SonataFlowService {
       throw new Error('Execute workflow did not return a workflow instance ID');
     }
   }
-
+  
   public async retriggerInstance(args: {
     definitionId: string;
     instanceId: string;

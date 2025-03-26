@@ -18,6 +18,7 @@ import { ParsedRequest } from 'openapi-backend';
 
 import {
   AssessedProcessInstanceDTO,
+  AuthTokenVariables,
   ExecuteWorkflowRequestDTO,
   ExecuteWorkflowResponseDTO,
   Filter,
@@ -172,11 +173,12 @@ export class V2 {
     if (!definition.serviceUrl) {
       throw new Error(`ServiceURL is not defined for workflow ${workflowId}`);
     }
-     
     const executionResponse = await this.orchestratorService.executeWorkflow({
       definitionId: workflowId,
       inputData:
         executeWorkflowRequestDTO.inputData as ProcessInstanceVariables,
+      authTokens:
+        executeWorkflowRequestDTO.authTokens as AuthTokenVariables,
       serviceUrl: definition.serviceUrl,
       businessKey,
       cacheHandler: 'throw',
