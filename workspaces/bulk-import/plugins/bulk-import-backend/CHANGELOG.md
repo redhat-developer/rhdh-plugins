@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 6.0.0
+
+### Major Changes
+
+- b806644: Use newer audit-log package from Backstage. Note: Breaking change – audit log format has changed.
+
 ## 5.4.0
 
 ### Minor Changes

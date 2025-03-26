@@ -9,6 +9,9 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { default as React_2 } from 'react';
 
 // @public
+export const ApplicationLauncherDropdown: () => React_2.JSX.Element;
+
+// @public
 export const CreateDropdown: React_2.ComponentType<CreateDropdownProps>;
 
 // @public

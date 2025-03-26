@@ -19,8 +19,10 @@ import {
   createPlugin,
   createRoutableExtension,
   fetchApiRef,
+  type IconComponent,
 } from '@backstage/core-plugin-api';
 
+import MUIAdoptionInsightsIcon from '@mui/icons-material/QueryStatsOutlined';
 import { rootRouteRef } from './routes';
 import { AdoptionInsightsApiClient, adoptionInsightsApiRef } from './api';
 
@@ -60,3 +62,8 @@ export const AdoptionInsightsPage = adoptionInsightsPlugin.provide(
     mountPoint: rootRouteRef,
   }),
 );
+
+/**
+ * @public
+ */
+export const AdoptionInsightsIcon: IconComponent = MUIAdoptionInsightsIcon;

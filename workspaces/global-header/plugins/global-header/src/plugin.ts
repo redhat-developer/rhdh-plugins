@@ -356,3 +356,20 @@ export const StarredDropdown = globalHeaderPlugin.provide(
     },
   }),
 );
+
+/**
+ * Application Launcher Dropdown
+ *
+ * @public
+ */
+export const ApplicationLauncherDropdown = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'ApplicationLauncherDropdown',
+    component: {
+      lazy: () =>
+        import(
+          './components/HeaderDropdownComponent/ApplicationLauncherDropdown'
+        ).then(m => m.ApplicationLauncherDropdown),
+    },
+  }),
+);

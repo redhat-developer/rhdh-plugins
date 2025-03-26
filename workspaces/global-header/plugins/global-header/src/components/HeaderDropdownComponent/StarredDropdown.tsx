@@ -20,27 +20,27 @@ import {
   useEntityPresentation,
   useStarredEntities,
 } from '@backstage/plugin-catalog-react';
-import { InfoCard, Link } from '@backstage/core-components';
-
+import { Link } from '@backstage/core-components';
+import {
+  CompoundEntityRef,
+  Entity,
+  parseEntityRef,
+} from '@backstage/catalog-model';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import Star from '@mui/icons-material/Star';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 
-import { useDropdownManager } from '../../hooks';
-import { HeaderDropdownComponent } from './HeaderDropdownComponent';
-import {
-  CompoundEntityRef,
-  Entity,
-  parseEntityRef,
-} from '@backstage/catalog-model';
 import { useTheme } from '@mui/material/styles';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import Box from '@mui/material/Box';
+
+import { useDropdownManager } from '../../hooks';
+import { HeaderDropdownComponent } from './HeaderDropdownComponent';
+import { DropdownEmptyState } from './DropdownEmptyState';
 
 /**
  * @public
@@ -102,36 +102,6 @@ const StarredItem: React.FC<SectionComponentProps> = ({
   );
 };
 
-const NoStarredItems = () => {
-  return (
-    <InfoCard>
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        textAlign="center"
-        py={4}
-        px={2} // Added padding to control width
-        maxWidth={300} // Set max width to constrain text expansion
-        mx="auto"
-      >
-        <AutoAwesomeIcon sx={{ fontSize: 64 }} color="disabled" />
-        <Typography variant="h6" sx={{ mt: 2, color: 'text.primary' }}>
-          No starred items yet
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ mt: 1, color: 'text.secondary', maxWidth: 250 }}
-        >
-          Click the star icon next to an entity's name to save it here for quick
-          access.
-        </Typography>
-      </Box>
-    </InfoCard>
-  );
-};
-
 export const StarredDropdown = () => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
   const { starredEntities, toggleStarredEntity } = useStarredEntities();
@@ -163,7 +133,11 @@ export const StarredDropdown = () => {
           ))}
         </>
       ) : (
-        <NoStarredItems />
+        <DropdownEmptyState
+          title="No starred items yet"
+          subTitle="Click the star icon next to an entity's name to save it here for quick access."
+          icon={<AutoAwesomeIcon sx={{ fontSize: 64 }} color="disabled" />}
+        />
       )}
     </HeaderDropdownComponent>
   );

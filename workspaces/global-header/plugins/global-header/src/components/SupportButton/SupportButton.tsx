@@ -69,7 +69,7 @@ export const SupportButton = ({
   }
 
   const isExternalLink =
-    supportUrl.startsWith('http') || supportUrl.startsWith('https');
+    supportUrl.startsWith('http://') || supportUrl.startsWith('https://');
 
   return (
     <Box sx={layout}>

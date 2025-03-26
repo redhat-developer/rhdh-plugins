@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ErrorPage, Progress } from '@backstage/core-components';
 import {
@@ -188,6 +188,17 @@ export const MarketplacePluginInstallContent = ({
   plugin: MarketplacePlugin;
   packages: MarketplacePackage[];
 }) => {
+  const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
+
+  useEffect(() => {
+    const header = document.querySelector('nav#global-header');
+    setHasGlobalHeader(Boolean(header));
+  }, []);
+
+  const dynamicHeight = hasGlobalHeader
+    ? 'calc(100vh - 220px)'
+    : 'calc(100vh - 160px)';
+
   const codeEditor = useCodeEditor();
   const params = useRouteRefParams(pluginInstallRouteRef);
 
@@ -239,7 +250,7 @@ export const MarketplacePluginInstallContent = ({
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 160px)',
+        height: dynamicHeight,
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -376,7 +387,7 @@ export const MarketplacePluginInstallContent = ({
         sx={{
           mt: 4,
           flexShrink: 0,
-          backgroundColor: 'background.paper',
+          backgroundColor: 'inherit',
         }}
       >
         <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
