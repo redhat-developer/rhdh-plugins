@@ -97,7 +97,10 @@ const CatalogEntities = () => {
       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }, [catalogEntities, page, rowsPerPage, selectedOption]);
 
-  if (!visibleCatalogEntities || visibleCatalogEntities?.length === 0) {
+  if (
+    (!visibleCatalogEntities || visibleCatalogEntities?.length === 0) &&
+    !loading
+  ) {
     return (
       <CardWrapper title={CATALOG_ENTITIES_TITLE}>
         <Box
@@ -132,6 +135,7 @@ const CatalogEntities = () => {
                 align="left"
                 sx={{
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
+                  width: '25%',
                 }}
               >
                 {header.title}
@@ -152,13 +156,13 @@ const CatalogEntities = () => {
           ) : (
             visibleCatalogEntities?.map(entity => (
               <TableRow
-                key={entity.name}
+                key={`${entity.kind}-${entity.name}`}
                 sx={{
                   '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell>
+                <TableCell sx={{ width: '25%' }}>
                   <Link
                     component="a"
                     href={entityLink({
@@ -178,14 +182,14 @@ const CatalogEntities = () => {
                     {entity.name ?? '--'}
                   </Link>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '25%' }}>
                   {entity.kind?.charAt(0).toLocaleUpperCase('en-US') +
                     entity.kind?.slice(1) || '--'}
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '25%' }}>
                   {getLastUsedDay(entity.last_used) ?? '--'}
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ width: '25%' }}>
                   {Number(entity.count).toLocaleString() ?? '--'}
                 </TableCell>
               </TableRow>
