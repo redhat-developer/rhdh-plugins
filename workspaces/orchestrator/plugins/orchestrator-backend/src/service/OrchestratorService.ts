@@ -194,7 +194,7 @@ export class OrchestratorService {
     const isWorkflowAvailable = this.workflowCacheService.isAvailable(
       definitionId,
       cacheHandler,
-    );  
+    );
     return isWorkflowAvailable
       ? await this.sonataFlowService.executeWorkflow(args)
       : undefined;

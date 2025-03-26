@@ -71,7 +71,6 @@ export type ProcessInstanceVariables = Record<string, unknown>;
 
 export type AuthTokenVariables = Record<string, unknown>;
 
-
 export interface ProcessInstance {
   id: string;
   processId: string;

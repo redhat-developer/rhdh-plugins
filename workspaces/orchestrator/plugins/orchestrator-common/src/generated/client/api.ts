@@ -73,7 +73,7 @@ export interface ExecuteWorkflowRequestDTO {
      * @memberof ExecuteWorkflowRequestDTO
      */
     'inputData'?: object;
-        /**
+    /**
      * 
      * @type {object}
      * @memberof ExecuteWorkflowRequestDTO
