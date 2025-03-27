@@ -16,11 +16,11 @@
 import React from 'react';
 import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
-import OpenShiftIcon from '../../assets/logos/openshift.png';
-import AnsibleIcon from '../../assets/logos/ansible.png';
-import OpenShiftAIIcon from '../../assets/logos/openshift-ai.png';
-import DevSpacesIcon from '../../assets/logos/devspaces.png';
-import OpenshiftVirtualizationIcon from '../../assets/logos/openshift-virtualization.png';
+import OpenShiftIcon from '../../assets/logos/openshift.svg';
+import AnsibleIcon from '../../assets/logos/ansible.svg';
+import OpenShiftAIIcon from '../../assets/logos/openshift-ai.svg';
+import DevSpacesIcon from '../../assets/logos/devspaces.svg';
+import OpenshiftVirtualizationIcon from '../../assets/logos/openshift-virtualization.svg';
 
 export enum Product {
   OPENSHIFT_CONSOLE = 'openshift-console',
