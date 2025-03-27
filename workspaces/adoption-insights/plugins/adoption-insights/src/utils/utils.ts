@@ -21,6 +21,7 @@ import {
   isYesterday,
   startOfMonth,
   startOfWeek,
+  subDays,
 } from 'date-fns';
 import { APIsViewOptions } from '../types';
 
@@ -45,6 +46,12 @@ export const getDateRange = (value: string) => {
     case 'last-month':
       return {
         startDate: format(startOfMonth(today), 'yyyy-MM-dd'),
+        endDate: format(today, 'yyyy-MM-dd'),
+      };
+
+    case 'last-28-days':
+      return {
+        startDate: format(subDays(today, 27), 'yyyy-MM-dd'),
         endDate: format(today, 'yyyy-MM-dd'),
       };
 

@@ -35,7 +35,8 @@ interface InsightsHeaderProps extends React.HTMLProps<HTMLDivElement> {
 }
 
 const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
-  const [selectedOption, setSelectedOption] = React.useState<string>('');
+  const [selectedOption, setSelectedOption] =
+    React.useState<string>('last-28-days');
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [startDate, setStartDate] = React.useState<Date | null>(null);
   const [endDate, setEndDate] = React.useState<Date | null>(null);
@@ -58,7 +59,7 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
   const handleChange = React.useCallback(
     (event: SelectChangeEvent<string>) => {
       const value = event.target.value;
-      if (value === 'all-time' || !value) return;
+      if (!value) return;
 
       const { startDate: newStartDate, endDate: newEndDate } =
         getDateRange(value);

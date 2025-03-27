@@ -112,6 +112,7 @@ describe('InsightsHeader', () => {
     expect(screen.getByText('Today')).toBeInTheDocument();
     expect(screen.getByText('Last week')).toBeInTheDocument();
     expect(screen.getByText('Last month')).toBeInTheDocument();
+    expect(screen.getByText('Last 28 days')).toBeInTheDocument();
     expect(screen.getByText('Last year')).toBeInTheDocument();
   });
 
