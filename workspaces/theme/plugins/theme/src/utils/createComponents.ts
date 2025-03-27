@@ -131,6 +131,12 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             height: 0,
           },
         },
+        rounded: {
+          '& > :last-child': {
+            borderBottomLeftRadius: 4,
+            borderBottomRightRadius: 4,
+          },
+        },
         elevation0: noElevationStyle,
       },
     };
@@ -154,6 +160,19 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     elevations.forEach(elevation => {
       components.MuiPaper!.styleOverrides![elevation] = elevationStyle;
     });
+  }
+
+  // MUI AppBar
+  if (options.appBar !== 'mui') {
+    components.MuiAppBar = {
+      styleOverrides: {
+        root: {
+          backgroundColor: general.appBarBackgroundColor,
+          backgroundImage: general.appBarBackgroundImage,
+          outline: 'none',
+        },
+      },
+    };
   }
 
   // MUI buttons
@@ -205,6 +224,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '&:hover': {
             backgroundColor: 'transparent',
             border: `1px solid`,
+          },
+          '&:disabled': {
+            color: general.disabled,
+            backgroudColor: general.disabledBackground,
+            border: `1px solid ${general.disabledBackground}`,
           },
         },
         outlinedPrimary: {
