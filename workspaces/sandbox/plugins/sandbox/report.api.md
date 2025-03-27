@@ -10,21 +10,19 @@ import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
 
-// @public (undocumented)
+// @public
 export const SandboxActivitiesIcon: IconComponent;
 
 // @public
 export const SandboxActivitiesPage: () => JSX_2.Element;
 
-// @public (undocumented)
+// @public
 export const SandboxHomeIcon: IconComponent;
 
 // @public
 export const SandboxPage: () => JSX_2.Element;
 
-// Warning: (ae-missing-release-tag) "sandboxPlugin" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 export const sandboxPlugin: BackstagePlugin<
   {
     root: RouteRef<undefined>;
@@ -32,12 +30,6 @@ export const sandboxPlugin: BackstagePlugin<
   {},
   {}
 >;
-
-// Warnings were encountered during analysis:
-//
-// src/plugin.d.ts:3:22 - (ae-undocumented) Missing documentation for "sandboxPlugin".
-// src/plugin.d.ts:19:22 - (ae-undocumented) Missing documentation for "SandboxHomeIcon".
-// src/plugin.d.ts:23:22 - (ae-undocumented) Missing documentation for "SandboxActivitiesIcon".
 
 // (No @packageDocumentation comment for this package)
 ```

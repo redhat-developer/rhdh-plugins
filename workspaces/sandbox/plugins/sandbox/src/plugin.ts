@@ -34,6 +34,10 @@ import {
   AAPBackendClient,
 } from './api';
 
+/**
+ * Plugin for Developer Sandbox frontend
+ * @public
+ */
 export const sandboxPlugin = createPlugin({
   id: 'sandbox',
   routes: {
@@ -102,11 +106,13 @@ export const SandboxActivitiesPage = sandboxPlugin.provide(
 );
 
 /**
+ * Icon for Sandbox Home Page
  * @public
  */
 export const SandboxHomeIcon: IconComponent = HomeOutlinedIcon;
 
 /**
+ * Icon for Sandbox Activities Page
  * @public
  */
 export const SandboxActivitiesIcon: IconComponent = StarOutlineOutlinedIcon;
