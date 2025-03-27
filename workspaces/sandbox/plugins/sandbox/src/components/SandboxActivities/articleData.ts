@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Art0 from '../../assets/images/art0.png';
-import Art1 from '../../assets/images/art1.png';
-import Art2 from '../../assets/images/art2.png';
-import Art3 from '../../assets/images/art3.png';
-import Art4 from '../../assets/images/art4.png';
-import Art5 from '../../assets/images/art5.png';
+import Art0 from '../../assets/images/art0.svg';
+import Art1 from '../../assets/images/art1.svg';
+import Art2 from '../../assets/images/art2.svg';
+import Art3 from '../../assets/images/art3.svg';
+import Art4 from '../../assets/images/art4.svg';
+import Art5 from '../../assets/images/art5.svg';
 
 type ArticleData = {
   img: string;

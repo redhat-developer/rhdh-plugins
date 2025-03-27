@@ -20,7 +20,7 @@ import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
-import Image from '../../assets/images/sandbox-banner-image.png';
+import Image from '../../assets/images/sandbox-banner-image.svg';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
 
 const TRIAL_DURATION_DAYS = 30;
