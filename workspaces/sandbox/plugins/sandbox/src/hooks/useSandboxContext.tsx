@@ -165,7 +165,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
             userData?.defaultUserNamespace ?? '',
             data?.items[0]?.status?.adminPasswordSecret,
           );
-          if (adminSecret && adminSecret?.data) {
+          if (adminSecret?.data) {
             setAnsibleUIPassword(decode(adminSecret?.data?.password));
           }
         }

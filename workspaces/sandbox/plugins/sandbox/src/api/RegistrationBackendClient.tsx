@@ -48,7 +48,7 @@ export class RegistrationBackendClient implements RegistrationService {
     this.configApi = options.configApi;
   }
 
-  private signupAPI = async (): Promise<string> => {
+  private readonly signupAPI = async (): Promise<string> => {
     return `${await this.discoveryApi.getBaseUrl('proxy')}/signup`;
   };
 
@@ -79,7 +79,7 @@ export class RegistrationBackendClient implements RegistrationService {
       let timeout = false;
       const captchaTimeout = setTimeout(() => {
         timeout = true;
-        reject('Recaptcha timeout.');
+        reject(new Error('Recaptcha timeout.'));
       }, 10000);
       if (grecaptcha?.enterprise) {
         grecaptcha.enterprise.ready(async () => {
@@ -92,12 +92,12 @@ export class RegistrationBackendClient implements RegistrationService {
                 }),
               );
             } catch (e) {
-              reject('Recaptcha failure.');
+              reject(new Error('Recaptcha failure.'));
             }
           }
         });
       } else {
-        reject('Recaptcha failure.');
+        reject(new Error('Recaptcha failure.'));
       }
     });
   };

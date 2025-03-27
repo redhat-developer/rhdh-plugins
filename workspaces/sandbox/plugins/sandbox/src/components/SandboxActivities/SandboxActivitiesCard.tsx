@@ -22,7 +22,7 @@ import { useTheme } from '@mui/material/styles';
 import { Link } from '@backstage/core-components';
 
 type SandboxActivitiesCardProps = {
-  key: number;
+  key: string;
   article: {
     img: string;
     title: string;

@@ -42,8 +42,8 @@ const FeaturedArticles: React.FC = () => {
         Featured
       </Typography>
       <ItemCardGrid>
-        {articleData?.featured?.map((article, index) => (
-          <SandboxActivitiesCard key={index} article={article} />
+        {articleData?.featured?.map(article => (
+          <SandboxActivitiesCard key={article.title} article={article} />
         ))}
       </ItemCardGrid>
     </Box>
@@ -63,8 +63,8 @@ const Articles: React.FC = () => {
       }}
     >
       <ItemCardGrid>
-        {articleData?.other?.map((article, index) => (
-          <SandboxActivitiesCard key={index} article={article} />
+        {articleData?.other?.map(article => (
+          <SandboxActivitiesCard key={article.title} article={article} />
         ))}
       </ItemCardGrid>
     </Box>

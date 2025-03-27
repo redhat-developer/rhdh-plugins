@@ -80,7 +80,7 @@ export const getReadyCondition = (
   }
 
   // check if instance is idled
-  if (data?.items[0]?.spec && data?.items[0]?.spec?.idle_aap) {
+  if (data?.items[0]?.spec?.idle_aap) {
     return AnsibleStatus.IDLED;
   }
 

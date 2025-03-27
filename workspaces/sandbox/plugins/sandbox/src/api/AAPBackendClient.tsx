@@ -40,7 +40,7 @@ export class AAPBackendClient implements AAPService {
     this.fetchApi = options.fetchApi;
   }
 
-  private kubeAPI = async (): Promise<string> => {
+  private readonly kubeAPI = async (): Promise<string> => {
     return `${await this.discoveryApi.getBaseUrl('proxy')}/kube-api`;
   };
 

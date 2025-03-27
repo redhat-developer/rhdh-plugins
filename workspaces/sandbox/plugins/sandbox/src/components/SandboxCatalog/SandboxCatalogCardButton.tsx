@@ -37,40 +37,35 @@ export const SandboxCatalogCardButton: React.FC<
   const { loading, userFound, userReady, ansibleStatus } = useSandboxContext();
 
   const label = (() => {
-    switch (id) {
-      case Product.AAP:
-        switch (ansibleStatus) {
-          case AnsibleStatus.IDLED:
-            return 'Reprovision';
-          case AnsibleStatus.PROVISIONING:
-            return 'Provisioning';
-          case AnsibleStatus.READY:
-            return 'Launch';
-          default:
-            return 'Start provision';
-        }
-      default:
-        return 'Try it';
+    if (id === Product.AAP) {
+      if (ansibleStatus === AnsibleStatus.IDLED) {
+        return 'Reprovision';
+      }
+      if (ansibleStatus === AnsibleStatus.PROVISIONING) {
+        return 'Provisioning';
+      }
+      if (ansibleStatus === AnsibleStatus.READY) {
+        return 'Launch';
+      }
+      return 'Start provision';
     }
+    return 'Try it';
   })();
 
   let endIcon;
   if (loading || (userFound && !userReady)) {
     endIcon = <CircularProgress size={20} />;
+  } else if (id !== Product.AAP) {
+    endIcon = <OpenInNewIcon />;
+  } else if (
+    ansibleStatus === AnsibleStatus.UNKNOWN ||
+    ansibleStatus === AnsibleStatus.PROVISIONING
+  ) {
+    endIcon = <CircularProgress size={20} />;
   } else {
-    if (id !== Product.AAP) {
-      endIcon = <OpenInNewIcon />;
-    } else {
-      if (
-        ansibleStatus === AnsibleStatus.UNKNOWN ||
-        ansibleStatus === AnsibleStatus.PROVISIONING
-      ) {
-        endIcon = <CircularProgress size={20} />;
-      } else {
-        endIcon = null;
-      }
-    }
+    endIcon = null;
   }
+
   const buttonSx = {
     border: `1px solid ${theme.palette.primary.main}`,
     marginTop: theme.spacing(0.5),

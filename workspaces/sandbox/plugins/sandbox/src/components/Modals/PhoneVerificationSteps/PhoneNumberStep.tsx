@@ -41,7 +41,6 @@ const FLAG_FETCH_URL =
   'https://purecatamphetamine.github.io/country-flag-icons/3x2';
 
 type CountrySelectFieldProps = {
-  disabled?: boolean;
   value: Country;
   onChange: (value: Country) => void;
   options: { label: string; value: Country }[];

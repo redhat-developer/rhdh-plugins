@@ -64,11 +64,11 @@ export class KubeBackendClient implements KubeAPIService {
     this.fetchApi = options.fetchApi;
   }
 
-  private kubeAPI = async (): Promise<string> => {
+  private readonly kubeAPI = async (): Promise<string> => {
     return `${await this.discoveryApi.getBaseUrl('proxy')}/kube-api`;
   };
 
-  private projectPersistentVolumeClaimUrl = (
+  private readonly projectPersistentVolumeClaimUrl = (
     namespace: string,
     labelSelector?: string,
   ): string => {
@@ -79,7 +79,7 @@ export class KubeBackendClient implements KubeAPIService {
     return url;
   };
 
-  private projectDeploymentUrl = (
+  private readonly projectDeploymentUrl = (
     namespace: string,
     labelSelector?: string,
   ) => {
@@ -90,7 +90,7 @@ export class KubeBackendClient implements KubeAPIService {
     return url;
   };
 
-  private projectStatefulSetUrl = (
+  private readonly projectStatefulSetUrl = (
     namespace: string,
     labelSelector?: string,
   ) => {

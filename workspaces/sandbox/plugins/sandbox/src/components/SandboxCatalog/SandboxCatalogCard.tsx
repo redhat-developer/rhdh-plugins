@@ -162,13 +162,12 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
       if (verificationRequired) {
         setVerifyPhoneModalOpen(true);
       }
-    } else {
-      if (pdt === Product.AAP) {
-        await handleAAPInstance();
-        refetchAAP();
-        setAnsibleCredsModalOpen(true);
-      }
+    } else if (pdt === Product.AAP) {
+      await handleAAPInstance();
+      refetchAAP();
+      setAnsibleCredsModalOpen(true);
     }
+
     showGreenCorner();
   };
 
