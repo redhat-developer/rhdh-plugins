@@ -19,7 +19,7 @@ import Menu from '@mui/material/Menu';
 import Button from '@mui/material/Button';
 import { Theme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { MenuItemConfig, MenuSectionConfig } from './MenuSection';
 
@@ -34,6 +34,7 @@ interface HeaderDropdownProps {
   anchorEl: HTMLElement | null;
   isIconButton?: boolean;
   tooltip?: string;
+  size?: IconButtonProps['size'];
 }
 
 const menuListStyle = (theme: Theme) => ({
@@ -69,6 +70,7 @@ export const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
   onClose,
   anchorEl,
   isIconButton = false,
+  size = 'small',
   tooltip,
 }) => {
   const id = useId();
@@ -95,7 +97,7 @@ export const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
     <Box>
       <Tooltip title={tooltip}>
         {isIconButton ? (
-          <IconButton {...commonButtonProps} color="inherit">
+          <IconButton {...commonButtonProps} color="inherit" size={size}>
             {buttonContent}
           </IconButton>
         ) : (
