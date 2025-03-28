@@ -64,3 +64,16 @@ export const AiExperiencePage = aiExperiencePlugin.provide(
     mountPoint: rootRouteRef,
   }),
 );
+
+/**
+ * AI News Page
+ * @public
+ */
+export const AiNewsPage = aiExperiencePlugin.provide(
+  createRoutableExtension({
+    name: 'AiNewsPage',
+    component: () =>
+      import('./components/NewsPage/NewsPage').then(m => m.NewsPage),
+    mountPoint: rootRouteRef,
+  }),
+);
