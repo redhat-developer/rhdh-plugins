@@ -24,6 +24,7 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
 import EventApiController from './controllers/EventApiController';
 import { QueryParams } from './types/event-request';
+import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
 export async function createRouter({
   httpAuth,
@@ -36,6 +37,11 @@ export async function createRouter({
 }): Promise<express.Router> {
   const router = Router();
 
+  const permissionIntegrationRouter = createPermissionIntegrationRouter({
+    permissions: [adoptionInsightsEventsReadPermission],
+  });
+
+  router.use(permissionIntegrationRouter);
   router.use(express.json());
 
   const authorizeUser = async (
