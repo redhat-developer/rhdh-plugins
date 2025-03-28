@@ -64,7 +64,7 @@ class CSVGenerator<T> {
       return `"${removedNewLines.replace(/"/g, '""')}"`;
     }
 
-    return cell;
+    return removedNewLines;
   };
 
   /** Add a row to the CSV */
@@ -201,14 +201,24 @@ export default async ({
   const pluginCSV = new CSVGenerator<MarketplacePlugin>({
     name: p => p?.metadata?.name,
     title: p => p?.metadata?.title,
-    description: p => p?.metadata?.description,
     author: p =>
       p?.spec?.developer ||
       p?.spec?.author ||
       p?.spec?.owner ||
-      (p?.spec?.authors || []).join(','),
+      (p?.spec?.authors || [])?.map(a => a.name).join(', '),
     categories: p => ((p?.spec?.categories as string[]) || []).join(', '),
     lifecycle: p => p?.spec?.lifecycle,
+    metadataDescription: p => p?.metadata?.description,
+    specDescription: p => p?.spec?.description,
+    support: p => p?.spec?.support,
+    publisher: p => p?.spec?.publisher,
+    highlights: p => (p?.spec?.highlights || []).join(', '),
+    'certified-by': p =>
+      p?.metadata?.annotations?.['extensions.backstage.io/certified-by'],
+    'verified-by': p =>
+      p?.metadata?.annotations?.['extensions.backstage.io/verified-by'],
+    'pre-installed': p =>
+      p?.metadata?.annotations?.['extensions.backstage.io/pre-installed'],
     packages: p => (p?.spec?.packages || []).join(', '),
     'backend packages': p =>
       getPackagesOfType(p?.spec?.packages || [], packages, [
