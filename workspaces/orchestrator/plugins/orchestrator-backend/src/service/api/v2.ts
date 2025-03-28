@@ -18,7 +18,7 @@ import { ParsedRequest } from 'openapi-backend';
 
 import {
   AssessedProcessInstanceDTO,
-  AuthTokenVariables,
+  AuthToken,
   ExecuteWorkflowRequestDTO,
   ExecuteWorkflowResponseDTO,
   Filter,
@@ -178,7 +178,7 @@ export class V2 {
       inputData:
         executeWorkflowRequestDTO.inputData as ProcessInstanceVariables,
       authTokens:
-        executeWorkflowRequestDTO.authTokens as AuthTokenVariables,
+        executeWorkflowRequestDTO.authTokens as Array<AuthToken>,
       serviceUrl: definition.serviceUrl,
       businessKey,
       cacheHandler: 'throw',

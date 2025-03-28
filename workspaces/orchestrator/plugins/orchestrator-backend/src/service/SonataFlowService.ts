@@ -23,11 +23,11 @@ import {
   getWorkflowCategory,
   ProcessInstanceStateValues,
   ProcessInstanceVariables,
-  AuthTokenVariables,
   WorkflowDefinition,
   WorkflowExecutionResponse,
   WorkflowInfo,
   WorkflowOverview,
+  AuthToken,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { Pagination } from '../types/pagination';
@@ -101,7 +101,7 @@ export class SonataFlowService {
     definitionId: string;
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
-    authTokens?: AuthTokenVariables;
+    authTokens?: Array<AuthToken>;
     businessKey?: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
     const urlToFetch = args.businessKey
@@ -113,7 +113,7 @@ export class SonataFlowService {
 
   	// Add X-Authentication headers from authTokens
   	if (args.authTokens && Array.isArray(args.authTokens)) {
-    	args.authTokens.forEach((tokenObj: Record<string, unknown>) => {
+    	args.authTokens.forEach((tokenObj) => {
       	if (tokenObj.provider && tokenObj.token) {
         const headerKey = `X-Authentication-${tokenObj.provider}`;
         headers[headerKey] = String(tokenObj.token); // Ensure token is a string
