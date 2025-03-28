@@ -44,6 +44,8 @@ export interface NodeInstance {
   exit?: string;
   definitionId: string;
   nodeId: string;
+  errorMessage: string;
+  retrigger: boolean;
 }
 
 export interface TriggerableNode {
@@ -64,6 +66,7 @@ export interface Milestone {
 export interface ProcessInstanceError {
   __typename?: 'ProcessInstanceError';
   nodeDefinitionId: string;
+  nodeInstanceId: string;
   message?: string;
 }
 
