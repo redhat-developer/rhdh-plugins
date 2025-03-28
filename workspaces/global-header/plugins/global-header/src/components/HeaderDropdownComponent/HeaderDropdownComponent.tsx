@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useId } from 'react';
 import Menu from '@mui/material/Menu';
 import Button from '@mui/material/Button';
-import { styled } from '@mui/material/styles';
+import { Theme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { MenuItemConfig, MenuSectionConfig } from './MenuSection';
 
@@ -34,34 +34,33 @@ interface HeaderDropdownProps {
   anchorEl: HTMLElement | null;
   isIconButton?: boolean;
   tooltip?: string;
+  size?: IconButtonProps['size'];
 }
 
-const Listbox = styled('ul')(
-  ({ theme }) => `
-  font-size: 0.875rem;
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-  min-width: 160px;
-  border-radius: 4px;
-  text-decoration: none;
-  list-style: none;
-  overflow: auto;
-  outline: 1;
-  background: ${theme.palette.background.paper};
-  border: 1px solid ${theme.palette.divider};
-  color: ${
+const menuListStyle = (theme: Theme) => ({
+  fontSize: '0.875rem',
+  boxSizing: 'border-box',
+  padding: 0,
+  margin: 0,
+  minWidth: '160px',
+  borderRadius: '4px',
+  textDecoration: 'none',
+  listStyle: 'none',
+  overflow: 'auto',
+  outline: '1px solid transparent',
+  background: theme.palette.background.paper,
+  border: `1px solid ${theme.palette.divider}`,
+  color:
     theme.palette.mode === 'dark'
       ? theme.palette.text.disabled
-      : theme.palette.text.primary
-  };
-  boxShadow: theme.palette.mode === 'dark'
-    ? '0 2px 6px 2px rgba(0,0,0,0.50), 0 1px 2px 0 rgba(0,0,0,0.50)'
-    : '0 2px 6px 2px rgba(0,0,0,0.15), 0 1px 2px 0 rgba(0,0,0,0.30)',
-  max-height: 60vh;
-  z-index: 1;
-  `,
-);
+      : theme.palette.text.primary,
+  boxShadow:
+    theme.palette.mode === 'dark'
+      ? '0 2px 6px 2px rgba(0,0,0,0.50), 0 1px 2px 0 rgba(0,0,0,0.50)'
+      : '0 2px 6px 2px rgba(0,0,0,0.15), 0 1px 2px 0 rgba(0,0,0,0.30)',
+  maxHeight: '60vh',
+  zIndex: 1,
+});
 
 export const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
   buttonContent,
@@ -71,28 +70,44 @@ export const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
   onClose,
   anchorEl,
   isIconButton = false,
+  size = 'small',
   tooltip,
 }) => {
+  const id = useId();
+
+  const commonButtonProps = {
+    ...buttonProps,
+    onClick: (event: React.MouseEvent<HTMLElement>) => {
+      onOpen(event);
+      // focus the menu when opened
+      // TODO: investigate why MUI isn't doing this for us
+      setTimeout(() => {
+        document
+          .getElementById(`${id}-menu`)
+          ?.getElementsByTagName('a')[0]
+          ?.focus();
+      }, 0);
+    },
+    'aria-haspopup': true,
+    'aria-controls': id,
+    'aria-expanded': anchorEl ? true : undefined,
+  };
+
   return (
     <Box>
       <Tooltip title={tooltip}>
         {isIconButton ? (
-          <IconButton {...buttonProps} color="inherit" onClick={onOpen}>
+          <IconButton {...commonButtonProps} color="inherit" size={size}>
             {buttonContent}
           </IconButton>
         ) : (
-          <Button
-            disableRipple
-            disableTouchRipple
-            {...buttonProps}
-            onClick={onOpen}
-          >
+          <Button disableRipple disableTouchRipple {...commonButtonProps}>
             {buttonContent}
           </Button>
         )}
       </Tooltip>
       <Menu
-        id="menu-appbar"
+        id={`${id}-menu`}
         anchorEl={anchorEl}
         keepMounted
         open={Boolean(anchorEl)}
@@ -110,8 +125,12 @@ export const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
             py: 0,
           },
         }}
+        MenuListProps={{
+          'aria-labelledby': id,
+          sx: theme => menuListStyle(theme),
+        }}
       >
-        <Listbox role="menu">{children}</Listbox>
+        {children}
       </Menu>
     </Box>
   );
