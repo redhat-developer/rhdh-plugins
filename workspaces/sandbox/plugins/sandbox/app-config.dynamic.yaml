@@ -1,0 +1,19 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-sandbox:
+      appIcons:
+        - name: homeIcon
+          importName: SandboxHomeIcon
+        - name: activitiesIcon
+          importName: SandboxActivitiesIcon
+      dynamicRoutes:
+        - path: /home
+          importName: SandboxPage
+          menuItem:
+            icon: homeIcon
+            text: Home
+        - path: /activities
+          importName: SandboxActivitiesPage
+          menuItem:
+            icon: activitiesIcon
+            text: Activities
