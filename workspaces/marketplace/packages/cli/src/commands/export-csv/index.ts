@@ -208,7 +208,7 @@ export default async ({
       (p?.spec?.authors || [])?.map(a => a.name).join(', '),
     categories: p => ((p?.spec?.categories as string[]) || []).join(', '),
     lifecycle: p => p?.spec?.lifecycle,
-    medatadataDescription: p => p?.metadata?.description,
+    metadataDescription: p => p?.metadata?.description,
     specDescription: p => p?.spec?.description,
     support: p => p?.spec?.support,
     publisher: p => p?.spec?.publisher,
