@@ -27,6 +27,7 @@ import {
   WorkflowExecutionResponse,
   WorkflowInfo,
   WorkflowOverview,
+  AuthToken,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { Pagination } from '../types/pagination';
@@ -100,16 +101,34 @@ export class SonataFlowService {
     definitionId: string;
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
+    authTokens?: Array<AuthToken>;
     businessKey?: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
     const urlToFetch = args.businessKey
       ? `${args.serviceUrl}/${args.definitionId}?businessKey=${args.businessKey}`
       : `${args.serviceUrl}/${args.definitionId}`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+  	// Add X-Authentication headers from authTokens
+  	if (args.authTokens && Array.isArray(args.authTokens)) {
+    	args.authTokens.forEach((tokenObj) => {
+      	if (tokenObj.provider && tokenObj.token) {
+        const headerKey = `X-Authentication-${tokenObj.provider}`;
+        headers[headerKey] = String(tokenObj.token); // Ensure token is a string
+      	}
+      });
+  	}
+  	
+  	else {
+    	this.logger.debug('No authTokens provided or authTokens is not an array.');
+  	}
 
     const response = await fetch(urlToFetch, {
       method: 'POST',
       body: JSON.stringify(args.inputData || {}),
-      headers: { 'content-type': 'application/json' },
+      headers,
     });
 
     const json = await response.json();

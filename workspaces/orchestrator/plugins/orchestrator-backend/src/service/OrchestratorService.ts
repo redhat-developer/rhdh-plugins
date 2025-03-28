@@ -22,6 +22,7 @@ import {
   WorkflowExecutionResponse,
   WorkflowInfo,
   WorkflowOverview,
+  AuthToken,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { Pagination } from '../types/pagination';
@@ -185,6 +186,7 @@ export class OrchestratorService {
     definitionId: string;
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
+    authTokens?: Array<AuthToken>;
     businessKey?: string;
     cacheHandler?: CacheHandler;
   }): Promise<WorkflowExecutionResponse | undefined> {
