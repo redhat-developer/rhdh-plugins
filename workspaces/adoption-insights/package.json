@@ -38,7 +38,7 @@
     "directory": "workspaces/adoption-insights"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.30.0",
+    "@backstage/cli": "^0.29.6",
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.13.0",
     "@changesets/cli": "^2.27.1",
@@ -51,7 +51,9 @@
   },
   "resolutions": {
     "@types/react": "^18",
-    "@types/react-dom": "^18"
+    "@types/react-dom": "^18",
+    "@backstage/plugin-catalog-backend": "1.30.0",
+    "@backstage/plugin-scaffolder-backend": "1.29.0"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

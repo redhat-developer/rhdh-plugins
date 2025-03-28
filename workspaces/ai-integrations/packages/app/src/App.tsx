@@ -51,6 +51,7 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
+import { AiExperiencePage } from '@red-hat-developer-hub/backstage-plugin-ai-experience';
 
 const app = createApp({
   apis,
@@ -110,6 +111,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
+    <Route path="/ai-experience" element={<AiExperiencePage />} />
   </FlatRoutes>
 );
 

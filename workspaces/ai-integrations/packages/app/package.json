@@ -46,6 +46,7 @@
     "@backstage/theme": "^0.6.4",
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
+    "@red-hat-developer-hub/backstage-plugin-ai-experience": "workspace:^",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
     "react-router": "^6.3.0",
