@@ -43,6 +43,7 @@ backend:
       - host: '*.mozilla.org'
       - host: '*.openshift.com'
       - host: '*.openshiftapps.com'
+      - host: '${RHDH_BRIDGE_HOST}'
 
 integrations:
   github:

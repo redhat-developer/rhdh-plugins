@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-/**
- * The model-catalog backend module for the catalog plugin.
- *
- * @packageDocumentation
- */
+import {
+  catalogModuleModelCatalogResourceEntityProvider,
+  catalogModuleRHDHRHOAIReaderProcessor,
+  catalogModuleRHDHRHOAILocationsExtensionPoint,
+  catalogModuleRHDHRHOAIEntityProvider,
+} from './module';
 
-// export * from './clients';
-export { catalogModuleModelCatalogResourceEntityProvider as default } from './module';
-export { catalogModuleRHDHRHOAIReaderProcessor } from './module';
-export { catalogModuleRHDHRHOAILocationsExtensionPoint } from './module';
-export { catalogModuleRHDHRHOAIEntityProvider } from './module';
-export * from './providers';
-export * from './processors';
-export * from './clients';
+describe('model-catalog', () => {
+  it('should export entity providers and processor', () => {
+    expect(catalogModuleModelCatalogResourceEntityProvider).toBeDefined();
+    expect(catalogModuleRHDHRHOAIReaderProcessor).toBeDefined();
+    expect(catalogModuleRHDHRHOAILocationsExtensionPoint).toBeDefined();
+    expect(catalogModuleRHDHRHOAIEntityProvider).toBeDefined();
+  });
+});
