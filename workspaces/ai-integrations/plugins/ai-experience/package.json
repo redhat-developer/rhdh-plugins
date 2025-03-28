@@ -19,8 +19,7 @@
     "role": "frontend-plugin",
     "pluginId": "ai-experience",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-ai-experience",
-      "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog"
+      "@red-hat-developer-hub/backstage-plugin-ai-experience"
     ]
   },
   "sideEffects": false,
