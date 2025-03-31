@@ -13,18 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * The model-catalog backend module for the catalog plugin.
- *
- * @packageDocumentation
- */
-
-// export * from './clients';
-export { catalogModuleModelCatalogResourceEntityProvider as default } from './module';
-export { catalogModuleRHDHRHOAIReaderProcessor } from './module';
-export { catalogModuleRHDHRHOAILocationsExtensionPoint } from './module';
-export { catalogModuleRHDHRHOAIEntityProvider } from './module';
-export * from './providers';
-export * from './processors';
-export * from './clients';
+export * from './BridgeResourceConnector';
