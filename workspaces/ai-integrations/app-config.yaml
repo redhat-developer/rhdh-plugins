@@ -43,6 +43,7 @@ backend:
       - host: '*.mozilla.org'
       - host: '*.openshift.com'
       - host: '*.openshiftapps.com'
+      - host: '${RHDH_BRIDGE_HOST}'
 
 integrations:
   github:
@@ -91,5 +92,7 @@ catalog:
     - allow: [Component, System, API, Resource, Location]
   providers:
     modelCatalog:
-      ollama:
+      # The field underneath here can be any value that you feel represents your model catalog bridge instance
+      development:
+        # If testing locally, this value should be set to `localhost:9090`
         baseUrl: '${RHDH_AI_BRIDGE_SERVER}'

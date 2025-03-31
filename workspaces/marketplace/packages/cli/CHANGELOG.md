@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/marketplace-cli
 
+## 0.4.2
+
+### Patch Changes
+
+- 7517e3b: (export-csv) Always escape newlines in each CSV cell and add more columns
+
+## 0.4.1
+
+### Patch Changes
+
+- 5a99fdd: use CJS imports instead of ESM to fix double-encapsulation import issue
+
 ## 0.4.0
 
 ### Minor Changes

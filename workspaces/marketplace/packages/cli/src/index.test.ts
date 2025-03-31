@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const exec = require('child_process');
 
-/**
- * The model-catalog backend module for the catalog plugin.
- *
- * @packageDocumentation
- */
-
-// export * from './clients';
-export { catalogModuleModelCatalogResourceEntityProvider as default } from './module';
-export { catalogModuleRHDHRHOAIReaderProcessor } from './module';
-export { catalogModuleRHDHRHOAILocationsExtensionPoint } from './module';
-export { catalogModuleRHDHRHOAIEntityProvider } from './module';
-export * from './providers';
-export * from './processors';
-export * from './clients';
+describe('marketplace-cli', () => {
+  it('should not crash trying to run export-csv', () => {
+    const output = exec.execSync(
+      '../bin/marketplace-cli export-csv -p ../../../ -r',
+      {
+        cwd: __dirname,
+        stdio: 'inherit',
+      },
+    );
+    expect(output).toBeDefined();
+  });
+});
