@@ -38,7 +38,7 @@ export const registerCommands = (program: Command) => {
   program
     .command('init')
     .description('init')
-    .action(lazy(() => import('./init').then(m => m.default)));
+    .action(lazy(() => require('./init').default));
 
   program
     .command('generate')
@@ -58,14 +58,14 @@ export const registerCommands = (program: Command) => {
       'metadata.namespace for the generated Package entities',
     )
     .option('--owner [owner]', 'spec.owner for the generated Package entities')
-    .action(lazy(() => import('./generate').then(m => m.default)));
+    .action(lazy(() => require('./generate').default));
 
   program
     .command('verify')
     .description(
       'Verify a set of marketplace entities. By default, it will read entities from the standard input',
     )
-    .action(lazy(() => import('./verify').then(m => m.default)));
+    .action(lazy(() => require('./verify').default));
 
   program
     .command('export-csv')
@@ -87,5 +87,5 @@ export const registerCommands = (program: Command) => {
       'The type of CSV to export. Can be one of: "plugin", "package", or "all". "all" will generate two files.',
       'all',
     )
-    .action(lazy(() => import('./export-csv').then(m => m.default)));
+    .action(lazy(() => require('./export-csv').default));
 };
