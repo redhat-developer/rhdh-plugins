@@ -1,6 +1,7 @@
 .openapi-generator-ignore
 Apis/DefaultApi.md
 Models/AssessedProcessInstanceDTO.md
+Models/AuthToken.md
 Models/ErrorResponse.md
 Models/ExecuteWorkflowRequestDTO.md
 Models/ExecuteWorkflowResponseDTO.md

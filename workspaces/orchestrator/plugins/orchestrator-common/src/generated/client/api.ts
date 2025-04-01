@@ -43,6 +43,25 @@ export interface AssessedProcessInstanceDTO {
     'assessedBy'?: ProcessInstanceDTO;
 }
 /**
+ * 
+ * @export
+ * @interface AuthToken
+ */
+export interface AuthToken {
+    /**
+     * The auth token provider name
+     * @type {string}
+     * @memberof AuthToken
+     */
+    'provider': string;
+    /**
+     * The auth token itself retrieved from the above specified provider name
+     * @type {string}
+     * @memberof AuthToken
+     */
+    'token': string;
+}
+/**
  * The ErrorResponse object represents a common structure for handling errors in API responses. It includes essential information about the error, such as the error message and additional optional details.
  * @export
  * @interface ErrorResponse
@@ -73,6 +92,12 @@ export interface ExecuteWorkflowRequestDTO {
      * @memberof ExecuteWorkflowRequestDTO
      */
     'inputData'?: object;
+    /**
+     * 
+     * @type {Array<AuthToken>}
+     * @memberof ExecuteWorkflowRequestDTO
+     */
+    'authTokens'?: Array<AuthToken>;
 }
 /**
  * 

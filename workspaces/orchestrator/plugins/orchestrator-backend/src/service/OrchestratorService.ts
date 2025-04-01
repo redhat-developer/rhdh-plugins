@@ -15,6 +15,7 @@
  */
 
 import {
+  AuthToken,
   Filter,
   ProcessInstance,
   ProcessInstanceVariables,
@@ -22,7 +23,6 @@ import {
   WorkflowExecutionResponse,
   WorkflowInfo,
   WorkflowOverview,
-  AuthToken,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { Pagination } from '../types/pagination';
