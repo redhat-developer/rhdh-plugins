@@ -52,7 +52,7 @@ export const WorkflowPage = () => {
         <TabbedLayout.Route path="/" title="Workflow details">
           <WorkflowPageTabContent>
             <WorkflowDetailsTabContent
-              loading={loadingWorkflowOverview}
+              loadingWorkflowOverview={loadingWorkflowOverview}
               workflowOverviewDTO={workflowOverviewDTO?.data}
               errorWorkflowOverview={errorWorkflowOverview}
             />

@@ -9454,6 +9454,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@kie-tools/serverless-workflow-standalone-editor@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "@kie-tools/serverless-workflow-standalone-editor@npm:10.0.0"
+  checksum: ac90e1ce5c81e506a549f95f225a3add8cd54aa70c52094fee7a176363d5b997ff15f6882772d1c9385196490acf5755488778812beaea754d862f44e8b224b1
+  languageName: node
+  linkType: hard
+
 "@kie-tools/serverless-workflow-text-editor@npm:0.32.0, @kie-tools/serverless-workflow-text-editor@npm:^0.32.0":
   version: 0.32.0
   resolution: "@kie-tools/serverless-workflow-text-editor@npm:0.32.0"
@@ -12479,6 +12486,7 @@ __metadata:
     "@kie-tools/serverless-workflow-combined-editor": ^0.32.0
     "@kie-tools/serverless-workflow-language-service": ^0.32.0
     "@kie-tools/serverless-workflow-service-catalog": ^0.32.0
+    "@kie-tools/serverless-workflow-standalone-editor": ^10.0.0
     "@material-ui/core": ^4.12.4
     "@material-ui/icons": ^4.11.3
     "@material-ui/lab": ^4.0.0-alpha.45
