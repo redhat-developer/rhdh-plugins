@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-application-provider-test
 
+## 0.1.1
+
+### Patch Changes
+
+- 388d9c0: Add CrashProviderWithoutErrorBoundary
+
 ## 0.1.0
 
 ### Minor Changes
