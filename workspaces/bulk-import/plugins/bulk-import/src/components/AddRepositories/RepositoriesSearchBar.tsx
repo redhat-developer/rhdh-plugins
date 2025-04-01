@@ -22,15 +22,6 @@ import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
 import Input from '@mui/material/Input';
 import InputAdornment from '@mui/material/InputAdornment';
-import { makeStyles } from '@mui/styles';
-
-const useStyles = makeStyles({
-  formControl: {
-    alignItems: 'flex-end',
-    flexGrow: 1,
-    paddingLeft: '21px',
-  },
-});
 
 export const RepositoriesSearchBar = ({
   value,
@@ -41,11 +32,16 @@ export const RepositoriesSearchBar = ({
   onChange: (filter: string) => void;
   activeOrganization?: boolean;
 }) => {
-  const classes = useStyles();
   const ariaLabel = activeOrganization ? 'search-in-organization' : 'search';
 
   return (
-    <FormControl className={classes.formControl}>
+    <FormControl
+      sx={{
+        alignItems: 'flex-end',
+        flexGrow: 1,
+        paddingLeft: '21px',
+      }}
+    >
       <Input
         data-testid={ariaLabel}
         placeholder="Search"

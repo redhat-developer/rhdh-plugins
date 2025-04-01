@@ -90,9 +90,7 @@ export const BulkImportPage = () => {
       <Header title="Bulk import" />
       <DrawerContextProvider>
         <DeleteDialogContextProvider>
-          <Content noPadding>
-            <div style={{ padding: '24px' }}>{showContent()}</div>
-          </Content>
+          <Content>{showContent()}</Content>
         </DeleteDialogContextProvider>
       </DrawerContextProvider>
     </Page>

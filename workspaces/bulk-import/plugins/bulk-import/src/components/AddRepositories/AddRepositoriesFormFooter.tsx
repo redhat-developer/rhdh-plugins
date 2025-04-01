@@ -22,7 +22,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import {
@@ -31,23 +30,10 @@ import {
   ApprovalTool,
 } from '../../types';
 
-const useStyles = makeStyles({
-  illustration: {
-    flexDirection: 'row',
-    display: 'flex',
-    justifyContent: 'space-around',
-    overflow: 'scroll',
-  },
-  tooltip: {
-    maxWidth: 'none',
-  },
-});
-
 const sPad = (repositories: AddedRepositories) =>
   Object.keys(repositories || []).length > 1 ? 's' : '';
 
 export const AddRepositoriesFormFooter = () => {
-  const styles = useStyles();
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
   const approvalToolTitle =
@@ -101,7 +87,12 @@ export const AddRepositoriesFormFooter = () => {
       data-testid="add-repository-footer"
     >
       {toolTipTitle ? (
-        <Tooltip classes={{ tooltip: styles.tooltip }} title={toolTipTitle}>
+        <Tooltip
+          title={toolTipTitle}
+          sx={{
+            maxWidth: 'none',
+          }}
+        >
           <span>{submitButton}</span>
         </Tooltip>
       ) : (

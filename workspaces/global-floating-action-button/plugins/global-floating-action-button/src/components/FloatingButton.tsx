@@ -17,7 +17,6 @@
 import * as React from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
-import classnames from 'classnames';
 
 import { makeStyles } from '@mui/styles';
 import { FABWithSubmenu } from './FABWithSubmenu';
@@ -26,11 +25,6 @@ import { FloatingActionButton, Slot } from '../types';
 import { filterAndSortButtons } from '../utils';
 
 const useStyles = makeStyles(theme => ({
-  fabButton: {
-    zIndex: 200,
-    display: 'flex',
-    position: 'fixed',
-  },
   'page-end': {
     bottom: theme?.spacing?.(2) ?? '16px',
     right: theme?.spacing?.(2) ?? '16px',
@@ -91,7 +85,12 @@ export const FloatingButton = ({
   } else {
     fabDiv = (
       <div
-        className={classnames(fabButton.fabButton, fabButton[slot])}
+        style={{
+          zIndex: 200,
+          display: 'flex',
+          position: 'fixed',
+        }}
+        className={fabButton[slot]}
         id="floating-button"
         data-testid="floating-button"
       >
