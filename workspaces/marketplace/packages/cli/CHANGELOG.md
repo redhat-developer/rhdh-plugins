@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/marketplace-cli
 
+## 0.4.3
+
+### Patch Changes
+
+- e5e4655: use new Backstage `lazy` loading function
+
 ## 0.4.2
 
 ### Patch Changes
