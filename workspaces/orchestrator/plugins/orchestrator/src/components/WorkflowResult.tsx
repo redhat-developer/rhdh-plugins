@@ -133,6 +133,15 @@ const ResultMessage = ({
           </Alert>
         </Box>
       );
+    } else if (status === ProcessInstanceStatusDTO.Pending) {
+      statusComponent = (
+        <Box sx={{ width: '100%' }}>
+          <Alert severity="warning">
+            <AlertTitle>Workflow is pending...</AlertTitle>
+            The workflow is on hold, waiting for the next action or approval.
+          </Alert>
+        </Box>
+      );
     } else {
       statusComponent = (
         <Box sx={{ width: '100%' }}>
