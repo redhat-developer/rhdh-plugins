@@ -16,18 +16,14 @@
 
 import React from 'react';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
-import {
-  Page,
-  Header,
-  Content,
-  ErrorBoundary,
-} from '@backstage/core-components';
+import { Page, Content, ErrorBoundary } from '@backstage/core-components';
 
 import { themeId } from '../consts';
 import { collectionRouteRef, collectionsRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { useCollection } from '../hooks/useCollection';
 import { MarketplaceCollectionGridLoader } from '../components/MarketplaceCollectionGrid';
+import { TechPreviewHeader } from '../components/TechPreviewNotice';
 
 const CollectionHeader = () => {
   const params = useRouteRefParams(collectionRouteRef);
@@ -37,7 +33,11 @@ const CollectionHeader = () => {
   const collectionsLink = useRouteRef(collectionsRouteRef)();
 
   return (
-    <Header title={displayName} type="Collections" typeLink={collectionsLink} />
+    <TechPreviewHeader
+      title={displayName}
+      type="Collections"
+      typeLink={collectionsLink}
+    />
   );
 };
 
