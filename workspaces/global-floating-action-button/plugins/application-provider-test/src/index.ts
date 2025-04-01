@@ -22,3 +22,15 @@ ClassNameGenerator.configure(componentName => {
 });
 
 export * from './plugin';
+
+/**
+ * @public
+ */
+export const CrashProviderWithoutErrorBoundary = () => {
+  throw new Error(
+    'CrashProviderWithoutErrorBoundary failed to render (intentional crash)',
+  );
+};
+
+CrashProviderWithoutErrorBoundary.displayName =
+  'CrashProviderWithoutErrorBoundary';
