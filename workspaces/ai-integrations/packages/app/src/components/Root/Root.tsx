@@ -37,11 +37,16 @@ import {
   SidebarSpace,
   useSidebarOpenState,
   Link,
+  CatalogIcon,
 } from '@backstage/core-components';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
+import {
+  GlobalHeaderComponent,
+  defaultGlobalHeaderComponentsMountPoints,
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -73,6 +78,9 @@ const SidebarLogo = () => {
 
 export const Root = ({ children }: PropsWithChildren<{}>) => (
   <SidebarPage>
+    <GlobalHeaderComponent
+      globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
+    />
     <Sidebar>
       <SidebarLogo />
       <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
@@ -81,7 +89,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
       <SidebarDivider />
       <SidebarGroup label="Menu" icon={<MenuIcon />}>
         {/* Global nav, not org-specific */}
-        <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
+        <SidebarItem icon={HomeIcon} to="home" text="Home" />
+        <SidebarItem icon={CatalogIcon} to="catalog" text="Catalog" />
         <MyGroupsSidebarItem
           singularTitle="My Group"
           pluralTitle="My Groups"
