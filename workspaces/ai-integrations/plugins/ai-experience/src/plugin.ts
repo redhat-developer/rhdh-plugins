@@ -39,7 +39,9 @@ export const AiExperiencePage = aiExperiencePlugin.provide(
   createRoutableExtension({
     name: 'AiExperiencePage',
     component: () =>
-      import('./components/ExampleComponent').then(m => m.ExampleComponent),
+      import('./components/AiExperienceHomePage').then(
+        m => m.AiExperienceHomePage,
+      ),
     mountPoint: rootRouteRef,
   }),
 );
