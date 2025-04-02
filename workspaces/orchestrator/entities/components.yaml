@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: orchestrator-example-components
+  description: A collection of Example Software Components for the Orchestrator
+spec:
+  type: file
+  targets:
+    - ./componentWithWorkflows.yaml

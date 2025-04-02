@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React, { useCallback } from 'react';
 
 import {
@@ -30,15 +31,21 @@ import { orchestratorApiRef } from '../api';
 import usePolling from '../hooks/usePolling';
 import { WorkflowsTable } from './WorkflowsTable';
 
-export const WorkflowsTabContent = () => {
+export type WorkflowsTabContentProps = {
+  filterWorkflows?: (workflow: WorkflowOverviewDTO) => boolean;
+};
+
+export const WorkflowsTabContent = ({
+  filterWorkflows = () => true,
+}: WorkflowsTabContentProps) => {
   const orchestratorApi = useApi(orchestratorApiRef);
 
   const fetchWorkflowOverviews = useCallback(async () => {
     // TODO: pass pagination details only if the user is granted the generic orchestratorWorkflowPermission
     // FE pagination will be used otherwise
     const overviewsResp = await orchestratorApi.listWorkflowOverviews();
-    return overviewsResp.data.overviews;
-  }, [orchestratorApi]);
+    return overviewsResp.data.overviews?.filter(filterWorkflows);
+  }, [orchestratorApi, filterWorkflows]);
 
   const { loading, error, value } = usePolling<
     WorkflowOverviewDTO[] | undefined
