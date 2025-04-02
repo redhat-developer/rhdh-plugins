@@ -15,7 +15,6 @@
  */
 import React from 'react';
 
-import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -31,7 +30,6 @@ interface CardWrapperProps {
 
 const CardWrapper: React.FC<CardWrapperProps> = ({
   title,
-  version,
   description,
   tags,
 }) => {
@@ -40,6 +38,7 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
       sx={{
         border: theme => `1px solid ${theme.palette.grey[400]}`,
         borderRadius: 3,
+        overflow: 'hidden',
       }}
     >
       <CardContent
@@ -65,10 +64,12 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
             {title}
           </Link>
         </Box>
+
+        {/* // Todo: Add version to the model card once it is available
         <Box sx={{ display: 'flex', alignItems: 'center', pt: 1 }}>
           <LocalOfferOutlinedIcon sx={{ width: '16px' }} />
           <Typography variant="body2">{version}</Typography>
-        </Box>
+        </Box> */}
         <Box sx={{ pt: 2, height: '175px', overflow: 'hidden' }}>
           <Typography
             variant="body2"

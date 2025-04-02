@@ -37,6 +37,7 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
       sx={{
         border: theme => `1px solid ${theme.palette.grey[400]}`,
         borderRadius: 3,
+        overflow: 'hidden',
       }}
     >
       <CardContent

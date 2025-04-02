@@ -23,35 +23,45 @@ import LearnSection from '../LearnSection';
 import ModelSection from '../ModelSection';
 import TemplateSection from '../TemplateSection';
 import useGreeting from '../../hooks/useGreeting';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { identityApiRef, useApi } from '@backstage/core-plugin-api';
+import { useAsync } from 'react-use';
 
 export const AiExperienceHomePage = () => {
   const greeting = useGreeting();
+  const identityApi = useApi(identityApiRef);
+
+  const { value: profile } = useAsync(() => identityApi.getProfileInfo());
 
   return (
-    <Page themeId="home">
-      <Content>
-        <Box>
-          <SectionWrapper title={`${greeting} Alex!`}>
-            <Box sx={{ padding: '20px 10px 30px 40px' }}>
-              <LearnSection />
-            </Box>
-          </SectionWrapper>
-        </Box>
-        <Box sx={{ pt: 3 }}>
-          <SectionWrapper title="Explore AI models">
-            <Box sx={{ padding: '20px 10px 10px 0' }}>
-              <ModelSection />
-            </Box>
-          </SectionWrapper>
-        </Box>
-        <Box sx={{ pt: 3 }}>
-          <SectionWrapper title="Explore AI templates">
-            <Box sx={{ padding: '20px 10px 10px 0' }}>
-              <TemplateSection />
-            </Box>
-          </SectionWrapper>
-        </Box>
-      </Content>
-    </Page>
+    <QueryClientProvider client={new QueryClient()}>
+      <Page themeId="home">
+        <Content>
+          <Box>
+            <SectionWrapper
+              title={`${greeting} ${profile?.displayName || ''}!`}
+            >
+              <Box sx={{ padding: '20px 10px 30px 40px' }}>
+                <LearnSection />
+              </Box>
+            </SectionWrapper>
+          </Box>
+          <Box sx={{ pt: 3 }}>
+            <SectionWrapper title="Explore AI models">
+              <Box sx={{ padding: '20px 10px 10px 0' }}>
+                <ModelSection />
+              </Box>
+            </SectionWrapper>
+          </Box>
+          <Box sx={{ pt: 3 }}>
+            <SectionWrapper title="Explore AI templates">
+              <Box sx={{ padding: '20px 10px 10px 0' }}>
+                <TemplateSection />
+              </Box>
+            </SectionWrapper>
+          </Box>
+        </Content>
+      </Page>
+    </QueryClientProvider>
   );
 };
