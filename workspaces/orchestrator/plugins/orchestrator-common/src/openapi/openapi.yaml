@@ -578,8 +578,8 @@ components:
         authTokens:
           type: array
           items:
-            $ref: '#/components/schemas/AuthToken' 
-          minItems: 1     
+            $ref: '#/components/schemas/AuthToken'
+          minItems: 1
           additionalProperties: true
     AuthToken:
       type: object
@@ -593,7 +593,7 @@ components:
       required:
         - provider
         - token
-      additionalProperties: false          
+      additionalProperties: false
     ExecuteWorkflowResponseDTO:
       type: object
       properties:

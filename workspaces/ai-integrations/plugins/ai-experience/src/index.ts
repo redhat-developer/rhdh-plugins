@@ -13,4 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { aiExperiencePlugin, AiExperiencePage } from './plugin';
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+
+ClassNameGenerator.configure(componentName => {
+  return componentName.startsWith('v5-')
+    ? componentName
+    : `v5-${componentName}`;
+});
+
+export * from './plugin';

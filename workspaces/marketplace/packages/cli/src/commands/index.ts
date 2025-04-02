@@ -14,31 +14,13 @@
  * limitations under the License.
  */
 import { Command } from 'commander';
-import { exitWithError } from '../lib/errors';
-import { assertError } from '@backstage/errors';
-
-// Wraps an action function so that it always exits and handles errors
-function lazy(
-  getActionFunc: () => Promise<(...args: any[]) => Promise<void>>,
-): (...args: any[]) => Promise<never> {
-  return async (...args: any[]) => {
-    try {
-      const actionFunc = await getActionFunc();
-      await actionFunc(...args);
-
-      process.exit(0);
-    } catch (error) {
-      assertError(error);
-      exitWithError(error);
-    }
-  };
-}
+import { lazy } from '../lib/lazy';
 
 export const registerCommands = (program: Command) => {
   program
     .command('init')
     .description('init')
-    .action(lazy(() => require('./init').default));
+    .action(lazy(() => import('./init'), 'default'));
 
   program
     .command('generate')
@@ -58,14 +40,14 @@ export const registerCommands = (program: Command) => {
       'metadata.namespace for the generated Package entities',
     )
     .option('--owner [owner]', 'spec.owner for the generated Package entities')
-    .action(lazy(() => require('./generate').default));
+    .action(lazy(() => import('./generate'), 'default'));
 
   program
     .command('verify')
     .description(
       'Verify a set of marketplace entities. By default, it will read entities from the standard input',
     )
-    .action(lazy(() => require('./verify').default));
+    .action(lazy(() => import('./verify'), 'default'));
 
   program
     .command('export-csv')
@@ -87,5 +69,5 @@ export const registerCommands = (program: Command) => {
       'The type of CSV to export. Can be one of: "plugin", "package", or "all". "all" will generate two files.',
       'all',
     )
-    .action(lazy(() => require('./export-csv').default));
+    .action(lazy(() => import('./export-csv'), 'default'));
 };

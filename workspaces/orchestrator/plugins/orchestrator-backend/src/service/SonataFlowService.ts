@@ -17,6 +17,7 @@
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 import {
+  AuthToken,
   extractWorkflowFormat,
   Filter,
   fromWorkflowSource,
@@ -27,7 +28,6 @@ import {
   WorkflowExecutionResponse,
   WorkflowInfo,
   WorkflowOverview,
-  AuthToken,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { Pagination } from '../types/pagination';
@@ -111,19 +111,19 @@ export class SonataFlowService {
       'Content-Type': 'application/json',
     };
 
-  	// Add X-Authentication headers from authTokens
-  	if (args.authTokens && Array.isArray(args.authTokens)) {
-    	args.authTokens.forEach((tokenObj) => {
-      	if (tokenObj.provider && tokenObj.token) {
-        const headerKey = `X-Authentication-${tokenObj.provider}`;
-        headers[headerKey] = String(tokenObj.token); // Ensure token is a string
-      	}
+    // Add X-Authentication headers from authTokens
+    if (args.authTokens && Array.isArray(args.authTokens)) {
+      args.authTokens.forEach(tokenObj => {
+        if (tokenObj.provider && tokenObj.token) {
+          const headerKey = `X-Authentication-${tokenObj.provider}`;
+          headers[headerKey] = String(tokenObj.token); // Ensure token is a string
+        }
       });
-  	}
-  	
-  	else {
-    	this.logger.debug('No authTokens provided or authTokens is not an array.');
-  	}
+    } else {
+      this.logger.debug(
+        'No authTokens provided or authTokens is not an array.',
+      );
+    }
 
     const response = await fetch(urlToFetch, {
       method: 'POST',

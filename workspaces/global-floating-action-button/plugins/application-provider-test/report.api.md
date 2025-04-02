@@ -29,6 +29,12 @@ export const CountProvider: ({
 export const CrashProvider: () => never;
 
 // @public (undocumented)
+export const CrashProviderWithoutErrorBoundary: {
+  (): never;
+  displayName: string;
+};
+
+// @public (undocumented)
 export const TestCardOne: () => JSX_2.Element;
 
 // @public (undocumented)

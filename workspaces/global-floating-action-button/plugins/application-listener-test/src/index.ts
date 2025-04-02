@@ -14,3 +14,15 @@
  * limitations under the License.
  */
 export * from './plugin';
+
+/**
+ * @public
+ */
+export const CrashListenerWithoutErrorBoundary = () => {
+  throw new Error(
+    'CrashListenerWithoutErrorBoundary failed to render (intentional crash)',
+  );
+};
+
+CrashListenerWithoutErrorBoundary.displayName =
+  'CrashListenerWithoutErrorBoundary';
