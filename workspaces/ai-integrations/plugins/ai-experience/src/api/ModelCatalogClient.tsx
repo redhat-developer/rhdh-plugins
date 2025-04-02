@@ -42,7 +42,7 @@ export class ModelCatalogClient implements ModelServiceApi {
     this.fetchApi = options.fetchApi;
   }
 
-  private async get(
+  private async fetcher(
     path: string,
     searchParams?: URLSearchParams,
   ): Promise<any> {
@@ -63,10 +63,10 @@ export class ModelCatalogClient implements ModelServiceApi {
   getModels(
     request: GetEntitiesRequest,
   ): Promise<GetEntitiesResponse<AIModel>> {
-    return this.get('/models', encodeGetEntitiesRequest(request));
+    return this.fetcher('/models', encodeGetEntitiesRequest(request));
   }
 
   getTemplates(request: GetEntitiesRequest): Promise<GetEntitiesResponse<any>> {
-    return this.get('/templates', encodeGetEntitiesRequest(request));
+    return this.fetcher('/templates', encodeGetEntitiesRequest(request));
   }
 }

@@ -25,8 +25,8 @@ export const createSearchParams: <
 ) => URLSearchParams;
 
 // @public (undocumented)
-export const decodeEntityFilterQuery: (
-  searchParams: URLSearchParams,
+export const decodeEntityFilter: (
+  searchParameters: URLSearchParams,
 ) => EntityFilterQuery_2 | undefined;
 
 // @public (undocumented)

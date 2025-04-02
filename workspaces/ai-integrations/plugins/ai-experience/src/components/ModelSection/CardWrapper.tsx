@@ -23,7 +23,7 @@ import Chip from '@mui/material/Chip';
 
 interface CardWrapperProps {
   title: string;
-  version: string;
+  version?: string;
   description: string;
   tags: string[];
 }

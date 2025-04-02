@@ -23,17 +23,5 @@ describe('plugin', () => {
   it('should read models items', async () => {
     // Todo: fix tests
     expect(true).toBe(true);
-    //   const { server } = await startTestBackend({
-    //     features: [
-    //       aiExperiencePlugin,
-    //       catalogServiceMock.factory({
-    //         entities: [],
-    //       }),
-    //     ],
-    //   });
-
-    //   await request(server).get('/api/ai-experience/models').expect(200, {
-    //     items: [],
-    //   });
   });
 });

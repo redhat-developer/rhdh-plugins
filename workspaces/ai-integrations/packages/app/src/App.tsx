@@ -55,6 +55,13 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { AiExperiencePage } from '@red-hat-developer-hub/backstage-plugin-ai-experience';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
+const githubProvider = {
+  id: 'github-auth-provider',
+  title: 'GitHub',
+  message: 'Sign in using GitHub',
+  apiRef: githubAuthApiRef,
+};
+
 const app = createApp({
   apis,
   bindRoutes({ bind }) {
@@ -74,24 +81,12 @@ const app = createApp({
       catalogIndex: catalogPlugin.routes.catalogIndex,
     });
   },
+  themes: getThemes(),
   components: {
     SignInPage: props => (
-      <SignInPage
-        {...props}
-        auto
-        providers={[
-          'guest',
-          {
-            id: 'github-auth-provider',
-            title: 'GitHub',
-            message: 'Sign in using GitHub',
-            apiRef: githubAuthApiRef,
-          },
-        ]}
-      />
+      <SignInPage {...props} auto providers={['guest', githubProvider]} />
     ),
   },
-  themes: getThemes(),
 });
 
 const routes = (

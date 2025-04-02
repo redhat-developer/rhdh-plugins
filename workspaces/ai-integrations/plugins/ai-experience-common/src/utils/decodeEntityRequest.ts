@@ -22,16 +22,16 @@ import {
 /**
  * @public
  */
-export const decodeEntityFilterQuery = (
-  searchParams: URLSearchParams,
+export const decodeEntityFilter = (
+  searchParameters: URLSearchParams,
 ): EntityFilterQuery | undefined => {
-  if (!searchParams.has('filter')) {
+  if (!searchParameters.has('filter')) {
     return undefined;
   }
 
   const filter: Record<string, string | string[]> = {};
 
-  searchParams.getAll('filter').forEach(keyValuePair => {
+  searchParameters.getAll('filter').forEach(keyValuePair => {
     const firstEqualIndex = keyValuePair.indexOf('=');
     if (firstEqualIndex === -1) {
       return;
@@ -62,7 +62,7 @@ export const decodeGetEntitiesRequest = (
   if (searchParams.get('limit')) {
     request.limit = Number(searchParams.get('limit'));
   }
-  request.filter = decodeEntityFilterQuery(searchParams);
+  request.filter = decodeEntityFilter(searchParams);
 
   return request;
 };
