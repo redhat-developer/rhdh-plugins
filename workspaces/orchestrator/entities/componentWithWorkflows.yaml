@@ -1,0 +1,26 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: orchestrator-test-component
+  title: Test Component For Orchestrator
+  description: |
+    This is an example Backstage catalog component
+  links:
+    - title: Orchestrator Website
+      url: https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator
+  annotations:
+    argocd/app-name: 'janus-idp'
+    backstage.io/kubernetes-id: 'janus-idp'
+    github.com/project-slug: redhat-developer/rhdh
+    quay.io/repository-slug: rhdh-community/rhdh
+    backstage.io/techdocs-ref: url:https://github.com/redhat-developer/rhdh
+    backstage.io/kubernetes-namespace: janus-idp-prod
+    sonarqube.org/project-key: janus-idp_backstage-showcase
+    orchestrator/workflow-ids: foo,bar,yamlgreet,wait-or-error 
+spec:
+  type: website
+  system: janus-idp
+  owner: janus-authors
+  lifecycle: production
+  dependsOn:
+    - resource:github

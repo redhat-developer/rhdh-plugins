@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-export { orchestratorPlugin, OrchestratorPage } from './plugin';
-export { default as OrchestratorIcon } from './components/OrchestratorIcon';
-export * from './entityPage';
+export { hasWorkflows } from './entitySelectors';
+export { WorkflowsEntityContent } from './WorkflowsEntityContent';

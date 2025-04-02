@@ -68,6 +68,10 @@ import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
+import {
+  hasWorkflows,
+  WorkflowsEntityContent,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import React from 'react';
 
 const techdocsContent = (
@@ -177,6 +181,8 @@ const serviceEntityPage = (
       </Grid>
     </EntityLayout.Route>
 
+    {/* TODO */}
+
     <EntityLayout.Route path="/dependencies" title="Dependencies">
       <Grid container spacing={3} alignItems="stretch">
         <Grid item md={6}>
@@ -202,6 +208,10 @@ const websiteEntityPage = (
 
     <EntityLayout.Route path="/ci-cd" title="CI/CD">
       {cicdContent}
+    </EntityLayout.Route>
+
+    <EntityLayout.Route path="/workflows" title="Workflows" if={hasWorkflows}>
+      <WorkflowsEntityContent />
     </EntityLayout.Route>
 
     <EntityLayout.Route path="/dependencies" title="Dependencies">
@@ -233,6 +243,8 @@ const defaultEntityPage = (
     <EntityLayout.Route path="/" title="Overview">
       {overviewContent}
     </EntityLayout.Route>
+
+    {/* TODO */}
 
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
