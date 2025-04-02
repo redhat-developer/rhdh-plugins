@@ -22,12 +22,14 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 
 interface CardWrapperProps {
+  link: string;
   title: string;
   description: string;
   tag: string;
 }
 
 const CardWrapper: React.FC<CardWrapperProps> = ({
+  link,
   title,
   description,
   tag,
@@ -60,7 +62,7 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
         </Box>
         <Box sx={{ margin: '8px 0', height: '21px', overflow: 'hidden' }}>
           <Link
-            href="#"
+            href={link}
             underline="always"
             sx={{
               display: '-webkit-box',

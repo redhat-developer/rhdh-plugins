@@ -22,6 +22,7 @@ import Link from '@mui/material/Link';
 import Chip from '@mui/material/Chip';
 
 interface CardWrapperProps {
+  link: string;
   title: string;
   version?: string;
   description: string;
@@ -29,6 +30,7 @@ interface CardWrapperProps {
 }
 
 const CardWrapper: React.FC<CardWrapperProps> = ({
+  link,
   title,
   description,
   tags,
@@ -51,7 +53,7 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
       >
         <Box sx={{ overflow: 'hidden' }}>
           <Link
-            href="#"
+            href={link}
             underline="always"
             sx={{
               display: '-webkit-box',

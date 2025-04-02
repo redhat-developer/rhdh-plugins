@@ -37,6 +37,7 @@ export const TemplateSection = () => {
         {templates?.items.map(item => (
           <Grid item xs={12} md={3} key={item.title}>
             <CardWrapper
+              link={`/create/templates/default/${item.metadata.name}`}
               title={item.metadata.title}
               description={item.metadata.description}
               tag="Template"
