@@ -22,6 +22,8 @@ import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 import CardWrapper from './CardWrapper';
 import HomePageAiModels from '../../images/homepage-ai-models.svg';
@@ -31,6 +33,12 @@ export const ModelSection = () => {
   const [isRemoveFirstCard, setIsRemoveFirstCard] = React.useState(false);
   const [showDiscoveryCard, setShowDiscoveryCard] = React.useState(true);
   const [imgLoaded, setImgLoaded] = React.useState(false);
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down(1280));
+  const isExtraSmallScreen = useMediaQuery(theme.breakpoints.down(900));
+  const smallScreenWidth = isExtraSmallScreen ? 266 : 180;
+  const imageWidth = isSmallScreen ? smallScreenWidth : 266;
 
   const handleClose = () => {
     setShowDiscoveryCard(false);
@@ -54,7 +62,7 @@ export const ModelSection = () => {
           <Grid item xs={12} md={5} key="AI models illustration">
             <Box
               sx={{
-                border: theme => `1px solid ${theme.palette.grey[400]}`,
+                border: `1px solid ${theme.palette.grey[400]}`,
                 borderRadius: 3,
                 display: 'flex',
                 alignItems: 'center',
@@ -69,7 +77,7 @@ export const ModelSection = () => {
               {!imgLoaded && (
                 <Skeleton
                   variant="rectangular"
-                  width={266}
+                  width={imageWidth}
                   height={300}
                   sx={{ borderRadius: 3 }}
                 />
@@ -80,6 +88,7 @@ export const ModelSection = () => {
                 onLoad={() => setImgLoaded(true)}
                 alt="AI models illustration"
                 height={300}
+                width={imageWidth}
               />
               <Box sx={{ p: 2 }}>
                 <Box>

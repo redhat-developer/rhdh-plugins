@@ -39,7 +39,7 @@ export const AiExperienceHomePage = () => {
         <Content>
           <Box>
             <SectionWrapper
-              title={`${greeting} ${profile?.displayName || ''}!`}
+              title={`${greeting} ${profile?.displayName ?? 'Guest'}!`}
             >
               <Box sx={{ padding: '20px 10px 30px 40px' }}>
                 <LearnSection />
