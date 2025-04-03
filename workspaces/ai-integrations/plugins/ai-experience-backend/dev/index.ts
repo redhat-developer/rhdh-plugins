@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const LEARNING_SECTION_ITEMS = [
-  {
-    title: 'Get started',
-    description: 'Learn about Red Hat Developer Hub.',
-    buttonText: 'Go to Tech Docs',
-    buttonLink: '/docs',
-  },
-  {
-    title: 'Explore',
-    description: 'Explore AI models, servers and templates.',
-    buttonText: 'Go to Catalog',
-    buttonLink: '/catalog',
-  },
-  {
-    title: 'Learn',
-    description: 'Explore and develop new skills in AI.',
-    buttonText: 'Go to Learning Paths',
-    buttonLink: '/learning-paths',
-  },
-];
+import { createBackend } from '@backstage/backend-defaults';
+import { mockServices } from '@backstage/backend-test-utils';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
+
+const backend = createBackend();
+
+backend.add(mockServices.auth.factory());
+backend.add(mockServices.httpAuth.factory());
+
+// TEMPLATE NOTE:
+// Rather than using a real catalog you can use a mock with a fixed set of entities.
+backend.add(
+  catalogServiceMock.factory({
+    entities: [],
+  }),
+);
+
+backend.add(import('../src'));
+
+backend.start();

@@ -40,6 +40,7 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { searchPage } from './components/search/SearchPage';
 import { Root } from './components/Root';
+import { getThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 
 import {
   AlertDisplay,
@@ -52,6 +53,14 @@ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { AiExperiencePage } from '@red-hat-developer-hub/backstage-plugin-ai-experience';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
+
+const githubProvider = {
+  id: 'github-auth-provider',
+  title: 'GitHub',
+  message: 'Sign in using GitHub',
+  apiRef: githubAuthApiRef,
+};
 
 const app = createApp({
   apis,
@@ -72,15 +81,19 @@ const app = createApp({
       catalogIndex: catalogPlugin.routes.catalogIndex,
     });
   },
+  themes: getThemes(),
   components: {
-    SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
+    SignInPage: props => (
+      <SignInPage {...props} auto providers={['guest', githubProvider]} />
+    ),
   },
 });
 
 const routes = (
   <FlatRoutes>
-    <Route path="/" element={<Navigate to="catalog" />} />
+    <Route path="/" element={<Navigate to="home" />} />
     <Route path="/catalog" element={<CatalogIndexPage />} />
+    <Route path="/home" element={<AiExperiencePage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"
       element={<CatalogEntityPage />}
@@ -111,7 +124,6 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/ai-experience" element={<AiExperiencePage />} />
   </FlatRoutes>
 );
 

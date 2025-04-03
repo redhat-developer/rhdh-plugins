@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const LEARNING_SECTION_ITEMS = [
-  {
-    title: 'Get started',
-    description: 'Learn about Red Hat Developer Hub.',
-    buttonText: 'Go to Tech Docs',
-    buttonLink: '/docs',
-  },
-  {
-    title: 'Explore',
-    description: 'Explore AI models, servers and templates.',
-    buttonText: 'Go to Catalog',
-    buttonLink: '/catalog',
-  },
-  {
-    title: 'Learn',
-    description: 'Explore and develop new skills in AI.',
-    buttonText: 'Go to Learning Paths',
-    buttonLink: '/learning-paths',
-  },
-];
+import { GetEntitiesRequest } from '@backstage/catalog-client/index';
+import { encodeGetEntitiesRequest } from './encodeEntityRequest';
+
+describe('encodeGetEntitiesRequest', () => {
+  it('should encode GetEntitiesRequest', () => {
+    const request: GetEntitiesRequest = {
+      limit: 2,
+      filter: {
+        kind: 'resource',
+        'spec.type': 'ai-model',
+      },
+    };
+
+    const encodedParams = encodeGetEntitiesRequest(request).toString();
+    expect(encodedParams).toBe(
+      'limit=2&filter=kind%3Dresource&filter=spec.type%3Dai-model',
+    );
+  });
+});

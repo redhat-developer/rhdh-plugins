@@ -13,23 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const LEARNING_SECTION_ITEMS = [
-  {
-    title: 'Get started',
-    description: 'Learn about Red Hat Developer Hub.',
-    buttonText: 'Go to Tech Docs',
-    buttonLink: '/docs',
-  },
-  {
-    title: 'Explore',
-    description: 'Explore AI models, servers and templates.',
-    buttonText: 'Go to Catalog',
-    buttonLink: '/catalog',
-  },
-  {
-    title: 'Learn',
-    description: 'Explore and develop new skills in AI.',
-    buttonText: 'Go to Learning Paths',
-    buttonLink: '/learning-paths',
-  },
-];
+import type { Entity } from '@backstage/catalog-model';
+import { GetEntitiesRequest } from '@backstage/catalog-client';
+
+/**
+ * @public
+ */
+export interface AIModel extends Entity {
+  spec: any;
+}
+
+/**
+ * @public
+ */
+export interface ModelServiceApi {
+  getModels(request: GetEntitiesRequest): Promise<GetEntitiesResponse<AIModel>>;
+  getTemplates(request: GetEntitiesRequest): Promise<GetEntitiesResponse<any>>;
+}
+
+/**
+ * @public
+ */
+export interface GetEntitiesResponse<T> {
+  items: T[];
+  totalItems: number;
+  pageInfo: {
+    nextCursor?: string;
+    prevCursor?: string;
+  };
+}

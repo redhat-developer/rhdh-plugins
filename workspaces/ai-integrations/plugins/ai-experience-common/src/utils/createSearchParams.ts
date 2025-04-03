@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const LEARNING_SECTION_ITEMS = [
-  {
-    title: 'Get started',
-    description: 'Learn about Red Hat Developer Hub.',
-    buttonText: 'Go to Tech Docs',
-    buttonLink: '/docs',
-  },
-  {
-    title: 'Explore',
-    description: 'Explore AI models, servers and templates.',
-    buttonText: 'Go to Catalog',
-    buttonLink: '/catalog',
-  },
-  {
-    title: 'Learn',
-    description: 'Explore and develop new skills in AI.',
-    buttonText: 'Go to Learning Paths',
-    buttonLink: '/learning-paths',
-  },
-];
+
+/**
+ * @Public
+ */
+export const createSearchParams = <T extends { query: Record<string, string> }>(
+  req: T,
+): URLSearchParams => {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(req.query).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach(v => {
+        if (typeof v === 'string') searchParams.append(key, v);
+      });
+    } else if (typeof value === 'string') {
+      searchParams.append(key, value);
+    }
+  });
+
+  return searchParams;
+};

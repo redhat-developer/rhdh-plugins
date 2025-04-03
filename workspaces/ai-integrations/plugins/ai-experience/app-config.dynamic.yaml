@@ -1,0 +1,6 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-ai-experience:
+      dynamicRoutes:
+        - path: /
+          importName: AiExperiencePage

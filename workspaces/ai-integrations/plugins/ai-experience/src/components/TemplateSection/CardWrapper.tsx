@@ -22,21 +22,24 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 
 interface CardWrapperProps {
+  link: string;
   title: string;
   description: string;
-  tag: string;
+  kind: string;
 }
 
 const CardWrapper: React.FC<CardWrapperProps> = ({
+  link,
   title,
   description,
-  tag,
+  kind,
 }) => {
   return (
     <Box
       sx={{
         border: theme => `1px solid ${theme.palette.grey[400]}`,
         borderRadius: 3,
+        overflow: 'hidden',
       }}
     >
       <CardContent
@@ -51,15 +54,15 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
           <Chip
             label={
               <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
-                {tag}
+                {kind}
               </Typography>
             }
-            key={tag}
+            key={kind}
           />
         </Box>
         <Box sx={{ margin: '8px 0', height: '21px', overflow: 'hidden' }}>
           <Link
-            href="#"
+            href={link}
             underline="always"
             sx={{
               display: '-webkit-box',

@@ -1,4 +1,4 @@
-# @@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
+# @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
 The model-catalog backend module for the catalog plugin.
 

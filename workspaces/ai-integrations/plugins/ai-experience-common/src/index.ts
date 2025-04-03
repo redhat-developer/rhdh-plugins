@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const LEARNING_SECTION_ITEMS = [
-  {
-    title: 'Get started',
-    description: 'Learn about Red Hat Developer Hub.',
-    buttonText: 'Go to Tech Docs',
-    buttonLink: '/docs',
-  },
-  {
-    title: 'Explore',
-    description: 'Explore AI models, servers and templates.',
-    buttonText: 'Go to Catalog',
-    buttonLink: '/catalog',
-  },
-  {
-    title: 'Learn',
-    description: 'Explore and develop new skills in AI.',
-    buttonText: 'Go to Learning Paths',
-    buttonLink: '/learning-paths',
-  },
-];
+
+/**
+ * Common functionalities for the ai-experience plugin.
+ *
+ * @packageDocumentation
+ */
+
+/**
+ * In this package you might for example declare types that are common
+ * between the frontend and backend plugin packages.
+ */
+export * from './utils';
+export * from './types';

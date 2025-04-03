@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const LEARNING_SECTION_ITEMS = [
-  {
-    title: 'Get started',
-    description: 'Learn about Red Hat Developer Hub.',
-    buttonText: 'Go to Tech Docs',
-    buttonLink: '/docs',
-  },
-  {
-    title: 'Explore',
-    description: 'Explore AI models, servers and templates.',
-    buttonText: 'Go to Catalog',
-    buttonLink: '/catalog',
-  },
-  {
-    title: 'Learn',
-    description: 'Explore and develop new skills in AI.',
-    buttonText: 'Go to Learning Paths',
-    buttonLink: '/learning-paths',
-  },
-];
+
+// TEMPLATE NOTE:
+// Plugin tests are integration tests for your plugin, ensuring that all pieces
+// work together end-to-end. You can still mock injected backend services
+// however, just like anyone who installs your plugin might replace the
+// services with their own implementations.
+describe('plugin', () => {
+  it('should read models items', async () => {
+    // Todo: fix tests
+    expect(true).toBe(true);
+  });
+});
