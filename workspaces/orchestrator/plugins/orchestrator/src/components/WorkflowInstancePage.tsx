@@ -35,9 +35,7 @@ import {
   Grid,
   IconButton,
   Tooltip,
-  // FLPATH-2135
-  // Menu,
-  // MenuItem,
+  Typography,
 } from '@material-ui/core';
 import Snackbar from '@material-ui/core/Snackbar';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
@@ -81,7 +79,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     modalText: {
-      fontSize: '1.1rem',
+      marginBottom: theme.spacing(2),
     },
     errorColor: {
       color: theme.palette.error.dark,
@@ -104,11 +102,13 @@ const AbortConfirmationDialogContent = ({
   const classes = useStyles();
   return (
     <div>
-      <p className={classes.modalText}>
-        Are you sure you want to abort this workflow run? <br /> <br />
-        Aborting will stop all in-progress and pending steps immediately. Any
-        incomplete tasks will not be saved.
-      </p>
+      <Box className={classes.modalText}>
+        <Typography variant="h6">
+          Are you sure you want to abort this workflow run? <br /> <br />
+          Aborting will stop all in-progress and pending steps immediately. Any
+          incomplete tasks will not be saved.
+        </Typography>
+      </Box>
       {!canAbort && (
         <Box sx={{ width: '100%' }}>
           <Alert severity="info">
@@ -314,15 +314,8 @@ export const WorkflowInstancePage = ({
         <>
           <ContentHeader title="">
             <InfoDialog
-              title={
-                <Box display="flex" alignItems="center">
-                  <ErrorIcon
-                    className={classes.errorColor}
-                    style={{ marginRight: 8 }}
-                  />
-                  <b>Abort workflow run?</b>
-                </Box>
-              }
+              title="Abort workflow run?"
+              titleIcon={<ErrorIcon className={classes.errorColor} />}
               onClose={toggleAbortConfirmationDialog}
               open={isAbortConfirmationDialogOpen}
               dialogActions={
