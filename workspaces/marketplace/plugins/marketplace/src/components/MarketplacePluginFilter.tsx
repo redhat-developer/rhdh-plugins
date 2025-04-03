@@ -16,19 +16,20 @@
 
 import React from 'react';
 
-import { Select, SelectItem } from '@backstage/core-components';
+import { SelectItem } from '@backstage/core-components';
 import { useSearchParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
-
 import { MarketplaceAnnotation } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { usePluginFacet } from '../hooks/usePluginFacet';
 import { usePluginFacets } from '../hooks/usePluginFacets';
-import { BackstageSelectFilter } from '../shared-components/BackstageSelectFilter';
+import { CustomSelectFilter } from '../shared-components/CustomSelectFilter';
+import { useQueryArrayFilter } from '../hooks/useQueryArrayFilter';
 
 const CategoryFilter = () => {
   const categoriesFacet = usePluginFacet('spec.categories');
+  const filter = useQueryArrayFilter('spec.categories');
   const categories = categoriesFacet.data;
 
   const items = React.useMemo(() => {
@@ -40,11 +41,11 @@ const CategoryFilter = () => {
   }, [categories]);
 
   return (
-    <BackstageSelectFilter
+    <CustomSelectFilter
       label="Category"
-      name="spec.categories"
       items={items}
-      multiple
+      onChange={(_e, value) => filter.set(value)}
+      selectedItems={filter.current}
     />
   );
 };
@@ -52,6 +53,7 @@ const CategoryFilter = () => {
 const AuthorFilter = () => {
   const authorsFacet = usePluginFacet('spec.authors.name');
   const authors = authorsFacet.data;
+  const filter = useQueryArrayFilter('spec.authors.name');
 
   const items = React.useMemo(() => {
     if (!authors) return [];
@@ -62,11 +64,11 @@ const AuthorFilter = () => {
   }, [authors]);
 
   return (
-    <BackstageSelectFilter
+    <CustomSelectFilter
       label="Author"
-      name="spec.authors.name"
       items={items}
-      multiple
+      onChange={(_e, value) => filter.set(value)}
+      selectedItems={filter.current}
     />
   );
 };
@@ -126,15 +128,19 @@ const SupportTypeFilter = () => {
   }, [facets]);
 
   const selected = React.useMemo(() => {
-    return searchParams
+    const selectedFilters = searchParams
       .getAll('filter')
       .filter(filter =>
         filter.startsWith('metadata.annotations.extensions.backstage.io/'),
       );
-  }, [searchParams]);
+    return items?.filter(item =>
+      selectedFilters.includes(item.value.toString()),
+    );
+  }, [searchParams, items]);
 
   const onChange = React.useCallback(
-    (newValue: string | string[] | number | number[]) => {
+    (newValues: SelectItem[]) => {
+      const newSelection = newValues.map(v => v.value);
       setSearchParams(
         params => {
           const newParams = new URLSearchParams();
@@ -142,10 +148,10 @@ const SupportTypeFilter = () => {
           let added = false;
           const add = () => {
             if (added) return;
-            if (Array.isArray(newValue)) {
-              newValue.forEach(v => newParams.append('filter', String(v)));
+            if (Array.isArray(newSelection)) {
+              newSelection.forEach(v => newParams.append('filter', String(v)));
             } else {
-              newParams.append('filter', String(newValue));
+              newParams.append('filter', String(newSelection));
             }
             added = true;
           };
@@ -175,15 +181,12 @@ const SupportTypeFilter = () => {
   );
 
   return (
-    <Box pb={1} pt={1}>
-      <Select
-        label="Support type"
-        items={items}
-        selected={selected}
-        onChange={onChange}
-        multiple
-      />
-    </Box>
+    <CustomSelectFilter
+      label="Support type"
+      items={items}
+      onChange={(_e, value) => onChange(value)}
+      selectedItems={selected}
+    />
   );
 };
 
