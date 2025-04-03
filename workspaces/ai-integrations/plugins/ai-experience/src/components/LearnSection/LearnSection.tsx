@@ -31,7 +31,7 @@ export const LearnSection = () => {
         md={6}
         lg={3}
         display="flex"
-        justifyContent="center"
+        justifyContent="left"
         alignItems="center"
       >
         <Box
@@ -48,6 +48,7 @@ export const LearnSection = () => {
           lg={3}
           key={item.title}
           display="flex"
+          justifyContent="left"
           alignItems="center"
         >
           <CardWrapper
