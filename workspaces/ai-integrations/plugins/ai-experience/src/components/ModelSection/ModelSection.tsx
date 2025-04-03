@@ -49,7 +49,7 @@ export const ModelSection = () => {
 
   return (
     <React.Fragment>
-      <Grid container>
+      <Grid container spacing={1} alignItems="stretch">
         {!isRemoveFirstCard && (
           <Grid item xs={12} md={5} key="AI models illustration">
             <Box

@@ -33,14 +33,14 @@ export const TemplateSection = () => {
 
   return (
     <React.Fragment>
-      <Grid container>
+      <Grid container spacing={1} alignItems="stretch">
         {templates?.items.map(item => (
           <Grid item xs={12} md={3} key={item.title}>
             <CardWrapper
               link={`/create/templates/default/${item.metadata.name}`}
               title={item.metadata.title}
               description={item.metadata.description}
-              tag="Template"
+              kind="Template"
             />
           </Grid>
         ))}

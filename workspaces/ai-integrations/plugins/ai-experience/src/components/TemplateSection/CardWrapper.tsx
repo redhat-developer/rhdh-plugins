@@ -25,14 +25,14 @@ interface CardWrapperProps {
   link: string;
   title: string;
   description: string;
-  tag: string;
+  kind: string;
 }
 
 const CardWrapper: React.FC<CardWrapperProps> = ({
   link,
   title,
   description,
-  tag,
+  kind,
 }) => {
   return (
     <Box
@@ -54,10 +54,10 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
           <Chip
             label={
               <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
-                {tag}
+                {kind}
               </Typography>
             }
-            key={tag}
+            key={kind}
           />
         </Box>
         <Box sx={{ margin: '8px 0', height: '21px', overflow: 'hidden' }}>
