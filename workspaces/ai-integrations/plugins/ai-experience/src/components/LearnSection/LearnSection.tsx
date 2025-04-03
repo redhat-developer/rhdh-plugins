@@ -48,7 +48,6 @@ export const LearnSection = () => {
           lg={3}
           key={item.title}
           display="flex"
-          justifyContent="center"
           alignItems="center"
         >
           <CardWrapper
