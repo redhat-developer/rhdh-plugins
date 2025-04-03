@@ -48,6 +48,7 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
           '&:last-child': {
             pb: 2,
           },
+          backgroundColor: 'transparent',
         }}
       >
         <Box sx={{ padding: '8px 0' }}>
@@ -70,6 +71,8 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
               WebkitLineClamp: 1,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              fontSize: '0.9rem',
+              fontWeight: '500',
             }}
           >
             {title}

@@ -19,7 +19,7 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
-import Chip from '@mui/material/Chip';
+import TagList from './TagList';
 
 interface CardWrapperProps {
   link: string;
@@ -49,6 +49,7 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
           '&:last-child': {
             pb: 2,
           },
+          backgroundColor: 'transparent',
         }}
       >
         <Box sx={{ overflow: 'hidden' }}>
@@ -61,6 +62,8 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
               WebkitLineClamp: 1,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              fontSize: '0.9rem',
+              fontWeight: '500',
             }}
           >
             {title}
@@ -87,26 +90,7 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
             {description}
           </Typography>
         </Box>
-        <Box
-          sx={{
-            height: '72px',
-            display: 'flex',
-            alignItems: 'flex-end',
-            flexWrap: 'wrap',
-          }}
-        >
-          {tags.slice(0, 3).map(tag => (
-            <Chip
-              variant="outlined"
-              label={
-                <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
-                  {tag}
-                </Typography>
-              }
-              key={tag}
-            />
-          ))}
-        </Box>
+        <TagList tags={tags} />
       </CardContent>
     </Box>
   );
