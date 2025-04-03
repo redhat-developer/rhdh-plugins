@@ -52,16 +52,6 @@ const NoPluginsFound = () => (
           <Grid container spacing={2}>
             <Grid item>
               <LinkButton
-                variant="contained"
-                color="primary"
-                to="https://developers.redhat.com/rhdh/plugins#redhatnotpreinstalled"
-                externalLinkIcon
-              >
-                View plugins
-              </LinkButton>
-            </Grid>
-            <Grid item>
-              <LinkButton
                 variant="outlined"
                 color="primary"
                 to="https://docs.redhat.com/en/documentation/red_hat_developer_hub/"
