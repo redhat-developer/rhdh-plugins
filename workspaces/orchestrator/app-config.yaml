@@ -19,11 +19,7 @@ backend:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
     # host: 127.0.0.1
-  csp:
-    frame-ancestors: ['http://localhost:3000', 'http://localhost:7007']
-    script-src: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
-    script-src-elem: ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
-    connect-src: ["'self'", 'http:', 'https:', 'data:']
+
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
     # Default Helmet Content-Security-Policy values can be removed by setting the key to false
   cors:
