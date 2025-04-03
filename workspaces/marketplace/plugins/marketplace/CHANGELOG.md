@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.5.4
+
+### Patch Changes
+
+- 49b40bd: removing `View plugins` button from no plugins found page
+
 ## 0.5.3
 
 ### Patch Changes
