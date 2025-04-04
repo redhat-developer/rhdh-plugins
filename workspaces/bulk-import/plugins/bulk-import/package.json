@@ -80,12 +80,6 @@
     "react-router-dom": "^6.0.0",
     "start-server-and-test": "2.0.10"
   },
-  "scalprum": {
-    "name": "janus-idp.backstage-plugin-bulk-import",
-    "exposedModules": {
-      "BulkImportPlugin": "./src/index.ts"
-    }
-  },
   "files": [
     "dist",
     "dist-scalprum",
@@ -105,7 +99,8 @@
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "maintainers": [
-    "@rm3l"
+    "@rm3l",
+    "@debsmita1"
   ],
   "author": "Red Hat"
 }

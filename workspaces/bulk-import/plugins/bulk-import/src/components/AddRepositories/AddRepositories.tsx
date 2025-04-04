@@ -20,7 +20,6 @@ import { useDrawer } from '@janus-idp/shared-react';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
-import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 import { get } from 'lodash';
 
@@ -37,33 +36,28 @@ import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
 import { AddRepositoriesTable } from './AddRepositoriesTable';
 
-const useStyles = makeStyles(() => ({
-  body: {
-    marginBottom: '50px',
-    padding: '24px',
-  },
-  // We would need this once the ServiceNow approval tool is incorporated in the plugin
-  // approvalTool: {
-  //   display: 'flex',
-  //   flexDirection: 'row',
-  //   justifyContent: 'left',
-  //   alignItems: 'center',
-  //   paddingTop: '24px',
-  //   paddingBottom: '24px',
-  //   paddingLeft: '16px',
-  //   backgroundColor: theme.palette.background.paper,
-  //   borderBottomStyle: 'groove',
-  //   border: theme.palette.divider,
-  // },
-  approvalToolTooltip: {
-    paddingTop: '4px',
-    paddingRight: '24px',
-    paddingLeft: '5px',
-  },
-}));
+// const useStyles = makeStyles(() => ({
+//   // We would need this once the ServiceNow approval tool is incorporated in the plugin
+//   approvalTool: {
+//     display: 'flex',
+//     flexDirection: 'row',
+//     justifyContent: 'left',
+//     alignItems: 'center',
+//     paddingTop: '24px',
+//     paddingBottom: '24px',
+//     paddingLeft: '16px',
+//     backgroundColor: theme.palette.background.paper,
+//     borderBottomStyle: 'groove',
+//     border: theme.palette.divider,
+//   },
+//   approvalToolTooltip: {
+//     paddingTop: '4px',
+//     paddingRight: '24px',
+//     paddingLeft: '5px',
+//   },
+// }));
 
 export const AddRepositories = ({ error }: { error: any }) => {
-  const styles = useStyles();
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const { setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -85,7 +79,12 @@ export const AddRepositories = ({ error }: { error: any }) => {
   return (
     <>
       <FormControl fullWidth>
-        <div className={styles.body}>
+        <div
+          style={{
+            marginBottom: '50px',
+            padding: '24px',
+          }}
+        >
           {error && (
             <div style={{ paddingBottom: '10px' }}>
               <Alert severity="error">
