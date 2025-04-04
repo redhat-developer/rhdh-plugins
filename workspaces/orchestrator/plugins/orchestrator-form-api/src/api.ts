@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { createApiRef } from '@backstage/core-plugin-api';
 import { JsonObject } from '@backstage/types';
 
 import { FormProps } from '@rjsf/core';
-import { ErrorSchema, UiSchema } from '@rjsf/utils';
+import { ErrorSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 
 /**
@@ -62,6 +63,27 @@ export type OrchestratorFormDecorator = (
 
 /**
  * @public
+ *
+ * Expected response received by fetch:url of the SchemaUpdater widget.
+ *
+ * Key is the JSON Schema placeholder identifier,
+ * Value is content the key will be newly assigned to.
+ */
+export type SchemaChunksResponse = {
+  [key: string]: JsonObject;
+};
+
+/**
+ * @public
+ *
+ * Function provided by the Orchestrator down to the OrchestratorFormApi to update the form's JSON Schema on the fly.
+ */
+export type OrchestratorFormSchemaUpdater = (
+  chunks: SchemaChunksResponse,
+) => void;
+
+/**
+ * @public
  * OrchestratorFormApi
  * API to be implemented by factory in a custom plugin
  */
@@ -71,11 +93,7 @@ export interface OrchestratorFormApi {
    * getFormDecorator
    * return the form decorator
    */
-  getFormDecorator(
-    schema: JSONSchema7,
-    uiSchema: UiSchema<JsonObject, JSONSchema7>,
-    initialFormData?: JsonObject,
-  ): OrchestratorFormDecorator;
+  getFormDecorator(): OrchestratorFormDecorator;
 }
 
 /**

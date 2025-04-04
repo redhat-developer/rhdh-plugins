@@ -7899,31 +7899,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internal/plugin-orchestrator-form-widgets@workspace:^, @internal/plugin-orchestrator-form-widgets@workspace:plugins/orchestrator-form-widgets":
-  version: 0.0.0-use.local
-  resolution: "@internal/plugin-orchestrator-form-widgets@workspace:plugins/orchestrator-form-widgets"
-  dependencies:
-    "@backstage/cli": ^0.31.1
-    "@backstage/core-app-api": ^1.15.2
-    "@backstage/core-components": ^0.17.0
-    "@backstage/core-plugin-api": ^1.10.1
-    "@backstage/dev-utils": ^1.1.7-next.3
-    "@backstage/test-utils": ^1.7.1
-    "@backstage/theme": ^0.6.2
-    "@material-ui/core": ^4.9.13
-    "@material-ui/icons": ^4.9.1
-    "@material-ui/lab": ^4.0.0-alpha.61
-    "@testing-library/jest-dom": ^6.0.0
-    "@testing-library/react": ^14.0.0
-    "@testing-library/user-event": ^14.0.0
-    msw: ^1.0.0
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-use: ^17.2.4
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  languageName: unknown
-  linkType: soft
-
 "@ioredis/commands@npm:^1.1.1":
   version: 1.2.0
   resolution: "@ioredis/commands@npm:1.2.0"
@@ -11473,6 +11448,7 @@ __metadata:
     "@rjsf/utils": ^5.21.2
     "@types/json-schema": 7.0.15
     "@types/react": ^18.2.58
+    json-schema: ^0.4.0
     prettier: 3.4.2
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
@@ -11544,6 +11520,8 @@ __metadata:
     "@types/react-dom": ^18.2.19
     "@types/uuid": ^9.0.0
     axios: ^1.7.7
+    json-schema: ^0.4.0
+    lodash: ^4.17.21
     moment: ^2.29.4
     monaco-editor: ^0.52.2
     prettier: 3.4.2
@@ -16191,6 +16169,7 @@ __metadata:
     "@mui/styles": 5.16.14
     "@playwright/test": 1.50.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^"
     "@redhat-developer/red-hat-developer-hub-theme": ^0.5.0
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
@@ -17364,6 +17343,15 @@ __metadata:
   version: 3.0.1
   resolution: "brotli-wasm@npm:3.0.1"
   checksum: 48191b27265de8ffc59c940f9efef3a931448b6a15c26a4e360192fc3f0968e073c11fe0926510d019c305cc1d9c6d65df4d3e5752648a91cb0bbcccff7a8460
+  languageName: node
+  linkType: hard
+
+"browser-resolve@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "browser-resolve@npm:2.0.0"
+  dependencies:
+    resolve: ^1.17.0
+  checksum: 69225e73b555bd6d2a08fb93c7342cfcf3b5058b975099c52649cd5c3cec84c2066c5385084d190faedfb849684d9dabe10129f0cd401d1883572f2e6650f440
   languageName: node
   linkType: hard
 
@@ -18939,6 +18927,7 @@ __metadata:
   linkType: hard
 
 "create-require@npm:^1.1.0, create-require@npm:^1.1.1":
+"create-require@npm:^1.1.0, create-require@npm:^1.1.1":
   version: 1.1.1
   resolution: "create-require@npm:1.1.1"
   checksum: a9a1503d4390d8b59ad86f4607de7870b39cad43d929813599a23714831e81c520bddf61bcdd1f8e30f05fd3a2b71ae8538e946eb2786dc65c2bbc520f692eff
@@ -20125,6 +20114,13 @@ __metadata:
     domhandler: ^5.0.2
     entities: ^4.2.0
   checksum: cd1810544fd8cdfbd51fa2c0c1128ec3a13ba92f14e61b7650b5de421b88205fd2e3f0cc6ace82f13334114addb90ed1c2f23074a51770a8e9c1273acbc7f3e6
+  languageName: node
+  linkType: hard
+
+"domain-browser@npm:4.22.0":
+  version: 4.22.0
+  resolution: "domain-browser@npm:4.22.0"
+  checksum: e7ce1c19073e17dec35cfde050a3ddaac437d3ba8b870adabf9d5682e665eab3084df05de432dedf25b34303f0a2c71ac30f1cdba61b1aea018047b10de3d988
   languageName: node
   linkType: hard
 
@@ -28889,6 +28885,41 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-stdlib-browser@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "node-stdlib-browser@npm:1.3.1"
+  dependencies:
+    assert: ^2.0.0
+    browser-resolve: ^2.0.0
+    browserify-zlib: ^0.2.0
+    buffer: ^5.7.1
+    console-browserify: ^1.1.0
+    constants-browserify: ^1.0.0
+    create-require: ^1.1.1
+    crypto-browserify: ^3.12.1
+    domain-browser: 4.22.0
+    events: ^3.0.0
+    https-browserify: ^1.0.0
+    isomorphic-timers-promises: ^1.0.1
+    os-browserify: ^0.3.0
+    path-browserify: ^1.0.1
+    pkg-dir: ^5.0.0
+    process: ^0.11.10
+    punycode: ^1.4.1
+    querystring-es3: ^0.2.1
+    readable-stream: ^3.6.0
+    stream-browserify: ^3.0.0
+    stream-http: ^3.2.0
+    string_decoder: ^1.0.0
+    timers-browserify: ^2.0.4
+    tty-browserify: 0.0.1
+    url: ^0.11.4
+    util: ^0.12.4
+    vm-browserify: ^1.0.1
+  checksum: 2012dbd84de654c60414c7d88817c1c8214324fa4e77f09395aa2a9d3722f49fafc0abf1643dc5998a96ebcee2409ee0d957ec4c4fd50d3ff5b40e031d1feb90
+  languageName: node
+  linkType: hard
+
 "nopt@npm:^6.0.0":
   version: 6.0.0
   resolution: "nopt@npm:6.0.0"
@@ -30331,6 +30362,15 @@ __metadata:
   dependencies:
     find-up: ^4.0.0
   checksum: 9863e3f35132bf99ae1636d31ff1e1e3501251d480336edb1c211133c8d58906bed80f154a1d723652df1fda91e01c7442c2eeaf9dc83157c7ae89087e43c8d6
+  languageName: node
+  linkType: hard
+
+"pkg-dir@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "pkg-dir@npm:5.0.0"
+  dependencies:
+    find-up: ^5.0.0
+  checksum: b167bb8dac7bbf22b1d5e30ec223e6b064b84b63010c9d49384619a36734caf95ed23ad23d4f9bd975e8e8082b60a83395f43a89bb192df53a7c25a38ecb57d9
   languageName: node
   linkType: hard
 

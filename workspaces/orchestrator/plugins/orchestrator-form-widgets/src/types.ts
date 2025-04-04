@@ -1,3 +1,5 @@
+import { JsonObject } from '@backstage/types/index';
+
 /*
  * Copyright Red Hat, Inc.
  *
@@ -13,18 +15,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-import { createDevApp } from '@backstage/dev-utils';
-import {
-  orchestratorFormWidgetsPlugin,
-  OrchestratorFormWidgetsPage,
-} from '../src/plugin';
-
-createDevApp()
-  .registerPlugin(orchestratorFormWidgetsPlugin)
-  .addPage({
-    element: <OrchestratorFormWidgetsPage />,
-    title: 'Root Page',
-    path: '/orchestrator-form-widgets',
-  })
-  .render();
+export type FormContextData = JsonObject;

@@ -1,13 +1,70 @@
 # orchestrator-form-widgets
 
-Welcome to the orchestrator-form-widgets plugin!
+This Backstage frontend plugin provides default, but optional, set of RJSF form widgets for the Orchestrator workflow execution page.
 
-_This plugin was created through the Backstage CLI_
+## Deployment
 
-## Getting started
+### Static (for development)
 
-Your plugin has been added to the example app in this repository, meaning you'll be able to access it by running `yarn start` in the root directory, and then navigating to [/orchestrator-form-widgets](http://localhost:3000/orchestrator-form-widgets).
+In the packages/app/src/App.tsx:
 
-You can also serve the plugin in isolation by running `yarn start` in the plugin directory.
-This method of serving the plugin provides quicker iteration speed and a faster startup and hot reloads.
-It is only meant for local development, and the setup for it can be found inside the [/dev](./dev) directory.
+```
+import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
+...
+const app = createApp({
+    ...
+    plugins: [orchestratorFormWidgetsPlugin],
+})
+```
+
+### Dynamic (for RHDH production)
+
+For RHDH production deployments, it is expected that the plugin is exported as a dynamic plugin using janus CLI a loaded among the other dynamic frontend plugins.
+No explicit configuration is needed.
+
+## Content
+
+The plugin provides implementation of `OrchestratorFormApi` (for `orchestratorFormApiRef`) to extend the Workflow execution form for custom provided ui:widgets.
+
+## Context
+
+## SchemaUpdater widget
+
+A headless widget used for fetching snippets of JSON schema and dynamically updating the RJSF form JSON schema on the fly.
+
+Example of use in workflow's input data schema:
+
+```
+        "mySchemaUpdater": {
+          "type": "string",
+          "ui:widget": "SchemaUpdater",
+          "ui:props": {
+            "fetch:url": "https://raw.githubusercontent.com/mareklibra/generated-workflow-templates/refs/heads/main/uiSchemaChunks/chunk01.json"
+          }
+        },
+        "placeholderTwo": {
+          "type": "string",
+          "title": "This title is used until replaced by any SchemaUpdater"
+        },
+        "placeholderFour": {
+          "ui:widget": "hidden"
+        }
+```
+
+The provided chunks are expected to be JSON documents of `SchemaChunksResponse` structure.
+
+Example of response:
+
+```
+{
+  "placeholderTwo": {
+    "type": "string",
+    "title": "This is inputbox supplied by chunk02, replacing addition by chunk01 to the same placeholderTwo"
+  },
+  "placeholderFour": {
+    "type": "string",
+    "title": "This is ActiveTextInput ui:widget to test preservation of state on placeholderFour",
+    "ui:widget": "ActiveTextInput"
+  }
+}
+```
