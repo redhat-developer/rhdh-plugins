@@ -15,22 +15,18 @@
  */
 
 import React from 'react';
-import {
-  Page,
-  Header,
-  Content,
-  ErrorBoundary,
-} from '@backstage/core-components';
+import { Page, Content, ErrorBoundary } from '@backstage/core-components';
 
 import { themeId } from '../consts';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { MarketplaceCollectionsGrid } from '../components/MarketplaceCollectionsGrid';
+import { TechPreviewHeader } from '../components/TechPreviewNotice';
 
 export const MarketplaceCollectionsPage = () => {
   return (
     <ReactQueryProvider>
       <Page themeId={themeId}>
-        <Header title="Collections" />
+        <TechPreviewHeader title="Collections" />
         <Content>
           <ErrorBoundary>
             <MarketplaceCollectionsGrid />

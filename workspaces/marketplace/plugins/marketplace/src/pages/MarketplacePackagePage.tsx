@@ -16,18 +16,14 @@
 
 import React from 'react';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
-import {
-  Page,
-  Header,
-  Content,
-  ErrorBoundary,
-} from '@backstage/core-components';
+import { Page, Content, ErrorBoundary } from '@backstage/core-components';
 
 import { themeId } from '../consts';
 import { packageRouteRef, packagesRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePackage } from '../hooks/usePackage';
 import { MarketplacePackageContentLoader } from '../components/MarketplacePackageContent';
+import { TechPreviewHeader } from '../components/TechPreviewNotice';
 
 const PackageHeader = () => {
   const params = useRouteRefParams(packageRouteRef);
@@ -36,7 +32,13 @@ const PackageHeader = () => {
   const displayName = pkg.data?.metadata.title ?? params.name;
   const packagesLink = useRouteRef(packagesRouteRef)();
 
-  return <Header title={displayName} type="Packages" typeLink={packagesLink} />;
+  return (
+    <TechPreviewHeader
+      title={displayName}
+      type="Packages"
+      typeLink={packagesLink}
+    />
+  );
 };
 
 export const MarketplacePackagePage = () => (

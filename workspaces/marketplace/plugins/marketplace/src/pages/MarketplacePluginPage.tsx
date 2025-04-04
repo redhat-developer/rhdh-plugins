@@ -16,18 +16,14 @@
 
 import React from 'react';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
-import {
-  Page,
-  Header,
-  Content,
-  ErrorBoundary,
-} from '@backstage/core-components';
+import { Page, Content, ErrorBoundary } from '@backstage/core-components';
 
 import { themeId } from '../consts';
 import { pluginRouteRef, pluginsRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { MarketplacePluginContentLoader } from '../components/MarketplacePluginContent';
 import { usePlugin } from '../hooks/usePlugin';
+import { TechPreviewHeader } from '../components/TechPreviewNotice';
 
 const PluginHeader = () => {
   const params = useRouteRefParams(pluginRouteRef);
@@ -36,7 +32,13 @@ const PluginHeader = () => {
   const displayName = plugin.data?.metadata.title ?? params.name;
   const pluginsLink = useRouteRef(pluginsRouteRef)();
 
-  return <Header title={displayName} type="Plugins" typeLink={pluginsLink} />;
+  return (
+    <TechPreviewHeader
+      title={displayName}
+      type="Plugins"
+      typeLink={pluginsLink}
+    />
+  );
 };
 
 export const MarketplacePluginPage = () => (

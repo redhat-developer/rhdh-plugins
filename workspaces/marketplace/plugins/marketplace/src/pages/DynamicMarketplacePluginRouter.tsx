@@ -17,12 +17,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-import {
-  Page,
-  Header,
-  TabbedLayout,
-  ErrorBoundary,
-} from '@backstage/core-components';
+import { Page, TabbedLayout, ErrorBoundary } from '@backstage/core-components';
 
 import { useScalprum } from '@scalprum/react-core';
 
@@ -42,6 +37,8 @@ import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
 // import { MarketplacePackagesTable } from '../components/MarketplacePackagesTable';
 import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer';
 import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
+
+import { TechPreviewHeader } from '../components/TechPreviewNotice';
 
 export interface PluginTab {
   Component: React.ComponentType;
@@ -79,7 +76,7 @@ const Tabs = () => {
   return (
     <>
       <Page themeId={themeId}>
-        <Header title="Extensions" />
+        <TechPreviewHeader title="Extensions" />
         <TabbedLayout>
           {/* <TabbedLayout.Route path="/catalog" title="Marketplace">
             <ErrorBoundary>
@@ -99,7 +96,7 @@ const Tabs = () => {
             </TabbedLayout.Route>
           ))}
 
-          {/*       
+          {/*
           <TabbedLayout.Route path="/collections" title="Collections">
             <ErrorBoundary>
               <MarketplaceCollectionsGrid />

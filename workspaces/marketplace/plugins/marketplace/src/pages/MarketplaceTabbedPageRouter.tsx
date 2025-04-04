@@ -17,7 +17,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-import { Page, Header, TabbedLayout } from '@backstage/core-components';
+import { Page, TabbedLayout } from '@backstage/core-components';
 
 import { themeId } from '../consts';
 
@@ -38,6 +38,7 @@ import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer
 import { useCollections } from '../hooks/useCollections';
 
 import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
+import { TechPreviewHeader } from '../components/TechPreviewNotice';
 
 const Tabs = () => {
   const showCollections = !!useCollections({}).data?.items?.length;
@@ -45,7 +46,7 @@ const Tabs = () => {
   return (
     <>
       <Page themeId={themeId}>
-        <Header title="Marketplace" />
+        <TechPreviewHeader title="Marketplace" />
         <TabbedLayout>
           <TabbedLayout.Route path="/catalog" title="Catalog">
             <MarketplaceCatalogContent />
