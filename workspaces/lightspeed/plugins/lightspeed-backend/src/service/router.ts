@@ -193,7 +193,7 @@ export async function createRouter(
         if (!fetchResponse.ok) {
           // Read the error body
           const errorBody = await fetchResponse.json();
-          const errormsg = `Error from road-core server: ${errorBody.error?.message || 'Unknown error'}`;
+          const errormsg = `Error from road-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
           logger.error(errormsg);
 
           // Return a 500 status for any upstream error
