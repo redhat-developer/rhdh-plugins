@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,8 +21,11 @@ import { Link, TableColumn, TableProps } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
+import { Box, makeStyles, Tooltip } from '@material-ui/core';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import PlayArrow from '@material-ui/icons/PlayArrow';
+import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 
 import {
   capitalize,
@@ -33,7 +37,7 @@ import {
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { VALUE_UNAVAILABLE } from '../constants';
+import { AVAILABLE, UNAVAILABLE, VALUE_UNAVAILABLE } from '../constants';
 import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../dataFormatters/WorkflowOverviewFormatter';
@@ -97,7 +101,23 @@ const usePermittedToViewBatch = (
   };
 };
 
+const useStyles = makeStyles(theme => ({
+  warning: {
+    color: theme.palette.warning.main,
+  },
+  error: {
+    color: theme.palette.error.main,
+  },
+  success: {
+    color: theme.palette.success.main,
+  },
+  info: {
+    color: theme.palette.primary.main,
+  },
+}));
+
 export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
+  const styles = useStyles();
   const navigate = useNavigate();
   const definitionLink = useRouteRef(workflowRouteRef);
   const definitionRunsLink = useRouteRef(workflowRunsRouteRef);
@@ -205,6 +225,35 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
         field: 'category',
         render: rowData => capitalize(rowData.category),
       },
+      {
+        title: 'Workflow status',
+        field: 'avialability',
+        render: rowData => {
+          if (rowData.availablity === AVAILABLE)
+            return (
+              <Box display="flex" alignItems="center">
+                <TaskAltOutlinedIcon
+                  sx={{ fontSize: 15, marginRight: 0.5 }}
+                  className={styles.success}
+                />
+                {rowData.availablity}
+              </Box>
+            );
+          else if (rowData.availablity === UNAVAILABLE)
+            return (
+              <Tooltip title="Workflow is currently down or in an error state">
+                <Box display="flex" alignItems="center">
+                  <WarningAmberOutlinedIcon
+                    sx={{ fontSize: 15, marginRight: 0.5 }}
+                    className={styles.warning}
+                  />
+                  {rowData.availablity}
+                </Box>
+              </Tooltip>
+            );
+          return rowData.availablity;
+        },
+      },
       { title: 'Last run', field: 'lastTriggered' },
       {
         title: 'Last run status',
@@ -224,7 +273,13 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
       },
       { title: 'Description', field: 'description', minWidth: '25vw' },
     ],
-    [canViewInstance, canViewWorkflow, definitionLink],
+    [
+      canViewInstance,
+      canViewWorkflow,
+      definitionLink,
+      styles.success,
+      styles.warning,
+    ],
   );
 
   const options = useMemo<TableProps['options']>(

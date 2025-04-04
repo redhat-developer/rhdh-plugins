@@ -1,5 +1,17 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.4.3
+
+### Patch Changes
+
+- f406790: Bump PF chatbot version
+
+## 0.4.2
+
+### Patch Changes
+
+- 5fcce0c: Bumped Patternfly and chatbot versions
+
 ## 0.4.1
 
 ### Patch Changes
