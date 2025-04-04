@@ -71,5 +71,8 @@
     "@ciiay",
     "@debsmita1",
     "@divyanshiGupta"
-  ]
+  ],
+  "dependencies": {
+    "@mui/icons-material": "^5"
+  }
 }
