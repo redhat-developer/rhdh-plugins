@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { Entity } from '@backstage/catalog-model';
+import { ModelCatalog } from '@redhat-ai-dev/model-catalog-types';
 
 import YAML from 'yaml';
 
@@ -40,10 +41,12 @@ export async function listModels(
 }*/
 
 /**
- * fetchCatalogEntities retrieves model catalog entities from the Model Catalog Bridge services
+ * fetchModelCatalogEntries retrieves model catalog entities from the Model Catalog Bridge services
  * @public
  */
-export async function fetchCatalogEntities(baseUrl: string): Promise<Entity[]> {
+export async function fetchModelCatalogEntries(
+  baseUrl: string,
+): Promise<ModelCatalog[]> {
   // ToDo: Discover catalog-info endpoint?
   const res = await fetch(`${baseUrl}`, {
     method: 'GET',
@@ -53,11 +56,6 @@ export async function fetchCatalogEntities(baseUrl: string): Promise<Entity[]> {
     throw new Error(res.statusText);
   }
 
-  // ToDo: Look at seeing if we can use the parser provided by the CatalogProcessorProvider package
-  const data = await res
-    .blob()
-    .then(blob => blob.text())
-    .then(yamlStr => YAML.parseAllDocuments(yamlStr))
-    .then(yamlData => yamlData.map(item => item.toJS()));
-  return data;
+  const modelCatalogs: ModelCatalog[] = JSON.parse(res.json.toString());
+  return modelCatalogs;
 }

@@ -15,25 +15,22 @@
  */
 
 import YAML from 'yaml';
-import { Entity, ResourceEntity } from '@backstage/catalog-model';
 import { Stream } from 'stream';
 
-const fakeEntity: ResourceEntity = {
-  apiVersion: 'backstage.io/v1beta1',
-  kind: 'Resource',
-  metadata: {
-    name: 'ibm-granite',
-    description: 'IBM Granite code model',
-    tags: [],
-    links: [],
+const fakeCatalog: ModelCatalog[] = [
+  {
+    models: [
+      {
+        name: 'ibm-granite',
+        description: 'IBM Granite code model',
+        lifecycle: 'production',
+        owner: 'example-user',
+      },
+    ],
   },
-  spec: {
-    dependencyOf: [],
-    owner: 'example-user',
-    type: 'ai-model',
-  },
-};
-const blob = new Blob([YAML.stringify(fakeEntity)], {
+];
+
+const blob = new Blob([YAML.stringify(fakeCatalog)], {
   type: 'application/json',
 });
 
@@ -53,7 +50,8 @@ global.fetch = jest.fn(url => {
   });
 }) as jest.Mock;
 
-import { fetchCatalogEntities } from './BridgeResourceConnector';
+import { fetchModelCatalogEntries } from './BridgeResourceConnector';
+import { ModelCatalog } from '@redhat-ai-dev/model-catalog-types';
 
 const httpsMock = require('https');
 
@@ -65,9 +63,9 @@ describe('Bridge Resource Connector', () => {
       streamStream.emit('data', 'test');
       streamStream.emit('end');
     });
-    const entities: Entity[] = await fetchCatalogEntities('fake-url');
-    expect(entities.length).toEqual(1);
-    expect(entities[0].metadata.name).toEqual('ibm-granite');
+    const catalogs: ModelCatalog[] = await fetchModelCatalogEntries('fake-url');
+    expect(catalogs.length).toEqual(1);
+    expect(catalogs[0].models[0].name).toEqual('ibm-granite');
   });
   it('should error out if error encountered', async () => {
     const streamStream = new Stream();
@@ -77,7 +75,7 @@ describe('Bridge Resource Connector', () => {
       streamStream.emit('end');
     });
     await expect(
-      async () => await fetchCatalogEntities('errorTest'),
+      async () => await fetchModelCatalogEntries('errorTest'),
     ).rejects.toThrow();
   });
 });
