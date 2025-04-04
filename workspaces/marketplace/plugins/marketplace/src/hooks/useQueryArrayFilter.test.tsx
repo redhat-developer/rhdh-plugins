@@ -60,7 +60,7 @@ describe('useQueryArrayFilter', () => {
       screen.getByText('/?filter=filter-name=filter value'),
     ).toBeInTheDocument();
     expect(hook.result.current).toEqual({
-      current: ['filter value'],
+      current: [{ label: 'filter value', value: 'filter value' }],
       set: expect.any(Function),
       clear: expect.any(Function),
     });
@@ -79,7 +79,10 @@ describe('useQueryArrayFilter', () => {
       ),
     ).toBeInTheDocument();
     expect(hook.result.current).toEqual({
-      current: ['filter value', 'another value'],
+      current: [
+        { label: 'filter value', value: 'filter value' },
+        { label: 'another value', value: 'another value' },
+      ],
       set: expect.any(Function),
       clear: expect.any(Function),
     });
@@ -98,7 +101,10 @@ describe('useQueryArrayFilter', () => {
       ),
     ).toBeInTheDocument();
     expect(hook.result.current).toEqual({
-      current: ['filter value', 'another value'],
+      current: [
+        { label: 'filter value', value: 'filter value' },
+        { label: 'another value', value: 'another value' },
+      ],
       set: expect.any(Function),
       clear: expect.any(Function),
     });
@@ -110,10 +116,14 @@ describe('useQueryArrayFilter', () => {
     });
     expect(screen.getByText('/')).toBeInTheDocument();
 
-    await act(async () => hook.result.current.set('new value'));
+    await act(async () =>
+      hook.result.current.set([{ label: 'new value', value: 'new value' }]),
+    );
     hook.rerender();
 
-    expect(hook.result.current.current).toEqual(['new value']);
+    expect(hook.result.current.current).toEqual([
+      { label: 'new value', value: 'new value' },
+    ]);
     expect(
       screen.getByText('/?filter=filter-name%3Dnew+value'),
     ).toBeInTheDocument();
@@ -126,11 +136,17 @@ describe('useQueryArrayFilter', () => {
     expect(screen.getByText('/')).toBeInTheDocument();
 
     await act(async () =>
-      hook.result.current.set(['new value', 'another value']),
+      hook.result.current.set([
+        { label: 'new value', value: 'new value' },
+        { label: 'another value', value: 'another value' },
+      ]),
     );
     hook.rerender();
 
-    expect(hook.result.current.current).toEqual(['new value', 'another value']);
+    expect(hook.result.current.current).toEqual([
+      { label: 'new value', value: 'new value' },
+      { label: 'another value', value: 'another value' },
+    ]);
     expect(
       screen.getByText(
         '/?filter=filter-name%3Dnew+value&filter=filter-name%3Danother+value',
@@ -144,17 +160,24 @@ describe('useQueryArrayFilter', () => {
         '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
       ),
     });
-    expect(hook.result.current.current).toEqual(['old value', 'old value 2']);
+    expect(hook.result.current.current).toEqual([
+      { label: 'old value', value: 'old value' },
+      { label: 'old value 2', value: 'old value 2' },
+    ]);
     expect(
       screen.getByText(
         '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
       ),
     ).toBeInTheDocument();
 
-    await act(async () => hook.result.current.set('new value'));
+    await act(async () =>
+      hook.result.current.set([{ label: 'new value', value: 'new value' }]),
+    );
     hook.rerender();
 
-    expect(hook.result.current.current).toEqual(['new value']);
+    expect(hook.result.current.current).toEqual([
+      { label: 'new value', value: 'new value' },
+    ]);
     expect(
       screen.getByText(
         '/?filter=another-filter%3DAnother+filter&filter=filter-name%3Dnew+value&page=2',
@@ -168,7 +191,10 @@ describe('useQueryArrayFilter', () => {
         '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
       ),
     });
-    expect(hook.result.current.current).toEqual(['old value', 'old value 2']);
+    expect(hook.result.current.current).toEqual([
+      { label: 'old value', value: 'old value' },
+      { label: 'old value 2', value: 'old value 2' },
+    ]);
     expect(
       screen.getByText(
         '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
@@ -176,11 +202,17 @@ describe('useQueryArrayFilter', () => {
     ).toBeInTheDocument();
 
     await act(async () =>
-      hook.result.current.set(['new value', 'another value']),
+      hook.result.current.set([
+        { label: 'new value', value: 'new value' },
+        { label: 'another value', value: 'another value' },
+      ]),
     );
     hook.rerender();
 
-    expect(hook.result.current.current).toEqual(['new value', 'another value']);
+    expect(hook.result.current.current).toEqual([
+      { label: 'new value', value: 'new value' },
+      { label: 'another value', value: 'another value' },
+    ]);
     expect(
       screen.getByText(
         '/?filter=another-filter%3DAnother+filter&filter=filter-name%3Dnew+value&filter=filter-name%3Danother+value&page=2',
@@ -194,7 +226,10 @@ describe('useQueryArrayFilter', () => {
         '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
       ),
     });
-    expect(hook.result.current.current).toEqual(['old value', 'old value 2']);
+    expect(hook.result.current.current).toEqual([
+      { label: 'old value', value: 'old value' },
+      { label: 'old value 2', value: 'old value 2' },
+    ]);
     expect(
       screen.getByText(
         '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',

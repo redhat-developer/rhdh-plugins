@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { SelectItem } from '@backstage/core-components/index';
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -33,14 +34,15 @@ export const useQueryArrayFilter = (filterName: string) => {
         const name = keyValuePair.substring(0, firstEqualIndex);
         const value = keyValuePair.substring(firstEqualIndex + 1);
         if (name === filterName) {
-          acc.push(value);
+          acc.push({ label: value, value });
         }
         return acc;
-      }, [] as string[]);
+      }, [] as SelectItem[]);
   }, [filterName, searchParams]);
 
   const set = React.useCallback(
-    (newValue: string | string[] | number | number[]) => {
+    (newValues: SelectItem[]) => {
+      const newSelection = newValues.map(v => v.value);
       setSearchParams(
         params => {
           const newParams = new URLSearchParams();
@@ -48,12 +50,15 @@ export const useQueryArrayFilter = (filterName: string) => {
           let added = false;
           const add = () => {
             if (added) return;
-            if (Array.isArray(newValue)) {
-              newValue.forEach(v => {
+            if (Array.isArray(newSelection)) {
+              newSelection.forEach(v => {
                 newParams.append(filterSearchParam, `${filterName}=${v}`);
               });
             } else {
-              newParams.append(filterSearchParam, `${filterName}=${newValue}`);
+              newParams.append(
+                filterSearchParam,
+                `${filterName}=${newSelection}`,
+              );
             }
             added = true;
           };
