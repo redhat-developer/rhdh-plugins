@@ -112,7 +112,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/lightspeed" element={<LightspeedPage />} />;
+    <Route path="/lightspeed" element={<LightspeedPage />} />
   </FlatRoutes>
 );
 
