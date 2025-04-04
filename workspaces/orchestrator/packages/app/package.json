@@ -22,7 +22,6 @@
     "@backstage-community/plugin-rbac": "^1.33.2",
     "@backstage/app-defaults": "^1.5.17-next.1",
     "@backstage/catalog-model": "^1.7.3",
-    "@backstage/cli": "^0.30.0-next.3",
     "@backstage/core-app-api": "^1.15.5-next.0",
     "@backstage/core-components": "^0.16.4-next.1",
     "@backstage/core-plugin-api": "^1.10.4-next.0",
@@ -59,6 +58,7 @@
     "react-use": "^17.4.0"
   },
   "devDependencies": {
+    "@backstage/cli": "^0.31.1",
     "@backstage/test-utils": "^1.7.5-next.0",
     "@playwright/test": "1.50.1",
     "@testing-library/dom": "^9.0.0",
