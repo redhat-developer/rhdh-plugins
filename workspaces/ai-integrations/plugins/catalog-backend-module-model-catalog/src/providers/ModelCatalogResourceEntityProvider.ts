@@ -25,13 +25,15 @@ import {
 import {
   ANNOTATION_LOCATION,
   ANNOTATION_ORIGIN_LOCATION,
+  Entity,
 } from '@backstage/catalog-model';
 
-import { fetchCatalogEntities } from '../clients/BridgeResourceConnector';
+import { fetchModelCatalogEntries } from '../clients/BridgeResourceConnector';
 import { ModelCatalogConfig } from './types';
 import { readModelCatalogApiEntityConfigs } from './config';
 import type { Config } from '@backstage/config';
 import { InputError, isError } from '@backstage/errors';
+import { GenerateCatalogEntities } from '../clients/ModelCatalogGenerator';
 /**
  * Provides entities from the model catalog service, allowing models and model servers to be imported into RHDH
  *
@@ -148,8 +150,14 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
       `Discovering ResourceEntities from Model Server ${this.baseUrl}`,
     );
 
-    /** [5]: Convert the fetched model and model server data into RHDH catalog entities */
-    const entityList = await fetchCatalogEntities(this.baseUrl);
+    /** [5]: Fetch the model catalog entries from the bridge and convert into RHDH catalog entities */
+    const catalogList = await fetchModelCatalogEntries(this.baseUrl);
+    let entityList: Entity[] = [];
+    catalogList.forEach(catalog => {
+      const catalogEntities = GenerateCatalogEntities(catalog);
+      entityList = entityList.concat(entityList, catalogEntities);
+    });
+
     entityList.forEach(entity => {
       if (entity.metadata.annotations === undefined) {
         entity.metadata.annotations = {
