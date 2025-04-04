@@ -53,10 +53,6 @@ export const lightspeedPlugin = createBackendPlugin({
           path: '/health',
           allow: 'unauthenticated',
         });
-        http.addAuthPolicy({
-          path: '/conversations',
-          allow: 'unauthenticated',
-        });
       },
     });
   },
