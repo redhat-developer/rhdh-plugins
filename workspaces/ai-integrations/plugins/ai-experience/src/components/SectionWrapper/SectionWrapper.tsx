@@ -35,7 +35,7 @@ const SectionWrapper = ({ children, title }: SectionWrapperProps) => {
       }}
     >
       <Typography
-        variant="h5"
+        variant="h3"
         sx={{
           display: 'flex',
           alignItems: 'center',

@@ -72,4 +72,10 @@ backend.add(
 backend.add(catalogModuleRHDHRHOAILocationsExtensionPoint);
 backend.add(catalogModuleRHDHRHOAIReaderProcessor);
 backend.add(catalogModuleRHDHRHOAIEntityProvider);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-ai-experience-backend'),
+);
+
+backend.add(import('@backstage/plugin-auth-backend-module-github-provider'));
+
 backend.start();

@@ -24,8 +24,16 @@ import { LEARNING_SECTION_ITEMS } from '../../utils/constants';
 
 export const LearnSection = () => {
   return (
-    <Grid container spacing={3} alignItems="center" wrap="nowrap">
-      <Grid item xs={12} md={4}>
+    <Grid container spacing={3}>
+      <Grid
+        item
+        xs={12}
+        md={6}
+        lg={3}
+        display="flex"
+        justifyContent="left"
+        alignItems="center"
+      >
         <Box
           component="img"
           src={HomePageAiIllustration}
@@ -33,7 +41,16 @@ export const LearnSection = () => {
         />
       </Grid>
       {LEARNING_SECTION_ITEMS.map(item => (
-        <Grid item xs={12} md={4} key={item.title}>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          lg={3}
+          key={item.title}
+          display="flex"
+          justifyContent="left"
+          alignItems="center"
+        >
           <CardWrapper
             title={item.title}
             description={item.description}
