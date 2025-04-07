@@ -377,7 +377,15 @@ export const WorkflowInstancePage = ({
                     // }
                     style={{ color: 'white' }}
                   >
-                    Rerun
+                    {value.instance.state ===
+                    ProcessInstanceStatusDTO.Active ? (
+                      <>
+                        <CircularProgress color="inherit" size="0.75rem" />
+                        &nbsp;Running...
+                      </>
+                    ) : (
+                      'Run again'
+                    )}
                   </Button>
                 </Tooltip>
 
