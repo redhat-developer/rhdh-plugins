@@ -15,6 +15,7 @@
  */
 import React from 'react';
 
+import { ResponseErrorPanel } from '@backstage/core-components';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -37,7 +38,7 @@ const Techdocs = () => {
   const [limit] = React.useState(20);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
 
-  const { techdocs, loading } = useTechdocs({ limit });
+  const { techdocs, loading, error } = useTechdocs({ limit });
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -60,6 +61,14 @@ const Techdocs = () => {
       page * rowsPerPage + rowsPerPage,
     );
   }, [techdocs, page, rowsPerPage]);
+
+  if (error) {
+    return (
+      <CardWrapper title="Top techdocs">
+        <ResponseErrorPanel error={error} />
+      </CardWrapper>
+    );
+  }
 
   if (!visibleTechdocs || visibleTechdocs?.length === 0) {
     return (

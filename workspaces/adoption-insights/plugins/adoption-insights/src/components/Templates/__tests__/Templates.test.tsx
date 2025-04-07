@@ -45,6 +45,7 @@ jest.mock('@backstage/plugin-catalog-react', () => ({
 }));
 
 jest.mock('@backstage/core-plugin-api', () => ({
+  ...jest.requireActual('@backstage/core-plugin-api'),
   useRouteRef: () => (params: any) =>
     `/create/${params.kind}/${params.namespace}/${params.name}`,
 }));

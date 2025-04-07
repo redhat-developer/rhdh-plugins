@@ -67,6 +67,8 @@ describe('AdoptionInsightsApiClient', () => {
         type: 'test',
       };
       mockFetch.mockResolvedValue({
+        body: {},
+        ok: true,
         json: jest.fn().mockResolvedValue(response),
       });
 
