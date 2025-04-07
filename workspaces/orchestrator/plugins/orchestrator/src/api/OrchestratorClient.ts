@@ -122,7 +122,7 @@ export class OrchestratorClient implements OrchestratorApi {
     for (const integration of integrations) {
       const provider = integration.type;
       const host = integration.config.apiBaseUrl || integration.config.host;
-	    const url = raw.startsWith('http') ? raw : `https://${host}`;
+	    const url = host.startsWith('http') ? host : `https://${host}`;
 	    if (!url) continue;
 	    try {
           const credentials = await this.scmAuthApi.getCredentials({
