@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { DiscoveryApi, IdentityApi } from '@backstage/core-plugin-api';
+import { ScmAuthApi, ScmIntegrationsApi } from '@backstage/integration-react';
 import type { JsonObject } from '@backstage/types';
 
 import axios, {
@@ -40,7 +41,6 @@ import {
   OrchestratorClientOptions,
 } from './OrchestratorClient';
 
-import { ScmAuthApi, ScmIntegrationsApi } from '@backstage/integration-react';
 jest.mock('axios');
 
 describe('OrchestratorClient', () => {
@@ -55,22 +55,22 @@ describe('OrchestratorClient', () => {
   const mockScmAuthApi: jest.Mocked<ScmAuthApi> = {
     getCredentials: jest.fn().mockResolvedValue({
       token: 'mock-token',
-   }),
+    }),
   };
 
   const mockScmIntegrationsApi: Partial<ScmIntegrationsApi> = {
     byUrl: jest.fn(),
     byHost: jest.fn(),
     list: jest.fn().mockReturnValue([
-    {
-      type: 'github',
-      title: 'GitHub',
-      config: {
-        host: 'github.com',
-        apiBaseUrl: 'https://api.github.com',
-       },
-     },
-   ]),
+      {
+        type: 'github',
+        title: 'GitHub',
+        config: {
+          host: 'github.com',
+          apiBaseUrl: 'https://api.github.com',
+        },
+      },
+    ]),
   } as any;
 
   beforeEach(() => {
