@@ -146,7 +146,15 @@ describe('OrchestratorClient', () => {
               businessKey ? `?businessKey=${businessKey}` : ''
             }`,
           ),
-          data: JSON.stringify({ inputData: parameters }),
+          data: JSON.stringify({
+            inputData: parameters,
+            authTokens: [
+              {
+                provider: 'github',
+                token: 'mock-token',
+              },
+            ],
+          }),
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -156,7 +164,15 @@ describe('OrchestratorClient', () => {
         expect(executeWorkflowSpy).toHaveBeenCalledTimes(1);
         expect(executeWorkflowSpy).toHaveBeenCalledWith(
           workflowId,
-          { inputData: parameters },
+          {
+            inputData: parameters,
+            authTokens: [
+              {
+                provider: 'github',
+                token: 'mock-token',
+              },
+            ],
+          },
           businessKey,
           getDefaultTestRequestConfig(),
         );
