@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DiscoveryApi, IdentityApi } from '@backstage/core-plugin-api';
+import { DiscoveryApi, IdentityApi} from '@backstage/core-plugin-api';
 import type { JsonObject } from '@backstage/types';
 
 import axios, {
@@ -39,6 +39,13 @@ import {
 
 import { OrchestratorApi } from './api';
 
+import {
+  scmAuthApiRef,
+  scmIntegrationsApiRef,
+  ScmAuthApi,
+  ScmIntegrationsApi,
+} from '@backstage/integration-react';
+
 const getError = (err: unknown): Error => {
   if (
     isAxiosError<{ error: { message: string; name: string } }>(err) &&
@@ -54,17 +61,25 @@ const getError = (err: unknown): Error => {
 export interface OrchestratorClientOptions {
   discoveryApi: DiscoveryApi;
   identityApi: IdentityApi;
+  scmAuthApi: ScmAuthApi;
+  scmIntegrationsApi: ScmIntegrationsApi;
   axiosInstance?: AxiosInstance;
 }
 export class OrchestratorClient implements OrchestratorApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly identityApi: IdentityApi;
+  private readonly scmAuthApi: ScmAuthApi;
+  private readonly scmIntegrationsApi: ScmIntegrationsApi;
   private axiosInstance?: AxiosInstance;
 
   private baseUrl: string | null = null;
   constructor(options: OrchestratorClientOptions) {
+    console.log('OrchestratorClient created with options:', options);
+
     this.discoveryApi = options.discoveryApi;
     this.identityApi = options.identityApi;
+    this.scmAuthApi = options.scmAuthApi;
+    this.scmIntegrationsApi = options.scmIntegrationsApi;
     this.axiosInstance = options.axiosInstance;
   }
 
@@ -104,10 +119,42 @@ export class OrchestratorClient implements OrchestratorApi {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
       await this.getDefaultReqConfig();
+      const integrations = this.scmIntegrationsApi.list(); 
+      const authTokens: { provider: string; token: string }[] = [];
+      for (const integration of integrations) {
+      const provider = integration.type;
+      const host = integration.config.host || integration.config.apiBaseUrl;
+      const url = `https://${host}`;
+
+	  if (!url) continue;
+	  try {
+        const credentials = await this.scmAuthApi.getCredentials({
+        url,
+        token: true,
+        optional: true, 
+      });
+
+      if (credentials?.token) {
+        authTokens.push({
+          provider,
+          token: credentials.token,
+        });
+      }
+    } catch (e) {
+      console.warn(`No token available for ${provider}`, e);
+    }
+  }
+    const requestBody = {
+    inputData: args.parameters,
+    authTokens,
+    };
+   console.log('Request payload:', JSON.stringify(requestBody, null, 2));
+
+    
     try {
       return await defaultApi.executeWorkflow(
         args.workflowId,
-        { inputData: args.parameters },
+        requestBody,
         args.businessKey,
         reqConfigOption,
       );
@@ -262,4 +309,37 @@ export class OrchestratorClient implements OrchestratorApi {
     };
     return reqConfigOption;
   }
+  
+  async triggerWorkflowWithAuthTokens(args: {
+  workflowId: string;
+  parameters: JsonObject;
+  authTokens: { provider: string; token: string }[];
+  businessKey?: string;
+}): Promise<AxiosResponse<any>> {
+  const baseUrl = await this.getBaseUrl();
+  const { token: idToken } = await this.identityApi.getCredentials();
+
+  const axiosInstance =
+    this.axiosInstance ||
+    axios.create({
+      baseURL: baseUrl,
+      headers: {
+        ...(idToken && { Authorization: `Bearer ${idToken}` }),
+      },
+      withCredentials: true,
+    });
+
+  try {
+    return await axiosInstance.post(
+      `${baseUrl}/workflows/${args.workflowId}/trigger`,
+      {
+        parameters: args.parameters,
+        authTokens: args.authTokens,
+        businessKey: args.businessKey,
+      }
+    );
+  } catch (err) {
+    throw getError(err);
+  }
+} 
 }

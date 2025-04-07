@@ -24,6 +24,9 @@ import {
 import { orchestratorApiRef, OrchestratorClient } from './api';
 import { orchestratorRootRouteRef } from './routes';
 
+import { scmAuthApiRef, scmIntegrationsApiRef } from '@backstage/integration-react';
+
+
 /**
  * @public
  * Orchestrator Plugin
@@ -33,9 +36,11 @@ export const orchestratorPlugin = createPlugin({
   apis: [
     createApiFactory({
       api: orchestratorApiRef,
-      deps: { discoveryApi: discoveryApiRef, identityApi: identityApiRef },
-      factory({ discoveryApi, identityApi }) {
-        return new OrchestratorClient({ discoveryApi, identityApi });
+      deps: { discoveryApi: discoveryApiRef, identityApi: identityApiRef,scmAuthApi: scmAuthApiRef,
+    scmIntegrationsApi: scmIntegrationsApiRef, },
+      factory({ discoveryApi, identityApi, scmAuthApi, scmIntegrationsApi  }) {
+        return new OrchestratorClient({ discoveryApi, identityApi,scmAuthApi,
+      scmIntegrationsApi,});
       },
     }),
   ],
