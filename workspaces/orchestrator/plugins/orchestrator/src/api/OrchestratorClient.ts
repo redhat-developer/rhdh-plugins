@@ -122,25 +122,25 @@ export class OrchestratorClient implements OrchestratorApi {
       for (const integration of integrations) {
       const provider = integration.type;
       const host = integration.config.apiBaseUrl || integration.config.host;
-	  const url = raw.startsWith('http') ? raw : `https://${host}`;
-	  if (!url) continue;
-	  try {
-        const credentials = await this.scmAuthApi.getCredentials({
-        url,
-        token: true,
-        optional: true, 
-      });
+	   const url = raw.startsWith('http') ? raw : `https://${host}`;
+	   if (!url) continue;
+	   try {
+         const credentials = await this.scmAuthApi.getCredentials({
+         url,
+         token: true,
+         optional: true, 
+       });
 
-      if (credentials?.token) {
-        authTokens.push({
-          provider,
-          token: credentials.token,
-        });
-       }
-     } catch (e) {
-       console.warn(`No token available for ${provider}`, e);
-     }
-   }
+       if (credentials?.token) {
+         authTokens.push({
+           provider,
+           token: credentials.token,
+         });
+        }
+      } catch (e) {
+        console.warn(`No token available for ${provider}`, e);
+      }
+    }
     const requestBody = {
     inputData: args.parameters,
     authTokens,
