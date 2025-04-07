@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-theme': patch
+'@red-hat-developer-hub/backstage-plugin-theme': minor
 ---
 
-Some UI bug fix.
+Backstage version bump to v1.36.1 and some UI bug fix.
