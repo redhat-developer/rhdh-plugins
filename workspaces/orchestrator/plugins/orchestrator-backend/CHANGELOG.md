@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 5.2.3
+
+### Patch Changes
+
+- 691fd23: fix tests
+- Updated dependencies [691fd23]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.26.2
+
 ## 5.2.2
 
 ### Patch Changes

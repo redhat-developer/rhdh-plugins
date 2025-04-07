@@ -1,5 +1,14 @@
 ### Dependencies
 
+## 2.6.3
+
+### Patch Changes
+
+- c64c3a5: fix view variables screen
+- 28c900b: fixing responsiveness of the WorkflowPage
+- Updated dependencies [691fd23]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.26.2
+
 ## 2.6.2
 
 ### Patch Changes

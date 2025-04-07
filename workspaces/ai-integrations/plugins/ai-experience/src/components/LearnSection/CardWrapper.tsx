@@ -36,9 +36,9 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
 }) => {
   return (
     <Box>
-      <CardContent sx={{ width: '220px' }}>
+      <CardContent sx={{ width: '220px', backgroundColor: 'transparent' }}>
         <Box>
-          <Typography variant="h5" component="div" fontWeight="500">
+          <Typography variant="h3" component="div" fontWeight="500">
             {title}
           </Typography>
         </Box>
@@ -72,6 +72,10 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
               justifyContent: 'flex-start',
               fontSize: '16px',
               fontWeight: '400',
+              border: theme =>
+                `1px solid ${
+                  theme.palette.mode === 'light' ? '#0066CC' : '#1FA7F8'
+                }`,
             }}
           >
             {buttonText} <ArrowForwardIcon sx={{ pl: 0.5 }} />

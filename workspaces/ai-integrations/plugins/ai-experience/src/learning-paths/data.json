@@ -1,0 +1,153 @@
+[
+  {
+    "paths": 20,
+    "hours": 7,
+    "minutes": 40,
+    "description": "In this learning path, I'll demonstrate how anyone can run a distributed AI workload on Red Hat OpenShift using just a few nodes and GPUs. ",
+    "label": "RoCE multi-node AI training on Red Hat OpenShift",
+    "url": "https://developers.redhat.com/learn/openshift/roce-multi-node-ai-training-red-hat-openshift"
+  },
+  {
+    "paths": 5,
+    "hours": 2,
+    "description": "Interactive Image Classification with Jupyter Notebooks on Red Hat OpenShift AI",
+    "label": "Interactive Image Classification with Jupyter Notebooks on Red Hat OpenShift AI",
+    "url": "https://developers.redhat.com/learn/openshift/install-red-hat-developer-hub-helm-google-kubernetes-engine-gke"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Integrate a private AI coding assistant into your CDE using Ollama, Continue, and OpenShift Dev Spaces",
+    "label": "Integrate a private AI coding assistant into your CDE using Ollama, Continue, and OpenShift Dev Spaces",
+    "url": "https://developers.redhat.com/learn/openshift-ai/integrate-private-ai-coding-assistant-your-cde-using-ollama-continue-openshift-dev-spaces"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Download, serve and interact with LLMs on RHEL AI",
+    "label": "Download, serve and interact with LLMs on RHEL AI",
+    "url": "https://developers.redhat.com/learn/download-serve-and-interact-llms-rhel-ai"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Demystify RAG with OpenShift AI and Elasticsearch",
+    "label": "Demystify RAG with OpenShift AI and Elasticsearch",
+    "url": "https://developers.redhat.com/learn/openshift/demystify-rag-openshift-ai-and-elasticsearch"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "From Podman AI Lab to OpenShift AI",
+    "label": "From Podman AI Lab to OpenShift AI",
+    "url": "https://developers.redhat.com/learn/openshift/podman-ai-lab-openshift-ai"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Install Red Hat Device Edge on NVIDIA Jetson Orin and IGX Orin",
+    "label": "Install Red Hat Device Edge on NVIDIA Jetson Orin and IGX Orin",
+    "url": "https://developers.redhat.com/learn/rhel/install-red-hat-device-edge-nvidia-jetson-orin-and-igx-orin"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "RHEL AI: Try out LLMs the easy way",
+    "label": "RHEL AI: Try out LLMs the easy way",
+    "url": "https://developers.redhat.com/learn/rhel/rhel-ai-try-llms-easy-way"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Utilize Retrieval-Augmented Generation (RAG) with Node.js to optimize your AI applications",
+    "label": "Utilize Retrieval-Augmented Generation (RAG) with Node.js to optimize your AI applications",
+    "url": "https://developers.redhat.com/learn/openshift/utilize-retrieval-augmented-generation-rag-nodejs-optimize-your-ai-applications"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Deploying your LangChain.js Node.js applications to OpenShift AI",
+    "label": "Deploying your LangChain.js Node.js applications to OpenShift AI",
+    "url": "https://developers.redhat.com/learn/openshift/deploying-your-langchainjs-nodejs-applications-openshift-ai"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Building and Evaluating a Fraud Detection Model with TensorFlow and ONNX",
+    "label": "Building and Evaluating a Fraud Detection Model with TensorFlow and ONNX",
+    "url": "https://developers.redhat.com/learn/openshift/building-and-evaluating-a-fraud-detection-model-with-tensorflow-and-onnx"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Utilize Retrieval-Augmented Generation (RAG) with Node.js to optimize your AI applications",
+    "label": "Utilize Retrieval-Augmented Generation (RAG) with Node.js to optimize your AI applications",
+    "url": "https://developers.redhat.com/learn/openshift/utilize-retrieval-augmented-generation-rag-nodejs-optimize-your-ai-applications"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Diving Deeper with large language models and Node.js",
+    "label": "Diving Deeper with large language models and Node.js",
+    "url": "https://developers.redhat.com/learn/diving-deeper-large-language-models-and-nodejs"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Get started with Red Hat OpenShift Lightspeed",
+    "label": "Get started with Red Hat OpenShift Lightspeed",
+    "url": "https://developers.redhat.com/learn/openshift/get-started-red-hat-openshift-lightspeed"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Build your AI application with AI Lab extension in Podman Desktop",
+    "label": "Build your AI application with AI Lab extension in Podman Desktop",
+    "url": "https://developers.redhat.com/learn/rhel/build-your-ai-application-ai-lab-extension-podman-desktop"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Automation ML pipeline with OpenShift AI",
+    "label": "Automation ML pipeline with OpenShift AI",
+    "url": "https://developers.redhat.com/learn/automation-ml-pipeline-openshift-ai"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Data Engineering : Extract live Data Collection from images and logs",
+    "label": "Data Engineering : Extract live Data Collection from images and logs",
+    "url": "https://developers.redhat.com/learn/openshift/data-engineering-extract-live-data-collection-images-and-logs"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "Introduction to OpenShift AI",
+    "label": "Introduction to OpenShift AI",
+    "url": "https://developers.redhat.com/learn/openshift-ai/introduction-openshift-ai"
+  },
+  {
+    "paths": 19,
+    "hours": 4,
+    "minutes": 15,
+    "description": "How to get started with large language models and Node.js",
+    "label": "How to get started with large language models and Node.js",
+    "url": "https://developers.redhat.com/learn/diving-deeper-large-language-models-and-nodejs"
+  }
+]

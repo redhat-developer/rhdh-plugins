@@ -22,15 +22,23 @@ import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 import CardWrapper from './CardWrapper';
-import { AI_MODELS, AI_MODELS_DESCRIPTION } from '../../utils/constants';
 import HomePageAiModels from '../../images/homepage-ai-models.svg';
+import { useModels } from '../../hooks/useModels';
 
 export const ModelSection = () => {
   const [isRemoveFirstCard, setIsRemoveFirstCard] = React.useState(false);
   const [showDiscoveryCard, setShowDiscoveryCard] = React.useState(true);
   const [imgLoaded, setImgLoaded] = React.useState(false);
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down(1280));
+  const isExtraSmallScreen = useMediaQuery(theme.breakpoints.down(900));
+  const smallScreenWidth = isExtraSmallScreen ? 266 : 180;
+  const imageWidth = isSmallScreen ? smallScreenWidth : 266;
 
   const handleClose = () => {
     setShowDiscoveryCard(false);
@@ -38,15 +46,23 @@ export const ModelSection = () => {
       setIsRemoveFirstCard(true);
     }, 500);
   };
+  const { data } = useModels();
+  const models = data?.items ?? [];
+  const params = new URLSearchParams({
+    'filters[kind]': 'resource',
+    'filters[type]': 'ai-model',
+    limit: '20',
+  });
+  const catalogModelLink = `/catalog?${params.toString()}`;
 
   return (
     <React.Fragment>
-      <Grid container>
+      <Grid container spacing={1} alignItems="stretch">
         {!isRemoveFirstCard && (
           <Grid item xs={12} md={5} key="AI models illustration">
             <Box
               sx={{
-                border: theme => `1px solid ${theme.palette.grey[400]}`,
+                border: `1px solid ${theme.palette.grey[400]}`,
                 borderRadius: 3,
                 display: 'flex',
                 alignItems: 'center',
@@ -61,8 +77,8 @@ export const ModelSection = () => {
               {!imgLoaded && (
                 <Skeleton
                   variant="rectangular"
-                  width={266}
-                  height={330}
+                  width={imageWidth}
+                  height={300}
                   sx={{ borderRadius: 3 }}
                 />
               )}
@@ -71,12 +87,14 @@ export const ModelSection = () => {
                 src={HomePageAiModels}
                 onLoad={() => setImgLoaded(true)}
                 alt="AI models illustration"
-                height={330}
+                height={300}
+                width={imageWidth}
               />
               <Box sx={{ p: 2 }}>
-                <Box sx={{ width: '180px' }}>
+                <Box>
                   <Typography variant="body2" paragraph>
-                    {AI_MODELS_DESCRIPTION}
+                    Discover the AI models and services that are available in
+                    your organization
                   </Typography>
                 </Box>
                 <IconButton
@@ -90,21 +108,27 @@ export const ModelSection = () => {
             </Box>
           </Grid>
         )}
-        {AI_MODELS.slice(0, isRemoveFirstCard ? 4 : 2).map(item => (
-          <Grid item xs={12} md={isRemoveFirstCard ? 3 : 3.5} key={item.title}>
+        {models?.slice(0, isRemoveFirstCard ? 4 : 2).map(item => (
+          <Grid
+            item
+            xs={12}
+            md={isRemoveFirstCard ? 3 : 3.5}
+            key={item.metadata.name}
+          >
             <CardWrapper
-              title={item.title}
-              version={item.version}
-              description={item.description}
-              tags={item.tags}
+              link={`/catalog/default/resource/${item.metadata.name}`}
+              title={item.spec.profile.displayName}
+              version="latest"
+              description={item.metadata.description ?? ''}
+              tags={item.metadata?.tags ?? []}
             />
           </Grid>
         ))}
       </Grid>
       <Box sx={{ pt: 2 }}>
-        <Link href="#" underline="always">
+        <Link href={catalogModelLink} underline="always">
           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            View all {AI_MODELS.length} models
+            View all {data?.totalItems ? data?.totalItems : ''} models
           </Typography>
         </Link>
       </Box>

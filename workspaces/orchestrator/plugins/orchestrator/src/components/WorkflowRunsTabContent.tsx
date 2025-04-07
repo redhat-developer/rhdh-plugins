@@ -301,8 +301,8 @@ export const WorkflowRunsTabContent = () => {
   return error ? (
     <ErrorPanel error={error} />
   ) : (
-    <Grid container item justifyContent="flex-end" spacing={1}>
-      <Grid item xs={2}>
+    <Grid container item xs={12} spacing={2}>
+      <Grid item>
         <Selector
           label="Status"
           items={statuses}
@@ -322,7 +322,7 @@ export const WorkflowRunsTabContent = () => {
           selected={startedSelectorValue}
         />
       </Grid>
-      <Grid item xs={10}>
+      <Grid item xs style={{ flexGrow: 1 }}>
         <InfoCard
           noPadding
           title={

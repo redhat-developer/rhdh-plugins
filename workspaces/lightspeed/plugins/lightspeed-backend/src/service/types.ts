@@ -44,26 +44,15 @@ export interface QueryRequestBody {
   // Query message
   query: string;
 
-  // LLM server URL, expected to be the proxy endpoint
-  // for example: http://localhost:7007/api/proxy/lightspeed/api
-  serverURL: string;
+  // LLM provider, expected to be the server name in configuration
+  provider: string;
 
-  // A combination of user_id & session_id in the format of <user_id>+<session_id>
-  conversation_id: string;
+  // Conversation session id
+  conversation_id?: string;
+
+  // System prompt to override the default value
+  system_prompt?: string;
 }
-
-// For create AIMessage, HumanMessage, SystemMessage respectively
-export const Roles = {
-  AIRole: 'ai',
-  HumanRole: 'human',
-  SystemRole: 'system',
-} as const;
 
 // default number of message history being loaded
 export const DEFAULT_HISTORY_LENGTH = 10;
-
-export type ConversationSummary = {
-  conversation_id: string;
-  summary: string;
-  lastMessageTimestamp: number;
-};

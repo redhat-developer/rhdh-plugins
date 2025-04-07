@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import moment from 'moment';
 
 import {
@@ -20,7 +21,7 @@ import {
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { VALUE_UNAVAILABLE } from '../constants';
+import { AVAILABLE, UNAVAILABLE, VALUE_UNAVAILABLE } from '../constants';
 import DataFormatter from './DataFormatter';
 
 export interface FormattedWorkflowOverview {
@@ -32,7 +33,14 @@ export interface FormattedWorkflowOverview {
   readonly category: string;
   readonly description: string;
   readonly format: WorkflowFormatDTO;
+  readonly availablity?: string;
 }
+
+const formatIsAvailable = (availablity: boolean | undefined) => {
+  if (availablity === true) return AVAILABLE;
+  else if (availablity === false) return UNAVAILABLE;
+  return VALUE_UNAVAILABLE;
+};
 
 const WorkflowOverviewFormatter: DataFormatter<
   WorkflowOverviewDTO,
@@ -50,6 +58,7 @@ const WorkflowOverviewFormatter: DataFormatter<
       category: data.category ?? VALUE_UNAVAILABLE,
       description: data.description ?? VALUE_UNAVAILABLE,
       format: data.format,
+      availablity: formatIsAvailable(data.isAvailable),
     };
   },
 };
