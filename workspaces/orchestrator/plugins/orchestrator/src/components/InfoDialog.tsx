@@ -30,29 +30,33 @@ import CloseIcon from '@material-ui/icons/Close';
 
 export type InfoDialogProps = {
   title: React.ReactNode;
+  titleIcon?: React.ReactNode;
   open: boolean;
   onClose?: () => void;
   dialogActions?: React.ReactNode;
   children?: React.ReactNode;
+  wideDialog?: boolean;
 };
 
 export type ParentComponentRef = HTMLElement;
 
-const useStyles = makeStyles(_theme => ({
+const useStyles = makeStyles(theme => ({
   closeBtn: {
     position: 'absolute',
-    right: 8,
-    top: 8,
+    right: theme.spacing(1),
+    top: theme.spacing(1),
   },
   dialogActions: {
     justifyContent: 'flex-start',
-    paddingLeft: _theme.spacing(3),
-    paddingBottom: _theme.spacing(2),
+    paddingLeft: theme.spacing(3),
+    paddingBottom: theme.spacing(2),
   },
-  title: {
-    position: 'absolute',
-    left: 20,
-    top: 20,
+  titleContainer: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  titleIcon: {
+    marginRight: theme.spacing(1),
   },
 }));
 
@@ -60,15 +64,32 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
   ParentComponentRef,
   InfoDialogProps
 > = (props, forwardedRef): JSX.Element | null => {
-  const { title, open = false, onClose, children, dialogActions } = props;
+  const {
+    title,
+    titleIcon,
+    open = false,
+    onClose,
+    children,
+    dialogActions,
+    wideDialog,
+  } = props;
   const classes = useStyles();
 
   return (
-    <Dialog onClose={_ => onClose} open={open} ref={forwardedRef}>
+    <Dialog
+      onClose={_ => onClose}
+      open={open}
+      ref={forwardedRef}
+      maxWidth={wideDialog ? 'xl' : 'sm'}
+      PaperProps={{
+        style: { minWidth: wideDialog ? 500 : 400 },
+      }}
+    >
       <DialogTitle>
-        <Box>
-          <Typography className={classes.title} variant="h5">
-            {title}
+        <Box className={classes.titleContainer}>
+          {titleIcon && <Box className={classes.titleIcon}>{titleIcon}</Box>}
+          <Typography variant="h4">
+            <b>{title}</b>
           </Typography>
           <IconButton
             className={classes.closeBtn}

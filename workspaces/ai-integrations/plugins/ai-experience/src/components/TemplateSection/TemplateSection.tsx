@@ -21,26 +21,35 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
 import CardWrapper from './CardWrapper';
-import { AI_TEMPLATES } from '../../utils/constants';
+import { useTemplates } from '../../hooks/useTemplates';
 
 export const TemplateSection = () => {
+  const { data: templates } = useTemplates();
+  const params = new URLSearchParams({
+    'filters[kind]': 'template',
+    limit: '20',
+  });
+  const catalogTemplatesLink = `/catalog?${params.toString()}`;
+
   return (
     <React.Fragment>
-      <Grid container>
-        {AI_TEMPLATES.slice(0, 4).map(item => (
+      <Grid container spacing={1} alignItems="stretch">
+        {templates?.items.map(item => (
           <Grid item xs={12} md={3} key={item.title}>
             <CardWrapper
-              title={item.title}
-              description={item.description}
-              tag={item.tag}
+              link={`/create/templates/default/${item.metadata.name}`}
+              title={item.metadata.title}
+              description={item.metadata.description}
+              kind="Template"
             />
           </Grid>
         ))}
       </Grid>
       <Box sx={{ pt: 2 }}>
-        <Link href="#" underline="always">
+        <Link href={catalogTemplatesLink} underline="always">
           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            View all {AI_TEMPLATES.length} templates
+            View all {templates?.totalItems ? templates?.totalItems : ''}{' '}
+            templates
           </Typography>
         </Link>
       </Box>

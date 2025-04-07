@@ -81,7 +81,6 @@ export const SearchBar = (props: SearchBarProps) => {
                 sx: {
                   borderRadius: '4px',
                   outline: 'unset',
-                  border: `1px solid ${theme.palette.divider}`,
                   boxShadow:
                     theme.palette.mode === 'dark'
                       ? `0 2px 6px 2px rgba(0, 0, 0, 0.50), 0 1px 2px 0 rgba(0, 0, 0, 0.50)`

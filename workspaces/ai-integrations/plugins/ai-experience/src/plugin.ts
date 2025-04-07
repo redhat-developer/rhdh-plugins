@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 import {
+  createApiFactory,
   createPlugin,
   createRoutableExtension,
+  discoveryApiRef,
+  fetchApiRef,
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
+import { aiExperienceApiRef } from './api';
+import { ModelCatalogClient } from './api/ModelCatalogClient';
 
 /**
  * Plugin for AI Experience frontend
@@ -29,6 +34,20 @@ export const aiExperiencePlugin = createPlugin({
   routes: {
     root: rootRouteRef,
   },
+  apis: [
+    createApiFactory({
+      api: aiExperienceApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ discoveryApi, fetchApi }) =>
+        new ModelCatalogClient({
+          discoveryApi,
+          fetchApi,
+        }),
+    }),
+  ],
 });
 
 /**

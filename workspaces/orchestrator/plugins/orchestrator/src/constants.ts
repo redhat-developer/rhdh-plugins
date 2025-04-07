@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const VALUE_UNAVAILABLE = '---' as const;
 
+export const VALUE_UNAVAILABLE = '---' as const;
+export const AVAILABLE = 'Available';
+export const UNAVAILABLE = 'Unavailable';
 export const SHORT_REFRESH_INTERVAL = 5000;
 export const LONG_REFRESH_INTERVAL = 15000;
 export const DEFAULT_TABLE_PAGE_SIZE = 20;
