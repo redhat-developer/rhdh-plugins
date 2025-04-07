@@ -15,7 +15,12 @@
  */
 
 /// <reference path="../../@types/index.d.ts" />
-import { ConfigApi, DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
+import {
+  ConfigApi,
+  DiscoveryApi,
+  FetchApi,
+  OAuthApi,
+} from '@backstage/core-plugin-api';
 import { isValidCountryCode, isValidPhoneNumber } from '../utils/phone-utils';
 import { CommonResponse, SignupData } from '../types';
 
@@ -23,6 +28,7 @@ export type RegistrationBackendClientOptions = {
   configApi: ConfigApi;
   discoveryApi: DiscoveryApi;
   fetchApi: FetchApi;
+  oauthApi: OAuthApi;
 };
 
 export interface RegistrationService {
@@ -41,15 +47,21 @@ export class RegistrationBackendClient implements RegistrationService {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
   private readonly configApi: ConfigApi;
+  private readonly oauthApi: OAuthApi;
 
   constructor(options: RegistrationBackendClientOptions) {
     this.discoveryApi = options.discoveryApi;
     this.fetchApi = options.fetchApi;
     this.configApi = options.configApi;
+    this.oauthApi = options.oauthApi;
   }
 
   private readonly signupAPI = async (): Promise<string> => {
     return `${await this.discoveryApi.getBaseUrl('proxy')}/signup`;
+  };
+
+  private oauthAccessToken = async (): Promise<string> => {
+    return `Bearer ${await this.oauthApi.getAccessToken()}`;
   };
 
   getRecaptchaAPIKey = (): string => {
@@ -61,7 +73,12 @@ export class RegistrationBackendClient implements RegistrationService {
 
   getSignUpData = async (): Promise<SignupData | undefined> => {
     const signupURL = await this.signupAPI();
-    const response = await this.fetchApi.fetch(signupURL);
+    const response = await this.fetchApi.fetch(signupURL, {
+      method: 'GET',
+      headers: {
+        Authorization: await this.oauthAccessToken(),
+      },
+    });
     if (!response.ok) {
       if (response.status === 404) {
         return undefined;
@@ -114,6 +131,7 @@ export class RegistrationBackendClient implements RegistrationService {
       method: 'POST',
       headers: {
         'Recaptcha-Token': token,
+        Authorization: await this.oauthAccessToken(),
       },
       body: null,
     });
@@ -132,6 +150,9 @@ export class RegistrationBackendClient implements RegistrationService {
     }
     const response = await this.fetchApi.fetch(verificationURL, {
       method: 'PUT',
+      headers: {
+        Authorization: await this.oauthAccessToken(),
+      },
       body: JSON.stringify({
         country_code: countryCode,
         phone_number: phoneNumber,
@@ -148,6 +169,9 @@ export class RegistrationBackendClient implements RegistrationService {
     const verificationURL = `${await this.signupAPI()}/verification`;
     const response = await this.fetchApi.fetch(`${verificationURL}/${code}`, {
       method: 'GET',
+      headers: {
+        Authorization: await this.oauthAccessToken(),
+      },
     });
 
     if (!response.ok) {
@@ -160,6 +184,9 @@ export class RegistrationBackendClient implements RegistrationService {
     const verificationURL = `${await this.signupAPI()}/verification/activation-code`;
     const response = await this.fetchApi.fetch(verificationURL, {
       method: 'POST',
+      headers: {
+        Authorization: await this.oauthAccessToken(),
+      },
       body: JSON.stringify({
         code: code,
       }),

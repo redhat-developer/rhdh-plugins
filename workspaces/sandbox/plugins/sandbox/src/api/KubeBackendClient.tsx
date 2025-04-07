@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
+import { DiscoveryApi, FetchApi, OAuthApi } from '@backstage/core-plugin-api';
 import { errorMessage } from '../utils/common';
 import {
   DeploymentData,
@@ -26,6 +26,7 @@ import {
 export type KubeBackendClientOptions = {
   discoveryApi: DiscoveryApi;
   fetchApi: FetchApi;
+  oauthApi: OAuthApi;
 };
 
 export interface KubeAPIService {
@@ -58,14 +59,20 @@ export interface KubeAPIService {
 export class KubeBackendClient implements KubeAPIService {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
+  private readonly oauthApi: OAuthApi;
 
   constructor(options: KubeBackendClientOptions) {
     this.discoveryApi = options.discoveryApi;
     this.fetchApi = options.fetchApi;
+    this.oauthApi = options.oauthApi;
   }
 
   private readonly kubeAPI = async (): Promise<string> => {
     return `${await this.discoveryApi.getBaseUrl('proxy')}/kube-api`;
+  };
+
+  private oauthAccessToken = async (): Promise<string> => {
+    return `Bearer ${await this.oauthApi.getAccessToken()}`;
   };
 
   private readonly projectPersistentVolumeClaimUrl = (
@@ -118,6 +125,9 @@ export class KubeBackendClient implements KubeAPIService {
             const pvcURL = `/api/v1/namespaces/${userNamespace}/persistentvolumeclaims/${volume.persistentVolumeClaim.claimName}`;
             const response = await this.fetchApi.fetch(`${kubeApi}${pvcURL}`, {
               method: 'DELETE',
+              headers: {
+                Authorization: await this.oauthAccessToken(),
+              },
             });
             if (!response.ok && response.status !== 404) {
               const error = await response.json();
@@ -132,6 +142,9 @@ export class KubeBackendClient implements KubeAPIService {
               `${kubeApi}${secretURL}`,
               {
                 method: 'DELETE',
+                headers: {
+                  Authorization: await this.oauthAccessToken(),
+                },
               },
             );
             if (!response.ok && response.status !== 404) {
@@ -168,6 +181,9 @@ export class KubeBackendClient implements KubeAPIService {
                 `${kubeApi}${pvcURL}`,
                 {
                   method: 'DELETE',
+                  headers: {
+                    Authorization: await this.oauthAccessToken(),
+                  },
                 },
               );
               if (!response.ok && response.status !== 404) {
@@ -191,6 +207,9 @@ export class KubeBackendClient implements KubeAPIService {
       `${kubeApi}${projectSecretURL}`,
       {
         method: 'GET',
+        headers: {
+          Authorization: await this.oauthAccessToken(),
+        },
       },
     );
 
@@ -209,6 +228,9 @@ export class KubeBackendClient implements KubeAPIService {
     const url = this.projectPersistentVolumeClaimUrl(namespace, labels);
     const response = await this.fetchApi.fetch(`${kubeApi}${url}`, {
       method: 'GET',
+      headers: {
+        Authorization: await this.oauthAccessToken(),
+      },
     });
 
     if (!response.ok) {
@@ -226,6 +248,9 @@ export class KubeBackendClient implements KubeAPIService {
     const url = this.projectDeploymentUrl(namespace, labels);
     const response = await this.fetchApi.fetch(`${kubeApi}${url}`, {
       method: 'GET',
+      headers: {
+        Authorization: await this.oauthAccessToken(),
+      },
     });
 
     if (!response.ok) {
@@ -243,6 +268,9 @@ export class KubeBackendClient implements KubeAPIService {
     const url = this.projectStatefulSetUrl(namespace, labels);
     const response = await this.fetchApi.fetch(`${kubeApi}${url}`, {
       method: 'GET',
+      headers: {
+        Authorization: await this.oauthAccessToken(),
+      },
     });
 
     if (!response.ok) {

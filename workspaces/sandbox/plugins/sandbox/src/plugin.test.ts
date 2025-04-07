@@ -20,7 +20,7 @@ import {
   SandboxHomeIcon,
   SandboxActivitiesIcon,
 } from './plugin';
-import { registerApiRef, kubeApiRef, aapApiRef } from './api';
+import { registerApiRef, kubeApiRef, aapApiRef, keycloakApiRef } from './api';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
 
@@ -28,7 +28,7 @@ jest.mock('./components/SandboxCatalog/SandboxCatalogPage', () => ({
   SandboxCatalogPage: jest.fn(),
 }));
 
-jest.mock('./components/SandboxActivities/SandboxActvitiesPage', () => ({
+jest.mock('./components/SandboxActivities/SandboxActivitiesPage', () => ({
   SandboxActivitiesPage: jest.fn(),
 }));
 
@@ -41,14 +41,15 @@ describe('sandbox plugin', () => {
   it('should register all required APIs', () => {
     const apis = [...sandboxPlugin.getApis()];
 
-    // Check if we have 3 API factories
-    expect(apis).toHaveLength(3);
+    // Check if we have 4 API factories
+    expect(apis).toHaveLength(4);
 
     // Check if each API is properly registered
     const apiRefs = apis.map((api: any) => api.api);
     expect(apiRefs).toContain(registerApiRef);
     expect(apiRefs).toContain(kubeApiRef);
     expect(apiRefs).toContain(aapApiRef);
+    expect(apiRefs).toContain(keycloakApiRef);
   });
 
   describe('routable extensions', () => {
@@ -89,6 +90,7 @@ describe('sandbox plugin', () => {
         configApi: expect.any(Object),
         discoveryApi: expect.any(Object),
         fetchApi: expect.any(Object),
+        oauthApi: keycloakApiRef,
       });
     });
 
@@ -100,6 +102,7 @@ describe('sandbox plugin', () => {
       expect(kubeApi?.deps).toEqual({
         discoveryApi: expect.any(Object),
         fetchApi: expect.any(Object),
+        oauthApi: keycloakApiRef,
       });
     });
 
@@ -111,7 +114,20 @@ describe('sandbox plugin', () => {
       expect(aapApi?.deps).toEqual({
         discoveryApi: expect.any(Object),
         fetchApi: expect.any(Object),
+        oauthApi: keycloakApiRef,
       });
+    });
+  });
+
+  it('should create keycloak API factory with correct dependencies', () => {
+    const apis = [...sandboxPlugin.getApis()];
+    const keycloakApi = apis.find((api: any) => api.api === keycloakApiRef);
+
+    expect(keycloakApi).toBeDefined();
+    expect(keycloakApi?.deps).toEqual({
+      discoveryApi: expect.any(Object),
+      oauthRequestApi: expect.any(Object),
+      configApi: expect.any(Object),
     });
   });
 });

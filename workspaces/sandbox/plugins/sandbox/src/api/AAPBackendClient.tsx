@@ -15,6 +15,7 @@
  */
 
 import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
+import { OAuthApi } from '@backstage/core-plugin-api';
 import { errorMessage } from '../utils/common';
 import { AAPObject } from '../utils/aap-utils';
 import { AAPData } from '../types';
@@ -22,6 +23,7 @@ import { AAPData } from '../types';
 export type AAPBackendClientOptions = {
   discoveryApi: DiscoveryApi;
   fetchApi: FetchApi;
+  oauthApi: OAuthApi;
 };
 
 export interface AAPService {
@@ -34,14 +36,20 @@ export interface AAPService {
 export class AAPBackendClient implements AAPService {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
+  private readonly oauthApi: OAuthApi;
 
   constructor(options: AAPBackendClientOptions) {
     this.discoveryApi = options.discoveryApi;
     this.fetchApi = options.fetchApi;
+    this.oauthApi = options.oauthApi;
   }
 
   private readonly kubeAPI = async (): Promise<string> => {
     return `${await this.discoveryApi.getBaseUrl('proxy')}/kube-api`;
+  };
+
+  private oauthAccessToken = async (): Promise<string> => {
+    return `Bearer ${await this.oauthApi.getAccessToken()}`;
   };
 
   getAAP = async (namespace: string): Promise<AAPData | undefined> => {
@@ -49,6 +57,9 @@ export class AAPBackendClient implements AAPService {
     const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms`;
     const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
       method: 'GET',
+      headers: {
+        Authorization: await this.oauthAccessToken(),
+      },
     });
 
     if (!response.ok) {
@@ -66,6 +77,7 @@ export class AAPBackendClient implements AAPService {
       body: AAPObject,
       headers: {
         'Content-Type': 'application/yaml',
+        Authorization: await this.oauthAccessToken(),
       },
     });
 
@@ -87,6 +99,7 @@ export class AAPBackendClient implements AAPService {
       }),
       headers: {
         'Content-Type': 'application/merge-patch+json',
+        Authorization: await this.oauthAccessToken(),
       },
     });
 
@@ -101,6 +114,9 @@ export class AAPBackendClient implements AAPService {
     const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms/sandbox-aap`;
     const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
       method: 'DELETE',
+      headers: {
+        Authorization: await this.oauthAccessToken(),
+      },
     });
 
     if (!response.ok && response.status !== 404) {
