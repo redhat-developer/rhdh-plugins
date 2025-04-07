@@ -41,8 +41,6 @@ import {
 } from './OrchestratorClient';
 
 import { ScmAuthApi, ScmIntegrationsApi } from '@backstage/integration-react';
-
-
 jest.mock('axios');
 
 describe('OrchestratorClient', () => {

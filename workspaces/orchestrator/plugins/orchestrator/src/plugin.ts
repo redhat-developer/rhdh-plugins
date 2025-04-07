@@ -23,10 +23,7 @@ import {
 
 import { orchestratorApiRef, OrchestratorClient } from './api';
 import { orchestratorRootRouteRef } from './routes';
-
-import { scmAuthApiRef, scmIntegrationsApiRef } from '@backstage/integration-react';
-
-
+import { scmAuthApiRef,scmIntegrationsApiRef, } from '@backstage/integration-react';
 /**
  * @public
  * Orchestrator Plugin
