@@ -39,9 +39,10 @@ import {
 
 import { OrchestratorApi } from './api';
 
+import { ScmAuthApi } from '@backstage/integration-react';
+
 import {
-  ScmAuthApi,
-  ScmIntegrationsApi,
+  ScmIntegrations,
 } from '@backstage/integration';
 
 const getError = (err: unknown): Error => {
@@ -60,7 +61,7 @@ export interface OrchestratorClientOptions {
   discoveryApi: DiscoveryApi;
   identityApi: IdentityApi;
   scmAuthApi: ScmAuthApi;
-  scmIntegrationsApi: ScmIntegrationsApi;
+  scmIntegrationsApi: ScmIntegrations;
   axiosInstance?: AxiosInstance;
 }
 export class OrchestratorClient implements OrchestratorApi {

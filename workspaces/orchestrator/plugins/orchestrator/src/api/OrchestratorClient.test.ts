@@ -40,6 +40,9 @@ import {
   OrchestratorClientOptions,
 } from './OrchestratorClient';
 
+import { ScmAuthApi } from '@backstage/integration-react';
+import { ScmIntegrations } from '@backstage/integration';
+
 jest.mock('axios');
 
 describe('OrchestratorClient', () => {
@@ -55,12 +58,35 @@ describe('OrchestratorClient', () => {
     getCredentials: jest.fn(),
   };
 
-  const mockScmIntegrationsApi = {
-    list: jest.fn().mockReturnValue([]),
+  // Mock ScmAuthApi
+  const mockScmAuthApi: jest.Mocked<ScmAuthApi> = {
+    getCredentials: jest.fn().mockResolvedValue({
+      token: 'mock-token',
+    }),
   };
 
-  const mockFetch = jest.fn();
-  (global as any).fetch = mockFetch; // Cast global to any to avoid TypeScript errors
+  // Mock ScmIntegrations
+  const mockScmIntegrationsApi: jest.Mocked<ScmIntegrations> = {
+    list: jest.fn().mockReturnValue([
+      {
+        type: 'github',
+        title: 'GitHub',
+        config: {
+          host: 'github.com',
+        },
+      },
+      {
+        type: 'gitlab',
+        title: 'GitLab',
+        config: {
+          host: 'gitlab.com',
+        },
+      },
+    ]),
+    byUrl: jest.fn(),
+    byHost: jest.fn(),
+    all: jest.fn(),
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
