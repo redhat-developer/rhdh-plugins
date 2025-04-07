@@ -50,6 +50,14 @@ describe('OrchestratorClient', () => {
   const baseUrl = 'https://api.example.com';
   const mockToken = 'test-token';
   const defaultAuthHeaders = { Authorization: `Bearer ${mockToken}` };
+  
+  const mockScmAuthApi = {
+    getCredentials: jest.fn(),
+  };
+
+  const mockScmIntegrationsApi = {
+    list: jest.fn().mockReturnValue([]),
+  };
 
   const mockFetch = jest.fn();
   (global as any).fetch = mockFetch; // Cast global to any to avoid TypeScript errors
@@ -75,6 +83,8 @@ describe('OrchestratorClient', () => {
     orchestratorClientOptions = {
       discoveryApi: mockDiscoveryApi,
       identityApi: mockIdentityApi,
+      scmAuthApi: mockScmAuthApi,
+      scmIntegrationsApi: mockScmIntegrationsApi,
       axiosInstance: axios,
     };
     orchestratorClient = new OrchestratorClient(orchestratorClientOptions);

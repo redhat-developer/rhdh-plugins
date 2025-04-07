@@ -40,11 +40,9 @@ import {
 import { OrchestratorApi } from './api';
 
 import {
-  scmAuthApiRef,
-  scmIntegrationsApiRef,
   ScmAuthApi,
   ScmIntegrationsApi,
-} from '@backstage/integration-react';
+} from '@backstage/integration';
 
 const getError = (err: unknown): Error => {
   if (
