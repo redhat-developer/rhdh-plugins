@@ -53,7 +53,7 @@ export const WorkflowPage = () => {
           <Grid container spacing={2}>
             <RunButton />
             <WorkflowDetailsTabContent
-              loading={loadingWorkflowOverview}
+              loadingWorkflowOverview={loadingWorkflowOverview}
               workflowOverviewDTO={workflowOverviewDTO?.data}
               errorWorkflowOverview={errorWorkflowOverview}
             />

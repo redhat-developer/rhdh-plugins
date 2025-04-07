@@ -19,7 +19,6 @@ import {
   HttpAuthService,
   LoggerService,
   PermissionsService,
-  resolvePackagePath,
   SchedulerService,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
@@ -56,7 +55,6 @@ import {
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import * as pkg from '../../package.json';
 import { RouterOptions } from '../routerWrapper';
 import { buildPagination } from '../types/pagination';
 import { V2 } from './api/v2';
@@ -196,7 +194,6 @@ export async function createBackendRouter(
   router.use(express.json());
   router.use(permissionsIntegrationRouter);
   router.use('/workflows', express.text());
-  router.use('/static', express.static(resolvePackagePath(pkg.name, 'static')));
   router.get('/health', (_, response) => {
     logger.info('PONG!');
     response.json({ status: 'ok' });
