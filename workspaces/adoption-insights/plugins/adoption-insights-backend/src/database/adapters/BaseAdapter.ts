@@ -149,9 +149,9 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
         db('events')
           .select('user_ref')
           .whereBetween('created_at', [start_date, end_date])
-          .groupBy('user_ref'),
-      )
-      .as('sub');
+          .groupBy('user_ref')
+          .as('sub'),
+      );
 
     return query.then(result => {
       const { licensedUsers } = this.config!;
