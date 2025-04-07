@@ -15,6 +15,7 @@
  */
 import React from 'react';
 
+import { ResponseErrorPanel } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -47,8 +48,16 @@ const ActiveUsers = () => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
 
-  const { activeUsers, loading } = useActiveUsers();
+  const { activeUsers, loading, error } = useActiveUsers();
   const { data, grouping = 'daily' } = activeUsers;
+
+  if (error) {
+    return (
+      <CardWrapper title="Active users">
+        <ResponseErrorPanel error={error} />
+      </CardWrapper>
+    );
+  }
 
   if (!data || data?.length === 0 || (!data?.[0] && !loading)) {
     return (

@@ -15,6 +15,7 @@
  */
 import React from 'react';
 
+import { ResponseErrorPanel } from '@backstage/core-components';
 import {
   Cell,
   Label,
@@ -41,9 +42,20 @@ import EmptyChartState from '../Common/EmptyChartState';
 const Users = () => {
   const theme = useTheme();
 
-  const { users, loading } = useUsers();
+  const { users, loading, error } = useUsers();
 
-  if (!users || users.data?.length === 0 || (!users.data?.[0] && !loading)) {
+  if (error) {
+    return (
+      <CardWrapper title="Total number of users" filter={<InfoComponent />}>
+        <ResponseErrorPanel error={error} />
+      </CardWrapper>
+    );
+  }
+
+  if (
+    (!users || users.data?.length === 0 || (!users.data?.[0] && !loading)) &&
+    !error
+  ) {
     return (
       <CardWrapper title="Total number of users" filter={<InfoComponent />}>
         <Box
@@ -58,7 +70,7 @@ const Users = () => {
     );
   }
 
-  const { logged_in_users = 0, licensed_users = 0 } = users.data[0];
+  const { logged_in_users = 0, licensed_users = 0 } = users?.data?.[0] ?? {};
 
   const loggedInPercentage =
     logged_in_users && licensed_users

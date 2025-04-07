@@ -15,6 +15,7 @@
  */
 import React from 'react';
 
+import { ResponseErrorPanel } from '@backstage/core-components';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -41,7 +42,7 @@ const Plugins = () => {
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
 
   const { isDefaultDateRange } = useDateRange();
-  const { plugins, loading } = usePlugins({ limit });
+  const { plugins, loading, error } = usePlugins({ limit });
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -64,6 +65,14 @@ const Plugins = () => {
       page * rowsPerPage + rowsPerPage,
     );
   }, [plugins, page, rowsPerPage]);
+
+  if (error) {
+    return (
+      <CardWrapper title="Top plugins">
+        <ResponseErrorPanel error={error} />
+      </CardWrapper>
+    );
+  }
 
   if (!visiblePlugins || visiblePlugins?.length === 0) {
     return (

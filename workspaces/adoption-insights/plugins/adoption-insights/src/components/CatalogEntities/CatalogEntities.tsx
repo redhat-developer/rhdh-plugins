@@ -15,6 +15,7 @@
  */
 import React from 'react';
 
+import { ResponseErrorPanel } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import { SelectChangeEvent } from '@mui/material/Select';
 import Table from '@mui/material/Table';
@@ -49,7 +50,7 @@ const CatalogEntities = () => {
 
   const entityLink = useRouteRef(entityRouteRef);
 
-  const { catalogEntities, loading } = useCatalogEntities({
+  const { catalogEntities, loading, error } = useCatalogEntities({
     limit,
     kind: selectedOption === 'All' ? '' : selectedOption.toLocaleLowerCase(),
   });
@@ -96,6 +97,14 @@ const CatalogEntities = () => {
       })
       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }, [catalogEntities, page, rowsPerPage, selectedOption]);
+
+  if (error) {
+    return (
+      <CardWrapper title={CATALOG_ENTITIES_TITLE}>
+        <ResponseErrorPanel error={error} />
+      </CardWrapper>
+    );
+  }
 
   if (
     (!visibleCatalogEntities || visibleCatalogEntities?.length === 0) &&
