@@ -40,8 +40,8 @@ import {
   OrchestratorClientOptions,
 } from './OrchestratorClient';
 
-import { ScmAuthApi } from '@backstage/integration-react';
-import { ScmIntegrations } from '@backstage/integration';
+import { ScmAuthApi, ScmIntegrationsApi } from '@backstage/integration-react';
+
 
 jest.mock('axios');
 
@@ -53,40 +53,27 @@ describe('OrchestratorClient', () => {
   const baseUrl = 'https://api.example.com';
   const mockToken = 'test-token';
   const defaultAuthHeaders = { Authorization: `Bearer ${mockToken}` };
-  
-  const mockScmAuthApi = {
-    getCredentials: jest.fn(),
-  };
 
-  // Mock ScmAuthApi
   const mockScmAuthApi: jest.Mocked<ScmAuthApi> = {
     getCredentials: jest.fn().mockResolvedValue({
       token: 'mock-token',
-    }),
+   }),
   };
 
-  // Mock ScmIntegrations
-  const mockScmIntegrationsApi: jest.Mocked<ScmIntegrations> = {
-    list: jest.fn().mockReturnValue([
-      {
-        type: 'github',
-        title: 'GitHub',
-        config: {
-          host: 'github.com',
-        },
-      },
-      {
-        type: 'gitlab',
-        title: 'GitLab',
-        config: {
-          host: 'gitlab.com',
-        },
-      },
-    ]),
+  const mockScmIntegrationsApi: Partial<ScmIntegrationsApi> = {
     byUrl: jest.fn(),
     byHost: jest.fn(),
-    all: jest.fn(),
-  };
+    list: jest.fn().mockReturnValue([
+    {
+      type: 'github',
+      title: 'GitHub',
+      config: {
+        host: 'github.com',
+        apiBaseUrl: 'https://api.github.com',
+       },
+     },
+   ]),
+  } as any;
 
   beforeEach(() => {
     jest.clearAllMocks();

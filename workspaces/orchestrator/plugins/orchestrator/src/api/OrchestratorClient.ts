@@ -39,11 +39,11 @@ import {
 
 import { OrchestratorApi } from './api';
 
-import { ScmAuthApi } from '@backstage/integration-react';
-
 import {
-  ScmIntegrations,
-} from '@backstage/integration';
+  ScmAuthApi,
+  ScmIntegrationsApi,
+} from '@backstage/integration-react';
+
 
 const getError = (err: unknown): Error => {
   if (
@@ -61,7 +61,7 @@ export interface OrchestratorClientOptions {
   discoveryApi: DiscoveryApi;
   identityApi: IdentityApi;
   scmAuthApi: ScmAuthApi;
-  scmIntegrationsApi: ScmIntegrations;
+  scmIntegrationsApi: ScmIntegrationsApi;
   axiosInstance?: AxiosInstance;
 }
 export class OrchestratorClient implements OrchestratorApi {
@@ -116,17 +116,17 @@ export class OrchestratorClient implements OrchestratorApi {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
       await this.getDefaultReqConfig();
-    const integrations = this.scmIntegrationsApi.list(); 
-    const authTokens: { provider: string; token: string }[] = [];
+    // We know the injected ScmIntegrationsApi instance is actually a ScmIntegrationRegistry with .list()  
+    const integrations = (this.scmIntegrationsApi as any).list?.();  
+    const authTokens: { provider: string; token: string }[] = [];    
     for (const integration of integrations) {
-      const provider = integration.type;
+	  const provider = integration.type;
       const host = integration.config.apiBaseUrl || integration.config.host;
 	    const url = host.startsWith('http') ? host : `https://${host}`;
 	    if (!url) continue;
 	    try {
           const credentials = await this.scmAuthApi.getCredentials({
           url,
-          token: true,
           optional: true, 
         });
 
@@ -139,7 +139,7 @@ export class OrchestratorClient implements OrchestratorApi {
        } catch (e) {
          console.warn(`No token available for ${provider}`, e);
        }
-     }
+     }    
     const requestBody = {
     inputData: args.parameters,
     authTokens,
