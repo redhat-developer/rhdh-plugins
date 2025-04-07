@@ -37,10 +37,9 @@ export const orchestratorPlugin = createPlugin({
     createApiFactory({
       api: orchestratorApiRef,
       deps: { discoveryApi: discoveryApiRef, identityApi: identityApiRef,scmAuthApi: scmAuthApiRef,
-    scmIntegrationsApi: scmIntegrationsApiRef, },
+    scmIntegrationsApi: scmIntegrationsApiRef,},
       factory({ discoveryApi, identityApi, scmAuthApi, scmIntegrationsApi  }) {
-        return new OrchestratorClient({ discoveryApi, identityApi,scmAuthApi,
-      scmIntegrationsApi,});
+        return new OrchestratorClient({ discoveryApi, identityApi,scmAuthApi,scmIntegrationsApi,});
       },
     }),
   ],

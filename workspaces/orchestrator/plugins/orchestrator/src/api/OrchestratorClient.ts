@@ -74,8 +74,6 @@ export class OrchestratorClient implements OrchestratorApi {
 
   private baseUrl: string | null = null;
   constructor(options: OrchestratorClientOptions) {
-    console.log('OrchestratorClient created with options:', options);
-
     this.discoveryApi = options.discoveryApi;
     this.identityApi = options.identityApi;
     this.scmAuthApi = options.scmAuthApi;
@@ -123,9 +121,8 @@ export class OrchestratorClient implements OrchestratorApi {
       const authTokens: { provider: string; token: string }[] = [];
       for (const integration of integrations) {
       const provider = integration.type;
-      const host = integration.config.host || integration.config.apiBaseUrl;
-      const url = `https://${host}`;
-
+      const host = integration.config.apiBaseUrl || integration.config.host;
+	  const url = raw.startsWith('http') ? raw : `https://${host}`;
 	  if (!url) continue;
 	  try {
         const credentials = await this.scmAuthApi.getCredentials({
@@ -139,17 +136,15 @@ export class OrchestratorClient implements OrchestratorApi {
           provider,
           token: credentials.token,
         });
-      }
-    } catch (e) {
-      console.warn(`No token available for ${provider}`, e);
-    }
-  }
+       }
+     } catch (e) {
+       console.warn(`No token available for ${provider}`, e);
+     }
+   }
     const requestBody = {
     inputData: args.parameters,
     authTokens,
     };
-   console.log('Request payload:', JSON.stringify(requestBody, null, 2));
-
     
     try {
       return await defaultApi.executeWorkflow(
@@ -309,37 +304,4 @@ export class OrchestratorClient implements OrchestratorApi {
     };
     return reqConfigOption;
   }
-  
-  async triggerWorkflowWithAuthTokens(args: {
-  workflowId: string;
-  parameters: JsonObject;
-  authTokens: { provider: string; token: string }[];
-  businessKey?: string;
-}): Promise<AxiosResponse<any>> {
-  const baseUrl = await this.getBaseUrl();
-  const { token: idToken } = await this.identityApi.getCredentials();
-
-  const axiosInstance =
-    this.axiosInstance ||
-    axios.create({
-      baseURL: baseUrl,
-      headers: {
-        ...(idToken && { Authorization: `Bearer ${idToken}` }),
-      },
-      withCredentials: true,
-    });
-
-  try {
-    return await axiosInstance.post(
-      `${baseUrl}/workflows/${args.workflowId}/trigger`,
-      {
-        parameters: args.parameters,
-        authTokens: args.authTokens,
-        businessKey: args.businessKey,
-      }
-    );
-  } catch (err) {
-    throw getError(err);
-  }
-} 
 }
