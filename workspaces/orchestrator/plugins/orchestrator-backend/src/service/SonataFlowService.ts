@@ -111,11 +111,11 @@ export class SonataFlowService {
       'Content-Type': 'application/json',
     };
 
-    // Add X-Authentication headers from authTokens
+    // Add X-Authorization headers from authTokens
     if (args.authTokens && Array.isArray(args.authTokens)) {
       args.authTokens.forEach(tokenObj => {
         if (tokenObj.provider && tokenObj.token) {
-          const headerKey = `X-Authentication-${tokenObj.provider}`;
+          const headerKey = `X-Authorization-${tokenObj.provider}`;
           headers[headerKey] = String(tokenObj.token); // Ensure token is a string
         }
       });
