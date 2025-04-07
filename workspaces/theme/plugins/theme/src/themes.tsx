@@ -18,8 +18,8 @@ import React from 'react';
 import { AppTheme } from '@backstage/core-plugin-api';
 import { themes } from '@backstage/theme';
 
-import LightIcon from '@mui/icons-material/WbSunnyRounded';
-import DarkIcon from '@mui/icons-material/Brightness2Rounded';
+import LightIcon from '@material-ui/icons/WbSunny';
+import DarkIcon from '@material-ui/icons/Brightness2';
 import { createTheme } from '@mui/material/styles';
 
 import {
