@@ -50,6 +50,9 @@ export interface RHDHThemePalette {
     tabsBottomBorderColor: string;
 
     contrastText: string;
+
+    appBarBackgroundColor: string;
+    appBarBackgroundImage: string;
   };
 
   primary: {
@@ -112,6 +115,8 @@ export interface ThemeConfigOptions {
   tables?: 'patternfly' | 'mui';
 
   tabs?: 'patternfly' | 'mui';
+
+  appBar?: 'patternfly' | 'mui';
 }
 
 export interface ThemeConfig {

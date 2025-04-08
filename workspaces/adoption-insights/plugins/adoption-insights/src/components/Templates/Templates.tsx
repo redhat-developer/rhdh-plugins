@@ -16,6 +16,7 @@
 import React from 'react';
 
 import { parseEntityRef } from '@backstage/catalog-model';
+import { ResponseErrorPanel } from '@backstage/core-components';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -37,7 +38,7 @@ const Templates = () => {
   const [limit] = React.useState(20);
   const [rowsPerPage, setRowsPerPage] = React.useState(3);
 
-  const { templates, loading } = useTemplates({ limit });
+  const { templates, loading, error } = useTemplates({ limit });
 
   const handleChangePage = React.useCallback(
     (_event: unknown, newPage: number) => {
@@ -60,6 +61,14 @@ const Templates = () => {
       page * rowsPerPage + rowsPerPage,
     );
   }, [templates, page, rowsPerPage]);
+
+  if (error) {
+    return (
+      <CardWrapper title="Top templates">
+        <ResponseErrorPanel error={error} />
+      </CardWrapper>
+    );
+  }
 
   if (!visibleTemplates || visibleTemplates?.length === 0) {
     return (

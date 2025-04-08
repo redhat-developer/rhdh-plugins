@@ -15,6 +15,7 @@
  */
 import React from 'react';
 
+import { ResponseErrorPanel } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
@@ -45,8 +46,16 @@ const Searches = () => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
 
-  const { searches, loading } = useSearches();
+  const { searches, loading, error } = useSearches();
   const { data, grouping = 'daily' } = searches;
+
+  if (error) {
+    return (
+      <CardWrapper title="Searches">
+        <ResponseErrorPanel error={error} />
+      </CardWrapper>
+    );
+  }
 
   if (!data || data?.length === 0 || (!data?.[0] && !loading)) {
     return (
