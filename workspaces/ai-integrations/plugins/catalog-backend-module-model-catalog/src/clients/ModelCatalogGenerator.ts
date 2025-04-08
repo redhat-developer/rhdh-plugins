@@ -27,7 +27,7 @@ import {
 } from '@backstage/catalog-model';
 
 function isModelCatalog(o: any): o is ModelCatalog {
-  return 'model' in o && 'modelServer' in o;
+  return 'model' in o;
 }
 
 export function ParseCatalogJSON(jsonStr: string): ModelCatalog {
@@ -76,7 +76,7 @@ export function GenerateModelResourceEntities(
       apiVersion: 'backstage.io/v1beta1',
       kind: 'Resource',
       metadata: {
-        name: `${model.name}`,
+        name: sanitizeMetadataName(model.name),
         description: `${model.description}`,
         tags: [],
         links: [],
@@ -89,7 +89,7 @@ export function GenerateModelResourceEntities(
 
     // Set optional parameters, if present
     if (model.tags !== undefined) {
-      modelResourceEntity.metadata.tags = model.tags;
+      modelResourceEntity.metadata.tags = sanitizeTags(model.tags);
     }
     if (model.artifactLocationURL !== undefined) {
       modelResourceEntity.metadata.links?.push({
@@ -123,7 +123,7 @@ export function GenerateModelServerComponentEntity(
     apiVersion: 'backstage.io/v1beta1',
     kind: 'Component',
     metadata: {
-      name: `${modelServer.name}`,
+      name: sanitizeMetadataName(modelServer.name),
       description: `${modelServer.description}`,
       tags: [],
       links: [],
@@ -144,7 +144,7 @@ export function GenerateModelServerComponentEntity(
   // Configure optional parameters
   // Set optional parameters, if present
   if (modelServer.tags !== undefined) {
-    modelServerComponent.metadata.tags = modelServer.tags;
+    modelServerComponent.metadata.tags = sanitizeTags(modelServer.tags);
   }
   modelServerComponent.metadata.links = [];
   if (modelServer.API !== undefined) {
@@ -171,7 +171,7 @@ export function GenerateModelServerAPI(
     apiVersion: `backstage.io/v1beta1`,
     kind: `API`,
     metadata: {
-      name: `${modelServer.name}`,
+      name: sanitizeMetadataName(modelServer.name),
       tags: [],
       links: [
         {
@@ -189,7 +189,36 @@ export function GenerateModelServerAPI(
   };
 
   if (api.tags !== undefined) {
-    modelServerAPIEntity.metadata.tags = api.tags;
+    modelServerAPIEntity.metadata.tags = sanitizeTags(api.tags);
   }
   return modelServerAPIEntity;
+}
+
+function sanitizeMetadataName(modelName: string): string {
+  return modelName.replaceAll(/\s/g, '-');
+}
+
+function sanitizeTags(tags: string[]): string[] {
+  const sanitizedTags: string[] = [];
+  tags.forEach(tag => {
+    let sanitizedTag: string = tag;
+    // Replace whitespace with dashes
+    sanitizedTag = sanitizedTag.replace(/\s/g, '-').toLowerCase();
+
+    // Remove any invalid special characters
+    sanitizedTag = sanitizedTag.replace(/[^a-z0-9.-]/g, '-');
+
+    // Remove any successive dashes
+    sanitizedTag = sanitizedTag.replace(/-+/g, '-');
+
+    // Remove any dashes that may be at the beginning or end
+    sanitizedTag = sanitizedTag.replace(/^-|-$/g, '');
+
+    // Shorten to 63 characters maximum
+    if (sanitizedTag.length > 63) {
+      sanitizedTag = sanitizedTag.slice(0, 63);
+    }
+    sanitizedTags.push(sanitizedTag);
+  });
+  return sanitizedTags;
 }

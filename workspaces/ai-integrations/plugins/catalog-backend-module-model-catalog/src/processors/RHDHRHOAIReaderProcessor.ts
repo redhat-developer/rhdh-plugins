@@ -76,7 +76,7 @@ export class RHDHRHOAIReaderProcessor implements CatalogProcessor {
     location: LocationSpec,
     _optional: boolean,
     emit: CatalogProcessorEmit,
-    parser: CatalogProcessorParser,
+    _: CatalogProcessorParser,
   ): Promise<boolean> {
     // Pick a custom location type string. A location will be
     // registered later with this type.

@@ -68,7 +68,7 @@ describe('Model Catalog Generator', () => {
         owner: 'example-user',
         description: 'Developer model service running on vLLM',
         homepageURL: 'https://example.com',
-        tags: ['vLLM', 'granite', 'ibm'],
+        tags: ['vllm', 'granite', 'ibm'],
         API: {
           url: 'https://api.example.com',
           type: Type.Openapi,
@@ -83,7 +83,7 @@ describe('Model Catalog Generator', () => {
           description: 'IBM Granite 20b model running on vLLM',
           artifactLocationURL:
             'https://huggingface.co/ibm-granite/granite-20b-code-instruct',
-          tags: ['IBM', 'granite', 'vllm', '20b'],
+          tags: ['ibm', 'granite', 'vllm', '20b'],
           owner: 'example-user',
           lifecycle: 'production',
         },
@@ -118,7 +118,7 @@ describe('Model Catalog Generator', () => {
         metadata: {
           name: 'ibm-granite-20b',
           description: 'IBM Granite 20b model running on vLLM',
-          tags: ['IBM', 'granite', 'vllm', '20b'],
+          tags: ['ibm', 'granite', 'vllm', '20b'],
           links: [
             {
               url: 'https://huggingface.co/ibm-granite/granite-20b-code-instruct',
@@ -183,7 +183,7 @@ describe('Model Catalog Generator', () => {
       metadata: {
         name: 'developer-model-service',
         description: 'Developer model service running on vLLM',
-        tags: ['vLLM', 'granite', 'ibm'],
+        tags: ['vllm', 'granite', 'ibm'],
         links: [
           {
             url: 'https://api.example.com',
