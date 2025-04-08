@@ -63,7 +63,7 @@ jest.mock('../clients/BridgeResourceConnector', () => ({
 }));
 
 class SchedulerServiceTaskRunnerMock implements SchedulerServiceTaskRunner {
-  private tasks: SchedulerServiceTaskInvocationDefinition[] = [];
+  private readonly tasks: SchedulerServiceTaskInvocationDefinition[] = [];
   async run(task: SchedulerServiceTaskInvocationDefinition) {
     this.tasks.push(task);
   }

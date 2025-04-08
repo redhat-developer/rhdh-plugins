@@ -18,6 +18,7 @@ import { Stream } from 'stream';
 import {
   ModelCatalogKeys,
   fetchModelCatalogFromKey,
+  fetchModelCatalogKeys,
 } from './BridgeResourceConnector';
 
 const fakeCatalogKeys: ModelCatalogKeys = {
@@ -57,7 +58,6 @@ global.fetch = jest.fn(url => {
   });
 }) as jest.Mock;
 
-import { fetchModelCatalogKeys } from './BridgeResourceConnector';
 import { ModelCatalog } from '@redhat-ai-dev/model-catalog-types';
 
 const httpsMock = require('https');

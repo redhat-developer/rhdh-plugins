@@ -212,7 +212,7 @@ function sanitizeTags(tags: string[]): string[] {
     sanitizedTag = sanitizedTag.replace(/-+/g, '-');
 
     // Remove any dashes that may be at the beginning or end
-    sanitizedTag = sanitizedTag.replace(/^-|-$/g, '');
+    sanitizedTag = sanitizedTag.replace(/(^-)|(-$)/g, '');
 
     // Shorten to 63 characters maximum
     if (sanitizedTag.length > 63) {
