@@ -24,10 +24,12 @@ import {
   ComponentEntity,
   ApiEntity,
   ResourceEntity,
+  makeValidator,
 } from '@backstage/catalog-model';
+import { LoggerService } from '@backstage/backend-plugin-api';
 
 function isModelCatalog(o: any): o is ModelCatalog {
-  return 'model' in o;
+  return 'models' in o || 'modelServers' in o;
 }
 
 export function ParseCatalogJSON(jsonStr: string): ModelCatalog {
@@ -41,25 +43,35 @@ export function ParseCatalogJSON(jsonStr: string): ModelCatalog {
 
 // Generate the Backstage catalog entities that correspond to the given model catalog json object
 // Note: These entities will need to have their location and origin location annotations set before ingestion into the catalog
-export function GenerateCatalogEntities(modelCatalog: ModelCatalog): Entity[] {
+// An optional logger parameter can be passed if you wish log output from the generator
+export function GenerateCatalogEntities(
+  modelCatalog: ModelCatalog,
+  logger?: LoggerService,
+): Entity[] {
   // Generate the Resource entities for the Model(s)
   let modelCatalogEntities: Entity[] = [];
   const models: Model[] = modelCatalog.models;
   modelCatalogEntities = modelCatalogEntities.concat(
-    GenerateModelResourceEntities(models, modelCatalog.modelServer),
+    GenerateModelResourceEntities(models, modelCatalog.modelServer, logger),
   );
 
   // Generate the Model Server and Model Server APi entity, if present
   if (modelCatalog.modelServer !== undefined) {
     const modelServer = modelCatalog.modelServer;
     modelCatalogEntities.push(
-      GenerateModelServerComponentEntity(modelServer, modelCatalog.models),
+      GenerateModelServerComponentEntity(
+        modelServer,
+        modelCatalog.models,
+        logger,
+      ),
     );
 
     // If there's an exposed API present, generate that entity as well, and update the model server entity accordingly
     if (modelServer.API !== undefined) {
       const api: API = modelServer.API;
-      modelCatalogEntities.push(GenerateModelServerAPI(api, modelServer));
+      modelCatalogEntities.push(
+        GenerateModelServerAPI(api, modelServer, logger),
+      );
     }
   }
 
@@ -69,6 +81,7 @@ export function GenerateCatalogEntities(modelCatalog: ModelCatalog): Entity[] {
 export function GenerateModelResourceEntities(
   models: Model[],
   modelServer?: ModelServer,
+  logger?: LoggerService,
 ): ResourceEntity[] {
   const modelResourceEntities: ResourceEntity[] = [];
   models.forEach(model => {
@@ -89,7 +102,7 @@ export function GenerateModelResourceEntities(
 
     // Set optional parameters, if present
     if (model.tags !== undefined) {
-      modelResourceEntity.metadata.tags = sanitizeTags(model.tags);
+      modelResourceEntity.metadata.tags = sanitizeTags(model.tags, logger);
     }
     if (model.artifactLocationURL !== undefined) {
       modelResourceEntity.metadata.links?.push({
@@ -118,6 +131,7 @@ export function GenerateModelResourceEntities(
 export function GenerateModelServerComponentEntity(
   modelServer: ModelServer,
   models: Model[],
+  logger?: LoggerService,
 ): ComponentEntity {
   const modelServerComponent: ComponentEntity = {
     apiVersion: 'backstage.io/v1beta1',
@@ -144,7 +158,7 @@ export function GenerateModelServerComponentEntity(
   // Configure optional parameters
   // Set optional parameters, if present
   if (modelServer.tags !== undefined) {
-    modelServerComponent.metadata.tags = sanitizeTags(modelServer.tags);
+    modelServerComponent.metadata.tags = sanitizeTags(modelServer.tags, logger);
   }
   modelServerComponent.metadata.links = [];
   if (modelServer.API !== undefined) {
@@ -166,6 +180,7 @@ export function GenerateModelServerComponentEntity(
 export function GenerateModelServerAPI(
   api: API,
   modelServer: ModelServer,
+  logger?: LoggerService,
 ): ApiEntity {
   const modelServerAPIEntity: ApiEntity = {
     apiVersion: `backstage.io/v1beta1`,
@@ -189,34 +204,31 @@ export function GenerateModelServerAPI(
   };
 
   if (api.tags !== undefined) {
-    modelServerAPIEntity.metadata.tags = sanitizeTags(api.tags);
+    modelServerAPIEntity.metadata.tags = sanitizeTags(api.tags, logger);
   }
   return modelServerAPIEntity;
 }
 
 function sanitizeMetadataName(modelName: string): string {
-  return modelName.replaceAll(/\s/g, '-');
+  return modelName.replace(/\s/g, '');
 }
 
-function sanitizeTags(tags: string[]): string[] {
+function sanitizeTags(tags: string[], logger?: LoggerService): string[] {
   const sanitizedTags: string[] = [];
   tags.forEach(tag => {
     let sanitizedTag: string = tag;
-    // Replace whitespace with dashes
-    sanitizedTag = sanitizedTag.replace(/\s/g, '-').toLowerCase();
+    // Replace whitespace with empty character
+    sanitizedTag = sanitizedTag.replace(/\s/g, '');
 
-    // Remove any invalid special characters
-    sanitizedTag = sanitizedTag.replace(/[^a-z0-9.-]/g, '-');
-
-    // Remove any successive dashes
-    sanitizedTag = sanitizedTag.replace(/-+/g, '-');
-
-    // Remove any dashes that may be at the beginning or end
-    sanitizedTag = sanitizedTag.replace(/(^-)|(-$)/g, '');
-
-    // Shorten to 63 characters maximum
-    if (sanitizedTag.length > 63) {
-      sanitizedTag = sanitizedTag.slice(0, 63);
+    // Call the Backstage tag validator and check if the tag conforms
+    // If the tag is not valid, skip it
+    if (!makeValidator().isValidTag(sanitizeTags)) {
+      if (logger !== undefined) {
+        logger.error(
+          `invalid tag: ${sanitizedTag}. Tags are expected to be less than 63 characters and conform to: ^[a-z0-9:+#]+(\-[a-z0-9:+#]+)*$`,
+        );
+      }
+      return; /* in typescript a return in a foreach skips to the next iteration */
     }
     sanitizedTags.push(sanitizedTag);
   });

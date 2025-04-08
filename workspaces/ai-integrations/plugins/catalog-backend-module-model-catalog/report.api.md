@@ -6,7 +6,6 @@
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
-import { CatalogProcessorParser } from '@backstage/plugin-catalog-node';
 import type { Config } from '@backstage/config';
 import { EntityProvider } from '@backstage/plugin-catalog-node';
 import { EntityProviderConnection } from '@backstage/plugin-catalog-node';
@@ -79,7 +78,6 @@ export class RHDHRHOAIReaderProcessor implements CatalogProcessor {
     location: LocationSpec,
     _optional: boolean,
     emit: CatalogProcessorEmit,
-    _: CatalogProcessorParser,
   ): Promise<boolean>;
 }
 ```

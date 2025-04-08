@@ -17,7 +17,6 @@ import {
   processingResult,
   CatalogProcessor,
   CatalogProcessorEmit,
-  CatalogProcessorParser,
   CatalogProcessorResult,
   CatalogProcessorEntityResult,
 } from '@backstage/plugin-catalog-node';
@@ -76,7 +75,6 @@ export class RHDHRHOAIReaderProcessor implements CatalogProcessor {
     location: LocationSpec,
     _optional: boolean,
     emit: CatalogProcessorEmit,
-    _: CatalogProcessorParser,
   ): Promise<boolean> {
     // Pick a custom location type string. A location will be
     // registered later with this type.
