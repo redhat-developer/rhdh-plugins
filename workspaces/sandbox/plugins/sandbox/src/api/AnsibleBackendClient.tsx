@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
+import { DiscoveryApi } from '@backstage/core-plugin-api';
 import { OAuthApi } from '@backstage/core-plugin-api';
 import { errorMessage } from '../utils/common';
+import { fetchWithAuth } from '../utils/fetch-utils';
 import { AAPObject } from '../utils/aap-utils';
 import { AAPData } from '../types';
 
-export type AAPBackendClientOptions = {
+export type AnsibleBackendClientOptions = {
   discoveryApi: DiscoveryApi;
-  fetchApi: FetchApi;
   oauthApi: OAuthApi;
 };
 
@@ -33,14 +33,12 @@ export interface AAPService {
   deleteAAPCR(namespace: string): Promise<void>;
 }
 
-export class AAPBackendClient implements AAPService {
+export class AnsibleBackendClient implements AAPService {
   private readonly discoveryApi: DiscoveryApi;
-  private readonly fetchApi: FetchApi;
   private readonly oauthApi: OAuthApi;
 
-  constructor(options: AAPBackendClientOptions) {
+  constructor(options: AnsibleBackendClientOptions) {
     this.discoveryApi = options.discoveryApi;
-    this.fetchApi = options.fetchApi;
     this.oauthApi = options.oauthApi;
   }
 
@@ -48,19 +46,16 @@ export class AAPBackendClient implements AAPService {
     return `${await this.discoveryApi.getBaseUrl('proxy')}/kube-api`;
   };
 
-  private oauthAccessToken = async (): Promise<string> => {
-    return `Bearer ${await this.oauthApi.getAccessToken()}`;
-  };
-
   getAAP = async (namespace: string): Promise<AAPData | undefined> => {
     const kubeApi = await this.kubeAPI();
     const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'GET',
-      headers: {
-        Authorization: await this.oauthAccessToken(),
+    const response = await fetchWithAuth(
+      this.oauthApi,
+      `${kubeApi}${projectAAPUrl}`,
+      {
+        method: 'GET',
       },
-    });
+    );
 
     if (!response.ok) {
       const error = await response.json();
@@ -72,14 +67,17 @@ export class AAPBackendClient implements AAPService {
   createAAP = async (namespace: string): Promise<void> => {
     const kubeApi = await this.kubeAPI();
     const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'POST',
-      body: AAPObject,
-      headers: {
-        'Content-Type': 'application/yaml',
-        Authorization: await this.oauthAccessToken(),
+    const response = await fetchWithAuth(
+      this.oauthApi,
+      `${kubeApi}${projectAAPUrl}`,
+      {
+        method: 'POST',
+        body: AAPObject,
+        headers: {
+          'Content-Type': 'application/yaml',
+        },
       },
-    });
+    );
 
     if (!response.ok && response.status !== 409) {
       const error = await response.json();
@@ -90,18 +88,21 @@ export class AAPBackendClient implements AAPService {
   unIdleAAP = async (namespace: string): Promise<void> => {
     const kubeApi = await this.kubeAPI();
     const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms/sandbox-aap`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'PATCH',
-      body: JSON.stringify({
-        spec: {
-          idle_aap: false,
+    const response = await fetchWithAuth(
+      this.oauthApi,
+      `${kubeApi}${projectAAPUrl}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({
+          spec: {
+            idle_aap: false,
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/merge-patch+json',
         },
-      }),
-      headers: {
-        'Content-Type': 'application/merge-patch+json',
-        Authorization: await this.oauthAccessToken(),
       },
-    });
+    );
 
     if (!response.ok) {
       const error = await response.json();
@@ -112,12 +113,13 @@ export class AAPBackendClient implements AAPService {
   deleteAAPCR = async (namespace: string): Promise<void> => {
     const kubeApi = await this.kubeAPI();
     const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms/sandbox-aap`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: await this.oauthAccessToken(),
+    const response = await fetchWithAuth(
+      this.oauthApi,
+      `${kubeApi}${projectAAPUrl}`,
+      {
+        method: 'DELETE',
       },
-    });
+    );
 
     if (!response.ok && response.status !== 404) {
       const error = await response.json();

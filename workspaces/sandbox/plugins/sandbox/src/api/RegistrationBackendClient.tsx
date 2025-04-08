@@ -15,19 +15,14 @@
  */
 
 /// <reference path="../../@types/index.d.ts" />
-import {
-  ConfigApi,
-  DiscoveryApi,
-  FetchApi,
-  OAuthApi,
-} from '@backstage/core-plugin-api';
+import { ConfigApi, DiscoveryApi, OAuthApi } from '@backstage/core-plugin-api';
 import { isValidCountryCode, isValidPhoneNumber } from '../utils/phone-utils';
+import { fetchWithAuth } from '../utils/fetch-utils';
 import { CommonResponse, SignupData } from '../types';
 
 export type RegistrationBackendClientOptions = {
   configApi: ConfigApi;
   discoveryApi: DiscoveryApi;
-  fetchApi: FetchApi;
   oauthApi: OAuthApi;
 };
 
@@ -45,23 +40,17 @@ export interface RegistrationService {
 
 export class RegistrationBackendClient implements RegistrationService {
   private readonly discoveryApi: DiscoveryApi;
-  private readonly fetchApi: FetchApi;
   private readonly configApi: ConfigApi;
   private readonly oauthApi: OAuthApi;
 
   constructor(options: RegistrationBackendClientOptions) {
     this.discoveryApi = options.discoveryApi;
-    this.fetchApi = options.fetchApi;
     this.configApi = options.configApi;
     this.oauthApi = options.oauthApi;
   }
 
   private readonly signupAPI = async (): Promise<string> => {
     return `${await this.discoveryApi.getBaseUrl('proxy')}/signup`;
-  };
-
-  private oauthAccessToken = async (): Promise<string> => {
-    return `Bearer ${await this.oauthApi.getAccessToken()}`;
   };
 
   getRecaptchaAPIKey = (): string => {
@@ -73,11 +62,8 @@ export class RegistrationBackendClient implements RegistrationService {
 
   getSignUpData = async (): Promise<SignupData | undefined> => {
     const signupURL = await this.signupAPI();
-    const response = await this.fetchApi.fetch(signupURL, {
+    const response = await fetchWithAuth(this.oauthApi, signupURL, {
       method: 'GET',
-      headers: {
-        Authorization: await this.oauthAccessToken(),
-      },
     });
     if (!response.ok) {
       if (response.status === 404) {
@@ -127,11 +113,10 @@ export class RegistrationBackendClient implements RegistrationService {
       throw new Error(`Error getting recaptcha token: ${err}`);
     }
     const signupURL = await this.signupAPI();
-    await this.fetchApi.fetch(signupURL, {
+    await fetchWithAuth(this.oauthApi, signupURL, {
       method: 'POST',
       headers: {
         'Recaptcha-Token': token,
-        Authorization: await this.oauthAccessToken(),
       },
       body: null,
     });
@@ -148,11 +133,8 @@ export class RegistrationBackendClient implements RegistrationService {
     if (!isValidPhoneNumber(phoneNumber)) {
       throw new Error('Invalid phone number.');
     }
-    const response = await this.fetchApi.fetch(verificationURL, {
+    const response = await fetchWithAuth(this.oauthApi, verificationURL, {
       method: 'PUT',
-      headers: {
-        Authorization: await this.oauthAccessToken(),
-      },
       body: JSON.stringify({
         country_code: countryCode,
         phone_number: phoneNumber,
@@ -167,12 +149,13 @@ export class RegistrationBackendClient implements RegistrationService {
 
   completePhoneVerification = async (code: string): Promise<void> => {
     const verificationURL = `${await this.signupAPI()}/verification`;
-    const response = await this.fetchApi.fetch(`${verificationURL}/${code}`, {
-      method: 'GET',
-      headers: {
-        Authorization: await this.oauthAccessToken(),
+    const response = await fetchWithAuth(
+      this.oauthApi,
+      `${verificationURL}/${code}`,
+      {
+        method: 'GET',
       },
-    });
+    );
 
     if (!response.ok) {
       const error: CommonResponse = await response.json();
@@ -182,11 +165,8 @@ export class RegistrationBackendClient implements RegistrationService {
 
   verifyActivationCode = async (code: string): Promise<void> => {
     const verificationURL = `${await this.signupAPI()}/verification/activation-code`;
-    const response = await this.fetchApi.fetch(verificationURL, {
+    const response = await fetchWithAuth(this.oauthApi, verificationURL, {
       method: 'POST',
-      headers: {
-        Authorization: await this.oauthAccessToken(),
-      },
       body: JSON.stringify({
         code: code,
       }),

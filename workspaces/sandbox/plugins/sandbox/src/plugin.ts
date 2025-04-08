@@ -19,7 +19,6 @@ import {
   createRoutableExtension,
   IconComponent,
   discoveryApiRef,
-  fetchApiRef,
   configApiRef,
   oauthRequestApiRef,
 } from '@backstage/core-plugin-api';
@@ -34,7 +33,7 @@ import {
   KubeBackendClient,
   kubeApiRef,
   aapApiRef,
-  AAPBackendClient,
+  AnsibleBackendClient,
 } from './api';
 
 /**
@@ -73,14 +72,12 @@ export const sandboxPlugin = createPlugin({
       deps: {
         configApi: configApiRef,
         discoveryApi: discoveryApiRef,
-        fetchApi: fetchApiRef,
         oauthApi: keycloakApiRef,
       },
-      factory: ({ configApi, discoveryApi, fetchApi, oauthApi }) =>
+      factory: ({ configApi, discoveryApi, oauthApi }) =>
         new RegistrationBackendClient({
           configApi,
           discoveryApi,
-          fetchApi,
           oauthApi,
         }),
     }),
@@ -88,21 +85,19 @@ export const sandboxPlugin = createPlugin({
       api: kubeApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
-        fetchApi: fetchApiRef,
         oauthApi: keycloakApiRef,
       },
-      factory: ({ discoveryApi, fetchApi, oauthApi }) =>
-        new KubeBackendClient({ discoveryApi, fetchApi, oauthApi }),
+      factory: ({ discoveryApi, oauthApi }) =>
+        new KubeBackendClient({ discoveryApi, oauthApi }),
     }),
     createApiFactory({
       api: aapApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
-        fetchApi: fetchApiRef,
         oauthApi: keycloakApiRef,
       },
-      factory: ({ discoveryApi, fetchApi, oauthApi }) =>
-        new AAPBackendClient({ discoveryApi, fetchApi, oauthApi }),
+      factory: ({ discoveryApi, oauthApi }) =>
+        new AnsibleBackendClient({ discoveryApi, oauthApi }),
     }),
   ],
 });

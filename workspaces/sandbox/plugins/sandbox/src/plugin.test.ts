@@ -89,7 +89,6 @@ describe('sandbox plugin', () => {
       expect(registrationApi?.deps).toEqual({
         configApi: expect.any(Object),
         discoveryApi: expect.any(Object),
-        fetchApi: expect.any(Object),
         oauthApi: keycloakApiRef,
       });
     });
@@ -101,7 +100,6 @@ describe('sandbox plugin', () => {
       expect(kubeApi).toBeDefined();
       expect(kubeApi?.deps).toEqual({
         discoveryApi: expect.any(Object),
-        fetchApi: expect.any(Object),
         oauthApi: keycloakApiRef,
       });
     });
@@ -113,7 +111,6 @@ describe('sandbox plugin', () => {
       expect(aapApi).toBeDefined();
       expect(aapApi?.deps).toEqual({
         discoveryApi: expect.any(Object),
-        fetchApi: expect.any(Object),
         oauthApi: keycloakApiRef,
       });
     });

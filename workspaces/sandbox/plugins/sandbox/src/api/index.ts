@@ -24,11 +24,11 @@ import {
 } from '@backstage/core-plugin-api';
 import { RegistrationService } from './RegistrationBackendClient';
 import { KubeAPIService } from './KubeBackendClient';
-import { AAPService } from './AAPBackendClient';
+import { AAPService } from './AnsibleBackendClient';
 
 export * from './RegistrationBackendClient';
 export * from './KubeBackendClient';
-export * from './AAPBackendClient';
+export * from './AnsibleBackendClient';
 
 export const keycloakApiRef: ApiRef<
   OpenIdConnectApi &
