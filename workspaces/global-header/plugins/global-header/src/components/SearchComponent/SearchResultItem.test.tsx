@@ -15,14 +15,23 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { SearchResultItem } from './SearchResultItem';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Result, SearchDocument } from '@backstage/plugin-search-common';
+import { useAnalytics } from '@backstage/core-plugin-api';
 
 jest.mock('../../utils/stringUtils', () => ({
   highlightMatch: jest.fn((text, _) => text),
 }));
+
+jest.mock('@backstage/core-plugin-api', () => {
+  const actual = jest.requireActual('@backstage/core-plugin-api');
+  return {
+    ...actual,
+    useAnalytics: jest.fn(),
+  };
+});
 
 describe('SearchResultItem', () => {
   const renderProps = {};
@@ -92,5 +101,38 @@ describe('SearchResultItem', () => {
     );
 
     expect(screen.getByRole('link')).toHaveAttribute('href', '/');
+  });
+
+  it('should trigger the analytics discover event', () => {
+    const result = {
+      rank: 1,
+      document: { title: 'Result 1', location: '/result-1' },
+    } as Result<SearchDocument>;
+
+    const captureEventMock = jest.fn();
+    (useAnalytics as jest.Mock).mockReturnValue({
+      captureEvent: captureEventMock,
+    });
+
+    render(
+      <Router>
+        <SearchResultItem
+          option="Result 1"
+          query={query}
+          result={result}
+          renderProps={renderProps}
+        />
+      </Router>,
+    );
+    const resultItem = screen.getByText('Result 1');
+
+    fireEvent.click(resultItem);
+
+    expect(useAnalytics).toHaveBeenCalled();
+    expect(captureEventMock).toHaveBeenCalled();
+    expect(captureEventMock).toHaveBeenCalledWith('discover', 'Result 1', {
+      attributes: { to: '/result-1' },
+      value: 1,
+    });
   });
 });

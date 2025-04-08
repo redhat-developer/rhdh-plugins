@@ -16,22 +16,23 @@
 
 import React, { useState } from 'react';
 import { useAsync } from 'react-use';
+import useObservable from 'react-use/esm/useObservable';
 
 import {
+  CodeSnippet,
   Content,
   InfoCard,
   Link,
-  StructuredMetadataTable,
 } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
+import { appThemeApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
-import InfoIcon from '@material-ui/icons/Info';
+import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 import moment from 'moment';
 
 import {
   AssessedProcessInstanceDTO,
+  capitalize,
   InputSchemaResponseDTO,
   orchestratorAdminViewPermission,
   ProcessInstanceDTO,
@@ -92,13 +93,36 @@ const VariablesDialogContent = ({
   instanceVariables,
 }: {
   instanceVariables: WorkflowDataDTO;
-}) => (
-  <Box sx={{ maxHeight: 300, marginTop: 20, width: 500, overflow: 'auto' }}>
-    {instanceVariables && (
-      <StructuredMetadataTable dense metadata={instanceVariables} />
-    )}
-  </Box>
-);
+}) => {
+  const appThemeApi = useApi(appThemeApiRef);
+  const activeThemeId = useObservable(
+    appThemeApi.activeThemeId$(),
+    appThemeApi.getActiveThemeId(),
+  );
+
+  return (
+    <Box>
+      {Object.entries(instanceVariables).map(([key, value]) => (
+        <div key={key} style={{ marginBottom: '16px' }}>
+          <Typography variant="h6" style={{ marginBottom: '8px' }}>
+            {capitalize(key)}
+          </Typography>
+          <CodeSnippet
+            text={JSON.stringify(value, null, 2)}
+            language="json"
+            showLineNumbers
+            showCopyCodeButton
+            customStyle={{
+              color: activeThemeId === 'dark' ? '#abb2bf' : 'd3d3d3',
+              backgroundColor: activeThemeId === 'dark' ? '#151515' : '#F0F0F0',
+              padding: '25px 0',
+            }}
+          />
+        </div>
+      ))}
+    </Box>
+  );
+};
 
 export const WorkflowInstancePageContent: React.FC<{
   assessedInstance: AssessedProcessInstanceDTO;
@@ -167,17 +191,22 @@ export const WorkflowInstancePageContent: React.FC<{
   return (
     <Content noPadding>
       <InfoDialog
-        title={
-          <Box display="flex" alignItems="center">
-            <InfoIcon color="primary" style={{ marginRight: 8 }} />
-            <b>Run Variables</b>
-          </Box>
-        }
+        title="Run Variables"
         onClose={toggleVariablesDialog}
         open={isVariablesDialogOpen}
+        dialogActions={
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={toggleVariablesDialog}
+          >
+            Close
+          </Button>
+        }
         children={
           <VariablesDialogContent instanceVariables={instanceVariables} />
         }
+        wideDialog
       />
       <Grid container spacing={2}>
         <Grid item xs={6}>

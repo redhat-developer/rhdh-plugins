@@ -1,5 +1,27 @@
 ### Dependencies
 
+## 2.6.3
+
+### Patch Changes
+
+- c64c3a5: fix view variables screen
+- 28c900b: fixing responsiveness of the WorkflowPage
+- Updated dependencies [691fd23]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.26.2
+
+## 2.6.2
+
+### Patch Changes
+
+- 78411e8: fix compile issue
+- ec0400b: Disable abort when workflow execution does not exist
+- 4b77c55: If a workflow is Completed but the DataIndex reports an error message anyway, the message is rendered as a warning to reduce user's confusion.
+- 3422e48: Add LoginAsAdmin readme file
+- 6ae40d9: implement filters
+- Updated dependencies [29cf5fb]
+- Updated dependencies [754a051]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.26.1
+
 ## 2.6.1
 
 ### Patch Changes

@@ -16,68 +16,18 @@
 
 import React, { useMemo } from 'react';
 
-import { identityApiRef, useApi } from '@backstage/core-plugin-api';
-import { Content, EmptyState, Header, Page } from '@backstage/core-components';
-import { ClockConfig, HeaderWorldClock } from '@backstage/plugin-home';
-
-import useAsync from 'react-use/esm/useAsync';
+import { Content, EmptyState, Page } from '@backstage/core-components';
 
 import { HomePageCardMountPoint } from '../types';
-import { ReadOnlyGrid } from './ReadOnlyGrid';
-import { LocalClock, LocalClockProps } from './LocalClock';
 
-export interface HomePageProps {
-  title?: string;
-  personalizedTitle?: string;
-  pageTitle?: string;
-  subtitle?: string;
-  localClock?: LocalClockProps;
-  worldClocks?: ClockConfig[];
+import { Header, HeaderProps } from './Header';
+import { ReadOnlyGrid } from './ReadOnlyGrid';
+
+export interface HomePageProps extends HeaderProps {
   cards?: HomePageCardMountPoint[];
 }
 
-// I kept this because I hope that we will add this soon or at least in Dynamic Home Page plugin 1.2 ~ RHDH 1.6.
-// const getTimeBasedTitle = (): string => {
-//   const currentHour = new Date(Date.now()).getHours();
-//   if (currentHour < 12) {
-//     return 'Good morning {{firstName}}';
-//   } else if (currentHour < 17) {
-//     return 'Good afternoon {{firstName}}';
-//   }
-//   return 'Good evening {{firstName}}';
-// };
-
-const getPersonalizedTitle = (
-  title: string,
-  displayName: string | undefined,
-) => {
-  const firstName = displayName?.split(' ')[0];
-  const replacedTitle = title
-    .replace('{{firstName}}', firstName ?? '')
-    .replace('{{displayName}}', displayName ?? '');
-  return replacedTitle;
-};
-
 export const HomePage = (props: HomePageProps) => {
-  const identityApi = useApi(identityApiRef);
-  const { value: profile } = useAsync(() => identityApi.getProfileInfo());
-
-  const title = React.useMemo<string>(() => {
-    if (profile?.displayName && props.personalizedTitle) {
-      return getPersonalizedTitle(props.personalizedTitle, profile.displayName);
-    } else if (props.title) {
-      return getPersonalizedTitle(props.title, profile?.displayName);
-    }
-    // return getPersonalizedTitle(getTimeBasedTitle(), profile?.displayName);
-    return getPersonalizedTitle('Welcome back!', profile?.displayName);
-  }, [profile?.displayName, props.personalizedTitle, props.title]);
-
-  const subtitle = React.useMemo<string | undefined>(() => {
-    return props.subtitle
-      ? getPersonalizedTitle(props.subtitle, profile?.displayName)
-      : undefined;
-  }, [props.subtitle, profile?.displayName]);
-
   const filteredAndSortedHomePageCards = useMemo(() => {
     if (!props.cards) {
       return [];
@@ -98,33 +48,7 @@ export const HomePage = (props: HomePageProps) => {
 
   return (
     <Page themeId="home">
-      <Header
-        title={title}
-        subtitle={subtitle}
-        pageTitleOverride={props.pageTitle}
-      >
-        {props.localClock?.format && props.localClock?.format !== 'none' ? (
-          <LocalClock
-            label={
-              props.localClock?.label ??
-              (props.worldClocks && props.worldClocks.length > 0
-                ? 'Local'
-                : undefined)
-            }
-            format={
-              props.localClock?.format ??
-              (props.worldClocks && props.worldClocks.length > 0
-                ? 'time'
-                : undefined)
-            }
-            lang={props.localClock?.lang}
-          />
-        ) : null}
-
-        {props.worldClocks && props.worldClocks.length > 0 ? (
-          <HeaderWorldClock clockConfigs={props.worldClocks} />
-        ) : null}
-      </Header>
+      <Header {...props} />
       <Content>
         {filteredAndSortedHomePageCards.length === 0 ? (
           <EmptyState

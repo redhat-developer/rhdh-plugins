@@ -1,5 +1,28 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.1.1
+
+### Patch Changes
+
+- 822185a: add MUI v5 workaround to fix local design issues
+- 822185a: fix crash if slot name contains a typo
+
+## 1.1.0
+
+### Minor Changes
+
+- c62c02a: Backstage version bump to v1.36.1
+
+## 1.0.1
+
+### Patch Changes
+
+- 680ede5: Updated dependency `@mui/icons-material` to `5.16.14`.
+  Updated dependency `@mui/styles` to `5.16.14`.
+  Updated dependency `@mui/material` to `5.16.14`.
+  Updated dependency `@mui/styled-engine` to `5.16.14`.
+- 41fc49f: fixed css issues in fab
+
 ## 1.0.0
 
 ### Major Changes

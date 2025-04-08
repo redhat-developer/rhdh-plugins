@@ -15,6 +15,7 @@
  */
 
 import {
+  AuthToken,
   Filter,
   ProcessInstance,
   ProcessInstanceVariables,
@@ -185,6 +186,7 @@ export class OrchestratorService {
     definitionId: string;
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
+    authTokens?: Array<AuthToken>;
     businessKey?: string;
     cacheHandler?: CacheHandler;
   }): Promise<WorkflowExecutionResponse | undefined> {

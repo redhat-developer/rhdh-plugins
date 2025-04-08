@@ -30,6 +30,11 @@ dynamicPlugins:
               to: create
 
         - mountPoint: global.header/component
+          importName: StarredDropdown
+          config:
+            priority: 85
+
+        - mountPoint: global.header/component
           importName: SupportButton
           config:
             priority: 80

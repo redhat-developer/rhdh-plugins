@@ -19,6 +19,8 @@ import Menu from '@mui/material/Menu';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { MenuItemConfig, MenuSectionConfig } from './MenuSection';
 
 interface HeaderDropdownProps {
@@ -30,6 +32,8 @@ interface HeaderDropdownProps {
   onOpen: (event: React.MouseEvent<HTMLElement>) => void;
   onClose: () => void;
   anchorEl: HTMLElement | null;
+  isIconButton?: boolean;
+  tooltip?: string;
 }
 
 const Listbox = styled('ul')(
@@ -66,17 +70,27 @@ export const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
   onOpen,
   onClose,
   anchorEl,
+  isIconButton = false,
+  tooltip,
 }) => {
   return (
     <Box>
-      <Button
-        disableRipple
-        disableTouchRipple
-        {...buttonProps}
-        onClick={onOpen}
-      >
-        {buttonContent}
-      </Button>
+      <Tooltip title={tooltip}>
+        {isIconButton ? (
+          <IconButton {...buttonProps} color="inherit" onClick={onOpen}>
+            {buttonContent}
+          </IconButton>
+        ) : (
+          <Button
+            disableRipple
+            disableTouchRipple
+            {...buttonProps}
+            onClick={onOpen}
+          >
+            {buttonContent}
+          </Button>
+        )}
+      </Tooltip>
       <Menu
         id="menu-appbar"
         anchorEl={anchorEl}

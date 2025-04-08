@@ -24,6 +24,7 @@ All URIs are relative to *http://localhost*
 ## Documentation for Models
 
  - [AssessedProcessInstanceDTO](./Models/AssessedProcessInstanceDTO.md)
+ - [AuthToken](./Models/AuthToken.md)
  - [ErrorResponse](./Models/ErrorResponse.md)
  - [ExecuteWorkflowRequestDTO](./Models/ExecuteWorkflowRequestDTO.md)
  - [ExecuteWorkflowResponseDTO](./Models/ExecuteWorkflowResponseDTO.md)

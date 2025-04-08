@@ -1,5 +1,44 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.4.0
+
+### Minor Changes
+
+- ba8628d: Added a new application launcher dropdown to the global header which can be used to configure application links and quick links.
+
+## 1.3.0
+
+### Minor Changes
+
+- d49d965: Backstage version bump to v1.36.1
+
+### Patch Changes
+
+- 9562fd9: changing `Logout` text to `Sign Out`
+
+## 1.2.0
+
+### Minor Changes
+
+- 3099c9c: Added a new starred dropdown to global header which shows all the starred entities.
+
+### Patch Changes
+
+- c658469: Emit search analytics events for search and discover events
+
+## 1.1.0
+
+### Minor Changes
+
+- 612bc20: Renaming the 'Create' to 'Self-service'
+
+### Patch Changes
+
+- 680ede5: Updated dependency `@mui/icons-material` to `5.16.14`.
+  Updated dependency `@mui/styles` to `5.16.14`.
+  Updated dependency `@mui/material` to `5.16.14`.
+  Updated dependency `@mui/styled-engine` to `5.16.14`.
+
 ## 1.0.0
 
 ### Major Changes

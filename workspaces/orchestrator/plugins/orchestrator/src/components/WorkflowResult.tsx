@@ -74,7 +74,7 @@ const useStyles = makeStyles(theme => ({
 const finalStates: ProcessInstanceStatusDTO[] = [
   ProcessInstanceStatusDTO.Error,
   ProcessInstanceStatusDTO.Completed,
-  ProcessInstanceStatusDTO.Aborted,
+
   ProcessInstanceStatusDTO.Suspended,
 ];
 
@@ -124,7 +124,15 @@ const ResultMessage = ({
       </Box>
     );
   } else if (!error && !resultMessage) {
-    if (status && finalStates.includes(status)) {
+    if (status === ProcessInstanceStatusDTO.Aborted) {
+      statusComponent = (
+        <Box sx={{ width: '100%' }}>
+          <Alert severity="info">
+            <AlertTitle> Run has aborted</AlertTitle>
+          </Alert>
+        </Box>
+      );
+    } else if (status && finalStates.includes(status)) {
       statusComponent = (
         <Box sx={{ width: '100%' }}>
           <Alert severity="success">

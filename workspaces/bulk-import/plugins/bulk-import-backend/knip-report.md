@@ -1,22 +1,15 @@
 # Knip report
 
-## Unused dependencies (1)
-
-| Name                                                       | Location     | Severity |
-| :--------------------------------------------------------- | :----------- | :------- |
-| @red-hat-developer-hub/backstage-plugin-bulk-import-common | package.json | error    |
-
 ## Unused devDependencies (3)
 
-| Name                                | Location     | Severity |
-| :---------------------------------- | :----------- | :------- |
-| @openapitools/openapi-generator-cli | package.json | error    |
-| js-yaml-cli                         | package.json | error    |
-| openapicmd                          | package.json | error    |
+| Name                                | Location          | Severity |
+| :---------------------------------- | :---------------- | :------- |
+| @openapitools/openapi-generator-cli | package.json:72:6 | error    |
+| js-yaml-cli                         | package.json:78:6 | error    |
+| openapicmd                          | package.json:80:6 | error    |
 
-## Unlisted dependencies (2)
+## Unlisted dependencies (1)
 
-| Name                                | Location                   | Severity |
-| :---------------------------------- | :------------------------- | :------- |
-| openapi-client-axios                | src/generated/openapi.d.ts | error    |
-| @ianvs/prettier-plugin-sort-imports | .prettierrc.js             | error    |
+| Name                 | Location                   | Severity |
+| :------------------- | :------------------------- | :------- |
+| openapi-client-axios | src/generated/openapi.d.ts | error    |

@@ -339,3 +339,37 @@ export const NotificationBanner = globalHeaderPlugin.provide(
     },
   }),
 );
+
+/**
+ * Starred Dropdown
+ *
+ * @public
+ */
+export const StarredDropdown = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'StarredDropdown',
+    component: {
+      lazy: () =>
+        import('./components/HeaderDropdownComponent/StarredDropdown').then(
+          m => m.StarredDropdown,
+        ),
+    },
+  }),
+);
+
+/**
+ * Application Launcher Dropdown
+ *
+ * @public
+ */
+export const ApplicationLauncherDropdown = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'ApplicationLauncherDropdown',
+    component: {
+      lazy: () =>
+        import(
+          './components/HeaderDropdownComponent/ApplicationLauncherDropdown'
+        ).then(m => m.ApplicationLauncherDropdown),
+    },
+  }),
+);

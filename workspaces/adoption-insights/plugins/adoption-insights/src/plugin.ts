@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 import {
+  configApiRef,
+  createApiFactory,
   createPlugin,
   createRoutableExtension,
+  fetchApiRef,
+  type IconComponent,
 } from '@backstage/core-plugin-api';
 
+import MUIAdoptionInsightsIcon from '@mui/icons-material/QueryStatsOutlined';
 import { rootRouteRef } from './routes';
+import { AdoptionInsightsApiClient, adoptionInsightsApiRef } from './api';
 
 /**
  * Plugin for Adoption Insights frontend
@@ -29,6 +35,17 @@ export const adoptionInsightsPlugin = createPlugin({
   routes: {
     root: rootRouteRef,
   },
+  apis: [
+    createApiFactory({
+      api: adoptionInsightsApiRef,
+      deps: {
+        configApi: configApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ configApi, fetchApi }) =>
+        new AdoptionInsightsApiClient({ configApi, fetchApi }),
+    }),
+  ],
 });
 
 /**
@@ -39,7 +56,14 @@ export const AdoptionInsightsPage = adoptionInsightsPlugin.provide(
   createRoutableExtension({
     name: 'AdoptionInsightsPage',
     component: () =>
-      import('./components/ExampleComponent').then(m => m.ExampleComponent),
+      import('./components/AdoptionInsightsPage').then(
+        m => m.AdoptionInsightsPage,
+      ),
     mountPoint: rootRouteRef,
   }),
 );
+
+/**
+ * @public
+ */
+export const AdoptionInsightsIcon: IconComponent = MUIAdoptionInsightsIcon;

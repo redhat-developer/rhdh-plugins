@@ -857,6 +857,20 @@ ul.nav-tabs {
     }
   }
 };
+    defs["AuthToken"] = {
+  "required" : [ "provider", "token" ],
+  "properties" : {
+    "provider" : {
+      "type" : "string",
+      "description" : "The auth token provider name"
+    },
+    "token" : {
+      "type" : "string",
+      "description" : "The auth token itself retrieved from the above specified provider name"
+    }
+  },
+  "additionalProperties" : false
+};
     defs["ErrorResponse"] = {
   "required" : [ "message" ],
   "properties" : {
@@ -877,6 +891,13 @@ ul.nav-tabs {
     "inputData" : {
       "type" : "object",
       "additionalProperties" : false
+    },
+    "authTokens" : {
+      "minItems" : 1,
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/components/schemas/AuthToken"
+      }
     }
   }
 };
@@ -1849,7 +1870,14 @@ The identifier of the workflow instance to abort.
  -H "Content-Type: application/json" \
  "http://localhost/v2/workflows/{workflowId}/execute?businessKey=businessKey_example" \
  -d '{
-  &quot;inputData&quot; : &quot;{}&quot;
+  &quot;inputData&quot; : &quot;{}&quot;,
+  &quot;authTokens&quot; : [ {
+    &quot;provider&quot; : &quot;provider&quot;,
+    &quot;token&quot; : &quot;token&quot;
+  }, {
+    &quot;provider&quot; : &quot;provider&quot;,
+    &quot;token&quot; : &quot;token&quot;
+  } ]
 }'
 </code></pre>
                           </div>

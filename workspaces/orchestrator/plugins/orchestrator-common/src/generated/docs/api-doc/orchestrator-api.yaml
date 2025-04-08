@@ -587,6 +587,25 @@ spec:
             inputData:
               type: object
               additionalProperties: true
+            authTokens:
+              type: array
+              items:
+                $ref: '#/components/schemas/AuthToken'
+              minItems: 1
+              additionalProperties: true
+        AuthToken:
+          type: object
+          properties:
+            provider:
+              description: The auth token provider name
+              type: string
+            token:
+              description: The auth token itself retrieved from the above specified provider name
+              type: string
+          required:
+            - provider
+            - token
+          additionalProperties: false
         ExecuteWorkflowResponseDTO:
           type: object
           properties:

@@ -35,9 +35,7 @@ import {
   Grid,
   IconButton,
   Tooltip,
-  // FLPATH-2135
-  // Menu,
-  // MenuItem,
+  Typography,
 } from '@material-ui/core';
 import Snackbar from '@material-ui/core/Snackbar';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
@@ -45,7 +43,6 @@ import CloseIcon from '@material-ui/icons/Close';
 import ErrorIcon from '@material-ui/icons/Error';
 import { AlertTitle } from '@material-ui/lab';
 import Alert from '@material-ui/lab/Alert';
-import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 
 // FLPATH-2135
 // import StartIcon from '@mui/icons-material/Start';
@@ -82,7 +79,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     modalText: {
-      fontSize: '1.1rem',
+      marginBottom: theme.spacing(2),
     },
     errorColor: {
       color: theme.palette.error.dark,
@@ -105,11 +102,13 @@ const AbortConfirmationDialogContent = ({
   const classes = useStyles();
   return (
     <div>
-      <p className={classes.modalText}>
-        Are you sure you want to abort this workflow run? <br /> <br />
-        Aborting will stop all in-progress and pending steps immediately. Any
-        incomplete tasks will not be saved.
-      </p>
+      <Box className={classes.modalText}>
+        <Typography variant="h6">
+          Are you sure you want to abort this workflow run? <br /> <br />
+          Aborting will stop all in-progress and pending steps immediately. Any
+          incomplete tasks will not be saved.
+        </Typography>
+      </Box>
       {!canAbort && (
         <Box sx={{ width: '100%' }}>
           <Alert severity="info">
@@ -297,8 +296,8 @@ export const WorkflowInstancePage = ({
 
   // For making the linter happy - FLPATH-2135:
   // No-op statements to be removed when the feature is re-enabled.
-  handleOptionClick;
-  openRerunMenu;
+  handleOptionClick; // eslint-disable-line
+  openRerunMenu; // eslint-disable-line
   handleClick; // eslint-disable-line
 
   const classes = useStyles();
@@ -315,15 +314,8 @@ export const WorkflowInstancePage = ({
         <>
           <ContentHeader title="">
             <InfoDialog
-              title={
-                <Box display="flex" alignItems="center">
-                  <ErrorIcon
-                    className={classes.errorColor}
-                    style={{ marginRight: 8 }}
-                  />
-                  <b>Abort workflow run?</b>
-                </Box>
-              }
+              title="Abort workflow run?"
+              titleIcon={<ErrorIcon className={classes.errorColor} />}
               onClose={toggleAbortConfirmationDialog}
               open={isAbortConfirmationDialogOpen}
               dialogActions={
@@ -385,7 +377,15 @@ export const WorkflowInstancePage = ({
                     // }
                     style={{ color: 'white' }}
                   >
-                    Rerun
+                    {value.instance.state ===
+                    ProcessInstanceStatusDTO.Active ? (
+                      <>
+                        <CircularProgress color="inherit" size="0.75rem" />
+                        &nbsp;Running...
+                      </>
+                    ) : (
+                      'Run again'
+                    )}
                   </Button>
                 </Tooltip>
 

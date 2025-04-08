@@ -12,6 +12,12 @@ export const applicationListenerTestPlugin: BackstagePlugin<{}, {}, {}>;
 export const CrashListener: () => never;
 
 // @public (undocumented)
+export const CrashListenerWithoutErrorBoundary: {
+  (): never;
+  displayName: string;
+};
+
+// @public (undocumented)
 export const LocationListener: () => null;
 
 // (No @packageDocumentation comment for this package)

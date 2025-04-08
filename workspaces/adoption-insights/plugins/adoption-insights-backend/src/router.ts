@@ -1,3 +1,5 @@
+import express, { Request, Response } from 'express';
+import Router from 'express-promise-router';
 /*
  * Copyright Red Hat, Inc.
  *
@@ -13,53 +15,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { HttpAuthService } from '@backstage/backend-plugin-api';
-import { InputError } from '@backstage/errors';
-import { z } from 'zod';
-import express from 'express';
-import Router from 'express-promise-router';
-import { TodoListService } from './services/TodoListService/types';
+import {
+  HttpAuthService,
+  PermissionsService,
+} from '@backstage/backend-plugin-api';
+import { NotAllowedError } from '@backstage/errors';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
+import EventApiController from './controllers/EventApiController';
+import { QueryParams } from './types/event-request';
+import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
 export async function createRouter({
   httpAuth,
-  todoListService,
+  permissions,
+  eventApiController,
 }: {
   httpAuth: HttpAuthService;
-  todoListService: TodoListService;
+  permissions: PermissionsService;
+  eventApiController: EventApiController;
 }): Promise<express.Router> {
   const router = Router();
+
+  const permissionIntegrationRouter = createPermissionIntegrationRouter({
+    permissions: [adoptionInsightsEventsReadPermission],
+  });
+
+  router.use(permissionIntegrationRouter);
   router.use(express.json());
 
-  // TEMPLATE NOTE:
-  // Zod is a powerful library for data validation and recommended in particular
-  // for user-defined schemas. In this case we use it for input validation too.
-  //
-  // If you want to define a schema for your API we recommend using Backstage's
-  // OpenAPI tooling: https://backstage.io/docs/next/openapi/01-getting-started
-  const todoSchema = z.object({
-    title: z.string(),
-    entityRef: z.string().optional(),
-  });
+  const authorizeUser = async (
+    req: Request<{}, {}, {}, QueryParams>,
+  ): Promise<void> => {
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const decision = (
+      await permissions.authorize(
+        [{ permission: adoptionInsightsEventsReadPermission }],
+        { credentials },
+      )
+    )[0];
 
-  router.post('/todos', async (req, res) => {
-    const parsed = todoSchema.safeParse(req.body);
-    if (!parsed.success) {
-      throw new InputError(parsed.error.toString());
+    if (decision.result === AuthorizeResult.DENY) {
+      throw new NotAllowedError('Unauthorized');
     }
-
-    const result = await todoListService.createTodo(parsed.data, {
-      credentials: await httpAuth.credentials(req, { allow: ['user'] }),
+  };
+  const getUserEntityRef = async (req: Request): Promise<string> => {
+    const credentials = await httpAuth.credentials(req, {
+      allow: ['user'],
     });
-
-    res.status(201).json(result);
+    return credentials.principal.userEntityRef;
+  };
+  router.use(async (req, _, next) => {
+    await getUserEntityRef(req);
+    next();
   });
 
-  router.get('/todos', async (_req, res) => {
-    res.json(await todoListService.listTodos());
+  router.get(
+    '/events',
+    async (req: Request<{}, {}, {}, QueryParams>, res: Response) => {
+      await authorizeUser(req);
+      return eventApiController.getInsights(req, res);
+    },
+  );
+
+  router.post('/events', async (req, res) => {
+    return eventApiController.trackEvents(req, res);
   });
 
-  router.get('/todos/:id', async (req, res) => {
-    res.json(await todoListService.getTodo({ id: req.params.id }));
+  router.get('/health', (_, response) => {
+    response.json({ status: 'ok' });
   });
 
   return router;

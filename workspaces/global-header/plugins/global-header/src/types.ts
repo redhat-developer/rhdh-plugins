@@ -46,6 +46,22 @@ export interface ProfileDropdownMountPointConfig {
 }
 
 /**
+ * Application Launcher Dropdown Config
+ *
+ * @public
+ */
+export interface ApplicationLauncherDropdownMountPointConfig {
+  section?: string;
+  sectionLink?: string;
+  sectionLinkLabel?: string;
+  priority?: number;
+  icon?: string;
+  title?: string;
+  link?: string;
+  props?: Record<string, any>;
+}
+
+/**
  * Global Header Component Mount Point
  *
  * @public
@@ -84,6 +100,13 @@ export interface ProfileDropdownMountPoint {
   };
 }
 
+export interface ApplicationLauncherDropdownMountPoint {
+  Component: React.ComponentType<any>;
+  config?: ApplicationLauncherDropdownMountPointConfig & {
+    props?: Record<string, any>;
+  };
+}
+
 /**
  * ScalprumState
  *
@@ -96,6 +119,7 @@ export interface ScalprumState {
         'global.header/component': GlobalHeaderComponentMountPoint[];
         'global.header/create': CreateDropdownMountPoint[];
         'global.header/profile': ProfileDropdownMountPoint[];
+        'global.header/application-launcher': ApplicationLauncherDropdownMountPoint[];
       };
     };
   };

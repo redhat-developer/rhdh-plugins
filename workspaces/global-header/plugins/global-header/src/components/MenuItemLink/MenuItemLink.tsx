@@ -16,7 +16,7 @@
 
 import React from 'react';
 import Tooltip from '@mui/material/Tooltip';
-import { Link } from 'react-router-dom';
+import { Link } from '@backstage/core-components';
 import { MenuItemLinkContent } from './MenuItemLinkContent';
 
 /**
@@ -38,6 +38,8 @@ export const MenuItemLink = ({
   icon,
   tooltip,
 }: MenuItemLinkProps) => {
+  const isExternalLink = to.startsWith('http://') || to.startsWith('https://');
+
   const headerLinkContent = () => (
     <Link
       to={to}
@@ -47,7 +49,12 @@ export const MenuItemLink = ({
         width: '100%',
       }}
     >
-      <MenuItemLinkContent icon={icon} label={title} subLabel={subTitle} />
+      <MenuItemLinkContent
+        icon={icon}
+        label={title}
+        subLabel={subTitle}
+        isExternalLink={isExternalLink}
+      />
     </Link>
   );
   return (

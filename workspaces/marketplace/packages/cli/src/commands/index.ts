@@ -14,27 +14,14 @@
  * limitations under the License.
  */
 import { Command } from 'commander';
-import { exitWithError } from '../lib/errors';
-import { assertError } from '@backstage/errors';
-
-// Wraps an action function so that it always exits and handles errors
-function lazy(
-  getActionFunc: () => Promise<(...args: any[]) => Promise<void>>,
-): (...args: any[]) => Promise<never> {
-  return async (...args: any[]) => {
-    try {
-      const actionFunc = await getActionFunc();
-      await actionFunc(...args);
-
-      process.exit(0);
-    } catch (error) {
-      assertError(error);
-      exitWithError(error);
-    }
-  };
-}
+import { lazy } from '../lib/lazy';
 
 export const registerCommands = (program: Command) => {
+  program
+    .command('init')
+    .description('init')
+    .action(lazy(() => import('./init'), 'default'));
+
   program
     .command('generate')
     .description(
@@ -53,5 +40,34 @@ export const registerCommands = (program: Command) => {
       'metadata.namespace for the generated Package entities',
     )
     .option('--owner [owner]', 'spec.owner for the generated Package entities')
-    .action(lazy(() => import('./generate').then(m => m.default)));
+    .action(lazy(() => import('./generate'), 'default'));
+
+  program
+    .command('verify')
+    .description(
+      'Verify a set of marketplace entities. By default, it will read entities from the standard input',
+    )
+    .action(lazy(() => import('./verify'), 'default'));
+
+  program
+    .command('export-csv')
+    .description('Export a folder of marketplace plugin YAMLs to a CSV file')
+    .option(
+      '-o, --output-file [path]',
+      'Path to the output CSV file. By default, it will output to the standard output. When a file is specified, the "csv" file extension will be added automatically',
+    )
+    .option(
+      '-p, --plugins-yaml-path [path]',
+      'Path to the default plugins folder, containing marketplace plugin YAML files. Multiple paths can be provided, separated by commas',
+    )
+    .option(
+      '-r, --recursive',
+      'Recursively search for YAML files in each directory provided in plugins-yaml-path',
+    )
+    .option(
+      '-t, --type [type]',
+      'The type of CSV to export. Can be one of: "plugin", "package", or "all". "all" will generate two files.',
+      'all',
+    )
+    .action(lazy(() => import('./export-csv'), 'default'));
 };

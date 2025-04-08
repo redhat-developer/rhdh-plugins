@@ -1,22 +1,9 @@
 # Knip report
 
-## Unused dependencies (1)
+## Unused devDependencies (3)
 
-| Name                                                       | Location     | Severity |
-| :--------------------------------------------------------- | :----------- | :------- |
-| @red-hat-developer-hub/backstage-plugin-bulk-import-common | package.json | error    |
-
-## Unused devDependencies (4)
-
-| Name                        | Location     | Severity |
-| :-------------------------- | :----------- | :------- |
-| @testing-library/user-event | package.json | error    |
-| @backstage/core-app-api     | package.json | error    |
-| start-server-and-test       | package.json | error    |
-| @testing-library/dom        | package.json | error    |
-
-## Unlisted dependencies (1)
-
-| Name                                | Location       | Severity |
-| :---------------------------------- | :------------- | :------- |
-| @ianvs/prettier-plugin-sort-imports | .prettierrc.js | error    |
+| Name                        | Location          | Severity |
+| :-------------------------- | :---------------- | :------- |
+| @testing-library/user-event | package.json:73:6 | error    |
+| @backstage/core-app-api     | package.json:64:6 | error    |
+| @testing-library/dom        | package.json:70:6 | error    |

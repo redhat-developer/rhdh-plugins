@@ -40,6 +40,7 @@ export const bulkImportPlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         auth: coreServices.auth,
         catalogApi: catalogServiceRef,
+        auditor: coreServices.auditor,
       },
       async init({
         config,
@@ -51,6 +52,7 @@ export const bulkImportPlugin = createBackendPlugin({
         httpAuth,
         auth,
         catalogApi,
+        auditor,
       }) {
         const router = await createRouter({
           config,
@@ -61,6 +63,7 @@ export const bulkImportPlugin = createBackendPlugin({
           httpAuth,
           auth,
           catalogApi,
+          auditor,
         });
         http.use(router);
         http.addAuthPolicy({

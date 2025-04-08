@@ -135,12 +135,25 @@ describe('Global floating action button utils', () => {
   });
 
   it('should evaluate floating buttons in the record along with their positions and an array of actions for floating buttons', () => {
-    const buttons = evaluateFloatingButtonsWithPositions(floatingButtons);
+    const fabs: FloatingActionButton[] = [
+      ...floatingButtons,
+      {
+        slot: 'bottom-leftt' as Slot,
+        color: 'success',
+        icon: 'GitIcon',
+        label: 'Add2',
+        toolTip: 'Add2',
+        to: 'https://github.com/xyz',
+        priority: 100,
+      },
+    ];
+    const buttons = evaluateFloatingButtonsWithPositions(fabs);
     expect(buttons).toEqual([
       {
         slot: Slot.PAGE_END,
         actions: [
           {
+            slot: Slot.PAGE_END,
             color: 'success',
             icon: 'GitIcon',
             label: 'Git repo',
@@ -148,6 +161,7 @@ describe('Global floating action button utils', () => {
             toolTip: 'Git',
           },
           {
+            slot: Slot.PAGE_END,
             color: 'success',
             icon: 'GitIcon',
             label: 'Menu',
@@ -155,6 +169,15 @@ describe('Global floating action button utils', () => {
             to: 'https://github.com/xyz',
             priority: 200,
             excludeOnPaths: ['/test-pathname'],
+          },
+          {
+            slot: Slot.PAGE_END,
+            color: 'success',
+            icon: 'GitIcon',
+            label: 'Add2',
+            toolTip: 'Add2',
+            to: 'https://github.com/xyz',
+            priority: 100,
           },
         ],
       },
