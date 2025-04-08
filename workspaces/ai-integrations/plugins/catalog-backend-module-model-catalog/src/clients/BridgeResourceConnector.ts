@@ -31,7 +31,7 @@ export async function fetchModelCatalogKeys(
   baseUrl: string,
 ): Promise<string[]> {
   // ToDo: Discover catalog-info endpoint?
-  const res = await fetch(`${baseUrl}/fake/list`, {
+  const res = await fetch(`${baseUrl}/list`, {
     method: 'GET',
   });
 
