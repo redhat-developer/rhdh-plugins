@@ -64,7 +64,6 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
           <Button
             variant="outlined"
             href={buttonLink}
-            target="_blank"
             sx={{
               textTransform: 'none',
               minWidth: '200px',
