@@ -222,7 +222,7 @@ function sanitizeTags(tags: string[], logger?: LoggerService): string[] {
 
     // Call the Backstage tag validator and check if the tag conforms
     // If the tag is not valid, skip it
-    if (!makeValidator().isValidTag(sanitizeTags)) {
+    if (!makeValidator().isValidTag(sanitizedTag)) {
       if (logger !== undefined) {
         logger.error(
           `invalid tag: ${sanitizedTag}. Tags are expected to be less than 63 characters and conform to: ^[a-z0-9:+#]+(\-[a-z0-9:+#]+)*$`,
