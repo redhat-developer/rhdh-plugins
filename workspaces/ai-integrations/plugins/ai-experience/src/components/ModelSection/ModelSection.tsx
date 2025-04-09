@@ -17,7 +17,6 @@ import React from 'react';
 
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
@@ -28,6 +27,7 @@ import { useTheme } from '@mui/material/styles';
 import CardWrapper from './CardWrapper';
 import HomePageAiModels from '../../images/homepage-ai-models.svg';
 import { useModels } from '../../hooks/useModels';
+import { ViewMoreLink } from '../Links/ViewMoreLink';
 
 export const ModelSection = () => {
   const [isRemoveFirstCard, setIsRemoveFirstCard] = React.useState(false);
@@ -126,11 +126,9 @@ export const ModelSection = () => {
         ))}
       </Grid>
       <Box sx={{ pt: 2 }}>
-        <Link href={catalogModelLink} underline="always">
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            View all {data?.totalItems ? data?.totalItems : ''} models
-          </Typography>
-        </Link>
+        <ViewMoreLink to={catalogModelLink}>
+          View all {data?.totalItems ? data?.totalItems : ''} models
+        </ViewMoreLink>
       </Box>
     </React.Fragment>
   );
