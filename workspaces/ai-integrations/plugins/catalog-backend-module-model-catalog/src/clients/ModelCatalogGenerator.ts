@@ -29,7 +29,7 @@ import {
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 function isModelCatalog(o: any): o is ModelCatalog {
-  return 'models' in o || 'modelServers' in o;
+  return 'models' in o || 'modelServer' in o;
 }
 
 export function ParseCatalogJSON(jsonStr: string): ModelCatalog {
