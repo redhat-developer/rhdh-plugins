@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ModelCatalogResourceEntityProvider should connect and run should resolve 1`] = `
+[
+  [
+    {
+      "entities": [
+        {
+          "entity": {
+            "apiVersion": "backstage.io/v1beta1",
+            "kind": "Resource",
+            "metadata": {
+              "annotations": {
+                "backstage.io/managed-by-location": "ModelCatalogResourceEntityProvider:development",
+                "backstage.io/managed-by-origin-location": "ModelCatalogResourceEntityProvider:development",
+              },
+              "description": "IBM Granite code model",
+              "links": [],
+              "name": "ibm-granite",
+              "tags": [],
+            },
+            "spec": {
+              "dependencyOf": [],
+              "owner": "example-user",
+              "type": "ai-model",
+            },
+          },
+          "locationKey": "ModelCatalogResourceEntityProvider:development",
+        },
+      ],
+      "type": "full",
+    },
+  ],
+]
+`;

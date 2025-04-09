@@ -6,13 +6,12 @@
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
-import { CatalogProcessorParser } from '@backstage/plugin-catalog-node';
 import type { Config } from '@backstage/config';
-import { Entity } from '@backstage/catalog-model';
 import { EntityProvider } from '@backstage/plugin-catalog-node';
 import { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
 import { LoggerService } from '@backstage/backend-plugin-api';
+import { ModelCatalog } from '@redhat-ai-dev/model-catalog-types';
 import { RootConfigService } from '@backstage/backend-plugin-api';
 import type { SchedulerService } from '@backstage/backend-plugin-api';
 import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
@@ -32,7 +31,19 @@ export const catalogModuleRHDHRHOAILocationsExtensionPoint: BackendFeature;
 export const catalogModuleRHDHRHOAIReaderProcessor: BackendFeature;
 
 // @public
-export function fetchCatalogEntities(baseUrl: string): Promise<Entity[]>;
+export function fetchModelCatalogFromKey(
+  baseUrl: string,
+  modelCatalogKey: string,
+): Promise<ModelCatalog>;
+
+// @public
+export function fetchModelCatalogKeys(baseUrl: string): Promise<string[]>;
+
+// @public
+export interface ModelCatalogKeys {
+  // (undocumented)
+  uris: string[];
+}
 
 // @public
 export class ModelCatalogResourceEntityProvider implements EntityProvider {
@@ -67,7 +78,6 @@ export class RHDHRHOAIReaderProcessor implements CatalogProcessor {
     location: LocationSpec,
     _optional: boolean,
     emit: CatalogProcessorEmit,
-    parser: CatalogProcessorParser,
   ): Promise<boolean>;
 }
 ```
