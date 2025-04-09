@@ -49,6 +49,16 @@ export type Options = {
   fetchApi: FetchApi;
 };
 
+const validateResponse = (response: Response, action: string) => {
+  if (!response.body || !response.ok) {
+    throw new Error(
+      `failed to fetch ${action}, status ${response.status}: ${
+        !response.ok ? response.statusText : 'Something went wrong.'
+      }`,
+    );
+  }
+};
+
 export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
   private readonly configApi: ConfigApi;
   private readonly fetchApi: FetchApi;
@@ -74,6 +84,8 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
 
     const response = await this.fetchApi.fetch(url);
 
+    validateResponse(response, 'active users');
+
     const data = await response.json();
     return data as ActiveUsersResponse;
   }
@@ -87,6 +99,8 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     const url = generateEventsUrl(`${baseUrl}/events`, options);
 
     const response = await this.fetchApi.fetch(url);
+
+    validateResponse(response, 'users');
 
     const data = await response.json();
     return data as UsersResponse;
@@ -104,6 +118,8 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
 
     const response = await this.fetchApi.fetch(url);
 
+    validateResponse(response, 'catalog entities');
+
     const data = await response.json();
     return data as CatalogEntitiesResponse;
   }
@@ -117,6 +133,8 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     const url = generateEventsUrl(`${baseUrl}/events`, options);
 
     const response = await this.fetchApi.fetch(url);
+
+    validateResponse(response, 'templates');
 
     const data = await response.json();
     return data as TemplatesResponse;
@@ -132,6 +150,8 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
 
     const response = await this.fetchApi.fetch(url);
 
+    validateResponse(response, 'techdocs');
+
     const data = await response.json();
     return data as TechdocsResponse;
   }
@@ -146,6 +166,8 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
 
     const response = await this.fetchApi.fetch(url);
 
+    validateResponse(response, 'plugins');
+
     const data = await response.json();
     return data as PluginTrendResponse;
   }
@@ -159,6 +181,8 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
     const url = generateEventsUrl(`${baseUrl}/events`, options);
 
     const response = await this.fetchApi.fetch(url);
+
+    validateResponse(response, 'searches');
 
     const data = await response.json();
     return data as SearchesResponse;

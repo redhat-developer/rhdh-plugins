@@ -18,8 +18,8 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
-import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
+import { Link } from '@backstage/core-components';
 
 interface CardWrapperProps {
   link: string;
@@ -63,9 +63,9 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
         </Box>
         <Box sx={{ margin: '8px 0', height: '21px', overflow: 'hidden' }}>
           <Link
-            href={link}
+            to={link}
             underline="always"
-            sx={{
+            style={{
               display: '-webkit-box',
               WebkitBoxOrient: 'vertical',
               WebkitLineClamp: 1,
