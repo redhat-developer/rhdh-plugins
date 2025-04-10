@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.5.5
+
+### Patch Changes
+
+- 81aa8ea: Close chip in filter should remove the selected filter
+
 ## 0.5.4
 
 ### Patch Changes

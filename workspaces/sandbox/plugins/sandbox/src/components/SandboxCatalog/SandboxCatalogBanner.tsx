@@ -17,7 +17,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
-import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
 import Image from '../../assets/images/sandbox-banner-image.svg';
@@ -46,31 +46,29 @@ export const SandboxCatalogBanner: React.FC = () => {
       elevation={0}
       sx={{
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'space-between',
         padding: theme.spacing(4),
         backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#0E1214',
       }}
     >
-      <Grid container alignItems="center" spacing={4}>
-        <Grid item xs={12} sm={12} md={2}>
-          <Box>
-            <img
-              src={Image}
-              alt="Red Hat Trial"
-              style={{
-                width: '100%',
-                float: 'right',
-                maxWidth: '207px',
-                height: 'auto',
-                display: 'block',
-              }}
-            />
-          </Box>
-        </Grid>
-        <Grid item xs={12} sm={12} md={10}>
+      <Stack direction="row">
+        <Box
+          sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}
+        >
+          <img
+            src={Image}
+            alt="Red Hat Trial"
+            style={{
+              maxWidth: '207px',
+              height: 'auto',
+              display: 'block',
+            }}
+          />
+        </Box>
+
+        <Box mt={2} ml={4}>
           {loading ? (
-            <Box>
+            <>
               <Skeleton
                 animation="wave"
                 variant="rounded"
@@ -92,21 +90,32 @@ export const SandboxCatalogBanner: React.FC = () => {
                 height="25px"
                 sx={{ my: '15px', borderRadius: 10 }}
               />
-            </Box>
+            </>
           ) : (
-            <Box>
+            <>
               {userData ? (
                 <>
                   <Typography
                     variant="h1"
-                    style={{ fontSize: '50px', fontWeight: 700 }}
+                    sx={{
+                      mt: '1rem',
+                      fontWeight: 700,
+                      fontSize: {
+                        xs: '2rem',
+                        sm: '2.5rem',
+                        md: '3.125rem',
+                      },
+                    }}
                   >
                     Welcome, {userData?.name}
                   </Typography>
                   <Typography
                     variant="inherit"
                     color="textPrimary"
-                    style={{ fontSize: '25px', fontWeight: 400 }}
+                    sx={{
+                      fontWeight: 400,
+                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5625rem' },
+                    }}
                   >
                     Your free trial expires in {calculateDaysLeft()} days
                   </Typography>
@@ -115,23 +124,33 @@ export const SandboxCatalogBanner: React.FC = () => {
                 <>
                   <Typography
                     variant="h1"
-                    style={{ fontSize: '50px', fontWeight: 700 }}
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: {
+                        xs: '2rem',
+                        sm: '2.5rem',
+                        md: '3.125rem',
+                      },
+                    }}
                   >
                     Try Red Hat products
                   </Typography>
                   <Typography
                     variant="inherit"
                     color="textPrimary"
-                    style={{ fontSize: '25px', fontWeight: 400 }}
+                    sx={{
+                      fontWeight: 400,
+                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5625rem' },
+                    }}
                   >
                     Explore, experiment, and see what's possible
                   </Typography>
                   <Typography
                     color="textPrimary"
-                    style={{
-                      fontSize: '16px',
+                    sx={{
                       marginTop: '10px',
                       fontWeight: 450,
+                      fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
                     }}
                   >
                     Click on "Try it" to initiate your free, no commitment
@@ -139,10 +158,10 @@ export const SandboxCatalogBanner: React.FC = () => {
                   </Typography>
                 </>
               )}
-            </Box>
+            </>
           )}
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
     </Card>
   );
 };
