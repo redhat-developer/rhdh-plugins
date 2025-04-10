@@ -116,13 +116,13 @@ export class OrchestratorClient implements OrchestratorApi {
     const authTokens: { provider: string; token: string }[] = [];
     for (const integration of integrations) {
       const provider = integration.type;
-      const host = integration.config.apiBaseUrl || integration.config.host;
-      const url = host.startsWith('http') ? host : `https://${host}`;
+      const url = `https://${integration.config.host}`;
       if (!url) continue;
       try {
         const credentials = await this.scmAuthApi.getCredentials({
           url,
-          optional: true,
+          token: true,
+          optional: false,
         });
 
         if (credentials?.token) {
