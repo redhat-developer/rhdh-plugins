@@ -25,13 +25,18 @@ import {
 import {
   ANNOTATION_LOCATION,
   ANNOTATION_ORIGIN_LOCATION,
+  Entity,
 } from '@backstage/catalog-model';
 
-import { fetchCatalogEntities } from '../clients/BridgeResourceConnector';
+import {
+  fetchModelCatalogFromKey,
+  fetchModelCatalogKeys,
+} from '../clients/BridgeResourceConnector';
 import { ModelCatalogConfig } from './types';
 import { readModelCatalogApiEntityConfigs } from './config';
 import type { Config } from '@backstage/config';
 import { InputError, isError } from '@backstage/errors';
+import { GenerateCatalogEntities } from '../clients/ModelCatalogGenerator';
 /**
  * Provides entities from the model catalog service, allowing models and model servers to be imported into RHDH
  *
@@ -148,8 +153,18 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
       `Discovering ResourceEntities from Model Server ${this.baseUrl}`,
     );
 
-    /** [5]: Convert the fetched model and model server data into RHDH catalog entities */
-    const entityList = await fetchCatalogEntities(this.baseUrl);
+    /** [5]: Fetch the model catalog keys from the bridge and fetch the corresponding catalog entries. */
+    const catalogKeys = await fetchModelCatalogKeys(this.baseUrl);
+    let entityList: Entity[] = [];
+
+    await Promise.all(
+      catalogKeys.map(async key => {
+        const catalog = await fetchModelCatalogFromKey(this.baseUrl, key);
+        const catalogEntities = GenerateCatalogEntities(catalog);
+        entityList = entityList.concat(catalogEntities);
+      }),
+    );
+
     entityList.forEach(entity => {
       if (entity.metadata.annotations === undefined) {
         entity.metadata.annotations = {
@@ -163,42 +178,6 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
           this.getProviderName();
       }
     });
-
-    // ATTEMPT ONE
-    // create a location with the URL set to this.baseUrl and the type of 'rhdh-rhoai-bridge'
-    // to correspond to the location annotations of the entities created; this may help reconciling with the bridge later on pushing updates via
-    // the catalog rest API.
-    // const thisLocation: LocationEntity = {
-    //   apiVersion: 'backstage.io/v1beta1',
-    //   kind: 'Location',
-    //   metadata: {
-    //     name: `ModelCatalogResourceEntityProvider_${this.env}`,
-    //     annotations: {
-    //       [ANNOTATION_LOCATION]: this.getProviderName(),
-    //       [ANNOTATION_ORIGIN_LOCATION]: this.getProviderName(),
-    //     },
-    //   },
-    //   spec: {
-    //     type: 'rhdh-rhoai-bridge',
-    //     target: this.baseUrl,
-    //   },
-    // };
-    // entityList.push(thisLocation);
-
-    // ATTEMPT TWO at creating a location
-    // const entities = this.getLocationEntity(this.baseUrl)
-    // await this.connection.applyMutation({
-    //   type: 'full',
-    //   entities,
-    // });
-
-    /* const modelServerName: string = this.convertModeServerName(this.name);
-    let entities: Entity[] = [];
-    const modelServerEntity: ComponentEntity =
-      this.buildComponentEntityFromModelEndpoint(modelServerName);
-    const modelResourceEntities: ResourceEntity[] =
-      this.buildResourceEntityFromModelEndpoint(modelList, modelServerName);
-    entities = entities.concat(modelServerEntity, modelResourceEntities);
 
     /** [6]: Add/update the catalog entities that correspond to the models */
     await this.connection.applyMutation({
