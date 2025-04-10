@@ -19,19 +19,23 @@ import {
   createRoutableExtension,
   IconComponent,
   discoveryApiRef,
-  fetchApiRef,
   configApiRef,
+  oauthRequestApiRef,
 } from '@backstage/core-plugin-api';
+import { OAuth2 } from '@backstage/core-app-api';
 import { rootRouteRef } from './routes';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
 import {
   registerApiRef,
+  keycloakApiRef,
   RegistrationBackendClient,
   KubeBackendClient,
   kubeApiRef,
   aapApiRef,
-  AAPBackendClient,
+  AnsibleBackendClient,
+  secureFetchApiRef,
+  SecureFetchClient,
 } from './api';
 
 /**
@@ -45,32 +49,62 @@ export const sandboxPlugin = createPlugin({
   },
   apis: [
     createApiFactory({
+      api: keycloakApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        oauthRequestApi: oauthRequestApiRef,
+        configApi: configApiRef,
+      },
+      factory: ({ discoveryApi, oauthRequestApi, configApi }) =>
+        OAuth2.create({
+          configApi,
+          discoveryApi,
+          oauthRequestApi,
+          provider: {
+            id: 'oidc',
+            title: 'Keycloak OIDC',
+            icon: () => null,
+          },
+          environment: configApi.getOptionalString('auth.environment'),
+          defaultScopes: ['openid', 'profile', 'email'],
+        }),
+    }),
+    createApiFactory({
+      api: secureFetchApiRef,
+      deps: { oauthApi: keycloakApiRef },
+      factory: ({ oauthApi }) => new SecureFetchClient({ oauthApi }),
+    }),
+    createApiFactory({
       api: registerApiRef,
       deps: {
         configApi: configApiRef,
         discoveryApi: discoveryApiRef,
-        fetchApi: fetchApiRef,
+        secureFetchApi: secureFetchApiRef,
       },
-      factory: ({ configApi, discoveryApi, fetchApi }) =>
-        new RegistrationBackendClient({ configApi, discoveryApi, fetchApi }),
+      factory: ({ configApi, discoveryApi, secureFetchApi }) =>
+        new RegistrationBackendClient({
+          configApi,
+          discoveryApi,
+          secureFetchApi,
+        }),
     }),
     createApiFactory({
       api: kubeApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
-        fetchApi: fetchApiRef,
+        secureFetchApi: secureFetchApiRef,
       },
-      factory: ({ discoveryApi, fetchApi }) =>
-        new KubeBackendClient({ discoveryApi, fetchApi }),
+      factory: ({ discoveryApi, secureFetchApi }) =>
+        new KubeBackendClient({ discoveryApi, secureFetchApi }),
     }),
     createApiFactory({
       api: aapApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
-        fetchApi: fetchApiRef,
+        secureFetchApi: secureFetchApiRef,
       },
-      factory: ({ discoveryApi, fetchApi }) =>
-        new AAPBackendClient({ discoveryApi, fetchApi }),
+      factory: ({ discoveryApi, secureFetchApi }) =>
+        new AnsibleBackendClient({ discoveryApi, secureFetchApi }),
     }),
   ],
 });
@@ -98,7 +132,7 @@ export const SandboxActivitiesPage = sandboxPlugin.provide(
   createRoutableExtension({
     name: 'SandboxActivitiesPage',
     component: () =>
-      import('./components/SandboxActivities/SandboxActvitiesPage').then(
+      import('./components/SandboxActivities/SandboxActivitiesPage').then(
         m => m.SandboxActivitiesPage,
       ),
     mountPoint: rootRouteRef,

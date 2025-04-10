@@ -15,14 +15,15 @@
  */
 
 /// <reference path="../../@types/index.d.ts" />
-import { ConfigApi, DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
+import { ConfigApi, DiscoveryApi } from '@backstage/core-plugin-api';
 import { isValidCountryCode, isValidPhoneNumber } from '../utils/phone-utils';
 import { CommonResponse, SignupData } from '../types';
+import { SecureFetchApi } from './SecureFetchClient';
 
 export type RegistrationBackendClientOptions = {
   configApi: ConfigApi;
   discoveryApi: DiscoveryApi;
-  fetchApi: FetchApi;
+  secureFetchApi: SecureFetchApi;
 };
 
 export interface RegistrationService {
@@ -39,13 +40,13 @@ export interface RegistrationService {
 
 export class RegistrationBackendClient implements RegistrationService {
   private readonly discoveryApi: DiscoveryApi;
-  private readonly fetchApi: FetchApi;
   private readonly configApi: ConfigApi;
+  private readonly secureFetchApi: SecureFetchApi;
 
   constructor(options: RegistrationBackendClientOptions) {
     this.discoveryApi = options.discoveryApi;
-    this.fetchApi = options.fetchApi;
     this.configApi = options.configApi;
+    this.secureFetchApi = options.secureFetchApi;
   }
 
   private readonly signupAPI = async (): Promise<string> => {
@@ -61,7 +62,9 @@ export class RegistrationBackendClient implements RegistrationService {
 
   getSignUpData = async (): Promise<SignupData | undefined> => {
     const signupURL = await this.signupAPI();
-    const response = await this.fetchApi.fetch(signupURL);
+    const response = await this.secureFetchApi.fetch(signupURL, {
+      method: 'GET',
+    });
     if (!response.ok) {
       if (response.status === 404) {
         return undefined;
@@ -110,7 +113,7 @@ export class RegistrationBackendClient implements RegistrationService {
       throw new Error(`Error getting recaptcha token: ${err}`);
     }
     const signupURL = await this.signupAPI();
-    await this.fetchApi.fetch(signupURL, {
+    await this.secureFetchApi.fetch(signupURL, {
       method: 'POST',
       headers: {
         'Recaptcha-Token': token,
@@ -130,7 +133,7 @@ export class RegistrationBackendClient implements RegistrationService {
     if (!isValidPhoneNumber(phoneNumber)) {
       throw new Error('Invalid phone number.');
     }
-    const response = await this.fetchApi.fetch(verificationURL, {
+    const response = await this.secureFetchApi.fetch(verificationURL, {
       method: 'PUT',
       body: JSON.stringify({
         country_code: countryCode,
@@ -146,9 +149,12 @@ export class RegistrationBackendClient implements RegistrationService {
 
   completePhoneVerification = async (code: string): Promise<void> => {
     const verificationURL = `${await this.signupAPI()}/verification`;
-    const response = await this.fetchApi.fetch(`${verificationURL}/${code}`, {
-      method: 'GET',
-    });
+    const response = await this.secureFetchApi.fetch(
+      `${verificationURL}/${code}`,
+      {
+        method: 'GET',
+      },
+    );
 
     if (!response.ok) {
       const error: CommonResponse = await response.json();
@@ -158,7 +164,7 @@ export class RegistrationBackendClient implements RegistrationService {
 
   verifyActivationCode = async (code: string): Promise<void> => {
     const verificationURL = `${await this.signupAPI()}/verification/activation-code`;
-    const response = await this.fetchApi.fetch(verificationURL, {
+    const response = await this.secureFetchApi.fetch(verificationURL, {
       method: 'POST',
       body: JSON.stringify({
         code: code,

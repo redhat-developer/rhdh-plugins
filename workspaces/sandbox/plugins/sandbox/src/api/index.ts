@@ -13,14 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createApiRef } from '@backstage/core-plugin-api';
+import {
+  ApiRef,
+  BackstageIdentityApi,
+  createApiRef,
+  OAuthApi,
+  OpenIdConnectApi,
+  ProfileInfoApi,
+  SessionApi,
+} from '@backstage/core-plugin-api';
 import { RegistrationService } from './RegistrationBackendClient';
 import { KubeAPIService } from './KubeBackendClient';
-import { AAPService } from './AAPBackendClient';
+import { AAPService } from './AnsibleBackendClient';
+import { SecureFetchApi } from './SecureFetchClient';
 
+export * from './SecureFetchClient';
 export * from './RegistrationBackendClient';
 export * from './KubeBackendClient';
-export * from './AAPBackendClient';
+export * from './AnsibleBackendClient';
+
+export const keycloakApiRef: ApiRef<
+  OpenIdConnectApi &
+    ProfileInfoApi &
+    BackstageIdentityApi &
+    SessionApi &
+    OAuthApi
+> = createApiRef({
+  id: 'plugin.sandbox.keycloak.api-ref',
+});
+
+export const secureFetchApiRef = createApiRef<SecureFetchApi>({
+  id: 'plugin.sandbox.secure-fetch.api-ref',
+});
 
 export const registerApiRef = createApiRef<RegistrationService>({
   id: 'plugin.sandbox.registration.api-ref',
