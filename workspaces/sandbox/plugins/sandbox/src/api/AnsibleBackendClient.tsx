@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-import { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
+import { DiscoveryApi } from '@backstage/core-plugin-api';
 import { errorMessage } from '../utils/common';
 import { AAPObject } from '../utils/aap-utils';
 import { AAPData } from '../types';
+import { SecureFetchApi } from './SecureFetchClient';
 
-export type AAPBackendClientOptions = {
+export type AnsibleBackendClientOptions = {
   discoveryApi: DiscoveryApi;
-  fetchApi: FetchApi;
+  secureFetchApi: SecureFetchApi;
 };
 
 export interface AAPService {
@@ -31,13 +32,13 @@ export interface AAPService {
   deleteAAPCR(namespace: string): Promise<void>;
 }
 
-export class AAPBackendClient implements AAPService {
+export class AnsibleBackendClient implements AAPService {
   private readonly discoveryApi: DiscoveryApi;
-  private readonly fetchApi: FetchApi;
+  private readonly secureFetchApi: SecureFetchApi;
 
-  constructor(options: AAPBackendClientOptions) {
+  constructor(options: AnsibleBackendClientOptions) {
     this.discoveryApi = options.discoveryApi;
-    this.fetchApi = options.fetchApi;
+    this.secureFetchApi = options.secureFetchApi;
   }
 
   private readonly kubeAPI = async (): Promise<string> => {
@@ -47,9 +48,12 @@ export class AAPBackendClient implements AAPService {
   getAAP = async (namespace: string): Promise<AAPData | undefined> => {
     const kubeApi = await this.kubeAPI();
     const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'GET',
-    });
+    const response = await this.secureFetchApi.fetch(
+      `${kubeApi}${projectAAPUrl}`,
+      {
+        method: 'GET',
+      },
+    );
 
     if (!response.ok) {
       const error = await response.json();
@@ -61,13 +65,16 @@ export class AAPBackendClient implements AAPService {
   createAAP = async (namespace: string): Promise<void> => {
     const kubeApi = await this.kubeAPI();
     const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'POST',
-      body: AAPObject,
-      headers: {
-        'Content-Type': 'application/yaml',
+    const response = await this.secureFetchApi.fetch(
+      `${kubeApi}${projectAAPUrl}`,
+      {
+        method: 'POST',
+        body: AAPObject,
+        headers: {
+          'Content-Type': 'application/yaml',
+        },
       },
-    });
+    );
 
     if (!response.ok && response.status !== 409) {
       const error = await response.json();
@@ -78,17 +85,20 @@ export class AAPBackendClient implements AAPService {
   unIdleAAP = async (namespace: string): Promise<void> => {
     const kubeApi = await this.kubeAPI();
     const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms/sandbox-aap`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'PATCH',
-      body: JSON.stringify({
-        spec: {
-          idle_aap: false,
+    const response = await this.secureFetchApi.fetch(
+      `${kubeApi}${projectAAPUrl}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({
+          spec: {
+            idle_aap: false,
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/merge-patch+json',
         },
-      }),
-      headers: {
-        'Content-Type': 'application/merge-patch+json',
       },
-    });
+    );
 
     if (!response.ok) {
       const error = await response.json();
@@ -99,9 +109,12 @@ export class AAPBackendClient implements AAPService {
   deleteAAPCR = async (namespace: string): Promise<void> => {
     const kubeApi = await this.kubeAPI();
     const projectAAPUrl = `/apis/aap.ansible.com/v1alpha1/namespaces/${namespace}/ansibleautomationplatforms/sandbox-aap`;
-    const response = await this.fetchApi.fetch(`${kubeApi}${projectAAPUrl}`, {
-      method: 'DELETE',
-    });
+    const response = await this.secureFetchApi.fetch(
+      `${kubeApi}${projectAAPUrl}`,
+      {
+        method: 'DELETE',
+      },
+    );
 
     if (!response.ok && response.status !== 404) {
       const error = await response.json();
