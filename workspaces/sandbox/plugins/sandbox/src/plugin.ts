@@ -34,6 +34,8 @@ import {
   kubeApiRef,
   aapApiRef,
   AnsibleBackendClient,
+  secureFetchApiRef,
+  SecureFetchClient,
 } from './api';
 
 /**
@@ -68,36 +70,41 @@ export const sandboxPlugin = createPlugin({
         }),
     }),
     createApiFactory({
+      api: secureFetchApiRef,
+      deps: { oauthApi: keycloakApiRef },
+      factory: ({ oauthApi }) => new SecureFetchClient({ oauthApi }),
+    }),
+    createApiFactory({
       api: registerApiRef,
       deps: {
         configApi: configApiRef,
         discoveryApi: discoveryApiRef,
-        oauthApi: keycloakApiRef,
+        secureFetchApi: secureFetchApiRef,
       },
-      factory: ({ configApi, discoveryApi, oauthApi }) =>
+      factory: ({ configApi, discoveryApi, secureFetchApi }) =>
         new RegistrationBackendClient({
           configApi,
           discoveryApi,
-          oauthApi,
+          secureFetchApi,
         }),
     }),
     createApiFactory({
       api: kubeApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
-        oauthApi: keycloakApiRef,
+        secureFetchApi: secureFetchApiRef,
       },
-      factory: ({ discoveryApi, oauthApi }) =>
-        new KubeBackendClient({ discoveryApi, oauthApi }),
+      factory: ({ discoveryApi, secureFetchApi }) =>
+        new KubeBackendClient({ discoveryApi, secureFetchApi }),
     }),
     createApiFactory({
       api: aapApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
-        oauthApi: keycloakApiRef,
+        secureFetchApi: secureFetchApiRef,
       },
-      factory: ({ discoveryApi, oauthApi }) =>
-        new AnsibleBackendClient({ discoveryApi, oauthApi }),
+      factory: ({ discoveryApi, secureFetchApi }) =>
+        new AnsibleBackendClient({ discoveryApi, secureFetchApi }),
     }),
   ],
 });

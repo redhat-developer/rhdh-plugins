@@ -20,7 +20,13 @@ import {
   SandboxHomeIcon,
   SandboxActivitiesIcon,
 } from './plugin';
-import { registerApiRef, kubeApiRef, aapApiRef, keycloakApiRef } from './api';
+import {
+  registerApiRef,
+  kubeApiRef,
+  aapApiRef,
+  keycloakApiRef,
+  secureFetchApiRef,
+} from './api';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
 
@@ -42,7 +48,7 @@ describe('sandbox plugin', () => {
     const apis = [...sandboxPlugin.getApis()];
 
     // Check if we have 4 API factories
-    expect(apis).toHaveLength(4);
+    expect(apis).toHaveLength(5);
 
     // Check if each API is properly registered
     const apiRefs = apis.map((api: any) => api.api);
@@ -50,6 +56,7 @@ describe('sandbox plugin', () => {
     expect(apiRefs).toContain(kubeApiRef);
     expect(apiRefs).toContain(aapApiRef);
     expect(apiRefs).toContain(keycloakApiRef);
+    expect(apiRefs).toContain(secureFetchApiRef);
   });
 
   describe('routable extensions', () => {
@@ -89,7 +96,7 @@ describe('sandbox plugin', () => {
       expect(registrationApi?.deps).toEqual({
         configApi: expect.any(Object),
         discoveryApi: expect.any(Object),
-        oauthApi: keycloakApiRef,
+        secureFetchApi: secureFetchApiRef,
       });
     });
 
@@ -100,7 +107,7 @@ describe('sandbox plugin', () => {
       expect(kubeApi).toBeDefined();
       expect(kubeApi?.deps).toEqual({
         discoveryApi: expect.any(Object),
-        oauthApi: keycloakApiRef,
+        secureFetchApi: secureFetchApiRef,
       });
     });
 
@@ -111,7 +118,7 @@ describe('sandbox plugin', () => {
       expect(aapApi).toBeDefined();
       expect(aapApi?.deps).toEqual({
         discoveryApi: expect.any(Object),
-        oauthApi: keycloakApiRef,
+        secureFetchApi: secureFetchApiRef,
       });
     });
   });
@@ -125,6 +132,18 @@ describe('sandbox plugin', () => {
       discoveryApi: expect.any(Object),
       oauthRequestApi: expect.any(Object),
       configApi: expect.any(Object),
+    });
+  });
+
+  it('should create secure fetch API factory with correct dependencies', () => {
+    const apis = [...sandboxPlugin.getApis()];
+    const secureFetchApi = apis.find(
+      (api: any) => api.api === secureFetchApiRef,
+    );
+
+    expect(secureFetchApi).toBeDefined();
+    expect(secureFetchApi?.deps).toEqual({
+      oauthApi: keycloakApiRef,
     });
   });
 });

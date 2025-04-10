@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { DiscoveryApi, OAuthApi } from '@backstage/core-plugin-api';
+import { DiscoveryApi } from '@backstage/core-plugin-api';
 import { errorMessage } from '../utils/common';
-import { fetchWithAuth } from '../utils/fetch-utils';
 import {
   DeploymentData,
   PersistentVolumeClaimData,
   SecretItem,
   StatefulSetData,
 } from '../types';
+import { SecureFetchApi } from './SecureFetchClient';
 
 export type KubeBackendClientOptions = {
   discoveryApi: DiscoveryApi;
-  oauthApi: OAuthApi;
+  secureFetchApi: SecureFetchApi;
 };
 
 export interface KubeAPIService {
@@ -58,11 +58,11 @@ export interface KubeAPIService {
 
 export class KubeBackendClient implements KubeAPIService {
   private readonly discoveryApi: DiscoveryApi;
-  private readonly oauthApi: OAuthApi;
+  private readonly secureFetchApi: SecureFetchApi;
 
   constructor(options: KubeBackendClientOptions) {
     this.discoveryApi = options.discoveryApi;
-    this.oauthApi = options.oauthApi;
+    this.secureFetchApi = options.secureFetchApi;
   }
 
   private readonly kubeAPI = async (): Promise<string> => {
@@ -117,8 +117,7 @@ export class KubeBackendClient implements KubeAPIService {
           // delete pvc if any
           if (volume.persistentVolumeClaim?.claimName) {
             const pvcURL = `/api/v1/namespaces/${userNamespace}/persistentvolumeclaims/${volume.persistentVolumeClaim.claimName}`;
-            const response = await fetchWithAuth(
-              this.oauthApi,
+            const response = await this.secureFetchApi.fetch(
               `${kubeApi}${pvcURL}`,
               {
                 method: 'DELETE',
@@ -133,8 +132,7 @@ export class KubeBackendClient implements KubeAPIService {
           // delete secret if any
           if (volume.secret?.secretName) {
             const secretURL = `/api/v1/namespaces/${userNamespace}/secrets/${volume.secret.secretName}`;
-            const response = await fetchWithAuth(
-              this.oauthApi,
+            const response = await this.secureFetchApi.fetch(
               `${kubeApi}${secretURL}`,
               {
                 method: 'DELETE',
@@ -170,8 +168,7 @@ export class KubeBackendClient implements KubeAPIService {
           if (pvcs && pvcs.items.length > 0) {
             for (const pvc of pvcs.items) {
               const pvcURL = `/api/v1/namespaces/${userNamespace}/persistentvolumeclaims/${pvc.metadata.name}`;
-              const response = await fetchWithAuth(
-                this.oauthApi,
+              const response = await this.secureFetchApi.fetch(
                 `${kubeApi}${pvcURL}`,
                 {
                   method: 'DELETE',
@@ -194,8 +191,7 @@ export class KubeBackendClient implements KubeAPIService {
   ): Promise<SecretItem | undefined> => {
     const kubeApi = await this.kubeAPI();
     const projectSecretURL = `/api/v1/namespaces/${namespace}/secrets/${secretName}`;
-    const response = await fetchWithAuth(
-      this.oauthApi,
+    const response = await this.secureFetchApi.fetch(
       `${kubeApi}${projectSecretURL}`,
       {
         method: 'GET',
@@ -215,7 +211,7 @@ export class KubeBackendClient implements KubeAPIService {
   ): Promise<PersistentVolumeClaimData | undefined> => {
     const kubeApi = await this.kubeAPI();
     const url = this.projectPersistentVolumeClaimUrl(namespace, labels);
-    const response = await fetchWithAuth(this.oauthApi, `${kubeApi}${url}`, {
+    const response = await this.secureFetchApi.fetch(`${kubeApi}${url}`, {
       method: 'GET',
     });
 
@@ -232,7 +228,7 @@ export class KubeBackendClient implements KubeAPIService {
   ): Promise<DeploymentData | undefined> => {
     const kubeApi = await this.kubeAPI();
     const url = this.projectDeploymentUrl(namespace, labels);
-    const response = await fetchWithAuth(this.oauthApi, `${kubeApi}${url}`, {
+    const response = await this.secureFetchApi.fetch(`${kubeApi}${url}`, {
       method: 'GET',
     });
 
@@ -249,7 +245,7 @@ export class KubeBackendClient implements KubeAPIService {
   ): Promise<StatefulSetData | undefined> => {
     const kubeApi = await this.kubeAPI();
     const url = this.projectStatefulSetUrl(namespace, labels);
-    const response = await fetchWithAuth(this.oauthApi, `${kubeApi}${url}`, {
+    const response = await this.secureFetchApi.fetch(`${kubeApi}${url}`, {
       method: 'GET',
     });
 

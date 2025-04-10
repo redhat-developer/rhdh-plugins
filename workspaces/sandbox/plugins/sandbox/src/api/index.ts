@@ -25,7 +25,9 @@ import {
 import { RegistrationService } from './RegistrationBackendClient';
 import { KubeAPIService } from './KubeBackendClient';
 import { AAPService } from './AnsibleBackendClient';
+import { SecureFetchApi } from './SecureFetchClient';
 
+export * from './SecureFetchClient';
 export * from './RegistrationBackendClient';
 export * from './KubeBackendClient';
 export * from './AnsibleBackendClient';
@@ -38,6 +40,10 @@ export const keycloakApiRef: ApiRef<
     OAuthApi
 > = createApiRef({
   id: 'plugin.sandbox.keycloak.api-ref',
+});
+
+export const secureFetchApiRef = createApiRef<SecureFetchApi>({
+  id: 'plugin.sandbox.secure-fetch.api-ref',
 });
 
 export const registerApiRef = createApiRef<RegistrationService>({
