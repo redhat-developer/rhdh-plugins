@@ -40,15 +40,15 @@ import {
   ProcessInstanceStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { orchestratorApiRef } from '../api';
-import { DEFAULT_TABLE_PAGE_SIZE, VALUE_UNAVAILABLE } from '../constants';
-import usePolling from '../hooks/usePolling';
-import { workflowInstanceRouteRef, workflowRouteRef } from '../routes';
-import { Selector } from './Selector';
-import OverrideBackstageTable from './ui/OverrideBackstageTable';
-import { mapProcessInstanceToDetails } from './WorkflowInstancePageContent';
-import { WorkflowInstanceStatusIndicator } from './WorkflowInstanceStatusIndicator';
-import { WorkflowRunDetail } from './WorkflowRunDetail';
+import { orchestratorApiRef } from '../../api';
+import { DEFAULT_TABLE_PAGE_SIZE, VALUE_UNAVAILABLE } from '../../constants';
+import usePolling from '../../hooks/usePolling';
+import { workflowInstanceRouteRef, workflowRouteRef } from '../../routes';
+import { Selector } from '../Selector';
+import OverrideBackstageTable from '../ui/OverrideBackstageTable';
+import { mapProcessInstanceToDetails } from '../WorkflowInstancePageContent';
+import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
+import { WorkflowRunDetail } from '../WorkflowRunDetail';
 
 const makeSelectItemsFromProcessInstanceValues = () =>
   [

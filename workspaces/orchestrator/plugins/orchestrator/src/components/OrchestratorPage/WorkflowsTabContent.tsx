@@ -27,8 +27,8 @@ import Grid from '@material-ui/core/Grid/Grid';
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { orchestratorApiRef } from '../api';
-import usePolling from '../hooks/usePolling';
+import { orchestratorApiRef } from '../../api';
+import usePolling from '../../hooks/usePolling';
 import { WorkflowsTable } from './WorkflowsTable';
 
 export const WorkflowsTabContent = () => {
