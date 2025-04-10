@@ -121,7 +121,6 @@ export class OrchestratorClient implements OrchestratorApi {
       try {
         const credentials = await this.scmAuthApi.getCredentials({
           url,
-          token: true,
           optional: false,
         });
 
