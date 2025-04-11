@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.5.0
+
+### Minor Changes
+
+- 72cf928: Add keyboard navigation support to global header menu items
+
+### Patch Changes
+
+- 41ebaf4: remove search bar underline
+
 ## 1.4.0
 
 ### Minor Changes
