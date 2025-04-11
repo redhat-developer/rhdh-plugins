@@ -18,8 +18,10 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { Link } from '@backstage/core-components';
+import { makeStyles, useTheme } from '@material-ui/core';
+import { Theme } from '@mui/material/styles';
 
 interface CardWrapperProps {
   title: string;
@@ -28,12 +30,27 @@ interface CardWrapperProps {
   buttonLink: string;
 }
 
+const getStyles = makeStyles((theme: Theme) => ({
+  link: {
+    textTransform: 'none',
+    minWidth: '200px',
+    padding: theme.spacing(1),
+    display: 'flex',
+    fontSize: '16px',
+    border: `1px solid ${
+      theme.palette.mode === 'light' ? '#0066CC' : '#1FA7F8'
+    }`,
+  },
+}));
+
 const CardWrapper: React.FC<CardWrapperProps> = ({
   title,
   description,
   buttonText,
   buttonLink,
 }) => {
+  const theme = useTheme();
+  const classes = getStyles(theme);
   return (
     <Box>
       <CardContent sx={{ width: '220px', backgroundColor: 'transparent' }}>
@@ -61,25 +78,16 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
           </Typography>
         </Box>
         <Box>
-          <Button
-            variant="outlined"
-            href={buttonLink}
-            target="_blank"
-            sx={{
-              textTransform: 'none',
-              minWidth: '200px',
-              p: 1,
-              justifyContent: 'flex-start',
-              fontSize: '16px',
-              fontWeight: '400',
-              border: theme =>
-                `1px solid ${
-                  theme.palette.mode === 'light' ? '#0066CC' : '#1FA7F8'
-                }`,
-            }}
-          >
-            {buttonText} <ArrowForwardIcon sx={{ pl: 0.5 }} />
-          </Button>
+          <Link to={buttonLink} underline="none" className={classes.link}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              {buttonText} <ArrowForwardIcon sx={{ pl: 0.5 }} />
+            </div>
+          </Link>
         </Box>
       </CardContent>
     </Box>

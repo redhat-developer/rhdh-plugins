@@ -13,39 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Entity } from '@backstage/catalog-model';
-
-import YAML from 'yaml';
-
-// listModels will list the models from an OpenAI compatible endpoint
-/*
-export async function listModels(
-  baseUrl: string,
-  access_token: string,
-): Promise<ModelList> {
-  const res = await fetch(`${baseUrl}/v1/models`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: access_token,
-    },
-    method: 'GET',
-  });
-
-  if (!res.ok) {
-    throw new Error(res.statusText);
-  }
-
-  const data = await res.json();
-  return data;
-}*/
+import { ModelCatalog } from '@redhat-ai-dev/model-catalog-types';
 
 /**
- * fetchCatalogEntities retrieves model catalog entities from the Model Catalog Bridge services
+ * ModelCatalogKeys is the object used by the bridge to return the list of keys corresponding to each model catalog entry in the bridge
  * @public
  */
-export async function fetchCatalogEntities(baseUrl: string): Promise<Entity[]> {
+export interface ModelCatalogKeys {
+  uris: string[];
+}
+
+/**
+ * fetchModelCatalogKeys retrieves the keys for each of the model catalog entries in the model catalog bridge service
+ * @public
+ */
+export async function fetchModelCatalogKeys(
+  baseUrl: string,
+): Promise<string[]> {
   // ToDo: Discover catalog-info endpoint?
-  const res = await fetch(`${baseUrl}`, {
+  const res = await fetch(`${baseUrl}/list`, {
     method: 'GET',
   });
 
@@ -53,11 +39,26 @@ export async function fetchCatalogEntities(baseUrl: string): Promise<Entity[]> {
     throw new Error(res.statusText);
   }
 
-  // ToDo: Look at seeing if we can use the parser provided by the CatalogProcessorProvider package
-  const data = await res
-    .blob()
-    .then(blob => blob.text())
-    .then(yamlStr => YAML.parseAllDocuments(yamlStr))
-    .then(yamlData => yamlData.map(item => item.toJS()));
-  return data;
+  const modelCatalogKeys: ModelCatalogKeys = await res.json();
+  return modelCatalogKeys.uris;
+}
+
+/**
+ * fetchModelCatalogFromKey fetches a model catalog JSON object from the bridge based on a given key
+ * @public
+ */
+export async function fetchModelCatalogFromKey(
+  baseUrl: string,
+  modelCatalogKey: string,
+): Promise<ModelCatalog> {
+  const res = await fetch(`${baseUrl}${modelCatalogKey}`, {
+    method: 'GET',
+  });
+
+  if (!res.ok) {
+    throw new Error(res.statusText);
+  }
+
+  const modelCatalog: ModelCatalog = await res.json();
+  return modelCatalog;
 }

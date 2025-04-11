@@ -268,8 +268,8 @@ const WorkflowOutputs = ({
   }
 
   const links = outputs?.filter(item => item.format === 'link');
-  const nonLinksFiltered = outputs?.filter(item => item.format !== 'link');
-  const nonLinks = nonLinksFiltered.reduce<{
+  const nonLinks = outputs?.filter(item => item.format !== 'link');
+  const nonLinksAsObject = nonLinks.reduce<{
     [key: string]: any;
   }>((data, item) => {
     let value = item.value || '';
@@ -307,10 +307,10 @@ const WorkflowOutputs = ({
         </Grid>
       )}
 
-      {nonLinks?.length > 0 && (
-        <Grid item md={12} key="__links" className={styles.values}>
+      {Object.keys(nonLinksAsObject).length > 0 && (
+        <Grid item md={12} key="non__links" className={styles.values}>
           <AboutField label="Values">
-            <StructuredMetadataTable dense metadata={nonLinks} />
+            <StructuredMetadataTable dense metadata={nonLinksAsObject} />
           </AboutField>
         </Grid>
       )}
