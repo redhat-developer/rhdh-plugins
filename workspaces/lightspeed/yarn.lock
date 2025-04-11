@@ -7941,17 +7941,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:^0.3.0":
-  version: 0.3.16
-  resolution: "@langchain/openai@npm:0.3.16"
+"@langchain/openai@npm:^0.5.0":
+  version: 0.5.5
+  resolution: "@langchain/openai@npm:0.5.5"
   dependencies:
     js-tiktoken: ^1.0.12
-    openai: ^4.77.0
+    openai: ^4.87.3
     zod: ^3.22.4
     zod-to-json-schema: ^3.22.3
   peerDependencies:
-    "@langchain/core": ">=0.2.26 <0.4.0"
-  checksum: 98147633629ec918434307de722e9aa7fb018a95d4e443d44d0bc782cc19e77a3a398eb07b691a78ff4a547ed4b707f941627f9a15e4a0803f5c24e0e4eac94b
+    "@langchain/core": ">=0.3.39 <0.4.0"
+  checksum: 45268375ee66f847a4b5ce64dbca86ad8ad07f0c6c6c9e23c50851f7abd501f841806aac7fb08c2213e6f2ef9f7ca3373243ff59e695626be22752114bfee142
   languageName: node
   linkType: hard
 
@@ -10545,7 +10545,7 @@ __metadata:
     "@backstage/plugin-permission-node": ^0.8.7
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
     "@langchain/core": ^0.3.0
-    "@langchain/openai": ^0.3.0
+    "@langchain/openai": ^0.5.0
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@types/express": 4.17.21
@@ -28024,9 +28024,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^4.52.6, openai@npm:^4.77.0":
-  version: 4.77.4
-  resolution: "openai@npm:4.77.4"
+"openai@npm:^4.52.6, openai@npm:^4.87.3":
+  version: 4.93.0
+  resolution: "openai@npm:4.93.0"
   dependencies:
     "@types/node": ^18.11.18
     "@types/node-fetch": ^2.6.4
@@ -28036,13 +28036,16 @@ __metadata:
     formdata-node: ^4.3.2
     node-fetch: ^2.6.7
   peerDependencies:
+    ws: ^8.18.0
     zod: ^3.23.8
   peerDependenciesMeta:
+    ws:
+      optional: true
     zod:
       optional: true
   bin:
     openai: bin/cli
-  checksum: b49027c284d2db9955d890442462ff88f7f6002269c6b42496753a417d86e99e618e5acc8e5911a303e2063483b4a998647e203fdfde0dd43c865087841d7900
+  checksum: 39fa6635475590c05c5fcb1fd07708c8f23d430dad36037c49fe25020ada0a4a36801e5c443669acd8f947d52005e3b7cf0215ca4b76262007f9b1ea3c916a68
   languageName: node
   linkType: hard
 
