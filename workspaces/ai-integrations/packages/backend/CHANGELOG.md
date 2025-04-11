@@ -1,5 +1,13 @@
 # backend
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [340bf72]
+- Updated dependencies [13a7a3a]
+  - @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog@0.3.0
+
 ## 0.0.2
 
 ### Patch Changes

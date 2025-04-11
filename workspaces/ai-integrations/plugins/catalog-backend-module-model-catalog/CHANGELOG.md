@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 0.3.0
+
+### Minor Changes
+
+- 340bf72: simplifying model catalog entity provider configuration until running the bridge as a pod is officially supported
+
+### Patch Changes
+
+- 13a7a3a: Add null check when retrieving keys from catalog bridge
+
 ## 0.2.0
 
 ### Minor Changes
