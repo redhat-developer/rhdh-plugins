@@ -141,4 +141,29 @@ describe('ModelCatalogResourceEntityProvider', () => {
       (connection.applyMutation as jest.Mock).mock.calls,
     ).toMatchSnapshot();
   });
+
+  it('should connect and run should resolve even if the keys returned are null', async () => {
+    (fetchModelCatalogKeys as jest.Mock).mockReturnValue(Promise.resolve(null));
+
+    const mcprovider = ModelCatalogResourceEntityProvider.fromConfig(
+      {
+        config: mockServices.rootConfig({ data: CONFIG }),
+        logger: mockServices.logger.mock(),
+      },
+      {
+        schedule,
+      },
+    );
+
+    for await (const k of mcprovider) {
+      await k.connect(connection);
+      await schedule.runAll();
+    }
+
+    expect(connection.applyMutation).toHaveBeenCalledTimes(1);
+    expect(fetchModelCatalogFromKey).toHaveBeenCalledTimes(0);
+    expect(
+      (connection.applyMutation as jest.Mock).mock.calls,
+    ).toMatchSnapshot();
+  });
 });

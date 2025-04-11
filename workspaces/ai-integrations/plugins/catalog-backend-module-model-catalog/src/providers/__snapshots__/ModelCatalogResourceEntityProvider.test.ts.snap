@@ -33,3 +33,14 @@ exports[`ModelCatalogResourceEntityProvider should connect and run should resolv
   ],
 ]
 `;
+
+exports[`ModelCatalogResourceEntityProvider should connect and run should resolve even if the keys returned are null 1`] = `
+[
+  [
+    {
+      "entities": [],
+      "type": "full",
+    },
+  ],
+]
+`;
