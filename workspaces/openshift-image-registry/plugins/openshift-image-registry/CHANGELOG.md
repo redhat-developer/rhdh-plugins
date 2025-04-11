@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.12.1
+
+### Patch Changes
+
+- c2f8760: Updated dependency `@types/node` to `18.19.86`.
+
 ## 1.12.0
 
 ### Minor Changes
