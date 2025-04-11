@@ -94,5 +94,7 @@ catalog:
     modelCatalog:
       # The field underneath here can be any value that you feel represents your model catalog bridge instance
       development:
-        # If testing locally, this value should be set to `localhost:9090`
-        baseUrl: '${RHDH_AI_BRIDGE_SERVER}'
+        # `http://localhost:9090` works in both local testing and when the bridge is running as a sidecar
+        # we'll hardcode for now and see about env vars later on once we officially take on running the bridge as
+        # a separate pod
+        baseUrl: 'http://localhost:9090'
