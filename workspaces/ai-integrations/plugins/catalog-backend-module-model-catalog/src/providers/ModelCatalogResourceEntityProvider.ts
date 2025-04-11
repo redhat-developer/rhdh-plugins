@@ -156,7 +156,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
     /** [5]: Fetch the model catalog keys from the bridge and fetch the corresponding catalog entries. */
     let catalogKeys = await fetchModelCatalogKeys(this.baseUrl);
     // If no models are registered yet, the catalogKeys array may be null, so handle it by setting it to be an emptyList
-    if (catalogKeys === null) {
+    if (catalogKeys === null || catalogKeys === undefined) {
       catalogKeys = [];
     }
     let entityList: Entity[] = [];
