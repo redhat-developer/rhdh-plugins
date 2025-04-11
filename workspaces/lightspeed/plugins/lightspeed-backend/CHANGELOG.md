@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 0.5.1
+
+### Patch Changes
+
+- d6bbaa9: Updated dependency `@langchain/openai` to `^0.5.0`.
+
 ## 0.5.0
 
 ### Minor Changes
