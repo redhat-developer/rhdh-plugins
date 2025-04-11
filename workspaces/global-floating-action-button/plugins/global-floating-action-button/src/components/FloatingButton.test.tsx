@@ -45,6 +45,10 @@ jest.mock('@mui/styles', () => ({
   },
 }));
 
+beforeEach(() => {
+  document.body.innerHTML = '<div class="BackstagePage-root-123"></div>';
+});
+
 describe('Floating Button', () => {
   it('should render a floating button', () => {
     render(

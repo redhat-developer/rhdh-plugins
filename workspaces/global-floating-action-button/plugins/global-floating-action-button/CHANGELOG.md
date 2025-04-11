@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.1.2
+
+### Patch Changes
+
+- 51c4635: fix fab position to append to Backstage-Root
+
 ## 1.1.1
 
 ### Patch Changes
