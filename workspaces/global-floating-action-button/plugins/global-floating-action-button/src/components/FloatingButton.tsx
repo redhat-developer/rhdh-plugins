@@ -59,7 +59,9 @@ export const FloatingButton = ({
 
   React.useEffect(() => {
     const checkTargetElement = () => {
-      const element = document.querySelector('[class^="BackstagePage-root"]');
+      const element =
+        document.querySelector('[class^="BackstagePage-root"]') ??
+        document.querySelector('main');
       if (element) {
         setTargetElement(element);
       } else {
@@ -80,9 +82,7 @@ export const FloatingButton = ({
   if (fabs?.length === 0) {
     return null;
   }
-  if (!targetElement) {
-    return null;
-  }
+
   let fabDiv;
   if (fabs.length > 1) {
     fabDiv = (
