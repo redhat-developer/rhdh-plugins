@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.1.3
+
+### Patch Changes
+
+- 038f03e: render fab on document body when the target element is not found
+
 ## 1.1.2
 
 ### Patch Changes
