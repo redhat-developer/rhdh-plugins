@@ -10835,7 +10835,7 @@ __metadata:
     react-dom: 16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
     react-use: ^17.2.4
-    start-server-and-test: 2.0.10
+    start-server-and-test: 2.0.11
     yaml: ^2.0.0
     yup: ^1.4.0
   peerDependencies:
@@ -15905,7 +15905,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.7.9, axios@npm:^1.0.0, axios@npm:^1.3.4, axios@npm:^1.6.0, axios@npm:^1.7.4, axios@npm:^1.7.9":
+"axios@npm:1.7.9":
   version: 1.7.9
   resolution: "axios@npm:1.7.9"
   dependencies:
@@ -15913,6 +15913,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: cb8ce291818effda09240cb60f114d5625909b345e10f389a945320e06acf0bc949d0f8422d25720f5dd421362abee302c99f5e97edec4c156c8939814b23d19
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.0.0, axios@npm:^1.3.4, axios@npm:^1.6.0, axios@npm:^1.7.4, axios@npm:^1.8.2":
+  version: 1.8.4
+  resolution: "axios@npm:1.8.4"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: e901dc1730bdcd769839b3d93ae6d6457a53d79b19a0eb623ebfea333441259ab51e63ca118baa47a5156567401466ac739f31087b4ee5e6770ab2e227484538
   languageName: node
   linkType: hard
 
@@ -32567,7 +32578,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:7.8.1, rxjs@npm:^7.5.5, rxjs@npm:^7.8.1":
+"rxjs@npm:7.8.1":
   version: 7.8.1
   resolution: "rxjs@npm:7.8.1"
   dependencies:
@@ -32582,6 +32593,15 @@ __metadata:
   dependencies:
     tslib: ^1.9.0
   checksum: bc334edef1bb8bbf56590b0b25734ba0deaf8825b703256a93714308ea36dff8a11d25533671adf8e104e5e8f256aa6fdfe39b2e248cdbd7a5f90c260acbbd1b
+  languageName: node
+  linkType: hard
+
+"rxjs@npm:^7.5.5, rxjs@npm:^7.8.2":
+  version: 7.8.2
+  resolution: "rxjs@npm:7.8.2"
+  dependencies:
+    tslib: ^2.1.0
+  checksum: 2f233d7c832a6c255dabe0759014d7d9b1c9f1cb2f2f0d59690fd11c883c9826ea35a51740c06ab45b6ade0d9087bde9192f165cba20b6730d344b831ef80744
   languageName: node
   linkType: hard
 
@@ -33695,9 +33715,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"start-server-and-test@npm:2.0.10":
-  version: 2.0.10
-  resolution: "start-server-and-test@npm:2.0.10"
+"start-server-and-test@npm:2.0.11":
+  version: 2.0.11
+  resolution: "start-server-and-test@npm:2.0.11"
   dependencies:
     arg: ^5.0.2
     bluebird: 3.7.2
@@ -33706,12 +33726,12 @@ __metadata:
     execa: 5.1.1
     lazy-ass: 1.6.0
     ps-tree: 1.2.0
-    wait-on: 8.0.2
+    wait-on: 8.0.3
   bin:
     server-test: src/bin/start.js
     start-server-and-test: src/bin/start.js
     start-test: src/bin/start.js
-  checksum: e70b4324f80778b726a1f2734dfcafda827b1bb3e7c0e5e69f8df470824d16e977f218fc0f08f9378bdedb8840b8e5a2a91cbfab3abf356bf6e1e17326a8b062
+  checksum: 7cd50cc4749d4307e654ac876425c4613e88c8c155bbdfa20be7aae0f06ce43b3831b6e77902e334ffe886c541d9d2c1998b9eaa6608963a0af6ef5b86257c20
   languageName: node
   linkType: hard
 
@@ -36277,18 +36297,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wait-on@npm:8.0.2":
-  version: 8.0.2
-  resolution: "wait-on@npm:8.0.2"
+"wait-on@npm:8.0.3":
+  version: 8.0.3
+  resolution: "wait-on@npm:8.0.3"
   dependencies:
-    axios: ^1.7.9
+    axios: ^1.8.2
     joi: ^17.13.3
     lodash: ^4.17.21
     minimist: ^1.2.8
-    rxjs: ^7.8.1
+    rxjs: ^7.8.2
   bin:
     wait-on: bin/wait-on
-  checksum: 3b6388f991faec8d5226f7a1c0dbcf9852f536632f987dd65f27e7a070d03bfc67f051a4d208009e6dbbdb095a6f9109394c2dc88fec191a798983e0c8469471
+  checksum: 28b6984a5f42cf161dfa824f858b58ee9899d4b5428d4c086720e6e494b9caa3011991102a01e48f3ed3fdbfc3f2a6f32b56cf91b10955161b31222dc577935e
   languageName: node
   linkType: hard
 
