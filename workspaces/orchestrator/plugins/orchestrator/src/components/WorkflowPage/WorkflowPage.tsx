@@ -25,7 +25,7 @@ import { Grid } from '@material-ui/core';
 import { orchestratorApiRef } from '../../api';
 import { workflowRouteRef, workflowRunsRoutePath } from '../../routes';
 import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
-import { WorkflowRunsTabContent } from '../WorkflowRunsTabContent';
+import { WorkflowRunsTabContent } from '../OrchestratorPage/WorkflowRunsTabContent';
 import { RunButton } from './RunButton';
 import { WorkflowDetailsTabContent } from './WorkflowDetailsTabContent';
 
