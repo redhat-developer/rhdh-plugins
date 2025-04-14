@@ -268,8 +268,6 @@ export const PreviewPullRequestForm = ({
       </Box>
 
       <TextField
-        // eslint-disable-next-line no-restricted-syntax
-        id={`${approvalTool} title`.toLowerCase().split(' ').join('-')}
         label={`${approvalTool} title`}
         placeholder="Add Backstage catalog entity descriptor files"
         variant="outlined"
@@ -284,8 +282,6 @@ export const PreviewPullRequestForm = ({
       />
 
       <TextField
-        // eslint-disable-next-line no-restricted-syntax
-        id={`${approvalTool} body`.toLowerCase().split(' ').join('-')}
         label={`${approvalTool} body`}
         placeholder="A describing text with Markdown support"
         margin="normal"
@@ -305,7 +301,6 @@ export const PreviewPullRequestForm = ({
       </Box>
 
       <TextField
-        id="component-name"
         label="Name of the created component"
         placeholder="Component Name"
         margin="normal"
