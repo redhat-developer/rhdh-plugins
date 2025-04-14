@@ -60,6 +60,7 @@ export const CustomSelectFilter = (props: BackstageSelectFilterProps) => {
         disableCloseOnSelect
         aria-label={props.label}
         options={props.items}
+        isOptionEqualToValue={(option, value) => option.value === value.value}
         getOptionLabel={option => option.label}
         onChange={props.onChange}
         renderOption={(renderProps, option, selectedOption) => {
@@ -72,7 +73,7 @@ export const CustomSelectFilter = (props: BackstageSelectFilterProps) => {
                 style={{ marginRight: 8 }}
                 checked={
                   props.selectedItems.find(
-                    c => c.value === option.value.toString(),
+                    c => c.label === option.label.toString(),
                   )
                     ? true
                     : selectedOption.selected
