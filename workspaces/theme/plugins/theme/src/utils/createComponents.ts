@@ -131,12 +131,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             height: 0,
           },
         },
-        rounded: {
-          '& > :last-child': {
-            borderBottomLeftRadius: 4,
-            borderBottomRightRadius: 4,
-          },
-        },
         elevation0: noElevationStyle,
       },
     };
@@ -162,19 +156,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     });
   }
 
-  // MUI AppBar
-  if (options.appBar !== 'mui') {
-    components.MuiAppBar = {
-      styleOverrides: {
-        root: {
-          backgroundColor: general.appBarBackgroundColor,
-          backgroundImage: general.appBarBackgroundImage,
-          outline: 'none',
-        },
-      },
-    };
-  }
-
   // MUI buttons
   // Don't disableRipple for MuiButtonBase as it will affect all the buttons
   // and we need to ensure that the buttons have a right touch and focus styling.
@@ -186,10 +167,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         root: {
           textTransform: 'none',
+          border: '0',
           borderRadius: '3px',
         },
         contained: {
-          border: '0',
           boxShadow: 'none',
           '&:hover': {
             border: '0',
@@ -224,11 +205,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '&:hover': {
             backgroundColor: 'transparent',
             border: `1px solid`,
-          },
-          '&:disabled': {
-            color: general.disabled,
-            backgroudColor: general.disabledBackground,
-            border: `1px solid ${general.disabledBackground}`,
           },
         },
         outlinedPrimary: {
