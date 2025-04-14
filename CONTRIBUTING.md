@@ -22,15 +22,15 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
     - [Next steps](#next-steps)
     - [Maintenance of older versions](#maintenance-of-older-versions)
   - [API Reports](#api-reports)
-  - [Maintaining Plugins](#maintaining-plugins)
+  - [Submitting a Pull Request](#submitting-a-pull-request)
+  - [Plugin Owner Responsibilities](#plugin-owner-responsibilities)
+    - [Responsibilities](#responsibilities)
     - [Keeping Workspaces Up to Date with Backstage](#keeping-workspaces-up-to-date-with-backstage)
       - [Process](#process)
     - [Updating Dependencies with Renovate](#updating-dependencies-with-renovate)
       - [Types of PRs](#types-of-prs)
         - [Dependency Updates](#dependency-updates)
         - [Security Fixes](#security-fixes)
-      - [Responsibilities](#responsibilities)
-  - [Submitting a Pull Request](#submitting-a-pull-request)
 
 ## License
 
@@ -262,14 +262,38 @@ There are two ways you can do this:
 
 Each plugin/package has its own API Report which means you might see more than one file updated or created depending on your changes. These changes will then need to be committed as well.
 
-## Maintaining Plugins
+## Submitting a Pull Request
+
+When you've got your contribution working, tested, and committed to your branch it's time to create a Pull Request (PR). If you are unsure how to do this GitHub's [Creating a pull request from a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) documentation will help you with that.
+
+
+## Plugin Owner Responsibilities
+
+> [!NOTE]
+> To carry out your responsibilities as a plugin owner, you will need write access to the repository. If you are a plugin owner and do not have write access, please reach out to one of the [repository maintainers](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-maintainers).
+
+As a plugin owner, you are responsible for the ongoing health and maintenance of your plugin(s) in this repository.
+
+### Responsibilities
+
+- **Review, approve, and merge PRs** opened against your plugin, including:
+  - Community contributions
+  - Renovate PRs (See [Updating Dependencies with Renovate](#updating-dependencies-with-renovate))
+  - Dependabot PRs
+  - Version package PRs
+- **Keep your workspace(s) up to date** with the latest Backstage version supported by RHDH.  
+  See [Keeping Workspaces Up to Date](#keeping-workspaces-up-to-date-with-backstage).
+- **Manage security updates and patches**:  
+  Work with your security team to address vulnerabilities according to SLA and product lifecycle requirements.
+  Since this repository does not maintain release branches, Renovate only opens PRs against the latest code.  
+  If your plugin is used in multiple product versions, you are responsible for backporting critical patches.
+- **Justify Dependency-Related PR closures**:  
+  If you choose not to merge a Renovate or dependency-related PR, include a brief explanation when closing it.
+
 
 ### Keeping Workspaces Up to Date with Backstage
 
 To keep plugins in the various workspaces up to date with Backstage we have a [Version Bump Workflow](https://github.com/redhat-developer/rhdh-plugins/actions/workflows/version-bump.yml) in place, similar to the one that is used in the [backstage/community-plugins](https://github.com/backstage/community-plugins) repository.
-
-> [!NOTE]
-> To run this workflow, you will need write access to the repository. If you are a plugin owner and do not have write access, please reach out to one of the repository admins (@bethgriggs, @nickboldt, @04kash).
 
 #### Process
 
@@ -301,16 +325,3 @@ This repository uses [Renovate](https://docs.renovatebot.com/) to automatically 
 
 - PRs can also be opened for security alerts. These PRs are distinguishable with a `[security]`suffix in its title and will also have a `security` label.
 
-#### Responsibilities
-
-As a plugin owner,
-
-- You are responsible for reviewing, approving, and merging the PRs opened against your plugins
-- If you decide to not accept the Renovate fixes, provide a justification before closing.
-- Work with your security team to ensure vulnerabilities are fixed according to their SLA timelines and Product Lifecycle requirements.
-
-Because we do not have release branches in this repo, Renovate will only create PRs against the latest code. Plugin owners will need to ensure any necessary patches are backported if their plugins are maintained in multiple product versions.
-
-## Submitting a Pull Request
-
-When you've got your contribution working, tested, and committed to your branch it's time to create a Pull Request (PR). If you are unsure how to do this GitHub's [Creating a pull request from a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) documentation will help you with that.
