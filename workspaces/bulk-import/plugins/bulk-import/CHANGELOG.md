@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.12.2
+
+### Patch Changes
+
+- 2aa88ad: fixes runtime error on click of Preview PR in localhost/dev mode
+
 ## 1.12.1
 
 ### Patch Changes
