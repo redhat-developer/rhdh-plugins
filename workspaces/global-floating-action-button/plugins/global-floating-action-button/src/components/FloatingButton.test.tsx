@@ -49,21 +49,36 @@ beforeEach(() => {
   document.body.innerHTML = '<div class="BackstagePage-root-123"></div>';
 });
 
+const renderFab = (htmlContent: string) => {
+  document.body.innerHTML = htmlContent;
+  render(
+    <FloatingButton
+      floatingButtons={[
+        {
+          icon: <AddIcon />,
+          label: 'Add',
+        },
+      ]}
+      slot={Slot.BOTTOM_LEFT}
+    />,
+  );
+};
+
 describe('Floating Button', () => {
   it('should render a floating button', () => {
-    render(
-      <FloatingButton
-        floatingButtons={[
-          {
-            icon: <AddIcon />,
-            label: 'Add',
-            color: 'primary',
-            toolTip: 'Main menu',
-          },
-        ]}
-        slot={Slot.BOTTOM_LEFT}
-      />,
-    );
+    renderFab('<div class="BackstagePage-root-123"></div>');
+    expect(screen.getByTestId('floating-button')).toBeInTheDocument();
+    expect(screen.getByTestId('AddIcon')).toBeInTheDocument();
+  });
+
+  it('should render a floating button in the UI when the `BackstagePage-root` classname is not found', () => {
+    renderFab('<div class="BackstagePage-xxx-123"></div>');
+    expect(screen.getByTestId('floating-button')).toBeInTheDocument();
+    expect(screen.getByTestId('AddIcon')).toBeInTheDocument();
+  });
+
+  it('should render a floating button when the `BackstagePage-root` classname is not found but the html tag is found', () => {
+    renderFab('<main class="BackstagePage-xxx-123"></div>');
     expect(screen.getByTestId('floating-button')).toBeInTheDocument();
     expect(screen.getByTestId('AddIcon')).toBeInTheDocument();
   });
