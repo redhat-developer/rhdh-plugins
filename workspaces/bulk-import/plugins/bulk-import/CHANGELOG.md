@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.12.1
+
+### Patch Changes
+
+- d5cc14d: added MUI class generator
+
 ## 1.12.0
 
 ### Minor Changes
