@@ -18,24 +18,15 @@ import React from 'react';
 
 import { LinkButton } from '@backstage/core-components';
 
+import { Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { AddRepositoriesFormValues } from '../../types';
 
-const useStyles = makeStyles(() => ({
-  addLink: {
-    display: 'flex',
-    justifyContent: 'end',
-    marginBottom: '24px',
-  },
-}));
-
 export const RepositoriesAddLink = () => {
   const { status, setStatus } = useFormikContext<AddRepositoriesFormValues>();
-  const classes = useStyles();
 
   const handleCloseAlert = () => {
     setStatus(null);
@@ -53,7 +44,13 @@ export const RepositoriesAddLink = () => {
           <br />
         </>
       )}
-      <span className={classes.addLink}>
+      <Typography
+        sx={{
+          display: 'flex',
+          justifyContent: 'end',
+          marginBottom: '24px !important',
+        }}
+      >
         <LinkButton
           to="add"
           color="primary"
@@ -62,7 +59,7 @@ export const RepositoriesAddLink = () => {
         >
           Add
         </LinkButton>
-      </span>
+      </Typography>
     </>
   );
 };

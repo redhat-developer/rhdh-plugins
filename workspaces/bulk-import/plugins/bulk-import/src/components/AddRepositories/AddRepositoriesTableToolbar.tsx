@@ -20,7 +20,6 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import {
@@ -29,13 +28,6 @@ import {
   RepositorySelection,
 } from '../../types';
 import { RepositoriesSearchBar } from './RepositoriesSearchBar';
-
-const useStyles = makeStyles(() => ({
-  toolbar: {
-    paddingTop: '14px',
-    paddingBottom: '14px',
-  },
-}));
 
 export const AddRepositoriesTableToolbar = ({
   title,
@@ -56,7 +48,6 @@ export const AddRepositoriesTableToolbar = ({
     RepositorySelection.Repository,
   );
   const [search, setSearch] = React.useState<string>('');
-  const classes = useStyles();
   const [selectedReposNumber, setSelectedReposNumber] = React.useState(0);
   const handleToggle = (
     _event: React.MouseEvent<HTMLElement>,
@@ -90,7 +81,12 @@ export const AddRepositoriesTableToolbar = ({
   }, [selectedReposFromDrawer, values.repositories, activeOrganization]);
 
   return (
-    <Toolbar className={classes.toolbar}>
+    <Toolbar
+      sx={{
+        paddingTop: '14px',
+        paddingBottom: '14px',
+      }}
+    >
       <Typography
         sx={{ flex: '1 1 100%', fontWeight: 'bold' }}
         variant="h5"
@@ -100,7 +96,6 @@ export const AddRepositoriesTableToolbar = ({
       </Typography>
       {!activeOrganization && (
         <ToggleButtonGroup
-          size="medium"
           color="primary"
           value={selection}
           exclusive
