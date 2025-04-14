@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.1.4
+
+### Patch Changes
+
+- 8c2bdd9: add inline div styles to the FloatingButton element
+
 ## 1.1.3
 
 ### Patch Changes
