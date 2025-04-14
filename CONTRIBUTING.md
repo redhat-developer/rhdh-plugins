@@ -270,7 +270,7 @@ When you've got your contribution working, tested, and committed to your branch 
 ## Plugin Owner Responsibilities
 
 > [!NOTE]
-> To carry out your responsibilities as a plugin owner, you will need write access to the repository. If you are a plugin owner and do not have write access, please reach out to one of the repository admins.
+> To carry out your responsibilities as a plugin owner, you will need write access to the repository. If you are a plugin owner and do not have write access, please reach out to one of the [repository maintainers](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-maintainers).
 
 As a plugin owner, you are responsible for the ongoing health and maintenance of your plugin(s) in this repository.
 
