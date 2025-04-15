@@ -25,13 +25,9 @@ const evaluateParams = (
   newParams: URLSearchParams,
   filterName: string,
 ) => {
-  if (Array.isArray(newValues)) {
-    newValues.forEach(v => {
-      newParams.append(filterSearchParam, `${filterName}=${v}`);
-    });
-  } else {
-    newParams.append(filterSearchParam, `${filterName}=${newValues}`);
-  }
+  newValues.forEach(v => {
+    newParams.append(filterSearchParam, `${filterName}=${v}`);
+  });
 };
 
 export const useQueryArrayFilter = (filterName: string) => {
