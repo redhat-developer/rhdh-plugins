@@ -232,9 +232,10 @@ export class DataIndexService {
     if (pagination) pagination.sortField ??= FETCH_PROCESS_INSTANCES_SORT_FIELD;
 
     const processIdNotNullCondition = 'processId: {isNull: false}';
-    const definitionIdsCondition = definitionIds
-      ? `processId: {in: ${JSON.stringify(definitionIds)}}`
-      : undefined;
+    const definitionIdsCondition =
+      definitionIds && definitionIds.length > 0
+        ? `processId: {in: ${JSON.stringify(definitionIds)}}`
+        : undefined;
     const type = 'ProcessInstance';
     const filterCondition = filter
       ? buildFilterCondition(
