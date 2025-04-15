@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { DiscoveryApi, IdentityApi } from '@backstage/core-plugin-api';
+import { ScmAuthApi, ScmIntegrationsApi } from '@backstage/integration-react';
 import type { JsonObject } from '@backstage/types';
 
 import axios, {
@@ -54,17 +55,23 @@ const getError = (err: unknown): Error => {
 export interface OrchestratorClientOptions {
   discoveryApi: DiscoveryApi;
   identityApi: IdentityApi;
+  scmAuthApi: ScmAuthApi;
+  scmIntegrationsApi: ScmIntegrationsApi;
   axiosInstance?: AxiosInstance;
 }
 export class OrchestratorClient implements OrchestratorApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly identityApi: IdentityApi;
+  private readonly scmAuthApi: ScmAuthApi;
+  private readonly scmIntegrationsApi: ScmIntegrationsApi;
   private axiosInstance?: AxiosInstance;
 
   private baseUrl: string | null = null;
   constructor(options: OrchestratorClientOptions) {
     this.discoveryApi = options.discoveryApi;
     this.identityApi = options.identityApi;
+    this.scmAuthApi = options.scmAuthApi;
+    this.scmIntegrationsApi = options.scmIntegrationsApi;
     this.axiosInstance = options.axiosInstance;
   }
 
@@ -104,10 +111,38 @@ export class OrchestratorClient implements OrchestratorApi {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
       await this.getDefaultReqConfig();
+    // We know the injected ScmIntegrationsApi instance is actually a ScmIntegrationRegistry with .list()
+    const integrations = (this.scmIntegrationsApi as any).list?.();
+    const authTokens: { provider: string; token: string }[] = [];
+    for (const integration of integrations) {
+      const provider = integration.type;
+      const url = `https://${integration.config.host}`;
+      if (!url) continue;
+      try {
+        const credentials = await this.scmAuthApi.getCredentials({
+          url,
+          optional: false,
+        });
+
+        if (credentials?.token) {
+          authTokens.push({
+            provider,
+            token: credentials.token,
+          });
+        }
+      } catch (e) {
+        console.warn(`No token available for ${provider}`, e);
+      }
+    }
+    const requestBody = {
+      inputData: args.parameters,
+      authTokens,
+    };
+
     try {
       return await defaultApi.executeWorkflow(
         args.workflowId,
-        { inputData: args.parameters },
+        requestBody,
         args.businessKey,
         reqConfigOption,
       );

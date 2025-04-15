@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { DiscoveryApi, IdentityApi } from '@backstage/core-plugin-api';
+import { ScmAuthApi, ScmIntegrationsApi } from '@backstage/integration-react';
 import type { JsonObject } from '@backstage/types';
 
 import axios, {
@@ -51,8 +52,26 @@ describe('OrchestratorClient', () => {
   const mockToken = 'test-token';
   const defaultAuthHeaders = { Authorization: `Bearer ${mockToken}` };
 
-  const mockFetch = jest.fn();
-  (global as any).fetch = mockFetch; // Cast global to any to avoid TypeScript errors
+  const mockScmAuthApi: jest.Mocked<ScmAuthApi> = {
+    getCredentials: jest.fn().mockResolvedValue({
+      token: 'mock-token',
+    }),
+  };
+
+  const mockScmIntegrationsApi: Partial<ScmIntegrationsApi> = {
+    byUrl: jest.fn(),
+    byHost: jest.fn(),
+    list: jest.fn().mockReturnValue([
+      {
+        type: 'github',
+        title: 'GitHub',
+        config: {
+          host: 'github.com',
+          apiBaseUrl: 'https://api.github.com',
+        },
+      },
+    ]),
+  } as any;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -75,6 +94,8 @@ describe('OrchestratorClient', () => {
     orchestratorClientOptions = {
       discoveryApi: mockDiscoveryApi,
       identityApi: mockIdentityApi,
+      scmAuthApi: mockScmAuthApi,
+      scmIntegrationsApi: mockScmIntegrationsApi,
       axiosInstance: axios,
     };
     orchestratorClient = new OrchestratorClient(orchestratorClientOptions);
@@ -125,7 +146,15 @@ describe('OrchestratorClient', () => {
               businessKey ? `?businessKey=${businessKey}` : ''
             }`,
           ),
-          data: JSON.stringify({ inputData: parameters }),
+          data: JSON.stringify({
+            inputData: parameters,
+            authTokens: [
+              {
+                provider: 'github',
+                token: 'mock-token',
+              },
+            ],
+          }),
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -135,7 +164,15 @@ describe('OrchestratorClient', () => {
         expect(executeWorkflowSpy).toHaveBeenCalledTimes(1);
         expect(executeWorkflowSpy).toHaveBeenCalledWith(
           workflowId,
-          { inputData: parameters },
+          {
+            inputData: parameters,
+            authTokens: [
+              {
+                provider: 'github',
+                token: 'mock-token',
+              },
+            ],
+          },
           businessKey,
           getDefaultTestRequestConfig(),
         );
