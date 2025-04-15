@@ -52,8 +52,8 @@ export const WorkflowsTabContent = () => {
       {loading ? <Progress /> : null}
       {error ? <ResponseErrorPanel error={error} /> : null}
       {isReady ? (
-        <Grid container direction="column" xs={12}>
-          <Grid item>
+        <Grid container direction="column">
+          <Grid item xs={12}>
             <WorkflowsTable items={value ?? []} />
           </Grid>
         </Grid>
