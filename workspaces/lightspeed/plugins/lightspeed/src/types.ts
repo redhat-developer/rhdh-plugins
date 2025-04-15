@@ -26,25 +26,23 @@ export type Conversations = {
 };
 
 export interface BaseMessage {
-  lc: number;
+  name: string;
   type: string;
-  id: string[];
-  kwargs: {
-    content: string;
-    response_metadata: {
-      model?: string;
-      created_at: number;
-      role: string;
-    };
-    additional_kwargs: {
-      [_key: string]: any;
-    };
+  id: number;
+  content: string;
+  response_metadata: {
+    model?: string;
+    created_at: number;
+    role?: string;
+  };
+  additional_kwargs: {
+    [_key: string]: any;
   };
 }
 export type ConversationSummary = {
   conversation_id: string;
-  lastMessageTimestamp: number;
-  summary: string;
+  last_message_timestamp: number;
+  topic_summary: string;
 };
 
 export type ConversationList = ConversationSummary[];

@@ -22,13 +22,13 @@ import { MessageProps } from '@patternfly/chatbot';
 import { useQuery } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
+import { TEMP_CONVERSATION_ID } from '../const';
 import logo from '../images/logo.svg';
 import {
   createBotMessage,
   createUserMessage,
   getMessageData,
   getTimestamp,
-  splitJsonStrings,
 } from '../utils/lightspeed-chatbox-utils';
 import { useCreateConversationMessage } from './useCreateCoversationMessage';
 
@@ -67,6 +67,7 @@ export const useConversationMessages = (
   selectedModel: string,
   avatar: string = defaultAvatar,
   onComplete?: (message: string) => void,
+  onStart?: (conversation_id: string) => void,
 ) => {
   const { mutateAsync: createMessage } = useCreateConversationMessage();
   const scrollToBottomRef = React.useRef<HTMLDivElement>(null);
@@ -83,8 +84,13 @@ export const useConversationMessages = (
   React.useEffect(() => {
     if (currentConversation !== conversationId) {
       setCurrentConversation(conversationId);
-      setConversations({
-        [conversationId]: [],
+      setConversations(prev => {
+        if (prev[conversationId]) return prev;
+
+        return {
+          ...prev,
+          [conversationId]: [],
+        };
       });
     }
   }, [currentConversation, conversationId]);
@@ -158,6 +164,8 @@ export const useConversationMessages = (
 
   const handleInputPrompt = React.useCallback(
     async (prompt: string) => {
+      let newConversationId = '';
+
       const conversationTuple = [
         createUserMessage({
           avatar,
@@ -193,6 +201,7 @@ export const useConversationMessages = (
         scrollToBottomRef.current?.scrollIntoView({ behavior: 'auto' });
       }, 0);
       const finalMessages: string[] = [];
+      let buffer = '';
 
       try {
         const reader = await createMessage({
@@ -203,62 +212,79 @@ export const useConversationMessages = (
 
         const decoder = new TextDecoder('utf-8');
         const keepGoing = true;
+
         while (keepGoing) {
-          const { done, value } = await reader.read();
+          const { value, done } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
+          buffer += decoder.decode(value, { stream: true });
 
-          const data = splitJsonStrings(chunk) ?? [];
-          data?.forEach(line => {
-            const trimmedLine = line.trim();
-            // Ignore empty lines
-            if (!trimmedLine) return;
+          // Process all complete messages separated by double newlines
+          const parts = buffer.split('\n\n');
+          buffer = parts.pop()!;
+
+          for (const part of parts) {
+            const lines = part
+              .split('\n')
+              .filter(line => line.startsWith('data:'));
+
+            const jsonString = lines
+              .map(line => line.trim().slice(5).trim())
+              .join('');
             try {
-              const jsonData = JSON.parse(line);
-              const content = jsonData?.response?.kwargs?.content || '';
-              finalMessages.push(content);
+              const { event, data } = JSON.parse(jsonString);
+              if (event === 'start') {
+                if (currentConversation === TEMP_CONVERSATION_ID) {
+                  // If the conversation is temp, we need to set the new conversation id
+                  newConversationId = data?.conversation_id;
+                }
+              }
 
-              // Store streaming message
-              const [humanMessage, aiMessage] =
-                streamingConversations.current[currentConversation];
-              streamingConversations.current[currentConversation] = [
-                humanMessage,
-                { ...aiMessage, content: aiMessage.content + content },
-              ];
+              if (event === 'token') {
+                const content = data?.token || '';
 
-              setConversations(prevConversations => {
-                const conversation =
-                  prevConversations[currentConversation] ?? [];
+                finalMessages.push(content);
 
-                const lastMessageIndex = conversation.length - 1;
-                const lastMessage =
-                  conversation.length === 0
-                    ? createBotMessage({
-                        content: '',
-                        timestamp: getTimestamp(Date.now()),
-                      })
-                    : { ...conversation[lastMessageIndex] };
-
-                lastMessage.isLoading = false;
-                lastMessage.content += content;
-                lastMessage.name =
-                  jsonData?.response?.kwargs?.response_metadata?.model;
-                lastMessage.timestamp = getTimestamp(
-                  jsonData?.response?.kwargs?.response_metadata?.created_at ||
-                    Date.now(),
-                );
-
-                const updatedConversation = [
-                  ...conversation.slice(0, lastMessageIndex),
-                  lastMessage,
+                // Store streaming message
+                const [humanMessage, aiMessage] =
+                  streamingConversations.current[currentConversation];
+                streamingConversations.current[currentConversation] = [
+                  humanMessage,
+                  { ...aiMessage, content: aiMessage.content + content },
                 ];
 
-                return {
-                  ...prevConversations,
-                  [currentConversation]: updatedConversation,
-                };
-              });
+                setConversations(prevConversations => {
+                  const conversation =
+                    prevConversations[currentConversation] ?? [];
+
+                  const lastMessageIndex = conversation.length - 1;
+                  const lastMessage =
+                    conversation.length === 0
+                      ? createBotMessage({
+                          content: '',
+                          timestamp: getTimestamp(Date.now()),
+                        })
+                      : { ...conversation[lastMessageIndex] };
+
+                  lastMessage.isLoading = false;
+                  lastMessage.content += content;
+                  lastMessage.name =
+                    data?.response_metadata?.model || selectedModel;
+                  lastMessage.timestamp = getTimestamp(
+                    data?.response_metadata?.created_at || Date.now(),
+                  );
+
+                  const updatedConversation = [
+                    ...conversation.slice(0, lastMessageIndex),
+                    lastMessage,
+                  ];
+
+                  return {
+                    ...prevConversations,
+                    [currentConversation]: updatedConversation,
+                  };
+                });
+              }
             } catch (error) {
               // eslint-disable-next-line no-console
               console.warn('Error parsing JSON:', error);
@@ -266,7 +292,7 @@ export const useConversationMessages = (
                 onComplete('Invalid JSON received');
               }
             }
-          });
+          }
         }
       } catch (e) {
         setConversations(prevConversations => {
@@ -294,7 +320,9 @@ export const useConversationMessages = (
 
           return {
             ...prevConversations,
-            [currentConversation]: updatedConversation,
+            [newConversationId.length > 0
+              ? newConversationId
+              : currentConversation]: updatedConversation,
           };
         });
       }
@@ -303,12 +331,30 @@ export const useConversationMessages = (
       if (typeof onComplete === 'function') {
         onComplete(finalMessages.join(''));
       }
+      // Swap temp conversation messages with new conversation
+
+      if (currentConversation === TEMP_CONVERSATION_ID && newConversationId) {
+        setConversations(prevConversations => {
+          return {
+            ...prevConversations,
+            [newConversationId]: prevConversations[TEMP_CONVERSATION_ID],
+          };
+        });
+
+        onStart?.(newConversationId);
+
+        setConversations(prev => {
+          const { temp, ...rest } = prev;
+          return rest;
+        });
+      }
     },
 
     [
       avatar,
       userName,
       onComplete,
+      onStart,
       selectedModel,
       createMessage,
       currentConversation,
