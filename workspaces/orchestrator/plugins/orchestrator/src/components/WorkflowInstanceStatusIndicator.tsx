@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+
+import React, { useEffect } from 'react';
 
 import { Link } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
-import DotIcon from '@material-ui/icons/FiberManualRecord';
+import { CircularProgress } from '@material-ui/core';
+import CheckCircleOutlinedIcon from '@material-ui/icons/CheckCircleOutlined';
+import ErrorOutlineOutlinedIcon from '@material-ui/icons/ErrorOutlineOutlined';
 
 import {
   capitalize,
@@ -39,20 +42,70 @@ export const WorkflowInstanceStatusIndicator = ({
   const iconColor = useWorkflowInstanceStateColors(status);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
 
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.href =
+      'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
+
   if (!status) {
     return VALUE_UNAVAILABLE;
   }
 
+  let icon: React.ReactNode;
+  let title: string = '';
+  switch (status) {
+    case ProcessInstanceStatusDTO.Active:
+      icon = <CircularProgress size="1.15rem" className={iconColor} />;
+      title = 'Running';
+      break;
+    case ProcessInstanceStatusDTO.Completed:
+      icon = <CheckCircleOutlinedIcon className={iconColor} />;
+      title = 'Completed';
+      break;
+    case ProcessInstanceStatusDTO.Suspended:
+      icon = <b className={iconColor}>--</b>;
+      title = 'Suspended';
+      break;
+    case ProcessInstanceStatusDTO.Aborted:
+      icon = <b className={iconColor}>--</b>;
+      title = 'Aborted';
+      break;
+    case ProcessInstanceStatusDTO.Error:
+      icon = <ErrorOutlineOutlinedIcon className={iconColor} />;
+      title = 'Failed';
+      break;
+    case ProcessInstanceStatusDTO.Pending:
+      icon = (
+        <span className={`material-symbols-outlined ${iconColor}`}>
+          pending
+        </span>
+      );
+      title = 'Pending';
+      break;
+    default:
+      icon = VALUE_UNAVAILABLE;
+      break;
+  }
+
   return (
-    <>
-      <DotIcon style={{ fontSize: '0.75rem' }} className={iconColor} />{' '}
+    <div
+      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+    >
+      {icon}
       {lastRunId ? (
         <Link to={workflowInstanceLink({ instanceId: lastRunId })}>
-          {capitalize(status)}
+          {capitalize(title)}
         </Link>
       ) : (
-        <>{capitalize(status)}</>
+        <>{capitalize(title)}</>
       )}
-    </>
+    </div>
   );
 };

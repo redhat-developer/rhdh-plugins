@@ -265,7 +265,7 @@ export const WorkflowRunsTabContent = () => {
             },
           ]),
       {
-        title: 'Status',
+        title: 'Run Status',
         field: 'state',
         render: (data: WorkflowRunDetail) => (
           <WorkflowInstanceStatusIndicator
