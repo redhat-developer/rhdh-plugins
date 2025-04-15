@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-api
 
+## 1.5.0
+
+### Minor Changes
+
+- fc9ce7c: Backstage version bump to v1.37.1
+
 ## 1.4.3
 
 ### Patch Changes

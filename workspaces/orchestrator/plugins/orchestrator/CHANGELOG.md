@@ -1,5 +1,24 @@
 ### Dependencies
 
+## 2.7.0
+
+### Minor Changes
+
+- fc9ce7c: Backstage version bump to v1.37.1
+
+### Patch Changes
+
+- 535f787: Add option to view input schema from workflows table
+- 7ebb7e1: fix bug in workflowResult - values
+- 2ab77e3: run again button text is running while workflow is running
+- 438e3aa: Add aborted as a result to WorkflowResult
+- 6eecbea: replace sonataflow editor with serverless-workflow-standalone-editor
+- 04ca7f3: Add Workflow Status to WorkflowsTable
+- Updated dependencies [fc9ce7c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.5.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.5.0
+
 ## 2.6.3
 
 ### Patch Changes
