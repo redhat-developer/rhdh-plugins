@@ -62,7 +62,9 @@ export class LightspeedApiClient implements LightspeedAPI {
             ? undefined
             : conversation_id,
         model: selectedModel,
-        provider: 'ollama',
+        provider: this.configApi
+          .getConfigArray('lightspeed.servers')[0]
+          .getOptionalString('id'), // Currently supports a single llm server
         query: prompt,
       }),
     });
