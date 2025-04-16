@@ -13,20 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { orchestratorFormWidgetsPlugin } from './plugin';
 
-import React from 'react';
-
-import {
-  FormDecoratorProps,
-  OrchestratorFormApi,
-  OrchestratorFormDecorator,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-
-class DefaultFormApi implements OrchestratorFormApi {
-  getFormDecorator(): OrchestratorFormDecorator {
-    return (FormComponent: React.ComponentType<FormDecoratorProps>) =>
-      FormComponent;
-  }
-}
-
-export const defaultFormExtensionsApi = new DefaultFormApi();
+describe('orchestrator-form-widgets', () => {
+  it('should export plugin', () => {
+    expect(orchestratorFormWidgetsPlugin).toBeDefined();
+  });
+});

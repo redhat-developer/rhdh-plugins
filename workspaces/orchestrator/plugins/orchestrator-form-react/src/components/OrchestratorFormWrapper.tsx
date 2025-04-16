@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,16 @@ import { JsonObject } from '@backstage/types';
 import { Grid } from '@material-ui/core';
 import { withTheme } from '@rjsf/core';
 import { Theme as MuiTheme } from '@rjsf/material-ui';
-import { ErrorSchema, UiSchema } from '@rjsf/utils';
+import { ErrorSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 import omit from 'lodash/omit';
 
 import {
   FormDecoratorProps,
   orchestratorFormApiRef,
+  OrchestratorFormContextProps,
+  useWrapperFormPropsContext,
+  WrapperFormPropsContext,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
 import { defaultFormExtensionsApi } from '../DefaultFormApi';
@@ -39,43 +42,21 @@ import StepperObjectField from './StepperObjectField';
 
 const MuiForm = withTheme<JsonObject, JSONSchema7>(MuiTheme);
 
-type OrchestratorFormWrapperProps = {
-  schema: JSONSchema7;
-  numStepsInMultiStepSchema?: number;
-  children: React.ReactNode;
-  onSubmit: (formData: JsonObject) => void;
-  uiSchema: UiSchema<JsonObject, JSONSchema7>;
-  initialFormData?: JsonObject;
-};
-
-const WrapperFormPropsContext =
-  React.createContext<OrchestratorFormWrapperProps | null>(null);
-
-const useWrapperFormPropsContext = (): OrchestratorFormWrapperProps => {
-  const context = React.useContext(WrapperFormPropsContext);
-  if (context === null) {
-    throw new Error('OrchestratorFormWrapperProps not provided');
-  }
-  return context;
-};
-
 const FormComponent = (decoratorProps: FormDecoratorProps) => {
-  const props = useWrapperFormPropsContext();
+  const formContext = useWrapperFormPropsContext();
+
   const {
     numStepsInMultiStepSchema,
     uiSchema,
     schema,
     onSubmit: _onSubmit,
-    initialFormData,
     children,
-  } = props;
+    formData,
+    setFormData,
+  } = formContext;
   const [extraErrors, setExtraErrors] = React.useState<
     ErrorSchema<JsonObject> | undefined
   >();
-  // make this form a controlled component so state will remain when moving between steps. see https://rjsf-team.github.io/react-jsonschema-form/docs/quickstart#controlled-component
-  const [formData, setFormData] = React.useState<JsonObject>(
-    initialFormData || {},
-  );
   const isMultiStep = numStepsInMultiStepSchema !== undefined;
   const { handleNext, activeStep, handleValidateStarted, handleValidateEnded } =
     useStepperContext();
@@ -114,7 +95,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     if (
       (!_extraErrors || Object.keys(_extraErrors).length === 0) &&
       !_validationError &&
-      activeStep < (numStepsInMultiStepSchema || 1)
+      activeStep < (numStepsInMultiStepSchema ?? 1)
     ) {
       _onSubmit(_formData);
       handleNext();
@@ -135,7 +116,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           uiSchema={uiSchema}
           validator={validator}
           schema={schema}
-          formData={decoratorProps.formData || formData}
+          formData={formData}
           noHtml5Validate
           extraErrors={extraErrors}
           onSubmit={e => onSubmit(e.formData || {})}
@@ -153,26 +134,19 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
   );
 };
 
-const OrchestratorFormWrapper = ({
-  schema,
-  uiSchema,
-  initialFormData,
-  ...props
-}: OrchestratorFormWrapperProps) => {
+type OrchestratorFormWrapperProps = OrchestratorFormContextProps;
+
+const OrchestratorFormWrapper = (props: OrchestratorFormWrapperProps) => {
   const formApi =
     useApiHolder().get(orchestratorFormApiRef) || defaultFormExtensionsApi;
+
   const NewComponent = React.useMemo(() => {
-    const formDecorator = formApi.getFormDecorator(
-      schema,
-      uiSchema,
-      initialFormData,
-    );
+    const formDecorator = formApi.getFormDecorator();
     return formDecorator(FormComponent);
-  }, [schema, uiSchema, formApi, initialFormData]);
+  }, [formApi]);
+
   return (
-    <WrapperFormPropsContext.Provider
-      value={{ schema, uiSchema, initialFormData, ...props }}
-    >
+    <WrapperFormPropsContext.Provider value={props}>
       <NewComponent />
     </WrapperFormPropsContext.Provider>
   );

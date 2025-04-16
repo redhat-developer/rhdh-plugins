@@ -1,3 +1,5 @@
+import { JsonObject } from '@backstage/types/index';
+
 /*
  * Copyright Red Hat, Inc.
  *
@@ -13,20 +15,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import React from 'react';
-
-import {
-  FormDecoratorProps,
-  OrchestratorFormApi,
-  OrchestratorFormDecorator,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-
-class DefaultFormApi implements OrchestratorFormApi {
-  getFormDecorator(): OrchestratorFormDecorator {
-    return (FormComponent: React.ComponentType<FormDecoratorProps>) =>
-      FormComponent;
-  }
-}
-
-export const defaultFormExtensionsApi = new DefaultFormApi();
+export type FormContextData = JsonObject;

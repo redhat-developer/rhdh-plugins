@@ -15,7 +15,7 @@ For reference, an example plugin can be found [here](https://github.com/parodos-
 ## API
 
 To implement the API, include @red-hat-developer-hub/backstage-plugin-orchestrator-form-api package as a dependency.
-This package provides the `FormExtensionsApi` interface and related types.
+This package provides the `OrchestratorFormApi` interface and related types.
 
 ```typescript
 export type FormDecoratorProps = Pick<
@@ -27,22 +27,28 @@ export type FormDecoratorProps = Pick<
   ) => Promise<ErrorSchema<JsonObject>> | undefined;
 };
 
-export type FormDecorator = (
+export type OrchestratorFormDecorator = (
   FormComponent: React.ComponentType<FormDecoratorProps>,
 ) => React.ComponentType;
 
-export interface FormExtensionsApi {
-  getFormDecorator(schema: JSONSchema7): FormDecorator;
+export interface OrchestratorFormApi {
+  getFormDecorator(): OrchestratorFormDecorator;
 }
 ```
+
+### WrapperFormPropsContext
+
+The OrchestratorFormApi implementation is wrapped within `WrapperFormPropsContext` to get access to i.e. recent UI schema, schemaUpdater or other-fields form data which can be used for data fetching or validation.
+
+Use `useWrapperFormPropsContext()` hook to access the context.
 
 ### Example API Implementation
 
 ```typescript
-class CustomFormApi implements FormExtensionsApi {
-  getFormDecorator(schema: JSONSchema7) {
+class CustomFormApi implements OrchestratorFormApi {
+  getFormDecorator() {
     return (FormComponent: React.ComponentType<FormDecoratorProps>>) => {
-      const widgets = {CountryWidget}; // CountryWidget needs to be implemneted and imported
+      const widgets = {CountryWidget}; // CountryWidget needs to be implemented and imported
       return () => <FormComponent widgets={widgets} />;
     };
   }

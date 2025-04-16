@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useCallback, useState } from 'react';
+
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -31,6 +32,7 @@ import {
 import type { JsonObject } from '@backstage/types';
 
 import { Grid } from '@material-ui/core';
+import { JSONSchema7 } from 'json-schema';
 
 import {
   InputSchemaResponseDTO,
@@ -47,6 +49,7 @@ import {
 import { getErrorObject } from '../../utils/ErrorUtils';
 import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
 import JsonTextAreaForm from './JsonTextAreaForm';
+import { getSchemaUpdater } from './schemaUpdater';
 
 export const ExecuteWorkflowPage = () => {
   const orchestratorApi = useApi(orchestratorApiRef);
@@ -70,8 +73,17 @@ export const ExecuteWorkflowPage = () => {
     );
     return res.data;
   }, [orchestratorApi, workflowId]);
-  const schema = value?.inputSchema;
-  const data = value?.data;
+
+  const [schema, setSchema] = useState<JSONSchema7 | undefined>();
+  useEffect(() => {
+    setSchema(value?.inputSchema);
+  }, [value]);
+  const updateSchema = useMemo(
+    () => getSchemaUpdater(schema, setSchema),
+    [schema],
+  );
+
+  const initialFormData = value?.data ?? {};
   const {
     value: workflowName,
     loading: workflowNameLoading,
@@ -121,10 +133,11 @@ export const ExecuteWorkflowPage = () => {
             {!!schema ? (
               <OrchestratorForm
                 schema={schema}
+                updateSchema={updateSchema}
                 handleExecute={handleExecute}
                 isExecuting={isExecuting}
                 isDataReadonly={!!assessmentInstanceId}
-                data={data}
+                initialFormData={initialFormData}
               />
             ) : (
               <JsonTextAreaForm
