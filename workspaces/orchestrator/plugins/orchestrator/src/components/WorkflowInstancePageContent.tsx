@@ -27,7 +27,14 @@ import {
 import { appThemeApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
+import {
+  Box,
+  Button,
+  Grid,
+  makeStyles,
+  Typography,
+  useTheme,
+} from '@material-ui/core';
 import moment from 'moment';
 
 import {
@@ -99,6 +106,7 @@ const VariablesDialogContent = ({
     appThemeApi.activeThemeId$(),
     appThemeApi.getActiveThemeId(),
   );
+  const theme = useTheme();
 
   return (
     <Box>
@@ -113,8 +121,14 @@ const VariablesDialogContent = ({
             showLineNumbers
             showCopyCodeButton
             customStyle={{
-              color: activeThemeId === 'dark' ? '#abb2bf' : 'd3d3d3',
-              backgroundColor: activeThemeId === 'dark' ? '#151515' : '#F0F0F0',
+              color:
+                activeThemeId === 'dark'
+                  ? theme.palette.grey[100]
+                  : theme.palette.grey[800],
+              backgroundColor:
+                activeThemeId === 'dark'
+                  ? theme.palette.grey[900]
+                  : theme.palette.grey[100],
               padding: '25px 0',
             }}
           />

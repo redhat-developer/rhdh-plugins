@@ -16,12 +16,11 @@
 import React from 'react';
 
 import Grid from '@mui/material/Grid';
-import Link from '@mui/material/Link';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 import CardWrapper from './CardWrapper';
 import { useTemplates } from '../../hooks/useTemplates';
+import { ViewMoreLink } from '../Links/ViewMoreLink';
 
 export const TemplateSection = () => {
   const { data: templates } = useTemplates();
@@ -46,12 +45,10 @@ export const TemplateSection = () => {
         ))}
       </Grid>
       <Box sx={{ pt: 2 }}>
-        <Link href={catalogTemplatesLink} underline="always">
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            View all {templates?.totalItems ? templates?.totalItems : ''}{' '}
-            templates
-          </Typography>
-        </Link>
+        <ViewMoreLink to={catalogTemplatesLink} underline="always">
+          View all {templates?.totalItems ? templates?.totalItems : ''}{' '}
+          templates
+        </ViewMoreLink>
       </Box>
     </React.Fragment>
   );

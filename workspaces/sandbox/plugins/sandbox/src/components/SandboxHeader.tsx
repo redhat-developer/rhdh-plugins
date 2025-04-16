@@ -15,6 +15,7 @@
  */
 import React from 'react';
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -65,29 +66,33 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
       }
       style={{ background: 'none' }}
     >
-      <Link
-        to="https://www.redhat.com/en/contact"
-        underline="none"
-        target="_blank"
+      <Box
+        sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}
       >
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<SupportAgentIcon />}
-          endIcon={<OpenInNewIcon />}
-          sx={{
-            textTransform: 'none',
-            marginRight: theme.spacing(2),
-            border: `1px solid ${theme.palette.primary.main}`,
-            '&:hover': {
-              backgroundColor: 'rgba(25, 118, 210, 0.04)',
-              borderColor: '#1976d2',
-            },
-          }}
+        <Link
+          to="https://www.redhat.com/en/contact"
+          underline="none"
+          target="_blank"
         >
-          Contact Red Hat Sales
-        </Button>
-      </Link>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<SupportAgentIcon />}
+            endIcon={<OpenInNewIcon />}
+            sx={{
+              textTransform: 'none',
+              marginRight: theme.spacing(2),
+              border: `1px solid ${theme.palette.primary.main}`,
+              '&:hover': {
+                backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                borderColor: '#1976d2',
+              },
+            }}
+          >
+            Contact Red Hat Sales
+          </Button>
+        </Link>
+      </Box>
     </Header>
   );
 };

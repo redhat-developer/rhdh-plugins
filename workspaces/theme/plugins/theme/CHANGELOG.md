@@ -4,7 +4,11 @@
 
 ### Minor Changes
 
-- cbb46e4: Backstage version bump to v1.36.1 and some UI bug fix.
+- 97ffc75: Backstage version bump to v1.36.1
+
+### Patch Changes
+
+- b1fc395: Some UI bug fix.
 
 ## 0.5.0
 

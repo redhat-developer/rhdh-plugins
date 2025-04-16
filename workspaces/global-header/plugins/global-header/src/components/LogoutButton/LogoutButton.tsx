@@ -22,7 +22,7 @@ import {
   useApi,
 } from '@backstage/core-plugin-api';
 
-import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
 
 import { MenuItemLinkContent } from '../MenuItemLink/MenuItemLinkContent';
 
@@ -34,13 +34,12 @@ export const LogoutButton = () => {
     identityApi.signOut().catch(error => errorApi.post(error));
   };
 
-  // TODO switch to Button
   return (
-    <Box
+    <MenuItem
       onClick={handleLogout}
       sx={{ cursor: 'pointer', width: '100%', color: 'inherit' }}
     >
       <MenuItemLinkContent icon="logout" label="Sign out" />
-    </Box>
+    </MenuItem>
   );
 };

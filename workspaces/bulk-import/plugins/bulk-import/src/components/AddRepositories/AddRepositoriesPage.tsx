@@ -27,7 +27,6 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
@@ -35,19 +34,9 @@ import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bu
 import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
 
-const useStyles = makeStyles(() => ({
-  accordionDetails: {
-    flexDirection: 'row',
-    display: 'flex',
-    justifyContent: 'space-around',
-    overflow: 'auto',
-  },
-}));
-
 export const AddRepositoriesPage = () => {
   const queryClientRef = React.useRef<QueryClient>();
   const theme = useTheme();
-  const classes = useStyles();
 
   if (!queryClientRef.current) {
     queryClientRef.current = new QueryClient();
@@ -75,7 +64,14 @@ export const AddRepositoriesPage = () => {
                   Add repositories to Red Hat Developer Hub in 4 steps
                 </Typography>
               </AccordionSummary>
-              <AccordionDetails className={classes.accordionDetails}>
+              <AccordionDetails
+                sx={{
+                  flexDirection: 'row',
+                  display: 'flex',
+                  justifyContent: 'space-around',
+                  overflow: 'auto',
+                }}
+              >
                 {/* <Illustrations
                 iconClassname={
                   theme.palette.mode === 'dark'

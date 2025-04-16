@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
+import { SelectItem } from '@backstage/core-components/index';
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 const filterSearchParam = 'filter';
+
+const evaluateParams = (
+  newValues: (string | number)[],
+  newParams: URLSearchParams,
+  filterName: string,
+) => {
+  newValues.forEach(v => {
+    newParams.append(filterSearchParam, `${filterName}=${v}`);
+  });
+};
 
 export const useQueryArrayFilter = (filterName: string) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -33,14 +44,14 @@ export const useQueryArrayFilter = (filterName: string) => {
         const name = keyValuePair.substring(0, firstEqualIndex);
         const value = keyValuePair.substring(firstEqualIndex + 1);
         if (name === filterName) {
-          acc.push(value);
+          acc.push({ label: value, value });
         }
         return acc;
-      }, [] as string[]);
+      }, [] as SelectItem[]);
   }, [filterName, searchParams]);
 
   const set = React.useCallback(
-    (newValue: string | string[] | number | number[]) => {
+    (newValues: (string | number)[]) => {
       setSearchParams(
         params => {
           const newParams = new URLSearchParams();
@@ -48,13 +59,7 @@ export const useQueryArrayFilter = (filterName: string) => {
           let added = false;
           const add = () => {
             if (added) return;
-            if (Array.isArray(newValue)) {
-              newValue.forEach(v => {
-                newParams.append(filterSearchParam, `${filterName}=${v}`);
-              });
-            } else {
-              newParams.append(filterSearchParam, `${filterName}=${newValue}`);
-            }
+            evaluateParams(newValues, newParams, filterName);
             added = true;
           };
 
@@ -89,10 +94,9 @@ export const useQueryArrayFilter = (filterName: string) => {
         const newParams = new URLSearchParams();
 
         params.forEach((value, key) => {
-          if (
-            key !== filterSearchParam ||
-            !value.startsWith(`${filterName}=`)
-          ) {
+          const isCurrentFilter =
+            key === filterSearchParam && value.startsWith(`${filterName}=`);
+          if (!isCurrentFilter) {
             newParams.append(key, value);
           }
         });

@@ -17,8 +17,8 @@ import {
   processingResult,
   CatalogProcessor,
   CatalogProcessorEmit,
-  CatalogProcessorParser,
   CatalogProcessorResult,
+  CatalogProcessorEntityResult,
 } from '@backstage/plugin-catalog-node';
 import {
   LoggerService,
@@ -33,7 +33,12 @@ import { readModelCatalogApiEntityConfigs } from '../providers/config';
 import {
   ANNOTATION_LOCATION,
   ANNOTATION_ORIGIN_LOCATION,
+  Entity,
 } from '@backstage/catalog-model';
+import {
+  GenerateCatalogEntities,
+  ParseCatalogJSON,
+} from '../clients/ModelCatalogGenerator';
 
 /**
  * A processor that reads from the RHDH RHOAI Bridge
@@ -70,7 +75,6 @@ export class RHDHRHOAIReaderProcessor implements CatalogProcessor {
     location: LocationSpec,
     _optional: boolean,
     emit: CatalogProcessorEmit,
-    parser: CatalogProcessorParser,
   ): Promise<boolean> {
     // Pick a custom location type string. A location will be
     // registered later with this type.
@@ -105,33 +109,41 @@ export class RHDHRHOAIReaderProcessor implements CatalogProcessor {
       // for potential auth and access control checks (i.e. SARs) with the kubeflow MR
       const data = await this.reader.readUrl(location.target);
       const response = [{ url: location.target, data: await data.buffer() }];
-      // Repeatedly call emit(processingResult.entity(location, <entity>))
       const parseResults: CatalogProcessorResult[] = [];
+      // Repeatedly call emit(processingResult.entity(location, <entity>))
+
       for (const item of response) {
-        for await (const parseResult of parser({
-          data: item.data,
-          location: { type: location.type, target: item.url },
-        })) {
-          if (parseResult.type === 'entity') {
-            const locKey = `${location.type}:${location.target}`;
-            if (parseResult.entity.metadata.annotations === undefined) {
-              parseResult.entity.metadata.annotations = {
-                [ANNOTATION_LOCATION]: locKey,
-                [ANNOTATION_ORIGIN_LOCATION]: locKey,
-              };
-            } else {
-              parseResult.entity.metadata.annotations[ANNOTATION_LOCATION] =
-                locKey;
-              parseResult.entity.metadata.annotations[
-                ANNOTATION_ORIGIN_LOCATION
-              ] = locKey;
-            }
+        const modelCatalog = ParseCatalogJSON(item.data.toString());
+        let entities: Entity[] = [];
+
+        entities = GenerateCatalogEntities(modelCatalog);
+        entities.forEach(entity => {
+          const locKey = `${location.type}:${location.target}`;
+          const parseResult: CatalogProcessorEntityResult = {
+            type: 'entity',
+            entity: entity,
+            location: { type: location.type, target: item.url },
+            locationKey: locKey,
+          };
+
+          // ToDo: We can probably handle this in the generator now
+          if (parseResult.entity.metadata.annotations === undefined) {
+            parseResult.entity.metadata.annotations = {
+              [ANNOTATION_LOCATION]: locKey,
+              [ANNOTATION_ORIGIN_LOCATION]: locKey,
+            };
+          } else {
+            parseResult.entity.metadata.annotations[ANNOTATION_LOCATION] =
+              locKey;
+            parseResult.entity.metadata.annotations[
+              ANNOTATION_ORIGIN_LOCATION
+            ] = locKey;
           }
           parseResults.push(parseResult);
           emit(parseResult);
-        }
+        });
+        emit(processingResult.refresh(`${location.type}:${location.target}`));
       }
-      emit(processingResult.refresh(`${location.type}:${location.target}`));
     } catch (error) {
       const message = `Unable to read ${location.type}, ${error}`.substring(
         0,

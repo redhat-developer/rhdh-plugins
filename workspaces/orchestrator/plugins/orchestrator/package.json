@@ -55,12 +55,12 @@
     "export-dynamic": "janus-cli package export-dynamic-plugin --in-place"
   },
   "dependencies": {
-    "@backstage/core-components": "^0.16.4-next.1",
-    "@backstage/core-plugin-api": "^1.10.4-next.0",
+    "@backstage/core-components": "^0.17.0",
+    "@backstage/core-plugin-api": "^1.10.5",
     "@backstage/errors": "^1.2.7",
-    "@backstage/plugin-catalog": "^1.27.0-next.3",
+    "@backstage/plugin-catalog": "^1.28.0",
     "@backstage/plugin-permission-common": "^0.8.4",
-    "@backstage/plugin-permission-react": "^0.4.31-next.0",
+    "@backstage/plugin-permission-react": "^0.4.32",
     "@kie-tools-core/editor": "^0.32.0",
     "@kie-tools/serverless-workflow-standalone-editor": "^10.0.0",
     "@monaco-editor/react": "^4.6.0",
@@ -78,9 +78,9 @@
     "vscode-languageserver-types": "3.17.5"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.30.0-next.3",
-    "@backstage/dev-utils": "^1.1.7-next.3",
-    "@backstage/test-utils": "^1.7.5-next.0",
+    "@backstage/cli": "^0.31.1",
+    "@backstage/dev-utils": "^1.1.8",
+    "@backstage/test-utils": "^1.7.6",
     "@backstage/types": "^1.2.1",
     "@janus-idp/cli": "3.2.0",
     "@material-ui/core": "^4.12.4",

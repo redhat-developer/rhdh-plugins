@@ -22,6 +22,7 @@ import { useRouteRef } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
 import { Box, makeStyles, Tooltip } from '@material-ui/core';
+import DeveloperModeOutlinedIcon from '@material-ui/icons/DeveloperModeOutlined';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import PlayArrow from '@material-ui/icons/PlayArrow';
 import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
@@ -37,18 +38,19 @@ import {
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { AVAILABLE, UNAVAILABLE, VALUE_UNAVAILABLE } from '../constants';
+import { AVAILABLE, UNAVAILABLE, VALUE_UNAVAILABLE } from '../../constants';
 import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
-} from '../dataFormatters/WorkflowOverviewFormatter';
-import { usePermissionArray } from '../hooks/usePermissionArray';
+} from '../../dataFormatters/WorkflowOverviewFormatter';
+import { usePermissionArray } from '../../hooks/usePermissionArray';
 import {
   executeWorkflowRouteRef,
   workflowRouteRef,
   workflowRunsRouteRef,
-} from '../routes';
-import OverrideBackstageTable from './ui/OverrideBackstageTable';
-import { WorkflowInstanceStatusIndicator } from './WorkflowInstanceStatusIndicator';
+} from '../../routes';
+import OverrideBackstageTable from '../ui/OverrideBackstageTable';
+import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
+import { InputSchemaDialog } from './InputSchemaDialog';
 
 export interface WorkflowsTableProps {
   items: WorkflowOverviewDTO[];
@@ -127,6 +129,22 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const { allowed: permittedToUse } = usePermittedToUseBatch(items);
   const { allowed: permittedToView } = usePermittedToViewBatch(items);
 
+  const [isInputSchemaDialogOpen, setIsInputSchemaDialogOpen] = useState(false);
+  const [dataForDialog, setDataForDialog] = useState<
+    FormattedWorkflowOverview | undefined
+  >(undefined);
+
+  const toggleInputSchemaDialog = React.useCallback(() => {
+    setIsInputSchemaDialogOpen(prev => !prev);
+  }, []);
+
+  const handleViewInputSchema = useCallback(
+    (rowData: FormattedWorkflowOverview) => {
+      setDataForDialog(rowData);
+      toggleInputSchemaDialog();
+    },
+    [toggleInputSchemaDialog],
+  );
   const initialState = useMemo(
     () => items.map(WorkflowOverviewFormatter.format),
     [items],
@@ -136,7 +154,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     setData(initialState);
   }, [initialState]);
 
-  const handleView = useCallback(
+  const handleViewVariables = useCallback(
     (rowData: FormattedWorkflowOverview) => {
       navigate(definitionRunsLink({ workflowId: rowData.id }));
     },
@@ -195,12 +213,24 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
         icon: FormatListBulleted,
         tooltip: 'View runs',
         disabled: !canViewWorkflow(rowData.id),
-        onClick: () => handleView(rowData),
+        onClick: () => handleViewVariables(rowData),
+      }),
+      rowData => ({
+        icon: DeveloperModeOutlinedIcon,
+        tooltip: 'View input schema',
+        disabled: !canViewWorkflow(rowData.id),
+        onClick: () => handleViewInputSchema(rowData),
       }),
     ];
 
     return actionItems;
-  }, [canExecuteWorkflow, canViewWorkflow, handleExecute, handleView]);
+  }, [
+    canExecuteWorkflow,
+    canViewWorkflow,
+    handleExecute,
+    handleViewVariables,
+    handleViewInputSchema,
+  ]);
 
   const columns = useMemo<TableColumn<FormattedWorkflowOverview>[]>(
     () => [
@@ -294,12 +324,21 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   // TODO: use backend pagination only if the generic orchestratorWorkflowPermission is in place
   // use FE pagination otherwise (it means when specific permissions are used)
   return (
-    <OverrideBackstageTable<FormattedWorkflowOverview>
-      title="Workflows"
-      options={options}
-      columns={columns}
-      data={data}
-      actions={actions}
-    />
+    <>
+      {dataForDialog && (
+        <InputSchemaDialog
+          rowData={dataForDialog}
+          isInputSchemaDialogOpen={isInputSchemaDialogOpen}
+          toggleInputSchemaDialog={toggleInputSchemaDialog}
+        />
+      )}
+      <OverrideBackstageTable<FormattedWorkflowOverview>
+        title="Workflows"
+        options={options}
+        columns={columns}
+        data={data}
+        actions={actions}
+      />
+    </>
   );
 };

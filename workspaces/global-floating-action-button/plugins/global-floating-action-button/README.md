@@ -18,49 +18,187 @@ The sections below are relevant for static plugins. If the plugin is expected to
 - Add content of `app-config.dynamic.yaml` into `app-config.local.yaml`.
 - To configure a plugin as a Floating Action Button (FAB), you need to specify the `global.floatingactionbutton/config` mount point in your plugin configuration, as shown below using the bulk-import plugin as an example:
 
-  ```yaml
-  dynamicPlugins:
-    frontend:
-      red-hat-developer-hub.backstage-plugin-bulk-import:
-        # start of fab config
-        mountPoints:
-          - mountPoint: global.floatingactionbutton/config
-            importName: BulkImportPage # It is necessary to specify an importName because mount point without an associated component is not allowed.
-            config:
-              slot: 'page-end'
-              icon: <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#e8eaed"><g><rect fill="none" height="24" width="24"/></g><g><path d="M11,7L9.6,8.4l2.6,2.6H2v2h10.2l-2.6,2.6L11,17l5-5L11,7z M20,19h-8v2h8c1.1,0,2-0.9,2-2V5c0-1.1-0.9-2-2-2h-8v2h8V19z"/></g></svg>
-              label: 'Bulk import'
-              toolTip: 'Register multiple repositories in bulk'
-              to: /bulk-import/repositories
-        # end of fab config
-        appIcons:
-          - name: bulkImportIcon
-            importName: BulkImportIcon
-        dynamicRoutes:
-          - path: /bulk-import/repositories
-            importName: BulkImportPage
-            menuItem:
-              icon: bulkImportIcon
-              text: Bulk import
+  ```yaml title="dynamic-plugins.yaml"
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-bulk-import:
+            # start of fab config
+            mountPoints:
+              - mountPoint: global.floatingactionbutton/config
+                importName: BulkImportPage # It is necessary to specify an importName because mount point without an associated component is not allowed.
+                config:
+                  slot: 'page-end'
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#e8eaed"><g><rect fill="none" height="24" width="24"/></g><g><path d="M11,7L9.6,8.4l2.6,2.6H2v2h10.2l-2.6,2.6L11,17l5-5L11,7z M20,19h-8v2h8c1.1,0,2-0.9,2-2V5c0-1.1-0.9-2-2-2h-8v2h8V19z"/></g></svg>
+                  label: 'Bulk import'
+                  toolTip: 'Register multiple repositories in bulk'
+                  to: /bulk-import/repositories
+            # end of fab config
+            appIcons:
+              - name: bulkImportIcon
+                importName: BulkImportIcon
+            dynamicRoutes:
+              - path: /bulk-import/repositories
+                importName: BulkImportPage
+                menuItem:
+                  icon: bulkImportIcon
+                  text: Bulk import
   ```
 
-- To configure a Floating Action Button (FAB) that opens an external link, specify the `global.floatingactionbutton/config` mount point in the `backstage-plugin-global-floating-action-button` plugin, as shown below:
+- To configure Floating Action Button(s) (FAB) that opens an external link, specify the `global.floatingactionbutton/config` mount point in the `backstage-plugin-global-floating-action-button` plugin, as shown below:
 
-  ```yaml
-  dynamicPlugins:
-    frontend:
-      red-hat-developer-hub.backstage-plugin-global-floating-action-button:
-        mountPoints:
-          - mountPoint: application/listener
-            importName: DynamicGlobalFloatingActionButton
-          - mountPoint: global.floatingactionbutton/config
-            importName: NullComponent # It is necessary to specify an importName because mount point without an associated component is not allowed.
-            config:
-              icon: github
-              label: 'Git'
-              toolTip: 'Github'
-              to: https://github.com/redhat-developer/rhdh-plugins
+  ```yaml title="dynamic-plugins.yaml"
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+            mountPoints:
+              - mountPoint: application/listener
+                importName: DynamicGlobalFloatingActionButton
+              - mountPoint: global.floatingactionbutton/config
+                importName: NullComponent # It is necessary to specify an importName because mount point without an associated component is not allowed.
+                config:
+                  icon: '<svg viewBox="0 0 250 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><path d="M200.134 0l55.555 117.514-55.555 117.518h-47.295l55.555-117.518L152.84 0h47.295zM110.08 99.836l20.056-38.092-2.29-8.868L102.847 0H55.552l48.647 102.898 5.881-3.062zm17.766 74.433l-17.333-39.034-6.314-3.101-48.647 102.898h47.295l25-52.88v-7.883z" fill="#40B4E5"/><path d="M152.842 235.032L97.287 117.514 152.842 0h47.295l-55.555 117.514 55.555 117.518h-47.295zm-97.287 0L0 117.514 55.555 0h47.296L47.295 117.514l55.556 117.518H55.555z" fill="#003764"/></svg>'
+                  label: 'Quay'
+                  showLabel: true
+                  toolTip: 'Quay'
+                  to: 'https://quay.io'
+              - mountPoint: global.floatingactionbutton/config
+                importName: NullComponent
+                config:
+                  icon: github
+                  label: 'Git'
+                  toolTip: 'Github'
+                  to: https://github.com/redhat-developer/rhdh-plugins
   ```
+
+- To configure a Floating Action Button (FAB) that opens multiple options, define the `global.floatingactionbutton/config` mount point in the same `slot` for multiple actions. The default slot is `page-end` when not specified.
+
+  ```yaml title="dynamic-plugins.yaml"
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-bulk-import:
+            # start of fab config
+            mountPoints:
+              - mountPoint: global.floatingactionbutton/config
+                importName: BulkImportPage # It is necessary to specify an importName because mount point without an associated component is not allowed.
+                config:
+                  slot: 'page-end'
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#e8eaed"><g><rect fill="none" height="24" width="24"/></g><g><path d="M11,7L9.6,8.4l2.6,2.6H2v2h10.2l-2.6,2.6L11,17l5-5L11,7z M20,19h-8v2h8c1.1,0,2-0.9,2-2V5c0-1.1-0.9-2-2-2h-8v2h8V19z"/></g></svg>
+                  label: 'Bulk import'
+                  toolTip: 'Register multiple repositories in bulk'
+                  to: /bulk-import/repositories
+            # end of fab config
+            appIcons:
+              - name: bulkImportIcon
+                importName: BulkImportIcon
+            dynamicRoutes:
+              - path: /bulk-import/repositories
+                importName: BulkImportPage
+                menuItem:
+                  icon: bulkImportIcon
+                  text: Bulk import
+
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+            mountPoints:
+              - mountPoint: application/listener
+                importName: DynamicGlobalFloatingActionButton
+              - mountPoint: global.floatingactionbutton/config
+                importName: NullComponent # It is necessary to specify an importName because mount point without an associated component is not allowed.
+                config:
+                  icon: github
+                  label: 'Git'
+                  toolTip: 'Github'
+                  to: https://github.com/redhat-developer/rhdh-plugins
+              - mountPoint: global.floatingactionbutton/config
+                importName: NullComponent # It is necessary to specify an importName because mount point without an associated component is not allowed.
+                config:
+                  icon: '<svg viewBox="0 0 250 300" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><path d="M200.134 0l55.555 117.514-55.555 117.518h-47.295l55.555-117.518L152.84 0h47.295zM110.08 99.836l20.056-38.092-2.29-8.868L102.847 0H55.552l48.647 102.898 5.881-3.062zm17.766 74.433l-17.333-39.034-6.314-3.101-48.647 102.898h47.295l25-52.88v-7.883z" fill="#40B4E5"/><path d="M152.842 235.032L97.287 117.514 152.842 0h47.295l-55.555 117.514 55.555 117.518h-47.295zm-97.287 0L0 117.514 55.555 0h47.296L47.295 117.514l55.556 117.518H55.555z" fill="#003764"/></svg>'
+                  label: 'Quay'
+                  showLabel: true
+                  toolTip: 'Quay'
+                  to: 'https://quay.io'
+  ```
+
+- To configure a Floating Action Button(FAB) to display only on specific pages, configure the `global.floatingactionbutton/config` mount point in the `backstage-plugin-global-floating-action-button` plugin and set the `visibleOnPaths` property, as shown below:
+
+  ```yaml title="dynamic-plugins.yaml"
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-bulk-import:
+            # start of fab config
+            mountPoints:
+              - mountPoint: global.floatingactionbutton/config
+                importName: BulkImportPage # It is necessary to specify an importName because mount point without an associated component is not allowed.
+                config:
+                  slot: 'page-end'
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#e8eaed"><g><rect fill="none" height="24" width="24"/></g><g><path d="M11,7L9.6,8.4l2.6,2.6H2v2h10.2l-2.6,2.6L11,17l5-5L11,7z M20,19h-8v2h8c1.1,0,2-0.9,2-2V5c0-1.1-0.9-2-2-2h-8v2h8V19z"/></g></svg>
+                  label: 'Bulk import'
+                  toolTip: 'Register multiple repositories in bulk'
+                  to: /bulk-import/repositories
+                  visibleOnPaths: ['/catalog', '/settings']
+            # end of fab config
+            appIcons:
+              - name: bulkImportIcon
+                importName: BulkImportIcon
+            dynamicRoutes:
+              - path: /bulk-import/repositories
+                importName: BulkImportPage
+                menuItem:
+                  icon: bulkImportIcon
+                  text: Bulk import
+  ```
+
+  In this example, the bulk import Floating Action Button(FAB) is visible only on the `/catalog` and `/settings` pages, while it remains hidden on all other pages.
+
+- To hide a Floating Action Button(FAB) on specific pages, configure the `global.floatingactionbutton/config` mount point in the `backstage-plugin-global-floating-action-button` plugin and set the `excludeOnPaths` property, as shown below:
+
+  ```yaml title="dynamic-plugins.yaml"
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-bulk-import:
+            # start of fab config
+            mountPoints:
+              - mountPoint: global.floatingactionbutton/config
+                importName: BulkImportPage # It is necessary to specify an importName because mount point without an associated component is not allowed.
+                config:
+                  slot: 'page-end'
+                  icon: <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#e8eaed"><g><rect fill="none" height="24" width="24"/></g><g><path d="M11,7L9.6,8.4l2.6,2.6H2v2h10.2l-2.6,2.6L11,17l5-5L11,7z M20,19h-8v2h8c1.1,0,2-0.9,2-2V5c0-1.1-0.9-2-2-2h-8v2h8V19z"/></g></svg>
+                  label: 'Bulk import'
+                  toolTip: 'Register multiple repositories in bulk'
+                  to: /bulk-import/repositories
+                  excludeOnPaths: ['/bulk-import']
+            # end of fab config
+            appIcons:
+              - name: bulkImportIcon
+                importName: BulkImportIcon
+            dynamicRoutes:
+              - path: /bulk-import/repositories
+                importName: BulkImportPage
+                menuItem:
+                  icon: bulkImportIcon
+                  text: Bulk import
+  ```
+
+  In this example, the bulk import Floating Action Button(FAB) will be hidden on the `/bulk-import` page, while it appears on all other pages.
 
 #### Static Installation
 
@@ -113,7 +251,7 @@ The sections below are relevant for static plugins. If the plugin is expected to
 | ------------------ | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | **slot**           | `enum`                                                                                                            | The position where the fab will be placed. Valid values: `PAGE_END`, `BOTTOM_LEFT`.                                                                                                                               | [optional] default to `PAGE_END`.              |
 | **label**          | `String`                                                                                                          | A name for your action button.                                                                                                                                                                                    | required                                       |
-| **icon**           | `String`<br>`React.ReactElement`                                                                                  | An icon for your floating button. Recommended to use **filled** icons from the [Material Design library](https://fonts.google.com/icons)                                                                          | optional                                       |
+| **icon**           | `String`<br>`React.ReactElement`<br>`SVG image icon`<br>`HTML image icon`                                         | An icon for your floating button. Recommended to use **filled** icons from the [Material Design library](https://fonts.google.com/icons)                                                                          | optional                                       |
 | **showLabel**      | `Boolean`                                                                                                         | To display the label next to your icon.                                                                                                                                                                           | optional                                       |
 | **size**           | `'small'`<br>`'medium'`<br>`'large'`                                                                              | A name for your action button.                                                                                                                                                                                    | [optional] default to `'medium'`               |
 | **color**          | `'default'`<br>`'error'`<br>`'info'`<br>`'inherit'`<br>`'primary'`<br>`'secondary'`<br>`'success'`<br>`'warning'` | The color of the component. It supports both default and custom theme colors, which can be added as shown in the [palette customization guide](https://mui.com/material-ui/customization/palette/#custom-colors). | [optional] default to `'default'`.             |

@@ -38,6 +38,18 @@ const createWrapper =
   };
 
 describe('useQueryArrayFilter', () => {
+  const testFilter =
+    '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2';
+  const testFilter2 =
+    '/?filter=filter-name=new value&filter=filter-name=another value';
+  const labelValues = [
+    { label: 'new value', value: 'new value' },
+    { label: 'another value', value: 'another value' },
+  ];
+  const labelValues2 = [
+    { label: 'old value', value: 'old value' },
+    { label: 'old value 2', value: 'old value 2' },
+  ];
   it('returns an empty array when no search param is defined', async () => {
     const hook = renderHook(() => useQueryArrayFilter('test'), {
       wrapper: createWrapper('/'),
@@ -52,15 +64,14 @@ describe('useQueryArrayFilter', () => {
   });
 
   it('returns the right filter if one search param is defined', async () => {
+    const filter = '/?filter=filter-name=filter value';
     const hook = renderHook(() => useQueryArrayFilter('filter-name'), {
-      wrapper: createWrapper('/?filter=filter-name=filter value'),
+      wrapper: createWrapper(filter),
     });
 
-    expect(
-      screen.getByText('/?filter=filter-name=filter value'),
-    ).toBeInTheDocument();
+    expect(screen.getByText(filter)).toBeInTheDocument();
     expect(hook.result.current).toEqual({
-      current: ['filter value'],
+      current: [{ label: 'filter value', value: 'filter value' }],
       set: expect.any(Function),
       clear: expect.any(Function),
     });
@@ -68,18 +79,12 @@ describe('useQueryArrayFilter', () => {
 
   it('returns the right filter if two search param is defined', async () => {
     const hook = renderHook(() => useQueryArrayFilter('filter-name'), {
-      wrapper: createWrapper(
-        '/?filter=filter-name=filter value&filter=filter-name=another value',
-      ),
+      wrapper: createWrapper(testFilter2),
     });
 
-    expect(
-      screen.getByText(
-        '/?filter=filter-name=filter value&filter=filter-name=another value',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText(testFilter2)).toBeInTheDocument();
     expect(hook.result.current).toEqual({
-      current: ['filter value', 'another value'],
+      current: labelValues,
       set: expect.any(Function),
       clear: expect.any(Function),
     });
@@ -87,18 +92,12 @@ describe('useQueryArrayFilter', () => {
 
   it('returns the right filter if other search param is defined', async () => {
     const hook = renderHook(() => useQueryArrayFilter('filter-name'), {
-      wrapper: createWrapper(
-        '/?filter=filter-name=filter value&filter=filter-name=another value&filter=unknown-filter-name=again another filter&page=2',
-      ),
+      wrapper: createWrapper(testFilter2),
     });
 
-    expect(
-      screen.getByText(
-        '/?filter=filter-name=filter value&filter=filter-name=another value&filter=unknown-filter-name=again another filter&page=2',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText(testFilter2)).toBeInTheDocument();
     expect(hook.result.current).toEqual({
-      current: ['filter value', 'another value'],
+      current: labelValues,
       set: expect.any(Function),
       clear: expect.any(Function),
     });
@@ -110,10 +109,12 @@ describe('useQueryArrayFilter', () => {
     });
     expect(screen.getByText('/')).toBeInTheDocument();
 
-    await act(async () => hook.result.current.set('new value'));
+    await act(async () => hook.result.current.set(['new value']));
     hook.rerender();
 
-    expect(hook.result.current.current).toEqual(['new value']);
+    expect(hook.result.current.current).toEqual([
+      { label: 'new value', value: 'new value' },
+    ]);
     expect(
       screen.getByText('/?filter=filter-name%3Dnew+value'),
     ).toBeInTheDocument();
@@ -130,7 +131,7 @@ describe('useQueryArrayFilter', () => {
     );
     hook.rerender();
 
-    expect(hook.result.current.current).toEqual(['new value', 'another value']);
+    expect(hook.result.current.current).toEqual(labelValues);
     expect(
       screen.getByText(
         '/?filter=filter-name%3Dnew+value&filter=filter-name%3Danother+value',
@@ -140,21 +141,16 @@ describe('useQueryArrayFilter', () => {
 
   it('keeps unrelated search params and filters when setting a string', async () => {
     const hook = renderHook(() => useQueryArrayFilter('filter-name'), {
-      wrapper: createWrapper(
-        '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
-      ),
+      wrapper: createWrapper(testFilter),
     });
-    expect(hook.result.current.current).toEqual(['old value', 'old value 2']);
-    expect(
-      screen.getByText(
-        '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
-      ),
-    ).toBeInTheDocument();
+    expect(hook.result.current.current).toEqual(labelValues2);
+    expect(screen.getByText(testFilter)).toBeInTheDocument();
 
-    await act(async () => hook.result.current.set('new value'));
+    const labelValue = [{ label: 'new value', value: 'new value' }];
+    await act(async () => hook.result.current.set(['new value']));
     hook.rerender();
 
-    expect(hook.result.current.current).toEqual(['new value']);
+    expect(hook.result.current.current).toEqual(labelValue);
     expect(
       screen.getByText(
         '/?filter=another-filter%3DAnother+filter&filter=filter-name%3Dnew+value&page=2',
@@ -164,23 +160,16 @@ describe('useQueryArrayFilter', () => {
 
   it('keeps unrelated search params and filters when setting a array', async () => {
     const hook = renderHook(() => useQueryArrayFilter('filter-name'), {
-      wrapper: createWrapper(
-        '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
-      ),
+      wrapper: createWrapper(testFilter),
     });
-    expect(hook.result.current.current).toEqual(['old value', 'old value 2']);
-    expect(
-      screen.getByText(
-        '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
-      ),
-    ).toBeInTheDocument();
-
+    expect(hook.result.current.current).toEqual(labelValues2);
+    expect(screen.getByText(testFilter)).toBeInTheDocument();
     await act(async () =>
       hook.result.current.set(['new value', 'another value']),
     );
     hook.rerender();
 
-    expect(hook.result.current.current).toEqual(['new value', 'another value']);
+    expect(hook.result.current.current).toEqual(labelValues);
     expect(
       screen.getByText(
         '/?filter=another-filter%3DAnother+filter&filter=filter-name%3Dnew+value&filter=filter-name%3Danother+value&page=2',
@@ -190,16 +179,10 @@ describe('useQueryArrayFilter', () => {
 
   it('keeps unrelated search params and filters when removing a filter', async () => {
     const hook = renderHook(() => useQueryArrayFilter('filter-name'), {
-      wrapper: createWrapper(
-        '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
-      ),
+      wrapper: createWrapper(testFilter),
     });
-    expect(hook.result.current.current).toEqual(['old value', 'old value 2']);
-    expect(
-      screen.getByText(
-        '/?filter=another-filter=Another filter&filter=filter-name=old value&filter=filter-name=old value 2&page=2',
-      ),
-    ).toBeInTheDocument();
+    expect(hook.result.current.current).toEqual(labelValues2);
+    expect(screen.getByText(testFilter)).toBeInTheDocument();
 
     await act(async () => hook.result.current.clear());
     hook.rerender();

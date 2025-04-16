@@ -14,60 +14,65 @@
  * limitations under the License.
  */
 
-import YAML from 'yaml';
-import { Entity, ResourceEntity } from '@backstage/catalog-model';
 import { Stream } from 'stream';
+import {
+  ModelCatalogKeys,
+  fetchModelCatalogFromKey,
+  fetchModelCatalogKeys,
+} from './BridgeResourceConnector';
 
-const fakeEntity: ResourceEntity = {
-  apiVersion: 'backstage.io/v1beta1',
-  kind: 'Resource',
-  metadata: {
-    name: 'ibm-granite',
-    description: 'IBM Granite code model',
-    tags: [],
-    links: [],
-  },
-  spec: {
-    dependencyOf: [],
-    owner: 'example-user',
-    type: 'ai-model',
-  },
+const fakeCatalogKeys: ModelCatalogKeys = {
+  uris: ['example-model', 'model-two', 'model-three'],
 };
-const blob = new Blob([YAML.stringify(fakeEntity)], {
-  type: 'application/json',
-});
+
+const fakeCatalog: ModelCatalog = {
+  models: [
+    {
+      name: 'ibm-granite',
+      description: 'IBM Granite code model',
+      lifecycle: 'production',
+      owner: 'example-user',
+    },
+  ],
+};
 
 // Mock different fetch results based on the url passed in, to trigger success vs. error scenarios
 global.fetch = jest.fn(url => {
-  if (url === 'errorTest') {
+  if (url === 'errorTest/list') {
     return Promise.resolve({
       ok: false,
       status: 401,
       json: () => 'error',
     });
+  } else if (url === 'fake-url/example-model') {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => fakeCatalog,
+    });
   }
   return Promise.resolve({
     ok: true,
     status: 200,
-    blob: () => Promise.resolve(blob),
+    json: () => fakeCatalogKeys,
   });
 }) as jest.Mock;
 
-import { fetchCatalogEntities } from './BridgeResourceConnector';
+import { ModelCatalog } from '@redhat-ai-dev/model-catalog-types';
 
 const httpsMock = require('https');
 
-describe('Bridge Resource Connector', () => {
-  it('should fetch catallog entities successfully', async () => {
+describe('fetchModelCatalogKeys', () => {
+  it('should fetch catalog keys successfully', async () => {
     const streamStream = new Stream();
     httpsMock.get = jest.fn().mockImplementation(cb => {
       cb(streamStream);
       streamStream.emit('data', 'test');
       streamStream.emit('end');
     });
-    const entities: Entity[] = await fetchCatalogEntities('fake-url');
-    expect(entities.length).toEqual(1);
-    expect(entities[0].metadata.name).toEqual('ibm-granite');
+    const catalogKeys: string[] = await fetchModelCatalogKeys('fake-url');
+    expect(catalogKeys.length).toEqual(3);
+    expect(catalogKeys).toEqual(['example-model', 'model-two', 'model-three']);
   });
   it('should error out if error encountered', async () => {
     const streamStream = new Stream();
@@ -77,7 +82,36 @@ describe('Bridge Resource Connector', () => {
       streamStream.emit('end');
     });
     await expect(
-      async () => await fetchCatalogEntities('errorTest'),
+      async () => await fetchModelCatalogKeys('errorTest'),
+    ).rejects.toThrow();
+  });
+});
+
+describe('fetchModelCatalogFromKey', () => {
+  it('should fetch catalog successfully', async () => {
+    const streamStream = new Stream();
+    httpsMock.get = jest.fn().mockImplementation(cb => {
+      cb(streamStream);
+      streamStream.emit('data', 'test');
+      streamStream.emit('end');
+    });
+    const catalog: ModelCatalog = await fetchModelCatalogFromKey(
+      'fake-url',
+      '/example-model',
+    );
+    expect(catalog.models === undefined).toBe(false);
+    expect(catalog.models.length).toEqual(1);
+    expect(catalog.models[0].name).toEqual('ibm-granite');
+  });
+  it('should error out if error encountered', async () => {
+    const streamStream = new Stream();
+    httpsMock.get = jest.fn().mockImplementation(cb => {
+      cb(streamStream);
+      streamStream.emit('data', 'test');
+      streamStream.emit('end');
+    });
+    await expect(
+      async () => await fetchModelCatalogKeys('errorTest'),
     ).rejects.toThrow();
   });
 });
