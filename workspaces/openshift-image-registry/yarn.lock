@@ -7532,9 +7532,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/shared-react@npm:2.16.0":
-  version: 2.16.0
-  resolution: "@janus-idp/shared-react@npm:2.16.0"
+"@janus-idp/shared-react@npm:2.18.0":
+  version: 2.18.0
+  resolution: "@janus-idp/shared-react@npm:2.18.0"
   dependencies:
     "@backstage/catalog-model": ^1.7.3
     "@backstage/core-components": ^0.16.3
@@ -7553,7 +7553,7 @@ __metadata:
     react-use: ^17.5.0
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 99587964aa0ca9ca4a052751d018f9736f241fadbbdb3c2a738b4efc3b1a1737817d74cedaf898f2500baa2f2c6d8a9030194a32bec6a47c01133b4787fdf226
+  checksum: e7234c2f02379ce634ed3bfab8a5208230e80d8e91fbefee1b2a37a77f516a9ed5f48256f316c21b1aecdfa767dfbee44027f1efa16a7076c2fa7c7bcf19700a
   languageName: node
   linkType: hard
 
@@ -10591,7 +10591,7 @@ __metadata:
     "@emotion/styled": ^11.13.0
     "@ianvs/prettier-plugin-sort-imports": ^4.3.1
     "@janus-idp/cli": 1.19.1
-    "@janus-idp/shared-react": 2.16.0
+    "@janus-idp/shared-react": 2.18.0
     "@material-ui/core": ^4.9.13
     "@material-ui/icons": ^4.11.3
     "@material-ui/lab": ^4.0.0-alpha.45
