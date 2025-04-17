@@ -309,6 +309,9 @@ export const useConversationMessages = (
 
           lastMessage.isLoading = false;
           lastMessage.content += e;
+          lastMessage.error = {
+            title: e.message,
+          };
           lastMessage.timestamp = getTimestamp(Date.now());
 
           const updatedConversation = [

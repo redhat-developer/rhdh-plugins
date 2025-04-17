@@ -74,9 +74,19 @@ export class LightspeedApiClient implements LightspeedAPI {
     }
 
     if (!response.ok) {
-      throw new Error(
-        `failed to fetch data, status ${response.status}: ${response.statusText}`,
-      );
+      const body = await response.body.getReader();
+      const reader = body.read();
+      const decoder = new TextDecoder('utf-8');
+      const text = await reader.then(({ done, value }) => {
+        if (done) {
+          return '';
+        }
+        return decoder.decode(value);
+      });
+      const errorMessage = JSON.parse(text);
+      if (errorMessage?.error) {
+        throw new Error(`failed to create message: ${errorMessage.error}`);
+      }
     }
     return response.body.getReader();
   }

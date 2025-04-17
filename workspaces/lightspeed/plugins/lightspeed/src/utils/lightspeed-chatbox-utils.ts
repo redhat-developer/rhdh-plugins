@@ -85,6 +85,9 @@ type MessageProps = {
   name?: string;
   avatar?: string | any;
   isLoading?: boolean;
+  error?: {
+    title: string;
+  };
 };
 
 export const createMessage = ({
@@ -94,6 +97,7 @@ export const createMessage = ({
   isLoading = false,
   content,
   timestamp,
+  error,
 }: MessageProps & { role: 'user' | 'bot' }) => ({
   role,
   name,
@@ -101,6 +105,7 @@ export const createMessage = ({
   isLoading,
   content,
   timestamp,
+  error,
 });
 
 export const createUserMessage = (props: MessageProps) =>

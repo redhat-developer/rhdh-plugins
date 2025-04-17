@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { AlertProps } from '@patternfly/react-core';
+
 export type Conversations = {
   [key: string]: {
     user: string;
@@ -22,6 +24,7 @@ export type Conversations = {
     loading: boolean;
     timestamp: string;
     botTimestamp: string;
+    error?: AlertProps;
   };
 };
 
@@ -38,6 +41,7 @@ export interface BaseMessage {
   additional_kwargs: {
     [_key: string]: any;
   };
+  error?: AlertProps;
 }
 export type ConversationSummary = {
   conversation_id: string;
