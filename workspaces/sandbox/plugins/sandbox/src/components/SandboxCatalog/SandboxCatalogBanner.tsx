@@ -66,7 +66,7 @@ export const SandboxCatalogBanner: React.FC = () => {
           />
         </Box>
 
-        <Box mt={2} ml={4}>
+        <Box mt={2} ml={{ xs: 0, sm: 0, md: 4, lg: 4 }}>
           {loading ? (
             <>
               <Skeleton

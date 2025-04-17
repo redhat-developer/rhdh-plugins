@@ -50,7 +50,7 @@ export class RegistrationBackendClient implements RegistrationService {
   }
 
   private readonly signupAPI = async (): Promise<string> => {
-    return `${await this.discoveryApi.getBaseUrl('proxy')}/signup`;
+    return 'https://registration-service-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com/api/v1/signup';
   };
 
   getRecaptchaAPIKey = (): string => {

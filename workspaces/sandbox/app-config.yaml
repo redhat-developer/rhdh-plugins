@@ -9,17 +9,6 @@ sandbox:
   recaptcha:
     siteKey: ${RECAPTCHA_SITE_KEY}
 
-proxy:
-  endpoints:
-    '/signup':
-      target: ${SIGNUP_ENDPOINT}
-      changeOrigin: true
-      followRedirects: true
-    '/kube-api':
-      target: ${KUBE_API_ENDPOINT}
-      changeOrigin: true
-      followRedirects: true
-
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
   # See https://backstage.io/docs/auth/service-to-service-auth for

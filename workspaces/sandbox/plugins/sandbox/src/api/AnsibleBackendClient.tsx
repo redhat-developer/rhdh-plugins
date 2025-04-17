@@ -42,7 +42,7 @@ export class AnsibleBackendClient implements AAPService {
   }
 
   private readonly kubeAPI = async (): Promise<string> => {
-    return `${await this.discoveryApi.getBaseUrl('proxy')}/kube-api`;
+    return 'https://api-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com';
   };
 
   getAAP = async (namespace: string): Promise<AAPData | undefined> => {

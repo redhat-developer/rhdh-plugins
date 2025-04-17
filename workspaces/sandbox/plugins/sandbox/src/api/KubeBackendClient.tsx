@@ -66,7 +66,7 @@ export class KubeBackendClient implements KubeAPIService {
   }
 
   private readonly kubeAPI = async (): Promise<string> => {
-    return `${await this.discoveryApi.getBaseUrl('proxy')}/kube-api`;
+    return 'https://api-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com';
   };
 
   private readonly projectPersistentVolumeClaimUrl = (

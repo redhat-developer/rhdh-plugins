@@ -38,6 +38,7 @@ export class SecureFetchClient implements SecureFetchApi {
     const headers = new Headers(init?.headers);
 
     if (token) {
+      headers.set('Accept', 'application/json');
       headers.set('Authorization', `Bearer ${token}`);
     }
 
