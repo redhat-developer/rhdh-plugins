@@ -25,6 +25,7 @@ import { AnsibleStatus, decode, getReadyCondition } from '../utils/aap-utils';
 import { errorMessage } from '../utils/common';
 
 interface SandboxContextType {
+  userStatus: string;
   userFound: boolean;
   userReady: boolean;
   verificationRequired: boolean;
@@ -219,6 +220,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <SandboxContext.Provider
       value={{
+        userStatus: status,
         userFound,
         userReady,
         verificationRequired,

@@ -27,7 +27,7 @@ const TRIAL_DURATION_DAYS = 30;
 
 export const SandboxCatalogBanner: React.FC = () => {
   const theme = useTheme();
-  const { userData, loading } = useSandboxContext();
+  const { userData, verificationRequired, loading } = useSandboxContext();
 
   const calculateDaysLeft = React.useCallback(() => {
     const currentDate = new Date();
@@ -117,7 +117,9 @@ export const SandboxCatalogBanner: React.FC = () => {
                       fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5625rem' },
                     }}
                   >
-                    Your free trial expires in {calculateDaysLeft()} days
+                    {verificationRequired
+                      ? 'Click on "Try it" to initiate your free, no commitment 30-day trial.'
+                      : `Your free trial expires in ${calculateDaysLeft()} days`}
                   </Typography>
                 </>
               ) : (
