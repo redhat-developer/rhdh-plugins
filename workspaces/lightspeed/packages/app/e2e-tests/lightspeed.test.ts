@@ -27,6 +27,8 @@ import {
 } from './fixtures/responses';
 import { openLightspeed, sendMessage } from './utils/testHelper';
 
+const botQuery = 'Please respond';
+
 test.beforeEach(async ({ page }) => {
   await page.route(`${modelBaseUrl}/v1/models`, async route => {
     const json = { object: 'list', data: models };
@@ -37,10 +39,6 @@ test.beforeEach(async ({ page }) => {
       const json = [];
       await route.fulfill({ json });
     }
-    if (route.request().method() === 'POST') {
-      const json = defaultConversation;
-      await route.fulfill({ json });
-    }
   });
   await page.route(`${modelBaseUrl}/conversations/user*`, async route => {
     const json = [];
@@ -48,9 +46,12 @@ test.beforeEach(async ({ page }) => {
   });
   await page.route(`${modelBaseUrl}/v1/query`, async route => {
     const payload = route.request().postDataJSON();
-    conversations[0].conversation_id = payload.conversation_id;
-    contents[0].kwargs.content = payload.query;
-    const body = generateQueryResponse(payload.conversation_id);
+
+    const body = generateQueryResponse(
+      payload.query === botQuery
+        ? (conversations[1].conversation_id = payload.conversation_id)
+        : conversations[0].conversation_id,
+    );
     await route.fulfill({ body });
   });
 
@@ -82,27 +83,26 @@ test.describe('Conversation', () => {
   test.beforeEach(async ({ page }) => {
     await page.route(`${modelBaseUrl}/conversations`, async route => {
       if (route.request().method() === 'GET') {
-        const json = conversations;
+        const json = { conversations };
         await route.fulfill({ json });
       } else {
         await route.fulfill();
       }
     });
     await page.route(`${modelBaseUrl}/conversations/user*`, async route => {
-      const json = contents;
+      const json = { chat_history: contents };
       await route.fulfill({ json });
     });
   });
 
   test('Bot responds', async ({ page }) => {
-    const inputText = 'Please respond';
-    await sendMessage(inputText, page);
+    await sendMessage(botQuery, page);
 
     const userMessage = page.locator('.pf-chatbot__message--user');
     const botMessage = page.locator('.pf-chatbot__message--bot');
 
     await expect(userMessage).toBeVisible();
-    await expect(userMessage).toContainText(inputText);
+    await expect(userMessage).toContainText(botQuery);
     await expect(botMessage).toBeVisible();
     await expect(botMessage).toContainText(botResponse);
   });
@@ -123,7 +123,7 @@ test.describe('Conversation', () => {
   test('Filter and switch conversations', async ({ page }) => {
     await page.route(`${modelBaseUrl}/conversations`, async route => {
       if (route.request().method() === 'GET') {
-        const json = moreConversations;
+        const json = { conversations: moreConversations };
         await route.fulfill({ json });
       } else {
         await route.fulfill();
@@ -133,7 +133,7 @@ test.describe('Conversation', () => {
     const sidePanel = page.locator('.pf-v6-c-drawer__panel');
 
     const currentChat = sidePanel.locator('li.pf-chatbot__menu-item--active');
-    await expect(currentChat).toHaveText(moreConversations[0].summary);
+    await expect(currentChat).toHaveText(moreConversations[0].topic_summary);
 
     const chats = sidePanel.locator('li.pf-chatbot__menu-item');
     await expect(chats).toHaveCount(2);
@@ -143,14 +143,14 @@ test.describe('Conversation', () => {
     );
     await searchBox.fill('new');
     await expect(chats).toHaveCount(1);
-    await expect(chats).toHaveText(moreConversations[1].summary);
+    await expect(chats).toHaveText(moreConversations[1].topic_summary);
 
     await chats.click();
 
     const userMessage = page.locator('.pf-chatbot__message--user');
     const botMessage = page.locator('.pf-chatbot__message--bot');
 
-    await expect(userMessage).toContainText(contents[0].kwargs.content);
-    await expect(botMessage).toContainText(contents[1].kwargs.content);
+    await expect(userMessage).toContainText(contents[0].content);
+    await expect(botMessage).toContainText(contents[1].content);
   });
 });

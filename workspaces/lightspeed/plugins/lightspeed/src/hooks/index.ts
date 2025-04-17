@@ -17,7 +17,6 @@ export * from './useAllModels';
 export * from './useBackstageUserIdentity';
 export * from './useConversationMessages';
 export * from './useConversations';
-export * from './useCreateConversation';
 export * from './useCreateCoversationMessage';
 export * from './useDeleteConversation';
 export * from './useIsMobile';
