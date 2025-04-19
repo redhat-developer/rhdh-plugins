@@ -10273,7 +10273,7 @@ __metadata:
     "@material-ui/core": ^4.12.4
     "@mui/icons-material": ^5.16.14
     "@mui/material": ^5.16.14
-    "@redhat-developer/red-hat-developer-hub-theme": 0.4.0
+    "@redhat-developer/red-hat-developer-hub-theme": 0.5.1
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
@@ -10294,9 +10294,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0"
+"@redhat-developer/red-hat-developer-hub-theme@npm:0.5.1":
+  version: 0.5.1
+  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.1"
   peerDependencies:
     "@backstage/theme": ^0.5.2
     "@emotion/react": ^11.11.1
@@ -10305,7 +10305,7 @@ __metadata:
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.14.19
     "@mui/material": ^5.14.20
-  checksum: 8684f8faa2fe87100dba2c19f1e1a306e808cf98bc65da829c3203a325ea6520a93e54c174e25a220ccf8280ecc2750a178a0d18b12f5ba354c7c415e8a9dc7b
+  checksum: 4de9e62b9de390c7de82fcf123a03135366952ab39d423be51c3afb242c316e3deb78ecaa3e038d6bcc12695f8f03223b9efb45a689a40ea2c11139f4e3fc06d
   languageName: node
   linkType: hard
 
