@@ -8824,19 +8824,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:^5.16.7":
-  version: 5.16.7
-  resolution: "@mui/icons-material@npm:5.16.7"
+"@mui/icons-material@npm:^5.16.7, @mui/icons-material@npm:^5.17.1":
+  version: 5.17.1
+  resolution: "@mui/icons-material@npm:5.17.1"
   dependencies:
     "@babel/runtime": ^7.23.9
   peerDependencies:
     "@mui/material": ^5.0.0
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: a875f2837897d79a83173d80461e06ab090b64d08913d26433cf2cbeb8e7c7456468632a7aa495d722718f09111a8043255777d73b4dfbe9e0f863a170fc7190
+  checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
   languageName: node
   linkType: hard
 
@@ -10627,7 +10627,7 @@ __metadata:
     "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.4.7
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.6.0
     "@scalprum/react-core": 0.9.3
     "@tanstack/react-query": ^5.60.5
     "@testing-library/jest-dom": ^6.0.0
@@ -10658,6 +10658,22 @@ __metadata:
     "@material-ui/icons": ^4.11.3
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   checksum: 5f43f7ca3f6b2cfd2caaf6aaf72b9153bc2e2f06ec50e5d61c804eab0a6e9266c6ce1357755cb3b93cf426b768d808ca5b3394a60da15c55c623a9197104a9d8
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.6.0"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.10.4
+    "@backstage/theme": ^0.6.4
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 37b868436f32ac08f6fd465d3a14caf636731e299a8407dc07970681b0e6327d61f12616820ff57b103a3ef8c51d37092dd6e972363d914cecd7c0f3231a760b
   languageName: node
   linkType: hard
 
