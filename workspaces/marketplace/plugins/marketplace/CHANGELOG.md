@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.5.6
+
+### Patch Changes
+
+- e1c4440: fix issue with deselecting the selected filter
+
 ## 0.5.5
 
 ### Patch Changes

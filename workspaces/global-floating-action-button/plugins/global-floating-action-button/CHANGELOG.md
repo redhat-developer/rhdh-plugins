@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.1.4
+
+### Patch Changes
+
+- 8c2bdd9: add inline div styles to the FloatingButton element
+
+## 1.1.3
+
+### Patch Changes
+
+- 038f03e: render fab on document body when the target element is not found
+
+## 1.1.2
+
+### Patch Changes
+
+- 51c4635: fix fab position to append to Backstage-Root
+
 ## 1.1.1
 
 ### Patch Changes

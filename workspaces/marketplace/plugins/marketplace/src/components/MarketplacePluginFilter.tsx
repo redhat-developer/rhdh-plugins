@@ -73,7 +73,7 @@ const AuthorFilter = () => {
 
   const handleChange = React.useCallback(
     (_e: any, value: SelectItem[]) => {
-      const newSelection = value.map(v => v.value);
+      const newSelection = value.map(v => v.label);
       filter.set(newSelection);
     },
     [filter],

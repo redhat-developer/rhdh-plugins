@@ -19,20 +19,10 @@ import * as React from 'react';
 import { Link, StatusPending } from '@backstage/core-components';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { makeStyles } from '@mui/styles';
 
 import GitAltIcon from '../components/GitAltIcon';
 
-const useStyles = makeStyles(() => ({
-  urlLink: {
-    paddingLeft: '5px',
-    display: 'inline-flex',
-  },
-  openInNew: { paddingBottom: '5px', paddingTop: '3px' },
-}));
-
 export const WaitingForPR = ({ url }: { url: string }) => {
-  const styles = useStyles();
   return (
     <span
       style={{
@@ -52,10 +42,13 @@ export const WaitingForPR = ({ url }: { url: string }) => {
         <Link
           to={url}
           data-testid="pull request url"
-          className={styles.urlLink}
+          style={{
+            paddingLeft: '5px',
+            display: 'inline-flex',
+          }}
         >
           PR
-          <OpenInNewIcon className={styles.openInNew} />
+          <OpenInNewIcon sx={{ paddingBottom: '5px', paddingTop: '3px' }} />
         </Link>
       )}
     </span>

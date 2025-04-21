@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { Fragment } from 'react';
 import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import { Link } from '@backstage/core-components';
 import { MenuItemLinkProps } from '../MenuItemLink/MenuItemLink';
+import ListSubheader from '@mui/material/ListSubheader';
 
 /**
  * Menu item configuration
@@ -51,55 +51,66 @@ export const MenuSection: React.FC<MenuSectionConfig> = ({
   items,
   hideDivider = false,
   handleClose,
-}) => (
-  <Box>
-    {sectionLabel && (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mx: 0,
-          mt: '0.5rem',
-          '&:hover': { background: 'transparent' },
-        }}
-      >
-        <Typography variant="body2" sx={{ pl: 2, color: 'text.disabled' }}>
-          {sectionLabel}
-        </Typography>
+}) => {
+  const hasClickableSubheader =
+    optionalLink && optionalLinkLabel && items.length > 0;
+
+  return (
+    <>
+      {sectionLabel && (
         <MenuItem
           sx={{
-            '&:hover': { background: 'transparent' },
+            p: 0,
           }}
           disableRipple
           disableTouchRipple
+          component={hasClickableSubheader ? Link : Fragment}
+          to={optionalLink}
           onClick={handleClose}
         >
-          {optionalLink && optionalLinkLabel && items.length > 0 && (
-            <Link
-              to={optionalLink}
-              underline="none"
-              style={{ fontSize: '0.875em' }}
+          <ListSubheader
+            sx={{
+              backgroundColor: 'transparent',
+              m: 0,
+              color: 'text.disabled',
+              lineHeight: 2,
+              mt: '0.5rem',
+              fontWeight: 400,
+            }}
+          >
+            {sectionLabel}
+          </ListSubheader>
+
+          {optionalLinkLabel && (
+            <Box
+              sx={{
+                fontSize: '0.875em',
+                mr: 2,
+                flexGrow: 1,
+                textAlign: 'right',
+                mt: '0.5rem',
+              }}
             >
               {optionalLinkLabel}
-            </Link>
+            </Box>
           )}
         </MenuItem>
-      </Box>
-    )}
-    <ul style={{ padding: 0, listStyle: 'none' }}>
+      )}
+
       {items.map(({ icon, label, subLabel, link, Component }, index) => (
         <MenuItem
           key={`menu-item-${index.toString()}`}
           disableRipple
           disableTouchRipple
           onClick={handleClose}
-          sx={{ py: 0.5, '&:hover': { background: 'transparent' } }}
+          sx={{ py: 0.5 }}
+          component={link ? Link : Fragment}
+          to={link}
         >
           <Component icon={icon} to={link!} title={label} subTitle={subLabel} />
         </MenuItem>
       ))}
-    </ul>
-    {!hideDivider && <Divider sx={{ my: 0.5 }} />}
-  </Box>
-);
+      {!hideDivider && <Divider sx={{ my: 0.5 }} />}
+    </>
+  );
+};

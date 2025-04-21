@@ -15,8 +15,8 @@
  */
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
-import classnames from 'classnames';
 
 import { makeStyles } from '@mui/styles';
 import { FABWithSubmenu } from './FABWithSubmenu';
@@ -25,20 +25,14 @@ import { FloatingActionButton, Slot } from '../types';
 import { filterAndSortButtons } from '../utils';
 
 const useStyles = makeStyles(theme => ({
-  fabButton: {
-    zIndex: 200,
-    display: 'flex',
-    position: 'fixed',
-  },
   'page-end': {
-    bottom: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
-    right: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
+    bottom: theme?.spacing?.(2) ?? '16px',
+    right: theme?.spacing?.(2) ?? '16px',
     alignItems: 'end',
   },
   'bottom-left': {
-    bottom: theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
-    paddingLeft:
-      theme && Object.keys(theme).length > 0 ? theme?.spacing(2) : '16px',
+    bottom: theme?.spacing?.(2) ?? '16px',
+    paddingLeft: theme?.spacing?.(2) ?? '16px',
     alignItems: 'start',
   },
 }));
@@ -50,8 +44,29 @@ export const FloatingButton = ({
   floatingButtons: FloatingActionButton[];
   slot: Slot;
 }) => {
+  const timeoutRef = React.useRef<NodeJS.Timeout>();
   const { pathname } = useLocation();
   const fabButton = useStyles();
+  const [targetElement, setTargetElement] = React.useState<Element | null>(
+    null,
+  );
+
+  React.useEffect(() => {
+    const checkTargetElement = () => {
+      const element =
+        document.querySelector('[class^="BackstagePage-root"]') ??
+        document.querySelector('main');
+      if (element) {
+        setTargetElement(element);
+      } else {
+        timeoutRef.current = setTimeout(checkTargetElement, 300);
+      }
+    };
+    checkTargetElement();
+    return () => {
+      clearTimeout(timeoutRef.current);
+    };
+  }, [pathname, targetElement]);
 
   const fabs = React.useMemo(
     () => filterAndSortButtons(floatingButtons, pathname),
@@ -62,21 +77,30 @@ export const FloatingButton = ({
     return null;
   }
 
+  let fabDiv;
   if (fabs.length > 1) {
-    return (
+    fabDiv = (
       <FABWithSubmenu className={fabButton[slot]} fabs={fabs} slot={slot} />
     );
+  } else {
+    fabDiv = (
+      <div
+        style={{
+          zIndex: 200,
+          display: 'flex',
+          position: 'fixed',
+        }}
+        className={fabButton[slot]}
+        id="floating-button"
+        data-testid="floating-button"
+      >
+        <CustomFab
+          actionButton={{ color: 'info', iconColor: 'white', ...fabs[0] }}
+        />
+      </div>
+    );
   }
-
-  return (
-    <div
-      className={classnames(fabButton.fabButton, fabButton[slot])}
-      id="floating-button"
-      data-testid="floating-button"
-    >
-      <CustomFab
-        actionButton={{ color: 'info', iconColor: 'white', ...fabs[0] }}
-      />
-    </div>
-  );
+  return targetElement
+    ? createPortal(fabDiv, targetElement)
+    : createPortal(fabDiv, document.body);
 };
