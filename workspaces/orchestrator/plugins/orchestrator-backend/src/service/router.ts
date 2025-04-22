@@ -801,6 +801,9 @@ function setupInternalRoutes(
             allWorkflowIds,
           );
 
+        if (!authorizedWorkflowIds || authorizedWorkflowIds.length === 0)
+          res.json([]);
+
         const result = await routerApi.v2.getInstances(
           buildPagination(req),
           getRequestFilters(req),
