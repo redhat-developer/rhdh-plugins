@@ -6,6 +6,8 @@ organization:
   name: Red Hat
 
 sandbox:
+  signupAPI: ${SIGNUP_API}
+  kubeAPI: ${KUBE_API}
   recaptcha:
     siteKey: ${RECAPTCHA_SITE_KEY}
 

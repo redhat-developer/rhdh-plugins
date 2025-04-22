@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { DiscoveryApi } from '@backstage/core-plugin-api';
+import { ConfigApi } from '@backstage/core-plugin-api';
 import { errorMessage } from '../utils/common';
 import { AAPObject } from '../utils/aap-utils';
 import { AAPData } from '../types';
 import { SecureFetchApi } from './SecureFetchClient';
 
 export type AnsibleBackendClientOptions = {
-  discoveryApi: DiscoveryApi;
+  configApi: ConfigApi;
   secureFetchApi: SecureFetchApi;
 };
 
@@ -33,16 +33,17 @@ export interface AAPService {
 }
 
 export class AnsibleBackendClient implements AAPService {
-  private readonly discoveryApi: DiscoveryApi;
+  private readonly configApi: ConfigApi;
   private readonly secureFetchApi: SecureFetchApi;
 
   constructor(options: AnsibleBackendClientOptions) {
-    this.discoveryApi = options.discoveryApi;
+    this.configApi = options.configApi;
     this.secureFetchApi = options.secureFetchApi;
   }
 
   private readonly kubeAPI = async (): Promise<string> => {
-    return 'https://api-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com';
+    const kubeAPI = this.configApi.getString('sandbox.kubeAPI');
+    return kubeAPI;
   };
 
   getAAP = async (namespace: string): Promise<AAPData | undefined> => {
