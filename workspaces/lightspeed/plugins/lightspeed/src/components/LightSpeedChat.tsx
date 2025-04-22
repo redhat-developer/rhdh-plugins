@@ -36,11 +36,11 @@ import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/Chat
 import { DropdownItem, Title } from '@patternfly/react-core';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { TEMP_CONVERSATION_ID } from '../const';
 import {
   useBackstageUserIdentity,
   useConversationMessages,
   useConversations,
-  useCreateConversation,
   useDeleteConversation,
   useIsMobile,
   useLastOpenedConversation,
@@ -129,24 +129,15 @@ export const LightspeedChat = ({
   const queryClient = useQueryClient();
 
   const { data: conversations = [] } = useConversations();
-  const { mutateAsync: createConversation } = useCreateConversation();
   const { mutateAsync: deleteConversation } = useDeleteConversation();
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
 
   React.useEffect(() => {
     if (user && lastOpenedId === null && isReady) {
-      createConversation()
-        .then(({ conversation_id }) => {
-          setConversationId(conversation_id);
-          setNewChatCreated(true);
-        })
-        .catch(e => {
-          // eslint-disable-next-line
-          console.warn(e);
-          setError(e);
-        });
+      setConversationId(TEMP_CONVERSATION_ID);
+      setNewChatCreated(true);
     }
-  }, [user, isReady, lastOpenedId, setConversationId, createConversation]);
+  }, [user, isReady, lastOpenedId, setConversationId]);
 
   React.useEffect(() => {
     // Update last opened conversation whenever `conversationId` changes
@@ -155,12 +146,17 @@ export const LightspeedChat = ({
     }
   }, [conversationId, setLastOpenedId]);
 
+  const onStart = (conv_id: string) => {
+    setConversationId(conv_id);
+  };
+
   const onComplete = (message: string) => {
     setIsSendButtonDisabled(false);
     setAnnouncement(`Message from Bot: ${message}`);
     queryClient.invalidateQueries({
       queryKey: ['conversations'],
     });
+    setNewChatCreated(false);
   };
 
   const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
@@ -170,6 +166,7 @@ export const LightspeedChat = ({
       selectedModel,
       avatar,
       onComplete,
+      onStart,
     );
 
   const [messages, setMessages] =
@@ -184,7 +181,9 @@ export const LightspeedChat = ({
   }, [messages, scrollToBottomRef.current]);
 
   const sendMessage = (message: string | number) => {
-    setNewChatCreated(false);
+    if (conversationId !== TEMP_CONVERSATION_ID) {
+      setNewChatCreated(false);
+    }
     setAnnouncement(
       `Message from User: ${prompt}. Message from Bot is loading.`,
     );
@@ -195,11 +194,10 @@ export const LightspeedChat = ({
   const onNewChat = React.useCallback(() => {
     (async () => {
       setMessages([]);
-      const { conversation_id } = await createConversation();
-      setConversationId(conversation_id);
+      setConversationId(TEMP_CONVERSATION_ID);
       setNewChatCreated(true);
     })();
-  }, [createConversation, setConversationId, setMessages]);
+  }, [setConversationId, setMessages]);
 
   const openDeleteModal = (conversation_id: string) => {
     setTargetConversationId(conversation_id);
@@ -221,6 +219,7 @@ export const LightspeedChat = ({
       } catch (e) {
         // eslint-disable-next-line no-console
         console.warn(e);
+        setError(e);
       }
     })();
   }, [
@@ -295,7 +294,8 @@ export const LightspeedChat = ({
   );
 
   const welcomePrompts =
-    newChatCreated || (!conversationFound && conversationMessages.length === 0)
+    (newChatCreated && conversationMessages.length === 0) ||
+    (!conversationFound && conversationMessages.length === 0)
       ? [
           {
             title: 'Topic 1',

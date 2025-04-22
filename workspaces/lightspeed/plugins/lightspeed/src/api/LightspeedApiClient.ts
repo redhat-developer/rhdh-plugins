@@ -16,6 +16,7 @@
 
 import { ConfigApi, FetchApi } from '@backstage/core-plugin-api';
 
+import { TEMP_CONVERSATION_ID } from '../const';
 import { LightspeedAPI } from './api';
 
 export type Options = {
@@ -56,11 +57,15 @@ export class LightspeedApiClient implements LightspeedAPI {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        conversation_id,
-        serverURL: this.getServerUrl(),
+        conversation_id:
+          conversation_id === TEMP_CONVERSATION_ID
+            ? undefined
+            : conversation_id,
         model: selectedModel,
+        provider: this.configApi
+          .getConfigArray('lightspeed.servers')[0]
+          .getOptionalString('id'), // Currently supports a single llm server
         query: prompt,
-        historyLength: 10,
       }),
     });
 
@@ -69,9 +74,19 @@ export class LightspeedApiClient implements LightspeedAPI {
     }
 
     if (!response.ok) {
-      throw new Error(
-        `failed to fetch data, status ${response.status}: ${response.statusText}`,
-      );
+      const body = await response.body.getReader();
+      const reader = body.read();
+      const decoder = new TextDecoder('utf-8');
+      const text = await reader.then(({ done, value }) => {
+        if (done) {
+          return '';
+        }
+        return decoder.decode(value);
+      });
+      const errorMessage = JSON.parse(text);
+      if (errorMessage?.error) {
+        throw new Error(`failed to create message: ${errorMessage.error}`);
+      }
     }
     return response.body.getReader();
   }
@@ -93,45 +108,46 @@ export class LightspeedApiClient implements LightspeedAPI {
   async getAllModels() {
     const baseUrl = await this.getBaseUrl();
     const result = await this.fetcher(`${baseUrl}/v1/models`);
+
+    if (!result.ok) {
+      throw new Error(
+        `failed to get models, status ${result.status}: ${result.statusText}`,
+      );
+    }
+
     const response = await result.json();
     return response?.data ? response.data : [];
   }
 
   async getConversationMessages(conversation_id: string) {
+    if (conversation_id === TEMP_CONVERSATION_ID) {
+      return [];
+    }
     const baseUrl = await this.getBaseUrl();
     const result = await this.fetcher(
       `${baseUrl}/conversations/${encodeURIComponent(conversation_id)}`,
     );
-    return await result.json();
+    if (!result.ok) {
+      throw new Error(
+        `failed to get conversation messages, status ${result.status}: ${result.statusText}`,
+      );
+    }
+    const response = await result.json();
+    return response.chat_history ?? [];
   }
 
   async getConversations() {
     const baseUrl = await this.getBaseUrl();
     const result = await this.fetcher(`${baseUrl}/conversations`);
-    return await result.json();
-  }
 
-  async createConversation() {
-    const baseUrl = await this.getBaseUrl();
-
-    const response = await this.fetchApi.fetch(`${baseUrl}/conversations`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({}),
-    });
-
-    if (!response.body) {
-      throw new Error('Something went wrong.');
-    }
-
-    if (!response.ok) {
+    if (!result.ok) {
       throw new Error(
-        `failed to create conversation, status ${response.status}: ${response.statusText}`,
+        `failed to get conversation, status ${result.status}: ${result.statusText}`,
       );
     }
-    return await response.json();
+
+    const response = await result.json();
+    return response.conversations ?? [];
   }
 
   async deleteConversation(conversation_id: string) {

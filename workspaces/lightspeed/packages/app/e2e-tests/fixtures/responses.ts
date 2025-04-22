@@ -39,21 +39,26 @@ export const defaultConversation = {
 export const conversations = [
   {
     conversation_id: 'user:development/guest+Av8Fax73D4XPx5Ls',
-    summary: 'Conversation 1',
-    lastMessageTimestamp: createdAt,
+    topic_summary: 'Conversation 1',
+    last_message_timestamp: createdAt,
+  },
+  {
+    conversation_id: 'temp-conversation-id',
+    topic_summary: 'Temporary conversation',
+    last_message_timestamp: createdAt,
   },
 ];
 
 export const moreConversations = [
   {
     conversation_id: 'user:development/guest+Av8Fax73D4XPx5Ls',
-    summary: 'Conversation 1',
-    lastMessageTimestamp: createdAt,
+    topic_summary: 'Conversation 1',
+    last_message_timestamp: createdAt,
   },
   {
     conversation_id: 'user:development/guest+Av8Fax73D4XPx5La',
-    summary: 'New Conversation',
-    lastMessageTimestamp: createdAt,
+    topic_summary: 'New Conversation',
+    last_message_timestamp: createdAt,
   },
 ];
 
@@ -62,24 +67,20 @@ export const contents = [
     lc: 1,
     type: 'constructor',
     id: ['langchain_core', 'messages', 'HumanMessage'],
-    kwargs: {
-      content: 'New conversation',
-      response_metadata: {
-        created_at: createdAt,
-      },
-      additional_kwargs: {},
+    content: 'New conversation',
+    response_metadata: {
+      created_at: createdAt,
     },
+    additional_kwargs: {},
   },
   {
     lc: 1,
     type: 'constructor',
     id: ['langchain_core', 'messages', 'AIMessage'],
-    kwargs: {
-      content: 'Still a placeholder message',
-      response_metadata: {
-        created_at: createdAt,
-        model: models[1].id,
-      },
+    content: 'Still a placeholder message',
+    response_metadata: {
+      created_at: createdAt,
+      model: models[1].id,
       tool_calls: [],
       invalid_tool_calls: [],
       additional_kwargs: {},
@@ -90,12 +91,32 @@ export const contents = [
 export const botResponse = `This is a placeholder message`;
 
 export const generateQueryResponse = (conversationId: string) => {
-  let body = '';
+  const tokens = botResponse.match(/(\s+|[^\s]+)/g) || [];
 
-  for (const token of botResponse.split(' ')) {
-    body += `{"conversation_id":"${conversationId}","response":{"lc":1,"type":"constructor","id":["langchain_core","messages","AIMessageChunk"],"kwargs":{"content":" ${token}","tool_call_chunks":[],"additional_kwargs":{},"id":"chatcmpl-890","tool_calls":[],"invalid_tool_calls":[],"response_metadata":{"prompt":0,"completion":0,"created_at":1736332476031,"model":"${models[1].id}"}}}}`;
-  }
-  body += `{"conversation_id":"${conversationId}","response":{"lc":1,"type":"constructor","id":["langchain_core","messages","AIMessageChunk"],"kwargs":{"content":"","tool_call_chunks":[],"additional_kwargs":{},"id":"chatcmpl-890","tool_calls":[],"invalid_tool_calls":[],"response_metadata":{"prompt":0,"completion":0,"finish_reason":"stop","system_fingerprint":"fp_ollama","created_at":1736332476031,"model":"${models[1].id}"}}}}`;
+  const events: {
+    event: string;
+    data?: Record<string, any>;
+    done?: boolean;
+  }[] = [];
 
-  return body;
+  events.push({
+    event: 'start',
+    data: { conversation_id: conversationId },
+  });
+
+  tokens.forEach((token, index) => {
+    events.push({
+      event: 'token',
+      data: { id: index, token },
+    });
+  });
+
+  events.push({
+    event: 'end',
+    done: true,
+  });
+
+  return `${events
+    .map(({ event, data }) => `data: ${JSON.stringify({ event, data })}\n\n`)
+    .join('')}\n`;
 };
