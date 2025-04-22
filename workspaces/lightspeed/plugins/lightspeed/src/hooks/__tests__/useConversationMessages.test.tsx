@@ -54,6 +54,40 @@ const queryClient = new QueryClient({
   },
 });
 
+type SSEEvent = {
+  event: string;
+  data: Record<string, any>;
+};
+
+const createSSEStream = (events: SSEEvent[]): string => {
+  return `${events
+    .map(({ event, data }) => `data: ${JSON.stringify({ event, data })}\n\n`)
+    .join('')}\n`;
+};
+
+const generateSSEFromText = (
+  text: string,
+  conversationId: string = '5f8c430b-b006-4567-a89d-fdf0ab34f800',
+): string => {
+  const events: SSEEvent[] = [];
+
+  events.push({
+    event: 'start',
+    data: { conversation_id: conversationId },
+  });
+
+  const tokens = text.match(/(\s+|[^\s]+)/g) || [];
+
+  // Add token events
+  tokens.forEach((token, index) => {
+    events.push({
+      event: 'token',
+      data: { id: index, token },
+    });
+  });
+
+  return createSSEStream(events);
+};
 const wrapper = ({
   children,
 }: {
@@ -163,9 +197,11 @@ describe('useConversationMesages', () => {
 
     rerender({ conversationId: 'updatedConversationId' });
 
-    expect(result.current.conversations).toEqual({
-      updatedConversationId: [],
-    });
+    expect(result.current.conversations).toEqual(
+      expect.objectContaining({
+        updatedConversationId: [],
+      }),
+    );
   });
 
   it('should call onComplete when streaming is done', async () => {
@@ -178,7 +214,7 @@ describe('useConversationMesages', () => {
           .mockResolvedValueOnce({
             done: false,
             value: new TextEncoder().encode(
-              '{"response":{"kwargs":{"content":"Hi test-user!"}}}',
+              generateSSEFromText('Hi test-user!'),
             ),
           })
           .mockResolvedValueOnce({ done: true, value: null }),
@@ -217,10 +253,16 @@ describe('useConversationMesages', () => {
           .fn()
           .mockResolvedValueOnce({
             done: false,
+
             value: new TextEncoder().encode(
-              '{"response":{"kwargs":{"content":"{{"key": "value"} }}}',
+              `data: {"event": "start", "data": {"conversation_id": "5f8c430b-b006-4567-a89d-fdf0ab34f800"}}\n
+data: {"event": "token", "data": {"id": 0, "token": "{{"key"\n
+data: {"event": "token", "data": {"id": 1, "token": ": "value"}}\n
+data: {"event": "token", "data": {"id": 2, "token": ""}}\n
+`,
             ),
           })
+
           .mockResolvedValueOnce({ done: true, value: null }),
       }),
     };
@@ -315,7 +357,7 @@ describe('useConversationMesages', () => {
           .mockResolvedValueOnce({
             done: false,
             value: new TextEncoder().encode(
-              '{"response":{"kwargs":{"content":"Hi test-user!"}}}',
+              generateSSEFromText('Hi test-user!'),
             ),
           })
           .mockResolvedValueOnce({ done: true, value: null }),
@@ -454,7 +496,7 @@ describe('useConversationMesages', () => {
           .mockResolvedValueOnce({
             done: false,
             value: new TextEncoder().encode(
-              '{"response":{"kwargs":{"content":"Hi from conversation 1!"}}}',
+              generateSSEFromText('Hi from conversation 1!'),
             ),
           })
           .mockResolvedValueOnce({ done: true, value: null }),
@@ -494,7 +536,7 @@ describe('useConversationMesages', () => {
         .mockResolvedValueOnce({
           done: false,
           value: new TextEncoder().encode(
-            '{"response":{"kwargs":{"content":"Hi from conversation 2!"}}}',
+            generateSSEFromText('Hi from conversation 2!'),
           ),
         })
         .mockResolvedValueOnce({ done: true, value: null }),
@@ -526,13 +568,13 @@ describe('useConversationMesages', () => {
           .mockResolvedValueOnce({
             done: false,
             value: new TextEncoder().encode(
-              '{"response":{"kwargs":{"content":"Hi from conversation 1 (part 1)!"}}}',
+              generateSSEFromText('Hi from conversation 1 (part 1)!'),
             ),
           })
           .mockResolvedValueOnce({
             done: false,
             value: new TextEncoder().encode(
-              '{"response":{"kwargs":{"content":"Hi from conversation 1 (part 2)!"}}}',
+              generateSSEFromText('Hi from conversation 1 (part 2)!'),
             ),
           })
           .mockResolvedValueOnce({ done: true, value: null }),
@@ -568,7 +610,7 @@ describe('useConversationMesages', () => {
         .mockResolvedValueOnce({
           done: false,
           value: new TextEncoder().encode(
-            '{"response":{"kwargs":{"content":"Hi from conversation 2!"}}}',
+            generateSSEFromText('Hi from conversation 2!'),
           ),
         })
         .mockResolvedValueOnce({ done: true, value: null }),

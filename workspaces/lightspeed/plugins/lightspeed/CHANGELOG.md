@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.5.0
+
+### Minor Changes
+
+- f9d1bc4: Align with road-core service API response
+
 ## 0.4.3
 
 ### Patch Changes

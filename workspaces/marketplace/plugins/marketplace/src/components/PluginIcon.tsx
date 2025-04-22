@@ -17,6 +17,7 @@
 import React from 'react';
 
 import CardMedia from '@mui/material/CardMedia';
+import NoIconIcon from '@mui/icons-material/PowerOutlined';
 
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
@@ -28,6 +29,29 @@ export const PluginIcon = ({
   size: number;
 }) => {
   const icon = plugin?.spec?.icon;
+
+  if (!icon) {
+    return (
+      <CardMedia
+        sx={{
+          width: size,
+          height: size,
+          flexShrink: 0,
+          backgroundColor: 'action.disabledBackground',
+        }}
+      >
+        <NoIconIcon
+          sx={{
+            width: size,
+            height: size,
+            padding: '10px',
+            color: 'action.disabled',
+          }}
+        />
+      </CardMedia>
+    );
+  }
+
   return (
     <CardMedia
       image={icon}
@@ -35,7 +59,6 @@ export const PluginIcon = ({
         width: size,
         height: size,
         flexShrink: 0,
-        backgroundColor: icon ? undefined : 'grey.400',
       }}
     />
   );
