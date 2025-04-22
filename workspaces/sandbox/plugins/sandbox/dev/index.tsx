@@ -31,7 +31,7 @@ createDevApp()
     element: <SandboxPage />,
     title: 'Home',
     icon: HomeOutlinedIcon,
-    path: '/home',
+    path: '/',
   })
   .addPage({
     element: <SandboxActivitiesPage />,

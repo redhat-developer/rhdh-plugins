@@ -107,7 +107,7 @@ describe('productData', () => {
     it('should have correct AAP warning message', () => {
       const aap = productData.find(p => p.id === Product.AAP);
       const warningMessage = aap?.description[4];
-      expect(warningMessage?.value).toBe('20-minute environment provisioning');
+      expect(warningMessage?.value).toBe('30-minute environment provisioning');
       expect(warningMessage?.icon.type).toBe(ErrorOutlineRoundedIcon);
     });
   });

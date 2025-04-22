@@ -48,7 +48,7 @@ export const SandboxCatalogCardButton: React.FC<
       if (ansibleStatus === AnsibleStatus.READY) {
         return 'Launch';
       }
-      return 'Start provision';
+      return 'Provision';
     }
     return 'Try it';
   })();

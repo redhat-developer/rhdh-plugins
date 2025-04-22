@@ -29,6 +29,7 @@ interface SandboxContextType {
   userFound: boolean;
   userReady: boolean;
   verificationRequired: boolean;
+  pendingApproval: boolean;
   userData: SignupData | undefined;
   loading: boolean;
   fetchError: string | null;
@@ -71,6 +72,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userReady, setUserReady] = useState<boolean>(false);
   const [verificationRequired, setVerificationRequired] =
     useState<boolean>(false);
+  const [pendingApproval, setPendingApproval] = useState<boolean>(false);
 
   const [ansibleData, setAnsibleData] = React.useState<AAPData | undefined>();
   const [ansibleUILink, setAnsibleUILink] = React.useState<
@@ -91,6 +93,12 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     if (status === 'verify') {
       setVerificationRequired(true);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (status === 'pending-approval') {
+      setPendingApproval(true);
     }
   }, [status]);
 
@@ -224,6 +232,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
         userFound,
         userReady,
         verificationRequired,
+        pendingApproval,
         userData,
         loading,
         fetchError,
