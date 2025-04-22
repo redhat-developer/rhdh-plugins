@@ -16,7 +16,7 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react"
     ],
-    "supported-versions": "1.32.5"
+    "supported-versions": "1.37.1"
   },
   "sideEffects": false,
   "scripts": {
