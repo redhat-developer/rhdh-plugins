@@ -22,8 +22,9 @@ import {
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
-import { aiExperienceApiRef } from './api';
+import { aiExperienceApiRef, rssApiRef } from './api';
 import { ModelCatalogClient } from './api/ModelCatalogClient';
+import { RSSClient } from './api/RSSClient';
 
 /**
  * Plugin for AI Experience frontend
@@ -46,6 +47,15 @@ export const aiExperiencePlugin = createPlugin({
           discoveryApi,
           fetchApi,
         }),
+    }),
+    createApiFactory({
+      api: rssApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ discoveryApi, fetchApi }) =>
+        new RSSClient({ discoveryApi, fetchApi }),
     }),
   ],
 });

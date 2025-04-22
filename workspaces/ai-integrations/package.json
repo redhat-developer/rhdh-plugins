@@ -61,5 +61,8 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "@red-hat-developer-hub/backstage-plugin-global-header": "^1.5.0"
   }
 }

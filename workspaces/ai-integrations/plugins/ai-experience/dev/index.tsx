@@ -35,6 +35,6 @@ createDevApp()
     element: <AiNewsPage />,
     title: 'AI News',
     icon: NewspaperOutlinedIcon,
-    path: '/activities',
+    path: '/news',
   })
   .render();

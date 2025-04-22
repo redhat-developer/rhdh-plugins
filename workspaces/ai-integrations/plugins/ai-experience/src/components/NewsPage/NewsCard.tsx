@@ -20,14 +20,15 @@ import Typography from '@mui/material/Typography';
 import CardMedia from '@mui/material/CardMedia';
 import { useTheme } from '@mui/material/styles';
 import { Link } from '@backstage/core-components';
+import { formatDescription } from '../../utils/rss-utils';
 
-export type Article = {
+export interface Article {
   title: string;
   link: string;
-  description: string;
-  pubDate: string;
-  guid: string;
-};
+  pubDate?: string;
+  description?: string;
+  thumbnail?: string;
+}
 
 type NewsCardProps = {
   key: string;
@@ -36,7 +37,7 @@ type NewsCardProps = {
 
 export const NewsCard: React.FC<NewsCardProps> = ({
   key,
-  article: { guid, title, description, link },
+  article: { title, description, link, thumbnail },
 }) => {
   const theme = useTheme();
 
@@ -44,29 +45,76 @@ export const NewsCard: React.FC<NewsCardProps> = ({
     <Link to={link} style={{ textDecoration: 'none' }}>
       <Card
         key={key}
-        elevation={0}
+        elevation={2}
         sx={{
-          maxWidth: '326px',
-          minHeight: '368px',
-          borderRadius: 2,
+          height: thumbnail ? '320px' : '180px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          borderRadius: 4,
           border: `1px solid ${
             theme.palette.mode === 'dark' ? '#57585a' : '#E4E4E4'
           }`,
         }}
       >
-        <CardMedia
-          component="img"
-          height="120"
-          width="326"
-          image={guid}
-          alt={title}
-        />
-        <CardContent sx={{ margin: theme.spacing(0.5), borderRadius: 2 }}>
-          <Typography variant="body1" color="primary" gutterBottom>
-            {title}
+        {thumbnail && (
+          <CardMedia
+            component="img"
+            height="140"
+            image={thumbnail}
+            alt={title}
+            sx={{
+              margin: `${theme.spacing(2)} auto 0 auto`,
+              objectFit: 'cover',
+            }}
+          />
+        )}
+        <CardContent
+          sx={{
+            padding: `${theme.spacing(2)} ${theme.spacing(0.5)} ${theme.spacing(
+              0.5,
+            )} ${theme.spacing(0.5)}`,
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            backgroundColor:
+              theme.palette.mode === 'dark'
+                ? '#2F3134'
+                : theme.palette.background.paper,
+          }}
+        >
+          {' '}
+          <Typography
+            variant="h6"
+            color="primary"
+            gutterBottom
+            sx={{
+              fontWeight: 600,
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {title.length > 70 ? `${title.substring(0, 70)}...` : title}
           </Typography>
-          <Typography variant="body2" color="textPrimary">
-            {description}
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            data-testid="news-card-description"
+            sx={{
+              mt: 1,
+              lineHeight: 1.5,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 3,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {description && description.trim() !== ''
+              ? formatDescription(description)
+              : title}
           </Typography>
         </CardContent>
       </Card>

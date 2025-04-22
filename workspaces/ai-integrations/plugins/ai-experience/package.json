@@ -48,10 +48,11 @@
     "@red-hat-developer-hub/backstage-plugin-ai-experience-common": "workspace:^",
     "@tanstack/react-query": "^5.71.0",
     "react-use": "^17.2.4",
-    "rss-parser": "^3.13.0"
+    "xml2js": "^0.6.2"
   },
   "peerDependencies": {
-    "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+    "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
+    "react-router-dom": "*"
   },
   "devDependencies": {
     "@backstage/cli": "^0.31.0",
