@@ -10708,38 +10708,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-global-header@npm:^1.4.0":
-  version: 1.4.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.4.0"
-  dependencies:
-    "@backstage/catalog-model": ^1.7.3
-    "@backstage/core-components": ^0.16.4
-    "@backstage/core-plugin-api": ^1.10.4
-    "@backstage/plugin-catalog-react": ^1.15.2
-    "@backstage/plugin-notifications": ^0.5.2
-    "@backstage/plugin-notifications-common": ^0.0.8
-    "@backstage/plugin-search": ^1.4.23
-    "@backstage/plugin-search-backend": ^1.8.2
-    "@backstage/plugin-search-backend-module-catalog": ^0.3.1
-    "@backstage/plugin-search-backend-module-pg": ^0.5.41
-    "@backstage/plugin-search-backend-module-techdocs": ^0.3.6
-    "@backstage/plugin-search-common": ^1.2.17
-    "@backstage/plugin-search-react": ^1.8.6
-    "@backstage/plugin-signals-react": ^0.0.10
-    "@backstage/theme": ^0.6.4
-    "@mui/icons-material": 5.16.14
-    "@mui/material": 5.16.14
-    "@mui/styled-engine": 5.16.14
-    "@scalprum/react-core": 0.9.3
-    react-use: ^17.5.0
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.0.0
-  checksum: 4be3d75e736d7788ac5371a2070ff207cf7c43450fb0d4b8bac2aabd1800debc878f2629535916140b19179280ac5416c7d19205dd82c9959a8554f64143f173
-  languageName: node
-  linkType: hard
-
-"@red-hat-developer-hub/backstage-plugin-global-header@npm:^1.5.0":
+"@red-hat-developer-hub/backstage-plugin-global-header@npm:^1.4.0, @red-hat-developer-hub/backstage-plugin-global-header@npm:^1.5.0":
   version: 1.5.0
   resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.5.0"
   dependencies:
