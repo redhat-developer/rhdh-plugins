@@ -26,14 +26,12 @@ export const formApiFactory = createApiFactory({
   api: orchestratorFormApiRef,
   deps: { configApi: configApiRef, fetchApi: fetchApiRef },
   factory(_options) {
-    return new FormWidgetsApi(/* inject APIs */);
+    return new FormWidgetsApi();
   },
 });
 
 export const orchestratorFormWidgetsPlugin = createPlugin({
   id: 'orchestrator-form-widgets',
-  routes: {
-    // root: rootRouteRef,
-  },
+  routes: {},
   apis: [formApiFactory],
 });

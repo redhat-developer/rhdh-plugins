@@ -34,12 +34,12 @@ A headless widget used for fetching snippets of JSON schema and dynamically upda
 
 Example of use in workflow's input data schema:
 
-```
+```json
         "mySchemaUpdater": {
           "type": "string",
           "ui:widget": "SchemaUpdater",
           "ui:props": {
-            "fetch:url": "https://raw.githubusercontent.com/mareklibra/generated-workflow-templates/refs/heads/main/uiSchemaChunks/chunk01.json"
+            "fetch:url": "https://service.providing/chunk01.json"
           }
         },
         "placeholderTwo": {
