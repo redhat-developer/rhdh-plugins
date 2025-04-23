@@ -15,3 +15,4 @@
  */
 
 export * from './QuickAccessApiClient';
+export * from './EntityApiClient';
