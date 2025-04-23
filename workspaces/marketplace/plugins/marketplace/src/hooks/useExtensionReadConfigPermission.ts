@@ -13,24 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useQuery } from '@tanstack/react-query';
 
+import { useMarketplaceApi } from './useMarketplaceApi';
 import { usePermission } from '@backstage/plugin-permission-react';
-import {
-  extensionPluginCreatePermission,
-  extensionPluginReadPermission,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { extensionPluginCreatePermission } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-export const useExtensionsViewPermission = () => {
-  const canReadPlugins = usePermission({
-    permission: extensionPluginReadPermission,
+export const useExtensionReadConfigPermission = (
+  namespace: string,
+  name: string,
+) => {
+  const marketplaceApi = useMarketplaceApi();
+  return useQuery({
+    queryKey: ['marketplaceApi', 'getPluginConfigByName', namespace, name],
+    queryFn: () => marketplaceApi.getPluginConfigByName?.(namespace, name),
   });
+};
 
-  const canInstallPlugins = usePermission({
+export const useExtensionInstallPluginPermission = () => {
+  const canInstallPlugin = usePermission({
     permission: extensionPluginCreatePermission,
+    resourceRef: extensionPluginCreatePermission.resourceType,
   });
 
-  return {
-    loading: canReadPlugins.loading || canInstallPlugins.loading,
-    allowed: canReadPlugins.allowed || canInstallPlugins.allowed,
-  };
+  return canInstallPlugin;
 };

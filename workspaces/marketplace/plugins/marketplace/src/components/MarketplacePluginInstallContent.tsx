@@ -32,7 +32,6 @@ import {
   MarketplacePackageSpecAppConfigExample,
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { usePermission } from '@backstage/plugin-permission-react';
 
 import { JsonObject } from '@backstage/types';
 
@@ -49,6 +48,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
@@ -61,7 +61,7 @@ import {
   useCodeEditor,
 } from './CodeEditor';
 import { Markdown } from './Markdown';
-import { extensionPluginCreatePermission } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { useExtensionReadConfigPermission } from '../hooks/useExtensionReadConfigPermission';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -221,9 +221,10 @@ export const MarketplacePluginInstallContent = ({
   }, [codeEditor, packages]);
 
   const navigate = useNavigate();
-  const canInstallPlugin = usePermission({
-    permission: extensionPluginCreatePermission,
-  });
+  const canInstallPlugin = useExtensionReadConfigPermission(
+    params.namespace,
+    params.name,
+  );
   const examples = packages[0]?.spec?.appConfigExamples;
   const installationInstructions = plugin.spec?.installation;
   const aboutMarkdown = plugin.spec?.description;
@@ -401,20 +402,28 @@ export const MarketplacePluginInstallContent = ({
         <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
           <CheckboxList packages={packages} />
         </Box>
-        {canInstallPlugin.allowed && (
-          <Button variant="contained" color="primary" disabled>
-            Install
-          </Button>
-        )}
+        <Tooltip
+          title={
+            !canInstallPlugin.data?.authorizedActions?.includes('create')
+              ? "You don't have permission to install plugins or edit their configurations. Contact your administrator to request access or assistance."
+              : ''
+          }
+        >
+          <Typography component="span">
+            <Button variant="contained" color="primary" disabled>
+              Install
+            </Button>
+          </Typography>
+        </Tooltip>
         <Button
           variant="outlined"
           color="primary"
           sx={{ ml: 2 }}
           onClick={() => navigate(pluginLink)}
         >
-          {canInstallPlugin.allowed ? 'Cancel' : 'Back'}
+          Cancel
         </Button>
-        {canInstallPlugin.allowed && (
+        {canInstallPlugin.data?.authorizedActions?.includes('create') && (
           <Button
             variant="text"
             color="primary"
