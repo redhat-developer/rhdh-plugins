@@ -25,6 +25,7 @@ import {
   TableColumn,
 } from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
 
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
@@ -32,6 +33,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 
 import {
+  extensionPluginCreatePermission,
   MarketplacePackage,
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
@@ -177,6 +179,9 @@ export const MarketplacePluginContent = ({
 }) => {
   const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(pluginInstallRouteRef);
+  const canInstallPlugin = usePermission({
+    permission: extensionPluginCreatePermission,
+  });
 
   const withFilter = (name: string, value: string) =>
     `${getIndexPath()}?filter=${encodeURIComponent(name)}=${encodeURIComponent(
@@ -247,12 +252,12 @@ export const MarketplacePluginContent = ({
               color="primary"
               variant="contained"
             >
-              {
-                mapMarketplacePluginInstallStatusToButton[
-                  plugin.spec?.installStatus ??
-                    MarketplacePluginInstallStatus.NotInstalled
-                ]
-              }
+              {canInstallPlugin.allowed
+                ? mapMarketplacePluginInstallStatusToButton[
+                    plugin.spec?.installStatus ??
+                      MarketplacePluginInstallStatus.NotInstalled
+                  ]
+                : 'View'}
             </LinkButton>
           </Grid>
           <Grid item md={9}>

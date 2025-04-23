@@ -16,13 +16,17 @@
 
 import React from 'react';
 
-import { Content, LinkButton } from '@backstage/core-components';
+import { Content, LinkButton, Progress } from '@backstage/core-components';
 import { CatalogFilterLayout } from '@backstage/plugin-catalog-react';
 
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import {
+  extensionPluginCreatePermission,
+  extensionPluginReadPermission,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { SearchTextField } from '../shared-components/SearchTextField';
 
@@ -33,6 +37,8 @@ import { MarketplacePluginFilter } from './MarketplacePluginFilter';
 import { CollectionHorizontalScrollRow } from './CollectionHorizontalScrollRow';
 
 import notFoundImag from '../assets/notfound.png';
+import { useExtensionsViewPermission } from '../hooks/useExtensionsViewPermission';
+import { MissingPermissionPage } from '../shared-components/MissingPermissionPage';
 
 const NoPluginsFound = () => (
   <Content>
@@ -78,6 +84,7 @@ export const MarketplaceCatalogContent = () => {
   });
 
   const filteredPlugins = useFilteredPlugins();
+  const canViewPlugins = useExtensionsViewPermission();
 
   let title = 'Plugins';
   if (filteredPlugins.data && filteredPlugins.data.totalItems > 0) {
@@ -88,6 +95,21 @@ export const MarketplaceCatalogContent = () => {
     //   title += ` (${totalItems})`;
     // }
     title += ` (${filteredPlugins.data.filteredItems})`;
+  }
+
+  if (canViewPlugins.loading) {
+    return <Progress />;
+  }
+
+  if (!canViewPlugins.allowed) {
+    return (
+      <MissingPermissionPage
+        permissions={[
+          extensionPluginReadPermission,
+          extensionPluginCreatePermission,
+        ]}
+      />
+    );
   }
 
   if (filteredPlugins.data?.totalItems === 0) {

@@ -14,27 +14,56 @@
  * limitations under the License.
  */
 
-import express from 'express';
+import express, { Request } from 'express';
 import Router from 'express-promise-router';
+import { NotAllowedError } from '@backstage/errors';
 
-import { HttpAuthService } from '@backstage/backend-plugin-api';
+import {
+  HttpAuthService,
+  PermissionsService,
+} from '@backstage/backend-plugin-api';
+import {
+  AuthorizeResult,
+  BasicPermission,
+} from '@backstage/plugin-permission-common';
 
 import {
   decodeGetEntitiesRequest,
   decodeGetEntityFacetsRequest,
+  extensionPluginCreatePermission,
+  extensionPluginReadPermission,
   MarketplaceApi,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 import { createSearchParams } from './utils/createSearchParams';
 import { removeVerboseSpecContent } from './utils/removeVerboseSpecContent';
+import { extensionPermissions } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export async function createRouter({
   marketplaceApi,
+  httpAuth,
+  permissions,
 }: {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
+  permissions: PermissionsService;
 }): Promise<express.Router> {
   const router = Router();
+  const permissionsIntegrationRouter = createPermissionIntegrationRouter({
+    permissions: extensionPermissions,
+  });
   router.use(express.json());
+  router.use(permissionsIntegrationRouter);
+
+  const authorize = async (request: Request, permission: BasicPermission) => {
+    const decision = (
+      await permissions.authorize([{ permission: permission }], {
+        credentials: await httpAuth.credentials(request),
+      })
+    )[0];
+
+    return decision;
+  };
 
   router.get('/collections', async (req, res) => {
     const request = decodeGetEntitiesRequest(createSearchParams(req));
@@ -88,6 +117,18 @@ export async function createRouter({
   });
 
   router.get('/plugins', async (req, res) => {
+    const readDecision = await authorize(req, extensionPluginReadPermission);
+    const installDecision = await authorize(
+      req,
+      extensionPluginCreatePermission,
+    );
+
+    if (
+      readDecision.result === AuthorizeResult.DENY &&
+      installDecision.result === AuthorizeResult.DENY
+    ) {
+      throw new NotAllowedError('Unauthorized');
+    }
     const request = decodeGetEntitiesRequest(createSearchParams(req));
     const plugins = await marketplaceApi.getPlugins(request);
     removeVerboseSpecContent(plugins.items);

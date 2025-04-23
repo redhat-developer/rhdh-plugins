@@ -16,6 +16,7 @@
 
 import React from 'react';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { RequirePermission } from '@backstage/plugin-permission-react';
 import {
   Page,
   Header,
@@ -28,6 +29,12 @@ import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePlugin } from '../hooks/usePlugin';
 import { MarketplacePluginInstallContentLoader } from '../components/MarketplacePluginInstallContent';
+import {
+  extensionPluginCreatePermission,
+  extensionPluginReadPermission,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { useExtensionsViewPermission } from '../hooks/useExtensionsViewPermission';
+import { MissingPermissionPage } from '../shared-components/MissingPermissionPage';
 
 const PluginInstallHeader = () => {
   const params = useRouteRefParams(pluginInstallRouteRef);
@@ -43,15 +50,29 @@ const PluginInstallHeader = () => {
   return <Header title={title} type="Plugin" typeLink={pluginLink} />;
 };
 
-export const MarketplacePluginInstallPage = () => (
-  <ReactQueryProvider>
-    <Page themeId={themeId}>
-      <PluginInstallHeader />
-      <Content>
-        <ErrorBoundary>
-          <MarketplacePluginInstallContentLoader />
-        </ErrorBoundary>
-      </Content>
-    </Page>
-  </ReactQueryProvider>
-);
+export const MarketplacePluginInstallPage = () => {
+  const canViewPlugins = useExtensionsViewPermission();
+
+  if (!canViewPlugins.allowed) {
+    return (
+      <MissingPermissionPage
+        permissions={[
+          extensionPluginReadPermission,
+          extensionPluginCreatePermission,
+        ]}
+      />
+    );
+  }
+  return (
+    <ReactQueryProvider>
+      <Page themeId={themeId}>
+        <PluginInstallHeader />
+        <Content>
+          <ErrorBoundary>
+            <MarketplacePluginInstallContentLoader />
+          </ErrorBoundary>
+        </Content>
+      </Page>
+    </ReactQueryProvider>
+  );
+};

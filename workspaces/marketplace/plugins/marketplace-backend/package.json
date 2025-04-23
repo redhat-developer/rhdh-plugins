@@ -39,6 +39,8 @@
     "@backstage/catalog-model": "^1.7.3",
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^1.16.0",
+    "@backstage/plugin-permission-common": "^0.8.4",
+    "@backstage/plugin-permission-node": "^0.8.8",
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0"

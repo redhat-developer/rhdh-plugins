@@ -32,6 +32,8 @@ import {
   MarketplacePackageSpecAppConfigExample,
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { usePermission } from '@backstage/plugin-permission-react';
+
 import { JsonObject } from '@backstage/types';
 
 import Box from '@mui/material/Box';
@@ -59,6 +61,7 @@ import {
   useCodeEditor,
 } from './CodeEditor';
 import { Markdown } from './Markdown';
+import { extensionPluginCreatePermission } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -218,6 +221,9 @@ export const MarketplacePluginInstallContent = ({
   }, [codeEditor, packages]);
 
   const navigate = useNavigate();
+  const canInstallPlugin = usePermission({
+    permission: extensionPluginCreatePermission,
+  });
   const examples = packages[0]?.spec?.appConfigExamples;
   const installationInstructions = plugin.spec?.installation;
   const aboutMarkdown = plugin.spec?.description;
@@ -395,25 +401,29 @@ export const MarketplacePluginInstallContent = ({
         <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
           <CheckboxList packages={packages} />
         </Box>
-        <Button variant="contained" color="primary" disabled>
-          Install
-        </Button>
+        {canInstallPlugin.allowed && (
+          <Button variant="contained" color="primary" disabled>
+            Install
+          </Button>
+        )}
         <Button
           variant="outlined"
           color="primary"
           sx={{ ml: 2 }}
           onClick={() => navigate(pluginLink)}
         >
-          Cancel
+          {canInstallPlugin.allowed ? 'Cancel' : 'Back'}
         </Button>
-        <Button
-          variant="text"
-          color="primary"
-          onClick={onLoaded}
-          sx={{ ml: 3 }}
-        >
-          Reset
-        </Button>
+        {canInstallPlugin.allowed && (
+          <Button
+            variant="text"
+            color="primary"
+            onClick={onLoaded}
+            sx={{ ml: 3 }}
+          >
+            Reset
+          </Button>
+        )}
       </Box>
     </Box>
   );
