@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import type { MouseEvent } from 'react';
 
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -43,7 +43,7 @@ export const RepositoriesTableBody = ({
   emptyRows: number;
   rows: AddRepositoryData[];
   onOrgRowSelected: (org: AddRepositoryData) => void;
-  onClick: (_event: React.MouseEvent, repo: AddRepositoryData) => void;
+  onClick: (_event: MouseEvent, repo: AddRepositoryData) => void;
   selectedRepos: AddedRepositories;
   isDrawer?: boolean;
   showOrganizations?: boolean;

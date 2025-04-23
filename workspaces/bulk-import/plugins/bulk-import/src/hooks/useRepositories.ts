@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo } from 'react';
 import { useAsync } from 'react-use';
 
 import {
@@ -102,7 +102,7 @@ export const useRepositories = (
     { refetchInterval: pollInterval || 60000 },
   );
 
-  const prepareData = React.useMemo(() => {
+  const prepareData = useMemo(() => {
     if (options?.showOrganizations) {
       return prepareDataForOrganizations(value as OrgAndRepoResponse);
     }

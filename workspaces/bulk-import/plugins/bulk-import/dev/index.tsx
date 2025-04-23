@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { configApiRef } from '@backstage/core-plugin-api';
 import { createDevApp } from '@backstage/dev-utils';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';

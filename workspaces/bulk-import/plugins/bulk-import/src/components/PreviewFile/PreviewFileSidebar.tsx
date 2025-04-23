@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   configApiRef,
@@ -70,10 +70,8 @@ export const PreviewFileSidebar = ({
   const bulkImportApi = useApi(bulkImportApiRef);
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
-  const [pullRequest, setPullRequest] = React.useState<PullRequestPreviewData>(
-    {},
-  );
-  const [isInitialized, setIsInitialized] = React.useState(false);
+  const [pullRequest, setPullRequest] = useState<PullRequestPreviewData>({});
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const fetchPullRequestData = async (
     id: string,
@@ -153,7 +151,7 @@ export const PreviewFileSidebar = ({
     return repoPrTemplate;
   };
 
-  const initializePullRequest = React.useCallback(async () => {
+  const initializePullRequest = useCallback(async () => {
     const newPullRequestData: PullRequestPreviewData = {};
     if (Object.keys(data?.selectedRepositories || [])?.length > 0) {
       for (const repo of Object.values(data?.selectedRepositories || [])) {
@@ -189,7 +187,7 @@ export const PreviewFileSidebar = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, bulkImportApi, setStatus, status]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isInitialized && data?.id) {
       initializePullRequest();
     }

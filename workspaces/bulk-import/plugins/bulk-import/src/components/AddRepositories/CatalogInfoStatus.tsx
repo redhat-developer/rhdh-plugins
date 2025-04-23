@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useEffect } from 'react';
 
 import { StatusRunning } from '@backstage/core-components';
 
@@ -49,7 +49,7 @@ export const CatalogInfoStatus = ({
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (importStatus === RepositoryStatus.ADDED) {
       setFieldValue(`excludedRepositories.${data.id}`, {
         repoId: data.id,

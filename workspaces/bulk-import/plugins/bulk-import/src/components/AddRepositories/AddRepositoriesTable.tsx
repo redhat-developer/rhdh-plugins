@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import { useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -26,8 +26,8 @@ import { RepositoriesTable } from './RepositoriesTable';
 
 export const AddRepositoriesTable = ({ title }: { title: string }) => {
   const { values } = useFormikContext<AddRepositoriesFormValues>();
-  const [searchString, setSearchString] = React.useState<string>('');
-  const [page, setPage] = React.useState<number>(0);
+  const [searchString, setSearchString] = useState<string>('');
+  const [page, setPage] = useState<number>(0);
   const handleSearch = (str: string) => {
     setSearchString(str);
     setPage(0);

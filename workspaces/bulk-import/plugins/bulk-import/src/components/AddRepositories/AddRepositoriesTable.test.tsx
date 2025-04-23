@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useAsync } from 'react-use';
 

@@ -6,7 +6,7 @@ To start the app, run:
 
 ```sh
 yarn install
-yarn dev
+yarn start
 ```
 
 To enable GitHub authentication, set up the following environment variables: `GITHUB_TOKEN`, `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` required in the `app-config.yaml` file, and update `workspaces/bulk-import/examples/org.yaml` L18-L41 using your GitHub id and email as the following:

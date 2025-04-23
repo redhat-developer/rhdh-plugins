@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useRef } from 'react';
 
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
@@ -40,7 +40,7 @@ import { RepositoriesList } from './Repositories/RepositoriesList';
 
 export const BulkImportPage = () => {
   // to store the queryClient instance
-  const queryClientRef = React.useRef<QueryClient>();
+  const queryClientRef = useRef<QueryClient>();
   const initialValues: AddRepositoriesFormValues = {
     repositoryType: RepositorySelection.Repository,
     repositories: {},
