@@ -11,7 +11,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.32.5",
+    "supported-versions": "1.37.1",
     "pluginId": "orchestrator",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator",
@@ -62,7 +62,7 @@
     "@backstage/plugin-permission-common": "^0.8.4",
     "@backstage/plugin-permission-react": "^0.4.32",
     "@backstage/types": "^1.2.1",
-    "@kie-tools-core/editor": "^0.32.0",
+    "@kie-tools-core/editor": "^10.0.0",
     "@kie-tools/serverless-workflow-standalone-editor": "^10.0.0",
     "@monaco-editor/react": "^4.6.0",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
@@ -84,7 +84,7 @@
     "@backstage/cli": "^0.31.1",
     "@backstage/dev-utils": "^1.1.8",
     "@backstage/test-utils": "^1.7.6",
-    "@janus-idp/cli": "3.2.0",
+    "@janus-idp/cli": "3.5.0",
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
     "@material-ui/lab": "^4.0.0-alpha.45",

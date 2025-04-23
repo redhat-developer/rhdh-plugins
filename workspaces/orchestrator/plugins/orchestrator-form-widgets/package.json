@@ -72,6 +72,7 @@
     "@backstage/core-app-api": "^1.15.2",
     "@backstage/dev-utils": "^1.1.7-next.3",
     "@backstage/test-utils": "^1.7.1",
+    "@janus-idp/cli": "3.5.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
