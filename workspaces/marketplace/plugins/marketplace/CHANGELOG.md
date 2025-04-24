@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.5.7
+
+### Patch Changes
+
+- f92389c: add a no-icon-icon when the icon is missing in the plugin metadata
+
 ## 0.5.6
 
 ### Patch Changes
