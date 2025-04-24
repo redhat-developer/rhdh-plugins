@@ -60,7 +60,7 @@ The Sandbox plugin uses Red Hat SSO to authenticate users accessing the Sandbox 
     Please, note that your `SANDBOX_RHDH_PLUGIN_IMAGE` should be public.
     If you want to use latest from codeready-toolchain org, you need to run something like `make start-rhdh-local SANDBOX_RHDH_PLUGIN_IMAGE=quay.io/codeready-toolchain/sandbox-rhdh-plugin:v26`
 
-Please note, that every time you want to re deploy, you need to:
+Please, note that every time you want to re deploy, you need to:
 1. `podman stop rhdh`
 2. `podman rm rhdh`
 3. `podman stop rhdh-plugins-installer`
