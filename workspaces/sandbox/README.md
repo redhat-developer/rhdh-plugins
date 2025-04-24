@@ -50,3 +50,18 @@ To generate knip reports for this app, run:
 ```sh
 yarn backstage-repo-tools knip-reports
 ```
+
+## Local Frontend Setup (provisional)
+The Sandbox plugin uses Red Hat SSO to authenticate users accessing the Sandbox backend. This section explains how to configure your local RHDH Sandbox UI to connect with Red Hat SSO and the Sandbox backend (currently, only the staging environment is supported).
+
+1. `cd workspaces/sandbox`
+2. `make push-plugin` (note that, currently, master is broken, so you need to skip this step)
+3. `make start-rhdh-local SANDBOX_RHDH_PLUGIN_IMAGE=<SANDBOX_RHDH_PLUGIN_IMAGE>`
+    Please, note that your `SANDBOX_RHDH_PLUGIN_IMAGE` should be public.
+    If you want to use latest from codeready-toolchain org, you need to run something like `make start-rhdh-local SANDBOX_RHDH_PLUGIN_IMAGE=quay.io/codeready-toolchain/sandbox-rhdh-plugin:v26`
+
+Please note, that every time you want to re deploy, you need to:
+1. `podman stop rhdh`
+2. `podman rm rhdh`
+3. `podman stop rhdh-plugins-installer`
+4. `podman rm rhdh-plugins-installer`

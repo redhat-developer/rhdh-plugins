@@ -1,0 +1,41 @@
+includes:
+  - dynamic-plugins.default.yaml
+plugins:
+  - disabled: false
+    package: oci://$SANDBOX_RHDH_PLUGIN_IMAGE!red-hat-developer-hub-backstage-plugin-sandbox
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          default.main-menu-items:
+            menuItems:
+              default.home:
+                title: Home
+                icon: homeIcon
+                to: '/home'
+                priority: 200
+              default.activities:
+                title: Activities
+                icon: activitiesIcon
+                to: '/activities'
+                priority: 100
+              default.catalog:
+                title: ''
+              default.apis:
+                title: ''
+              default.learning-path:
+                title: ''
+              default.create:
+                title: ''
+              default.docs:
+                title: ''
+          red-hat-developer-hub.backstage-plugin-sandbox:
+            appIcons:
+              - name: homeIcon
+                importName: SandboxHomeIcon
+              - name: activitiesIcon
+                importName: SandboxActivitiesIcon
+            dynamicRoutes:
+              - path: /home
+                importName: SandboxPage
+              - path: /activities
+                importName: SandboxActivitiesPage
