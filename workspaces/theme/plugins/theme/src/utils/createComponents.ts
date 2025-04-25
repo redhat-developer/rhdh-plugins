@@ -191,7 +191,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         contained: {
           border: '0',
           boxShadow: 'none',
-          '&:hover': {
+          '&:hover, &:focus-visible': {
             border: '0',
             boxShadow: 'none',
           },
@@ -221,7 +221,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
         outlined: {
           border: `1px solid color-mix(in srgb, currentColor 50%, transparent)`,
-          '&:hover': {
+          '&:hover, &:focus-visible': {
             backgroundColor: 'transparent',
             border: `1px solid`,
           },
@@ -232,12 +232,12 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         outlinedPrimary: {
-          '&:hover': {
+          '&:hover, &:focus-visible': {
             backgroundColor: 'transparent',
           },
         },
         outlinedSecondary: {
-          '&:hover': {
+          '&:hover, &:focus-visible': {
             backgroundColor: 'transparent',
           },
         },
@@ -268,7 +268,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     components.MuiLink = {
       styleOverrides: {
         underlineHover: {
-          '&:hover': {
+          '&:hover, &:focus-visible': {
             textDecoration: 'none',
           },
         },
@@ -488,7 +488,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       },
       styleOverrides: {
         root: {
-          borderBottom: `1px solid ${general.tabsBottomBorderColor}`,
+          borderBottom: `1px solid ${general.paperBorderColor}`,
           padding: '0 1.5rem',
         },
         vertical: {
@@ -501,16 +501,22 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             textAlign: 'left',
           },
           borderBottom: `none`,
-          borderLeft: `1px solid ${general.tabsBottomBorderColor}`,
+          borderLeft: `1px solid ${general.paperBorderColor}`,
           padding: 0,
-        },
-        flexContainerVertical: {
-          '& > button:hover': {
-            boxShadow: `2px 0 ${general.tabsBottomBorderColor} inset`,
+          "& span[class*='MuiTabs-indicator']": {
+            padding: '0.5em 0',
+            marginTop: '-0.5em',
+            marginLeft: 0,
+            width: '3px',
           },
         },
         indicator: {
           left: 0,
+          // get the tab indicator to match the margin
+          padding: '0 0.75em',
+          marginLeft: '-0.75em',
+          boxSizing: 'content-box',
+          height: '3px',
         },
       },
     };
@@ -519,14 +525,26 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         disableRipple,
       },
       styleOverrides: {
+        selected: {
+          color: `${palette.text?.primary} !important`,
+        },
         root: {
-          textTransform: 'none',
+          borderRadius: '4px',
+          fontWeight: '400',
+          margin: '0.75em 0.75em calc(0.75em - 1.5px)',
+          minHeight: 0,
           minWidth: 'initial !important',
-          '&:disabled': {
-            backgroundColor: general.tabsDisabledBackgroundColor,
+          padding: '0 0.25em',
+          textTransform: 'none',
+          '&[class*="v5"]': {
+            lineHeight: 1.75,
           },
-          '&:hover': {
-            boxShadow: `0 -2px ${general.tabsBottomBorderColor} inset`,
+          '&:hover, &:focus-visible': {
+            backgroundColor: general.tabsLinkHoverBackgroundColor,
+          },
+          '&:disabled': {
+            color: general.disabled,
+            backgroundColor: general.disabledBackground,
           },
         },
       },
@@ -541,21 +559,17 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         tabsWrapper: {
           paddingLeft: '0',
-          backgroundColor: general.mainSectionBackgroundColor,
         },
         defaultTab: {
           textTransform: 'none',
           fontSize: '1rem',
-          fontWeight: '500',
+          fontWeight: '400',
           color: general.disabled,
-          padding: '0.5rem 1rem',
-          '&:hover': {
-            boxShadow: `0 -3px ${general.tabsBottomBorderColor} inset`,
-          },
+          padding: '0 0.25em',
         },
         tabRoot: {
-          '&:hover': {
-            backgroundColor: 'unset',
+          '&:hover, &:focus-visible': {
+            backgroundColor: general.tabsLinkHoverBackgroundColor,
           },
           '&:not(.Mui-selected):hover': {
             color: general.disabled,
