@@ -30,6 +30,7 @@ import {
   AddRepositoryData,
   SortingOrderEnum,
 } from '../../types';
+import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { RepositoriesHeader } from '../AddRepositories/RepositoriesHeader';
 import { AddedRepositoriesTableBody } from './AddedRepositoriesTableBody';
 import DeleteRepositoryDialog from './DeleteRepositoryDialog';
@@ -106,8 +107,8 @@ export const RepositoriesList = () => {
         onSearchChange={handleSearch}
         title={
           importJobs?.totalJobs === 0
-            ? 'Added repositories'
-            : `Added repositories (${importJobs.totalJobs})`
+            ? `Added ${gitlabFeatureFlag ? 'entities' : 'repositories'}`
+            : `Added  ${gitlabFeatureFlag ? 'entities' : 'repositories'} (${importJobs.totalJobs})`
         }
         components={{
           Header: () => (

@@ -221,6 +221,7 @@ export const getImportStatus = (
   status: string,
   showIcon?: boolean,
   prUrl?: string,
+  isApprovalToolGitlab: boolean = false,
 ) => {
   if (!status) {
     return '';
@@ -228,7 +229,10 @@ export const getImportStatus = (
   switch (status) {
     case 'WAIT_PR_APPROVAL':
       return showIcon ? (
-        <WaitingForPR url={prUrl as string} />
+        <WaitingForPR
+          url={prUrl as string}
+          isApprovalToolGitlab={isApprovalToolGitlab}
+        />
       ) : (
         'Waiting for Approval'
       );
@@ -691,3 +695,7 @@ export const getValidationSchema = (approvalTool: string) =>
     prAnnotations: validateKeyValuePair,
     prSpec: validateKeyValuePair,
   });
+
+export const gitlabFeatureFlag = true;
+
+export const isApprovalToolGitlab = true;

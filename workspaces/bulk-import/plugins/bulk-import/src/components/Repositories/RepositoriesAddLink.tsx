@@ -22,6 +22,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import { useFormikContext } from 'formik';
 
 import { AddRepositoriesFormValues } from '../../types';
+import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 export const RepositoriesAddLink = () => {
   const { status, setStatus } = useFormikContext<AddRepositoriesFormValues>();
@@ -55,7 +56,7 @@ export const RepositoriesAddLink = () => {
           variant="contained"
           data-testid="add-repository"
         >
-          Add
+          {gitlabFeatureFlag ? 'Import' : 'Add'}
         </LinkButton>
       </Typography>
     </>

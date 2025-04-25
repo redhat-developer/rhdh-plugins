@@ -26,6 +26,7 @@ import { AddRepositoriesFormValues, AddRepositoryData } from '../../types';
 import {
   calculateLastUpdated,
   getImportStatus,
+  isApprovalToolGitlab,
   urlHelper,
 } from '../../utils/repository-utils';
 import CatalogInfoAction from './CatalogInfoAction';
@@ -45,6 +46,7 @@ const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
     values.repositories?.[data.id]?.catalogInfoYaml?.status as string,
     true,
     values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
+    isApprovalToolGitlab, // will compare with the approval tool while api integration
   );
 };
 
