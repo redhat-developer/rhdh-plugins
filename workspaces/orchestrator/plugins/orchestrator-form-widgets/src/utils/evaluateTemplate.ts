@@ -13,24 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  createApiFactory,
-  createPlugin,
-  fetchApiRef,
-} from '@backstage/core-plugin-api';
-import { orchestratorFormApiRef } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { FormWidgetsApi } from './FormWidgetsApi';
 
-export const formApiFactory = createApiFactory({
-  api: orchestratorFormApiRef,
-  deps: { fetchApi: fetchApiRef },
-  factory(options) {
-    return new FormWidgetsApi(options);
-  },
-});
+import { JsonValue } from '@backstage/types';
 
-export const orchestratorFormWidgetsPlugin = createPlugin({
-  id: 'orchestrator-form-widgets',
-  routes: {},
-  apis: [formApiFactory],
-});
+export const evaluateTemplateUnit = (condition: string): string => {
+  return 'TODO - evaluated value';
+};
+
+export const evaluateTemplate = ({
+  template,
+  key,
+}: {
+  template?: JsonValue;
+  key: string;
+}): string => {
+  if (!template || typeof template !== 'string') {
+    throw new Error(`Template can be a string only, key: ${key}`);
+  }
+
+  const evaluated: string = template;
+
+  // TODO: parse and evaluate all units
+
+  return evaluated;
+};

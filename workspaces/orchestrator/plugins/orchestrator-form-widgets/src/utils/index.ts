@@ -13,24 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  createApiFactory,
-  createPlugin,
-  fetchApiRef,
-} from '@backstage/core-plugin-api';
-import { orchestratorFormApiRef } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { FormWidgetsApi } from './FormWidgetsApi';
-
-export const formApiFactory = createApiFactory({
-  api: orchestratorFormApiRef,
-  deps: { fetchApi: fetchApiRef },
-  factory(options) {
-    return new FormWidgetsApi(options);
-  },
-});
-
-export const orchestratorFormWidgetsPlugin = createPlugin({
-  id: 'orchestrator-form-widgets',
-  routes: {},
-  apis: [formApiFactory],
-});
+export * from './getRequestInit';
+export * from './evaluateTemplate';
+export * from './useRetriggerEvaluate';

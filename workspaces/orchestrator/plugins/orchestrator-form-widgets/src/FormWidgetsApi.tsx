@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   FormDecoratorProps,
   OrchestratorFormApi,
   OrchestratorFormContextProps,
   useWrapperFormPropsContext,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { ErrorSchema, FormValidation } from '@rjsf/utils';
+import { ErrorSchema, FormValidation, Widget } from '@rjsf/utils';
+import { JSONSchema7 } from 'json-schema';
 import { JsonObject, JsonValue } from '@backstage/types';
+import { FetchApi } from '@backstage/core-plugin-api';
+
 import { SchemaUpdater, ActiveTextInput } from './widgets';
 
 const sleep = (ms: number) => {
@@ -87,13 +90,11 @@ const safeSet: (errors: JsonObject, path: string, value: JsonValue) => void = (
   }
 };
 export class FormWidgetsApi implements OrchestratorFormApi {
-  // private readonly configApi: ConfigApi;
-  // private readonly fetchApi: FetchApi;
+  private readonly fetchApi: FetchApi;
 
-  // public constructor(options: { configApi: ConfigApi; fetchApi: FetchApi }) {
-  //   this.configApi = options.configApi;
-  //   this.fetchApi = options.fetchApi;
-  // }
+  public constructor(options: { fetchApi: FetchApi }) {
+    this.fetchApi = options.fetchApi;
+  }
 
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
     return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
@@ -101,7 +102,17 @@ export class FormWidgetsApi implements OrchestratorFormApi {
         const { formData, setFormData, uiSchema } =
           useWrapperFormPropsContext();
 
-        const widgets = { SchemaUpdater, ActiveTextInput };
+        const widgets: {
+          [key: string]: Widget<JsonObject, JSONSchema7, JsonObject>;
+        } = useMemo(
+          () => ({
+            SchemaUpdater: props => (
+              <SchemaUpdater {...props} fetchApi={this.fetchApi} />
+            ),
+            ActiveTextInput,
+          }),
+          [],
+        );
 
         const onChange = useCallback(
           (data: JsonObject | undefined) => {

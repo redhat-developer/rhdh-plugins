@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Widget } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
 import { JsonObject } from '@backstage/types';
@@ -23,14 +23,21 @@ import {
   useWrapperFormPropsContext,
   SchemaChunksResponse,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { FetchApi } from '@backstage/core-plugin-api';
 
 import { FormContextData } from '../types';
+import {
+  evaluateTemplate,
+  getRequestInit,
+  useRetriggerEvaluate,
+} from '../utils';
 
 const useStyles = makeStyles((theme: Theme) => ({
   error: {
     color: theme.palette.error.main,
   },
 }));
+
 export const SchemaUpdater: Widget<
   JsonObject,
   JSONSchema7,
@@ -40,11 +47,19 @@ export const SchemaUpdater: Widget<
   const formContext = useWrapperFormPropsContext();
   const [_, setLoading] = useState(true);
   const [error, setError] = useState<string>();
+  const fetchApi = props.fetchApi as FetchApi;
 
   const updateSchema =
     formContext.updateSchema as OrchestratorFormSchemaUpdater;
-  const uiProps = (props.options?.props ?? {}) as JsonObject;
+  const uiProps = useMemo(
+    () => (props.options?.props ?? {}) as JsonObject,
+    [props.options?.props],
+  );
 
+  const retrigger = useRetriggerEvaluate(
+    /* This is safe retype, since proper checking of input value is done in the useRetriggerEvaluate() hook */
+    uiProps['fetch:retrigger'] as string[],
+  );
   const fetchUrl = uiProps['fetch:url']?.toString();
 
   useEffect(() => {
@@ -57,11 +72,26 @@ export const SchemaUpdater: Widget<
         setLoading(true);
         setError(undefined);
 
-        // TODO: use Backstage fetchApi instead
-        const response = await fetch(fetchUrl);
+        const response = await fetchApi.fetch(
+          evaluateTemplate({ template: fetchUrl, key: 'fetch:url' }),
+          getRequestInit(uiProps, 'fetch'),
+        );
         const data = (await response.json()) as unknown as SchemaChunksResponse;
 
-        // TODO: validate received response before updating
+        // validate received response before updating
+        if (!data) {
+          throw new Error('Empty response received');
+        }
+        if (typeof data !== 'object') {
+          throw new Error('JSON object expected');
+        }
+        Object.keys(data).forEach(key => {
+          if (!data[key].type) {
+            throw new Error(
+              `JSON response malformed, missing "type" field for "${key}" key`,
+            );
+          }
+        });
 
         updateSchema(data);
       } catch (err) {
@@ -76,7 +106,15 @@ export const SchemaUpdater: Widget<
     };
 
     fetchSchemaChunks();
-  }, [fetchUrl, props.id, updateSchema /* TODO: when to retrigger? */]);
+  }, [
+    fetchUrl,
+    fetchApi,
+    props.id,
+    updateSchema,
+    uiProps,
+    // no need to expand the "retrigger" array here since its identity changes only if an item changes
+    retrigger,
+  ]);
 
   if (!fetchUrl) {
     // eslint-disable-next-line no-console
@@ -89,7 +127,6 @@ export const SchemaUpdater: Widget<
   }
 
   if (error) {
-    // TODO: Maybe render such errors on top of the page
     return <div className={classes.error}>{error}</div>;
   }
 
