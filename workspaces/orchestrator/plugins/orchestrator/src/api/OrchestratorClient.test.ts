@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DiscoveryApi, IdentityApi } from '@backstage/core-plugin-api';
-import { ScmAuthApi, ScmIntegrationsApi } from '@backstage/integration-react';
+import {
+  DiscoveryApi,
+  IdentityApi,
+  OAuthApi,
+} from '@backstage/core-plugin-api';
 import type { JsonObject } from '@backstage/types';
 
 import axios, {
@@ -52,26 +55,15 @@ describe('OrchestratorClient', () => {
   const mockToken = 'test-token';
   const defaultAuthHeaders = { Authorization: `Bearer ${mockToken}` };
 
-  const mockScmAuthApi: jest.Mocked<ScmAuthApi> = {
-    getCredentials: jest.fn().mockResolvedValue({
-      token: 'mock-token',
-    }),
-  };
+  /** OAuth mocks for the explicit-provider implementation */
+  const mockGithubAuthApi: jest.Mocked<OAuthApi> = {
+    getAccessToken: jest.fn().mockResolvedValue('mock-token'),
+    /* the rest of the OAuthApi methods are not used in these tests */
+  } as unknown as jest.Mocked<OAuthApi>;
 
-  const mockScmIntegrationsApi: Partial<ScmIntegrationsApi> = {
-    byUrl: jest.fn(),
-    byHost: jest.fn(),
-    list: jest.fn().mockReturnValue([
-      {
-        type: 'github',
-        title: 'GitHub',
-        config: {
-          host: 'github.com',
-          apiBaseUrl: 'https://api.github.com',
-        },
-      },
-    ]),
-  } as any;
+  const mockGitlabAuthApi: jest.Mocked<OAuthApi> = {
+    getAccessToken: jest.fn().mockResolvedValue(''),
+  } as unknown as jest.Mocked<OAuthApi>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -94,8 +86,8 @@ describe('OrchestratorClient', () => {
     orchestratorClientOptions = {
       discoveryApi: mockDiscoveryApi,
       identityApi: mockIdentityApi,
-      scmAuthApi: mockScmAuthApi,
-      scmIntegrationsApi: mockScmIntegrationsApi,
+      githubAuthApi: mockGithubAuthApi,
+      gitlabAuthApi: mockGitlabAuthApi,
       axiosInstance: axios,
     };
     orchestratorClient = new OrchestratorClient(orchestratorClientOptions);

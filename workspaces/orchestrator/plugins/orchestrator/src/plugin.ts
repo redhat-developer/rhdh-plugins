@@ -18,12 +18,10 @@ import {
   createPlugin,
   createRoutableExtension,
   discoveryApiRef,
+  githubAuthApiRef,
+  gitlabAuthApiRef,
   identityApiRef,
 } from '@backstage/core-plugin-api';
-import {
-  scmAuthApiRef,
-  scmIntegrationsApiRef,
-} from '@backstage/integration-react';
 
 import { orchestratorApiRef, OrchestratorClient } from './api';
 import { orchestratorRootRouteRef } from './routes';
@@ -40,15 +38,15 @@ export const orchestratorPlugin = createPlugin({
       deps: {
         discoveryApi: discoveryApiRef,
         identityApi: identityApiRef,
-        scmAuthApi: scmAuthApiRef,
-        scmIntegrationsApi: scmIntegrationsApiRef,
+        githubAuthApi: githubAuthApiRef,
+        gitlabAuthApi: gitlabAuthApiRef,
       },
-      factory({ discoveryApi, identityApi, scmAuthApi, scmIntegrationsApi }) {
+      factory({ discoveryApi, identityApi, githubAuthApi, gitlabAuthApi }) {
         return new OrchestratorClient({
           discoveryApi,
           identityApi,
-          scmAuthApi,
-          scmIntegrationsApi,
+          githubAuthApi,
+          gitlabAuthApi,
         });
       },
     }),

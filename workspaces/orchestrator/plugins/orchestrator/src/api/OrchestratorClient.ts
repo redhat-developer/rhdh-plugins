@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DiscoveryApi, IdentityApi } from '@backstage/core-plugin-api';
-import { ScmAuthApi, ScmIntegrationsApi } from '@backstage/integration-react';
+import {
+  DiscoveryApi,
+  IdentityApi,
+  OAuthApi,
+} from '@backstage/core-plugin-api';
 import type { JsonObject } from '@backstage/types';
 
 import axios, {
@@ -55,23 +58,23 @@ const getError = (err: unknown): Error => {
 export interface OrchestratorClientOptions {
   discoveryApi: DiscoveryApi;
   identityApi: IdentityApi;
-  scmAuthApi: ScmAuthApi;
-  scmIntegrationsApi: ScmIntegrationsApi;
+  githubAuthApi?: OAuthApi;
+  gitlabAuthApi?: OAuthApi;
   axiosInstance?: AxiosInstance;
 }
 export class OrchestratorClient implements OrchestratorApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly identityApi: IdentityApi;
-  private readonly scmAuthApi: ScmAuthApi;
-  private readonly scmIntegrationsApi: ScmIntegrationsApi;
+  private readonly githubAuthApi?: OAuthApi;
+  private readonly gitlabAuthApi?: OAuthApi;
   private axiosInstance?: AxiosInstance;
 
   private baseUrl: string | null = null;
   constructor(options: OrchestratorClientOptions) {
     this.discoveryApi = options.discoveryApi;
     this.identityApi = options.identityApi;
-    this.scmAuthApi = options.scmAuthApi;
-    this.scmIntegrationsApi = options.scmIntegrationsApi;
+    this.githubAuthApi = options.githubAuthApi;
+    this.gitlabAuthApi = options.gitlabAuthApi;
     this.axiosInstance = options.axiosInstance;
   }
 
@@ -111,28 +114,24 @@ export class OrchestratorClient implements OrchestratorApi {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
       await this.getDefaultReqConfig();
-    // We know the injected ScmIntegrationsApi instance is actually a ScmIntegrationRegistry with .list()
-    const integrations = (this.scmIntegrationsApi as any).list?.();
     const authTokens: { provider: string; token: string }[] = [];
-    for (const integration of integrations) {
-      const provider = integration.type;
-      const url = `https://${integration.config.host}`;
-      if (!url) continue;
-      try {
-        const credentials = await this.scmAuthApi.getCredentials({
-          url,
-          optional: false,
-        });
-
-        if (credentials?.token) {
-          authTokens.push({
-            provider,
-            token: credentials.token,
-          });
-        }
-      } catch (e) {
-        console.warn(`No token available for ${provider}`, e);
+    // Explicit GitHub token check
+    try {
+      const githubToken = await this.githubAuthApi?.getAccessToken?.();
+      if (githubToken) {
+        authTokens.push({ provider: 'github', token: githubToken });
       }
+    } catch (e) {
+      console.warn('GitHub token not available', e);
+    }
+    // Explicit GitLab token check
+    try {
+      const gitlabToken = await this.gitlabAuthApi?.getAccessToken?.();
+      if (gitlabToken) {
+        authTokens.push({ provider: 'gitlab', token: gitlabToken });
+      }
+    } catch (e) {
+      console.warn('GitLab token not available', e);
     }
     const requestBody = {
       inputData: args.parameters,
