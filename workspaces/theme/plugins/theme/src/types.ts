@@ -116,6 +116,8 @@ export interface ThemeConfigOptions {
   tabs?: 'patternfly' | 'mui';
 
   appBar?: 'patternfly' | 'mui';
+
+  breadcrumbs?: 'patternfly' | 'mui';
 }
 
 export interface ThemeConfig {

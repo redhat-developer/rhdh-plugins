@@ -97,7 +97,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         button: {
           textTransform: 'none',
-          fontWeight: 'bold',
+          fontWeight: 'normal',
         },
       },
     };
@@ -187,6 +187,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         root: {
           textTransform: 'none',
           borderRadius: '3px',
+          fontWeight: 'normal',
         },
         contained: {
           border: '0',
@@ -303,7 +304,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     };
   }
 
-  if (options.inputs !== 'mui') {
+  if (options.checkbox !== 'mui') {
     components.MuiCheckbox = {
       defaultProps: {
         color: 'primary',
@@ -560,6 +561,27 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
       },
     };
+
+    // MUI Breadcrumbs
+    if (options.breadcrumbs !== 'mui') {
+      components.MuiBreadcrumbs = {
+        defaultProps: {
+          separator: '>',
+        },
+        styleOverrides: {
+          separator: {
+            fontWeight: 'bold',
+          },
+          root: {
+            fontWeight: '400',
+          },
+          li: {
+            fontSize: '0.875rem !important',
+            fontStyle: 'normal !important',
+          },
+        },
+      };
+    }
   }
 
   //
@@ -639,13 +661,41 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         header: {
           boxShadow: 'none',
-          borderBottom: `1px solid ${general.headerBottomBorderColor}`,
         },
         title: {
-          fontWeight: 'bold',
           '&[class*="MuiTypography-h1-"]': {
-            fontWeight: 'bold',
-            fontSize: '2rem',
+            fontWeight: '500',
+            fontSize: '1.5rem',
+          },
+        },
+        subtitle: {
+          '&[class*="BackstageHeader-subtitle-"]': {
+            fontWeight: 'normal',
+            fontSize: '0.875rem',
+          },
+        },
+        breadcrumb: {
+          marginBottom: '0.5rem',
+        },
+      },
+    };
+    components.BreadcrumbsCurrentPage = {
+      styleOverrides: {
+        root: {
+          '& p': {
+            fontStyle: 'normal',
+            fontSize: 'inherit',
+          },
+        },
+      },
+    };
+    components.BackstageBreadcrumbsStyledBox = {
+      styleOverrides: {
+        root: {
+          textDecoration: 'underline !important',
+          color: palette.rhdh?.primary.main,
+          '&:hover': {
+            color: `color-mix(in srgb, ${palette.rhdh?.primary.main} 50%, ${palette.text?.primary})`,
           },
         },
       },
