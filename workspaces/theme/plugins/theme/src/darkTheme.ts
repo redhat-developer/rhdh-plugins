@@ -21,10 +21,10 @@ import { type ThemeConfigPalette } from './types';
 
 export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
   primary: {
-    main: '#1FA7F8',
+    main: '#92c5f9',
   },
   secondary: {
-    main: '#1FA7F8',
+    main: '#92c5f9',
   },
   navigation: {
     background: '#0f1214',
@@ -82,11 +82,11 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
       appBarBackgroundImage: 'none',
     },
     primary: {
-      main: '#1FA7F8',
+      main: '#92c5f9',
       focusVisibleBorder: '#ADD6FF',
     },
     secondary: {
-      main: '#1FA7F8',
+      main: '#92c5f9',
       focusVisibleBorder: '#ADD6FF',
     },
     cards: {

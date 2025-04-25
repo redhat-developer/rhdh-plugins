@@ -190,6 +190,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
         contained: {
           border: '0',
+          borderRadius: '99em',
           boxShadow: 'none',
           '&:hover, &:focus-visible': {
             border: '0',
@@ -200,6 +201,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         containedPrimary: {
+          borderRadius: '99em',
           '&:focus-visible': {
             boxShadow: `inset 0 0 0 1px ${rhdhPrimary.focusVisibleBorder}`,
             outline: `${rhdhPrimary.focusVisibleBorder} solid 1px`,
@@ -220,6 +222,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         outlined: {
+          borderRadius: '99em',
           border: `1px solid color-mix(in srgb, currentColor 50%, transparent)`,
           '&:hover, &:focus-visible': {
             backgroundColor: 'transparent',
