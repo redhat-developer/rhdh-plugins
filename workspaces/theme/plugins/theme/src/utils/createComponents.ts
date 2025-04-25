@@ -565,7 +565,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
         defaultTab: {
           textTransform: 'none',
-          fontSize: '1rem',
+          fontSize: '0.875rem',
           fontWeight: '400',
           color: general.disabled,
           padding: '0 0.25em',
