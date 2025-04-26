@@ -696,6 +696,6 @@ export const getValidationSchema = (approvalTool: string) =>
     prSpec: validateKeyValuePair,
   });
 
-export const gitlabFeatureFlag = true;
+export const gitlabFeatureFlag = false;
 
-export const isApprovalToolGitlab = true;
+export const isApprovalToolGitlab = false;
