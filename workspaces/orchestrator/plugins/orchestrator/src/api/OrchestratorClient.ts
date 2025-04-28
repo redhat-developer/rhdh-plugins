@@ -115,23 +115,37 @@ export class OrchestratorClient implements OrchestratorApi {
     const reqConfigOption: AxiosRequestConfig =
       await this.getDefaultReqConfig();
     const authTokens: { provider: string; token: string }[] = [];
-    // Explicit GitHub token check
-    try {
-      const githubToken = await this.githubAuthApi?.getAccessToken?.();
-      if (githubToken) {
-        authTokens.push({ provider: 'github', token: githubToken });
+
+    /** Build one promise per provider (guard against missing APIs) */
+    const tokenPromises = [
+      this.githubAuthApi
+        ? this.githubAuthApi
+            .getAccessToken?.()
+            .then(tok => ({ provider: 'github' as const, token: tok }))
+        : undefined,
+
+      this.gitlabAuthApi
+        ? this.gitlabAuthApi
+            .getAccessToken?.()
+            .then(tok => ({ provider: 'gitlab' as const, token: tok }))
+        : undefined,
+    ].filter(Boolean) as Promise<{
+      provider: string;
+      token: string | undefined;
+    }>[];
+
+    const results = await Promise.allSettled(tokenPromises);
+
+    /** keep only fulfilled + non-empty tokens */
+    for (const r of results) {
+      if (r.status === 'fulfilled') {
+        const { provider, token } = r.value;
+        if (token) {
+          authTokens.push({ provider, token });
+        }
+      } else if (r.status === 'rejected') {
+        console.warn('SCM token fetch failed:', r.reason);
       }
-    } catch (e) {
-      console.warn('GitHub token not available', e);
-    }
-    // Explicit GitLab token check
-    try {
-      const gitlabToken = await this.gitlabAuthApi?.getAccessToken?.();
-      if (gitlabToken) {
-        authTokens.push({ provider: 'gitlab', token: gitlabToken });
-      }
-    } catch (e) {
-      console.warn('GitLab token not available', e);
     }
     const requestBody = {
       inputData: args.parameters,
