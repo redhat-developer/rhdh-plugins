@@ -2,6 +2,9 @@ app:
   title: Developer Sandbox
   baseUrl: http://localhost:3000
 
+# Used for enabling the full page redirect flow rather than the popup flow for Red Hat SSO
+enableExperimentalRedirectFlow: true
+
 organization:
   name: Red Hat
 
