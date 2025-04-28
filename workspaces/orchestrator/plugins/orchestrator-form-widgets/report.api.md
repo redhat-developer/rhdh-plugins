@@ -13,7 +13,7 @@ export const orchestratorFormWidgetsPlugin: BackstagePlugin<    {}, {}, {}>;
 
 // Warnings were encountered during analysis:
 //
-// src/plugin.d.ts:6:22 - (ae-undocumented) Missing documentation for "orchestratorFormWidgetsPlugin".
+// src/plugin.d.ts:5:22 - (ae-undocumented) Missing documentation for "orchestratorFormWidgetsPlugin".
 
 // (No @packageDocumentation comment for this package)
 
