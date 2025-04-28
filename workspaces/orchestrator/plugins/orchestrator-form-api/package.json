@@ -12,7 +12,7 @@
   },
   "backstage": {
     "role": "web-library",
-    "supported-versions": "1.32.5"
+    "supported-versions": "1.37.1"
   },
   "sideEffects": false,
   "scripts": {
@@ -28,15 +28,16 @@
   },
   "dependencies": {
     "@backstage/core-plugin-api": "^1.10.5",
+    "@backstage/types": "^1.2.1",
     "@rjsf/core": "^5.21.2",
-    "@rjsf/utils": "^5.21.2"
+    "@rjsf/utils": "^5.21.2",
+    "json-schema": "^0.4.0"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
     "@backstage/cli": "^0.31.1",
-    "@backstage/types": "^1.2.1",
     "@types/json-schema": "7.0.15",
     "@types/react": "^18.2.58",
     "prettier": "3.4.2",

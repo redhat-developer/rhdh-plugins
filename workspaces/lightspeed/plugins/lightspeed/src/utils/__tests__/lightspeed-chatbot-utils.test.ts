@@ -208,17 +208,21 @@ describe('createBotMessage', () => {
 describe('getMessageData', () => {
   it('should return content and timestamp from message.kwargs', () => {
     const message = {
-      kwargs: {
-        content: 'This is the message content',
-        response_metadata: {
-          created_at: 1730121598867,
-        },
+      content: 'This is the message content',
+      response_metadata: {
+        created_at: 1744695548.101305,
+        model: 'granite3-dense:8b',
       },
+      additional_kwargs: {},
+      id: 1,
+      type: 'human',
+      name: '',
     };
-    const result = getMessageData(message as any);
+    const result = getMessageData(message);
     expect(result).toEqual({
       content: 'This is the message content',
-      timestamp: '28/10/2024, 13:19:58',
+      model: 'granite3-dense:8b',
+      timestamp: '15/04/2025, 05:39:08',
     });
   });
 
@@ -240,36 +244,28 @@ describe('getCategorizeMessages', () => {
   const messages: ConversationList = [
     {
       conversation_id: '1',
-      lastMessageTimestamp: new Date().toISOString(),
-      summary: 'Today message',
+      last_message_timestamp: Date.now() / 1000,
+      topic_summary: 'Today message',
     },
     {
       conversation_id: '2',
-      lastMessageTimestamp: new Date(
-        Date.now() - 24 * 60 * 60 * 1000,
-      ).toISOString() as any,
-      summary: 'Yesterday message',
+      last_message_timestamp: (Date.now() - 24 * 60 * 60 * 1000) / 1000,
+      topic_summary: 'Yesterday message',
     },
     {
       conversation_id: '3',
-      lastMessageTimestamp: new Date(
-        Date.now() - 5 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-      summary: '5 days ago',
+      last_message_timestamp: (Date.now() - 5 * 24 * 60 * 60 * 1000) / 1000,
+      topic_summary: '5 days ago',
     },
     {
       conversation_id: '4',
-      lastMessageTimestamp: new Date(
-        Date.now() - 15 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-      summary: '15 days ago',
+      last_message_timestamp: (Date.now() - 15 * 24 * 60 * 60 * 1000) / 1000,
+      topic_summary: '15 days ago',
     },
     {
       conversation_id: '5',
-      lastMessageTimestamp: new Date(
-        Date.now() - 45 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-      summary: '45 days ago',
+      last_message_timestamp: (Date.now() - 45 * 24 * 60 * 60 * 1000) / 1000,
+      topic_summary: '45 days ago',
     },
   ];
 
@@ -289,7 +285,7 @@ describe('getCategorizeMessages', () => {
     expect(result['Previous 30 Days'][0].text).toBe('15 days ago');
 
     const monthYearKey = new Date(
-      messages[4].lastMessageTimestamp,
+      messages[4].last_message_timestamp * 1000,
     ).toLocaleString('default', {
       month: 'long',
       year: 'numeric',

@@ -1,0 +1,87 @@
+{
+  "name": "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "frontend-plugin",
+    "pluginId": "orchestrator-form-widgets",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets"
+    ],
+    "supported-versions": "1.32.5"
+  },
+  "homepage": "https://red.ht/rhdh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/orchestrator/plugins/orchestrator-form-widgets"
+  },
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
+  "sideEffects": false,
+  "keywords": [
+    "support:tech-preview",
+    "lifecycle:active",
+    "backstage",
+    "plugin",
+    "orchestrator",
+    "workflows",
+    "rjsf",
+    "widgets",
+    "orchestrator"
+  ],
+  "scripts": {
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build",
+    "tsc": "tsc",
+    "prettier:check": "prettier --ignore-unknown --check .",
+    "prettier:fix": "prettier --ignore-unknown --write .",
+    "lint:check": "backstage-cli package lint",
+    "lint:fix": "backstage-cli package lint --fix",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack",
+    "export-dynamic": "janus-cli package export-dynamic-plugin --in-place"
+  },
+  "dependencies": {
+    "@backstage/core-components": "^0.17.0",
+    "@backstage/core-plugin-api": "^1.10.1",
+    "@backstage/theme": "^0.6.2",
+    "@backstage/types": "^1.2.1",
+    "@material-ui/core": "^4.9.13",
+    "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.61",
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
+    "@rjsf/utils": "^5.21.2",
+    "json-schema": "^0.4.0",
+    "react-use": "^17.2.4"
+  },
+  "peerDependencies": {
+    "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.31.1",
+    "@backstage/core-app-api": "^1.15.2",
+    "@backstage/dev-utils": "^1.1.7-next.3",
+    "@backstage/test-utils": "^1.7.1",
+    "@janus-idp/cli": "3.5.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "msw": "^1.0.0",
+    "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+  },
+  "files": [
+    "app-config.yaml",
+    "dist",
+    "dist-scalprum"
+  ]
+}
