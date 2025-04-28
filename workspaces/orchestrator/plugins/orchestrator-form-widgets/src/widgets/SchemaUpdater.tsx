@@ -19,7 +19,6 @@ import { JSONSchema7 } from 'json-schema';
 import { JsonObject } from '@backstage/types';
 import { makeStyles, Theme } from '@material-ui/core';
 import {
-  OrchestratorFormSchemaUpdater,
   useWrapperFormPropsContext,
   SchemaChunksResponse,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
@@ -28,9 +27,11 @@ import { FetchApi } from '@backstage/core-plugin-api';
 import { FormContextData } from '../types';
 import {
   evaluateTemplate,
+  evaluateTemplateProps,
   getRequestInit,
   useRetriggerEvaluate,
 } from '../utils';
+import { isEqual } from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => ({
   error: {
@@ -43,28 +44,57 @@ export const SchemaUpdater: Widget<
   JSONSchema7,
   FormContextData
 > = props => {
+  const fetchApi = props.fetchApi as FetchApi;
+  const templateUnitEvaluator =
+    props.templateUnitEvaluator as evaluateTemplateProps['unitEvaluator'];
+
   const classes = useStyles();
   const formContext = useWrapperFormPropsContext();
   const [_, setLoading] = useState(true);
   const [error, setError] = useState<string>();
-  const fetchApi = props.fetchApi as FetchApi;
+  const [evaluatedFetchUrl, setEvaluatedFetchUrl] = useState<string>();
+  const [evaluatedRequestInit, setEvaluatedRequestInit] =
+    useState<RequestInit>();
 
-  const updateSchema =
-    formContext.updateSchema as OrchestratorFormSchemaUpdater;
+  const { updateSchema, formData } = formContext;
+
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as JsonObject,
     [props.options?.props],
   );
+  const fetchUrl = uiProps['fetch:url']?.toString();
 
   const retrigger = useRetriggerEvaluate(
+    templateUnitEvaluator,
+    formData,
     /* This is safe retype, since proper checking of input value is done in the useRetriggerEvaluate() hook */
     uiProps['fetch:retrigger'] as string[],
   );
-  const fetchUrl = uiProps['fetch:url']?.toString();
+
+  useEffect(() => {
+    evaluateTemplate({
+      template: fetchUrl,
+      key: 'fetch:url',
+      unitEvaluator: templateUnitEvaluator,
+      formData,
+    })
+      .then(evaluated => setEvaluatedFetchUrl(evaluated))
+      .catch(reason => setError(reason.toString()));
+  }, [fetchUrl, templateUnitEvaluator, formData]);
+
+  useEffect(() => {
+    getRequestInit(uiProps, 'fetch', templateUnitEvaluator, formData)
+      .then(evaluated =>
+        setEvaluatedRequestInit(actual =>
+          isEqual(actual, evaluated) ? actual : evaluated,
+        ),
+      )
+      .catch(reason => setError(reason.toString()));
+  }, [uiProps, templateUnitEvaluator, formData]);
 
   useEffect(() => {
     const fetchSchemaChunks = async () => {
-      if (!fetchUrl) {
+      if (!evaluatedFetchUrl || !retrigger || !evaluatedRequestInit) {
         return;
       }
 
@@ -73,8 +103,8 @@ export const SchemaUpdater: Widget<
         setError(undefined);
 
         const response = await fetchApi.fetch(
-          evaluateTemplate({ template: fetchUrl, key: 'fetch:url' }),
-          getRequestInit(uiProps, 'fetch'),
+          evaluatedFetchUrl,
+          evaluatedRequestInit,
         );
         const data = (await response.json()) as unknown as SchemaChunksResponse;
 
@@ -96,7 +126,12 @@ export const SchemaUpdater: Widget<
         updateSchema(data);
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error('Error when updating schema', props.id, fetchUrl, err);
+        console.error(
+          'Error when updating schema',
+          props.id,
+          evaluatedFetchUrl,
+          err,
+        );
         setError(
           `Failed to fetch schema update by the ${props.id} SchemaUpdater`,
         );
@@ -107,11 +142,11 @@ export const SchemaUpdater: Widget<
 
     fetchSchemaChunks();
   }, [
-    fetchUrl,
+    evaluatedFetchUrl,
+    evaluatedRequestInit,
     fetchApi,
     props.id,
     updateSchema,
-    uiProps,
     // no need to expand the "retrigger" array here since its identity changes only if an item changes
     retrigger,
   ]);

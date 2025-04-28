@@ -14,26 +14,48 @@
  * limitations under the License.
  */
 
-import { JsonValue } from '@backstage/types';
+import { JsonObject, JsonValue } from '@backstage/types';
 
-export const evaluateTemplateUnit = (condition: string): string => {
-  return 'TODO - evaluated value';
-};
-
-export const evaluateTemplate = ({
-  template,
-  key,
-}: {
+export type evaluateTemplateProps = {
   template?: JsonValue;
   key: string;
-}): string => {
+  unitEvaluator: (
+    unit: string,
+    formData: JsonObject,
+  ) => Promise<JsonValue | undefined>;
+  formData: JsonObject;
+};
+
+export const evaluateTemplate = async (
+  props: evaluateTemplateProps,
+): Promise<string> => {
+  const { template, key, unitEvaluator, formData } = props;
+
   if (!template || typeof template !== 'string') {
     throw new Error(`Template can be a string only, key: ${key}`);
   }
 
-  const evaluated: string = template;
-
-  // TODO: parse and evaluate all units
+  let evaluated;
+  const startIndex = template.indexOf('$${{');
+  if (startIndex < 0) {
+    evaluated = template;
+  } else {
+    evaluated = template.substring(0, startIndex);
+    const stopIndex = template.indexOf('}}');
+    if (stopIndex < 0) {
+      throw new Error(`Template unit is not closed by }}`);
+    }
+    evaluated += await unitEvaluator(
+      template.substring(startIndex + 4, stopIndex),
+      formData,
+    );
+    if (template.length > stopIndex + 2) {
+      evaluated += await evaluateTemplate({
+        ...props,
+        template: template.substring(stopIndex + 2),
+      });
+    }
+  }
 
   return evaluated;
 };

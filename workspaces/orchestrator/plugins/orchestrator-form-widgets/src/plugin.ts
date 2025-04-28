@@ -14,16 +14,32 @@
  * limitations under the License.
  */
 import {
+  atlassianAuthApiRef,
+  configApiRef,
   createApiFactory,
   createPlugin,
   fetchApiRef,
+  githubAuthApiRef,
+  gitlabAuthApiRef,
+  googleAuthApiRef,
+  identityApiRef,
+  microsoftAuthApiRef,
 } from '@backstage/core-plugin-api';
 import { orchestratorFormApiRef } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { FormWidgetsApi } from './FormWidgetsApi';
 
 export const formApiFactory = createApiFactory({
   api: orchestratorFormApiRef,
-  deps: { fetchApi: fetchApiRef },
+  deps: {
+    fetchApi: fetchApiRef,
+    identityApi: identityApiRef,
+    configApi: configApiRef,
+    googleAuthApi: googleAuthApiRef,
+    microsoftAuthApi: microsoftAuthApiRef,
+    githubAuthApi: githubAuthApiRef,
+    gitlabAuthApi: gitlabAuthApiRef,
+    atlassianAuthApi: atlassianAuthApiRef,
+  },
   factory(options) {
     return new FormWidgetsApi(options);
   },

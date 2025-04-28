@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 import { JsonObject } from '@backstage/types';
-import { evaluateTemplate } from './evaluateTemplate';
+import { evaluateTemplate, evaluateTemplateProps } from './evaluateTemplate';
 
 const ALLOWED_METHODS = ['GET', 'POST'];
 
-export const getRequestInit = (
+export const getRequestInit = async (
   uiProps: JsonObject,
   prefix: string,
-): RequestInit => {
+  unitEvaluator: evaluateTemplateProps['unitEvaluator'],
+  formData: JsonObject,
+): Promise<RequestInit> => {
   const requestInit: RequestInit = {};
 
   const method = uiProps[`${prefix}:method`]?.toString().toLocaleUpperCase();
@@ -40,9 +42,22 @@ export const getRequestInit = (
       if (typeof body === 'object') {
         const bodyObject = body as JsonObject;
         const evaluated: JsonObject = {};
-        Object.keys(body).forEach(key => {
-          evaluated[key] = evaluateTemplate({ key, template: bodyObject[key] });
+
+        const keys = Object.keys(body);
+        const values = await Promise.all(
+          keys.map(key =>
+            evaluateTemplate({
+              unitEvaluator,
+              key,
+              formData,
+              template: bodyObject[key],
+            }),
+          ),
+        );
+        keys.forEach((key, idx) => {
+          evaluated[key] = values[idx];
         });
+
         const bodyInit: BodyInit = JSON.stringify(evaluated);
         requestInit.body = bodyInit;
       } else {
@@ -58,12 +73,22 @@ export const getRequestInit = (
     if (typeof headers === 'object') {
       const headersObject = headers as JsonObject;
       const headersInit: HeadersInit = {};
-      Object.keys(headers).forEach(key => {
-        headersInit[key] = evaluateTemplate({
-          key,
-          template: headersObject[key],
-        });
+
+      const keys = Object.keys(headers);
+      const values = await Promise.all(
+        keys.map(key =>
+          evaluateTemplate({
+            unitEvaluator,
+            key,
+            formData,
+            template: headersObject[key],
+          }),
+        ),
+      );
+      keys.forEach((key, idx) => {
+        headersInit[key] = values[idx];
       });
+
       requestInit.headers = headersInit;
     } else {
       throw new Error('fetch:body must be object for POST requests');

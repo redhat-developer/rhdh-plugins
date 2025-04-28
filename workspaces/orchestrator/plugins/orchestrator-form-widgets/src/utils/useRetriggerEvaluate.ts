@@ -16,30 +16,44 @@ import { useState } from 'react';
  * limitations under the License.
  */
 import { isEqual } from 'lodash';
-import { evaluateTemplateUnit } from './evaluateTemplate';
+import { JsonObject } from '@backstage/types';
+import { evaluateTemplateProps } from './evaluateTemplate';
 
-export const useRetriggerEvaluate = (conditions?: string[]): string[] => {
-  const [evaluated, setEvaluated] = useState<string[]>([]);
+export const useRetriggerEvaluate = (
+  templateUnitEvaluator: evaluateTemplateProps['unitEvaluator'],
+  formData: JsonObject,
+  conditions?: string[],
+): string[] | undefined => {
+  const [evaluated, setEvaluated] = useState<string[]>();
 
-  if (!conditions?.length) {
-    if (evaluated.length > 0) {
+  if (!conditions) {
+    if (!evaluated || evaluated.length > 0) {
       setEvaluated([]);
     }
   } else {
-    const actual: string[] = conditions.map((condition: string) => {
-      try {
-        return evaluateTemplateUnit(condition);
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Can not evaluate retrigger condition: ', condition);
-        // ignore and continue - this will not be a retrigger
-      }
-      return '';
-    });
+    const doItAsync = async () => {
+      const actual: string[] = await Promise.all(
+        conditions.map((condition: string) => {
+          try {
+            return templateUnitEvaluator(condition, formData)?.toString();
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error(
+              'Can not evaluate retrigger condition: ',
+              condition,
+              err,
+            );
+            throw err;
+          }
+        }),
+      );
 
-    if (!isEqual(evaluated, actual)) {
-      setEvaluated(actual);
-    }
+      if (!isEqual(evaluated, actual)) {
+        setEvaluated(actual);
+      }
+    };
+
+    doItAsync();
   }
 
   return evaluated;
