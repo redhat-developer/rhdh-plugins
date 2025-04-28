@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import he from 'he';
+
 export const extractImageFromHTML = (html: string): string | undefined => {
   if (!html) return undefined; // Explicitly return undefined
   const match = html.match(/<img[^>]+src=(?:"([^">]+)"|'([^'>]+)')/i);
@@ -27,7 +29,12 @@ export const sanitizeXML = (xml: string): string => {
 };
 
 export const formatDescription = (text: string) => {
-  const cleanText = text.replace(/<[^>]*>?/g, '').replace(/&nbsp;/g, ' ');
+  // Decode HTML entities first
+  const decoded = he.decode(text || '');
+  // Remove HTML tags and replace &nbsp; with spaces
+  const cleanText = decoded
+    .replace(/<[^>]*>?/g, '')
+    .replace(/\u00A0|&nbsp;/g, ' ');
   if (cleanText.length > 200) {
     return `${cleanText.substring(0, 200)}...`;
   }

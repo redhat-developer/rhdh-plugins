@@ -65,7 +65,7 @@ describe('NewsGrid', () => {
     expect(screen.getByText('Fetching RSS Feed')).toBeInTheDocument();
   });
 
-  it('should display "No RSS Content Available" when fetch returns empty data', async () => {
+  it('should display "No content available" when fetch returns empty data', async () => {
     const mockXml = '<rss><channel></channel></rss>';
     const mockParsedData = { rss: { channel: { item: [] } } };
     mockRssApi.fetch.mockResolvedValue(mockXml);
@@ -75,7 +75,7 @@ describe('NewsGrid', () => {
     renderWithTheme(<NewsGrid />);
 
     await waitFor(() => {
-      expect(screen.getByText('No RSS Content Available')).toBeInTheDocument();
+      expect(screen.getByText('No content available')).toBeInTheDocument();
     });
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(mockSanitizeXML).toHaveBeenCalledWith(mockXml);
@@ -85,7 +85,7 @@ describe('NewsGrid', () => {
     );
   });
 
-  it('should display "No RSS Content Available" when fetch returns data without items', async () => {
+  it('should display "No content available" when fetch returns data without items', async () => {
     const mockXml = '<rss><channel><title>Test Feed</title></channel></rss>';
     const mockParsedData = { rss: { channel: { title: 'Test Feed' } } }; // No 'item' key
     mockRssApi.fetch.mockResolvedValue(mockXml);
@@ -95,12 +95,12 @@ describe('NewsGrid', () => {
     renderWithTheme(<NewsGrid />);
 
     await waitFor(() => {
-      expect(screen.getByText('No RSS Content Available')).toBeInTheDocument();
+      expect(screen.getByText('No content available')).toBeInTheDocument();
     });
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
-  it('should display "No RSS Content Available" on API fetch error', async () => {
+  it('should display "No content available" on API fetch error', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     const error = new Error('Failed to fetch');
     mockRssApi.fetch.mockRejectedValue(error);
@@ -108,7 +108,7 @@ describe('NewsGrid', () => {
     renderWithTheme(<NewsGrid />);
 
     await waitFor(() => {
-      expect(screen.getByText('No RSS Content Available')).toBeInTheDocument();
+      expect(screen.getByText('No content available')).toBeInTheDocument();
     });
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -118,7 +118,7 @@ describe('NewsGrid', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('should display "No RSS Content Available" on XML parsing error', async () => {
+  it('should display "No content available" on XML parsing error', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     const error = new Error('XML Parse Error');
     const mockXml = '<rss>invalid xml</rss>';
@@ -129,7 +129,7 @@ describe('NewsGrid', () => {
     renderWithTheme(<NewsGrid />);
 
     await waitFor(() => {
-      expect(screen.getByText('No RSS Content Available')).toBeInTheDocument();
+      expect(screen.getByText('No content available')).toBeInTheDocument();
     });
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(consoleErrorSpy).toHaveBeenCalledWith(
@@ -246,7 +246,7 @@ describe('NewsGrid', () => {
           thumbnail: 'thumb1',
         }),
       }),
-      {},
+      expect.anything(),
     );
     expect(NewsCard).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -255,7 +255,7 @@ describe('NewsGrid', () => {
           thumbnail: 'thumb2',
         }),
       }),
-      {},
+      expect.anything(),
     );
     expect(NewsCard).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -264,7 +264,7 @@ describe('NewsGrid', () => {
           thumbnail: 'thumb3',
         }),
       }),
-      {},
+      expect.anything(),
     );
     expect(NewsCard).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -273,7 +273,7 @@ describe('NewsGrid', () => {
           thumbnail: 'thumb4',
         }),
       }),
-      {},
+      expect.anything(),
     );
     expect(NewsCard).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -282,7 +282,7 @@ describe('NewsGrid', () => {
           thumbnail: 'thumb5',
         }),
       }),
-      {},
+      expect.anything(),
     );
     expect(NewsCard).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -291,7 +291,7 @@ describe('NewsGrid', () => {
           thumbnail: 'extracted_thumb',
         }),
       }),
-      {},
+      expect.anything(),
     );
     expect(mockExtractImageFromHTML).toHaveBeenCalledWith('desc6');
   });

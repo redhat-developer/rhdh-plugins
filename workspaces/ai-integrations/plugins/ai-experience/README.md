@@ -40,9 +40,8 @@ yarn workspace app add @red-hat-developer-hub/backstage-plugin-ai-experience
 
    ```yaml
    proxy:
-     '/rssfeed':
+     '/ai-rssfeed':
        target: 'https://www.wired.com/feed/tag/ai/latest/rss'
-       credentials: 'dangerously-allow-unauthenticated'
        changeOrigin: true
        followRedirects: true
    ```

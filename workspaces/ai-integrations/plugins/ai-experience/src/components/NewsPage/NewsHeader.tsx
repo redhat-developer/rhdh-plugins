@@ -34,6 +34,6 @@ export const NewsHeader: React.FC = () => {
           AI News
         </Typography>
       }
-    ></Header>
+    />
   );
 };

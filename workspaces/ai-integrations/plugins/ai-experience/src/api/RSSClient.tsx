@@ -37,7 +37,7 @@ export class RSSClient implements RSSFeedApi {
   }
 
   private readonly rssAPI = async (): Promise<string> => {
-    return `${await this.discoveryApi.getBaseUrl('proxy')}/rssfeed/`;
+    return `${await this.discoveryApi.getBaseUrl('proxy')}/ai-rssfeed/`;
   };
 
   async fetch(): Promise<any> {

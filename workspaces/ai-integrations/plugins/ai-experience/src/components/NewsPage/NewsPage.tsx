@@ -14,24 +14,15 @@
  * limitations under the License.
  */
 import React from 'react';
-import { makeStyles } from '@material-ui/core';
-import { Theme } from '@mui/material/styles';
 import { Page, Content } from '@backstage/core-components';
 import { NewsHeader } from './NewsHeader';
 import { NewsGrid } from './NewsGrid';
 
-const useStyles = makeStyles((theme: Theme) => ({
-  content: {
-    backgroundColor: theme.palette.background.default,
-  },
-}));
-
 export const NewsPage = () => {
-  const classes = useStyles();
   return (
     <Page themeId="ai-experience">
       <NewsHeader />
-      <Content noPadding className={classes.content}>
+      <Content noPadding>
         <NewsGrid />
       </Content>
     </Page>

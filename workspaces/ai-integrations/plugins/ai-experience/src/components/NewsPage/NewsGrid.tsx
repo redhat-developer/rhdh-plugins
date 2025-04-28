@@ -17,11 +17,14 @@ import React, { useEffect, useState } from 'react';
 import { parseStringPromise, processors } from 'xml2js';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useApi } from '@backstage/core-plugin-api';
 import { extractImageFromHTML, sanitizeXML } from '../../utils/rss-utils';
 import { Article, NewsCard } from './NewsCard';
+import Image from '../../assets/rss-not-found.svg';
 import { rssApiRef } from '../../api';
 
 export const NewsGrid: React.FC = () => {
@@ -97,27 +100,46 @@ export const NewsGrid: React.FC = () => {
 
   if (!articleData || articleData.length === 0) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%',
-          padding: '40px 0',
-          backgroundColor: theme.palette.background.paper,
-        }}
-      >
-        <Box sx={{ textAlign: 'center', color: theme.palette.text.secondary }}>
-          <Box sx={{ fontWeight: 'medium', fontSize: '1rem', mb: 1 }}>
-            No RSS Content Available
-          </Box>
-          <Box sx={{ fontSize: '0.875rem' }}>
-            Unable to retrieve content from the specified RSS source. Please
-            verify the RSS feed URL or try an alternative source.
-          </Box>
+      <Stack direction="row">
+        <Box
+          sx={{
+            margin: `${theme.spacing(26)} ${theme.spacing(10)}`,
+          }}
+        >
+          <Typography
+            variant="h1"
+            gutterBottom
+            sx={{
+              fontWeight: 300,
+              marginTop: theme.spacing(2),
+            }}
+          >
+            No content available
+          </Typography>
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            sx={{
+              fontWeight: 400,
+              fontSize: theme.typography.h6.fontSize,
+              marginTop: theme.spacing(1),
+              marginBottom: theme.spacing(2),
+            }}
+          >
+            Looks like we couldn't get content from that RSS feed. You can
+            double-check the URL or switch to a different source by updating the
+            plugin config file.
+          </Typography>
         </Box>
-      </Box>
+        <Box
+          sx={{
+            display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' },
+            marginRight: `${theme.spacing(10)}`,
+          }}
+        >
+          <img src={Image} alt="No RSS Content" />
+        </Box>
+      </Stack>
     );
   }
 
@@ -126,8 +148,9 @@ export const NewsGrid: React.FC = () => {
       sx={{
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '36px 240px 48px 40px',
-        backgroundColor: theme.palette.background.paper,
+        padding: `${theme.spacing(4.5)} ${theme.spacing(30)} ${theme.spacing(
+          6,
+        )} ${theme.spacing(5)}`,
       }}
     >
       <Grid container direction="row" spacing={4}>

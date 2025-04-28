@@ -7,9 +7,8 @@ organization:
 
 # Used for setting the RSS feed URL for the AI News Page
 proxy:
-  '/rssfeed':
+  '/ai-rssfeed':
     target: 'https://www.wired.com/feed/tag/ai/latest/rss'
-    credentials: 'dangerously-allow-unauthenticated'
     changeOrigin: true
     followRedirects: true
 

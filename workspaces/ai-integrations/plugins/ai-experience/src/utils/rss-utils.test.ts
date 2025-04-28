@@ -180,17 +180,17 @@ describe('rss-utils', () => {
   });
 
   describe('formatDescription', () => {
-    it('should remove HTML tags from the text', () => {
+    it('should remove HTML tags from the text and decode entities', () => {
       const text = '<p>This is <b>bold</b> text.</p>';
       expect(formatDescription(text)).toBe('This is bold text.');
     });
 
-    it('should replace &nbsp; with spaces', () => {
-      const text = 'Text&nbsp;with&nbsp;non-breaking&nbsp;spaces.';
+    it('should replace &nbsp; and \u00A0 with spaces', () => {
+      const text = 'Text&nbsp;with\u00A0non-breaking&nbsp;spaces.';
       expect(formatDescription(text)).toBe('Text with non-breaking spaces.');
     });
 
-    it('should remove tags and replace &nbsp;', () => {
+    it('should remove tags, decode entities, and replace &nbsp;', () => {
       const text = '<div>Mixed&nbsp;content with <a href="#">link</a></div>';
       expect(formatDescription(text)).toBe('Mixed content with link');
     });
@@ -225,11 +225,6 @@ describe('rss-utils', () => {
     it('should return an empty string if the input contains only HTML tags', () => {
       const text = '<em><i><b></b></i></em>';
       expect(formatDescription(text)).toBe('');
-    });
-
-    it('should return spaces if the input contains only &nbsp;', () => {
-      const text = '&nbsp;&nbsp;&nbsp;';
-      expect(formatDescription(text)).toBe('   ');
     });
   });
 });

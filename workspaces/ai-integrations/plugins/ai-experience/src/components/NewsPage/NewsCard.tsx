@@ -16,6 +16,7 @@
 import React from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import CardMedia from '@mui/material/CardMedia';
 import { useTheme } from '@mui/material/styles';
@@ -80,24 +81,25 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             justifyContent: 'space-between',
             backgroundColor:
               theme.palette.mode === 'dark'
-                ? '#2F3134'
+                ? '#2A2D30'
                 : theme.palette.background.paper,
           }}
         >
-          {' '}
-          <Typography
-            variant="h6"
-            color="primary"
-            gutterBottom
-            sx={{
-              fontWeight: 600,
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {title.length > 70 ? `${title.substring(0, 70)}...` : title}
-          </Typography>
+          <Tooltip title={title} placement="top">
+            <Typography
+              variant="h6"
+              color="primary"
+              gutterBottom
+              sx={{
+                fontWeight: 600,
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {title.length > 70 ? `${title.substring(0, 70)}...` : title}
+            </Typography>
+          </Tooltip>
           <Typography
             variant="body2"
             color="textSecondary"
