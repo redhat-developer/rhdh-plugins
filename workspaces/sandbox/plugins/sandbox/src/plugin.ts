@@ -78,33 +78,31 @@ export const sandboxPlugin = createPlugin({
       api: registerApiRef,
       deps: {
         configApi: configApiRef,
-        discoveryApi: discoveryApiRef,
         secureFetchApi: secureFetchApiRef,
       },
-      factory: ({ configApi, discoveryApi, secureFetchApi }) =>
+      factory: ({ configApi, secureFetchApi }) =>
         new RegistrationBackendClient({
           configApi,
-          discoveryApi,
           secureFetchApi,
         }),
     }),
     createApiFactory({
       api: kubeApiRef,
       deps: {
-        discoveryApi: discoveryApiRef,
+        configApi: configApiRef,
         secureFetchApi: secureFetchApiRef,
       },
-      factory: ({ discoveryApi, secureFetchApi }) =>
-        new KubeBackendClient({ discoveryApi, secureFetchApi }),
+      factory: ({ configApi, secureFetchApi }) =>
+        new KubeBackendClient({ configApi, secureFetchApi }),
     }),
     createApiFactory({
       api: aapApiRef,
       deps: {
-        discoveryApi: discoveryApiRef,
+        configApi: configApiRef,
         secureFetchApi: secureFetchApiRef,
       },
-      factory: ({ discoveryApi, secureFetchApi }) =>
-        new AnsibleBackendClient({ discoveryApi, secureFetchApi }),
+      factory: ({ configApi, secureFetchApi }) =>
+        new AnsibleBackendClient({ configApi, secureFetchApi }),
     }),
   ],
 });
