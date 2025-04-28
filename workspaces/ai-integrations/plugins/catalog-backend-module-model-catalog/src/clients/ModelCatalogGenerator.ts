@@ -122,6 +122,21 @@ export function GenerateModelResourceEntities(
         `component:${modelServer.name}`,
       );
     }
+
+    // Handle any annotations present on the model resource
+    if (model.annotations !== undefined) {
+      // Add the techdocs annotation to the resource if present
+      let techdocsUrl: string = model.annotations.TechDocs;
+      techdocsUrl = techdocsUrl.trim();
+      if (model.annotations.TechDocs !== '') {
+        if (modelResourceEntity.metadata.annotations === undefined) {
+          modelResourceEntity.metadata.annotations = {};
+        }
+        modelResourceEntity.metadata.annotations[
+          'backstage.io/techdocs-ref'
+        ] = `url:${techdocsUrl}`;
+      }
+    }
     modelResourceEntities.push(modelResourceEntity);
   });
 

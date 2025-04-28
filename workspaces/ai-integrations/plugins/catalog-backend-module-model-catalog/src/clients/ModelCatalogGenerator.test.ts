@@ -61,6 +61,86 @@ describe('Model Catalog Generator', () => {
     ];
     expect(modelCatalogEntities).toEqual(expectedModelEntities);
   });
+  it('should generate techdoc annotations when present on the json object', () => {
+    const modelCatalog: ModelCatalog = {
+      models: [
+        {
+          name: 'ibm-granite',
+          description: 'IBM Granite code model',
+          lifecycle: 'production',
+          owner: 'example-user',
+          annotations: {
+            TechDocs:
+              'https://github.com/redhat-ai-dev/granite-3.1-8b-lab-docs/tree/main',
+          },
+        },
+      ],
+    };
+    const modelCatalogEntities = GenerateCatalogEntities(modelCatalog);
+    expect(modelCatalogEntities.length).toEqual(1);
+
+    const expectedModelEntities: Entity[] = [
+      {
+        apiVersion: 'backstage.io/v1beta1',
+        kind: 'Resource',
+        metadata: {
+          name: 'ibm-granite',
+          description: 'IBM Granite code model',
+          annotations: {
+            'backstage.io/techdocs-ref': `url:https://github.com/redhat-ai-dev/granite-3.1-8b-lab-docs/tree/main`,
+          },
+          tags: [],
+          links: [],
+        },
+        spec: {
+          dependencyOf: [],
+          owner: 'example-user',
+          type: 'ai-model',
+        },
+      },
+    ];
+    expect(modelCatalogEntities).toEqual(expectedModelEntities);
+  });
+  it('should generate techdoc annotations when present on the json object even if unnecessary whitespace is present', () => {
+    const modelCatalog: ModelCatalog = {
+      models: [
+        {
+          name: 'ibm-granite',
+          description: 'IBM Granite code model',
+          lifecycle: 'production',
+          owner: 'example-user',
+          annotations: {
+            TechDocs:
+              '      https://github.com/redhat-ai-dev/granite-3.1-8b-lab-docs/tree/main           ',
+          },
+        },
+      ],
+    };
+    const modelCatalogEntities = GenerateCatalogEntities(modelCatalog);
+    expect(modelCatalogEntities.length).toEqual(1);
+
+    const expectedModelEntities: Entity[] = [
+      {
+        apiVersion: 'backstage.io/v1beta1',
+        kind: 'Resource',
+        metadata: {
+          name: 'ibm-granite',
+          description: 'IBM Granite code model',
+          annotations: {
+            'backstage.io/techdocs-ref': `url:https://github.com/redhat-ai-dev/granite-3.1-8b-lab-docs/tree/main`,
+          },
+          tags: [],
+          links: [],
+        },
+        spec: {
+          dependencyOf: [],
+          owner: 'example-user',
+          type: 'ai-model',
+        },
+      },
+    ];
+    expect(modelCatalogEntities).toEqual(expectedModelEntities);
+  });
   it('should generate catalog entities for multiple models and a model server with API', () => {
     const modelCatalog: ModelCatalog = {
       modelServer: {
