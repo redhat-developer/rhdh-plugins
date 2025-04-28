@@ -54,10 +54,17 @@ yarn backstage-repo-tools knip-reports
 ## Local Frontend Setup (provisional)
 The Sandbox plugin uses Red Hat SSO to authenticate users accessing the Sandbox backend. This section explains how to configure your local RHDH Sandbox UI to connect with Red Hat SSO and the Sandbox backend (currently, only the staging environment is supported).
 
+0. `export QUAY_NAMESPACE=<your-quay-namespace>`
 1. `cd workspaces/sandbox`
-2. `make push-plugin` (note that, currently, master is broken, so you need to skip this step)
+2. `make push-plugin`
 3. `make start-rhdh-local SANDBOX_RHDH_PLUGIN_IMAGE=<SANDBOX_RHDH_PLUGIN_IMAGE>`
-    Please, note that your `SANDBOX_RHDH_PLUGIN_IMAGE` should be public.
+
+    Please, note that your `SANDBOX_RHDH_PLUGIN_IMAGE` should be public. 
+
+    The output of the previous command should print the image path to use, example:
+    ```
+    Successfully built image quay.io/<yourquaynamespacehere>/sandbox-rhdh-plugin:24192715
+    ```
     If you want to use latest from codeready-toolchain org, you need to run something like `make start-rhdh-local SANDBOX_RHDH_PLUGIN_IMAGE=quay.io/codeready-toolchain/sandbox-rhdh-plugin:v26`
 
 Please, note that every time you want to re deploy, you need to:

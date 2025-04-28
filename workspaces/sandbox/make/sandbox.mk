@@ -33,7 +33,7 @@ generate-env:
 
 .PHONY: start-rhdh-local
 start-rhdh-local: clone-rhdh-local generate-env
-	cp deploy/base/app-config.local.yaml $(RHDH_LOCAL_DIR)/configs/app-config.local.yaml && \
+	cp deploy/base/app-config.yaml $(RHDH_LOCAL_DIR)/configs/app-config.local.yaml && \
 	SANDBOX_RHDH_PLUGIN_IMAGE=$(SANDBOX_RHDH_PLUGIN_IMAGE) envsubst < deploy/base/dynamic-plugins.yaml > $(RHDH_LOCAL_DIR)/configs/dynamic-plugins.yaml && \
 	cd $(RHDH_LOCAL_DIR) && \
 	yq e '.services.rhdh.ports = ["3000:3000"] | (.services.rhdh.ports) |= map(. style="double")' -i compose.yaml && \

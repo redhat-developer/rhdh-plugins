@@ -1,0 +1,35 @@
+app:
+  title: Developer Sandbox
+  baseUrl: http://localhost:3000
+backend:
+  baseUrl: http://localhost:3000
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  listen:
+    port: 3000
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+auth:
+  environment: production
+  session:
+    secret: 'dummy'
+  providers:
+    oidc:
+      production:
+        metadataUrl: https://sso.redhat.com/auth/realms/redhat-external
+        clientId: crtoolchain-local
+        clientSecret: dummy
+        prompt: auto
+        signIn:
+          resolvers:
+            - resolver: emailLocalPartMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: true
+signInPage: oidc
+sandbox:
+  recaptcha:
+    siteKey: fhgffhgfhjgfhg
