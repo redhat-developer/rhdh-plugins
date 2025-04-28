@@ -32,8 +32,13 @@ These plugins farther import following isolated plugins:
    - Provides the workflow execution form.
 
 4. **`backstage-plugin-orchestrator-form-api`**
+
    - Defines the API for extending the workflow execution form.
    - For more details, see the [Extensible Form Documentation](./docs/extensibleForm.md).
+
+5. **`backstage-plugin-orchestrator-form-widgets`**
+
+   - Provides the workflow execution form custom widgets.
 
 For more details about architecture, see the [Architecture](https://www.rhdhorchestrator.io/main/docs/architecture/) page.
 

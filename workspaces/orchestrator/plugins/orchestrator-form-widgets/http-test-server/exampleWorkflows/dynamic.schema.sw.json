@@ -1,0 +1,40 @@
+{
+  "id": "dynamic_schema",
+  "version": "1.0",
+  "specVersion": "0.8",
+  "name": "Dynamic Input Schema Workflow",
+  "description": "JSON based workflow demonstrating use of the orchestrator-form-widgets",
+  "dataInputSchema": "schemas/dynamic_schema__main-schema.json",
+  "start": "Start",
+  "functions": [
+    {
+      "name": "sysout",
+      "type": "custom",
+      "operation": "sysout"
+    }
+  ],
+  "states": [
+    {
+      "name": "Start",
+      "type": "inject",
+      "data": {},
+      "transition": "End"
+    },
+    {
+      "name": "End",
+      "type": "operation",
+      "actions": [
+        {
+          "name": "sysout",
+          "functionRef": {
+            "refName": "sysout",
+            "arguments": {
+              "message": ".firstStep.fooTheFirst"
+            }
+          }
+        }
+      ],
+      "end": true
+    }
+  ]
+}

@@ -68,11 +68,14 @@ export const getRequestInit = async (
     }
   }
 
+  const headersInit: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
   const headers = uiProps[`${prefix}:headers`];
   if (headers) {
     if (typeof headers === 'object') {
       const headersObject = headers as JsonObject;
-      const headersInit: HeadersInit = {};
 
       const keys = Object.keys(headers);
       const values = await Promise.all(
@@ -88,12 +91,11 @@ export const getRequestInit = async (
       keys.forEach((key, idx) => {
         headersInit[key] = values[idx];
       });
-
-      requestInit.headers = headersInit;
     } else {
       throw new Error('fetch:body must be object for POST requests');
     }
   }
+  requestInit.headers = headersInit;
 
   return requestInit;
 };
