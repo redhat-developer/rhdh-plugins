@@ -19,12 +19,14 @@ import {
   createRoutableExtension,
   discoveryApiRef,
   fetchApiRef,
+  IconComponent,
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
 import { aiExperienceApiRef, rssApiRef } from './api';
 import { ModelCatalogClient } from './api/ModelCatalogClient';
 import { RSSClient } from './api/RSSClient';
+import MUINewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
 
 /**
  * Plugin for AI Experience frontend
@@ -87,3 +89,8 @@ export const AiNewsPage = aiExperiencePlugin.provide(
     mountPoint: rootRouteRef,
   }),
 );
+
+/**
+ * @public
+ */
+export const AiNewsIcon: IconComponent = MUINewspaperOutlinedIcon;
