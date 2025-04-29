@@ -54,7 +54,7 @@ describe('Model Catalog Generator', () => {
         },
         spec: {
           dependencyOf: [],
-          owner: 'example-user',
+          owner: 'user:example-user',
           type: 'ai-model',
         },
       },
@@ -94,7 +94,7 @@ describe('Model Catalog Generator', () => {
         },
         spec: {
           dependencyOf: [],
-          owner: 'example-user',
+          owner: 'user:example-user',
           type: 'ai-model',
         },
       },
@@ -134,7 +134,7 @@ describe('Model Catalog Generator', () => {
         },
         spec: {
           dependencyOf: [],
-          owner: 'example-user',
+          owner: 'user:example-user',
           type: 'ai-model',
         },
       },
@@ -156,6 +156,7 @@ describe('Model Catalog Generator', () => {
           tags: ['openapi', 'openai', '3scale'],
         },
         lifecycle: 'production',
+        authentication: true,
       },
       models: [
         {
@@ -166,6 +167,7 @@ describe('Model Catalog Generator', () => {
           tags: ['ibm', 'granite', 'vllm', '20b'],
           owner: 'example-user',
           lifecycle: 'production',
+          license: 'https://www.apache.org/licenses/LICENSE-2.0',
         },
         {
           name: 'mistral-7b',
@@ -204,10 +206,14 @@ describe('Model Catalog Generator', () => {
               url: 'https://huggingface.co/ibm-granite/granite-20b-code-instruct',
               title: 'Artifact Location',
             },
+            {
+              url: 'https://www.apache.org/licenses/LICENSE-2.0',
+              title: 'License',
+            },
           ],
         },
         spec: {
-          owner: 'example-user',
+          owner: 'user:example-user',
           type: 'ai-model',
           dependencyOf: ['component:developer-model-service'],
         },
@@ -227,7 +233,7 @@ describe('Model Catalog Generator', () => {
           ],
         },
         spec: {
-          owner: 'example-user',
+          owner: 'user:example-user',
           type: 'ai-model',
           dependencyOf: ['component:developer-model-service'],
         },
@@ -251,7 +257,7 @@ describe('Model Catalog Generator', () => {
           ],
         },
         spec: {
-          owner: 'example-user',
+          owner: 'user:example-user',
           type: 'ai-model',
           dependencyOf: ['component:developer-model-service'],
         },
@@ -263,7 +269,7 @@ describe('Model Catalog Generator', () => {
       metadata: {
         name: 'developer-model-service',
         description: 'Developer model service running on vLLM',
-        tags: ['vllm', 'granite', 'ibm'],
+        tags: ['vllm', 'granite', 'ibm', 'auth-required'],
         links: [
           {
             url: 'https://api.example.com',
@@ -278,7 +284,7 @@ describe('Model Catalog Generator', () => {
       spec: {
         type: 'model-server',
         lifecycle: 'production',
-        owner: 'example-user',
+        owner: 'user:example-user',
         dependsOn: [
           'resource:ibm-granite-20b',
           'resource:mistral-7b',
@@ -293,7 +299,7 @@ describe('Model Catalog Generator', () => {
       kind: `API`,
       metadata: {
         name: 'developer-model-service',
-        tags: ['openapi', 'openai', '3scale'],
+        tags: ['openapi', 'openai', '3scale', 'auth-required'],
         links: [
           {
             url: `https://api.example.com`,
@@ -303,7 +309,7 @@ describe('Model Catalog Generator', () => {
       },
       spec: {
         type: 'openapi',
-        owner: 'example-user',
+        owner: 'user:example-user',
         lifecycle: 'production',
         definition:
           'https://raw.githubusercontent.com/redhat-ai-dev/model-catalog-example/refs/heads/main/developer-model-service/openapi.json',

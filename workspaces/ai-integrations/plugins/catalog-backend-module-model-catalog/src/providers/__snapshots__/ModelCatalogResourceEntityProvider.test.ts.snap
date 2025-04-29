@@ -21,7 +21,7 @@ exports[`ModelCatalogResourceEntityProvider should connect and run should resolv
             },
             "spec": {
               "dependencyOf": [],
-              "owner": "example-user",
+              "owner": "user:example-user",
               "type": "ai-model",
             },
           },
