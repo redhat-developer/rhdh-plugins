@@ -21,5 +21,8 @@ export const aiExperiencePlugin: BackstagePlugin<
   {}
 >;
 
+// @public
+export const AiNewsPage: () => JSX_2.Element;
+
 // (No @packageDocumentation comment for this package)
 ```

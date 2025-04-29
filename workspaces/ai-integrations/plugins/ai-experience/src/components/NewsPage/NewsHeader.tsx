@@ -13,14 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createApiRef } from '@backstage/core-plugin-api';
-import { ModelServiceApi } from '@red-hat-developer-hub/backstage-plugin-ai-experience-common';
-import { RSSFeedApi } from './RSSClient';
+import React from 'react';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+import { Header } from '@backstage/core-components';
 
-export const aiExperienceApiRef = createApiRef<ModelServiceApi>({
-  id: 'plugin.ai-experience.api-ref',
-});
-
-export const rssApiRef = createApiRef<RSSFeedApi>({
-  id: 'plugin.ai-experience.rss-api-ref',
-});
+export const NewsHeader: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <Header
+      title={
+        <Typography
+          color="textPrimary"
+          style={{
+            fontWeight: 700,
+            fontSize: theme.typography.h2.fontSize,
+            fontFamily: theme.typography.body1.fontFamily,
+          }}
+        >
+          AI News
+        </Typography>
+      }
+    />
+  );
+};

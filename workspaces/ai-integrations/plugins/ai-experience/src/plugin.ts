@@ -22,8 +22,9 @@ import {
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
-import { aiExperienceApiRef } from './api';
+import { aiExperienceApiRef, rssApiRef } from './api';
 import { ModelCatalogClient } from './api/ModelCatalogClient';
+import { RSSClient } from './api/RSSClient';
 
 /**
  * Plugin for AI Experience frontend
@@ -47,6 +48,15 @@ export const aiExperiencePlugin = createPlugin({
           fetchApi,
         }),
     }),
+    createApiFactory({
+      api: rssApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ discoveryApi, fetchApi }) =>
+        new RSSClient({ discoveryApi, fetchApi }),
+    }),
   ],
 });
 
@@ -61,6 +71,19 @@ export const AiExperiencePage = aiExperiencePlugin.provide(
       import('./components/AiExperienceHomePage').then(
         m => m.AiExperienceHomePage,
       ),
+    mountPoint: rootRouteRef,
+  }),
+);
+
+/**
+ * AI News Page
+ * @public
+ */
+export const AiNewsPage = aiExperiencePlugin.provide(
+  createRoutableExtension({
+    name: 'AiNewsPage',
+    component: () =>
+      import('./components/NewsPage/NewsPage').then(m => m.NewsPage),
     mountPoint: rootRouteRef,
   }),
 );

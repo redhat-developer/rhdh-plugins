@@ -47,7 +47,9 @@
     "@red-hat-developer-hub/backstage-plugin-ai-experience-backend": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-ai-experience-common": "workspace:^",
     "@tanstack/react-query": "^5.71.0",
-    "react-use": "^17.2.4"
+    "he": "^1.2.0",
+    "react-use": "^17.2.4",
+    "xml2js": "^0.6.2"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
@@ -57,9 +59,11 @@
     "@backstage/core-app-api": "^1.16.0",
     "@backstage/dev-utils": "^1.1.8",
     "@backstage/test-utils": "^1.7.6",
+    "@redhat-developer/red-hat-developer-hub-theme": "0.4.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
+    "@types/he": "^1.2.3",
     "msw": "^1.0.0",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
