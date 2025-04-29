@@ -16,3 +16,4 @@
 export * from './getRequestInit';
 export * from './evaluateTemplate';
 export * from './useRetriggerEvaluate';
+export * from './useTemplateUnitEvaluator';

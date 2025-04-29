@@ -14,25 +14,15 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useMemo } from 'react';
-import { get } from 'lodash';
+import React, { useCallback } from 'react';
 import {
   FormDecoratorProps,
   OrchestratorFormApi,
   OrchestratorFormContextProps,
   useWrapperFormPropsContext,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { ErrorSchema, FormValidation, Widget, WidgetProps } from '@rjsf/utils';
-import { JSONSchema7 } from 'json-schema';
+import { ErrorSchema, FormValidation } from '@rjsf/utils';
 import { JsonObject, JsonValue } from '@backstage/types';
-import {
-  ConfigApi,
-  FetchApi,
-  IdentityApi,
-  OAuthApi,
-  OpenIdConnectApi,
-  ProfileInfoApi,
-} from '@backstage/core-plugin-api';
 
 import { SchemaUpdater, ActiveTextInput } from './widgets';
 
@@ -98,143 +88,17 @@ const safeSet: (errors: JsonObject, path: string, value: JsonValue) => void = (
   }
 };
 
-type ScmApi = OAuthApi & ProfileInfoApi;
-type ScmOpenIdApi = ScmApi & OpenIdConnectApi;
+const widgets = {
+  SchemaUpdater,
+  ActiveTextInput,
+};
 
 export class FormWidgetsApi implements OrchestratorFormApi {
-  private readonly fetchApi: FetchApi;
-  private readonly identityApi: IdentityApi;
-  private readonly configApi: ConfigApi;
-
-  private readonly scmApis: { [key: string]: ScmApi };
-  private readonly scmOpenIdApis: { [key: string]: ScmOpenIdApi };
-
-  public constructor(options: {
-    fetchApi: FetchApi;
-    identityApi: IdentityApi;
-    configApi: ConfigApi;
-    githubAuthApi: ScmApi;
-    atlassianAuthApi: ScmApi;
-    googleAuthApi: ScmOpenIdApi;
-    microsoftAuthApi: ScmOpenIdApi;
-    gitlabAuthApi: ScmOpenIdApi;
-  }) {
-    this.fetchApi = options.fetchApi;
-    this.identityApi = options.identityApi;
-    this.configApi = options.configApi;
-
-    this.scmApis = {
-      githubAuthApi: options.githubAuthApi,
-      atlassianAuthApi: options.atlassianAuthApi,
-    };
-    this.scmOpenIdApis = {
-      googleAuthApi: options.googleAuthApi,
-      microsoftAuthApi: options.microsoftAuthApi,
-      gitlabAuthApi: options.gitlabAuthApi,
-    };
-  }
-
-  private async templateUnitEvaluatorIdentityApi(key: string) {
-    if (key === 'token') {
-      return (await this.identityApi.getCredentials()).token;
-    }
-    if (key === 'userEntityRef') {
-      return (await this.identityApi.getBackstageIdentity()).userEntityRef;
-    }
-    if (key === 'profileEmail') {
-      return (await this.identityApi.getProfileInfo()).email;
-    }
-    if (key === 'displayName') {
-      return (await this.identityApi.getProfileInfo()).displayName;
-    }
-    throw new Error(`Unknown template key "${key}" in "identityApi"`);
-  }
-
-  private async templateUnitEvaluatorSCM(keyFamily: string, key: string) {
-    if (key === 'token') {
-      return await this.scmApis[keyFamily].getAccessToken();
-    }
-    if (key === 'profileEmail') {
-      return (await this.scmApis[keyFamily].getProfile())?.email;
-    }
-    if (key === 'profileName') {
-      return (await this.scmApis[keyFamily].getProfile())?.displayName;
-    }
-    throw new Error(`Unknown template key "${key}" in "${keyFamily}"`);
-  }
-
-  private async templateUnitEvaluatorOpenId(keyFamily: string, key: string) {
-    if (key === 'token') {
-      return await this.scmOpenIdApis[keyFamily].getAccessToken();
-    }
-    if (key === 'openIdToken') {
-      return await this.scmOpenIdApis[keyFamily].getIdToken();
-    }
-    if (key === 'profileEmail') {
-      return (await this.scmOpenIdApis[keyFamily].getProfile())?.email;
-    }
-    if (key === 'profileName') {
-      return (await this.scmOpenIdApis[keyFamily].getProfile())?.displayName;
-    }
-    throw new Error(`Unknown template key "${key}" in "${keyFamily}"`);
-  }
-
-  async templateUnitEvaluator(unit: string, formData: JsonObject) {
-    if (!unit) {
-      throw new Error('Template unit can not be empty');
-    }
-
-    const keyFamily = unit.substring(0, unit.indexOf('.'));
-    const key = unit.substring(unit.indexOf('.') + 1);
-
-    if (keyFamily === 'current') {
-      return get(formData, key);
-    }
-
-    if (keyFamily === 'rjsfConfig') {
-      // Mind setting frontend visibility in configuration: https://backstage.io/docs/conf/defining/#visibility
-      return this.configApi.getOptionalString(
-        `orchestrator.rjsf-widgets.${key}`,
-      );
-    }
-
-    if (keyFamily === 'identityApi') {
-      await this.templateUnitEvaluatorIdentityApi(key);
-    }
-
-    if (this.scmApis[keyFamily]) {
-      await this.templateUnitEvaluatorSCM(keyFamily, key);
-    }
-
-    if (this.scmOpenIdApis[keyFamily]) {
-      await this.templateUnitEvaluatorOpenId(keyFamily, key);
-    }
-
-    throw new Error(`Unknown template unit "${unit}"`);
-  }
-
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
     return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
       return () => {
         const { formData, setFormData, uiSchema } =
           useWrapperFormPropsContext();
-
-        const widgets: {
-          [key: string]: Widget<JsonObject, JSONSchema7, JsonObject>;
-        } = useMemo(() => {
-          return {
-            SchemaUpdater: (
-              props: WidgetProps<JsonObject, JSONSchema7, JsonObject>,
-            ) => (
-              <SchemaUpdater
-                {...props}
-                fetchApi={this.fetchApi}
-                templateUnitEvaluator={this.templateUnitEvaluator}
-              />
-            ),
-            ActiveTextInput,
-          };
-        }, []);
 
         const onChange = useCallback(
           (data: JsonObject | undefined) => {

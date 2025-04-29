@@ -22,14 +22,14 @@ import {
   useWrapperFormPropsContext,
   SchemaChunksResponse,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { FetchApi } from '@backstage/core-plugin-api';
+import { fetchApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { FormContextData } from '../types';
 import {
   evaluateTemplate,
-  evaluateTemplateProps,
   getRequestInit,
   useRetriggerEvaluate,
+  useTemplateUnitEvaluator,
 } from '../utils';
 import { isEqual } from 'lodash';
 
@@ -44,9 +44,8 @@ export const SchemaUpdater: Widget<
   JSONSchema7,
   FormContextData
 > = props => {
-  const fetchApi = props.fetchApi as FetchApi;
-  const templateUnitEvaluator =
-    props.templateUnitEvaluator as evaluateTemplateProps['unitEvaluator'];
+  const fetchApi = useApi(fetchApiRef);
+  const templateUnitEvaluator = useTemplateUnitEvaluator();
 
   const classes = useStyles();
   const formContext = useWrapperFormPropsContext();
