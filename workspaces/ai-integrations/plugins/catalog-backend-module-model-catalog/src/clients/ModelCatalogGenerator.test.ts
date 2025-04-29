@@ -320,4 +320,116 @@ describe('Model Catalog Generator', () => {
     expectedEntities.push(expectedModelServerAPIEntity);
     expect(modelCatalogEntities).toEqual(expectedModelEntities);
   });
+  it('should generate catalog entities for a model server that doesn not require authentication', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'developer-model-service',
+        owner: 'example-user',
+        description: 'Developer model service running on vLLM',
+        homepageURL: 'https://example.com',
+        tags: ['vllm', 'granite', 'ibm'],
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://raw.githubusercontent.com/redhat-ai-dev/model-catalog-example/refs/heads/main/developer-model-service/openapi.json',
+          tags: ['openapi', 'openai', '3scale'],
+        },
+        lifecycle: 'production',
+      },
+      models: [
+        {
+          name: 'ibm-granite-20b',
+          description: 'IBM Granite 20b model running on vLLM',
+          artifactLocationURL:
+            'https://huggingface.co/ibm-granite/granite-20b-code-instruct',
+          tags: ['ibm', 'granite', 'vllm', '20b'],
+          owner: 'example-user',
+          lifecycle: 'production',
+          license: 'https://www.apache.org/licenses/LICENSE-2.0',
+        },
+      ],
+    };
+    const modelCatalogEntities = GenerateCatalogEntities(modelCatalog);
+    expect(modelCatalog.modelServer !== undefined).toBe(true);
+    expect(modelCatalog.models.length).toBe(1);
+
+    const expectedModelEntities: Entity[] = [
+      {
+        apiVersion: 'backstage.io/v1beta1',
+        kind: 'Resource',
+        metadata: {
+          name: 'ibm-granite-20b',
+          description: 'IBM Granite 20b model running on vLLM',
+          tags: ['ibm', 'granite', 'vllm', '20b'],
+          links: [
+            {
+              url: 'https://huggingface.co/ibm-granite/granite-20b-code-instruct',
+              title: 'Artifact Location',
+            },
+            {
+              url: 'https://www.apache.org/licenses/LICENSE-2.0',
+              title: 'License',
+            },
+          ],
+        },
+        spec: {
+          owner: 'user:example-user',
+          type: 'ai-model',
+          dependencyOf: ['component:developer-model-service'],
+        },
+      },
+    ];
+    const expectedModelServerEntity: ComponentEntity = {
+      apiVersion: 'backstage.io/v1beta1',
+      kind: 'Component',
+      metadata: {
+        name: 'developer-model-service',
+        description: 'Developer model service running on vLLM',
+        tags: ['vllm', 'granite', 'ibm', 'auth-not-required'],
+        links: [
+          {
+            url: 'https://api.example.com',
+            title: 'API',
+          },
+          {
+            url: 'https://example.com',
+            title: 'Homepage',
+          },
+        ],
+      },
+      spec: {
+        type: 'model-server',
+        lifecycle: 'production',
+        owner: 'user:example-user',
+        dependsOn: ['resource:ibm-granite-20b'],
+        providesApis: ['developer-model-service'],
+      },
+    };
+
+    const expectedModelServerAPIEntity: ApiEntity = {
+      apiVersion: `backstage.io/v1beta1`,
+      kind: `API`,
+      metadata: {
+        name: 'developer-model-service',
+        tags: ['openapi', 'openai', '3scale', 'auth-not-required'],
+        links: [
+          {
+            url: `https://api.example.com`,
+            title: `API`,
+          },
+        ],
+      },
+      spec: {
+        type: 'openapi',
+        owner: 'user:example-user',
+        lifecycle: 'production',
+        definition:
+          'https://raw.githubusercontent.com/redhat-ai-dev/model-catalog-example/refs/heads/main/developer-model-service/openapi.json',
+      },
+    };
+    const expectedEntities: Entity[] = expectedModelEntities;
+    expectedEntities.push(expectedModelServerEntity);
+    expectedEntities.push(expectedModelServerAPIEntity);
+    expect(modelCatalogEntities).toEqual(expectedModelEntities);
+  });
 });
