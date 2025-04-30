@@ -36,6 +36,18 @@ yarn workspace app add @red-hat-developer-hub/backstage-plugin-ai-experience
    <Route path="/home" element={<AiExperiencePage />} />;
    ```
 
+2. To add RSS Feeds for the AI News Page,add the following configuration to your `app-config.yaml` file:
+
+   ```yaml
+   proxy:
+     '/ai-rssfeed':
+       target: 'https://www.wired.com/feed/tag/ai/latest/rss'
+       changeOrigin: true
+       followRedirects: true
+   ```
+
+   This configuration allows the plugin to fetch RSS feeds from the specified URL. You can replace the URL with any other RSS feed you want to use.
+
 ## For Users
 
 ### Using the AI experience Plugin

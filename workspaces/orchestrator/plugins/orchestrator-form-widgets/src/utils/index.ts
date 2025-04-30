@@ -13,14 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createApiRef } from '@backstage/core-plugin-api';
-import { ModelServiceApi } from '@red-hat-developer-hub/backstage-plugin-ai-experience-common';
-import { RSSFeedApi } from './RSSClient';
-
-export const aiExperienceApiRef = createApiRef<ModelServiceApi>({
-  id: 'plugin.ai-experience.api-ref',
-});
-
-export const rssApiRef = createApiRef<RSSFeedApi>({
-  id: 'plugin.ai-experience.rss-api-ref',
-});
+export * from './getRequestInit';
+export * from './evaluateTemplate';
+export * from './useRetriggerEvaluate';
+export * from './useTemplateUnitEvaluator';
