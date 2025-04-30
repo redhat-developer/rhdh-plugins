@@ -16,25 +16,21 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
-import { usePermission } from '@backstage/plugin-permission-react';
-import { extensionPluginCreatePermission } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-export const useExtensionReadConfigPermission = (
+export const useExtensionConfigPermission = (
   namespace: string,
   name: string,
 ) => {
   const marketplaceApi = useMarketplaceApi();
+
   return useQuery({
-    queryKey: ['marketplaceApi', 'getPluginConfigByName', namespace, name],
-    queryFn: () => marketplaceApi.getPluginConfigByName?.(namespace, name),
+    queryKey: [
+      'marketplaceApi',
+      'getPluginConfigAuthorization',
+      namespace,
+      name,
+    ],
+    queryFn: () =>
+      marketplaceApi.getPluginConfigAuthorization?.(namespace, name),
   });
-};
-
-export const useExtensionInstallPluginPermission = () => {
-  const canInstallPlugin = usePermission({
-    permission: extensionPluginCreatePermission,
-    resourceRef: extensionPluginCreatePermission.resourceType,
-  });
-
-  return canInstallPlugin;
 };

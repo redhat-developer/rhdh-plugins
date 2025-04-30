@@ -61,7 +61,7 @@ import {
   useCodeEditor,
 } from './CodeEditor';
 import { Markdown } from './Markdown';
-import { useExtensionReadConfigPermission } from '../hooks/useExtensionReadConfigPermission';
+import { useExtensionConfigPermission } from '../hooks/useExtensionConfigPermission';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -221,7 +221,7 @@ export const MarketplacePluginInstallContent = ({
   }, [codeEditor, packages]);
 
   const navigate = useNavigate();
-  const canInstallPlugin = useExtensionReadConfigPermission(
+  const canInstallPlugin = useExtensionConfigPermission(
     params.namespace,
     params.name,
   );

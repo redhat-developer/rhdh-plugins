@@ -159,55 +159,110 @@ export async function createRouter({
     res.json(plugin);
   });
 
-  router.get('/plugin/:namespace/:name/configuration', async (req, res) => {
-    const [readDecision, installDecision] = await Promise.all([
-      authorizeConditional(req, extensionPluginReadPermission),
-      authorizeConditional(req, extensionPluginCreatePermission),
-    ]);
-    if (
-      readDecision.result === AuthorizeResult.DENY &&
-      installDecision.result === AuthorizeResult.DENY
-    ) {
-      res.status(403);
-      return;
-    }
+  router.get(
+    '/plugin/:namespace/:name/configuration/authorize',
+    async (req, res) => {
+      const [readDecision, installDecision] = await Promise.all([
+        authorizeConditional(req, extensionPluginReadPermission),
+        authorizeConditional(req, extensionPluginCreatePermission),
+      ]);
+      if (
+        readDecision.result === AuthorizeResult.DENY &&
+        installDecision.result === AuthorizeResult.DENY
+      ) {
+        res.status(403);
+        return;
+      }
 
-    const authorizedActions: string[] = [];
-    let plugin: MarketplacePlugin;
+      const authorizedActions: string[] = [];
+      let plugin: MarketplacePlugin;
 
-    const evaluateConditional = async (
-      decision: PolicyDecision,
-      action: string,
-    ) => {
-      if (decision.result === AuthorizeResult.CONDITIONAL) {
-        if (!plugin) {
-          plugin = await marketplaceApi.getPluginByName(
-            req.params.namespace,
-            req.params.name,
-          );
-        }
-        if (matches(plugin, decision.conditions)) {
+      const evaluateConditional = async (
+        decision: PolicyDecision,
+        action: string,
+      ) => {
+        if (decision.result === AuthorizeResult.CONDITIONAL) {
+          if (!plugin) {
+            plugin = await marketplaceApi.getPluginByName(
+              req.params.namespace,
+              req.params.name,
+            );
+          }
+          if (matches(plugin, decision.conditions)) {
+            authorizedActions.push(action);
+          }
+        } else if (decision.result === AuthorizeResult.ALLOW) {
           authorizedActions.push(action);
         }
-      } else if (decision.result === AuthorizeResult.ALLOW) {
-        authorizedActions.push(action);
+      };
+
+      await Promise.all([
+        evaluateConditional(readDecision, 'read'),
+        evaluateConditional(installDecision, 'create'),
+      ]);
+
+      if (authorizedActions.length === 0) {
+        res.status(403);
+        return;
       }
-    };
+      res.status(200).json({ authorizedActions });
+    },
+  );
 
-    await Promise.all([
-      evaluateConditional(readDecision, 'read'),
-      evaluateConditional(installDecision, 'create'),
-    ]);
-
-    if (authorizedActions.length === 0) {
-      res.status(403);
+  router.get('/plugin/:namespace/:name/configuration', async (req, res) => {
+    const readDecision = await authorizeConditional(
+      req,
+      extensionPluginReadPermission,
+    );
+    if (readDecision.result === AuthorizeResult.DENY) {
+      res.status(403).json({ error: 'Forbidden' });
       return;
     }
-    res.status(200).json({ authorizedActions }); // This should return the configuration in YAML
+
+    const plugin = await marketplaceApi.getPluginByName(
+      req.params.namespace,
+      req.params.name,
+    );
+
+    const hasReadAccess =
+      readDecision.result === AuthorizeResult.ALLOW ||
+      (readDecision.result === AuthorizeResult.CONDITIONAL &&
+        matches(plugin, readDecision.conditions));
+    if (!hasReadAccess) {
+      res.status(403).json({ error: 'Forbidden' });
+      return;
+    }
+
+    res.status(200).json({}); // This should return the configuration in YAML string
   });
 
-  router.post('/plugin/:namespace/:name/configuration', async (_req, _res) => {
+  router.post('/plugin/:namespace/:name/configuration', async (req, res) => {
     // installs the plugin
+    const installDecision = await authorizeConditional(
+      req,
+      extensionPluginCreatePermission,
+    );
+    if (installDecision.result === AuthorizeResult.DENY) {
+      res.status(403).json({ error: 'Forbidden' });
+      return;
+    }
+
+    const plugin = await marketplaceApi.getPluginByName(
+      req.params.namespace,
+      req.params.name,
+    );
+
+    const hasInstallAccess =
+      installDecision.result === AuthorizeResult.ALLOW ||
+      (installDecision.result === AuthorizeResult.CONDITIONAL &&
+        matches(plugin, installDecision.conditions));
+
+    if (!hasInstallAccess) {
+      res.status(403).json({ error: 'Forbidden' });
+      return;
+    }
+
+    res.status(200).json({});
   });
 
   router.get('/plugin/:namespace/:name/packages', async (req, res) => {

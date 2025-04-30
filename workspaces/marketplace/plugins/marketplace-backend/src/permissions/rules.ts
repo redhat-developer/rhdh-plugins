@@ -64,7 +64,9 @@ const hasPluginName = createPermissionRule({
   apply: (plugin: MarketplacePlugin, { pluginNames }) => {
     return pluginNames && pluginNames.length > 0
       ? !!pluginNames?.find(
-          name => name.toLowerCase() === plugin.metadata.title?.toLowerCase(),
+          name =>
+            name.toLowerCase() === plugin.metadata.title?.toLowerCase() ||
+            name.toLowerCase() === plugin.metadata.name.toLowerCase(),
         )
       : true;
   },

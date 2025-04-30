@@ -50,7 +50,7 @@ import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
 import { usePluginPackages } from '../hooks/usePluginPackages';
-import { useExtensionReadConfigPermission } from '../hooks/useExtensionReadConfigPermission';
+import { useExtensionConfigPermission } from '../hooks/useExtensionConfigPermission';
 import { Links } from './Links';
 
 export const MarketplacePluginContentSkeleton = () => {
@@ -180,7 +180,7 @@ export const MarketplacePluginContent = ({
   const params = useRouteRefParams(pluginRouteRef);
   const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(pluginInstallRouteRef);
-  const canInstallPlugin = useExtensionReadConfigPermission(
+  const canInstallPlugin = useExtensionConfigPermission(
     params.namespace,
     params.name,
   );
