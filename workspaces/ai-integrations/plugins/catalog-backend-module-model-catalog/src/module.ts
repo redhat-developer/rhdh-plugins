@@ -103,9 +103,13 @@ export const catalogModuleRHDHRHOAILocationsExtensionPoint =
       env.registerInit({
         deps: {
           catalog: catalogLocationsExtensionPoint,
+          logger: coreServices.logger,
         },
-        async init({ catalog }) {
+        async init({ catalog, logger }) {
           // setAllowedLocationTypes does not add to the list but replaces it, so we preserve the default options of 'file' and 'url'
+          logger
+            .child({ source: 'catalog-backend-module-model-catalog"' })
+            .info("Registering the 'rhdh-rhoai-bridge' location type");
           const allowedLocationTypes = ['file', 'url', 'rhdh-rhoai-bridge'];
           catalog.setAllowedLocationTypes(allowedLocationTypes);
         },

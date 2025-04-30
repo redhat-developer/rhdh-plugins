@@ -113,6 +113,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
     ansibleStatus,
     signupUser,
     userFound,
+    userReady,
     verificationRequired,
     refetchUserData,
     refetchAAP,
@@ -156,18 +157,21 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   };
 
   const handleTryButtonClick = async (pdt: Product) => {
+    // User is not yet signed up
     if (!userFound) {
       signupUser();
       refetchUserData();
-      if (verificationRequired) {
-        setVerifyPhoneModalOpen(true);
-      }
-    } else if (pdt === Product.AAP) {
+    }
+    // User has signed up but require verification
+    if (userFound && verificationRequired) {
+      setVerifyPhoneModalOpen(true);
+    }
+    // User has signed up and the trial is ready and user selects the AAP Trial
+    if (userFound && userReady && pdt === Product.AAP) {
       await handleAAPInstance();
       refetchAAP();
       setAnsibleCredsModalOpen(true);
     }
-
     showGreenCorner();
   };
 

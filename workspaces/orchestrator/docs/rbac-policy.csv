@@ -9,6 +9,9 @@ p, role:default/workflowAdmin, orchestrator.workflow, read, allow
 p, role:default/workflowAdmin, orchestrator.workflow.use, update, allow
 p, role:default/workflowAdmin, orchestrator.workflowAdminView, read, allow
 
+p, role:default/workflowDenied, orchestrator.workflow, read, deny
+p, role:default/workflowDenied, orchestrator.workflow.use, update, deny 
+
 g, user:development/guest, role:default/workflowUser
 g, user:default/rgolangh, role:default/workflowAdmin
 g, user:default/mareklibra, role:default/workflowAdmin

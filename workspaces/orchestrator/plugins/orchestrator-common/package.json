@@ -12,7 +12,7 @@
   },
   "backstage": {
     "role": "common-library",
-    "supported-versions": "1.32.5",
+    "supported-versions": "1.37.1",
     "pluginId": "orchestrator",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator",

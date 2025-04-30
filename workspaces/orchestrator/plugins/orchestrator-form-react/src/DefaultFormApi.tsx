@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
 
-import type { JSONSchema7 } from 'json-schema';
+import React from 'react';
 
 import {
   FormDecoratorProps,
@@ -24,7 +23,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
 class DefaultFormApi implements OrchestratorFormApi {
-  getFormDecorator(_schema: JSONSchema7): OrchestratorFormDecorator {
+  getFormDecorator(): OrchestratorFormDecorator {
     return (FormComponent: React.ComponentType<FormDecoratorProps>) =>
       FormComponent;
   }

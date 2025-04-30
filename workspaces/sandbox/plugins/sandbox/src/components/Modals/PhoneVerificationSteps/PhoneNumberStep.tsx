@@ -38,7 +38,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const FLAG_FETCH_URL =
-  'https://purecatamphetamine.github.io/country-flag-icons/3x2';
+  'https://catamphetamine.github.io/country-flag-icons/3x2';
 
 type CountrySelectFieldProps = {
   value: Country;

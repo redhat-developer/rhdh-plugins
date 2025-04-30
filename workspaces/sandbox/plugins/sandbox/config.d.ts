@@ -21,6 +21,16 @@ export interface Config {
    */
   sandbox: {
     /**
+     * The URL of the sandbox service
+     * @visibility frontend
+     */
+    signupAPI: string;
+    /**
+     * The URL of the sandbox service
+     * @visibility frontend
+     */
+    kubeAPI: string;
+    /**
      * @visibility frontend
      */
     recaptcha: {

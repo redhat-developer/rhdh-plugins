@@ -85,6 +85,9 @@ type MessageProps = {
   name?: string;
   avatar?: string | any;
   isLoading?: boolean;
+  error?: {
+    title: string;
+  };
 };
 
 export const createMessage = ({
@@ -94,6 +97,7 @@ export const createMessage = ({
   isLoading = false,
   content,
   timestamp,
+  error,
 }: MessageProps & { role: 'user' | 'bot' }) => ({
   role,
   name,
@@ -101,6 +105,7 @@ export const createMessage = ({
   isLoading,
   content,
   timestamp,
+  error,
 });
 
 export const createUserMessage = (props: MessageProps) =>
@@ -118,9 +123,9 @@ export const createBotMessage = (props: MessageProps) =>
 
 export const getMessageData = (message: BaseMessage) => {
   return {
-    model: message?.kwargs?.response_metadata?.model,
-    content: message?.kwargs?.content || '',
-    timestamp: getTimestamp(message?.kwargs?.response_metadata?.created_at),
+    model: message?.response_metadata?.model,
+    content: message?.content || '',
+    timestamp: getTimestamp(message?.response_metadata?.created_at * 1000),
   };
 };
 
@@ -149,39 +154,42 @@ export const getCategorizeMessages = (
     'Previous 7 Days': [],
     'Previous 30 Days': [],
   };
+  messages
+    .sort((a, b) => b.last_message_timestamp - a.last_message_timestamp)
+    .forEach(c => {
+      const messageDate = new Date(c.last_message_timestamp * 1000);
+      const messageDayString = messageDate.toDateString();
+      const dayDifference = getDayDifference(
+        now,
+        c.last_message_timestamp * 1000,
+      );
+      const message: Conversation = {
+        id: c.conversation_id,
+        text: c.topic_summary,
+        label: 'Options',
+        ...addProps(c),
+      };
 
-  messages.forEach(c => {
-    const messageDate = new Date(c.lastMessageTimestamp);
-    const messageDayString = messageDate.toDateString();
-    const dayDifference = getDayDifference(now, c.lastMessageTimestamp);
-
-    const message: Conversation = {
-      id: c.conversation_id,
-      text: c.summary,
-      label: 'Options',
-      ...addProps(c),
-    };
-
-    if (messageDayString === today) {
-      categorizedMessages.Today.push(message);
-    } else if (dayDifference === 1) {
-      categorizedMessages.Yesterday.push(message);
-    } else if (dayDifference <= 7) {
-      categorizedMessages['Previous 7 Days'].push(message);
-    } else if (dayDifference <= 30) {
-      categorizedMessages['Previous 30 Days'].push(message);
-    } else {
-      // handle month-wise grouping
-      const monthYear = messageDate.toLocaleString('default', {
-        month: 'long',
-        year: 'numeric',
-      });
-      if (!categorizedMessages[monthYear]) {
-        categorizedMessages[monthYear] = [];
+      if (messageDayString === today) {
+        categorizedMessages.Today.push(message);
+      } else if (dayDifference === 1) {
+        categorizedMessages.Yesterday.push(message);
+      } else if (dayDifference <= 7) {
+        categorizedMessages['Previous 7 Days'].push(message);
+      } else if (dayDifference <= 30) {
+        categorizedMessages['Previous 30 Days'].push(message);
+      } else {
+        // handle month-wise grouping
+        const monthYear = messageDate.toLocaleString('default', {
+          month: 'long',
+          year: 'numeric',
+        });
+        if (!categorizedMessages[monthYear]) {
+          categorizedMessages[monthYear] = [];
+        }
+        categorizedMessages[monthYear].push(message);
       }
-      categorizedMessages[monthYear].push(message);
-    }
-  });
+    });
 
   const filteredCategories = Object.keys(categorizedMessages).reduce(
     (result, category) => {

@@ -154,7 +154,7 @@ export const productData: ProductData[] = [
       },
       {
         icon: getSandboxCatalogCardIcon('warning'),
-        value: '20-minute environment provisioning',
+        value: '30-minute environment provisioning',
       },
     ],
   },
