@@ -29,7 +29,7 @@
     "@backstage/plugin-catalog-backend": "^1.31.0",
     "@backstage/plugin-catalog-backend-module-logs": "^0.1.7",
     "@backstage/plugin-catalog-backend-module-scaffolder-entity-model": "^0.2.5",
-    "@backstage/plugin-permission-backend": "^0.5.54",
+    "@backstage/plugin-permission-backend": "^0.6.0",
     "@backstage/plugin-permission-backend-module-allow-all-policy": "^0.2.5",
     "@backstage/plugin-proxy-backend": "^0.5.11",
     "@backstage/plugin-scaffolder-backend": "^1.30.0",
