@@ -56,23 +56,18 @@ yarn backstage-repo-tools knip-reports
 The Sandbox plugin makes usage of RH SSO for authenticating users to the Sandbox backend.
 This section provides the steps for connecting your local RHDH sandbox UI app to RH SSO and Sandbox backend ( only stage is supported atm ).
 
-1. Build and push your local code an OCI image
-
-```sh
-cd rhdh-plugins/workspaces/sandbox
-npx @janus-idp/cli@3.3.1 package package-dynamic-plugins --tag quay.io/fmuntean/sandbox-plugin:v3 --platform linux/arm64
-podman push quay.io/fmuntean/sandbox-plugin:v3
-```
-
-Notes:
-
-- you'll have to replace the quay repository path with you're own repo and also adjust the paltform based on your local architecture
-- atm only the OCI format of the sandbox plugins seems to be working with rhdh-local, we're still experimenting with having local binary of the plugin without the need to push the OCI image to a remote repository
-
-2. Download rhdh-local
+1. Download rhdh-local
 
 ```sh
 git clone https://github.com/redhat-developer/rhdh-local.git
+```
+
+2. Package your local code and copy it to the rhdh-local folder
+
+```sh
+cd rhdh-plugins/workspaces/sandbox
+npx @janus-idp/cli@latest package package-dynamic-plugins --export-to .
+cp -r red-hat-developer-hub-backstage-plugin-sandbox ../../../rhdh-local/local-plugins/
 ```
 
 3. Start your local dev environment
@@ -83,7 +78,7 @@ git clone https://github.com/redhat-developer/rhdh-local.git
 cd rhdh-local
 ```
 
-- Paste the following content inside `configs/app-config.local.yaml`:
+- Paste the following content inside `configs/app-config/app-config.local.yaml`:
 
 ```yaml
 app:
@@ -119,18 +114,20 @@ auth:
               dangerouslyAllowSignInWithoutUserInCatalog: true
 signInPage: oidc
 sandbox:
+  signupAPI: https://registration-service-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com/api/v1
+  kubeAPI: https://api-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com
   recaptcha:
-    siteKey: fhgffhgfhjgfhg
+    siteKey: 6Lc_164lAAAAAPvrC0WO-XDljvZ2DZ3UQ38A4XR0
 ```
 
-- Paste the following content in the `configs/dynamic-plugins.yaml`
+- Paste the following content in the `configs/dynamic-configs/dynamic-plugins.override.yaml`
 
 ```yaml
 includes:
   - dynamic-plugins.default.yaml
 plugins:
   - disabled: false
-    package: oci://quay.io/fmuntean/sandbox-plugin:v3!red-hat-developer-hub-backstage-plugin-sandbox
+    package: ./local-plugins/red-hat-developer-hub-backstage-plugin-sandbox
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -139,7 +136,7 @@ plugins:
               default.home:
                 title: Home
                 icon: homeIcon
-                to: '/home'
+                to: '/'
                 priority: 200
               default.activities:
                 title: Activities
@@ -154,8 +151,6 @@ plugins:
                 title: ''
               default.create:
                 title: ''
-              default.docs:
-                title: ''
           red-hat-developer-hub.backstage-plugin-sandbox:
             appIcons:
               - name: homeIcon
@@ -163,13 +158,60 @@ plugins:
               - name: activitiesIcon
                 importName: SandboxActivitiesIcon
             dynamicRoutes:
-              - path: /home
+              - path: /
                 importName: SandboxPage
               - path: /activities
                 importName: SandboxActivitiesPage
-```
 
-Note: make sure you update the `package` field with the URL of your own quay repository path.
+  # Global Header
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-global-header:
+            mountPoints:
+              - mountPoint: application/header
+                importName: GlobalHeader
+                config:
+                  position: above-main-content
+              - mountPoint: global.header/component
+                importName: Spacer
+                config:
+                  priority: 99
+                  props:
+                    growFactor: 1
+                    minWidth: 1
+              - mountPoint: global.header/component
+                importName: ProfileDropdown
+                config:
+                  priority: 10
+              - mountPoint: global.header/profile
+                importName: MenuItemLink
+                config:
+                  priority: 100
+                  props:
+                    title: Settings
+                    link: /settings
+                    icon: manageAccounts
+              - mountPoint: global.header/profile
+                importName: LogoutButton
+                config:
+                  priority: 10
+
+  # Techdocs
+  - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-backend-dynamic
+    disabled: true
+
+  - package: ./dynamic-plugins/dist/backstage-plugin-techdocs
+    disabled: true
+
+  - package: ./dynamic-plugins/dist/backstage-plugin-techdocs-module-addons-contrib
+    disabled: true
+
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-dynamic-home-page
+    disabled: true
+```
 
 - Update the `compose.yaml` to use the right port
 
@@ -200,4 +242,4 @@ podman compose up
 
 - Open the UI at [localhost:3000](http://localhost:3000)
 
-NOTE: anytime you push an new image you'll need to update the `configs/dynamic-plugins.yaml` and restart the containers.
+NOTE: anytime you build a new local package you'll need to recopy it to the `rhdh-local/local-plugins/` folder and restart the containers. Use `podman-compose down -v` so that also the volumes are cleaned up.
