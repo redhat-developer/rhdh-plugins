@@ -5,6 +5,13 @@ app:
 organization:
   name: Red Hat
 
+# Used for setting the RSS feed URL for the AI News Page
+proxy:
+  '/ai-rssfeed':
+    target: 'https://www.wired.com/feed/tag/ai/latest/rss'
+    changeOrigin: true
+    followRedirects: true
+
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
   # See https://backstage.io/docs/auth/service-to-service-auth for

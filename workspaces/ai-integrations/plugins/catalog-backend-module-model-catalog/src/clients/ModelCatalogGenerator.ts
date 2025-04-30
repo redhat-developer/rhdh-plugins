@@ -95,7 +95,7 @@ export function GenerateModelResourceEntities(
         links: [],
       },
       spec: {
-        owner: `${model.owner}`,
+        owner: `user:${model.owner}`,
         type: 'ai-model',
       },
     };
@@ -114,6 +114,12 @@ export function GenerateModelResourceEntities(
       modelResourceEntity.metadata.links?.push({
         title: 'How to use',
         url: `${model.howToUseURL}`,
+      });
+    }
+    if (model.license !== undefined) {
+      modelResourceEntity.metadata.links?.push({
+        title: `License`,
+        url: `${model.license}`,
       });
     }
     modelResourceEntity.spec.dependencyOf = [];
@@ -160,7 +166,7 @@ export function GenerateModelServerComponentEntity(
     spec: {
       type: 'model-server',
       lifecycle: `${modelServer.lifecycle}`,
-      owner: `${modelServer.owner}`,
+      owner: `user:${modelServer.owner}`,
     },
   };
 
@@ -174,6 +180,12 @@ export function GenerateModelServerComponentEntity(
   // Set optional parameters, if present
   if (modelServer.tags !== undefined) {
     modelServerComponent.metadata.tags = sanitizeTags(modelServer.tags, logger);
+  }
+  // Add authentication tag
+  if (modelServer.authentication === undefined || !modelServer.authentication) {
+    modelServerComponent.metadata.tags?.push('auth-not-required');
+  } else {
+    modelServerComponent.metadata.tags?.push('auth-required');
   }
   modelServerComponent.metadata.links = [];
   if (modelServer.API !== undefined) {
@@ -212,7 +224,7 @@ export function GenerateModelServerAPI(
     },
     spec: {
       type: `${api.type}`,
-      owner: `${modelServer.owner}`,
+      owner: `user:${modelServer.owner}`,
       lifecycle: `${modelServer.lifecycle}`,
       definition: `${api.spec}`,
     },
@@ -220,6 +232,12 @@ export function GenerateModelServerAPI(
 
   if (api.tags !== undefined) {
     modelServerAPIEntity.metadata.tags = sanitizeTags(api.tags, logger);
+  }
+  // Add authentication tag
+  if (modelServer.authentication === undefined || !modelServer.authentication) {
+    modelServerAPIEntity.metadata.tags?.push('auth-not-required');
+  } else {
+    modelServerAPIEntity.metadata.tags?.push('auth-required');
   }
   return modelServerAPIEntity;
 }

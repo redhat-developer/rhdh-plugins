@@ -10673,13 +10673,17 @@ __metadata:
     "@mui/material": 5.16.14
     "@red-hat-developer-hub/backstage-plugin-ai-experience-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-ai-experience-common": "workspace:^"
+    "@redhat-developer/red-hat-developer-hub-theme": 0.4.0
     "@tanstack/react-query": ^5.71.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
+    "@types/he": ^1.2.3
+    he: ^1.2.0
     msw: ^1.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-use: ^17.2.4
+    xml2js: ^0.6.2
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
@@ -10706,8 +10710,8 @@ __metadata:
   linkType: soft
 
 "@red-hat-developer-hub/backstage-plugin-global-header@npm:^1.4.0":
-  version: 1.4.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.4.0"
+  version: 1.5.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.5.0"
   dependencies:
     "@backstage/catalog-model": ^1.7.3
     "@backstage/core-components": ^0.16.4
@@ -10732,7 +10736,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 4be3d75e736d7788ac5371a2070ff207cf7c43450fb0d4b8bac2aabd1800debc878f2629535916140b19179280ac5416c7d19205dd82c9959a8554f64143f173
+  checksum: ad39efee863508bac5e45b41f2d8687719cda77ac7a424a83723c858213c404312c738e595eeaf69b0bf04ad662eb58eb951f46011796b7b20df235ef3d71bb9
   languageName: node
   linkType: hard
 
@@ -10740,6 +10744,21 @@ __metadata:
   version: 1.1.0
   resolution: "@redhat-ai-dev/model-catalog-types@npm:1.1.0"
   checksum: 1974a2b6a3cc7cc1ef9da13e2794482bc00404f70aa6bfaf349992a7df4ad4ae7d8fe856bcd814595fcfef9f6a16c72967e0e6cf3d3d4a4d22398a355ae00b41
+  languageName: node
+  linkType: hard
+
+"@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0":
+  version: 0.4.0
+  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.4.0"
+  peerDependencies:
+    "@backstage/theme": ^0.5.2
+    "@emotion/react": ^11.11.1
+    "@emotion/styled": ^11.11.0
+    "@material-ui/core": ^4.12.4
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.14.19
+    "@mui/material": ^5.14.20
+  checksum: 8684f8faa2fe87100dba2c19f1e1a306e808cf98bc65da829c3203a325ea6520a93e54c174e25a220ccf8280ecc2750a178a0d18b12f5ba354c7c415e8a9dc7b
   languageName: node
   linkType: hard
 
@@ -13635,6 +13654,13 @@ __metadata:
   dependencies:
     "@types/unist": ^2
   checksum: 41531b7fbf590b02452996fc63272479c20a07269e370bd6514982cbcd1819b4b84d3ea620f2410d1b9541a23d08ce2eeb0a592145d05e00e249c3d56700d460
+  languageName: node
+  linkType: hard
+
+"@types/he@npm:^1.2.3":
+  version: 1.2.3
+  resolution: "@types/he@npm:1.2.3"
+  checksum: e77851c73dd7b9902d92fe0118a26246a7f3676a3a1c6eb1408305187ef73b57c22550b1435946b983267f961d935554d5d0e1b458416932552f31e763e1aa41
   languageName: node
   linkType: hard
 

@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createApiRef } from '@backstage/core-plugin-api';
-import { ModelServiceApi } from '@red-hat-developer-hub/backstage-plugin-ai-experience-common';
-import { RSSFeedApi } from './RSSClient';
+import React from 'react';
+import { Page, Content } from '@backstage/core-components';
+import { NewsHeader } from './NewsHeader';
+import { NewsGrid } from './NewsGrid';
 
-export const aiExperienceApiRef = createApiRef<ModelServiceApi>({
-  id: 'plugin.ai-experience.api-ref',
-});
-
-export const rssApiRef = createApiRef<RSSFeedApi>({
-  id: 'plugin.ai-experience.rss-api-ref',
-});
+export const NewsPage = () => {
+  return (
+    <Page themeId="ai-experience">
+      <NewsHeader />
+      <Content noPadding>
+        <NewsGrid />
+      </Content>
+    </Page>
+  );
+};

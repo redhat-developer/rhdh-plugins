@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 import React from 'react';
-import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
-import { createDevApp } from '@backstage/dev-utils';
-import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
-import {
-  aiExperiencePlugin,
-  AiExperiencePage,
-  AiNewsPage,
-} from '../src/plugin';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+import { Header } from '@backstage/core-components';
 
-createDevApp()
-  .registerPlugin(aiExperiencePlugin)
-  .addThemes(getAllThemes())
-  .addPage({
-    element: <AiExperiencePage />,
-    title: 'Root Page',
-    path: '/ai-experience',
-  })
-  .addPage({
-    element: <AiNewsPage />,
-    title: 'AI News',
-    icon: NewspaperOutlinedIcon,
-    path: '/news',
-  })
-  .render();
+export const NewsHeader: React.FC = () => {
+  const theme = useTheme();
+  return (
+    <Header
+      pageTitleOverride="AI News"
+      title={
+        <Typography
+          color="textPrimary"
+          style={{
+            fontWeight: 700,
+            fontSize: theme.typography.h2.fontSize,
+            fontFamily: theme.typography.body1.fontFamily,
+          }}
+        >
+          AI News
+        </Typography>
+      }
+    />
+  );
+};
