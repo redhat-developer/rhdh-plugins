@@ -18,7 +18,7 @@
           "ui:props": {
             "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/chunk01",
             "fetch:headers": {
-              "test-header": "Executed for the $${{identityApi.displayName}} user."
+              "test-header": "Executed for the $${{identityApi.displayName}} user with $${{gitlabAuthApi.profileName}} gitlab profile name."
             }
           }
         },

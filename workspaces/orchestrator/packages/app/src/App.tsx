@@ -21,7 +21,7 @@ import {
   OAuthRequestDialog,
   SignInPage,
 } from '@backstage/core-components';
-import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import { githubAuthApiRef, gitlabAuthApiRef } from '@backstage/core-plugin-api';
 import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
   CatalogEntityPage,
@@ -90,6 +90,12 @@ const app = createApp({
             title: 'GitHub',
             message: 'Sign in using GitHub',
             apiRef: githubAuthApiRef,
+          },
+          {
+            id: 'gitlab-auth-provider',
+            title: 'GitLab',
+            message: 'Sign in using GitLab',
+            apiRef: gitlabAuthApiRef,
           },
         ]}
       />

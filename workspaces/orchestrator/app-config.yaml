@@ -38,14 +38,11 @@ backend:
   #   dangerouslyDisableDefaultAuthPolicy: true
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
-#integrations: {}
-integrations:
-  #  github:
-  #    - host: github.com
-  #      token: ${GITHUB_TOKEN}
-  gitlab:
-    - host: gitlab.com
-      token: ${GITLAB_TOKEN}
+integrations: {}
+#integrations:
+#  github:
+#    - host: github.com
+#      token: ${GITHUB_TOKEN}
 
 proxy:
   reviveConsumedRequestBodies: true
@@ -79,6 +76,14 @@ auth:
   environment: development
   providers:
     guest: {}
+    gitlab:
+      development:
+        clientId: ${AUTH_GITLAB_CLIENT_ID}
+        clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
+            # - resolver: usernameMatchingUserEntityName
     github:
       development:
         clientId: ${AUTH_GITHUB_CLIENT_ID}
