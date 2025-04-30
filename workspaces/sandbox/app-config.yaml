@@ -2,23 +2,17 @@ app:
   title: Developer Sandbox
   baseUrl: http://localhost:3000
 
+# Used for enabling the full page redirect flow rather than the popup flow for Red Hat SSO
+enableExperimentalRedirectFlow: true
+
 organization:
   name: Red Hat
 
 sandbox:
+  signupAPI: ${SIGNUP_API}
+  kubeAPI: ${KUBE_API}
   recaptcha:
     siteKey: ${RECAPTCHA_SITE_KEY}
-
-proxy:
-  endpoints:
-    '/signup':
-      target: ${SIGNUP_ENDPOINT}
-      changeOrigin: true
-      followRedirects: true
-    '/kube-api':
-      target: ${KUBE_API_ENDPOINT}
-      changeOrigin: true
-      followRedirects: true
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins

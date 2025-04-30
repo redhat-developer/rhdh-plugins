@@ -14,14 +14,27 @@
  * limitations under the License.
  */
 import React from 'react';
+import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
 import { createDevApp } from '@backstage/dev-utils';
-import { aiExperiencePlugin, AiExperiencePage } from '../src/plugin';
+import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import {
+  aiExperiencePlugin,
+  AiExperiencePage,
+  AiNewsPage,
+} from '../src/plugin';
 
 createDevApp()
   .registerPlugin(aiExperiencePlugin)
+  .addThemes(getAllThemes())
   .addPage({
     element: <AiExperiencePage />,
     title: 'Root Page',
     path: '/ai-experience',
+  })
+  .addPage({
+    element: <AiNewsPage />,
+    title: 'AI News',
+    icon: NewspaperOutlinedIcon,
+    path: '/news',
   })
   .render();

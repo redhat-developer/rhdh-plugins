@@ -52,7 +52,10 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { AiExperiencePage } from '@red-hat-developer-hub/backstage-plugin-ai-experience';
+import {
+  AiExperiencePage,
+  AiNewsPage,
+} from '@red-hat-developer-hub/backstage-plugin-ai-experience';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
 const githubProvider = {
@@ -124,6 +127,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
+    <Route path="/news" element={<AiNewsPage />} />
   </FlatRoutes>
 );
 
