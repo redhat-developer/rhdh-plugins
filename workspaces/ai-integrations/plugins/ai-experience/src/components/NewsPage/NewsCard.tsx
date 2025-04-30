@@ -48,7 +48,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
         key={key}
         elevation={2}
         sx={{
-          height: thumbnail ? '320px' : '180px',
+          height: thumbnail ? '330px' : '180px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
@@ -56,6 +56,8 @@ export const NewsCard: React.FC<NewsCardProps> = ({
           border: `1px solid ${
             theme.palette.mode === 'dark' ? '#57585a' : '#E4E4E4'
           }`,
+          padding: `0 ${theme.spacing(3)} 0 ${theme.spacing(3)}`,
+          paddingTop: thumbnail ? `${theme.spacing(3)}` : `${theme.spacing(1)}`,
         }}
       >
         {thumbnail && (
@@ -65,8 +67,8 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             image={thumbnail}
             alt={title}
             sx={{
-              margin: `${theme.spacing(2)} auto 0 auto`,
               objectFit: 'cover',
+              height: '140px',
             }}
           />
         )}
@@ -75,14 +77,15 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             padding: `${theme.spacing(2)} ${theme.spacing(0.5)} ${theme.spacing(
               0.5,
             )} ${theme.spacing(0.5)}`,
-            flexGrow: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between',
+            alignItems: 'flex-start',
             backgroundColor:
               theme.palette.mode === 'dark'
-                ? '#2A2D30'
+                ? '#2F3134'
                 : theme.palette.background.paper,
+            gap: theme.spacing(0.5),
+            ...(thumbnail ? {} : { justifyContent: 'center', flex: 1 }), // Center vertically if no thumbnail
           }}
         >
           <Tooltip title={title} placement="top">
@@ -91,21 +94,22 @@ export const NewsCard: React.FC<NewsCardProps> = ({
               color="primary"
               gutterBottom
               sx={{
-                fontWeight: 600,
-                textOverflow: 'ellipsis',
+                fontFamily: theme.typography.body1.fontFamily,
+                fontWeight: 450,
                 overflow: 'hidden',
-                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 2,
               }}
             >
-              {title.length > 70 ? `${title.substring(0, 70)}...` : title}
+              {title}
             </Typography>
           </Tooltip>
           <Typography
             variant="body2"
-            color="textSecondary"
             data-testid="news-card-description"
             sx={{
-              mt: 1,
               lineHeight: 1.5,
               display: '-webkit-box',
               WebkitBoxOrient: 'vertical',

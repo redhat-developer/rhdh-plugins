@@ -22,6 +22,7 @@ export const NewsHeader: React.FC = () => {
   const theme = useTheme();
   return (
     <Header
+      pageTitleOverride="AI News"
       title={
         <Typography
           color="textPrimary"
