@@ -25,7 +25,7 @@ export const useAutoScroll = (
   containerRef: React.RefObject<HTMLElement>,
   options: useAutoScrollOptions = {},
 ) => {
-  const { deltaUp = 20, deltaDown = 100, delay = 200 } = options;
+  const { deltaUp = 10, deltaDown = 60, delay = 200 } = options;
 
   const [autoScroll, setAutoScroll] = React.useState(true);
   const lastScrollTop = React.useRef(0);
@@ -80,8 +80,38 @@ export const useAutoScroll = (
     setAutoScroll(true);
   }, []);
 
+  const stopAutoScroll = React.useCallback(() => {
+    manualScrollInterrupted.current = true;
+    setAutoScroll(false);
+  }, []);
+
+  const scrollToTop = React.useCallback(() => {
+    stopAutoScroll();
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  }, [stopAutoScroll, containerRef]);
+
+  const scrollToBottom = React.useCallback(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+    resumeAutoScroll();
+  }, [resumeAutoScroll, containerRef]);
+
   return {
     autoScroll,
     resumeAutoScroll,
+    stopAutoScroll,
+    scrollToBottom,
+    scrollToTop,
   };
 };

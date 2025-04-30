@@ -74,7 +74,8 @@ export const LightspeedChatBox = React.forwardRef(
     const containerRef = React.useRef<HTMLDivElement>(null);
 
     const cmessages = useBufferedMessages(messages, 30);
-    const { autoScroll, resumeAutoScroll } = useAutoScroll(containerRef);
+    const { autoScroll, scrollToBottom, scrollToTop } =
+      useAutoScroll(containerRef);
 
     React.useImperativeHandle(ref, () => ({
       scrollToBottom: () => {
@@ -82,26 +83,19 @@ export const LightspeedChatBox = React.forwardRef(
         scrollQueued.current = true;
 
         requestAnimationFrame(() => {
-          const container = containerRef.current;
-          if (container) {
-            container.scrollTo({
-              top: container.scrollHeight,
-              behavior: 'auto',
-            });
-          }
+          scrollToBottom();
           scrollQueued.current = false;
         });
-        resumeAutoScroll();
       },
     }));
 
     // Auto-scrolls to the latest message
     React.useEffect(() => {
-      if (!autoScroll || scrollQueued.current) return;
+      if (!autoScroll || scrollQueued.current) return undefined;
 
       scrollQueued.current = true;
 
-      const scrollToBottom = () => {
+      const rafId = requestAnimationFrame(() => {
         const container = containerRef.current;
         if (!container) return;
 
@@ -111,9 +105,12 @@ export const LightspeedChatBox = React.forwardRef(
         });
 
         scrollQueued.current = false;
-      };
+      });
 
-      requestAnimationFrame(scrollToBottom);
+      return () => {
+        cancelAnimationFrame(rafId);
+        scrollQueued.current = false;
+      };
 
       // eslint-disable-next-line
     }, [autoScroll, cmessages, containerRef]);
@@ -127,8 +124,9 @@ export const LightspeedChatBox = React.forwardRef(
             : messageBoxClasses
         }
         announcement={announcement}
-        style={{ justifyContent: 'flex-end' }}
         ref={containerRef}
+        onScrollToTopClick={scrollToTop}
+        onScrollToBottomClick={scrollToBottom}
       >
         {welcomePrompts.length ? (
           <ChatbotWelcomePrompt
