@@ -117,7 +117,7 @@ export const ModelSection = () => {
           >
             <CardWrapper
               link={`/catalog/default/resource/${item.metadata.name}`}
-              title={item.spec.profile.displayName}
+              title={item.spec?.profile?.displayName ?? item.metadata.name}
               version="latest"
               description={item.metadata.description ?? ''}
               tags={item.metadata?.tags ?? []}
