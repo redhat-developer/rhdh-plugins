@@ -22,6 +22,7 @@ import { MessageProps } from '@patternfly/chatbot';
 import { useQuery } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
+import { ScrollContainerHandle } from '../components/LightspeedChatBox';
 import { TEMP_CONVERSATION_ID } from '../const';
 import logo from '../images/logo.svg';
 import {
@@ -70,7 +71,7 @@ export const useConversationMessages = (
   onStart?: (conversation_id: string) => void,
 ) => {
   const { mutateAsync: createMessage } = useCreateConversationMessage();
-  const scrollToBottomRef = React.useRef<HTMLDivElement>(null);
+  const scrollToBottomRef = React.useRef<ScrollContainerHandle>(null);
 
   const [currentConversation, setCurrentConversation] =
     React.useState(conversationId);
@@ -99,7 +100,11 @@ export const useConversationMessages = (
     useFetchConversationMessages(currentConversation);
 
   React.useEffect(() => {
-    if (!Array.isArray(conversationsData) || conversationsData.length === 0)
+    if (
+      !Array.isArray(conversationsData) ||
+      (conversationsData.length === 0 &&
+        conversationId !== TEMP_CONVERSATION_ID)
+    )
       return;
 
     const newConvoIndex: number[] = [];
@@ -198,7 +203,7 @@ export const useConversationMessages = (
       });
 
       setTimeout(() => {
-        scrollToBottomRef.current?.scrollIntoView({ behavior: 'auto' });
+        scrollToBottomRef.current?.scrollToBottom();
       }, 0);
       const finalMessages: string[] = [];
       let buffer = '';
