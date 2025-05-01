@@ -507,18 +507,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           borderLeft: `1px solid ${general.paperBorderColor}`,
           padding: 0,
           "& span[class*='MuiTabs-indicator']": {
-            padding: '0.5em 0',
-            marginTop: '-0.5em',
-            marginLeft: 0,
             width: '3px',
           },
         },
         indicator: {
           left: 0,
-          // get the tab indicator to match the margin
-          padding: '0 0.75em',
-          marginLeft: '-0.75em',
-          boxSizing: 'content-box',
           height: '3px',
         },
       },
@@ -528,26 +521,41 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         disableRipple,
       },
       styleOverrides: {
-        selected: {
-          color: `${palette.text?.primary} !important`,
-        },
         root: {
-          borderRadius: '4px',
           fontWeight: '400',
-          margin: '0.75em 0.75em calc(0.75em - 1.5px)',
-          minHeight: 0,
           minWidth: 'initial !important',
-          padding: '0.25em 0.5em',
+          padding: '0.25em 1em',
+          position: 'relative',
           textTransform: 'none',
+          zIndex: 1,
+          '&:before': {
+            borderRadius: '4px',
+            content: '""',
+            display: 'block',
+            height: 'calc(100% - 1.5em)',
+            left: '0.5em',
+            position: 'absolute',
+            top: '0.75em',
+            width: 'calc(100% - 1em)',
+            zIndex: -1,
+          },
+          '&.Mui-selected': {
+            color: `${palette.text?.primary} !important`,
+          },
           '&[class*="v5"]': {
             lineHeight: 1.75,
           },
           '&:hover, &:focus-visible': {
-            backgroundColor: general.tabsLinkHoverBackgroundColor,
+            backgroundColor: 'transparent !important',
+            '&:before': {
+              backgroundColor: general.tabsLinkHoverBackgroundColor,
+            },
           },
           '&:disabled': {
             color: general.disabled,
-            backgroundColor: general.disabledBackground,
+            '&:before': {
+              backgroundColor: general.disabledBackground,
+            },
           },
         },
       },
@@ -569,15 +577,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           fontSize: '0.875rem',
           fontWeight: '400',
           color: general.disabled,
-          padding: '0.25em 0.5em',
-        },
-        tabRoot: {
-          '&:hover, &:focus-visible': {
-            backgroundColor: general.tabsLinkHoverBackgroundColor,
-          },
-          '&:not(.Mui-selected):hover': {
-            color: general.disabled,
-          },
+          padding: '0.25em 1em',
         },
       },
     };
