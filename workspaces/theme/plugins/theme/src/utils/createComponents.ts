@@ -537,7 +537,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           margin: '0.75em 0.75em calc(0.75em - 1.5px)',
           minHeight: 0,
           minWidth: 'initial !important',
-          padding: '0 0.25em',
+          padding: '0.25em 0.5em',
           textTransform: 'none',
           '&[class*="v5"]': {
             lineHeight: 1.75,
@@ -562,13 +562,14 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         tabsWrapper: {
           paddingLeft: '0',
+          backgroundColor: general.mainSectionBackgroundColor,
         },
         defaultTab: {
           textTransform: 'none',
           fontSize: '0.875rem',
           fontWeight: '400',
           color: general.disabled,
-          padding: '0 0.25em',
+          padding: '0.25em 0.5em',
         },
         tabRoot: {
           '&:hover, &:focus-visible': {
