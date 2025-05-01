@@ -15,57 +15,23 @@
  */
 
 import { useDrawer } from '@janus-idp/shared-react';
-import { makeStyles, Theme } from '@material-ui/core';
-import HelpIcon from '@mui/icons-material/HelpOutline';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import { useTheme } from '@mui/material/styles';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 import { get } from 'lodash';
 
-import { useNumberOfApprovalTools } from '../../hooks';
 import { AddRepositoriesFormValues, PullRequestPreviewData } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
 // import { useFormikContext } from 'formik';
 // import { AddRepositoriesFormValues } from '../../types';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
 import { AddRepositoriesTable } from './AddRepositoriesTable';
 
-const useStyles = makeStyles((theme: Theme) => ({
-  approvalTool: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'left',
-    alignItems: 'center',
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(3),
-    paddingLeft: theme.spacing(2),
-    backgroundColor: theme.palette.background.paper,
-    borderBottomStyle: 'groove',
-    borderBottomColor: theme.palette.divider,
-  },
-  approvalToolTooltip: {
-    paddingTop: theme.spacing(0.5),
-    paddingRight: theme.spacing(3),
-    paddingLeft: theme.spacing(0.5),
-  },
-}));
-
 export const AddRepositories = ({ error }: { error: any }) => {
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const { setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
-
-  const styles = useStyles();
-  const theme = useTheme();
   const closeDrawer = () => {
     setOpenDrawer(false);
   };
@@ -79,7 +45,6 @@ export const AddRepositories = ({ error }: { error: any }) => {
     });
     setOpenDrawer(false);
   };
-  const { numberOfApprovalTools } = useNumberOfApprovalTools();
   return (
     <>
       <FormControl fullWidth>
@@ -96,56 +61,6 @@ export const AddRepositories = ({ error }: { error: any }) => {
                 {get(error, 'err') || 'Failed to create pull request'}
               </Alert>
             </div>
-          )}
-
-          {/* Need to improve CSS */}
-          {gitlabFeatureFlag && numberOfApprovalTools > 1 && (
-            <Box
-              sx={{
-                height: '90px',
-                backgroundColor: theme.palette.background.paper,
-                border: `2px solid ${theme.palette.divider}`,
-                borderRadius: '4px',
-                borderBottom: `1px solid ${theme.palette.divider}`,
-                borderBottomLeftRadius: 0,
-                borderBottomRightRadius: 0,
-              }}
-            >
-              <span className={styles.approvalTool}>
-                <Typography fontSize="14px" fontWeight="500">
-                  Approval tool
-                </Typography>
-                <Tooltip
-                  placement="top"
-                  title="Importing requires approval. After the pull request is approved, the repositories will be imported to the Catalog page."
-                >
-                  <span className={styles.approvalToolTooltip}>
-                    <HelpIcon fontSize="small" />
-                  </span>
-                </Tooltip>
-                <RadioGroup
-                  id="approval-tool"
-                  data-testid="approval-tool"
-                  row
-                  name="approvalTool"
-                  value={values.approvalTool}
-                  onChange={(_event, value: string) => {
-                    setFieldValue('approvalTool', value);
-                  }}
-                >
-                  <FormControlLabel
-                    value="git"
-                    control={<Radio />}
-                    label="GitHub"
-                  />
-                  <FormControlLabel
-                    value="gitlab"
-                    control={<Radio />}
-                    label="GitLab"
-                  />
-                </RadioGroup>
-              </span>
-            </Box>
           )}
           <AddRepositoriesTable title="Selected repositories" />
         </div>

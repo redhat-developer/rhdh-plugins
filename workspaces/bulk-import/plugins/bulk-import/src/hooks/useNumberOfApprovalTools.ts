@@ -1,3 +1,5 @@
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
+
 /*
  * Copyright Red Hat, Inc.
  *
@@ -13,9 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
+type ApprovalToolConfig = {
+  githubConfigured: boolean;
+  gitlabConfigured: boolean;
+  numberOfApprovalTools: number;
+};
 
-export function useNumberOfApprovalTools() {
+export function useNumberOfApprovalTools(): ApprovalToolConfig {
   const config = useApi(configApiRef);
 
   const githubIntegrations =
