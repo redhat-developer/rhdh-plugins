@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.3.1
+
+### Patch Changes
+
+- a5b2c24: Updated dependency `tss-react` to `4.9.16`.
+- 00db670: Updated dependency `react-grid-layout` to `1.5.1`.
+
 ## 1.3.0
 
 ### Minor Changes
