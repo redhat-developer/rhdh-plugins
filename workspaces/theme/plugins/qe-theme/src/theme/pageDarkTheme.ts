@@ -22,31 +22,31 @@ import { PageTheme, genPageTheme, shapes } from '@backstage/theme';
  * @returns
  */
 export function createPagesDarkTheme(): Record<string, PageTheme> {
-  const gradientLeft = 'rgb(255, 246, 140)';
-  const gradientRight = 'rgb(0, 0, 208)';
+  const gradientLeft = 'rgb(0, 0, 208)';
+  const gradientRight = 'rgb(255, 246, 140)';
   return {
     home: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: 'none',
     }),
     app: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: shapes.wave,
     }),
     apis: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: shapes.wave,
     }),
     documentation: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: shapes.wave,
     }),
     tool: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: shapes.round,
     }),
     other: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: 'none',
     }),
   };

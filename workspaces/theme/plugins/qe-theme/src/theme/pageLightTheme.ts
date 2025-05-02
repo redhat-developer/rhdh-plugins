@@ -22,32 +22,51 @@ import { PageTheme, genPageTheme, shapes } from '@backstage/theme';
  * @returns
  */
 export function createPagesLightTheme(): Record<string, PageTheme> {
+  const fontColor = 'rgb(0, 0, 0)';
   const gradientLeft = 'rgb(248, 248, 248)';
   const gradientRight = 'rgb(248, 248, 248)';
   return {
     home: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: 'none',
+      options: {
+        fontColor,
+      },
     }),
     app: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: shapes.wave,
+      options: {
+        fontColor,
+      },
     }),
     apis: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: shapes.wave,
+      options: {
+        fontColor,
+      },
     }),
     documentation: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: shapes.wave,
+      options: {
+        fontColor,
+      },
     }),
     tool: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: shapes.round,
+      options: {
+        fontColor,
+      },
     }),
     other: genPageTheme({
-      colors: [gradientRight, gradientLeft],
+      colors: [gradientLeft, gradientRight],
       shape: 'none',
+      options: {
+        fontColor,
+      },
     }),
   };
 }
