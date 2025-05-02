@@ -23,8 +23,6 @@ import { useTheme } from '@mui/material/styles';
 import Image from '../../assets/images/sandbox-banner-image.svg';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
 
-const TRIAL_DURATION_DAYS = 30;
-
 export const SandboxCatalogBanner: React.FC = () => {
   const theme = useTheme();
   const { userData, pendingApproval, verificationRequired, loading } =
@@ -32,15 +30,19 @@ export const SandboxCatalogBanner: React.FC = () => {
 
   const calculateDaysLeft = React.useCallback(() => {
     const currentDate = new Date();
-    const trialStartDate = new Date(userData?.startDate ?? '');
-    const trialEndDate = new Date(trialStartDate);
-    trialEndDate.setDate(trialEndDate.getDate() + TRIAL_DURATION_DAYS);
-
-    const diffTime = trialEndDate.getTime() - currentDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    return diffDays;
-  }, [userData?.startDate]);
+    const trialEndDate = new Date(userData?.endDate ?? '');
+    // Calculate the difference in
+    // milliseconds between the two dates
+    const differenceInMs: number = Math.abs(
+      trialEndDate.getTime() - currentDate.getTime(),
+    );
+    // Define the number of milliseconds in a day
+    const millisecondsInDay: number = 1000 * 60 * 60 * 24;
+    // Calculate the difference in days by
+    // dividing the difference in milliseconds by
+    // milliseconds in a day
+    return Math.floor(differenceInMs / millisecondsInDay);
+  }, [userData?.endDate]);
 
   return (
     <Card
@@ -128,7 +130,10 @@ export const SandboxCatalogBanner: React.FC = () => {
                       if (pendingApproval) {
                         return 'Please wait for your trial to be approved.';
                       }
-                      return `Your free trial expires in ${calculateDaysLeft()} days`;
+                      if (userData.endDate !== '') {
+                        return `Your free trial expires in ${calculateDaysLeft()} days`;
+                      }
+                      return '';
                     })()}
                   </Typography>
                 </>
