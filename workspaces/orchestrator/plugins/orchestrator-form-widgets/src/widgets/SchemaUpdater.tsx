@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import React, { useEffect, useMemo, useState } from 'react';
+import { isEqual } from 'lodash';
 import { Widget } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
 import { JsonObject } from '@backstage/types';
-import { makeStyles, Theme } from '@material-ui/core';
 import {
   useWrapperFormPropsContext,
   SchemaChunksResponse,
@@ -31,13 +31,7 @@ import {
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
 } from '../utils';
-import { isEqual } from 'lodash';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  error: {
-    color: theme.palette.error.main,
-  },
-}));
+import { ErrorText } from './ErrorText';
 
 export const SchemaUpdater: Widget<
   JsonObject,
@@ -47,7 +41,6 @@ export const SchemaUpdater: Widget<
   const fetchApi = useApi(fetchApiRef);
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const classes = useStyles();
   const formContext = useWrapperFormPropsContext();
   const [_, setLoading] = useState(true);
   const [error, setError] = useState<string>();
@@ -161,7 +154,7 @@ export const SchemaUpdater: Widget<
   }
 
   if (error) {
-    return <div className={classes.error}>{error}</div>;
+    return <ErrorText text={error} />;
   }
 
   // No need to render anything

@@ -27,6 +27,7 @@ const logRequest = req => {
   console.log('request: ', {
     originalUrl: req.originalUrl,
     method: req.method,
+    query: req.query,
     headers: req.headers,
     body: req.body,
   });
@@ -114,6 +115,22 @@ app.post('/chunk02', (req, res) => {
   }
 
   res.send(JSON.stringify(chunk02));
+});
+
+app.get('/activeTextWhisperer', (req, res) => {
+  const mydata = req.query.mydata;
+
+  const autocomplete = ['my option one', 'my option two', 'Jack', 'Joe'];
+  if (mydata) {
+    autocomplete.push(mydata);
+  }
+
+  const result = {
+    myresult: { foo: { default: 'This is dynamically fetched default value' } },
+    bar: { something: { myautocompleteoptions: autocomplete } },
+  };
+
+  res.send(JSON.stringify(result));
 });
 
 app.listen(port, () => {
