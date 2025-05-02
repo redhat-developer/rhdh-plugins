@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
+export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
+
 export * from './hooks';
 export * from './themes';
 export type {
