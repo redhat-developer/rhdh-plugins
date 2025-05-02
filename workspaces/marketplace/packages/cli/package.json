@@ -1,7 +1,7 @@
 {
   "name": "@red-hat-developer-hub/marketplace-cli",
   "description": "CLI for the Marketplace",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "backstage": {
     "role": "cli"
   },

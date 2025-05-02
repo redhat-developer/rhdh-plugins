@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.5.1
+
+### Patch Changes
+
+- e6c1643: Pause autoscroll when user scrolls up during streaming chat responses
+
 ## 0.5.0
 
 ### Minor Changes
