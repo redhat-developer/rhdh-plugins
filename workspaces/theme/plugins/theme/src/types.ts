@@ -31,7 +31,6 @@ export interface RHDHThemePalette {
     cardBackgroundColor: string;
     cardBorderColor: string;
 
-    headerBottomBorderColor: string;
     mainSectionBackgroundColor: string;
     formControlBackgroundColor: string;
 

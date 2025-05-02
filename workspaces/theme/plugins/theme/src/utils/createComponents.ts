@@ -610,6 +610,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     components.BackstageSidebar = {
       styleOverrides: {
         drawer: {
+          gap: '0.25rem',
+          borderRight: `0.5rem solid ${general.sidebarBackgroundColor ?? general.sideBarBackgroundColor}`,
+          paddingBottom: '0.5rem',
           backgroundColor:
             general.sidebarBackgroundColor ?? general.sideBarBackgroundColor,
           '& a[class*="BackstageSidebarItem-selected-"]': {
@@ -620,9 +623,14 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     };
     components.BackstageSidebarItem = {
       styleOverrides: {
+        root: {
+          borderRadius: '6px',
+          width: 'calc(100% - 0.5rem) !important',
+          marginLeft: '0.5rem !important',
+        },
         label: {
           '&[class*="MuiTypography-subtitle2"]': {
-            fontWeight: '500',
+            fontWeight: 'normal',
           },
         },
       },
@@ -630,10 +638,15 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   }
 
   if (options.pages !== 'mui') {
-    components.BackstagePage = {
+    components.BackstageSidebarPage = {
       styleOverrides: {
         root: {
-          backgroundColor: general.mainSectionBackgroundColor,
+          backgroundColor:
+            general.sidebarBackgroundColor ?? general.sideBarBackgroundColor,
+          "& [class*='BackstagePage-root']": {
+            borderRadius: '1.5rem',
+            border: `0.5rem solid ${general.sidebarBackgroundColor ?? general.sideBarBackgroundColor}`,
+          },
         },
       },
     };
@@ -673,6 +686,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '&[class*="BackstageHeader-subtitle-"]': {
             fontWeight: 'normal',
             fontSize: '0.875rem',
+            opacity: 1,
           },
         },
         breadcrumb: {

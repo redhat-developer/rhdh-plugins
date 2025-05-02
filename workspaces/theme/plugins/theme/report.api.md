@@ -50,7 +50,6 @@ export interface RHDHThemePalette {
         popoverBoxShadow: string;
         cardBackgroundColor: string;
         cardBorderColor: string;
-        headerBottomBorderColor: string;
         mainSectionBackgroundColor: string;
         formControlBackgroundColor: string;
         sideBarBackgroundColor?: string;
