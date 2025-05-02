@@ -341,6 +341,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: general.cardBackgroundColor,
+          borderRadius: '16px',
         },
       },
     };
