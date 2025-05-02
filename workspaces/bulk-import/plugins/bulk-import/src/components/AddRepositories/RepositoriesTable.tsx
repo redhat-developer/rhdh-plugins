@@ -352,7 +352,6 @@ export const RepositoriesTable = ({
             isApprovalToolGitlab ? 'Selected projects' : 'Selected repositories'
           }
           orgData={activeOrganization}
-          isApprovalToolGitlab={isApprovalToolGitlab}
           onSelect={handleUpdatesFromDrawer}
           open={isOpen}
           onClose={handleClose}
