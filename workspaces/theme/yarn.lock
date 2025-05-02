@@ -10349,6 +10349,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-qe-theme@workspace:plugins/qe-theme":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-qe-theme@workspace:plugins/qe-theme"
+  dependencies:
+    "@backstage/cli": ^0.30.0
+    "@backstage/core-app-api": ^1.15.5
+    "@backstage/core-plugin-api": ^1.10.4
+    "@backstage/dev-utils": ^1.1.7
+    "@backstage/test-utils": ^1.7.5
+    "@backstage/theme": ^0.6.4
+    "@material-ui/icons": ^4.11.3
+    "@testing-library/jest-dom": ^6.0.0
+    "@testing-library/react": ^14.0.0
+    "@testing-library/user-event": ^14.0.0
+    msw: ^1.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-theme@workspace:^, @red-hat-developer-hub/backstage-plugin-theme@workspace:plugins/theme":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-theme@workspace:plugins/theme"
