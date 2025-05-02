@@ -179,7 +179,7 @@ export const EntitySection = () => {
                 key={item.metadata.name}
               >
                 <EntityCard
-                  link={`/catalog/default/${item.kind}/${item.metadata.name}`}
+                  link={`/catalog/default/${item.kind.toLocaleLowerCase('en-US')}/${item.metadata.name}`}
                   title={item.spec?.profile?.displayName ?? item.metadata.name}
                   version="latest"
                   description={item.metadata.description ?? ''}
