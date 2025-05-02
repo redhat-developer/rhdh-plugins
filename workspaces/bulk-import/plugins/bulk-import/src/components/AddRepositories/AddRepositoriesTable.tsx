@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import { useFormikContext } from 'formik';
 
 import { useNumberOfApprovalTools } from '../../hooks';
-import { AddRepositoriesFormValues, RepositorySelection } from '../../types';
+import {
+  AddRepositoriesFormValues,
+  ApprovalTool as ApprovalToolEnum,
+  RepositorySelection,
+} from '../../types';
 import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
 import ApprovalTool from './ApprovalTool';
@@ -29,6 +33,11 @@ import { RepositoriesTable } from './RepositoriesTable';
 
 export const AddRepositoriesTable = ({ title }: { title: string }) => {
   const { values ,setFieldValue} = useFormikContext<AddRepositoriesFormValues>();
+  const [isApprovalToolGitlab, setIsApprovalToolGitlab] = useState(false);
+
+  useEffect(() => {
+    setIsApprovalToolGitlab(values.approvalTool === ApprovalToolEnum.Gitlab);
+  }, [values.approvalTool]);
   const [searchString, setSearchString] = useState<string>('');
   const [page, setPage] = useState<number>(0);
   const handleSearch = (str: string) => {
@@ -47,9 +56,14 @@ export const AddRepositoriesTable = ({ title }: { title: string }) => {
           />
         )}
         <AddRepositoriesTableToolbar
-          title={title}
+          title={
+            title
+              ? title
+              : `Selected  ${isApprovalToolGitlab ? 'projects' : 'repositories'}`
+          }
           setSearchString={handleSearch}
           onPageChange={setPage}
+          isApprovalToolGitlab={isApprovalToolGitlab}
         />
         {values.repositoryType === RepositorySelection.Repository ? (
           <RepositoriesTable

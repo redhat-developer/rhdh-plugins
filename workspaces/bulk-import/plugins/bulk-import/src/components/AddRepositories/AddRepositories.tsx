@@ -62,7 +62,7 @@ export const AddRepositories = ({ error }: { error: any }) => {
               </Alert>
             </div>
           )}
-          <AddRepositoriesTable title="Selected repositories" />
+          <AddRepositoriesTable />
         </div>
         <br />
       </FormControl>
