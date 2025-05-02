@@ -16,18 +16,26 @@
 
 import { TableColumn } from '@backstage/core-components';
 
-export const OrganizationsColumnHeader: TableColumn[] = [
+export const getOrganizationsColumnHeader = (
+  isApprovalToolGitlab: boolean = false,
+): TableColumn[] => [
   {
     id: 'name',
     title: 'Name',
     field: 'orgName',
   },
   { id: 'url', title: 'URL', field: 'organizationUrl' },
-  {
-    id: 'selected-repositories',
-    title: 'Selected repositories',
-    field: 'selectedRepositories',
-  },
+  isApprovalToolGitlab
+    ? {
+        id: 'selected-projects',
+        title: 'Selected projects',
+        field: 'selectedRepositories', // will be update this according to api response
+      }
+    : {
+        id: 'selected-repositories',
+        title: 'Selected repositories',
+        field: 'selectedRepositories',
+      },
   {
     id: 'cataloginfoyaml',
     title: 'catalog-info.yaml',

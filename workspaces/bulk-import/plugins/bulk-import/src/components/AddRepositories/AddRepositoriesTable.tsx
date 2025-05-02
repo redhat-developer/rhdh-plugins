@@ -69,12 +69,14 @@ export const AddRepositoriesTable = ({ title }: { title: string }) => {
           <RepositoriesTable
             searchString={searchString}
             page={page}
+            isApprovalToolGitlab={isApprovalToolGitlab}
             setPage={setPage}
           />
         ) : (
           <RepositoriesTable
             searchString={searchString}
             page={page}
+            isApprovalToolGitlab={isApprovalToolGitlab}
             setPage={setPage}
             showOrganizations
           />

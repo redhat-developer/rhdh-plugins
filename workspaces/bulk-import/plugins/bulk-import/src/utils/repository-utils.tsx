@@ -43,6 +43,8 @@ import {
   RepositoryStatus,
 } from '../types';
 
+export const gitlabFeatureFlag = false;
+
 export const descendingComparator = (
   a: AddRepositoryData,
   b: AddRepositoryData,
@@ -240,10 +242,10 @@ export const getImportStatus = (
       return showIcon ? (
         <span style={{ display: 'flex', alignItems: 'baseline' }}>
           <StatusOK />
-          Added
+          {gitlabFeatureFlag ? 'Imported' : 'Added'}
         </span>
       ) : (
-        'Added'
+        `${gitlabFeatureFlag ? 'Already imported' : 'Added'}`
       );
     default:
       return '';
@@ -695,7 +697,3 @@ export const getValidationSchema = (approvalTool: string) =>
     prAnnotations: validateKeyValuePair,
     prSpec: validateKeyValuePair,
   });
-
-export const gitlabFeatureFlag = true;
-
-export const isApprovalToolGitlab = true;
