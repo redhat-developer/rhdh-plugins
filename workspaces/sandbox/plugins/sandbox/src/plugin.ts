@@ -138,6 +138,21 @@ export const SandboxActivitiesPage = sandboxPlugin.provide(
 );
 
 /**
+ * Sandbox RHSSO Sign In Page
+ * @public
+ */
+export const RHSSOSignInPage = sandboxPlugin.provide(
+  createRoutableExtension({
+    name: 'RHSSOSignInPage',
+    component: () =>
+      import('./components/SignIn/RHSSOSignInPage').then(
+        m => m.RHSSOSignInPage,
+      ),
+    mountPoint: rootRouteRef,
+  }),
+);
+
+/**
  * Icon for Sandbox Home Page
  * @public
  */
