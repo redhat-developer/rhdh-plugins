@@ -130,7 +130,7 @@ export const SandboxCatalogBanner: React.FC = () => {
                       if (pendingApproval) {
                         return 'Please wait for your trial to be approved.';
                       }
-                      if (userData.endDate !== '') {
+                      if (userData.endDate) {
                         return `Your free trial expires in ${calculateDaysLeft()} days`;
                       }
                       return '';
