@@ -70,7 +70,7 @@ export const AddRepositoriesFormFooter = () => {
         isSubmitting && <CircularProgress size="20px" color="inherit" />
       }
     >
-      {label[values.approvalTool].submitTitle}
+      {label[values.approvalTool]?.submitTitle}
     </Button>
   );
 
@@ -98,7 +98,7 @@ export const AddRepositoriesFormFooter = () => {
     >
       {disableCreate ? (
         <Tooltip
-          title={label[values.approvalTool].toolTipTitle}
+          title={label[values.approvalTool]?.toolTipTitle}
           sx={{
             maxWidth: 'none',
           }}
