@@ -52,7 +52,6 @@ export interface RHDHThemePalette {
         cardBorderColor: string;
         mainSectionBackgroundColor: string;
         formControlBackgroundColor: string;
-        sideBarBackgroundColor?: string;
         sidebarBackgroundColor: string;
         sidebarItemSelectedBackgroundColor: string;
         tableTitleColor: string;
@@ -104,6 +103,8 @@ export interface ThemeConfigOptions {
     accordions?: 'patternfly' | 'mui';
     // (undocumented)
     appBar?: 'patternfly' | 'mui';
+    // (undocumented)
+    breadcrumbs?: 'patternfly' | 'mui';
     // (undocumented)
     buttons?: 'patternfly' | 'mui';
     // (undocumented)

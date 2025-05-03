@@ -611,10 +611,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         drawer: {
           gap: '0.25rem',
-          borderRight: `0.5rem solid ${general.sidebarBackgroundColor ?? general.sideBarBackgroundColor}`,
+          borderRight: `0.5rem solid ${general.sidebarBackgroundColor}`,
           paddingBottom: '0.5rem',
-          backgroundColor:
-            general.sidebarBackgroundColor ?? general.sideBarBackgroundColor,
+          backgroundColor: general.sidebarBackgroundColor,
           '& a[class*="BackstageSidebarItem-selected-"]': {
             backgroundColor: general.sidebarItemSelectedBackgroundColor,
           },
@@ -641,11 +640,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     components.BackstageSidebarPage = {
       styleOverrides: {
         root: {
-          backgroundColor:
-            general.sidebarBackgroundColor ?? general.sideBarBackgroundColor,
+          backgroundColor: general.sidebarBackgroundColor,
           "& [class*='BackstagePage-root']": {
             borderRadius: '1.5rem',
-            border: `0.5rem solid ${general.sidebarBackgroundColor ?? general.sideBarBackgroundColor}`,
+            border: `0.5rem solid ${general.sidebarBackgroundColor}`,
           },
         },
       },

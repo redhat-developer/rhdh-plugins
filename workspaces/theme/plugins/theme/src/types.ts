@@ -34,8 +34,6 @@ export interface RHDHThemePalette {
     mainSectionBackgroundColor: string;
     formControlBackgroundColor: string;
 
-    /** @deprecated please use `sidebarBackgroundColor` instead */
-    sideBarBackgroundColor?: string;
     sidebarBackgroundColor: string;
     sidebarItemSelectedBackgroundColor: string;
 
