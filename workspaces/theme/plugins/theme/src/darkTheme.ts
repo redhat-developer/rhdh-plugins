@@ -65,6 +65,7 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
       formControlBackgroundColor: '#36373A',
 
       sidebarBackgroundColor: '#151515',
+      sidebarDividerColor: '#383838',
       sidebarItemSelectedBackgroundColor: '#292929',
 
       tableTitleColor: '#E0E0E0',

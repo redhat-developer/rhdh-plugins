@@ -65,6 +65,7 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
       formControlBackgroundColor: '#FFF',
 
       sidebarBackgroundColor: '#f2f2f2',
+      sidebarDividerColor: '#c7c7c7',
       sidebarItemSelectedBackgroundColor: '#FFF',
 
       tableTitleColor: '#181818',

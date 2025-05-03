@@ -53,6 +53,7 @@ export interface RHDHThemePalette {
         mainSectionBackgroundColor: string;
         formControlBackgroundColor: string;
         sidebarBackgroundColor: string;
+        sidebarDividerColor: string;
         sidebarItemSelectedBackgroundColor: string;
         tableTitleColor: string;
         tableSubtitleColor: string;
