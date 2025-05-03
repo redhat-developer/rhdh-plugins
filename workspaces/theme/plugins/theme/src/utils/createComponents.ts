@@ -614,9 +614,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           borderRight: `0.5rem solid ${general.sidebarBackgroundColor}`,
           paddingBottom: '1.5rem',
           backgroundColor: general.sidebarBackgroundColor,
-          '& a[class*="BackstageSidebarItem-selected-"]': {
-            backgroundColor: general.sidebarItemSelectedBackgroundColor,
-          },
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
@@ -635,6 +632,52 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             fontWeight: 'normal',
           },
         },
+        selected: {
+          backgroundColor: general.sidebarItemSelectedBackgroundColor,
+        },
+      },
+    };
+    components.MuiBottomNavigation = {
+      styleOverrides: {
+        root: {
+          backgroundColor: `${general.sidebarBackgroundColor} !important`,
+          borderColor: `${general.sidebarBackgroundColor} !important`,
+        },
+      },
+    };
+    components.MuiBottomNavigationAction = {
+      defaultProps: {
+        disableRipple,
+      },
+      styleOverrides: {
+        root: {
+          color: `${palette.text?.primary} !important`,
+          backgroundColor: `${general.sidebarBackgroundColor} !important`,
+          borderRadius: '6px',
+          borderTop: '3px solid transparent !important', // default mui selected styling
+          paddingTop: '6px !important', // default mui selected styling
+          marginTop: '-1px !important', // default mui selected styling
+          '&:hover, &:focus-visible': {
+            backgroundColor: `${general.sidebarItemSelectedBackgroundColor} !important`,
+          },
+        },
+        selected: {
+          backgroundColor: `${general.sidebarItemSelectedBackgroundColor} !important`,
+          color: `${palette.text?.primary} !important`,
+        },
+      },
+    };
+    components.MuiDrawer = {
+      styleOverrides: {
+        root: {
+          // undocumented Backstage makeStyles
+          "& [class*='makeStyles-overlay-']": {
+            backgroundColor: `${general.sidebarBackgroundColor} !important`,
+          },
+          '& hr': {
+            backgroundColor: general.sidebarDividerColor,
+          },
+        },
       },
     };
   }
@@ -643,18 +686,20 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     components.BackstageSidebarPage = {
       styleOverrides: {
         root: {
-          // Controls the page inset as in PF6
-          backgroundColor: general.sidebarBackgroundColor,
-          "& > [class*='MuiLinearProgress-root'], & > main": {
-            borderRadius: '2.5rem',
-            border: `1.5rem solid ${general.sidebarBackgroundColor}`,
-            marginLeft: '-1.5rem',
-          },
-          "& > [class*='MuiLinearProgress-root']": {
-            backgroundColor: general.mainSectionBackgroundColor,
-            height: '100vh',
-            "& > [class*='MuiLinearProgress-']": {
-              height: '0.5rem !important',
+          // Controls the page inset as in PF6 -- only in desktop view
+          '@media (min-width: 600px)': {
+            backgroundColor: general.sidebarBackgroundColor,
+            "& > [class*='MuiLinearProgress-root'], & > main": {
+              borderRadius: '2.5rem',
+              border: `1.5rem solid ${general.sidebarBackgroundColor}`,
+              marginLeft: '-1.5rem',
+            },
+            "& > [class*='MuiLinearProgress-root']": {
+              backgroundColor: general.mainSectionBackgroundColor,
+              height: '100vh',
+              "& > [class*='MuiLinearProgress-']": {
+                height: '0.5rem !important',
+              },
             },
           },
         },
