@@ -16,7 +16,11 @@
     "directory": "workspaces/theme/plugins/theme"
   },
   "backstage": {
-    "role": "web-library"
+    "role": "frontend-plugin",
+    "pluginId": "rhdh-theme",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-theme"
+    ]
   },
   "sideEffects": false,
   "scripts": {
@@ -56,6 +60,7 @@
   },
   "configSchema": "config.d.ts",
   "files": [
+    "app-config.dynamic.yaml",
     "config.d.ts",
     "dist"
   ],

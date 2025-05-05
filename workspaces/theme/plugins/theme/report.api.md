@@ -5,6 +5,9 @@
 ```ts
 
 import { AppTheme } from '@backstage/core-plugin-api';
+import { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
+import { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
+import { default as React_2 } from 'react';
 import { Theme } from '@mui/material/styles';
 import { UnifiedThemeOptions } from '@backstage/theme';
 
@@ -27,11 +30,25 @@ export interface Config {
     };
 }
 
+export { DarkIcon }
+
+// @public (undocumented)
+export const darkThemeProvider: (props: {
+    children: React_2.ReactNode;
+}) => JSX.Element | null;
+
 // @public (undocumented)
 export const getAllThemes: () => AppTheme[];
 
 // @public (undocumented)
 export const getThemes: () => AppTheme[];
+
+export { LightIcon }
+
+// @public (undocumented)
+export const lightThemeProvider: (props: {
+    children: React_2.ReactNode;
+}) => JSX.Element | null;
 
 // @public (undocumented)
 export interface RHDHThemePalette {
