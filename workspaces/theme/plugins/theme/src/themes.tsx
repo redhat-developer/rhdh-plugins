@@ -30,6 +30,10 @@ import {
 import * as backstage from './backstage';
 import * as rhdh from './rhdh';
 
+export const lightThemeProvider = createThemeProviderForThemeName('light');
+
+export const darkThemeProvider = createThemeProviderForThemeName('dark');
+
 export const getAllThemes = (): AppTheme[] => {
   return [
     {
