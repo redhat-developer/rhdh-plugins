@@ -110,10 +110,7 @@ export const SandboxCatalogBanner: React.FC = () => {
                       },
                     }}
                   >
-                    Welcome,{' '}
-                    {userData.givenName !== ''
-                      ? userData.givenName
-                      : userData.compliantUsername}
+                    Welcome, {userData.givenName || userData.compliantUsername}
                   </Typography>
                   <Typography
                     variant="inherit"
