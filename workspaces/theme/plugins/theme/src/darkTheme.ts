@@ -27,15 +27,15 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
     main: '#92c5f9',
   },
   navigation: {
-    background: '#0f1214',
-    indicator: '#0066CC',
+    background: '#292929',
+    indicator: 'transparent',
     color: '#ffffff',
     selectedColor: '#ffffff',
     navItem: {
-      hoverBackground: '#3c3f42',
+      hoverBackground: '#292929',
     },
     submenu: {
-      background: '#0f1214',
+      background: '#292929',
     },
   },
   text: {
@@ -43,8 +43,8 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
     secondary: '#c7c7c7',
   },
   background: {
-    default: '#333333',
-    paper: '#1b1d21',
+    default: '#292929',
+    paper: '#292929',
   },
   rhdh: {
     general: {
@@ -58,27 +58,27 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
       popoverBoxShadow:
         '0 0.25rem 0.5rem 0rem rgba(3, 3, 3, 0.48), 0 0 0.25rem 0 rgba(3, 3, 3, 0.24)',
 
-      cardBackgroundColor: '#1b1d21',
+      cardBackgroundColor: '#292929',
       cardBorderColor: '#A3A3A3',
 
-      headerBottomBorderColor: '#A3A3A3',
-      mainSectionBackgroundColor: '#0f1214',
+      mainSectionBackgroundColor: '#292929',
       formControlBackgroundColor: '#36373A',
 
-      sidebarBackgroundColor: '#1b1d21',
-      sidebarItemSelectedBackgroundColor: '#4F5255',
+      sidebarBackgroundColor: '#151515',
+      sidebarDividerColor: '#383838',
+      sidebarItemSelectedBackgroundColor: '#292929',
 
       tableTitleColor: '#E0E0E0',
       tableSubtitleColor: '#E0E0E0',
       tableColumnTitleColor: '#E0E0E0',
-      tableRowHover: '#0f1214',
+      tableRowHover: '#292929',
       tableBorderColor: '#515151',
-      tableBackgroundColor: '#1b1d21',
+      tableBackgroundColor: '#292929',
       tabsLinkHoverBackgroundColor: 'rgba(199, 199, 199, 0.1500)',
 
       contrastText: '#FFF',
 
-      appBarBackgroundColor: '#1b1d21',
+      appBarBackgroundColor: '#151515',
       appBarBackgroundImage: 'none',
     },
     primary: {
@@ -91,7 +91,7 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
     },
     cards: {
       headerTextColor: '#FFF',
-      headerBackgroundColor: '#0f1214',
+      headerBackgroundColor: '#292929',
       headerBackgroundImage: 'none',
     },
   },

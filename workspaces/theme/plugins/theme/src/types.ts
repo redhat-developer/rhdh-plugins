@@ -31,13 +31,11 @@ export interface RHDHThemePalette {
     cardBackgroundColor: string;
     cardBorderColor: string;
 
-    headerBottomBorderColor: string;
     mainSectionBackgroundColor: string;
     formControlBackgroundColor: string;
 
-    /** @deprecated please use `sidebarBackgroundColor` instead */
-    sideBarBackgroundColor?: string;
     sidebarBackgroundColor: string;
+    sidebarDividerColor: string;
     sidebarItemSelectedBackgroundColor: string;
 
     tableTitleColor: string;
@@ -116,6 +114,8 @@ export interface ThemeConfigOptions {
   tabs?: 'patternfly' | 'mui';
 
   appBar?: 'patternfly' | 'mui';
+
+  breadcrumbs?: 'patternfly' | 'mui';
 }
 
 export interface ThemeConfig {

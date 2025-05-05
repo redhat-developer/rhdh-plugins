@@ -50,11 +50,10 @@ export interface RHDHThemePalette {
         popoverBoxShadow: string;
         cardBackgroundColor: string;
         cardBorderColor: string;
-        headerBottomBorderColor: string;
         mainSectionBackgroundColor: string;
         formControlBackgroundColor: string;
-        sideBarBackgroundColor?: string;
         sidebarBackgroundColor: string;
+        sidebarDividerColor: string;
         sidebarItemSelectedBackgroundColor: string;
         tableTitleColor: string;
         tableSubtitleColor: string;
@@ -105,6 +104,8 @@ export interface ThemeConfigOptions {
     accordions?: 'patternfly' | 'mui';
     // (undocumented)
     appBar?: 'patternfly' | 'mui';
+    // (undocumented)
+    breadcrumbs?: 'patternfly' | 'mui';
     // (undocumented)
     buttons?: 'patternfly' | 'mui';
     // (undocumented)
