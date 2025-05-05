@@ -32,3 +32,23 @@ export const errorMessage = (e: unknown): string => {
 
   return 'An unknown error occurred'; // Fallback message
 };
+
+// calculateDaysBetweenDates returns the number of days between the two days, including starting and end date.
+export const calculateDaysBetweenDates = (
+  startDate: Date,
+  endDate: Date,
+): number => {
+  // Define the number of milliseconds in a day
+  const millisecondsInDay: number = 1000 * 60 * 60 * 24;
+
+  // Calculate the difference in
+  // milliseconds between the two dates
+  const differenceInMs: number = Math.abs(
+    // end day is included
+    endDate.getTime() + millisecondsInDay - startDate.getTime(),
+  );
+  // Calculate the difference in days by
+  // dividing the difference in milliseconds by
+  // milliseconds in a day
+  return Math.floor(differenceInMs / millisecondsInDay);
+};
