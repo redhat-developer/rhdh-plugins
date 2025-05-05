@@ -1,5 +1,5 @@
 {
-  "name": "@red-hat-developer-hub/cli",
+  "name": "@red-hat-developer-hub/rhdh-repo-tools",
   "description": "CLI for the RHDH Plugins Repository",
   "version": "0.0.1",
   "backstage": {
@@ -24,9 +24,7 @@
     "clean": "backstage-cli package clean",
     "start": "nodemon --"
   },
-  "bin": {
-    "rhdh-cli": "bin/rhdh-cli"
-  },
+  "bin": "bin/rhdh-repo-tools",
   "files": [
     "bin",
     "dist/**/*.js"
@@ -47,7 +45,7 @@
   },
   "nodemonConfig": {
     "watch": "./src",
-    "exec": "bin/rhdh-cli",
+    "exec": "bin/rhdh-repo-tools",
     "ext": "ts"
   },
   "devDependencies": {
