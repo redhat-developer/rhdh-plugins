@@ -49,6 +49,7 @@ export interface RHDHThemePalette {
     contrastText: string;
 
     appBarBackgroundColor: string;
+    appBarForegroundColor: string;
     appBarBackgroundImage: string;
   };
 
