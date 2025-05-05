@@ -9,13 +9,9 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
-import { SignInPageProps } from '@backstage/core-plugin-api';
-import { SignInProviderConfig } from '@backstage/core-components';
 
-// Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
-//
 // @public
-export const RHSSOSignInPage: (props: Props) => JSX_2.Element;
+export const RHSSOSignInPage: (props: any) => JSX_2.Element;
 
 // @public
 export const SandboxActivitiesIcon: IconComponent;

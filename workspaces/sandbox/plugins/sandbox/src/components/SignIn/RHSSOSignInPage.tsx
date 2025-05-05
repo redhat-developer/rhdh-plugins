@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 import React from 'react';
-import { SignInPageProps } from '@backstage/core-plugin-api';
-import { SignInPage, SignInProviderConfig } from '@backstage/core-components';
+import { SignInPage } from '@backstage/core-components';
 import { keycloakApiRef } from '../../api';
 
-export type Props = SignInPageProps & {
-  provider: SignInProviderConfig;
-};
-
-export const RHSSOSignInPage = (props: Props) => {
+export const RHSSOSignInPage = (props: any) => {
   return (
     <div style={{ visibility: 'hidden' }}>
       <SignInPage
