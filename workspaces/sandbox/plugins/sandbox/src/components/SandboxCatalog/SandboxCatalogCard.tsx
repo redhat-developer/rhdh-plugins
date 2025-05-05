@@ -59,7 +59,7 @@ const CatalogCardGreenCorner = ({ show }: { show: boolean }) => {
         style={{
           width: '32px',
           height: '32px',
-          backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#1b1d21',
+          backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#0E1214',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -68,7 +68,7 @@ const CatalogCardGreenCorner = ({ show }: { show: boolean }) => {
     );
   }
   return (
-    <Tooltip title="Product you tried" placement="top" arrow>
+    <Tooltip title="Tried" placement="top" arrow>
       <Box
         style={{
           width: '32px',
@@ -212,7 +212,15 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
 
   return (
     <>
-      <Card elevation={0} key={id} sx={{ width: '100%', height: '100%' }}>
+      <Card
+        elevation={0}
+        key={id}
+        sx={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#0E1214',
+        }}
+      >
         <CatalogCardGreenCorner show={greenCorner} />
         <CardMedia
           sx={{
@@ -238,7 +246,12 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
             </Typography>
           </Stack>
         </CardMedia>
-        <CardContent style={{ padding: `0 ${theme.spacing(3)}` }}>
+        <CardContent
+          style={{
+            padding: `0 ${theme.spacing(3)}`,
+            backgroundColor: 'transparent',
+          }}
+        >
           {description?.map(point => (
             <Typography
               key={point.value}
@@ -246,7 +259,11 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
               style={{ fontSize: '14px', paddingBottom: '8px' }}
             >
               <div
-                style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '5px',
+                }}
               >
                 {point.icon} {point.value}
               </div>
