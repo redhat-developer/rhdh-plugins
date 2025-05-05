@@ -22,6 +22,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
 import Image from '../../assets/images/sandbox-banner-image.svg';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
+import { calculateDaysBetweenDates } from '../common';
 
 export const SandboxCatalogBanner: React.FC = () => {
   const theme = useTheme();
@@ -29,20 +30,13 @@ export const SandboxCatalogBanner: React.FC = () => {
     useSandboxContext();
 
   const calculateDaysLeft = React.useCallback(() => {
-    const currentDate = new Date();
-    const trialEndDate = new Date(userData?.endDate ?? '');
-    // Calculate the difference in
-    // milliseconds between the two dates
-    const differenceInMs: number = Math.abs(
-      trialEndDate.getTime() - currentDate.getTime(),
-    );
-    // Define the number of milliseconds in a day
-    const millisecondsInDay: number = 1000 * 60 * 60 * 24;
-    // Calculate the difference in days by
-    // dividing the difference in milliseconds by
-    // milliseconds in a day
-    return Math.floor(differenceInMs / millisecondsInDay);
-  }, [userData?.endDate]);
+    if (userData && userData.endDate) {
+      const trialEndDate = new Date(userData.endDate);
+      return calculateDaysBetweenDates(new Date(), trialEndDate);
+    }
+    // unable to compute days
+    return undefined;
+  }, [userData]);
 
   return (
     <Card
