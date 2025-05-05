@@ -22,7 +22,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
 import Image from '../../assets/images/sandbox-banner-image.svg';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
-import { calculateDaysBetweenDates } from '../common';
+import { calculateDaysBetweenDates } from '../../utils/common';
 
 export const SandboxCatalogBanner: React.FC = () => {
   const theme = useTheme();
