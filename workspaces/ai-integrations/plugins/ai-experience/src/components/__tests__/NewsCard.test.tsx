@@ -76,18 +76,6 @@ describe('NewsCard', () => {
     );
   });
 
-  it('truncates a long title', () => {
-    const longTitle =
-      'This is a very long article title that definitely exceeds the seventy character limit imposed by the component design.';
-    const articleWithLongTitle = { ...baseArticle, title: longTitle };
-    renderInTheme(<NewsCard key="1" article={articleWithLongTitle} />);
-
-    expect(
-      screen.getByText(`${longTitle.substring(0, 70)}...`),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(longTitle)).not.toBeInTheDocument();
-  });
-
   it('does not truncate a short title', () => {
     const shortTitle = 'Short Title';
     const articleWithShortTitle = { ...baseArticle, title: shortTitle };

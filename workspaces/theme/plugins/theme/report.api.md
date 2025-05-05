@@ -62,8 +62,7 @@ export interface RHDHThemePalette {
         tableRowHover: string;
         tableBorderColor: string;
         tableBackgroundColor: string;
-        tabsDisabledBackgroundColor: string;
-        tabsBottomBorderColor: string;
+        tabsLinkHoverBackgroundColor: string;
         contrastText: string;
         appBarBackgroundColor: string;
         appBarBackgroundImage: string;

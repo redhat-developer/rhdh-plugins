@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 1.12.3
+
+### Patch Changes
+
+- 206fef8: Remove unused devDependency for @types/node
+
+## 1.12.2
+
+### Patch Changes
+
+- df6fd7e: Updated dependency `@types/node` to `18.19.87`.
+
 ## 1.12.1
 
 ### Patch Changes
