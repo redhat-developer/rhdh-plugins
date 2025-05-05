@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-qe-theme
 
+## 0.6.0
+
+### Minor Changes
+
+- 36f95b2: Migrate qe-theme into rhdh-plugins. Updated dependencies.
+
 # @pataknight/backstage-plugin-rhdh-qe-theme
 
 ## 0.5.1

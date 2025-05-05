@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.8.0
+
+### Minor Changes
+
+- 8f9be66: Add support to load the theme as dynamic plugin
+
 ## 0.7.0
 
 ### Minor Changes
