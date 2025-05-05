@@ -121,7 +121,7 @@ app.get('/activeTextWhisperer', (req, res) => {
   const mydata = req.query.mydata;
 
   const autocomplete = ['my option one', 'my option two', 'Jack', 'Joe'];
-  if (mydata) {
+  if (mydata && mydata !== '___undefined___') {
     autocomplete.push(mydata);
   }
 

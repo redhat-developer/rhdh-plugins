@@ -96,7 +96,8 @@ export const ActiveTextInput: Widget<
     (changed: string) => {
       // TODO(do not merge): validate
 
-      const errorSchema = undefined;
+      // firstStep.fooTheFirst
+      const errorSchema = { firstStep: { fooTheFirst: { error: 'my error' } } };
 
       onChange(changed, errorSchema);
     },
@@ -111,6 +112,13 @@ export const ActiveTextInput: Widget<
         !retrigger ||
         !defaultValueSelector
       ) {
+        // Not yet ready to fetch
+        return;
+      }
+
+      const firstTime = value === undefined;
+      if (!firstTime && !autocompleteSelector) {
+        // No need to fetch
         return;
       }
 
@@ -140,7 +148,11 @@ export const ActiveTextInput: Widget<
           );
           setAutocompleteOptions(autocompleteValues);
         }
-        handleChange(selected);
+
+        if (firstTime) {
+          // loading default so do it only once
+          handleChange(selected);
+        }
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error(
@@ -163,6 +175,7 @@ export const ActiveTextInput: Widget<
     defaultValueSelector,
     fetchApi,
     props.id,
+    value,
     handleChange,
     // no need to expand the "retrigger" array here since its identity changes only if an item changes
     retrigger,
@@ -203,11 +216,7 @@ export const ActiveTextInput: Widget<
 
     return (
       <FormControl variant="outlined" fullWidth>
-        <Autocomplete
-          // disablePortal
-          options={autocompleteOptions}
-          renderInput={renderInput}
-        />
+        <Autocomplete options={autocompleteOptions} renderInput={renderInput} />
       </FormControl>
     );
   }

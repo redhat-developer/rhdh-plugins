@@ -45,10 +45,17 @@ export const evaluateTemplate = async (
     if (stopIndex < 0) {
       throw new Error(`Template unit is not closed by }}`);
     }
-    evaluated += await unitEvaluator(
+
+    let evaluatedUnit = await unitEvaluator(
       template.substring(startIndex + 4, stopIndex),
       formData,
     );
+    if (evaluatedUnit === undefined) {
+      evaluatedUnit = '___undefined___';
+    }
+
+    evaluated += evaluatedUnit;
+
     if (template.length > stopIndex + 2) {
       evaluated += await evaluateTemplate({
         ...props,
