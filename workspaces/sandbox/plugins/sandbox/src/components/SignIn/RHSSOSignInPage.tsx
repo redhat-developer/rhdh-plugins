@@ -25,7 +25,7 @@ export const RHSSOSignInPage = (props: any) => {
         auto
         provider={{
           id: 'oidc',
-          title: 'Red Hat SSO',
+          title: 'Red Hat account',
           message: 'Sign in using your Red Hat SSO account',
           apiRef: keycloakApiRef,
         }}
