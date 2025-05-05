@@ -11,6 +11,9 @@ import { JSX as JSX_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
 
 // @public
+export const RHSSOSignInPage: (props: any) => JSX_2.Element;
+
+// @public
 export const SandboxActivitiesIcon: IconComponent;
 
 // @public
