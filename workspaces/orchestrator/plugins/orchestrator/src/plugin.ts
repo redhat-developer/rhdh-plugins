@@ -18,6 +18,8 @@ import {
   createPlugin,
   createRoutableExtension,
   discoveryApiRef,
+  githubAuthApiRef,
+  gitlabAuthApiRef,
   identityApiRef,
 } from '@backstage/core-plugin-api';
 
@@ -33,9 +35,19 @@ export const orchestratorPlugin = createPlugin({
   apis: [
     createApiFactory({
       api: orchestratorApiRef,
-      deps: { discoveryApi: discoveryApiRef, identityApi: identityApiRef },
-      factory({ discoveryApi, identityApi }) {
-        return new OrchestratorClient({ discoveryApi, identityApi });
+      deps: {
+        discoveryApi: discoveryApiRef,
+        identityApi: identityApiRef,
+        githubAuthApi: githubAuthApiRef,
+        gitlabAuthApi: gitlabAuthApiRef,
+      },
+      factory({ discoveryApi, identityApi, githubAuthApi, gitlabAuthApi }) {
+        return new OrchestratorClient({
+          discoveryApi,
+          identityApi,
+          githubAuthApi,
+          gitlabAuthApi,
+        });
       },
     }),
   ],
