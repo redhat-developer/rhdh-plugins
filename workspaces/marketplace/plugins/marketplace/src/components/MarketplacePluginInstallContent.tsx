@@ -261,34 +261,36 @@ export const MarketplacePluginInstallContent = ({
         spacing={3}
         sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
       >
-        <Grid
-          item
-          xs={12}
-          md={6.5}
-          sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-        >
-          <Card
-            sx={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              borderRadius: 0,
-            }}
+        {packages.length > 0 && (
+          <Grid
+            item
+            xs={12}
+            md={6.5}
+            sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
           >
-            <CardContent
+            <Card
               sx={{
                 flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                overflow: 'auto',
-                scrollbarWidth: 'thin',
+                overflow: 'hidden',
+                borderRadius: 0,
               }}
             >
-              <CodeEditor defaultLanguage="yaml" onLoaded={onLoaded} />
-            </CardContent>
-          </Card>
-        </Grid>
+              <CardContent
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'auto',
+                  scrollbarWidth: 'thin',
+                }}
+              >
+                <CodeEditor defaultLanguage="yaml" onLoaded={onLoaded} />
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
 
         {showRightCard && (
           <Grid
