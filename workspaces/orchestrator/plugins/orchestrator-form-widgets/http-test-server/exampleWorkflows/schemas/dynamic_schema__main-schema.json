@@ -29,7 +29,14 @@
           "ui:widget": "ActiveTextInput",
           "ui:props": {
             "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/activeTextWhisperer",
-            "fetch:response:value": "myresult.foo.default"
+            "fetch:response:value": "myresult.foo.default",
+            "validate:url": "http://localhost:7007/api/proxy/mytesthttpserver/validate",
+            "validate:method": "POST",
+            "validate:body": {
+              "field": "mySimpleActiveText",
+              "value": "$${{current.firstStep.mySimpleActiveText}}",
+              "moreDataForMyValidator": "$${{current.firstStep.fooTheFirst}}"
+            }
           }
         },
         "mySchemaUpdater": {

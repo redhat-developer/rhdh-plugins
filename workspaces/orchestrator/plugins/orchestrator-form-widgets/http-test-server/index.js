@@ -118,6 +118,8 @@ app.post('/chunk02', (req, res) => {
 });
 
 app.get('/activeTextWhisperer', (req, res) => {
+  logRequest(req);
+
   const mydata = req.query.mydata;
 
   const autocomplete = ['my option one', 'my option two', 'Jack', 'Joe'];
@@ -138,4 +140,29 @@ app.listen(port, () => {
   console.info(
     `Simple HTTP server for orchestrator-form-widgets development only. Listening on ${port} port.`,
   );
+});
+
+app.post('/validate', (req, res) => {
+  logRequest(req);
+
+  const field = req.body?.field;
+  const value = req.body?.value;
+  const moreDataForMyValidator = req.body?.moreDataForMyValidator;
+
+  if (
+    field === 'mySimpleActiveText' &&
+    moreDataForMyValidator !== 'ignoreerror'
+  ) {
+    if (!value || value.length < 5) {
+      res.status(422);
+      res.send({
+        [field]: ['The field must be 5 or more characters long.'],
+      });
+
+      return;
+    }
+  }
+
+  res.status(200);
+  res.send('Valid');
 });

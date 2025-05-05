@@ -94,12 +94,7 @@ export const ActiveTextInput: Widget<
 
   const handleChange = useCallback(
     (changed: string) => {
-      // TODO(do not merge): validate
-
-      // firstStep.fooTheFirst
-      const errorSchema = { firstStep: { fooTheFirst: { error: 'my error' } } };
-
-      onChange(changed, errorSchema);
+      onChange(changed);
     },
     [onChange],
   );
