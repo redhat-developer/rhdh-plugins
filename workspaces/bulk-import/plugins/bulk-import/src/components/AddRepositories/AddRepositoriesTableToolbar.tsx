@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import type { MouseEvent } from 'react';
+import { useEffect, useState } from 'react';
 
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -44,15 +45,12 @@ export const AddRepositoriesTableToolbar = ({
 }) => {
   const { setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
-  const [selection, setSelection] = React.useState<string>(
+  const [selection, setSelection] = useState<string>(
     RepositorySelection.Repository,
   );
-  const [search, setSearch] = React.useState<string>('');
-  const [selectedReposNumber, setSelectedReposNumber] = React.useState(0);
-  const handleToggle = (
-    _event: React.MouseEvent<HTMLElement>,
-    type: string,
-  ) => {
+  const [search, setSearch] = useState<string>('');
+  const [selectedReposNumber, setSelectedReposNumber] = useState(0);
+  const handleToggle = (_event: MouseEvent<HTMLElement>, type: string) => {
     if (type && onPageChange) {
       setSelection(type);
       setFieldValue('repositoryType', type);
@@ -67,7 +65,7 @@ export const AddRepositoriesTableToolbar = ({
     setSearch(filter);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (activeOrganization && selectedReposFromDrawer) {
       const thisSelectedReposCount = Object.values(
         selectedReposFromDrawer,

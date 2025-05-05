@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo } from 'react';
 import { useAsync } from 'react-use';
 
 import {
@@ -98,7 +98,7 @@ export const useAddedRepositories = (
     { refetchInterval: pollInterval || 60000, refetchOnWindowFocus: false },
   );
 
-  const prepareData = React.useMemo(() => {
+  const prepareData = useMemo(() => {
     const repoData = prepareDataForAddedRepositories(
       value as ImportJobs | Response,
       user as string,

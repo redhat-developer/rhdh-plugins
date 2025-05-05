@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import type { ChangeEvent, MouseEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -60,16 +61,16 @@ export const RepositoriesTable = ({
 }) => {
   const { setFieldValue, values, setStatus } =
     useFormikContext<AddRepositoriesFormValues>();
-  const [order, setOrder] = React.useState<Order>('asc');
-  const [orderBy, setOrderBy] = React.useState<string>();
-  const [selected, setSelected] = React.useState<AddedRepositories>({});
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [tableData, setTableData] = React.useState<AddRepositoryData[]>([]);
-  const [isOpen, setIsOpen] = React.useState<boolean>(false);
+  const [order, setOrder] = useState<Order>('asc');
+  const [orderBy, setOrderBy] = useState<string>();
+  const [selected, setSelected] = useState<AddedRepositories>({});
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [tableData, setTableData] = useState<AddRepositoryData[]>([]);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeOrganization, setActiveOrganization] =
-    React.useState<AddRepositoryData | null>();
-  const [localPage, setLocalPage] = React.useState(0);
-  const [drawerPage, setDrawerPage] = React.useState(0);
+    useState<AddRepositoryData | null>();
+  const [localPage, setLocalPage] = useState(0);
+  const [drawerPage, setDrawerPage] = useState(0);
 
   const { loading, data, error } = useRepositories({
     showOrganizations,
@@ -79,7 +80,7 @@ export const RepositoriesTable = ({
     searchString,
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (drawerOrganization) {
       setDrawerPage(0);
     } else {
@@ -87,13 +88,13 @@ export const RepositoriesTable = ({
     }
   }, [drawerOrganization, localPage, page]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (drawerOrganization) {
       setSelected(values.repositories);
     }
   }, [drawerOrganization, values?.repositories]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (showOrganizations) {
       setTableData(Object.values(data?.organizations || {}));
     } else {
@@ -101,7 +102,7 @@ export const RepositoriesTable = ({
     }
   }, [data, showOrganizations]);
 
-  const filteredData = React.useMemo(() => {
+  const filteredData = useMemo(() => {
     let filteredRows = !showOrganizations
       ? evaluateRowForRepo(tableData, values.repositories)
       : evaluateRowForOrg(tableData, values.repositories);
@@ -113,16 +114,13 @@ export const RepositoriesTable = ({
     return filteredRows;
   }, [tableData, order, orderBy, values?.repositories, showOrganizations]);
 
-  const handleRequestSort = (
-    _event: React.MouseEvent<unknown>,
-    property: string,
-  ) => {
+  const handleRequestSort = (_event: MouseEvent<unknown>, property: string) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
 
-  const updateSelectedRepositories = React.useCallback(
+  const updateSelectedRepositories = useCallback(
     (newSelected: AddedRepositories) => {
       setFieldValue(
         'repositories',
@@ -168,9 +166,7 @@ export const RepositoriesTable = ({
       updateSelectedRepositories(newSelectedRows);
     }
   };
-  const handleSelectAllClick = (
-    _event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleSelectAllClick = (_event: ChangeEvent<HTMLInputElement>) => {
     if (drawerOrganization) {
       handleClickAllForRepositoriesTable(true);
     } else {
@@ -191,7 +187,7 @@ export const RepositoriesTable = ({
     }
   };
 
-  const handleClick = (_event: React.MouseEvent, repo: AddRepositoryData) => {
+  const handleClick = (_event: MouseEvent, repo: AddRepositoryData) => {
     let newSelected;
     if (selected[repo.id]) {
       newSelected = { ...selected };
@@ -213,9 +209,7 @@ export const RepositoriesTable = ({
     }
   };
 
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleChangeRowsPerPage = (event: ChangeEvent<HTMLInputElement>) => {
     const newRowsPerPage = parseInt(event.target.value, 10);
     setRowsPerPage(newRowsPerPage);
     if (drawerOrganization) {
@@ -228,17 +222,17 @@ export const RepositoriesTable = ({
     }
   };
 
-  const handleOrgRowSelected = React.useCallback((org: AddRepositoryData) => {
+  const handleOrgRowSelected = useCallback((org: AddRepositoryData) => {
     setActiveOrganization(org);
     setIsOpen(true);
   }, []);
 
-  const handleClose = React.useCallback(() => {
+  const handleClose = useCallback(() => {
     setIsOpen(false);
     setActiveOrganization(null);
   }, [setIsOpen]);
 
-  const handleUpdatesFromDrawer = React.useCallback(
+  const handleUpdatesFromDrawer = useCallback(
     (drawerSelected: AddedRepositories) => {
       if (drawerSelected) {
         setSelected(drawerSelected);
@@ -248,11 +242,11 @@ export const RepositoriesTable = ({
     [updateSelectedRepositories, setSelected],
   );
 
-  const selectedForActiveDrawer = React.useMemo(
+  const selectedForActiveDrawer = useMemo(
     () => filterSelectedForActiveDrawer(tableData || [], selected),
     [tableData, selected],
   );
-  const selectedRepositoriesOnActivePage = React.useMemo(
+  const selectedRepositoriesOnActivePage = useMemo(
     () => filterSelectedRepositoriesOnActivePage(filteredData, selected),
     [filteredData, selected],
   );

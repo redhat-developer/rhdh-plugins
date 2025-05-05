@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import type { ChangeEvent, MouseEvent } from 'react';
 
 import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
@@ -41,7 +41,7 @@ export const RepositoriesHeader = ({
   isRepoSelectDrawer = false,
 }: {
   numSelected?: number;
-  onRequestSort: (event: React.MouseEvent<unknown>, property: any) => void;
+  onRequestSort: (event: MouseEvent<unknown>, property: any) => void;
   order: Order;
   orderBy: string | undefined;
   rowCount?: number;
@@ -49,12 +49,11 @@ export const RepositoriesHeader = ({
   showOrganizations?: boolean;
   showImportJobs?: boolean;
   isRepoSelectDrawer?: boolean;
-  onSelectAllClick?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onSelectAllClick?: (event: ChangeEvent<HTMLInputElement>) => void;
 }) => {
-  const createSortHandler =
-    (property: any) => (event: React.MouseEvent<unknown>) => {
-      onRequestSort(event, property);
-    };
+  const createSortHandler = (property: any) => (event: MouseEvent<unknown>) => {
+    onRequestSort(event, property);
+  };
 
   const getColumnHeader = () => {
     if (showOrganizations) {

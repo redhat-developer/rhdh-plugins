@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
+import { useState } from 'react';
 
 import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
@@ -36,7 +37,7 @@ const CustomTabPanel = ({
   index,
   ...other
 }: {
-  children?: React.ReactNode;
+  children?: ReactNode;
   index: number;
   value: number;
 }) => {
@@ -91,10 +92,10 @@ export const PreviewPullRequests = ({
   formErrors: PullRequestPreviewData;
   setFormErrors: (pullRequest: PullRequestPreviewData) => void;
 }) => {
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = useState(0);
   const { status } = useFormikContext<AddRepositoriesFormValues>();
 
-  const handleChange = (_event: React.ChangeEvent<{}>, newValue: number) => {
+  const handleChange = (_event: ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
   };
 
