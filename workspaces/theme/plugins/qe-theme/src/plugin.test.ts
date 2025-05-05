@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
-export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
+import { qeThemePlugin } from './plugin';
 
-export * from './hooks';
-export * from './themes';
-export type {
-  BackstageThemePalette,
-  RHDHThemePalette,
-  ThemeConfigPalette,
-  ThemeConfigPageTheme,
-  ThemeConfigOptions,
-  ThemeConfig,
-  Branding,
-  Config,
-} from './types';
+describe('qe-theme', () => {
+  it('should export plugin', () => {
+    expect(qeThemePlugin).toBeDefined();
+  });
+});

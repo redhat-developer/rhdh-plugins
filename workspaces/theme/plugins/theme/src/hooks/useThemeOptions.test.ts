@@ -53,8 +53,8 @@ describe('useThemeOptions', () => {
       defaultPageTheme: 'default',
       pageTheme: {
         default: {
-          backgroundImage: 'none,  linear-gradient(90deg, #0f1214, #0f1214)',
-          colors: ['#0f1214'],
+          backgroundImage: 'none,  linear-gradient(90deg, #292929, #292929)',
+          colors: ['#292929'],
           fontColor: '#ffffff',
           shape: 'none',
         },

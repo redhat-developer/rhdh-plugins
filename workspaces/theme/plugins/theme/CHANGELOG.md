@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.8.0
+
+### Minor Changes
+
+- 8f9be66: Add support to load the theme as dynamic plugin
+
+## 0.7.0
+
+### Minor Changes
+
+- 7db4caa: Align BackstageHeader, Backstage/MUI Breadcrumbs, BackstageSidebar, and BackstagePage with PF6
+- 7db4caa: **Breaking change**: remove deprecated general.sideBarBackgroundColor
+- 33b6dd1: Align primary color, buttons and tabs styling with PatternFly 6. Add styling for :focus-visible on the tabs.
+
 ## 0.6.0
 
 ### Minor Changes

@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
-export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
+import React, { ReactNode } from 'react';
+import { lightTheme } from './lightTheme';
+import { darkTheme } from './darkTheme';
+import { UnifiedThemeProvider } from '@backstage/theme';
 
-export * from './hooks';
-export * from './themes';
-export type {
-  BackstageThemePalette,
-  RHDHThemePalette,
-  ThemeConfigPalette,
-  ThemeConfigPageTheme,
-  ThemeConfigOptions,
-  ThemeConfig,
-  Branding,
-  Config,
-} from './types';
+export const lightThemeProvider = ({ children }: { children: ReactNode }) => (
+  <UnifiedThemeProvider theme={lightTheme} children={children} />
+);
+
+export const darkThemeProvider = ({ children }: { children: ReactNode }) => (
+  <UnifiedThemeProvider theme={darkTheme} children={children} />
+);

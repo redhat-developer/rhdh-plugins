@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
-export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
+import { createPlugin } from '@backstage/core-plugin-api';
 
-export * from './hooks';
-export * from './themes';
-export type {
-  BackstageThemePalette,
-  RHDHThemePalette,
-  ThemeConfigPalette,
-  ThemeConfigPageTheme,
-  ThemeConfigOptions,
-  ThemeConfig,
-  Branding,
-  Config,
-} from './types';
+export const qeThemePlugin = createPlugin({
+  id: 'qe-theme',
+  routes: {},
+});

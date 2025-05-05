@@ -197,6 +197,7 @@ export default async (opts: OptionValues) => {
       apiVersion: 'backstage.io/v1alpha1',
       kind: 'Location',
       metadata: {
+        namespace,
         name: 'packages',
       },
       spec: {

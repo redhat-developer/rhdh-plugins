@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-export { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
-export { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
+export { default as LightIcon } from '@material-ui/icons/WbSunny';
+export { default as DarkIcon } from '@material-ui/icons/Brightness2';
 
-export * from './hooks';
-export * from './themes';
-export type {
-  BackstageThemePalette,
-  RHDHThemePalette,
-  ThemeConfigPalette,
-  ThemeConfigPageTheme,
-  ThemeConfigOptions,
-  ThemeConfig,
-  Branding,
-  Config,
-} from './types';
+export { qeThemePlugin as default } from './plugin';
+
+export { lightThemeProvider, darkThemeProvider } from './theme/providers';
