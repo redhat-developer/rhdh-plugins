@@ -32,11 +32,7 @@ import { safeSet } from './safeSet';
 const walkThrough: (
   uiSchema: OrchestratorFormContextProps['uiSchema'],
   formData: JsonObject | undefined,
-  callback: (
-    path: string,
-    uiSchemaProperty: JsonObject,
-    // formDataValue: JsonValue | undefined,
-  ) => Promise<void>,
+  callback: (path: string, uiSchemaProperty: JsonObject) => Promise<void>,
   pathPrefix: string,
 ) => Promise<void>[] = (uiSchema, formData, callback, pathPrefix) => {
   let dottedPathPrefix = pathPrefix;
@@ -49,12 +45,7 @@ const walkThrough: (
       // tune following condition to match just those fields which are relevant for the orchestrator-form-widget
       if (typeof uiSchema[key] === 'object') {
         if (uiSchema[key]?.['ui:widget']) {
-          return [
-            callback(
-              `${dottedPathPrefix}${key}`,
-              uiSchema[key] /* , formData?.[key]*/,
-            ),
-          ];
+          return [callback(`${dottedPathPrefix}${key}`, uiSchema[key])];
         }
 
         return walkThrough(
