@@ -688,10 +688,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         root: {
           // Controls the page inset as in PF6 -- only in desktop view
           '@media (min-width: 600px)': {
-            // Needed to prevent scrolling in global header
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100vh',
             '--rhdh-v1-page-inset': '1.5rem',
             backgroundColor: general.sidebarBackgroundColor,
             "& #global-header ~ main, & #global-header ~ [class*='MuiLinearProgress-root']":
@@ -708,6 +704,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             },
             "& > [class*='MuiLinearProgress-root']": {
               backgroundColor: general.mainSectionBackgroundColor,
+              height: '100vh',
               "& > [class*='MuiLinearProgress-']": {
                 height: '0.5rem !important',
               },
