@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.5.1
+
+### Patch Changes
+
+- 9ad7f38: Fixed profile dropdown username to match the User Profile name in the Settings page
+
 ## 1.5.0
 
 ### Minor Changes
