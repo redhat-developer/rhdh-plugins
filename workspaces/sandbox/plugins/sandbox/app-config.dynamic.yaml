@@ -27,6 +27,8 @@ plugins:
               default.create:
                 title: ''
           red-hat-developer-hub.backstage-plugin-sandbox:
+            signInPage:
+              importName: RHSSOSignInPage
             appIcons:
               - name: homeIcon
                 importName: SandboxHomeIcon
