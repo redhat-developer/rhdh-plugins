@@ -56,7 +56,8 @@ The Sandbox plugin uses Red Hat SSO to authenticate users accessing the Sandbox 
 
 0. `export QUAY_NAMESPACE=<your-quay-namespace>`
 1. `cd workspaces/sandbox`
-2. `make start-rhdh-local`
+2. `yarn install`
+3. `make start-rhdh-local`
 
 Please, note that every time you want to re deploy, you need to run:
 `make stop-rhdh-local`
