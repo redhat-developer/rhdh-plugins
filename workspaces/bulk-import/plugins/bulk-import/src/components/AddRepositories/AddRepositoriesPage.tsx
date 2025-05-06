@@ -82,7 +82,7 @@ export const AddRepositoriesPage = () => {
                         ? 'icon-approval-tool-white'
                         : 'icon-approval-tool-black'
                     }
-                    iconText="Choose approval tool (GitHub/GitLab) for PR/ticket creation"
+                    iconText="Choose approval tool (GitHub/GitLab) for PR creation"
                   />
                 )}
                 <Illustrations

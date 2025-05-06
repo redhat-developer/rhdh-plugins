@@ -102,7 +102,7 @@ const DeleteRepositoryDialog = ({
         >
           <span style={{ fontWeight: 'bold' }}>
             <WarningIcon className={classes.warningIcon} color="warning" />{' '}
-            Remove {repository.repoName} repository?
+            {`Remove ${repository.repoName} ${gitlabFeatureFlag ? '' : 'repository'}?`}
           </span>
 
           <IconButton
@@ -159,7 +159,7 @@ const DeleteRepositoryDialog = ({
             },
           }}
         >
-          Remove
+          {mutationDelete.isLoading ? 'Removing...' : 'Remove'}
         </Button>
         <Button
           variant="outlined"

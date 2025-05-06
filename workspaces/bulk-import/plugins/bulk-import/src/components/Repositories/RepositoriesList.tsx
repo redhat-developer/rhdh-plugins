@@ -107,8 +107,8 @@ export const RepositoriesList = () => {
         onSearchChange={handleSearch}
         title={
           importJobs?.totalJobs === 0
-            ? `Added ${gitlabFeatureFlag ? 'entities' : 'repositories'}`
-            : `Added  ${gitlabFeatureFlag ? 'entities' : 'repositories'} (${importJobs.totalJobs})`
+            ? `${gitlabFeatureFlag ? 'Imported entities' : 'Added repositories'}`
+            : `${gitlabFeatureFlag ? 'Imported entities' : 'Added repositories'} (${importJobs.totalJobs})`
         }
         components={{
           Header: () => (
