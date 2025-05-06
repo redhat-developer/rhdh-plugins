@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState,useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -31,8 +31,9 @@ import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
 import ApprovalTool from './ApprovalTool';
 import { RepositoriesTable } from './RepositoriesTable';
 
-export const AddRepositoriesTable = ({ title }: { title: string }) => {
-  const { values ,setFieldValue} = useFormikContext<AddRepositoriesFormValues>();
+export const AddRepositoriesTable = ({ title }: { title?: string }) => {
+  const { values, setFieldValue } =
+    useFormikContext<AddRepositoriesFormValues>();
   const [isApprovalToolGitlab, setIsApprovalToolGitlab] = useState(false);
 
   useEffect(() => {
