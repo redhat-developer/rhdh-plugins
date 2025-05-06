@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-export * from './MarketplaceAuthor';
-export * from './MarketplaceCollection';
-export * from './MarketplaceKind';
-export * from './MarketplacePackage';
-export * from './MarketplacePlugin';
-export * from './DynamicPackageConfig';
-export * from './DynamicPluginConfig';
+import { DynamicPackageConfig } from './DynamicPackageConfig';
+
+/**
+ * @public
+ */
+export type DynamicPluginsConfig = {
+  plugins: DynamicPackageConfig[];
+};
+
+/**
+ * @public
+ */
+export type DynamicPluginConfig = DynamicPackageConfig[];

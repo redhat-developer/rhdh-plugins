@@ -1,0 +1,4 @@
+plugins:
+  - package: ./dynamic-plugins/dist/package11-backend-dynamic
+    disabled: true
+    pluginConfig: []

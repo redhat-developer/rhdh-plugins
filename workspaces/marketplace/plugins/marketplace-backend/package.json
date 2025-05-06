@@ -44,6 +44,7 @@
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
+    "js-yaml": "^4.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

@@ -14,18 +14,6 @@
  * limitations under the License.
  */
 
-import { JsonObject } from '@backstage/types';
-
-export interface DynamicPluginsConfig {
-  plugins: DynamicPluginConfig[];
-}
-
-export interface DynamicPluginConfig {
-  package: string;
-  disabled: boolean;
-  pluginConfig: JsonObject;
-}
-
 export interface PackageJson {
   name: string;
   version: string;

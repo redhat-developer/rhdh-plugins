@@ -10622,6 +10622,7 @@ __metadata:
     "@types/supertest": ^2.0.12
     express: ^4.17.1
     express-promise-router: ^4.1.0
+    js-yaml: ^4.1.0
     msw: ^1.0.0
     supertest: ^6.2.4
     zod: ^3.22.4

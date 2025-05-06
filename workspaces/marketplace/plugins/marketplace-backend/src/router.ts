@@ -43,16 +43,22 @@ import { createSearchParams } from './utils/createSearchParams';
 import { removeVerboseSpecContent } from './utils/removeVerboseSpecContent';
 import { rules as extensionRules } from './permissions/rules';
 import { matches } from './utils/permissionUtils';
+import { PluginsConfigService } from './pluginsConfig/PluginsConfigService';
+import { InputError, NotFoundError } from '@backstage/errors';
 
-export async function createRouter({
-  marketplaceApi,
-  httpAuth,
-  permissions,
-}: {
+export type MarketplaceRouterOptions = {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
   permissions: PermissionsService;
-}): Promise<express.Router> {
+  pluginsConfigService: PluginsConfigService;
+};
+
+export async function createRouter(
+  options: MarketplaceRouterOptions,
+): Promise<express.Router> {
+  const { httpAuth, marketplaceApi, permissions, pluginsConfigService } =
+    options;
+
   const router = Router();
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
     resourceType: RESOURCE_TYPE_EXTENSIONS_PLUGIN,
@@ -138,6 +144,26 @@ export async function createRouter({
     );
   });
 
+  router.get('/package/:namespace/:name/configuration', async (req, res) => {
+    const marketplacePackage = await marketplaceApi.getPackageByName(
+      req.params.namespace,
+      req.params.name,
+    );
+
+    if (!marketplacePackage.spec?.dynamicArtifact) {
+      throw new InputError(
+        "Package catalog entity is missing 'spec.dynamicArtifact'",
+      ); // 400
+    }
+    const result = pluginsConfigService.getPackageConfig(
+      marketplacePackage.spec?.dynamicArtifact,
+    );
+    if (!result) {
+      throw new NotFoundError(); // 404
+    }
+    res.status(200).json(result);
+  });
+
   router.get('/plugins', async (req, res) => {
     const request = decodeGetEntitiesRequest(createSearchParams(req));
     const plugins = await marketplaceApi.getPlugins(request);
@@ -220,7 +246,7 @@ export async function createRouter({
       );
     }
 
-    const plugin = await marketplaceApi.getPluginByName(
+    const marketplacePlugin = await marketplaceApi.getPluginByName(
       req.params.namespace,
       req.params.name,
     );
@@ -228,14 +254,19 @@ export async function createRouter({
     const hasReadAccess =
       readDecision.result === AuthorizeResult.ALLOW ||
       (readDecision.result === AuthorizeResult.CONDITIONAL &&
-        matches(plugin, readDecision.conditions));
+        matches(marketplacePlugin, readDecision.conditions));
     if (!hasReadAccess) {
       throw new NotAllowedError(
         `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
       );
     }
 
-    res.status(200).json({}); // This should return the configuration in YAML string
+    const result =
+      await pluginsConfigService.getPluginConfig(marketplacePlugin);
+    if (!result) {
+      throw new NotFoundError(); // 404
+    }
+    res.status(200).json(result);
   });
 
   router.post('/plugin/:namespace/:name/configuration', async (req, res) => {

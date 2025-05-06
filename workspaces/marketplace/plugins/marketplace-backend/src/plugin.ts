@@ -26,6 +26,8 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { createRouter } from './router';
+import { PluginsConfigService } from './pluginsConfig/PluginsConfigService';
+import { PluginsConfigFileHandler } from './pluginsConfig/PluginsConfigFileHandler';
 
 /**
  * marketplacePlugin backend plugin
@@ -38,12 +40,20 @@ export const marketplacePlugin = createBackendPlugin({
     env.registerInit({
       deps: {
         auth: coreServices.auth,
+        config: coreServices.rootConfig,
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         discovery: coreServices.discovery,
         permissions: coreServices.permissions,
       },
-      async init({ auth, httpAuth, httpRouter, discovery, permissions }) {
+      async init({
+        auth,
+        config,
+        httpAuth,
+        httpRouter,
+        discovery,
+        permissions,
+      }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
 
         const marketplaceApi: MarketplaceApi = new MarketplaceCatalogClient({
@@ -51,9 +61,17 @@ export const marketplacePlugin = createBackendPlugin({
           catalogApi,
         });
 
+        const pluginsConfigService = new PluginsConfigService(
+          new PluginsConfigFileHandler(
+            config.getOptionalString('marketplace.dynamicPluginsConfig'),
+          ),
+          marketplaceApi,
+        );
+
         httpRouter.use(
           await createRouter({
             httpAuth,
+            pluginsConfigService,
             marketplaceApi,
             permissions,
           }),

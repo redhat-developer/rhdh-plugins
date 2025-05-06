@@ -23,13 +23,26 @@ import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import { ExtendedHttpServer } from '@backstage/backend-defaults/rootHttpRouter';
 
 import { marketplacePlugin } from './plugin';
-import { mockCollections, mockPlugins } from '../__fixtures__/mockData';
+import {
+  mockCollections,
+  mockPlugins,
+  mockPackages,
+  mockDynamicPackage11,
+  mockDynamicPlugin1,
+} from '../__fixtures__/mockData';
 
 import {
   MarketplacePlugin,
   MarketplaceCollection,
   MarketplaceKind,
+  MarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { PluginsConfigService } from './pluginsConfig/PluginsConfigService';
+
+type MockMarketplaceEntity =
+  | Partial<MarketplacePlugin>
+  | Partial<MarketplaceCollection>
+  | Partial<MarketplacePackage>;
 
 const BASE_CONFIG = {
   app: {
@@ -99,12 +112,14 @@ describe('createRouter', () => {
   const setupTestWithMockCatalog = async ({
     mockData,
     name,
-    kind = 'plugin',
+    kind = MarketplaceKind.Plugin,
   }: {
-    mockData: MarketplacePlugin[] | MarketplaceCollection[] | {} | null;
+    mockData: MockMarketplaceEntity[] | {};
     name?: string;
     kind?: string;
-  }): Promise<{ backendServer: ExtendedHttpServer }> => {
+  }): Promise<{
+    backendServer: ExtendedHttpServer;
+  }> => {
     const { server } = testSetup();
     const backendServer: ExtendedHttpServer = await startBackendServer();
     server.use(
@@ -124,11 +139,18 @@ describe('createRouter', () => {
       ),
       rest.get(
         `http://localhost:${backendServer.port()}/api/catalog/entities/by-name/${kind}/default/${name}`,
-        (_, res, ctx) =>
-          res(
-            ctx.status(name === 'invalid-plugin' ? 404 : 200),
-            ctx.json(name === 'invalid-plugin' ? {} : mockData),
-          ),
+        (_, res, ctx) => {
+          if (!Array.isArray(mockData)) {
+            throw new Error('Internal server error');
+          }
+          const foundEntity = mockData.find(
+            e => e.kind === kind && e.metadata?.name === name,
+          );
+          return res(
+            ctx.status(foundEntity ? 200 : 404),
+            ctx.json(foundEntity),
+          );
+        },
       ),
     );
 
@@ -153,7 +175,7 @@ describe('createRouter', () => {
 
     it('should get the collection by name', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
-        mockData: mockCollections[0],
+        mockData: mockCollections,
         name: 'featured-plugins',
         kind: MarketplaceKind.Collection,
       });
@@ -163,13 +185,13 @@ describe('createRouter', () => {
       );
 
       expect(response.status).toEqual(200);
-      expect(response.body.metadata.name).toEqual('test-featured-plugins');
+      expect(response.body.metadata.name).toEqual('featured-plugins');
       expect(response.body.spec.plugins).toEqual(['plugin1', 'plugin2']);
     });
 
     it('should throw error while fetching collection by name', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
-        mockData: null,
+        mockData: [],
         name: 'not-found',
         kind: MarketplaceKind.Collection,
       });
@@ -246,7 +268,7 @@ describe('createRouter', () => {
 
     it('should throw an error when the collection is not found', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
-        mockData: null,
+        mockData: [],
         name: 'not-found',
         kind: MarketplaceKind.Collection,
       });
@@ -323,7 +345,7 @@ describe('createRouter', () => {
 
     it('should get the plugin by name', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
-        mockData: mockPlugins[0],
+        mockData: mockPlugins,
         name: 'plugin1',
       });
 
@@ -337,7 +359,7 @@ describe('createRouter', () => {
 
     it('should throw error while fetching plugin by name', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
-        mockData: {},
+        mockData: [],
         name: 'invalid-plugin',
       });
       const response = await request(backendServer).get(
@@ -357,6 +379,98 @@ describe('createRouter', () => {
         response: {
           statusCode: 404,
         },
+      });
+    });
+
+    describe('GET /plugin/:namespace/:name/configuration', () => {
+      it('should get the plugin configuration', async () => {
+        const { backendServer } = await setupTestWithMockCatalog({
+          mockData: [...mockPlugins, ...mockPackages],
+          name: 'plugin1',
+        });
+
+        jest
+          .spyOn(PluginsConfigService.prototype, 'getPluginConfig')
+          .mockResolvedValue(mockDynamicPlugin1);
+
+        const response = await request(backendServer).get(
+          '/api/marketplace/plugin/default/plugin1/configuration',
+        );
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual(mockDynamicPlugin1);
+      });
+
+      it('should throw an error when the plugin configuration is not found', async () => {
+        const { backendServer } = await setupTestWithMockCatalog({
+          mockData: [],
+          name: 'not-found',
+        });
+
+        const response = await request(backendServer).get(
+          '/api/marketplace/plugin/default/not-found/configuration',
+        );
+        expect(response.status).toEqual(404);
+        expect(response.body).toEqual({
+          error: {
+            message: 'Plugin default/not-found not found',
+            name: 'NotFoundError',
+          },
+          request: {
+            method: 'GET',
+            url: '/plugin/default/not-found/configuration',
+          },
+          response: {
+            statusCode: 404,
+          },
+        });
+      });
+    });
+  });
+
+  describe('packages', () => {
+    describe('GET /package/:namespace/:name/configuration', () => {
+      it('should get the package configuration', async () => {
+        const { backendServer } = await setupTestWithMockCatalog({
+          mockData: mockPackages,
+          name: 'package11',
+          kind: MarketplaceKind.Package,
+        });
+
+        jest
+          .spyOn(PluginsConfigService.prototype, 'getPackageConfig')
+          .mockReturnValue(mockDynamicPackage11);
+
+        const response = await request(backendServer).get(
+          '/api/marketplace/package/default/package11/configuration',
+        );
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual(mockDynamicPackage11);
+      });
+
+      it('should throw an error when the package configuration is not found', async () => {
+        const { backendServer } = await setupTestWithMockCatalog({
+          mockData: [],
+          name: 'not-found',
+          kind: MarketplaceKind.Package,
+        });
+
+        const response = await request(backendServer).get(
+          '/api/marketplace/package/default/not-found/configuration',
+        );
+        expect(response.status).toEqual(404);
+        expect(response.body).toEqual({
+          error: {
+            message: 'Package default/not-found not found',
+            name: 'NotFoundError',
+          },
+          request: {
+            method: 'GET',
+            url: '/package/default/not-found/configuration',
+          },
+          response: {
+            statusCode: 404,
+          },
+        });
       });
     });
   });
