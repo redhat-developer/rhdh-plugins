@@ -30,8 +30,8 @@ export const SandboxCatalogBanner: React.FC = () => {
     useSandboxContext();
 
   const calculateDaysLeft = React.useCallback(() => {
-    if (userData && userData.endDate) {
-      const trialEndDate = new Date(userData.endDate);
+    if (userData?.endDate) {
+      const trialEndDate = new Date(userData?.endDate);
       return calculateDaysBetweenDates(new Date(), trialEndDate);
     }
     // unable to compute days
@@ -46,6 +46,7 @@ export const SandboxCatalogBanner: React.FC = () => {
         justifyContent: 'space-between',
         padding: theme.spacing(4),
         backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#0E1214',
+        borderRadius: '0',
       }}
     >
       <Stack direction="row">
