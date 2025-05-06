@@ -68,7 +68,6 @@ import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import React from 'react';
 
 const techdocsContent = (
   <EntityTechdocsContent>
@@ -89,7 +88,6 @@ const cicdContent = (
         <EntityGithubActionsContent />
       </EntitySwitch.Case>
      */}
-
     <EntitySwitch.Case>
       <EmptyState
         title="No CI/CD available for this entity"

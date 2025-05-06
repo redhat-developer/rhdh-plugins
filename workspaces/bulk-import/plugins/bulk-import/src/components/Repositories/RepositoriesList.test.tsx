@@ -13,46 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
-
 import { identityApiRef } from '@backstage/core-plugin-api';
-import { TestApiProvider } from '@backstage/test-utils';
+import { permissionApiRef } from '@backstage/plugin-permission-react';
+import {
+  mockApis,
+  renderInTestApp,
+  TestApiProvider,
+} from '@backstage/test-utils';
 
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { useFormikContext } from 'formik';
 
+import {
+  BulkImportAPI,
+  bulkImportApiRef,
+} from '../../api/BulkImportBackendClient';
 import { useAddedRepositories } from '../../hooks';
 import { mockGetImportJobs, mockGetRepositories } from '../../mocks/mockData';
 import { RepositoriesList } from './RepositoriesList';
-
-jest.mock('react', () => ({
-  ...jest.requireActual('react'),
-}));
-
-jest.mock('formik', () => ({
-  ...jest.requireActual('formik'),
-  useFormikContext: jest.fn(),
-}));
 
 jest.mock('./RepositoriesList', () => ({
   ...jest.requireActual('./RepositoriesList'),
   useStyles: jest.fn().mockReturnValue({ empty: 'empty' }),
 }));
 
-jest.mock('@mui/material', () => ({
-  ...jest.requireActual('@mui/material'),
-  makeStyles: () => () => {
-    return {
-      empty: 'empty',
-    };
-  },
-}));
-
-jest.mock('@backstage/core-plugin-api', () => ({
-  ...jest.requireActual('@backstage/core-plugin-api'),
-  useApi: jest.fn(),
+jest.mock('formik', () => ({
+  ...jest.requireActual('formik'),
+  useFormikContext: jest.fn(),
 }));
 
 jest.mock('../../hooks/useAddedRepositories', () => ({
@@ -89,15 +76,19 @@ describe('RepositoriesList', () => {
     (useFormikContext as jest.Mock).mockReturnValue({
       status: null,
       setFieldValue: jest.fn(),
-      values: mockGetRepositories.repositories,
+      values: mockGetRepositories,
     });
     mockUseAddedRepositories.mockReturnValue(mockAsyncData);
-    render(
-      <Router>
-        <TestApiProvider apis={[[identityApiRef, mockIdentityApi]]}>
-          <RepositoriesList />
-        </TestApiProvider>
-      </Router>,
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [identityApiRef, mockIdentityApi],
+          [bulkImportApiRef, {} as BulkImportAPI],
+          [permissionApiRef, mockApis.permission()],
+        ]}
+      >
+        <RepositoriesList />
+      </TestApiProvider>,
     );
     const addRepoButton = screen.getByText('Add');
     expect(addRepoButton).toBeInTheDocument();
@@ -116,12 +107,15 @@ describe('RepositoriesList', () => {
       ...mockAsyncData,
       data: { addedRepositories: [], totalJobs: 0 },
     });
-    render(
-      <Router>
-        <TestApiProvider apis={[[identityApiRef, mockIdentityApi]]}>
-          <RepositoriesList />
-        </TestApiProvider>
-      </Router>,
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [identityApiRef, mockIdentityApi],
+          [bulkImportApiRef, {} as BulkImportAPI],
+        ]}
+      >
+        <RepositoriesList />
+      </TestApiProvider>,
     );
 
     expect(
@@ -144,12 +138,15 @@ describe('RepositoriesList', () => {
       ...mockAsyncData,
       data: { addedRepositories: [], totalJobs: 0 },
     });
-    render(
-      <Router>
-        <TestApiProvider apis={[[identityApiRef, mockIdentityApi]]}>
-          <RepositoriesList />
-        </TestApiProvider>
-      </Router>,
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [identityApiRef, mockIdentityApi],
+          [bulkImportApiRef, {} as BulkImportAPI],
+        ]}
+      >
+        <RepositoriesList />
+      </TestApiProvider>,
     );
     const addRepoButton = screen.getByText('Add');
     expect(addRepoButton).toBeInTheDocument();

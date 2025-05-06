@@ -28,6 +28,7 @@ interface CardWrapperProps {
   description: string;
   buttonText: string;
   buttonLink: string;
+  target?: string;
 }
 
 const getStyles = makeStyles((theme: Theme) => ({
@@ -48,6 +49,7 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
   description,
   buttonText,
   buttonLink,
+  target,
 }) => {
   const theme = useTheme();
   const classes = getStyles(theme);
@@ -78,7 +80,12 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
           </Typography>
         </Box>
         <Box>
-          <Link to={buttonLink} underline="none" className={classes.link}>
+          <Link
+            to={buttonLink}
+            target={target}
+            underline="none"
+            className={classes.link}
+          >
             <div
               style={{
                 display: 'flex',

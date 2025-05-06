@@ -172,14 +172,6 @@ export const LightspeedChat = ({
   const [messages, setMessages] =
     React.useState<MessageProps[]>(conversationMessages);
 
-  // Auto-scrolls to the latest message
-  React.useEffect(() => {
-    setTimeout(() => {
-      scrollToBottomRef.current?.scrollIntoView({ behavior: 'auto' });
-    }, 10);
-    // eslint-disable-next-line
-  }, [messages, scrollToBottomRef.current]);
-
   const sendMessage = (message: string | number) => {
     if (conversationId !== TEMP_CONVERSATION_ID) {
       setNewChatCreated(false);
@@ -285,8 +277,9 @@ export const LightspeedChat = ({
         }
         return c_id;
       });
+      scrollToBottomRef.current?.scrollToBottom();
     },
-    [setConversationId],
+    [setConversationId, scrollToBottomRef],
   );
 
   const conversationFound = !!conversations.find(

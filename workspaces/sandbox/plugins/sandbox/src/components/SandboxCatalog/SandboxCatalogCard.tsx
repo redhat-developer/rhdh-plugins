@@ -59,7 +59,7 @@ const CatalogCardGreenCorner = ({ show }: { show: boolean }) => {
         style={{
           width: '32px',
           height: '32px',
-          backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#1b1d21',
+          backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#0E1214',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -68,7 +68,7 @@ const CatalogCardGreenCorner = ({ show }: { show: boolean }) => {
     );
   }
   return (
-    <Tooltip title="Product you tried" placement="top" arrow>
+    <Tooltip title="Tried" placement="top" arrow>
       <Box
         style={{
           width: '32px',
@@ -113,6 +113,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
     ansibleStatus,
     signupUser,
     userFound,
+    userReady,
     verificationRequired,
     refetchUserData,
     refetchAAP,
@@ -156,18 +157,21 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   };
 
   const handleTryButtonClick = async (pdt: Product) => {
+    // User is not yet signed up
     if (!userFound) {
       signupUser();
       refetchUserData();
-      if (verificationRequired) {
-        setVerifyPhoneModalOpen(true);
-      }
-    } else if (pdt === Product.AAP) {
+    }
+    // User has signed up but require verification
+    if (userFound && verificationRequired) {
+      setVerifyPhoneModalOpen(true);
+    }
+    // User has signed up and the trial is ready and user selects the AAP Trial
+    if (userFound && userReady && pdt === Product.AAP) {
       await handleAAPInstance();
       refetchAAP();
       setAnsibleCredsModalOpen(true);
     }
-
     showGreenCorner();
   };
 
@@ -208,7 +212,15 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
 
   return (
     <>
-      <Card elevation={0} key={id} sx={{ width: '100%', height: '100%' }}>
+      <Card
+        elevation={0}
+        key={id}
+        sx={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#0E1214',
+        }}
+      >
         <CatalogCardGreenCorner show={greenCorner} />
         <CardMedia
           sx={{
@@ -234,7 +246,12 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
             </Typography>
           </Stack>
         </CardMedia>
-        <CardContent style={{ padding: `0 ${theme.spacing(3)}` }}>
+        <CardContent
+          style={{
+            padding: `0 ${theme.spacing(3)}`,
+            backgroundColor: 'transparent',
+          }}
+        >
           {description?.map(point => (
             <Typography
               key={point.value}
@@ -242,7 +259,11 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
               style={{ fontSize: '14px', paddingBottom: '8px' }}
             >
               <div
-                style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '5px',
+                }}
               >
                 {point.icon} {point.value}
               </div>

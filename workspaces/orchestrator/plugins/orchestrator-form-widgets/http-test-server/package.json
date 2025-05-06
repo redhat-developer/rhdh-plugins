@@ -1,0 +1,22 @@
+{
+  "name": "http-test-server",
+  "version": "5.2.3",
+  "license": "Apache-2.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "node ./index.js",
+    "prettier:check": "prettier --ignore-unknown --check .",
+    "prettier:fix": "prettier --ignore-unknown --write .",
+    "update-running-workflow": "cp -r ./exampleWorkflows/* ../../../packages/backend/.devModeTemp/repository/workflows/"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "prettier": "3.4.2"
+  },
+  "maintainers": [
+    "@mlibra"
+  ],
+  "author": "The Backstage Community"
+}

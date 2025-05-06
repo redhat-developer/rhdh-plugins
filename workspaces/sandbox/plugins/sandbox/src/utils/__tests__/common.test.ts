@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { errorMessage } from '../common';
+import { calculateDaysBetweenDates, errorMessage } from '../common';
 
 describe('errorMessage', () => {
   it('should return the string directly when input is a string', () => {
@@ -48,5 +48,56 @@ describe('errorMessage', () => {
   it('should return fallback message for non-string message property', () => {
     const error = { message: 123 };
     expect(errorMessage(error)).toBe('{"message":123}');
+  });
+});
+
+describe('calculateDaysBetweenDates', () => {
+  it('should return the expected number of days between dates', () => {
+    expect(
+      calculateDaysBetweenDates(new Date('2001-01-01'), new Date('2001-01-30')),
+    ).toBe(30);
+  });
+
+  it('should handle same day (returns 1 since it includes both start and end date)', () => {
+    expect(
+      calculateDaysBetweenDates(new Date('2023-05-15'), new Date('2023-05-15')),
+    ).toBe(1);
+  });
+
+  it('should handle dates spanning month boundaries', () => {
+    expect(
+      calculateDaysBetweenDates(new Date('2023-01-25'), new Date('2023-02-05')),
+    ).toBe(12);
+  });
+
+  it('should handle dates spanning year boundaries', () => {
+    expect(
+      calculateDaysBetweenDates(new Date('2022-12-25'), new Date('2023-01-05')),
+    ).toBe(12);
+  });
+
+  it('should handle leap years correctly', () => {
+    // February in a leap year (2020)
+    expect(
+      calculateDaysBetweenDates(new Date('2020-02-01'), new Date('2020-02-29')),
+    ).toBe(29);
+
+    // February in a non-leap year (2023)
+    expect(
+      calculateDaysBetweenDates(new Date('2023-02-01'), new Date('2023-02-28')),
+    ).toBe(28);
+  });
+
+  it('should handle dates with different time components', () => {
+    // Same day but different times - should still count as 1 day
+    const startDate = new Date('2023-05-15T08:00:00');
+    const endDate = new Date('2023-05-15T18:00:00');
+    expect(calculateDaysBetweenDates(startDate, endDate)).toBe(1);
+  });
+
+  it('should handle a full year correctly', () => {
+    expect(
+      calculateDaysBetweenDates(new Date('2023-01-01'), new Date('2023-12-31')),
+    ).toBe(365);
   });
 });

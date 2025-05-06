@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-
 import { Entity } from '@backstage/catalog-model';
 import { StatusOK } from '@backstage/core-components';
 

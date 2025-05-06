@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useRef } from 'react';
 
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
@@ -35,7 +35,7 @@ import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
 
 export const AddRepositoriesPage = () => {
-  const queryClientRef = React.useRef<QueryClient>();
+  const queryClientRef = useRef<QueryClient>();
   const theme = useTheme();
 
   if (!queryClientRef.current) {

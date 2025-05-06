@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { DiscoveryApi } from '@backstage/core-plugin-api';
+import { ConfigApi } from '@backstage/core-plugin-api';
 import { errorMessage } from '../utils/common';
 import {
   DeploymentData,
@@ -25,7 +25,7 @@ import {
 import { SecureFetchApi } from './SecureFetchClient';
 
 export type KubeBackendClientOptions = {
-  discoveryApi: DiscoveryApi;
+  configApi: ConfigApi;
   secureFetchApi: SecureFetchApi;
 };
 
@@ -57,16 +57,17 @@ export interface KubeAPIService {
 }
 
 export class KubeBackendClient implements KubeAPIService {
-  private readonly discoveryApi: DiscoveryApi;
+  private readonly configApi: ConfigApi;
   private readonly secureFetchApi: SecureFetchApi;
 
   constructor(options: KubeBackendClientOptions) {
-    this.discoveryApi = options.discoveryApi;
+    this.configApi = options.configApi;
     this.secureFetchApi = options.secureFetchApi;
   }
 
-  private readonly kubeAPI = async (): Promise<string> => {
-    return `${await this.discoveryApi.getBaseUrl('proxy')}/kube-api`;
+  private readonly kubeAPI = (): string => {
+    const kubeAPI = this.configApi.getString('sandbox.kubeAPI');
+    return kubeAPI;
   };
 
   private readonly projectPersistentVolumeClaimUrl = (

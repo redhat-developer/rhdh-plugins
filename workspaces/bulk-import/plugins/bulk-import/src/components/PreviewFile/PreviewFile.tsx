@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-
 import { Link } from '@backstage/core-components';
 
 import { useDrawer } from '@janus-idp/shared-react';

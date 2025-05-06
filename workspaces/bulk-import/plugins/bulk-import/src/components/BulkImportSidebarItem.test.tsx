@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { SidebarItem } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
 

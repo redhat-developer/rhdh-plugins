@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  configApiRef,
-  createApiFactory,
-  createPlugin,
-  fetchApiRef,
-} from '@backstage/core-plugin-api';
+import { createApiFactory, createPlugin } from '@backstage/core-plugin-api';
 import { orchestratorFormApiRef } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { FormWidgetsApi } from './FormWidgetsApi';
 
 export const formApiFactory = createApiFactory({
   api: orchestratorFormApiRef,
-  deps: { configApi: configApiRef, fetchApi: fetchApiRef },
-  factory(_options) {
+  deps: {},
+  factory() {
     return new FormWidgetsApi();
   },
 });

@@ -75,7 +75,9 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
             variant="h3"
             sx={{ fontWeight: 700, padding: '32px 24px 0 24px' }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div
+              style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}
+            >
               <CheckCircleIcon
                 sx={{
                   color: 'success.main',
@@ -100,12 +102,6 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
             <CloseIcon />
           </IconButton>
           <DialogContent sx={{ padding: '6px 24px' }}>
-            <Typography
-              variant="body1"
-              sx={{ ml: 2, my: 0.5, fontSize: '16px', fontWeight: 450 }}
-            >
-              Next:
-            </Typography>
             <DialogContentText
               id="alert-dialog-description"
               color="textPrimary"
@@ -121,13 +117,12 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
                   ml: 4,
                   mr: 3,
                   mb: 2,
-                  backgroundColor:
-                    theme.palette.mode === 'dark' ? '#47494b' : '#fff',
+                  backgroundColor: 'transparent',
                 }}
               >
                 <Typography variant="body1" component="div">
                   <Box component="ol" sx={{ pl: 0 }}>
-                    <Box component="li" sx={{ mb: 1 }}>
+                    <Box component="li" sx={{ mb: 1, ml: 2 }}>
                       <Typography variant="h6" fontWeight="bold">
                         Log in to your AAP trial account
                       </Typography>
@@ -168,8 +163,7 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
                           flexDirection: 'column',
                           gap: '6px',
                           width: '300px',
-                          backgroundColor:
-                            theme.palette.mode === 'dark' ? '#47494b' : '#fff',
+                          backgroundColor: 'transparent',
                         }}
                       >
                         <Stack
@@ -295,7 +289,7 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
                       </div>
                     </Box>
 
-                    <Box component="li" sx={{ mt: 4, mb: 1 }}>
+                    <Box component="li" sx={{ mt: 4, mb: 1, ml: 2 }}>
                       <Typography variant="h6" fontWeight="bold">
                         Activate your subscription
                       </Typography>
@@ -303,12 +297,12 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
                         variant="body1"
                         sx={{ mt: 1, mb: 2, fontSize: '16px', fontWeight: 450 }}
                       >
-                        Activate your AAP subscription using your Red Hat Hybrid
-                        Cloud Console username and password.
+                        Activate your AAP subscription using your Red Hat
+                        username and password.
                       </Typography>
                     </Box>
 
-                    <Box component="li" sx={{ mt: 4 }}>
+                    <Box component="li" sx={{ mt: 4, ml: 2 }}>
                       <Typography variant="h6" fontWeight="bold">
                         Enjoy your AAP sandbox!
                       </Typography>
@@ -416,6 +410,7 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
+                backgroundColor: 'transparent',
               }}
             >
               <Typography
@@ -433,21 +428,32 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
 
               <OpenInNewIcon />
             </div>
-
-            <Box
-              sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 4 }}
+            <div
+              style={{
+                backgroundColor: 'transparent',
+              }}
             >
-              <CircularProgress size="5rem" />
-            </Box>
-            <Alert variant="outlined" severity="info">
-              <Typography
-                variant="body1"
-                sx={{ fontSize: '16px', fontWeight: 500 }}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  mt: 4,
+                  mb: 4,
+                  backgroundColor: 'transparent',
+                }}
               >
-                You can close this modal. Follow the status of your instance on
-                the AAP sandbox card.
-              </Typography>
-            </Alert>
+                <CircularProgress size="5rem" />
+              </Box>
+              <Alert variant="outlined" severity="info">
+                <Typography
+                  variant="body1"
+                  sx={{ fontSize: '16px', fontWeight: 500 }}
+                >
+                  You can close this modal. Follow the status of your instance
+                  on the AAP sandbox card.
+                </Typography>
+              </Alert>
+            </div>
           </DialogContent>
           <DialogActions sx={{ justifyContent: 'flex-start', pl: 3 }}>
             <Button

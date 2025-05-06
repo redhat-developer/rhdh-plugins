@@ -22,24 +22,21 @@ import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
 import Image from '../../assets/images/sandbox-banner-image.svg';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
-
-const TRIAL_DURATION_DAYS = 30;
+import { calculateDaysBetweenDates } from '../../utils/common';
 
 export const SandboxCatalogBanner: React.FC = () => {
   const theme = useTheme();
-  const { userData, loading } = useSandboxContext();
+  const { userData, pendingApproval, verificationRequired, loading } =
+    useSandboxContext();
 
   const calculateDaysLeft = React.useCallback(() => {
-    const currentDate = new Date();
-    const trialStartDate = new Date(userData?.startDate ?? '');
-    const trialEndDate = new Date(trialStartDate);
-    trialEndDate.setDate(trialEndDate.getDate() + TRIAL_DURATION_DAYS);
-
-    const diffTime = trialEndDate.getTime() - currentDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    return diffDays;
-  }, [userData?.startDate]);
+    if (userData?.endDate) {
+      const trialEndDate = new Date(userData?.endDate);
+      return calculateDaysBetweenDates(new Date(), trialEndDate);
+    }
+    // unable to compute days
+    return undefined;
+  }, [userData]);
 
   return (
     <Card
@@ -49,6 +46,7 @@ export const SandboxCatalogBanner: React.FC = () => {
         justifyContent: 'space-between',
         padding: theme.spacing(4),
         backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#0E1214',
+        borderRadius: '0',
       }}
     >
       <Stack direction="row">
@@ -66,7 +64,7 @@ export const SandboxCatalogBanner: React.FC = () => {
           />
         </Box>
 
-        <Box mt={2} ml={4}>
+        <Box mt={2} ml={{ xs: 0, sm: 0, md: 4, lg: 4 }}>
           {loading ? (
             <>
               <Skeleton
@@ -107,7 +105,7 @@ export const SandboxCatalogBanner: React.FC = () => {
                       },
                     }}
                   >
-                    Welcome, {userData?.name}
+                    Welcome, {userData.givenName || userData.compliantUsername}
                   </Typography>
                   <Typography
                     variant="inherit"
@@ -117,7 +115,18 @@ export const SandboxCatalogBanner: React.FC = () => {
                       fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5625rem' },
                     }}
                   >
-                    Your free trial expires in {calculateDaysLeft()} days
+                    {(() => {
+                      if (verificationRequired) {
+                        return 'Click on "Try it" to initiate your free, no commitment 30-day trial.';
+                      }
+                      if (pendingApproval) {
+                        return 'Please wait for your trial to be approved.';
+                      }
+                      if (userData?.endDate) {
+                        return `Your free trial expires in ${calculateDaysLeft()} days`;
+                      }
+                      return '';
+                    })()}
                   </Typography>
                 </>
               ) : (

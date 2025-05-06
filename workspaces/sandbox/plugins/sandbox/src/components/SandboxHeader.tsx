@@ -34,11 +34,12 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
   const theme = useTheme();
   return (
     <Header
+      pageTitleOverride={!showSubTitle ? 'Activities' : 'Home'}
       title={
         <Typography
           color="textPrimary"
           style={{
-            fontWeight: 700,
+            fontWeight: 900,
             fontSize: theme.typography.h1.fontSize,
             fontFamily: theme.typography.h1.fontFamily,
           }}
@@ -64,7 +65,12 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
           </Typography>
         )
       }
-      style={{ background: 'none' }}
+      style={{
+        background: 'none',
+        padding: '29.5px',
+        borderBottom: '1px solid',
+        borderColor: theme.palette.mode === 'light' ? '#C7C7C7' : '#383838',
+      }}
     >
       <Box
         sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}

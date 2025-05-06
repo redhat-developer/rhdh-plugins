@@ -1,0 +1,66 @@
+{
+  "$id": "classpath:/schemas/dynamic_schema__main-schema.json",
+  "title": "Data Input Schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "firstStep": {
+      "type": "object",
+      "title": "Example use",
+      "properties": {
+        "fooTheFirst": {
+          "type": "string",
+          "title": "First page simple input field"
+        },
+        "mySchemaUpdater": {
+          "type": "string",
+          "ui:widget": "SchemaUpdater",
+          "ui:props": {
+            "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/chunk01",
+            "fetch:headers": {
+              "test-header": "Executed for the $${{identityApi.displayName}} user with $${{githubAuthApi.profileName}} GitHub profile name."
+            }
+          }
+        },
+        "placeholderOne": {
+          "type": "string",
+          "title": "This field and its title are visible until replaced by any SchemaUpdater."
+        }
+      }
+    },
+    "secondStep": {
+      "type": "object",
+      "title": "Second page of the wizard",
+      "properties": {
+        "myTextField": {
+          "type": "string",
+          "title": "Provide name of the next component. Try 'password' or 'complex'"
+        },
+        "addressOrPassword": {
+          "type": "string",
+          "title": "This title is not rendered. Will be replaced by myAnotherSchemaUpdater",
+          "ui:widget": "hidden"
+        },
+        "placeholderThree": {
+          "type": "object",
+          "ui:widget": "hidden"
+        },
+        "myAnotherSchemaUpdater": {
+          "type": "string",
+          "ui:widget": "SchemaUpdater",
+          "ui:props": {
+            "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/chunk02",
+            "fetch:method": "POST",
+            "fetch:headers": {
+              "not-used-but-anyway": "$${{githubAuthApi.token}}"
+            },
+            "fetch:body": {
+              "nextField": "$${{current.secondStep.myTextField}}"
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["firstStep", "secondStep"]
+}

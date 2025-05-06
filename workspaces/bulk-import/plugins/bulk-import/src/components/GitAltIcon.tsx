@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import type { FC, HTMLProps, ReactElement } from 'react';
 
-const GitAltIcon: React.FC<React.HTMLProps<SVGElement>> = ({
-  style,
-}): React.ReactElement => {
+const GitAltIcon: FC<HTMLProps<SVGElement>> = ({ style }): ReactElement => {
   return (
     <svg
       height="1em"

@@ -29,6 +29,11 @@ import {
 } from './api';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
+import {
+  configApiRef,
+  discoveryApiRef,
+  oauthRequestApiRef,
+} from '@backstage/core-plugin-api';
 
 jest.mock('./components/SandboxCatalog/SandboxCatalogPage', () => ({
   SandboxCatalogPage: jest.fn(),
@@ -47,10 +52,8 @@ describe('sandbox plugin', () => {
   it('should register all required APIs', () => {
     const apis = [...sandboxPlugin.getApis()];
 
-    // Check if we have 4 API factories
     expect(apis).toHaveLength(5);
 
-    // Check if each API is properly registered
     const apiRefs = apis.map((api: any) => api.api);
     expect(apiRefs).toContain(registerApiRef);
     expect(apiRefs).toContain(kubeApiRef);
@@ -88,62 +91,55 @@ describe('sandbox plugin', () => {
   describe('API factories', () => {
     it('should create registration API factory with correct dependencies', () => {
       const apis = [...sandboxPlugin.getApis()];
-      const registrationApi = apis.find(
+      const registrationApiFactory = apis.find(
         (api: any) => api.api === registerApiRef,
       );
 
-      expect(registrationApi).toBeDefined();
-      expect(registrationApi?.deps).toEqual({
-        configApi: expect.any(Object),
-        discoveryApi: expect.any(Object),
-        secureFetchApi: secureFetchApiRef,
-      });
+      expect(registrationApiFactory).toBeDefined();
+      expect(registrationApiFactory?.deps.configApi).toBe(configApiRef);
+      expect(registrationApiFactory?.deps.secureFetchApi).toBe(
+        secureFetchApiRef,
+      );
     });
 
     it('should create kube API factory with correct dependencies', () => {
       const apis = [...sandboxPlugin.getApis()];
-      const kubeApi = apis.find((api: any) => api.api === kubeApiRef);
+      const kubeApiFactory = apis.find((api: any) => api.api === kubeApiRef);
 
-      expect(kubeApi).toBeDefined();
-      expect(kubeApi?.deps).toEqual({
-        discoveryApi: expect.any(Object),
-        secureFetchApi: secureFetchApiRef,
-      });
+      expect(kubeApiFactory).toBeDefined();
+      expect(kubeApiFactory?.deps.configApi).toBe(configApiRef);
+      expect(kubeApiFactory?.deps.secureFetchApi).toBe(secureFetchApiRef);
     });
 
     it('should create AAP API factory with correct dependencies', () => {
       const apis = [...sandboxPlugin.getApis()];
-      const aapApi = apis.find((api: any) => api.api === aapApiRef);
+      const aapApiFactory = apis.find((api: any) => api.api === aapApiRef);
 
-      expect(aapApi).toBeDefined();
-      expect(aapApi?.deps).toEqual({
-        discoveryApi: expect.any(Object),
-        secureFetchApi: secureFetchApiRef,
-      });
+      expect(aapApiFactory).toBeDefined();
+      expect(aapApiFactory?.deps.configApi).toBe(configApiRef);
+      expect(aapApiFactory?.deps.secureFetchApi).toBe(secureFetchApiRef);
     });
-  });
 
-  it('should create keycloak API factory with correct dependencies', () => {
-    const apis = [...sandboxPlugin.getApis()];
-    const keycloakApi = apis.find((api: any) => api.api === keycloakApiRef);
+    it('should create keycloak API factory with correct dependencies', () => {
+      const apis = [...sandboxPlugin.getApis()];
+      const keycloakApiFactory = apis.find(
+        (api: any) => api.api === keycloakApiRef,
+      );
 
-    expect(keycloakApi).toBeDefined();
-    expect(keycloakApi?.deps).toEqual({
-      discoveryApi: expect.any(Object),
-      oauthRequestApi: expect.any(Object),
-      configApi: expect.any(Object),
+      expect(keycloakApiFactory).toBeDefined();
+      expect(keycloakApiFactory?.deps.discoveryApi).toBe(discoveryApiRef);
+      expect(keycloakApiFactory?.deps.oauthRequestApi).toBe(oauthRequestApiRef);
+      expect(keycloakApiFactory?.deps.configApi).toBe(configApiRef);
     });
-  });
 
-  it('should create secure fetch API factory with correct dependencies', () => {
-    const apis = [...sandboxPlugin.getApis()];
-    const secureFetchApi = apis.find(
-      (api: any) => api.api === secureFetchApiRef,
-    );
+    it('should create secure fetch API factory with correct dependencies', () => {
+      const apis = [...sandboxPlugin.getApis()];
+      const secureFetchApiFactory = apis.find(
+        (api: any) => api.api === secureFetchApiRef,
+      );
 
-    expect(secureFetchApi).toBeDefined();
-    expect(secureFetchApi?.deps).toEqual({
-      oauthApi: keycloakApiRef,
+      expect(secureFetchApiFactory).toBeDefined();
+      expect(secureFetchApiFactory?.deps.oauthApi).toBe(keycloakApiRef);
     });
   });
 });

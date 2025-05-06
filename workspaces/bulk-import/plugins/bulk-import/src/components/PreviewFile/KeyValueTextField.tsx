@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { FocusEvent } from 'react';
 
 import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '@mui/material/TextField';
@@ -23,9 +23,7 @@ interface KeyValueTextFieldProps {
   label: string;
   name: string;
   value: string;
-  onChange: (
-    event: React.FocusEvent<HTMLTextAreaElement | HTMLInputElement>,
-  ) => void;
+  onChange: (event: FocusEvent<HTMLTextAreaElement | HTMLInputElement>) => void;
   fieldError: string;
 }
 
