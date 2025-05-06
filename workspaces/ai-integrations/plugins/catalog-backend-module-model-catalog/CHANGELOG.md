@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 0.4.0
+
+### Minor Changes
+
+- 21f35a2: Add TechDocs annotations to generated Resource entities when present in the JSON object
+
+### Patch Changes
+
+- f99bda6: add a log message around registering the 'rhdh-rhoai-bridge' location type
+- 23dccda: Bug fixes to the model catalog plugin to resolve issues setting the user, license URL and authentication metadata in the generated catalog entities
+
 ## 0.3.0
 
 ### Minor Changes
