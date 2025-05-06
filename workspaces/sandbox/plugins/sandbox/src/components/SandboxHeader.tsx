@@ -65,7 +65,12 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
           </Typography>
         )
       }
-      style={{ background: 'none' }}
+      style={{
+        background: 'none',
+        padding: '29.5px',
+        borderBottom: '1px solid',
+        borderColor: theme.palette.mode === 'light' ? '#C7C7C7' : '#383838',
+      }}
     >
       <Box
         sx={{ display: { xs: 'none', sm: 'none', md: 'block', lg: 'block' } }}
