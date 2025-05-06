@@ -117,3 +117,6 @@ kubernetes:
 permission:
   # setting this to `false` will disable permissions
   enabled: true
+
+marketplace:
+  dynamicPluginsConfig: ${DYNAMIC_PLUGINS_CONFIG}

@@ -26,13 +26,29 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { createSearchParams } from './utils/createSearchParams';
 import { removeVerboseSpecContent } from './utils/removeVerboseSpecContent';
+import type { Config } from '@backstage/config';
+import { PluginsConfigReader } from './pluginsConfig/PluginsConfigReader';
+import { PluginsConfigService } from './pluginsConfig/PluginsConfigService';
+import { NotFoundError } from '@backstage/errors';
 
-export async function createRouter({
-  marketplaceApi,
-}: {
+export type MarketplaceRouterOptions = {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
-}): Promise<express.Router> {
+  config: Config;
+};
+
+export async function createRouter(
+  options: MarketplaceRouterOptions,
+): Promise<express.Router> {
+  const { marketplaceApi, config } = options;
+
+  const pluginsConfigService = new PluginsConfigService(
+    new PluginsConfigReader(
+      config.getOptionalString('marketplace.dynamicPluginsConfig'),
+    ),
+    marketplaceApi,
+  );
+
   const router = Router();
   router.use(express.json());
 
@@ -87,6 +103,26 @@ export async function createRouter({
     );
   });
 
+  router.get('/package/:namespace/:name/configuration', async (req, res) => {
+    const marketplacePackage = await marketplaceApi.getPackageByName(
+      req.params.namespace,
+      req.params.name,
+    );
+
+    // TODO: permissions check
+
+    if (!marketplacePackage.spec?.dynamicArtifact) {
+      throw Error("Package is missing 'spec.dynamicArtifact'");
+    }
+    const result = pluginsConfigService.getPackageConfig(
+      marketplacePackage.spec?.dynamicArtifact,
+    );
+    if (!result) {
+      throw new NotFoundError(); // 404
+    }
+    res.status(200).json(result);
+  });
+
   router.get('/plugins', async (req, res) => {
     const request = decodeGetEntitiesRequest(createSearchParams(req));
     const plugins = await marketplaceApi.getPlugins(request);
@@ -106,6 +142,22 @@ export async function createRouter({
       req.params.name,
     );
     res.json(plugin);
+  });
+
+  router.get('/plugin/:namespace/:name/configuration', async (req, res) => {
+    const marketplacePlugin = await marketplaceApi.getPluginByName(
+      req.params.namespace,
+      req.params.name,
+    );
+
+    // TODO: permissions check
+
+    const result =
+      await pluginsConfigService.getPluginConfig(marketplacePlugin);
+    if (!result) {
+      throw new NotFoundError(); // 404
+    }
+    res.status(200).json(result);
   });
 
   router.get('/plugin/:namespace/:name/packages', async (req, res) => {

@@ -68,6 +68,28 @@ export enum DocumentationType {
 }
 
 // @public (undocumented)
+export type DynamicPackageConfig = {
+    package: string;
+    disabled?: boolean;
+    pluginConfig?: DynamicPluginAppConfig;
+};
+
+// @public (undocumented)
+export type DynamicPluginAppConfig = {
+    dynamicPlugins?: {
+        frontend?: JsonObject;
+    };
+};
+
+// @public (undocumented)
+export type DynamicPluginConfig = DynamicPackageConfig[];
+
+// @public (undocumented)
+export type DynamicPluginsConfig = {
+    plugins: DynamicPackageConfig[];
+};
+
+// @public (undocumented)
 export const encodeGetEntitiesRequest: (request: GetEntitiesRequest) => URLSearchParams;
 
 // @public (undocumented)
@@ -131,11 +153,15 @@ export interface MarketplaceApi {
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
+    getPackageConfigByName?(namespace: string, name: string): Promise<DynamicPackageConfig>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPluginByName(namespace: string, name: string): Promise<MarketplacePlugin>;
+    // (undocumented)
+    getPluginConfigByName?(namespace: string, name: string): Promise<DynamicPluginConfig>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
@@ -164,11 +190,15 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
+    getPackageConfigByName(namespace: string, name: string): Promise<DynamicPackageConfig>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPluginByName(namespace: string, name: string): Promise<MarketplacePlugin>;
+    // (undocumented)
+    getPluginConfigByName(namespace: string, name: string): Promise<DynamicPluginConfig>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
