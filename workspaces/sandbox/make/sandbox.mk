@@ -12,9 +12,10 @@ push-plugin:
 	podman push $(SANDBOX_RHDH_PLUGIN_IMAGE)
 
 
-RHDH_LOCAL_DIR := "$(TMPDIR)/rhdh-local"
+RHDH_LOCAL_DIR := "$(TMPDIR)rhdh-local"
 .PHONY: clone-rhdh-local
 clone-rhdh-local:
+	rm -rf ${RHDH_LOCAL_DIR}; \
 	git clone https://github.com/redhat-developer/rhdh-local $(RHDH_LOCAL_DIR) && \
 	echo "cloned to $(RHDH_LOCAL_DIR)"
 
@@ -41,9 +42,11 @@ start-rhdh-local: clone-rhdh-local generate-env
 	cd $(RHDH_LOCAL_DIR) && \
 	yq e 'del(.services.rhdh.volumes[] | select(. == "./configs:/opt/app-root/src/configs:Z"))' -i compose.yaml && \
 	yq e '.services.rhdh.ports = ["3000:3000"] | (.services.rhdh.ports) |= map(. style="double")' -i compose.yaml && \
-	podman-compose up -d
+	podman-compose up -d  && \
+	echo "UI is up and running at: localhost:3000"
 
 .PHONY: stop-rhdh-local
 stop-rhdh-local:
 	cd $(RHDH_LOCAL_DIR) && \
-	podman-compose down -v
+	podman-compose down -v && \
+	rm -rf $(RHDH_LOCAL_DIR)
