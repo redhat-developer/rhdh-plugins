@@ -43,20 +43,23 @@ integrations: {}
 #  github:
 #    - host: github.com
 #      token: ${GITHUB_TOKEN}
-#  gitlab:
-#    - host: gitlab.com
-#      token: ${GITLAB_TOKEN}
 
 proxy:
-  '/quay/api':
-    target: 'https://quay.io'
-    headers:
-      X-Requested-With: 'XMLHttpRequest'
-      # Uncomment the following line to access a private Quay Repository using a token
-      # Authorization: 'Bearer <YOUR TOKEN>'
-    changeOrigin: true
-    # Change to "false" in case of using self hosted quay instance with a self-signed certificate
-    secure: true
+  reviveConsumedRequestBodies: true
+  endpoints:
+    '/quay/api':
+      target: 'https://quay.io'
+      headers:
+        X-Requested-With: 'XMLHttpRequest'
+        # Uncomment the following line to access a private Quay Repository using a token
+        # Authorization: 'Bearer <YOUR TOKEN>'
+      changeOrigin: true
+      # Change to "false" in case of using self hosted quay instance with a self-signed certificate
+      secure: true
+    '/mytesthttpserver':
+      target: 'http://localhost:12345'
+      allowedMethods: ['GET', 'POST']
+      allowedHeaders: ['test-header']
 
 quay:
   uiUrl: 'https://quay.io'
@@ -73,6 +76,14 @@ auth:
   environment: development
   providers:
     guest: {}
+    gitlab:
+      development:
+        clientId: ${AUTH_GITLAB_CLIENT_ID}
+        clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
+            # - resolver: usernameMatchingUserEntityName
     github:
       development:
         clientId: ${AUTH_GITHUB_CLIENT_ID}
