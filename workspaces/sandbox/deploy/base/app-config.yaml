@@ -1,6 +1,10 @@
 app:
   title: Developer Sandbox
   baseUrl: http://localhost:3000
+
+# this is required in order to be able to open the SSO login in full page mode.
+enableExperimentalRedirectFlow: true
+
 backend:
   baseUrl: http://localhost:3000
   csp:
@@ -31,5 +35,7 @@ auth:
               dangerouslyAllowSignInWithoutUserInCatalog: true
 signInPage: oidc
 sandbox:
+  signupAPI: https://registration-service-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com/api/v1
+  kubeAPI: https://api-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com
   recaptcha:
-    siteKey: fhgffhgfhjgfhg
+    siteKey: 6Lc_164lAAAAAPvrC0WO-XDljvZ2DZ3UQ38A4XR0

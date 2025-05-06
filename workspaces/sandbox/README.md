@@ -24,7 +24,7 @@ dynamicPlugins:
         - name: activitiesIcon
           importName: SandboxActivitiesIcon
       dynamicRoutes:
-        - path: /home
+        - path: /
           importName: SandboxPage
           menuItem:
             icon: homeIcon

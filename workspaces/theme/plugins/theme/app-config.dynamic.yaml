@@ -1,0 +1,19 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-theme:
+      appIcons:
+        - importName: LightIcon
+          name: lightIcon
+        - importName: DarkIcon
+          name: darkIcon
+      themes:
+        - id: light-dynamic
+          icon: lightIcon
+          importName: lightThemeProvider
+          title: Light Dynamic
+          variant: light
+        - icon: darkIcon
+          id: dark-dynamic
+          importName: darkThemeProvider
+          title: Dark Dynamic
+          variant: dark

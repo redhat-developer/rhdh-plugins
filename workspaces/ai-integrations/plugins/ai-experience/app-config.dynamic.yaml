@@ -1,6 +1,14 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-ai-experience:
+      appIcons:
+        - importName: AiNewsIcon
+          name: aiNewsIcon
       dynamicRoutes:
         - path: /
           importName: AiExperiencePage
+        - path: /ai-news
+          importName: AiNewsPage
+          menuItem:
+            icon: aiNewsIcon
+            text: AI News

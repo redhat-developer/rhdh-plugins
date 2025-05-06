@@ -18,18 +18,22 @@ export const LEARNING_SECTION_ITEMS = [
     title: 'Get started',
     description: 'Learn about Red Hat Developer Hub.',
     buttonText: 'Go to Tech Docs',
-    buttonLink: '/docs',
+    buttonLink:
+      'https://docs.redhat.com/en/documentation/red_hat_developer_hub/',
+    target: '_blank',
   },
   {
     title: 'Explore',
     description: 'Explore AI models, servers and templates.',
     buttonText: 'Go to Catalog',
     buttonLink: '/catalog',
+    target: undefined,
   },
   {
     title: 'Learn',
     description: 'Explore and develop new skills in AI.',
     buttonText: 'Go to Learning Paths',
     buttonLink: '/learning-paths',
+    target: undefined,
   },
 ];

@@ -34,11 +34,12 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
   const theme = useTheme();
   return (
     <Header
+      pageTitleOverride={!showSubTitle ? 'Activities' : 'Home'}
       title={
         <Typography
           color="textPrimary"
           style={{
-            fontWeight: 700,
+            fontWeight: 900,
             fontSize: theme.typography.h1.fontSize,
             fontFamily: theme.typography.h1.fontFamily,
           }}

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';

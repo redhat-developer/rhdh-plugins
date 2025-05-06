@@ -41,7 +41,7 @@ import GroupIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
 import { makeStyles } from '@mui/styles';
 import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
-import React, { PropsWithChildren } from 'react';
+import { PropsWithChildren } from 'react';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 

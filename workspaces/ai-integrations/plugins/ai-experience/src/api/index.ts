@@ -15,7 +15,12 @@
  */
 import { createApiRef } from '@backstage/core-plugin-api';
 import { ModelServiceApi } from '@red-hat-developer-hub/backstage-plugin-ai-experience-common';
+import { RSSFeedApi } from './RSSClient';
 
 export const aiExperienceApiRef = createApiRef<ModelServiceApi>({
   id: 'plugin.ai-experience.api-ref',
+});
+
+export const rssApiRef = createApiRef<RSSFeedApi>({
+  id: 'plugin.ai-experience.rss-api-ref',
 });

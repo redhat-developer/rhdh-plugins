@@ -25,6 +25,9 @@ import {
   WelcomePrompt,
 } from '@patternfly/chatbot';
 
+import { useAutoScroll } from '../hooks/useAutoScroll';
+import { useBufferedMessages } from '../hooks/useBufferedMessages';
+
 const useStyles = makeStyles(theme => ({
   prompt: {
     'justify-content': 'flex-end',
@@ -51,6 +54,10 @@ type LightspeedChatBoxProps = {
   welcomePrompts: WelcomePrompt[];
 };
 
+export interface ScrollContainerHandle {
+  scrollToBottom: () => void;
+}
+
 export const LightspeedChatBox = React.forwardRef(
   (
     {
@@ -60,14 +67,53 @@ export const LightspeedChatBox = React.forwardRef(
       profileLoading,
       welcomePrompts,
     }: LightspeedChatBoxProps,
-    ref: React.ForwardedRef<HTMLDivElement>,
+    ref: React.ForwardedRef<ScrollContainerHandle>,
   ) => {
-    const [cmessages, setCMessages] = React.useState(messages);
     const classes = useStyles();
+    const scrollQueued = React.useRef(false);
+    const containerRef = React.useRef<HTMLDivElement>(null);
 
+    const cmessages = useBufferedMessages(messages, 30);
+    const { autoScroll, scrollToBottom, scrollToTop } =
+      useAutoScroll(containerRef);
+
+    React.useImperativeHandle(ref, () => ({
+      scrollToBottom: () => {
+        if (scrollQueued.current) return;
+        scrollQueued.current = true;
+
+        requestAnimationFrame(() => {
+          scrollToBottom();
+          scrollQueued.current = false;
+        });
+      },
+    }));
+
+    // Auto-scrolls to the latest message
     React.useEffect(() => {
-      setCMessages(messages);
-    }, [messages]);
+      if (!autoScroll || scrollQueued.current) return undefined;
+
+      scrollQueued.current = true;
+
+      const rafId = requestAnimationFrame(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'auto',
+        });
+
+        scrollQueued.current = false;
+      });
+
+      return () => {
+        cancelAnimationFrame(rafId);
+        scrollQueued.current = false;
+      };
+
+      // eslint-disable-next-line
+    }, [autoScroll, cmessages, containerRef]);
 
     const messageBoxClasses = `${classes.container} ${classes.userMessageText}`;
     return (
@@ -78,7 +124,9 @@ export const LightspeedChatBox = React.forwardRef(
             : messageBoxClasses
         }
         announcement={announcement}
-        style={{ justifyContent: 'flex-end' }}
+        ref={containerRef}
+        onScrollToTopClick={scrollToTop}
+        onScrollToBottomClick={scrollToBottom}
       >
         {welcomePrompts.length ? (
           <ChatbotWelcomePrompt
@@ -94,7 +142,6 @@ export const LightspeedChatBox = React.forwardRef(
             return (
               <React.Fragment key={`${message.role}-${index}`}>
                 <Message key={`${message.role}-${index}`} {...message} />
-                <div ref={ref} />
               </React.Fragment>
             );
           }

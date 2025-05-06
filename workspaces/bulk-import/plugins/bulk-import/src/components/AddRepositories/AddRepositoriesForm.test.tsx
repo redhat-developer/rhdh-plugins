@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 import { configApiRef, identityApiRef } from '@backstage/core-plugin-api';

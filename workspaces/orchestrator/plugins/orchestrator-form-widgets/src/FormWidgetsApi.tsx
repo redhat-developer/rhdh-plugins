@@ -23,6 +23,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { ErrorSchema, FormValidation } from '@rjsf/utils';
 import { JsonObject, JsonValue } from '@backstage/types';
+
 import { SchemaUpdater, ActiveTextInput } from './widgets';
 
 const sleep = (ms: number) => {
@@ -33,7 +34,7 @@ const customValidate = (
   _formData: JsonObject | undefined,
   errors: FormValidation<JsonObject>,
 ): FormValidation<JsonObject> => {
-  // Trigger field validation
+  // TODO: Trigger field validation
   // Called synchronously
   return errors;
 };
@@ -86,22 +87,18 @@ const safeSet: (errors: JsonObject, path: string, value: JsonValue) => void = (
     safeSet(safeObject, steps[1], value);
   }
 };
+
+const widgets = {
+  SchemaUpdater,
+  ActiveTextInput,
+};
+
 export class FormWidgetsApi implements OrchestratorFormApi {
-  // private readonly configApi: ConfigApi;
-  // private readonly fetchApi: FetchApi;
-
-  // public constructor(options: { configApi: ConfigApi; fetchApi: FetchApi }) {
-  //   this.configApi = options.configApi;
-  //   this.fetchApi = options.fetchApi;
-  // }
-
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
     return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
       return () => {
         const { formData, setFormData, uiSchema } =
           useWrapperFormPropsContext();
-
-        const widgets = { SchemaUpdater, ActiveTextInput };
 
         const onChange = useCallback(
           (data: JsonObject | undefined) => {
@@ -118,6 +115,8 @@ export class FormWidgetsApi implements OrchestratorFormApi {
           currentFormData: JsonObject,
         ) => {
           // Asynchronous validation on wizard step transition or submit
+
+          // TODO
           return sleep(1000 /* The sleep mimics async fetch, remove it */).then(
             () => {
               const errors: ErrorSchema<JsonObject> = {};

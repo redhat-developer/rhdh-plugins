@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -93,7 +93,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
     });
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!loading && repoUrl && defaultBranch) {
       const shouldOpenPanel =
         value?.status === RepositoryStatus.WAIT_PR_APPROVAL &&

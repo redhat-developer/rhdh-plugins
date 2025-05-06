@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import { useState } from 'react';
 
 import { Link } from '@backstage/core-components';
 
@@ -57,7 +57,7 @@ export const PreviewFileSidebarDrawerContent = ({
 
   setPullRequest: (pullRequest: PullRequestPreviewData) => void;
 }) => {
-  const [formErrors, setFormErrors] = React.useState<PullRequestPreviewData>();
+  const [formErrors, setFormErrors] = useState<PullRequestPreviewData>();
 
   if (isLoading) {
     return (

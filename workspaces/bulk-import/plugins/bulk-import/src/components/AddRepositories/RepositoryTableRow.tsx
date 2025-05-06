@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import type { MouseEvent } from 'react';
 import { useAsync } from 'react-use';
 
 import { Link } from '@backstage/core-components';
@@ -45,7 +45,7 @@ export const RepositoryTableRow = ({
   data,
   isDrawer = false,
 }: {
-  handleClick: (_event: React.MouseEvent, id: AddRepositoryData) => void;
+  handleClick: (_event: MouseEvent, id: AddRepositoryData) => void;
   isItemSelected: boolean;
   data: AddRepositoryData;
   isDrawer?: boolean;

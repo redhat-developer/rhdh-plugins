@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Link } from '@backstage/core-components';
 
@@ -90,7 +90,7 @@ export const AddRepositoriesDrawer = ({
     onClose();
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const sr = Object.values(values.repositories).reduce(
       (acc, repo) =>
         repo.orgName === orgData?.orgName ? { ...acc, [repo.id]: repo } : acc,

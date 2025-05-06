@@ -44,7 +44,7 @@ export const WorkflowPage = () => {
   return (
     <BaseOrchestratorPage
       title={workflowOverviewDTO?.data.name || workflowId}
-      type="Workflows"
+      type="orchestrator"
       typeLink="/orchestrator"
       noPadding
     >

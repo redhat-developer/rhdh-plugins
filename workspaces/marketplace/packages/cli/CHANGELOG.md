@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/marketplace-cli
 
+## 0.4.4
+
+### Patch Changes
+
+- dd94b9d: use namespace parameter also for packages location
+
 ## 0.4.3
 
 ### Patch Changes

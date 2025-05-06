@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { MouseEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Table } from '@backstage/core-components';
@@ -40,17 +41,15 @@ export const RepositoriesList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const [order, setOrder] = React.useState<SortingOrderEnum>(
-    SortingOrderEnum.Asc,
-  );
-  const [orderBy, setOrderBy] = React.useState<string>('repoName');
+  const [order, setOrder] = useState<SortingOrderEnum>(SortingOrderEnum.Asc);
+  const [orderBy, setOrderBy] = useState<string>('repoName');
   const { openDialog, setOpenDialog, deleteComponent } = useDeleteDialog();
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
-  const [pageNumber, setPageNumber] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [debouncedSearch, setDebouncedSearch] = React.useState('');
+  const [pageNumber, setPageNumber] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  const orderByColumn = React.useMemo(() => {
+  const orderByColumn = useMemo(() => {
     return orderBy?.replace(/\.([a-zA-Z])/g, (_, char) =>
       char.toUpperCase('en-US'),
     ) as keyof typeof AddedRepositoryColumnNameEnum;
@@ -83,10 +82,7 @@ export const RepositoriesList = () => {
     setOpenDrawer(false);
   };
 
-  const handleRequestSort = (
-    _event: React.MouseEvent<unknown>,
-    property: string,
-  ) => {
+  const handleRequestSort = (_event: MouseEvent<unknown>, property: string) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? SortingOrderEnum.Desc : SortingOrderEnum.Asc);
     setOrderBy(property);

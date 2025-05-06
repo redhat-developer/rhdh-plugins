@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { errorMessage } from '../common';
+import { calculateDaysBetweenDates, errorMessage } from '../common';
 
 describe('errorMessage', () => {
   it('should return the string directly when input is a string', () => {
@@ -48,5 +48,13 @@ describe('errorMessage', () => {
   it('should return fallback message for non-string message property', () => {
     const error = { message: 123 };
     expect(errorMessage(error)).toBe('{"message":123}');
+  });
+});
+
+describe('calculateDaysBetweenDates', () => {
+  it('should return the expected number of days between dates', () => {
+    expect(
+      calculateDaysBetweenDates(new Date('2001-01-01'), new Date('2001-01-30')),
+    ).toBe(30);
   });
 });

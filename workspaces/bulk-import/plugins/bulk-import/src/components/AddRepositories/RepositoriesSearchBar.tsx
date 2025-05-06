@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import Clear from '@mui/icons-material/Clear';
 import Search from '@mui/icons-material/Search';
 import FormControl from '@mui/material/FormControl';

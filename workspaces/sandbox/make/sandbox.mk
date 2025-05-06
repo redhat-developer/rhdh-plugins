@@ -33,9 +33,18 @@ generate-env:
 
 .PHONY: start-rhdh-local
 start-rhdh-local: clone-rhdh-local generate-env
-	cp deploy/base/app-config.yaml $(RHDH_LOCAL_DIR)/configs/app-config.local.yaml && \
-	SANDBOX_RHDH_PLUGIN_IMAGE=$(SANDBOX_RHDH_PLUGIN_IMAGE) envsubst < deploy/base/dynamic-plugins.yaml > $(RHDH_LOCAL_DIR)/configs/dynamic-plugins.yaml && \
+	rm -rf plugins/sandbox/dist-dynamic
+	rm -rf red-hat-developer-hub-backstage-plugin-sandbox
+	npx @janus-idp/cli@3.3.1 package package-dynamic-plugins --export-to .
+	cp -r red-hat-developer-hub-backstage-plugin-sandbox $(RHDH_LOCAL_DIR)/local-plugins/
+	cp deploy/base/app-config.yaml $(RHDH_LOCAL_DIR)/configs/app-config/app-config.yaml
+	cp deploy/base/dynamic-plugins.yaml $(RHDH_LOCAL_DIR)/configs/dynamic-plugins/dynamic-plugins.override.yaml
 	cd $(RHDH_LOCAL_DIR) && \
+	yq e 'del(.services.rhdh.volumes[] | select(. == "./configs:/opt/app-root/src/configs:Z"))' -i compose.yaml && \
 	yq e '.services.rhdh.ports = ["3000:3000"] | (.services.rhdh.ports) |= map(. style="double")' -i compose.yaml && \
-	yq e '.services.rhdh.env_file = ["./default.env", "./.env"]' -i compose.yaml && \
-	podman compose up
+	podman-compose up -d
+
+.PHONY: stop-rhdh-local
+stop-rhdh-local:
+	cd $(RHDH_LOCAL_TO_STOP_DIR) && \
+	podman-compose down -v

@@ -150,7 +150,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
           <Stack direction="row" spacing={2} sx={{ mt: 2, marginRight: 20 }}>
             {otp.map((digit, index) => (
               <TextField
-                key={digit}
+                key={index}
                 value={digit}
                 onChange={e => handleChange(index, e)}
                 onKeyDown={e =>

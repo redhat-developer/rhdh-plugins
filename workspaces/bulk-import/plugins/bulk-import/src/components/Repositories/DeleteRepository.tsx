@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-
 import { useDeleteDialog } from '@janus-idp/shared-react';
 import Delete from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';

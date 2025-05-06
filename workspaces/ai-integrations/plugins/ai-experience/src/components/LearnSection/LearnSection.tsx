@@ -56,6 +56,7 @@ export const LearnSection = () => {
             description={item.description}
             buttonText={item.buttonText}
             buttonLink={item.buttonLink}
+            target={item.target}
           />
         </Grid>
       ))}

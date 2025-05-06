@@ -15,14 +15,13 @@
  */
 
 /// <reference path="../../@types/index.d.ts" />
-import { ConfigApi, DiscoveryApi } from '@backstage/core-plugin-api';
+import { ConfigApi } from '@backstage/core-plugin-api';
 import { isValidCountryCode, isValidPhoneNumber } from '../utils/phone-utils';
 import { CommonResponse, SignupData } from '../types';
 import { SecureFetchApi } from './SecureFetchClient';
 
 export type RegistrationBackendClientOptions = {
   configApi: ConfigApi;
-  discoveryApi: DiscoveryApi;
   secureFetchApi: SecureFetchApi;
 };
 
@@ -39,18 +38,17 @@ export interface RegistrationService {
 }
 
 export class RegistrationBackendClient implements RegistrationService {
-  private readonly discoveryApi: DiscoveryApi;
   private readonly configApi: ConfigApi;
   private readonly secureFetchApi: SecureFetchApi;
 
   constructor(options: RegistrationBackendClientOptions) {
-    this.discoveryApi = options.discoveryApi;
     this.configApi = options.configApi;
     this.secureFetchApi = options.secureFetchApi;
   }
 
-  private readonly signupAPI = async (): Promise<string> => {
-    return `${await this.discoveryApi.getBaseUrl('proxy')}/signup`;
+  private readonly signupAPI = (): string => {
+    const signupAPI = this.configApi.getString('sandbox.signupAPI');
+    return `${signupAPI}/signup`;
   };
 
   getRecaptchaAPIKey = (): string => {
