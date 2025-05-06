@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import { useEffect, useState } from 'react';
 import { JsonObject, JsonValue } from '@backstage/types';
+import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 
 export type evaluateTemplateProps = {
   template?: JsonValue;
@@ -63,6 +65,34 @@ export const evaluateTemplate = async (
       });
     }
   }
+
+  return evaluated;
+};
+
+export const useEvaluateTemplate = ({
+  template,
+  key,
+  formData,
+  setError,
+}: {
+  template?: string;
+  key: string;
+  formData: JsonObject;
+  setError: (e: string) => void;
+}) => {
+  const unitEvaluator = useTemplateUnitEvaluator();
+  const [evaluated, setEvaluated] = useState<string>();
+
+  useEffect(() => {
+    evaluateTemplate({
+      template,
+      key,
+      unitEvaluator,
+      formData,
+    })
+      .then(setEvaluated)
+      .catch(reason => setError(reason.toString()));
+  }, [template, unitEvaluator, formData, key, setError]);
 
   return evaluated;
 };

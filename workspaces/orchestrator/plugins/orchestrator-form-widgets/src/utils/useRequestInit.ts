@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useEffect, useState } from 'react';
+import { isEqual } from 'lodash';
 import { JsonObject } from '@backstage/types';
 import { evaluateTemplate, evaluateTemplateProps } from './evaluateTemplate';
+import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 
 const ALLOWED_METHODS = ['GET', 'POST'];
 
@@ -98,4 +101,32 @@ export const getRequestInit = async (
   requestInit.headers = headersInit;
 
   return requestInit;
+};
+
+export const useRequestInit = ({
+  uiProps,
+  prefix,
+  formData,
+  setError,
+}: {
+  uiProps: JsonObject;
+  prefix: string;
+  formData: JsonObject;
+  setError: (e: string) => void;
+}) => {
+  const [evaluatedRequestInit, setEvaluatedRequestInit] =
+    useState<RequestInit>();
+  const unitEvaluator = useTemplateUnitEvaluator();
+
+  useEffect(() => {
+    getRequestInit(uiProps, prefix, unitEvaluator, formData)
+      .then(evaluated =>
+        setEvaluatedRequestInit(actual =>
+          isEqual(actual, evaluated) ? actual : evaluated,
+        ),
+      )
+      .catch(reason => setError(reason.toString()));
+  }, [uiProps, unitEvaluator, formData, prefix, setError]);
+
+  return evaluatedRequestInit;
 };

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import React, { useEffect, useMemo, useState } from 'react';
-import { isEqual } from 'lodash';
 import { Widget } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
 import { JsonObject } from '@backstage/types';
@@ -26,8 +25,8 @@ import { fetchApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { FormContextData } from '../types';
 import {
-  evaluateTemplate,
-  getRequestInit,
+  useRequestInit,
+  useEvaluateTemplate,
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
 } from '../utils';
@@ -44,9 +43,6 @@ export const SchemaUpdater: Widget<
   const formContext = useWrapperFormPropsContext();
   const [_, setLoading] = useState(true);
   const [error, setError] = useState<string>();
-  const [evaluatedFetchUrl, setEvaluatedFetchUrl] = useState<string>();
-  const [evaluatedRequestInit, setEvaluatedRequestInit] =
-    useState<RequestInit>();
 
   const { updateSchema, formData } = formContext;
 
@@ -63,26 +59,18 @@ export const SchemaUpdater: Widget<
     uiProps['fetch:retrigger'] as string[],
   );
 
-  useEffect(() => {
-    evaluateTemplate({
-      template: fetchUrl,
-      key: 'fetch:url',
-      unitEvaluator: templateUnitEvaluator,
-      formData,
-    })
-      .then(evaluated => setEvaluatedFetchUrl(evaluated))
-      .catch(reason => setError(reason.toString()));
-  }, [fetchUrl, templateUnitEvaluator, formData]);
-
-  useEffect(() => {
-    getRequestInit(uiProps, 'fetch', templateUnitEvaluator, formData)
-      .then(evaluated =>
-        setEvaluatedRequestInit(actual =>
-          isEqual(actual, evaluated) ? actual : evaluated,
-        ),
-      )
-      .catch(reason => setError(reason.toString()));
-  }, [uiProps, templateUnitEvaluator, formData]);
+  const evaluatedFetchUrl = useEvaluateTemplate({
+    template: fetchUrl,
+    key: 'fetch:url',
+    formData,
+    setError,
+  });
+  const evaluatedRequestInit = useRequestInit({
+    uiProps,
+    prefix: 'fetch',
+    formData,
+    setError,
+  });
 
   useEffect(() => {
     const fetchSchemaChunks = async () => {

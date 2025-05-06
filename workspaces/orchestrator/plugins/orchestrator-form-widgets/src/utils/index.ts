@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './getRequestInit';
+export * from './useRequestInit';
 export * from './evaluateTemplate';
 export * from './useRetriggerEvaluate';
 export * from './useTemplateUnitEvaluator';

@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 /*
  * Copyright Red Hat, Inc.
  *
@@ -15,6 +13,7 @@ import { useState } from 'react';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useState } from 'react';
 import { isEqual } from 'lodash';
 import { JsonObject, JsonValue } from '@backstage/types';
 import { evaluateTemplateProps } from './evaluateTemplate';
@@ -34,9 +33,7 @@ export const useRetriggerEvaluate = (
     const doItAsync = async () => {
       const actualJson: (JsonValue | undefined)[] = await Promise.all(
         conditions.map((condition: string) => {
-          try {
-            return templateUnitEvaluator(condition, formData);
-          } catch (err) {
+          return templateUnitEvaluator(condition, formData).catch(err => {
             // eslint-disable-next-line no-console
             console.error(
               'Can not evaluate retrigger condition: ',
@@ -44,7 +41,7 @@ export const useRetriggerEvaluate = (
               err,
             );
             throw err;
-          }
+          });
         }),
       );
 

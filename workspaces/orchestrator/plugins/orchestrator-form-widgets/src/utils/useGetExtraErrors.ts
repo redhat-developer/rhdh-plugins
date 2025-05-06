@@ -24,7 +24,7 @@ import { JsonObject } from '@backstage/types';
 import { ErrorSchema } from '@rjsf/utils';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 import { evaluateTemplate } from './evaluateTemplate';
-import { getRequestInit } from './getRequestInit';
+import { getRequestInit } from './useRequestInit';
 import { safeSet } from './safeSet';
 
 // Walks through the uiSchema and calls the "callback" for every field which is backed by the dynamic ui:widget.
