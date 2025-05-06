@@ -1,4 +1,3 @@
-TMP_DIR := $(shell mktemp -d)
 TAG := $(shell date +'%d%H%M%S')
 SANDBOX_RHDH_PLUGIN_IMAGE ?= quay.io/$(QUAY_NAMESPACE)/sandbox-rhdh-plugin:$(TAG)
 OS := $(shell uname -s)
@@ -13,7 +12,7 @@ push-plugin:
 	podman push $(SANDBOX_RHDH_PLUGIN_IMAGE)
 
 
-RHDH_LOCAL_DIR := "$(TMP_DIR)/rhdh-local"
+RHDH_LOCAL_DIR := "$(TMPDIR)/rhdh-local"
 .PHONY: clone-rhdh-local
 clone-rhdh-local:
 	git clone https://github.com/redhat-developer/rhdh-local $(RHDH_LOCAL_DIR) && \
@@ -46,5 +45,5 @@ start-rhdh-local: clone-rhdh-local generate-env
 
 .PHONY: stop-rhdh-local
 stop-rhdh-local:
-	cd $(RHDH_LOCAL_TO_STOP_DIR) && \
+	cd $(RHDH_LOCAL_DIR) && \
 	podman-compose down -v
