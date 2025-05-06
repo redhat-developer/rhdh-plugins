@@ -1,0 +1,41 @@
+app:
+  title: Developer Sandbox
+  baseUrl: http://localhost:3000
+
+# this is required in order to be able to open the SSO login in full page mode.
+enableExperimentalRedirectFlow: true
+
+backend:
+  baseUrl: http://localhost:3000
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  listen:
+    port: 3000
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+auth:
+  environment: production
+  session:
+    secret: 'dummy'
+  providers:
+    oidc:
+      production:
+        metadataUrl: https://sso.redhat.com/auth/realms/redhat-external
+        clientId: crtoolchain-local
+        clientSecret: dummy
+        prompt: auto
+        signIn:
+          resolvers:
+            - resolver: emailLocalPartMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: true
+signInPage: oidc
+sandbox:
+  signupAPI: https://registration-service-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com/api/v1
+  kubeAPI: https://api-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com
+  recaptcha:
+    siteKey: 6Lc_164lAAAAAPvrC0WO-XDljvZ2DZ3UQ38A4XR0
