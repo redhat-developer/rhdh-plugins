@@ -15,20 +15,16 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  identityApiRef,
-  useApi,
-  ProfileInfo,
-} from '@backstage/core-plugin-api';
+import { useUserProfile } from '@backstage/plugin-user-settings';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import Typography from '@mui/material/Typography';
 import { lighten } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import { MenuSection } from './MenuSection';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
-import { MenuSection } from './MenuSection';
 import { useDropdownManager } from '../../hooks';
-import Box from '@mui/material/Box';
 
 /**
  * @public
@@ -40,9 +36,8 @@ export interface ProfileDropdownProps {
 
 export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
+  const { displayName } = useUserProfile();
 
-  const identityApi = useApi(identityApiRef);
-  const [user, setUser] = useState<ProfileInfo>();
   const profileDropdownMountPoints = useProfileDropdownMountPoints();
 
   const headerRef = useRef<HTMLElement | null>(null);
@@ -65,15 +60,6 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const userProfile = await identityApi.getProfileInfo();
-      setUser(userProfile);
-    };
-
-    fetchUser();
-  }, [identityApi]);
-
   const menuItems = useMemo(() => {
     return (profileDropdownMountPoints ?? [])
       .map(mp => ({
@@ -94,17 +80,21 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
     <HeaderDropdownComponent
       buttonContent={
         <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
-          <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
-          <Typography
-            variant="body2"
-            sx={{
-              display: { xs: 'none', md: 'block' },
-              fontWeight: 500,
-              mr: '1rem',
-            }}
-          >
-            {user?.displayName ?? 'Guest'}
-          </Typography>
+          {displayName && (
+            <>
+              <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
+              <Typography
+                variant="body2"
+                sx={{
+                  display: { xs: 'none', md: 'block' },
+                  fontWeight: 500,
+                  mr: '1rem',
+                }}
+              >
+                {displayName}
+              </Typography>
+            </>
+          )}
           <KeyboardArrowDownOutlinedIcon
             sx={{
               bgcolor: bgColor,
