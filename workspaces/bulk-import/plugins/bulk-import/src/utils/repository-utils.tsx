@@ -228,6 +228,7 @@ export const getImportStatus = (
   if (!status) {
     return '';
   }
+  const labelText = gitlabFeatureFlag ? 'Already imported' : 'Added';
   switch (status) {
     case 'WAIT_PR_APPROVAL':
       return showIcon ? (
@@ -245,7 +246,7 @@ export const getImportStatus = (
           {gitlabFeatureFlag ? 'Imported' : 'Added'}
         </span>
       ) : (
-        `${gitlabFeatureFlag ? 'Already imported' : 'Added'}`
+        labelText
       );
     default:
       return '';
