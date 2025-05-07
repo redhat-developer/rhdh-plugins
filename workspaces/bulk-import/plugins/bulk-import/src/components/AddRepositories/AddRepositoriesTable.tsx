@@ -58,9 +58,8 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
         )}
         <AddRepositoriesTableToolbar
           title={
-            title
-              ? title
-              : `Selected  ${isApprovalToolGitlab ? 'projects' : 'repositories'}`
+            title ||
+            `Selected  ${isApprovalToolGitlab ? 'projects' : 'repositories'}`
           }
           setSearchString={handleSearch}
           onPageChange={setPage}

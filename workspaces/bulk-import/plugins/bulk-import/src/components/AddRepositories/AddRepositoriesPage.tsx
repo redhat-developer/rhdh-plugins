@@ -144,7 +144,6 @@ export const AddRepositoriesPage = () => {
       </div>
     );
   };
-  //
   return (
     <Page themeId="tool">
       <Header

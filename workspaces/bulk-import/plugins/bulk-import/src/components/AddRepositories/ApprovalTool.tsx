@@ -61,7 +61,7 @@ const ApprovalTool: React.FC<ApprovalToolProps> = ({
       </Typography>
       <Tooltip
         placement="top"
-        title="Importing requires approval. After the pull request is approved, the repositories will be imported to the Catalog page."
+        title="Importing requires approval. After the pull/merge request is approved, the repositories/projects will be imported to the Catalog page."
       >
         <Typography
           sx={{

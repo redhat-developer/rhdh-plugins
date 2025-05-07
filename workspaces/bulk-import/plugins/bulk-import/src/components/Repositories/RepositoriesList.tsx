@@ -97,7 +97,13 @@ export const RepositoriesList = () => {
     setDebouncedSearch(str);
     setPageNumber(0);
   };
-
+  const baseTitle = gitlabFeatureFlag
+    ? 'Imported entities'
+    : 'Added repositories';
+  const finalTitle =
+    importJobs?.totalJobs === 0
+      ? baseTitle
+      : `${baseTitle} (${importJobs.totalJobs})`;
   return (
     <>
       <RepositoriesAddLink />
@@ -105,11 +111,7 @@ export const RepositoriesList = () => {
         data={importJobs.addedRepositories ?? []}
         columns={RepositoriesListColumns}
         onSearchChange={handleSearch}
-        title={
-          importJobs?.totalJobs === 0
-            ? `${gitlabFeatureFlag ? 'Imported entities' : 'Added repositories'}`
-            : `${gitlabFeatureFlag ? 'Imported entities' : 'Added repositories'} (${importJobs.totalJobs})`
-        }
+        title={finalTitle}
         components={{
           Header: () => (
             <RepositoriesHeader
