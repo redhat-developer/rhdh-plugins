@@ -63,8 +63,8 @@ export const createRunWorkflowAction = (
       },
     },
     async handler(ctx) {
-      const entity = ctx.templateInfo?.entityRef;
-      if (!entity) {
+      const templateEntity = ctx.templateInfo?.entityRef;
+      if (!templateEntity) {
         throw new Error('No template entity');
       }
 
@@ -79,12 +79,27 @@ export const createRunWorkflowAction = (
 
       try {
         const { data } = await api.executeWorkflow(
-          parseEntityRef(entity).name,
+          parseEntityRef(templateEntity).name,
           { inputData: ctx.input.parameters },
           undefined,
           reqConfigOption,
         );
-        ctx.output('instanceUrl', `/orchestrator/instances/${data.id}`);
+
+        const targetEntity = ctx.input.parameters.targetEntity
+          ? ctx.input.parameters.targetEntity.toString()
+          : 'undefined';
+
+        let targetEntityKind, targetEntityNamespace, targetEntityName, rest;
+
+        if (targetEntity) [targetEntityKind, rest] = targetEntity?.split(':');
+        if (rest) [targetEntityNamespace, targetEntityName] = rest.split('/');
+
+        const workflowId = templateEntity.toString().split('/').pop();
+
+        ctx.output(
+          'instanceUrl',
+          `/orchestrator/entity/${targetEntityNamespace}/${targetEntityKind}/${targetEntityName}/${workflowId}/${data.id}`,
+        );
       } catch (err) {
         throw getError(err);
       }

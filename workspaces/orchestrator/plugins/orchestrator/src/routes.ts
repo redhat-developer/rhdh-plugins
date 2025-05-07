@@ -20,6 +20,8 @@ export const orchestratorRootRouteRef = createRouteRef({
   id: 'orchestrator',
 });
 
+// sub routes for admin
+
 // orchestrator page
 export const workflowInstancesRouteRef = createSubRouteRef({
   id: 'orchestrator/instances',
@@ -54,4 +56,18 @@ export const executeWorkflowRouteRef = createSubRouteRef({
   id: 'orchestrator/workflows/execute',
   parent: orchestratorRootRouteRef,
   path: '/workflows/:workflowId/execute',
+});
+
+// sub routes for users
+
+export const entityWorkflowRouteRef = createSubRouteRef({
+  id: 'orchestrator.workflow',
+  parent: orchestratorRootRouteRef,
+  path: '/entity/:namespace/:kind/:name/:workflowId',
+});
+
+export const entityInstanceRouteRef = createSubRouteRef({
+  id: 'orchestrator.workflowInstance',
+  parent: orchestratorRootRouteRef,
+  path: '/entity/:namespace/:kind/:name/:workflowId/:instanceId',
 });

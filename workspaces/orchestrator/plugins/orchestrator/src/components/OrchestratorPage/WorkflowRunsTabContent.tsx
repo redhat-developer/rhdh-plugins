@@ -43,7 +43,12 @@ import {
 import { orchestratorApiRef } from '../../api';
 import { DEFAULT_TABLE_PAGE_SIZE, VALUE_UNAVAILABLE } from '../../constants';
 import usePolling from '../../hooks/usePolling';
-import { workflowInstanceRouteRef, workflowRouteRef } from '../../routes';
+import {
+  entityInstanceRouteRef,
+  entityWorkflowRouteRef,
+  workflowInstanceRouteRef,
+  workflowRouteRef,
+} from '../../routes';
 import { Selector } from '../Selector';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
 import { mapProcessInstanceToDetails } from '../WorkflowInstancePageContent';
@@ -73,7 +78,11 @@ const started = ['Today', 'Yesterday', 'Last 7 days', 'This month'].map(
 );
 
 export const WorkflowRunsTabContent = () => {
-  const { workflowId } = useRouteRefParams(workflowRouteRef);
+  const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
+  const { workflowId } = useRouteRefParams(entityWorkflowRouteRef);
+  const { kind } = useRouteRefParams(entityWorkflowRouteRef);
+  const { name } = useRouteRefParams(entityWorkflowRouteRef);
+  const { namespace } = useRouteRefParams(entityWorkflowRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
   const workflowPageLink = useRouteRef(workflowRouteRef);
@@ -175,6 +184,18 @@ export const WorkflowRunsTabContent = () => {
             }
           : undefined;
     }
+    //will be uncommented once nested filters will be supported
+
+    // const backstageEntityFilter: FieldFilter |undefined = entityIdentifier ? {
+    //   operator: 'EQ',
+    //   value: entityIdentifier,
+    //   field: 'initiatorEntity',
+    // }: undefined;
+
+    // const nestedVariablesFilter: NestedFilter = entityIdentifier ?{
+    //   field: 'variables',
+    //   nested: backstageEntityFilter,
+    // } : undefined;
 
     // removes undefined filters
     const filters = [statusFilter, workflowIdFilter, startedFilter].filter(
@@ -243,11 +264,24 @@ export const WorkflowRunsTabContent = () => {
       {
         title: 'ID',
         field: 'id',
-        render: data => (
-          <Link to={workflowInstanceLink({ instanceId: data.id })}>
-            {data.id}
-          </Link>
-        ),
+        render: data =>
+          kind ? (
+            <Link
+              to={entityInstanceLink({
+                kind: kind,
+                namespace: namespace,
+                name: name,
+                workflowId: workflowId,
+                instanceId: data.id,
+              })}
+            >
+              {data.id}
+            </Link>
+          ) : (
+            <Link to={workflowInstanceLink({ instanceId: data.id })}>
+              {data.id}
+            </Link>
+          ),
         sorting: false,
       },
       ...(workflowId
@@ -287,7 +321,16 @@ export const WorkflowRunsTabContent = () => {
       { title: 'Started', field: 'start', customSort: applyBackendSort },
       { title: 'Duration', field: 'duration', sorting: false },
     ],
-    [workflowInstanceLink, workflowId, workflowPageLink, applyBackendSort],
+    [
+      workflowInstanceLink,
+      workflowId,
+      workflowPageLink,
+      applyBackendSort,
+      entityInstanceLink,
+      name,
+      kind,
+      namespace,
+    ],
   );
 
   let data = value || [];
@@ -327,8 +370,8 @@ export const WorkflowRunsTabContent = () => {
           noPadding
           title={
             workflowId
-              ? `Workflow runs (${data.length}) `
-              : `All runs (${data.length}) `
+                ? `Workflow runs (${data.length}) `
+                : `All runs (${data.length}) `
           }
         >
           <OverrideBackstageTable

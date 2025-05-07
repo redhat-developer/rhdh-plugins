@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: hello-world
+  description: A simple Hello World service for development
+  annotations:
+    orchestrator.io/workflows: '["yamlgreet", "hello_world"]'
+spec:
+  type: service
+  lifecycle: development
+  owner: user:guest

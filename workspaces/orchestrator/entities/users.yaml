@@ -8,3 +8,15 @@ spec:
     displayName: Marek Libra
     email: foo@xyzbar.cz
   memberOf: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: liorsoffer
+  annotations:
+    orchestrator.io/workflows: '["yamlgreet", "hello_world"]'
+spec:
+  profile:
+    displayName: lior soffer
+    email: liorsoffer1@gmail.com
+  memberOf: []

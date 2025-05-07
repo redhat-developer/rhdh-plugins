@@ -15,6 +15,7 @@
  */
 
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
 import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
@@ -54,6 +55,8 @@ export const WorkflowDetailsTabContent = ({
     return orchestratorApi.getWorkflowSource(workflowId);
   }, []);
 
+  const { kind } = useParams();
+
   return (
     <Grid container item direction="column" xs={12} spacing={2}>
       {errorWorkflowOverview && (
@@ -67,7 +70,7 @@ export const WorkflowDetailsTabContent = ({
           loading={loadingWorkflowOverview}
         />
       </Grid>
-      {workflowOverviewDTO && adminView.allowed && value && (
+      {workflowOverviewDTO && adminView.allowed && value && !kind && (
         <Grid item>
           <InfoCard title="Workflow definition">
             <ServerlessWorkflowEditor

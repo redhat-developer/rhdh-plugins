@@ -117,6 +117,11 @@ catalog:
     - type: file
       target: ../../entities/templates.yaml
 
+    - type: file
+      target: ../../entities/hello-world.yaml
+      rules:
+        - allow: [Component]
+
     # - type: url
     #   target: https://github.com/mareklibra/generated-workflow-templates/blob/main/templates.yaml
 
