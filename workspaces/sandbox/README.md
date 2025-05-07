@@ -52,6 +52,7 @@ yarn backstage-repo-tools knip-reports
 ```
 
 ## Local Frontend Setup (provisional)
+
 The Sandbox plugin uses Red Hat SSO to authenticate users accessing the Sandbox backend. This section explains how to configure your local RHDH Sandbox UI to connect with Red Hat SSO and the Sandbox backend.
 
 0. `export QUAY_NAMESPACE=<your-quay-namespace>`
