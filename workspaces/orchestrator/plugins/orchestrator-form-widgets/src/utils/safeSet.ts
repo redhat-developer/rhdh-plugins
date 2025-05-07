@@ -13,9 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './useRequestInit';
-export * from './evaluateTemplate';
-export * from './useRetriggerEvaluate';
-export * from './useTemplateUnitEvaluator';
-export * from './safeSet';
-export * from './useGetExtraErrors';
+
+import { JsonObject, JsonValue } from '@backstage/types';
+
+export const safeSet: (
+  errors: JsonObject,
+  path: string,
+  value: JsonValue,
+) => void = (errors, path, value) => {
+  const steps = path.split('.', 2);
+  if (steps.length === 1) {
+    errors[steps[0]] = value;
+  } else {
+    const safeObject = (errors[steps[0]] ?? {}) as JsonObject;
+    errors[steps[0]] = safeObject;
+    safeSet(safeObject, steps[1], value);
+  }
+};

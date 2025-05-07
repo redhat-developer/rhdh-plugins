@@ -61,6 +61,7 @@
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
     "@rjsf/utils": "^5.21.2",
     "json-schema": "^0.4.0",
+    "jsonata": "^2.0.6",
     "lodash": "^4.17.21",
     "react-use": "^17.2.4"
   },

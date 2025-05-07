@@ -75,7 +75,7 @@ Example of response:
 
 Moreover, it does extensive logging of the received HTTP requests for debugging during the widget's development.
 
-Refer [http-test-server](./http-test-server/README.md) for more details.
+Refer to [http-test-server](./http-test-server/README.md) for more details.
 
 ## How to develop widgets
 
@@ -84,7 +84,7 @@ We do not have a dedicated developer Backstage instance to host dev environment 
 So far the development can be done via Orchestrator's dev instance (see `./workspaces/orchestrator/packages/backend` and `./workspaces/orchestrator/packages/frontend`).
 This instance is already configured to statically load the widget library (see `createApp()` in `./workspaces/orchestrator/packages/app/src/App.tsx`).
 
-To develop the widgets, we recommend to uncomment or farther configure the `integrations:` and `auth:` sections in the `./workspaces/orchestrator/app-config.yaml` to be able to test various SCM Auth providers within `$${{}}` templates.
+To develop the widgets, we recommend to uncomment or further configure the `integrations:` and `auth:` sections in the `./workspaces/orchestrator/app-config.yaml` to be able to test various SCM Auth providers within `$${{}}` templates.
 
 Please note, that the `proxy:` section is already pre-configured to match the `http-test-server` listening on localhost.
 
@@ -143,12 +143,12 @@ yarn start
 ### The dynamic_schema workflow
 
 There is `dynamic_schema` workflow located under `http-test-server/exampleWorkflows`.
-It's purpose is to have a playground when developing the widgets.
+Its purpose is to have a playground when developing the widgets.
 
 The URLs referenced from this workflow's data input schema rely on proxy configured in the `./workspaces/orchestrator/app-config.yaml` which assumes the `http-test-server` to be running.
 
 This dev-only workflow is similar to https://github.com/rhdhorchestrator/backstage-orchestrator-workflows/blob/main/workflows/dynamic.schema.sw.json .
-The difference is in the URLs used - the backstage-orchestrator-workflows' one references public Git Hub HTTP server, so no extra steps in running the `http-test-server` are needed.
+The difference is in the URLs used - the backstage-orchestrator-workflows' one references public GitHub HTTP server, so no extra steps in running the `http-test-server` are needed.
 
 ## Development of a workflow using orchestrator-form-widgets
 

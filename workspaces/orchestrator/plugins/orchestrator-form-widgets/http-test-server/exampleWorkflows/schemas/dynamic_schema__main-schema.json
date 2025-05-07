@@ -10,7 +10,34 @@
       "properties": {
         "fooTheFirst": {
           "type": "string",
-          "title": "First page simple input field"
+          "title": "Standard input field. Write something to see it in the autocomplete field."
+        },
+        "myActiveText": {
+          "type": "string",
+          "title": "Example of ActiveTextInput widget with autocomplete",
+          "ui:widget": "ActiveTextInput",
+          "ui:props": {
+            "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/activeTextWhisperer?mydata=$${{current.firstStep.fooTheFirst}}",
+            "fetch:response:value": "myresult.foo.default",
+            "fetch:response:autocomplete": "bar.something.myautocompleteoptions",
+            "fetch:retrigger": ["current.firstStep.fooTheFirst"]
+          }
+        },
+        "mySimpleActiveText": {
+          "type": "string",
+          "title": "Example of simple ActiveTextInput with validation",
+          "ui:widget": "ActiveTextInput",
+          "ui:props": {
+            "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/activeTextWhisperer",
+            "fetch:response:value": "myresult.foo.default",
+            "validate:url": "http://localhost:7007/api/proxy/mytesthttpserver/validate",
+            "validate:method": "POST",
+            "validate:body": {
+              "field": "mySimpleActiveText",
+              "value": "$${{current.firstStep.mySimpleActiveText}}",
+              "moreDataForMyValidator": "$${{current.firstStep.fooTheFirst}}"
+            }
+          }
         },
         "mySchemaUpdater": {
           "type": "string",

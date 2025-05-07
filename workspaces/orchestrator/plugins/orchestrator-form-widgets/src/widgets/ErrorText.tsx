@@ -13,9 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './useRequestInit';
-export * from './evaluateTemplate';
-export * from './useRetriggerEvaluate';
-export * from './useTemplateUnitEvaluator';
-export * from './safeSet';
-export * from './useGetExtraErrors';
+import React from 'react';
+import { makeStyles, Theme } from '@material-ui/core';
+
+const useStyles = makeStyles((theme: Theme) => ({
+  error: {
+    color: theme.palette.error.main,
+  },
+}));
+
+export const ErrorText = ({ text }: { text: string }) => {
+  const classes = useStyles();
+
+  return <div className={classes.error}>{text}</div>;
+};
