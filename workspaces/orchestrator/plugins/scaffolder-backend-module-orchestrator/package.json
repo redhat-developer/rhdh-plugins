@@ -55,7 +55,7 @@
     "prettier:fix": "prettier --ignore-unknown --write .",
     "lint:check": "backstage-cli package lint",
     "lint:fix": "backstage-cli package lint --fix",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --no-embed-as-dependencies --embed-package '@red-hat-developer-hub/backstage-plugin-orchestrator-common'"
+    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package '@red-hat-developer-hub/backstage-plugin-orchestrator-common'"
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.2.1",
