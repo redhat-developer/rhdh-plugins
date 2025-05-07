@@ -50,6 +50,7 @@ export const RepositoriesTable = ({
   setPage,
   showOrganizations = false,
   drawerOrganization,
+  isApprovalToolGitlab = false,
   updateSelectedReposInDrawer,
 }: {
   searchString: string;
@@ -57,6 +58,7 @@ export const RepositoriesTable = ({
   setPage?: (page: number) => void;
   showOrganizations?: boolean;
   drawerOrganization?: string;
+  isApprovalToolGitlab?: boolean;
   updateSelectedReposInDrawer?: (repos: AddedRepositories) => void;
 }) => {
   const { setFieldValue, values, setStatus } =
@@ -305,6 +307,7 @@ export const RepositoriesTable = ({
             rowCount={getRowCount() || 0}
             showOrganizations={drawerOrganization ? false : showOrganizations}
             isRepoSelectDrawer={!!drawerOrganization}
+            isApprovalToolGitlab={isApprovalToolGitlab}
           />
           <RepositoriesTableBody
             loading={loading}
@@ -315,6 +318,7 @@ export const RepositoriesTable = ({
             onClick={handleClick}
             selectedRepos={selected}
             isDrawer={!!drawerOrganization}
+            isApprovalToolGitlab={isApprovalToolGitlab}
             showOrganizations={showOrganizations}
           />
         </Table>
@@ -344,7 +348,9 @@ export const RepositoriesTable = ({
       </TableContainer>
       {showOrganizations && activeOrganization && (
         <AddRepositoriesDrawer
-          title="Selected repositories"
+          title={
+            isApprovalToolGitlab ? 'Selected projects' : 'Selected repositories'
+          }
           orgData={activeOrganization}
           onSelect={handleUpdatesFromDrawer}
           open={isOpen}
