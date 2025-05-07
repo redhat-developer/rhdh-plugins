@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.6.0
+
+### Minor Changes
+
+- f0f1eb6: Added avatar to the Profile dropdown
+
 ## 1.5.1
 
 ### Patch Changes
