@@ -1,0 +1,47 @@
+/*
+ * Copyright The Backstage Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import fs from 'fs';
+import yaml from 'js-yaml';
+
+import {
+  DynamicPackageConfig,
+  DynamicPluginsConfig,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
+export class PluginsConfigReader {
+  constructor(private readonly dynamicPluginsConfigFile: string | undefined) {}
+
+  parse(): DynamicPackageConfig[] | undefined {
+    if (!this.dynamicPluginsConfigFile) {
+      return undefined;
+    }
+
+    const configContent = fs.readFileSync(
+      this.dynamicPluginsConfigFile,
+      'utf-8',
+    );
+    const parsedContent = yaml.load(configContent) as DynamicPluginsConfig;
+
+    if (!parsedContent || !Array.isArray(parsedContent.plugins)) {
+      throw new Error(
+        "Failed to load 'dynamicPluginsConfig', content of the \'plugins\' field must be a list",
+      );
+    }
+
+    return parsedContent.plugins;
+  }
+}

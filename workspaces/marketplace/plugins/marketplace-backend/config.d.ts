@@ -1,5 +1,5 @@
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-export * from './MarketplaceAuthor';
-export * from './MarketplaceCollection';
-export * from './MarketplaceKind';
-export * from './MarketplacePackage';
-export * from './MarketplacePlugin';
-export * from './DynamicPackageConfig';
-export * from './DynamicPluginConfig';
+export interface Config {
+  marketplace: {
+    /**
+     * The path to the yaml config file containing the dynamic plugins
+     * @visibility frontend
+     */
+    dynamicPluginsConfig?: string;
+  };
+}

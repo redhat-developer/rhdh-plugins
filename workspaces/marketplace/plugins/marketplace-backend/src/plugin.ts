@@ -38,11 +38,12 @@ export const marketplacePlugin = createBackendPlugin({
     env.registerInit({
       deps: {
         auth: coreServices.auth,
+        config: coreServices.rootConfig,
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         discovery: coreServices.discovery,
       },
-      async init({ auth, httpAuth, httpRouter, discovery }) {
+      async init({ auth, config, httpAuth, httpRouter, discovery }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
 
         const marketplaceApi: MarketplaceApi = new MarketplaceCatalogClient({
@@ -53,6 +54,7 @@ export const marketplacePlugin = createBackendPlugin({
         httpRouter.use(
           await createRouter({
             httpAuth,
+            config,
             marketplaceApi,
           }),
         );
