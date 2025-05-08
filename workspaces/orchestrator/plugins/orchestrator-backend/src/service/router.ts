@@ -22,6 +22,7 @@ import {
   LoggerService,
   PermissionsService,
   SchedulerService,
+  UserInfoService,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import type { DiscoveryApi } from '@backstage/core-plugin-api';
@@ -174,6 +175,7 @@ export async function createBackendRouter(
     scheduler,
     permissions,
     httpAuth,
+    userInfo,
   } = options;
   const publicServices = initPublicServices(logger, config, scheduler);
 
@@ -204,6 +206,7 @@ export async function createBackendRouter(
     permissions,
     httpAuth,
     auditor,
+    userInfo,
   );
   setupExternalRoutes(router, discovery, scaffolderService, auditor);
 
@@ -314,6 +317,7 @@ function setupInternalRoutes(
   permissions: PermissionsService,
   httpAuth: HttpAuthService,
   auditor: AuditorService,
+  userInfo: UserInfoService,
 ) {
   function manageDenyAuthorization(auditEvent: AuditorServiceEvent) {
     const error = new UnauthorizedError();
@@ -434,8 +438,18 @@ function setupInternalRoutes(
 
       const executeWorkflowRequestDTO = req.body;
 
+      const credentials = await httpAuth.credentials(req);
+      const initiatorEntity = await (
+        await userInfo.getUserInfo(credentials)
+      ).userEntityRef;
       return routerApi.v2
-        .executeWorkflow(executeWorkflowRequestDTO, workflowId, businessKey)
+        .executeWorkflow(
+          executeWorkflowRequestDTO,
+          workflowId,
+          initiatorEntity,
+          req.body.inputData.targetEntity,
+          businessKey,
+        )
         .then(result => {
           auditEvent.success({ meta: { id: result.id } });
           return res.status(200).json(result);

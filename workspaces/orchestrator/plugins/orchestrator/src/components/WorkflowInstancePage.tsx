@@ -61,7 +61,12 @@ import { orchestratorApiRef } from '../api';
 import { SHORT_REFRESH_INTERVAL } from '../constants';
 import { usePermissionArrayDecision } from '../hooks/usePermissionArray';
 import usePolling from '../hooks/usePolling';
-import { executeWorkflowRouteRef, workflowInstanceRouteRef } from '../routes';
+import {
+  entityInstanceRouteRef,
+  entityWorkflowRouteRef,
+  executeWorkflowRouteRef,
+  workflowInstanceRouteRef,
+} from '../routes';
 import { isNonNullable } from '../utils/TypeGuards';
 import { buildUrl } from '../utils/UrlUtils';
 import { BaseOrchestratorPage } from './BaseOrchestratorPage';
@@ -149,17 +154,10 @@ const AbortConfirmationDialogActions = (
   );
 };
 
-export const WorkflowInstancePage = ({
-  instanceId,
-}: {
-  instanceId?: string;
-}) => {
+export const WorkflowInstancePage = () => {
   const navigate = useNavigate();
   const orchestratorApi = useApi(orchestratorApiRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
-  const { instanceId: queryInstanceId } = useRouteRefParams(
-    workflowInstanceRouteRef,
-  );
   const [isAbortConfirmationDialogOpen, setIsAbortConfirmationDialogOpen] =
     useState(false);
 
@@ -179,16 +177,14 @@ export const WorkflowInstancePage = ({
     setIsRerunSnackbarOpen(false);
   };
 
+  const { instanceId } = useRouteRefParams(workflowInstanceRouteRef);
   const fetchInstance = React.useCallback(async () => {
-    if (!instanceId && !queryInstanceId) {
+    if (!instanceId) {
       return undefined;
     }
-    const res = await orchestratorApi.getInstance(
-      instanceId ?? queryInstanceId,
-      true,
-    );
+    const res = await orchestratorApi.getInstance(instanceId, true);
     return res.data;
-  }, [instanceId, orchestratorApi, queryInstanceId]);
+  }, [instanceId, orchestratorApi]);
 
   const { loading, error, value, restart } = usePolling<
     AssessedProcessInstanceDTO | undefined
@@ -301,12 +297,25 @@ export const WorkflowInstancePage = ({
   handleClick; // eslint-disable-line
 
   const classes = useStyles();
+  const entityWorkflowLink = useRouteRef(entityWorkflowRouteRef);
+  const { kind } = useRouteRefParams(entityInstanceRouteRef);
+  const { name } = useRouteRefParams(entityInstanceRouteRef);
+  const { namespace } = useRouteRefParams(entityInstanceRouteRef);
 
   return (
     <BaseOrchestratorPage
       title={value?.instance.id}
       type={value?.instance.processName}
-      typeLink={`/orchestrator/workflows/${workflowId}`}
+      typeLink={
+        kind
+          ? entityWorkflowLink({
+              kind: kind,
+              namespace: namespace,
+              name: name,
+              workflowId: value?.instance.processId ?? '',
+            })
+          : '/orchestrator/instances'
+      }
     >
       {loading ? <Progress /> : null}
       {error ? <ResponseErrorPanel error={error} /> : null}
@@ -346,50 +355,51 @@ export const WorkflowInstancePage = ({
                   </Tooltip>
                 )}
               </Grid>
-              <Grid item>
-                <Tooltip
-                  title="user not authorized to execute workflow"
-                  disableHoverListener={permittedToUse.allowed}
-                >
-                  <Button
-                    ref={anchorRef}
-                    variant="contained"
-                    color="primary"
-                    startIcon={
-                      isRetrigger ? <CircularProgress size="1rem" /> : null
-                    }
-                    disabled={!permittedToUse.allowed || !canRerun}
-                    onClick={
-                      // Temporarily disable the "retrigger" as a workaround for FLPATH-2135.
-                      // We will re-enable once the SonataFlow fixes the feature
-                      handleRerun
-
-                      // value?.instance.state === ProcessInstanceStatusDTO.Error
-                      //   ? handleClick
-                      //   : handleRerun
-                    }
-                    // Commented-out for FLPATH-2135:
-                    // endIcon={
-                    //   value?.instance.state ===
-                    //     ProcessInstanceStatusDTO.Error ? (
-                    //     <ArrowDropDown />
-                    //   ) : null
-                    // }
-                    style={{ color: 'white' }}
+              {!kind && (
+                <Grid item>
+                  <Tooltip
+                    title="user not authorized to execute workflow"
+                    disableHoverListener={permittedToUse.allowed}
                   >
-                    {value.instance.state ===
-                    ProcessInstanceStatusDTO.Active ? (
-                      <>
-                        <CircularProgress color="inherit" size="0.75rem" />
-                        &nbsp;Running...
-                      </>
-                    ) : (
-                      'Run again'
-                    )}
-                  </Button>
-                </Tooltip>
+                    <Button
+                      ref={anchorRef}
+                      variant="contained"
+                      color="primary"
+                      startIcon={
+                        isRetrigger ? <CircularProgress size="1rem" /> : null
+                      }
+                      disabled={!permittedToUse.allowed || !canRerun}
+                      onClick={
+                        // Temporarily disable the "retrigger" as a workaround for FLPATH-2135.
+                        // We will re-enable once the SonataFlow fixes the feature
+                        handleRerun
 
-                {/*
+                        // value?.instance.state === ProcessInstanceStatusDTO.Error
+                        //   ? handleClick
+                        //   : handleRerun
+                      }
+                      // Commented-out for FLPATH-2135:
+                      // endIcon={
+                      //   value?.instance.state ===
+                      //     ProcessInstanceStatusDTO.Error ? (
+                      //     <ArrowDropDown />
+                      //   ) : null
+                      // }
+                      style={{ color: 'white' }}
+                    >
+                      {value.instance.state ===
+                      ProcessInstanceStatusDTO.Active ? (
+                        <>
+                          <CircularProgress color="inherit" size="0.75rem" />
+                          &nbsp;Running...
+                        </>
+                      ) : (
+                        'Run again'
+                      )}
+                    </Button>
+                  </Tooltip>
+
+                  {/*
                 Temporarily disable the "retrigger" as a workaround for FLPATH-2135.
                 <Menu
                   anchorEl={anchorRef.current}
@@ -414,7 +424,8 @@ export const WorkflowInstancePage = ({
                     From failure point
                   </MenuItem>
                 </Menu> */}
-              </Grid>
+                </Grid>
+              )}
             </Grid>
           </ContentHeader>
           <Snackbar
