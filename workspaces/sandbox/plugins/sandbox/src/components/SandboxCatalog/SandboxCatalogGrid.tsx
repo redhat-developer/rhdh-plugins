@@ -32,9 +32,9 @@ export const SandboxCatalogGrid: React.FC = () => {
   };
 
   return (
-    <Grid container spacing={3} sx={{ maxWidth: '100%' }}>
+    <Grid container spacing={2} sx={{ maxWidth: '100%' }}>
       {productData?.map(product => (
-        <Grid item xs={12} sm="auto" md="auto" key={product.id}>
+        <Grid item xs="auto" sm="auto" md="auto" lg="auto" key={product.id}>
           <Box sx={{ width: '330px', height: '372px' }}>
             <SandboxCatalogCard
               id={product.id}
