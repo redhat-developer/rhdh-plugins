@@ -160,8 +160,8 @@ export async function createRouter(
     async (request, response) => {
       const {
         provider,
-        system_prompt,
-      }: Pick<QueryRequestBody, 'provider' | 'system_prompt'> = request.body;
+        // system_prompt,
+      }: Pick<QueryRequestBody, 'provider'> = request.body; // Pick<QueryRequestBody, 'provider' | 'system_prompt'> = request.body;
       try {
         const credentials = await httpAuth.credentials(request);
         const userEntity = await userInfo.getUserInfo(credentials);
@@ -174,9 +174,9 @@ export async function createRouter(
           credentials,
         );
         const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
-        if (!system_prompt) {
-          request.body.system_prompt = QUERY_SYSTEM_INSTRUCTION;
-        }
+        // if (QUERY_SYSTEM_INSTRUCTION) {
+        //   request.body.system_prompt = QUERY_SYSTEM_INSTRUCTION;
+        // }
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
         const requestBody = JSON.stringify(request.body);
         const fetchResponse = await fetch(
