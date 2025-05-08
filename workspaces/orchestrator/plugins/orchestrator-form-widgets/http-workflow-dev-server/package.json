@@ -1,5 +1,5 @@
 {
-  "name": "http-test-server",
+  "name": "http-workflow-dev-server",
   "version": "5.2.3",
   "license": "Apache-2.0",
   "main": "index.ts",
