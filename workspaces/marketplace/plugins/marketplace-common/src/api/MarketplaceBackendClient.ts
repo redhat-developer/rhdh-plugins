@@ -87,6 +87,29 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     return response.json();
   }
 
+  private async post(
+    path: string,
+    searchParams?: URLSearchParams,
+  ): Promise<any> {
+    const baseUrl = await this.discoveryApi.getBaseUrl('extensions');
+    const query = searchParams ? searchParams.toString() : '';
+    const url = `${baseUrl}${path}${query ? '?' : ''}${query}`;
+
+    const response = await this.fetchApi.fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error(
+        `Unexpected status code: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
   getCollections(
     request: GetEntitiesRequest,
   ): Promise<GetEntitiesResponse<MarketplaceCollection>> {
@@ -176,6 +199,15 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     name: string,
   ): Promise<{ configYaml: string }> {
     return this.get(
+      `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
+    );
+  }
+
+  async installPlugin(
+    namespace: string,
+    name: string,
+  ): Promise<{ status: any }> {
+    return this.post(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
     );
   }
