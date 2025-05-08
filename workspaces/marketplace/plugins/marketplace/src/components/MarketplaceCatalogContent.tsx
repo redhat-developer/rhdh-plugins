@@ -24,6 +24,8 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Launch from '@mui/icons-material/Launch';
+import AlertTitle from '@mui/material/AlertTitle';
+import Alert from '@mui/material/Alert';
 
 import { SearchTextField } from '../shared-components/SearchTextField';
 
@@ -121,6 +123,11 @@ export const MarketplaceCatalogContent = () => {
         <MarketplacePluginFilter />
       </CatalogFilterLayout.Filters>
       <CatalogFilterLayout.Content>
+        <Alert severity="info" sx={{ mb: '1rem' }}>
+          <AlertTitle>
+            Plugin installation is disabled in the production environment.
+          </AlertTitle>
+        </Alert>
         <Stack direction="column" gap={3}>
           {featuredCollections.data?.items?.map(collection => (
             <CollectionHorizontalScrollRow

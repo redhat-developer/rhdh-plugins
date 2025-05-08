@@ -239,7 +239,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     namespace: string,
     name: string,
     configYaml: string,
-  ): Promise<{ status: any }> {
+  ): Promise<{ status: string }> {
     return this.request(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
       'POST',
