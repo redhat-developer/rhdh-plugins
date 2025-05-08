@@ -30,7 +30,10 @@ const FeaturedArticles: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '36px 60px 48px 60px',
-        backgroundColor: theme.palette.mode === 'dark' ? '#1f1f1f' : '#fff',
+        backgroundColor:
+          theme.palette.mode === 'dark'
+            ? '#1f1f1f'
+            : theme.palette.background.paper,
       }}
     >
       <Typography
@@ -59,7 +62,10 @@ const Articles: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '36px 60px 48px 60px',
-        backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#fff',
+        backgroundColor:
+          theme.palette.mode === 'dark'
+            ? '#000000'
+            : theme.palette.background.default,
       }}
     >
       <ItemCardGrid>
