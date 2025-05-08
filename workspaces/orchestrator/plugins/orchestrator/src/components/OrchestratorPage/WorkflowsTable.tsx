@@ -21,12 +21,9 @@ import { Link, TableColumn, TableProps } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { Box, makeStyles, Tooltip } from '@material-ui/core';
 import DeveloperModeOutlinedIcon from '@material-ui/icons/DeveloperModeOutlined';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import PlayArrow from '@material-ui/icons/PlayArrow';
-import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 
 import {
   capitalize,
@@ -38,7 +35,7 @@ import {
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { AVAILABLE, UNAVAILABLE, VALUE_UNAVAILABLE } from '../../constants';
+import { VALUE_UNAVAILABLE } from '../../constants';
 import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../../dataFormatters/WorkflowOverviewFormatter';
@@ -50,6 +47,7 @@ import {
 } from '../../routes';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
 import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
+import { WorkflowStatus } from '../WorkflowStatus';
 import { InputSchemaDialog } from './InputSchemaDialog';
 
 export interface WorkflowsTableProps {
@@ -103,23 +101,7 @@ const usePermittedToViewBatch = (
   };
 };
 
-const useStyles = makeStyles(theme => ({
-  warning: {
-    color: theme.palette.warning.main,
-  },
-  error: {
-    color: theme.palette.error.main,
-  },
-  success: {
-    color: theme.palette.success.main,
-  },
-  info: {
-    color: theme.palette.primary.main,
-  },
-}));
-
 export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
-  const styles = useStyles();
   const navigate = useNavigate();
   const definitionLink = useRouteRef(workflowRouteRef);
   const definitionRunsLink = useRouteRef(workflowRunsRouteRef);
@@ -258,31 +240,9 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
       {
         title: 'Workflow status',
         field: 'avialability',
-        render: rowData => {
-          if (rowData.availablity === AVAILABLE)
-            return (
-              <Box display="flex" alignItems="center">
-                <TaskAltOutlinedIcon
-                  sx={{ fontSize: 15, marginRight: 0.5 }}
-                  className={styles.success}
-                />
-                {rowData.availablity}
-              </Box>
-            );
-          else if (rowData.availablity === UNAVAILABLE)
-            return (
-              <Tooltip title="Workflow is currently down or in an error state">
-                <Box display="flex" alignItems="center">
-                  <WarningAmberOutlinedIcon
-                    sx={{ fontSize: 15, marginRight: 0.5 }}
-                    className={styles.warning}
-                  />
-                  {rowData.availablity}
-                </Box>
-              </Tooltip>
-            );
-          return rowData.availablity;
-        },
+        render: rowData => (
+          <WorkflowStatus availability={rowData.availablity} />
+        ),
       },
       { title: 'Last run', field: 'lastTriggered' },
       {
@@ -303,13 +263,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
       },
       { title: 'Description', field: 'description', minWidth: '25vw' },
     ],
-    [
-      canViewInstance,
-      canViewWorkflow,
-      definitionLink,
-      styles.success,
-      styles.warning,
-    ],
+    [canViewInstance, canViewWorkflow, definitionLink],
   );
 
   const options = useMemo<TableProps['options']>(
