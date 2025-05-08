@@ -26,6 +26,7 @@ import {
   identityApiRef,
   storageApiRef,
 } from '@backstage/core-plugin-api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import {
   type StarredEntitiesProps,
@@ -35,8 +36,13 @@ import {
   VisitsStorageApi,
 } from '@backstage/plugin-home';
 
-import { QuickAccessApiClient, quickAccessApiRef } from './api';
 import { rootRouteRef } from './routes';
+import {
+  EntityApiClient,
+  entityApiRef,
+  QuickAccessApiClient,
+  quickAccessApiRef,
+} from './api';
 
 import type { DynamicHomePageProps } from './components/DynamicHomePage';
 import type { DynamicCustomizableHomePageProps } from './components/DynamicCustomizableHomePage';
@@ -68,6 +74,13 @@ export const dynamicHomePagePlugin = createPlugin({
     root: rootRouteRef,
   },
   apis: [
+    createApiFactory({
+      api: entityApiRef,
+      deps: {
+        catalogApi: catalogApiRef,
+      },
+      factory: ({ catalogApi }) => new EntityApiClient({ catalogApi }),
+    }),
     createApiFactory({
       api: quickAccessApiRef,
       deps: {
@@ -292,6 +305,45 @@ export const WorldClock = dynamicHomePagePlugin.provide(
     name: 'WorldClock',
     component: {
       lazy: () => import('./components/WorldClock').then(m => m.WorldClock),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const OnboardingSection = dynamicHomePagePlugin.provide(
+  createComponentExtension({
+    name: 'OnboardingSection',
+    component: {
+      lazy: () =>
+        import('./components/OnboardingSection').then(m => m.OnboardingSection),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const EntitySection = dynamicHomePagePlugin.provide(
+  createComponentExtension({
+    name: 'EntitySection',
+    component: {
+      lazy: () =>
+        import('./components/EntitySection').then(m => m.EntitySection),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const TemplateSection = dynamicHomePagePlugin.provide(
+  createComponentExtension({
+    name: 'TemplateSection',
+    component: {
+      lazy: () =>
+        import('./components/TemplateSection').then(m => m.TemplateSection),
     },
   }),
 );
