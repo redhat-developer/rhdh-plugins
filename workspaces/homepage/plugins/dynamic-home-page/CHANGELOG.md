@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.3.2
+
+### Patch Changes
+
+- a9e5f32: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.6.0`.
+
 ## 1.3.1
 
 ### Patch Changes
