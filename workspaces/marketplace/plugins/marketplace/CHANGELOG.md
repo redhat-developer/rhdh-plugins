@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.5.8
+
+### Patch Changes
+
+- a9e5f32: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.6.0`.
+- 4291395: Hiding `yaml editor` for plugins not having packages.
+
 ## 0.5.7
 
 ### Patch Changes
