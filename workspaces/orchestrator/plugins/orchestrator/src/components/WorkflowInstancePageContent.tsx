@@ -81,7 +81,7 @@ export const mapProcessInstanceToDetails = (
 
 const useStyles = makeStyles(() => ({
   topRowCard: () => ({
-    height: '21rem',
+    height: '24rem',
     overflow: 'auto',
   }),
   bottomRowCard: {
