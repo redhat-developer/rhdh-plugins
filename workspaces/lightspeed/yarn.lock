@@ -9738,9 +9738,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-core@npm:6.3.0-prerelease.2":
-  version: 6.3.0-prerelease.2
-  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.2"
+"@patternfly/react-core@npm:6.3.0-prerelease.4":
+  version: 6.3.0-prerelease.4
+  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.4"
   dependencies:
     "@patternfly/react-icons": ^6.3.0-prerelease.1
     "@patternfly/react-styles": ^6.3.0-prerelease.1
@@ -9751,7 +9751,7 @@ __metadata:
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 512e43eed51d3486a609fbfddbc765373d9d421e63b5a68b310145de8ecd65423bdbab8d71524d4479ea8637226468168c34a289b94f35c48a26f3a848acc3de
+  checksum: 172f239242b5d54e99a8714a73b68c6f37007634f29b959f80675d27b1eb1b45b5a9826db084c61c79c481804e884c32453e5aba62eb431db140a1b8996cbfce
   languageName: node
   linkType: hard
 
@@ -10591,7 +10591,7 @@ __metadata:
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
     "@patternfly/chatbot": 6.3.0-prerelease.10
-    "@patternfly/react-core": 6.3.0-prerelease.2
+    "@patternfly/react-core": 6.3.0-prerelease.4
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@tanstack/react-query": ^5.59.15
