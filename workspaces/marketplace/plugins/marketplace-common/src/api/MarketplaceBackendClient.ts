@@ -165,7 +165,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   async getPluginConfigAuthorization(
     namespace: string,
     name: string,
-  ): Promise<{ authorizedActions: string[] }> {
+  ): Promise<{ read: 'ALLOW' | 'DENY'; write: 'ALLOW' | 'DENY' }> {
     return this.get(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/authorize`,
     );
