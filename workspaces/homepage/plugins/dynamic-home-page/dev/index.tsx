@@ -39,7 +39,7 @@ import {
 } from '@backstage/plugin-home';
 
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
-import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 
 import { QuickAccessApi, quickAccessApiRef } from '../src/api';

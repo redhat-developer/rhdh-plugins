@@ -52,6 +52,7 @@ jest.mock('react-use', () => ({
 
 jest.mock('../../hooks', () => ({
   useRepositories: jest.fn(),
+  useNumberOfApprovalTools: jest.fn(() => ({ numberOfApprovalTools: 1 })),
 }));
 
 class MockBulkImportApi {

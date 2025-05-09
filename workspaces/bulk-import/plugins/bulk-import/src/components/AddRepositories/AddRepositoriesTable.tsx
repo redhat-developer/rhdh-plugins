@@ -14,42 +14,69 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import { useFormikContext } from 'formik';
 
-import { AddRepositoriesFormValues, RepositorySelection } from '../../types';
+import { useNumberOfApprovalTools } from '../../hooks';
+import {
+  AddRepositoriesFormValues,
+  ApprovalTool as ApprovalToolEnum,
+  RepositorySelection,
+} from '../../types';
+import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
+import ApprovalTool from './ApprovalTool';
 import { RepositoriesTable } from './RepositoriesTable';
 
-export const AddRepositoriesTable = ({ title }: { title: string }) => {
-  const { values } = useFormikContext<AddRepositoriesFormValues>();
+export const AddRepositoriesTable = ({ title }: { title?: string }) => {
+  const { values, setFieldValue } =
+    useFormikContext<AddRepositoriesFormValues>();
+  const [isApprovalToolGitlab, setIsApprovalToolGitlab] = useState(false);
+
+  useEffect(() => {
+    setIsApprovalToolGitlab(values.approvalTool === ApprovalToolEnum.Gitlab);
+  }, [values.approvalTool]);
   const [searchString, setSearchString] = useState<string>('');
   const [page, setPage] = useState<number>(0);
   const handleSearch = (str: string) => {
     setSearchString(str);
     setPage(0);
   };
+  const { numberOfApprovalTools } = useNumberOfApprovalTools();
+
   return (
     <Box sx={{ width: '100%' }}>
       <Paper style={{ width: '100%' }}>
+        {numberOfApprovalTools > 1 && gitlabFeatureFlag && (
+          <ApprovalTool
+            approvalTool={values.approvalTool}
+            setFieldValue={setFieldValue}
+          />
+        )}
         <AddRepositoriesTableToolbar
-          title={title}
+          title={
+            title ||
+            `Selected  ${isApprovalToolGitlab ? 'projects' : 'repositories'}`
+          }
           setSearchString={handleSearch}
           onPageChange={setPage}
+          isApprovalToolGitlab={isApprovalToolGitlab}
         />
         {values.repositoryType === RepositorySelection.Repository ? (
           <RepositoriesTable
             searchString={searchString}
             page={page}
+            isApprovalToolGitlab={isApprovalToolGitlab}
             setPage={setPage}
           />
         ) : (
           <RepositoriesTable
             searchString={searchString}
             page={page}
+            isApprovalToolGitlab={isApprovalToolGitlab}
             setPage={setPage}
             showOrganizations
           />

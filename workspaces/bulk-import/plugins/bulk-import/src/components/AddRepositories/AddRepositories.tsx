@@ -23,43 +23,15 @@ import { get } from 'lodash';
 
 import { AddRepositoriesFormValues, PullRequestPreviewData } from '../../types';
 import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
-// import HelpIcon from '@mui/icons-material/HelpOutline';
-// import FormControlLabel from '@mui/material/FormControlLabel';
-// import Radio from '@mui/material/Radio';
-// import RadioGroup from '@mui/material/RadioGroup';
-// import Tooltip from '@mui/material/Tooltip';
-// import Typography from '@mui/material/Typography';
 // import { useFormikContext } from 'formik';
 // import { AddRepositoriesFormValues } from '../../types';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
 import { AddRepositoriesTable } from './AddRepositoriesTable';
 
-// const useStyles = makeStyles(() => ({
-//   // We would need this once the ServiceNow approval tool is incorporated in the plugin
-//   approvalTool: {
-//     display: 'flex',
-//     flexDirection: 'row',
-//     justifyContent: 'left',
-//     alignItems: 'center',
-//     paddingTop: '24px',
-//     paddingBottom: '24px',
-//     paddingLeft: '16px',
-//     backgroundColor: theme.palette.background.paper,
-//     borderBottomStyle: 'groove',
-//     border: theme.palette.divider,
-//   },
-//   approvalToolTooltip: {
-//     paddingTop: '4px',
-//     paddingRight: '24px',
-//     paddingLeft: '5px',
-//   },
-// }));
-
 export const AddRepositories = ({ error }: { error: any }) => {
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const { setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
-
   const closeDrawer = () => {
     setOpenDrawer(false);
   };
@@ -73,7 +45,6 @@ export const AddRepositories = ({ error }: { error: any }) => {
     });
     setOpenDrawer(false);
   };
-
   return (
     <>
       <FormControl fullWidth>
@@ -91,40 +62,7 @@ export const AddRepositories = ({ error }: { error: any }) => {
               </Alert>
             </div>
           )}
-          {/* 
-          // Enable this when ServiceNow approval tool is supported
-          <span className={styles.approvalTool}>
-            <Typography fontSize="16px" fontWeight="500">
-              Approval tool
-            </Typography>
-            <Tooltip
-              placement="top"
-              title="When adding a new repository, it requires approval. Once the PR is approved or the ServiceNow ticket is closed, the repositories will be added to the Catalog page."
-            >
-              <span className={styles.approvalToolTooltip}>
-                <HelpIcon fontSize="small" />
-              </span>
-            </Tooltip>
-            <RadioGroup
-              id="approval-tool"
-              data-testid="approval-tool"
-              row
-              name="approvalTool"
-              value={values.approvalTool}
-              onChange={(_event, value: string) => {
-                setFieldValue('approvalTool', value);
-              }}
-            >
-              <FormControlLabel value="git" control={<Radio />} label="Git" />
-              <FormControlLabel
-                value="servicenow"
-                control={<Radio />}
-                label="ServiceNow"
-                disabled
-              />
-            </RadioGroup>
-          </span> */}
-          <AddRepositoriesTable title="Selected repositories" />
+          <AddRepositoriesTable />
         </div>
         <br />
       </FormControl>

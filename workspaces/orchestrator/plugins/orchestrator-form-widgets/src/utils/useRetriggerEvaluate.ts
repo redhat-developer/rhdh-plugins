@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 /*
  * Copyright Red Hat, Inc.
  *
@@ -15,16 +13,17 @@ import { useState } from 'react';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useState } from 'react';
 import { isEqual } from 'lodash';
-import { JsonObject } from '@backstage/types';
+import { JsonObject, JsonValue } from '@backstage/types';
 import { evaluateTemplateProps } from './evaluateTemplate';
 
 export const useRetriggerEvaluate = (
   templateUnitEvaluator: evaluateTemplateProps['unitEvaluator'],
   formData: JsonObject,
   conditions?: string[],
-): string[] | undefined => {
-  const [evaluated, setEvaluated] = useState<string[]>();
+): (string | undefined)[] | undefined => {
+  const [evaluated, setEvaluated] = useState<(string | undefined)[]>();
 
   if (!conditions) {
     if (!evaluated || evaluated.length > 0) {
@@ -32,11 +31,9 @@ export const useRetriggerEvaluate = (
     }
   } else {
     const doItAsync = async () => {
-      const actual: string[] = await Promise.all(
+      const actualJson: (JsonValue | undefined)[] = await Promise.all(
         conditions.map((condition: string) => {
-          try {
-            return templateUnitEvaluator(condition, formData)?.toString();
-          } catch (err) {
+          return templateUnitEvaluator(condition, formData).catch(err => {
             // eslint-disable-next-line no-console
             console.error(
               'Can not evaluate retrigger condition: ',
@@ -44,10 +41,11 @@ export const useRetriggerEvaluate = (
               err,
             );
             throw err;
-          }
+          });
         }),
       );
 
+      const actual = actualJson.map(v => v?.toString());
       if (!isEqual(evaluated, actual)) {
         setEvaluated(actual);
       }

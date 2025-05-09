@@ -42,6 +42,7 @@ import { FormikErrors, useFormik, useFormikContext } from 'formik';
 
 import {
   AddRepositoriesFormValues,
+  ApprovalTool,
   PullRequestPreview,
   PullRequestPreviewData,
 } from '../../types';
@@ -81,8 +82,11 @@ export const PreviewPullRequestForm = ({
   const { values } = useFormikContext<AddRepositoriesFormValues>();
   const catalogApi = useApi(catalogApiRef);
 
-  const approvalTool =
-    values.approvalTool === 'git' ? 'Pull request' : 'ServiceNow ticket';
+  const approvalToolLabel = {
+    [ApprovalTool.Gitlab]: 'Merge request',
+    [ApprovalTool.Git]: 'Pull request',
+    [ApprovalTool.ServiceNow]: 'ServiceNow ticket',
+  };
 
   const formik = useFormik<PullRequestPreview>({
     enableReinitialize: true,
@@ -90,7 +94,9 @@ export const PreviewPullRequestForm = ({
     initialErrors: formErrors?.[
       repoId
     ] as any as FormikErrors<PullRequestPreview>,
-    validationSchema: getValidationSchema(approvalTool),
+    validationSchema: getValidationSchema(
+      approvalToolLabel[values.approvalTool],
+    ),
     onSubmit: () => {},
   });
 
@@ -265,10 +271,10 @@ export const PreviewPullRequestForm = ({
   return (
     <>
       <Box marginTop={2}>
-        <Typography variant="h6">{`${approvalTool} details`}</Typography>
+        <Typography variant="h6">{`${approvalToolLabel[values.approvalTool]} details`}</Typography>
       </Box>
       <TextField
-        label={`${approvalTool} title`}
+        label={`${approvalToolLabel[values.approvalTool]} title`}
         placeholder="Add Backstage catalog entity descriptor files"
         variant="outlined"
         margin="normal"
@@ -281,7 +287,7 @@ export const PreviewPullRequestForm = ({
         required
       />
       <TextField
-        label={`${approvalTool} body`}
+        label={`${approvalToolLabel[values.approvalTool]} body`}
         placeholder="A describing text with Markdown support"
         margin="normal"
         variant="outlined"
@@ -397,7 +403,8 @@ export const PreviewPullRequestForm = ({
       })}
       <Box marginTop={2}>
         <Typography variant="h6">
-          Preview {`${approvalTool.toLocaleLowerCase('en-US')}`}
+          Preview
+          {` ${approvalToolLabel[values.approvalTool].toLocaleLowerCase('en-US')}`}
         </Typography>
       </Box>
       <PreviewPullRequestComponent

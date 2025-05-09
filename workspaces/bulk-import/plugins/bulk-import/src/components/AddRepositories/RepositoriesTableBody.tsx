@@ -24,7 +24,7 @@ import TableRow from '@mui/material/TableRow';
 
 import { AddedRepositories, AddRepositoryData } from '../../types';
 import { OrganizationTableRow } from './OrganizationTableRow';
-import { RepositoriesColumnHeader } from './RepositoriesColumnHeader';
+import { getRepositoriesColumnHeader } from './RepositoriesColumnHeader';
 import { RepositoryTableRow } from './RepositoryTableRow';
 
 export const RepositoriesTableBody = ({
@@ -37,6 +37,7 @@ export const RepositoriesTableBody = ({
   onClick,
   selectedRepos,
   isDrawer,
+  isApprovalToolGitlab = false,
 }: {
   loading: boolean;
   ariaLabel: string;
@@ -47,6 +48,7 @@ export const RepositoriesTableBody = ({
   selectedRepos: AddedRepositories;
   isDrawer?: boolean;
   showOrganizations?: boolean;
+  isApprovalToolGitlab?: boolean;
 }) => {
   const isSelected = (id: string) => {
     return !!selectedRepos[id];
@@ -56,7 +58,9 @@ export const RepositoriesTableBody = ({
     return (
       <tbody>
         <tr>
-          <td colSpan={RepositoriesColumnHeader.length}>
+          <td
+            colSpan={getRepositoriesColumnHeader(isApprovalToolGitlab).length}
+          >
             <Box
               data-testid={`${ariaLabel}-loading`}
               sx={{
@@ -107,7 +111,7 @@ export const RepositoriesTableBody = ({
   return (
     <tbody>
       <tr>
-        <td colSpan={RepositoriesColumnHeader.length}>
+        <td colSpan={getRepositoriesColumnHeader(isApprovalToolGitlab).length}>
           <Box
             data-testid="no-repositories-found"
             sx={{

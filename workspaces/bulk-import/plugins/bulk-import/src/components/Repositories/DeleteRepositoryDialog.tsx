@@ -34,6 +34,7 @@ import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { AddRepositoryData } from '../../types';
+import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -101,7 +102,7 @@ const DeleteRepositoryDialog = ({
         >
           <span style={{ fontWeight: 'bold' }}>
             <WarningIcon className={classes.warningIcon} color="warning" />{' '}
-            Remove {repository.repoName} repository?
+            {`Remove ${repository.repoName} ${gitlabFeatureFlag ? '' : 'repository'}?`}
           </span>
 
           <IconButton
@@ -122,8 +123,8 @@ const DeleteRepositoryDialog = ({
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1">
-          Removing a repository erases all associated information from the
-          Catalog page.
+          {`Removing ${gitlabFeatureFlag ? 'it will' : 'a repository'} erases all associated information from the
+          Catalog page.`}
         </Typography>
       </DialogContent>
       {(isUrlMissing || mutationDelete.isError) && (
@@ -158,7 +159,7 @@ const DeleteRepositoryDialog = ({
             },
           }}
         >
-          Remove
+          {mutationDelete.isLoading ? 'Removing...' : 'Remove'}
         </Button>
         <Button
           variant="outlined"
