@@ -29,8 +29,7 @@ const FeaturedArticles: React.FC = () => {
       sx={{
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '36px 240px 48px 60px',
-        backgroundColor: theme.palette.background.paper,
+        padding: '36px 60px 48px 60px',
       }}
     >
       <Typography
@@ -58,8 +57,11 @@ const Articles: React.FC = () => {
       sx={{
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '36px 240px 48px 60px',
-        backgroundColor: theme.palette.background.default,
+        padding: '36px 60px 48px 60px',
+        backgroundColor:
+          theme.palette.mode === 'dark'
+            ? '#000000'
+            : theme.palette.background.default,
       }}
     >
       <ItemCardGrid>

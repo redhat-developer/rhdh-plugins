@@ -24,17 +24,12 @@ import { Header, Link } from '@backstage/core-components';
 
 interface SandboxHeaderProps {
   pageTitle: string;
-  showSubTitle?: boolean;
 }
 
-export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
-  pageTitle,
-  showSubTitle,
-}) => {
+export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
   const theme = useTheme();
   return (
     <Header
-      pageTitleOverride={!showSubTitle ? 'Activities' : 'Home'}
       title={
         <Typography
           color="textPrimary"
@@ -48,22 +43,20 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({
         </Typography>
       }
       subtitle={
-        showSubTitle && (
-          <Typography variant="body1" color="textSecondary">
-            powered by{' '}
-            <Link
-              to="https://developers.redhat.com/rhdh/overview"
-              underline="none"
-            >
-              Red Hat Developer Hub{' '}
-            </Link>
-            <OpenInNewIcon
-              fontSize="small"
-              color="primary"
-              sx={{ fontSize: '12px' }}
-            />
-          </Typography>
-        )
+        <Typography variant="body1" color="textSecondary">
+          powered by{' '}
+          <Link
+            to="https://developers.redhat.com/rhdh/overview"
+            underline="none"
+          >
+            Red Hat Developer Hub{' '}
+          </Link>
+          <OpenInNewIcon
+            fontSize="small"
+            color="primary"
+            sx={{ fontSize: '12px' }}
+          />
+        </Typography>
       }
       style={{
         background: 'none',

@@ -420,13 +420,12 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
                   fontWeight: 420,
                 }}
               >
-                While you wait, consider exploring the{' '}
-                <Link to="#" underline="none">
-                  AAP documentation.
+                New to Ansible Automation Platform? Get up to speed with our{' '}
+                <Link to="http://red.ht/ansibledevsandboxpath" underline="none">
+                  introductory learning path.
                 </Link>
+                <OpenInNewIcon />
               </Typography>
-
-              <OpenInNewIcon />
             </div>
             <div
               style={{
