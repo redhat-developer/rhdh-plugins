@@ -91,7 +91,7 @@ export interface MarketplaceApi {
   getPluginConfigAuthorization?(
     namespace: string,
     name: string,
-  ): Promise<{ authorizedActions: string[] }>;
+  ): Promise<{ read: 'ALLOW' | 'DENY'; write: 'ALLOW' | 'DENY' }>;
 
   getPluginConfigByName?(
     namespace: string,

@@ -10613,6 +10613,7 @@ __metadata:
     "@backstage/catalog-client": ^1.9.1
     "@backstage/catalog-model": ^1.7.3
     "@backstage/cli": ^0.30.0
+    "@backstage/errors": ^1.2.7
     "@backstage/plugin-catalog-node": ^1.16.0
     "@backstage/plugin-permission-common": ^0.8.4
     "@backstage/plugin-permission-node": ^0.8.8
