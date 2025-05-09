@@ -39,7 +39,7 @@ export const extensionsPermissionResourceRef = createPermissionResourceRef<
   MarketplacePlugin,
   ExtentionFilter
 >().with({
-  pluginId: 'marketplace',
+  pluginId: 'extensions',
   resourceType: RESOURCE_TYPE_EXTENSIONS_PLUGIN,
 });
 

@@ -17,53 +17,53 @@
 import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
 
 export const rootRouteRef = createRouteRef({
-  id: 'marketplace',
+  id: 'extensions',
 });
 
 export const pluginsRouteRef = createSubRouteRef({
-  id: 'marketplace/plugins',
+  id: 'extensions/plugins',
   path: '/plugins',
   parent: rootRouteRef,
 });
 
 export const pluginRouteRef = createSubRouteRef({
-  id: 'marketplace/plugin',
+  id: 'extensions/plugin',
   path: '/plugins/:namespace/:name',
   parent: rootRouteRef,
 });
 
 export const pluginInstallRouteRef = createSubRouteRef({
-  id: 'marketplace/plugin/install',
+  id: 'extensions/plugin/install',
   path: '/plugins/:namespace/:name/install',
   parent: rootRouteRef,
 });
 
 export const packagesRouteRef = createSubRouteRef({
-  id: 'marketplace/packages',
+  id: 'extensions/packages',
   path: '/packages',
   parent: rootRouteRef,
 });
 
 export const packageRouteRef = createSubRouteRef({
-  id: 'marketplace/package',
+  id: 'extensions/package',
   path: '/packages/:namespace/:name',
   parent: rootRouteRef,
 });
 
 export const packageInstallRouteRef = createSubRouteRef({
-  id: 'marketplace/package/install',
+  id: 'extensions/package/install',
   path: '/packages/:namespace/:name/install',
   parent: rootRouteRef,
 });
 
 export const collectionsRouteRef = createSubRouteRef({
-  id: 'marketplace/collections',
+  id: 'extensions/collections',
   path: '/collections',
   parent: rootRouteRef,
 });
 
 export const collectionRouteRef = createSubRouteRef({
-  id: 'marketplace/collection',
+  id: 'extensions/collection',
   path: '/collections/:namespace/:name',
   parent: rootRouteRef,
 });

@@ -78,9 +78,6 @@ export const encodeGetEntityFacetsRequest: (request: GetEntityFacetsRequest) => 
 export const EXTENSIONS_API_VERSION = "extensions.backstage.io/v1alpha1";
 
 // @public
-export const extensionsPackageCreatePermission: ResourcePermission<"extensions-package">;
-
-// @public
 export const extensionsPackageDeletePermission: ResourcePermission<"extensions-package">;
 
 // @public
@@ -88,6 +85,9 @@ export type ExtensionsPackagePermission = ResourcePermission<typeof RESOURCE_TYP
 
 // @public
 export const extensionsPackageReadPermission: ResourcePermission<"extensions-package">;
+
+// @public
+export const extensionsPackageWritePermission: ResourcePermission<"extensions-package">;
 
 // @public (undocumented)
 export const extensionsPermissions: ResourcePermission<"extensions-plugin">[];

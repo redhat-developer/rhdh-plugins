@@ -33,7 +33,7 @@ import { createRouter } from './router';
  * @public
  */
 export const marketplacePlugin = createBackendPlugin({
-  pluginId: 'marketplace',
+  pluginId: 'extensions',
   register(env) {
     env.registerInit({
       deps: {

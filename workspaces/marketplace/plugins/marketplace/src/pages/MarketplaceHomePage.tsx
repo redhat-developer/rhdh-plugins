@@ -31,7 +31,7 @@ export const MarketplaceHomePage = () => {
   return (
     <ReactQueryProvider>
       <Page themeId={themeId}>
-        <Header title="Marketplace" />
+        <Header title="Extensions" />
         <Content>
           <ErrorBoundary>
             <MarketplaceCatalogContent />

@@ -216,7 +216,7 @@ export async function createRouter({
     );
     if (readDecision.result === AuthorizeResult.DENY) {
       throw new NotAllowedError(
-        `Not allowed to read configuration ${req.params.namespace}:${req.params.name}`,
+        `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
       );
     }
 
@@ -231,7 +231,7 @@ export async function createRouter({
         matches(plugin, readDecision.conditions));
     if (!hasReadAccess) {
       throw new NotAllowedError(
-        `Not allowed to read configuration ${req.params.namespace}:${req.params.name}`,
+        `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
       );
     }
 
