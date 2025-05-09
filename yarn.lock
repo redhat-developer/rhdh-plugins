@@ -3862,9 +3862,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/cli@portal:./workspaces/repo-tools/packages/cli::locator=%40redhat-developer%2Frhdh-plugins%40workspace%3A.":
+"@red-hat-developer-hub/rhdh-repo-tools@portal:./workspaces/repo-tools/packages/cli::locator=%40redhat-developer%2Frhdh-plugins%40workspace%3A.":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/cli@portal:./workspaces/repo-tools/packages/cli::locator=%40redhat-developer%2Frhdh-plugins%40workspace%3A."
+  resolution: "@red-hat-developer-hub/rhdh-repo-tools@portal:./workspaces/repo-tools/packages/cli::locator=%40redhat-developer%2Frhdh-plugins%40workspace%3A."
   dependencies:
     "@backstage/cli": ^0.26.11
     "@backstage/cli-node": ^0.2.7
@@ -3879,7 +3879,7 @@ __metadata:
     semver: ^7.6.0
     ts-morph: ^23.0.0
   bin:
-    rhdh-cli: bin/rhdh-cli
+    rhdh-repo-tools: bin/rhdh-repo-tools
   languageName: node
   linkType: soft
 
@@ -3893,7 +3893,7 @@ __metadata:
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
     "@manypkg/get-packages": ^2.2.2
     "@octokit/rest": ^20.1.1
-    "@red-hat-developer-hub/cli": "portal:./workspaces/repo-tools/packages/cli"
+    "@red-hat-developer-hub/rhdh-repo-tools": "portal:./workspaces/repo-tools/packages/cli"
     "@spotify/eslint-plugin": ^15.0.0
     "@spotify/prettier-config": ^15.0.0
     array-to-table: ^1.0.1
