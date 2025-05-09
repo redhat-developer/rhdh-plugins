@@ -22,7 +22,7 @@ import { SandboxActivitiesGrid } from './SandboxActivitiesGrid';
 
 const useStyles = makeStyles((theme: Theme) => ({
   content: {
-    backgroundColor: theme.palette.mode === 'dark' ? '#1f1f1f' : '#fff',
+    backgroundColor: theme.palette.background.default,
   },
 }));
 

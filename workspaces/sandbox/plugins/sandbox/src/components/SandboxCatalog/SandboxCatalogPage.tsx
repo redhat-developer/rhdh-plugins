@@ -15,7 +15,7 @@
  */
 import React from 'react';
 import Box from '@mui/material/Box';
-import { Theme, useTheme } from '@mui/material/styles';
+import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@material-ui/core/styles';
 import { Page, Content } from '@backstage/core-components';
 import { SandboxCatalogBanner } from './SandboxCatalogBanner';
@@ -31,7 +31,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export const SandboxCatalogPage = () => {
   const classes = useStyles();
-  const theme = useTheme();
 
   return (
     <SandboxProvider>
@@ -42,10 +41,6 @@ export const SandboxCatalogPage = () => {
           <Box
             style={{
               padding: '48px 60px 48px 60px',
-              backgroundColor:
-                theme.palette.mode === 'dark'
-                  ? '#1f1f1f'
-                  : theme.palette.background.default,
             }}
           >
             <SandboxCatalogGrid />

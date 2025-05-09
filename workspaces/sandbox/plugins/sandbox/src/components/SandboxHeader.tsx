@@ -60,7 +60,7 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
       }
       style={{
         background: 'none',
-        padding: '48.8px',
+        padding: '29.5px',
         borderBottom: '1px solid',
         borderColor: theme.palette.mode === 'light' ? '#C7C7C7' : '#383838',
       }}

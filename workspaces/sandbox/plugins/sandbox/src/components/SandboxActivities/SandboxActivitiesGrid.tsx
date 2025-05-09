@@ -30,10 +30,6 @@ const FeaturedArticles: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '36px 60px 48px 60px',
-        backgroundColor:
-          theme.palette.mode === 'dark'
-            ? '#1f1f1f'
-            : theme.palette.background.paper,
       }}
     >
       <Typography
