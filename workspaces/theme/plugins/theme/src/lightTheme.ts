@@ -78,7 +78,8 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
 
       contrastText: '#FFF',
 
-      appBarBackgroundColor: '#212427',
+      appBarBackgroundColor: '#f2f2f2',
+      appBarForegroundColor: '#1f1f1f',
       appBarBackgroundImage: 'none',
     },
     primary: {
