@@ -22,127 +22,103 @@ import {
 /**
  * @public
  */
-export const RESOURCE_TYPE_EXTENSION_PLUGIN = 'extension-plugin';
+export const RESOURCE_TYPE_EXTENSIONS_PLUGIN = 'extensions-plugin';
 
 /**
  * @public
  */
-export const RESOURCE_TYPE_EXTENSION_PACKAGE = 'extension-package';
+export const RESOURCE_TYPE_EXTENSIONS_PACKAGE = 'extensions-package';
 
 /**
  * @public
- * Convenience type for extension plugin
+ * Convenience type for extensions plugin
  */
-export type ExtensionPluginPermission = ResourcePermission<
-  typeof RESOURCE_TYPE_EXTENSION_PLUGIN
+export type ExtensionsPluginPermission = ResourcePermission<
+  typeof RESOURCE_TYPE_EXTENSIONS_PLUGIN
 >;
 
 /**
  * @public
- * Convenience type for extension package
+ * Convenience type for extensions package
  */
-export type ExtensionPackagePermission = ResourcePermission<
-  typeof RESOURCE_TYPE_EXTENSION_PACKAGE
+export type ExtensionsPackagePermission = ResourcePermission<
+  typeof RESOURCE_TYPE_EXTENSIONS_PACKAGE
 >;
 
-/** This permission grants access to the endpoint that reads the configuration of the extension plugin
+/** This permission grants access to the endpoint that reads the configuration of the extensions plugin
  * @public
  */
-export const extensionPluginReadPermission = createPermission({
-  name: 'extension.plugin.configuration.read',
+export const extensionsPluginReadPermission = createPermission({
+  name: 'extensions.plugin.configuration.read',
   attributes: {
     action: 'read',
   },
-  resourceType: RESOURCE_TYPE_EXTENSION_PLUGIN,
+  resourceType: RESOURCE_TYPE_EXTENSIONS_PLUGIN,
 });
 
-/** This permission grants access to the endpoint that updates the configuration of the extension plugin
+/** This permission grants access to the endpoint that installs or updates the extensions plugin
  * @public
  */
-export const extensionPluginUpdatePermission = createPermission({
-  name: 'extension.plugin.configuration.update',
-  attributes: {
-    action: 'update',
-  },
-  resourceType: RESOURCE_TYPE_EXTENSION_PLUGIN,
-});
-
-/** This permission grants access to the endpoint that installs the extension plugin
- * @public
- */
-export const extensionPluginCreatePermission = createPermission({
-  name: 'extension.plugin.configuration.create',
+export const extensionsPluginWritePermission = createPermission({
+  name: 'extensions.plugin.configuration.write',
   attributes: {
     action: 'create',
   },
-  resourceType: RESOURCE_TYPE_EXTENSION_PLUGIN,
+  resourceType: RESOURCE_TYPE_EXTENSIONS_PLUGIN,
 });
 
-/** This permission grants access to the endpoint that disables the extension plugin
+/** This permission grants access to the endpoint that disables the extensions plugin
  * @public
  */
-export const extensionPluginDeletePermission = createPermission({
-  name: 'extension.plugin.configuration.delete',
+export const extensionsPluginDeletePermission = createPermission({
+  name: 'extensions.plugin.configuration.delete',
   attributes: {
     action: 'delete',
   },
-  resourceType: RESOURCE_TYPE_EXTENSION_PLUGIN,
+  resourceType: RESOURCE_TYPE_EXTENSIONS_PLUGIN,
 });
 
-/** This permission grants access to the endpoint that reads the configuration of the extension package
+/** This permission grants access to the endpoint that reads the configuration of the extensions package
  * @public
  */
-export const extensionPackageReadPermission = createPermission({
-  name: 'extension.package.configuration.read',
+export const extensionsPackageReadPermission = createPermission({
+  name: 'extensions.package.configuration.read',
   attributes: {
     action: 'read',
   },
-  resourceType: RESOURCE_TYPE_EXTENSION_PACKAGE,
+  resourceType: RESOURCE_TYPE_EXTENSIONS_PACKAGE,
 });
 
-/** This permission grants access to the endpoint that installs the extension package
+/** This permission grants access to the endpoint that installs or updates the extensions package
  * @public
  */
-export const extensionPackageCreatePermission = createPermission({
-  name: 'extension.package.configuration.create',
+export const extensionsPackageWritePermission = createPermission({
+  name: 'extensions.package.configuration.write',
   attributes: {
     action: 'create',
   },
-  resourceType: RESOURCE_TYPE_EXTENSION_PACKAGE,
+  resourceType: RESOURCE_TYPE_EXTENSIONS_PACKAGE,
 });
 
-/** This permission grants access to the endpoint that updates the configuration of the extension package
+/** This permission grants access to the endpoint that disables the extensions package
  * @public
  */
-export const extensionPackageUpdatePermission = createPermission({
-  name: 'extension.package.configuration.update',
-  attributes: {
-    action: 'update',
-  },
-  resourceType: RESOURCE_TYPE_EXTENSION_PACKAGE,
-});
-
-/** This permission grants access to the endpoint that disables the extension package
- * @public
- */
-export const extensionPackageDeletePermission = createPermission({
-  name: 'extension.package.configuration.delete',
+export const extensionsPackageDeletePermission = createPermission({
+  name: 'extensions.package.configuration.delete',
   attributes: {
     action: 'delete',
   },
-  resourceType: RESOURCE_TYPE_EXTENSION_PACKAGE,
+  resourceType: RESOURCE_TYPE_EXTENSIONS_PACKAGE,
 });
 
 /**
  * @public
  */
-export const extensionPermissions = [
-  // extensionPluginUpdatePermission,
-  extensionPluginCreatePermission,
-  extensionPluginReadPermission,
-  // extensionPluginDeletePermission,
-  // extensionPackageReadPermission,
-  // extensionPackageDeletePermission,
-  // extensionPackageUpdatePermission,
-  // extensionPackageCreatePermission,
+export const extensionsPermissions = [
+  extensionsPluginWritePermission,
+  extensionsPluginReadPermission,
+  // extensionsPluginDeletePermission,
+  // extensionsPackageReadPermission,
+  // extensionsPackageDeletePermission,
+  // extensionsPackageWritePermission,
 ];
