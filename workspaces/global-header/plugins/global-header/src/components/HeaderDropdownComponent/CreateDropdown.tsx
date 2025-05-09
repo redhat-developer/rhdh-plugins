@@ -70,11 +70,7 @@ export const CreateDropdown = ({ layout }: CreateDropdownProps) => {
       buttonProps={{
         variant: 'outlined',
         sx: {
-          color: '#fff',
-          border: '1px solid rgba(255, 255, 255, 0.5)',
-          '&:hover, &.Mui-focusVisible': {
-            border: '1px solid #fff',
-          },
+          color: 'inherit',
           ...layout,
         },
       }}
