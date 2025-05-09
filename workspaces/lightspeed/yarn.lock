@@ -9695,9 +9695,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.3.0-prerelease.10":
-  version: 6.3.0-prerelease.10
-  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.10"
+"@patternfly/chatbot@npm:6.3.0-prerelease.13":
+  version: 6.3.0-prerelease.13
+  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.13"
   dependencies:
     "@patternfly/react-code-editor": ^6.1.0
     "@patternfly/react-core": ^6.1.0
@@ -9717,7 +9717,7 @@ __metadata:
   peerDependencies:
     react: ^17 || ^18
     react-dom: ^17 || ^18
-  checksum: d78d6c9eb3c4f2005ecaf63ed5354ec07101cbbaf93e9cb1d819a7921fef221b11e38d7be3723c9b0b633fc92b991f459554b94c04687e45c56ee9acf12335a7
+  checksum: e5648127b2e9c158984567b241ad84211cde59fa4438373ca12f25c9d09bbf817c7eff6876fff9978c95ee7dd7773b361ad4a3b576b8020638cb5649d0f3dcc1
   languageName: node
   linkType: hard
 
@@ -10590,7 +10590,7 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
-    "@patternfly/chatbot": 6.3.0-prerelease.10
+    "@patternfly/chatbot": 6.3.0-prerelease.13
     "@patternfly/react-core": 6.3.0-prerelease.4
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
