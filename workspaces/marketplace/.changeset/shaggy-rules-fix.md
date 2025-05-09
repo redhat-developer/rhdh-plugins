@@ -5,3 +5,4 @@
 ---
 
 updated `extension` to `extensions`
+update marketplace pluginId to extensions

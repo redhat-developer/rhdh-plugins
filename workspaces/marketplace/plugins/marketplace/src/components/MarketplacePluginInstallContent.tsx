@@ -423,7 +423,8 @@ export const MarketplacePluginInstallContent = ({
         >
           Cancel
         </Button>
-        {pluginConfigPermissions.data?.write !== 'ALLOW' && (
+        {(pluginConfigPermissions.data?.write === 'ALLOW' ||
+          pluginConfigPermissions.data?.read === 'ALLOW') && (
           <Button
             variant="text"
             color="primary"

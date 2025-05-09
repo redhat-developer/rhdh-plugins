@@ -208,7 +208,8 @@ export const MarketplacePluginContent = ({
         <div>
           <LinkButton
             to={
-              pluginConfigPerm.data?.write === 'ALLOW'
+              pluginConfigPerm.data?.write === 'ALLOW' ||
+              pluginConfigPerm.data?.read === 'ALLOW'
                 ? getInstallPath({
                     namespace: plugin.metadata.namespace!,
                     name: plugin.metadata.name,

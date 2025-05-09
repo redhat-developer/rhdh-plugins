@@ -16,7 +16,7 @@
 
 import { marketplacePlugin } from './plugin';
 
-describe('marketplace', () => {
+describe('extensions', () => {
   it('should export plugin', () => {
     expect(marketplacePlugin).toBeDefined();
   });
