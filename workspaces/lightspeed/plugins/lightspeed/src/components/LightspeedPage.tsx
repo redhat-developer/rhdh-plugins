@@ -26,6 +26,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { useAllModels } from '../hooks/useAllModels';
 import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
 import queryClient from '../utils/queryClient';
+import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
 import PermissionRequiredState from './PermissionRequiredState';
 
@@ -86,16 +87,18 @@ const LightspeedPageInner = () => {
         {!hasViewAccess ? (
           <PermissionRequiredState />
         ) : (
-          <LightspeedChat
-            selectedModel={selectedModel}
-            handleSelectedModel={item => {
-              setSelectedModel(item);
-            }}
-            models={modelsItems}
-            userName={profile?.displayName}
-            avatar={profile?.picture}
-            profileLoading={profileLoading}
-          />
+          <FileAttachmentContextProvider>
+            <LightspeedChat
+              selectedModel={selectedModel}
+              handleSelectedModel={item => {
+                setSelectedModel(item);
+              }}
+              models={modelsItems}
+              userName={profile?.displayName}
+              avatar={profile?.picture}
+              profileLoading={profileLoading}
+            />
+          </FileAttachmentContextProvider>
         )}
       </Content>
     </Page>

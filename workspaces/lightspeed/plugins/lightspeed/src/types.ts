@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { SourcesCardProps } from '@patternfly/chatbot';
 import { AlertProps } from '@patternfly/react-core';
 
 export type Conversations = {
@@ -38,6 +39,7 @@ export interface BaseMessage {
     created_at: number;
     role?: string;
   };
+  sources?: SourcesCardProps;
   additional_kwargs: {
     [_key: string]: any;
   };
@@ -47,6 +49,23 @@ export type ConversationSummary = {
   conversation_id: string;
   last_message_timestamp: number;
   topic_summary: string;
+};
+
+export enum SupportedFileType {
+  JSON = 'application/json',
+  YAML = 'application/x-yaml',
+  TEXT = 'text/plain',
+}
+export interface FileContent {
+  content: string;
+  type: string;
+  name: string;
+}
+
+export type Attachment = {
+  attachment_type: string;
+  content_type: string;
+  content: string;
 };
 
 export type ConversationList = ConversationSummary[];
