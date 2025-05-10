@@ -8536,9 +8536,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:^5.16.14":
-  version: 5.16.14
-  resolution: "@mui/icons-material@npm:5.16.14"
+"@mui/icons-material@npm:^5.16.14, @mui/icons-material@npm:^5.17.1":
+  version: 5.17.1
+  resolution: "@mui/icons-material@npm:5.17.1"
   dependencies:
     "@babel/runtime": ^7.23.9
   peerDependencies:
@@ -8548,7 +8548,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 14c01298e47972099ce71a8f142e2bb93dfc61a3ac0239030c55b3e5c6719f692e9c2fac131247c52f4922e74b08291ecb1f3398117222cc7baa82ec6f38e073
+  checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
   languageName: node
   linkType: hard
 
@@ -10273,7 +10273,7 @@ __metadata:
     "@material-ui/core": ^4.12.4
     "@mui/icons-material": ^5.16.14
     "@mui/material": ^5.16.14
-    "@redhat-developer/red-hat-developer-hub-theme": 0.5.1
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.6.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
@@ -10294,18 +10294,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@redhat-developer/red-hat-developer-hub-theme@npm:0.5.1":
-  version: 0.5.1
-  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.1"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.6.0"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/theme": ^0.5.2
-    "@emotion/react": ^11.11.1
-    "@emotion/styled": ^11.11.0
-    "@material-ui/core": ^4.12.4
+    "@backstage/core-plugin-api": ^1.10.4
+    "@backstage/theme": ^0.6.4
     "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.14.19
-    "@mui/material": ^5.14.20
-  checksum: 4de9e62b9de390c7de82fcf123a03135366952ab39d423be51c3afb242c316e3deb78ecaa3e038d6bcc12695f8f03223b9efb45a689a40ea2c11139f4e3fc06d
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 37b868436f32ac08f6fd465d3a14caf636731e299a8407dc07970681b0e6327d61f12616820ff57b103a3ef8c51d37092dd6e972363d914cecd7c0f3231a760b
   languageName: node
   linkType: hard
 
