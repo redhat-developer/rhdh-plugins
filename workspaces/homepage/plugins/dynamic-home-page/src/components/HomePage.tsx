@@ -48,7 +48,7 @@ export const HomePage = (props: HomePageProps) => {
 
   return (
     <Page themeId="home">
-      <Header {...props} />
+      <Header {...props} title="Welcome back!" />
       <Content>
         {filteredAndSortedHomePageCards.length === 0 ? (
           <EmptyState
