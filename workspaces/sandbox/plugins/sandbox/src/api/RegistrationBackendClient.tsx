@@ -140,9 +140,15 @@ export class RegistrationBackendClient implements RegistrationService {
     });
 
     if (!response.ok) {
-      throw new Error(
-        'Invalid phone number. Please verify the country code and number format, then try again.',
-      );
+      const error: CommonResponse = await response.json();
+      // handle backend error messages and make it more user-friendly
+      if (error?.message.includes("Invalid 'To' Phone Number")) {
+        throw new Error(
+          'Invalid phone number. Please verify the country code and number format, then try again.',
+        );
+      } else {
+        throw new Error(error?.message);
+      }
     }
   };
 

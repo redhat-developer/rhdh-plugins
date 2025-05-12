@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { SandboxHeader } from './SandboxHeader';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { wrapInTestApp } from '@backstage/test-utils';
 
-test('renders the modal with the correct title and warning', () => {
+test('renders the modal with the correct title', () => {
   const theme = createTheme();
   render(
-    <ThemeProvider theme={theme}>
-      <SandboxHeader pageTitle="Developer Sandbox" />
-    </ThemeProvider>,
+    wrapInTestApp(
+      <ThemeProvider theme={theme}>
+        <SandboxHeader pageTitle="My Page Title" />
+      </ThemeProvider>,
+    ),
   );
-  expect(global.window.document.title).toBe('Developer Sandbox');
+  expect(screen.getByText('My Page Title')).toBeInTheDocument();
 });

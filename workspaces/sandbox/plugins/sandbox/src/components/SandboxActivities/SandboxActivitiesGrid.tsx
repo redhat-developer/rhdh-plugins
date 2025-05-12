@@ -29,6 +29,7 @@ const FeaturedArticles: React.FC = () => {
       sx={{
         alignItems: 'center',
         justifyContent: 'space-between',
+        backgroundColor: theme.palette.background.paper,
         padding: '36px 60px 48px 60px',
       }}
     >
