@@ -35,10 +35,14 @@ export const SandboxCatalogPage = () => {
   return (
     <SandboxProvider>
       <Page themeId="sandbox">
-        <SandboxHeader pageTitle="Developer Sandbox" showSubTitle />
+        <SandboxHeader pageTitle="Developer Sandbox" />
         <Content className={classes.content} noPadding>
           <SandboxCatalogBanner />
-          <Box style={{ padding: '48px 60px 48px 60px' }}>
+          <Box
+            style={{
+              padding: '48px 60px 48px 60px',
+            }}
+          >
             <SandboxCatalogGrid />
           </Box>
 
