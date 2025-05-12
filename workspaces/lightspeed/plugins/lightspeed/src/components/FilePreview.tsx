@@ -71,15 +71,15 @@ const FilePreview = () => {
           ))}
         </div>
       )}
-      {showAlert && uploadError && (
+      {showAlert && uploadError.message && (
         <ChatbotAlert
           component="h4"
           title="File upload failed"
-          variant="danger"
+          variant={uploadError.type ?? 'danger'}
           isInline
-          onClose={() => setUploadError(null)}
+          onClose={() => setUploadError({ message: null })}
         >
-          {uploadError}
+          {uploadError.message}
         </ChatbotAlert>
       )}
     </>

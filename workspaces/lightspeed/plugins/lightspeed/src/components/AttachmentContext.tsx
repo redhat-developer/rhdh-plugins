@@ -18,14 +18,15 @@ import React from 'react';
 import { FileContent } from '../types';
 import { isSupportedFileType, readFileAsText } from '../utils/attachment-utils';
 
+type UploadError = { type?: 'info' | 'danger'; message: string | null };
 interface FileAttachmentContextType {
   showAlert: boolean;
-  uploadError: string | null;
+  uploadError: UploadError;
   fileContents: FileContent[];
   isLoadingFile: Record<string, boolean>;
   handleFileUpload: (files: File[]) => void;
   setFileContents: React.Dispatch<React.SetStateAction<FileContent[]>>;
-  setUploadError: React.Dispatch<React.SetStateAction<string | null>>;
+  setUploadError: React.Dispatch<React.SetStateAction<UploadError>>;
   currentFileContent?: FileContent;
   setCurrentFileContent: React.Dispatch<
     React.SetStateAction<FileContent | undefined>
@@ -54,7 +55,9 @@ const FileAttachmentContextProvider: React.FC<{
   >({});
   const [previewModalKey, setPreviewModalKey] = React.useState<number>(0);
   const [showAlert, setShowAlert] = React.useState<boolean>(false);
-  const [uploadError, setUploadError] = React.useState<string | null>('');
+  const [uploadError, setUploadError] = React.useState<UploadError>({
+    message: null,
+  });
   const [fileContents, setFileContents] = React.useState<FileContent[]>([]);
   const [isPreviewModalOpen, setIsPreviewModalOpen] =
     React.useState<boolean>(false);
@@ -65,7 +68,7 @@ const FileAttachmentContextProvider: React.FC<{
     );
     if (existingFile) {
       setShowAlert(true);
-      setUploadError('File already exists.');
+      setUploadError({ type: 'info', message: 'File already exists.' });
       return;
     }
 
@@ -73,21 +76,27 @@ const FileAttachmentContextProvider: React.FC<{
 
     if (fileArr.length > 1) {
       setShowAlert(true);
-      setUploadError('Uploaded more than one file.');
+      setUploadError({
+        message: 'Uploaded more than one file.',
+      });
       return;
     }
     if (!isSupportedFileType(fileArr[0])) {
       setShowAlert(true);
-      setUploadError('Unsupported file type.');
+      setUploadError({
+        message:
+          'Unsupported file type. Supported types are: .txt, .yaml, .json.',
+      });
       return;
     }
 
     // this is 25MB in bytes; size is in bytes
     if (fileArr[0].size > 25000000) {
       setShowAlert(true);
-      setUploadError(
-        'Your file size is too large. Please ensure that your file is less than 25 MB.',
-      );
+      setUploadError({
+        message:
+          'Your file size is too large. Please ensure that your file is less than 25 MB.',
+      });
       return;
     }
 
@@ -102,11 +111,13 @@ const FileAttachmentContextProvider: React.FC<{
           },
         ]);
         setShowAlert(false);
-        setUploadError(null);
+        setUploadError({ message: null });
         setIsLoadingFile({ [fileArr[0].name]: false });
       })
       .catch((error: DOMException) => {
-        setUploadError(`Failed to read file: ${error.message}`);
+        setUploadError({
+          message: `Failed to read file: ${error.message}`,
+        });
       });
   };
 
