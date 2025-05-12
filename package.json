@@ -7,7 +7,7 @@
     "node": "20"
   },
   "scripts": {
-    "create-workspace": "rhdh-cli workspace create",
+    "create-workspace": "rhdh-repo-tools workspace create",
     "postinstall": "husky",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write ."
@@ -21,7 +21,7 @@
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@manypkg/get-packages": "^2.2.2",
     "@octokit/rest": "^20.1.1",
-    "@red-hat-developer-hub/cli": "portal:./workspaces/repo-tools/packages/cli",
+    "@red-hat-developer-hub/rhdh-repo-tools": "portal:./workspaces/repo-tools/packages/cli",
     "@spotify/eslint-plugin": "^15.0.0",
     "@spotify/prettier-config": "^15.0.0",
     "array-to-table": "^1.0.1",

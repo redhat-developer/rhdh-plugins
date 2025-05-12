@@ -56,7 +56,7 @@ import { SignalsDisplay } from '@backstage/plugin-signals';
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
-import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const app = createApp({
   apis,

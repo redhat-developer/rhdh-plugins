@@ -41,8 +41,9 @@ export const marketplacePlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         discovery: coreServices.discovery,
+        permissions: coreServices.permissions,
       },
-      async init({ auth, httpAuth, httpRouter, discovery }) {
+      async init({ auth, httpAuth, httpRouter, discovery, permissions }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
 
         const marketplaceApi: MarketplaceApi = new MarketplaceCatalogClient({
@@ -54,6 +55,7 @@ export const marketplacePlugin = createBackendPlugin({
           await createRouter({
             httpAuth,
             marketplaceApi,
+            permissions,
           }),
         );
       },

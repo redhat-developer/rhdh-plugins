@@ -162,6 +162,24 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     );
   }
 
+  async getPluginConfigAuthorization(
+    namespace: string,
+    name: string,
+  ): Promise<{ authorizedActions: string[] }> {
+    return this.get(
+      `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/authorize`,
+    );
+  }
+
+  async getPluginConfigByName(
+    namespace: string,
+    name: string,
+  ): Promise<{ configYaml: string }> {
+    return this.get(
+      `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
+    );
+  }
+
   getPluginPackages(
     namespace: string,
     name: string,

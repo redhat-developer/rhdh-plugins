@@ -88,6 +88,16 @@ export interface MarketplaceApi {
 
   getPluginByName(namespace: string, name: string): Promise<MarketplacePlugin>;
 
+  getPluginConfigAuthorization?(
+    namespace: string,
+    name: string,
+  ): Promise<{ authorizedActions: string[] }>;
+
+  getPluginConfigByName?(
+    namespace: string,
+    name: string,
+  ): Promise<{ configYaml: string }>;
+
   getPluginPackages(
     namespace: string,
     name: string,

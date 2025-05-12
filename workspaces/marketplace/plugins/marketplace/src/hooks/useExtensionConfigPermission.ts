@@ -13,16 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useQuery } from '@tanstack/react-query';
 
-/**
- * Common functionalities for the marketplace plugin.
- *
- * @packageDocumentation
- */
+import { useMarketplaceApi } from './useMarketplaceApi';
 
-export * from './annotations';
-export * from './api';
-export * from './consts';
-export * from './types';
-export * from './utils';
-export * from './permissions';
+export const useExtensionConfigPermission = (
+  namespace: string,
+  name: string,
+) => {
+  const marketplaceApi = useMarketplaceApi();
+
+  return useQuery({
+    queryKey: [
+      'marketplaceApi',
+      'getPluginConfigAuthorization',
+      namespace,
+      name,
+    ],
+    queryFn: () =>
+      marketplaceApi.getPluginConfigAuthorization?.(namespace, name),
+  });
+};

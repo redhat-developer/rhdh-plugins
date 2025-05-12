@@ -11,6 +11,7 @@ import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 import { GetEntityFacetsResponse } from '@backstage/catalog-client';
 import { JsonObject } from '@backstage/types';
 import { QueryEntitiesInitialRequest } from '@backstage/catalog-client';
+import { ResourcePermission } from '@backstage/plugin-permission-common';
 
 // @public (undocumented)
 export interface Asset extends JsonObject {
@@ -72,6 +73,39 @@ export const encodeGetEntitiesRequest: (request: GetEntitiesRequest) => URLSearc
 
 // @public (undocumented)
 export const encodeGetEntityFacetsRequest: (request: GetEntityFacetsRequest) => URLSearchParams;
+
+// @public
+export const extensionPackageCreatePermission: ResourcePermission<"extension-package">;
+
+// @public
+export const extensionPackageDeletePermission: ResourcePermission<"extension-package">;
+
+// @public
+export type ExtensionPackagePermission = ResourcePermission<typeof RESOURCE_TYPE_EXTENSION_PACKAGE>;
+
+// @public
+export const extensionPackageReadPermission: ResourcePermission<"extension-package">;
+
+// @public
+export const extensionPackageUpdatePermission: ResourcePermission<"extension-package">;
+
+// @public (undocumented)
+export const extensionPermissions: ResourcePermission<"extension-plugin">[];
+
+// @public
+export const extensionPluginCreatePermission: ResourcePermission<"extension-plugin">;
+
+// @public
+export const extensionPluginDeletePermission: ResourcePermission<"extension-plugin">;
+
+// @public
+export type ExtensionPluginPermission = ResourcePermission<typeof RESOURCE_TYPE_EXTENSION_PLUGIN>;
+
+// @public
+export const extensionPluginReadPermission: ResourcePermission<"extension-plugin">;
+
+// @public
+export const extensionPluginUpdatePermission: ResourcePermission<"extension-plugin">;
 
 // @public (undocumented)
 export const EXTENSIONS_API_VERSION = "extensions.backstage.io/v1alpha1";
@@ -137,6 +171,14 @@ export interface MarketplaceApi {
     // (undocumented)
     getPluginByName(namespace: string, name: string): Promise<MarketplacePlugin>;
     // (undocumented)
+    getPluginConfigAuthorization?(namespace: string, name: string): Promise<{
+        authorizedActions: string[];
+    }>;
+    // (undocumented)
+    getPluginConfigByName?(namespace: string, name: string): Promise<{
+        configYaml: string;
+    }>;
+    // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPluginPackages(namespace: string, name: string): Promise<MarketplacePackage[]>;
@@ -169,6 +211,14 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPluginByName(namespace: string, name: string): Promise<MarketplacePlugin>;
+    // (undocumented)
+    getPluginConfigAuthorization(namespace: string, name: string): Promise<{
+        authorizedActions: string[];
+    }>;
+    // (undocumented)
+    getPluginConfigByName(namespace: string, name: string): Promise<{
+        configYaml: string;
+    }>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
@@ -347,5 +397,11 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     packages?: string[];
 }
+
+// @public (undocumented)
+export const RESOURCE_TYPE_EXTENSION_PACKAGE = "extension-package";
+
+// @public (undocumented)
+export const RESOURCE_TYPE_EXTENSION_PLUGIN = "extension-plugin";
 
 ```

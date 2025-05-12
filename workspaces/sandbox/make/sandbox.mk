@@ -43,7 +43,7 @@ start-rhdh-local: clone-rhdh-local generate-env
 	yq e 'del(.services.rhdh.volumes[] | select(. == "./configs:/opt/app-root/src/configs:Z"))' -i compose.yaml && \
 	yq e '.services.rhdh.ports = ["3000:3000"] | (.services.rhdh.ports) |= map(. style="double")' -i compose.yaml && \
 	podman-compose up -d  && \
-	echo "UI is up and running at: localhost:3000"
+	echo "UI is up and running at: http://localhost:3000"
 
 .PHONY: stop-rhdh-local
 stop-rhdh-local:

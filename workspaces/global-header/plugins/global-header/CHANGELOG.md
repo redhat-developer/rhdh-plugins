@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.7.0
+
+### Minor Changes
+
+- 0bd2f82: **Breaking change**: Use new theme package. Global header items will now use the `theme.rhdh?.general.appBarForegroundColor` colour if defined, and fall back to `theme.palette.text.primary`. This may cause your global header to not look correct in light mode when using the legacy theme.
+
 ## 1.6.0
 
 ### Minor Changes

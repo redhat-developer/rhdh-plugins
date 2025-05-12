@@ -30,6 +30,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
+import Tooltip from '@mui/material/Tooltip';
 
 import {
   MarketplacePackage,
@@ -49,6 +50,7 @@ import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
 import { usePluginPackages } from '../hooks/usePluginPackages';
+import { useExtensionConfigPermission } from '../hooks/useExtensionConfigPermission';
 import { Links } from './Links';
 
 export const MarketplacePluginContentSkeleton = () => {
@@ -175,8 +177,13 @@ export const MarketplacePluginContent = ({
 }: {
   plugin: MarketplacePlugin;
 }) => {
+  const params = useRouteRefParams(pluginRouteRef);
   const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(pluginInstallRouteRef);
+  const canInstallPlugin = useExtensionConfigPermission(
+    params.namespace,
+    params.name,
+  );
 
   const withFilter = (name: string, value: string) =>
     `${getIndexPath()}?filter=${encodeURIComponent(name)}=${encodeURIComponent(
@@ -187,6 +194,42 @@ export const MarketplacePluginContent = ({
   const about = plugin.spec?.description ?? plugin.metadata.description ?? '';
 
   const highlights = plugin.spec?.highlights ?? [];
+
+  const pluginActionButton = () => {
+    return (
+      <Tooltip
+        title={
+          !canInstallPlugin.data
+            ? `You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.`
+            : ''
+        }
+      >
+        <div>
+          <LinkButton
+            to={
+              canInstallPlugin.data
+                ? getInstallPath({
+                    namespace: plugin.metadata.namespace!,
+                    name: plugin.metadata.name,
+                  })
+                : ''
+            }
+            color="primary"
+            variant="contained"
+            disabled={!canInstallPlugin.data}
+          >
+            {!canInstallPlugin.data ||
+            !canInstallPlugin.data?.authorizedActions.includes('create')
+              ? 'View'
+              : mapMarketplacePluginInstallStatusToButton[
+                  plugin.spec?.installStatus ??
+                    MarketplacePluginInstallStatus.NotInstalled
+                ]}
+          </LinkButton>
+        </div>
+      </Tooltip>
+    );
+  };
 
   return (
     <Content>
@@ -239,21 +282,7 @@ export const MarketplacePluginContent = ({
               </>
             ) : null}
 
-            <LinkButton
-              to={getInstallPath({
-                namespace: plugin.metadata.namespace!,
-                name: plugin.metadata.name,
-              })}
-              color="primary"
-              variant="contained"
-            >
-              {
-                mapMarketplacePluginInstallStatusToButton[
-                  plugin.spec?.installStatus ??
-                    MarketplacePluginInstallStatus.NotInstalled
-                ]
-              }
-            </LinkButton>
+            {pluginActionButton()}
           </Grid>
           <Grid item md={9}>
             <Markdown title="About" content={about} />

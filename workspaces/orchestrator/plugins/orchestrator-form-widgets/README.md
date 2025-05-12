@@ -69,13 +69,13 @@ Example of response:
 }
 ```
 
-## HTTP Test Server
+## HTTP server for dynamic widgets development - http-workflow-dev-server
 
-**For the development purposes only**, there is `http-test-server`, very simple Express Node.js server which responds with JSON schema chunks for the `SchemaUpdater` and other active widgets.
+**For the development purposes only**, there is `http-workflow-dev-server`, very simple Express Node.js server which responds with JSON schema chunks for the `SchemaUpdater` and other active widgets.
 
 Moreover, it does extensive logging of the received HTTP requests for debugging during the widget's development.
 
-Refer to [http-test-server](./http-test-server/README.md) for more details.
+Refer to [http-workflow-dev-server](./http-workflow-dev-server/README.md) for more details.
 
 ## How to develop widgets
 
@@ -86,7 +86,7 @@ This instance is already configured to statically load the widget library (see `
 
 To develop the widgets, we recommend to uncomment or further configure the `integrations:` and `auth:` sections in the `./workspaces/orchestrator/app-config.yaml` to be able to test various SCM Auth providers within `$${{}}` templates.
 
-Please note, that the `proxy:` section is already pre-configured to match the `http-test-server` listening on localhost.
+Please note, that the `proxy:` section is already pre-configured to match the `http-workflow-dev-server` listening on localhost.
 
 Make sure your user has an entity in the Catalog and the authentication is otherwise configured so the tokens and user's profile info can be fetched by the workflow and `$${{identityApi.[various_keys]}}` templating.
 
@@ -98,7 +98,7 @@ yarn install
 ```
 
 ```bash
-cd ./workspaces/orchestrator/plugins/orchestrator-form-widgets/http-test-server
+cd ./workspaces/orchestrator/plugins/orchestrator-form-widgets/http-workflow-dev-server
 yarn update-running-workflow # which will copy the workflow under Backstage backend cache
 ```
 
@@ -134,7 +134,7 @@ yarn start
 - In third terminal, run the HTTP test server:
 
 ```bash
-cd ./workspaces/orchestrator/plugins/orchestrator-form-widgets/http-test-server
+cd ./workspaces/orchestrator/plugins/orchestrator-form-widgets/http-workflow-dev-server
 
 yarn install
 yarn start
@@ -142,13 +142,13 @@ yarn start
 
 ### The dynamic_schema workflow
 
-There is `dynamic_schema` workflow located under `http-test-server/exampleWorkflows`.
+There is `dynamic_schema` workflow located under `http-workflow-dev-server/exampleWorkflows`.
 Its purpose is to have a playground when developing the widgets.
 
-The URLs referenced from this workflow's data input schema rely on proxy configured in the `./workspaces/orchestrator/app-config.yaml` which assumes the `http-test-server` to be running.
+The URLs referenced from this workflow's data input schema rely on proxy configured in the `./workspaces/orchestrator/app-config.yaml` which assumes the `http-workflow-dev-server` to be running.
 
 This dev-only workflow is similar to https://github.com/rhdhorchestrator/backstage-orchestrator-workflows/blob/main/workflows/dynamic.schema.sw.json .
-The difference is in the URLs used - the backstage-orchestrator-workflows' one references public GitHub HTTP server, so no extra steps in running the `http-test-server` are needed.
+The difference is in the URLs used - the backstage-orchestrator-workflows' one references public GitHub HTTP server, so no extra steps in running the `http-workflow-dev-server` are needed.
 
 ## Development of a workflow using orchestrator-form-widgets
 
