@@ -25,6 +25,7 @@ import { JsonObject } from '@backstage/types';
 
 import { SchemaUpdater, ActiveTextInput } from './widgets';
 import { useGetExtraErrors } from './utils';
+import StaticText from './widgets/StaticText';
 
 const customValidate = (
   _formData: JsonObject | undefined,
@@ -38,6 +39,7 @@ const customValidate = (
 const widgets = {
   SchemaUpdater,
   ActiveTextInput,
+  StaticText,
 };
 
 export class FormWidgetsApi implements OrchestratorFormApi {
