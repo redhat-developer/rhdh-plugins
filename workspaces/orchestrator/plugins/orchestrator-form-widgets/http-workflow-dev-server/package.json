@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "node ./index.js",
+    "start-courses": "node ./httpServer.dynamic.course.select.js",
     "prettier:check": "prettier --ignore-unknown --check .",
     "prettier:fix": "prettier --ignore-unknown --write .",
     "update-running-workflow": "cp -r ./exampleWorkflows/* ../../../packages/backend/.devModeTemp/repository/workflows/"
