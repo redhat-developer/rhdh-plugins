@@ -26,8 +26,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { createRouter } from './router';
-import { PluginsConfigService } from './pluginsConfig/PluginsConfigService';
-import { PluginsConfigFileHandler } from './pluginsConfig/PluginsConfigFileHandler';
+import { InstallationDataService } from './installation/InstallationDataService';
 
 /**
  * marketplacePlugin backend plugin
@@ -61,17 +60,19 @@ export const marketplacePlugin = createBackendPlugin({
           catalogApi,
         });
 
-        const pluginsConfigService = new PluginsConfigService(
-          new PluginsConfigFileHandler(
-            config.getOptionalString('marketplace.dynamicPluginsConfig'),
-          ),
-          marketplaceApi,
-        );
+        let installationDataService: InstallationDataService | undefined =
+          undefined;
+        if (config.getOptionalBoolean('extensions.installation.enabled')) {
+          installationDataService = InstallationDataService.fromConfig({
+            config,
+            marketplaceApi,
+          });
+        }
 
         httpRouter.use(
           await createRouter({
             httpAuth,
-            pluginsConfigService,
+            installationDataService,
             marketplaceApi,
             permissions,
           }),

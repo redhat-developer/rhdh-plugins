@@ -20,8 +20,6 @@ import {
 } from '@backstage/catalog-client';
 
 import type {
-  DynamicPackageConfig,
-  DynamicPluginConfig,
   MarketplaceCollection,
   MarketplacePackage,
   MarketplacePlugin,
@@ -146,7 +144,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   async getPackageConfigByName(
     namespace: string,
     name: string,
-  ): Promise<DynamicPackageConfig> {
+  ): Promise<string> {
     return this.get(
       `/package/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
     );
@@ -185,7 +183,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   async getPluginConfigByName(
     namespace: string,
     name: string,
-  ): Promise<DynamicPluginConfig> {
+  ): Promise<string> {
     return this.get(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
     );

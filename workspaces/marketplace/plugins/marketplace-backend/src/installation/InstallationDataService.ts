@@ -15,26 +15,32 @@
  */
 
 import {
-  DynamicPackageConfig,
-  DynamicPluginConfig,
   MarketplaceApi,
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { PluginsConfigFileHandler } from './PluginsConfigFileHandler';
+import {
+  FileInstallationStorage,
+  InstallationStorage,
+} from './FileInstallationStorage';
+import type { Config } from '@backstage/config';
 
-export interface PluginsConfig {
-  getPackageConfig(dynamicArtifact: string): DynamicPackageConfig | undefined;
-  getPluginConfig(
-    plugin: MarketplacePlugin,
-  ): Promise<DynamicPluginConfig | undefined>;
-}
-
-export class PluginsConfigService implements PluginsConfig {
-  constructor(
-    private readonly pluginsConfigFileHandler: PluginsConfigFileHandler,
+export class InstallationDataService {
+  private constructor(
+    private readonly installationStorage: InstallationStorage,
     private readonly marketplaceApi: MarketplaceApi,
-  ) {
-    pluginsConfigFileHandler.parse();
+  ) {}
+
+  static fromConfig(deps: {
+    config: Config;
+    marketplaceApi: MarketplaceApi;
+  }): InstallationDataService {
+    const { config, marketplaceApi } = deps;
+
+    const storage = new FileInstallationStorage(
+      config.getString('extensions.installation.saveToSingleFile.file'),
+    );
+    storage.initialize();
+    return new InstallationDataService(storage, marketplaceApi);
   }
 
   private async getPluginDynamicArtifacts(
@@ -52,24 +58,14 @@ export class PluginsConfigService implements PluginsConfig {
     );
   }
 
-  getPackageConfig(
-    packageDynamicArtifact: string,
-  ): DynamicPackageConfig | undefined {
-    return this.pluginsConfigFileHandler.getPackage(packageDynamicArtifact);
+  getPackageConfig(packageDynamicArtifact: string): string | undefined {
+    return this.installationStorage.getPackage(packageDynamicArtifact);
   }
 
   async getPluginConfig(
     plugin: MarketplacePlugin,
-  ): Promise<DynamicPluginConfig> {
+  ): Promise<string | undefined> {
     const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
-
-    const result: DynamicPluginConfig = [];
-    for (const dynamicArtifact of dynamicArtifacts) {
-      const p = this.pluginsConfigFileHandler.getPackage(dynamicArtifact);
-      if (p) {
-        result.push(p);
-      }
-    }
-    return result;
+    return this.installationStorage.getPackages(dynamicArtifacts);
   }
 }

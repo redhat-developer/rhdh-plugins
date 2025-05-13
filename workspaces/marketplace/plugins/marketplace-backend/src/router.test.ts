@@ -29,6 +29,7 @@ import {
   mockPackages,
   mockDynamicPackage11,
   mockDynamicPlugin1,
+  mockFileInstallationStorage,
 } from '../__fixtures__/mockData';
 
 import {
@@ -37,7 +38,9 @@ import {
   MarketplaceKind,
   MarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { PluginsConfigService } from './pluginsConfig/PluginsConfigService';
+import { InstallationDataService } from './installation/InstallationDataService';
+import { stringify } from 'yaml';
+import { JsonObject } from '@backstage/types/index';
 
 type MockMarketplaceEntity =
   | Partial<MarketplacePlugin>
@@ -56,12 +59,33 @@ const BASE_CONFIG = {
     },
   },
 };
-async function startBackendServer(): Promise<ExtendedHttpServer> {
+
+const FILE_INSTALL_CONFIG = {
+  extensions: {
+    installation: {
+      enabled: true,
+      type: 'saveToSingleFile',
+      saveToSingleFile: { file: 'dummy-config.yaml' },
+    },
+  },
+};
+
+jest.mock('./installation/FileInstallationStorage', () => {
+  return {
+    FileInstallationStorage: jest
+      .fn()
+      .mockImplementation(() => mockFileInstallationStorage),
+  };
+});
+
+async function startBackendServer(
+  config?: JsonObject,
+): Promise<ExtendedHttpServer> {
   const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
     marketplacePlugin,
     mockServices.rootLogger.factory(),
     mockServices.rootConfig.factory({
-      data: { ...BASE_CONFIG },
+      data: { ...BASE_CONFIG, ...(config || {}) },
     }),
   ];
 
@@ -96,7 +120,7 @@ const setupTest = () => {
   beforeEach(() => {});
 
   afterEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
     jest.restoreAllMocks();
     server.resetHandlers();
   });
@@ -113,15 +137,17 @@ describe('createRouter', () => {
     mockData,
     name,
     kind = MarketplaceKind.Plugin,
+    config,
   }: {
     mockData: MockMarketplaceEntity[] | {};
     name?: string;
     kind?: string;
+    config?: JsonObject;
   }): Promise<{
     backendServer: ExtendedHttpServer;
   }> => {
     const { server } = testSetup();
-    const backendServer: ExtendedHttpServer = await startBackendServer();
+    const backendServer: ExtendedHttpServer = await startBackendServer(config);
     server.use(
       rest.get(
         `http://localhost:${backendServer.port()}/api/catalog/entities/by-query`,
@@ -387,23 +413,26 @@ describe('createRouter', () => {
         const { backendServer } = await setupTestWithMockCatalog({
           mockData: [...mockPlugins, ...mockPackages],
           name: 'plugin1',
+          config: FILE_INSTALL_CONFIG,
         });
+        const pluginToGet = stringify(mockDynamicPlugin1);
 
         jest
-          .spyOn(PluginsConfigService.prototype, 'getPluginConfig')
-          .mockResolvedValue(mockDynamicPlugin1);
+          .spyOn(InstallationDataService.prototype, 'getPluginConfig')
+          .mockResolvedValue(pluginToGet);
 
         const response = await request(backendServer).get(
-          '/api/marketplace/plugin/default/plugin1/configuration',
+          '/api/extensions/plugin/default/plugin1/configuration',
         );
         expect(response.status).toEqual(200);
-        expect(response.body).toEqual(mockDynamicPlugin1);
+        expect(response.text).toEqual(pluginToGet);
       });
 
       it('should throw an error when the plugin configuration is not found', async () => {
         const { backendServer } = await setupTestWithMockCatalog({
           mockData: [],
           name: 'not-found',
+          config: FILE_INSTALL_CONFIG,
         });
 
         const response = await request(backendServer).get(
@@ -434,17 +463,19 @@ describe('createRouter', () => {
           mockData: mockPackages,
           name: 'package11',
           kind: MarketplaceKind.Package,
+          config: FILE_INSTALL_CONFIG,
         });
+        const packageToGet = stringify(mockDynamicPackage11);
 
         jest
-          .spyOn(PluginsConfigService.prototype, 'getPackageConfig')
-          .mockReturnValue(mockDynamicPackage11);
+          .spyOn(InstallationDataService.prototype, 'getPackageConfig')
+          .mockReturnValue(packageToGet);
 
         const response = await request(backendServer).get(
-          '/api/marketplace/package/default/package11/configuration',
+          '/api/extensions/package/default/package11/configuration',
         );
         expect(response.status).toEqual(200);
-        expect(response.body).toEqual(mockDynamicPackage11);
+        expect(response.text).toEqual(packageToGet);
       });
 
       it('should throw an error when the package configuration is not found', async () => {
@@ -452,6 +483,7 @@ describe('createRouter', () => {
           mockData: [],
           name: 'not-found',
           kind: MarketplaceKind.Package,
+          config: FILE_INSTALL_CONFIG,
         });
 
         const response = await request(backendServer).get(

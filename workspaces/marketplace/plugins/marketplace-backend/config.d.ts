@@ -15,11 +15,25 @@
  */
 
 export interface Config {
-  marketplace: {
-    /**
-     * The path to the yaml config file containing the dynamic plugins
-     * @visibility frontend
-     */
-    dynamicPluginsConfig?: string;
+  extensions?: {
+    installation?: {
+      /**
+       * Whether the installation is enabled, defaults to false.
+       * @visibility frontend
+       */
+      enabled?: boolean;
+      /**
+       * Type of saving installation configuration
+       * @visibility frontend
+       */
+      type: 'saveToSingleFile';
+      saveToSingleFile: {
+        /**
+         * The path to the yaml file containing the plugins installation configuration
+         * @visibility frontend
+         */
+        file: string;
+      };
+    };
   };
 }

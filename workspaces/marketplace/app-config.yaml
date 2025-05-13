@@ -118,5 +118,10 @@ permission:
   # setting this to `false` will disable permissions
   enabled: true
 
-marketplace:
-  dynamicPluginsConfig: ${DYNAMIC_PLUGINS_CONFIG}
+extensions:
+  ### Example for how to enable installation to a file.
+  # installation:
+  #   enabled: true
+  #   type: 'saveToSingleFile'
+  #   saveToSingleFile:
+  #     file: ${EXTENSIONS_PLUGIN_CONFIG}

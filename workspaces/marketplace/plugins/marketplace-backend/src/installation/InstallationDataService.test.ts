@@ -13,25 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { ConfigReader } from '@backstage/config';
 
-import { PluginsConfigService } from './PluginsConfigService';
+import { InstallationDataService } from './InstallationDataService';
 import {
   mockDynamicPackage11,
   mockDynamicPlugin1,
+  mockFileInstallationStorage,
   mockMarketplaceApi,
   mockPackages,
   mockPlugins,
-  mockPluginsConfigFileHandler,
 } from '../../__fixtures__/mockData';
+import { stringify } from 'yaml';
 
-describe('PluginsConfigService', () => {
-  let pluginsConfigService: PluginsConfigService;
+jest.mock('./FileInstallationStorage', () => {
+  return {
+    FileInstallationStorage: jest
+      .fn()
+      .mockImplementation(() => mockFileInstallationStorage),
+  };
+});
+
+describe('InstallationDataService', () => {
+  let installationDataService: InstallationDataService;
 
   beforeEach(async () => {
-    pluginsConfigService = new PluginsConfigService(
-      mockPluginsConfigFileHandler,
-      mockMarketplaceApi,
-    );
+    const mockConfig = new ConfigReader({
+      extensions: {
+        installation: {
+          enabled: true,
+          type: 'saveToSingleFile',
+          saveToSingleFile: { file: 'dummy-file.yaml' },
+        },
+      },
+    });
+    installationDataService = InstallationDataService.fromConfig({
+      config: mockConfig,
+      marketplaceApi: mockMarketplaceApi,
+    });
   });
 
   afterEach(async () => {
@@ -40,10 +59,10 @@ describe('PluginsConfigService', () => {
 
   describe('getPackageConfig', () => {
     it('should return package config', () => {
-      const result = pluginsConfigService.getPackageConfig(
+      const result = installationDataService.getPackageConfig(
         mockPackages[0].spec?.dynamicArtifact!,
       );
-      expect(result).toEqual(mockDynamicPackage11);
+      expect(result).toEqual(stringify(mockDynamicPackage11));
     });
   });
 
@@ -58,8 +77,10 @@ describe('PluginsConfigService', () => {
           isMatch ? [mockPackages[0], mockPackages[1]] : [],
         );
       });
-      const result = await pluginsConfigService.getPluginConfig(mockPlugins[0]);
-      expect(result).toEqual(mockDynamicPlugin1);
+      const result = await installationDataService.getPluginConfig(
+        mockPlugins[0],
+      );
+      expect(result).toEqual(stringify(mockDynamicPlugin1));
     });
   });
 });

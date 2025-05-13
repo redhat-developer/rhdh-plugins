@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 import {
-  DynamicPackageConfig,
   MarketplaceApi,
   MarketplaceKind,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { PluginsConfigFileHandler } from '../src/pluginsConfig/PluginsConfigFileHandler';
+import { FileInstallationStorage } from '../src/installation/FileInstallationStorage';
+import { type JsonObject } from '@backstage/types';
+import { stringify } from 'yaml';
 
 export const mockCollections = [
   {
@@ -141,14 +142,23 @@ export const mockDynamicPackage21 = {
 
 export const mockDynamicPlugin1 = [mockDynamicPackage11, mockDynamicPackage12];
 
-const mockPluginsMap = new Map<string, DynamicPackageConfig>([
+const mockPluginsMap = new Map<string, JsonObject>([
   [mockDynamicPackage11.package, mockDynamicPackage11],
   [mockDynamicPackage12.package, mockDynamicPackage12],
 ]);
-export const mockPluginsConfigFileHandler = {
-  parse: jest.fn(),
-  getPackage: jest.fn((name: string) => mockPluginsMap.get(name)),
-} as unknown as jest.Mocked<PluginsConfigFileHandler>;
+export const mockFileInstallationStorage = {
+  initialize: jest.fn(),
+  getPackage: jest.fn((name: string) => {
+    const pcg = mockPluginsMap.get(name);
+    return pcg ? stringify(pcg) : pcg;
+  }),
+  getPackages: jest.fn((names: Iterable<string>) => {
+    const packages = Array.from(names)
+      .filter(name => mockPluginsMap.has(name))
+      .map(name => mockPluginsMap.get(name));
+    return stringify(packages);
+  }),
+} as unknown as jest.Mocked<FileInstallationStorage>;
 
 export const mockMarketplaceApi = {
   getPluginByName: jest.fn(),

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import express, { Request } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import Router from 'express-promise-router';
-import { NotAllowedError } from '@backstage/errors';
+import { NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
   HttpAuthService,
   PermissionsService,
@@ -43,21 +43,34 @@ import { createSearchParams } from './utils/createSearchParams';
 import { removeVerboseSpecContent } from './utils/removeVerboseSpecContent';
 import { rules as extensionRules } from './permissions/rules';
 import { matches } from './utils/permissionUtils';
-import { PluginsConfigService } from './pluginsConfig/PluginsConfigService';
-import { InputError, NotFoundError } from '@backstage/errors';
+import { InstallationDataService } from './installation/InstallationDataService';
 
 export type MarketplaceRouterOptions = {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
   permissions: PermissionsService;
-  pluginsConfigService: PluginsConfigService;
+  installationDataService?: InstallationDataService;
 };
 
 export async function createRouter(
   options: MarketplaceRouterOptions,
 ): Promise<express.Router> {
-  const { httpAuth, marketplaceApi, permissions, pluginsConfigService } =
+  const { httpAuth, marketplaceApi, permissions, installationDataService } =
     options;
+
+  const requireInstallationDataService = (
+    _req: Request,
+    _res: Response,
+    next: NextFunction,
+  ) => {
+    if (!installationDataService) {
+      throw new Error(
+        "Installation is disabled under 'extensions.installation.enabled'.",
+      );
+    } else {
+      next();
+    }
+  };
 
   const router = Router();
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
@@ -144,25 +157,29 @@ export async function createRouter(
     );
   });
 
-  router.get('/package/:namespace/:name/configuration', async (req, res) => {
-    const marketplacePackage = await marketplaceApi.getPackageByName(
-      req.params.namespace,
-      req.params.name,
-    );
+  router.get(
+    '/package/:namespace/:name/configuration',
+    requireInstallationDataService,
+    async (req, res) => {
+      const marketplacePackage = await marketplaceApi.getPackageByName(
+        req.params.namespace,
+        req.params.name,
+      );
 
-    if (!marketplacePackage.spec?.dynamicArtifact) {
-      throw new InputError(
-        "Package catalog entity is missing 'spec.dynamicArtifact'",
-      ); // 400
-    }
-    const result = pluginsConfigService.getPackageConfig(
-      marketplacePackage.spec?.dynamicArtifact,
-    );
-    if (!result) {
-      throw new NotFoundError(); // 404
-    }
-    res.status(200).json(result);
-  });
+      if (!marketplacePackage.spec?.dynamicArtifact) {
+        throw new Error(
+          `Package catalog entity ${marketplacePackage.metadata.name} is missing 'spec.dynamicArtifact'`,
+        );
+      }
+      const result = installationDataService!.getPackageConfig(
+        marketplacePackage.spec?.dynamicArtifact,
+      );
+      if (!result) {
+        throw new NotFoundError(); // 404
+      }
+      res.status(200).setHeader('Content-Type', 'text/yaml').send(result);
+    },
+  );
 
   router.get('/plugins', async (req, res) => {
     const request = decodeGetEntitiesRequest(createSearchParams(req));
@@ -235,21 +252,24 @@ export async function createRouter(
     },
   );
 
-  router.get('/plugin/:namespace/:name/configuration', async (req, res) => {
-    const readDecision = await authorizeConditional(
-      req,
-      extensionsPluginReadPermission,
-    );
-    if (readDecision.result === AuthorizeResult.DENY) {
-      throw new NotAllowedError(
-        `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
+  router.get(
+    '/plugin/:namespace/:name/configuration',
+    requireInstallationDataService,
+    async (req, res) => {
+      const readDecision = await authorizeConditional(
+        req,
+        extensionsPluginReadPermission,
       );
-    }
+      if (readDecision.result === AuthorizeResult.DENY) {
+        throw new NotAllowedError(
+          `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
+          );
+      }
 
-    const marketplacePlugin = await marketplaceApi.getPluginByName(
-      req.params.namespace,
-      req.params.name,
-    );
+      const marketplacePlugin = await marketplaceApi.getPluginByName(
+        req.params.namespace,
+        req.params.name,
+      );
 
     const hasReadAccess =
       readDecision.result === AuthorizeResult.ALLOW ||
@@ -261,13 +281,14 @@ export async function createRouter(
       );
     }
 
-    const result =
-      await pluginsConfigService.getPluginConfig(marketplacePlugin);
-    if (!result) {
-      throw new NotFoundError(); // 404
-    }
-    res.status(200).json(result);
-  });
+      const result =
+        await installationDataService!.getPluginConfig(marketplacePlugin);
+      if (!result) {
+        throw new NotFoundError(); // 404
+      }
+      res.status(200).setHeader('Content-Type', 'text/yaml').send(result);
+    },
+  );
 
   router.post('/plugin/:namespace/:name/configuration', async (req, res) => {
     // installs the plugin

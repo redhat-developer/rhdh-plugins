@@ -19,7 +19,6 @@ import { OptionValues } from 'commander';
 import path from 'path';
 import yaml from 'yaml';
 import {
-  DynamicPluginsConfig,
   EXTENSIONS_API_VERSION,
   MarketplaceKind,
   MarketplacePackage,
@@ -27,6 +26,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { EntityLink, LocationEntityV1alpha1 } from '@backstage/catalog-model';
 import {
+  DynamicPluginsConfig,
   PackageJson,
   PackageJsonBugs,
   PackageJsonPerson,
