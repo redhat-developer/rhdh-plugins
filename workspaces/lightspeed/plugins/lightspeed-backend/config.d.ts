@@ -37,5 +37,10 @@ export interface Config {
        */
       token?: string;
     }>;
+    /**
+     * If turn on query restriction validation.
+     * @visibility frontend
+     */
+    disableQuestionValidation?: boolean;
   };
 }
