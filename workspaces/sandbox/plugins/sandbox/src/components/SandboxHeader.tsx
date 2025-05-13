@@ -30,6 +30,7 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
   const theme = useTheme();
   return (
     <Header
+      pageTitleOverride={pageTitle}
       title={
         <Typography
           color="textPrimary"

@@ -19,57 +19,14 @@ const app = createApp({
 
 ### Dynamic (for RHDH production)
 
-For RHDH production deployments, it is expected that the plugin is exported as a dynamic plugin using janus CLI a loaded among the other dynamic frontend plugins.
+For RHDH production deployments, it is expected that the plugin is exported as a dynamic plugin using Janus CLI a loaded among the other dynamic frontend plugins.
 No explicit configuration is needed.
 
 ## Content
 
-The plugin provides implementation of `OrchestratorFormApi` (for `orchestratorFormApiRef`) to extend the Workflow execution form for custom provided ui:widgets.
+Documentation of implemented widgets can be found in a [separate document](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/docs/orchestratorFormWidgets.md).
 
-## Context
-
-## SchemaUpdater widget
-
-A headless widget used for fetching snippets of JSON schema and dynamically updating the RJSF form JSON schema on the fly.
-
-Example of use in workflow's input data schema:
-
-```json
-        "mySchemaUpdater": {
-          "type": "string",
-          "ui:widget": "SchemaUpdater",
-          "ui:props": {
-            "fetch:url": "https://service.providing/chunk01.json"
-          }
-        },
-        "placeholderTwo": {
-          "type": "string",
-          "title": "This title is used until replaced by any SchemaUpdater"
-        },
-        "placeholderFour": {
-          "ui:widget": "hidden"
-        }
-```
-
-The provided chunks are expected to be JSON documents of `SchemaChunksResponse` structure.
-
-Example of response:
-
-```
-{
-  "placeholderTwo": {
-    "type": "string",
-    "title": "This is inputbox supplied by chunk02, replacing addition by chunk01 to the same placeholderTwo"
-  },
-  "placeholderFour": {
-    "type": "string",
-    "title": "This is ActiveTextInput ui:widget to test preservation of state on placeholderFour",
-    "ui:widget": "ActiveTextInput"
-  }
-}
-```
-
-## HTTP server for dynamic widgets development - http-workflow-dev-server
+## `http-workflow-dev-server` - HTTP server for dynamic widgets development
 
 **For the development purposes only**, there is `http-workflow-dev-server`, very simple Express Node.js server which responds with JSON schema chunks for the `SchemaUpdater` and other active widgets.
 
@@ -149,32 +106,3 @@ The URLs referenced from this workflow's data input schema rely on proxy configu
 
 This dev-only workflow is similar to https://github.com/rhdhorchestrator/backstage-orchestrator-workflows/blob/main/workflows/dynamic.schema.sw.json .
 The difference is in the URLs used - the backstage-orchestrator-workflows' one references public GitHub HTTP server, so no extra steps in running the `http-workflow-dev-server` are needed.
-
-## Development of a workflow using orchestrator-form-widgets
-
-Developing workflows with `orchestrator-form-widgets` follows principles similar to standard workflow creation, with one critical enhancement: the ability to incorporate dynamic UI elements via the `ui:widget` property in your data input schema.
-
-Key Differentiators:
-
-- Dynamic UI Integration: Reference custom UI widgets directly in your schema using `ui:widget`, enabling interactive components like `ActiveTextInput` or `ActiveDropdown`.
-- Backend Flexibility: A live HTTP server is required to:
-  - Serve JSON Schema snippets for the SchemaUpdater.
-  - Provide default data or option lists.
-  - Handle complex validation logic for widgets.
-
-Deployment Considerations:
-
-- Use one or multiple servers depending on organizational needs.
-- Ensure endpoint structures and response formats exactly match the naming conventions and data structures defined in your schema’s `ui:props` by the creator of workflow's `data input schema`.
-
-TODO: describe components and provide snippets of code (based on the ADR).
-
-### SchemaUpdater
-
-TBD
-
-### ActiveTextInput
-
-TBD
-
-### TBD: other sections - similar to the ADR

@@ -1,0 +1,45 @@
+{
+  "$id": "classpath:/schemas/dynamic-course-select__main-schema.json",
+  "title": "Data Input Schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "studentName": {
+      "type": "string",
+      "title": "Student name (standard HTML component)"
+    },
+    "courseName": {
+      "type": "string",
+      "title": "Course name (ActiveTextInput component with autocomplete, fetches default data, retriggered by studentName, a change triggers a SchemaUpdater), try to enter 'complexCourse'",
+      "ui:widget": "ActiveTextInput",
+      "ui:props": {
+        "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/courses?studentname=$${{current.studentName}}",
+        "fetch:response:value": "mycourses.mydefault",
+        "fetch:response:autocomplete": "listofcourses.all",
+        "fetch:retrigger": ["current.studentName"],
+        "fetch:method": "POST",
+        "fetch:body": {
+          "requesterName": "Mr./Mrs. $${{identityApi.displayName}}"
+        },
+        "fetch:headers": {
+          "githubNameNotUsedJustShowing": "${{githubAuthApi.profileName}}"
+        }
+      }
+    },
+    "courseDetails": {
+      "type": "object",
+      "title": "This title will never be displayed. This 'courseDetails' property is just a placeholder to be replaced by the 'mySchemaUpdater' based on the fetched response. Will contain complex data later.",
+      "ui:widget": "hidden"
+    },
+    "mySchemaUpdater": {
+      "type": "string",
+      "title": "This title will never be displayed. The 'type' is irrelevant. There can be multiple SchemaUpdater instances, if you like. They can even be dynamically supplied by one of them.",
+      "ui:widget": "SchemaUpdater",
+      "ui:props": {
+        "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/coursedetailsschema?coursename=$${{current.courseName}}",
+        "fetch:retrigger": ["current.courseName"]
+      }
+    }
+  },
+  "required": ["studentName", "courseName"]
+}

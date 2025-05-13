@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.13.1
+
+### Patch Changes
+
+- bcb78bc: fix generic error when pr creation fails
+
 ## 1.13.0
 
 ### Minor Changes
