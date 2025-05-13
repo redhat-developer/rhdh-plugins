@@ -19,7 +19,6 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
 import { useFormikContext } from 'formik';
-import { get } from 'lodash';
 
 import { AddRepositoriesFormValues, PullRequestPreviewData } from '../../types';
 import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
@@ -45,6 +44,9 @@ export const AddRepositories = ({ error }: { error: any }) => {
     });
     setOpenDrawer(false);
   };
+
+  const errorMessage = error?.error?.message && JSON.parse(error.error.message);
+
   return (
     <>
       <FormControl fullWidth>
@@ -57,8 +59,14 @@ export const AddRepositories = ({ error }: { error: any }) => {
           {error && (
             <div style={{ paddingBottom: '10px' }}>
               <Alert severity="error">
-                <AlertTitle>{get(error, 'name') || 'Error occured'}</AlertTitle>
-                {get(error, 'err') || 'Failed to create pull request'}
+                <AlertTitle>
+                  {errorMessage?.error?.name ??
+                    error?.error?.name ??
+                    'Error occured'}
+                </AlertTitle>
+                {errorMessage?.error?.message ??
+                  error?.err ??
+                  'Failed to create pull request'}
               </Alert>
             </div>
           )}
