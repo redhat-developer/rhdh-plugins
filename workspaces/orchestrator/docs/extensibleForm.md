@@ -18,7 +18,7 @@ To implement the API, include @red-hat-developer-hub/backstage-plugin-orchestrat
 This package provides the `OrchestratorFormApi` interface and related types.
 
 ```typescript
-export type OrchestratorFormDecoratorProps = Pick<
+export type FormDecoratorProps = Pick<
   FormProps<JsonObject, JSONSchema7>,
   'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate'
 > & {
@@ -28,21 +28,27 @@ export type OrchestratorFormDecoratorProps = Pick<
 };
 
 export type OrchestratorFormDecorator = (
-  FormComponent: React.ComponentType<OrchestratorFormDecoratorProps>,
+  FormComponent: React.ComponentType<FormDecoratorProps>,
 ) => React.ComponentType;
 
 export interface OrchestratorFormApi {
-  getFormDecorator(schema: JSONSchema7): OrchestratorFormDecorator;
+  getFormDecorator(): OrchestratorFormDecorator;
 }
 ```
+
+### WrapperFormPropsContext
+
+The OrchestratorFormApi implementation is wrapped within `WrapperFormPropsContext` to get access to i.e. recent UI schema, schemaUpdater or other-fields form data which can be used for data fetching or validation.
+
+Use `useWrapperFormPropsContext()` hook to access the context.
 
 ### Example API Implementation
 
 ```typescript
 class CustomFormApi implements OrchestratorFormApi {
-  getFormDecorator(schema: JSONSchema7) {
+  getFormDecorator() {
     return (FormComponent: React.ComponentType<FormDecoratorProps>>) => {
-      const widgets = {CountryWidget}; // CountryWidget needs to be implemneted and imported
+      const widgets = {CountryWidget}; // CountryWidget needs to be implemented and imported
       return () => <FormComponent widgets={widgets} />;
     };
   }
@@ -131,6 +137,6 @@ The `orchestrator-form-react` plugin handles the following key tasks:
 
 - **Organizing Forms into Wizard-Style Steps:** If the schema is an object containing nested objects (i.e., the root is an object, and its properties are also objects), the plugin organizes the form into multiple steps. Each nested object becomes a separate step in a wizard-style interface. For example, the schema provided above results in two steps: _Personal Details_ and _Contact Details_.
 
-The [`orchestrator-form-react`](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-form-react) plugin is designed to operate independently of the main orchestrator plugin. This modularity allows developers to test and validate form behavior in a standalone Backstage development environment before integrating it with the full orchestrator setup.
+The [`orchestrator-form-react`](https://github.com/janus-idp/backstage-plugins/tree/main/plugins/orchestrator-form-react) plugin is designed to operate independently of the main orchestrator plugin. This modularity allows developers to test and validate form behavior in a standalone Backstage development environment before integrating it with the full orchestrator setup.
 
 To use this plugin, add the `@red-hat-developer-hub/backstage-plugin-orchestrator-form-react` package as a dependency in your project.
