@@ -1,0 +1,44 @@
+id: dynamic-course-select
+version: '1.0'
+specVersion: '0.8'
+name: Dynamic Course Select
+description: Simple workflow demonstrating basics of using the orchestrator-form-widgets library. Requires corresponding HTTP endpoints to be up and proxy to be configured.
+start: Start
+dataInputSchema: schemas/dynamic-course-select__main-schema.json
+functions:
+  - name: PrintSuccessData
+    type: expression
+    operation: '{
+      "result": {
+      "message": "The workflow finished successfully.",
+      "outputs": [
+      {
+      "key": "resourceOne",
+      "value": $WORKFLOW.instanceId
+      },
+      {
+      "key": "studentName",
+      "value": .studentName
+      },
+      {
+      "key": "courseName",
+      "value": .courseName
+      },
+      {
+      "key": "room",
+      "value": .courseDetails.room
+      },
+      {
+      "key": "requestCertificate",
+      "value": .courseDetails.requestCertificate
+      }
+      ]
+      }
+      }'
+states:
+  - name: Start
+    type: operation
+    actions:
+      - name: Fill progress data
+        functionRef: PrintSuccessData
+    end: true
