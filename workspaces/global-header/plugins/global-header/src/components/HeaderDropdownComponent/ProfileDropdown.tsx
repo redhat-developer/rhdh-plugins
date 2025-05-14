@@ -100,7 +100,7 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
                   mr: '1rem',
                 }}
               >
-                {displayName}
+                {displayName.split(' ')[0]}
               </Typography>
             </>
           )}
