@@ -68,6 +68,12 @@
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets",
+    "exposedModules": {
+      "OrchestratorFormWidgetsPlugin": "./src/index.ts"
+    }
+  },
   "devDependencies": {
     "@backstage/cli": "^0.31.1",
     "@backstage/core-app-api": "^1.15.2",
