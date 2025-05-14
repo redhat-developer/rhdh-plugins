@@ -57,6 +57,9 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
     setOtp(['', '', '', '', '', '']);
     setOpen(false);
     setEnterOTP(false);
+    setphoneSubmitError(undefined);
+    setVerificationCodeError(undefined);
+    setCodeResent(false);
   };
 
   const handlePhoneNumberSubmit = async () => {
@@ -86,8 +89,10 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
       setVerificationCodeError(undefined);
       setLoading(true);
       await registerApi.completePhoneVerification(otp.join(''));
-      refetchUserData();
       handleClose();
+      setTimeout(() => {
+        refetchUserData();
+      }, 2000);
     } catch (e) {
       setVerificationCodeError(errorMessage(e));
     } finally {
