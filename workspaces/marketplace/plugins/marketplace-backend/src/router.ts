@@ -16,7 +16,7 @@
 
 import express, { Request, Response, NextFunction } from 'express';
 import Router from 'express-promise-router';
-import { NotAllowedError, NotFoundError } from '@backstage/errors';
+import { NotAllowedError } from '@backstage/errors';
 import {
   HttpAuthService,
   PermissionsService,
@@ -174,9 +174,6 @@ export async function createRouter(
       const result = installationDataService!.getPackageConfig(
         marketplacePackage.spec?.dynamicArtifact,
       );
-      if (!result) {
-        throw new NotFoundError(); // 404
-      }
       res.status(200).setHeader('Content-Type', 'text/yaml').send(result);
     },
   );
@@ -263,7 +260,7 @@ export async function createRouter(
       if (readDecision.result === AuthorizeResult.DENY) {
         throw new NotAllowedError(
           `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
-          );
+        );
       }
 
       const marketplacePlugin = await marketplaceApi.getPluginByName(
@@ -271,21 +268,18 @@ export async function createRouter(
         req.params.name,
       );
 
-    const hasReadAccess =
-      readDecision.result === AuthorizeResult.ALLOW ||
-      (readDecision.result === AuthorizeResult.CONDITIONAL &&
-        matches(marketplacePlugin, readDecision.conditions));
-    if (!hasReadAccess) {
-      throw new NotAllowedError(
-        `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
-      );
-    }
+      const hasReadAccess =
+        readDecision.result === AuthorizeResult.ALLOW ||
+        (readDecision.result === AuthorizeResult.CONDITIONAL &&
+          matches(marketplacePlugin, readDecision.conditions));
+      if (!hasReadAccess) {
+        throw new NotAllowedError(
+          `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
+        );
+      }
 
       const result =
         await installationDataService!.getPluginConfig(marketplacePlugin);
-      if (!result) {
-        throw new NotFoundError(); // 404
-      }
       res.status(200).setHeader('Content-Type', 'text/yaml').send(result);
     },
   );

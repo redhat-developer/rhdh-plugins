@@ -427,32 +427,6 @@ describe('createRouter', () => {
         expect(response.status).toEqual(200);
         expect(response.text).toEqual(pluginToGet);
       });
-
-      it('should throw an error when the plugin configuration is not found', async () => {
-        const { backendServer } = await setupTestWithMockCatalog({
-          mockData: [],
-          name: 'not-found',
-          config: FILE_INSTALL_CONFIG,
-        });
-
-        const response = await request(backendServer).get(
-          '/api/marketplace/plugin/default/not-found/configuration',
-        );
-        expect(response.status).toEqual(404);
-        expect(response.body).toEqual({
-          error: {
-            message: 'Plugin default/not-found not found',
-            name: 'NotFoundError',
-          },
-          request: {
-            method: 'GET',
-            url: '/plugin/default/not-found/configuration',
-          },
-          response: {
-            statusCode: 404,
-          },
-        });
-      });
     });
   });
 
@@ -476,33 +450,6 @@ describe('createRouter', () => {
         );
         expect(response.status).toEqual(200);
         expect(response.text).toEqual(packageToGet);
-      });
-
-      it('should throw an error when the package configuration is not found', async () => {
-        const { backendServer } = await setupTestWithMockCatalog({
-          mockData: [],
-          name: 'not-found',
-          kind: MarketplaceKind.Package,
-          config: FILE_INSTALL_CONFIG,
-        });
-
-        const response = await request(backendServer).get(
-          '/api/marketplace/package/default/not-found/configuration',
-        );
-        expect(response.status).toEqual(404);
-        expect(response.body).toEqual({
-          error: {
-            message: 'Package default/not-found not found',
-            name: 'NotFoundError',
-          },
-          request: {
-            method: 'GET',
-            url: '/package/default/not-found/configuration',
-          },
-          response: {
-            statusCode: 404,
-          },
-        });
       });
     });
   });
