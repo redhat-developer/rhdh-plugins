@@ -17,7 +17,7 @@ export const LEARNING_SECTION_ITEMS = [
   {
     title: 'Get started',
     description: 'Learn about Red Hat Developer Hub.',
-    buttonText: 'Go to Tech Docs',
+    buttonText: 'Read documentation',
     buttonLink:
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/',
     target: '_blank',

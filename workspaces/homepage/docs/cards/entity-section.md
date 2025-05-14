@@ -22,6 +22,6 @@ dynamicPlugins:
               lg: { w: 12, h: 6 }
               md: { w: 12, h: 6 }
               sm: { w: 12, h: 6 }
-              xs: { w: 12, h: 14.5 }
+              xs: { w: 12, h: 6 }
               xxs: { w: 12, h: 14.5 }
 ```

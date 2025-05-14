@@ -227,6 +227,11 @@ export const EntitySection = () => {
       sx={{
         padding: '24px',
         border: muitheme => `1px solid ${muitheme.palette.grey[300]}`,
+        overflow: 'auto',
+        '$::-webkit-scrollbar': {
+          display: 'none',
+        },
+        scrollbarWidth: 'none',
       }}
     >
       <Typography

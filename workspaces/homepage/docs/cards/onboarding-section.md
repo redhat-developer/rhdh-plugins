@@ -20,7 +20,7 @@ dynamicPlugins:
               xl: { w: 12, h: 5 }
               lg: { w: 12, h: 5 }
               md: { w: 12, h: 5 }
-              sm: { w: 12, h: 7.8 }
-              xs: { w: 12, h: 13.5 }
-              xxs: { w: 12, h: 14 }
+              sm: { w: 12, h: 5 }
+              xs: { w: 12, h: 7 }
+              xxs: { w: 12, h: 12 }
 ```
