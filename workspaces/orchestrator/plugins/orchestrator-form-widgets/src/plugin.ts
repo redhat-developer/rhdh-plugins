@@ -17,7 +17,7 @@ import { createApiFactory, createPlugin } from '@backstage/core-plugin-api';
 import { orchestratorFormApiRef } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { FormWidgetsApi } from './FormWidgetsApi';
 
-export const formApiFactory = createApiFactory({
+export const orchestratorFormApiFactory = createApiFactory({
   api: orchestratorFormApiRef,
   deps: {},
   factory() {
@@ -28,5 +28,5 @@ export const formApiFactory = createApiFactory({
 export const orchestratorFormWidgetsPlugin = createPlugin({
   id: 'orchestrator-form-widgets',
   routes: {},
-  apis: [formApiFactory],
+  apis: [orchestratorFormApiFactory],
 });
