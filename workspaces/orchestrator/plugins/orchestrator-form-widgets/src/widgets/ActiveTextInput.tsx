@@ -50,7 +50,6 @@ export const ActiveTextInput: Widget<
   const { formData } = formContext;
 
   const { label, value, onChange } = props;
-
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as JsonObject,
     [props.options?.props],
@@ -98,7 +97,6 @@ export const ActiveTextInput: Widget<
         // Not yet ready to fetch
         return;
       }
-
       const firstTime = value === undefined;
       if (!firstTime && !autocompleteSelector) {
         // No need to fetch
@@ -179,27 +177,21 @@ export const ActiveTextInput: Widget<
   }
 
   if (autocompleteOptions) {
-    const renderInput = (params: AutocompleteRenderInputParams) => {
-      const autocompleteValue = (
-        params.inputProps as unknown as { value: string }
-      ).value;
-      if (autocompleteValue !== value) {
-        handleChange(autocompleteValue);
-      }
-
-      return (
-        <TextField
-          {...params}
-          value={value ?? ''}
-          onChange={event => handleChange(event.target.value)}
-          label={label}
-        />
-      );
-    };
+    const renderInput = (params: AutocompleteRenderInputParams) => (
+      <TextField
+        {...params}
+        onChange={event => handleChange(event.target.value)}
+        label={label}
+      />
+    );
 
     return (
       <FormControl variant="outlined" fullWidth>
-        <Autocomplete options={autocompleteOptions} renderInput={renderInput} />
+        <Autocomplete
+          options={autocompleteOptions}
+          value={value}
+          renderInput={renderInput}
+        />
       </FormControl>
     );
   }
