@@ -160,7 +160,9 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
     // User is not yet signed up
     if (!userFound) {
       signupUser();
-      refetchUserData();
+      setTimeout(() => {
+        refetchUserData();
+      }, 2000);
     }
     // User has signed up but require verification
     if (userFound && verificationRequired) {

@@ -142,9 +142,20 @@ export class RegistrationBackendClient implements RegistrationService {
     if (!response.ok) {
       const error: CommonResponse = await response.json();
       // handle backend error messages and make it more user-friendly
-      if (error?.message.includes("Invalid 'To' Phone Number")) {
+      if (
+        error?.message.includes("Invalid 'To' Phone Number") ||
+        error?.message.includes("'To' number cannot be a Short Code:") ||
+        error?.message.includes(
+          "Message cannot be sent with the current combination of 'To'",
+        ) ||
+        error?.message.includes('is not a valid mobile number')
+      ) {
         throw new Error(
           'Invalid phone number. Please verify the country code and number format, then try again.',
+        );
+      } else if (error?.message.includes('phone number already in use')) {
+        throw new Error(
+          'This phone number is already in use. Please use a different number.',
         );
       } else {
         throw new Error(error?.message);
