@@ -42,6 +42,9 @@ const widgets = {
 
 export class FormWidgetsApi implements OrchestratorFormApi {
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
+    // eslint-disable-next-line no-console
+    console.log('Using FormWidgetsApi by RHDH orchestrator-form-widgets.');
+
     return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
       return () => {
         const { formData, setFormData } = useWrapperFormPropsContext();
