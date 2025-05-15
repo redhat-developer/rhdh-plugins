@@ -31,9 +31,6 @@ export const OnboardingSection = () => {
   const greeting = useGreeting();
   const { displayName } = useUserProfile();
 
-  const fullName = displayName ?? '';
-  const firstName = fullName.split(' ')[0];
-
   const content = (
     <Box>
       <Grid container margin="auto">
@@ -101,7 +98,7 @@ export const OnboardingSection = () => {
           fontSize: '1.5rem',
         }}
       >
-        {`${greeting} ${firstName ?? 'Guest'}!`}
+        {`${greeting} ${displayName ?? 'Guest'}!`}
       </Typography>
       {content}
     </Card>
