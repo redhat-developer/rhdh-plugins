@@ -4,16 +4,19 @@
 
 ```ts
 
+import { ApiFactory } from '@backstage/core-plugin-api';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { OrchestratorFormApi } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
-// Warning: (ae-missing-release-tag) "orchestratorFormWidgetsPlugin" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+// Warning: (ae-forgotten-export) The symbol "FormWidgetsApi" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
+export const orchestratorFormApiFactory: ApiFactory<OrchestratorFormApi, FormWidgetsApi, {
+[x: string]: unknown;
+}>;
+
+// @public
 export const orchestratorFormWidgetsPlugin: BackstagePlugin<    {}, {}, {}>;
-
-// Warnings were encountered during analysis:
-//
-// src/plugin.d.ts:5:22 - (ae-undocumented) Missing documentation for "orchestratorFormWidgetsPlugin".
 
 // (No @packageDocumentation comment for this package)
 

@@ -17,7 +17,11 @@ import { createApiFactory, createPlugin } from '@backstage/core-plugin-api';
 import { orchestratorFormApiRef } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { FormWidgetsApi } from './FormWidgetsApi';
 
-export const formApiFactory = createApiFactory({
+/**
+ * @public
+ * Form API factory for the orchestratorFormWidgetsPlugin.
+ */
+export const orchestratorFormApiFactory = createApiFactory({
   api: orchestratorFormApiRef,
   deps: {},
   factory() {
@@ -25,8 +29,12 @@ export const formApiFactory = createApiFactory({
   },
 });
 
+/**
+ * @public
+ * Orchestrator Frontend Plugin providing decorator with default RJSF widgets for the Workflow Execution page.
+ */
 export const orchestratorFormWidgetsPlugin = createPlugin({
   id: 'orchestrator-form-widgets',
   routes: {},
-  apis: [formApiFactory],
+  apis: [orchestratorFormApiFactory],
 });

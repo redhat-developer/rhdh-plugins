@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { JsonObject } from '@backstage/types';
 import { Widget } from '@rjsf/utils';
 import { fetchApiRef, useApi } from '@backstage/core-plugin-api';
 import { JSONSchema7 } from 'json-schema';
+import { useDebounce } from 'react-use';
 
 import { useWrapperFormPropsContext } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { FormContextData } from '../types';
@@ -34,6 +35,7 @@ import {
   applySelectorString,
 } from '../utils/applySelector';
 import { Autocomplete, AutocompleteRenderInputParams } from '@material-ui/lab';
+import { DEFAULT_DEBOUNCE_LIMIT } from './constants';
 
 export const ActiveTextInput: Widget<
   JsonObject,
@@ -43,14 +45,12 @@ export const ActiveTextInput: Widget<
   const fetchApi = useApi(fetchApiRef);
   const templateUnitEvaluator = useTemplateUnitEvaluator();
   const formContext = useWrapperFormPropsContext();
-  const [_, setLoading] = useState(true);
   const [error, setError] = useState<string>();
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
 
   const { formData } = formContext;
 
   const { label, value, onChange } = props;
-
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as JsonObject,
     [props.options?.props],
@@ -66,6 +66,7 @@ export const ActiveTextInput: Widget<
     /* This is safe retype, since proper checking of input value is done in the useRetriggerEvaluate() hook */
     uiProps['fetch:retrigger'] as string[],
   );
+  const isValueSet = value === undefined;
 
   const evaluatedFetchUrl = useEvaluateTemplate({
     template: fetchUrl,
@@ -87,8 +88,8 @@ export const ActiveTextInput: Widget<
     [onChange],
   );
 
-  useEffect(() => {
-    const fetchDefaultData = async () => {
+  useDebounce(
+    () => {
       if (
         !evaluatedFetchUrl ||
         !evaluatedRequestInit ||
@@ -99,70 +100,73 @@ export const ActiveTextInput: Widget<
         return;
       }
 
-      const firstTime = value === undefined;
-      if (!firstTime && !autocompleteSelector) {
+      if (!isValueSet && !autocompleteSelector) {
         // No need to fetch
         return;
       }
 
-      try {
-        setLoading(true);
-        setError(undefined);
+      const fetchDefaultData = async () => {
+        try {
+          setError(undefined);
 
-        const response = await fetchApi.fetch(
-          evaluatedFetchUrl,
-          evaluatedRequestInit,
-        );
-        const data = (await response.json()) as JsonObject;
-
-        // validate received response before updating
-        if (!data) {
-          throw new Error('Empty response received');
-        }
-        if (typeof data !== 'object') {
-          throw new Error('JSON object expected');
-        }
-
-        const selected = await applySelectorString(data, defaultValueSelector);
-        if (autocompleteSelector) {
-          const autocompleteValues = await applySelectorArray(
-            data,
-            autocompleteSelector,
+          const response = await fetchApi.fetch(
+            evaluatedFetchUrl,
+            evaluatedRequestInit,
           );
-          setAutocompleteOptions(autocompleteValues);
-        }
+          const data = (await response.json()) as JsonObject;
 
-        if (firstTime) {
-          // loading default so do it only once
-          handleChange(selected);
-        }
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(
-          'Error when fetching default ActiveTextInput data',
-          props.id,
-          evaluatedFetchUrl,
-          err,
-        );
-        setError(`Failed to fetch data for ${props.id} ActiveTextInput`);
-      } finally {
-        setLoading(false);
-      }
-    };
+          // validate received response before updating
+          if (!data) {
+            throw new Error('Empty response received');
+          }
+          if (typeof data !== 'object') {
+            throw new Error('JSON object expected');
+          }
 
-    fetchDefaultData();
-  }, [
-    evaluatedFetchUrl,
-    evaluatedRequestInit,
-    autocompleteSelector,
-    defaultValueSelector,
-    fetchApi,
-    props.id,
-    value,
-    handleChange,
-    // no need to expand the "retrigger" array here since its identity changes only if an item changes
-    retrigger,
-  ]);
+          const selected = await applySelectorString(
+            data,
+            defaultValueSelector,
+          );
+          if (autocompleteSelector) {
+            const autocompleteValues = await applySelectorArray(
+              data,
+              autocompleteSelector,
+            );
+            setAutocompleteOptions(autocompleteValues);
+          }
+
+          if (isValueSet) {
+            // loading default so do it only once
+            handleChange(selected);
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error(
+            'Error when fetching default ActiveTextInput data',
+            props.id,
+            evaluatedFetchUrl,
+            err,
+          );
+          setError(`Failed to fetch data for ${props.id} ActiveTextInput`);
+        }
+      };
+
+      fetchDefaultData();
+    },
+    DEFAULT_DEBOUNCE_LIMIT,
+    [
+      evaluatedFetchUrl,
+      evaluatedRequestInit,
+      autocompleteSelector,
+      defaultValueSelector,
+      fetchApi,
+      props.id,
+      handleChange,
+      isValueSet,
+      // no need to expand the "retrigger" array here since its identity changes only if an item changes
+      retrigger,
+    ],
+  );
 
   if (!fetchUrl || !defaultValueSelector) {
     // eslint-disable-next-line no-console
@@ -179,27 +183,21 @@ export const ActiveTextInput: Widget<
   }
 
   if (autocompleteOptions) {
-    const renderInput = (params: AutocompleteRenderInputParams) => {
-      const autocompleteValue = (
-        params.inputProps as unknown as { value: string }
-      ).value;
-      if (autocompleteValue !== value) {
-        handleChange(autocompleteValue);
-      }
-
-      return (
-        <TextField
-          {...params}
-          value={value ?? ''}
-          onChange={event => handleChange(event.target.value)}
-          label={label}
-        />
-      );
-    };
+    const renderInput = (params: AutocompleteRenderInputParams) => (
+      <TextField
+        {...params}
+        onChange={event => handleChange(event.target.value)}
+        label={label}
+      />
+    );
 
     return (
       <FormControl variant="outlined" fullWidth>
-        <Autocomplete options={autocompleteOptions} renderInput={renderInput} />
+        <Autocomplete
+          options={autocompleteOptions}
+          value={value}
+          renderInput={renderInput}
+        />
       </FormControl>
     );
   }

@@ -24,6 +24,11 @@ import {
 
 class DefaultFormApi implements OrchestratorFormApi {
   getFormDecorator(): OrchestratorFormDecorator {
+    // eslint-disable-next-line no-console
+    console.log(
+      'Using the Orchestrator DefaultFormApi (without additional extensions).',
+    );
+
     return (FormComponent: React.ComponentType<FormDecoratorProps>) =>
       FormComponent;
   }
