@@ -38,14 +38,14 @@
             }
           }
         },
-        "myStaticText": {
+        "myActiveText": {
           "type": "string",
-          "title": "Example of StaticText with fetch",
-          "ui:widget": "StaticText",
+          "title": "Example of ActiveText with fetch",
+          "ui:widget": "ActiveText",
           "ui:props": {
             "ui:text": "Example demonstration text. fooTheFirst: $${{current.firstStep.fooTheFirst}}. response:example: $${{fetch:response:example}}",
             "ui:variant": "p1",
-            "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/staticTexts",
+            "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/activeTexts",
             "fetch:response:example": "example.text0",
             "fetch:retrigger": ["current.firstStep.fooTheFirst"]
           }

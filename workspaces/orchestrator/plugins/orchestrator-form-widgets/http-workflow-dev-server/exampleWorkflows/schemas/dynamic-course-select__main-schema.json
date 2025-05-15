@@ -34,9 +34,9 @@
     "suggestedCourses": {
       "type": "string",
       "title": "Suggested Additional Courses",
-      "ui:widget": "StaticText",
+      "ui:widget": "ActiveText",
       "ui:props": {
-        "ui:variant": "h1",
+        "ui:variant": "h4",
         "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/suggested-courses?coursename=$${{current.courseName}}",
         "fetch:method": "GET",
         "fetch:response:suggestions": "suggestions",
@@ -47,9 +47,9 @@
     "staticMessage": {
       "type": "string",
       "title": "Suggested Additional Courses static",
-      "ui:widget": "StaticText",
+      "ui:widget": "ActiveText",
       "ui:props": {
-        "ui:variant": "h1",
+        "ui:variant": "subtitle1",
         "ui:text": "You might also be interested in other stuff"
       }
     },

@@ -25,7 +25,7 @@ import { useRetriggerEvaluate } from './useRetriggerEvaluate';
 import { useDebounce } from 'react-use';
 import { DEFAULT_DEBOUNCE_LIMIT } from '../widgets/constants';
 
-export const useFetchData = (
+export const useFetch = (
   formData: JsonObject,
   uiProps: UiProps,
   retrigger: ReturnType<typeof useRetriggerEvaluate>,

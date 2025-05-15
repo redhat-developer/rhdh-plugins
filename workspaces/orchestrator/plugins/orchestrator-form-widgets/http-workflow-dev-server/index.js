@@ -135,7 +135,7 @@ app.get('/activeTextWhisperer', (req, res) => {
   res.send(JSON.stringify(result));
 });
 
-app.get('/staticTexts', (req, res) => {
+app.get('/activeTexts', (req, res) => {
   logRequest(req);
   res.send(
     JSON.stringify({

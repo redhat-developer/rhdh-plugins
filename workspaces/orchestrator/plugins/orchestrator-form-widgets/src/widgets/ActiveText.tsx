@@ -27,13 +27,31 @@ import { ErrorText } from './ErrorText';
 import { useWrapperFormPropsContext } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { useFetchAndEvaluate } from '../utils';
 
-const StaticText: Widget<JsonObject, JSONSchema7, FormContextData> = props => {
+export const ActiveText: Widget<
+  JsonObject,
+  JSONSchema7,
+  FormContextData
+> = props => {
   const { id, options } = props;
   const uiProps = (options?.props ?? {}) as UiProps;
 
   const formContext = useWrapperFormPropsContext();
   const formData = formContext.formData;
-  const { text, error, loading } = useFetchAndEvaluate(formData, uiProps, id);
+  const { text, error, loading } = useFetchAndEvaluate(
+    uiProps['ui:text'] || '',
+    formData,
+    uiProps,
+    id,
+  );
+
+  if (!uiProps['ui:text']) {
+    return (
+      <ErrorText
+        text={`Field ${id} is configured to use ActiveText widget, but doesn't contain property ui:text.`}
+      />
+    );
+  }
+
   if (error) {
     return <ErrorText text={error} />;
   }
@@ -43,5 +61,3 @@ const StaticText: Widget<JsonObject, JSONSchema7, FormContextData> = props => {
     </Typography>
   );
 };
-
-export default StaticText;

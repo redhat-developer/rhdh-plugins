@@ -15,15 +15,18 @@
  */
 
 import { JsonObject } from '@backstage/types/index';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { UiProps } from '../uiPropTypes';
 import { getErrorMessage } from './errorUtils';
 import { evaluateTemplate } from './evaluateTemplate';
-import { useFetchData } from './useFetch';
+import { useFetch } from './useFetch';
 import { useRetriggerEvaluate } from './useRetriggerEvaluate';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
+import { useDebounce } from 'react-use';
+import { DEFAULT_DEBOUNCE_LIMIT } from '../widgets/constants';
 
 export const useFetchAndEvaluate = (
+  template: string,
   formData: JsonObject,
   uiProps: UiProps,
   fieldId: string,
@@ -38,55 +41,53 @@ export const useFetchAndEvaluate = (
     data,
     error: fetchError,
     loading: fetchLoading,
-  } = useFetchData(formData, uiProps, retrigger);
+  } = useFetch(formData, uiProps, retrigger);
   const [error, setError] = useState<string>();
   const [loading, setLoading] = React.useState(true);
   const [resultText, setResultText] = React.useState<string>();
-  useEffect(() => {
-    const evaluate = async () => {
-      const template = uiProps['ui:text'];
-      if (!template) {
-        setError(
-          `field ${fieldId} has ui:widget property StaticText but doesn't contain property ui:text`,
-        );
-        return;
-      }
-      if (!retrigger || fetchLoading || fetchError) {
-        return;
-      }
-      try {
-        setLoading(true);
-        setError(undefined);
-        const evaluatedText = await evaluateTemplate({
-          template: template,
-          key: fieldId,
-          unitEvaluator,
-          formData,
-          responseData: data,
-          uiProps,
-        });
-        setResultText(evaluatedText);
-      } catch (err) {
-        const prefix = `Failed to evaluate text '${template}' for field ${fieldId}`;
-        const msg = getErrorMessage(prefix, err);
-        setError(msg);
-        // eslint-disable-next-line no-console
-        console.error(prefix, err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    evaluate();
-  }, [
-    retrigger,
-    fetchError,
-    fetchLoading,
-    fieldId,
-    data,
-    formData,
-    uiProps,
-    unitEvaluator,
-  ]);
+  useDebounce(
+    () => {
+      const evaluate = async () => {
+        if (!retrigger || fetchLoading || fetchError) {
+          return;
+        }
+        try {
+          setLoading(true);
+          setError(undefined);
+          const evaluatedText = await evaluateTemplate({
+            template,
+            key: fieldId,
+            unitEvaluator,
+            formData,
+            responseData: data,
+            uiProps,
+          });
+          setResultText(evaluatedText);
+        } catch (err) {
+          const prefix = `Failed to evaluate text '${template}' for field ${fieldId}`;
+          const msg = getErrorMessage(prefix, err);
+          setError(msg);
+          // eslint-disable-next-line no-console
+          console.error(prefix, err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      evaluate();
+    },
+    DEFAULT_DEBOUNCE_LIMIT,
+    [
+      retrigger,
+      fetchError,
+      fetchLoading,
+      fieldId,
+      data,
+      formData,
+      uiProps,
+      unitEvaluator,
+      template,
+    ],
+  );
   return {
     text: resultText,
     loading: loading || fetchLoading,

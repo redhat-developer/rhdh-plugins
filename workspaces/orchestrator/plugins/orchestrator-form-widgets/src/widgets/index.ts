@@ -15,3 +15,4 @@
  */
 export * from './SchemaUpdater';
 export * from './ActiveTextInput';
+export * from './ActiveText';
