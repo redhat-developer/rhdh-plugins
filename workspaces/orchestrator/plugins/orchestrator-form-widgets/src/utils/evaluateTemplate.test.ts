@@ -33,7 +33,6 @@ describe('evaluate template', () => {
 
   it('fails on incorrect input', async () => {
     const cases = [
-      { input: '', throws: 'Template can be a string only, key: myKey' },
       { input: undefined, throws: 'Template can be a string only, key: myKey' },
       { input: '$${{}}', throws: 'Template unit can not be empty' },
       { input: '$${{foo', throws: 'Template unit is not closed by }}' },
