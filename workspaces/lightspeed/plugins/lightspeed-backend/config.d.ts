@@ -41,6 +41,6 @@ export interface Config {
      * If turn on query restriction validation.
      * @visibility frontend
      */
-    disableQuestionValidation?: boolean;
+    questionValidation?: boolean;
   };
 }
