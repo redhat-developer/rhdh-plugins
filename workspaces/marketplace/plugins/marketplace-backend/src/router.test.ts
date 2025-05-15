@@ -29,7 +29,7 @@ import {
   mockPackages,
   mockDynamicPackage11,
   mockDynamicPlugin1,
-  mockFileInstallationStorage,
+  mockInstallationDataService,
 } from '../__fixtures__/mockData';
 
 import {
@@ -69,14 +69,6 @@ const FILE_INSTALL_CONFIG = {
     },
   },
 };
-
-jest.mock('./installation/FileInstallationStorage', () => {
-  return {
-    FileInstallationStorage: jest
-      .fn()
-      .mockImplementation(() => mockFileInstallationStorage),
-  };
-});
 
 async function startBackendServer(
   config?: JsonObject,
@@ -120,7 +112,7 @@ const setupTest = () => {
   beforeEach(() => {});
 
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     jest.restoreAllMocks();
     server.resetHandlers();
   });
@@ -409,6 +401,12 @@ describe('createRouter', () => {
     });
 
     describe('GET /plugin/:namespace/:name/configuration', () => {
+      beforeEach(() => {
+        jest
+          .spyOn(InstallationDataService, 'fromConfig')
+          .mockReturnValue(mockInstallationDataService);
+      });
+
       it('should get the plugin configuration', async () => {
         const { backendServer } = await setupTestWithMockCatalog({
           mockData: [...mockPlugins, ...mockPackages],
@@ -417,9 +415,12 @@ describe('createRouter', () => {
         });
         const pluginToGet = stringify(mockDynamicPlugin1);
 
+        mockInstallationDataService.getPluginConfig.mockResolvedValue(
+          pluginToGet,
+        );
         jest
-          .spyOn(InstallationDataService.prototype, 'getPluginConfig')
-          .mockResolvedValue(pluginToGet);
+          .spyOn(InstallationDataService, 'fromConfig')
+          .mockReturnValue(mockInstallationDataService);
 
         const response = await request(backendServer).get(
           '/api/extensions/plugin/default/plugin1/configuration',
@@ -431,6 +432,12 @@ describe('createRouter', () => {
   });
 
   describe('packages', () => {
+    beforeEach(() => {
+      jest
+        .spyOn(InstallationDataService, 'fromConfig')
+        .mockReturnValue(mockInstallationDataService);
+    });
+
     describe('GET /package/:namespace/:name/configuration', () => {
       it('should get the package configuration', async () => {
         const { backendServer } = await setupTestWithMockCatalog({
@@ -441,9 +448,9 @@ describe('createRouter', () => {
         });
         const packageToGet = stringify(mockDynamicPackage11);
 
-        jest
-          .spyOn(InstallationDataService.prototype, 'getPackageConfig')
-          .mockReturnValue(packageToGet);
+        mockInstallationDataService.getPackageConfig.mockReturnValue(
+          packageToGet,
+        );
 
         const response = await request(backendServer).get(
           '/api/extensions/package/default/package11/configuration',

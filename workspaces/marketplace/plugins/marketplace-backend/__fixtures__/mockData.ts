@@ -20,6 +20,7 @@ import {
 import { FileInstallationStorage } from '../src/installation/FileInstallationStorage';
 import { type JsonObject } from '@backstage/types';
 import { stringify } from 'yaml';
+import { InstallationDataService } from '../src/installation/InstallationDataService';
 
 export const mockCollections = [
   {
@@ -159,6 +160,11 @@ export const mockFileInstallationStorage = {
     return stringify(packages);
   }),
 } as unknown as jest.Mocked<FileInstallationStorage>;
+
+export const mockInstallationDataService = {
+  getPluginConfig: jest.fn(),
+  getPackageConfig: jest.fn(),
+} as unknown as jest.Mocked<InstallationDataService>;
 
 export const mockMarketplaceApi = {
   getPluginByName: jest.fn(),

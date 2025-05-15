@@ -43,6 +43,7 @@ export const marketplacePlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         discovery: coreServices.discovery,
+        logger: coreServices.logger,
         permissions: coreServices.permissions,
       },
       async init({
@@ -51,6 +52,7 @@ export const marketplacePlugin = createBackendPlugin({
         httpAuth,
         httpRouter,
         discovery,
+        logger,
         permissions,
       }) {
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
@@ -63,10 +65,17 @@ export const marketplacePlugin = createBackendPlugin({
         let installationDataService: InstallationDataService | undefined =
           undefined;
         if (config.getOptionalBoolean('extensions.installation.enabled')) {
-          installationDataService = InstallationDataService.fromConfig({
-            config,
-            marketplaceApi,
-          });
+          try {
+            installationDataService = InstallationDataService.fromConfig({
+              config,
+              marketplaceApi,
+            });
+          } catch (err) {
+            logger.error(
+              'Error while loading installation data. Installation will be disabled. Error:',
+              err,
+            );
+          }
         }
 
         httpRouter.use(

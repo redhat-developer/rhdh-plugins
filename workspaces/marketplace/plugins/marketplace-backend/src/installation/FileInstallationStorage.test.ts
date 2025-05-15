@@ -58,7 +58,7 @@ describe('FileInstallationStorage', () => {
       expect(() => {
         pluginsConfigFileHandler.initialize();
       }).toThrow(
-        "Failed to load 'extensions.installation.saveToSingleFile.file'. Invalid content, format of the 'plugins' field must be a list",
+        "Failed to load 'extensions.installation.saveToSingleFile.file'. Invalid installation configuration, 'plugins' field must be a list",
       );
     });
 
@@ -73,7 +73,9 @@ describe('FileInstallationStorage', () => {
 
       expect(() => {
         pluginsConfigFileHandler.initialize();
-      }).toThrow('Invalid content, package must be a non-empty string');
+      }).toThrow(
+        "Invalid installation configuration, 'package' field in each package item must be a non-empty string",
+      );
     });
   });
 

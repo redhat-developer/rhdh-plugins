@@ -16,7 +16,8 @@
 
 import fs from 'fs';
 
-import { Document, isMap, isSeq, parseDocument, YAMLMap, YAMLSeq } from 'yaml';
+import { Document, isMap, parseDocument, YAMLMap, YAMLSeq } from 'yaml';
+import { validateConfigurationFormat } from '../validation/configValidation';
 
 export interface InstallationStorage {
   initialize?(): void;
@@ -31,39 +32,6 @@ export class FileInstallationStorage implements InstallationStorage {
   constructor(configFile: string) {
     this.configFile = configFile;
     this.config = new Document();
-  }
-
-  private validateConfigFormat(doc: Document) {
-    const plugins = doc.get('plugins');
-
-    if (!isSeq(plugins))
-      throw new Error(
-        "Failed to load 'extensions.installation.saveToSingleFile.file'. Invalid content, format of the 'plugins' field must be a list",
-      );
-    for (const item of plugins.items) {
-      this.validatePackageFormat(item);
-    }
-  }
-
-  private validatePackageFormat(item: unknown) {
-    if (!isMap(item)) {
-      throw new Error('Invalid content, format of package must be a map');
-    }
-
-    const packageName = item.get('package');
-    if (typeof packageName !== 'string' || packageName.trim() === '') {
-      throw new Error('Invalid content, package must be a non-empty string');
-    }
-
-    const disabled = item.get('disabled');
-    if (disabled && typeof disabled !== 'boolean') {
-      throw new Error('Invalid content, disabled must be a boolean');
-    }
-
-    const pluginConfig = item.get('pluginConfig');
-    if (pluginConfig && !isMap(pluginConfig)) {
-      throw new Error('Invalid content, pluginConfig must be a map');
-    }
   }
 
   private toStringYaml(mapNodes: YAMLMap[]): string {
@@ -82,7 +50,7 @@ export class FileInstallationStorage implements InstallationStorage {
   initialize(): void {
     const rawContent = fs.readFileSync(this.configFile, 'utf-8');
     const parsedContent = parseDocument(rawContent);
-    this.validateConfigFormat(parsedContent);
+    validateConfigurationFormat(parsedContent);
     this.config = parsedContent;
   }
 
