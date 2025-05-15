@@ -69,6 +69,10 @@ import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import React from 'react';
+import {
+  OrchestratorCatalogTab,
+  IsOrchestratorCatalogTabAvailable,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator/src/components/OrchestratorCatalogTab';
 
 const techdocsContent = (
   <EntityTechdocsContent>
@@ -191,6 +195,14 @@ const serviceEntityPage = (
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
     </EntityLayout.Route>
+
+    <EntityLayout.Route
+      if={IsOrchestratorCatalogTabAvailable}
+      path="/workflows"
+      title="Workflows"
+    >
+      <OrchestratorCatalogTab />
+    </EntityLayout.Route>
   </EntityLayout>
 );
 
@@ -301,6 +313,13 @@ const userPage = (
           <EntityOwnershipCard variant="gridItem" />
         </Grid>
       </Grid>
+    </EntityLayout.Route>
+    <EntityLayout.Route
+      if={IsOrchestratorCatalogTabAvailable}
+      path="/workflows"
+      title="Workflows"
+    >
+      <OrchestratorCatalogTab />
     </EntityLayout.Route>
   </EntityLayout>
 );
