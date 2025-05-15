@@ -196,6 +196,7 @@ export const ActiveTextInput: Widget<
         <Autocomplete
           options={autocompleteOptions}
           value={value}
+          onChange={(_, v) => handleChange(v)}
           renderInput={renderInput}
         />
       </FormControl>
