@@ -51,7 +51,7 @@ export const WorkflowPage = () => {
       <TabbedLayout>
         <TabbedLayout.Route path="/" title="Workflow details">
           <Grid container spacing={2}>
-            <RunButton />
+            <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
             <WorkflowDetailsTabContent
               loadingWorkflowOverview={loadingWorkflowOverview}
               workflowOverviewDTO={workflowOverviewDTO?.data}
@@ -61,7 +61,7 @@ export const WorkflowPage = () => {
         </TabbedLayout.Route>
         <TabbedLayout.Route path={workflowRunsRoutePath} title="Workflow runs">
           <Grid container spacing={2}>
-            <RunButton />
+            <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
             <WorkflowRunsTabContent />
           </Grid>
         </TabbedLayout.Route>
