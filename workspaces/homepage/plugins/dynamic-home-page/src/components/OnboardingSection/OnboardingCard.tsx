@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 import React from 'react';
-
-import { Link as BackstageLink } from '@backstage/core-components';
+import { Link as RouterLink } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import CardContent from '@mui/material/CardContent';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { styled } from '@mui/material/styles';
+import Button from '@mui/material/Button';
 
 interface OnboardingCardProps {
   title: string;
@@ -29,16 +28,6 @@ interface OnboardingCardProps {
   buttonLink: string;
   target?: string;
 }
-
-const StyledLink = styled(BackstageLink)(({ theme }) => ({
-  testDecoration: 'none',
-  padding: theme.spacing(1, 1.5),
-  display: 'inline-flex',
-  alignItems: 'center',
-  fontSize: '16px',
-  border: `1px solid ${theme.palette.primary.main}`,
-  borderRadius: 4,
-}));
 
 const OnboardingCard: React.FC<OnboardingCardProps> = ({
   title,
@@ -78,9 +67,15 @@ const OnboardingCard: React.FC<OnboardingCardProps> = ({
         >
           {description}
         </Box>
-        <StyledLink to={buttonLink} underline="none" target={target}>
+        <Button
+          component={RouterLink}
+          variant="outlined"
+          color="primary"
+          to={buttonLink}
+          target={target}
+        >
           {buttonText} <ArrowForwardIcon style={{ paddingLeft: '0.5rem' }} />
-        </StyledLink>
+        </Button>
       </CardContent>
     </Box>
   );
