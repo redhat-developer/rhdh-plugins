@@ -373,3 +373,18 @@ export const ApplicationLauncherDropdown = globalHeaderPlugin.provide(
     },
   }),
 );
+
+/**
+ * Company Logo
+ *
+ * @public
+ */
+export const CompanyLogo = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'CompanyLogo',
+    component: {
+      lazy: () =>
+        import('./components/CompanyLogo/CompanyLogo').then(m => m.CompanyLogo),
+    },
+  }),
+);
