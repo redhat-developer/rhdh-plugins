@@ -44,7 +44,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
 
   const [loading, setLoading] = useState<boolean>(false);
   const [codeResent, setCodeResent] = useState<boolean>(false);
-  const [phoneSubmitError, setphoneSubmitError] = React.useState<
+  const [phoneSubmitError, setPhoneSubmitError] = React.useState<
     string | undefined
   >();
   const [verificationCodeError, setVerificationCodeError] = React.useState<
@@ -57,7 +57,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
     setOtp(['', '', '', '', '', '']);
     setOpen(false);
     setEnterOTP(false);
-    setphoneSubmitError(undefined);
+    setPhoneSubmitError(undefined);
     setVerificationCodeError(undefined);
     setCodeResent(false);
   };
@@ -69,7 +69,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
       '',
     );
     try {
-      setphoneSubmitError(undefined);
+      setPhoneSubmitError(undefined);
       setLoading(true);
       await registerApi.initiatePhoneVerification(
         countryCallingCode,
@@ -78,7 +78,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
 
       setEnterOTP(true);
     } catch (e) {
-      setphoneSubmitError(errorMessage(e));
+      setPhoneSubmitError(errorMessage(e));
     } finally {
       setLoading(false);
     }
