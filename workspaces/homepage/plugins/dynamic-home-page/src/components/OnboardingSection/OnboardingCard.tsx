@@ -73,6 +73,10 @@ const OnboardingCard: React.FC<OnboardingCardProps> = ({
           color="primary"
           to={buttonLink}
           target={target}
+          sx={{
+            padding: theme => theme.spacing(1, 1.5),
+            fontSize: '16px',
+          }}
         >
           {buttonText} <ArrowForwardIcon style={{ paddingLeft: '0.5rem' }} />
         </Button>
