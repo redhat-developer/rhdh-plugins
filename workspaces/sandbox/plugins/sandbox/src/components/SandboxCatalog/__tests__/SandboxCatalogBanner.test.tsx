@@ -162,7 +162,7 @@ describe('SandboxCatalogBanner', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders verification required message when needed', () => {
+  it('renders boilerplate message when verification is needed', () => {
     renderWithProviders({
       userData: {
         name: 'John Doe',
@@ -231,6 +231,23 @@ describe('SandboxCatalogBanner', () => {
     expect(text).toBeInTheDocument();
 
     jest.restoreAllMocks();
+  });
+
+  it('does not render trial expiry message when endDate is not set', () => {
+    renderWithProviders({
+      userData: {
+        name: 'John Doe',
+        username: 'john_doe',
+        compliantUsername: 'john_doe',
+        givenName: 'John',
+        familyName: 'Doe',
+        company: 'ACME Corp',
+        status: { ready: true, reason: '', verificationRequired: false },
+      },
+    });
+
+    const text = screen.queryByText(/Your free trial expires in \d+ days?/);
+    expect(text).not.toBeInTheDocument();
   });
 
   it('uses compliantUsername when givenName is not available', () => {
