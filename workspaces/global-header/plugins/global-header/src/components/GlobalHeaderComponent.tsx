@@ -48,7 +48,14 @@ export const GlobalHeaderComponent = ({
 
   return (
     <AppBar position="sticky" component="nav" id="global-header">
-      <Toolbar sx={{ gap: 1 }}>
+      <Toolbar
+        sx={{
+          gap: 1,
+          color: theme =>
+            (theme as any).rhdh?.general.appBarForegroundColor ??
+            theme.palette.text.primary,
+        }}
+      >
         {mountPoints.map((mountPoint, index) => (
           <ErrorBoundary key={`header-component-${index}`}>
             <mountPoint.Component

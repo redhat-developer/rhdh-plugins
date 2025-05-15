@@ -273,7 +273,7 @@ const WorkflowOutputs = ({
     [key: string]: any;
   }>((data, item) => {
     let value = item.value || '';
-    if (typeof value !== 'string') {
+    if (!['string', 'number', 'boolean'].includes(typeof value)) {
       // This is a workaround for malformed returned data. It should not happen if the sender does WorkflowResult validation properly.
       if (typeof value === 'object') {
         value = `Object: ${JSON.stringify(value)}`;

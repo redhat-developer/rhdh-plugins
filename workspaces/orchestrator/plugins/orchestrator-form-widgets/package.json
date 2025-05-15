@@ -61,11 +61,18 @@
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
     "@rjsf/utils": "^5.21.2",
     "json-schema": "^0.4.0",
+    "jsonata": "^2.0.6",
     "lodash": "^4.17.21",
     "react-use": "^17.2.4"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+  },
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets",
+    "exposedModules": {
+      "OrchestratorFormWidgetsPlugin": "./src/index.ts"
+    }
   },
   "devDependencies": {
     "@backstage/cli": "^0.31.1",

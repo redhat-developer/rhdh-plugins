@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
+  AuthRequestOptions,
   DiscoveryApi,
   IdentityApi,
   OAuthApi,
@@ -116,17 +118,18 @@ export class OrchestratorClient implements OrchestratorApi {
       await this.getDefaultReqConfig();
     const authTokens: { provider: string; token: string }[] = [];
 
+    const authRequestOptions: AuthRequestOptions = { optional: true };
     /** Build one promise per provider (guard against missing APIs) */
     const tokenPromises = [
       this.githubAuthApi
         ? this.githubAuthApi
-            .getAccessToken?.()
+            .getAccessToken?.(undefined, authRequestOptions)
             .then(tok => ({ provider: 'github' as const, token: tok }))
         : undefined,
 
       this.gitlabAuthApi
         ? this.gitlabAuthApi
-            .getAccessToken?.()
+            .getAccessToken?.(undefined, authRequestOptions)
             .then(tok => ({ provider: 'gitlab' as const, token: tok }))
         : undefined,
     ].filter(Boolean) as Promise<{
@@ -144,13 +147,17 @@ export class OrchestratorClient implements OrchestratorApi {
           authTokens.push({ provider, token });
         }
       } else if (r.status === 'rejected') {
+        // eslint-disable-next-line no-console
         console.warn('SCM token fetch failed:', r.reason);
       }
     }
-    const requestBody = {
+    const requestBody: JsonObject = {
       inputData: args.parameters,
-      authTokens,
     };
+    // The ExecuteWorkflowRequestDTO has minItems set to 1
+    if (authTokens.length > 0) {
+      requestBody.authTokens = authTokens;
+    }
 
     try {
       return await defaultApi.executeWorkflow(

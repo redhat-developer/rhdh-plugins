@@ -19,7 +19,7 @@ import { exitWithError } from './lib/errors';
 import { registerCommands } from './commands';
 
 const main = (argv: string[]) => {
-  program.name('rhdh-cli');
+  program.name('rhdh-repo-tools');
 
   registerCommands(program);
 

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.8.1
+
+### Patch Changes
+
+- cf40352: Add CSS for global header
+
 ## 0.8.0
 
 ### Minor Changes

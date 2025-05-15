@@ -68,7 +68,9 @@ export const SandboxCatalogCardButton: React.FC<
   }
 
   const buttonSx = {
-    border: `1px solid ${theme.palette.primary.main}`,
+    border: `1px solid ${
+      theme.palette.mode === 'dark' ? '#92c5f9' : theme.palette.primary.main
+    }`,
     marginTop: theme.spacing(0.5),
     '&:hover': {
       backgroundColor: 'rgba(25, 118, 210, 0.04)',

@@ -41,13 +41,13 @@ export const SearchInput = ({
       disableUnderline: true,
       startAdornment: (
         <InputAdornment position="start">
-          <SearchIcon style={{ color: '#fff' }} />
+          <SearchIcon style={{ color: 'inherit' }} />
         </InputAdornment>
       ),
     }}
     sx={{
-      input: { color: '#fff' },
-      button: { color: '#fff' },
+      input: { color: 'inherit' },
+      button: { color: 'inherit' },
       '& fieldset': { border: 'none' },
     }}
   />

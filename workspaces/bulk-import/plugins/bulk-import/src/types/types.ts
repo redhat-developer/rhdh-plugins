@@ -119,6 +119,7 @@ export enum RepositorySelection {
 export enum ApprovalTool {
   Git = 'git',
   ServiceNow = 'servicenow',
+  Gitlab = 'gitlab',
 }
 
 export type CreateImportJobRepository = {

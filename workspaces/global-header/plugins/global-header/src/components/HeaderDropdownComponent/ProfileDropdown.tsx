@@ -18,6 +18,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useUserProfile } from '@backstage/plugin-user-settings';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
+import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import { lighten } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -36,7 +37,7 @@ export interface ProfileDropdownProps {
 
 export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
-  const { displayName } = useUserProfile();
+  const { displayName, profile } = useUserProfile();
 
   const profileDropdownMountPoints = useProfileDropdownMountPoints();
 
@@ -82,7 +83,15 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
         <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
           {displayName && (
             <>
-              <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
+              {profile.picture ? (
+                <Avatar
+                  src={profile.picture}
+                  sx={{ mr: 2, height: '32px', width: '32px' }}
+                  alt="Profile picture"
+                />
+              ) : (
+                <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
+              )}
               <Typography
                 variant="body2"
                 sx={{

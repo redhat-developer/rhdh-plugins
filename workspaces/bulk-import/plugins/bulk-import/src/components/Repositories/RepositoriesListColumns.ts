@@ -17,6 +17,7 @@
 import { TableColumn } from '@backstage/core-components';
 
 import { AddRepositoryData } from '../../types';
+import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 export const RepositoriesListColumns: TableColumn<AddRepositoryData>[] = [
   {
@@ -27,13 +28,13 @@ export const RepositoriesListColumns: TableColumn<AddRepositoryData>[] = [
   },
   {
     id: 'repo-url',
-    title: 'Repo URL',
+    title: `${gitlabFeatureFlag ? 'URL' : 'Repo URL'}`,
     field: 'repoUrl',
     type: 'string',
   },
   {
     id: 'organization',
-    title: 'Organization',
+    title: `${gitlabFeatureFlag ? 'Organization/group' : 'Organization'}`,
     field: 'organizationUrl',
     type: 'string',
   },

@@ -304,9 +304,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-test-server@workspace:.":
+"http-workflow-dev-server@workspace:.":
   version: 0.0.0-use.local
-  resolution: "http-test-server@workspace:."
+  resolution: "http-workflow-dev-server@workspace:."
   dependencies:
     express: ^5.1.0
     prettier: 3.4.2

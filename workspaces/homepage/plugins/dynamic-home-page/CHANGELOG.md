@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.3.3
+
+### Patch Changes
+
+- 93e16a8: Correcting the home page title for `Recent Visits` and `Top Visits` on initial load and page reload.
+- f691b55: Updated dependency `tss-react` to `4.9.17`.
+
+## 1.3.2
+
+### Patch Changes
+
+- a9e5f32: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.6.0`.
+
 ## 1.3.1
 
 ### Patch Changes

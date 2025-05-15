@@ -81,6 +81,7 @@ export interface RHDHThemePalette {
         tabsLinkHoverBackgroundColor: string;
         contrastText: string;
         appBarBackgroundColor: string;
+        appBarForegroundColor: string;
         appBarBackgroundImage: string;
     };
     // (undocumented)

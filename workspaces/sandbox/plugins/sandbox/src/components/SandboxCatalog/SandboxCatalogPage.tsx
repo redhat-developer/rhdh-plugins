@@ -20,7 +20,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Page, Content } from '@backstage/core-components';
 import { SandboxCatalogBanner } from './SandboxCatalogBanner';
 import { SandboxCatalogGrid } from './SandboxCatalogGrid';
-import { SandboxCatalogFooter } from './SandboxCatalogFooter';
 import { SandboxProvider } from '../../hooks/useSandboxContext';
 import { SandboxHeader } from '../SandboxHeader';
 
@@ -36,13 +35,21 @@ export const SandboxCatalogPage = () => {
   return (
     <SandboxProvider>
       <Page themeId="sandbox">
-        <SandboxHeader pageTitle="Developer Sandbox" showSubTitle />
+        <SandboxHeader pageTitle="Developer Sandbox" />
         <Content className={classes.content} noPadding>
           <SandboxCatalogBanner />
-          <Box style={{ padding: '48px 60px 48px 60px' }}>
+          <Box
+            style={{
+              padding: '48px 60px 48px 60px',
+            }}
+          >
             <SandboxCatalogGrid />
           </Box>
+
+          {/*
+           /* TODO enable this later once https://issues.redhat.com/browse/SANDBOX-1161 is implemented
           <SandboxCatalogFooter />
+          */}
         </Content>
       </Page>
     </SandboxProvider>

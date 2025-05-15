@@ -22,7 +22,11 @@ import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
-import { AddRepositoriesFormValues, AddRepositoryData } from '../../types';
+import {
+  AddRepositoriesFormValues,
+  AddRepositoryData,
+  ApprovalTool,
+} from '../../types';
 import {
   calculateLastUpdated,
   getImportStatus,
@@ -45,6 +49,7 @@ const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
     values.repositories?.[data.id]?.catalogInfoYaml?.status as string,
     true,
     values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
+    values?.approvalTool === ApprovalTool.Gitlab,
   );
 };
 

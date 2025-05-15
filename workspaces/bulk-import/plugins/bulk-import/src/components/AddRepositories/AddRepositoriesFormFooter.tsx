@@ -27,6 +27,7 @@ import {
   AddRepositoriesFormValues,
   ApprovalTool,
 } from '../../types';
+import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 const sPad = (repositories: AddedRepositories) =>
   Object.keys(repositories || []).length > 1 ? 's' : '';
@@ -34,18 +35,31 @@ const sPad = (repositories: AddedRepositories) =>
 export const AddRepositoriesFormFooter = () => {
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
-  const approvalToolTitle =
-    (values.approvalTool === ApprovalTool.Git
-      ? 'pull request'
-      : 'ServiceNow ticket') + sPad(values.repositories);
-  const submitTitle = `Create ${approvalToolTitle}`;
+
+  const label = {
+    [ApprovalTool.ServiceNow]: {
+      submitTitle: `Create ServiceNow ticket${sPad(values.repositories)}`,
+      toolTipTitle: `Catalog-info.yaml files must be generated before creating a ServiceNow ticket`,
+    },
+    [ApprovalTool.Gitlab]: {
+      submitTitle: `Import`,
+      toolTipTitle:
+        'The Catalog-info.yaml files need to be generated for import.',
+    },
+    [ApprovalTool.Git]: {
+      submitTitle: gitlabFeatureFlag
+        ? 'Import'
+        : `Create pull request${sPad(values.repositories)}`,
+      toolTipTitle: gitlabFeatureFlag
+        ? 'The Catalog-info.yaml files need to be generated for import.'
+        : `Catalog-info.yaml files must be generated before creating a pull request`,
+    },
+  };
 
   const disableCreate =
-    !values.repositories || Object.values(values.repositories).length === 0;
-
-  const toolTipTitle = disableCreate
-    ? `Catalog-info.yaml files must be generated before creating a ${approvalToolTitle}`
-    : null;
+    values.approvalTool === ApprovalTool.Gitlab ||
+    !values.repositories ||
+    Object.values(values.repositories).length === 0;
 
   const submitButton = (
     <Button
@@ -58,7 +72,7 @@ export const AddRepositoriesFormFooter = () => {
         isSubmitting && <CircularProgress size="20px" color="inherit" />
       }
     >
-      {submitTitle}
+      {label[values.approvalTool]?.submitTitle}
     </Button>
   );
 
@@ -84,9 +98,9 @@ export const AddRepositoriesFormFooter = () => {
       }}
       data-testid="add-repository-footer"
     >
-      {toolTipTitle ? (
+      {disableCreate ? (
         <Tooltip
-          title={toolTipTitle}
+          title={label[values.approvalTool]?.toolTipTitle}
           sx={{
             maxWidth: 'none',
           }}

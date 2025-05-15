@@ -36,12 +36,14 @@ export const AddRepositoriesTableToolbar = ({
   onPageChange,
   activeOrganization,
   selectedReposFromDrawer,
+  isApprovalToolGitlab,
 }: {
   title: string;
   setSearchString: (str: string) => void;
   onPageChange?: (page: number) => void;
   activeOrganization?: string;
   selectedReposFromDrawer?: AddedRepositories;
+  isApprovalToolGitlab?: boolean;
 }) => {
   const { setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -103,14 +105,16 @@ export const AddRepositoriesTableToolbar = ({
           <ToggleButton
             value={RepositorySelection.Repository}
             data-testid="repository-view"
+            sx={{ minWidth: '120px' }}
           >
-            Repository
+            {isApprovalToolGitlab ? 'Project' : 'Repository'}
           </ToggleButton>
           <ToggleButton
             value={RepositorySelection.Organization}
             data-testid="organization-view"
+            sx={{ minWidth: '120px' }}
           >
-            Organization
+            {isApprovalToolGitlab ? 'Group' : 'Organization'}
           </ToggleButton>
         </ToggleButtonGroup>
       )}

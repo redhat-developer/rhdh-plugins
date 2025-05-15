@@ -30,7 +30,10 @@ import {
   RepositorySelection,
   RepositoryStatus,
 } from '../../types';
-import { getCustomisedErrorMessage } from '../../utils/repository-utils';
+import {
+  getCustomisedErrorMessage,
+  gitlabFeatureFlag,
+} from '../../utils/repository-utils';
 
 export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
   const { status, values } = useFormikContext<AddRepositoriesFormValues>();
@@ -95,7 +98,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
             color="success"
             style={{ verticalAlign: 'sub', paddingTop: '7px' }}
           />
-          {RepositoryStatus.Ready}{' '}
+          {gitlabFeatureFlag ? 'Ready to import' : RepositoryStatus.Ready}{' '}
           <Link
             to=""
             onClick={() => openDrawer(data)}

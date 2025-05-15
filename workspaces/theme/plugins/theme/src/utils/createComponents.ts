@@ -688,12 +688,29 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         root: {
           // Controls the page inset as in PF6 -- only in desktop view
           '@media (min-width: 600px)': {
+            // The size of the page inset border
+            '--rhdh-v1-page-inset': '1.5rem',
             backgroundColor: general.sidebarBackgroundColor,
-            "& > [class*='MuiLinearProgress-root'], & > main": {
-              borderRadius: '2.5rem',
-              border: `1.5rem solid ${general.sidebarBackgroundColor}`,
-              marginLeft: '-1.5rem',
+            // Cancel out the spacing produced by the page inset border when
+            // the global header is present
+            "& #global-header ~ main, & #global-header ~ [class*='MuiLinearProgress-root']":
+              {
+                marginTop: 'calc(-1 * var(--rhdh-v1-page-inset))',
+              },
+            // Cancel out the spacing produced by the page inset border when
+            // the sidebar is present
+            "& nav ~ main, & nav ~ [class*='MuiLinearProgress-root']": {
+              marginLeft: 'calc(-1 * var(--rhdh-v1-page-inset))',
             },
+            // The border + border radius emulates the PF6 page inset look without
+            // needing to change the markup
+            "& > [class*='MuiLinearProgress-root'], & > main": {
+              borderRadius: 'calc(1rem + var(--rhdh-v1-page-inset))',
+              border: `var(--rhdh-v1-page-inset) solid ${general.sidebarBackgroundColor}`,
+            },
+            // The Backstage suspense is an MUI LinearProgress that is not wrapped by
+            // a `main`. We need to give it 100vh height to fill the page for the page
+            // inset to look right.
             "& > [class*='MuiLinearProgress-root']": {
               backgroundColor: general.mainSectionBackgroundColor,
               height: '100vh',
@@ -835,6 +852,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         root: {
           height: '3px',
+          zIndex: 1,
         },
         vertical: {
           width: '3px',

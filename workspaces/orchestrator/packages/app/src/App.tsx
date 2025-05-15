@@ -102,7 +102,7 @@ const app = createApp({
     ),
   },
   themes: getThemes(),
-  /* Hardcoded depolyment of the Orchestrator Form Widget library in our DEV-only instance.
+  /* Hardcoded deployment of the Orchestrator Form Widget library in our DEV-only instance.
     In a production deployment, the plugin will be loaded dynamically. */
   plugins: [orchestratorFormWidgetsPlugin],
 });

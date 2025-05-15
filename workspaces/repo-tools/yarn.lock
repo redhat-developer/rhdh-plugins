@@ -5371,9 +5371,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/cli@workspace:packages/cli":
+"@red-hat-developer-hub/rhdh-repo-tools@workspace:packages/cli":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/cli@workspace:packages/cli"
+  resolution: "@red-hat-developer-hub/rhdh-repo-tools@workspace:packages/cli"
   dependencies:
     "@backstage/cli": ^0.26.11
     "@backstage/cli-node": ^0.2.7
@@ -5390,7 +5390,7 @@ __metadata:
     semver: ^7.6.0
     ts-morph: ^23.0.0
   bin:
-    rhdh-cli: bin/rhdh-cli
+    rhdh-repo-tools: bin/rhdh-repo-tools
   languageName: unknown
   linkType: soft
 
