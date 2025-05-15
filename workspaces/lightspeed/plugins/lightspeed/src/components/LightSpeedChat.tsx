@@ -33,7 +33,7 @@ import {
   MessageProps,
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
-import { DropdownItem, Title } from '@patternfly/react-core';
+import { DropdownItem, DropEvent, Title } from '@patternfly/react-core';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { TEMP_CONVERSATION_ID } from '../const';
@@ -47,11 +47,15 @@ import {
   useLightspeedDeletePermission,
 } from '../hooks';
 import { ConversationSummary } from '../types';
+import { getAttachments } from '../utils/attachment-utils';
 import {
   getCategorizeMessages,
   getFootnoteProps,
 } from '../utils/lightspeed-chatbox-utils';
+import Attachment from './Attachment';
+import { useFileAttachmentContext } from './AttachmentContext';
 import { DeleteModal } from './DeleteModal';
+import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 
@@ -80,6 +84,11 @@ const useStyles = makeStyles(theme => ({
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',
+    },
+  },
+  footerPopover: {
+    '& img': {
+      maxWidth: '100%',
     },
   },
 }));
@@ -119,6 +128,9 @@ export const LightspeedChat = ({
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
 
+  const { fileContents, setFileContents, handleFileUpload } =
+    useFileAttachmentContext();
+
   // Sync conversationId with lastOpenedId whenever lastOpenedId changes
   React.useEffect(() => {
     if (isReady && lastOpenedId !== null) {
@@ -156,6 +168,9 @@ export const LightspeedChat = ({
     queryClient.invalidateQueries({
       queryKey: ['conversations'],
     });
+    queryClient.invalidateQueries({
+      queryKey: ['conversationMessages', conversationId],
+    });
     setNewChatCreated(false);
   };
 
@@ -179,17 +194,20 @@ export const LightspeedChat = ({
     setAnnouncement(
       `Message from User: ${prompt}. Message from Bot is loading.`,
     );
-    handleInputPrompt(message.toString());
+    handleInputPrompt(message.toString(), getAttachments(fileContents));
     setIsSendButtonDisabled(true);
+    setFileContents([]);
   };
 
   const onNewChat = React.useCallback(() => {
     (async () => {
-      setMessages([]);
-      setConversationId(TEMP_CONVERSATION_ID);
-      setNewChatCreated(true);
+      if (conversationId !== TEMP_CONVERSATION_ID) {
+        setMessages([]);
+        setConversationId(TEMP_CONVERSATION_ID);
+        setNewChatCreated(true);
+      }
     })();
-  }, [setConversationId, setMessages]);
+  }, [conversationId, setConversationId, setMessages]);
 
   const openDeleteModal = (conversation_id: string) => {
     setTargetConversationId(conversation_id);
@@ -283,7 +301,7 @@ export const LightspeedChat = ({
   );
 
   const conversationFound = !!conversations.find(
-    c => c.conversation_id === conversationId,
+    (c: ConversationSummary) => c.conversation_id === conversationId,
   );
 
   const welcomePrompts =
@@ -291,14 +309,31 @@ export const LightspeedChat = ({
     (!conversationFound && conversationMessages.length === 0)
       ? [
           {
-            title: 'Topic 1',
-            message: 'Helpful prompt for Topic 1',
-            onClick: () => sendMessage('Helpful prompt for Topic 1'),
+            title: 'Getting Started with Backstage',
+            message:
+              'Can you guide me through the first steps to start using Backstage as a developer, like exploring the Software Catalog and adding my service?',
+            onClick: () =>
+              sendMessage(
+                'Can you guide me through the first steps to start using Backstage as a developer, like exploring the Software Catalog and adding my service?',
+              ),
           },
           {
-            title: 'Topic 2',
-            message: 'Helpful prompt for Topic 2',
-            onClick: () => sendMessage('Helpful prompt for Topic 2'),
+            title: 'Get Help On Code Readability',
+            message:
+              'Can you suggest techniques I can use to make my code more readable and maintainable?',
+            onClick: () =>
+              sendMessage(
+                'Can you suggest techniques I can use to make my code more readable and maintainable?',
+              ),
+          },
+          {
+            title: 'Create An OpenShift Deployment',
+            message:
+              'Can you guide me through creating a new deployment in OpenShift for a containerized application?',
+            onClick: () =>
+              sendMessage(
+                'Can you guide me through creating a new deployment in OpenShift for a containerized application?',
+              ),
           },
         ]
       : [];
@@ -310,6 +345,11 @@ export const LightspeedChat = ({
   const onDrawerToggle = React.useCallback(() => {
     setIsDrawerOpen(isOpen => !isOpen);
   }, []);
+
+  const handleAttach = (data: File[], event: DropEvent) => {
+    event.preventDefault();
+    handleFileUpload(data);
+  };
 
   if (error) {
     return (
@@ -377,18 +417,21 @@ export const LightspeedChat = ({
                 />
               </ChatbotContent>
               <ChatbotFooter className={classes.footer}>
+                <FilePreview />
                 <MessageBar
                   onSendMessage={sendMessage}
                   isSendButtonDisabled={isSendButtonDisabled}
-                  hasAttachButton={false}
+                  hasAttachButton
+                  handleAttach={handleAttach}
                   hasMicrophoneButton
                 />
-                <ChatbotFootnote {...getFootnoteProps()} />
+                <ChatbotFootnote {...getFootnoteProps(classes.footerPopover)} />
               </ChatbotFooter>
             </>
           }
         />
       </Chatbot>
+      <Attachment />
     </>
   );
 };

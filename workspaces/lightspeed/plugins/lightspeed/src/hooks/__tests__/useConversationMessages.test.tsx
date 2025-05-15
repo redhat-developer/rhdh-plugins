@@ -346,6 +346,7 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
       prompt,
       'gpt-3',
       'testConversationId',
+      [],
     );
   });
 

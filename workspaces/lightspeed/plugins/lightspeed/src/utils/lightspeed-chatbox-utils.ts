@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Conversation } from '@patternfly/chatbot';
+import { Conversation, SourcesCardProps } from '@patternfly/chatbot';
+import { PopoverProps } from '@patternfly/react-core';
 
 import { BaseMessage, ConversationList, ConversationSummary } from '../types';
 
-export const getFootnoteProps = () => ({
-  label: 'Lightspeed uses AI. Check for mistakes.',
+export const getFootnoteProps = (additionalClassName: string) => ({
+  label: 'Always check AI/LLM generated responses for accuracy prior to use.',
   popover: {
+    popoverProps: {
+      className: additionalClassName ?? '',
+    } as PopoverProps,
     title: 'Verify accuracy',
     description: `While Lightspeed strives for accuracy, there's always a possibility of errors. It's a good practice to verify critical information from reliable sources, especially if it's crucial for decision-making or actions.`,
     bannerImage: {
@@ -88,6 +92,7 @@ type MessageProps = {
   error?: {
     title: string;
   };
+  sources?: SourcesCardProps;
 };
 
 export const createMessage = ({
@@ -98,6 +103,7 @@ export const createMessage = ({
   content,
   timestamp,
   error,
+  sources,
 }: MessageProps & { role: 'user' | 'bot' }) => ({
   role,
   name,
@@ -106,6 +112,7 @@ export const createMessage = ({
   content,
   timestamp,
   error,
+  sources,
 });
 
 export const createUserMessage = (props: MessageProps) =>
