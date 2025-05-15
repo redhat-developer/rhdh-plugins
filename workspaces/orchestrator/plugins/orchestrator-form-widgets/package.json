@@ -71,7 +71,7 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets",
     "exposedModules": {
-      "OrchestratorFormWidgetsPlugin": "./src/index.ts"
+      "PluginRoot": "./src/index.ts"
     }
   },
   "devDependencies": {
