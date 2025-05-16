@@ -124,6 +124,17 @@ lightspeed:
       token: <api_key>
 ```
 
+`questionValidation` is default to be enabled with topic restriction on RHDH related topics.
+If you want to disable the validation, set the value to be `false`.
+
+Example configuration to disable `questionValidation`:
+
+```yaml
+lightspeed:
+  questionValidation: false
+  servers: ... ...
+```
+
 ---
 
 #### To install this plugin locally in [backstage-showcase](https://github.com/janus-idp/backstage-showcase) application as a dynamic plugin.
