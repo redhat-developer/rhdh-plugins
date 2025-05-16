@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 
+## 0.0.4
+
+### Patch Changes
+
+- 1e6eff6: Fix partition overlap error
+
 ## 0.0.3
 
 ### Patch Changes
