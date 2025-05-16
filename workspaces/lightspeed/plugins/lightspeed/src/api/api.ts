@@ -18,7 +18,7 @@ import { createApiRef } from '@backstage/core-plugin-api';
 
 import OpenAI from 'openai';
 
-import { BaseMessage, ConversationList } from '../types';
+import { Attachment, BaseMessage, ConversationList } from '../types';
 
 export type LightspeedAPI = {
   getAllModels: () => Promise<OpenAI.Models.Model[]>;
@@ -27,6 +27,7 @@ export type LightspeedAPI = {
     prompt: string,
     selectedModel: string,
     conversation_id: string,
+    attachments: Attachment[],
   ) => Promise<ReadableStreamDefaultReader>;
   deleteConversation: (
     conversation_id: string,

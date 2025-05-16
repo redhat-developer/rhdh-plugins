@@ -73,7 +73,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     path: string,
     searchParams?: URLSearchParams,
   ): Promise<any> {
-    const baseUrl = await this.discoveryApi.getBaseUrl('marketplace');
+    const baseUrl = await this.discoveryApi.getBaseUrl('extensions');
     const query = searchParams ? searchParams.toString() : '';
     const url = `${baseUrl}${path}${query ? '?' : ''}${query}`;
 
@@ -165,7 +165,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   async getPluginConfigAuthorization(
     namespace: string,
     name: string,
-  ): Promise<{ authorizedActions: string[] }> {
+  ): Promise<{ read: 'ALLOW' | 'DENY'; write: 'ALLOW' | 'DENY' }> {
     return this.get(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/authorize`,
     );

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -178,6 +178,30 @@ app.get('/coursedetailsschema', (req, res) => {
     room: {
       mydefault,
     },
+  };
+
+  // HTTP 200
+  res.send(JSON.stringify(response));
+});
+
+app.get('/suggested-courses', (req, res) => {
+  logRequest(req);
+
+  const courseName = req.query?.coursename;
+
+  let suggestions = [];
+  if (courseName === 'one course') {
+    suggestions = ['Related Course A', 'Another Related Course'];
+  } else if (courseName === 'another course') {
+    suggestions = ['One More Course', 'And Another One'];
+  } else if (courseName === 'complexCourse') {
+    suggestions = ['Advanced Topics', 'Master Class'];
+  } else {
+    suggestions = ['Consider these too!', 'Explore other options'];
+  }
+
+  const response = {
+    suggestions: suggestions.join(', '),
   };
 
   // HTTP 200

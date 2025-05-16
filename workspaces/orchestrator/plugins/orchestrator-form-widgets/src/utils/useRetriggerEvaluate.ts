@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { isEqual } from 'lodash';
 import { JsonObject, JsonValue } from '@backstage/types';
 import { evaluateTemplateProps } from './evaluateTemplate';
@@ -24,35 +24,36 @@ export const useRetriggerEvaluate = (
   conditions?: string[],
 ): (string | undefined)[] | undefined => {
   const [evaluated, setEvaluated] = useState<(string | undefined)[]>();
-
-  if (!conditions) {
-    if (!evaluated || evaluated.length > 0) {
-      setEvaluated([]);
-    }
-  } else {
-    const doItAsync = async () => {
-      const actualJson: (JsonValue | undefined)[] = await Promise.all(
-        conditions.map((condition: string) => {
-          return templateUnitEvaluator(condition, formData).catch(err => {
-            // eslint-disable-next-line no-console
-            console.error(
-              'Can not evaluate retrigger condition: ',
-              condition,
-              err,
-            );
-            throw err;
-          });
-        }),
-      );
-
-      const actual = actualJson.map(v => v?.toString());
-      if (!isEqual(evaluated, actual)) {
-        setEvaluated(actual);
+  useEffect(() => {
+    if (!conditions) {
+      if (!evaluated || evaluated.length > 0) {
+        setEvaluated([]);
       }
-    };
+    } else {
+      const doItAsync = async () => {
+        const actualJson: (JsonValue | undefined)[] = await Promise.all(
+          conditions.map((condition: string) => {
+            return templateUnitEvaluator(condition, formData).catch(err => {
+              // eslint-disable-next-line no-console
+              console.error(
+                'Can not evaluate retrigger condition: ',
+                condition,
+                err,
+              );
+              throw err;
+            });
+          }),
+        );
 
-    doItAsync();
-  }
+        const actual = actualJson.map(v => v?.toString());
+        if (!isEqual(evaluated, actual)) {
+          setEvaluated(actual);
+        }
+      };
+
+      doItAsync();
+    }
+  }, [conditions, evaluated, templateUnitEvaluator, formData]);
 
   return evaluated;
 };

@@ -33,7 +33,7 @@ import { MarketplacePackageProvider } from './providers/MarketplacePackageProvid
  */
 export const catalogModuleMarketplace = createBackendModule({
   pluginId: 'catalog',
-  moduleId: 'marketplace',
+  moduleId: 'extensions',
   register(reg) {
     reg.registerInit({
       deps: {

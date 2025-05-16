@@ -50,7 +50,7 @@ import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
 import { usePluginPackages } from '../hooks/usePluginPackages';
-import { useExtensionConfigPermission } from '../hooks/useExtensionConfigPermission';
+import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 import { Links } from './Links';
 
 export const MarketplacePluginContentSkeleton = () => {
@@ -180,7 +180,7 @@ export const MarketplacePluginContent = ({
   const params = useRouteRefParams(pluginRouteRef);
   const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(pluginInstallRouteRef);
-  const canInstallPlugin = useExtensionConfigPermission(
+  const pluginConfigPerm = usePluginConfigurationPermissions(
     params.namespace,
     params.name,
   );
@@ -199,7 +199,8 @@ export const MarketplacePluginContent = ({
     return (
       <Tooltip
         title={
-          !canInstallPlugin.data
+          pluginConfigPerm.data?.read !== 'ALLOW' &&
+          pluginConfigPerm.data?.write !== 'ALLOW'
             ? `You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.`
             : ''
         }
@@ -207,7 +208,8 @@ export const MarketplacePluginContent = ({
         <div>
           <LinkButton
             to={
-              canInstallPlugin.data
+              pluginConfigPerm.data?.write === 'ALLOW' ||
+              pluginConfigPerm.data?.read === 'ALLOW'
                 ? getInstallPath({
                     namespace: plugin.metadata.namespace!,
                     name: plugin.metadata.name,
@@ -216,10 +218,12 @@ export const MarketplacePluginContent = ({
             }
             color="primary"
             variant="contained"
-            disabled={!canInstallPlugin.data}
+            disabled={
+              pluginConfigPerm.data?.read !== 'ALLOW' &&
+              pluginConfigPerm.data?.write !== 'ALLOW'
+            }
           >
-            {!canInstallPlugin.data ||
-            !canInstallPlugin.data?.authorizedActions.includes('create')
+            {pluginConfigPerm.data?.write !== 'ALLOW'
               ? 'View'
               : mapMarketplacePluginInstallStatusToButton[
                   plugin.spec?.installStatus ??

@@ -16,7 +16,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "pluginId": "marketplace",
+    "pluginId": "extensions",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-marketplace",
       "@red-hat-developer-hub/backstage-plugin-marketplace-backend",

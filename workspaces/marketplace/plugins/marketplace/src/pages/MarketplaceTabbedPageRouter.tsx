@@ -45,7 +45,7 @@ const Tabs = () => {
   return (
     <>
       <Page themeId={themeId}>
-        <Header title="Marketplace" />
+        <Header title="Extensions" />
         <TabbedLayout>
           <TabbedLayout.Route path="/catalog" title="Catalog">
             <MarketplaceCatalogContent />

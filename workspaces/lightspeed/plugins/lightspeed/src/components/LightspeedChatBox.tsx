@@ -24,6 +24,7 @@ import {
   MessageProps,
   WelcomePrompt,
 } from '@patternfly/chatbot';
+import { Alert } from '@patternfly/react-core';
 
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { useBufferedMessages } from '../hooks/useBufferedMessages';
@@ -34,6 +35,9 @@ const useStyles = makeStyles(theme => ({
   },
   container: {
     maxWidth: 'unset !important',
+  },
+  alert: {
+    background: 'unset !important',
   },
   userMessageText: {
     '& div.pf-chatbot__message--user': {
@@ -99,10 +103,12 @@ export const LightspeedChatBox = React.forwardRef(
         const container = containerRef.current;
         if (!container) return;
 
-        container.scrollTo({
-          top: container.scrollHeight,
-          behavior: 'auto',
-        });
+        setTimeout(() => {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: 'auto',
+          });
+        }, 0);
 
         scrollQueued.current = false;
       });
@@ -128,6 +134,23 @@ export const LightspeedChatBox = React.forwardRef(
         onScrollToTopClick={scrollToTop}
         onScrollToBottomClick={scrollToBottom}
       >
+        <div>
+          <Alert
+            title="Important"
+            variant="info"
+            isInline
+            className={classes.alert}
+          >
+            Red Hat Developer Hub Lightspeed can answer questions on many topics
+            using your preferred models. Lightspeed's responses are influenced
+            by the Red Hat Developer Hub documentation but Lightspeed does not
+            have access to your Software Catalog, TechDocs, or Templates etc. Do
+            NOT include personal or business sensitive information in your
+            input. Interactions with Developer Hub Lightspeed may be reviewed
+            and used to improve responses.
+          </Alert>
+          <br />
+        </div>
         {welcomePrompts.length ? (
           <ChatbotWelcomePrompt
             title={`Hello, ${profileLoading ? '...' : (userName ?? 'Guest')}`}

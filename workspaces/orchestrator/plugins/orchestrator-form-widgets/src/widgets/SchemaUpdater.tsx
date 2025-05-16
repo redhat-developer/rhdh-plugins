@@ -66,6 +66,7 @@ export const SchemaUpdater: Widget<
     formData,
     setError,
   });
+
   const evaluatedRequestInit = useRequestInit({
     uiProps,
     prefix: 'fetch',

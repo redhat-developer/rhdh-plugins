@@ -2018,6 +2018,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/types@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "@backstage/types@npm:1.2.1"
+  checksum: 4cf2f2fd5ca6e5f4716c5511ca00cdc8502387976a796098fec9cfd2aea6c6d077c13a46da43b1a7ff1c05fd7b208e7a45b51bbbd024319e9e7a053254fd2222
+  languageName: node
+  linkType: hard
+
 "@bcoe/v8-coverage@npm:^0.2.3":
   version: 0.2.3
   resolution: "@bcoe/v8-coverage@npm:0.2.3"
@@ -3889,6 +3896,7 @@ __metadata:
   dependencies:
     "@backstage/cli": ^0.27.0
     "@backstage/cli-node": ^0.2.2
+    "@backstage/types": ^1.2.1
     "@changesets/parse": ^0.4.0
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
     "@manypkg/get-packages": ^2.2.2
@@ -3904,6 +3912,7 @@ __metadata:
     fs-extra: 11.3.0
     husky: ^9.0.11
     lint-staged: ^15.2.2
+    lodash: ^4.17.21
     lodash.escaperegexp: ^4.1.2
     node-fetch: ^2.6.7
     prettier: ^3.4.2

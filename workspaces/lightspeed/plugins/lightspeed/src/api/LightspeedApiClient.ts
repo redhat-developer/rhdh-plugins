@@ -17,6 +17,7 @@
 import { ConfigApi, FetchApi } from '@backstage/core-plugin-api';
 
 import { TEMP_CONVERSATION_ID } from '../const';
+import { Attachment } from '../types';
 import { LightspeedAPI } from './api';
 
 export type Options = {
@@ -48,6 +49,7 @@ export class LightspeedApiClient implements LightspeedAPI {
     prompt: string,
     selectedModel: string,
     conversation_id: string,
+    attachments: Attachment[],
   ) {
     const baseUrl = await this.getBaseUrl();
 
@@ -66,6 +68,7 @@ export class LightspeedApiClient implements LightspeedAPI {
           .getConfigArray('lightspeed.servers')[0]
           .getOptionalString('id'), // Currently supports a single llm server
         query: prompt,
+        attachments,
       }),
     });
 

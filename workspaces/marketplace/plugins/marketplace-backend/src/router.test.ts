@@ -68,7 +68,7 @@ const setupTest = () => {
       onUnhandledRequest: (req, print) => {
         if (
           req.url.pathname === '/' ||
-          req.url.pathname.startsWith('/api/marketplace')
+          req.url.pathname.startsWith('/api/extensions')
         ) {
           // bypass
           return;
@@ -142,7 +142,7 @@ describe('createRouter', () => {
       });
 
       const response = await request(backendServer).get(
-        '/api/marketplace/collections',
+        '/api/extensions/collections',
       );
 
       expect(response.status).toEqual(200);
@@ -159,7 +159,7 @@ describe('createRouter', () => {
       });
 
       const response = await request(backendServer).get(
-        '/api/marketplace/collection/default/featured-plugins',
+        '/api/extensions/collection/default/featured-plugins',
       );
 
       expect(response.status).toEqual(200);
@@ -175,7 +175,7 @@ describe('createRouter', () => {
       });
 
       const response = await request(backendServer).get(
-        '/api/marketplace/collection/default/not-found',
+        '/api/extensions/collection/default/not-found',
       );
 
       expect(response.status).toEqual(404);
@@ -214,7 +214,7 @@ describe('createRouter', () => {
       );
 
       const response = await request(backendServer).get(
-        '/api/marketplace/collection/default/featured-plugins/plugins',
+        '/api/extensions/collection/default/featured-plugins/plugins',
       );
 
       expect(response.status).toEqual(200);
@@ -237,7 +237,7 @@ describe('createRouter', () => {
       );
 
       const response = await request(backendServer).get(
-        '/api/marketplace/collection/default/featured-plugins/plugins',
+        '/api/extensions/collection/default/featured-plugins/plugins',
       );
 
       expect(response.status).toEqual(200);
@@ -252,7 +252,7 @@ describe('createRouter', () => {
       });
 
       const response = await request(backendServer).get(
-        '/api/marketplace/collection/default/not-found/plugins',
+        '/api/extensions/collection/default/not-found/plugins',
       );
 
       expect(response.status).toEqual(404);
@@ -288,7 +288,7 @@ describe('createRouter', () => {
       });
 
       const response = await request(backendServer).get(
-        '/api/marketplace/collections/facets?facet=spec.categories',
+        '/api/extensions/collections/facets?facet=spec.categories',
       );
 
       expect(response.status).toEqual(200);
@@ -315,7 +315,7 @@ describe('createRouter', () => {
         mockData: mockPlugins,
       });
       const response = await request(backendServer).get(
-        '/api/marketplace/plugins',
+        '/api/extensions/plugins',
       );
       expect(response.status).toEqual(200);
       expect(response.body.items).toHaveLength(2);
@@ -328,7 +328,7 @@ describe('createRouter', () => {
       });
 
       const response = await request(backendServer).get(
-        '/api/marketplace/plugin/default/plugin1',
+        '/api/extensions/plugin/default/plugin1',
       );
 
       expect(response.status).toEqual(200);
@@ -341,7 +341,7 @@ describe('createRouter', () => {
         name: 'invalid-plugin',
       });
       const response = await request(backendServer).get(
-        '/api/marketplace/plugin/default/invalid-plugin',
+        '/api/extensions/plugin/default/invalid-plugin',
       );
 
       expect(response.status).toEqual(404);

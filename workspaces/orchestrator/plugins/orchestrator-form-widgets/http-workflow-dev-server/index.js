@@ -135,6 +135,18 @@ app.get('/activeTextWhisperer', (req, res) => {
   res.send(JSON.stringify(result));
 });
 
+app.get('/activeTexts', (req, res) => {
+  logRequest(req);
+  res.send(
+    JSON.stringify({
+      example: {
+        text0: 'Text 0',
+        text1: 'Text 1',
+      },
+    }),
+  );
+});
+
 app.listen(port, () => {
   // eslint-disable-next-line no-console
   console.info(

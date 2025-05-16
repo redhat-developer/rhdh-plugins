@@ -36,7 +36,7 @@ import { allRoutes } from './routes';
  * @public
  */
 export const marketplacePlugin = createPlugin({
-  id: 'marketplace',
+  id: 'extensions',
   routes: allRoutes,
   apis: [
     createApiFactory({

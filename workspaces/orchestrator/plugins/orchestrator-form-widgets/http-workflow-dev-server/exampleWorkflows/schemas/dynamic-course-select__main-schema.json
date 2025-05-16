@@ -31,6 +31,28 @@
       "title": "This title will never be displayed. This 'courseDetails' property is just a placeholder to be replaced by the 'mySchemaUpdater' based on the fetched response. Will contain complex data later.",
       "ui:widget": "hidden"
     },
+    "suggestedCourses": {
+      "type": "string",
+      "title": "Suggested Additional Courses",
+      "ui:widget": "ActiveText",
+      "ui:props": {
+        "ui:variant": "h4",
+        "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/suggested-courses?coursename=$${{current.courseName}}",
+        "fetch:method": "GET",
+        "fetch:response:suggestions": "suggestions",
+        "fetch:retrigger": ["current.studentName", "current.courseName"],
+        "ui:text": "You might also be interested in: $${{fetch:response:suggestions}}"
+      }
+    },
+    "staticMessage": {
+      "type": "string",
+      "title": "Suggested Additional Courses static",
+      "ui:widget": "ActiveText",
+      "ui:props": {
+        "ui:variant": "subtitle1",
+        "ui:text": "You might also be interested in other stuff"
+      }
+    },
     "mySchemaUpdater": {
       "type": "string",
       "title": "This title will never be displayed. The 'type' is irrelevant. There can be multiple SchemaUpdater instances, if you like. They can even be dynamically supplied by one of them.",
