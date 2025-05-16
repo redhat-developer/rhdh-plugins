@@ -16,12 +16,16 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useUserProfile } from '@backstage/plugin-user-settings';
+import { useApi } from '@backstage/core-plugin-api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import { UserEntity } from '@backstage/catalog-model';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import { lighten } from '@mui/material/styles';
 import Box from '@mui/material/Box';
+
 import { MenuSection } from './MenuSection';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
@@ -37,7 +41,14 @@ export interface ProfileDropdownProps {
 
 export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
-  const { displayName, profile } = useUserProfile();
+  const [user, setUser] = useState<string | null>();
+  const {
+    displayName,
+    backstageIdentity,
+    profile,
+    loading: profileLoading,
+  } = useUserProfile();
+  const catalogApi = useApi(catalogApiRef);
 
   const profileDropdownMountPoints = useProfileDropdownMountPoints();
 
@@ -61,6 +72,27 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
     }
   }, []);
 
+  useEffect(() => {
+    const fetchUserEntity = async () => {
+      let userProfile;
+      try {
+        if (backstageIdentity?.userEntityRef) {
+          userProfile = (await catalogApi.getEntityByRef(
+            backstageIdentity.userEntityRef,
+          )) as unknown as UserEntity;
+        }
+        setUser(
+          userProfile?.spec?.profile?.displayName ??
+            userProfile?.metadata?.title,
+        );
+      } catch (_err) {
+        setUser(null);
+      }
+    };
+
+    fetchUserEntity();
+  }, [backstageIdentity, catalogApi]);
+
   const menuItems = useMemo(() => {
     return (profileDropdownMountPoints ?? [])
       .map(mp => ({
@@ -77,11 +109,23 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
     return null;
   }
 
+  const profileDisplayName = () => {
+    const name = user ?? displayName;
+    const regex = /^[^:/]+:[^/]+\/[^/]+$/;
+    if (regex.test(name)) {
+      return name
+        .charAt(name.indexOf('/') + 1)
+        .toLocaleUpperCase('en-US')
+        .concat(name.substring(name.indexOf('/') + 2));
+    }
+    return name;
+  };
+
   return (
     <HeaderDropdownComponent
       buttonContent={
         <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
-          {displayName && (
+          {!profileLoading && (
             <>
               {profile.picture ? (
                 <Avatar
@@ -100,7 +144,7 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
                   mr: '1rem',
                 }}
               >
-                {displayName}
+                {profileDisplayName()}
               </Typography>
             </>
           )}
