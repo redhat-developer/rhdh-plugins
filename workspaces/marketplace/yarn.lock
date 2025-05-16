@@ -10698,6 +10698,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.8.0":
+  version: 0.8.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.8.1"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.10.4
+    "@backstage/theme": ^0.6.4
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 0d492e2bc4deb69525687219fd30965bffff84a8a9521323c5b0000302957c1c9f58aa1096ca760a71de282fc36aba1029a8fdd1ce6d1eae33db74e199631a9f
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/marketplace-cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/marketplace-cli@workspace:packages/cli"
@@ -15120,7 +15136,7 @@ __metadata:
     "@material-ui/icons": ^4.9.1
     "@playwright/test": 1.50.1
     "@red-hat-developer-hub/backstage-plugin-marketplace": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.6.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.8.0
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
