@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.4.0
+
+### Minor Changes
+
+- 7d138e5: Added extension permissions
+
+### Patch Changes
+
+- 4413eef: updated `extension` to `extensions`
+  update marketplace pluginId to extensions
+- Updated dependencies [4413eef]
+- Updated dependencies [7d138e5]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes
