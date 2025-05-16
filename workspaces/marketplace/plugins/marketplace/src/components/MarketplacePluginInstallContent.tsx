@@ -61,7 +61,7 @@ import {
   useCodeEditor,
 } from './CodeEditor';
 import { Markdown } from './Markdown';
-import { useExtensionConfigPermission } from '../hooks/useExtensionConfigPermission';
+import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -221,7 +221,7 @@ export const MarketplacePluginInstallContent = ({
   }, [codeEditor, packages]);
 
   const navigate = useNavigate();
-  const canInstallPlugin = useExtensionConfigPermission(
+  const pluginConfigPermissions = usePluginConfigurationPermissions(
     params.namespace,
     params.name,
   );
@@ -404,7 +404,7 @@ export const MarketplacePluginInstallContent = ({
         </Box>
         <Tooltip
           title={
-            !canInstallPlugin.data?.authorizedActions?.includes('create')
+            pluginConfigPermissions.data?.write !== 'ALLOW'
               ? "You don't have permission to install plugins or edit their configurations. Contact your administrator to request access or assistance."
               : ''
           }
@@ -423,7 +423,8 @@ export const MarketplacePluginInstallContent = ({
         >
           Cancel
         </Button>
-        {canInstallPlugin.data?.authorizedActions?.includes('create') && (
+        {(pluginConfigPermissions.data?.write === 'ALLOW' ||
+          pluginConfigPermissions.data?.read === 'ALLOW') && (
           <Button
             variant="text"
             color="primary"

@@ -17,7 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
 
-export const useExtensionConfigPermission = (
+export const usePluginConfigurationPermissions = (
   namespace: string,
   name: string,
 ) => {

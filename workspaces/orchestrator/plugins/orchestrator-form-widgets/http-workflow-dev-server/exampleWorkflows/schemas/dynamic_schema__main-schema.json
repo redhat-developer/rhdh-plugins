@@ -12,17 +12,6 @@
           "type": "string",
           "title": "Standard input field. Write something to see it in the autocomplete field."
         },
-        "myActiveText": {
-          "type": "string",
-          "title": "Example of ActiveTextInput widget with autocomplete",
-          "ui:widget": "ActiveTextInput",
-          "ui:props": {
-            "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/activeTextWhisperer?mydata=$${{current.firstStep.fooTheFirst}}",
-            "fetch:response:value": "myresult.foo.default",
-            "fetch:response:autocomplete": "bar.something.myautocompleteoptions",
-            "fetch:retrigger": ["current.firstStep.fooTheFirst"]
-          }
-        },
         "mySimpleActiveText": {
           "type": "string",
           "title": "Example of simple ActiveTextInput with validation",
@@ -47,6 +36,18 @@
             "fetch:headers": {
               "test-header": "Executed for the $${{identityApi.displayName}} user with $${{githubAuthApi.profileName}} GitHub profile name."
             }
+          }
+        },
+        "myActiveText": {
+          "type": "string",
+          "title": "Example of ActiveText with fetch",
+          "ui:widget": "ActiveText",
+          "ui:props": {
+            "ui:text": "Example demonstration text. fooTheFirst: $${{current.firstStep.fooTheFirst}}. response:example: $${{fetch:response:example}}",
+            "ui:variant": "p1",
+            "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/activeTexts",
+            "fetch:response:example": "example.text0",
+            "fetch:retrigger": ["current.firstStep.fooTheFirst"]
           }
         },
         "placeholderOne": {

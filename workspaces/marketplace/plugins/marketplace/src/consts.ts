@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export const themeId = 'marketplace';
+export const themeId = 'extensions';
