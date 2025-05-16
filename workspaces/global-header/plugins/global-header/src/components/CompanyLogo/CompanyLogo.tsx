@@ -32,6 +32,7 @@ const LogoRender = ({
       src={base64Logo}
       alt="Home logo"
       style={{
+        display: 'block',
         maxHeight: '40px',
         maxWidth: '150px',
       }}
@@ -53,8 +54,25 @@ export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
     'app.branding.fullLogo',
   );
   return (
-    <Box sx={{ marginRight: '32px' }}>
-      <Link to={to} underline="none" aria-label="Home">
+    <Box
+      sx={{
+        width: '224px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: '-24px',
+      }}
+    >
+      <Link
+        to={to}
+        underline="none"
+        aria-label="Home"
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         <LogoRender
           base64Logo={logo ?? logoFullBase64URI}
           defaultLogo={<DefaultLogo textColor="white" />}
