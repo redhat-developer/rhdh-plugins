@@ -21,6 +21,10 @@ export type {
   FormDecoratorProps,
   OrchestratorFormSchemaUpdater,
   SchemaChunksResponse,
+  OrchestratorFormContextProps,
 } from './api';
-export type { OrchestratorFormContextProps } from './context';
-export { WrapperFormPropsContext, useWrapperFormPropsContext } from './context';
+
+export {
+  useOrchestratorFormApiOrDefault,
+  useWrapperFormPropsContext,
+} from './context';

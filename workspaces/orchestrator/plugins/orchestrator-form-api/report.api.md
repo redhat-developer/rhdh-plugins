@@ -4,14 +4,12 @@
 
 ```ts
 
-/// <reference types="react" />
-
 import { ApiRef } from '@backstage/core-plugin-api';
+import { Context } from 'react';
 import { ErrorSchema } from '@rjsf/utils';
 import { FormProps } from '@rjsf/core';
 import { JsonObject } from '@backstage/types';
-import { JSONSchema7 } from 'json-schema';
-import { default as React_2 } from 'react';
+import type { JSONSchema7 } from 'json-schema';
 import { UiSchema } from '@rjsf/utils';
 
 // @public
@@ -21,6 +19,7 @@ export type FormDecoratorProps = Pick<FormProps<JsonObject, JSONSchema7>, 'formD
 
 // @public
 export interface OrchestratorFormApi {
+    getFormContext(): Context<OrchestratorFormContextProps | null>;
     getFormDecorator(): OrchestratorFormDecorator;
 }
 
@@ -32,7 +31,7 @@ export type OrchestratorFormContextProps = {
     schema: JSONSchema7;
     updateSchema: OrchestratorFormSchemaUpdater;
     numStepsInMultiStepSchema?: number;
-    children: React_2.ReactNode;
+    children: React.ReactNode;
     onSubmit: (formData: JsonObject) => void;
     uiSchema: UiSchema<JsonObject, JSONSchema7>;
     formData: JsonObject;
@@ -50,15 +49,16 @@ export type SchemaChunksResponse = {
     [key: string]: JsonObject;
 };
 
+// @public (undocumented)
+export const useOrchestratorFormApiOrDefault: () => OrchestratorFormApi;
+
 // @public
 export const useWrapperFormPropsContext: () => OrchestratorFormContextProps;
 
-// @public
-export const WrapperFormPropsContext: React_2.Context<OrchestratorFormContextProps | null>;
-
 // Warnings were encountered during analysis:
 //
-// src/context.d.ts:9:1 - (ae-undocumented) Missing documentation for "OrchestratorFormContextProps".
+// src/api.d.ts:58:1 - (ae-undocumented) Missing documentation for "OrchestratorFormContextProps".
+// src/context.d.ts:6:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
 
 // (No @packageDocumentation comment for this package)
 

@@ -15,33 +15,21 @@
  */
 import React from 'react';
 
-import { JsonObject } from '@backstage/types';
+import { useApiHolder } from '@backstage/core-plugin-api';
 
-import { UiSchema } from '@rjsf/utils';
-import { JSONSchema7 } from 'json-schema';
-
-import { OrchestratorFormSchemaUpdater } from './api';
+import {
+  OrchestratorFormApi,
+  orchestratorFormApiRef,
+  OrchestratorFormContextProps,
+} from './api';
+import { defaultFormExtensionsApi } from './DefaultFormApi';
 
 /**
  * @public
+ *
  */
-export type OrchestratorFormContextProps = {
-  schema: JSONSchema7;
-  updateSchema: OrchestratorFormSchemaUpdater;
-  numStepsInMultiStepSchema?: number;
-  children: React.ReactNode;
-  onSubmit: (formData: JsonObject) => void;
-  uiSchema: UiSchema<JsonObject, JSONSchema7>;
-  formData: JsonObject;
-  setFormData: (data: JsonObject) => void;
-};
-
-/**
- * Context wrapping RJSF form on the Workflow execution page, making it available for the custom widgets.
- * @public
- */
-export const WrapperFormPropsContext =
-  React.createContext<OrchestratorFormContextProps | null>(null);
+export const useOrchestratorFormApiOrDefault = (): OrchestratorFormApi =>
+  useApiHolder().get(orchestratorFormApiRef) ?? defaultFormExtensionsApi;
 
 /**
  * @public
@@ -49,7 +37,9 @@ export const WrapperFormPropsContext =
  * Simplifies access to the form context in widgets.
  */
 export const useWrapperFormPropsContext = (): OrchestratorFormContextProps => {
-  const context = React.useContext(WrapperFormPropsContext);
+  const formApi = useOrchestratorFormApiOrDefault();
+  const context = React.useContext(formApi.getFormContext());
+
   if (context === null) {
     throw new Error('OrchestratorFormWrapperProps not provided');
   }

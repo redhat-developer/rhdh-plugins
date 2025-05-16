@@ -7,6 +7,8 @@
 import { ApiFactory } from '@backstage/core-plugin-api';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { OrchestratorFormApi } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { default as React_2 } from 'react';
 
 // Warning: (ae-forgotten-export) The symbol "FormWidgetsApi" needs to be exported by the entry point index.d.ts
 //
