@@ -27,7 +27,7 @@ jobs:
           id: check_pr
           run: |
               if [[ "${{ github.event.pull_request.title }}" == Version*Packages* \
-              && "${{ github.event.pull_request.user.login }}" == "backstage-service" ]] \
+              && "${{ github.event.pull_request.user.login }}" == "rhdh-bot" ]] \
               && [[ "${{ github.event.pull_request.head.ref }}" == maintenance-changesets-release/* ]] \
               && [[ "${{ github.event.pull_request.merged }}" == "true" ]]; then
                 echo "is_version_pr=true" >> $GITHUB_OUTPUT
@@ -118,7 +118,7 @@ jobs:
           versionBranch: maintenance-changesets-release/${{ needs.check-merged-pr.outputs.workspace_name }}
           skipRootChangelogUpdate: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_SERVICE_ACCOUNT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
 
   release:
     name: Prior Version Release workspace ${{ needs.check-merged-pr.outputs.workspace_name }} on branch ${{ github.ref }}
@@ -170,14 +170,14 @@ jobs:
       # CHANGED: Publish with tag "maintenance" to avoid overwriting the latest npm tag
       - name: publish
         run: |
-          yarn config set -H 'npmAuthToken' "${{secrets.NPM_TOKEN}}"
+          yarn config set -H 'npmAuthToken' "${{secrets.RHDH_NPM_TOKEN}}"
           yarn workspaces foreach -v --no-private npm publish --access public --tolerate-republish --tag "maintenance"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.RHDH_NPM_TOKEN }}
       
       - name: Create tag
         working-directory: ${{ github.workspace }}/scripts/ci
         run: node create-tag.js
         env:
             WORKSPACE_NAME: ${{ needs.check-merged-pr.outputs.workspace_name }}
-            GITHUB_TOKEN: ${{ secrets.GH_SERVICE_ACCOUNT_TOKEN }}
+            GITHUB_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
