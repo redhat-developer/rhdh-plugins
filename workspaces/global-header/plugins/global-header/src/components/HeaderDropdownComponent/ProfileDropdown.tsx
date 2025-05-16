@@ -15,20 +15,20 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  identityApiRef,
-  useApi,
-  ProfileInfo,
-} from '@backstage/core-plugin-api';
+import { useUserProfile } from '@backstage/plugin-user-settings';
+import { useApi } from '@backstage/core-plugin-api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import { UserEntity } from '@backstage/catalog-model';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import Typography from '@mui/material/Typography';
 import { lighten } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+
+import { MenuSection } from './MenuSection';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
-import { MenuSection } from './MenuSection';
 import { useDropdownManager } from '../../hooks';
-import Box from '@mui/material/Box';
 
 /**
  * @public
@@ -40,9 +40,14 @@ export interface ProfileDropdownProps {
 
 export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
+  const [user, setUser] = useState<string | null>();
+  const {
+    displayName,
+    backstageIdentity,
+    loading: profileLoading,
+  } = useUserProfile();
+  const catalogApi = useApi(catalogApiRef);
 
-  const identityApi = useApi(identityApiRef);
-  const [user, setUser] = useState<ProfileInfo>();
   const profileDropdownMountPoints = useProfileDropdownMountPoints();
 
   const headerRef = useRef<HTMLElement | null>(null);
@@ -66,13 +71,25 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   }, []);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const userProfile = await identityApi.getProfileInfo();
-      setUser(userProfile);
+    const fetchUserEntity = async () => {
+      let userProfile;
+      try {
+        if (backstageIdentity?.userEntityRef) {
+          userProfile = (await catalogApi.getEntityByRef(
+            backstageIdentity.userEntityRef,
+          )) as unknown as UserEntity;
+        }
+        setUser(
+          userProfile?.spec?.profile?.displayName ??
+            userProfile?.metadata?.title,
+        );
+      } catch (_err) {
+        setUser(null);
+      }
     };
 
-    fetchUser();
-  }, [identityApi]);
+    fetchUserEntity();
+  }, [backstageIdentity, catalogApi]);
 
   const menuItems = useMemo(() => {
     return (profileDropdownMountPoints ?? [])
@@ -90,21 +107,37 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
     return null;
   }
 
+  const profileDisplayName = () => {
+    const name = user ?? displayName;
+    const regex = /^[^:/]+:[^/]+\/[^/]+$/;
+    if (regex.test(name)) {
+      return name
+        .charAt(name.indexOf('/') + 1)
+        .toLocaleUpperCase('en-US')
+        .concat(name.substring(name.indexOf('/') + 2));
+    }
+    return name;
+  };
+
   return (
     <HeaderDropdownComponent
       buttonContent={
         <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
-          <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
-          <Typography
-            variant="body2"
-            sx={{
-              display: { xs: 'none', md: 'block' },
-              fontWeight: 500,
-              mr: '1rem',
-            }}
-          >
-            {user?.displayName ?? 'Guest'}
-          </Typography>
+          {!profileLoading && (
+            <>
+              <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
+              <Typography
+                variant="body2"
+                sx={{
+                  display: { xs: 'none', md: 'block' },
+                  fontWeight: 500,
+                  mr: '1rem',
+                }}
+              >
+                {profileDisplayName()}
+              </Typography>
+            </>
+          )}
           <KeyboardArrowDownOutlinedIcon
             sx={{
               bgcolor: bgColor,
