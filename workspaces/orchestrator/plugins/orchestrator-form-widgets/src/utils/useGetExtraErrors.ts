@@ -81,7 +81,7 @@ export const useGetExtraErrors = () => {
 
       if (
         validateUrl &&
-        ['ActiveTextInput'].includes(
+        ['ActiveTextInput', 'ActiveDropdown'].includes(
           uiSchemaProperty?.['ui:widget']?.toString() || '',
         )
       ) {

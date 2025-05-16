@@ -53,6 +53,26 @@
         "ui:text": "You might also be interested in other stuff"
       }
     },
+    "preferredTeacher": {
+      "type": "string",
+      "title": "Preferred teacher (by the ActiveDropdown widget with validation). TODO: use relative URL",
+      "ui:widget": "ActiveDropdown",
+      "ui:props": {
+        "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/preferred-teacher?studentname=$${{current.studentName}}&coursename=$${{current.courseName}}",
+        "fetch:response:label": "bar.labels",
+        "fetch:response:value": "values",
+        "fetch:retrigger": ["current.studentName", "current.courseName"],
+        "fetch:method": "GET",
+        "validate:url": "http://localhost:7007/api/proxy/mytesthttpserver/validateteacher",
+        "validate:method": "POST",
+        "validate:body": {
+          "field": "preferredTeacher",
+          "value": "$${{current.preferredTeacher}}",
+          "courseName": "$${{current.courseName}}",
+          "studentName": "$${{current.studentName}}"
+        }
+      }
+    },
     "mySchemaUpdater": {
       "type": "string",
       "title": "This title will never be displayed. The 'type' is irrelevant. There can be multiple SchemaUpdater instances, if you like. They can even be dynamically supplied by one of them.",

@@ -118,7 +118,7 @@ Referenced as: `"ui:widget": "ActiveTextInput"`.
 
 A smart component based on the [@mui/material/TextField](https://mui.com/material-ui/react-text-field/) keeping look&feel with other RJSF-default fields.
 
-### Data fetching
+### ActiveTextInput Data fetching
 
 When instantiated, it loads (prefetch) the **default** value using a single HTTP call based on the `fetch:*` from the `ui:props`.
 
@@ -130,7 +130,7 @@ If the `fetch:retrigger` is omitted, the fetch is issued just once to preload th
 
 Because a text input’s default value only applies when the field is initially empty, any changes to the returned value in subsequent requests are ignored if the user has already entered data into that field.
 
-### Data validation
+### ActiveTextInput Data validation
 
 In addition to the AJV validation handled by the RJSF form, an external service can be utilized through the `validate:*` properties via HTTP requests.
 
@@ -187,6 +187,40 @@ The widget supports following `ui:props`:
 - fetch:retrigger
 - fetch:response:value
 - fetch:response:autocomplete
+- validate:url
+- validate:method
+- validate:headers
+- validate:body
+- validate:retrigger
+
+[Check more details](#content-of-uiprops)
+
+## ActiveDropdown widget
+
+Referenced as: `"ui:widget": "ActiveDropdown"`.
+
+A smart component based on the [@mui/material/Select](https://mui.com/material-ui/react-select/) keeping look&feel with other RJSF-default fields.
+
+### ActiveDropdown Data Fetching and validation
+
+Retrieving a list of items (each consisting of a value and a label) and validating the field operates similarly to the `ActiveTextInput` component.
+
+The main distinction lies in the selectors used: `fetch:response:label` and `fetch:response:value`. Both selectors should resolve to arrays of strings, where the index in each array corresponds to a single item.
+Therefore, both arrays must be of equal length.
+
+The final value of the field is determined by the values provided by the `fetch:response:value` selector.
+
+### ActiveDropdown widget ui:props
+
+The widget supports following `ui:props`:
+
+- fetch:url
+- fetch:headers
+- fetch:method
+- fetch:body
+- fetch:retrigger
+- fetch:response:value
+- fetch:response:label
 - validate:url
 - validate:method
 - validate:headers
