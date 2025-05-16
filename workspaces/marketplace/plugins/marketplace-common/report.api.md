@@ -159,6 +159,8 @@ export interface MarketplaceApi {
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
+    getPackageConfigByName?(namespace: string, name: string): Promise<string>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
@@ -170,9 +172,7 @@ export interface MarketplaceApi {
         write: 'ALLOW' | 'DENY';
     }>;
     // (undocumented)
-    getPluginConfigByName?(namespace: string, name: string): Promise<{
-        configYaml: string;
-    }>;
+    getPluginConfigByName?(namespace: string, name: string): Promise<string>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
@@ -201,6 +201,8 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
+    getPackageConfigByName(namespace: string, name: string): Promise<string>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
@@ -212,9 +214,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
         write: 'ALLOW' | 'DENY';
     }>;
     // (undocumented)
-    getPluginConfigByName(namespace: string, name: string): Promise<{
-        configYaml: string;
-    }>;
+    getPluginConfigByName(namespace: string, name: string): Promise<string>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
