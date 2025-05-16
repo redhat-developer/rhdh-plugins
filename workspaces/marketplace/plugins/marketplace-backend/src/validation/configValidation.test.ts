@@ -48,8 +48,10 @@ describe('validateConfigurationFormat', () => {
 });
 
 describe('validatePackageFormat', () => {
-  it('should validate correct package', () => {
-    const doc = parseDocument(`
+  const validYAMLs = [
+    {
+      testCase: 'correct package',
+      yaml: `
         package: package1
         disabled: true
         pluginConfig:
@@ -57,52 +59,62 @@ describe('validatePackageFormat', () => {
           key2:
             subkey:
               value
-    `);
-    expect(() => validatePackageFormat(doc.contents)).not.toThrow();
+      `,
+    },
+    {
+      testCase: "missing 'disabled' and 'pluginConfig'",
+      yaml: `
+        package: package1
+      `,
+    },
+  ];
+
+  validYAMLs.forEach(({ testCase, yaml }) => {
+    it(`should validate ${testCase}`, () => {
+      expect(() =>
+        validatePackageFormat(parseDocument(yaml).contents),
+      ).not.toThrow();
+    });
   });
 
-  it("should validate missing 'disabled' and 'pluginConfig'", () => {
-    const doc = parseDocument(`
-      package: package1
-    `);
-    expect(() => validatePackageFormat(doc.contents)).not.toThrow();
-  });
+  const invalidYAMLs = [
+    {
+      testCase: "'package' is missing",
+      yaml: `
+        disabled: false
+      `,
+      error: "'package' field in each package item must be a non-empty string",
+    },
+    {
+      testCase: "'package' is an empty string",
+      yaml: `
+        package: ""
+      `,
+      error: "'package' field in each package item must be a non-empty string",
+    },
+    {
+      testCase: "'disabled' is not a boolean",
+      yaml: `
+        package: package1
+        disabled: "not a boolean"
+      `,
+      error: "optional 'disabled' field in each package item must be a boolean",
+    },
+    {
+      testCase: "'pluginConfig' is not a map",
+      yaml: `
+        package: package1
+        pluginConfig: "not a map"
+      `,
+      error: "optional 'pluginConfig' field in each package item must be a map",
+    },
+  ];
 
-  it("should throw if 'package' is missing from package", () => {
-    const doc = parseDocument(`
-      disabled: false
-    `);
-    expect(() => validatePackageFormat(doc.contents)).toThrow(
-      "Invalid installation configuration, 'package' field in each package item must be a non-empty string",
-    );
-  });
-
-  it("should throw if 'package' is an empty string", () => {
-    const doc = parseDocument(`
-      package: ""
-    `);
-    expect(() => validatePackageFormat(doc.contents)).toThrow(
-      "Invalid installation configuration, 'package' field in each package item must be a non-empty string",
-    );
-  });
-
-  it("should throw if 'disabled' is not a boolean", () => {
-    const doc = parseDocument(`
-      package: package1
-      disabled: "not a boolean"
-    `);
-    expect(() => validatePackageFormat(doc.contents)).toThrow(
-      "Invalid installation configuration, optional 'disabled' field in each package item must be a boolean",
-    );
-  });
-
-  it("should throw if 'pluginConfig' is not a map", () => {
-    const doc = parseDocument(`
-      package: package1
-      pluginConfig: "not a map"
-    `);
-    expect(() => validatePackageFormat(doc.contents)).toThrow(
-      "Invalid installation configuration, optional 'pluginConfig' field in each package item must be a map",
-    );
+  invalidYAMLs.forEach(({ testCase, yaml, error }) => {
+    it(`should throw if ${testCase}`, () => {
+      expect(() => validatePackageFormat(parseDocument(yaml).contents)).toThrow(
+        `Invalid installation configuration, ${error}`,
+      );
+    });
   });
 });
