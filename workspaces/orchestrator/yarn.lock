@@ -7989,9 +7989,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/cli@npm:3.5.0":
-  version: 3.5.0
-  resolution: "@janus-idp/cli@npm:3.5.0"
+"@janus-idp/cli@npm:3.6.0":
+  version: 3.6.0
+  resolution: "@janus-idp/cli@npm:3.6.0"
   dependencies:
     "@backstage/cli-common": ^0.1.15
     "@backstage/cli-node": ^0.2.12
@@ -8047,7 +8047,7 @@ __metadata:
       optional: true
   bin:
     janus-cli: bin/janus-cli
-  checksum: 0d6498891c66a27837e4818e4d1fd5fdbc62b69e33b72cbb89b7e291360d3aaa065c6e4f6c80180359c9418fc4992bd27a298b19ccd2efc862e93834b5eb8085
+  checksum: 349f35100b6517ebf56fb4cab9fdcc90af79863910fd28ab90a9c39a2957b71e850d601f567dc0cbcf03e3e2e6edf74f49c4aef53a97c82a4444290b2db3b42e
   languageName: node
   linkType: hard
 
@@ -11379,7 +11379,7 @@ __metadata:
     "@backstage/plugin-scaffolder-backend": ^1.31.0
     "@backstage/plugin-scaffolder-node": ^0.8.0
     "@janus-idp/backstage-plugin-audit-log-node": ^1.7.1
-    "@janus-idp/cli": 3.5.0
+    "@janus-idp/cli": 3.6.0
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@types/express": 4.17.21
     "@types/fs-extra": 11.0.4
@@ -11478,7 +11478,7 @@ __metadata:
     "@backstage/test-utils": ^1.7.1
     "@backstage/theme": ^0.6.2
     "@backstage/types": ^1.2.1
-    "@janus-idp/cli": 3.5.0
+    "@janus-idp/cli": 3.6.0
     "@material-ui/core": ^4.9.13
     "@material-ui/icons": ^4.9.1
     "@material-ui/lab": ^4.0.0-alpha.61
@@ -11513,7 +11513,7 @@ __metadata:
     "@backstage/plugin-permission-react": ^0.4.32
     "@backstage/test-utils": ^1.7.6
     "@backstage/types": ^1.2.1
-    "@janus-idp/cli": 3.5.0
+    "@janus-idp/cli": 3.6.0
     "@kie-tools-core/editor": ^10.0.0
     "@kie-tools/serverless-workflow-standalone-editor": ^10.0.0
     "@material-ui/core": ^4.12.4
@@ -11565,7 +11565,7 @@ __metadata:
     "@backstage/plugin-scaffolder-node": ^0.8.0
     "@backstage/plugin-scaffolder-node-test-utils": ^0.2.0
     "@backstage/types": ^1.2.1
-    "@janus-idp/cli": 3.5.0
+    "@janus-idp/cli": 3.6.0
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     axios: ^1.7.9
