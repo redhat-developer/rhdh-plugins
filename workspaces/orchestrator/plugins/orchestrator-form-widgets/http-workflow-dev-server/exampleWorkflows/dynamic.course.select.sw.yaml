@@ -31,6 +31,10 @@ functions:
       {
       "key": "requestCertificate",
       "value": .courseDetails.requestCertificate
+      },
+      {
+      "key": "teacher",
+      "value": .preferredTeacher
       }
       ]
       }

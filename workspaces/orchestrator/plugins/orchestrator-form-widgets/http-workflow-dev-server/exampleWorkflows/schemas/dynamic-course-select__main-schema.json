@@ -13,7 +13,7 @@
       "title": "Course name (ActiveTextInput component with autocomplete, fetches default data, retriggered by studentName, a change triggers a SchemaUpdater), try to enter 'complexCourse'",
       "ui:widget": "ActiveTextInput",
       "ui:props": {
-        "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/courses?studentname=$${{current.studentName}}",
+        "fetch:url": "$${{backend.baseUrl}}/api/proxy/mytesthttpserver/courses?studentname=$${{current.studentName}}",
         "fetch:response:value": "mycourses.mydefault",
         "fetch:response:autocomplete": "listofcourses.all",
         "fetch:retrigger": ["current.studentName"],
@@ -37,7 +37,7 @@
       "ui:widget": "ActiveText",
       "ui:props": {
         "ui:variant": "h4",
-        "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/suggested-courses?coursename=$${{current.courseName}}",
+        "fetch:url": "$${{backend.baseUrl}}/api/proxy/mytesthttpserver/suggested-courses?coursename=$${{current.courseName}}",
         "fetch:method": "GET",
         "fetch:response:suggestions": "suggestions",
         "fetch:retrigger": ["current.studentName", "current.courseName"],
@@ -53,12 +53,32 @@
         "ui:text": "You might also be interested in other stuff"
       }
     },
+    "preferredTeacher": {
+      "type": "string",
+      "title": "Preferred teacher (by the ActiveDropdown widget with validation).",
+      "ui:widget": "ActiveDropdown",
+      "ui:props": {
+        "fetch:url": "$${{backend.baseUrl}}/api/proxy/mytesthttpserver/preferred-teacher?studentname=$${{current.studentName}}&coursename=$${{current.courseName}}",
+        "fetch:response:label": "bar.labels",
+        "fetch:response:value": "values",
+        "fetch:retrigger": ["current.studentName", "current.courseName"],
+        "fetch:method": "GET",
+        "validate:url": "$${{backend.baseUrl}}/api/proxy/mytesthttpserver/validateteacher",
+        "validate:method": "POST",
+        "validate:body": {
+          "field": "preferredTeacher",
+          "value": "$${{current.preferredTeacher}}",
+          "courseName": "$${{current.courseName}}",
+          "studentName": "$${{current.studentName}}"
+        }
+      }
+    },
     "mySchemaUpdater": {
       "type": "string",
       "title": "This title will never be displayed. The 'type' is irrelevant. There can be multiple SchemaUpdater instances, if you like. They can even be dynamically supplied by one of them.",
       "ui:widget": "SchemaUpdater",
       "ui:props": {
-        "fetch:url": "http://localhost:7007/api/proxy/mytesthttpserver/coursedetailsschema?coursename=$${{current.courseName}}",
+        "fetch:url": "$${{backend.baseUrl}}/api/proxy/mytesthttpserver/coursedetailsschema?coursename=$${{current.courseName}}",
         "fetch:retrigger": ["current.courseName"]
       }
     }

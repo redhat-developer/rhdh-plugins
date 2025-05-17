@@ -86,12 +86,12 @@ app.get('/coursedetailsschema', (req, res) => {
       'ui:widget': 'ActiveTextInput',
       'ui:props': {
         'fetch:url':
-          'http://localhost:7007/api/proxy/mytesthttpserver/rooms?coursename=$${{current.courseName}}',
+          '$${{backend.baseUrl}}/api/proxy/mytesthttpserver/rooms?coursename=$${{current.courseName}}',
         'fetch:response:value': 'room.mydefault',
         'fetch:retrigger': ['current.courseName'],
         'fetch:method': 'GET',
         'validate:url':
-          'http://localhost:7007/api/proxy/mytesthttpserver/validateroom',
+          '$${{backend.baseUrl}}/api/proxy/mytesthttpserver/validateroom',
         'validate:method': 'POST',
         'validate:body': {
           field: 'courseDetails.room',
@@ -152,6 +152,72 @@ app.post('/validateroom', (req, res) => {
           'The field must be 5 or more characters long.',
           `This is something specific for ${courseName} courseName.`,
         ],
+      });
+
+      return;
+    }
+  }
+
+  // The HTTP 200 is important here. The response content "Valid" is not required, just a courtesy.
+  res.status(200);
+  res.send('Valid');
+});
+
+app.get('/preferred-teacher', (req, res) => {
+  logRequest(req);
+
+  const studentName = req.query?.studentname;
+  const courseName = req.query?.coursename;
+
+  const labels = [
+    'Tim',
+    'Jack ',
+    'John',
+    `Special teacher for "${courseName}"`,
+  ];
+
+  const values = ['123_tim', '456_jack', '789_john', 'he_is_special'];
+
+  if (studentName && studentName !== '___undefined___') {
+    labels.push(`Someone who knows ${studentName}`);
+    values.push('acquaintant');
+  }
+
+  const result = {
+    // Use whatever structure here, just make sure the selectors in the data input schema picks correct values and labels.
+    // For example, it means fetch:response:label and fetch:response:value in case of the ActiveDropdown.
+    foo: {},
+    bar: { labels },
+    values,
+  };
+
+  // HTTP 200
+  res.send(JSON.stringify(result));
+});
+
+app.post('/validateteacher', (req, res) => {
+  logRequest(req);
+
+  const field = req.body?.field;
+  const value = req.body?.value;
+  const courseName = req.body?.courseName;
+  // const studentName = req.body?.studentName;
+
+  if (field === 'preferredTeacher') {
+    if (value === '789_john') {
+      // any 4xx or 5xx is fine here
+      res.status(422);
+      res.send({
+        [field]: ['Unfortunately John became already unavailable.'],
+      });
+
+      return;
+    }
+
+    if (value === '456_jack' && courseName === 'one course') {
+      res.status(422);
+      res.send({
+        [field]: [`Jack newly prefers other topics than "${courseName}".`],
       });
 
       return;

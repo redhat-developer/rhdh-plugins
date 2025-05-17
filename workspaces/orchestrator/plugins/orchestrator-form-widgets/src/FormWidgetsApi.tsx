@@ -23,7 +23,12 @@ import {
 import { FormValidation } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
 
-import { SchemaUpdater, ActiveTextInput, ActiveText } from './widgets';
+import {
+  SchemaUpdater,
+  ActiveTextInput,
+  ActiveText,
+  ActiveDropdown,
+} from './widgets';
 import { useGetExtraErrors } from './utils';
 
 const customValidate = (
@@ -39,6 +44,7 @@ const widgets = {
   SchemaUpdater,
   ActiveTextInput,
   ActiveText,
+  ActiveDropdown,
 };
 
 export class FormWidgetsApi implements OrchestratorFormApi {
