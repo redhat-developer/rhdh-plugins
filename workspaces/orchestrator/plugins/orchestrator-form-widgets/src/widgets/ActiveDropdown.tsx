@@ -112,7 +112,7 @@ export const ActiveDropdown: Widget<
   }
 
   return (
-    <FormControl fullWidth>
+    <FormControl variant="outlined" fullWidth>
       <InputLabel id={labelId}>{label}</InputLabel>
       <Select
         labelId={labelId}
