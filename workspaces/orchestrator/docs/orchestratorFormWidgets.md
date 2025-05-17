@@ -240,7 +240,7 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 
 |    Property of ui:props     |                                                                                                                                                                                                                            Description                                                                                                                                                                                                                             |                        Example value                        |
 | :-------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------: |
-|          fetch:url          |                                                                                              The URL to fetch the widget’s data from, can be accompanied by other properties listed below. Can contain ${{...}} templates, i.e. to pass GET request parameters. Check the Backend Proxy chapter for description of behavior for both the absolute and relative URLs.                                                                                               |      `/my.app.config.proxy/v1/$${current.customerId}`       |
+|          fetch:url          |                                                                                                        The URL to fetch the widget’s data from, can be accompanied by other properties listed below. Can contain `${{...}}` templates, i.e. to pass GET request parameters. Check the Backend Proxy chapter for details about accessing external services.                                                                                                         |      `/my.app.config.proxy/v1/$${current.customerId}`       |
 |        fetch:headers        |                                                                                                                             HTTP headers of the request. Valid for both the POST and GET. By default, following header is automatically added unless explicitly overridden in the fetch:headers: `"Content-Type": "application/json"`                                                                                                                              |   `{ "Authorization": "Bearer $${{identityApi.token}}"}`    |
 |        fetch:method         |                                                                                                                                                                                                              HTTP method to use. The default is GET.                                                                                                                                                                                                               | GET, POST (So far no identified use-case for PUT or DELETE) |
 |         fetch:body          |                                                                                                                                                                                                  The body of an HTTP POST request. Not used with the GET method.                                                                                                                                                                                                   |          `{“foo”: “bar $${{identityApi.token}}”}`           |
@@ -269,11 +269,36 @@ As all widgets and the decorated RJSF form run on the frontend in the browser, m
 
 To mitigate these issues in a production environment, the deployment can be customized after the Orchestrator deployment to set up a [Backstage proxy](https://backstage.io/docs/plugins/proxying/) for each service.
 
-Relative URLs in the data input JSON schema will be automatically prefixed with the Backstage backend URL (including protocol and domain).
-Absolute URLs (e.g. including protocol) are used as stated.
+To generically prefix URLs with the Backstage backend, you can use the `$${{backend.baseUrl}}` template.
+
+Absolute URLs (those that include the protocol) will be used as provided.
+
+Relative URLs are resolved against the Backstage frontend URL, which often limits their usefulness in most production environments.
 
 Currently, there is no identified need for advanced modifications to the HTTP calls made by the widgets.
 However, if such requirements arise in the future, a new endpoint can be added to the existing Orchestrator backend to act as a proxy, enabling additional logic for requests and responses. So far, the existing Backstage proxy mechanism seems to be sufficient.
+
+Example:
+
+For proxy config in the `app-config.yaml`:
+
+```
+proxy:
+  reviveConsumedRequestBodies: true
+  endpoints:
+    '/mytesthttpserver':
+      target: 'http://localhost:12345'
+      allowedMethods: ['GET', 'POST']
+      allowedHeaders: ['test-header']
+```
+
+The URLs can look like:
+
+```
+      "ui:props": {
+        "fetch:url": "$${{backend.baseUrl}}/api/proxy/mytesthttpserver/myendpoint?foo=$${{current.foo}}",
+      }
+```
 
 ## Templating and Backstage API Exposed Parts
 
