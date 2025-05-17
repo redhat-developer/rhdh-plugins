@@ -88,7 +88,7 @@ export const useFetch = (
 
           setData(responseData);
         } catch (err) {
-          const prefix = `Failed to fetch data for url ${fetchUrl}`;
+          const prefix = `Failed to fetch data for url ${fetchUrl}.`;
           // eslint-disable-next-line no-console
           console.error(prefix, err);
           setError(getErrorMessage(prefix, err));
@@ -100,12 +100,10 @@ export const useFetch = (
     },
     DEFAULT_DEBOUNCE_LIMIT,
     [
-      error,
       evaluatedFetchUrl,
       evaluatedRequestInit,
       fetchApi,
       fetchUrl,
-      formData,
       // no need to expand the "retrigger" array here since its identity changes only if an item changes
       retrigger,
     ],

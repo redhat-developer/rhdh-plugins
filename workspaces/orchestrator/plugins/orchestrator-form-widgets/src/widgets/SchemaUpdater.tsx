@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Widget } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
 import { JsonObject } from '@backstage/types';
@@ -21,37 +21,32 @@ import {
   useWrapperFormPropsContext,
   SchemaChunksResponse,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { fetchApiRef, useApi } from '@backstage/core-plugin-api';
-import { useDebounce } from 'react-use';
+import { CircularProgress } from '@material-ui/core';
 
 import { FormContextData } from '../types';
 import {
-  useRequestInit,
-  useEvaluateTemplate,
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
+  useFetch,
 } from '../utils';
 import { ErrorText } from './ErrorText';
-import { DEFAULT_DEBOUNCE_LIMIT } from './constants';
+import { UiProps } from '../uiPropTypes';
 
 export const SchemaUpdater: Widget<
   JsonObject,
   JSONSchema7,
   FormContextData
 > = props => {
-  const fetchApi = useApi(fetchApiRef);
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
   const formContext = useWrapperFormPropsContext();
-  const [error, setError] = useState<string>();
-
   const { updateSchema, formData } = formContext;
 
   const uiProps = useMemo(
-    () => (props.options?.props ?? {}) as JsonObject,
+    () => (props.options?.props ?? {}) as UiProps,
     [props.options?.props],
   );
-  const fetchUrl = uiProps['fetch:url']?.toString();
+  const [localError, setLocalError] = useState<string>();
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -60,95 +55,42 @@ export const SchemaUpdater: Widget<
     uiProps['fetch:retrigger'] as string[],
   );
 
-  const evaluatedFetchUrl = useEvaluateTemplate({
-    template: fetchUrl,
-    key: 'fetch:url',
-    formData,
-    setError,
-  });
+  const { data, error, loading } = useFetch(formData, uiProps, retrigger);
 
-  const evaluatedRequestInit = useRequestInit({
-    uiProps,
-    prefix: 'fetch',
-    formData,
-    setError,
-  });
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
 
-  useDebounce(
-    () => {
-      if (!evaluatedFetchUrl || !retrigger || !evaluatedRequestInit) {
-        return;
+    const typedData = data as unknown as SchemaChunksResponse;
+
+    // validate received response before updating
+    Object.keys(typedData).forEach(key => {
+      if (!typedData[key]?.type) {
+        setLocalError(
+          `JSON response malformed for SchemaUpdater, missing "type" field for "${key}" key.`,
+        );
       }
+    });
 
-      const fetchSchemaChunks = async () => {
-        try {
-          setError(undefined);
+    try {
+      updateSchema(typedData);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error when updating schema', props.id, err);
+      setLocalError(
+        `Failed to update schema update by the ${props.id} SchemaUpdater`,
+      );
+    }
+  }, [data, props.id, updateSchema]);
 
-          const response = await fetchApi.fetch(
-            evaluatedFetchUrl,
-            evaluatedRequestInit,
-          );
-          const data =
-            (await response.json()) as unknown as SchemaChunksResponse;
-
-          // validate received response before updating
-          if (!data) {
-            throw new Error('Empty response received');
-          }
-          if (typeof data !== 'object') {
-            throw new Error('JSON object expected');
-          }
-          Object.keys(data).forEach(key => {
-            if (!data[key].type) {
-              throw new Error(
-                `JSON response malformed, missing "type" field for "${key}" key`,
-              );
-            }
-          });
-
-          updateSchema(data);
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error(
-            'Error when updating schema',
-            props.id,
-            evaluatedFetchUrl,
-            err,
-          );
-          setError(
-            `Failed to fetch schema update by the ${props.id} SchemaUpdater`,
-          );
-        }
-      };
-
-      fetchSchemaChunks();
-    },
-    DEFAULT_DEBOUNCE_LIMIT,
-    [
-      evaluatedFetchUrl,
-      evaluatedRequestInit,
-      fetchApi,
-      props.id,
-      updateSchema,
-      // no need to expand the "retrigger" array here since its identity changes only if an item changes
-      retrigger,
-    ],
-  );
-
-  if (!fetchUrl) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      'SchemaUpdater, incorrect ui:props, missing url:fetch: ',
-      props.id,
-      props.schema,
-    );
-    return <div>Misconfigured SchemaUpdater</div>;
+  if (localError ?? error) {
+    return <ErrorText text={localError ?? error ?? ''} />;
   }
 
-  if (error) {
-    return <ErrorText text={error} />;
+  if (loading) {
+    return <CircularProgress size={20} />;
   }
-
   // No need to render anything
   return <></>;
 };

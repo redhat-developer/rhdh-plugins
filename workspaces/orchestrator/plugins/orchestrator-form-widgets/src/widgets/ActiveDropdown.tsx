@@ -103,8 +103,8 @@ export const ActiveDropdown: Widget<
 
   const labelId = `${props.id}-label`;
 
-  if (localError || error) {
-    return <ErrorText text={localError || error || ''} />;
+  if (localError ?? error) {
+    return <ErrorText text={localError ?? error ?? ''} />;
   }
 
   if (loading || !labels || !values) {
@@ -122,7 +122,9 @@ export const ActiveDropdown: Widget<
         onChange={event => handleChange(event.target.value as string)}
       >
         {labels.map((itemLabel, idx) => (
-          <MenuItem value={values[idx]}>{itemLabel}</MenuItem>
+          <MenuItem key={values[idx]} value={values[idx]}>
+            {itemLabel}
+          </MenuItem>
         ))}
       </Select>
     </FormControl>

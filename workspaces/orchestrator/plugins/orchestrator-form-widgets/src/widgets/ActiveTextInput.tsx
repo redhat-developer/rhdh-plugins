@@ -66,7 +66,6 @@ export const ActiveTextInput: Widget<
     /* This is safe retype, since proper checking of input value is done in the useRetriggerEvaluate() hook */
     uiProps['fetch:retrigger'] as string[],
   );
-  const isValueSet = value === undefined;
 
   const { data, error, loading } = useFetch(formData, uiProps, retrigger);
 
@@ -83,7 +82,7 @@ export const ActiveTextInput: Widget<
     }
 
     const doItAsync = async () => {
-      if (!isValueSet) {
+      if (value === undefined) {
         // loading default so do it only once
         const defaultValue = await applySelectorString(
           data,
@@ -107,12 +106,12 @@ export const ActiveTextInput: Widget<
     autocompleteSelector,
     data,
     props.id,
-    isValueSet,
+    value,
     handleChange,
   ]);
 
-  if (localError || error) {
-    return <ErrorText text={localError || error || ''} />;
+  if (localError ?? error) {
+    return <ErrorText text={localError ?? error ?? ''} />;
   }
 
   if (loading) {
