@@ -308,6 +308,7 @@ That’s the reason for listing the exposed keys explicitly.
 | atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |         profileEmail          |                                 ProfileInfoApi.getProfile(undefined).email                                  |
 | atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |          profileName          |                              ProfileInfoApi.getProfile(undefined).displayName                               |
 |                                 rjsfConfig                                  | orchestrator.\[whatever key\] |               configApi.getOptionalString(\`${orchestrator.rjsf-widgets.\[whatever key\]}\`)                |
+|                                   backend                                   |            baseUrl            | configApi.getString('backend.baseUrl') - useful for building URLs with proxy without hardcoding the backend |
 
 ## Retrieving Data from Backstage Catalog
 

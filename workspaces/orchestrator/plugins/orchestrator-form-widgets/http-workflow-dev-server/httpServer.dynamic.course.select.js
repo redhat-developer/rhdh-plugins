@@ -86,12 +86,12 @@ app.get('/coursedetailsschema', (req, res) => {
       'ui:widget': 'ActiveTextInput',
       'ui:props': {
         'fetch:url':
-          'http://localhost:7007/api/proxy/mytesthttpserver/rooms?coursename=$${{current.courseName}}',
+          '$${{backend.baseUrl}}/api/proxy/mytesthttpserver/rooms?coursename=$${{current.courseName}}',
         'fetch:response:value': 'room.mydefault',
         'fetch:retrigger': ['current.courseName'],
         'fetch:method': 'GET',
         'validate:url':
-          'http://localhost:7007/api/proxy/mytesthttpserver/validateroom',
+          '$${{backend.baseUrl}}/api/proxy/mytesthttpserver/validateroom',
         'validate:method': 'POST',
         'validate:body': {
           field: 'courseDetails.room',
