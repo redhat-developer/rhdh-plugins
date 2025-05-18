@@ -22,14 +22,10 @@ import { AboutField } from '@backstage/plugin-catalog';
 import { Grid, makeStyles } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 
-import {
-  ProcessInstanceStatusDTO,
-  WorkflowOverviewDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { VALUE_UNAVAILABLE } from '../../constants';
 import WorkflowOverviewFormatter from '../../dataFormatters/WorkflowOverviewFormatter';
-import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
+import { WorkflowStatus } from '../WorkflowStatus';
 
 const useStyles = makeStyles({
   details: {
@@ -56,47 +52,39 @@ const WorkflowDefinitionDetailsCard = ({
     [workflowOverview],
   );
 
-  const details = React.useMemo(
-    () => [
-      {
-        label: 'category',
-        value: formattedWorkflowOverview?.category,
-      },
-
-      {
-        label: 'last run',
-        value: formattedWorkflowOverview?.lastTriggered,
-      },
-      {
-        label: 'last run status',
-        value: formattedWorkflowOverview?.lastRunStatus,
-        children:
-          formattedWorkflowOverview?.lastRunStatus !== VALUE_UNAVAILABLE ? (
-            <WorkflowInstanceStatusIndicator
-              status={
-                formattedWorkflowOverview?.lastRunStatus as ProcessInstanceStatusDTO
-              }
-              lastRunId={formattedWorkflowOverview?.lastRunId}
-            />
-          ) : (
-            VALUE_UNAVAILABLE
-          ),
-      },
-    ],
-    [formattedWorkflowOverview],
-  );
-
   return (
     <InfoCard title="Details" className={classes.details}>
       <Grid container spacing={7} alignContent="flex-start" wrap="nowrap">
-        {details?.map(({ label, value, children }) => (
-          <Grid item key={label}>
-            {/* AboutField requires the value to be defined as a prop as well */}
-            <AboutField label={label} value={value}>
-              {loading ? <Skeleton variant="text" /> : children || value}
-            </AboutField>
-          </Grid>
-        ))}
+        <Grid item key="category">
+          {/* AboutField requires the value to be defined as a prop as well */}
+          <AboutField
+            label="category"
+            value={formattedWorkflowOverview?.category}
+          >
+            {loading ? (
+              <Skeleton variant="text" />
+            ) : (
+              formattedWorkflowOverview?.category
+            )}
+          </AboutField>
+        </Grid>
+        <Grid item key="workflow status">
+          {/* AboutField requires the value to be defined as a prop as well */}
+          <AboutField
+            label="workflow status"
+            value={formattedWorkflowOverview?.availablity}
+          >
+            {loading ? (
+              <Skeleton variant="text" />
+            ) : (
+              <b>
+                <WorkflowStatus
+                  availability={formattedWorkflowOverview?.availablity}
+                />
+              </b>
+            )}
+          </AboutField>
+        </Grid>
         <Grid item md={7}>
           <AboutField
             label="description"

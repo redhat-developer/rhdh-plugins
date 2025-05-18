@@ -30,7 +30,7 @@ import {
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
 
-export const RunButton = () => {
+export const RunButton = ({ isAvailable }: { isAvailable?: boolean }) => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const navigate = useNavigate();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
@@ -44,6 +44,14 @@ export const RunButton = () => {
       orchestratorWorkflowUseSpecificPermission(workflowId),
     ]);
 
+  let tooltipText = '';
+  if (!canRun) {
+    tooltipText = 'User not authorized to execute workflow.';
+  } else if (!isAvailable) {
+    tooltipText =
+      'The workflow is currently down or in an error state. Running it now may fail or produce unexpected results.';
+  }
+
   return (
     <Grid item container justifyContent="flex-end" xs={12} spacing={2}>
       <Grid item>
@@ -51,8 +59,8 @@ export const RunButton = () => {
           <Skeleton variant="text" width="5rem" />
         ) : (
           <Tooltip
-            title="user not authorized to execute workflow"
-            disableHoverListener={canRun}
+            title={tooltipText}
+            disableHoverListener={tooltipText === ''}
           >
             <Button
               variant="contained"

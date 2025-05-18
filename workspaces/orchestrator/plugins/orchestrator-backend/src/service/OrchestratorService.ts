@@ -121,13 +121,9 @@ export class OrchestratorService {
     instanceId: string;
     cacheHandler?: CacheHandler;
   }): Promise<ProcessInstance | undefined> {
-    const { instanceId, cacheHandler } = args;
+    const { instanceId } = args;
     const instance = await this.dataIndexService.fetchInstance(instanceId);
-    const isWorkflowAvailable = this.workflowCacheService.isAvailable(
-      instance?.processId,
-      cacheHandler,
-    );
-    return isWorkflowAvailable ? instance : undefined;
+    return instance;
   }
 
   // SonataFlow Service Wrapper
@@ -218,15 +214,13 @@ export class OrchestratorService {
 
   public async fetchWorkflowOverview(args: {
     definitionId: string;
-    cacheHandler?: CacheHandler;
   }): Promise<WorkflowOverview | undefined> {
-    const { definitionId, cacheHandler } = args;
-    const isWorkflowAvailable = this.workflowCacheService.isAvailable(
-      definitionId,
-      cacheHandler,
-    );
-    return isWorkflowAvailable
-      ? await this.sonataFlowService.fetchWorkflowOverview(definitionId)
-      : undefined;
+    const { definitionId } = args;
+    const isWorkflowAvailable =
+      this.workflowCacheService.isAvailable(definitionId);
+    const overview =
+      await this.sonataFlowService.fetchWorkflowOverview(definitionId);
+    if (overview) overview.isAvailable = isWorkflowAvailable; // workflow overview is avaiable but the workflow itself is not
+    return overview;
   }
 }
