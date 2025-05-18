@@ -80,7 +80,6 @@ export class V2 {
   ): Promise<WorkflowOverviewDTO> {
     const overview = await this.orchestratorService.fetchWorkflowOverview({
       definitionId: workflowId,
-      cacheHandler: 'throw',
     });
 
     if (!overview) {
