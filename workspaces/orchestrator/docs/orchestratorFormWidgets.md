@@ -229,6 +229,73 @@ The widget supports following `ui:props`:
 
 [Check more details](#content-of-uiprops)
 
+## ActiveText widget
+
+Referenced as: `"ui:widget": "ActiveText"`.
+
+A smart component based on the [@mui/material/Typography](https://mui.com/material-ui/react-typography/) that displays text with dynamically changing content using `${{...}}` templates (see [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)).
+
+The content of the text can be derived from various sources, including:
+
+- Values of other form fields (`current.[fieldName]`).
+- Data fetched from external HTTP endpoints (`fetch:response:[KEY]`).
+- Information from Backstage APIs (`identityApi.[key]`, `rjsfConfig.[key]`, `backend.baseUrl`).
+
+The widget refetches the data when the values of the `fetch:retrigger` dependencies change. For details on data fetching properties, see [Content of `ui:props`](#content-of-uiprops).
+
+### ActiveText Data Fetching
+
+If the `fetch:url` property is provided in the `ui:props`, the widget will make an HTTP request to the specified endpoint. The `fetch:method`, `fetch:headers`, and `fetch:body` properties can be used to configure the request (see [Content of `ui:props`](#content-of-uiprops)).
+
+The response from the fetch operation is expected to be a JSON object. You can then use the `fetch:response:[YOUR_KEY]` properties to select specific values from this response and use them in the `ui:text` template.
+
+The data will be refetched if the value of any of the keys listed in the `fetch:retrigger` array changes.
+
+### Dynamic Text Templating
+
+The `ui:text` property in the `ui:props` defines the text to be displayed. This text can contain template literals in the format `${{...}}`. These templates are evaluated at runtime and replaced with dynamic values from various sources (see [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)).
+
+For example, if your API response is:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "name": "Example Data",
+    "value": 123
+  }
+}
+```
+
+You can configure your ActiveText widget like this:
+
+```json
+"myDynamicText": {
+    "type": "string",
+    "title": "Dynamic Data Display",
+    "ui:widget": "ActiveText",
+    "ui:props": {
+      "fetch:url": "/api/mydata",
+      "fetch:response:name": "data.name",
+      "fetch:response:value": "data.value",
+      "ui:text": "The name is: $${{fetch:response:name}}, and the value is: $${{fetch:response:value}}"
+    }
+  },
+```
+
+### ActiveText widget ui:props
+
+The widget supports the following `ui:props` (for detailed information on each, see [Content of `ui:props`](#content-of-uiprops)):
+
+- `ui:variant`: Corresponds to the `variant` property of the `@mui/material/Typography` component, allowing you to control the visual style of the text (e.g., `h1`, `body1`, `caption`).
+- `ui:text`: The text to display, which can include `${{...}}` templates for dynamic values.
+- `fetch:response:[YOUR_KEY]`: Selectors to extract data from the fetch response. The `[YOUR_KEY]` can be any name you choose.
+- `fetch:url`
+- `fetch:method`
+- `fetch:headers`
+- `fetch:body`
+- `fetch:retrigger`
+
 ## Content of `ui:props`
 
 A list of particular widgets supported by each widget can be found in its description above.
@@ -254,8 +321,8 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |     validate:retrigger      | An array similar to fetch:retrigger. Force revalidation of the field if a dependency is changed. In the most simple case when just the value of the particular field is listed (sort of \[“current.myField”\], the validation is triggered “on input”, i.e. when the user types a character in ActiveInputBox. The network calls are throttled. No matter if validate:retrigger is used, the validation happens at least on submit or transition to the next page. |                                                             |
 |        validate:body        |                                                                                                                                                                                                                       Similar to fetch:body                                                                                                                                                                                                                        |                                                             |
 |      validate:headers       |                                                                                                                                                                                                                    Similar to validate:headers                                                                                                                                                                                                                     |                                                             |
-|         ui:variant          |                                                                                                                                                                                              So far specific for StaticText widget only. Check the description there.                                                                                                                                                                                              |                                                             |
-|           ui:text           |                                                                                                                                                                                              So far specific for StaticText widget only. Check the description there.                                                                                                                                                                                              |                                                             |
+|         ui:variant          |                                                                                                                                                                                   So far specific for StaticText widget only. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                                   |                                                             |
+|           ui:text           |                                                                                                                                                                    So far specific for StaticText widget only. Check the description there. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                     |                                                             |
 
 ### Authentication
 
@@ -299,6 +366,8 @@ The URLs can look like:
         "fetch:url": "$${{backend.baseUrl}}/api/proxy/mytesthttpserver/myendpoint?foo=$${{current.foo}}",
       }
 ```
+
+`
 
 ## Templating and Backstage API Exposed Parts
 
