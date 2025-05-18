@@ -15,7 +15,6 @@
  */
 
 import React, { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import {
   ContentHeader,
@@ -59,6 +58,7 @@ import {
 
 import { orchestratorApiRef } from '../api';
 import { SHORT_REFRESH_INTERVAL } from '../constants';
+import { useHandleExecute } from '../hooks/useHandleExecute';
 import { usePermissionArrayDecision } from '../hooks/usePermissionArray';
 import usePolling from '../hooks/usePolling';
 import { executeWorkflowRouteRef, workflowInstanceRouteRef } from '../routes';
@@ -67,6 +67,7 @@ import { buildUrl } from '../utils/UrlUtils';
 import { BaseOrchestratorPage } from './BaseOrchestratorPage';
 import { InfoDialog } from './InfoDialog';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
+import { WorkflowUnavailableDialog } from './WorkflowUnavailableDialog';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -154,7 +155,6 @@ export const WorkflowInstancePage = ({
 }: {
   instanceId?: string;
 }) => {
-  const navigate = useNavigate();
   const orchestratorApi = useApi(orchestratorApiRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const { instanceId: queryInstanceId } = useRouteRefParams(
@@ -171,6 +171,9 @@ export const WorkflowInstancePage = ({
   const [isRetriggerSnackbarOpen, setIsRerunSnackbarOpen] =
     React.useState(false);
   const [retriggerError, setRetriggerError] = React.useState('');
+
+  const [isBarOpen, setIsBarOpen] = useState(false);
+  const { handleExecute } = useHandleExecute();
 
   const handleAbortBarClose = () => {
     setIsAbortSnackbarOpen(false);
@@ -254,8 +257,8 @@ export const WorkflowInstancePage = ({
       [QUERY_PARAM_INSTANCE_ID]: value.instance.id,
       [QUERY_PARAM_ASSESSMENT_INSTANCE_ID]: value.assessedBy?.id,
     });
-    navigate(urlToNavigate);
-  }, [value, navigate, executeWorkflowLink]);
+    handleExecute(value.instance.processId, setIsBarOpen, urlToNavigate);
+  }, [value, executeWorkflowLink, handleExecute]);
 
   const handleRetrigger = async () => {
     if (value) {
@@ -313,6 +316,11 @@ export const WorkflowInstancePage = ({
       {!loading && isNonNullable(value) ? (
         <>
           <ContentHeader title="">
+            <WorkflowUnavailableDialog
+              workflowId={value.instance.processId}
+              isBarOpen={isBarOpen}
+              setIsBarOpen={setIsBarOpen}
+            />
             <InfoDialog
               title="Abort workflow run?"
               titleIcon={<ErrorIcon className={classes.errorColor} />}

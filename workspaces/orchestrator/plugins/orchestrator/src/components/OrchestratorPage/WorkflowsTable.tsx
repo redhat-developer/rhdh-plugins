@@ -42,14 +42,12 @@ import { AVAILABLE, UNAVAILABLE, VALUE_UNAVAILABLE } from '../../constants';
 import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../../dataFormatters/WorkflowOverviewFormatter';
+import { useHandleExecute } from '../../hooks/useHandleExecute';
 import { usePermissionArray } from '../../hooks/usePermissionArray';
-import {
-  executeWorkflowRouteRef,
-  workflowRouteRef,
-  workflowRunsRouteRef,
-} from '../../routes';
+import { workflowRouteRef, workflowRunsRouteRef } from '../../routes';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
 import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
+import { WorkflowUnavailableDialog } from '../WorkflowUnavailableDialog';
 import { InputSchemaDialog } from './InputSchemaDialog';
 
 export interface WorkflowsTableProps {
@@ -123,8 +121,8 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const navigate = useNavigate();
   const definitionLink = useRouteRef(workflowRouteRef);
   const definitionRunsLink = useRouteRef(workflowRunsRouteRef);
-  const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const [data, setData] = useState<FormattedWorkflowOverview[]>([]);
+  const [chosenWorkflowId, setChosenWorkflowId] = useState<string>('');
 
   const { allowed: permittedToUse } = usePermittedToUseBatch(items);
   const { allowed: permittedToView } = usePermittedToViewBatch(items);
@@ -161,11 +159,14 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     [definitionRunsLink, navigate],
   );
 
-  const handleExecute = useCallback(
+  const [isBarOpen, setIsBarOpen] = useState(false);
+  const { handleExecute } = useHandleExecute();
+  const handleRun = useCallback(
     (rowData: FormattedWorkflowOverview) => {
-      navigate(executeWorkflowLink({ workflowId: rowData.id }));
+      setChosenWorkflowId(rowData.id);
+      handleExecute(rowData.id, setIsBarOpen);
     },
-    [executeWorkflowLink, navigate],
+    [handleExecute],
   );
 
   const canExecuteWorkflow = useCallback(
@@ -207,7 +208,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
         icon: PlayArrow,
         tooltip: 'Run',
         disabled: !canExecuteWorkflow(rowData.id),
-        onClick: () => handleExecute(rowData),
+        onClick: () => handleRun(rowData),
       }),
       rowData => ({
         icon: FormatListBulleted,
@@ -227,7 +228,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   }, [
     canExecuteWorkflow,
     canViewWorkflow,
-    handleExecute,
+    handleRun,
     handleViewVariables,
     handleViewInputSchema,
   ]);
@@ -332,6 +333,11 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
           toggleInputSchemaDialog={toggleInputSchemaDialog}
         />
       )}
+      <WorkflowUnavailableDialog
+        workflowId={chosenWorkflowId}
+        isBarOpen={isBarOpen}
+        setIsBarOpen={setIsBarOpen}
+      />
       <OverrideBackstageTable<FormattedWorkflowOverview>
         title="Workflows"
         options={options}

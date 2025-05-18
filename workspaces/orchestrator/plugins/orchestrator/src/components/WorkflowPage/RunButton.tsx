@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 
-import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { useRouteRefParams } from '@backstage/core-plugin-api';
 
 import { Button, Grid, Tooltip } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
@@ -27,16 +26,15 @@ import {
   orchestratorWorkflowUseSpecificPermission,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { useHandleExecute } from '../../hooks/useHandleExecute';
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
-import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
+import { workflowRouteRef } from '../../routes';
+import { WorkflowUnavailableDialog } from '../WorkflowUnavailableDialog';
 
 export const RunButton = () => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
-  const navigate = useNavigate();
-  const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
-  const handleExecute = () => {
-    navigate(executeWorkflowLink({ workflowId }));
-  };
+  const [isBarOpen, setIsBarOpen] = useState(false);
+  const { handleExecute } = useHandleExecute();
 
   const { loading: loadingPermission, allowed: canRun } =
     usePermissionArrayDecision([
@@ -46,6 +44,11 @@ export const RunButton = () => {
 
   return (
     <Grid item container justifyContent="flex-end" xs={12} spacing={2}>
+      <WorkflowUnavailableDialog
+        workflowId={workflowId}
+        isBarOpen={isBarOpen}
+        setIsBarOpen={setIsBarOpen}
+      />
       <Grid item>
         {loadingPermission ? (
           <Skeleton variant="text" width="5rem" />
@@ -57,7 +60,7 @@ export const RunButton = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={handleExecute}
+              onClick={() => handleExecute(workflowId, setIsBarOpen)}
               disabled={!canRun}
             >
               Run
