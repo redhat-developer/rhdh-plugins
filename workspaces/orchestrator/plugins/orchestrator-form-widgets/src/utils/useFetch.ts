@@ -35,6 +35,7 @@ export const useFetch = (
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<JsonObject>();
+
   const fetchUrl = uiProps['fetch:url'];
   const evaluatedRequestInit = useRequestInit({
     uiProps,
@@ -51,23 +52,28 @@ export const useFetch = (
 
   useDebounce(
     () => {
-      if (!fetchUrl) {
+      if (
+        !fetchUrl ||
+        !evaluatedFetchUrl ||
+        !evaluatedRequestInit ||
+        !retrigger
+      ) {
         setLoading(false);
-      }
-      if (error || !evaluatedFetchUrl || !evaluatedRequestInit || !retrigger) {
         return;
       }
+
       const fetchData = async () => {
         try {
           setError(undefined);
           setLoading(true);
+
           const response = await fetchApi.fetch(
             evaluatedFetchUrl,
             evaluatedRequestInit,
           );
           if (!response.ok) {
             throw new Error(
-              `Request ${evaluatedFetchUrl} returned status ${response.status}. status text: ${response.statusText}`,
+              `Request ${evaluatedFetchUrl} returned status ${response.status}. Status text: ${response.statusText}.`,
             );
           }
           const responseData = (await response.json()) as JsonObject;
@@ -79,9 +85,10 @@ export const useFetch = (
           if (typeof responseData !== 'object') {
             throw new Error('JSON object expected');
           }
+
           setData(responseData);
         } catch (err) {
-          const prefix = `Failed to fetch data for url ${fetchUrl}`;
+          const prefix = `Failed to fetch data for url ${fetchUrl}.`;
           // eslint-disable-next-line no-console
           console.error(prefix, err);
           setError(getErrorMessage(prefix, err));
@@ -93,14 +100,14 @@ export const useFetch = (
     },
     DEFAULT_DEBOUNCE_LIMIT,
     [
-      error,
       evaluatedFetchUrl,
       evaluatedRequestInit,
-      retrigger,
-      formData,
       fetchApi,
       fetchUrl,
+      // no need to expand the "retrigger" array here since its identity changes only if an item changes
+      retrigger,
     ],
   );
+
   return { data, error, loading };
 };

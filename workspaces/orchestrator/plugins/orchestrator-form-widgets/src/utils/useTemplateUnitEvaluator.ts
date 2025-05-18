@@ -18,6 +18,7 @@ import { get } from 'lodash';
 import { JsonObject } from '@backstage/types';
 import {
   atlassianAuthApiRef,
+  ConfigApi,
   configApiRef,
   githubAuthApiRef,
   gitlabAuthApiRef,
@@ -92,6 +93,13 @@ const templateUnitEvaluatorOpenId = async (
   throw new Error(`Unknown template key "${key}" in "${keyFamily}"`);
 };
 
+const templateUnitEvaluatorBackend = (configApi: ConfigApi, key: string) => {
+  if (key === 'baseUrl') {
+    return configApi.getString('backend.baseUrl');
+  }
+  throw new Error(`Unknown template key "${key}" in "backend"`);
+};
+
 export const useTemplateUnitEvaluator = () => {
   const configApi = useApi(configApiRef);
   const identityApi = useApi(identityApiRef);
@@ -133,6 +141,10 @@ export const useTemplateUnitEvaluator = () => {
       const key = unit.substring(unit.indexOf('.') + 1);
       if (keyFamily === 'current') {
         return get(formData, key);
+      }
+
+      if (keyFamily === 'backend') {
+        return templateUnitEvaluatorBackend(configApi, key);
       }
 
       if (keyFamily === 'rjsfConfig') {
