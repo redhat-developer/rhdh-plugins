@@ -54,7 +54,7 @@ import Alert from '@mui/material/Alert';
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
-import { applyContent, getExampleAsMarkdown } from '../utils';
+import { applyContent, getErrorMessage, getExampleAsMarkdown } from '../utils';
 
 import {
   CodeEditorContextProvider,
@@ -64,6 +64,7 @@ import {
 import { Markdown } from './Markdown';
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 import { useMarketplaceApi } from '../hooks/useMarketplaceApi';
+import { usePluginConfig } from '../hooks/usePluginConfig';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -193,10 +194,12 @@ export const MarketplacePluginInstallContent = ({
   plugin: MarketplacePlugin;
   packages: MarketplacePackage[];
 }) => {
+  const params = useRouteRefParams(pluginInstallRouteRef);
   const marketplaceApi = useMarketplaceApi();
   const navigate = useNavigate();
   const [showErrorAlert, setShowErrorAlert] = React.useState(false);
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
+  const pluginConfig = usePluginConfig(params.namespace, params.name);
 
   useEffect(() => {
     const header = document.querySelector('nav#global-header');
@@ -208,7 +211,6 @@ export const MarketplacePluginInstallContent = ({
     : 'calc(100vh - 160px)';
 
   const codeEditor = useCodeEditor();
-  const params = useRouteRefParams(pluginInstallRouteRef);
 
   const pluginLink = useRouteRef(pluginRouteRef)({
     namespace: params.namespace,
@@ -217,14 +219,32 @@ export const MarketplacePluginInstallContent = ({
 
   const onLoaded = React.useCallback(() => {
     setShowErrorAlert(false);
-    const dynamicPluginYaml = {
-      plugins: (packages ?? []).map(pkg => ({
-        package: pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....',
-        disabled: false,
-      })),
-    };
-    codeEditor.setValue(yaml.stringify(dynamicPluginYaml));
-  }, [codeEditor, packages]);
+
+    if (pluginConfig.isLoading) return;
+
+    if (pluginConfig.data?.configYaml) {
+      const configArray = yaml.parseDocument(pluginConfig.data.configYaml);
+
+      const configObject = {
+        plugins: configArray,
+      };
+
+      const configYaml = yaml.stringify(configObject);
+      codeEditor.setValue(configYaml);
+    } else {
+      const dynamicPluginYaml = {
+        plugins: (packages ?? []).map(pkg => ({
+          package: pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....',
+          disabled: false,
+        })),
+      };
+      codeEditor.setValue(yaml.stringify(dynamicPluginYaml));
+    }
+  }, [codeEditor, packages, pluginConfig.data, pluginConfig.isLoading]);
+
+  useEffect(() => {
+    onLoaded();
+  }, [onLoaded]);
 
   const pluginConfigPermissions = usePluginConfigurationPermissions(
     params.namespace,
@@ -280,7 +300,8 @@ export const MarketplacePluginInstallContent = ({
   const showDisableInstall =
     isProductionEnvironment ||
     showErrorAlert ||
-    pluginConfigPermissions.data?.write !== 'ALLOW';
+    pluginConfigPermissions.data?.write !== 'ALLOW' ||
+    (pluginConfig.data as any)?.error;
 
   const installTooltip = () => {
     if (isProductionEnvironment) {
@@ -288,6 +309,12 @@ export const MarketplacePluginInstallContent = ({
     }
     if (pluginConfigPermissions.data?.write !== 'ALLOW') {
       return "You don't have permission to install plugins or edit their configurations. Contact your administrator to request access or assistance.";
+    }
+    if ((pluginConfig.data as any)?.error?.message) {
+      return getErrorMessage(
+        (pluginConfig.data as any)?.error?.reason,
+        (pluginConfig.data as any)?.error?.message,
+      );
     }
     return '';
   };

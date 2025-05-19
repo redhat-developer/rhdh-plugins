@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import chalk from 'chalk';
-import { Entity } from '@backstage/catalog-model';
+import { Entity } from '@backstage/catalog-model/index';
 import {
   isMarketplacePackage,
   isMarketplacePlugin,

@@ -22,6 +22,7 @@ import {
   discoveryApiRef,
   fetchApiRef,
   createComponentExtension,
+  identityApiRef,
 } from '@backstage/core-plugin-api';
 
 import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
@@ -44,11 +45,13 @@ export const marketplacePlugin = createPlugin({
       deps: {
         discoveryApi: discoveryApiRef,
         fetchApi: fetchApiRef,
+        identityApi: identityApiRef,
       },
-      factory: ({ discoveryApi, fetchApi }) =>
+      factory: ({ discoveryApi, fetchApi, identityApi }) =>
         new MarketplaceBackendClient({
           discoveryApi,
           fetchApi,
+          identityApi,
         }),
     }),
   ],
