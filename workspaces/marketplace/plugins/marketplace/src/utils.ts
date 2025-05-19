@@ -17,6 +17,14 @@
 import { Pair, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
 import { JsonObject } from '@backstage/types';
 
+export enum ExtensionsStatus {
+  INSTALLATION_DISABLED = 'INSTALLATION_DISABLED',
+  FILE_CONFIG_VALUE_MISSING = 'FILE_CONFIG_VALUE_MISSING',
+  FILE_NOT_EXISTS = 'FILE_NOT_EXISTS',
+  INVALID_CONFIG = 'INVALID_CONFIG',
+  UNKNOWN = 'UNKNOWN',
+}
+
 export const getExampleAsMarkdown = (content: string | JsonObject) => {
   if (!content) {
     return '';
@@ -60,4 +68,18 @@ export const applyContent = (
     });
   }
   return content.toString();
+};
+
+export const getErrorMessage = (reason: ExtensionsStatus, message: string) => {
+  if (
+    reason === ExtensionsStatus.INSTALLATION_DISABLED ||
+    reason === ExtensionsStatus.UNKNOWN ||
+    reason === ExtensionsStatus.FILE_CONFIG_VALUE_MISSING ||
+    reason === ExtensionsStatus.INVALID_CONFIG ||
+    reason === ExtensionsStatus.FILE_NOT_EXISTS
+  ) {
+    // Plugin installation is disabled. Contact your administrator for assistance.
+    return message;
+  }
+  return '';
 };

@@ -294,7 +294,6 @@ export async function createRouter(
           `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
         );
       }
-
       const marketplacePlugin = await marketplaceApi.getPluginByName(
         req.params.namespace,
         req.params.name,

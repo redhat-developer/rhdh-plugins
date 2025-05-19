@@ -53,9 +53,19 @@ export type FetchApi = {
 /**
  * @public
  */
+export type IdentityApi = {
+  getCredentials(): Promise<{
+    token?: string;
+  }>;
+};
+
+/**
+ * @public
+ */
 export type MarketplaceBackendClientOptions = {
   discoveryApi: DiscoveryApi;
   fetchApi: FetchApi;
+  identityApi: IdentityApi;
 };
 
 /**
@@ -64,10 +74,12 @@ export type MarketplaceBackendClientOptions = {
 export class MarketplaceBackendClient implements MarketplaceApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
+  private readonly identityApi: IdentityApi;
 
   constructor(options: MarketplaceBackendClientOptions) {
     this.discoveryApi = options.discoveryApi;
     this.fetchApi = options.fetchApi;
+    this.identityApi = options.identityApi;
   }
 
   private async request(
@@ -76,14 +88,17 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     searchParams?: URLSearchParams,
     body?: any,
   ): Promise<any> {
+    const { token: idToken } = await this.identityApi.getCredentials();
     const baseUrl = await this.discoveryApi.getBaseUrl('extensions');
     const query = searchParams ? searchParams.toString() : '';
     const url = `${baseUrl}${path}${query ? '?' : ''}${query}`;
 
     const options: RequestInit = {
       method: requestType,
+
       headers: {
         'Content-Type': 'application/json',
+        ...(idToken && { Authorization: `Bearer ${idToken}` }),
       },
     };
     if (body && requestType !== 'GET') {
