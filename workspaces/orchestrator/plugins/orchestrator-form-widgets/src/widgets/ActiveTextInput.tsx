@@ -19,9 +19,8 @@ import { Widget } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
 import { CircularProgress, FormControl, TextField } from '@material-ui/core';
 import { Autocomplete, AutocompleteRenderInputParams } from '@material-ui/lab';
-import { useWrapperFormPropsContext } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
-import { FormContextData } from '../types';
 import {
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
@@ -37,13 +36,13 @@ import { UiProps } from '../uiPropTypes';
 export const ActiveTextInput: Widget<
   JsonObject,
   JSONSchema7,
-  FormContextData
+  OrchestratorFormContextProps
 > = props => {
   const templateUnitEvaluator = useTemplateUnitEvaluator();
-  const formContext = useWrapperFormPropsContext();
 
-  const { formData } = formContext;
-  const { label, value, onChange } = props;
+  const { label, value, onChange, formContext } = props;
+  const formData = formContext?.formData;
+
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as UiProps,
     [props.options?.props],
@@ -67,7 +66,7 @@ export const ActiveTextInput: Widget<
     uiProps['fetch:retrigger'] as string[],
   );
 
-  const { data, error, loading } = useFetch(formData, uiProps, retrigger);
+  const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
   const handleChange = useCallback(
     (changed: string) => {

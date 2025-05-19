@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { Context } from 'react';
+import React from 'react';
 
 import {
   FormDecoratorProps,
@@ -24,18 +24,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
 class DefaultFormApi implements OrchestratorFormApi {
-  private readonly context: Context<OrchestratorFormContextProps | null>;
-
-  public constructor() {
-    this.context = React.createContext<OrchestratorFormContextProps | null>(
-      null,
-    );
-  }
-
-  getFormContext(): React.Context<OrchestratorFormContextProps | null> {
-    return this.context;
-  }
-
   getFormDecorator(): OrchestratorFormDecorator {
     // eslint-disable-next-line no-console
     console.log(
@@ -43,7 +31,9 @@ class DefaultFormApi implements OrchestratorFormApi {
     );
 
     return (FormComponent: React.ComponentType<FormDecoratorProps>) =>
-      FormComponent;
+      (props: OrchestratorFormContextProps) => (
+        <FormComponent formContext={props} />
+      );
   }
 }
 

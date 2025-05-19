@@ -76,6 +76,7 @@ app.get('/coursedetailsschema', (req, res) => {
         /* replace nothing */
       }),
     );
+    return;
   }
 
   const fields = {

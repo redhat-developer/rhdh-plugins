@@ -20,7 +20,7 @@ import { evaluateTemplateProps } from './evaluateTemplate';
 
 export const useRetriggerEvaluate = (
   templateUnitEvaluator: evaluateTemplateProps['unitEvaluator'],
-  formData: JsonObject,
+  formData = {} as JsonObject,
   conditions?: string[],
 ): (string | undefined)[] | undefined => {
   const [evaluated, setEvaluated] = useState<(string | undefined)[]>();

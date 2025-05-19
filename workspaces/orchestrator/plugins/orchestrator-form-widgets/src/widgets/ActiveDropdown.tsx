@@ -17,7 +17,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Widget } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
 import { JSONSchema7 } from 'json-schema';
-import { useWrapperFormPropsContext } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import {
   CircularProgress,
   FormControl,
@@ -26,7 +26,6 @@ import {
   Select,
 } from '@material-ui/core';
 
-import { FormContextData } from '../types';
 import {
   useFetch,
   useRetriggerEvaluate,
@@ -39,13 +38,13 @@ import { ErrorText } from './ErrorText';
 export const ActiveDropdown: Widget<
   JsonObject,
   JSONSchema7,
-  FormContextData
+  OrchestratorFormContextProps
 > = props => {
   const templateUnitEvaluator = useTemplateUnitEvaluator();
-  const formContext = useWrapperFormPropsContext();
 
-  const { formData } = formContext;
-  const { label, value, onChange } = props;
+  const { label, value, onChange, formContext } = props;
+  const formData = formContext?.formData;
+
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as UiProps,
     [props.options?.props],
@@ -69,7 +68,7 @@ export const ActiveDropdown: Widget<
     uiProps['fetch:retrigger'] as string[],
   );
 
-  const { data, error, loading } = useFetch(formData, uiProps, retrigger);
+  const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
   useEffect(() => {
     if (!data || !labelSelector || !valueSelector) {
