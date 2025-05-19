@@ -29,11 +29,12 @@ type SandboxCatalogCardButtonProps = {
   id: Product;
   handleTryButtonClick: (id: Product) => void;
   theme: Theme;
+  refetchingUserData?: boolean;
 };
 
 export const SandboxCatalogCardButton: React.FC<
   SandboxCatalogCardButtonProps
-> = ({ link, id, handleTryButtonClick, theme }) => {
+> = ({ link, id, handleTryButtonClick, theme, refetchingUserData }) => {
   const { loading, userFound, verificationRequired, userReady, ansibleStatus } =
     useSandboxContext();
 
@@ -54,7 +55,11 @@ export const SandboxCatalogCardButton: React.FC<
   })();
 
   let endIcon;
-  if (loading || (userFound && !userReady && !verificationRequired)) {
+  if (
+    loading ||
+    (userFound && !userReady && !verificationRequired) ||
+    refetchingUserData
+  ) {
     endIcon = <CircularProgress size={20} />;
   } else if (id !== Product.AAP) {
     endIcon = <OpenInNewIcon />;
