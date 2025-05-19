@@ -728,6 +728,43 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
+    'pingWorkflowServiceById',
+    async (c, req: express.Request, res: express.Response, next) => {
+      const workflowId = c.request.params.workflowId as string;
+
+      const auditEvent = await auditor.createEvent({
+        eventId: 'ping-workflow-service',
+        request: req,
+      });
+
+      const decision = await authorize(
+        req,
+        [
+          orchestratorWorkflowPermission,
+          orchestratorWorkflowSpecificPermission(workflowId),
+        ],
+        permissions,
+        httpAuth,
+      );
+      if (decision.result === AuthorizeResult.DENY) {
+        manageDenyAuthorization(auditEvent);
+      }
+
+      return routerApi.v2
+        .pingWorkflowService(workflowId)
+        .then(result => {
+          auditEvent.success();
+          res.json(result);
+        })
+        .catch(error => {
+          auditEvent.fail({ error });
+          next(error);
+        });
+    },
+  );
+
+  // v2
+  routerApi.openApiBackend.register(
     'getInstances',
     async (_c, req: express.Request, res: express.Response, next) => {
       const auditEvent = await auditor.createEvent({

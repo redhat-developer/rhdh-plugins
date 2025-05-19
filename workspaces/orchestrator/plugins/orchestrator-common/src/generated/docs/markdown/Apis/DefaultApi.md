@@ -14,6 +14,7 @@ All URIs are relative to *http://localhost*
 | [**getWorkflowSourceById**](DefaultApi.md#getWorkflowSourceById) | **GET** /v2/workflows/{workflowId}/source |  |
 | [**getWorkflowStatuses**](DefaultApi.md#getWorkflowStatuses) | **GET** /v2/workflows/instances/statuses | Get workflow status list |
 | [**getWorkflowsOverview**](DefaultApi.md#getWorkflowsOverview) | **POST** /v2/workflows/overview |  |
+| [**pingWorkflowServiceById**](DefaultApi.md#pingWorkflowServiceById) | **GET** /v2/workflows/{workflowId}/pingWorkflowService |  |
 | [**retriggerInstance**](DefaultApi.md#retriggerInstance) | **POST** /v2/workflows/{workflowId}/{instanceId}/retrigger | Retrigger an instance |
 
 
@@ -287,6 +288,33 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="pingWorkflowServiceById"></a>
+# **pingWorkflowServiceById**
+> Boolean pingWorkflowServiceById(workflowId)
+
+
+
+    Returns true if the workflow service is up for the given workflow ID.
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **workflowId** | **String**| ID of the workflow to fetch | [default to null] |
+
+### Return type
+
+**Boolean**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 <a name="retriggerInstance"></a>
