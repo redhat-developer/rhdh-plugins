@@ -1,5 +1,32 @@
 ### Dependencies
 
+## 6.0.0
+
+### Major Changes
+
+- ff929e2: feat(orchestrator): capturing the auth tokens from available SCM systems after user logsIn and then send it to backend-plugin.
+
+### Minor Changes
+
+- fc9ce7c: Backstage version bump to v1.37.1
+
+### Patch Changes
+
+- 5214a15: Dev change only - use @janus-idp/cli 3.2.0 instead of 3.5.0
+- 3ac726f: add workflow status (available/unavailable)
+- fd078b4: Use upstream AuditorService instead of the Janus-specific AuditLogger.
+- 2f33284: Update kie-tools, @janus/cli and Backstage supported version to the most recent ones.
+- a9e5f32: Updated dependency `@openapitools/openapi-generator-cli` to `2.20.0`.
+  Updated dependency `prettier` to `3.5.3`.
+  Updated dependency `@redhat-developer/red-hat-developer-hub-theme` to `0.5.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.6.0`.
+  Updated dependency `@janus-idp/cli` to `3.5.0`.
+- 544c80a: Fix instance fetching to respect permissions
+- Updated dependencies [2f33284]
+- Updated dependencies [a9e5f32]
+- Updated dependencies [fc9ce7c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.0
+
 ## 5.2.3
 
 ### Patch Changes
