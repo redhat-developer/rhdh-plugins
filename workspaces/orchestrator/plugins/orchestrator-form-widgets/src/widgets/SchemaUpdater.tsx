@@ -18,12 +18,11 @@ import { Widget } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
 import { JsonObject } from '@backstage/types';
 import {
-  useWrapperFormPropsContext,
   SchemaChunksResponse,
+  OrchestratorFormContextProps,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { CircularProgress } from '@material-ui/core';
 
-import { FormContextData } from '../types';
 import {
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
@@ -35,12 +34,14 @@ import { UiProps } from '../uiPropTypes';
 export const SchemaUpdater: Widget<
   JsonObject,
   JSONSchema7,
-  FormContextData
+  OrchestratorFormContextProps
 > = props => {
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const formContext = useWrapperFormPropsContext();
-  const { updateSchema, formData } = formContext;
+  const { formContext } = props;
+  const formData = formContext?.formData;
+
+  const updateSchema = formContext?.updateSchema;
 
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as UiProps,
@@ -55,10 +56,15 @@ export const SchemaUpdater: Widget<
     uiProps['fetch:retrigger'] as string[],
   );
 
-  const { data, error, loading } = useFetch(formData, uiProps, retrigger);
+  const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
   useEffect(() => {
     if (!data) {
+      return;
+    }
+
+    if (!updateSchema) {
+      setLocalError('Missing the updateSchema() function in form context.');
       return;
     }
 

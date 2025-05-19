@@ -30,30 +30,25 @@ import {
   FormDecoratorProps,
   OrchestratorFormContextProps,
   useOrchestratorFormApiOrDefault,
-  useWrapperFormPropsContext,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
 import { useStepperContext } from '../utils/StepperContext';
 import useValidator from '../utils/useValidator';
 import StepperObjectField from './StepperObjectField';
 
-const MuiForm = withTheme<JsonObject, JSONSchema7>(MuiTheme);
+const MuiForm = withTheme<
+  JsonObject,
+  JSONSchema7,
+  OrchestratorFormContextProps
+>(MuiTheme);
 
 const FormComponent = (decoratorProps: FormDecoratorProps) => {
-  const formContext = useWrapperFormPropsContext();
+  const formContext = decoratorProps.formContext;
 
-  const {
-    numStepsInMultiStepSchema,
-    uiSchema,
-    schema,
-    onSubmit: _onSubmit,
-    children,
-    formData,
-    setFormData,
-  } = formContext;
   const [extraErrors, setExtraErrors] = React.useState<
     ErrorSchema<JsonObject> | undefined
   >();
+  const numStepsInMultiStepSchema = formContext?.numStepsInMultiStepSchema;
   const isMultiStep = numStepsInMultiStepSchema !== undefined;
   const { handleNext, activeStep, handleValidateStarted, handleValidateEnded } =
     useStepperContext();
@@ -61,6 +56,20 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     Error | undefined
   >();
   const validator = useValidator(isMultiStep);
+
+  if (!formContext) {
+    return <div>Form decorator must provide context data.</div>;
+  }
+
+  const {
+    uiSchema,
+    schema,
+    onSubmit: _onSubmit,
+    children,
+    formData,
+    setFormData,
+  } = formContext;
+
   const getActiveKey = () => {
     if (!isMultiStep) {
       return undefined;
@@ -75,7 +84,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     if (decoratorProps.getExtraErrors) {
       try {
         handleValidateStarted();
-        _extraErrors = await decoratorProps.getExtraErrors(formData);
+        _extraErrors = await decoratorProps.getExtraErrors(formData, uiSchema);
         const activeKey = getActiveKey();
         setExtraErrors(
           activeKey && _extraErrors?.[activeKey]
@@ -114,6 +123,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           validator={validator}
           schema={schema}
           formData={formData}
+          formContext={decoratorProps.formContext}
           noHtml5Validate
           extraErrors={extraErrors}
           onSubmit={e => onSubmit(e.formData || {})}
@@ -131,9 +141,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
   );
 };
 
-type OrchestratorFormWrapperProps = OrchestratorFormContextProps;
-
-const OrchestratorFormWrapper = (props: OrchestratorFormWrapperProps) => {
+const OrchestratorFormWrapper = (props: OrchestratorFormContextProps) => {
   const formApi = useOrchestratorFormApiOrDefault();
 
   const NewComponent = React.useMemo(() => {
@@ -141,16 +149,7 @@ const OrchestratorFormWrapper = (props: OrchestratorFormWrapperProps) => {
     return formDecorator(FormComponent);
   }, [formApi]);
 
-  const WrapperFormPropsContext = React.useMemo(
-    () => formApi.getFormContext(),
-    [formApi],
-  );
-
-  return (
-    <WrapperFormPropsContext.Provider value={props}>
-      <NewComponent />
-    </WrapperFormPropsContext.Provider>
-  );
+  return <NewComponent {...props} />;
 };
 
 export default OrchestratorFormWrapper;

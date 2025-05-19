@@ -14,14 +14,30 @@
  * limitations under the License.
  */
 
-import { Context } from 'react';
-
-import { createApiRef } from '@backstage/core-plugin-api';
+import { createApiRef, useApiHolder } from '@backstage/core-plugin-api';
 import { JsonObject } from '@backstage/types';
 
 import { FormProps } from '@rjsf/core';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
+
+import { defaultFormExtensionsApi } from './DefaultFormApi';
+
+/**
+ * @public
+ *
+ */
+export type OrchestratorFormContextProps = {
+  schema: JSONSchema7;
+  updateSchema: OrchestratorFormSchemaUpdater;
+  numStepsInMultiStepSchema?: number;
+  uiSchema: UiSchema<JsonObject, JSONSchema7>;
+  formData: JsonObject;
+  setFormData: (data: JsonObject) => void;
+
+  children: React.ReactNode;
+  onSubmit: (formData: JsonObject) => void;
+};
 
 /**
  * @public
@@ -46,11 +62,12 @@ import type { JSONSchema7 } from 'json-schema';
  *   The orchestrator form component will call getExtraErrors when running onSubmit.
  */
 export type FormDecoratorProps = Pick<
-  FormProps<JsonObject, JSONSchema7>,
+  FormProps<JsonObject, JSONSchema7, OrchestratorFormContextProps>,
   'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate'
 > & {
   getExtraErrors?: (
     formData: JsonObject,
+    uiSchema: OrchestratorFormContextProps['uiSchema'],
   ) => Promise<ErrorSchema<JsonObject>> | undefined;
 };
 
@@ -61,7 +78,7 @@ export type FormDecoratorProps = Pick<
  */
 export type OrchestratorFormDecorator = (
   FormComponent: React.ComponentType<FormDecoratorProps>,
-) => React.ComponentType;
+) => React.ComponentType<OrchestratorFormContextProps>;
 
 /**
  * @public
@@ -86,21 +103,6 @@ export type OrchestratorFormSchemaUpdater = (
 
 /**
  * @public
- *
- */
-export type OrchestratorFormContextProps = {
-  schema: JSONSchema7;
-  updateSchema: OrchestratorFormSchemaUpdater;
-  numStepsInMultiStepSchema?: number;
-  children: React.ReactNode;
-  onSubmit: (formData: JsonObject) => void;
-  uiSchema: UiSchema<JsonObject, JSONSchema7>;
-  formData: JsonObject;
-  setFormData: (data: JsonObject) => void;
-};
-
-/**
- * @public
  * OrchestratorFormApi
  * API to be implemented by factory in a custom plugin
  */
@@ -112,7 +114,7 @@ export interface OrchestratorFormApi {
    * Must be created by the API to share just a single instance within both the OrchestratorFormApi and
    * the Orchestrator where the context is actually provided (see OrchestratorFormWrapper).
    */
-  getFormContext(): Context<OrchestratorFormContextProps | null>;
+  // getFormContext(): Context<OrchestratorFormContextProps | null>;
 
   /**
    * @public
@@ -130,3 +132,6 @@ export interface OrchestratorFormApi {
 export const orchestratorFormApiRef = createApiRef<OrchestratorFormApi>({
   id: 'plugin.orchestrator.form',
 });
+
+export const useOrchestratorFormApiOrDefault = (): OrchestratorFormApi =>
+  useApiHolder().get(orchestratorFormApiRef) ?? defaultFormExtensionsApi;
