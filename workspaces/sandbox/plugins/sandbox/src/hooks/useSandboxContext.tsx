@@ -34,7 +34,7 @@ interface SandboxContextType {
   loading: boolean;
   fetchError: string | null;
   signupError: string | null;
-  refetchUserData: () => void;
+  refetchUserData: () => Promise<boolean>;
   signupUser: () => void;
   refetchAAP: () => void;
   ansibleData: AAPData | undefined;
@@ -108,11 +108,12 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [status]);
 
-  const fetchData = async (isRefetch = false) => {
+  const fetchData = async (isRefetch = false): Promise<boolean> => {
     if (!isRefetch) {
       setLoading(true);
     }
     setFetchError(null);
+    let found = false;
 
     try {
       const result = await registerApi.getSignUpData();
@@ -121,8 +122,10 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       if (result) {
         setUserFound(true);
+        found = true;
       } else {
         setUserFound(false);
+        found = false;
       }
     } catch (err) {
       setFetchError(
@@ -132,10 +135,12 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
       );
       setData(undefined);
       setUserFound(false);
+      found = false;
     } finally {
       setLoading(false);
       setStatusUnknown(false);
     }
+    return found;
   };
 
   const signupUser = async () => {

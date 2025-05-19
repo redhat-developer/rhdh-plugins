@@ -121,7 +121,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   const [ansibleCredsModalOpen, setAnsibleCredsModalOpen] =
     React.useState(false);
   const [verifyPhoneModalOpen, setVerifyPhoneModalOpen] = useState(false);
-
+  const [refetchingUserData, setRefetchingUserData] = useState(false);
   const [deleteAnsibleModalOpen, setDeleteAnsibleModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -160,8 +160,30 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
     // User is not yet signed up
     if (!userFound) {
       signupUser();
-      refetchUserData();
+
+      const maxAttempts = 5;
+      const retryInterval = 1000; // 1 second
+
+      // Poll until user is found or max attempts reached
+      for (let i = 0; i < maxAttempts; i++) {
+        setRefetchingUserData(true);
+        await new Promise(resolve => setTimeout(resolve, retryInterval));
+
+        try {
+          // Fetch the latest user data and check if user is found
+          const isUserFound = await refetchUserData();
+          if (isUserFound) {
+            break;
+          }
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Error fetching user data:', error);
+        } finally {
+          setRefetchingUserData(false);
+        }
+      }
     }
+
     // User has signed up but require verification
     if (userFound && verificationRequired) {
       setVerifyPhoneModalOpen(true);
@@ -283,6 +305,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
             id={id}
             handleTryButtonClick={handleTryButtonClick}
             theme={theme}
+            refetchingUserData={refetchingUserData}
           />
           <SandboxCatalogCardDeleteButton
             id={id}

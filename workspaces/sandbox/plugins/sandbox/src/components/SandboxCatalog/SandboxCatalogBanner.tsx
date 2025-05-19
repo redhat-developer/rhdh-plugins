@@ -36,7 +36,7 @@ export const SandboxCatalogBanner: React.FC = () => {
     }
     // unable to compute days
     return undefined;
-  }, [userData]);
+  }, [userData?.endDate]);
 
   return (
     <Card
@@ -73,6 +73,7 @@ export const SandboxCatalogBanner: React.FC = () => {
                 width={500}
                 height="25px"
                 sx={{ my: '10px', borderRadius: 10 }}
+                data-testid="MuiSkeleton-root"
               />
               <Skeleton
                 animation="wave"
@@ -80,6 +81,7 @@ export const SandboxCatalogBanner: React.FC = () => {
                 width={510}
                 height="25px"
                 sx={{ my: '15px', borderRadius: 10 }}
+                data-testid="MuiSkeleton-root"
               />
               <Skeleton
                 animation="wave"
@@ -87,6 +89,7 @@ export const SandboxCatalogBanner: React.FC = () => {
                 width={300}
                 height="25px"
                 sx={{ my: '15px', borderRadius: 10 }}
+                data-testid="MuiSkeleton-root"
               />
             </>
           ) : (
@@ -114,6 +117,9 @@ export const SandboxCatalogBanner: React.FC = () => {
                       fontWeight: 400,
                       fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5625rem' },
                     }}
+                    key={`user-status-${
+                      userData.endDate || ''
+                    }-${verificationRequired}-${pendingApproval}`}
                   >
                     {(() => {
                       if (verificationRequired) {
@@ -123,7 +129,10 @@ export const SandboxCatalogBanner: React.FC = () => {
                         return 'Please wait for your trial to be approved.';
                       }
                       if (userData?.endDate) {
-                        return `Your free trial expires in ${calculateDaysLeft()} days`;
+                        const daysLeft = calculateDaysLeft();
+                        return `Your free trial expires in ${daysLeft} ${
+                          daysLeft === 1 ? 'day' : 'days'
+                        }`;
                       }
                       return '';
                     })()}
