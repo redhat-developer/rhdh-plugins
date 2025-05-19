@@ -69,3 +69,8 @@ export type Attachment = {
 };
 
 export type ConversationList = ConversationSummary[];
+
+export type SamplePrompts = {
+  title: string;
+  message: string;
+}[];

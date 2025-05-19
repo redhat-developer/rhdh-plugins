@@ -38,5 +38,21 @@ export interface Config {
        */
       url: string;
     }>;
+    samplePrompts?: Array</**
+     * @visibility frontend
+     */
+    {
+      /**
+       * The title of the prompt.
+       * Displayed as the heading of the prompt.
+       * @visibility frontend
+       */
+      title: string;
+      /**
+       * The main question or message shown in the prompt.
+       * @visibility frontend
+       */
+      message: string;
+    }>;
   };
 }
