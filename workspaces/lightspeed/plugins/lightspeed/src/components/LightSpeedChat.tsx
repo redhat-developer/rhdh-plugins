@@ -46,6 +46,7 @@ import {
   useLastOpenedConversation,
   useLightspeedDeletePermission,
 } from '../hooks';
+import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
 import { ConversationSummary } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
 import {
@@ -143,7 +144,7 @@ export const LightspeedChat = ({
   const { data: conversations = [] } = useConversations();
   const { mutateAsync: deleteConversation } = useDeleteConversation();
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
-
+  const samplePrompts = useWelcomePrompts();
   React.useEffect(() => {
     if (user && lastOpenedId === null && isReady) {
       setConversationId(TEMP_CONVERSATION_ID);
@@ -307,35 +308,13 @@ export const LightspeedChat = ({
   const welcomePrompts =
     (newChatCreated && conversationMessages.length === 0) ||
     (!conversationFound && conversationMessages.length === 0)
-      ? [
-          {
-            title: 'Getting Started with Backstage',
-            message:
-              'Can you guide me through the first steps to start using Backstage as a developer, like exploring the Software Catalog and adding my service?',
-            onClick: () =>
-              sendMessage(
-                'Can you guide me through the first steps to start using Backstage as a developer, like exploring the Software Catalog and adding my service?',
-              ),
+      ? samplePrompts?.map(prompt => ({
+          title: prompt.title,
+          message: prompt.message,
+          onClick: () => {
+            sendMessage(prompt.message);
           },
-          {
-            title: 'Get Help On Code Readability',
-            message:
-              'Can you suggest techniques I can use to make my code more readable and maintainable?',
-            onClick: () =>
-              sendMessage(
-                'Can you suggest techniques I can use to make my code more readable and maintainable?',
-              ),
-          },
-          {
-            title: 'Create An OpenShift Deployment',
-            message:
-              'Can you guide me through creating a new deployment in OpenShift for a containerized application?',
-            onClick: () =>
-              sendMessage(
-                'Can you guide me through creating a new deployment in OpenShift for a containerized application?',
-              ),
-          },
-        ]
+        }))
       : [];
 
   const handleFilter = React.useCallback((value: string) => {
