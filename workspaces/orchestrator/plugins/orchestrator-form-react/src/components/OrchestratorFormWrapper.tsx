@@ -17,7 +17,6 @@
 import React from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
-import { useApiHolder } from '@backstage/core-plugin-api';
 import { JsonObject } from '@backstage/types';
 
 import { Grid } from '@material-ui/core';
@@ -29,13 +28,11 @@ import omit from 'lodash/omit';
 
 import {
   FormDecoratorProps,
-  orchestratorFormApiRef,
   OrchestratorFormContextProps,
+  useOrchestratorFormApiOrDefault,
   useWrapperFormPropsContext,
-  WrapperFormPropsContext,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
-import { defaultFormExtensionsApi } from '../DefaultFormApi';
 import { useStepperContext } from '../utils/StepperContext';
 import useValidator from '../utils/useValidator';
 import StepperObjectField from './StepperObjectField';
@@ -137,13 +134,17 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
 type OrchestratorFormWrapperProps = OrchestratorFormContextProps;
 
 const OrchestratorFormWrapper = (props: OrchestratorFormWrapperProps) => {
-  const formApi =
-    useApiHolder().get(orchestratorFormApiRef) || defaultFormExtensionsApi;
+  const formApi = useOrchestratorFormApiOrDefault();
 
   const NewComponent = React.useMemo(() => {
     const formDecorator = formApi.getFormDecorator();
     return formDecorator(FormComponent);
   }, [formApi]);
+
+  const WrapperFormPropsContext = React.useMemo(
+    () => formApi.getFormContext(),
+    [formApi],
+  );
 
   return (
     <WrapperFormPropsContext.Provider value={props}>

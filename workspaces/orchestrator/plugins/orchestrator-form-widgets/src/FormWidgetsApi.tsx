@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import React, { useCallback } from 'react';
+import React, { Context, useCallback } from 'react';
 import {
   FormDecoratorProps,
   OrchestratorFormApi,
+  OrchestratorFormContextProps,
   useWrapperFormPropsContext,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { FormValidation } from '@rjsf/utils';
@@ -48,6 +49,18 @@ const widgets = {
 };
 
 export class FormWidgetsApi implements OrchestratorFormApi {
+  private readonly context: Context<OrchestratorFormContextProps | null>;
+
+  public constructor() {
+    this.context = React.createContext<OrchestratorFormContextProps | null>(
+      null,
+    );
+  }
+
+  getFormContext = () => {
+    return this.context;
+  };
+
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
     // eslint-disable-next-line no-console
     console.log('Using FormWidgetsApi by RHDH orchestrator-form-widgets.');

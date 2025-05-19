@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import { Context } from 'react';
+
 import { createApiRef } from '@backstage/core-plugin-api';
 import { JsonObject } from '@backstage/types';
 
 import { FormProps } from '@rjsf/core';
-import { ErrorSchema } from '@rjsf/utils';
+import { ErrorSchema, UiSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 
 /**
@@ -84,10 +86,34 @@ export type OrchestratorFormSchemaUpdater = (
 
 /**
  * @public
+ *
+ */
+export type OrchestratorFormContextProps = {
+  schema: JSONSchema7;
+  updateSchema: OrchestratorFormSchemaUpdater;
+  numStepsInMultiStepSchema?: number;
+  children: React.ReactNode;
+  onSubmit: (formData: JsonObject) => void;
+  uiSchema: UiSchema<JsonObject, JSONSchema7>;
+  formData: JsonObject;
+  setFormData: (data: JsonObject) => void;
+};
+
+/**
+ * @public
  * OrchestratorFormApi
  * API to be implemented by factory in a custom plugin
  */
 export interface OrchestratorFormApi {
+  /**
+   * @public
+   * Context wrapping the RJSF form on Workflow execution page, making it available for the custom widgets.
+   *
+   * Must be created by the API to share just a single instance within both the OrchestratorFormApi and
+   * the Orchestrator where the context is actually provided (see OrchestratorFormWrapper).
+   */
+  getFormContext(): Context<OrchestratorFormContextProps | null>;
+
   /**
    * @public
    * getFormDecorator
