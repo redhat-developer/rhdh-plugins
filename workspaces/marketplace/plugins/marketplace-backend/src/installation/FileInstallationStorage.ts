@@ -36,7 +36,7 @@ export class FileInstallationStorage implements InstallationStorage {
 
   private toStringYaml(mapNodes: YAMLMap[]): string {
     const tempDoc = new Document(mapNodes);
-    return tempDoc.toString();
+    return tempDoc.toString({ lineWidth: 0 });
   }
 
   private getPackageYamlMap(packageName: string): YAMLMap | undefined {
@@ -55,7 +55,7 @@ export class FileInstallationStorage implements InstallationStorage {
   }
 
   getConfigYaml(): string {
-    return this.config.toString();
+    return this.config.toString({ lineWidth: 0 });
   }
 
   getPackage(packageName: string): string | undefined {
