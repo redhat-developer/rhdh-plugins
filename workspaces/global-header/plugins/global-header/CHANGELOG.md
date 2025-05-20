@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.5.2
+
+### Patch Changes
+
+- 437ff3f: fix global-header to prioritize 'spec.profile.displayname' or 'metadata.title' over profilename
+
 ## 1.5.1
 
 ### Patch Changes
