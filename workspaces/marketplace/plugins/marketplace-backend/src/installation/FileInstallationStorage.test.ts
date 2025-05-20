@@ -72,7 +72,7 @@ describe('FileInstallationStorage', () => {
       expect(() => {
         fileInstallationStorage.initialize();
       }).toThrow(
-        "Failed to load 'extensions.installation.saveToSingleFile.file'. Invalid installation configuration, 'plugins' field must be a list",
+        "Invalid installation configuration, 'plugins' field must be a list",
       );
     });
 
@@ -88,7 +88,7 @@ describe('FileInstallationStorage', () => {
       expect(() => {
         fileInstallationStorage.initialize();
       }).toThrow(
-        "Invalid installation configuration, 'package' field in each package item must be a non-empty string",
+        "Invalid installation configuration, 'package' field in package item must be a non-empty string",
       );
     });
   });

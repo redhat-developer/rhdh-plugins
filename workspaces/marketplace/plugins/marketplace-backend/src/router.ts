@@ -16,7 +16,7 @@
 
 import express, { Request, Response, NextFunction } from 'express';
 import Router from 'express-promise-router';
-import { NotAllowedError } from '@backstage/errors';
+import { InputError, NotAllowedError } from '@backstage/errors';
 import {
   HttpAuthService,
   PermissionsService,
@@ -44,6 +44,7 @@ import { removeVerboseSpecContent } from './utils/removeVerboseSpecContent';
 import { rules as extensionRules } from './permissions/rules';
 import { matches } from './utils/permissionUtils';
 import { InstallationDataService } from './installation/InstallationDataService';
+import { ConfigFormatError } from './errors/ConfigFormatError';
 
 export type MarketplaceRouterOptions = {
   httpAuth: HttpAuthService;
@@ -173,6 +174,41 @@ export async function createRouter(
         marketplacePackage.spec?.dynamicArtifact,
       );
       res.status(200).json({ configYaml: result });
+    },
+  );
+
+  router.post(
+    '/package/:namespace/:name/configuration',
+    requireInitializedInstallationDataService,
+    async (req, res) => {
+      const marketplacePackage = await marketplaceApi.getPackageByName(
+        req.params.namespace,
+        req.params.name,
+      );
+      if (!marketplacePackage.spec?.dynamicArtifact) {
+        throw new Error(
+          `Package ${marketplacePackage.metadata.name} is missing 'spec.dynamicArtifact'`,
+        );
+      }
+
+      const newConfig = req.body.configYaml;
+      if (!newConfig) {
+        throw new InputError(
+          "'configYaml' object must be present non-empty string",
+        );
+      }
+      try {
+        installationDataService.updatePackageConfig(
+          marketplacePackage.spec.dynamicArtifact,
+          newConfig,
+        );
+      } catch (e) {
+        if (e instanceof ConfigFormatError) {
+          throw new InputError(e.message);
+        }
+        throw e;
+      }
+      res.status(200).json({ status: 'OK' });
     },
   );
 
@@ -310,7 +346,19 @@ export async function createRouter(
       );
     }
 
-    res.status(200).json({});
+    const newConfig = req.body.configYaml;
+    if (!newConfig) {
+      throw new InputError("'configYaml' object must be present");
+    }
+    try {
+      await installationDataService.updatePluginConfig(plugin, newConfig);
+    } catch (e) {
+      if (e instanceof ConfigFormatError) {
+        throw new InputError(e.message);
+      }
+      throw e;
+    }
+    res.status(200).json({ status: 'OK' });
   });
 
   router.get('/plugin/:namespace/:name/packages', async (req, res) => {
