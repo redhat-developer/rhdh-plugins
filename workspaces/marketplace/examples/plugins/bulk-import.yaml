@@ -3,7 +3,7 @@ apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   name: bulk-import
-  namespace: rhdh
+  namespace: marketplace-plugin-demo
   title: Bulk Import
   description: |
     With this plugin you can import multiple code repositories into your software catalog at once. The plugin provides
