@@ -1,5 +1,44 @@
 ### Dependencies
 
+## 3.0.0
+
+### Major Changes
+
+- ff929e2: feat(orchestrator): capturing the auth tokens from available SCM systems after user logsIn and then send it to backend-plugin.
+
+### Minor Changes
+
+- 78e3ee6: Added backstage-plugin-orchestrator-form-widgets plugin hosting default set of RJSF form widgets provided along the Orchestrator. Includes the SchemaUpdater widget capable of downloading JSON schema chunks and modifying the RJSF form on the fly.
+- fc9ce7c: Backstage version bump to v1.37.1
+
+### Patch Changes
+
+- 54c33db: change breadcrumbs titles
+- 5214a15: Dev change only - use @janus-idp/cli 3.2.0 instead of 3.5.0
+- 3ac726f: add workflow status (available/unavailable)
+- 535f787: Add option to view input schema from workflows table
+- 7ebb7e1: fix bug in workflowResult - values
+- a6a0262: Fix Results card to render boolean values correctly.
+- 2ab77e3: run again button text is running while workflow is running
+- 2f33284: Update kie-tools, @janus/cli and Backstage supported version to the most recent ones.
+- a9e5f32: Updated dependency `@openapitools/openapi-generator-cli` to `2.20.0`.
+  Updated dependency `prettier` to `3.5.3`.
+  Updated dependency `@redhat-developer/red-hat-developer-hub-theme` to `0.5.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.6.0`.
+  Updated dependency `@janus-idp/cli` to `3.5.0`.
+- 4842b37: Add status icons
+- 438e3aa: Add aborted as a result to WorkflowResult
+- 567adeb: fix use of 'xs' in grid.item
+- 6eecbea: replace sonataflow editor with serverless-workflow-standalone-editor
+- 04ca7f3: Add Workflow Status to WorkflowsTable
+- Updated dependencies [78e3ee6]
+- Updated dependencies [2f33284]
+- Updated dependencies [a9e5f32]
+- Updated dependencies [fc9ce7c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.5.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.5.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.0
+
 ## 2.6.3
 
 ### Patch Changes

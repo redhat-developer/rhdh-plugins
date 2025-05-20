@@ -18,7 +18,7 @@ import { fetchApiRef, useApi } from '@backstage/core-plugin-api';
 import { flatten, get } from 'lodash';
 import {
   OrchestratorFormContextProps,
-  useWrapperFormPropsContext,
+  // useWrapperFormPropsContext,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { JsonObject } from '@backstage/types';
 import { ErrorSchema } from '@rjsf/utils';
@@ -67,11 +67,11 @@ const walkThrough: (
 
 export const useGetExtraErrors = () => {
   const fetchApi = useApi(fetchApiRef);
-  const { formData, uiSchema } = useWrapperFormPropsContext();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
   return async (
-    currentFormData: JsonObject,
+    formData: JsonObject,
+    uiSchema: OrchestratorFormContextProps['uiSchema'],
   ): Promise<ErrorSchema<JsonObject>> => {
     // Asynchronous validation on wizard step transition or submit
     const errors: ErrorSchema<JsonObject> = {};
@@ -82,7 +82,7 @@ export const useGetExtraErrors = () => {
       if (
         validateUrl &&
         ['ActiveTextInput', 'ActiveDropdown'].includes(
-          uiSchemaProperty?.['ui:widget']?.toString() || '',
+          uiSchemaProperty?.['ui:widget']?.toString() ?? '',
         )
       ) {
         const value = get(formData, path);
@@ -128,7 +128,7 @@ export const useGetExtraErrors = () => {
 
     const promises: Promise<void>[] = walkThrough(
       uiSchema,
-      currentFormData,
+      formData,
       callback,
       '',
     );

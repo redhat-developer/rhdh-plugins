@@ -91,21 +91,9 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   useEffect(() => {
-    if (status === 'verify') {
-      setVerificationRequired(true);
-    }
-  }, [status]);
-
-  useEffect(() => {
-    if (status === 'pending-approval') {
-      setPendingApproval(true);
-    }
-  }, [status]);
-
-  useEffect(() => {
-    if (status === 'ready') {
-      setUserReady(true);
-    }
+    setVerificationRequired(status === 'verify');
+    setPendingApproval(status === 'pending-approval');
+    setUserReady(status === 'ready');
   }, [status]);
 
   const fetchData = async (isRefetch = false): Promise<boolean> => {

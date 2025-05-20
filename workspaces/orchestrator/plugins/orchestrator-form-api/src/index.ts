@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export { orchestratorFormApiRef } from './api';
+export { orchestratorFormApiRef, useOrchestratorFormApiOrDefault } from './api';
 export type {
   OrchestratorFormApi,
   OrchestratorFormDecorator,
@@ -23,8 +23,3 @@ export type {
   SchemaChunksResponse,
   OrchestratorFormContextProps,
 } from './api';
-
-export {
-  useOrchestratorFormApiOrDefault,
-  useWrapperFormPropsContext,
-} from './context';

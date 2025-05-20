@@ -44,7 +44,7 @@ export const useFetch = (
     setError,
   });
   const evaluatedFetchUrl = useEvaluateTemplate({
-    template: fetchUrl || '',
+    template: fetchUrl ?? '',
     key: 'fetch:url',
     formData,
     setError,

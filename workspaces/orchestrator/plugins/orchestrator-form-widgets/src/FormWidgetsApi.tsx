@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import React, { Context, useCallback } from 'react';
+import React from 'react';
 import {
   FormDecoratorProps,
   OrchestratorFormApi,
   OrchestratorFormContextProps,
-  useWrapperFormPropsContext,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { FormValidation } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
@@ -49,43 +48,24 @@ const widgets = {
 };
 
 export class FormWidgetsApi implements OrchestratorFormApi {
-  private readonly context: Context<OrchestratorFormContextProps | null>;
-
-  public constructor() {
-    this.context = React.createContext<OrchestratorFormContextProps | null>(
-      null,
-    );
-  }
-
-  getFormContext = () => {
-    return this.context;
-  };
-
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
     // eslint-disable-next-line no-console
     console.log('Using FormWidgetsApi by RHDH orchestrator-form-widgets.');
 
     return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
-      return () => {
-        const { formData, setFormData } = useWrapperFormPropsContext();
+      return (props: OrchestratorFormContextProps) => {
+        const { setFormData } = props;
         const getExtraErrors = useGetExtraErrors();
-
-        const onChange = useCallback(
-          (data: JsonObject | undefined) => {
-            if (data) {
-              setFormData(data);
-            }
-          },
-          [setFormData],
-        );
 
         return (
           <FormComponent
             widgets={widgets}
             onChange={e => {
-              onChange(e.formData);
+              if (e.formData) {
+                setFormData(e.formData);
+              }
             }}
-            formContext={formData}
+            formContext={props}
             customValidate={customValidate}
             getExtraErrors={getExtraErrors}
           />

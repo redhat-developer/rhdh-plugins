@@ -4,8 +4,9 @@
 
 ```ts
 
+/// <reference types="react" />
+
 import { ApiRef } from '@backstage/core-plugin-api';
-import { Context } from 'react';
 import { ErrorSchema } from '@rjsf/utils';
 import { FormProps } from '@rjsf/core';
 import { JsonObject } from '@backstage/types';
@@ -13,13 +14,12 @@ import type { JSONSchema7 } from 'json-schema';
 import { UiSchema } from '@rjsf/utils';
 
 // @public
-export type FormDecoratorProps = Pick<FormProps<JsonObject, JSONSchema7>, 'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate'> & {
-    getExtraErrors?: (formData: JsonObject) => Promise<ErrorSchema<JsonObject>> | undefined;
+export type FormDecoratorProps = Pick<FormProps<JsonObject, JSONSchema7, OrchestratorFormContextProps>, 'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate'> & {
+    getExtraErrors?: (formData: JsonObject, uiSchema: OrchestratorFormContextProps['uiSchema']) => Promise<ErrorSchema<JsonObject>> | undefined;
 };
 
 // @public
 export interface OrchestratorFormApi {
-    getFormContext(): Context<OrchestratorFormContextProps | null>;
     getFormDecorator(): OrchestratorFormDecorator;
 }
 
@@ -31,15 +31,15 @@ export type OrchestratorFormContextProps = {
     schema: JSONSchema7;
     updateSchema: OrchestratorFormSchemaUpdater;
     numStepsInMultiStepSchema?: number;
-    children: React.ReactNode;
-    onSubmit: (formData: JsonObject) => void;
     uiSchema: UiSchema<JsonObject, JSONSchema7>;
     formData: JsonObject;
     setFormData: (data: JsonObject) => void;
+    children: React.ReactNode;
+    onSubmit: (formData: JsonObject) => void;
 };
 
 // @public
-export type OrchestratorFormDecorator = (FormComponent: React.ComponentType<FormDecoratorProps>) => React.ComponentType;
+export type OrchestratorFormDecorator = (FormComponent: React.ComponentType<FormDecoratorProps>) => React.ComponentType<OrchestratorFormContextProps>;
 
 // @public
 export type OrchestratorFormSchemaUpdater = (chunks: SchemaChunksResponse) => void;
@@ -49,16 +49,15 @@ export type SchemaChunksResponse = {
     [key: string]: JsonObject;
 };
 
+// Warning: (ae-missing-release-tag) "useOrchestratorFormApiOrDefault" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
 // @public (undocumented)
 export const useOrchestratorFormApiOrDefault: () => OrchestratorFormApi;
 
-// @public
-export const useWrapperFormPropsContext: () => OrchestratorFormContextProps;
-
 // Warnings were encountered during analysis:
 //
-// src/api.d.ts:58:1 - (ae-undocumented) Missing documentation for "OrchestratorFormContextProps".
-// src/context.d.ts:6:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
+// src/api.d.ts:10:1 - (ae-undocumented) Missing documentation for "OrchestratorFormContextProps".
+// src/api.d.ts:94:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
 
 // (No @packageDocumentation comment for this package)
 
