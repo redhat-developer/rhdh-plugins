@@ -49,7 +49,7 @@ export type MarketplaceRouterOptions = {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
   permissions: PermissionsService;
-  installationDataService?: InstallationDataService;
+  installationDataService: InstallationDataService;
 };
 
 export async function createRouter(
@@ -58,18 +58,16 @@ export async function createRouter(
   const { httpAuth, marketplaceApi, permissions, installationDataService } =
     options;
 
-  const requireInstallationDataService = (
+  const requireInitializedInstallationDataService = (
     _req: Request,
     _res: Response,
     next: NextFunction,
   ) => {
-    if (!installationDataService) {
-      throw new Error(
-        "Installation is disabled under 'extensions.installation.enabled'.",
-      );
-    } else {
-      next();
+    const error = installationDataService.getInitializationError();
+    if (error) {
+      throw error;
     }
+    next();
   };
 
   const router = Router();
@@ -159,7 +157,7 @@ export async function createRouter(
 
   router.get(
     '/package/:namespace/:name/configuration',
-    requireInstallationDataService,
+    requireInitializedInstallationDataService,
     async (req, res) => {
       const marketplacePackage = await marketplaceApi.getPackageByName(
         req.params.namespace,
@@ -251,7 +249,7 @@ export async function createRouter(
 
   router.get(
     '/plugin/:namespace/:name/configuration',
-    requireInstallationDataService,
+    requireInitializedInstallationDataService,
     async (req, res) => {
       const readDecision = await authorizeConditional(
         req,

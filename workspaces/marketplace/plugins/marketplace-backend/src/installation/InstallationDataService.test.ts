@@ -25,6 +25,11 @@ import {
   mockPlugins,
 } from '../../__fixtures__/mockData';
 import { stringify } from 'yaml';
+import { mockServices } from '@backstage/backend-test-utils';
+import {
+  InstallationInitError,
+  InstallationInitErrorReason,
+} from '../errors/InstallationInitError';
 
 jest.mock('./FileInstallationStorage', () => {
   return {
@@ -37,27 +42,107 @@ jest.mock('./FileInstallationStorage', () => {
 describe('InstallationDataService', () => {
   let installationDataService: InstallationDataService;
 
-  beforeEach(async () => {
-    const mockConfig = new ConfigReader({
-      extensions: {
-        installation: {
-          enabled: true,
-          type: 'saveToSingleFile',
-          saveToSingleFile: { file: 'dummy-file.yaml' },
-        },
+  const validConfig = new ConfigReader({
+    extensions: {
+      installation: {
+        enabled: true,
+        type: 'saveToSingleFile',
+        saveToSingleFile: { file: 'dummy-file.yaml' },
       },
-    });
-    installationDataService = InstallationDataService.fromConfig({
-      config: mockConfig,
-      marketplaceApi: mockMarketplaceApi,
-    });
+    },
   });
+
+  const mockLogger = mockServices.logger.mock();
 
   afterEach(async () => {
     jest.clearAllMocks();
+    mockFileInstallationStorage.initialize.mockReset();
+  });
+
+  describe('initialize', () => {
+    it("should return service with 'INSTALLATION_DISABLED' error when installation is disabled", () => {
+      const disabledConfig = new ConfigReader({
+        extensions: { installation: { enabled: false } },
+      });
+
+      installationDataService = InstallationDataService.fromConfig({
+        config: disabledConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockLogger,
+      });
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Installation feature is disabled',
+      );
+      expect(installationDataService.getInitializationError()).toBeDefined();
+      expect(installationDataService.getInitializationError()?.reason).toBe(
+        InstallationInitErrorReason.INSTALLATION_DISABLED,
+      );
+    });
+
+    it("should return service with 'FILE_CONFIG_VALUE_MISSING' error when file is missing", () => {
+      const missingFileConfig = new ConfigReader({
+        extensions: { installation: { enabled: true } },
+      });
+
+      installationDataService = InstallationDataService.fromConfig({
+        config: missingFileConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockLogger,
+      });
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "Installation feature is disabled. Error while loading data: Missing required config value at 'extensions.installation.saveToSingleFile.file'",
+      );
+      expect(installationDataService.getInitializationError()).toBeDefined();
+      expect(installationDataService.getInitializationError()?.reason).toBe(
+        InstallationInitErrorReason.FILE_CONFIG_VALUE_MISSING,
+      );
+    });
+
+    it("should return service with an error thrown by 'FileInstallationStorage.initialize'", () => {
+      const fileNotFoundConfig = new ConfigReader({
+        extensions: {
+          installation: {
+            enabled: true,
+            saveToSingleFile: {
+              file: 'non-existent-file.yaml',
+            },
+          },
+        },
+      });
+      mockFileInstallationStorage.initialize.mockImplementationOnce(() => {
+        throw new InstallationInitError(
+          InstallationInitErrorReason.FILE_NOT_EXISTS,
+          'Installation config file does not exist',
+        );
+      });
+
+      installationDataService = InstallationDataService.fromConfig({
+        config: fileNotFoundConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockLogger,
+      });
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Installation feature is disabled. Error while loading data: Installation config file does not exist',
+      );
+      expect(installationDataService.getInitializationError()).toBeDefined();
+      expect(installationDataService.getInitializationError()?.reason).toBe(
+        InstallationInitErrorReason.FILE_NOT_EXISTS,
+      );
+    });
   });
 
   describe('getPackageConfig', () => {
+    beforeEach(async () => {
+      installationDataService = InstallationDataService.fromConfig({
+        config: validConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockServices.logger.mock(),
+      });
+    });
+
     it('should return package config', () => {
       const result = installationDataService.getPackageConfig(
         mockPackages[0].spec?.dynamicArtifact!,
@@ -67,6 +152,14 @@ describe('InstallationDataService', () => {
   });
 
   describe('getPluginConfig', () => {
+    beforeEach(async () => {
+      installationDataService = InstallationDataService.fromConfig({
+        config: validConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockServices.logger.mock(),
+      });
+    });
+
     it('should return plugin config', async () => {
       const pluginToGet = mockPlugins[0];
       mockMarketplaceApi.getPluginPackages = jest.fn((namespace, name) => {

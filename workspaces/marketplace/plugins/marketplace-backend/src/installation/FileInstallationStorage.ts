@@ -18,6 +18,10 @@ import fs from 'fs';
 
 import { Document, isMap, parseDocument, YAMLMap, YAMLSeq } from 'yaml';
 import { validateConfigurationFormat } from '../validation/configValidation';
+import {
+  InstallationInitError,
+  InstallationInitErrorReason,
+} from '../errors/InstallationInitError';
 
 export interface InstallationStorage {
   initialize?(): void;
@@ -48,6 +52,12 @@ export class FileInstallationStorage implements InstallationStorage {
   }
 
   initialize(): void {
+    if (!fs.existsSync(this.configFile)) {
+      throw new InstallationInitError(
+        InstallationInitErrorReason.FILE_NOT_EXISTS,
+        `Installation config file does not exist: ${this.configFile}`,
+      );
+    }
     const rawContent = fs.readFileSync(this.configFile, 'utf-8');
     const parsedContent = parseDocument(rawContent);
     validateConfigurationFormat(parsedContent);

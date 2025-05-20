@@ -62,21 +62,12 @@ export const marketplacePlugin = createBackendPlugin({
           catalogApi,
         });
 
-        let installationDataService: InstallationDataService | undefined =
-          undefined;
-        if (config.getOptionalBoolean('extensions.installation.enabled')) {
-          try {
-            installationDataService = InstallationDataService.fromConfig({
-              config,
-              marketplaceApi,
-            });
-          } catch (err) {
-            logger.error(
-              'Error while loading installation data. Installation will be disabled. Error:',
-              err,
-            );
-          }
-        }
+        const installationDataService: InstallationDataService =
+          InstallationDataService.fromConfig({
+            config,
+            marketplaceApi,
+            logger,
+          });
 
         httpRouter.use(
           await createRouter({

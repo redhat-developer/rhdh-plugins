@@ -46,6 +46,20 @@ describe('FileInstallationStorage', () => {
       expect(pluginsConfigFileHandler.getConfigYaml()).toEqual(expected);
     });
 
+    it('should throw on initialize when config file does not exist', () => {
+      const configFileName = resolve(
+        __dirname,
+        '../../__fixtures__/data/nonExistentConfigFile.yaml',
+      );
+      const pluginsConfigFileHandler = new FileInstallationStorage(
+        configFileName,
+      );
+
+      expect(() => {
+        pluginsConfigFileHandler.initialize();
+      }).toThrow(`Installation config file does not exist: ${configFileName}`);
+    });
+
     it('should throw on initialize when bad plugins format', async () => {
       const configFileName = resolve(
         __dirname,

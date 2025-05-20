@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 import { Document, isMap, isSeq } from 'yaml';
-
-export class ConfigFormatError extends Error {
-  constructor(message: string) {
-    super(message);
-
-    this.name = 'ConfigError';
-  }
-}
+import { ConfigFormatError } from '../errors/ConfigFormatError';
 
 export function validateConfigurationFormat(doc: Document) {
   const plugins = doc.get('plugins');

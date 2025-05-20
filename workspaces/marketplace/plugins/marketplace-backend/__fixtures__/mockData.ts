@@ -164,6 +164,7 @@ export const mockFileInstallationStorage = {
 export const mockInstallationDataService = {
   getPluginConfig: jest.fn(),
   getPackageConfig: jest.fn(),
+  getInitializationError: jest.fn().mockReturnValue(undefined),
 } as unknown as jest.Mocked<InstallationDataService>;
 
 export const mockMarketplaceApi = {

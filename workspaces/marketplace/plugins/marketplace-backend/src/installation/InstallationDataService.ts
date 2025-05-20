@@ -23,24 +23,86 @@ import {
   InstallationStorage,
 } from './FileInstallationStorage';
 import type { Config } from '@backstage/config';
+import {
+  InstallationInitError,
+  InstallationInitErrorReason,
+  InstallationInitErrorReasonKeys,
+} from '../errors/InstallationInitError';
+import { LoggerService } from '@backstage/backend-plugin-api';
+import { ConfigFormatError } from '../errors/ConfigFormatError';
 
 export class InstallationDataService {
   private constructor(
-    private readonly installationStorage: InstallationStorage,
     private readonly marketplaceApi: MarketplaceApi,
+    private readonly installationStorage?: InstallationStorage,
+    private readonly initializationError?: InstallationInitError,
   ) {}
 
   static fromConfig(deps: {
     config: Config;
     marketplaceApi: MarketplaceApi;
+    logger: LoggerService;
   }): InstallationDataService {
-    const { config, marketplaceApi } = deps;
+    const { config, marketplaceApi, logger } = deps;
 
-    const storage = new FileInstallationStorage(
-      config.getString('extensions.installation.saveToSingleFile.file'),
-    );
-    storage.initialize();
-    return new InstallationDataService(storage, marketplaceApi);
+    const serviceWithInitializationError = (
+      reason: InstallationInitErrorReasonKeys,
+      message: string,
+      cause?: Error,
+    ): InstallationDataService => {
+      if (reason === InstallationInitErrorReason.INSTALLATION_DISABLED) {
+        logger.info('Installation feature is disabled');
+      } else {
+        logger.error(
+          `Installation feature is disabled. Error while loading data: ${message}`,
+        );
+      }
+      return new InstallationDataService(
+        marketplaceApi,
+        undefined,
+        new InstallationInitError(reason, message, cause),
+      );
+    };
+
+    try {
+      const installationEnabled = config.getOptionalBoolean(
+        'extensions.installation.enabled',
+      );
+      if (!installationEnabled) {
+        return serviceWithInitializationError(
+          InstallationInitErrorReason.INSTALLATION_DISABLED,
+          "Installation feature is disabled under 'extensions.installation.enabled'",
+        );
+      }
+
+      const filePath = config.getOptionalString(
+        'extensions.installation.saveToSingleFile.file',
+      );
+      if (!filePath) {
+        return serviceWithInitializationError(
+          InstallationInitErrorReason.FILE_CONFIG_VALUE_MISSING,
+          "Missing required config value at 'extensions.installation.saveToSingleFile.file'",
+        );
+      }
+
+      const storage = new FileInstallationStorage(filePath);
+      storage.initialize();
+      return new InstallationDataService(marketplaceApi, storage);
+    } catch (e) {
+      let reason: InstallationInitErrorReasonKeys;
+      if (e instanceof InstallationInitError) {
+        reason = e.reason;
+      } else if (e instanceof ConfigFormatError) {
+        reason = InstallationInitErrorReason.INVALID_CONFIG;
+      } else {
+        reason = InstallationInitErrorReason.UNKNOWN;
+      }
+      return serviceWithInitializationError(
+        reason,
+        e.message,
+        reason === InstallationInitErrorReason.UNKNOWN ? e : undefined,
+      );
+    }
   }
 
   private async getPluginDynamicArtifacts(
@@ -58,14 +120,18 @@ export class InstallationDataService {
     );
   }
 
+  getInitializationError(): InstallationInitError | undefined {
+    return this.initializationError;
+  }
+
   getPackageConfig(packageDynamicArtifact: string): string | undefined {
-    return this.installationStorage.getPackage(packageDynamicArtifact);
+    return this.installationStorage!.getPackage(packageDynamicArtifact);
   }
 
   async getPluginConfig(
     plugin: MarketplacePlugin,
   ): Promise<string | undefined> {
     const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
-    return this.installationStorage.getPackages(Array.from(dynamicArtifacts));
+    return this.installationStorage!.getPackages(Array.from(dynamicArtifacts));
   }
 }
