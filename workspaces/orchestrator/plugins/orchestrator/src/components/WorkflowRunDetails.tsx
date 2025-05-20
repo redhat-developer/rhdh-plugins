@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
+import { useAsync } from 'react-use';
 
 import { Link } from '@backstage/core-components';
-import { useRouteRef } from '@backstage/core-plugin-api';
+import { useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
 
 import { Grid, makeStyles, Typography } from '@material-ui/core';
@@ -25,12 +27,15 @@ import {
   capitalize,
   ProcessInstanceDTO,
   ProcessInstanceStatusDTO,
+  WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { orchestratorApiRef } from '../api';
 import { VALUE_UNAVAILABLE } from '../constants';
 import { workflowInstanceRouteRef, workflowRouteRef } from '../routes';
 import { WorkflowInstanceStatusIndicator } from './WorkflowInstanceStatusIndicator';
 import { WorkflowRunDetail } from './WorkflowRunDetail';
+import { WorkflowStatus } from './WorkflowStatus';
 
 type WorkflowDetailsCardProps = {
   assessedBy?: ProcessInstanceDTO;
@@ -48,6 +53,13 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
   details,
 }) => {
   const styles = useStyles();
+  const orchestratorApi = useApi(orchestratorApiRef);
+  const { value, loading, error } =
+    useAsync(async (): Promise<WorkflowOverviewDTO> => {
+      const res = await orchestratorApi.getWorkflowOverview(details.workflowId);
+
+      return res.data;
+    }, [orchestratorApi]);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
 
   const workflowPageLink = useRouteRef(workflowRouteRef);
@@ -63,8 +75,8 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
           </Link>
         </AboutField>
       </Grid>
-      <Grid item md={5} key="Status">
-        <AboutField label="Status">
+      <Grid item md={5} key="Run status">
+        <AboutField label="Run status">
           <Typography variant="subtitle2" component="div">
             <b>
               <WorkflowInstanceStatusIndicator
@@ -88,10 +100,16 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
-      <Grid item md={7} key="Description">
-        <AboutField label="Description">
+      <Grid item md={7} key="Workflow Status">
+        <AboutField label="Workflow Status">
           <Typography variant="subtitle2" component="div">
-            <b>{details.description ?? VALUE_UNAVAILABLE}</b>
+            <b>
+              {!error && !loading ? (
+                <WorkflowStatus availability={value?.isAvailable} />
+              ) : (
+                VALUE_UNAVAILABLE
+              )}
+            </b>
           </Typography>
         </AboutField>
       </Grid>
@@ -99,6 +117,13 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
         <AboutField label="Started">
           <Typography variant="subtitle2" component="div">
             <b>{details.start}</b>
+          </Typography>
+        </AboutField>
+      </Grid>
+      <Grid item md={7} key="Description">
+        <AboutField label="Description">
+          <Typography variant="subtitle2" component="div">
+            <b>{details.description ?? VALUE_UNAVAILABLE}</b>
           </Typography>
         </AboutField>
       </Grid>

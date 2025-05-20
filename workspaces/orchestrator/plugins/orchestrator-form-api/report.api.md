@@ -10,13 +10,12 @@ import { ApiRef } from '@backstage/core-plugin-api';
 import { ErrorSchema } from '@rjsf/utils';
 import { FormProps } from '@rjsf/core';
 import { JsonObject } from '@backstage/types';
-import { JSONSchema7 } from 'json-schema';
-import { default as React_2 } from 'react';
+import type { JSONSchema7 } from 'json-schema';
 import { UiSchema } from '@rjsf/utils';
 
 // @public
-export type FormDecoratorProps = Pick<FormProps<JsonObject, JSONSchema7>, 'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate'> & {
-    getExtraErrors?: (formData: JsonObject) => Promise<ErrorSchema<JsonObject>> | undefined;
+export type FormDecoratorProps = Pick<FormProps<JsonObject, JSONSchema7, OrchestratorFormContextProps>, 'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate'> & {
+    getExtraErrors?: (formData: JsonObject, uiSchema: OrchestratorFormContextProps['uiSchema']) => Promise<ErrorSchema<JsonObject>> | undefined;
 };
 
 // @public
@@ -32,15 +31,15 @@ export type OrchestratorFormContextProps = {
     schema: JSONSchema7;
     updateSchema: OrchestratorFormSchemaUpdater;
     numStepsInMultiStepSchema?: number;
-    children: React_2.ReactNode;
-    onSubmit: (formData: JsonObject) => void;
     uiSchema: UiSchema<JsonObject, JSONSchema7>;
     formData: JsonObject;
     setFormData: (data: JsonObject) => void;
+    children: React.ReactNode;
+    onSubmit: (formData: JsonObject) => void;
 };
 
 // @public
-export type OrchestratorFormDecorator = (FormComponent: React.ComponentType<FormDecoratorProps>) => React.ComponentType;
+export type OrchestratorFormDecorator = (FormComponent: React.ComponentType<FormDecoratorProps>) => React.ComponentType<OrchestratorFormContextProps>;
 
 // @public
 export type OrchestratorFormSchemaUpdater = (chunks: SchemaChunksResponse) => void;
@@ -50,15 +49,15 @@ export type SchemaChunksResponse = {
     [key: string]: JsonObject;
 };
 
-// @public
-export const useWrapperFormPropsContext: () => OrchestratorFormContextProps;
-
-// @public
-export const WrapperFormPropsContext: React_2.Context<OrchestratorFormContextProps | null>;
+// Warning: (ae-missing-release-tag) "useOrchestratorFormApiOrDefault" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export const useOrchestratorFormApiOrDefault: () => OrchestratorFormApi;
 
 // Warnings were encountered during analysis:
 //
-// src/context.d.ts:9:1 - (ae-undocumented) Missing documentation for "OrchestratorFormContextProps".
+// src/api.d.ts:10:1 - (ae-undocumented) Missing documentation for "OrchestratorFormContextProps".
+// src/api.d.ts:94:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
 
 // (No @packageDocumentation comment for this package)
 

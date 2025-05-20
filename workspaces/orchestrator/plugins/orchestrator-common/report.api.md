@@ -161,10 +161,8 @@ export interface ConfigurationParameters {
 // @public (undocumented)
 export const DEFAULT_SONATAFLOW_BASE_URL = "http://localhost";
 
-// Warning: (ae-missing-release-tag) "DEFAULT_SONATAFLOW_CONTAINER_IMAGE" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
-export const DEFAULT_SONATAFLOW_CONTAINER_IMAGE = "quay.io/kubesmarts/incubator-kie-sonataflow-devmode:main";
+// @public
+export const DEFAULT_SONATAFLOW_CONTAINER_IMAGE = "quay.io/kubesmarts/incubator-kie-sonataflow-devmode:9.103.x-prod";
 
 // Warning: (ae-missing-release-tag) "DEFAULT_SONATAFLOW_PERSISTENCE_PATH" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -1617,12 +1615,11 @@ export interface WorkflowRunStatusDTO {
 // src/QueryParams.d.ts:2:22 - (ae-undocumented) Missing documentation for "QUERY_PARAM_INSTANCE_ID".
 // src/QueryParams.d.ts:3:22 - (ae-undocumented) Missing documentation for "QUERY_PARAM_INCLUDE_ASSESSMENT".
 // src/QueryParams.d.ts:4:22 - (ae-undocumented) Missing documentation for "QUERY_PARAM_ASSESSMENT_INSTANCE_ID".
-// src/constants.d.ts:1:22 - (ae-undocumented) Missing documentation for "DEFAULT_SONATAFLOW_CONTAINER_IMAGE".
-// src/constants.d.ts:2:22 - (ae-undocumented) Missing documentation for "DEFAULT_SONATAFLOW_PERSISTENCE_PATH".
-// src/constants.d.ts:3:22 - (ae-undocumented) Missing documentation for "DEFAULT_SONATAFLOW_BASE_URL".
-// src/constants.d.ts:4:22 - (ae-undocumented) Missing documentation for "DEFAULT_WORKFLOWS_PATH".
-// src/constants.d.ts:5:22 - (ae-undocumented) Missing documentation for "ASSESSMENT_WORKFLOW_TYPE".
-// src/constants.d.ts:6:22 - (ae-undocumented) Missing documentation for "INFRASTRUCTURE_WORKFLOW_TYPE".
+// src/constants.d.ts:9:22 - (ae-undocumented) Missing documentation for "DEFAULT_SONATAFLOW_PERSISTENCE_PATH".
+// src/constants.d.ts:10:22 - (ae-undocumented) Missing documentation for "DEFAULT_SONATAFLOW_BASE_URL".
+// src/constants.d.ts:11:22 - (ae-undocumented) Missing documentation for "DEFAULT_WORKFLOWS_PATH".
+// src/constants.d.ts:12:22 - (ae-undocumented) Missing documentation for "ASSESSMENT_WORKFLOW_TYPE".
+// src/constants.d.ts:13:22 - (ae-undocumented) Missing documentation for "INFRASTRUCTURE_WORKFLOW_TYPE".
 // src/generated/api/definition.d.ts:1:22 - (ae-undocumented) Missing documentation for "openApiDocument".
 // src/generated/client/api.d.ts:130:22 - (ae-undocumented) Missing documentation for "FieldFilterOperatorEnum".
 // src/generated/client/api.d.ts:141:1 - (ae-undocumented) Missing documentation for "FieldFilterOperatorEnum".

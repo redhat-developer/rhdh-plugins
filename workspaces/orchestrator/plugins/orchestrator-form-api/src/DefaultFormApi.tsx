@@ -19,6 +19,7 @@ import React from 'react';
 import {
   FormDecoratorProps,
   OrchestratorFormApi,
+  OrchestratorFormContextProps,
   OrchestratorFormDecorator,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
@@ -30,7 +31,9 @@ class DefaultFormApi implements OrchestratorFormApi {
     );
 
     return (FormComponent: React.ComponentType<FormDecoratorProps>) =>
-      FormComponent;
+      (props: OrchestratorFormContextProps) => (
+        <FormComponent formContext={props} />
+      );
   }
 }
 

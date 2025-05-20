@@ -20,26 +20,25 @@ import Typography from '@material-ui/core/Typography';
 import { JsonObject } from '@backstage/types';
 import { Widget } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
-import { FormContextData } from '../types';
 import { UiProps } from '../uiPropTypes';
 import { CircularProgress } from '@material-ui/core';
 import { ErrorText } from './ErrorText';
-import { useWrapperFormPropsContext } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { useFetchAndEvaluate } from '../utils';
 
 export const ActiveText: Widget<
   JsonObject,
   JSONSchema7,
-  FormContextData
+  OrchestratorFormContextProps
 > = props => {
-  const { id, options } = props;
+  const { id, options, formContext } = props;
   const uiProps = (options?.props ?? {}) as UiProps;
 
-  const formContext = useWrapperFormPropsContext();
-  const formData = formContext.formData;
+  const formData = formContext?.formData;
+
   const { text, error, loading } = useFetchAndEvaluate(
-    uiProps['ui:text'] || '',
-    formData,
+    uiProps['ui:text'] ?? '',
+    formData ?? {},
     uiProps,
     id,
   );
