@@ -2,7 +2,7 @@
 
 The purpose of this Express Node.js server is to respond with JSON Schema chunks and other test data to ease development of the active widgets, like the `SchemaUpdater`.
 
-The production environment is expected to provide another HTTP server (unrelated to this testing one) dynamically providing `SchemaUpdater` snippets or fetch/validation functionality for other widgets.
+The production environment is expected to provide another HTTP server (unrelated to this testing one) which dynamically provides `SchemaUpdater` JSON-schema snippets or fetch/validation functionality for other widgets.
 
 ## How to run
 

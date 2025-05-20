@@ -18,26 +18,61 @@ import {
   LoggerService,
   SchedulerService,
 } from '@backstage/backend-plugin-api/index';
+import {
+  extractOverlappingPartition,
+  isPartitionOverlapError,
+  parsePartitionDate,
+} from '../utils/partition';
+
+type AttemptTracker = Map<string, number>;
 
 export const createPartition = async (
   knex: Knex,
   year: number,
   month: number,
+  attempts: AttemptTracker = new Map(),
+  maxRetries = 1,
 ) => {
-  const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
-  const nextMonth = new Date(year, month, 1);
-  nextMonth.setMonth(nextMonth.getMonth() + 1);
-  const endDate = `${nextMonth.getFullYear()}-${(nextMonth.getMonth() + 1)
-    .toString()
-    .padStart(2, '0')}-01`;
+  const start = new Date(year, month - 1, 1);
+  const end = new Date(year, month, 1);
 
-  const partitionName = `events_${year}_${month}`;
+  const startDate = start.toISOString().slice(0, 10);
+  const endDate = end.toISOString().slice(0, 10);
 
-  await knex.schema.raw(`
+  const partitionName = `events_${year}_${month.toString().padStart(2, '0')}`;
+  const key = `${year}_${month}`;
+
+  // track max attempts
+  const currentAttempt = attempts.get(key) ?? 0;
+  if (currentAttempt > maxRetries) {
+    throw new Error(`Exceeded max retries for partition ${key}`);
+  }
+  attempts.set(key, currentAttempt + 1);
+
+  try {
+    await knex.schema.raw(`
       CREATE TABLE IF NOT EXISTS ${partitionName} 
       PARTITION OF events
       FOR VALUES FROM ('${startDate}') TO ('${endDate}');
     `);
+  } catch (error) {
+    if (isPartitionOverlapError(error)) {
+      const overlappingPartition = extractOverlappingPartition(error.message);
+      const { year: y, month: m } = parsePartitionDate(overlappingPartition);
+
+      await knex.schema.raw(
+        `DROP TABLE IF EXISTS ${overlappingPartition} CASCADE`,
+      );
+
+      // Recreate the dropped overlapping partition
+      await createPartition(knex, y, m, attempts, maxRetries);
+
+      // Retry the current one
+      await createPartition(knex, year, month, attempts, maxRetries);
+    } else {
+      throw error;
+    }
+  }
 };
 
 export const schedulePartition = async (

@@ -17,6 +17,7 @@
 import { useEffect, useState } from 'react';
 import { JsonObject, JsonValue } from '@backstage/types';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
+import { UiProps } from '../uiPropTypes';
 
 export type evaluateTemplateProps = {
   template?: JsonValue;
@@ -24,16 +25,21 @@ export type evaluateTemplateProps = {
   unitEvaluator: (
     unit: string,
     formData: JsonObject,
+    responseData?: JsonObject,
+    uiProps?: UiProps,
   ) => Promise<JsonValue | undefined>;
   formData: JsonObject;
+  responseData?: JsonObject;
+  uiProps?: UiProps;
 };
 
 export const evaluateTemplate = async (
   props: evaluateTemplateProps,
 ): Promise<string> => {
-  const { template, key, unitEvaluator, formData } = props;
+  const { template, key, unitEvaluator, formData, responseData, uiProps } =
+    props;
 
-  if (!template || typeof template !== 'string') {
+  if (template === undefined || typeof template !== 'string') {
     throw new Error(`Template can be a string only, key: ${key}`);
   }
 
@@ -51,6 +57,8 @@ export const evaluateTemplate = async (
     let evaluatedUnit = await unitEvaluator(
       template.substring(startIndex + 4, stopIndex),
       formData,
+      responseData,
+      uiProps,
     );
     if (evaluatedUnit === undefined) {
       evaluatedUnit = '___undefined___';
@@ -84,12 +92,7 @@ export const useEvaluateTemplate = ({
   const [evaluated, setEvaluated] = useState<string>();
 
   useEffect(() => {
-    evaluateTemplate({
-      template,
-      key,
-      unitEvaluator,
-      formData,
-    })
+    evaluateTemplate({ template, key, unitEvaluator, formData })
       .then(setEvaluated)
       .catch(reason => setError(reason.toString()));
   }, [template, unitEvaluator, formData, key, setError]);

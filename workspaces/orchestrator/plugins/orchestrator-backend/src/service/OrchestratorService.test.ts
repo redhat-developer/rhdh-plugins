@@ -368,8 +368,7 @@ describe('OrchestratorService', () => {
       jest.clearAllMocks();
     });
 
-    it('should execute the operation when the workflow is available', async () => {
-      workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(true);
+    it('should execute the operation', async () => {
       dataIndexServiceMock.fetchInstance = jest
         .fn()
         .mockResolvedValue(instance);
@@ -380,32 +379,6 @@ describe('OrchestratorService', () => {
       });
 
       expect(result).toBeDefined();
-    });
-
-    it('should skip and not execute the operation when the workflow is not available', async () => {
-      workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(false);
-
-      const result = await orchestratorService.fetchInstance({
-        instanceId,
-        cacheHandler: 'skip',
-      });
-
-      expect(result).toBeUndefined();
-    });
-
-    it('should throw an error and not execute the operation when the workflow is not available', async () => {
-      workflowCacheServiceMock.isAvailable = jest
-        .fn()
-        .mockImplementation(() => {
-          throw new Error();
-        });
-
-      const promise = orchestratorService.fetchInstance({
-        instanceId,
-        cacheHandler: 'throw',
-      });
-
-      await expect(promise).rejects.toThrow();
     });
   });
 
@@ -537,43 +510,22 @@ describe('OrchestratorService', () => {
 
       const result = await orchestratorService.fetchWorkflowOverview({
         definitionId,
-        cacheHandler: 'skip',
       });
 
       expect(result).toBeDefined();
     });
 
-    it('should skip and not execute the operation when the workflow is not available', async () => {
+    it('should execute the operation when the workflow is not available', async () => {
       workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(false);
+      sonataFlowServiceMock.fetchWorkflowOverview = jest
+        .fn()
+        .mockResolvedValue(workflowOverview);
 
       const result = await orchestratorService.fetchWorkflowOverview({
         definitionId,
-        cacheHandler: 'skip',
       });
 
-      expect(result).toBeUndefined();
-      expect(
-        sonataFlowServiceMock.fetchWorkflowOverview,
-      ).not.toHaveBeenCalled();
-    });
-
-    it('should throw an error and not execute the operation when the workflow is not available', async () => {
-      workflowCacheServiceMock.isAvailable = jest
-        .fn()
-        .mockImplementation(() => {
-          throw new Error();
-        });
-
-      const promise = orchestratorService.fetchWorkflowOverview({
-        definitionId,
-        cacheHandler: 'throw',
-      });
-
-      await expect(promise).rejects.toThrow();
-
-      expect(
-        sonataFlowServiceMock.fetchWorkflowOverview,
-      ).not.toHaveBeenCalled();
+      expect(result).toBeDefined();
     });
   });
 
@@ -609,7 +561,6 @@ describe('OrchestratorService', () => {
         definitionId,
         serviceUrl,
         inputData,
-        cacheHandler: 'skip',
       });
 
       expect(result).toBeUndefined();

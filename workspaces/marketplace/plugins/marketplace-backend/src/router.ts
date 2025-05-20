@@ -16,7 +16,7 @@
 
 import express, { Request } from 'express';
 import Router from 'express-promise-router';
-
+import { NotAllowedError } from '@backstage/errors';
 import {
   HttpAuthService,
   PermissionsService,
@@ -31,12 +31,12 @@ import {
 import {
   decodeGetEntitiesRequest,
   decodeGetEntityFacetsRequest,
-  extensionPluginCreatePermission,
-  extensionPluginReadPermission,
+  extensionsPluginWritePermission,
+  extensionsPluginReadPermission,
   MarketplaceApi,
   MarketplacePlugin,
-  RESOURCE_TYPE_EXTENSION_PLUGIN,
-  extensionPermissions,
+  RESOURCE_TYPE_EXTENSIONS_PLUGIN,
+  extensionsPermissions,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 import { createSearchParams } from './utils/createSearchParams';
@@ -55,8 +55,8 @@ export async function createRouter({
 }): Promise<express.Router> {
   const router = Router();
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
-    resourceType: RESOURCE_TYPE_EXTENSION_PLUGIN,
-    permissions: extensionPermissions,
+    resourceType: RESOURCE_TYPE_EXTENSIONS_PLUGIN,
+    permissions: extensionsPermissions,
     rules: Object.values(extensionRules),
   });
   router.use(express.json());
@@ -65,7 +65,7 @@ export async function createRouter({
   const authorizeConditional = async (
     request: Request,
     permission:
-      | ResourcePermission<'extension-plugin' | 'extension-package'>
+      | ResourcePermission<'extensions-plugin' | 'extensions-package'>
       | BasicPermission,
   ) => {
     const credentials = await httpAuth.credentials(request);
@@ -163,18 +163,18 @@ export async function createRouter({
     '/plugin/:namespace/:name/configuration/authorize',
     async (req, res) => {
       const [readDecision, installDecision] = await Promise.all([
-        authorizeConditional(req, extensionPluginReadPermission),
-        authorizeConditional(req, extensionPluginCreatePermission),
+        authorizeConditional(req, extensionsPluginReadPermission),
+        authorizeConditional(req, extensionsPluginWritePermission),
       ]);
       if (
         readDecision.result === AuthorizeResult.DENY &&
         installDecision.result === AuthorizeResult.DENY
       ) {
-        res.status(403);
+        res.status(200).json({ read: 'DENY', write: 'DENY' });
         return;
       }
 
-      const authorizedActions: string[] = [];
+      let authorizedActions = {};
       let plugin: MarketplacePlugin;
 
       const evaluateConditional = async (
@@ -189,34 +189,35 @@ export async function createRouter({
             );
           }
           if (matches(plugin, decision.conditions)) {
-            authorizedActions.push(action);
+            authorizedActions = { ...authorizedActions, [action]: 'ALLOW' };
           }
         } else if (decision.result === AuthorizeResult.ALLOW) {
-          authorizedActions.push(action);
+          authorizedActions = { ...authorizedActions, [action]: 'ALLOW' };
         }
       };
 
       await Promise.all([
         evaluateConditional(readDecision, 'read'),
-        evaluateConditional(installDecision, 'create'),
+        evaluateConditional(installDecision, 'write'),
       ]);
 
-      if (authorizedActions.length === 0) {
-        res.status(403);
-        return;
+      if (Object.keys(authorizedActions).length === 0) {
+        res.status(200).json({ read: 'DENY', write: 'DENY' });
+      } else {
+        res.status(200).json(authorizedActions);
       }
-      res.status(200).json({ authorizedActions });
     },
   );
 
   router.get('/plugin/:namespace/:name/configuration', async (req, res) => {
     const readDecision = await authorizeConditional(
       req,
-      extensionPluginReadPermission,
+      extensionsPluginReadPermission,
     );
     if (readDecision.result === AuthorizeResult.DENY) {
-      res.status(403).json({ error: 'Forbidden' });
-      return;
+      throw new NotAllowedError(
+        `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
+      );
     }
 
     const plugin = await marketplaceApi.getPluginByName(
@@ -229,8 +230,9 @@ export async function createRouter({
       (readDecision.result === AuthorizeResult.CONDITIONAL &&
         matches(plugin, readDecision.conditions));
     if (!hasReadAccess) {
-      res.status(403).json({ error: 'Forbidden' });
-      return;
+      throw new NotAllowedError(
+        `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
+      );
     }
 
     res.status(200).json({}); // This should return the configuration in YAML string
@@ -240,11 +242,12 @@ export async function createRouter({
     // installs the plugin
     const installDecision = await authorizeConditional(
       req,
-      extensionPluginCreatePermission,
+      extensionsPluginWritePermission,
     );
     if (installDecision.result === AuthorizeResult.DENY) {
-      res.status(403).json({ error: 'Forbidden' });
-      return;
+      throw new NotAllowedError(
+        `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
+      );
     }
 
     const plugin = await marketplaceApi.getPluginByName(
@@ -258,8 +261,9 @@ export async function createRouter({
         matches(plugin, installDecision.conditions));
 
     if (!hasInstallAccess) {
-      res.status(403).json({ error: 'Forbidden' });
-      return;
+      throw new NotAllowedError(
+        `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
+      );
     }
 
     res.status(200).json({});

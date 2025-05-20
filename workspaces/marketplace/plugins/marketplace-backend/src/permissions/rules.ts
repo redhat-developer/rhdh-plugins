@@ -21,7 +21,7 @@ import {
 import { z } from 'zod';
 import {
   MarketplacePlugin,
-  RESOURCE_TYPE_EXTENSION_PLUGIN,
+  RESOURCE_TYPE_EXTENSIONS_PLUGIN,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export type ExtentionFilter = {
@@ -35,12 +35,12 @@ export type ExtentionFilters =
   | { not: ExtentionFilters }
   | ExtentionFilter;
 
-export const extensionPermissionResourceRef = createPermissionResourceRef<
+export const extensionsPermissionResourceRef = createPermissionResourceRef<
   MarketplacePlugin,
   ExtentionFilter
 >().with({
-  pluginId: 'marketplace',
-  resourceType: RESOURCE_TYPE_EXTENSION_PLUGIN,
+  pluginId: 'extensions',
+  resourceType: RESOURCE_TYPE_EXTENSIONS_PLUGIN,
 });
 
 export type ExtensionParams = {
@@ -52,18 +52,18 @@ export type ExtensionParams = {
 const hasPluginName = createPermissionRule({
   name: 'HAS_NAME',
   description: 'Should allow users to install the plugin with specified name',
-  resourceRef: extensionPermissionResourceRef,
+  resourceRef: extensionsPermissionResourceRef,
 
   paramsSchema: z.object({
     pluginNames: z
       .string()
       .array()
       .optional()
-      .describe('List of plugin names to match on'),
+      .describe('List of plugin names or titles to match on'),
   }),
   apply: (plugin: MarketplacePlugin, { pluginNames }) => {
     return pluginNames && pluginNames.length > 0
-      ? !!pluginNames?.find(
+      ? pluginNames?.some(
           name =>
             name.toLowerCase() === plugin.metadata.title?.toLowerCase() ||
             name.toLowerCase() === plugin.metadata.name.toLowerCase(),
@@ -77,7 +77,7 @@ const hasAnnotation = createPermissionRule({
   name: 'HAS_ANNOTATION',
   description:
     'Should allow users to install the plugin with specified annotation',
-  resourceRef: extensionPermissionResourceRef,
+  resourceRef: extensionsPermissionResourceRef,
   paramsSchema: z.object({
     annotation: z.string().describe('Name of the annotation to match on'),
     value: z

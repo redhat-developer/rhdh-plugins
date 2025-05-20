@@ -18,6 +18,7 @@ import { get } from 'lodash';
 import { JsonObject } from '@backstage/types';
 import {
   atlassianAuthApiRef,
+  ConfigApi,
   configApiRef,
   githubAuthApiRef,
   gitlabAuthApiRef,
@@ -30,6 +31,8 @@ import {
   ProfileInfoApi,
   useApi,
 } from '@backstage/core-plugin-api';
+import { isFetchResponseKey, UiProps } from '../uiPropTypes';
+import { applySelectorString } from './applySelector';
 
 export type ScmApi = OAuthApi & ProfileInfoApi;
 export type ScmOpenIdApi = ScmApi & OpenIdConnectApi;
@@ -90,6 +93,13 @@ const templateUnitEvaluatorOpenId = async (
   throw new Error(`Unknown template key "${key}" in "${keyFamily}"`);
 };
 
+const templateUnitEvaluatorBackend = (configApi: ConfigApi, key: string) => {
+  if (key === 'baseUrl') {
+    return configApi.getString('backend.baseUrl');
+  }
+  throw new Error(`Unknown template key "${key}" in "backend"`);
+};
+
 export const useTemplateUnitEvaluator = () => {
   const configApi = useApi(configApiRef);
   const identityApi = useApi(identityApiRef);
@@ -117,16 +127,24 @@ export const useTemplateUnitEvaluator = () => {
   );
 
   return useCallback(
-    async (unit: string, formData: JsonObject) => {
+    async (
+      unit: string,
+      formData: JsonObject,
+      responseData?: JsonObject,
+      uiProps?: UiProps,
+    ) => {
       if (!unit) {
         throw new Error('Template unit can not be empty');
       }
 
       const keyFamily = unit.substring(0, unit.indexOf('.'));
       const key = unit.substring(unit.indexOf('.') + 1);
-
       if (keyFamily === 'current') {
         return get(formData, key);
+      }
+
+      if (keyFamily === 'backend') {
+        return templateUnitEvaluatorBackend(configApi, key);
       }
 
       if (keyFamily === 'rjsfConfig') {
@@ -144,6 +162,20 @@ export const useTemplateUnitEvaluator = () => {
 
       if (scmOpenIdApis[keyFamily]) {
         return await templateUnitEvaluatorOpenId(scmOpenIdApis, keyFamily, key);
+      }
+
+      if (isFetchResponseKey(unit)) {
+        if (!uiProps?.[unit]) {
+          throw new Error(
+            `Template evaluation error: The ui property '${unit}' does not exist in the schema ui:props.`,
+          );
+        }
+        if (!responseData) {
+          throw new Error(
+            `Template evaluation error: Attempting to access fetched data for ui property '${unit}', but the fetch response is undefined.`,
+          );
+        }
+        return await applySelectorString(responseData, uiProps[unit]);
       }
 
       throw new Error(`Unknown template unit "${unit}"`);

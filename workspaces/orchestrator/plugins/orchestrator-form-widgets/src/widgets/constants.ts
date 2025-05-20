@@ -1,5 +1,3 @@
-import { JsonObject } from '@backstage/types/index';
-
 /*
  * Copyright Red Hat, Inc.
  *
@@ -15,4 +13,4 @@ import { JsonObject } from '@backstage/types/index';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export type FormContextData = JsonObject;
+export const DEFAULT_DEBOUNCE_LIMIT = 1000;

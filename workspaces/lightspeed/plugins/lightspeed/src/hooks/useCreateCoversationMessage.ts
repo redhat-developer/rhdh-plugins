@@ -19,6 +19,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { useMutation } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
+import { Attachment } from '../types';
 
 export const useCreateConversationMessage = () => {
   const lightspeedApi = useApi(lightspeedApiRef);
@@ -28,10 +29,12 @@ export const useCreateConversationMessage = () => {
       prompt,
       selectedModel,
       currentConversation,
+      attachments,
     }: {
       prompt: string;
       selectedModel: string;
       currentConversation: string;
+      attachments: Attachment[];
     }) => {
       if (!currentConversation) {
         throw new Error('Failed to generate AI response');
@@ -41,6 +44,7 @@ export const useCreateConversationMessage = () => {
         `${prompt}`,
         selectedModel,
         currentConversation,
+        attachments,
       );
     },
     onError: error => {

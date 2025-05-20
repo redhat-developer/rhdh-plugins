@@ -25,6 +25,7 @@ import { lightspeedApiRef } from '../api/api';
 import { ScrollContainerHandle } from '../components/LightspeedChatBox';
 import { TEMP_CONVERSATION_ID } from '../const';
 import logo from '../images/logo.svg';
+import { Attachment } from '../types';
 import {
   createBotMessage,
   createUserMessage,
@@ -168,7 +169,7 @@ export const useConversationMessages = (
   ]);
 
   const handleInputPrompt = React.useCallback(
-    async (prompt: string) => {
+    async (prompt: string, attachments: Attachment[] = []) => {
       let newConversationId = '';
 
       const conversationTuple = [
@@ -213,6 +214,7 @@ export const useConversationMessages = (
           prompt,
           selectedModel,
           currentConversation,
+          attachments,
         });
 
         const decoder = new TextDecoder('utf-8');
@@ -278,6 +280,45 @@ export const useConversationMessages = (
                   lastMessage.timestamp = getTimestamp(
                     data?.response_metadata?.created_at || Date.now(),
                   );
+
+                  const updatedConversation = [
+                    ...conversation.slice(0, lastMessageIndex),
+                    lastMessage,
+                  ];
+
+                  return {
+                    ...prevConversations,
+                    [currentConversation]: updatedConversation,
+                  };
+                });
+              }
+
+              if (event === 'end') {
+                const documents = data?.referenced_documents || [];
+
+                setConversations(prevConversations => {
+                  const conversation =
+                    prevConversations[currentConversation] ?? [];
+
+                  const lastMessageIndex = conversation.length - 1;
+                  const lastMessage =
+                    conversation.length === 0
+                      ? createBotMessage({
+                          content: '',
+                          timestamp: getTimestamp(Date.now()),
+                        })
+                      : { ...conversation[lastMessageIndex] };
+
+                  if (documents.length) {
+                    lastMessage.sources = {
+                      sources: documents.map(
+                        (doc: { doc_title: string; doc_url: string }) => ({
+                          title: doc.doc_title,
+                          link: doc.doc_url,
+                        }),
+                      ),
+                    };
+                  }
 
                   const updatedConversation = [
                     ...conversation.slice(0, lastMessageIndex),

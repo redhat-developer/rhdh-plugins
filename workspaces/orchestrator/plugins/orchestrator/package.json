@@ -111,7 +111,7 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-orchestrator",
     "exposedModules": {
-      "OrchestratorPlugin": "./src/index.ts"
+      "PluginRoot": "./src/index.ts"
     }
   },
   "maintainers": [

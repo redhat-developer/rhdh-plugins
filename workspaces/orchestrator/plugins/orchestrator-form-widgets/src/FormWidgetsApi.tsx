@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-import React, { useCallback } from 'react';
+import React from 'react';
 import {
   FormDecoratorProps,
   OrchestratorFormApi,
-  useWrapperFormPropsContext,
+  OrchestratorFormContextProps,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { FormValidation } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
 
-import { SchemaUpdater, ActiveTextInput } from './widgets';
+import {
+  SchemaUpdater,
+  ActiveTextInput,
+  ActiveText,
+  ActiveDropdown,
+} from './widgets';
 import { useGetExtraErrors } from './utils';
 
 const customValidate = (
@@ -38,31 +43,29 @@ const customValidate = (
 const widgets = {
   SchemaUpdater,
   ActiveTextInput,
+  ActiveText,
+  ActiveDropdown,
 };
 
 export class FormWidgetsApi implements OrchestratorFormApi {
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
-    return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
-      return () => {
-        const { formData, setFormData } = useWrapperFormPropsContext();
-        const getExtraErrors = useGetExtraErrors();
+    // eslint-disable-next-line no-console
+    console.log('Using FormWidgetsApi by RHDH orchestrator-form-widgets.');
 
-        const onChange = useCallback(
-          (data: JsonObject | undefined) => {
-            if (data) {
-              setFormData(data);
-            }
-          },
-          [setFormData],
-        );
+    return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
+      return (props: OrchestratorFormContextProps) => {
+        const { setFormData } = props;
+        const getExtraErrors = useGetExtraErrors();
 
         return (
           <FormComponent
             widgets={widgets}
             onChange={e => {
-              onChange(e.formData);
+              if (e.formData) {
+                setFormData(e.formData);
+              }
             }}
-            formContext={formData}
+            formContext={props}
             customValidate={customValidate}
             getExtraErrors={getExtraErrors}
           />

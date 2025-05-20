@@ -14,12 +14,30 @@
  * limitations under the License.
  */
 
-import { createApiRef } from '@backstage/core-plugin-api';
+import { createApiRef, useApiHolder } from '@backstage/core-plugin-api';
 import { JsonObject } from '@backstage/types';
 
 import { FormProps } from '@rjsf/core';
-import { ErrorSchema } from '@rjsf/utils';
+import { ErrorSchema, UiSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
+
+import { defaultFormExtensionsApi } from './DefaultFormApi';
+
+/**
+ * @public
+ *
+ */
+export type OrchestratorFormContextProps = {
+  schema: JSONSchema7;
+  updateSchema: OrchestratorFormSchemaUpdater;
+  numStepsInMultiStepSchema?: number;
+  uiSchema: UiSchema<JsonObject, JSONSchema7>;
+  formData: JsonObject;
+  setFormData: (data: JsonObject) => void;
+
+  children: React.ReactNode;
+  onSubmit: (formData: JsonObject) => void;
+};
 
 /**
  * @public
@@ -44,11 +62,12 @@ import type { JSONSchema7 } from 'json-schema';
  *   The orchestrator form component will call getExtraErrors when running onSubmit.
  */
 export type FormDecoratorProps = Pick<
-  FormProps<JsonObject, JSONSchema7>,
+  FormProps<JsonObject, JSONSchema7, OrchestratorFormContextProps>,
   'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate'
 > & {
   getExtraErrors?: (
     formData: JsonObject,
+    uiSchema: OrchestratorFormContextProps['uiSchema'],
   ) => Promise<ErrorSchema<JsonObject>> | undefined;
 };
 
@@ -59,7 +78,7 @@ export type FormDecoratorProps = Pick<
  */
 export type OrchestratorFormDecorator = (
   FormComponent: React.ComponentType<FormDecoratorProps>,
-) => React.ComponentType;
+) => React.ComponentType<OrchestratorFormContextProps>;
 
 /**
  * @public
@@ -90,6 +109,15 @@ export type OrchestratorFormSchemaUpdater = (
 export interface OrchestratorFormApi {
   /**
    * @public
+   * Context wrapping the RJSF form on Workflow execution page, making it available for the custom widgets.
+   *
+   * Must be created by the API to share just a single instance within both the OrchestratorFormApi and
+   * the Orchestrator where the context is actually provided (see OrchestratorFormWrapper).
+   */
+  // getFormContext(): Context<OrchestratorFormContextProps | null>;
+
+  /**
+   * @public
    * getFormDecorator
    * return the form decorator
    */
@@ -104,3 +132,6 @@ export interface OrchestratorFormApi {
 export const orchestratorFormApiRef = createApiRef<OrchestratorFormApi>({
   id: 'plugin.orchestrator.form',
 });
+
+export const useOrchestratorFormApiOrDefault = (): OrchestratorFormApi =>
+  useApiHolder().get(orchestratorFormApiRef) ?? defaultFormExtensionsApi;
