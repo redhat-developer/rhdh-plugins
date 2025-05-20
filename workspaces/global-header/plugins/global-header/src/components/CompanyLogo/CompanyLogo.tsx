@@ -58,9 +58,8 @@ export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
       sx={{
         width: '224px',
         display: 'flex',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
-        marginLeft: '-24px',
       }}
     >
       <Link
@@ -69,7 +68,7 @@ export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
         aria-label="Home"
         style={{
           display: 'flex',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
           alignItems: 'center',
         }}
       >
