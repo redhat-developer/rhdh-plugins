@@ -66,6 +66,6 @@ export class InstallationDataService {
     plugin: MarketplacePlugin,
   ): Promise<string | undefined> {
     const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
-    return this.installationStorage.getPackages(dynamicArtifacts);
+    return this.installationStorage.getPackages(Array.from(dynamicArtifacts));
   }
 }
