@@ -42,7 +42,7 @@ describe('validateConfigurationFormat', () => {
         key: value
     `);
     expect(() => validateConfigurationFormat(doc)).toThrow(
-      "Failed to load 'extensions.installation.saveToSingleFile.file'. Invalid installation configuration, 'plugins' field must be a list",
+      "Invalid installation configuration, 'plugins' field must be a list",
     );
   });
 });
@@ -83,14 +83,14 @@ describe('validatePackageFormat', () => {
       yaml: `
         disabled: false
       `,
-      error: "'package' field in each package item must be a non-empty string",
+      error: "'package' field in package item must be a non-empty string",
     },
     {
       testCase: "'package' is an empty string",
       yaml: `
         package: ""
       `,
-      error: "'package' field in each package item must be a non-empty string",
+      error: "'package' field in package item must be a non-empty string",
     },
     {
       testCase: "'disabled' is not a boolean",
@@ -98,7 +98,7 @@ describe('validatePackageFormat', () => {
         package: package1
         disabled: "not a boolean"
       `,
-      error: "optional 'disabled' field in each package item must be a boolean",
+      error: "optional 'disabled' field in package item must be a boolean",
     },
     {
       testCase: "'pluginConfig' is not a map",
@@ -106,7 +106,7 @@ describe('validatePackageFormat', () => {
         package: package1
         pluginConfig: "not a map"
       `,
-      error: "optional 'pluginConfig' field in each package item must be a map",
+      error: "optional 'pluginConfig' field in package item must be a map",
     },
   ];
 
