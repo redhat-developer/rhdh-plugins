@@ -44,6 +44,7 @@ export type { DividerProps } from './components/Divider/Divider';
 export type { SpacerProps } from './components/Spacer/Spacer';
 export type { SupportButtonProps } from './components/SupportButton/SupportButton';
 export type { NotificationButtonProps } from './components/NotificationButton/NotificationButton';
+export type { CompanyLogoProps } from './components/CompanyLogo/CompanyLogo';
 
 export type {
   NotificationBannerProps,
