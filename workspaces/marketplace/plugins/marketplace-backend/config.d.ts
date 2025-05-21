@@ -22,11 +22,6 @@ export interface Config {
        * @visibility frontend
        */
       enabled?: boolean;
-      /**
-       * Type of saving installation configuration
-       * @visibility frontend
-       */
-      type: 'saveToSingleFile';
       saveToSingleFile: {
         /**
          * The path to the yaml file containing the plugins installation configuration

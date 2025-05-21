@@ -64,7 +64,6 @@ const FILE_INSTALL_CONFIG = {
   extensions: {
     installation: {
       enabled: true,
-      type: 'saveToSingleFile',
       saveToSingleFile: { file: 'dummy-config.yaml' },
     },
   },

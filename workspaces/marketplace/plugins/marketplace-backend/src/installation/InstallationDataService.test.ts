@@ -46,7 +46,6 @@ describe('InstallationDataService', () => {
     extensions: {
       installation: {
         enabled: true,
-        type: 'saveToSingleFile',
         saveToSingleFile: { file: 'dummy-file.yaml' },
       },
     },
