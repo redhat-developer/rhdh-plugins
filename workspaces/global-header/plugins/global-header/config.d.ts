@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-// plugins/global-header/config.d.ts
-
 import '@backstage/config';
 
 declare module '@backstage/config' {
