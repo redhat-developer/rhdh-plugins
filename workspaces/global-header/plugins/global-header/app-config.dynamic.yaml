@@ -7,7 +7,7 @@ dynamicPlugins:
           importName: GlobalHeader
           config:
             position: above-sidebar # above-main-content | below-main-content | above-sidebar
-      
+
         - mountPoint: global.header/component
           importName: CompanyLogo
           config:
