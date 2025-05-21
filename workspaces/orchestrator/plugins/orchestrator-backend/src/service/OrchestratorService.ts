@@ -223,4 +223,17 @@ export class OrchestratorService {
     if (overview) overview.isAvailable = isWorkflowAvailable; // workflow overview is avaiable but the workflow itself is not
     return overview;
   }
+
+  public async pingWorkflowService(args: {
+    definitionId: string;
+  }): Promise<boolean | undefined> {
+    const { definitionId } = args;
+    const idUrlMap = await this.dataIndexService.fetchWorkflowServiceUrls();
+    const serviceUrl = idUrlMap[definitionId];
+    const isServiceUp = await this.sonataFlowService.pingWorkflowService({
+      definitionId,
+      serviceUrl,
+    });
+    return isServiceUp;
+  }
 }

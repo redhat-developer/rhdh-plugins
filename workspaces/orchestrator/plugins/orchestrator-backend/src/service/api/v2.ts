@@ -277,6 +277,14 @@ export class V2 {
     });
   }
 
+  public async pingWorkflowService(
+    workflowId: string,
+  ): Promise<boolean | undefined> {
+    return this.orchestratorService.pingWorkflowService({
+      definitionId: workflowId,
+    });
+  }
+
   public extractQueryParam(
     req: ParsedRequest,
     key: string,
