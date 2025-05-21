@@ -78,7 +78,10 @@ export interface MarketplaceApi {
     name: string,
   ): Promise<MarketplacePackage>;
 
-  getPackageConfigByName?(namespace: string, name: string): Promise<string>;
+  getPackageConfigByName?(
+    namespace: string,
+    name: string,
+  ): Promise<{ configYaml: string }>;
 
   getPlugins(
     request: GetEntitiesRequest,
@@ -95,7 +98,10 @@ export interface MarketplaceApi {
     name: string,
   ): Promise<{ read: 'ALLOW' | 'DENY'; write: 'ALLOW' | 'DENY' }>;
 
-  getPluginConfigByName?(namespace: string, name: string): Promise<string>;
+  getPluginConfigByName?(
+    namespace: string,
+    name: string,
+  ): Promise<{ configYaml: string }>;
 
   getPluginPackages(
     namespace: string,

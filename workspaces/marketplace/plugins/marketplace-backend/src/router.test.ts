@@ -425,7 +425,7 @@ describe('createRouter', () => {
           '/api/extensions/plugin/default/plugin1/configuration',
         );
         expect(response.status).toEqual(200);
-        expect(response.text).toEqual(pluginToGet);
+        expect(response.body.configYaml).toEqual(pluginToGet);
       });
     });
   });
@@ -455,7 +455,7 @@ describe('createRouter', () => {
           '/api/extensions/package/default/package11/configuration',
         );
         expect(response.status).toEqual(200);
-        expect(response.text).toEqual(packageToGet);
+        expect(response.body.configYaml).toEqual(packageToGet);
       });
     });
   });

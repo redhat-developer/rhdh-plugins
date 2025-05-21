@@ -144,7 +144,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   async getPackageConfigByName(
     namespace: string,
     name: string,
-  ): Promise<string> {
+  ): Promise<{ configYaml: string }> {
     return this.get(
       `/package/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
     );
@@ -183,7 +183,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   async getPluginConfigByName(
     namespace: string,
     name: string,
-  ): Promise<string> {
+  ): Promise<{ configYaml: string }> {
     return this.get(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
     );
