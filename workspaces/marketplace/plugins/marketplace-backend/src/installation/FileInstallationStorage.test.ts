@@ -124,10 +124,12 @@ describe('FileInstallationStorage', () => {
       fileInstallationStorage.initialize();
 
       expect(
-        fileInstallationStorage.getPackages([
-          mockPackages[0].spec.dynamicArtifact,
-          mockPackages[1].spec.dynamicArtifact,
-        ]),
+        fileInstallationStorage.getPackages(
+          new Set([
+            mockPackages[0].spec.dynamicArtifact,
+            mockPackages[1].spec.dynamicArtifact,
+          ]),
+        ),
       ).toEqual(stringify([mockDynamicPackage11, mockDynamicPackage12]));
     });
   });

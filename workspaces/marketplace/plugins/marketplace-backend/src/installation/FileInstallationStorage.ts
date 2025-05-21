@@ -26,7 +26,7 @@ import {
 export interface InstallationStorage {
   initialize?(): void;
   getPackage(packageName: string): string | undefined;
-  getPackages(packageNames: string[]): string | undefined;
+  getPackages(packageNames: Set<string>): string | undefined;
 }
 
 export class FileInstallationStorage implements InstallationStorage {
@@ -73,7 +73,7 @@ export class FileInstallationStorage implements InstallationStorage {
     return res ? this.toStringYaml([res]) : res;
   }
 
-  getPackages(packageNames: string[]): string | undefined {
+  getPackages(packageNames: Set<string>): string | undefined {
     const res = [];
     for (const packageName of packageNames) {
       const packageMap = this.getPackageYamlMap(packageName);
