@@ -12,22 +12,22 @@ backend:
   csp:
     img-src:
       - "'self'"
-      - "data:"
-      - "https://catamphetamine.github.io"
+      - 'data:'
+      - 'https://catamphetamine.github.io'
     script-src:
       - "'self'"
       - "'unsafe-eval'"
-      - "https://cdn.segment.com"
-      - "https://www.google.com"
-      - "https://www.gstatic.com"
+      - 'https://cdn.segment.com'
+      - 'https://www.google.com'
+      - 'https://www.gstatic.com'
     script-src-elem:
       - "'self'"
-      - "https://cdn.segment.com"
-      - "https://www.google.com"
-      - "https://www.gstatic.com"
+      - 'https://cdn.segment.com'
+      - 'https://www.google.com'
+      - 'https://www.gstatic.com'
     frame-src:
       - "'self'"
-      - "https://www.google.com"
+      - 'https://www.google.com'
   cors:
     origin: http://localhost:3000
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
