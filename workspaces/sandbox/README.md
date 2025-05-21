@@ -33,4 +33,4 @@ Please, note that every time you want to re deploy, you need to run:
 `make stop-rhdh-local`
 
 NOTE: the app uses prod RH SSO as auth provider and sandbox stage backend by default
-( those can be configured in `app-config.local.yaml` )
+( those can be configured in `deploy/app-config.yaml` )
