@@ -10277,12 +10277,12 @@ __metadata:
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
-    libphonenumber-js: ^1.11.20
+    libphonenumber-js: ^1.12.8
     lodash: ^4.17.21
     msw: ^1.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^18.0.2
-    react-phone-number-input: ^3.4.11
+    react-phone-number-input: ^3.4.12
     react-router: ^6.3.0
     react-router-dom: ^6.3.0
     react-use: ^17.2.4
@@ -17095,10 +17095,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"country-flag-icons@npm:^1.5.11":
-  version: 1.5.16
-  resolution: "country-flag-icons@npm:1.5.16"
-  checksum: f1df30e3ac63ab3e253826adfd33e5afe8e673d2ddb539f6bba24174d22de2830a7b9b126384bdc9d2d501be60b4b1230158f9210aba459428cf23644335d846
+"country-flag-icons@npm:^1.5.17":
+  version: 1.5.19
+  resolution: "country-flag-icons@npm:1.5.19"
+  checksum: bb9666fb0ddbedd76fcede911f969bfb1c5b14454049a08db22aded1f48b6201f3dfb9832fa904581b9fd788ee02feb946ae4c5fb322f7a866d328a0357630f9
   languageName: node
   linkType: hard
 
@@ -24126,10 +24126,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libphonenumber-js@npm:^1.11.17, libphonenumber-js@npm:^1.11.20":
-  version: 1.11.20
-  resolution: "libphonenumber-js@npm:1.11.20"
-  checksum: ab72f7162bf5023099914b7040b72739eefb8d6fa226a4aa133a1abf25e20f3d7a0999be43b73188e70e8493e5e646e6e89f54f6392a0139e7628df0ab9e28bf
+"libphonenumber-js@npm:^1.11.20, libphonenumber-js@npm:^1.12.8":
+  version: 1.12.8
+  resolution: "libphonenumber-js@npm:1.12.8"
+  checksum: b3a50a9b5f63e43ad368ea88712a1d6cf38f7b26c01fdafb0c114e4c2f977fb1a7c19303bf09ce89680b8acfbbfaf127e848550999b43628c9d1573c816d68d5
   languageName: node
   linkType: hard
 
@@ -29184,19 +29184,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-phone-number-input@npm:^3.4.11":
-  version: 3.4.11
-  resolution: "react-phone-number-input@npm:3.4.11"
+"react-phone-number-input@npm:^3.4.12":
+  version: 3.4.12
+  resolution: "react-phone-number-input@npm:3.4.12"
   dependencies:
     classnames: ^2.5.1
-    country-flag-icons: ^1.5.11
+    country-flag-icons: ^1.5.17
     input-format: ^0.3.10
-    libphonenumber-js: ^1.11.17
+    libphonenumber-js: ^1.11.20
     prop-types: ^15.8.1
   peerDependencies:
     react: ">=16.8"
     react-dom: ">=16.8"
-  checksum: 4c750615d5b96c273e8911b4cb6c478b408feb199e902f443ab341834c5450763886330d9a4cbef43d4959830557b5ffd689ad47f54c8d07528dbb5cf63c770d
+  checksum: 41273da06da8dcfb420cef0de52ec3ae5a7a6558358ad48ef6a7f4eae1a6be9334625c2295367f2ac474a365eb225090e0ee783be92a8367a9fb945e34b811eb
   languageName: node
   linkType: hard
 
