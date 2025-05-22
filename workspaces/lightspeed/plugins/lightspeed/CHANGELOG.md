@@ -1,5 +1,22 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.5.2
+
+### Patch Changes
+
+- a9e5f32: Updated dependency `@openapitools/openapi-generator-cli` to `2.20.0`.
+  Updated dependency `prettier` to `3.5.3`.
+  Updated dependency `@redhat-developer/red-hat-developer-hub-theme` to `0.5.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.6.0`.
+  Updated dependency `@janus-idp/cli` to `3.5.0`.
+- 3a76aaf: Updated dependency `@patternfly/react-core` to `6.3.0-prerelease.4`.
+- dc4ff7c: Add file attachment support
+  Update functional and legal disclaimers
+  Add citation links in the bot response
+  Update initial user prompts
+- Updated dependencies [a9e5f32]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.3.1
+
 ## 0.5.1
 
 ### Patch Changes
