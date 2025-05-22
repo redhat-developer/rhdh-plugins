@@ -139,7 +139,15 @@ const routes = (
 
 export default app.createRoot(
   <>
-    <GlobalStyles styles={{ html: { overflowY: 'hidden' } }} />
+    <GlobalStyles
+      styles={{
+        html: { overflowY: 'hidden' },
+        ':root': {
+          '--rhdh-v1-page-inset': '1.5rem',
+          '--rhdh-v1-header-height': '64px',
+        },
+      }}
+    />
     <AlertDisplay />
     <OAuthRequestDialog />
     <SignalsDisplay />
