@@ -122,7 +122,7 @@ lightspeed:
     - id: <server_id>
       url: <server_URL>
       token: <api_key>
-  samplePrompts: # optional
+  prompts: # optional
     - title: <prompt_title>
     - message: <prompt_message>
 ```

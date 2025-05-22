@@ -38,7 +38,7 @@ export interface Config {
        */
       url: string;
     }>;
-    samplePrompts?: Array</**
+    prompts?: Array</**
      * @visibility frontend
      */
     {
