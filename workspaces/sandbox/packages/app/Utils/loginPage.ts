@@ -15,7 +15,7 @@
  */
 import { expect, type Locator, type Page } from '@playwright/test';
 
-export class Login_page {
+export class LoginPage {
   readonly page: Page;
   readonly login_id: string;
   readonly login_pw: string;

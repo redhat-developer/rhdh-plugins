@@ -15,7 +15,7 @@
  */
 
 import { test, expect, Page, type Locator } from '@playwright/test';
-import { Login_page } from '../Utils/loginPage';
+import { LoginPage } from '../Utils/loginPage';
 
 const dotenv = require('dotenv');
 
@@ -36,7 +36,7 @@ test.describe('sandbox plugin', () => {
     });
     page = await context.newPage();
 
-    const login_page = new Login_page(page);
+    const login_page = new LoginPage(page);
     await login_page.navigate(baseUrl); // Navigate to base URL
     await login_page.login(id, pw); // Log in with credentials
   });
