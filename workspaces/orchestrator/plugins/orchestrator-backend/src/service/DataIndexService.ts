@@ -433,6 +433,7 @@ export class DataIndexService {
             name
             enter
             exit
+            errorMessage
           }
           variables
           parentProcessInstance {
@@ -442,6 +443,7 @@ export class DataIndexService {
           }
           error {
             nodeDefinitionId
+            nodeInstanceId
             message
           }
         }
@@ -467,12 +469,12 @@ export class DataIndexService {
       return undefined;
     }
 
-    const instance = processInstances[0];
+    const instance = this.removeNodes(processInstances[0]);
 
     const workflowInfo = await this.fetchWorkflowInfo(instance.processId);
     if (!workflowInfo?.source) {
       throw new Error(
-        `Workflow defintion is required to fetch instance ${instance.id}`,
+        `Workflow definition is required to fetch instance ${instance.id}`,
       );
     }
     const workflowDefinitionSrc: WorkflowDefinition = fromWorkflowSource(
@@ -498,5 +500,13 @@ export class DataIndexService {
     } else {
       throw result.error;
     }
+  }
+
+  private removeNodes(instance: ProcessInstance): ProcessInstance {
+    const errorNodeId = instance.error?.nodeInstanceId;
+    instance.nodes = instance.nodes.filter(node => {
+      return !node.errorMessage || node.id === errorNodeId;
+    });
+    return instance;
   }
 }
