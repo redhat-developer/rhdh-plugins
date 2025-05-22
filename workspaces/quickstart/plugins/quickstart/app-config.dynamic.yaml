@@ -1,0 +1,6 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-quickstart:
+      mountPoints:
+        - mountPoint: application/provider
+          importName: QuickstartDrawerProvider
