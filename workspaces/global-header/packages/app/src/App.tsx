@@ -16,7 +16,7 @@
 
 import React from 'react';
 // eslint-disable-next-line no-restricted-imports
-import GlobalStyles from '@mui/material';
+import { GlobalStyles } from '@mui/material';
 import { Navigate, Route } from 'react-router-dom';
 import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
