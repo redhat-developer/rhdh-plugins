@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all openshift image registry minor updates",
+      "matchFileNames": ["workspaces/openshift-image-registry/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(OIR)"
+      ],
+      "addLabels": ["team/rhdh", "openshift-image-registry"]
+    },
+    {
+      "description": "all openshift image registry patch updates",
+      "matchFileNames": ["workspaces/openshift-image-registry/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(OIR)"
+      ],
+      "addLabels": ["team/rhdh", "openshift-image-registry"]
+    },
+    {
+      "description": "all openshift image registry dev dependency updates",
+      "matchFileNames": ["workspaces/openshift-image-registry/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(OIR)"
+      ],
+      "addLabels": ["team/rhdh", "openshift-image-registry"]
+    }
+  ]
+}

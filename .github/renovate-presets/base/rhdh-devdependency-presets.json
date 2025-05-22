@@ -1,0 +1,9 @@
+{
+  "devDeps": {
+    "description": "Group all minor/patch devdependencies updates for RHDH {{arg0}} Plugins",
+    "matchUpdateTypes": ["minor", "patch"],
+    "matchDepTypes": ["devDependencies"],
+    "groupName": "RHDH {{arg0}} DevDependencies (non-major)",
+    "automerge": true
+  }
+}
