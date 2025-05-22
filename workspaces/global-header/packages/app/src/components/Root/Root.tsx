@@ -57,19 +57,18 @@ const useStyles = makeStyles(() => ({
   },
   sidebarLayout: {
     '& div[class*="BackstageSidebar-drawer"]': {
-      top: '64px',
-      height: 'calc(100vh - 64px)',
+      top: 'var(--rhdh-v1-header-height, 64px)',
+      height: 'calc(100vh - var(--rhdh-v1-header-height, 64px))',
     },
     '& main[class*="BackstagePage-root"]': {
-      height: `calc(100vh - 40px)`, // header-height(64px) - border-width(24px) = 40px
-      marginTop: '-24px',
-      marginBottom: '-24px',
-      '& header': {
-        borderRadiusTopRight: '4px',
-        overflow: 'hidden',
-      },
+      height: `calc(100vh - (var(--rhdh-v1-header-height, 64px) - var(--rhdh-v1-page-inset, 1.5rem)))`,
+      marginTop: 'calc(-1 * var(--rhdh-v1-page-inset, 1.5rem))',
+      marginBottom: 'calc(-1 * var(--rhdh-v1-page-inset, 1.5rem))',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
       '& article': {
-        borderRadiusBottomRight: '4px',
+        flex: 1,
         overflow: 'auto',
       },
     },
