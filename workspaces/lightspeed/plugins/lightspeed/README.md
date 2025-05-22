@@ -122,6 +122,7 @@ lightspeed:
     - id: <server_id>
       url: <server_URL>
       token: <api_key>
+  questionValidation: true # Optional - To disable question (prompt) validation set it to false.
 ```
 
 ---
