@@ -44,7 +44,7 @@
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "4.0.0-alpha.61",
     "@mui/icons-material": "5.16.4",
-    "@mui/lab": "5.0.0-alpha.175",
+    "@mui/lab": "5.0.0-alpha.176",
     "@mui/material": "5.16.14",
     "@mui/x-date-pickers": "5.0.20",
     "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": "workspace:^",
