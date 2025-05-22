@@ -32,35 +32,35 @@ describe('Entity Illustration Dismissal Utils', () => {
     });
 
     it('should return parsed array if data is present in localStorage', () => {
-      localStorage.setItem(key, JSON.stringify(['eswar']));
-      expect(getDismissedEntityIllustrationUsers()).toEqual(['eswar']);
+      localStorage.setItem(key, JSON.stringify(['user1']));
+      expect(getDismissedEntityIllustrationUsers()).toEqual(['user1']);
     });
   });
 
   describe('addDismissedEntityIllustrationUsers', () => {
     it('should add a new username to localStorage', () => {
-      addDismissedEntityIllustrationUsers('eswar');
+      addDismissedEntityIllustrationUsers('user1');
       const stored = JSON.parse(localStorage.getItem(key) || '[]');
-      expect(stored).toContain('eswar');
+      expect(stored).toContain('user1');
     });
 
     it('should not add duplicate usernames', () => {
-      localStorage.setItem(key, JSON.stringify(['eswar']));
-      addDismissedEntityIllustrationUsers('eswar');
+      localStorage.setItem(key, JSON.stringify(['user1']));
+      addDismissedEntityIllustrationUsers('user1');
       const stored = JSON.parse(localStorage.getItem(key) || '[]');
-      expect(stored).toEqual(['eswar']);
+      expect(stored).toEqual(['user1']);
     });
   });
 
   describe('hasEntityIllustrationUserDismissed', () => {
     it('should return true if username is in localStorage', () => {
-      localStorage.setItem(key, JSON.stringify(['eswar']));
-      expect(hasEntityIllustrationUserDismissed('eswar')).toBe(true);
+      localStorage.setItem(key, JSON.stringify(['user1']));
+      expect(hasEntityIllustrationUserDismissed('user1')).toBe(true);
     });
 
     it('should return false if username is not in localStorage', () => {
-      localStorage.setItem(key, JSON.stringify(['karthik']));
-      expect(hasEntityIllustrationUserDismissed('eswar')).toBe(false);
+      localStorage.setItem(key, JSON.stringify(['user2']));
+      expect(hasEntityIllustrationUserDismissed('user1')).toBe(false);
     });
   });
 });
