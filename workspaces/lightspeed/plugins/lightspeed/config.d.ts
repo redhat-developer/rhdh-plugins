@@ -43,7 +43,7 @@ export interface Config {
      * @visibility frontend
      */
     questionValidation?: boolean;
-    samplePrompts?: Array</**
+    prompts?: Array</**
      * @visibility frontend
      */
     {

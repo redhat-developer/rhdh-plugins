@@ -26,7 +26,7 @@ export const useWelcomePrompts = (): SamplePrompts => {
 
   return React.useMemo(() => {
     const samplePrompts: SamplePrompts = (
-      configApi?.getOptionalConfigArray('lightspeed.samplePrompts') ?? []
+      configApi?.getOptionalConfigArray('lightspeed.prompts') ?? []
     ).map(config => ({
       title: config.getString('title') ?? '',
       message: config.getString('message') ?? '',
