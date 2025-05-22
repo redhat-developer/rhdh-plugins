@@ -16,7 +16,7 @@
   "backstage": {
     "role": "backend-plugin-module",
     "pluginId": "scaffolder",
-    "supported-versions": "1.37.1",
+    "supported-versions": "1.36.1",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator-common",
       "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator"
