@@ -592,7 +592,6 @@ function setupInternalRoutes(
         const workflowDefinition =
           await services.orchestratorService.fetchWorkflowInfo({
             definitionId: workflowId,
-            cacheHandler: 'throw',
           });
 
         if (!workflowDefinition) {
@@ -606,11 +605,20 @@ function setupInternalRoutes(
             `Service URL is not defined for workflow ${workflowId}`,
           );
         }
+        const isAvailableNow =
+          await services.orchestratorService.pingWorkflowService({
+            definitionId: workflowId,
+            serviceUrl: serviceUrl,
+          });
 
+        if (!isAvailableNow) {
+          throw new Error(
+            `Workflow service for workflow ${workflowId} at ${serviceUrl}/management/processes/${workflowId} is not available at the moment.`,
+          );
+        }
         const definition =
           await services.orchestratorService.fetchWorkflowDefinition({
             definitionId: workflowId,
-            cacheHandler: 'throw',
           });
 
         if (!definition) {
@@ -627,7 +635,6 @@ function setupInternalRoutes(
         const instanceVariables = instanceId
           ? await services.orchestratorService.fetchInstanceVariables({
               instanceId,
-              cacheHandler: 'throw',
             })
           : undefined;
 
