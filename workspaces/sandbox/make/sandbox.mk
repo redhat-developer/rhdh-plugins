@@ -50,3 +50,6 @@ stop-rhdh-local:
 	cd $(RHDH_LOCAL_DIR) && \
 	podman-compose down -v && \
 	rm -rf $(RHDH_LOCAL_DIR)
+
+.PHONY: restart-rhdh-local
+restart-rhdh-local: stop-rhdh-local start-rhdh-local
