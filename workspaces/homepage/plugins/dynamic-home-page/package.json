@@ -45,7 +45,7 @@
     "@mui/icons-material": "5.16.4",
     "@mui/material": "5.16.14",
     "@mui/styles": "5.16.14",
-    "@scalprum/react-core": "0.9.3",
+    "@scalprum/react-core": "0.9.5",
     "react-grid-layout": "1.5.1",
     "react-use": "17.6.0",
     "tss-react": "4.9.17"
