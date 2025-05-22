@@ -54,7 +54,8 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-adoption-insights-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-ai-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-orchestrator-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-sandbox-presets"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-sandbox-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-openshift-image-registry-presets.json"
       ]
     },
     {
