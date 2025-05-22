@@ -78,6 +78,17 @@ export interface MarketplaceApi {
     name: string,
   ): Promise<MarketplacePackage>;
 
+  getPackageConfigByName?(
+    namespace: string,
+    name: string,
+  ): Promise<{ configYaml: string }>;
+
+  installPackage?(
+    namespace: string,
+    name: string,
+    configYaml: string,
+  ): Promise<{ status: string }>;
+
   getPlugins(
     request: GetEntitiesRequest,
   ): Promise<GetEntitiesResponse<MarketplacePlugin>>;
@@ -97,6 +108,12 @@ export interface MarketplaceApi {
     namespace: string,
     name: string,
   ): Promise<{ configYaml: string }>;
+
+  installPlugin?(
+    namespace: string,
+    name: string,
+    configYaml: string,
+  ): Promise<{ status: string }>;
 
   getPluginPackages(
     namespace: string,
