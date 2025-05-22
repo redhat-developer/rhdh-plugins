@@ -16368,6 +16368,7 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@mui/icons-material": 5.16.14
+    "@mui/material": 5.16.14
     "@playwright/test": 1.50.1
     "@red-hat-developer-hub/backstage-plugin-global-header": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-global-header-test": "workspace:^"
