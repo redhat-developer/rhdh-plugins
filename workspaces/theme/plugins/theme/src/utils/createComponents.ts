@@ -693,7 +693,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             backgroundColor: general.sidebarBackgroundColor,
             // Cancel out the spacing produced by the page inset border when
             // the global header is present
-            "& #global-header ~ main, & #global-header ~ [class*='MuiLinearProgress-root']":
+            "& #global-header ~ main, & #global-header ~ [class*='MuiLinearProgress-root'], & #above-main-content-header-container ~ main, & #above-main-content-header-container ~ [class*='MuiLinearProgress-root']":
               {
                 marginTop: 'calc(-1 * var(--rhdh-v1-page-inset))',
               },
