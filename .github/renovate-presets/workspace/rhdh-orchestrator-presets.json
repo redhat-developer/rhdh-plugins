@@ -4,7 +4,7 @@
       "description": "all Orchestrator minor updates",
       "matchFileNames": ["workspaces/orchestrator/**"],
       "extends": [
-        "github>redhat-developer/rhdh-plugins/.github/renovate-presets/base/rhdh-minor-presets(Orchestrator)"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Orchestrator)"
       ],
       "addLabels": ["team/orchestrator", "orchestrator"]
     },
