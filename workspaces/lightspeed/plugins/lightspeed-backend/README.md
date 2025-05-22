@@ -47,6 +47,17 @@ lightspeed:
       token: 'js92n-ssj28dbdk902' # dummy token
 ```
 
+`questionValidation` is default to be enabled with topic restriction on RHDH related topics.
+If you want to disable the validation, set the value to be `false`.
+
+Example configuration to disable `questionValidation`:
+
+```yaml
+lightspeed:
+  questionValidation: false
+  servers: ... ...
+```
+
 #### Permission Framework Support
 
 The Lightspeed Backend plugin has support for the permission framework.
