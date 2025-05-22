@@ -1,5 +1,14 @@
 ### Dependencies
 
+## 6.0.1
+
+### Patch Changes
+
+- 56c160b: Add endpoind to ping workflow service
+- 571d93e: Updated dependency `@types/express` to `4.17.22`.
+- Updated dependencies [56c160b]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.1
+
 ## 6.0.0
 
 ### Major Changes
