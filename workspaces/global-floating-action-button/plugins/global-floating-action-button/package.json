@@ -39,7 +39,7 @@
     "@mui/icons-material": "^5.15.17",
     "@mui/material": "^5.15.17",
     "@mui/styles": "5.16.14",
-    "@scalprum/react-core": "0.9.3",
+    "@scalprum/react-core": "0.9.5",
     "classnames": "^2.5.1",
     "react-use": "^17.2.4"
   },
