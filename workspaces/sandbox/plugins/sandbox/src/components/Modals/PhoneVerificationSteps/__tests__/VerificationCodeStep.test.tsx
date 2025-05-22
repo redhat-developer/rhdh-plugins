@@ -42,7 +42,7 @@ describe('VerificationCodeStep', () => {
   const mockHandleClose = jest.fn();
   const mockHandleEditPhoneNumber = jest.fn();
   const mockHandleStartTrialClick = jest.fn();
-  const otpCode: readonly string[] = ['1', '2', '3', '4', '5'];
+  const otpCode: string[] = ['1', '2', '3', '4', '5'];
   const phoneNumber = parsePhoneNumber('8 (800) 555-35-35', 'RU');
 
   beforeEach(() => {
