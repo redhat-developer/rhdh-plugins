@@ -159,6 +159,10 @@ export interface MarketplaceApi {
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
+    getPackageConfigByName?(namespace: string, name: string): Promise<{
+        configYaml: string;
+    }>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
@@ -200,6 +204,10 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     getCollectionsFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
+    // (undocumented)
+    getPackageConfigByName(namespace: string, name: string): Promise<{
+        configYaml: string;
+    }>;
     // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)

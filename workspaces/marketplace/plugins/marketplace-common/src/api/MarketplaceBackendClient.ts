@@ -141,6 +141,15 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     );
   }
 
+  async getPackageConfigByName(
+    namespace: string,
+    name: string,
+  ): Promise<{ configYaml: string }> {
+    return this.get(
+      `/package/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
+    );
+  }
+
   async getPlugins(
     request: GetEntitiesRequest,
   ): Promise<GetEntitiesResponse<MarketplacePlugin>> {
