@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.4.0
+
+### Minor Changes
+
+- 8915566: added new homepage cards - explore, catalog and templates
+
 ## 1.3.3
 
 ### Patch Changes
