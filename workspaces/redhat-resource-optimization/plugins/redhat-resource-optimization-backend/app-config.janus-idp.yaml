@@ -1,0 +1,9 @@
+proxy:
+  endpoints:
+    '/cost-management/v1':
+      target: https://console.redhat.com/api/cost-management/v1
+      allowedHeaders: ['Authorization']
+      credentials: dangerously-allow-unauthenticated
+resourceOptimization:
+  clientId: ${ROS_CLIENT_ID}
+  clientSecret: ${ROS_CLIENT_SECRET}
