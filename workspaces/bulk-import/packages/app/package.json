@@ -43,7 +43,7 @@
     "@backstage/plugin-user-settings": "^0.8.21",
     "@backstage/theme": "^0.6.5",
     "@mui/icons-material": "5.16.14",
-    "@mui/lab": "5.0.0-alpha.175",
+    "@mui/lab": "5.0.0-alpha.176",
     "@mui/material": "5.16.14",
     "@mui/styles": "5.16.14",
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^",
