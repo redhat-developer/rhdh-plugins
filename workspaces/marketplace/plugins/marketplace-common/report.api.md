@@ -179,6 +179,10 @@ export interface MarketplaceApi {
     getPluginPackages(namespace: string, name: string): Promise<MarketplacePackage[]>;
     // (undocumented)
     getPlugins(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePlugin>>;
+    // (undocumented)
+    installPlugin?(namespace: string, name: string): Promise<{
+        status: any;
+    }>;
 }
 
 // @public (undocumented)
@@ -221,6 +225,10 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     getPluginPackages(namespace: string, name: string): Promise<MarketplacePackage[]>;
     // (undocumented)
     getPlugins(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePlugin>>;
+    // (undocumented)
+    installPlugin(namespace: string, name: string): Promise<{
+        status: any;
+    }>;
 }
 
 // @public (undocumented)

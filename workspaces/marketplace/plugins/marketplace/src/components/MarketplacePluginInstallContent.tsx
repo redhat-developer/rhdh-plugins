@@ -17,6 +17,8 @@
 import React, { useEffect, useState } from 'react';
 
 import { ErrorPage, Progress } from '@backstage/core-components';
+import { JsonObject } from '@backstage/types';
+
 import {
   alertApiRef,
   useApi,
@@ -33,8 +35,6 @@ import {
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { JsonObject } from '@backstage/types';
-
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
@@ -49,6 +49,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
+import Alert from '@mui/material/Alert';
 
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
@@ -62,6 +63,7 @@ import {
 } from './CodeEditor';
 import { Markdown } from './Markdown';
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
+import { useMarketplaceApi } from '../hooks/useMarketplaceApi';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -191,6 +193,9 @@ export const MarketplacePluginInstallContent = ({
   plugin: MarketplacePlugin;
   packages: MarketplacePackage[];
 }) => {
+  const marketplaceApi = useMarketplaceApi();
+  const navigate = useNavigate();
+  const [showErrorAlert, setShowErrorAlert] = React.useState(false);
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
 
   useEffect(() => {
@@ -211,6 +216,7 @@ export const MarketplacePluginInstallContent = ({
   });
 
   const onLoaded = React.useCallback(() => {
+    setShowErrorAlert(false);
     const dynamicPluginYaml = {
       plugins: (packages ?? []).map(pkg => ({
         package: pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....',
@@ -220,7 +226,6 @@ export const MarketplacePluginInstallContent = ({
     codeEditor.setValue(yaml.stringify(dynamicPluginYaml));
   }, [codeEditor, packages]);
 
-  const navigate = useNavigate();
   const pluginConfigPermissions = usePluginConfigurationPermissions(
     params.namespace,
     params.name,
@@ -252,6 +257,39 @@ export const MarketplacePluginInstallContent = ({
 
   const handleTabChange = (_: any, newValue: React.SetStateAction<number>) => {
     setTabIndex(newValue);
+  };
+
+  const handleInstall = async () => {
+    try {
+      const res = await marketplaceApi.installPlugin?.(
+        params.namespace,
+        params.name,
+      );
+      if (res?.status === 'OK') {
+        navigate('/extensions');
+      } else {
+        setShowErrorAlert(true);
+      }
+    } catch (err) {
+      setShowErrorAlert(true);
+    }
+  };
+
+  const isProductionEnvironment = process.env.NODE_ENV === 'production';
+
+  const showDisableInstall =
+    isProductionEnvironment ||
+    showErrorAlert ||
+    pluginConfigPermissions.data?.write !== 'ALLOW';
+
+  const installTooltip = () => {
+    if (isProductionEnvironment) {
+      return 'Plugin installation is disabled in the production environment.';
+    }
+    if (pluginConfigPermissions.data?.write !== 'ALLOW') {
+      return "You don't have permission to install plugins or edit their configurations. Contact your administrator to request access or assistance.";
+    }
+    return '';
   };
 
   return (
@@ -402,15 +440,19 @@ export const MarketplacePluginInstallContent = ({
         <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
           <CheckboxList packages={packages} />
         </Box>
-        <Tooltip
-          title={
-            pluginConfigPermissions.data?.write !== 'ALLOW'
-              ? "You don't have permission to install plugins or edit their configurations. Contact your administrator to request access or assistance."
-              : ''
-          }
-        >
+        {showErrorAlert && (
+          <Alert severity="error" sx={{ mb: '1rem' }}>
+            Error occured
+          </Alert>
+        )}
+        <Tooltip title={installTooltip()}>
           <Typography component="span">
-            <Button variant="contained" color="primary" disabled>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleInstall}
+              disabled={showDisableInstall}
+            >
               Install
             </Button>
           </Typography>

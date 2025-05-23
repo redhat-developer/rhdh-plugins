@@ -265,8 +265,8 @@ export async function createRouter({
         `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
       );
     }
-
-    res.status(200).json({});
+    // throw new Error('Error occured');
+    res.status(200).json({ status: 'OK' });
   });
 
   router.get('/plugin/:namespace/:name/packages', async (req, res) => {
