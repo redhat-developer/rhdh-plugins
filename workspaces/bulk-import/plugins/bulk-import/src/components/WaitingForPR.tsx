@@ -19,6 +19,7 @@ import * as React from 'react';
 import { Link, StatusPending } from '@backstage/core-components';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 
 import GitAltIcon from '../components/GitAltIcon';
@@ -34,7 +35,8 @@ const useStyles = makeStyles(() => ({
 export const WaitingForPR = ({ url }: { url: string }) => {
   const styles = useStyles();
   return (
-    <span
+    <Typography
+      component="span"
       style={{
         display: 'flex',
       }}
@@ -47,7 +49,9 @@ export const WaitingForPR = ({ url }: { url: string }) => {
           paddingRight: '5px',
         }}
       />
-      <span style={{ color: '#757575' }}>Waiting for approval</span>
+      <Typography component="span" style={{ color: '#757575' }}>
+        Waiting for approval
+      </Typography>
       {url && (
         <Link
           to={url}
@@ -58,6 +62,6 @@ export const WaitingForPR = ({ url }: { url: string }) => {
           <OpenInNewIcon className={styles.openInNew} />
         </Link>
       )}
-    </span>
+    </Typography>
   );
 };

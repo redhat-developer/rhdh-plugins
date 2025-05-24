@@ -22,6 +22,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
@@ -102,7 +103,7 @@ export const AddRepositoriesFormFooter = () => {
     >
       {toolTipTitle ? (
         <Tooltip classes={{ tooltip: styles.tooltip }} title={toolTipTitle}>
-          <span>{submitButton}</span>
+          <Typography component="span">{submitButton}</Typography>
         </Tooltip>
       ) : (
         submitButton

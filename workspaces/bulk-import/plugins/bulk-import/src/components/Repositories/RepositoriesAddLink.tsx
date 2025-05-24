@@ -20,6 +20,7 @@ import { LinkButton } from '@backstage/core-components';
 
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
@@ -53,7 +54,7 @@ export const RepositoriesAddLink = () => {
           <br />
         </>
       )}
-      <span className={classes.addLink}>
+      <Typography component="span" className={classes.addLink}>
         <LinkButton
           to="add"
           color="primary"
@@ -62,7 +63,7 @@ export const RepositoriesAddLink = () => {
         >
           Add
         </LinkButton>
-      </span>
+      </Typography>
     </>
   );
 };

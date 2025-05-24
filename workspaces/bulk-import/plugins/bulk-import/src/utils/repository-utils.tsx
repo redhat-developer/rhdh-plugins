@@ -19,6 +19,7 @@ import * as React from 'react';
 import { Entity } from '@backstage/catalog-model';
 import { StatusOK } from '@backstage/core-components';
 
+import Typography from '@mui/material/Typography';
 import * as jsyaml from 'js-yaml';
 import { get } from 'lodash';
 import * as yaml from 'yaml';
@@ -236,10 +237,13 @@ export const getImportStatus = (
       );
     case 'ADDED':
       return showIcon ? (
-        <span style={{ display: 'flex', alignItems: 'baseline' }}>
+        <Typography
+          component="span"
+          style={{ display: 'flex', alignItems: 'baseline' }}
+        >
           <StatusOK />
           Added
-        </span>
+        </Typography>
       ) : (
         'Added'
       );

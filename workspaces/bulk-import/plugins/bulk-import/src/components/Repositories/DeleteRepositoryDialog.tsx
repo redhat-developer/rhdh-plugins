@@ -101,10 +101,10 @@ const DeleteRepositoryDialog = ({
             gap: 1,
           }}
         >
-          <span style={{ fontWeight: 'bold' }}>
+          <Typography component="span" style={{ fontWeight: 'bold' }}>
             <WarningIcon className={classes.warningIcon} color="warning" />{' '}
             Remove {repository.repoName} repository?
-          </span>
+          </Typography>
 
           <IconButton
             aria-label="close"
