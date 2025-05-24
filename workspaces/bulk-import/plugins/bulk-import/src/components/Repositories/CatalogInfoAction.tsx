@@ -26,6 +26,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
@@ -156,7 +157,9 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
 
   return catalogIcon()?.tooltip ? (
     <Tooltip title={catalogIcon()?.tooltip || ''}>
-      <span data-testid={catalogIcon()?.dataTestId}>{catalogIcon()?.icon}</span>
+      <Typography component="span" data-testid={catalogIcon()?.dataTestId}>
+        {catalogIcon()?.icon}
+      </Typography>
     </Tooltip>
   ) : null;
 };

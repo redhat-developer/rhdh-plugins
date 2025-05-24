@@ -18,6 +18,7 @@ import { useEffect } from 'react';
 
 import { StatusRunning } from '@backstage/core-components';
 
+import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import {
@@ -80,18 +81,21 @@ export const CatalogInfoStatus = ({
   if (!isDrawer && isLoading) {
     return (
       <StatusRunning>
-        <span
+        <Typography
+          component="span"
           style={{ fontWeight: '400', fontSize: '0.875rem', color: '#181818' }}
         >
           Generating
-        </span>
+        </Typography>
       </StatusRunning>
     );
   }
 
   if (importStatus) {
     return (
-      <span style={{ color: '#6A6E73' }}>{getImportStatus(importStatus)}</span>
+      <Typography component="span" style={{ color: '#6A6E73' }}>
+        {getImportStatus(importStatus)}
+      </Typography>
     );
   }
 
@@ -99,5 +103,5 @@ export const CatalogInfoStatus = ({
     return null;
   }
 
-  return <span>Not Generated</span>;
+  return <Typography component="span">Not Generated</Typography>;
 };

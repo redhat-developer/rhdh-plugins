@@ -22,6 +22,7 @@ import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import {
@@ -56,24 +57,24 @@ const CustomTabPanel = ({
 const getLabel = (status: any, repoId: string, repoName: string) => {
   if (status?.errors?.[`${repoId}`]) {
     return (
-      <span data-testid="pr-creation-failed">
+      <Typography component="span" data-testid="pr-creation-failed">
         <ErrorOutline
           color="error"
           style={{ verticalAlign: 'sub', paddingTop: '7px' }}
         />{' '}
         {repoName}
-      </span>
+      </Typography>
     );
   }
   if (status?.infos?.[`${repoId}`]) {
     return (
-      <span data-testid="info-message">
+      <Typography component="span" data-testid="info-message">
         <InfoOutlined
           color="info"
           style={{ verticalAlign: 'sub', paddingTop: '7px' }}
         />{' '}
         {repoName}
-      </span>
+      </Typography>
     );
   }
   return repoName;
