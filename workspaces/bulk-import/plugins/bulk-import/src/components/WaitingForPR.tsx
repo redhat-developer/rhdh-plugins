@@ -17,6 +17,7 @@
 import { Link, StatusPending } from '@backstage/core-components';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import Typography from '@mui/material/Typography';
 
 import GitAltIcon from '../components/GitAltIcon';
 import GitLabIcon from '../components/GitLabIcon';
@@ -29,7 +30,8 @@ export const WaitingForPR = ({
   isApprovalToolGitlab: boolean;
 }) => {
   return (
-    <span
+    <Typography
+      component="span"
       style={{
         display: 'flex',
       }}
@@ -53,7 +55,9 @@ export const WaitingForPR = ({
           }}
         />
       )}
-      <span style={{ color: '#757575' }}>Waiting for approval</span>
+      <Typography component="span" style={{ color: '#757575' }}>
+        Waiting for approval
+      </Typography>
       {url && (
         <Link
           to={url}
@@ -67,6 +71,6 @@ export const WaitingForPR = ({
           <OpenInNewIcon sx={{ paddingBottom: '5px', paddingTop: '3px' }} />
         </Link>
       )}
-    </span>
+    </Typography>
   );
 };

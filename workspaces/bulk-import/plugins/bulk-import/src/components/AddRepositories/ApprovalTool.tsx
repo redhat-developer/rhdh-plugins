@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ChangeEvent, FC } from 'react';
 
 import HelpIcon from '@mui/icons-material/HelpOutline';
 import Box from '@mui/material/Box';
@@ -30,13 +30,13 @@ interface ApprovalToolProps {
   setFieldValue: (field: string, value: any) => void; // Type for setFieldValue from Formik
 }
 
-const ApprovalTool: React.FC<ApprovalToolProps> = ({
+const ApprovalTool: FC<ApprovalToolProps> = ({
   approvalTool,
   setFieldValue,
 }) => {
   const theme = useTheme();
   const handleApprovalToolChange = (
-    _event: React.ChangeEvent<{}>,
+    _event: ChangeEvent<{}>,
     newValue: string,
   ) => {
     setFieldValue('approvalTool', newValue);

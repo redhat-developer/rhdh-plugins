@@ -16,9 +16,9 @@
 
 import { LinkButton } from '@backstage/core-components';
 
-import { Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { AddRepositoriesFormValues } from '../../types';

@@ -20,6 +20,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import {
@@ -105,7 +106,7 @@ export const AddRepositoriesFormFooter = () => {
             maxWidth: 'none',
           }}
         >
-          <span>{submitButton}</span>
+          <Typography component="span">{submitButton}</Typography>
         </Tooltip>
       ) : (
         submitButton

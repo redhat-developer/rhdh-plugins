@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import Typography from '@mui/material/Typography';
+
 import { getImageForIconClass } from '../../utils/icons';
 
 export const Illustrations = ({
@@ -25,7 +27,8 @@ export const Illustrations = ({
 }) => {
   return (
     <div>
-      <span
+      <Typography
+        component="span"
         style={{
           justifyContent: 'center',
           display: 'flex',
@@ -36,15 +39,15 @@ export const Illustrations = ({
           alt={iconText}
           height="100px"
         />
-      </span>
-      <p
+      </Typography>
+      <Typography
         style={{
           maxWidth: '150px',
           textAlign: 'center',
         }}
       >
         {iconText}
-      </p>
+      </Typography>
     </div>
   );
 };
