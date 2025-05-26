@@ -81,5 +81,5 @@ catalog:
 lightspeed:
   servers:
     - id: ollama
-      url: https://ollama-model-service-apicast-production.apps.rosa.redhat-ai-dev.m6no.p3.openshiftapps.com:443/v1
+      url: http://localhost:11434/v1
       token: dummy-token
