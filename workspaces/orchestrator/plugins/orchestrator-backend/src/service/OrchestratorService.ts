@@ -136,7 +136,6 @@ export class OrchestratorService {
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
     authTokens?: Array<AuthToken>;
-    businessKey?: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
     return await this.sonataFlowService.executeWorkflow(args);
   }
