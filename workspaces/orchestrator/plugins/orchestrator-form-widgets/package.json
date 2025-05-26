@@ -15,7 +15,7 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets"
     ],
-    "supported-versions": "1.37.1"
+    "supported-versions": "1.36.1"
   },
   "homepage": "https://red.ht/rhdh",
   "repository": {

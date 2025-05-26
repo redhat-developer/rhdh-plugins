@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-orchestrator-backend",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -9,7 +9,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "supported-versions": "1.37.1",
+    "supported-versions": "1.36.1",
     "pluginId": "orchestrator",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator",
@@ -95,7 +95,7 @@
     "@backstage/cli": "^0.31.1",
     "@janus-idp/backstage-plugin-audit-log-node": "^1.7.1",
     "@janus-idp/cli": "3.5.0",
-    "@types/express": "4.17.21",
+    "@types/express": "4.17.22",
     "@types/fs-extra": "11.0.4",
     "@types/json-schema": "7.0.15",
     "prettier": "3.5.3"
