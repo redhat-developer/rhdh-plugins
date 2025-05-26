@@ -56,7 +56,6 @@ import {
 import { RouterOptions } from '../routerWrapper';
 import { buildPagination } from '../types/pagination';
 import { V2 } from './api/v2';
-import { INTERNAL_SERVER_ERROR_MESSAGE } from './constants';
 import { DataIndexService } from './DataIndexService';
 import { DataInputSchemaService } from './DataInputSchemaService';
 import { OrchestratorService } from './OrchestratorService';
@@ -592,7 +591,6 @@ function setupInternalRoutes(
         const workflowDefinition =
           await services.orchestratorService.fetchWorkflowInfo({
             definitionId: workflowId,
-            cacheHandler: 'throw',
           });
 
         if (!workflowDefinition) {
@@ -610,7 +608,6 @@ function setupInternalRoutes(
         const definition =
           await services.orchestratorService.fetchWorkflowDefinition({
             definitionId: workflowId,
-            cacheHandler: 'throw',
           });
 
         if (!definition) {
@@ -627,7 +624,6 @@ function setupInternalRoutes(
         const instanceVariables = instanceId
           ? await services.orchestratorService.fetchInstanceVariables({
               instanceId,
-              cacheHandler: 'throw',
             })
           : undefined;
 
@@ -637,14 +633,10 @@ function setupInternalRoutes(
             )
           : undefined;
 
-        const workflowInfo = await routerApi.v2
-          .getWorkflowInputSchemaById(workflowId, serviceUrl)
-          .catch((error: Error) => {
-            auditEvent.fail({ error });
-            res.status(500).json({
-              message: error.message || INTERNAL_SERVER_ERROR_MESSAGE,
-            });
-          });
+        const workflowInfo = await routerApi.v2.getWorkflowInputSchemaById(
+          workflowId,
+          serviceUrl,
+        );
 
         if (!workflowInfo?.inputSchema?.properties) {
           auditEvent.success({

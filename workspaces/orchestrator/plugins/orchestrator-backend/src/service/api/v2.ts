@@ -96,7 +96,6 @@ export class V2 {
   public async getWorkflowSourceById(workflowId: string): Promise<string> {
     const source = await this.orchestratorService.fetchWorkflowSource({
       definitionId: workflowId,
-      cacheHandler: 'throw',
     });
 
     if (!source) {
@@ -133,7 +132,6 @@ export class V2 {
   ): Promise<AssessedProcessInstanceDTO> {
     const instance = await this.orchestratorService.fetchInstance({
       instanceId,
-      cacheHandler: 'throw',
     });
 
     if (!instance) {
@@ -145,7 +143,6 @@ export class V2 {
     if (includeAssessment && instance.businessKey) {
       assessedByInstance = await this.orchestratorService.fetchInstance({
         instanceId: instance.businessKey,
-        cacheHandler: 'throw',
       });
     }
 
@@ -164,7 +161,6 @@ export class V2 {
   ): Promise<ExecuteWorkflowResponseDTO> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
-      cacheHandler: 'throw',
     });
     if (!definition) {
       throw new Error(`Couldn't fetch workflow definition for ${workflowId}`);
@@ -179,7 +175,6 @@ export class V2 {
       authTokens: executeWorkflowRequestDTO.authTokens as Array<AuthToken>,
       serviceUrl: definition.serviceUrl,
       businessKey,
-      cacheHandler: 'throw',
     });
 
     if (!executionResponse) {
@@ -191,7 +186,6 @@ export class V2 {
       asyncFn: () =>
         this.orchestratorService.fetchInstance({
           instanceId: executionResponse.id,
-          cacheHandler: 'throw',
         }),
       maxAttempts: FETCH_INSTANCE_MAX_ATTEMPTS,
       delayMs: FETCH_INSTANCE_RETRY_DELAY_MS,
@@ -210,7 +204,6 @@ export class V2 {
   ): Promise<void> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
-      cacheHandler: 'throw',
     });
     if (!definition) {
       throw new Error(`Couldn't fetch workflow definition for ${workflowId}`);
@@ -222,7 +215,6 @@ export class V2 {
       definitionId: workflowId,
       instanceId: instanceId,
       serviceUrl: definition.serviceUrl,
-      cacheHandler: 'throw',
     });
 
     if (!response) {
@@ -238,7 +230,6 @@ export class V2 {
   ): Promise<string> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
-      cacheHandler: 'throw',
     });
     if (!definition) {
       throw new Error(`Couldn't fetch workflow definition for ${workflowId}`);
@@ -250,7 +241,6 @@ export class V2 {
       definitionId: workflowId,
       instanceId: instanceId,
       serviceUrl: definition.serviceUrl,
-      cacheHandler: 'throw',
     });
     return `Workflow instance ${instanceId} successfully aborted`;
   }
@@ -273,16 +263,31 @@ export class V2 {
     return this.orchestratorService.fetchWorkflowInfoOnService({
       definitionId: workflowId,
       serviceUrl: serviceUrl,
-      cacheHandler: 'throw',
     });
   }
 
   public async pingWorkflowService(
     workflowId: string,
   ): Promise<boolean | undefined> {
-    return this.orchestratorService.pingWorkflowService({
+    const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
     });
+    if (!definition) {
+      throw new Error(`Couldn't fetch workflow definition for ${workflowId}`);
+    }
+    if (!definition.serviceUrl) {
+      throw new Error(`ServiceURL is not defined for workflow ${workflowId}`);
+    }
+    const isAvailableNow = await this.orchestratorService.pingWorkflowService({
+      definitionId: workflowId,
+      serviceUrl: definition.serviceUrl,
+    });
+    if (!isAvailableNow) {
+      throw new Error(
+        `Workflow service for workflow ${workflowId} at ${definition.serviceUrl}/management/processes/${workflowId} is not available at the moment.`,
+      );
+    }
+    return isAvailableNow;
   }
 
   public extractQueryParam(

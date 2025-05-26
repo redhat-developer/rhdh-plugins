@@ -291,9 +291,15 @@ describe('SonataFlowService', () => {
         mockResponseJson,
         'POST',
       );
-
       // Then
-      const expectedMessage = `Request POST ${TEST_URL} failed with: StatusCode: 400 StatusText: ${STATUS_TEXT_BAD_REQUEST}, Details: ${DETAILS}, Stack: ${STACK_TRACE}`;
+      const expectedMessage = [
+        `HTTP POST request to ${TEST_URL} failed.`,
+        `Status Code: 400`,
+        `Status Text: ${STATUS_TEXT_BAD_REQUEST}`,
+        `Details: ${DETAILS}`,
+        `Stack Trace: ${STACK_TRACE}`,
+      ].join('\n');
+
       expect(result).toBe(expectedMessage);
     });
 
@@ -313,7 +319,12 @@ describe('SonataFlowService', () => {
       );
 
       // Then
-      const expectedMessage = `Request GET ${TEST_URL} failed with: StatusCode: 404 StatusText: ${STATUS_TEXT_NOT_FOUND}`;
+      const expectedMessage = [
+        `HTTP GET request to ${TEST_URL} failed.`,
+        `Status Code: 404`,
+        `Status Text: ${STATUS_TEXT_NOT_FOUND}`,
+      ].join('\n');
+
       expect(result).toBe(expectedMessage);
     });
 
@@ -332,7 +343,11 @@ describe('SonataFlowService', () => {
       );
 
       // Then
-      const expectedMessage = `Request GET ${TEST_URL} failed with: StatusCode: 500 Unexpected error`;
+      const expectedMessage = [
+        `HTTP GET request to ${TEST_URL} failed.`,
+        `Status Code: 500`,
+      ].join('\n');
+
       expect(result).toBe(expectedMessage);
     });
 
@@ -349,7 +364,11 @@ describe('SonataFlowService', () => {
       );
 
       // Then
-      const expectedMessage = `Request GET ${TEST_URL} failed with: StatusCode: 200 Unexpected error`;
+      const expectedMessage = [
+        `HTTP GET request to ${TEST_URL} failed.`,
+        `Status Code: 200`,
+      ].join('\n');
+
       expect(result).toBe(expectedMessage);
     });
 
@@ -369,7 +388,12 @@ describe('SonataFlowService', () => {
       );
 
       // Then
-      const expectedMessage = `Request GET ${TEST_URL} failed with: StatusCode: 500 StatusText: ${STATUS_TEXT_INTERNAL_SERVER_ERROR}`;
+      const expectedMessage = [
+        `HTTP GET request to ${TEST_URL} failed.`,
+        `Status Code: 500`,
+        `Status Text: ${STATUS_TEXT_INTERNAL_SERVER_ERROR}`,
+      ].join('\n');
+
       expect(result).toBe(expectedMessage);
     });
   });
