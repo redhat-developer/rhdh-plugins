@@ -15,7 +15,7 @@
  */
 
 import { test, expect, Page, type Locator } from '@playwright/test';
-import { LoginPage } from '../Utils/loginPage';
+import { LoginPage } from './Utils/loginPage';
 
 const dotenv = require('dotenv');
 
@@ -24,9 +24,10 @@ dotenv.config(); // Load environment variables from .env file
 let page: Page;
 
 // Load credentials and base URL from environment variables
-const id = process.env.PLAYWRIGHT_ID!;
-const pw = process.env.PLAYWRIGHT_PW!;
+const id = process.env.SSO_USERNAME!;
+const pw = process.env.SSO_PASSWORD!;
 const baseUrl = process.env.BASE_URL!;
+const env = 'dev';
 
 test.describe('sandbox plugin', () => {
   // Before all tests: launch browser, create new page, and log in
@@ -36,9 +37,9 @@ test.describe('sandbox plugin', () => {
     });
     page = await context.newPage();
 
-    const login_page = new LoginPage(page);
-    await login_page.navigate(baseUrl); // Navigate to base URL
-    await login_page.login(id, pw); // Log in with credentials
+    const loginPage = new LoginPage(page, env);
+    await loginPage.navigate(baseUrl); // Navigate to base URL
+    await loginPage.login(id, pw, env); // Log in with credentials
   });
 
   // Test the homepage layout and welcome text
@@ -58,11 +59,23 @@ test.describe('sandbox plugin', () => {
   test('Test Homepage Openshiftcard', async () => {
     const card = page.getByText('OpenShift Comprehensive cloud');
     await expect(card).toBeVisible(); // Ensure card is visible
+    await expect(page.getByText('OpenShift AI Scalable AI and')).toBeVisible();
+    await expect(page.getByText('Dev Spaces Cloud Development')).toBeVisible();
+    await expect(
+      page.getByText(
+        'Ansible Automation Platform Scalable, centralized automation solution Available',
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        'OpenShift Virtualization Migrate traditional VM workloads to OpenShift Unified',
+      ),
+    ).toBeVisible();
     await card.getByRole('button', { name: 'Try it' }).click();
-    // Verify expected text on the resulting article page
+    // Verify expected texts
     await expect(page.getByRole('article')).toContainText('Welcome');
     await expect(page.getByRole('article')).toContainText(
-      'Your free trial expires in 30 days',
+      'Click on "Try it" to initiate your free, no commitment 30-day trial.',
     );
   });
 
@@ -75,10 +88,11 @@ test.describe('sandbox plugin', () => {
     // Wait for the new page's 'load' event to ensure it's completely loaded
     await devSandboxPage.waitForLoadState('load', { timeout: 30000 });
     // Wait for a specific element that should be visible after the page is fully loaded
-    await devSandboxPage.waitForSelector('[class="pf-c-title pf-m-3xl"]', {
-      state: 'visible',
-      timeout: 15000,
+    const loadElement = devSandboxPage.getByRole('img', {
+      name: 'Red Hat OpenShift Service on',
     });
+    await loadElement.waitFor();
+
     await expect(devSandboxPage.getByRole('heading')).toContainText(
       'Log in with…',
     );
@@ -87,40 +101,30 @@ test.describe('sandbox plugin', () => {
   });
 
   // Test Activities page and open each article in a popup
-  test('Test Activites_page', async () => {
+  test('Test Activites Page', async () => {
     // Navigate to the Activities page
     await page.getByRole('link', { name: 'Activities' }).click();
     await expect(page.locator('h3')).toContainText('Featured');
 
-    // Locate all article cards using shared class
-    const articles = page.locator(
-      '[class="v5-MuiCardContent-root css-g19dxr"]',
-    );
-    const no_of_artricles = await articles.count();
-    if (no_of_artricles !== 0) {
-      // Proceed only if there is at least one article on the page
-      for (let index = 0; index < no_of_artricles; index++) {
-        // Extract the title of each article card
-        const article_ttl = await articles.nth(index).textContent();
-        const title = extractTitle(article_ttl || '');
-        // Open the article in a new popup and wait for it to fully load
-        const popupPage = await clickAndWaitForPopup(page, articles.nth(index));
-        // Assert the popup heading matches the expected article title
-        await expect(popupPage.locator('h1')).toContainText(
-          `Overview: ${title}`,
-        );
+    // Locate all article cards
+    const articles = page.getByRole('heading', { level: 5 });
 
-        await popupPage.close();
-      }
+    const noOfArtricles = await articles.count();
+    // Proceed only if there is at least one article on the page
+    for (let index = 0; index < noOfArtricles; index++) {
+      // Extract the title of each article card
+      const articleTitle = await articles.nth(index).textContent();
+
+      // Open the article in a new popup and wait for it to fully load
+      const popupPage = await clickAndWaitForPopup(page, articles.nth(index));
+      // Assert the popup heading matches the expected article title
+      await expect(popupPage.locator('h1')).toContainText(
+        `Overview: ${articleTitle}`,
+      );
+      await popupPage.close();
     }
   });
-  function extractTitle(text: string): string {
-    // Extracts everything up to the first lowercase letter followed by a capital (sentence break)
-    return text
-      .replace(/([a-z])(?=[A-Z])/g, '$1\n')
-      .split('\n')[0]
-      .trim();
-  }
+
   async function clickAndWaitForPopup(currentPage: Page, elelocator: Locator) {
     const [popupPage] = await Promise.all([
       currentPage.waitForEvent('popup'),

@@ -1,6 +1,6 @@
 # Playwright Test Automation - README
 
-This repository contains Playwright tests for automating the verification of the sandbox plugin. It covers the following functionalities:
+This folder contains Playwright tests for automating the verification of the sandbox plugin. It covers the following functionalities:
 
 1. **Homepage Layout and Welcome Text Verification**
 2. **OpenShift Card Interaction**
@@ -16,13 +16,13 @@ Before running the tests, ensure that you have the following:
 
 ### .env File Configuration
 
-Ensure you have a `.env` file at the root of your project with the following variables:
+Ensure you have a `.env` file at the root(workspaces/sandbox/) of your project with the following variables:
 
 ```
 
-PLAYWRIGHT\_ID=<Your Playwright ID>
-PLAYWRIGHT\_PW=<Your Playwright Password>
-BASE\_URL=<Your Base URL>
+SSO_USERNAME=<Your SSO ID>
+SSO_PASSWORD=<Your SSO Password>
+BASE_URL=<Your Base URL>
 
 ```
 
@@ -34,7 +34,7 @@ Clone this repository (or set it up on your local machine) and install the requi
 
 ```bash
 git clone <your-repository-url>
-cd <your-repository-name>
+cd <your-repository-name>/workspaces/sandbox
 yarn install
 ```
 
@@ -69,7 +69,7 @@ yarn playwright test <path-to-your-test-file>
 For example:
 
 ```bash
-yarn playwright test tests/sandboxPluginTest.spec.ts
+yarn playwright test e2e-tests/app.test.ts
 ```
 
 ### 2. **Run Tests in Headless Mode**
@@ -145,7 +145,7 @@ You can also run tests directly from your browser using the **Playwright extensi
 
 2. **Run Tests**:
 
-   - Open the test file (`sandboxPluginTest.spec.ts`).
+   - Open the test file (`app.test.ts`).
    - Use the **Playwright Test** extension to run individual tests directly from the editor.
 
 ---
@@ -168,7 +168,7 @@ To run Playwright tests in a CI environment, you can add the following scripts t
 ```json
 {
   "scripts": {
-    "test": "playwright test",
+    "tests": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headless": "playwright test --headless",
     "test:headed": "playwright test --headed",
@@ -183,7 +183,7 @@ To run Playwright tests in a CI environment, you can add the following scripts t
 Then, you can run the tests by simply running the following commands:
 
 ```bash
-yarn test
+yarn tests
 yarn test:headless
 yarn test:debug
 yarn test:ui

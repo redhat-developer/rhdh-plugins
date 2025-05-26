@@ -25,7 +25,15 @@
     "lint:fix": "backstage-cli package lint --fix",
     "prettier:check": "prettier --check .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "postinstall": "cd ../../ && yarn install",
+    "tests": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headless": "playwright test --headless",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit"
   },
   "workspaces": {
     "packages": [
