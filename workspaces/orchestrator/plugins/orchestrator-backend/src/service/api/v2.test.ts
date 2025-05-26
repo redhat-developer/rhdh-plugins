@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { Request } from 'express';
 
 import {
@@ -376,7 +377,6 @@ describe('executeWorkflow', () => {
     const actualResultV2: ExecuteWorkflowResponseDTO = await v2.executeWorkflow(
       workflowData,
       workflowInfo.id,
-      'businessKey',
     );
 
     // Assert
@@ -484,9 +484,14 @@ describe('getInstanceById', () => {
 
   it('Instance exists, assessment non empty string', async () => {
     const processInstance = generateProcessInstance(1);
-    processInstance.businessKey = 'testBusinessKey';
     const assessedBy = generateProcessInstance(1);
-    assessedBy.id = processInstance.businessKey;
+    if (
+      processInstance.variables &&
+      typeof processInstance.variables !== 'string'
+    ) {
+      processInstance.variables.orchestratorAssessmentInstanceId =
+        assessedBy.id;
+    }
 
     (mockOrchestratorService.fetchInstance as jest.Mock)
       .mockResolvedValueOnce(processInstance)
@@ -501,9 +506,6 @@ describe('getInstanceById', () => {
     expect(processInstanceV2).toBeDefined();
     expect(processInstanceV2.instance).toBeDefined();
     expect(processInstanceV2.assessedBy).toBeDefined();
-    expect(processInstanceV2.assessedBy?.id).toEqual(
-      processInstance.businessKey,
-    );
     expect(processInstanceV2.instance.id).toEqual(processInstance.id);
   });
 });

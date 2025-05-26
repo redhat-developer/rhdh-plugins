@@ -111,7 +111,6 @@ export class OrchestratorClient implements OrchestratorApi {
   async executeWorkflow(args: {
     workflowId: string;
     parameters: JsonObject;
-    businessKey?: string;
   }): Promise<AxiosResponse<ExecuteWorkflowResponseDTO>> {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
@@ -163,7 +162,6 @@ export class OrchestratorClient implements OrchestratorApi {
       return await defaultApi.executeWorkflow(
         args.workflowId,
         requestBody,
-        args.businessKey,
         reqConfigOption,
       );
     } catch (err) {
