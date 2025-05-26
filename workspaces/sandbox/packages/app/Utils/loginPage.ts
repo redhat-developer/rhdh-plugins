@@ -26,14 +26,22 @@ export class LoginPage {
   readonly login_btn: Locator;
   readonly header: Locator;
 
-  constructor(page: Page) {
+  constructor(page: Page, environment: string) {
     this.page = page;
-    this.login_id_loc = page.getByRole('textbox', {
-      name: 'Red Hat login or email',
-    });
-    this.login_pw_loc = page.getByRole('textbox', { name: 'Password' });
-    this.next_btn = page.getByRole('button', { name: 'Next' });
-    this.login_btn = page.getByRole('button', { name: 'Log in' });
+
+    if (environment === "dev") {
+      this.login_id_loc = page.getByRole('textbox', {
+        name: 'Red Hat login or email',
+      });
+      this.login_pw_loc = page.getByRole('textbox', { name: 'Password' });
+      this.next_btn = page.getByRole('button', { name: 'Next' });
+      this.login_btn = page.getByRole('button', { name: 'Log in' });
+    } else if (environment === "e2e-tests") {
+      this.login_id_loc = page.getByRole('textbox', { name: 'Username or email' });
+      this.login_pw_loc = page.getByRole('textbox', { name: 'Password' });
+      this.login_btn = page.getByRole('button', { name: 'Sign in' });
+    }
+
     this.header = page.locator('header');
   }
 
@@ -41,9 +49,11 @@ export class LoginPage {
     await this.page.goto(url);
   }
 
-  async login(login_id: string, login_pw: string) {
+  async login(login_id: string, login_pw: string, environment: string) {
     await this.login_id_loc.fill(login_id);
-    await this.next_btn.click();
+    if (environment === "dev") {
+      await this.next_btn.click();
+    }
     await this.login_pw_loc.fill(login_pw);
     await this.login_btn.click();
     // Verify header contains expected text
