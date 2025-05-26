@@ -31,10 +31,10 @@ describe('FileInstallationStorage', () => {
         __dirname,
         '../../__fixtures__/data/validPluginsConfig.yaml',
       );
-      const pluginsConfigFileHandler = new FileInstallationStorage(
+      const fileInstallationStorage = new FileInstallationStorage(
         configFileName,
       );
-      pluginsConfigFileHandler.initialize();
+      fileInstallationStorage.initialize();
       const expected = stringify({
         plugins: [
           mockDynamicPackage11,
@@ -43,7 +43,7 @@ describe('FileInstallationStorage', () => {
         ],
       });
 
-      expect(pluginsConfigFileHandler.getConfigYaml()).toEqual(expected);
+      expect(fileInstallationStorage.getConfigYaml()).toEqual(expected);
     });
 
     it('should throw on initialize when config file does not exist', () => {
@@ -51,12 +51,12 @@ describe('FileInstallationStorage', () => {
         __dirname,
         '../../__fixtures__/data/nonExistentConfigFile.yaml',
       );
-      const pluginsConfigFileHandler = new FileInstallationStorage(
+      const fileInstallationStorage = new FileInstallationStorage(
         configFileName,
       );
 
       expect(() => {
-        pluginsConfigFileHandler.initialize();
+        fileInstallationStorage.initialize();
       }).toThrow(`Installation config file does not exist: ${configFileName}`);
     });
 
@@ -65,12 +65,12 @@ describe('FileInstallationStorage', () => {
         __dirname,
         '../../__fixtures__/data/invalidPluginsConfigBadPluginsFormat.yaml',
       );
-      const pluginsConfigFileHandler = new FileInstallationStorage(
+      const fileInstallationStorage = new FileInstallationStorage(
         configFileName,
       );
 
       expect(() => {
-        pluginsConfigFileHandler.initialize();
+        fileInstallationStorage.initialize();
       }).toThrow(
         "Failed to load 'extensions.installation.saveToSingleFile.file'. Invalid installation configuration, 'plugins' field must be a list",
       );
@@ -81,12 +81,12 @@ describe('FileInstallationStorage', () => {
         __dirname,
         '../../__fixtures__/data/invalidPluginsConfigBadPackageFormat.yaml',
       );
-      const pluginsConfigFileHandler = new FileInstallationStorage(
+      const fileInstallationStorage = new FileInstallationStorage(
         configFileName,
       );
 
       expect(() => {
-        pluginsConfigFileHandler.initialize();
+        fileInstallationStorage.initialize();
       }).toThrow(
         "Invalid installation configuration, 'package' field in each package item must be a non-empty string",
       );
