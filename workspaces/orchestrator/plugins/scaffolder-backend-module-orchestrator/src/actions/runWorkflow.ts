@@ -81,7 +81,6 @@ export const createRunWorkflowAction = (
         const { data } = await api.executeWorkflow(
           parseEntityRef(entity).name,
           { inputData: ctx.input.parameters },
-          undefined,
           reqConfigOption,
         );
         ctx.output('instanceUrl', `/orchestrator/instances/${data.id}`);

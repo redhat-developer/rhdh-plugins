@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { LoggerService } from '@backstage/backend-plugin-api';
 
 import { Client, OperationResult } from '@urql/core';
@@ -493,7 +494,7 @@ describe('fetchInstances', () => {
     definitionIds,
   )}`;
   const queryBody =
-    'id, processName, processId, businessKey, state, start, end, nodes { id }, variables, parentProcessInstance {id, processName, businessKey}';
+    'id, processName, processId, state, start, end, nodes { id }, variables, parentProcessInstance {id, processName, businessKey}';
 
   const mockProcessInstances: ProcessInstance[] = [
     {
