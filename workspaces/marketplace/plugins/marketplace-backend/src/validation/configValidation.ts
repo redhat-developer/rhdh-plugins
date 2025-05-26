@@ -75,7 +75,7 @@ export function validatePackageFormat(
 
   if (packageName && packageToValidate !== packageName) {
     throw new ConfigFormatError(
-      `Invalid installation configuration, 'package' field value in package item differs from ${packageName}`,
+      `Invalid installation configuration, 'package' field value in package item differs from '${packageName}'`,
     );
   }
 }

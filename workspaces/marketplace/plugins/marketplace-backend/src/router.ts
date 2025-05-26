@@ -193,9 +193,7 @@ export async function createRouter(
 
       const newConfig = req.body.configYaml;
       if (!newConfig) {
-        throw new InputError(
-          "'configYaml' object must be present non-empty string",
-        );
+        throw new InputError("'configYaml' object must be present");
       }
       try {
         installationDataService.updatePackageConfig(

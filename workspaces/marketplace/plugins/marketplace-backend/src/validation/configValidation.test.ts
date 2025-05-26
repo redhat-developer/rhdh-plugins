@@ -112,11 +112,23 @@ describe('validatePackageFormat', () => {
       `,
       error: "optional 'pluginConfig' field in package item must be a map",
     },
+    {
+      testCase: "'packageName' differs",
+      yaml: `
+        package: package1
+        disabled: false
+      `,
+      error:
+        "'package' field value in package item differs from 'different-package'",
+      packageName: 'different-package',
+    },
   ];
 
-  invalidYAMLs.forEach(({ testCase, yaml, error }) => {
+  invalidYAMLs.forEach(({ testCase, yaml, error, packageName }) => {
     it(`should throw if ${testCase}`, () => {
-      expect(() => validatePackageFormat(parseDocument(yaml).contents)).toThrow(
+      expect(() =>
+        validatePackageFormat(parseDocument(yaml).contents, packageName),
+      ).toThrow(
         new ConfigFormatError(`Invalid installation configuration, ${error}`),
       );
     });

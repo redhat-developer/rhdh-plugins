@@ -175,4 +175,54 @@ describe('InstallationDataService', () => {
       expect(result).toEqual(stringify(mockDynamicPlugin1));
     });
   });
+
+  describe('updatePackageConfig', () => {
+    beforeEach(() => {
+      installationDataService = InstallationDataService.fromConfig({
+        config: validConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockLogger,
+      });
+    });
+
+    it('should update package', () => {
+      const newConfig = stringify({ ...mockDynamicPackage11, disabled: false });
+      installationDataService.updatePackageConfig(
+        mockDynamicPackage11.package,
+        newConfig,
+      );
+
+      expect(mockFileInstallationStorage.updatePackage).toHaveBeenCalledWith(
+        mockDynamicPackage11.package,
+        newConfig,
+      );
+    });
+  });
+
+  describe('updatePluginConfig', () => {
+    beforeEach(() => {
+      installationDataService = InstallationDataService.fromConfig({
+        config: validConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockLogger,
+      });
+    });
+
+    it('should update plugin', async () => {
+      const newConfig = stringify([mockDynamicPackage11]);
+
+      await installationDataService.updatePluginConfig(
+        mockPlugins[0],
+        newConfig,
+      );
+
+      expect(mockFileInstallationStorage.updatePackages).toHaveBeenCalledWith(
+        new Set([
+          mockPackages[0].spec?.dynamicArtifact,
+          mockPackages[1].spec?.dynamicArtifact,
+        ]),
+        newConfig,
+      );
+    });
+  });
 });
