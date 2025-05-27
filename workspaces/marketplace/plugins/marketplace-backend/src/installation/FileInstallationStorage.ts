@@ -16,12 +16,19 @@
 
 import fs from 'fs';
 
-import { Document, isMap, parseDocument, YAMLMap, YAMLSeq } from 'yaml';
+import {
+  Document,
+  isMap,
+  parseDocument,
+  type YAMLMap,
+  type YAMLSeq,
+} from 'yaml';
 import { validateConfigurationFormat } from '../validation/configValidation';
 import {
   InstallationInitError,
   InstallationInitErrorReason,
 } from '../errors/InstallationInitError';
+import type { JsonValue } from '@backstage/types';
 
 export interface InstallationStorage {
   initialize?(): void;
@@ -38,17 +45,20 @@ export class FileInstallationStorage implements InstallationStorage {
     this.config = new Document();
   }
 
-  private toStringYaml(mapNodes: YAMLMap[]): string {
+  private toStringYaml(mapNodes: YAMLMap<string, JsonValue>[]): string {
     const tempDoc = new Document(mapNodes);
     return tempDoc.toString({ lineWidth: 0 });
   }
 
-  private getPackageYamlMap(packageName: string): YAMLMap | undefined {
-    const packages = this.config.get('plugins') as YAMLSeq;
-    const res = packages.items.find(
+  private getPackageYamlMap(
+    packageName: string,
+  ): YAMLMap<string, JsonValue> | undefined {
+    const packages = this.config.get('plugins') as YAMLSeq<
+      YAMLMap<string, JsonValue>
+    >;
+    return packages.items.find(
       p => isMap(p) && p.get('package') === packageName,
-    ) as YAMLMap | undefined;
-    return res;
+    );
   }
 
   initialize(): void {

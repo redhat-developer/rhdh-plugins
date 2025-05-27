@@ -76,7 +76,7 @@ async function startBackendServer(
     marketplacePlugin,
     mockServices.rootLogger.factory(),
     mockServices.rootConfig.factory({
-      data: { ...BASE_CONFIG, ...(config || {}) },
+      data: { ...BASE_CONFIG, ...(config ?? {}) },
     }),
   ];
 

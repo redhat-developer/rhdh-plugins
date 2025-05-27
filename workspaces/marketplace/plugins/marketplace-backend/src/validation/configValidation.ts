@@ -13,10 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Document, isMap, isSeq } from 'yaml';
+import { Document, isMap, isSeq, type YAMLMap } from 'yaml';
 import { ConfigFormatError } from '../errors/ConfigFormatError';
+import type { JsonValue } from '@backstage/types';
 
-export function validateConfigurationFormat(doc: Document) {
+export function validateConfigurationFormat(
+  doc: Document,
+): asserts doc is Document & {
+  contents: YAMLMap<string, JsonValue>;
+} {
   const plugins = doc.get('plugins');
 
   if (!isSeq(plugins))
@@ -28,7 +33,9 @@ export function validateConfigurationFormat(doc: Document) {
   }
 }
 
-export function validatePackageFormat(item: unknown) {
+export function validatePackageFormat(
+  item: unknown,
+): asserts item is YAMLMap<string, JsonValue> {
   if (!isMap(item)) {
     throw new ConfigFormatError(
       "Invalid installation configuration, each package item in the 'plugins' list must be a map",

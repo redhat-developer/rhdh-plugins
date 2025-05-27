@@ -144,7 +144,7 @@ describe('InstallationDataService', () => {
 
     it('should return package config', () => {
       const result = installationDataService.getPackageConfig(
-        mockPackages[0].spec?.dynamicArtifact!,
+        mockPackages[0].spec.dynamicArtifact,
       );
       expect(result).toEqual(stringify(mockDynamicPackage11));
     });

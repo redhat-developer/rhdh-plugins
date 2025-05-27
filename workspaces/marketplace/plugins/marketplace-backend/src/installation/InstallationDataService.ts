@@ -18,6 +18,7 @@ import {
   MarketplaceApi,
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { DEFAULT_NAMESPACE } from '@backstage/catalog-model';
 import {
   FileInstallationStorage,
   InstallationStorage,
@@ -34,9 +35,18 @@ import { ConfigFormatError } from '../errors/ConfigFormatError';
 export class InstallationDataService {
   private constructor(
     private readonly marketplaceApi: MarketplaceApi,
-    private readonly installationStorage?: InstallationStorage,
+    private readonly _installationStorage?: InstallationStorage,
     private readonly initializationError?: InstallationInitError,
   ) {}
+
+  private get installationStorage(): InstallationStorage {
+    if (!this._installationStorage) {
+      throw new Error('Installation storage is not initialized', {
+        cause: this.initializationError,
+      });
+    }
+    return this._installationStorage;
+  }
 
   static fromConfig(deps: {
     config: Config;
@@ -109,7 +119,7 @@ export class InstallationDataService {
     plugin: MarketplacePlugin,
   ): Promise<Set<string>> {
     const marketplacePackages = await this.marketplaceApi.getPluginPackages(
-      plugin.metadata.namespace!,
+      plugin.metadata.namespace ?? DEFAULT_NAMESPACE,
       plugin.metadata.name,
     );
 
@@ -125,13 +135,13 @@ export class InstallationDataService {
   }
 
   getPackageConfig(packageDynamicArtifact: string): string | undefined {
-    return this.installationStorage!.getPackage(packageDynamicArtifact);
+    return this.installationStorage.getPackage(packageDynamicArtifact);
   }
 
   async getPluginConfig(
     plugin: MarketplacePlugin,
   ): Promise<string | undefined> {
     const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
-    return this.installationStorage!.getPackages(dynamicArtifacts);
+    return this.installationStorage.getPackages(dynamicArtifacts);
   }
 }

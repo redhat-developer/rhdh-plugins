@@ -36,12 +36,10 @@ export class InstallationInitError extends CustomErrorBase {
     public cause?: Error,
   ) {
     super(message, cause);
-    switch (this.reason) {
-      case 'INSTALLATION_DISABLED':
-        this.statusCode = 503;
-        return;
-      default:
-        this.statusCode = 500;
+    if (this.reason === InstallationInitErrorReason.INSTALLATION_DISABLED) {
+      this.statusCode = 503;
+    } else {
+      this.statusCode = 500;
     }
   }
 }

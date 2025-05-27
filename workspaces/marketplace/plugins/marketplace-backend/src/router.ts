@@ -169,7 +169,7 @@ export async function createRouter(
           `Package catalog entity ${marketplacePackage.metadata.name} is missing 'spec.dynamicArtifact'`,
         );
       }
-      const result = installationDataService!.getPackageConfig(
+      const result = installationDataService.getPackageConfig(
         marketplacePackage.spec?.dynamicArtifact,
       );
       res.status(200).json({ configYaml: result });
@@ -277,7 +277,7 @@ export async function createRouter(
       }
 
       const result =
-        await installationDataService!.getPluginConfig(marketplacePlugin);
+        await installationDataService.getPluginConfig(marketplacePlugin);
       res.status(200).json({ configYaml: result });
     },
   );
