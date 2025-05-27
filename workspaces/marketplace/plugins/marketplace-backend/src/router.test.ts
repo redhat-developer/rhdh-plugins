@@ -406,6 +406,23 @@ describe('createRouter', () => {
           .mockReturnValue(mockInstallationDataService);
       });
 
+      it('should fail when plugin not found with NotFoundError 404', async () => {
+        const { backendServer } = await setupTestWithMockCatalog({
+          mockData: [],
+          name: 'not-found',
+          config: FILE_INSTALL_CONFIG,
+        });
+
+        const response = await request(backendServer).get(
+          '/api/extensions/plugin/default/not-found/configuration',
+        );
+        expect(response.status).toEqual(404);
+        expect(response.body.error).toEqual({
+          message: 'Plugin default/not-found not found',
+          name: 'NotFoundError',
+        });
+      });
+
       it('should get the plugin configuration', async () => {
         const { backendServer } = await setupTestWithMockCatalog({
           mockData: [...mockPlugins, ...mockPackages],
@@ -438,6 +455,24 @@ describe('createRouter', () => {
     });
 
     describe('GET /package/:namespace/:name/configuration', () => {
+      it('should fail when package not found with NotFoundError 404', async () => {
+        const { backendServer } = await setupTestWithMockCatalog({
+          mockData: [],
+          name: 'not-found',
+          kind: MarketplaceKind.Package,
+          config: FILE_INSTALL_CONFIG,
+        });
+
+        const response = await request(backendServer).get(
+          '/api/extensions/package/default/not-found/configuration',
+        );
+        expect(response.status).toEqual(404);
+        expect(response.body.error).toEqual({
+          message: 'Package default/not-found not found',
+          name: 'NotFoundError',
+        });
+      });
+
       it('should get the package configuration', async () => {
         const { backendServer } = await setupTestWithMockCatalog({
           mockData: mockPackages,
