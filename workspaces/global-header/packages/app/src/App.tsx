@@ -144,7 +144,7 @@ export default app.createRoot(
         html: { overflowY: 'hidden' },
         ':root': {
           '--rhdh-v1-page-inset': '1.5rem',
-          '--rhdh-v1-header-height': '64px',
+          '--global-header-default-height': '64px',
         },
       }}
     />
