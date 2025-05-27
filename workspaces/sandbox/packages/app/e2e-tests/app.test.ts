@@ -55,7 +55,6 @@ test.describe('sandbox plugin', () => {
     `);
   });
 
-  // Test clicking the OpenShift card on the homepage
   test('Signup user and home page verification', async () => {
     const articleHeader = page.getByRole('article');
     const loadingIcon = page.locator('svg.v5-MuiCircularProgress-svg').first();
