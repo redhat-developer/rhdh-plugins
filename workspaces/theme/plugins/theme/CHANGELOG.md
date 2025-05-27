@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.8.2
+
+### Patch Changes
+
+- 275d8b1: Support above-sidebar postiion for global header
+
 ## 0.8.1
 
 ### Patch Changes
