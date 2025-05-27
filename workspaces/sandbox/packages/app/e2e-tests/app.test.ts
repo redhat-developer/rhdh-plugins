@@ -84,7 +84,6 @@ test.describe('sandbox plugin', () => {
     await expect(articleHeader).toContainText(
       'Your free trial expires in 30 days',
     );
-    
   });
 
   test('Test DevSandbox', async () => {
