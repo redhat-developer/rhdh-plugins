@@ -123,6 +123,9 @@ lightspeed:
       url: <server_URL>
       token: <api_key>
   questionValidation: true # Optional - To disable question (prompt) validation set it to false.
+  prompts: # optional
+    - title: <prompt_title>
+    - message: <prompt_message>
 ```
 
 `questionValidation` is default to be enabled with topic restriction on RHDH related topics.
