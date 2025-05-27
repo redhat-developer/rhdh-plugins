@@ -65,7 +65,7 @@
   "devDependencies": {
     "@backstage/cli": "^0.31.1",
     "@backstage/types": "^1.2.1",
-    "@openapitools/openapi-generator-cli": "2.20.0",
+    "@openapitools/openapi-generator-cli": "2.20.2",
     "@types/json-schema": "7.0.15",
     "js-yaml-cli": "0.6.0"
   },
