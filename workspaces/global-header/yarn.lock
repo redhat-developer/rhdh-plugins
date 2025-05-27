@@ -11420,9 +11420,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.8.1":
-  version: 0.8.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.8.1"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.8.1, @red-hat-developer-hub/backstage-plugin-theme@npm:^0.8.2":
+  version: 0.8.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.8.2"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
@@ -11432,7 +11432,7 @@ __metadata:
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 0d492e2bc4deb69525687219fd30965bffff84a8a9521323c5b0000302957c1c9f58aa1096ca760a71de282fc36aba1029a8fdd1ce6d1eae33db74e199631a9f
+  checksum: 76488ae3fbb9fabdd936d7a1353fda0b1d11fa9439cb33333678eccfcd71fdd1c9cf60418828d94ee26f3b1874a873767996eebbedb01b3fbf57200dee5c562d
   languageName: node
   linkType: hard
 
@@ -16368,10 +16368,11 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@mui/icons-material": 5.16.14
+    "@mui/material": 5.16.14
     "@playwright/test": 1.50.1
     "@red-hat-developer-hub/backstage-plugin-global-header": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-global-header-test": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.8.1
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.8.2
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
