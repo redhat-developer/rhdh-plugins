@@ -42,6 +42,7 @@ export const useFilteredPlugins = () => {
 
   const marketplaceApi = useMarketplaceApi();
   return useQuery({
+    refetchOnWindowFocus: false,
     queryKey: ['marketplaceApi', 'getPlugins', filteredPluginsRequest],
     queryFn: () => marketplaceApi.getPlugins(filteredPluginsRequest),
     select: data => {

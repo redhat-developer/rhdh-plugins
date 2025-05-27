@@ -3,4 +3,4 @@
 '@red-hat-developer-hub/backstage-plugin-orchestrator-common': patch
 ---
 
-add filter by variables and nested variables
+remove failed nodes from previous executions/retriggers

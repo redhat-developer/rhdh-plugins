@@ -1,5 +1,14 @@
 ### Dependencies
 
+## 6.0.2
+
+### Patch Changes
+
+- 7f6ca8a: add filter by variables and nested variables
+- Updated dependencies [c6b54ad]
+- Updated dependencies [7f6ca8a]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.2
+
 ## 6.0.1
 
 ### Patch Changes
