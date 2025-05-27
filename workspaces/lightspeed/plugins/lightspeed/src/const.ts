@@ -59,6 +59,13 @@ export const DEFAULT_SAMPLE_PROMPTS: SamplePrompts = [
     'Can you explain the difference between a quicksort and a mergesort algorithm, and when to use each?',
   ),
   createPrompt(
+    'Understand Event-Driven Architecture',
+    'Can you explain what event-driven architecture is and when it’s beneficial to use it in software development?',
+  ),
+];
+
+export const RHDH_SAMPLE_PROMPTS: SamplePrompts = [
+  createPrompt(
     'Deploy With Tekton',
     'Can you help me automate the deployment of my application using Tekton pipelines?',
   ),
@@ -69,9 +76,5 @@ export const DEFAULT_SAMPLE_PROMPTS: SamplePrompts = [
   createPrompt(
     'Getting Started with Backstage',
     'Can you guide me through the first steps to start using Backstage as a developer, like exploring the Software Catalog and adding my service?',
-  ),
-  createPrompt(
-    'Understand Event-Driven Architecture',
-    'Can you explain what event-driven architecture is and when it’s beneficial to use it in software development?',
   ),
 ];

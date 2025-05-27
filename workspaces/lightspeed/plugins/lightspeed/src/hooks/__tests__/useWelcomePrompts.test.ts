@@ -28,6 +28,7 @@ describe('useWelcomePrompts', () => {
     jest.clearAllMocks();
     (useApi as jest.Mock).mockReturnValue({
       getOptionalConfigArray: jest.fn(),
+      getOptionalBoolean: jest.fn().mockReturnValue(false),
     });
   });
 
@@ -46,6 +47,7 @@ describe('useWelcomePrompts', () => {
     ];
 
     (useApi as jest.Mock).mockReturnValue({
+      getOptionalBoolean: jest.fn().mockReturnValue(true),
       getOptionalConfigArray: jest
         .fn()
         .mockReturnValue(userPrompts.map(getMockString)),

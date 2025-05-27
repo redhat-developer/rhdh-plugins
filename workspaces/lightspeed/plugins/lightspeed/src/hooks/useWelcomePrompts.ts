@@ -17,7 +17,7 @@ import React from 'react';
 
 import { ConfigApi, configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { DEFAULT_SAMPLE_PROMPTS } from '../const';
+import { DEFAULT_SAMPLE_PROMPTS, RHDH_SAMPLE_PROMPTS } from '../const';
 import { SamplePrompts } from '../types';
 import { getRandomSamplePrompts } from '../utils/prompt-utils';
 
@@ -25,12 +25,19 @@ export const useWelcomePrompts = (): SamplePrompts => {
   const configApi: ConfigApi = useApi(configApiRef);
 
   return React.useMemo(() => {
+    const questionValidationEnabled =
+      configApi.getOptionalBoolean('lightspeed.questionValidation') ?? true;
+
+    const DEFAULT_PROMPTS = questionValidationEnabled
+      ? RHDH_SAMPLE_PROMPTS
+      : [...DEFAULT_SAMPLE_PROMPTS, ...RHDH_SAMPLE_PROMPTS];
+
     const samplePrompts: SamplePrompts = (
       configApi?.getOptionalConfigArray('lightspeed.prompts') ?? []
     ).map(config => ({
       title: config.getString('title') ?? '',
       message: config.getString('message') ?? '',
     }));
-    return getRandomSamplePrompts(samplePrompts, DEFAULT_SAMPLE_PROMPTS);
+    return getRandomSamplePrompts(samplePrompts, DEFAULT_PROMPTS);
   }, [configApi]);
 };
