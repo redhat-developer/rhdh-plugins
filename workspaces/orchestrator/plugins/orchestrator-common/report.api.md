@@ -718,6 +718,8 @@ export interface NodeInstance {
     // (undocumented)
     enter: string;
     // (undocumented)
+    errorMessage: string;
+    // (undocumented)
     exit?: string;
     // (undocumented)
     id: string;
@@ -725,6 +727,8 @@ export interface NodeInstance {
     name: string;
     // (undocumented)
     nodeId: string;
+    // (undocumented)
+    retrigger: boolean;
     // (undocumented)
     type: string;
 }
@@ -1018,6 +1022,8 @@ export interface ProcessInstanceError {
     message?: string;
     // (undocumented)
     nodeDefinitionId: string;
+    // (undocumented)
+    nodeInstanceId: string;
 }
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
@@ -2025,69 +2031,72 @@ export interface WorkflowRunStatusDTO {
 // src/models.d.ts:22:5 - (ae-undocumented) Missing documentation for "exit".
 // src/models.d.ts:23:5 - (ae-undocumented) Missing documentation for "definitionId".
 // src/models.d.ts:24:5 - (ae-undocumented) Missing documentation for "nodeId".
-// src/models.d.ts:26:1 - (ae-undocumented) Missing documentation for "TriggerableNode".
-// src/models.d.ts:27:5 - (ae-undocumented) Missing documentation for "id".
-// src/models.d.ts:28:5 - (ae-undocumented) Missing documentation for "name".
-// src/models.d.ts:29:5 - (ae-undocumented) Missing documentation for "type".
-// src/models.d.ts:30:5 - (ae-undocumented) Missing documentation for "uniqueId".
-// src/models.d.ts:31:5 - (ae-undocumented) Missing documentation for "nodeDefinitionId".
-// src/models.d.ts:33:1 - (ae-undocumented) Missing documentation for "Milestone".
-// src/models.d.ts:34:5 - (ae-undocumented) Missing documentation for "__typename".
-// src/models.d.ts:35:5 - (ae-undocumented) Missing documentation for "id".
-// src/models.d.ts:36:5 - (ae-undocumented) Missing documentation for "name".
-// src/models.d.ts:37:5 - (ae-undocumented) Missing documentation for "status".
-// src/models.d.ts:39:1 - (ae-undocumented) Missing documentation for "ProcessInstanceError".
-// src/models.d.ts:40:5 - (ae-undocumented) Missing documentation for "__typename".
-// src/models.d.ts:41:5 - (ae-undocumented) Missing documentation for "nodeDefinitionId".
-// src/models.d.ts:42:5 - (ae-undocumented) Missing documentation for "message".
-// src/models.d.ts:44:1 - (ae-undocumented) Missing documentation for "ProcessInstanceVariables".
-// src/models.d.ts:45:1 - (ae-undocumented) Missing documentation for "ProcessInstance".
-// src/models.d.ts:46:5 - (ae-undocumented) Missing documentation for "id".
-// src/models.d.ts:47:5 - (ae-undocumented) Missing documentation for "processId".
-// src/models.d.ts:48:5 - (ae-undocumented) Missing documentation for "processName".
-// src/models.d.ts:49:5 - (ae-undocumented) Missing documentation for "parentProcessInstanceId".
-// src/models.d.ts:50:5 - (ae-undocumented) Missing documentation for "rootProcessInstanceId".
-// src/models.d.ts:51:5 - (ae-undocumented) Missing documentation for "rootProcessId".
-// src/models.d.ts:52:5 - (ae-undocumented) Missing documentation for "roles".
-// src/models.d.ts:53:5 - (ae-undocumented) Missing documentation for "state".
-// src/models.d.ts:54:5 - (ae-undocumented) Missing documentation for "endpoint".
-// src/models.d.ts:55:5 - (ae-undocumented) Missing documentation for "serviceUrl".
-// src/models.d.ts:56:5 - (ae-undocumented) Missing documentation for "nodes".
-// src/models.d.ts:57:5 - (ae-undocumented) Missing documentation for "milestones".
-// src/models.d.ts:58:5 - (ae-undocumented) Missing documentation for "variables".
-// src/models.d.ts:63:5 - (ae-undocumented) Missing documentation for "parentProcessInstance".
-// src/models.d.ts:64:5 - (ae-undocumented) Missing documentation for "childProcessInstances".
-// src/models.d.ts:65:5 - (ae-undocumented) Missing documentation for "error".
-// src/models.d.ts:66:5 - (ae-undocumented) Missing documentation for "addons".
-// src/models.d.ts:67:5 - (ae-undocumented) Missing documentation for "businessKey".
-// src/models.d.ts:68:5 - (ae-undocumented) Missing documentation for "isSelected".
-// src/models.d.ts:69:5 - (ae-undocumented) Missing documentation for "errorMessage".
-// src/models.d.ts:70:5 - (ae-undocumented) Missing documentation for "isOpen".
-// src/models.d.ts:71:5 - (ae-undocumented) Missing documentation for "diagram".
-// src/models.d.ts:72:5 - (ae-undocumented) Missing documentation for "nodeDefinitions".
-// src/models.d.ts:73:5 - (ae-undocumented) Missing documentation for "source".
-// src/models.d.ts:74:5 - (ae-undocumented) Missing documentation for "category".
-// src/models.d.ts:75:5 - (ae-undocumented) Missing documentation for "description".
-// src/models.d.ts:77:1 - (ae-undocumented) Missing documentation for "IntrospectionQuery".
-// src/models.d.ts:78:5 - (ae-undocumented) Missing documentation for "__type".
-// src/models.d.ts:80:1 - (ae-undocumented) Missing documentation for "IntrospectionType".
-// src/models.d.ts:81:5 - (ae-undocumented) Missing documentation for "name".
-// src/models.d.ts:82:5 - (ae-undocumented) Missing documentation for "kind".
-// src/models.d.ts:83:5 - (ae-undocumented) Missing documentation for "description".
-// src/models.d.ts:84:5 - (ae-undocumented) Missing documentation for "fields".
-// src/models.d.ts:86:1 - (ae-undocumented) Missing documentation for "IntrospectionField".
-// src/models.d.ts:87:5 - (ae-undocumented) Missing documentation for "name".
-// src/models.d.ts:88:5 - (ae-undocumented) Missing documentation for "type".
-// src/models.d.ts:90:1 - (ae-undocumented) Missing documentation for "IntrospectionTypeRef".
-// src/models.d.ts:91:5 - (ae-undocumented) Missing documentation for "kind".
-// src/models.d.ts:92:5 - (ae-undocumented) Missing documentation for "name".
-// src/models.d.ts:93:5 - (ae-undocumented) Missing documentation for "ofType".
-// src/models.d.ts:95:1 - (ae-undocumented) Missing documentation for "TypeKind".
-// src/models.d.ts:96:5 - (ae-undocumented) Missing documentation for "InputObject".
-// src/models.d.ts:98:1 - (ae-undocumented) Missing documentation for "TypeName".
-// src/models.d.ts:99:5 - (ae-undocumented) Missing documentation for "Id".
-// src/models.d.ts:100:5 - (ae-undocumented) Missing documentation for "String".
-// src/models.d.ts:101:5 - (ae-undocumented) Missing documentation for "Date".
+// src/models.d.ts:25:5 - (ae-undocumented) Missing documentation for "errorMessage".
+// src/models.d.ts:26:5 - (ae-undocumented) Missing documentation for "retrigger".
+// src/models.d.ts:28:1 - (ae-undocumented) Missing documentation for "TriggerableNode".
+// src/models.d.ts:29:5 - (ae-undocumented) Missing documentation for "id".
+// src/models.d.ts:30:5 - (ae-undocumented) Missing documentation for "name".
+// src/models.d.ts:31:5 - (ae-undocumented) Missing documentation for "type".
+// src/models.d.ts:32:5 - (ae-undocumented) Missing documentation for "uniqueId".
+// src/models.d.ts:33:5 - (ae-undocumented) Missing documentation for "nodeDefinitionId".
+// src/models.d.ts:35:1 - (ae-undocumented) Missing documentation for "Milestone".
+// src/models.d.ts:36:5 - (ae-undocumented) Missing documentation for "__typename".
+// src/models.d.ts:37:5 - (ae-undocumented) Missing documentation for "id".
+// src/models.d.ts:38:5 - (ae-undocumented) Missing documentation for "name".
+// src/models.d.ts:39:5 - (ae-undocumented) Missing documentation for "status".
+// src/models.d.ts:41:1 - (ae-undocumented) Missing documentation for "ProcessInstanceError".
+// src/models.d.ts:42:5 - (ae-undocumented) Missing documentation for "__typename".
+// src/models.d.ts:43:5 - (ae-undocumented) Missing documentation for "nodeDefinitionId".
+// src/models.d.ts:44:5 - (ae-undocumented) Missing documentation for "nodeInstanceId".
+// src/models.d.ts:45:5 - (ae-undocumented) Missing documentation for "message".
+// src/models.d.ts:47:1 - (ae-undocumented) Missing documentation for "ProcessInstanceVariables".
+// src/models.d.ts:48:1 - (ae-undocumented) Missing documentation for "ProcessInstance".
+// src/models.d.ts:49:5 - (ae-undocumented) Missing documentation for "id".
+// src/models.d.ts:50:5 - (ae-undocumented) Missing documentation for "processId".
+// src/models.d.ts:51:5 - (ae-undocumented) Missing documentation for "processName".
+// src/models.d.ts:52:5 - (ae-undocumented) Missing documentation for "parentProcessInstanceId".
+// src/models.d.ts:53:5 - (ae-undocumented) Missing documentation for "rootProcessInstanceId".
+// src/models.d.ts:54:5 - (ae-undocumented) Missing documentation for "rootProcessId".
+// src/models.d.ts:55:5 - (ae-undocumented) Missing documentation for "roles".
+// src/models.d.ts:56:5 - (ae-undocumented) Missing documentation for "state".
+// src/models.d.ts:57:5 - (ae-undocumented) Missing documentation for "endpoint".
+// src/models.d.ts:58:5 - (ae-undocumented) Missing documentation for "serviceUrl".
+// src/models.d.ts:59:5 - (ae-undocumented) Missing documentation for "nodes".
+// src/models.d.ts:60:5 - (ae-undocumented) Missing documentation for "milestones".
+// src/models.d.ts:61:5 - (ae-undocumented) Missing documentation for "variables".
+// src/models.d.ts:66:5 - (ae-undocumented) Missing documentation for "parentProcessInstance".
+// src/models.d.ts:67:5 - (ae-undocumented) Missing documentation for "childProcessInstances".
+// src/models.d.ts:68:5 - (ae-undocumented) Missing documentation for "error".
+// src/models.d.ts:69:5 - (ae-undocumented) Missing documentation for "addons".
+// src/models.d.ts:70:5 - (ae-undocumented) Missing documentation for "businessKey".
+// src/models.d.ts:71:5 - (ae-undocumented) Missing documentation for "isSelected".
+// src/models.d.ts:72:5 - (ae-undocumented) Missing documentation for "errorMessage".
+// src/models.d.ts:73:5 - (ae-undocumented) Missing documentation for "isOpen".
+// src/models.d.ts:74:5 - (ae-undocumented) Missing documentation for "diagram".
+// src/models.d.ts:75:5 - (ae-undocumented) Missing documentation for "nodeDefinitions".
+// src/models.d.ts:76:5 - (ae-undocumented) Missing documentation for "source".
+// src/models.d.ts:77:5 - (ae-undocumented) Missing documentation for "category".
+// src/models.d.ts:78:5 - (ae-undocumented) Missing documentation for "description".
+// src/models.d.ts:80:1 - (ae-undocumented) Missing documentation for "IntrospectionQuery".
+// src/models.d.ts:81:5 - (ae-undocumented) Missing documentation for "__type".
+// src/models.d.ts:83:1 - (ae-undocumented) Missing documentation for "IntrospectionType".
+// src/models.d.ts:84:5 - (ae-undocumented) Missing documentation for "name".
+// src/models.d.ts:85:5 - (ae-undocumented) Missing documentation for "kind".
+// src/models.d.ts:86:5 - (ae-undocumented) Missing documentation for "description".
+// src/models.d.ts:87:5 - (ae-undocumented) Missing documentation for "fields".
+// src/models.d.ts:89:1 - (ae-undocumented) Missing documentation for "IntrospectionField".
+// src/models.d.ts:90:5 - (ae-undocumented) Missing documentation for "name".
+// src/models.d.ts:91:5 - (ae-undocumented) Missing documentation for "type".
+// src/models.d.ts:93:1 - (ae-undocumented) Missing documentation for "IntrospectionTypeRef".
+// src/models.d.ts:94:5 - (ae-undocumented) Missing documentation for "kind".
+// src/models.d.ts:95:5 - (ae-undocumented) Missing documentation for "name".
+// src/models.d.ts:96:5 - (ae-undocumented) Missing documentation for "ofType".
+// src/models.d.ts:98:1 - (ae-undocumented) Missing documentation for "TypeKind".
+// src/models.d.ts:99:5 - (ae-undocumented) Missing documentation for "InputObject".
+// src/models.d.ts:101:1 - (ae-undocumented) Missing documentation for "TypeName".
+// src/models.d.ts:102:5 - (ae-undocumented) Missing documentation for "Id".
+// src/models.d.ts:103:5 - (ae-undocumented) Missing documentation for "String".
+// src/models.d.ts:104:5 - (ae-undocumented) Missing documentation for "Date".
 // src/permissions.d.ts:1:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowPermission".
 // src/permissions.d.ts:2:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowSpecificPermission".
 // src/permissions.d.ts:3:22 - (ae-undocumented) Missing documentation for "orchestratorWorkflowUsePermission".
