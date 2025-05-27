@@ -7989,9 +7989,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@janus-idp/cli@npm:3.5.0":
-  version: 3.5.0
-  resolution: "@janus-idp/cli@npm:3.5.0"
+"@janus-idp/cli@npm:3.6.1":
+  version: 3.6.1
+  resolution: "@janus-idp/cli@npm:3.6.1"
   dependencies:
     "@backstage/cli-common": ^0.1.15
     "@backstage/cli-node": ^0.2.12
@@ -8047,7 +8047,7 @@ __metadata:
       optional: true
   bin:
     janus-cli: bin/janus-cli
-  checksum: 0d6498891c66a27837e4818e4d1fd5fdbc62b69e33b72cbb89b7e291360d3aaa065c6e4f6c80180359c9418fc4992bd27a298b19ccd2efc862e93834b5eb8085
+  checksum: e239e70aeaca07a45de2d3d0eafa03fb7cee83f57a5e666aaf63602fb79924d18a66ad98eb7e8ab6df47f703575d98e3aa7d798708f92f74c3d786ffbca4d635
   languageName: node
   linkType: hard
 
@@ -9411,10 +9411,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/core-downloads-tracker@npm:^5.16.14":
-  version: 5.16.14
-  resolution: "@mui/core-downloads-tracker@npm:5.16.14"
-  checksum: a25658362a69a89f35cdc12ded01b998b7f02df43648029f2523813fc7f259cc85f62bd1877059359d462e7c163e82308bd4cc74fa2d35651d302c5d8bbbc7f4
+"@mui/core-downloads-tracker@npm:^5.17.1":
+  version: 5.17.1
+  resolution: "@mui/core-downloads-tracker@npm:5.17.1"
+  checksum: 40a697aa031f089dde29812563320221efa1ec18840b0d0b744ba8846b558146d58910b5b4e67b7eb1942c6817ffc389b4b6b28456c762d39d250bc1e54423f7
   languageName: node
   linkType: hard
 
@@ -9434,22 +9434,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.16.14, @mui/icons-material@npm:^5.15.8":
-  version: 5.16.14
-  resolution: "@mui/icons-material@npm:5.16.14"
-  dependencies:
-    "@babel/runtime": ^7.23.9
-  peerDependencies:
-    "@mui/material": ^5.0.0
-    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 14c01298e47972099ce71a8f142e2bb93dfc61a3ac0239030c55b3e5c6719f692e9c2fac131247c52f4922e74b08291ecb1f3398117222cc7baa82ec6f38e073
-  languageName: node
-  linkType: hard
-
 "@mui/icons-material@npm:5.16.4":
   version: 5.16.4
   resolution: "@mui/icons-material@npm:5.16.4"
@@ -9463,6 +9447,22 @@ __metadata:
     "@types/react":
       optional: true
   checksum: b0559215a10819a082539a7ae43aedafb30bc109c5d6994ac6d748e46688d705e6b44b62693f89aea1fca3afdc6deb665d884c6bad0a2cffde9c5443027e3019
+  languageName: node
+  linkType: hard
+
+"@mui/icons-material@npm:5.17.1, @mui/icons-material@npm:^5.15.8":
+  version: 5.17.1
+  resolution: "@mui/icons-material@npm:5.17.1"
+  dependencies:
+    "@babel/runtime": ^7.23.9
+  peerDependencies:
+    "@mui/material": ^5.0.0
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
   languageName: node
   linkType: hard
 
@@ -9495,15 +9495,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.16.14, @mui/material@npm:^5.12.2, @mui/material@npm:^5.14.18":
-  version: 5.16.14
-  resolution: "@mui/material@npm:5.16.14"
+"@mui/material@npm:5.17.1, @mui/material@npm:^5.12.2, @mui/material@npm:^5.14.18":
+  version: 5.17.1
+  resolution: "@mui/material@npm:5.17.1"
   dependencies:
     "@babel/runtime": ^7.23.9
-    "@mui/core-downloads-tracker": ^5.16.14
-    "@mui/system": ^5.16.14
-    "@mui/types": ^7.2.15
-    "@mui/utils": ^5.16.14
+    "@mui/core-downloads-tracker": ^5.17.1
+    "@mui/system": ^5.17.1
+    "@mui/types": ~7.2.15
+    "@mui/utils": ^5.17.1
     "@popperjs/core": ^2.11.8
     "@types/react-transition-group": ^4.4.10
     clsx: ^2.1.0
@@ -9524,11 +9524,11 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 0c09353099580ca4f4e214ef1251a5fb1328a5ec19b5195ec4dd628c0ae0b3fae47a8fcae39a807aac1ac8a26bf0109da07eb7eca183975f8cae583d7306de0f
+  checksum: 26ff24f6d7ec1e429cf1dbe502046c8bcb684852bcfc32250b545c609ed38cef01985bbeec7ff294abe8b48be896cf9774e1198495b588d6c93cc56c9aecfbae
   languageName: node
   linkType: hard
 
-"@mui/private-theming@npm:^5.16.14, @mui/private-theming@npm:^5.17.1":
+"@mui/private-theming@npm:^5.17.1":
   version: 5.17.1
   resolution: "@mui/private-theming@npm:5.17.1"
   dependencies:
@@ -9583,15 +9583,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/styles@npm:5.16.14":
-  version: 5.16.14
-  resolution: "@mui/styles@npm:5.16.14"
+"@mui/styles@npm:5.17.1":
+  version: 5.17.1
+  resolution: "@mui/styles@npm:5.17.1"
   dependencies:
     "@babel/runtime": ^7.23.9
     "@emotion/hash": ^0.9.1
-    "@mui/private-theming": ^5.16.14
-    "@mui/types": ^7.2.15
-    "@mui/utils": ^5.16.14
+    "@mui/private-theming": ^5.17.1
+    "@mui/types": ~7.2.15
+    "@mui/utils": ^5.17.1
     clsx: ^2.1.0
     csstype: ^3.1.3
     hoist-non-react-statics: ^3.3.2
@@ -9610,7 +9610,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 1d579e005f26a76e39feeda8634cbf41d041dcfe85ca6cfa19180ca1e6477bc909966a4738a6a875bd9d18b4157272d60869bbf94546c4813db551df19c0e6aa
+  checksum: 3e9de5bc582cc99be5ea8bf3c6ec81cd1472d96c7c11fef70fa21e1e5ea7f3dc10d1a9be793ea39e37eb1896e44263adc313e42d711fdf9c4e2d9172d00997df
   languageName: node
   linkType: hard
 
@@ -9645,7 +9645,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^5.16.14, @mui/system@npm:^5.17.1":
+"@mui/system@npm:^5.17.1":
   version: 5.17.1
   resolution: "@mui/system@npm:5.17.1"
   dependencies:
@@ -9673,7 +9673,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/types@npm:^7.2.15, @mui/types@npm:^7.2.19, @mui/types@npm:~7.2.15":
+"@mui/types@npm:^7.2.19, @mui/types@npm:~7.2.15":
   version: 7.2.24
   resolution: "@mui/types@npm:7.2.24"
   peerDependencies:
@@ -9685,7 +9685,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/utils@npm:^5.14.15, @mui/utils@npm:^5.16.14, @mui/utils@npm:^5.17.1":
+"@mui/utils@npm:^5.14.15, @mui/utils@npm:^5.17.1":
   version: 5.17.1
   resolution: "@mui/utils@npm:5.17.1"
   dependencies:
@@ -10672,14 +10672,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.50.1":
-  version: 1.50.1
-  resolution: "@playwright/test@npm:1.50.1"
+"@playwright/test@npm:1.52.0":
+  version: 1.52.0
+  resolution: "@playwright/test@npm:1.52.0"
   dependencies:
-    playwright: 1.50.1
+    playwright: 1.52.0
   bin:
     playwright: cli.js
-  checksum: ace565b0638e629a35f9b38e32e4f93a84605a96b50a9a229f91668b686b5f845fe8739fb73a361d281472e9daa655b0c2be7255f57f590244214aaad264711d
+  checksum: a7e30109399ad40b9c5a5322d8adbb4f759e139169deb8c0c9b62ec678359bb0bb64155497f05dc4a96ff582da55c4f821da6f59d4b321b154ae706c923ee3b5
   languageName: node
   linkType: hard
 
@@ -11379,7 +11379,7 @@ __metadata:
     "@backstage/plugin-scaffolder-backend": ^1.31.0
     "@backstage/plugin-scaffolder-node": ^0.8.0
     "@janus-idp/backstage-plugin-audit-log-node": ^1.7.1
-    "@janus-idp/cli": 3.5.0
+    "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@types/express": 4.17.22
     "@types/fs-extra": 11.0.4
@@ -11478,7 +11478,7 @@ __metadata:
     "@backstage/test-utils": ^1.7.1
     "@backstage/theme": ^0.6.2
     "@backstage/types": ^1.2.1
-    "@janus-idp/cli": 3.5.0
+    "@janus-idp/cli": 3.6.1
     "@material-ui/core": ^4.9.13
     "@material-ui/icons": ^4.9.1
     "@material-ui/lab": ^4.0.0-alpha.61
@@ -11513,7 +11513,7 @@ __metadata:
     "@backstage/plugin-permission-react": ^0.4.32
     "@backstage/test-utils": ^1.7.6
     "@backstage/types": ^1.2.1
-    "@janus-idp/cli": 3.5.0
+    "@janus-idp/cli": 3.6.1
     "@kie-tools-core/editor": ^10.0.0
     "@kie-tools/serverless-workflow-standalone-editor": ^10.0.0
     "@material-ui/core": ^4.12.4
@@ -11565,7 +11565,7 @@ __metadata:
     "@backstage/plugin-scaffolder-node": ^0.8.0
     "@backstage/plugin-scaffolder-node-test-utils": ^0.2.0
     "@backstage/types": ^1.2.1
-    "@janus-idp/cli": 3.5.0
+    "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     axios: ^1.7.9
@@ -16045,11 +16045,11 @@ __metadata:
     "@backstage/plugin-user-settings": ^0.8.20
     "@backstage/test-utils": ^1.7.6
     "@backstage/theme": ^0.6.4
-    "@mui/icons-material": 5.16.14
+    "@mui/icons-material": 5.17.1
     "@mui/lab": 5.0.0-alpha.176
-    "@mui/material": 5.16.14
-    "@mui/styles": 5.16.14
-    "@playwright/test": 1.50.1
+    "@mui/material": 5.17.1
+    "@mui/styles": 5.17.1
+    "@playwright/test": 1.52.0
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^"
     "@redhat-developer/red-hat-developer-hub-theme": ^0.5.0
@@ -30249,27 +30249,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.50.1":
-  version: 1.50.1
-  resolution: "playwright-core@npm:1.50.1"
+"playwright-core@npm:1.52.0":
+  version: 1.52.0
+  resolution: "playwright-core@npm:1.52.0"
   bin:
     playwright-core: cli.js
-  checksum: 9c9c3115e8c39c9a2f4e0dc5b2bc1d76925fb0244051ace2bcffc7b2b66cf6fe1b96d9162f81bc7d9b7811b8c6f9df5aa93052d1284bfd6d30203bf4f7b58868
+  checksum: 28aa7785afb6ef9b05e8573a0655cb7cf72a782329f51d1e152ed94273c69206588b44a9440ca4b500cd1a15e6068ec9c2746ec4666a89bcce2854d429d22dc8
   languageName: node
   linkType: hard
 
-"playwright@npm:1.50.1":
-  version: 1.50.1
-  resolution: "playwright@npm:1.50.1"
+"playwright@npm:1.52.0":
+  version: 1.52.0
+  resolution: "playwright@npm:1.52.0"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.50.1
+    playwright-core: 1.52.0
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 02e3618acf7d0e08b45c4f4de0be259b83549e9551af9d5902fcc5a2a9c9667e8ef3e94ef62160bad1cda03aa643dbd01e418640a20f656cf4464afdf4b73bbd
+  checksum: ad072d7c2eef2568f9b35471221eeb838406e7d4b9c38624430003c235b0b939fd10d02080e6fa39ece43e88d04be0b6f3d875d16aa82ae691705f5ac2055ec5
   languageName: node
   linkType: hard
 
