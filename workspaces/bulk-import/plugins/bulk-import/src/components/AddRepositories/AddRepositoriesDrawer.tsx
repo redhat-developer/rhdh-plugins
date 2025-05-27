@@ -147,7 +147,7 @@ export const AddRepositoriesDrawer = ({
             bottom: '20px',
           }}
         >
-          <span>
+          <Typography component="span">
             <Button
               variant="contained"
               color="primary"
@@ -159,8 +159,8 @@ export const AddRepositoriesDrawer = ({
             >
               Select
             </Button>
-          </span>
-          <span>
+          </Typography>
+          <Typography component="span">
             <Button
               data-testid="close-drawer"
               variant="outlined"
@@ -168,7 +168,7 @@ export const AddRepositoriesDrawer = ({
             >
               Cancel
             </Button>
-          </span>
+          </Typography>
         </Box>
       </Container>
     </Drawer>
