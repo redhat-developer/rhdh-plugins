@@ -432,6 +432,12 @@ export interface ProcessInstanceDTO {
      * @type {string}
      * @memberof ProcessInstanceDTO
      */
+    'initiatorEntity'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ProcessInstanceDTO
+     */
     'businessKey'?: string;
     /**
      * 
