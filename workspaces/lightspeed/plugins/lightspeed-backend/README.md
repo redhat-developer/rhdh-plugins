@@ -34,7 +34,8 @@ lightspeed:
   servers:
     - id: <server id>
       url: <serverURL>
-      token: <api key> # dummy token
+      token: <api key>
+      questionValidation: true # Optional - To disable question (prompt) validation set it to false.
 ```
 
 Example local development configuration:
