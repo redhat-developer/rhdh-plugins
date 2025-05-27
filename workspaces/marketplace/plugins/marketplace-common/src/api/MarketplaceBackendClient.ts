@@ -69,15 +69,21 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     this.fetchApi = options.fetchApi;
   }
 
-  private async get(
+  private async request(
     path: string,
+    requestType: 'GET' | 'POST',
     searchParams?: URLSearchParams,
   ): Promise<any> {
     const baseUrl = await this.discoveryApi.getBaseUrl('extensions');
     const query = searchParams ? searchParams.toString() : '';
     const url = `${baseUrl}${path}${query ? '?' : ''}${query}`;
 
-    const response = await this.fetchApi.fetch(url);
+    const response = await this.fetchApi.fetch(url, {
+      method: requestType,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     if (!response.ok) {
       throw new Error(
         `Unexpected status code: ${response.status} ${response.statusText}`,
@@ -90,14 +96,19 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   getCollections(
     request: GetEntitiesRequest,
   ): Promise<GetEntitiesResponse<MarketplaceCollection>> {
-    return this.get('/collections', encodeGetEntitiesRequest(request));
+    return this.request(
+      '/collections',
+      'GET',
+      encodeGetEntitiesRequest(request),
+    );
   }
 
   getCollectionsFacets(
     request: GetEntityFacetsRequest,
   ): Promise<GetEntityFacetsResponse> {
-    return this.get(
+    return this.request(
       '/collections/facets',
+      'GET',
       encodeGetEntityFacetsRequest(request),
     );
   }
@@ -106,8 +117,9 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     namespace: string,
     name: string,
   ): Promise<MarketplaceCollection> {
-    return this.get(
+    return this.request(
       `/collection/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`,
+      'GET',
     );
   }
 
@@ -115,50 +127,61 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     namespace: string,
     name: string,
   ): Promise<MarketplacePlugin[]> {
-    return this.get(
+    return this.request(
       `/collection/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/plugins`,
+      'GET',
     );
   }
 
   async getPackages(
     request: GetEntitiesRequest,
   ): Promise<GetEntitiesResponse<MarketplacePackage>> {
-    return this.get('/packages', encodeGetEntitiesRequest(request));
+    return this.request('/packages', 'GET', encodeGetEntitiesRequest(request));
   }
 
   getPackagesFacets(
     request: GetEntityFacetsRequest,
   ): Promise<GetEntityFacetsResponse> {
-    return this.get('/packages/facets', encodeGetEntityFacetsRequest(request));
+    return this.request(
+      '/packages/facets',
+      'GET',
+      encodeGetEntityFacetsRequest(request),
+    );
   }
 
   getPackageByName(
     namespace: string,
     name: string,
   ): Promise<MarketplacePackage> {
-    return this.get(
+    return this.request(
       `/package/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`,
+      'GET',
     );
   }
 
   async getPlugins(
     request: GetEntitiesRequest,
   ): Promise<GetEntitiesResponse<MarketplacePlugin>> {
-    return this.get('/plugins', encodeGetEntitiesRequest(request));
+    return this.request('/plugins', 'GET', encodeGetEntitiesRequest(request));
   }
 
   getPluginFacets(
     request: GetEntityFacetsRequest,
   ): Promise<GetEntityFacetsResponse> {
-    return this.get('/plugins/facets', encodeGetEntityFacetsRequest(request));
+    return this.request(
+      '/plugins/facets',
+      'GET',
+      encodeGetEntityFacetsRequest(request),
+    );
   }
 
   async getPluginByName(
     namespace: string,
     name: string,
   ): Promise<MarketplacePlugin> {
-    return this.get(
+    return this.request(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`,
+      'GET',
     );
   }
 
@@ -166,8 +189,9 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     namespace: string,
     name: string,
   ): Promise<{ read: 'ALLOW' | 'DENY'; write: 'ALLOW' | 'DENY' }> {
-    return this.get(
+    return this.request(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/authorize`,
+      'GET',
     );
   }
 
@@ -175,8 +199,19 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     namespace: string,
     name: string,
   ): Promise<{ configYaml: string }> {
-    return this.get(
+    return this.request(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
+      'GET',
+    );
+  }
+
+  async installPlugin(
+    namespace: string,
+    name: string,
+  ): Promise<{ status: any }> {
+    return this.request(
+      `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
+      'POST',
     );
   }
 
@@ -184,8 +219,9 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     namespace: string,
     name: string,
   ): Promise<MarketplacePackage[]> {
-    return this.get(
+    return this.request(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/packages`,
+      'GET',
     );
   }
 }
