@@ -26,14 +26,16 @@
     "prettier:check": "prettier --check .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install",
-    "tests": "playwright test",
-    "test:ui": "playwright test --ui",
-    "test:headless": "playwright test --headless",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "test:chromium": "playwright test --project=chromium",
-    "test:firefox": "playwright test --project=firefox",
-    "test:webkit": "playwright test --project=webkit"
+    "test:base": "playwright test --config=sandboxplaywright.config.ts",
+    "tests": "npm run test:base",
+    "test:ui": "npm run test:base --ui",
+    "test:headless": "npm run test:base --headless",
+    "test:headed": "npm run test:base --headed",
+    "test:debug": "npm run test:base --debug",
+    "test:chromium": "npm run test:base --project=chromium",
+    "test:firefox": "npm run test:base --project=firefox",
+    "test:webkit": "npm run test:base --project=webkit"
+
   },
   "workspaces": {
     "packages": [
