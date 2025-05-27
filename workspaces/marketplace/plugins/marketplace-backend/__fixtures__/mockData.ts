@@ -133,7 +133,7 @@ export const mockDynamicPackage11 = {
 export const mockDynamicPackage12 = {
   package: mockPackages[1].spec.dynamicArtifact,
   disabled: true,
-  pluginConfig: mockPackages[1].spec.appConfigExamples![0].content,
+  pluginConfig: mockPackages[1].spec.appConfigExamples?.at(0)?.content,
 };
 
 export const mockDynamicPackage21 = {
