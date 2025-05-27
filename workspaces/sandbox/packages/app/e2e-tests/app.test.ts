@@ -56,7 +56,9 @@ test.describe('sandbox plugin', () => {
   });
 
   // Test clicking the OpenShift card on the homepage
-  test('Test Homepage Openshiftcard', async () => {
+  test('Signup user and home page verification', async () => {
+    const articleHeader = page.getByRole('article');
+    const loadingIcon = page.locator('svg.v5-MuiCircularProgress-svg').first();
     const card = page.getByText('OpenShift Comprehensive cloud');
     await expect(card).toBeVisible(); // Ensure card is visible
     await expect(page.getByText('OpenShift AI Scalable AI and')).toBeVisible();
@@ -71,12 +73,18 @@ test.describe('sandbox plugin', () => {
         'OpenShift Virtualization Migrate traditional VM workloads to OpenShift Unified',
       ),
     ).toBeVisible();
-    await card.getByRole('button', { name: 'Try it' }).click();
-    // Verify expected texts
-    await expect(page.getByRole('article')).toContainText('Welcome');
     await expect(page.getByRole('article')).toContainText(
       'Click on "Try it" to initiate your free, no commitment 30-day trial.',
     );
+    await card.getByRole('button', { name: 'Try it' }).click();
+    await loadingIcon.waitFor({ state: 'hidden' });
+
+    // Verify expected texts
+    await expect(articleHeader).toContainText('Welcome');
+    await expect(articleHeader).toContainText(
+      'Your free trial expires in 30 days',
+    );
+    
   });
 
   test('Test DevSandbox', async () => {
