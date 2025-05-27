@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all RHDH Bulk Import patch updates",
+      "matchFileNames": ["workspaces/bulk-import/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Bulk Import)"
+      ],
+      "addLabels": ["team/rhdh", "bulk-import"]
+    },
+    {
+      "description": "all RHDH Bulk Import dev dependency updates",
+      "matchFileNames": ["workspaces/bulk-import/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Bulk Import)"
+      ],
+      "addLabels": ["team/rhdh", "bulk-import"]
+    },
+    {
+      "description": "all RHDH Bulk Import minor updates",
+      "matchFileNames": ["workspaces/bulk-import/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Bulk Import)"
+      ],
+      "addLabels": ["team/rhdh", "bulk-import"]
+    }
+  ]
+}

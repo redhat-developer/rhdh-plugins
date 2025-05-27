@@ -272,30 +272,27 @@ export class SonataFlowService {
     jsonResponse: any,
     httpMethod = 'GET',
   ): Promise<string> {
-    const errorInfo = [];
-    let errorMsg = `Request ${httpMethod} ${urlToFetch} failed with: StatusCode: ${response.status}`;
+    const errorLines: string[] = [];
+
+    errorLines.push(`HTTP ${httpMethod} request to ${urlToFetch} failed.`);
+    errorLines.push(`Status Code: ${response.status}`);
 
     if (response.statusText) {
-      errorInfo.push(`StatusText: ${response.statusText}`);
-    }
-    if (jsonResponse?.details) {
-      errorInfo.push(`Details: ${jsonResponse?.details}`);
-    }
-    if (jsonResponse?.stack) {
-      errorInfo.push(`Stack: ${jsonResponse?.stack}`);
+      errorLines.push(`Status Text: ${response.statusText}`);
     }
     if (jsonResponse?.message) {
-      errorInfo.push(`Message: ${jsonResponse?.message}`);
+      errorLines.push(`Message: ${jsonResponse.message}`);
+    }
+    if (jsonResponse?.details) {
+      errorLines.push(`Details: ${jsonResponse.details}`);
+    }
+    if (jsonResponse?.stack) {
+      errorLines.push(`Stack Trace: ${jsonResponse.stack}`);
     }
     if (jsonResponse?.failedNodeId) {
-      errorInfo.push(`Failed Node Id: ${jsonResponse?.failedNodeId}`);
-    }
-    if (errorInfo.length > 0) {
-      errorMsg += ` ${errorInfo.join(', ')}`;
-    } else {
-      errorMsg += ' Unexpected error';
+      errorLines.push(`Failed Node ID: ${jsonResponse.failedNodeId}`);
     }
 
-    return errorMsg;
+    return errorLines.join('\n');
   }
 }

@@ -8,7 +8,24 @@ enableExperimentalRedirectFlow: true
 backend:
   baseUrl: http://localhost:3000
   csp:
-    connect-src: ["'self'", 'http:', 'https:']
+    img-src:
+      - "'self'"
+      - 'data:'
+      - 'https://catamphetamine.github.io'
+    script-src:
+      - "'self'"
+      - "'unsafe-eval'"
+      - 'https://cdn.segment.com'
+      - 'https://www.google.com'
+      - 'https://www.gstatic.com'
+    script-src-elem:
+      - "'self'"
+      - 'https://cdn.segment.com'
+      - 'https://www.google.com'
+      - 'https://www.gstatic.com'
+    frame-src:
+      - "'self'"
+      - 'https://www.google.com'
   listen:
     port: 3000
   cors:
@@ -35,7 +52,7 @@ auth:
               dangerouslyAllowSignInWithoutUserInCatalog: true
 signInPage: oidc
 sandbox:
-  signupAPI: https://registration-service-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com/api/v1
-  kubeAPI: https://api-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com
+  signupAPI: https://registration-service-toolchain-host-operator.apps.sandbox.x8i5.p1.openshiftapps.com/api/v1
+  kubeAPI: https://api-toolchain-host-operator.apps.sandbox.x8i5.p1.openshiftapps.com
   recaptcha:
     siteKey: 6Lc_164lAAAAAPvrC0WO-XDljvZ2DZ3UQ38A4XR0

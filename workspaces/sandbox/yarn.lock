@@ -8536,9 +8536,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:^5.16.14":
-  version: 5.16.14
-  resolution: "@mui/icons-material@npm:5.16.14"
+"@mui/icons-material@npm:^5.16.14, @mui/icons-material@npm:^5.17.1":
+  version: 5.17.1
+  resolution: "@mui/icons-material@npm:5.17.1"
   dependencies:
     "@babel/runtime": ^7.23.9
   peerDependencies:
@@ -8548,7 +8548,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 14c01298e47972099ce71a8f142e2bb93dfc61a3ac0239030c55b3e5c6719f692e9c2fac131247c52f4922e74b08291ecb1f3398117222cc7baa82ec6f38e073
+  checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
   languageName: node
   linkType: hard
 
@@ -10273,16 +10273,16 @@ __metadata:
     "@material-ui/core": ^4.12.4
     "@mui/icons-material": ^5.16.14
     "@mui/material": ^5.16.14
-    "@redhat-developer/red-hat-developer-hub-theme": 0.5.1
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.6.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
-    libphonenumber-js: ^1.11.20
+    libphonenumber-js: ^1.12.8
     lodash: ^4.17.21
     msw: ^1.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^18.0.2
-    react-phone-number-input: ^3.4.11
+    react-phone-number-input: ^3.4.12
     react-router: ^6.3.0
     react-router-dom: ^6.3.0
     react-use: ^17.2.4
@@ -10294,18 +10294,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@redhat-developer/red-hat-developer-hub-theme@npm:0.5.1":
-  version: 0.5.1
-  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.1"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.6.0"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/theme": ^0.5.2
-    "@emotion/react": ^11.11.1
-    "@emotion/styled": ^11.11.0
-    "@material-ui/core": ^4.12.4
+    "@backstage/core-plugin-api": ^1.10.4
+    "@backstage/theme": ^0.6.4
     "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.14.19
-    "@mui/material": ^5.14.20
-  checksum: 4de9e62b9de390c7de82fcf123a03135366952ab39d423be51c3afb242c316e3deb78ecaa3e038d6bcc12695f8f03223b9efb45a689a40ea2c11139f4e3fc06d
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 37b868436f32ac08f6fd465d3a14caf636731e299a8407dc07970681b0e6327d61f12616820ff57b103a3ef8c51d37092dd6e972363d914cecd7c0f3231a760b
   languageName: node
   linkType: hard
 
@@ -17095,10 +17096,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"country-flag-icons@npm:^1.5.11":
-  version: 1.5.16
-  resolution: "country-flag-icons@npm:1.5.16"
-  checksum: f1df30e3ac63ab3e253826adfd33e5afe8e673d2ddb539f6bba24174d22de2830a7b9b126384bdc9d2d501be60b4b1230158f9210aba459428cf23644335d846
+"country-flag-icons@npm:^1.5.17":
+  version: 1.5.19
+  resolution: "country-flag-icons@npm:1.5.19"
+  checksum: bb9666fb0ddbedd76fcede911f969bfb1c5b14454049a08db22aded1f48b6201f3dfb9832fa904581b9fd788ee02feb946ae4c5fb322f7a866d328a0357630f9
   languageName: node
   linkType: hard
 
@@ -24126,10 +24127,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libphonenumber-js@npm:^1.11.17, libphonenumber-js@npm:^1.11.20":
-  version: 1.11.20
-  resolution: "libphonenumber-js@npm:1.11.20"
-  checksum: ab72f7162bf5023099914b7040b72739eefb8d6fa226a4aa133a1abf25e20f3d7a0999be43b73188e70e8493e5e646e6e89f54f6392a0139e7628df0ab9e28bf
+"libphonenumber-js@npm:^1.11.20, libphonenumber-js@npm:^1.12.8":
+  version: 1.12.8
+  resolution: "libphonenumber-js@npm:1.12.8"
+  checksum: b3a50a9b5f63e43ad368ea88712a1d6cf38f7b26c01fdafb0c114e4c2f977fb1a7c19303bf09ce89680b8acfbbfaf127e848550999b43628c9d1573c816d68d5
   languageName: node
   linkType: hard
 
@@ -29184,19 +29185,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-phone-number-input@npm:^3.4.11":
-  version: 3.4.11
-  resolution: "react-phone-number-input@npm:3.4.11"
+"react-phone-number-input@npm:^3.4.12":
+  version: 3.4.12
+  resolution: "react-phone-number-input@npm:3.4.12"
   dependencies:
     classnames: ^2.5.1
-    country-flag-icons: ^1.5.11
+    country-flag-icons: ^1.5.17
     input-format: ^0.3.10
-    libphonenumber-js: ^1.11.17
+    libphonenumber-js: ^1.11.20
     prop-types: ^15.8.1
   peerDependencies:
     react: ">=16.8"
     react-dom: ">=16.8"
-  checksum: 4c750615d5b96c273e8911b4cb6c478b408feb199e902f443ab341834c5450763886330d9a4cbef43d4959830557b5ffd689ad47f54c8d07528dbb5cf63c770d
+  checksum: 41273da06da8dcfb420cef0de52ec3ae5a7a6558358ad48ef6a7f4eae1a6be9334625c2295367f2ac474a365eb225090e0ee783be92a8367a9fb945e34b811eb
   languageName: node
   linkType: hard
 

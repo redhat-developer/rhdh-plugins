@@ -390,19 +390,19 @@ The widgets manage waiting for asynchronous promises and chains of functions to 
 When exposing additional keys in the future, we will consider not only the [frontend-visibility](https://backstage.io/docs/conf/defining/#visibility) but security as well, since a malicious workflow can retrieve configuration of plugins or Backstage, eventually with their secrets.
 That’s the reason for listing the exposed keys explicitly.
 
-|                                 Key Family                                  |              Key              |                         Value of at runtime\<br\>(skipping promises for simplicity)                         |
-| :-------------------------------------------------------------------------: | :---------------------------: | :---------------------------------------------------------------------------------------------------------: |
-|                                   current                                   |  \[whatever property name\]   |                                  Value of other field/property of the form                                  |
-|                                 identityApi                                 |             token             |                                     IdentityApi.getCredentials().token                                      |
-|                                                                             |         userEntityRef         |                              IdentityApi.getBackstageIdentity().userEntityRef                               |
-|                                                                             |         profileEmail          |                                     IdentityApi.getProfileInfo().email                                      |
-|                                                                             |          displayName          |                                  IdentityApi.getProfileInfo().displayName                                   |
-|                microsoftAuthApi gitlabAuthApi googleAuthApi                 |          openIdToken          | OpenIdConnectApi.getIdToken(undefined /\* defaults \*/) Mind this is not available for Github and Atlassian |
-| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |             token             |                                OAuthApi.getAccessToken(undefined, undefined)                                |
-| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |         profileEmail          |                                 ProfileInfoApi.getProfile(undefined).email                                  |
-| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |          profileName          |                              ProfileInfoApi.getProfile(undefined).displayName                               |
-|                                 rjsfConfig                                  | orchestrator.\[whatever key\] |               configApi.getOptionalString(\`${orchestrator.rjsf-widgets.\[whatever key\]}\`)                |
-|                                   backend                                   |            baseUrl            | configApi.getString('backend.baseUrl') - useful for building URLs with proxy without hardcoding the backend |
+|                                 Key Family                                  |              Key              |                                                         Value of at runtime\<br\>(skipping promises for simplicity)                                                          |
+| :-------------------------------------------------------------------------: | :---------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|                                   current                                   |  \[whatever property name\]   | Value of other field/property of the form. The properties build hierarchy separated by `.` (dots) matching the structure of fields/objects defined by the data input schema. |
+|                                 identityApi                                 |             token             |                                                                      IdentityApi.getCredentials().token                                                                      |
+|                                                                             |         userEntityRef         |                                                               IdentityApi.getBackstageIdentity().userEntityRef                                                               |
+|                                                                             |         profileEmail          |                                                                      IdentityApi.getProfileInfo().email                                                                      |
+|                                                                             |          displayName          |                                                                   IdentityApi.getProfileInfo().displayName                                                                   |
+|                microsoftAuthApi gitlabAuthApi googleAuthApi                 |          openIdToken          |                                 OpenIdConnectApi.getIdToken(undefined /\* defaults \*/) Mind this is not available for Github and Atlassian                                  |
+| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |             token             |                                                                OAuthApi.getAccessToken(undefined, undefined)                                                                 |
+| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |         profileEmail          |                                                                  ProfileInfoApi.getProfile(undefined).email                                                                  |
+| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |          profileName          |                                                               ProfileInfoApi.getProfile(undefined).displayName                                                               |
+|                                 rjsfConfig                                  | orchestrator.\[whatever key\] |                                                configApi.getOptionalString(\`${orchestrator.rjsf-widgets.\[whatever key\]}\`)                                                |
+|                                   backend                                   |            baseUrl            |                                 configApi.getString('backend.baseUrl') - useful for building URLs with proxy without hardcoding the backend                                  |
 
 ## Retrieving Data from Backstage Catalog
 
@@ -420,4 +420,4 @@ Alternatively, you can fork the plugin that provides the library and use it as a
 In this scenario, you are responsible for managing updates and fixes, as backward compatibility is not guaranteed for forked versions.
 
 Currently, the Workflow execution RJSF form supports extending only one library at a time, meaning only a single implementation of `orchestratorFormApiRef` is active.
-You can fully replace the default implementation with your custom version by undeploying the original.
+You can fully replace the default implementation with your custom version by undeploying the original, [more info here](./extensibleForm.md).

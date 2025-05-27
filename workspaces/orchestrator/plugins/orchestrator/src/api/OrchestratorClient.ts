@@ -286,6 +286,21 @@ export class OrchestratorClient implements OrchestratorApi {
       throw getError(err);
     }
   }
+  async pingWorkflowService(
+    workflowId: string,
+  ): Promise<AxiosResponse<boolean>> {
+    const defaultApi = await this.getDefaultAPI();
+    const reqConfigOption: AxiosRequestConfig =
+      await this.getDefaultReqConfig();
+    try {
+      return await defaultApi.pingWorkflowServiceById(
+        workflowId,
+        reqConfigOption,
+      );
+    } catch (err) {
+      throw getError(err);
+    }
+  }
 
   async getWorkflowOverview(
     workflowId: string,
