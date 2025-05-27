@@ -20,6 +20,7 @@ import {
   Filter,
   IntrospectionField,
   LogicalFilter,
+  NestedFilter,
   TypeName,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -64,6 +65,10 @@ function isLogicalFilter(filter: Filter): filter is LogicalFilter {
   return (filter as LogicalFilter).filters !== undefined;
 }
 
+function isNestedFilter(filter: Filter): filter is NestedFilter {
+  return (filter as NestedFilter).nested !== undefined;
+}
+
 function handleLogicalFilter(
   introspection: IntrospectionField[],
   type: ProcessType,
@@ -76,6 +81,21 @@ function handleLogicalFilter(
   );
 
   return `${filter.operator.toLowerCase()}: {${subClauses.join(', ')}}`;
+}
+
+function handleNestedFilter(
+  introspection: IntrospectionField[],
+  type: ProcessType,
+  filter: NestedFilter,
+): string {
+  const subClauses = buildFilterCondition(
+    introspection,
+    type,
+    filter.nested,
+    true,
+  );
+
+  return `${filter.field}: {${subClauses}}`;
 }
 
 function handleBetweenOperator(filter: FieldFilter): string {
@@ -114,7 +134,7 @@ function isValidEnumOperator(operator: FieldFilterOperatorEnum): boolean {
 
 function handleBinaryOperator(
   binaryFilter: FieldFilter,
-  fieldDef: IntrospectionField,
+  fieldDef: IntrospectionField | undefined,
   type: 'ProcessDefinition' | 'ProcessInstance',
 ): string {
   if (isEnumFilter(binaryFilter.field, type)) {
@@ -138,9 +158,14 @@ export function buildFilterCondition(
   introspection: IntrospectionField[],
   type: ProcessType,
   filters?: Filter,
+  isNested?: boolean,
 ): string {
   if (!filters) {
     return '';
+  }
+
+  if (isNestedFilter(filters)) {
+    return handleNestedFilter(introspection, type, filters);
   }
 
   if (isLogicalFilter(filters)) {
@@ -153,16 +178,21 @@ export function buildFilterCondition(
     );
   }
 
-  const fieldDef = introspection.find(f => f.name === filters.field);
-  if (!fieldDef) {
-    throw new Error(`Can't find field "${filters.field}" definition`);
-  }
+  let fieldDef;
 
-  if (!isOperatorAllowedForField(filters.operator, fieldDef, type)) {
-    const allowedOperators = supportedOperatorsByType[fieldDef.type.name] || [];
-    throw new Error(
-      `Unsupported operator ${filters.operator} for field "${fieldDef.name}" of type "${fieldDef.type.name}". Allowed operators are: ${allowedOperators.join(', ')}`,
-    );
+  if (!isNested) {
+    fieldDef = introspection.find(f => f.name === filters.field);
+    if (!fieldDef) {
+      throw new Error(`Can't find field "${filters.field}" definition`);
+    }
+
+    if (!isOperatorAllowedForField(filters.operator, fieldDef, type)) {
+      const allowedOperators =
+        supportedOperatorsByType[fieldDef.type.name] || [];
+      throw new Error(
+        `Unsupported operator ${filters.operator} for field "${fieldDef.name}" of type "${fieldDef.type.name}". Allowed operators are: ${allowedOperators.join(', ')}`,
+      );
+    }
   }
 
   switch (filters.operator) {
@@ -221,9 +251,13 @@ function convertToBoolean(value: any): boolean {
 function formatValue(
   fieldName: string,
   fieldValue: any,
-  fieldDef: IntrospectionField,
+  fieldDef: IntrospectionField | undefined,
   type: ProcessType,
 ): string {
+  if (!fieldDef) {
+    return `"${fieldValue}"`;
+  }
+
   if (!isFieldFilterSupported) {
     throw new Error(`Unsupported field type ${fieldDef.type.name}`);
   }
