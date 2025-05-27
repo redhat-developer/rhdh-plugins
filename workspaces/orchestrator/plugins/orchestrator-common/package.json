@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-orchestrator-common",
-  "version": "1.27.0",
+  "version": "1.27.2",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -12,7 +12,7 @@
   },
   "backstage": {
     "role": "common-library",
-    "supported-versions": "1.37.1",
+    "supported-versions": "1.36.1",
     "pluginId": "orchestrator",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator",
@@ -65,7 +65,7 @@
   "devDependencies": {
     "@backstage/cli": "^0.31.1",
     "@backstage/types": "^1.2.1",
-    "@openapitools/openapi-generator-cli": "2.20.0",
+    "@openapitools/openapi-generator-cli": "2.20.2",
     "@types/json-schema": "7.0.15",
     "js-yaml-cli": "0.6.0"
   },

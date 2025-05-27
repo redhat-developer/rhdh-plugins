@@ -115,6 +115,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
         Enter the verification code
       </DialogTitle>
       <IconButton
+        data-testid="close-opt-button"
         aria-label="close"
         onClick={handleClose}
         sx={{
@@ -128,6 +129,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
       </IconButton>
       <DialogContent sx={{ padding: '6px 24px' }}>
         <DialogContentText
+          data-testid="sent-message-dialog"
           id="alert-dialog-description"
           color="textPrimary"
           style={{
@@ -171,6 +173,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
         </div>
 
         <Typography
+          data-testid="resend-code-link"
           variant="body2"
           color="primary"
           sx={{
@@ -211,10 +214,11 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'flex-start', padding: '24px' }}>
         <Button
+          data-testid="submit-opt-button"
           variant="contained"
           type="submit"
           onClick={handleStartTrialClick}
-          disabled={otp.some(digit => !digit) || loading || !!error}
+          disabled={otp.some(digit => !digit) || loading}
           endIcon={
             loading && <CircularProgress size={20} sx={{ color: '#AFAFAF' }} />
           }
@@ -222,6 +226,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
           Start trial
         </Button>
         <Button
+          data-testid="close-opt-button"
           variant="outlined"
           onClick={handleClose}
           sx={{

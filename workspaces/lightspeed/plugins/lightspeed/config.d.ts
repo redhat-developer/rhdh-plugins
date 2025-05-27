@@ -39,7 +39,7 @@ export interface Config {
       url: string;
     }>;
     /**
-     * If turn on query restriction validation.
+     * query restriction validation (Enabled by default).
      * @visibility frontend
      */
     questionValidation?: boolean;

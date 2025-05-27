@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Orchestrator minor updates",
+      "matchFileNames": ["workspaces/orchestrator/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Orchestrator)"
+      ],
+      "addLabels": ["team/orchestrator", "orchestrator"]
+    },
+    {
+      "description": "all Orchestrator patch updates",
+      "matchFileNames": ["workspaces/orchestrator/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Orchestrator)"
+      ],
+      "addLabels": ["team/orchestrator", "orchestrator"]
+    },
+    {
+      "description": "all Orchestrator dev dependency updates",
+      "matchFileNames": ["workspaces/orchestrator/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Orchestrator)"
+      ],
+      "addLabels": ["team/orchestrator", "orchestrator"]
+    }
+  ]
+}
