@@ -27,7 +27,7 @@ let page: Page;
 const id = process.env.SSO_USERNAME!;
 const pw = process.env.SSO_PASSWORD!;
 const baseUrl = process.env.BASE_URL!;
-const env = 'dev';
+const env = process.env.ENVIRONMENT!;
 
 test.describe('sandbox plugin', () => {
   // Before all tests: launch browser, create new page, and log in
