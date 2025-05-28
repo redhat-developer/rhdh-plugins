@@ -14,10 +14,7 @@ import { Knex } from 'knex';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  LoggerService,
-  SchedulerService,
-} from '@backstage/backend-plugin-api/index';
+import { LoggerService, SchedulerService } from '@backstage/backend-plugin-api';
 import {
   extractOverlappingPartition,
   isPartitionOverlapError,
