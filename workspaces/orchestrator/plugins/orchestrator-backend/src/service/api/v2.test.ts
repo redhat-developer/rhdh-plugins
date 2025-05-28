@@ -381,7 +381,6 @@ describe('executeWorkflow', () => {
     const actualResultV2: ExecuteWorkflowResponseDTO = await v2.executeWorkflow(
       workflowData,
       workflowInfo.id,
-      'businessKey',
     );
 
     // Assert
@@ -489,9 +488,15 @@ describe('getInstanceById', () => {
 
   it('Instance exists, assessment non empty string', async () => {
     const processInstance = generateProcessInstance(1);
-    processInstance.businessKey = 'testBusinessKey';
     const assessedBy = generateProcessInstance(1);
-    assessedBy.id = processInstance.businessKey;
+
+    if (
+      processInstance.variables &&
+      typeof processInstance.variables !== 'string'
+    ) {
+      processInstance.variables.orchestratorAssessmentInstanceId =
+        assessedBy.id;
+    }
 
     (mockOrchestratorService.fetchInstance as jest.Mock)
       .mockResolvedValueOnce(processInstance)

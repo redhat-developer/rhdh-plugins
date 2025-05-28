@@ -25,7 +25,9 @@ import {
   IntrospectionField,
   parseWorkflowVariables,
   ProcessInstance,
+  ProcessInstanceVariables,
   WorkflowDefinition,
+  WorkflowExecutionResponse,
   WorkflowInfo,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -127,6 +129,51 @@ export class DataIndexService {
       }
     }
     return pairs;
+  }
+
+  public async executeWorkflow(
+    definitionId: string,
+    definitionVersion: string,
+    assessmentInstanceId: string,
+    variables: ProcessInstanceVariables,
+  ): Promise<WorkflowExecutionResponse | undefined> {
+    this.logger.info(`executing workflow ${definitionId}`);
+    const ExecuteAfterMutationDocument = gql`
+      mutation ExecuteAfterMutation(
+        $processId: String!
+        $processVersion: String!
+        $completedInstanceId: String
+        $excludeProperties: [String]
+        $input: JSON
+      ) {
+        ExecuteAfter(
+          processId: $processId
+          processVersion: $processVersion
+          completedInstanceId: $completedInstanceId
+          excludeProperties: $excludeProperties
+          input: $input
+        )
+      }
+    `;
+
+    const result = await this.client.mutation(ExecuteAfterMutationDocument, {
+      processId: definitionId,
+      processVersion: definitionVersion,
+      completedInstanceId: assessmentInstanceId,
+      excludeProperties: [],
+      input: variables,
+    });
+
+    this.logger.debug(`Execute workflow result: ${JSON.stringify(result)}`);
+
+    if (result.error) {
+      throw new Error(
+        `Error executing workflow ${definitionId}: ${result.error}`,
+      );
+    }
+    this.logger.debug(`Successfully executed workflow  ${definitionId}`);
+
+    return result.data?.ExecuteAfter?.id;
   }
 
   public async fetchWorkflowInfo(
@@ -271,7 +318,7 @@ export class DataIndexService {
     const graphQlQuery = buildGraphQlQuery({
       type: 'ProcessInstances',
       queryBody:
-        'id, processName, processId, businessKey, state, start, end, nodes { id }, variables, parentProcessInstance {id, processName, businessKey}',
+        'id, processName, processId, state, start, end, nodes { id }, variables, parentProcessInstance {id, processName, businessKey}',
       whereClause,
       pagination,
     });
@@ -421,7 +468,6 @@ export class DataIndexService {
           processName
           processId
           serviceUrl
-          businessKey
           state
           start
           end
