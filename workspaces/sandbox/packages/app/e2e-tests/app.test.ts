@@ -55,6 +55,23 @@ test.describe('sandbox plugin', () => {
     `);
   });
 
+  // Test Header
+  test('Test Header', async () => {
+    // Opens and verifies that 'Red Hat Developer Hub' popup is not broken
+    const [rhdhPage] = await Promise.all([
+      page.waitForEvent('popup'),
+      page.getByRole('link', { name: 'Red Hat Developer Hub , Opens' }).click(),
+    ]);
+    await expect(rhdhPage.locator('h1')).toContainText('Red Hat Developer Hub');
+
+    // Opens and verifies that 'Contact Red Hat Sales' popup is not broken
+    const [salesPage] = await Promise.all([
+      page.waitForEvent('popup'),
+      page.getByRole('button', { name: 'Contact Red Hat Sales' }).click(),
+    ]);
+    await expect(salesPage.locator('h1')).toContainText('Contact Red Hat');
+  });
+
   test('Signup user and home page verification', async () => {
     const articleHeader = page.getByRole('article');
     const loadingIcon = page.locator('svg.v5-MuiCircularProgress-svg').first();
