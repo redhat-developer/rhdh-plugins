@@ -15,12 +15,13 @@
  */
 
 import {
-  QueryEntitiesInitialRequest,
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
+  QueryEntitiesInitialRequest,
 } from '@backstage/catalog-client';
 
 import {
+  ConfigurationResponse,
   MarketplaceCollection,
   MarketplacePackage,
   MarketplacePlugin,
@@ -81,7 +82,7 @@ export interface MarketplaceApi {
   getPackageConfigByName?(
     namespace: string,
     name: string,
-  ): Promise<{ configYaml: string }>;
+  ): Promise<ConfigurationResponse>;
 
   getPlugins(
     request: GetEntitiesRequest,
@@ -101,7 +102,7 @@ export interface MarketplaceApi {
   getPluginConfigByName?(
     namespace: string,
     name: string,
-  ): Promise<{ configYaml: string }>;
+  ): Promise<ConfigurationResponse>;
 
   getPluginPackages(
     namespace: string,
