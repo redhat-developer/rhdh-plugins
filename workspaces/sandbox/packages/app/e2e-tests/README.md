@@ -23,7 +23,7 @@ Ensure you have a `.env` file at the root(workspaces/sandbox/) of your project w
 SSO_USERNAME=<Your SSO ID>
 SSO_PASSWORD=<Your SSO Password>
 BASE_URL=<Your Base URL>
-
+ENVIRONMENT=<dev or e2e-tests>
 ```
 
 ## Setup Instructions
