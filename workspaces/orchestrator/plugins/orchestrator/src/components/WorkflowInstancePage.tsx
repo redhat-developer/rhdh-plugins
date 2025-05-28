@@ -34,6 +34,8 @@ import {
   CircularProgress,
   Grid,
   IconButton,
+  Menu,
+  MenuItem,
   Tooltip,
   Typography,
 } from '@material-ui/core';
@@ -43,10 +45,9 @@ import CloseIcon from '@material-ui/icons/Close';
 import ErrorIcon from '@material-ui/icons/Error';
 import { AlertTitle } from '@material-ui/lab';
 import Alert from '@material-ui/lab/Alert';
-
-// FLPATH-2135
-// import StartIcon from '@mui/icons-material/Start';
-// import SwipeRightAltOutlinedIcon from '@mui/icons-material/SwipeRightAltOutlined';
+import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
+import StartIcon from '@mui/icons-material/Start';
+import SwipeRightAltOutlinedIcon from '@mui/icons-material/SwipeRightAltOutlined';
 
 import {
   AssessedProcessInstanceDTO,
@@ -360,21 +361,16 @@ export const WorkflowInstancePage = ({
                     }
                     disabled={!permittedToUse.allowed || !canRerun}
                     onClick={
-                      // Temporarily disable the "retrigger" as a workaround for FLPATH-2135.
-                      // We will re-enable once the SonataFlow fixes the feature
-                      handleRerun
-
-                      // value?.instance.state === ProcessInstanceStatusDTO.Error
-                      //   ? handleClick
-                      //   : handleRerun
+                      value?.instance.state === ProcessInstanceStatusDTO.Error
+                        ? handleClick
+                        : handleRerun
                     }
-                    // Commented-out for FLPATH-2135:
-                    // endIcon={
-                    //   value?.instance.state ===
-                    //     ProcessInstanceStatusDTO.Error ? (
-                    //     <ArrowDropDown />
-                    //   ) : null
-                    // }
+                    endIcon={
+                      value?.instance.state ===
+                      ProcessInstanceStatusDTO.Error ? (
+                        <ArrowDropDown />
+                      ) : null
+                    }
                     style={{ color: 'white' }}
                   >
                     {value.instance.state ===
@@ -389,8 +385,6 @@ export const WorkflowInstancePage = ({
                   </Button>
                 </Tooltip>
 
-                {/*
-                Temporarily disable the "retrigger" as a workaround for FLPATH-2135.
                 <Menu
                   anchorEl={anchorRef.current}
                   open={openRerunMenu}
@@ -413,7 +407,7 @@ export const WorkflowInstancePage = ({
                     <SwipeRightAltOutlinedIcon />
                     From failure point
                   </MenuItem>
-                </Menu> */}
+                </Menu>
               </Grid>
             </Grid>
           </ContentHeader>
