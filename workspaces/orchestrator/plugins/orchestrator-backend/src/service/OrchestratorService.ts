@@ -133,11 +133,23 @@ export class OrchestratorService {
 
   public async executeWorkflow(args: {
     definitionId: string;
+    definitionVersion?: string;
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
     authTokens?: Array<AuthToken>;
-    businessKey?: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
+    if (
+      args.definitionVersion &&
+      args.inputData?.orchestratorAssessmentInstanceId &&
+      args.inputData?.orchestratorUseAssessmentInput
+    ) {
+      return await this.dataIndexService.executeWorkflow(
+        args.definitionId,
+        args.definitionVersion,
+        args.inputData?.orchestratorAssessmentInstanceId as string,
+        args.inputData,
+      );
+    }
     return await this.sonataFlowService.executeWorkflow(args);
   }
 

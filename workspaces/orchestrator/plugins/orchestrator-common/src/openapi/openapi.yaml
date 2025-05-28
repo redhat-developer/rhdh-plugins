@@ -255,12 +255,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: businessKey
-          in: query
-          description: ID of the parent workflow
-          required: false
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -398,8 +392,6 @@ components:
           $ref: '#/components/schemas/WorkflowCategoryDTO'
         description:
           type: string
-        isAvailable:
-          type: boolean
       required:
         - workflowId
         - format
@@ -512,7 +504,7 @@ components:
           type: string
         workflowdata:
           $ref: '#/components/schemas/WorkflowDataDTO'
-        businessKey:
+        assessmentInstanceId:
           type: string
         nodes:
           type: array
@@ -605,6 +597,12 @@ components:
             $ref: '#/components/schemas/AuthToken'
           minItems: 1
           additionalProperties: true
+        orchestratorAssessmentInstanceId:
+          type: string
+        orchestratorUseAssessmentInput:
+          type: boolean
+          description: If orchestratorAssessmentInstanceId is set and this is true then take the input of the assessment as input for this execution
+          default: true
     AuthToken:
       type: object
       properties:
