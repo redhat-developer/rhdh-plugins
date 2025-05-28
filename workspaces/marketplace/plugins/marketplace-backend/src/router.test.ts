@@ -14,34 +14,32 @@
  * limitations under the License.
  */
 
-import request from 'supertest';
 import { rest } from 'msw';
 import { setupServer, SetupServer } from 'msw/node';
+import request from 'supertest';
+import { stringify } from 'yaml';
 
+import { ExtendedHttpServer } from '@backstage/backend-defaults/rootHttpRouter';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
-import { ExtendedHttpServer } from '@backstage/backend-defaults/rootHttpRouter';
-
-import { marketplacePlugin } from './plugin';
+import type { JsonObject } from '@backstage/types';
 import {
-  mockCollections,
-  mockPlugins,
-  mockPackages,
-  mockDynamicPackage11,
-  mockDynamicPlugin1,
-  mockInstallationDataService,
-} from '../__fixtures__/mockData';
-
-import {
-  MarketplacePlugin,
   MarketplaceCollection,
   MarketplaceKind,
   MarketplacePackage,
+  MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { InstallationDataService } from './installation/InstallationDataService';
-import { stringify } from 'yaml';
-import { JsonObject } from '@backstage/types/index';
+import {
+  mockCollections,
+  mockDynamicPackage11,
+  mockDynamicPlugin1,
+  mockInstallationDataService,
+  mockPackages,
+  mockPlugins,
+} from '../__fixtures__/mockData';
 import { ConfigFormatError } from './errors/ConfigFormatError';
+import { InstallationDataService } from './installation/InstallationDataService';
+import { marketplacePlugin } from './plugin';
 
 type MockMarketplaceEntity =
   | Partial<MarketplacePlugin>
@@ -175,7 +173,7 @@ describe('createRouter', () => {
     return { backendServer };
   };
 
-  describe('collections', () => {
+  describe('GET /collections', () => {
     it('should get all collections', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
         mockData: mockCollections,
@@ -190,7 +188,9 @@ describe('createRouter', () => {
         items: mockCollections,
       });
     });
+  });
 
+  describe('GET /collection/:namespace/:name', () => {
     it('should get the collection by name', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
         mockData: mockCollections,
@@ -233,7 +233,9 @@ describe('createRouter', () => {
         },
       });
     });
+  });
 
+  describe('GET /collection/:namespace/:name/plugins', () => {
     it('should return empty array when plugins is not set in the collection entity', async () => {
       const { server } = testSetup();
       const backendServer = await startBackendServer();
@@ -310,7 +312,9 @@ describe('createRouter', () => {
         },
       });
     });
+  });
 
+  describe('GET /collections/facets', () => {
     it('should return facets data', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
         mockData: {
@@ -349,7 +353,7 @@ describe('createRouter', () => {
     });
   });
 
-  describe('plugins', () => {
+  describe('GET /plugins', () => {
     it('should get the plugins', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
         mockData: mockPlugins,
@@ -360,7 +364,9 @@ describe('createRouter', () => {
       expect(response.status).toEqual(200);
       expect(response.body.items).toHaveLength(2);
     });
+  });
 
+  describe('GET /plugin/:namespace/:name', () => {
     it('should get the plugin by name', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
         mockData: mockPlugins,
@@ -399,256 +405,260 @@ describe('createRouter', () => {
         },
       });
     });
-
-    describe('GET /plugin/:namespace/:name/configuration', () => {
-      beforeEach(() => {
-        jest
-          .spyOn(InstallationDataService, 'fromConfig')
-          .mockReturnValue(mockInstallationDataService);
-      });
-
-      it('should fail when plugin not found with NotFoundError 404', async () => {
-        const { backendServer } = await setupTestWithMockCatalog({
-          mockData: [],
-          name: 'not-found',
-          config: FILE_INSTALL_CONFIG,
-        });
-
-        const response = await request(backendServer).get(
-          '/api/extensions/plugin/default/not-found/configuration',
-        );
-        expect(response.status).toEqual(404);
-        expect(response.body.error).toEqual({
-          message: 'Plugin default/not-found not found',
-          name: 'NotFoundError',
-        });
-      });
-
-      it('should get the plugin configuration', async () => {
-        const { backendServer } = await setupTestWithMockCatalog({
-          mockData: [...mockPlugins, ...mockPackages],
-          name: 'plugin1',
-          config: FILE_INSTALL_CONFIG,
-        });
-        const pluginToGet = stringify(mockDynamicPlugin1);
-
-        mockInstallationDataService.getPluginConfig.mockResolvedValue(
-          pluginToGet,
-        );
-        jest
-          .spyOn(InstallationDataService, 'fromConfig')
-          .mockReturnValue(mockInstallationDataService);
-
-        const response = await request(backendServer).get(
-          '/api/extensions/plugin/default/plugin1/configuration',
-        );
-        expect(response.status).toEqual(200);
-        expect(response.body.configYaml).toEqual(pluginToGet);
-      });
-    });
-
-    describe('POST /plugin/:namespace/:name/configuration', () => {
-      const pluginSetup = {
-        mockData: mockPlugins,
-        name: 'plugin1',
-        config: FILE_INSTALL_CONFIG,
-      };
-
-      beforeEach(() => {
-        jest
-          .spyOn(InstallationDataService, 'fromConfig')
-          .mockReturnValue(mockInstallationDataService);
-      });
-
-      it('should fail when config missing with InputError 400', async () => {
-        const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
-
-        const response = await request(backendServer).post(
-          '/api/extensions/plugin/default/plugin1/configuration',
-        );
-        expect(response.status).toEqual(400);
-        expect(response.body.error).toEqual({
-          message: "'configYaml' object must be present",
-          name: 'InputError',
-        });
-      });
-
-      it('should fail when bad config format with InputError 400', async () => {
-        const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
-
-        mockInstallationDataService.updatePluginConfig.mockImplementationOnce(
-          () => {
-            throw new ConfigFormatError(
-              'Invalid installation configuration, plugin packages must be a list',
-            );
-          },
-        );
-
-        const response = await request(backendServer)
-          .post('/api/extensions/plugin/default/plugin1/configuration')
-          .send({ configYaml: 'invalid' });
-        expect(response.status).toEqual(400);
-        expect(response.body.error).toEqual({
-          message:
-            'Invalid installation configuration, plugin packages must be a list',
-          name: 'InputError',
-        });
-      });
-
-      it('should fail when plugin not found with NotFoundError 404', async () => {
-        const { backendServer } = await setupTestWithMockCatalog({
-          mockData: [],
-          name: 'not-found',
-          config: FILE_INSTALL_CONFIG,
-        });
-
-        const response = await request(backendServer)
-          .post('/api/extensions/plugin/default/not-found/configuration')
-          .send({ configYaml: stringify(mockDynamicPlugin1) });
-        expect(response.status).toEqual(404);
-        expect(response.body.error).toEqual({
-          message: 'Plugin default/not-found not found',
-          name: 'NotFoundError',
-        });
-      });
-
-      it('should install the plugin configuration', async () => {
-        const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
-
-        const response = await request(backendServer)
-          .post('/api/extensions/plugin/default/plugin1/configuration')
-          .send({ configYaml: stringify(mockDynamicPlugin1) });
-        expect(
-          mockInstallationDataService.updatePluginConfig,
-        ).toHaveBeenCalledWith(mockPlugins[0], stringify(mockDynamicPlugin1));
-        expect(response.status).toEqual(200);
-        expect(response.body).toEqual({ status: 'OK' });
-      });
-    });
   });
 
-  describe('packages', () => {
+  describe('GET /plugin/:namespace/:name/configuration', () => {
     beforeEach(() => {
       jest
         .spyOn(InstallationDataService, 'fromConfig')
         .mockReturnValue(mockInstallationDataService);
     });
 
-    describe('GET /package/:namespace/:name/configuration', () => {
-      it('should fail when package not found with NotFoundError 404', async () => {
-        const { backendServer } = await setupTestWithMockCatalog({
-          mockData: [],
-          name: 'not-found',
-          kind: MarketplaceKind.Package,
-          config: FILE_INSTALL_CONFIG,
-        });
-
-        const response = await request(backendServer).get(
-          '/api/extensions/package/default/not-found/configuration',
-        );
-        expect(response.status).toEqual(404);
-        expect(response.body.error).toEqual({
-          message: 'Package default/not-found not found',
-          name: 'NotFoundError',
-        });
+    it('should fail when plugin not found with NotFoundError 404', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: [],
+        name: 'not-found',
+        config: FILE_INSTALL_CONFIG,
       });
 
-      it('should get the package configuration', async () => {
-        const { backendServer } = await setupTestWithMockCatalog({
-          mockData: mockPackages,
-          name: 'package11',
-          kind: MarketplaceKind.Package,
-          config: FILE_INSTALL_CONFIG,
-        });
-        const packageToGet = stringify(mockDynamicPackage11);
-
-        mockInstallationDataService.getPackageConfig.mockReturnValue(
-          packageToGet,
-        );
-
-        const response = await request(backendServer).get(
-          '/api/extensions/package/default/package11/configuration',
-        );
-        expect(response.status).toEqual(200);
-        expect(response.body.configYaml).toEqual(packageToGet);
+      const response = await request(backendServer).get(
+        '/api/extensions/plugin/default/not-found/configuration',
+      );
+      expect(response.status).toEqual(404);
+      expect(response.body.error).toEqual({
+        message: 'Plugin default/not-found not found',
+        name: 'NotFoundError',
       });
     });
 
-    describe('POST /package/:namespace/:name/configuration', () => {
-      const packageSetup = {
+    it('should get the plugin configuration', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: [...mockPlugins, ...mockPackages],
+        name: 'plugin1',
+        config: FILE_INSTALL_CONFIG,
+      });
+      const pluginToGet = stringify(mockDynamicPlugin1);
+
+      mockInstallationDataService.getPluginConfig.mockResolvedValue(
+        pluginToGet,
+      );
+      jest
+        .spyOn(InstallationDataService, 'fromConfig')
+        .mockReturnValue(mockInstallationDataService);
+
+      const response = await request(backendServer).get(
+        '/api/extensions/plugin/default/plugin1/configuration',
+      );
+      expect(response.status).toEqual(200);
+      expect(response.body.configYaml).toEqual(pluginToGet);
+    });
+  });
+
+  describe('POST /plugin/:namespace/:name/configuration', () => {
+    const pluginSetup = {
+      mockData: mockPlugins,
+      name: 'plugin1',
+      config: FILE_INSTALL_CONFIG,
+    };
+
+    beforeEach(() => {
+      jest
+        .spyOn(InstallationDataService, 'fromConfig')
+        .mockReturnValue(mockInstallationDataService);
+    });
+
+    it('should fail when config missing with InputError 400', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
+
+      const response = await request(backendServer).post(
+        '/api/extensions/plugin/default/plugin1/configuration',
+      );
+      expect(response.status).toEqual(400);
+      expect(response.body.error).toEqual({
+        message: "'configYaml' object must be present",
+        name: 'InputError',
+      });
+    });
+
+    it('should fail when bad config format with InputError 400', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
+
+      mockInstallationDataService.updatePluginConfig.mockImplementationOnce(
+        () => {
+          throw new ConfigFormatError(
+            'Invalid installation configuration, plugin packages must be a list',
+          );
+        },
+      );
+
+      const response = await request(backendServer)
+        .post('/api/extensions/plugin/default/plugin1/configuration')
+        .send({ configYaml: 'invalid' });
+      expect(response.status).toEqual(400);
+      expect(response.body.error).toEqual({
+        message:
+          'Invalid installation configuration, plugin packages must be a list',
+        name: 'InputError',
+      });
+    });
+
+    it('should fail when plugin not found with NotFoundError 404', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: [],
+        name: 'not-found',
+        config: FILE_INSTALL_CONFIG,
+      });
+
+      const response = await request(backendServer)
+        .post('/api/extensions/plugin/default/not-found/configuration')
+        .send({ configYaml: stringify(mockDynamicPlugin1) });
+      expect(response.status).toEqual(404);
+      expect(response.body.error).toEqual({
+        message: 'Plugin default/not-found not found',
+        name: 'NotFoundError',
+      });
+    });
+
+    it('should install the plugin configuration', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
+
+      const response = await request(backendServer)
+        .post('/api/extensions/plugin/default/plugin1/configuration')
+        .send({ configYaml: stringify(mockDynamicPlugin1) });
+      expect(
+        mockInstallationDataService.updatePluginConfig,
+      ).toHaveBeenCalledWith(mockPlugins[0], stringify(mockDynamicPlugin1));
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ status: 'OK' });
+    });
+  });
+
+  describe('GET /package/:namespace/:name/configuration', () => {
+    beforeEach(() => {
+      jest
+        .spyOn(InstallationDataService, 'fromConfig')
+        .mockReturnValue(mockInstallationDataService);
+    });
+
+    it('should fail when package not found with NotFoundError 404', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: [],
+        name: 'not-found',
+        kind: MarketplaceKind.Package,
+        config: FILE_INSTALL_CONFIG,
+      });
+
+      const response = await request(backendServer).get(
+        '/api/extensions/package/default/not-found/configuration',
+      );
+      expect(response.status).toEqual(404);
+      expect(response.body.error).toEqual({
+        message: 'Package default/not-found not found',
+        name: 'NotFoundError',
+      });
+    });
+
+    it('should get the package configuration', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
         mockData: mockPackages,
         name: 'package11',
         kind: MarketplaceKind.Package,
         config: FILE_INSTALL_CONFIG,
-      };
-
-      it('should fail when config missing with InputError 400', async () => {
-        const { backendServer } = await setupTestWithMockCatalog(packageSetup);
-        const response = await request(backendServer).post(
-          '/api/extensions/package/default/package11/configuration',
-        );
-        expect(response.status).toEqual(400);
-        expect(response.body.error).toEqual({
-          message: "'configYaml' object must be present",
-          name: 'InputError',
-        });
       });
+      const packageToGet = stringify(mockDynamicPackage11);
 
-      it('should fail when bad config format with InputError 400', async () => {
-        const { backendServer } = await setupTestWithMockCatalog(packageSetup);
+      mockInstallationDataService.getPackageConfig.mockReturnValue(
+        packageToGet,
+      );
 
-        mockInstallationDataService.updatePackageConfig.mockImplementationOnce(
-          () => {
-            throw new ConfigFormatError(
-              'Invalid installation configuration, package item must be a map',
-            );
-          },
-        );
+      const response = await request(backendServer).get(
+        '/api/extensions/package/default/package11/configuration',
+      );
+      expect(response.status).toEqual(200);
+      expect(response.body.configYaml).toEqual(packageToGet);
+    });
+  });
 
-        const response = await request(backendServer)
-          .post('/api/extensions/package/default/package11/configuration')
-          .send({ configYaml: 'invalid' });
-        expect(response.status).toEqual(400);
-        expect(response.body.error).toEqual({
-          message:
+  describe('POST /package/:namespace/:name/configuration', () => {
+    const packageSetup = {
+      mockData: mockPackages,
+      name: 'package11',
+      kind: MarketplaceKind.Package,
+      config: FILE_INSTALL_CONFIG,
+    };
+
+    beforeEach(() => {
+      jest
+        .spyOn(InstallationDataService, 'fromConfig')
+        .mockReturnValue(mockInstallationDataService);
+    });
+
+    it('should fail when config missing with InputError 400', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(packageSetup);
+      const response = await request(backendServer).post(
+        '/api/extensions/package/default/package11/configuration',
+      );
+      expect(response.status).toEqual(400);
+      expect(response.body.error).toEqual({
+        message: "'configYaml' object must be present",
+        name: 'InputError',
+      });
+    });
+
+    it('should fail when bad config format with InputError 400', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(packageSetup);
+
+      mockInstallationDataService.updatePackageConfig.mockImplementationOnce(
+        () => {
+          throw new ConfigFormatError(
             'Invalid installation configuration, package item must be a map',
-          name: 'InputError',
-        });
+          );
+        },
+      );
+
+      const response = await request(backendServer)
+        .post('/api/extensions/package/default/package11/configuration')
+        .send({ configYaml: 'invalid' });
+      expect(response.status).toEqual(400);
+      expect(response.body.error).toEqual({
+        message:
+          'Invalid installation configuration, package item must be a map',
+        name: 'InputError',
+      });
+    });
+
+    it('should fail when package not found with NotFoundError 404', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: [],
+        name: 'not-found',
+        kind: MarketplaceKind.Package,
+        config: FILE_INSTALL_CONFIG,
       });
 
-      it('should fail when package not found with NotFoundError 404', async () => {
-        const { backendServer } = await setupTestWithMockCatalog({
-          mockData: [],
-          name: 'not-found',
-          kind: MarketplaceKind.Package,
-          config: FILE_INSTALL_CONFIG,
-        });
-
-        const response = await request(backendServer)
-          .post('/api/extensions/package/default/not-found/configuration')
-          .send({ configYaml: stringify(mockDynamicPackage11) });
-        expect(response.status).toEqual(404);
-        expect(response.body.error).toEqual({
-          message: 'Package default/not-found not found',
-          name: 'NotFoundError',
-        });
+      const response = await request(backendServer)
+        .post('/api/extensions/package/default/not-found/configuration')
+        .send({ configYaml: stringify(mockDynamicPackage11) });
+      expect(response.status).toEqual(404);
+      expect(response.body.error).toEqual({
+        message: 'Package default/not-found not found',
+        name: 'NotFoundError',
       });
+    });
 
-      it('should install the package configuration', async () => {
-        const { backendServer } = await setupTestWithMockCatalog(packageSetup);
+    it('should install the package configuration', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(packageSetup);
 
-        const response = await request(backendServer)
-          .post('/api/extensions/package/default/package11/configuration')
-          .send({ configYaml: stringify(mockDynamicPackage11) });
-        expect(
-          mockInstallationDataService.updatePackageConfig,
-        ).toHaveBeenCalledWith(
-          mockDynamicPackage11.package,
-          stringify(mockDynamicPackage11),
-        );
-        expect(response.status).toEqual(200);
-        expect(response.body).toEqual({ status: 'OK' });
-      });
+      const response = await request(backendServer)
+        .post('/api/extensions/package/default/package11/configuration')
+        .send({ configYaml: stringify(mockDynamicPackage11) });
+      expect(
+        mockInstallationDataService.updatePackageConfig,
+      ).toHaveBeenCalledWith(
+        mockDynamicPackage11.package,
+        stringify(mockDynamicPackage11),
+      );
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ status: 'OK' });
     });
   });
 });

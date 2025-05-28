@@ -132,12 +132,12 @@ export class FileInstallationStorage implements InstallationStorage {
 
       if (!packageNames.has(name)) {
         updatedPackages.items.push(item); // keep unchanged package of different plugin
-      } else {
-        if (!updated) {
-          // update plugin config
-          updatedPackages.items.push(...newNodes.contents.items);
-          updated = true;
-        }
+        continue;
+      }
+      if (!updated) {
+        // update plugin config
+        updatedPackages.items.push(...newNodes.contents.items);
+        updated = true;
       }
     }
 

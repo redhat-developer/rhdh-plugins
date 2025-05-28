@@ -146,7 +146,7 @@ export class InstallationDataService {
   }
 
   updatePackageConfig(packageDynamicArtifact: string, newConfig: string): void {
-    this.installationStorage!.updatePackage(packageDynamicArtifact, newConfig);
+    this.installationStorage.updatePackage(packageDynamicArtifact, newConfig);
   }
 
   async updatePluginConfig(
@@ -154,6 +154,6 @@ export class InstallationDataService {
     newConfig: string,
   ): Promise<void> {
     const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
-    this.installationStorage!.updatePackages(dynamicArtifacts, newConfig);
+    this.installationStorage.updatePackages(dynamicArtifacts, newConfig);
   }
 }

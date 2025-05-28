@@ -15,8 +15,8 @@
  */
 
 import fs from 'fs';
-import { parse } from 'yaml';
-
+import { resolve } from 'path';
+import { parse, stringify } from 'yaml';
 import {
   mockDynamicPackage11,
   mockDynamicPackage12,
@@ -24,8 +24,6 @@ import {
   mockPackages,
 } from '../../__fixtures__/mockData';
 import { FileInstallationStorage } from './FileInstallationStorage';
-import { resolve } from 'path';
-import { stringify } from 'yaml';
 
 describe('FileInstallationStorage', () => {
   describe('initialize', () => {
