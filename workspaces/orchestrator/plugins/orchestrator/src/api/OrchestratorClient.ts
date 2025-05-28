@@ -163,7 +163,6 @@ export class OrchestratorClient implements OrchestratorApi {
       return await defaultApi.executeWorkflow(
         args.workflowId,
         requestBody,
-        args.businessKey,
         reqConfigOption,
       );
     } catch (err) {

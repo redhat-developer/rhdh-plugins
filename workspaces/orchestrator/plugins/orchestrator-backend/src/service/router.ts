@@ -48,7 +48,6 @@ import {
   orchestratorWorkflowSpecificPermission,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
-  QUERY_PARAM_BUSINESS_KEY,
   QUERY_PARAM_INCLUDE_ASSESSMENT,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -426,15 +425,10 @@ function setupInternalRoutes(
         manageDenyAuthorization(auditEvent);
       }
 
-      const businessKey = routerApi.v2.extractQueryParam(
-        c.request,
-        QUERY_PARAM_BUSINESS_KEY,
-      );
-
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
-        .executeWorkflow(executeWorkflowRequestDTO, workflowId, businessKey)
+        .executeWorkflow(executeWorkflowRequestDTO, workflowId)
         .then(result => {
           auditEvent.success({ meta: { id: result.id } });
           return res.status(200).json(result);

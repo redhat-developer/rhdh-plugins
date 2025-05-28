@@ -25,7 +25,6 @@ import {
   ProcessInstance,
   ProcessInstanceListResultDTO,
   ProcessInstanceState,
-  ProcessInstanceVariables,
   WorkflowDTO,
   WorkflowInfo,
   WorkflowOverviewDTO,
@@ -140,9 +139,16 @@ export class V2 {
 
     let assessedByInstance: ProcessInstance | undefined;
 
-    if (includeAssessment && instance.businessKey) {
+    let variables: Record<string, unknown> | undefined;
+    if (typeof instance.variables === 'string') {
+      variables = JSON.parse(instance?.variables);
+    } else {
+      variables = instance.variables;
+    }
+
+    if (includeAssessment && variables?.orchestratorAssessmentInstanceId) {
       assessedByInstance = await this.orchestratorService.fetchInstance({
-        instanceId: instance.businessKey,
+        instanceId: variables.orchestratorAssessmentInstanceId as string,
       });
     }
 
@@ -157,7 +163,6 @@ export class V2 {
   public async executeWorkflow(
     executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO,
     workflowId: string,
-    businessKey: string | undefined,
   ): Promise<ExecuteWorkflowResponseDTO> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
@@ -170,11 +175,16 @@ export class V2 {
     }
     const executionResponse = await this.orchestratorService.executeWorkflow({
       definitionId: workflowId,
-      inputData:
-        executeWorkflowRequestDTO.inputData as ProcessInstanceVariables,
+      definitionVersion: definition.version,
+      inputData: {
+        workflowdata: executeWorkflowRequestDTO.inputData,
+        orchestratorAssessmentInstanceId:
+          executeWorkflowRequestDTO.orchestratorAssessmentInstanceId,
+        orchestratorUseAssessmentInput:
+          executeWorkflowRequestDTO.orchestratorUseAssessmentInput,
+      },
       authTokens: executeWorkflowRequestDTO.authTokens as Array<AuthToken>,
       serviceUrl: definition.serviceUrl,
-      businessKey,
     });
 
     if (!executionResponse) {

@@ -898,6 +898,14 @@ ul.nav-tabs {
       "items" : {
         "$ref" : "#/components/schemas/AuthToken"
       }
+    },
+    "orchestratorAssessmentInstanceId" : {
+      "type" : "string"
+    },
+    "orchestratorUseAssessmentInput" : {
+      "type" : "boolean",
+      "description" : "If orchestratorAssessmentInstanceId is set and this is true then take the input of the assessment as input for this execution",
+      "default" : true
     }
   }
 };
@@ -1100,7 +1108,7 @@ ul.nav-tabs {
     "workflowdata" : {
       "$ref" : "#/components/schemas/WorkflowDataDTO"
     },
-    "businessKey" : {
+    "assessmentInstanceId" : {
       "type" : "string"
     },
     "nodes" : {
@@ -1891,7 +1899,7 @@ The identifier of the workflow instance to abort.
                             <pre class="prettyprint"><code class="language-bsh">curl -X POST \
  -H "Accept: application/json" \
  -H "Content-Type: application/json" \
- "http://localhost/v2/workflows/{workflowId}/execute?businessKey=businessKey_example" \
+ "http://localhost/v2/workflows/{workflowId}/execute" \
  -d '{
   &quot;inputData&quot; : &quot;{}&quot;,
   &quot;authTokens&quot; : [ {
@@ -1900,7 +1908,9 @@ The identifier of the workflow instance to abort.
   }, {
     &quot;provider&quot; : &quot;provider&quot;,
     &quot;token&quot; : &quot;token&quot;
-  } ]
+  } ],
+  &quot;orchestratorUseAssessmentInput&quot; : true,
+  &quot;orchestratorAssessmentInstanceId&quot; : &quot;orchestratorAssessmentInstanceId&quot;
 }'
 </code></pre>
                           </div>
@@ -1920,10 +1930,9 @@ public class DefaultApiExample {
         DefaultApi apiInstance = new DefaultApi();
         String workflowId = workflowId_example; // String | ID of the workflow to execute
         ExecuteWorkflowRequestDTO executeWorkflowRequestDTO = ; // ExecuteWorkflowRequestDTO | 
-        String businessKey = businessKey_example; // String | ID of the parent workflow
 
         try {
-            ExecuteWorkflowResponseDTO result = apiInstance.executeWorkflow(workflowId, executeWorkflowRequestDTO, businessKey);
+            ExecuteWorkflowResponseDTO result = apiInstance.executeWorkflow(workflowId, executeWorkflowRequestDTO);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#executeWorkflow");
@@ -1941,10 +1950,9 @@ final api_instance = DefaultApi();
 
 final String workflowId = new String(); // String | ID of the workflow to execute
 final ExecuteWorkflowRequestDTO executeWorkflowRequestDTO = new ExecuteWorkflowRequestDTO(); // ExecuteWorkflowRequestDTO | 
-final String businessKey = new String(); // String | ID of the parent workflow
 
 try {
-    final result = await api_instance.executeWorkflow(workflowId, executeWorkflowRequestDTO, businessKey);
+    final result = await api_instance.executeWorkflow(workflowId, executeWorkflowRequestDTO);
     print(result);
 } catch (e) {
     print('Exception when calling DefaultApi->executeWorkflow: $e\n');
@@ -1961,10 +1969,9 @@ public class DefaultApiExample {
         DefaultApi apiInstance = new DefaultApi();
         String workflowId = workflowId_example; // String | ID of the workflow to execute
         ExecuteWorkflowRequestDTO executeWorkflowRequestDTO = ; // ExecuteWorkflowRequestDTO | 
-        String businessKey = businessKey_example; // String | ID of the parent workflow
 
         try {
-            ExecuteWorkflowResponseDTO result = apiInstance.executeWorkflow(workflowId, executeWorkflowRequestDTO, businessKey);
+            ExecuteWorkflowResponseDTO result = apiInstance.executeWorkflow(workflowId, executeWorkflowRequestDTO);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#executeWorkflow");
@@ -1984,12 +1991,10 @@ public class DefaultApiExample {
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 String *workflowId = workflowId_example; // ID of the workflow to execute (default to null)
 ExecuteWorkflowRequestDTO *executeWorkflowRequestDTO = ; // 
-String *businessKey = businessKey_example; // ID of the parent workflow (optional) (default to null)
 
 // Execute a workflow
 [apiInstance executeWorkflowWith:workflowId
     executeWorkflowRequestDTO:executeWorkflowRequestDTO
-    businessKey:businessKey
               completionHandler: ^(ExecuteWorkflowResponseDTO output, NSError* error) {
     if (output) {
         NSLog(@"%@", output);
@@ -2008,9 +2013,6 @@ String *businessKey = businessKey_example; // ID of the parent workflow (optiona
 var api = new OrchestratorPlugin.DefaultApi()
 var workflowId = workflowId_example; // {String} ID of the workflow to execute
 var executeWorkflowRequestDTO = ; // {ExecuteWorkflowRequestDTO} 
-var opts = {
-  'businessKey': businessKey_example // {String} ID of the parent workflow
-};
 
 var callback = function(error, data, response) {
   if (error) {
@@ -2019,7 +2021,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.executeWorkflow(workflowId, executeWorkflowRequestDTO, opts, callback);
+api.executeWorkflow(workflowId, executeWorkflowRequestDTO, callback);
 </code></pre>
                             </div>
 
@@ -2044,11 +2046,10 @@ namespace Example
             var apiInstance = new DefaultApi();
             var workflowId = workflowId_example;  // String | ID of the workflow to execute (default to null)
             var executeWorkflowRequestDTO = new ExecuteWorkflowRequestDTO(); // ExecuteWorkflowRequestDTO | 
-            var businessKey = businessKey_example;  // String | ID of the parent workflow (optional)  (default to null)
 
             try {
                 // Execute a workflow
-                ExecuteWorkflowResponseDTO result = apiInstance.executeWorkflow(workflowId, executeWorkflowRequestDTO, businessKey);
+                ExecuteWorkflowResponseDTO result = apiInstance.executeWorkflow(workflowId, executeWorkflowRequestDTO);
                 Debug.WriteLine(result);
             } catch (Exception e) {
                 Debug.Print("Exception when calling DefaultApi.executeWorkflow: " + e.Message );
@@ -2067,10 +2068,9 @@ require_once(__DIR__ . '/vendor/autoload.php');
 $api_instance = new OpenAPITools\Client\Api\DefaultApi();
 $workflowId = workflowId_example; // String | ID of the workflow to execute
 $executeWorkflowRequestDTO = ; // ExecuteWorkflowRequestDTO | 
-$businessKey = businessKey_example; // String | ID of the parent workflow
 
 try {
-    $result = $api_instance->executeWorkflow($workflowId, $executeWorkflowRequestDTO, $businessKey);
+    $result = $api_instance->executeWorkflow($workflowId, $executeWorkflowRequestDTO);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DefaultApi->executeWorkflow: ', $e->getMessage(), PHP_EOL;
@@ -2087,10 +2087,9 @@ use WWW::OPenAPIClient::DefaultApi;
 my $api_instance = WWW::OPenAPIClient::DefaultApi->new();
 my $workflowId = workflowId_example; # String | ID of the workflow to execute
 my $executeWorkflowRequestDTO = WWW::OPenAPIClient::Object::ExecuteWorkflowRequestDTO->new(); # ExecuteWorkflowRequestDTO | 
-my $businessKey = businessKey_example; # String | ID of the parent workflow
 
 eval {
-    my $result = $api_instance->executeWorkflow(workflowId => $workflowId, executeWorkflowRequestDTO => $executeWorkflowRequestDTO, businessKey => $businessKey);
+    my $result = $api_instance->executeWorkflow(workflowId => $workflowId, executeWorkflowRequestDTO => $executeWorkflowRequestDTO);
     print Dumper($result);
 };
 if ($@) {
@@ -2109,11 +2108,10 @@ from pprint import pprint
 api_instance = openapi_client.DefaultApi()
 workflowId = workflowId_example # String | ID of the workflow to execute (default to null)
 executeWorkflowRequestDTO =  # ExecuteWorkflowRequestDTO | 
-businessKey = businessKey_example # String | ID of the parent workflow (optional) (default to null)
 
 try:
     # Execute a workflow
-    api_response = api_instance.execute_workflow(workflowId, executeWorkflowRequestDTO, businessKey=businessKey)
+    api_response = api_instance.execute_workflow(workflowId, executeWorkflowRequestDTO)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling DefaultApi->executeWorkflow: %s\n" % e)</code></pre>
@@ -2125,10 +2123,9 @@ except ApiException as e:
 pub fn main() {
     let workflowId = workflowId_example; // String
     let executeWorkflowRequestDTO = ; // ExecuteWorkflowRequestDTO
-    let businessKey = businessKey_example; // String
 
     let mut context = DefaultApi::Context::default();
-    let result = client.executeWorkflow(workflowId, executeWorkflowRequestDTO, businessKey, &context).wait();
+    let result = client.executeWorkflow(workflowId, executeWorkflowRequestDTO, &context).wait();
 
     println!("{:?}", result);
 }
@@ -2223,33 +2220,6 @@ $(document).ready(function() {
                             </table>
 
 
-                            <div class="methodsubtabletitle">Query parameters</div>
-                            <table id="methodsubtable">
-                              <tr>
-                                <th width="150px">Name</th>
-                                <th>Description</th>
-                              </tr>
-                                <tr><td style="width:150px;">businessKey</td>
-<td>
-
-
-    <div id="d2e199_executeWorkflow_businessKey">
-        <div class="json-schema-view">
-            <div class="primitive">
-                <span class="type">
-                    String
-                </span>
-
-                    <div class="inner description marked">
-ID of the parent workflow
-                    </div>
-            </div>
-        </div>
-    </div>
-</td>
-</tr>
-
-                            </table>
 
                           <h2>Responses</h2>
                             <h3 id="examples-Default-executeWorkflow-title-200"></h3>
