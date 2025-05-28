@@ -1,0 +1,74 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import { Page, Locator, FileChooser, expect } from '@playwright/test';
+
+export const supportedFileTypes = ['.txt', '.yaml', '.json'];
+
+export async function triggerFileChooser(
+  page: Page,
+  buttonLocator: Locator,
+): Promise<FileChooser> {
+  const [fileChooser] = await Promise.all([
+    page.waitForEvent('filechooser'),
+    buttonLocator.click(),
+  ]);
+  return fileChooser;
+}
+
+export async function uploadFile(page: Page, filePath: string) {
+  const attachButton = page.getByRole('button', { name: 'Attach button' });
+  await expect(attachButton).toBeVisible();
+
+  const fileChooser = await triggerFileChooser(page, attachButton);
+  await fileChooser.setFiles(filePath);
+}
+
+export async function validateSuccessfulUpload(page: Page, fileName: string) {
+  const trimmerFilename = fileName.split('.')[0];
+
+  await expect(page.getByRole('button', { name: fileName })).toBeVisible();
+  await page
+    .locator('span')
+    .filter({ hasText: trimmerFilename })
+    .first()
+    .click();
+
+  const jsonStarter = page.locator('div').filter({ hasText: /^\{$/ }).first();
+  await jsonStarter.waitFor();
+
+  await expect(page.getByRole('banner')).toContainText('Preview attachment');
+  await expect(page.getByRole('button', { name: 'Edit' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Dismiss' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Edit' }).click();
+
+  await expect(page.getByRole('button', { name: 'Save' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Close' }).click();
+  await page.getByRole('button', { name: `Close ${trimmerFilename}` }).click();
+}
+
+export async function validateFailedUpload(page: Page) {
+  const alert = page.getByText(
+    'Danger alert:File upload failedUnsupported file type.',
+  );
+  await expect(alert).toBeVisible();
+
+  await page.getByRole('button', { name: 'Close Danger alert' }).click();
+  await expect(alert).toBeHidden();
+}
