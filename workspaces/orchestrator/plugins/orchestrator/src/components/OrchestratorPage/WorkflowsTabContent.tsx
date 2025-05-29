@@ -23,7 +23,7 @@ import {
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
-import Grid from '@material-ui/core/Grid/Grid';
+import Grid from '@mui/material/Grid';
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 

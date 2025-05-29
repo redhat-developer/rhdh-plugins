@@ -18,9 +18,10 @@ import React from 'react';
 
 import { Select, SelectedItems } from '@backstage/core-components';
 
-import { makeStyles, Typography } from '@material-ui/core';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     display: 'flex',
     flexDirection: 'column',
@@ -52,7 +53,7 @@ export const Selector = ({
   includeAll = true,
   ...otherProps
 }: SelectorProps) => {
-  const styles = useStyles();
+  const { classes } = useStyles();
 
   const selectItems = React.useMemo(
     () =>
@@ -68,9 +69,9 @@ export const Selector = ({
   );
 
   return (
-    <div className={styles.root}>
-      <Typography className={styles.label}>{otherProps.label}</Typography>
-      <div className={styles.select}>
+    <div className={classes.root}>
+      <Typography className={classes.label}>{otherProps.label}</Typography>
+      <div className={classes.select}>
         <Select
           onChange={handleChange}
           items={selectItems}

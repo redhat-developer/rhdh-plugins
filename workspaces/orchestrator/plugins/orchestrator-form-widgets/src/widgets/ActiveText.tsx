@@ -15,13 +15,13 @@
  */
 
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
 
 import { JsonObject } from '@backstage/types';
 import { Widget } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 import { UiProps } from '../uiPropTypes';
-import { CircularProgress } from '@material-ui/core';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import { ErrorText } from './ErrorText';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { useFetchAndEvaluate } from '../utils';
@@ -46,16 +46,18 @@ export const ActiveText: Widget<
   if (!uiProps['ui:text']) {
     return (
       <ErrorText
+        id={id}
         text={`Field ${id} is configured to use ActiveText widget, but doesn't contain property ui:text.`}
       />
     );
   }
 
   if (error) {
-    return <ErrorText text={error} />;
+    return <ErrorText id={id} text={error} />;
   }
+
   return (
-    <Typography variant={uiProps['ui:variant']}>
+    <Typography variant={uiProps['ui:variant']} data-testid={id}>
       {loading ? <CircularProgress size={20} /> : text}
     </Typography>
   );

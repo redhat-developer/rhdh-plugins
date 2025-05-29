@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './useRequestInit';
-export * from './evaluateTemplate';
-export * from './useRetriggerEvaluate';
-export * from './useTemplateUnitEvaluator';
-export * from './safeSet';
-export * from './useGetExtraErrors';
-export * from './useFetch';
-export * from './useFetchAndEvaluate';
-export * from './applySelector';
+import { useObservable } from 'react-use';
+
+import { appThemeApiRef, useApi } from '@backstage/core-plugin-api';
+
+export const useIsDarkMode = () => {
+  const appThemeApi = useApi(appThemeApiRef);
+  const activeThemeId = useObservable(
+    appThemeApi.activeThemeId$(),
+    appThemeApi.getActiveThemeId(),
+  );
+
+  return activeThemeId === 'dark';
+};
