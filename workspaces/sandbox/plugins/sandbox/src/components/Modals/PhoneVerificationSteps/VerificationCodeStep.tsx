@@ -62,6 +62,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
   const inputRefs = useRef<any>([]);
 
   useEffect(() => {
+    // Focus on the first input box when modal opens
     if (!otp[0]) {
       // Focus on the first input box when modal opens
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
@@ -153,6 +154,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
             {otp.map((digit, index) => (
               <TextField
                 key={index}
+                data-testid="opt-inputs"
                 value={digit}
                 onChange={e => handleChange(index, e)}
                 onKeyDown={e =>

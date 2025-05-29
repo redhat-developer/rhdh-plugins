@@ -77,6 +77,9 @@ describe('VerificationCodeStep', () => {
     // submit phone button should be there
     const submitButton = screen.getAllByTestId('submit-opt-button');
     expect(submitButton).toHaveLength(1);
+    // opt inputs are there
+    const optInputFields = screen.getAllByTestId('opt-inputs');
+    expect(optInputFields).toHaveLength(5);
     // resend opt should be there
     const resendOptLink = screen.getAllByTestId('resend-code-link');
     expect(resendOptLink).toHaveLength(1);
