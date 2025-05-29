@@ -117,3 +117,10 @@ kubernetes:
 permission:
   # setting this to `false` will disable permissions
   enabled: true
+
+extensions:
+  ### Example for how to enable installation to a file.
+  # installation:
+  #   enabled: true
+  #   saveToSingleFile:
+  #     file: ${EXTENSIONS_PLUGIN_CONFIG}

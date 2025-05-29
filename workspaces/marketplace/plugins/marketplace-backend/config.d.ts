@@ -1,5 +1,5 @@
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,21 @@
  * limitations under the License.
  */
 
-export * from './MarketplaceAuthor';
-export * from './MarketplaceCollection';
-export * from './MarketplaceKind';
-export * from './MarketplacePackage';
-export * from './MarketplacePlugin';
-export * from './ConfigurationResponse';
+export interface Config {
+  extensions?: {
+    installation?: {
+      /**
+       * Whether the installation is enabled, defaults to false.
+       * @visibility frontend
+       */
+      enabled?: boolean;
+      saveToSingleFile: {
+        /**
+         * The path to the yaml file containing the plugins installation configuration
+         * @visibility frontend
+         */
+        file: string;
+      };
+    };
+  };
+}
