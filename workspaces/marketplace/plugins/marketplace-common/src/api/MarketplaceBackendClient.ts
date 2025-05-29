@@ -20,6 +20,7 @@ import {
 } from '@backstage/catalog-client';
 
 import type {
+  ConfigurationResponse,
   MarketplaceCollection,
   MarketplacePackage,
   MarketplacePlugin,
@@ -30,9 +31,9 @@ import {
 } from '../utils';
 
 import type {
-  MarketplaceApi,
   GetEntitiesRequest,
   GetEntitiesResponse,
+  MarketplaceApi,
 } from './MarketplaceApi';
 
 /**
@@ -141,6 +142,15 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     );
   }
 
+  async getPackageConfigByName(
+    namespace: string,
+    name: string,
+  ): Promise<ConfigurationResponse> {
+    return this.get(
+      `/package/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
+    );
+  }
+
   async getPlugins(
     request: GetEntitiesRequest,
   ): Promise<GetEntitiesResponse<MarketplacePlugin>> {
@@ -174,7 +184,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   async getPluginConfigByName(
     namespace: string,
     name: string,
-  ): Promise<{ configYaml: string }> {
+  ): Promise<ConfigurationResponse> {
     return this.get(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
     );

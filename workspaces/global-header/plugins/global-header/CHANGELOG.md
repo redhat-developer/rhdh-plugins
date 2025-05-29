@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.7.2
+
+### Patch Changes
+
+- e1914ce: Updated dependency `@scalprum/react-core` to `0.9.5`.
+
 ## 1.7.1
 
 ### Patch Changes

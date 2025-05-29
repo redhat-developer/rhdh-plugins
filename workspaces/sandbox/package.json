@@ -25,7 +25,16 @@
     "lint:fix": "backstage-cli package lint --fix",
     "prettier:check": "prettier --check .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "postinstall": "cd ../../ && yarn install",
+    "test:base": "playwright test --config=sandboxplaywright.config.ts",
+    "tests": "npm run test:base",
+    "test:ui": "npm run test:base -- --ui",
+    "test:headless": "npm run test:base -- --headless",
+    "test:headed": "npm run test:base -- --headed",
+    "test:debug": "npm run test:base -- --debug",
+    "test:chromium": "npm run test:base -- --project=chromium",
+    "test:firefox": "npm run test:base -- --project=firefox",
+    "test:webkit": "npm run test:base -- --project=webkit"
   },
   "workspaces": {
     "packages": [
@@ -43,6 +52,7 @@
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.10.0",
     "@changesets/cli": "^2.27.1",
+    "@playwright/test": "^1.52.0",
     "@spotify/prettier-config": "^12.0.0",
     "@types/lodash": "^4.17.16",
     "knip": "^5.27.4",
