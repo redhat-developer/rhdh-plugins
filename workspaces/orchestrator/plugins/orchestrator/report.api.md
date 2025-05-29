@@ -10,7 +10,7 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { default as React_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
-import { SvgIconProps } from '@material-ui/core';
+import { SvgIconProps } from '@mui/material/SvgIcon';
 
 // @public
 export const OrchestratorIcon: (props: SvgIconProps) => React_2.JSX.Element;

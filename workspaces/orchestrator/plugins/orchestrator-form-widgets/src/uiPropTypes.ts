@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 import { JsonValue } from '@backstage/types/index';
-import { Variant } from '@material-ui/core/styles/createTypography';
+import { TypographyVariant } from '@mui/material/styles';
 
 export type UiProps = {
-  'ui:variant'?: Variant;
+  'ui:variant'?: TypographyVariant;
   'ui:text'?: string;
+  'ui:allowNotListed'?: 'true' | 'false';
   'fetch:url'?: string;
   'fetch:method'?: 'GET' | 'POST';
   'fetch:headers'?: Record<string, string>;

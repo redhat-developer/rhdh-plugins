@@ -33,6 +33,10 @@ functions:
       "value": .courseDetails.requestCertificate
       },
       {
+      "key": "complimentaryDrinks",
+      "value": .complimentaryDrinks
+      },
+      {
       "key": "teacher",
       "value": .preferredTeacher
       }

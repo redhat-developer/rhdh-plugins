@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,34 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 
-import {
-  Button,
-  makeStyles,
-  Step,
-  StepLabel,
-  Stepper,
-  Typography,
-} from '@material-ui/core';
+import Button from '@mui/material/Button';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Stepper from '@mui/material/Stepper';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from 'tss-react/mui';
 
 import { useStepperContext } from '../utils/StepperContext';
 import SubmitButton from './SubmitButton';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   // Hotfix: this should be fixed in the theme
   step: {
-    '& form': {
-      '& .field-array > div > div': {
-        outline: 'inherit !important',
-        padding: 'inherit !important',
-        backgroundColor: 'inherit !important',
-
-        '& div > div > div > div': {
-          // unfortunately there are no better CSS selectors
-          backgroundColor: 'inherit !important',
-        },
-      },
+    '.Mui-disabled': {
+      backgroundColor: 'inherit !important',
     },
   },
   regularButton: {
@@ -74,7 +64,7 @@ const OrchestratorFormStepper = ({
     ...steps,
     { content: reviewStep, title: 'Review', key: 'review' },
   ];
-  const styles = useStyles();
+  const { classes } = useStyles();
   return (
     <>
       <Stepper
@@ -84,7 +74,7 @@ const OrchestratorFormStepper = ({
         alternativeLabel
       >
         {stepsWithReview?.map((step, index) => (
-          <Step key={step.key} className={styles.step}>
+          <Step key={step.key} className={classes.step}>
             <StepLabel
               aria-label={`Step ${index + 1} ${step.title}`}
               aria-disabled="false"
@@ -97,7 +87,7 @@ const OrchestratorFormStepper = ({
           </Step>
         ))}
       </Stepper>
-      <div className={styles.formWrapper}>
+      <div className={classes.formWrapper}>
         {stepsWithReview[activeStep].content}
       </div>
     </>
@@ -106,13 +96,13 @@ const OrchestratorFormStepper = ({
 
 export const OrchestratorFormToolbar = () => {
   const { activeStep, handleBack, isValidating } = useStepperContext();
-  const styles = useStyles();
+  const { classes } = useStyles();
   return (
-    <div className={styles.footer}>
+    <div className={classes.footer}>
       <Button
         disabled={activeStep === 0}
         onClick={handleBack}
-        className={styles.regularButton}
+        className={classes.regularButton}
       >
         Back
       </Button>

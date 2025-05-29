@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-// import { JSONSchema7 } from 'json-schema';
 import { JsonObject, JsonValue } from '@backstage/types';
 
 import type { JSONSchema7 } from 'json-schema';
@@ -45,6 +44,10 @@ export function processSchema(
       return { [name]: '******' };
     }
 
+    if (Array.isArray(value)) {
+      return { [name]: JSON.stringify(value) };
+    }
+
     if (isJsonObject(value)) {
       // Recurse nested objects
       const nestedValue = Object.entries(value).reduce(
@@ -57,6 +60,7 @@ export function processSchema(
         },
         {},
       );
+
       return { [name]: nestedValue };
     }
   }

@@ -118,6 +118,10 @@ Referenced as: `"ui:widget": "ActiveTextInput"`.
 
 A smart component based on the [@mui/material/TextField](https://mui.com/material-ui/react-text-field/) keeping look&feel with other RJSF-default fields.
 
+![example](./widgets/ActiveTextInput_01.png)
+
+![example](./widgets/ActiveTextInput_02.png)
+
 ### ActiveTextInput Data fetching
 
 When instantiated, it loads (prefetch) the **default** value using a single HTTP call based on the `fetch:*` from the `ui:props`.
@@ -201,6 +205,10 @@ Referenced as: `"ui:widget": "ActiveDropdown"`.
 
 A smart component based on the [@mui/material/Select](https://mui.com/material-ui/react-select/) keeping look&feel with other RJSF-default fields.
 
+![example](./widgets/ActiveDropdown_01.png)
+
+![example](./widgets/ActiveDropdown_02.png)
+
 ### ActiveDropdown Data Fetching and validation
 
 Retrieving a list of items (each consisting of a value and a label) and validating the field operates similarly to the `ActiveTextInput` component.
@@ -221,6 +229,48 @@ The widget supports following `ui:props`:
 - fetch:retrigger
 - fetch:response:value
 - fetch:response:label
+- validate:url
+- validate:method
+- validate:headers
+- validate:body
+- validate:retrigger
+
+[Check more details](#content-of-uiprops)
+
+## ActiveMultiSelect widget
+
+Referenced as: `"ui:widget": "ActiveMultiSelect"`.
+
+A smart component based on the [@mui/material/TextField](https://mui.com/material-ui/react-text-field/) keeping look&feel with other RJSF-default fields with autocompletion.
+
+The selected items are represented as chips, the value of the field is an array of strings.
+
+Users can only enter values that are provided in the list returned by `fetch:url` and `fetch:response:autocomplete`.
+
+![example](./widgets/ActiveMultiSelect_01.png)
+
+![example](./widgets/ActiveMultiSelect_02.png)
+
+![example](./widgets/ActiveMultiSelect_03.png)
+
+![example](./widgets/ActiveMultiSelect_04.png)
+
+### ActiveMultiSelect Data Fetching and validation
+
+Retrieving a list of autocomplete items (array of strings for autocompletion) and validating the field operates similarly to the `ActiveTextInput` component.
+
+Validation is similar to the `ActiveTextInput` as well, just the value being passed is an array of strings.
+
+### ActiveMultiSelect widget ui:props
+
+The widget supports following `ui:props`:
+
+- fetch:url
+- fetch:headers
+- fetch:method
+- fetch:body
+- fetch:retrigger
+- fetch:response:autocomplete
 - validate:url
 - validate:method
 - validate:headers

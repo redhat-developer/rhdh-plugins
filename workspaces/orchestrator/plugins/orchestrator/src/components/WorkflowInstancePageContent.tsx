@@ -27,15 +27,13 @@ import {
 import { appThemeApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import {
-  Box,
-  Button,
-  Grid,
-  makeStyles,
-  Typography,
-  useTheme,
-} from '@material-ui/core';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import { useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import moment from 'moment';
+import { makeStyles } from 'tss-react/mui';
 
 import {
   AssessedProcessInstanceDTO,
@@ -79,11 +77,11 @@ export const mapProcessInstanceToDetails = (
   };
 };
 
-const useStyles = makeStyles(() => ({
-  topRowCard: () => ({
+const useStyles = makeStyles()(() => ({
+  topRowCard: {
     height: '24rem',
     overflow: 'auto',
-  }),
+  },
   bottomRowCard: {
     height: '42rem',
     overflow: 'auto',
@@ -141,7 +139,7 @@ const VariablesDialogContent = ({
 export const WorkflowInstancePageContent: React.FC<{
   assessedInstance: AssessedProcessInstanceDTO;
 }> = ({ assessedInstance }) => {
-  const styles = useStyles();
+  const { classes } = useStyles();
   const orchestratorApi = useApi(orchestratorApiRef);
 
   const details = React.useMemo(
@@ -217,17 +215,16 @@ export const WorkflowInstancePageContent: React.FC<{
             Close
           </Button>
         }
-        children={
-          <VariablesDialogContent instanceVariables={instanceVariables} />
-        }
         wideDialog
-      />
+      >
+        <VariablesDialogContent instanceVariables={instanceVariables} />
+      </InfoDialog>
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <InfoCard
             title="Details"
             divider={false}
-            className={styles.topRowCard}
+            className={classes.topRowCard}
             icon={viewVariables}
           >
             <WorkflowRunDetails
@@ -239,14 +236,14 @@ export const WorkflowInstancePageContent: React.FC<{
 
         <Grid item xs={6}>
           <WorkflowResult
-            className={styles.topRowCard}
+            className={classes.topRowCard}
             assessedInstance={assessedInstance}
           />
         </Grid>
 
         <Grid item xs={6}>
           <WorkflowInputs
-            className={styles.bottomRowCard}
+            className={classes.bottomRowCard}
             value={value}
             loading={loading}
             responseError={responseError}
@@ -257,7 +254,7 @@ export const WorkflowInstancePageContent: React.FC<{
           <InfoCard
             title="Workflow progress"
             divider={false}
-            className={styles.bottomRowCard}
+            className={classes.bottomRowCard}
           >
             <WorkflowProgress
               workflowError={assessedInstance.instance.error}

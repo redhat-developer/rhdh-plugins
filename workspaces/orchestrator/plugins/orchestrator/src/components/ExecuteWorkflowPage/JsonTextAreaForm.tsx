@@ -18,11 +18,16 @@ import React from 'react';
 
 import type { JsonObject } from '@backstage/types';
 
-import { Box, Grid, useTheme } from '@material-ui/core';
-import { Alert, AlertTitle } from '@material-ui/lab';
 import Editor, { loader } from '@monaco-editor/react';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import { useTheme } from '@mui/material/styles';
 
 import { SubmitButton } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
+
+import { useIsDarkMode } from '../../utils/isDarkMode';
 
 loader.config({
   // FLPATH-2358: If production env keeps downloading from jsdelivr.net, configure local path here
@@ -39,6 +44,8 @@ const JsonTextAreaForm = ({
 }) => {
   const [jsonText, setJsonText] = React.useState(DEFAULT_VALUE);
   const theme = useTheme();
+  const isDarkMode = useIsDarkMode();
+
   const getParameters = (): JsonObject => {
     if (!jsonText) {
       return {};
@@ -66,7 +73,7 @@ const JsonTextAreaForm = ({
             language="json"
             onChange={(value: string | undefined) => setJsonText(value ?? '')}
             height="30rem"
-            theme={theme.palette.type === 'dark' ? 'vs-dark' : 'light'}
+            theme={isDarkMode ? 'vs-dark' : 'light'}
             options={{
               minimap: { enabled: false },
             }}

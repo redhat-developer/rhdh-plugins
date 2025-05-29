@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React, { forwardRef, ForwardRefRenderFunction } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  makeStyles,
-  Typography,
-} from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
+import { Close } from '@mui/icons-material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from 'tss-react/mui';
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -42,9 +41,9 @@ export type WorkflowDescriptionModalProps = {
   onClose?: () => void;
 };
 
-export type ParentComponentRef = HTMLElement;
+export type ParentComponentRef = HTMLDivElement;
 
-const useStyles = makeStyles(_theme => ({
+const useStyles = makeStyles()(() => ({
   closeBtn: {
     position: 'absolute',
     right: 8,
@@ -63,7 +62,7 @@ export const RefForwardingWorkflowDescriptionModal: ForwardRefRenderFunction<
     runWorkflowLink,
     workflowError,
   } = props;
-  const classes = useStyles();
+  const { classes } = useStyles();
   const navigate = useNavigate();
 
   const handleRunWorkflow = () => {
@@ -113,7 +112,7 @@ export const RefForwardingWorkflowDescriptionModal: ForwardRefRenderFunction<
             aria-label="close"
             onClick={onClose}
           >
-            <CloseIcon />
+            <Close />
           </IconButton>
         </Box>
       </DialogTitle>

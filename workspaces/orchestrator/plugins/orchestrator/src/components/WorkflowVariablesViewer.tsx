@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 import ReactJson from 'react-json-view';
 
-import { useTheme } from '@material-ui/core';
-
+import { useIsDarkMode } from '../utils/isDarkMode';
 import { Paragraph } from './Paragraph';
 
 interface ProcessVariablesViewerProps {
@@ -29,7 +29,7 @@ export const WorkflowVariablesViewer: React.FC<ProcessVariablesViewerProps> = ({
   variables = {},
   emptyState = <Paragraph>No data available</Paragraph>,
 }) => {
-  const theme = useTheme();
+  const isDarkMode = useIsDarkMode();
 
   return !variables ? (
     <>{emptyState}</>
@@ -37,7 +37,7 @@ export const WorkflowVariablesViewer: React.FC<ProcessVariablesViewerProps> = ({
     <ReactJson
       src={variables}
       name={false}
-      theme={theme.palette.type === 'dark' ? 'monokai' : 'rjv-default'}
+      theme={isDarkMode ? 'monokai' : 'rjv-default'}
     />
   );
 };
