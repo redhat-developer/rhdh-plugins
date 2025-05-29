@@ -56,7 +56,7 @@ export const DEFAULT_SAMPLE_PROMPTS: SamplePrompts = [
   ),
   createPrompt(
     'Demystify Sorting Algorithms',
-    'Can you explain the difference between a quicksort and a mergesort algorithm, and when to use each?',
+    'Can you explain the difference between a quicksort and a merge sort algorithm, and when to use each?',
   ),
   createPrompt(
     'Understand Event-Driven Architecture',
