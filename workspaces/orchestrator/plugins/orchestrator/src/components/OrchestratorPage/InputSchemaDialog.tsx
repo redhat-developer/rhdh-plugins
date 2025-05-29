@@ -25,7 +25,9 @@ import {
 } from '@backstage/core-components';
 import { appThemeApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { Box, Button, useTheme } from '@material-ui/core';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import { useTheme } from '@mui/material/styles';
 
 import { InputSchemaResponseDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 

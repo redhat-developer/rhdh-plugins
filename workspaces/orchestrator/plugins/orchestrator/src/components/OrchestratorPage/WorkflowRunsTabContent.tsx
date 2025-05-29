@@ -29,7 +29,8 @@ import {
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
 
-import { Grid, TablePagination } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
+import TablePagination from '@mui/material/TablePagination';
 
 import {
   capitalize,

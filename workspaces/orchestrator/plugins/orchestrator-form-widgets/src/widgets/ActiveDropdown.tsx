@@ -18,20 +18,19 @@ import { Widget } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
 import { JSONSchema7 } from 'json-schema';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import {
-  CircularProgress,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from '@material-ui/core';
+
+import CircularProgress from '@mui/material/CircularProgress';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 import {
   useFetch,
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
+  applySelectorArray,
 } from '../utils';
-import { applySelectorArray } from '../utils/applySelector';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
 
@@ -42,8 +41,9 @@ export const ActiveDropdown: Widget<
 > = props => {
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const { label, value, onChange, formContext } = props;
+  const { id, label, value, onChange, formContext } = props;
   const formData = formContext?.formData;
+  const labelId = `${props.id}-label`;
 
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as UiProps,
@@ -100,10 +100,14 @@ export const ActiveDropdown: Widget<
     [onChange],
   );
 
-  const labelId = `${props.id}-label`;
+  useEffect(() => {
+    if (!value && values && values.length > 0) {
+      handleChange(values[0]);
+    }
+  }, [handleChange, value, values]);
 
   if (localError ?? error) {
-    return <ErrorText text={localError ?? error ?? ''} />;
+    return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
   if (loading || !labels || !values) {
@@ -115,13 +119,18 @@ export const ActiveDropdown: Widget<
       <InputLabel id={labelId}>{label}</InputLabel>
       <Select
         labelId={labelId}
-        id={props.id}
+        id={id}
+        data-testid={id}
         value={value}
         label={label}
         onChange={event => handleChange(event.target.value as string)}
       >
         {labels.map((itemLabel, idx) => (
-          <MenuItem key={values[idx]} value={values[idx]}>
+          <MenuItem
+            key={values[idx]}
+            value={values[idx]}
+            data-testid={`${id}-menuitem-${values[idx]}`}
+          >
             {itemLabel}
           </MenuItem>
         ))}

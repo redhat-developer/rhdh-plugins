@@ -64,7 +64,11 @@ export const evaluateTemplate = async (
       evaluatedUnit = '___undefined___';
     }
 
-    evaluated += evaluatedUnit;
+    if (Array.isArray(evaluatedUnit)) {
+      evaluated = JSON.stringify(evaluatedUnit);
+    } else {
+      evaluated += evaluatedUnit;
+    }
 
     if (template.length > stopIndex + 2) {
       evaluated += await evaluateTemplate({

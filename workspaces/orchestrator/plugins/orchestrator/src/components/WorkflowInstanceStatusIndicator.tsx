@@ -18,10 +18,10 @@ import React from 'react';
 import { Link } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
-import { CircularProgress } from '@material-ui/core';
-import CheckCircleOutlinedIcon from '@material-ui/icons/CheckCircleOutlined';
-import ErrorOutlineOutlinedIcon from '@material-ui/icons/ErrorOutlineOutlined';
-import HourglassEmptyOutlinedIcon from '@material-ui/icons/HourglassEmptyOutlined';
+import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
+import ErrorOutlineOutlined from '@mui/icons-material/ErrorOutlineOutlined';
+import HourglassEmptyOutlined from '@mui/icons-material/HourglassEmptyOutlined';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import {
   capitalize,
@@ -54,7 +54,7 @@ export const WorkflowInstanceStatusIndicator = ({
       title = 'Running';
       break;
     case ProcessInstanceStatusDTO.Completed:
-      icon = <CheckCircleOutlinedIcon className={iconColor} />;
+      icon = <CheckCircleOutlined className={iconColor} />;
       title = 'Completed';
       break;
     case ProcessInstanceStatusDTO.Suspended:
@@ -66,11 +66,11 @@ export const WorkflowInstanceStatusIndicator = ({
       title = 'Aborted';
       break;
     case ProcessInstanceStatusDTO.Error:
-      icon = <ErrorOutlineOutlinedIcon className={iconColor} />;
+      icon = <ErrorOutlineOutlined className={iconColor} />;
       title = 'Failed';
       break;
     case ProcessInstanceStatusDTO.Pending:
-      icon = <HourglassEmptyOutlinedIcon className={iconColor} />;
+      icon = <HourglassEmptyOutlined className={iconColor} />;
       title = 'Pending';
       break;
     default:

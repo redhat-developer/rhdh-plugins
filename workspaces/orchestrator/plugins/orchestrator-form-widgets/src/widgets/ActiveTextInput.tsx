@@ -17,20 +17,24 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { JsonObject } from '@backstage/types';
 import { Widget } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
-import { CircularProgress, FormControl, TextField } from '@material-ui/core';
-import { Autocomplete, AutocompleteRenderInputParams } from '@material-ui/lab';
+
+import CircularProgress from '@mui/material/CircularProgress';
+import FormControl from '@mui/material/FormControl';
+import TextField from '@mui/material/TextField';
+import Autocomplete, {
+  AutocompleteRenderInputParams,
+} from '@mui/material/Autocomplete';
+
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
 import {
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
   useFetch,
-} from '../utils';
-import { ErrorText } from './ErrorText';
-import {
   applySelectorArray,
   applySelectorString,
-} from '../utils/applySelector';
+} from '../utils';
+import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
 
 export const ActiveTextInput: Widget<
@@ -40,7 +44,7 @@ export const ActiveTextInput: Widget<
 > = props => {
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const { label, value, onChange, formContext } = props;
+  const { id, label, value, onChange, formContext } = props;
   const formData = formContext?.formData;
 
   const uiProps = useMemo(
@@ -110,7 +114,7 @@ export const ActiveTextInput: Widget<
   ]);
 
   if (localError ?? error) {
-    return <ErrorText text={localError ?? error ?? ''} />;
+    return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
   if (loading) {
@@ -121,6 +125,7 @@ export const ActiveTextInput: Widget<
     const renderInput = (params: AutocompleteRenderInputParams) => (
       <TextField
         {...params}
+        data-testid={`${id}-textfield`}
         onChange={event => handleChange(event.target.value)}
         label={label}
       />
@@ -130,6 +135,7 @@ export const ActiveTextInput: Widget<
       <FormControl variant="outlined" fullWidth>
         <Autocomplete
           options={autocompleteOptions}
+          data-testid={`${id}-autocomplete`}
           value={value}
           onChange={(_, v) => handleChange(v)}
           renderInput={renderInput}
@@ -142,6 +148,7 @@ export const ActiveTextInput: Widget<
     <FormControl variant="outlined" fullWidth>
       <TextField
         value={value ?? ''}
+        data-testid={`${id}-textfield`}
         onChange={event => handleChange(event.target.value)}
         label={label}
       />
