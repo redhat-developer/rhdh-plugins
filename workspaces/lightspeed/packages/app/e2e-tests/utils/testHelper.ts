@@ -28,5 +28,5 @@ export const sendMessage = async (message: string, page: Page) => {
   const inputLocator = page.getByRole('textbox').first();
   await inputLocator.waitFor({ state: 'visible' });
   await inputLocator.fill(message);
-  await page.locator('button[aria-label="Send button"]').click();
+  await page.locator('button[aria-label="Send"]').click();
 };
