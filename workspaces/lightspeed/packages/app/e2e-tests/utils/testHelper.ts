@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Page, Locator } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 export const openLightspeed = async (page: Page) => {
   const navLink = page.getByRole('link', { name: 'Lightspeed' });

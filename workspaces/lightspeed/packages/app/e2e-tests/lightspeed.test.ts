@@ -108,7 +108,7 @@ test('ChatDialogBox validation', async ({ page }) => {
   });
 });
 
-test('Configurable prompts validation', async ({ page }) => {
+test('verify ChatUIRenders ThreeNonEmpty Prompts', async ({ page }) => {
   await expect(page.getByLabel('Scrollable message log')).toMatchAriaSnapshot(`
     - heading "Hello, Guest How can I help you today?" [level=1]
     - button 

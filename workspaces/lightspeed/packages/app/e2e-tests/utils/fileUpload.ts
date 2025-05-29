@@ -64,11 +64,14 @@ export async function validateSuccessfulUpload(page: Page, fileName: string) {
 }
 
 export async function validateFailedUpload(page: Page) {
-  const alert = page.getByText(
-    'Danger alert:File upload failedUnsupported file type.',
+  const alertHeader = page.getByText('File upload failed');
+  const alertText = page.getByText(
+    'Unsupported file type. Supported types are: .txt, .yaml, .json.',
   );
-  await expect(alert).toBeVisible();
+  await expect(alertHeader).toBeVisible();
+  await expect(alertText).toBeVisible();
 
   await page.getByRole('button', { name: 'Close Danger alert' }).click();
-  await expect(alert).toBeHidden();
+  await expect(alertHeader).toBeHidden();
+  await expect(alertText).toBeHidden();
 }
