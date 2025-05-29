@@ -14,40 +14,39 @@
  * limitations under the License.
  */
 
-import { Page, expect } from '@playwright/test';
-
-export async function assertDrawerOpenState(page: Page) {
-  await expect(
-    page.getByRole('button', { name: 'Close drawer panel' }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('textbox', { name: 'Filter menu items' }),
-  ).toBeVisible();
-  await expect(page.getByRole('separator', { name: 'Resize' })).toBeVisible();
-}
+import { Page, expect, Locator } from '@playwright/test';
 
 export async function assertChatDialogInitialState(page: Page) {
   await expect(page.getByLabel('Chatbot', { exact: true })).toContainText(
     'Developer Hub Lightspeed',
   );
   await expect(page.getByRole('button', { name: 'Toggle menu' })).toBeVisible();
-  await assertDrawerOpenState(page);
+  await assertDrawerState(page, 'open');
 }
 
 export async function closeChatDrawer(page: Page) {
-  await page.getByRole('button', { name: 'Close drawer panel' }).click();
+  const closeButton = page.getByRole('button', { name: 'Close drawer panel' });
+  await closeButton.click();
 }
 
-export async function assertDrawerClosedState(page: Page) {
-  await expect(page.getByRole('separator', { name: 'Resize' })).toBeHidden();
-  await expect(
+export async function openChatDrawer(page: Page) {
+  const toggleButton = page.getByRole('button', { name: 'Toggle menu' });
+  await toggleButton.click();
+}
+
+export async function assertDrawerState(page: Page, state: 'open' | 'closed') {
+  const expectations = {
+    open: (locator: Locator) => expect(locator).toBeVisible(),
+    closed: (locator: Locator) => expect(locator).toBeHidden(),
+  };
+
+  const checks = [
     page.getByRole('button', { name: 'Close drawer panel' }),
-  ).toBeHidden();
-  await expect(
     page.getByRole('textbox', { name: 'Filter menu items' }),
-  ).toBeHidden();
-}
+    page.getByRole('separator', { name: 'Resize' }),
+  ];
 
-export async function reopenChatDrawer(page: Page) {
-  await page.getByRole('button', { name: 'Toggle menu' }).click();
+  for (const locator of checks) {
+    await expectations[state](locator);
+  }
 }

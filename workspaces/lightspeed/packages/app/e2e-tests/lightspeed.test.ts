@@ -35,10 +35,9 @@ import {
 import {
   assertChatDialogInitialState,
   closeChatDrawer,
-  assertDrawerClosedState,
-  reopenChatDrawer,
-  assertDrawerOpenState,
-} from './utils/chatDialog';
+  openChatDrawer,
+  assertDrawerState,
+} from './utils/sidebar';
 
 const botQuery = 'Please respond';
 
@@ -92,23 +91,25 @@ test('Models are available', async ({ page }) => {
   await expect(dropdown).toHaveText(model);
 });
 
-test('ChatDialogBox validation', async ({ page }) => {
-  await test.step('Verify initial state of ChatDialogBox', async () => {
+test('Chat History sidebar: initial state, close and reopen', async ({
+  page,
+}) => {
+  await test.step('Verify initial state of sidebar', async () => {
     await assertChatDialogInitialState(page);
   });
 
-  await test.step('Close the drawer and verify elements are hidden', async () => {
+  await test.step('Close the sidebar and verify elements are hidden', async () => {
     await closeChatDrawer(page);
-    await assertDrawerClosedState(page);
+    await assertDrawerState(page, 'closed');
   });
 
-  await test.step('Reopen the drawer and verify elements are visible again', async () => {
-    await reopenChatDrawer(page);
-    await assertDrawerOpenState(page);
+  await test.step('Reopen the sidebar and verify elements are visible again', async () => {
+    await openChatDrawer(page);
+    await assertDrawerState(page, 'open');
   });
 });
 
-test('verify ChatUIRenders ThreeNonEmpty Prompts', async ({ page }) => {
+test('verify default prompts are visible', async ({ page }) => {
   await expect(page.getByLabel('Scrollable message log')).toMatchAriaSnapshot(`
     - heading "Hello, Guest How can I help you today?" [level=1]
     - button 
@@ -126,7 +127,7 @@ test('verify ChatUIRenders ThreeNonEmpty Prompts', async ({ page }) => {
   expect(nonEmptyTexts.length).toBe(3);
 });
 
-test.describe('File Attachment Field Validation', () => {
+test.describe('File Attachment Validation', () => {
   const testFiles = [
     { path: '../../package.json', name: 'package.json' },
     { path: __filename, name: 'fileAttachment.spec.ts' },
