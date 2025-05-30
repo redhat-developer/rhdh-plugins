@@ -10274,7 +10274,7 @@ __metadata:
     "@material-ui/core": ^4.12.4
     "@mui/icons-material": ^5.16.14
     "@mui/material": ^5.16.14
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.6.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.8.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
@@ -10295,9 +10295,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.6.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.8.0":
+  version: 0.8.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.8.2"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
@@ -10307,7 +10307,7 @@ __metadata:
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 37b868436f32ac08f6fd465d3a14caf636731e299a8407dc07970681b0e6327d61f12616820ff57b103a3ef8c51d37092dd6e972363d914cecd7c0f3231a760b
+  checksum: 76488ae3fbb9fabdd936d7a1353fda0b1d11fa9439cb33333678eccfcd71fdd1c9cf60418828d94ee26f3b1874a873767996eebbedb01b3fbf57200dee5c562d
   languageName: node
   linkType: hard
 
