@@ -6,7 +6,14 @@ dynamicPlugins:
         - mountPoint: application/header
           importName: GlobalHeader
           config:
-            position: above-main-content # above-main-content | below-main-content
+            position: above-sidebar # above-main-content | above-sidebar
+
+        - mountPoint: global.header/component
+          importName: CompanyLogo
+          config:
+            priority: 200
+            props:
+              to: '/'
 
         - mountPoint: global.header/component
           importName: SearchComponent

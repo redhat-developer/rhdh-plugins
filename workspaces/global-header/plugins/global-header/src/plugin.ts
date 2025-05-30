@@ -44,6 +44,7 @@ export type { DividerProps } from './components/Divider/Divider';
 export type { SpacerProps } from './components/Spacer/Spacer';
 export type { SupportButtonProps } from './components/SupportButton/SupportButton';
 export type { NotificationButtonProps } from './components/NotificationButton/NotificationButton';
+export type { CompanyLogoProps } from './components/CompanyLogo/CompanyLogo';
 
 export type {
   NotificationBannerProps,
@@ -370,6 +371,21 @@ export const ApplicationLauncherDropdown = globalHeaderPlugin.provide(
         import(
           './components/HeaderDropdownComponent/ApplicationLauncherDropdown'
         ).then(m => m.ApplicationLauncherDropdown),
+    },
+  }),
+);
+
+/**
+ * Company Logo
+ *
+ * @public
+ */
+export const CompanyLogo = globalHeaderPlugin.provide(
+  createComponentExtension({
+    name: 'CompanyLogo',
+    component: {
+      lazy: () =>
+        import('./components/CompanyLogo/CompanyLogo').then(m => m.CompanyLogo),
     },
   }),
 );
