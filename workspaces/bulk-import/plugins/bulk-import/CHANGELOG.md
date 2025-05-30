@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 1.13.2
+
+### Patch Changes
+
+- 002f7c9: Updated dependency `@testing-library/user-event` to `14.6.1`.
+- d7a0dd1: Aligned eslint-rules as per other plugins.
+
 ## 1.13.1
 
 ### Patch Changes
