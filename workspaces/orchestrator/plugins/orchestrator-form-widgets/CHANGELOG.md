@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 0.2.1
+
+### Patch Changes
+
+- 3b571b3: Updated dependency `@janus-idp/cli` to `3.6.1`.
+
 ## 0.2.0
 
 ### Minor Changes
