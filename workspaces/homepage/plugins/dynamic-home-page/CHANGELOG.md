@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.4.2
+
+### Patch Changes
+
+- 002f7c9: Updated dependency `@testing-library/user-event` to `14.6.1`.
+
 ## 1.4.1
 
 ### Patch Changes
