@@ -159,12 +159,16 @@ export const mockFileInstallationStorage = {
       .map(name => mockPluginsMap.get(name));
     return stringify(packages);
   }),
+  updatePackage: jest.fn(),
+  updatePackages: jest.fn(),
 } as unknown as jest.Mocked<FileInstallationStorage>;
 
 export const mockInstallationDataService = {
   getPluginConfig: jest.fn(),
   getPackageConfig: jest.fn(),
   getInitializationError: jest.fn().mockReturnValue(undefined),
+  updatePackageConfig: jest.fn(),
+  updatePluginConfig: jest.fn(),
 } as unknown as jest.Mocked<InstallationDataService>;
 
 export const mockMarketplaceApi = {

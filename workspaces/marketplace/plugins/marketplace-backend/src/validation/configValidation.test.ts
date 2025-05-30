@@ -17,7 +17,9 @@ import { parseDocument } from 'yaml';
 import {
   validateConfigurationFormat,
   validatePackageFormat,
+  validatePluginFormat,
 } from './configValidation';
+import { ConfigFormatError } from '../errors/ConfigFormatError';
 
 describe('validateConfigurationFormat', () => {
   afterEach(() => {
@@ -42,7 +44,9 @@ describe('validateConfigurationFormat', () => {
         key: value
     `);
     expect(() => validateConfigurationFormat(doc)).toThrow(
-      "Failed to load 'extensions.installation.saveToSingleFile.file'. Invalid installation configuration, 'plugins' field must be a list",
+      new ConfigFormatError(
+        "Invalid installation configuration, 'plugins' field must be a list",
+      ),
     );
   });
 });
@@ -83,14 +87,14 @@ describe('validatePackageFormat', () => {
       yaml: `
         disabled: false
       `,
-      error: "'package' field in each package item must be a non-empty string",
+      error: "'package' field in package item must be a non-empty string",
     },
     {
       testCase: "'package' is an empty string",
       yaml: `
         package: ""
       `,
-      error: "'package' field in each package item must be a non-empty string",
+      error: "'package' field in package item must be a non-empty string",
     },
     {
       testCase: "'disabled' is not a boolean",
@@ -98,7 +102,7 @@ describe('validatePackageFormat', () => {
         package: package1
         disabled: "not a boolean"
       `,
-      error: "optional 'disabled' field in each package item must be a boolean",
+      error: "optional 'disabled' field in package item must be a boolean",
     },
     {
       testCase: "'pluginConfig' is not a map",
@@ -106,15 +110,64 @@ describe('validatePackageFormat', () => {
         package: package1
         pluginConfig: "not a map"
       `,
-      error: "optional 'pluginConfig' field in each package item must be a map",
+      error: "optional 'pluginConfig' field in package item must be a map",
+    },
+    {
+      testCase: "'packageName' differs",
+      yaml: `
+        package: package1
+        disabled: false
+      `,
+      error:
+        "'package' field value in package item differs from 'different-package'",
+      packageName: 'different-package',
     },
   ];
 
-  invalidYAMLs.forEach(({ testCase, yaml, error }) => {
+  invalidYAMLs.forEach(({ testCase, yaml, error, packageName }) => {
     it(`should throw if ${testCase}`, () => {
-      expect(() => validatePackageFormat(parseDocument(yaml).contents)).toThrow(
-        `Invalid installation configuration, ${error}`,
+      expect(() =>
+        validatePackageFormat(parseDocument(yaml).contents, packageName),
+      ).toThrow(
+        new ConfigFormatError(`Invalid installation configuration, ${error}`),
       );
     });
+  });
+});
+
+describe('validatePluginFormat', () => {
+  const pluginPackages = new Set(['package1', 'package2']);
+
+  it('should validate correct plugin configuration', () => {
+    const doc = parseDocument(`
+      - package: package1
+      - package: package2
+        disabled: false
+        pluginConfig:
+          key: value
+    `);
+    expect(() => validatePluginFormat(doc, pluginPackages)).not.toThrow();
+  });
+
+  it('should throw if plugin is not a sequence', () => {
+    const doc = parseDocument(`
+      package: package1
+    `);
+    expect(() => validatePluginFormat(doc, pluginPackages)).toThrow(
+      new ConfigFormatError(
+        'Invalid installation configuration, plugin packages must be a list',
+      ),
+    );
+  });
+
+  it('should throw if package is not part of the plugin', () => {
+    const doc = parseDocument(`
+      - package: package-from-different-plugin
+    `);
+    expect(() => validatePluginFormat(doc, pluginPackages)).toThrow(
+      new ConfigFormatError(
+        "Invalid configuration, package 'package-from-different-plugin' is not part of plugin configuration",
+      ),
+    );
   });
 });
