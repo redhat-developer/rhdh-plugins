@@ -23,6 +23,7 @@ import {
   ChatbotWelcomePrompt,
   Message,
   MessageBox,
+  MessageBoxHandle,
   MessageProps,
   WelcomePrompt,
 } from '@patternfly/chatbot';
@@ -81,7 +82,7 @@ export const LightspeedChatBox = React.forwardRef(
   ) => {
     const classes = useStyles();
     const scrollQueued = React.useRef(false);
-    const containerRef = React.useRef<HTMLDivElement>(null);
+    const containerRef = React.useRef<MessageBoxHandle>(null);
 
     const configApi = useApi(configApiRef);
     const questionValidationEnabled =
