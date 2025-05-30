@@ -187,9 +187,8 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         >
           <RPNInput
             required
-            defaultCountry="ES"
+            defaultCountry={country || 'ES'}
             label="Phone number"
-            placeholder="(000) 000 0000"
             value={phoneNumber}
             onChange={setPhoneNumber}
             inputComponent={PhoneInputField}
