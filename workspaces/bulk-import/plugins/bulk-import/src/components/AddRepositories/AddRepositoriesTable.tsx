@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import { useFormikContext } from 'formik';
+import debounce from 'lodash.debounce';
 
 import { useNumberOfApprovalTools } from '../../hooks';
 import {
@@ -41,10 +42,29 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
   }, [values.approvalTool]);
   const [searchString, setSearchString] = useState<string>('');
   const [page, setPage] = useState<number>(0);
-  const handleSearch = (str: string) => {
-    setSearchString(str);
-    setPage(0);
-  };
+
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((str: string) => {
+        setSearchString(str);
+        setPage(0);
+      }, 300),
+    [],
+  );
+
+  const handleSearch = useCallback(
+    (str: string) => {
+      debouncedSearch(str);
+    },
+    [debouncedSearch],
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
   const { numberOfApprovalTools } = useNumberOfApprovalTools();
 
   return (

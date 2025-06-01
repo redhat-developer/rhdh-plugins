@@ -10791,6 +10791,7 @@ __metadata:
     "@testing-library/react": ^15.0.0
     "@testing-library/user-event": 14.6.1
     "@types/lodash": ^4.14.151
+    "@types/lodash.debounce": ^4.0.9
     "@types/react": ^18.2.58
     formik: ^2.4.5
     js-yaml: ^4.1.0
@@ -13865,6 +13866,22 @@ __metadata:
   dependencies:
     keyv: "*"
   checksum: 8713da9382b9346d664866a6cab2f91b0fd479f61379af891303a618e9a2abad6f347adc38a0850540e3f2dad278427de24e7555339264fddb04d1d17d3b50e0
+  languageName: node
+  linkType: hard
+
+"@types/lodash.debounce@npm:^4.0.9":
+  version: 4.0.9
+  resolution: "@types/lodash.debounce@npm:4.0.9"
+  dependencies:
+    "@types/lodash": "*"
+  checksum: 8183a152e01928e3b97ca773f6ae6038b8695e76493ba8bf6b743ec143948a62294fbc9d49fa4a78b52265b3ba4892ef57534e0c13d04aa0f111671b5a944feb
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:*":
+  version: 4.17.17
+  resolution: "@types/lodash@npm:4.17.17"
+  checksum: cfa34a752f3c540a196e9f92dbaff93ae15fe4058da8cce1918dd9219076dc19eec33b043aae45865e2b3ef8234a845bb57366144ec8e52551e2bc3f119e04a1
   languageName: node
   linkType: hard
 
