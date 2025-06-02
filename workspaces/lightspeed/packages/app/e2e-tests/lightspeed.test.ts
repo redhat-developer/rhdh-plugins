@@ -91,9 +91,7 @@ test('Models are available', async ({ page }) => {
   await expect(dropdown).toHaveText(model);
 });
 
-test('Chat History sidebar: initial state, close and reopen', async ({
-  page,
-}) => {
+test('Verify sidebar: initial state, close and reopen', async ({ page }) => {
   await test.step('Verify initial state of sidebar', async () => {
     await assertChatDialogInitialState(page);
   });
