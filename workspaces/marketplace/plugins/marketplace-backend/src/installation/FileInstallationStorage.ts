@@ -124,27 +124,15 @@ export class FileInstallationStorage implements InstallationStorage {
     const packages = this.config.get('plugins') as YAMLSeq<
       YAMLMap<string, JsonValue>
     >;
-    const updatedPackages = new YAMLSeq<YAMLMap<string, JsonValue>>();
-    let updated = false;
 
+    const updatedPackages = new YAMLSeq<YAMLMap<string, JsonValue>>();
     for (const item of packages.items) {
       const name = item.get('package') as string;
-
       if (!packageNames.has(name)) {
         updatedPackages.items.push(item); // keep unchanged package of different plugin
-        continue;
-      }
-      if (!updated) {
-        // update plugin config
-        updatedPackages.items.push(...newNodes.contents.items);
-        updated = true;
       }
     }
-
-    if (!updated) {
-      // add new plugin config
-      updatedPackages.items.push(...newNodes.contents.items);
-    }
+    updatedPackages.items.push(...newNodes.contents.items);
 
     this.config.set('plugins', updatedPackages);
     this.save();

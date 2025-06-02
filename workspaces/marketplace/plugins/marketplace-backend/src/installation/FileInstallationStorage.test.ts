@@ -291,8 +291,8 @@ describe('FileInstallationStorage', () => {
       const updatedCatalogInfoYaml = fs.readFileSync(configFileName, 'utf8');
       const configYaml = parse(updatedCatalogInfoYaml);
       expect(configYaml.plugins).toEqual([
-        ...updatedPlugin,
         mockDynamicPackage21,
+        ...updatedPlugin,
       ]);
     });
 
