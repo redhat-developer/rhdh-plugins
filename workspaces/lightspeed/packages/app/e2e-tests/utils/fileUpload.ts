@@ -65,7 +65,9 @@ export async function validateSuccessfulUpload(page: Page, fileName: string) {
     .getByRole('contentinfo')
     .getByRole('button', { name: 'Close' })
     .click();
-  await page.getByRole('button', { name: `Close ${trimmerFilename}` }).click();
+  await page
+    .getByRole('button', { name: `Close ${trimmerFilename}` })
+    .click({ force: true });
 }
 
 export async function validateFailedUpload(page: Page) {
