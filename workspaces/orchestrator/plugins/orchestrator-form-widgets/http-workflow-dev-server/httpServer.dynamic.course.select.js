@@ -103,6 +103,10 @@ app.get('/coursedetailsschema', (req, res) => {
         },
       },
     },
+    nickname: {
+      type: 'string',
+      title: 'Your nickname',
+    },
   };
 
   if (courseName === 'complexCourse') {

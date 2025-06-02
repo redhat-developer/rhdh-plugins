@@ -64,7 +64,8 @@ export const evaluateTemplate = async (
       evaluatedUnit = '___undefined___';
     }
 
-    if (Array.isArray(evaluatedUnit)) {
+    if (typeof evaluatedUnit === 'object') {
+      // For both Arrays and JsonObjects
       evaluated = JSON.stringify(evaluatedUnit);
     } else {
       evaluated += evaluatedUnit;

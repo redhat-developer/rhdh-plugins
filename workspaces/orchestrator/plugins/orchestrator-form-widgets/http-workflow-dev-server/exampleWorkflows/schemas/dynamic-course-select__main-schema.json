@@ -89,7 +89,9 @@
           "field": "preferredTeacher",
           "value": "$${{current.preferredTeacher}}",
           "courseName": "$${{current.courseName}}",
-          "studentName": "$${{current.studentName}}"
+          "studentName": "$${{current.studentName}}",
+          "justAPropertyOfAComplexObject": "$${{current.courseDetails.nickname}}",
+          "passingCourseDetailsAsComplexObject": "$${{current.courseDetails}}"
         }
       }
     },
