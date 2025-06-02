@@ -77,7 +77,7 @@ export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
       >
         <LogoRender
           base64Logo={logo ?? logoFullBase64URI}
-          defaultLogo={<DefaultLogo textColor="white" />}
+          defaultLogo={<DefaultLogo />}
         />
       </Link>
     </Box>
