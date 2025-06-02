@@ -21,14 +21,12 @@ export const openLightspeed = async (page: Page) => {
   const navLink = getElementByRole(page, 'link', 'Lightspeed');
   await navLink.click();
 
-  // Assuming this is a static selector not handled in locatorUtils
   await page.locator('.pf-chatbot__messagebox').waitFor({ state: 'visible' });
 };
 
 export const sendMessage = async (message: string, page: Page) => {
   const inputLocator = getElementByRole(page, 'textbox', 'Send a message...');
   await inputLocator.fill(message);
-  const sendButton = getElementByRole(page, 'button', 'Send button');
+  const sendButton = getElementByRole(page, 'button', 'Send');
   await sendButton.click();
-
 };
