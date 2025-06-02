@@ -51,7 +51,9 @@ export async function validateSuccessfulUpload(page: Page, fileName: string) {
 
   await expect(page.getByRole('banner')).toContainText('Preview attachment');
   await expect(page.getByRole('button', { name: 'Edit' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Dismiss' })).toBeVisible();
+  await expect(
+    page.getByRole('contentinfo').getByRole('button', { name: 'Close' }),
+  ).toBeVisible();
 
   await page.getByRole('button', { name: 'Edit' }).click();
 
@@ -59,7 +61,10 @@ export async function validateSuccessfulUpload(page: Page, fileName: string) {
   await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.getByRole('button', { name: 'Close' }).click();
+  await page
+    .getByRole('contentinfo')
+    .getByRole('button', { name: 'Close' })
+    .click();
   await page.getByRole('button', { name: `Close ${trimmerFilename}` }).click();
 }
 
