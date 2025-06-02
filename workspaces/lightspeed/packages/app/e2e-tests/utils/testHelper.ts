@@ -15,18 +15,17 @@
  */
 
 import { Page } from '@playwright/test';
-import { getElementByRole } from './locatorUtils';
 
 export const openLightspeed = async (page: Page) => {
-  const navLink = getElementByRole(page, 'link', 'Lightspeed');
+  const navLink = page.getByRole('link', { name: 'Lightspeed' });
   await navLink.click();
 
   await page.locator('.pf-chatbot__messagebox').waitFor({ state: 'visible' });
 };
 
 export const sendMessage = async (message: string, page: Page) => {
-  const inputLocator = getElementByRole(page, 'textbox', 'Send a message...');
+  const inputLocator = page.getByRole('textbox', { name: 'Send a message...' });
   await inputLocator.fill(message);
-  const sendButton = getElementByRole(page, 'button', 'Send');
+  const sendButton = page.getByRole('button', { name: 'Send' });
   await sendButton.click();
 };

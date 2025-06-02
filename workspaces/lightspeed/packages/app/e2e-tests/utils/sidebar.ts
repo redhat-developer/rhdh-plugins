@@ -14,23 +14,22 @@
  * limitations under the License.
  */
 import { Page, expect, Locator } from '@playwright/test';
-import { getElementByRole, getLabelByName } from './locatorUtils';
 
 export async function assertChatDialogInitialState(page: Page) {
-  await expect(getLabelByName(page, 'Chatbot', true)).toContainText(
+  await expect(page.getByLabel('Chatbot', { exact: true })).toContainText(
     'Developer Hub Lightspeed',
   );
-  await expect(getElementByRole(page, 'button', 'Toggle menu')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Toggle menu' })).toBeVisible();
   await assertDrawerState(page, 'open');
 }
 
 export async function closeChatDrawer(page: Page) {
-  const closeButton = getElementByRole(page, 'button', 'Close drawer panel');
+  const closeButton = page.getByRole('button', { name: 'Close drawer panel' });
   await closeButton.click();
 }
 
 export async function openChatDrawer(page: Page) {
-  const toggleButton = getElementByRole(page, 'button', 'Toggle menu');
+  const toggleButton = page.getByRole('button', { name: 'Toggle menu' });
   await toggleButton.click();
 }
 
@@ -41,9 +40,9 @@ export async function assertDrawerState(page: Page, state: 'open' | 'closed') {
   };
 
   const checks = [
-    getElementByRole(page, 'button', 'Close drawer panel'),
-    getElementByRole(page, 'textbox', 'Filter menu items'),
-    getElementByRole(page, 'separator', 'Resize'),
+    page.getByRole('button', { name: 'Close drawer panel' }),
+    page.getByRole('textbox', { name: 'Filter menu items' }),
+    page.getByRole('separator', { name: 'Resize' }),
   ];
 
   for (const locator of checks) {
