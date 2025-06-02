@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.8.0
+
+### Minor Changes
+
+- dfc984b: Added Company Logo component
+
 ## 1.7.3
 
 ### Patch Changes
