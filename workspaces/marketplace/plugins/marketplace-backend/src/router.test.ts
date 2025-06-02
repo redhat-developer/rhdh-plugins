@@ -82,6 +82,17 @@ async function startBackendServer(
   return (await startTestBackend({ features })).server;
 }
 
+const expectNotFoundError = async (
+  response: request.Response,
+  kind: string,
+) => {
+  expect(response.status).toEqual(404);
+  expect(response.body.error).toEqual({
+    message: `${kind} default/not-found not found`,
+    name: 'NotFoundError',
+  });
+};
+
 const setupTest = () => {
   let server: SetupServer;
 
@@ -213,7 +224,7 @@ describe('createRouter', () => {
       expect(response.body.spec.plugins).toEqual(['plugin1', 'plugin2']);
     });
 
-    it('should throw error while fetching collection by name', async () => {
+    it('should fail when collection not found with NotFoundError 404 error', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
         mockData: [],
         name: 'not-found',
@@ -223,21 +234,7 @@ describe('createRouter', () => {
       const response = await request(backendServer).get(
         '/api/extensions/collection/default/not-found',
       );
-
-      expect(response.status).toEqual(404);
-      expect(response.body).toEqual({
-        error: {
-          message: 'Collection default/not-found not found',
-          name: 'NotFoundError',
-        },
-        request: {
-          method: 'GET',
-          url: '/collection/default/not-found',
-        },
-        response: {
-          statusCode: 404,
-        },
-      });
+      expectNotFoundError(response, 'Collection');
     });
   });
 
@@ -292,7 +289,7 @@ describe('createRouter', () => {
       expect(response.body).toEqual(mockPlugins);
     });
 
-    it('should throw an error when the collection is not found', async () => {
+    it('should fail when plugins collection not found with NotFoundError 404 error', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
         mockData: [],
         name: 'not-found',
@@ -303,20 +300,7 @@ describe('createRouter', () => {
         '/api/extensions/collection/default/not-found/plugins',
       );
 
-      expect(response.status).toEqual(404);
-      expect(response.body).toEqual({
-        error: {
-          message: 'Collection default/not-found not found',
-          name: 'NotFoundError',
-        },
-        request: {
-          method: 'GET',
-          url: '/collection/default/not-found/plugins',
-        },
-        response: {
-          statusCode: 404,
-        },
-      });
+      expectNotFoundError(response, 'Collection');
     });
   });
 
@@ -387,29 +371,15 @@ describe('createRouter', () => {
       expect(response.body.metadata.name).toEqual('plugin1');
     });
 
-    it('should throw error while fetching plugin by name', async () => {
+    it('should fail to get plugin by name when plugin not found with NotFoundError 404', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
         mockData: [],
-        name: 'invalid-plugin',
+        name: 'not-found',
       });
       const response = await request(backendServer).get(
-        '/api/extensions/plugin/default/invalid-plugin',
+        '/api/extensions/plugin/default/not-found',
       );
-
-      expect(response.status).toEqual(404);
-      expect(response.body).toEqual({
-        error: {
-          message: 'Plugin default/invalid-plugin not found',
-          name: 'NotFoundError',
-        },
-        request: {
-          method: 'GET',
-          url: '/plugin/default/invalid-plugin',
-        },
-        response: {
-          statusCode: 404,
-        },
-      });
+      expectNotFoundError(response, MarketplaceKind.Plugin);
     });
   });
 
@@ -424,11 +394,7 @@ describe('createRouter', () => {
       const response = await request(backendServer).get(
         '/api/extensions/plugin/default/not-found/configuration',
       );
-      expect(response.status).toEqual(404);
-      expect(response.body.error).toEqual({
-        message: 'Plugin default/not-found not found',
-        name: 'NotFoundError',
-      });
+      expectNotFoundError(response, MarketplaceKind.Plugin);
     });
 
     it('should get the plugin configuration', async () => {
@@ -503,11 +469,7 @@ describe('createRouter', () => {
       const response = await request(backendServer)
         .post('/api/extensions/plugin/default/not-found/configuration')
         .send({ configYaml: stringify(mockDynamicPlugin1) });
-      expect(response.status).toEqual(404);
-      expect(response.body.error).toEqual({
-        message: 'Plugin default/not-found not found',
-        name: 'NotFoundError',
-      });
+      expectNotFoundError(response, MarketplaceKind.Plugin);
     });
 
     it('should install the plugin configuration', async () => {
@@ -532,15 +494,10 @@ describe('createRouter', () => {
         kind: MarketplaceKind.Package,
         config: FILE_INSTALL_CONFIG,
       });
-
       const response = await request(backendServer).get(
         '/api/extensions/package/default/not-found/configuration',
       );
-      expect(response.status).toEqual(404);
-      expect(response.body.error).toEqual({
-        message: 'Package default/not-found not found',
-        name: 'NotFoundError',
-      });
+      expectNotFoundError(response, MarketplaceKind.Package);
     });
 
     it('should get the package configuration', async () => {
@@ -617,11 +574,7 @@ describe('createRouter', () => {
       const response = await request(backendServer)
         .post('/api/extensions/package/default/not-found/configuration')
         .send({ configYaml: stringify(mockDynamicPackage11) });
-      expect(response.status).toEqual(404);
-      expect(response.body.error).toEqual({
-        message: 'Package default/not-found not found',
-        name: 'NotFoundError',
-      });
+      expectNotFoundError(response, MarketplaceKind.Package);
     });
 
     it('should install the package configuration', async () => {
