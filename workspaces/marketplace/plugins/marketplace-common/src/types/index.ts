@@ -19,3 +19,4 @@ export * from './MarketplaceCollection';
 export * from './MarketplaceKind';
 export * from './MarketplacePackage';
 export * from './MarketplacePlugin';
+export * from './ConfigurationResponse';

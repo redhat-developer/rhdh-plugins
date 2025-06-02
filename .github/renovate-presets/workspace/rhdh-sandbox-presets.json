@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Sandbox minor updates",
+      "matchFileNames": ["workspaces/sandbox/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Sandbox)"
+      ],
+      "addLabels": ["team/sandbox", "sandbox"]
+    },
+    {
+      "description": "all Sandbox patch updates",
+      "matchFileNames": ["workspaces/sandbox/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Sandbox)"
+      ],
+      "addLabels": ["team/sandbox", "sandbox"]
+    },
+    {
+      "description": "all Sandbox dev dependency updates",
+      "matchFileNames": ["workspaces/sandbox/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Sandbox)"
+      ],
+      "addLabels": ["team/sandbox", "sandbox"]
+    }
+  ]
+}

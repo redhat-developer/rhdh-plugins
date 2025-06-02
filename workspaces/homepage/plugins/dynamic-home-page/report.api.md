@@ -59,6 +59,9 @@ export interface DynamicHomePageProps {
 }
 
 // @public (undocumented)
+export const EntitySection: () => React_2.JSX.Element;
+
+// @public (undocumented)
 export const FeaturedDocsCard: React_2.ComponentType<FeaturedDocsCardProps>;
 
 // @public (undocumented)
@@ -110,6 +113,9 @@ export interface MarkdownProps {
 }
 
 // @public (undocumented)
+export const OnboardingSection: () => React_2.JSX.Element;
+
+// @public (undocumented)
 export const Placeholder: React_2.ComponentType<PlaceholderProps>;
 
 // @public (undocumented)
@@ -144,6 +150,9 @@ export interface SearchBarProps {
     // (undocumented)
     queryParam?: string;
 }
+
+// @public (undocumented)
+export const TemplateSection: () => React_2.JSX.Element;
 
 // @public (undocumented)
 export const TopVisitedCard: React_2.ComponentType<VisitedByTypeProps>;

@@ -101,6 +101,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   const handleEditPhoneNumber = () => {
     setPhoneNumber(undefined);
     setEnterOTP(false);
+    setOtp(['', '', '', '', '', '']);
   };
 
   const handleResendCode = async () => {

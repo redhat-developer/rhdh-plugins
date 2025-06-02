@@ -1,0 +1,8 @@
+{
+  "minor": {
+    "description": "Group all minor updates for RHDH {{arg0}} Plugins",
+    "matchUpdateTypes": ["minor"],
+    "matchDepTypes": ["dependencies", "peerDependencies"],
+    "groupName": "RHDH {{arg0}} Dependencies (minor)"
+  }
+}

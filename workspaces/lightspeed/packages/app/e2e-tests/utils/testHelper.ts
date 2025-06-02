@@ -28,7 +28,7 @@ export const openLightspeed = async (page: Page) => {
 export const sendMessage = async (message: string, page: Page) => {
   const inputLocator = getElementByRole(page, 'textbox', 'Send a message...');
   await inputLocator.fill(message);
-
   const sendButton = getElementByRole(page, 'button', 'Send button');
   await sendButton.click();
+
 };

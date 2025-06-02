@@ -1,6 +1,8 @@
 # orchestrator-form-widgets
 
-This Backstage frontend plugin provides default, but optional, set of RJSF form widgets for the Orchestrator workflow execution page as described [here](../orchestrator-form-api/README.md).
+This Backstage frontend plugin provides default, but optional, set of RJSF form widgets for the Orchestrator workflow execution page as described in [orchestrator-form-api plugin](../orchestrator-form-api/README.md) or [extensibleForm.md](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/docs/extensibleForm.md).
+
+Documentation of implemented widgets can be found in a [orchestratorFormWidgets.md](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/docs/orchestratorFormWidgets.md).
 
 ## Deployment
 
@@ -21,10 +23,6 @@ const app = createApp({
 
 For RHDH production deployments, it is expected that the plugin is exported as a dynamic plugin using Janus CLI a loaded among the other dynamic frontend plugins.
 No explicit configuration is needed.
-
-## Content
-
-Documentation of implemented widgets can be found in a [separate document](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/docs/orchestratorFormWidgets.md).
 
 ## `http-workflow-dev-server` - HTTP server for dynamic widgets development
 

@@ -8557,7 +8557,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.16.14, @mui/icons-material@npm:^5.15.17":
+"@mui/icons-material@npm:5.16.14":
   version: 5.16.14
   resolution: "@mui/icons-material@npm:5.16.14"
   dependencies:
@@ -8570,6 +8570,22 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 14c01298e47972099ce71a8f142e2bb93dfc61a3ac0239030c55b3e5c6719f692e9c2fac131247c52f4922e74b08291ecb1f3398117222cc7baa82ec6f38e073
+  languageName: node
+  linkType: hard
+
+"@mui/icons-material@npm:^5.15.17, @mui/icons-material@npm:^5.17.1":
+  version: 5.17.1
+  resolution: "@mui/icons-material@npm:5.17.1"
+  dependencies:
+    "@babel/runtime": ^7.23.9
+  peerDependencies:
+    "@mui/material": ^5.0.0
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
   languageName: node
   linkType: hard
 
@@ -10376,7 +10392,7 @@ __metadata:
     "@mui/material": ^5.15.17
     "@mui/styles": 5.16.14
     "@openshift/dynamic-plugin-sdk": 5.0.1
-    "@scalprum/react-core": 0.9.3
+    "@scalprum/react-core": 0.9.5
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     classnames: ^2.5.1
@@ -10389,18 +10405,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@redhat-developer/red-hat-developer-hub-theme@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.6.0"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/theme": ^0.5.2
-    "@emotion/react": ^11.11.1
-    "@emotion/styled": ^11.11.0
-    "@material-ui/core": ^4.12.4
+    "@backstage/core-plugin-api": ^1.10.4
+    "@backstage/theme": ^0.6.4
     "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.14.19
-    "@mui/material": ^5.14.20
-  checksum: 158667ac33e7b926fec2c7ed9d26c3bd81deafe8b0026316ab171e66dd2f3a36474225e42b7ac8527d0e357c1c11432fe767f0cd46b2cd86464e53e4c146a09c
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 37b868436f32ac08f6fd465d3a14caf636731e299a8407dc07970681b0e6327d61f12616820ff57b103a3ef8c51d37092dd6e972363d914cecd7c0f3231a760b
   languageName: node
   linkType: hard
 
@@ -10859,27 +10876,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:^0.8.1":
-  version: 0.8.1
-  resolution: "@scalprum/core@npm:0.8.1"
+"@scalprum/core@npm:^0.8.3":
+  version: 0.8.3
+  resolution: "@scalprum/core@npm:0.8.3"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
     tslib: ^2.6.2
-  checksum: 581631848bda2081dfe797c4c4326b442ce086d69117cc1eb74c18d345124825d87f570d09e8edaaa132d32a7720db0e728971834f1509aca9349aff21246a52
+  checksum: 31d1d376c795d47cfc7c4cf84d262989f7a62e3c536aedff03cfa6e23bf969713f70f0e3c9035fe46b280a5133c85c416f1cd2b46c98f9822080ac9d7c752819
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.9.3":
-  version: 0.9.3
-  resolution: "@scalprum/react-core@npm:0.9.3"
+"@scalprum/react-core@npm:0.9.5":
+  version: 0.9.5
+  resolution: "@scalprum/react-core@npm:0.9.5"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
-    "@scalprum/core": ^0.8.1
+    "@scalprum/core": ^0.8.3
     lodash: ^4.17.0
   peerDependencies:
     react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
     react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 19c29a54e25c8025b668a96291741ce4b68dc0c87684cc39c260fc29aa2e0fc0d3e01266e0b5f64a290607e3df8d766539b619d23b756e2d09534b37034c313c
+  checksum: 824cc4c53437a3d0da9a760fefa31a6aba436caef7b2cad69838fb43bd19b6301f90d60e33e823628596ef5e7174a208ba0e67ab129688cf122771fc101b0598
   languageName: node
   linkType: hard
 
@@ -14808,7 +14825,7 @@ __metadata:
     "@mui/styles": 5.16.14
     "@playwright/test": 1.50.1
     "@red-hat-developer-hub/backstage-plugin-global-floating-action-button": "workspace:^"
-    "@redhat-developer/red-hat-developer-hub-theme": ^0.5.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.6.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@types/react-dom": "*"

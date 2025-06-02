@@ -8,6 +8,7 @@ spec:
   targets:
     - ./plugins/3scale.yaml
     - ./plugins/acr.yaml
+    - ./plugins/bulk-import.yaml
     - ./plugins/keycloak.yaml
     - ./plugins/marketplace.yaml
     - ./plugins/no-icon-no-description.yaml
