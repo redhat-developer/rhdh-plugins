@@ -35,7 +35,8 @@ export async function triggerFileChooser(
 }
 
 export async function uploadFile(page: Page, filePath: string) {
-  const attachButton = getElementByRole(page, 'button', 'Attach button');
+  const attachButton = page.getByRole('button', { name: 'Attach' });
+  await expect(attachButton).toBeVisible();
 
   const fileChooser = await triggerFileChooser(page, attachButton);
   await fileChooser.setFiles(filePath);
