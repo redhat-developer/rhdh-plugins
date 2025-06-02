@@ -173,6 +173,12 @@ describe('createRouter', () => {
     return { backendServer };
   };
 
+  beforeEach(() => {
+    jest
+      .spyOn(InstallationDataService, 'fromConfig')
+      .mockReturnValue(mockInstallationDataService);
+  });
+
   describe('GET /collections', () => {
     it('should get all collections', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
@@ -408,12 +414,6 @@ describe('createRouter', () => {
   });
 
   describe('GET /plugin/:namespace/:name/configuration', () => {
-    beforeEach(() => {
-      jest
-        .spyOn(InstallationDataService, 'fromConfig')
-        .mockReturnValue(mockInstallationDataService);
-    });
-
     it('should fail when plugin not found with NotFoundError 404', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
         mockData: [],
@@ -442,9 +442,6 @@ describe('createRouter', () => {
       mockInstallationDataService.getPluginConfig.mockResolvedValue(
         pluginToGet,
       );
-      jest
-        .spyOn(InstallationDataService, 'fromConfig')
-        .mockReturnValue(mockInstallationDataService);
 
       const response = await request(backendServer).get(
         '/api/extensions/plugin/default/plugin1/configuration',
@@ -460,12 +457,6 @@ describe('createRouter', () => {
       name: 'plugin1',
       config: FILE_INSTALL_CONFIG,
     };
-
-    beforeEach(() => {
-      jest
-        .spyOn(InstallationDataService, 'fromConfig')
-        .mockReturnValue(mockInstallationDataService);
-    });
 
     it('should fail when config missing with InputError 400', async () => {
       const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
@@ -534,12 +525,6 @@ describe('createRouter', () => {
   });
 
   describe('GET /package/:namespace/:name/configuration', () => {
-    beforeEach(() => {
-      jest
-        .spyOn(InstallationDataService, 'fromConfig')
-        .mockReturnValue(mockInstallationDataService);
-    });
-
     it('should fail when package not found with NotFoundError 404', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
         mockData: [],
@@ -586,12 +571,6 @@ describe('createRouter', () => {
       kind: MarketplaceKind.Package,
       config: FILE_INSTALL_CONFIG,
     };
-
-    beforeEach(() => {
-      jest
-        .spyOn(InstallationDataService, 'fromConfig')
-        .mockReturnValue(mockInstallationDataService);
-    });
 
     it('should fail when config missing with InputError 400', async () => {
       const { backendServer } = await setupTestWithMockCatalog(packageSetup);
