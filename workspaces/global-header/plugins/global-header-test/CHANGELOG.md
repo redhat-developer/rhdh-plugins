@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-global-header-test
 
+## 0.1.1
+
+### Patch Changes
+
+- 106af07: Updated dependency `@mui/styles` to `5.17.1`.
+  Updated dependency `@mui/icons-material` to `5.17.1`.
+  Updated dependency `@mui/material` to `5.17.1`.
+
 ## 0.1.0
 
 ### Minor Changes
