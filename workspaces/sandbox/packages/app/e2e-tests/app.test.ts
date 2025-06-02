@@ -28,13 +28,19 @@ const id = process.env.SSO_USERNAME!;
 const pw = process.env.SSO_PASSWORD!;
 const baseUrl = process.env.BASE_URL!;
 const env = process.env.ENVIRONMENT!;
+const defaultContextOptions = {
+  viewport: { width: 1700, height: 940 }, // e.g. MacBook Pro screen resolution (CSS px)
+  ignoreHTTPSErrors: false,
+};
 
 test.describe('sandbox plugin', () => {
   // Before all tests: launch browser, create new page, and log in
   test.beforeAll('', async ({ browser }) => {
-    const context = await browser.newContext({
-      viewport: { width: 1700, height: 940 }, // e.g. MacBook Pro screen resolution (CSS px)
-    });
+    if (env === 'e2e-tests') {
+      defaultContextOptions.ignoreHTTPSErrors = true; // disable tls
+    }
+
+    const context = await browser.newContext(defaultContextOptions);
     page = await context.newPage();
 
     const loginPage = new LoginPage(page, env);
@@ -111,20 +117,27 @@ test.describe('sandbox plugin', () => {
     // Wait for the new page's 'load' event to ensure it's completely loaded
     await devSandboxPage.waitForLoadState('load', { timeout: 30000 });
     // Wait for a specific element that should be visible after the page is fully loaded
+
+    let imgName = 'Red Hat OpenShift Service on';
+    let logMessage = 'Log in with…';
+
+    if (env === 'e2e-tests') {
+      imgName = 'Red Hat OpenShift';
+      logMessage = 'Log in with';
+    }
+
     const loadElement = devSandboxPage.getByRole('img', {
-      name: 'Red Hat OpenShift Service on',
+      name: imgName,
     });
     await loadElement.waitFor();
 
-    await expect(devSandboxPage.getByRole('heading')).toContainText(
-      'Log in with…',
-    );
-    await expect(devSandboxPage.getByRole('link')).toContainText('DevSandbox');
+    await expect(devSandboxPage.getByRole('heading')).toContainText(logMessage);
+    await expect(devSandboxPage.getByRole('list')).toContainText('DevSandbox');
     await devSandboxPage.close();
   });
 
   // Test Activities page and open each article in a popup
-  test('Test Activites Page', async () => {
+  test('Test Activities Page', async () => {
     // Navigate to the Activities page
     await page.getByRole('link', { name: 'Activities' }).click();
     await expect(page.locator('h3')).toContainText('Featured');
@@ -132,9 +145,9 @@ test.describe('sandbox plugin', () => {
     // Locate all article cards
     const articles = page.getByRole('heading', { level: 5 });
 
-    const noOfArtricles = await articles.count();
+    const noOfArticles = await articles.count();
     // Proceed only if there is at least one article on the page
-    for (let index = 0; index < noOfArtricles; index++) {
+    for (let index = 0; index < noOfArticles; index++) {
       // Extract the title of each article card
       const articleTitle = await articles.nth(index).textContent();
 
