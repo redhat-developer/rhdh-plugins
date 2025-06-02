@@ -268,9 +268,12 @@ export const WorkflowInstancePage = ({
         );
         restart();
       } catch (retriggerInstanceError) {
-        if (retriggerInstanceError.toString().includes('Failed Node Id')) {
+        if (retriggerInstanceError.toString().includes('Failed Node ID')) {
           setRetriggerError(`Run failed again`);
-        } else setRetriggerError(`Couldn't initiate the run`);
+        } else
+          setRetriggerError(
+            `Retrigger failed: ${(retriggerInstanceError as Error).message}`,
+          );
         setIsRerunSnackbarOpen(true);
       } finally {
         setIsRetrigger(false);

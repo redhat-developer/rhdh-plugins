@@ -83,6 +83,17 @@ describe('PhoneVerificationModal', () => {
     );
   };
 
+  test('should open the modal', () => {
+    renderComponent();
+
+    expect(screen.getByText("Let's verify you")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Enter your phone number and we'll send you a text message with a verification code.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   test('should handle modal close', () => {
     renderComponent();
 

@@ -13,15 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { CustomErrorBase } from '@backstage/errors';
 
-import { isError } from '@backstage/errors';
-
-export const getErrorObject = (err: unknown): Error => {
-  if (isError(err)) {
-    return err;
-  }
-  if (typeof err === 'string') {
-    return new Error(err);
-  }
-  return new Error('Unexpected error');
-};
+export class ConfigFormatError extends CustomErrorBase {
+  name = 'ConfigFormatError' as const;
+}

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -107,27 +106,19 @@ describe('SandboxCatalogCardButton', () => {
     expect(screen.getByText('Reprovision')).toBeInTheDocument();
   });
 
-  it('shows loading spinner when loading is true', () => {
-    mockUseSandboxContext.mockReturnValue({
-      loading: true,
-      userFound: false,
-      userReady: false,
-      ansibleStatus: AnsibleStatus.UNKNOWN,
-    } as any);
-
-    renderButton();
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
-  });
-
-  it('shows loading spinner when userFound is true but userReady is false', () => {
+  it('button was clicked - shows loading spinner when userFound is true but userReady is false', async () => {
     mockUseSandboxContext.mockReturnValue({
       loading: false,
       userFound: true,
       userReady: false,
       ansibleStatus: AnsibleStatus.UNKNOWN,
+      verificationRequired: false,
     } as any);
 
     renderButton();
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
+
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 

@@ -9695,9 +9695,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.3.0-prerelease.10":
-  version: 6.3.0-prerelease.10
-  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.10"
+"@patternfly/chatbot@npm:6.3.0-prerelease.17":
+  version: 6.3.0-prerelease.17
+  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.17"
   dependencies:
     "@patternfly/react-code-editor": ^6.1.0
     "@patternfly/react-core": ^6.1.0
@@ -9714,10 +9714,11 @@ __metadata:
     rehype-sanitize: ^6.0.0
     rehype-unwrap-images: ^1.0.0
     remark-gfm: ^4.0.0
+    unist-util-visit: ^5.0.0
   peerDependencies:
-    react: ^17 || ^18
-    react-dom: ^17 || ^18
-  checksum: d78d6c9eb3c4f2005ecaf63ed5354ec07101cbbaf93e9cb1d819a7921fef221b11e38d7be3723c9b0b633fc92b991f459554b94c04687e45c56ee9acf12335a7
+    react: ^17 || ^18 || ^19
+    react-dom: ^17 || ^18 || ^19
+  checksum: f29492ae053f6bcd90267eff96585c6fdf2eca52f8252ced0cc1b6579678df976d8d4d1d1b5aedea42dcfe64b6a865743c5af816d1d2620bc3231e82d5d5aa09
   languageName: node
   linkType: hard
 
@@ -10590,7 +10591,7 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
-    "@patternfly/chatbot": 6.3.0-prerelease.10
+    "@patternfly/chatbot": 6.3.0-prerelease.17
     "@patternfly/react-core": 6.3.0-prerelease.4
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
