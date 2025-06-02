@@ -93,6 +93,17 @@ const expectNotFoundError = async (
   });
 };
 
+const expectInputError = async (
+  response: request.Response,
+  errorMessage: string,
+) => {
+  expect(response.status).toEqual(400);
+  expect(response.body.error).toEqual({
+    message: errorMessage,
+    name: 'InputError',
+  });
+};
+
 const setupTest = () => {
   let server: SetupServer;
 
@@ -430,33 +441,24 @@ describe('createRouter', () => {
       const response = await request(backendServer).post(
         '/api/extensions/plugin/default/plugin1/configuration',
       );
-      expect(response.status).toEqual(400);
-      expect(response.body.error).toEqual({
-        message: "'configYaml' object must be present",
-        name: 'InputError',
-      });
+      expectInputError(response, "'configYaml' object must be present");
     });
 
     it('should fail when bad config format with InputError 400', async () => {
       const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
 
+      const errorMessage =
+        'Invalid installation configuration, plugin packages must be a list';
       mockInstallationDataService.updatePluginConfig.mockImplementationOnce(
         () => {
-          throw new ConfigFormatError(
-            'Invalid installation configuration, plugin packages must be a list',
-          );
+          throw new ConfigFormatError(errorMessage);
         },
       );
 
       const response = await request(backendServer)
         .post('/api/extensions/plugin/default/plugin1/configuration')
-        .send({ configYaml: 'invalid' });
-      expect(response.status).toEqual(400);
-      expect(response.body.error).toEqual({
-        message:
-          'Invalid installation configuration, plugin packages must be a list',
-        name: 'InputError',
-      });
+        .send({ configYaml: 'invalid-plugin' });
+      expectInputError(response, errorMessage);
     });
 
     it('should fail when plugin not found with NotFoundError 404', async () => {
@@ -534,33 +536,24 @@ describe('createRouter', () => {
       const response = await request(backendServer).post(
         '/api/extensions/package/default/package11/configuration',
       );
-      expect(response.status).toEqual(400);
-      expect(response.body.error).toEqual({
-        message: "'configYaml' object must be present",
-        name: 'InputError',
-      });
+      expectInputError(response, "'configYaml' object must be present");
     });
 
     it('should fail when bad config format with InputError 400', async () => {
       const { backendServer } = await setupTestWithMockCatalog(packageSetup);
 
+      const errorMessage =
+        'Invalid installation configuration, package item must be a map';
       mockInstallationDataService.updatePackageConfig.mockImplementationOnce(
         () => {
-          throw new ConfigFormatError(
-            'Invalid installation configuration, package item must be a map',
-          );
+          throw new ConfigFormatError(errorMessage);
         },
       );
 
       const response = await request(backendServer)
         .post('/api/extensions/package/default/package11/configuration')
-        .send({ configYaml: 'invalid' });
-      expect(response.status).toEqual(400);
-      expect(response.body.error).toEqual({
-        message:
-          'Invalid installation configuration, package item must be a map',
-        name: 'InputError',
-      });
+        .send({ configYaml: 'invalid-package' });
+      expectInputError(response, errorMessage);
     });
 
     it('should fail when package not found with NotFoundError 404', async () => {
