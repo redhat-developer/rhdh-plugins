@@ -17,7 +17,7 @@ clean-e2e-resources: get-e2e-repo
 
 # cleans Developer Sandbox UI
 .PHONY: clean-sandbox-ui
-clean-e2e-resources: get-e2e-repo
+clean-sandbox-ui: get-e2e-repo
 	$(MAKE) -C ${E2E_REPO_PATH} clean-sandbox-ui
 
 .PHONY: get-e2e-repo
