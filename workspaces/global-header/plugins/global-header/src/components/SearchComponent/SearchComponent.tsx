@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import { SearchBar } from './SearchBar';
 import { SearchContextProvider } from '@backstage/plugin-search-react';

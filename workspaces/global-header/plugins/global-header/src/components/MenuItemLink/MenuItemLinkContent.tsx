@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { FC } from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { HeaderIcon } from '../HeaderIcon/HeaderIcon';
@@ -27,7 +27,7 @@ interface MenuItemLinkContentProps {
   isExternalLink?: boolean;
 }
 
-export const MenuItemLinkContent: React.FC<MenuItemLinkContentProps> = ({
+export const MenuItemLinkContent: FC<MenuItemLinkContentProps> = ({
   icon,
   label,
   subLabel,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { CSSProperties } from 'react';
 import { Link } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import DefaultLogo from './DefaultLogo';
@@ -24,7 +24,7 @@ const LogoRender = ({
   defaultLogo,
 }: {
   base64Logo: string | undefined;
-  defaultLogo: React.JSX.Element;
+  defaultLogo: JSX.Element;
 }) => {
   return base64Logo ? (
     <img
@@ -48,7 +48,7 @@ const LogoRender = ({
 export interface CompanyLogoProps {
   logo?: string;
   to?: string;
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 }
 
 export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {

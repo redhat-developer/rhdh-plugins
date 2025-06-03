@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React, { useId } from 'react';
+import { useId } from 'react';
+import type { ReactNode, ComponentProps, MouseEvent, FC } from 'react';
 import Menu from '@mui/material/Menu';
 import Button from '@mui/material/Button';
 import { Theme } from '@mui/material/styles';
@@ -24,12 +25,12 @@ import Tooltip from '@mui/material/Tooltip';
 import { MenuItemConfig, MenuSectionConfig } from './MenuSection';
 
 interface HeaderDropdownProps {
-  buttonContent: React.ReactNode;
-  children: React.ReactNode;
+  buttonContent: ReactNode;
+  children: ReactNode;
   menuSections?: MenuSectionConfig[];
   menuBottomItems?: MenuItemConfig[];
-  buttonProps?: React.ComponentProps<typeof Button>;
-  onOpen: (event: React.MouseEvent<HTMLElement>) => void;
+  buttonProps?: ComponentProps<typeof Button>;
+  onOpen: (event: MouseEvent<HTMLElement>) => void;
   onClose: () => void;
   anchorEl: HTMLElement | null;
   isIconButton?: boolean;
@@ -62,7 +63,7 @@ const menuListStyle = (theme: Theme) => ({
   zIndex: 1,
 });
 
-export const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
+export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
   buttonContent,
   children,
   buttonProps,
@@ -77,7 +78,7 @@ export const HeaderDropdownComponent: React.FC<HeaderDropdownProps> = ({
 
   const commonButtonProps = {
     ...buttonProps,
-    onClick: (event: React.MouseEvent<HTMLElement>) => {
+    onClick: (event: MouseEvent<HTMLElement>) => {
       onOpen(event);
       // focus the menu when opened
       // TODO: investigate why MUI isn't doing this for us
