@@ -22,6 +22,7 @@ import {
   LoggerService,
   PermissionsService,
   SchedulerService,
+  UserInfoService,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import type { DiscoveryApi } from '@backstage/core-plugin-api';
@@ -41,8 +42,11 @@ import { Request as HttpRequest } from 'express-serve-static-core';
 import { OpenAPIBackend, Request } from 'openapi-backend';
 
 import {
+  FieldFilter,
   Filter,
+  NestedFilter,
   openApiDocument,
+  orchestratorInstanceAdminViewPermission,
   orchestratorPermissions,
   orchestratorWorkflowPermission,
   orchestratorWorkflowSpecificPermission,
@@ -98,6 +102,20 @@ const authorize = async (
       result: AuthorizeResult.DENY,
     }
   );
+};
+
+const isUserAuthorizedForInstanceAdminViewPermission = async (
+  request: HttpRequest,
+  permissionsSvc: PermissionsService,
+  httpAuth: HttpAuthService,
+): Promise<boolean> => {
+  const credentials = await httpAuth.credentials(request);
+  const [decision] = await permissionsSvc.authorize(
+    [{ permission: orchestratorInstanceAdminViewPermission }],
+    { credentials },
+  );
+
+  return decision.result === AuthorizeResult.ALLOW;
 };
 
 const filterAuthorizedWorkflowIds = async (
@@ -173,6 +191,7 @@ export async function createBackendRouter(
     scheduler,
     permissions,
     httpAuth,
+    userInfo,
   } = options;
   const publicServices = initPublicServices(logger, config, scheduler);
 
@@ -203,6 +222,7 @@ export async function createBackendRouter(
     permissions,
     httpAuth,
     auditor,
+    userInfo,
   );
   setupExternalRoutes(router, discovery, scaffolderService, auditor);
 
@@ -313,6 +333,7 @@ function setupInternalRoutes(
   permissions: PermissionsService,
   httpAuth: HttpAuthService,
   auditor: AuditorService,
+  userInfo: UserInfoService,
 ) {
   function manageDenyAuthorization(auditEvent: AuditorServiceEvent) {
     const error = new UnauthorizedError();
@@ -404,6 +425,10 @@ function setupInternalRoutes(
     'executeWorkflow',
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
+      const credentials = await httpAuth.credentials(req);
+      const initiatorEntity = await (
+        await userInfo.getUserInfo(credentials)
+      ).userEntityRef;
 
       const auditEvent = await auditor.createEvent({
         eventId: 'execute-workflow',
@@ -434,7 +459,12 @@ function setupInternalRoutes(
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
-        .executeWorkflow(executeWorkflowRequestDTO, workflowId, businessKey)
+        .executeWorkflow(
+          executeWorkflowRequestDTO,
+          workflowId,
+          businessKey,
+          initiatorEntity,
+        )
         .then(result => {
           auditEvent.success({ meta: { id: result.id } });
           return res.status(200).json(result);
@@ -778,9 +808,46 @@ function setupInternalRoutes(
         if (!authorizedWorkflowIds || authorizedWorkflowIds.length === 0)
           res.json([]);
 
+        const credentials = await httpAuth.credentials(req);
+        const initiatorEntity = (await userInfo.getUserInfo(credentials))
+          .userEntityRef;
+        const isUserAuthorizedForInstanceAdminView: boolean = // This permission will let user see ALL instances (including ones others created)
+          await isUserAuthorizedForInstanceAdminViewPermission(
+            req,
+            permissions,
+            httpAuth,
+          );
+
+        const requestFilters = getRequestFilters(req);
+
+        let filters = requestFilters;
+
+        if (!isUserAuthorizedForInstanceAdminView) {
+          const initiatorEntityFilter: FieldFilter = {
+            operator: 'EQ',
+            value: initiatorEntity,
+            field: 'initiatorEntity',
+          };
+
+          const nestedVariablesFilter: NestedFilter = {
+            field: 'variables',
+            nested: initiatorEntityFilter,
+          };
+
+          if (requestFilters === undefined) {
+            filters = nestedVariablesFilter;
+          } else {
+            // combine filters
+            filters = {
+              operator: 'AND',
+              filters: [nestedVariablesFilter, requestFilters],
+            };
+          }
+        }
+
         const result = await routerApi.v2.getInstances(
           buildPagination(req),
-          getRequestFilters(req),
+          filters,
           authorizedWorkflowIds,
         );
 
@@ -832,6 +899,28 @@ function setupInternalRoutes(
         );
         if (decision.result === AuthorizeResult.DENY) {
           manageDenyAuthorization(auditEvent);
+        }
+
+        const credentials = await httpAuth.credentials(request);
+        const initiatorEntity = (await userInfo.getUserInfo(credentials))
+          .userEntityRef;
+        // Check if user is authorized to view all instances
+        const isUserAuthorizedForInstanceAdminView =
+          await isUserAuthorizedForInstanceAdminViewPermission(
+            request,
+            permissions,
+            httpAuth,
+          );
+
+        // If not an admin, enforce initiatorEntity check
+        if (!isUserAuthorizedForInstanceAdminView) {
+          const instanceInitiatorEntity =
+            assessedInstance.instance.initiatorEntity;
+          if (instanceInitiatorEntity !== initiatorEntity) {
+            throw new Error(
+              `Unauthorized to access instance ${instanceId} not initiated by user.`,
+            );
+          }
         }
 
         auditEvent.success();
