@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import { Page } from '@playwright/test';
+import '@backstage/config';
 
-export const openLightspeed = async (page: Page) => {
-  const navLink = page.getByRole('link', { name: 'Lightspeed' });
-  await navLink.click();
-
-  await page.locator('.pf-chatbot__messagebox').waitFor({ state: 'visible' });
-};
-
-export const sendMessage = async (message: string, page: Page) => {
-  const inputLocator = page.getByRole('textbox', { name: 'Send a message...' });
-  await inputLocator.fill(message);
-  const sendButton = page.getByRole('button', { name: 'Send' });
-  await sendButton.click();
-};
+declare module '@backstage/config' {
+  interface Config {
+    app?: {
+      branding?: {
+        /**
+         * Base64 URI for the full logo
+         * @visibility frontend
+         */
+        fullLogo?: string;
+      };
+    };
+  }
+}

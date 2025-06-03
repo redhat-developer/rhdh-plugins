@@ -25,7 +25,6 @@ import {
   ProcessInstance,
   ProcessInstanceListResultDTO,
   ProcessInstanceState,
-  ProcessInstanceVariables,
   WorkflowDTO,
   WorkflowInfo,
   WorkflowOverviewDTO,
@@ -158,6 +157,7 @@ export class V2 {
     executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO,
     workflowId: string,
     businessKey: string | undefined,
+    initiatorEntity: string,
   ): Promise<ExecuteWorkflowResponseDTO> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
@@ -170,8 +170,10 @@ export class V2 {
     }
     const executionResponse = await this.orchestratorService.executeWorkflow({
       definitionId: workflowId,
-      inputData:
-        executeWorkflowRequestDTO.inputData as ProcessInstanceVariables,
+      inputData: {
+        workflowdata: executeWorkflowRequestDTO.inputData,
+        initiatorEntity: initiatorEntity,
+      },
       authTokens: executeWorkflowRequestDTO.authTokens as Array<AuthToken>,
       serviceUrl: definition.serviceUrl,
       businessKey,

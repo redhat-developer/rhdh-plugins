@@ -41,6 +41,7 @@ export const orchestratorPlugin = createBackendPlugin({
         scheduler: coreServices.scheduler,
         httpAuth: coreServices.httpAuth,
         http: coreServices.httpRouter,
+        userInfo: coreServices.userInfo,
       },
       async init(props) {
         const { http } = props;
