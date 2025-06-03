@@ -46,7 +46,7 @@
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "@red-hat-developer-hub/backstage-plugin-marketplace": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.6.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.8.0",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
     "react-router": "^6.3.0",
@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@backstage/test-utils": "^1.7.5",
-    "@playwright/test": "1.50.1",
+    "@playwright/test": "1.52.0",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",

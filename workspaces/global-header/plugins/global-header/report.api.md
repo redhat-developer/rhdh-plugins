@@ -12,6 +12,22 @@ import { default as React_2 } from 'react';
 export const ApplicationLauncherDropdown: () => React_2.JSX.Element;
 
 // @public
+export const CompanyLogo: ({
+  logo,
+  to,
+}: CompanyLogoProps) => React_2.JSX.Element;
+
+// @public (undocumented)
+export interface CompanyLogoProps {
+  // (undocumented)
+  layout?: React_2.CSSProperties;
+  // (undocumented)
+  logo?: string;
+  // (undocumented)
+  to?: string;
+}
+
+// @public
 export const CreateDropdown: React_2.ComponentType<CreateDropdownProps>;
 
 // @public
