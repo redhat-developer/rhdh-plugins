@@ -32,9 +32,7 @@ interface SandboxContextType {
   pendingApproval: boolean;
   userData: SignupData | undefined;
   loading: boolean;
-  fetchError: string | null;
-  signupError: string | null;
-  refetchUserData: () => Promise<boolean>;
+  refetchUserData: () => Promise<SignupData | undefined>;
   signupUser: () => void;
   refetchAAP: () => void;
   ansibleData: AAPData | undefined;
@@ -67,8 +65,6 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userFound, setUserFound] = useState<boolean>(false);
   const [userData, setData] = useState<SignupData | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [signupError, setSignupError] = useState<string | null>(null);
   const [userReady, setUserReady] = useState<boolean>(false);
   const [verificationRequired, setVerificationRequired] =
     useState<boolean>(false);
@@ -96,54 +92,44 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
     setUserReady(status === 'ready');
   }, [status]);
 
-  const fetchData = async (isRefetch = false): Promise<boolean> => {
+  const fetchData = async (
+    isRefetch = false,
+  ): Promise<SignupData | undefined> => {
     if (!isRefetch) {
       setLoading(true);
     }
-    setFetchError(null);
-    let found = false;
 
+    let result;
     try {
-      const result = await registerApi.getSignUpData();
+      result = await registerApi.getSignUpData();
       if (!isEqual(userData, result)) {
         setData(result);
       }
       if (result) {
         setUserFound(true);
-        found = true;
       } else {
         setUserFound(false);
-        found = false;
       }
     } catch (err) {
-      setFetchError(
-        err instanceof Error
-          ? err?.message
-          : 'An unknown error occurred during fetch',
-      );
+      /* eslint-disable no-console */
+      console.error('Error fetching user data:', err);
+      /* eslint-enable no-console */
       setData(undefined);
       setUserFound(false);
-      found = false;
     } finally {
       setLoading(false);
       setStatusUnknown(false);
     }
-    return found;
+    return result;
   };
 
   const signupUser = async () => {
     setLoading(true);
-    setSignupError(null);
     try {
       await registerApi.signup();
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Error during signup', err);
-      setSignupError(
-        err instanceof Error
-          ? err?.message
-          : 'An unknown error occurred during signup',
-      );
     } finally {
       setLoading(false);
     }
@@ -228,8 +214,6 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
         pendingApproval,
         userData,
         loading,
-        fetchError,
-        signupError,
         refetchUserData: fetchData,
         signupUser,
         refetchAAP: getAAPData,
