@@ -9,6 +9,17 @@ test-e2e: get-e2e-repo
 test-e2e-local:
 	$(MAKE) test-e2e E2E_REPO_PATH=../../../toolchain-e2e
 
+# cleans both toolchain resources and Developer Sandbox UI
+.PHONY: clean-all-e2e-resources
+clean-e2e-resources: get-e2e-repo
+	$(MAKE) -C ${E2E_REPO_PATH} clean-e2e-resources
+	$(MAKE) -C ${E2E_REPO_PATH} clean-sandbox-ui
+
+# cleans Developer Sandbox UI
+.PHONY: clean-sandbox-ui
+clean-e2e-resources: get-e2e-repo
+	$(MAKE) -C ${E2E_REPO_PATH} clean-sandbox-ui
+
 .PHONY: get-e2e-repo
 get-e2e-repo:
 ifeq ($(E2E_REPO_PATH),"")
