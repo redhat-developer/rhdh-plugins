@@ -28,6 +28,7 @@ import {
 import { openLightspeed, sendMessage } from './utils/testHelper';
 import {
   uploadFile,
+  reUploadfile,
   validateSuccessfulUpload,
   validateFailedUpload,
   supportedFileTypes,
@@ -138,6 +139,7 @@ test.describe('File Attachment Validation', () => {
 
       if (supportedFileTypes.includes(fileExtension)) {
         await validateSuccessfulUpload(page, name);
+        await reUploadfile(page, path);
       } else {
         await validateFailedUpload(page);
       }
