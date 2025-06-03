@@ -22,6 +22,7 @@ import type {
   PermissionsService,
   SchedulerService,
   UrlReaderService,
+  UserInfoService,
 } from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
@@ -41,6 +42,7 @@ export interface RouterOptions {
   scheduler: SchedulerService;
   permissions: PermissionsService;
   httpAuth: HttpAuthService;
+  userInfo: UserInfoService;
 }
 
 export async function createRouter(
@@ -71,5 +73,6 @@ export async function createRouter(
     scheduler: args.scheduler,
     permissions: args.permissions,
     httpAuth: args.httpAuth,
+    userInfo: args.userInfo,
   });
 }

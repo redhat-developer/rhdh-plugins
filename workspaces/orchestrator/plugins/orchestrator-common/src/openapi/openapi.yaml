@@ -512,6 +512,8 @@ components:
           type: string
         workflowdata:
           $ref: '#/components/schemas/WorkflowDataDTO'
+        initiatorEntity:
+          type: string
         businessKey:
           type: string
         nodes:
