@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 3.0.3
+
+### Patch Changes
+
+- dc01428: enable retrigger
+- 3b571b3: Updated dependency `@janus-idp/cli` to `3.6.1`.
+- 95c8073: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.8.0`.
+- Updated dependencies [4ecd9f0]
+- Updated dependencies [9bc8af0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.3
+
 ## 3.0.2
 
 ### Patch Changes

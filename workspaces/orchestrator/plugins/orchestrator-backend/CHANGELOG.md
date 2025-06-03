@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 6.0.3
+
+### Patch Changes
+
+- 4ecd9f0: Limit access to workflow instances to initiators only
+- 9bc8af0: remove failed nodes from previous executions/retriggers
+- 3b571b3: Updated dependency `@janus-idp/cli` to `3.6.1`.
+- 7509a73: skip cache availability check in selected functions
+- Updated dependencies [4ecd9f0]
+- Updated dependencies [9bc8af0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.3
+
 ## 6.0.2
 
 ### Patch Changes
