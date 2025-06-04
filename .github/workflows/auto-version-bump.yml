@@ -20,7 +20,9 @@ jobs:
         id: set-matrix
         run: |
           matrix=$(node scripts/ci/generate-auto-bump-matrix.js)
-          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo "matrix<<EOF" >> $GITHUB_OUTPUT
+          echo "$matrix" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
   batch-dispatch:
     needs: prepare
