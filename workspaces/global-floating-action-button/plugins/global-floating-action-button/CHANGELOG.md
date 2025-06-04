@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.1.6
+
+### Patch Changes
+
+- 106af07: Updated dependency `@mui/styles` to `5.17.1`.
+  Updated dependency `@mui/icons-material` to `5.17.1`.
+  Updated dependency `@mui/material` to `5.17.1`.
+
+## 1.1.5
+
+### Patch Changes
+
+- e1914ce: Updated dependency `@scalprum/react-core` to `0.9.5`.
+
 ## 1.1.4
 
 ### Patch Changes

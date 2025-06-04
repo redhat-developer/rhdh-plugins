@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 0.5.2
+
+### Patch Changes
+
+- 1704cd9: Updated dependency `msw` to `2.7.6`.
+- a9e5f32: Updated dependency `@openapitools/openapi-generator-cli` to `2.20.0`.
+  Updated dependency `prettier` to `3.5.3`.
+  Updated dependency `@redhat-developer/red-hat-developer-hub-theme` to `0.5.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.6.0`.
+  Updated dependency `@janus-idp/cli` to `3.5.0`.
+- 174e08c: Updated dependency `node-fetch` to `2.7.0`.
+- 571d93e: Updated dependency `@types/express` to `4.17.22`.
+- Updated dependencies [a9e5f32]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.3.1
+
 ## 0.5.1
 
 ### Patch Changes

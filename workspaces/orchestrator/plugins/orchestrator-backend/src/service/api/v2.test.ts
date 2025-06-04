@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { Request } from 'express';
 
 import {
@@ -67,6 +68,7 @@ const createMockOrchestratorService = (): OrchestratorService => {
   mockOrchestratorService.fetchInstance = jest.fn();
   mockOrchestratorService.executeWorkflow = jest.fn();
   mockOrchestratorService.abortWorkflowInstance = jest.fn();
+  mockOrchestratorService.pingWorkflowService = jest.fn();
 
   return mockOrchestratorService;
 };
@@ -363,6 +365,9 @@ describe('executeWorkflow', () => {
     (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
       workflowInfo,
     );
+    (
+      mockOrchestratorService.pingWorkflowService as jest.Mock
+    ).mockResolvedValue(workflowInfo);
 
     (mockOrchestratorService.executeWorkflow as jest.Mock).mockResolvedValue(
       execResponse,
@@ -377,6 +382,7 @@ describe('executeWorkflow', () => {
       workflowData,
       workflowInfo.id,
       'businessKey',
+      'someUserEntity',
     );
 
     // Assert

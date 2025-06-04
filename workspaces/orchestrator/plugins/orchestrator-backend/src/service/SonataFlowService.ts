@@ -45,23 +45,17 @@ export class SonataFlowService {
   }): Promise<WorkflowInfo | undefined> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}`;
     const response = await fetch(urlToFetch);
-    const jsonResponse = await response.json();
-    if (response.ok) {
-      this.logger.debug(
-        `Fetch workflow info result: ${JSON.stringify(jsonResponse)}`,
-      );
-      return jsonResponse;
-    }
-    this.logger.error(
-      `Fetch workflow info failed with: ${JSON.stringify(jsonResponse)}`,
+    const jsonResponse = await this.handleWorkflowServiceResponse(
+      'Get workflow info',
+      args.definitionId,
+      urlToFetch,
+      response,
+      'GET',
     );
-    throw new Error(
-      await this.createPrefixFetchErrorMessage(
-        urlToFetch,
-        response,
-        jsonResponse,
-      ),
+    this.logger.debug(
+      `Fetch workflow info result: ${JSON.stringify(jsonResponse)}`,
     );
+    return jsonResponse;
   }
 
   public async fetchWorkflowDefinition(
@@ -131,31 +125,25 @@ export class SonataFlowService {
       headers,
     });
 
-    const json = await response.json();
+    const json = await this.handleWorkflowServiceResponse(
+      'Execute',
+      args.definitionId,
+      urlToFetch,
+      response,
+      'POST',
+    );
     if (json.id) {
       this.logger.debug(
         `Execute workflow successful. Response: ${JSON.stringify(json)}`,
       );
       return json;
-    } else if (!response.ok) {
-      const errorMessage = await this.createPrefixFetchErrorMessage(
-        urlToFetch,
-        response,
-        json,
-        'POST',
-      );
-      this.logger.error(
-        `Execute workflow failed. Response: ${JSON.stringify(json)}`,
-      );
-      throw new Error(errorMessage);
-    } else {
-      this.logger.error(
-        `Execute workflow did not return a workflow instance ID. Response: ${JSON.stringify(
-          json,
-        )}`,
-      );
-      throw new Error('Execute workflow did not return a workflow instance ID');
     }
+    this.logger.error(
+      `Execute workflow did not return a workflow instance ID. Response: ${JSON.stringify(
+        json,
+      )}`,
+    );
+    throw new Error('Execute workflow did not return a workflow instance ID');
   }
 
   public async retriggerInstance(args: {
@@ -168,19 +156,13 @@ export class SonataFlowService {
     const response = await fetch(urlToFetch, {
       method: 'POST',
     });
-
-    if (!response.ok) {
-      const json = await response.json();
-      this.logger.error(`Retrigger failed with: ${JSON.stringify(json)}`);
-      throw new Error(
-        `${await this.createPrefixFetchErrorMessage(
-          urlToFetch,
-          response,
-          json,
-          'POST',
-        )}`,
-      );
-    }
+    await this.handleWorkflowServiceResponse(
+      'Retrigger',
+      args.definitionId,
+      urlToFetch,
+      response,
+      'POST',
+    );
 
     return true;
   }
@@ -196,18 +178,13 @@ export class SonataFlowService {
       method: 'DELETE',
     });
 
-    if (!response.ok) {
-      const json = await response.json();
-      this.logger.error(`Abort failed with: ${JSON.stringify(json)}`);
-      throw new Error(
-        `${await this.createPrefixFetchErrorMessage(
-          urlToFetch,
-          response,
-          json,
-          'DELETE',
-        )}`,
-      );
-    }
+    await this.handleWorkflowServiceResponse(
+      'Abort',
+      args.definitionId,
+      urlToFetch,
+      response,
+      'DELETE',
+    );
   }
 
   public async fetchWorkflowOverview(
@@ -266,36 +243,48 @@ export class SonataFlowService {
     return response.ok;
   }
 
-  public async createPrefixFetchErrorMessage(
-    urlToFetch: string,
+  private async handleWorkflowServiceResponse(
+    operation: 'Abort' | 'Execute' | 'Retrigger' | 'Get workflow info',
+    workflowId: string,
+    serviceUrl: string,
     response: Response,
-    jsonResponse: any,
-    httpMethod = 'GET',
-  ): Promise<string> {
-    const errorInfo = [];
-    let errorMsg = `Request ${httpMethod} ${urlToFetch} failed with: StatusCode: ${response.status}`;
+    httpMethod: Request['method'],
+  ): Promise<any> {
+    const logErrorPrefix = `Error during operation '${operation}' on workflow ${workflowId} with service URL ${serviceUrl}`;
 
+    const errorLines: string[] = [];
+    errorLines.push(`HTTP ${httpMethod} request to ${serviceUrl} failed.`);
+    errorLines.push(`Status Code: ${response.status}`);
     if (response.statusText) {
-      errorInfo.push(`StatusText: ${response.statusText}`);
+      errorLines.push(`Status Text: ${response.statusText}`);
     }
-    if (jsonResponse?.details) {
-      errorInfo.push(`Details: ${jsonResponse?.details}`);
+    try {
+      const jsonResponse = await response.json();
+      if ((jsonResponse.id && operation === 'Execute') || response.ok) {
+        // Treat as successful from the UI perspective.
+        // This allows navigation to the instance page even if the workflow execution
+        // fails immediately after initiation. The presence of an instance id or a successful
+        // 'ok' status indicates the initiation was successful.
+        return jsonResponse;
+      }
+      if (jsonResponse?.message) {
+        errorLines.push(`Message: ${jsonResponse.message}`);
+      }
+      if (jsonResponse?.details) {
+        errorLines.push(`Details: ${jsonResponse.details}`);
+      }
+      if (jsonResponse?.stack) {
+        errorLines.push(`Stack Trace: ${jsonResponse.stack}`);
+      }
+      if (jsonResponse?.failedNodeId) {
+        errorLines.push(`Failed Node ID: ${jsonResponse.failedNodeId}`);
+      }
+      this.logger.error(`${logErrorPrefix}: ${JSON.stringify(jsonResponse)}`);
+    } catch (jsonParseError) {
+      this.logger.error(
+        `${logErrorPrefix}. The details of this error cannot be provided because the response body was not in a parsable format.`,
+      );
     }
-    if (jsonResponse?.stack) {
-      errorInfo.push(`Stack: ${jsonResponse?.stack}`);
-    }
-    if (jsonResponse?.message) {
-      errorInfo.push(`Message: ${jsonResponse?.message}`);
-    }
-    if (jsonResponse?.failedNodeId) {
-      errorInfo.push(`Failed Node Id: ${jsonResponse?.failedNodeId}`);
-    }
-    if (errorInfo.length > 0) {
-      errorMsg += ` ${errorInfo.join(', ')}`;
-    } else {
-      errorMsg += ' Unexpected error';
-    }
-
-    return errorMsg;
+    throw new Error(errorLines.join('\n'));
   }
 }

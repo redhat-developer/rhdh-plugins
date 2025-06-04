@@ -16,6 +16,8 @@
 
 import { Link } from '@backstage/core-components';
 
+import Typography from '@mui/material/Typography';
+
 import { AddRepositoryData } from '../../types';
 
 export const SelectRepositories = ({
@@ -29,20 +31,28 @@ export const SelectRepositories = ({
 }) => {
   if (orgData?.totalReposInOrg === 0) {
     return (
-      <span style={{ color: '#6A6E73' }} data-testid="no-repositories">
+      <Typography
+        component="span"
+        style={{ color: '#6A6E73' }}
+        data-testid="no-repositories"
+      >
         No repositories found
-      </span>
+      </Typography>
     );
   }
 
   if (orgData?.totalReposInOrg === addedRepositoriesCount) {
     return (
-      <span style={{ color: '#6A6E73' }} data-testid="no-repositories">
+      <Typography
+        component="span"
+        style={{ color: '#6A6E73' }}
+        data-testid="no-repositories"
+      >
         All repositories are added{' '}
         <Link to="" onClick={() => onOrgRowSelected(orgData)}>
           View
         </Link>
-      </span>
+      </Typography>
     );
   }
 
@@ -51,21 +61,21 @@ export const SelectRepositories = ({
     Object.keys(orgData?.selectedRepositories || [])?.length === 0
   ) {
     return (
-      <span data-testid="select-repositories">
+      <Typography component="span" data-testid="select-repositories">
         None{' '}
         <Link to="" onClick={() => onOrgRowSelected(orgData)}>
           Select
         </Link>
-      </span>
+      </Typography>
     );
   }
   return (
-    <span data-testid="edit-repositories">
+    <Typography component="span" data-testid="edit-repositories">
       {Object.keys(orgData.selectedRepositories || [])?.length}/
       {(orgData?.totalReposInOrg || 0) - addedRepositoriesCount}{' '}
       <Link onClick={() => onOrgRowSelected(orgData)} to="">
         Edit
       </Link>
-    </span>
+    </Typography>
   );
 };

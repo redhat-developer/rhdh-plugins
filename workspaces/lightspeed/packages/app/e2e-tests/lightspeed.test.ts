@@ -26,6 +26,18 @@ import {
   moreConversations,
 } from './fixtures/responses';
 import { openLightspeed, sendMessage } from './utils/testHelper';
+import {
+  uploadFile,
+  validateSuccessfulUpload,
+  validateFailedUpload,
+  supportedFileTypes,
+} from './utils/fileUpload';
+import {
+  assertChatDialogInitialState,
+  closeChatDrawer,
+  openChatDrawer,
+  assertDrawerState,
+} from './utils/sidebar';
 
 const botQuery = 'Please respond';
 
@@ -77,6 +89,60 @@ test('Models are available', async ({ page }) => {
   await dropdown.click();
   await page.getByText(model).click();
   await expect(dropdown).toHaveText(model);
+});
+
+test('Verify sidebar: initial state, close and reopen', async ({ page }) => {
+  await test.step('Verify initial state of sidebar', async () => {
+    await assertChatDialogInitialState(page);
+  });
+
+  await test.step('Close the sidebar and verify elements are hidden', async () => {
+    await closeChatDrawer(page);
+    await assertDrawerState(page, 'closed');
+  });
+
+  await test.step('Reopen the sidebar and verify elements are visible again', async () => {
+    await openChatDrawer(page);
+    await assertDrawerState(page, 'open');
+  });
+});
+
+test('verify default prompts are visible', async ({ page }) => {
+  await expect(page.getByLabel('Scrollable message log')).toMatchAriaSnapshot(`
+    - heading "Hello, Guest How can I help you today?" [level=1]
+    - button 
+    - text: ''
+    - button 
+    - text: ''
+    - button 
+    - text: ''
+  `);
+  const messageLog = page.locator('div.pf-v6-c-card__title-text');
+  const textContents = await messageLog.allTextContents();
+
+  const nonEmptyTexts = textContents.filter(text => text.trim().length > 0);
+
+  expect(nonEmptyTexts.length).toBe(3);
+});
+
+test.describe('File Attachment Validation', () => {
+  const testFiles = [
+    { path: '../../package.json', name: 'package.json' },
+    { path: __filename, name: 'fileAttachment.spec.ts' },
+  ];
+
+  for (const { path, name } of testFiles) {
+    test(`should validate file: ${name}`, async ({ page }) => {
+      const fileExtension = `.${name.split('.').pop()}`;
+      await uploadFile(page, path);
+
+      if (supportedFileTypes.includes(fileExtension)) {
+        await validateSuccessfulUpload(page, name);
+      } else {
+        await validateFailedUpload(page);
+      }
+    });
+  }
 });
 
 test.describe('Conversation', () => {

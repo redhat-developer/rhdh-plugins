@@ -6,7 +6,8 @@
   "properties": {
     "studentName": {
       "type": "string",
-      "title": "Student name (standard HTML component)"
+      "title": "Student name (standard HTML component)",
+      "pattern": "^[A-Z]([-a-z0-9]*[a-zA-Z0-9])?$"
     },
     "courseName": {
       "type": "string",

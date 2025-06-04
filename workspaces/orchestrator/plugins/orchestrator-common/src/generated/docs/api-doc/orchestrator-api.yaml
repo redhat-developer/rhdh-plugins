@@ -524,6 +524,8 @@ spec:
               type: string
             workflowdata:
               $ref: '#/components/schemas/WorkflowDataDTO'
+            initiatorEntity:
+              type: string
             businessKey:
               type: string
             nodes:
@@ -702,6 +704,19 @@ spec:
           oneOf:
             - $ref: '#/components/schemas/LogicalFilter'
             - $ref: '#/components/schemas/FieldFilter'
+            - $ref: '#/components/schemas/NestedFilter'
+        NestedFilter:
+          type: object
+          required:
+            - field
+            - nested
+          properties:
+            field:
+              type: string
+            nested:
+              oneOf:
+                - $ref: '#/components/schemas/FieldFilter'
+                - $ref: '#/components/schemas/NestedFilter'
         LogicalFilter:
           type: object
           required:

@@ -25,5 +25,6 @@ export const useCollections = (request: GetEntitiesRequest) => {
   return useQuery({
     queryKey: ['marketplaceApi', 'getCollections', request],
     queryFn: () => marketplaceApi.getCollections(request),
+    refetchOnWindowFocus: false,
   });
 };
