@@ -20,9 +20,7 @@ jobs:
         id: set-matrix
         run: |
           matrix=$(node scripts/ci/generate-auto-bump-matrix.js)
-          echo "matrix<<EOF" >> $GITHUB_OUTPUT
-          echo "$matrix" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   batch-dispatch:
     needs: prepare
@@ -44,8 +42,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
         run: |
-          echo "Triggering version bump for workspace ${{ matrix.workspace }}"
-          json_input='${{ toJson(matrix.workspace) }}'
+          echo "Triggering version bump for batch ${{ strategy.job-index }}"
+          json_input='${{ toJson(matrix.batch) }}'
           echo "Rendered json_input: $json_input"
           gh workflow run version-bump.yml \
             --ref main \
