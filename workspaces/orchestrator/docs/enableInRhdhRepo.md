@@ -9,7 +9,7 @@ yarn enable-in-rhdh-repo
 This script will:
 
 - Export both the frontend and backend of the plugin as dynamic plugins and copy the result to dynamic-plugins-root in rhdh repo.
-- Add the necessary configuration to your RHDH `app-config.yaml`
+- Add the necessary configuration to your RHDH `app-config.local.yaml`. If it doesn’t exist, it copies a ready-to-use config from `scripts/config-for-rhdh-repo.yaml` — a better starting point than `app-config.example.yaml`, with defaults that work out of the box.
 - Avoid duplicate configuration if it's already present
 
 ### 📁 Required Directory Layout
