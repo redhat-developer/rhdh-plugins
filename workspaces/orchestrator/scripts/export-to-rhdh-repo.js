@@ -61,6 +61,17 @@ function main() {
     console.error(`❌ RHDH repo not found at: ${RHDH_DIR}`);
     process.exit(1);
   }
+  console.log('🛠️ Compiling TypeScript in workspaces/orchestrator');
+  const tscResult = spawnSync('yarn', ['tsc'], {
+    cwd: path.resolve(__dirname, '../'),
+    stdio: 'inherit',
+    shell: true,
+  });
+
+  if (tscResult.status !== 0) {
+    console.error('❌ TypeScript compilation failed.');
+    process.exit(tscResult.status);
+  }
   ensureDirExists(DYNAMIC_PLUGINS_ROOT);
   exportPlugin(FRONTEND_PLUGIN);
   exportPlugin(FRONTEND_WIDGETS_PLUGIN);
