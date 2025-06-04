@@ -19,7 +19,6 @@ import path from 'path';
 
 const workspacesDir = path.resolve('workspaces');
 
-// Only include directories that contain a `.auto-version-bump` marker file
 function getWorkspaceDirs() {
   return fs.readdirSync(workspacesDir).filter(entry => {
     const dirPath = path.join(workspacesDir, entry);
@@ -29,9 +28,18 @@ function getWorkspaceDirs() {
   });
 }
 
+function batch(array) {
+  const BATCH_SIZE = 10;
+  const batchArray = [];
+
+  for (let i = 0; i < array.length; i += BATCH_SIZE) {
+    batchArray.push(array.slice(i, i + BATCH_SIZE));
+  }
+
+  return batchArray;
+}
+
 const workspaces = getWorkspaceDirs().sort();
+const batches = batch(workspaces);
 
-// Final matrix: one workspace per job
-const matrix = workspaces.map(workspace => ({ workspace }));
-
-console.log(JSON.stringify(matrix));
+console.log(JSON.stringify({ batch: batches }));
