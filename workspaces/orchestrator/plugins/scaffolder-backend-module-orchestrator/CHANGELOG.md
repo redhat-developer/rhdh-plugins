@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 0.3.3
+
+### Patch Changes
+
+- 3b571b3: Updated dependency `@janus-idp/cli` to `3.6.1`.
+- Updated dependencies [4ecd9f0]
+- Updated dependencies [9bc8af0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.3
+
 ## 0.3.2
 
 ### Patch Changes
