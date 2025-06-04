@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints';
 import { GlobalHeaderComponent } from './GlobalHeaderComponent';
 

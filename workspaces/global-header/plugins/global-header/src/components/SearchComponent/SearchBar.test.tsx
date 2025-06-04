@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ReactElement } from 'react';
+
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SearchBar } from './SearchBar';
 import {
@@ -118,7 +119,7 @@ describe('SearchBar', () => {
 
   const typeAndSearch = (
     value: string,
-    rerender: (ui: React.ReactElement) => void,
+    rerender: (ui: ReactElement) => void,
   ) => {
     fireEvent.change(screen.getByPlaceholderText('Search...'), {
       target: { value },

@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
+import type { CSSProperties } from 'react';
 import MUIDivider from '@mui/material/Divider';
 
 /**
  * @public
  */
 export interface DividerProps {
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 }
 
 /**

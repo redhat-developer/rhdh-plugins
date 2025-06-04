@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useUserProfile } from '@backstage/plugin-user-settings';
 import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
@@ -36,7 +37,7 @@ import { useDropdownManager } from '../../hooks';
  * Props for Profile Dropdown
  */
 export interface ProfileDropdownProps {
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 }
 
 export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
