@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.5.3
+
+### Patch Changes
+
+- b3cca2b: Reset localstorage if the conversations are empty
+
 ## 0.5.2
 
 ### Patch Changes
