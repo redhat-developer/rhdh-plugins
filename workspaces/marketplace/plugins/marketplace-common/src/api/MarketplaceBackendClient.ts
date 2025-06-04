@@ -185,7 +185,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
       `/package/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
       'POST',
       undefined,
-      configYaml,
+      { configYaml },
     );
   }
 
@@ -244,7 +244,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
       'POST',
       undefined,
-      configYaml,
+      { configYaml },
     );
   }
 
