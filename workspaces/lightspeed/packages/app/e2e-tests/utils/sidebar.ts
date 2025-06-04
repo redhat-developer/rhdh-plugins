@@ -49,3 +49,11 @@ export async function assertDrawerState(page: Page, state: 'open' | 'closed') {
     await expectations[state](locator);
   }
 }
+
+export async function sidePanelAssertions(page: Page) {
+  const sidePanel = page.locator('.pf-v6-c-drawer__panel');
+  const conversation = sidePanel.locator('li.pf-chatbot__menu-item--active');
+  const newButton = sidePanel.getByRole('button', { name: 'new chat' });
+  await conversation.waitFor({ state: 'visible' });
+  await expect(newButton).toBeEnabled();
+}

@@ -16,6 +16,7 @@
 
 import { test, expect } from '@playwright/test';
 import { openLightspeed, sendMessage } from './utils/testHelper';
+import { sidePanelAssertions } from './utils/sidebar';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -34,13 +35,10 @@ test('Verify scroll controls in Conversation', async ({ page }) => {
   await page.waitForLoadState('networkidle');
   const message = 'let me know about openshift deplyment in detail';
   await sendMessage(message, page);
+
   const loadingIndicator = page.locator('div.pf-chatbot__message-loading');
   await loadingIndicator.waitFor({ state: 'visible' });
-
-  const menuItem = page
-    .getByRole('dialog', { name: 'Resize Close drawer panel New' })
-    .locator('li');
-  await menuItem.waitFor({ state: 'visible' });
+  await sidePanelAssertions(page);
 
   const jumpTopButton = page.getByRole('button', { name: 'Jump top' });
   const jumpBottomButton = page.getByRole('button', { name: 'Jump bottom' });
