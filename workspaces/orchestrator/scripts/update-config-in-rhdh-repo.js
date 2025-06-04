@@ -12,10 +12,13 @@ const LOCAL_CONFIG = path.join(RHDH_DIR, 'app-config.local.yaml');
 const INITIAL_CONFIG = path.join(__dirname, 'config-for-rhdh-repo.yaml');
 
 const pluginKey = 'red-hat-developer-hub.backstage-plugin-orchestrator';
+const widgetsPluginKey =
+  'red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets';
 
 const orchestratorDynamicPlugins = {
   rootDirectory: 'dynamic-plugins-root',
   frontend: {
+    [widgetsPluginKey]: {},
     [pluginKey]: {
       appIcons: [
         {
@@ -83,6 +86,12 @@ function updateConfig() {
       config.dynamicPlugins.frontend[pluginKey] =
         orchestratorDynamicPlugins.frontend[pluginKey];
       console.log(`✅ Added frontend plugin: ${pluginKey}`);
+    }
+
+    if (!config.dynamicPlugins.frontend[widgetsPluginKey]) {
+      config.dynamicPlugins.frontend[widgetsPluginKey] =
+        orchestratorDynamicPlugins.frontend[widgetsPluginKey];
+      console.log(`✅ Added frontend plugin: ${widgetsPluginKey}`);
     }
   }
 
