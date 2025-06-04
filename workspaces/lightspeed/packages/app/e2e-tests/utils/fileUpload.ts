@@ -36,7 +36,12 @@ export async function uploadFile(page: Page, filePath: string) {
   await fileChooser.setFiles(filePath);
 }
 
-export async function reUploadfile(page: Page, filePath: string) {
+export async function uploadAndAssertDuplicate(
+  page: Page,
+  filePath: string,
+  fileName: string,
+) {
+  await validateSuccessfulUpload(page, fileName);
   await uploadFile(page, filePath);
   await expect(
     page.getByRole('heading', { name: 'File upload failed' }),

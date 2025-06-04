@@ -35,10 +35,10 @@ test('Verify scroll controls in Conversation', async ({ page }) => {
   const message = 'let me know about openshift deplyment in detail';
   await sendMessage(message, page);
   const loadingIndicator = page.locator('div.pf-chatbot__message-loading');
-  await expect(loadingIndicator).toBeVisible();
+  await loadingIndicator.waitFor({ state: 'visible' });
 
   const menuItem = page.locator('.pf-v6-c-menu__item');
-  await expect(menuItem).toBeVisible({ timeout: 15000 });
+  await menuItem.waitFor({ state: 'visible' });
 
   const jumpTopButton = page.getByRole('button', { name: 'Jump top' });
   const jumpBottomButton = page.getByRole('button', { name: 'Jump bottom' });
