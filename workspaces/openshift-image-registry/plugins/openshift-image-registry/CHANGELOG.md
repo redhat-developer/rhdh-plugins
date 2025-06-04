@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.12.5
+
+### Patch Changes
+
+- 7f7267a: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.8.0`.
+
 ## 1.12.4
 
 ### Patch Changes
