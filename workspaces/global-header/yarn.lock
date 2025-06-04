@@ -5722,9 +5722,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/repo-tools@npm:^0.13.3":
-  version: 0.13.3
-  resolution: "@backstage/repo-tools@npm:0.13.3"
+"@backstage/repo-tools@npm:^0.13.4":
+  version: 0.13.4
+  resolution: "@backstage/repo-tools@npm:0.13.4"
   dependencies:
     "@apidevtools/swagger-parser": ^10.1.0
     "@apisyouwonthate/style-guide": ^1.4.0
@@ -5782,7 +5782,7 @@ __metadata:
       optional: true
   bin:
     backstage-repo-tools: bin/backstage-repo-tools
-  checksum: 193a06609973da472affee20ad7a68d70222f2300df828de1a52c94d91abd25a1b02b7d8b25d0e4b979d561be99280d4670167b0e3a2bbda5a0505e0ac058897
+  checksum: 4497e9bb89662f0ad6c3471dba9c897a06323b51da07dacb712c29fb30e042234c0e342000cd45538eff5cab8570d34c17153086419dbb48c889327ee6ec79d2
   languageName: node
   linkType: hard
 
@@ -7770,7 +7770,7 @@ __metadata:
   dependencies:
     "@backstage/cli": ^0.32.1
     "@backstage/e2e-test-utils": ^0.1.1
-    "@backstage/repo-tools": ^0.13.3
+    "@backstage/repo-tools": ^0.13.4
     "@changesets/cli": ^2.27.1
     "@playwright/test": 1.52.0
     "@spotify/prettier-config": ^12.0.0
