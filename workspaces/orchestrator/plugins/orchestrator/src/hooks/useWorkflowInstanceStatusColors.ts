@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from 'tss-react/mui';
 
 import { ProcessInstanceStatusDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-const useStyles = makeStyles(
+const useStyles = makeStyles()(
   theme =>
     ({
       [ProcessInstanceStatusDTO.Active]: {
@@ -45,6 +45,6 @@ const useStyles = makeStyles(
 export const useWorkflowInstanceStateColors = (
   value?: ProcessInstanceStatusDTO,
 ) => {
-  const styles = useStyles();
-  return value ? styles[value] : undefined;
+  const { classes } = useStyles();
+  return value ? classes[value] : undefined;
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 
 import { Content, StructuredMetadataTable } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
-import { Box, Button, makeStyles, Paper } from '@material-ui/core';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import type { JSONSchema7 } from 'json-schema';
+import { makeStyles } from 'tss-react/mui';
 
 import generateReviewTableData from '../utils/generateReviewTableData';
 import { useStepperContext } from '../utils/StepperContext';
 import SubmitButton from './SubmitButton';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   backButton: {
     marginRight: theme.spacing(1),
   },
@@ -62,20 +66,21 @@ const ReviewStep = ({
   data: JsonObject;
   handleExecute: () => void;
 }) => {
-  const styles = useStyles();
+  const { classes } = useStyles();
   const { handleBack } = useStepperContext();
   const displayData = React.useMemo<JsonObject>(() => {
     return generateReviewTableData(schema, data);
   }, [schema, data]);
+
   return (
     <Content noPadding>
-      <Paper square elevation={0} className={styles.paper}>
+      <Paper square elevation={0} className={classes.paper}>
         <StructuredMetadataTable dense metadata={displayData} />
         <Box mb={4} />
-        <div className={styles.footer}>
+        <div className={classes.footer}>
           <Button
             onClick={handleBack}
-            className={styles.backButton}
+            className={classes.backButton}
             disabled={busy}
           >
             Back

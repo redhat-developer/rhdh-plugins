@@ -19,8 +19,10 @@ import { useNavigate } from 'react-router-dom';
 
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 
-import { Button, Grid, Tooltip } from '@material-ui/core';
-import { Skeleton } from '@material-ui/lab';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Skeleton from '@mui/material/Skeleton';
+import Tooltip from '@mui/material/Tooltip';
 
 import {
   orchestratorWorkflowUsePermission,

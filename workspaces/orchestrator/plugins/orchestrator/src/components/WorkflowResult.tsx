@@ -24,15 +24,14 @@ import {
 import { RouteFunc, useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
 
-import {
-  Box,
-  CircularProgress,
-  Grid,
-  List,
-  ListItem,
-  makeStyles,
-} from '@material-ui/core';
-import { Alert, AlertTitle } from '@material-ui/lab';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import { makeStyles } from 'tss-react/mui';
 
 import {
   AssessedProcessInstanceDTO,
@@ -51,7 +50,7 @@ import {
   WorkflowDescriptionModalProps,
 } from './WorkflowDescriptionModal';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   outputGrid: {
     '& h2': {
       textTransform: 'none',
@@ -164,7 +163,7 @@ const NextWorkflows = ({
   instanceId: string;
   nextWorkflows: WorkflowResultDTO['nextWorkflows'];
 }) => {
-  const styles = useStyles();
+  const { classes } = useStyles();
 
   const orchestratorApi = useApi(orchestratorApiRef);
   const executeWorkflowLink: RouteFunc<{ workflowId: string }> = useRouteRef(
@@ -227,7 +226,7 @@ const NextWorkflows = ({
       : 'Suggested next workflows';
 
   return (
-    <Grid item xs={12} className={styles.outputGrid}>
+    <Grid item xs={12} className={classes.outputGrid}>
       <AboutField label={sectionLabel}>
         <List dense disablePadding>
           {nextWorkflows.map(item => (
@@ -261,7 +260,7 @@ const WorkflowOutputs = ({
 }: {
   outputs: WorkflowResultDTO['outputs'];
 }) => {
-  const styles = useStyles();
+  const { classes } = useStyles();
 
   if (!outputs?.length) {
     return null;
@@ -274,8 +273,9 @@ const WorkflowOutputs = ({
   }>((data, item) => {
     let value = item.value || '';
     if (!['string', 'number', 'boolean'].includes(typeof value)) {
-      // This is a workaround for malformed returned data. It should not happen if the sender does WorkflowResult validation properly.
-      if (typeof value === 'object') {
+      if (Array.isArray(value)) {
+        value = JSON.stringify(value);
+      } else if (typeof value === 'object') {
         value = `Object: ${JSON.stringify(value)}`;
       } else {
         value = 'Unexpected type';
@@ -287,7 +287,7 @@ const WorkflowOutputs = ({
   return (
     <>
       {links?.length > 0 && (
-        <Grid item md={12} key="__links" className={styles.links}>
+        <Grid item md={12} key="__links" className={classes.links}>
           <AboutField label="Links">
             <List dense disablePadding>
               {links
@@ -308,7 +308,7 @@ const WorkflowOutputs = ({
       )}
 
       {Object.keys(nonLinksAsObject).length > 0 && (
-        <Grid item md={12} key="non__links" className={styles.values}>
+        <Grid item md={12} key="non__links" className={classes.values}>
           <AboutField label="Values">
             <StructuredMetadataTable dense metadata={nonLinksAsObject} />
           </AboutField>

@@ -28,26 +28,24 @@ import {
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
 
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Grid,
-  IconButton,
-  Menu,
-  MenuItem,
-  Tooltip,
-  Typography,
-} from '@material-ui/core';
-import Snackbar from '@material-ui/core/Snackbar';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import CloseIcon from '@material-ui/icons/Close';
-import ErrorIcon from '@material-ui/icons/Error';
-import { AlertTitle } from '@material-ui/lab';
-import Alert from '@material-ui/lab/Alert';
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
-import StartIcon from '@mui/icons-material/Start';
-import SwipeRightAltOutlinedIcon from '@mui/icons-material/SwipeRightAltOutlined';
+import Close from '@mui/icons-material/Close';
+import Error from '@mui/icons-material/Error';
+import Start from '@mui/icons-material/Start';
+import SwipeRightAltOutlined from '@mui/icons-material/SwipeRightAltOutlined';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Snackbar from '@mui/material/Snackbar';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from 'tss-react/mui';
 
 import {
   AssessedProcessInstanceDTO,
@@ -69,24 +67,22 @@ import { BaseOrchestratorPage } from './BaseOrchestratorPage';
 import { InfoDialog } from './InfoDialog';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    abortButton: {
+const useStyles = makeStyles()(theme => ({
+  abortButton: {
+    backgroundColor: theme.palette.error.dark,
+    color: theme.palette.getContrastText(theme.palette.error.dark),
+    '&:hover': {
       backgroundColor: theme.palette.error.dark,
-      color: theme.palette.getContrastText(theme.palette.error.dark),
-      '&:hover': {
-        backgroundColor: theme.palette.error.dark,
-        filter: 'brightness(90%)',
-      },
+      filter: 'brightness(90%)',
     },
-    modalText: {
-      marginBottom: theme.spacing(2),
-    },
-    errorColor: {
-      color: theme.palette.error.dark,
-    },
-  }),
-);
+  },
+  modalText: {
+    marginBottom: theme.spacing(2),
+  },
+  errorColor: {
+    color: theme.palette.error.dark,
+  },
+}));
 
 export type AbortConfirmationDialogActionsProps = {
   handleSubmit: () => void;
@@ -100,7 +96,7 @@ const AbortConfirmationDialogContent = ({
 }: {
   canAbort: boolean;
 }) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   return (
     <div>
       <Box className={classes.modalText}>
@@ -126,7 +122,7 @@ const AbortConfirmationDialogContent = ({
 const AbortConfirmationDialogActions = (
   props: AbortConfirmationDialogActionsProps,
 ) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   return (
     <>
       <Button
@@ -169,7 +165,7 @@ export const WorkflowInstancePage = ({
   const [abortError, setAbortError] = React.useState('');
 
   const [isRetrigger, setIsRetrigger] = React.useState(false);
-  const [isRetriggerSnackbarOpen, setIsRerunSnackbarOpen] =
+  const [isRetriggerSnackbarOpen, setIsRetriggerSnackbarOpen] =
     React.useState(false);
   const [retriggerError, setRetriggerError] = React.useState('');
 
@@ -177,7 +173,7 @@ export const WorkflowInstancePage = ({
     setIsAbortSnackbarOpen(false);
   };
   const handleRerunBarClose = () => {
-    setIsRerunSnackbarOpen(false);
+    setIsRetriggerSnackbarOpen(false);
   };
 
   const fetchInstance = React.useCallback(async () => {
@@ -270,11 +266,12 @@ export const WorkflowInstancePage = ({
       } catch (retriggerInstanceError) {
         if (retriggerInstanceError.toString().includes('Failed Node ID')) {
           setRetriggerError(`Run failed again`);
-        } else
+        } else {
           setRetriggerError(
             `Retrigger failed: ${(retriggerInstanceError as Error).message}`,
           );
-        setIsRerunSnackbarOpen(true);
+        }
+        setIsRetriggerSnackbarOpen(true);
       } finally {
         setIsRetrigger(false);
       }
@@ -304,7 +301,7 @@ export const WorkflowInstancePage = ({
   openRerunMenu; // eslint-disable-line
   handleClick; // eslint-disable-line
 
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   return (
     <BaseOrchestratorPage
@@ -319,7 +316,7 @@ export const WorkflowInstancePage = ({
           <ContentHeader title="">
             <InfoDialog
               title="Abort workflow run?"
-              titleIcon={<ErrorIcon className={classes.errorColor} />}
+              titleIcon={<Error className={classes.errorColor} />}
               onClose={toggleAbortConfirmationDialog}
               open={isAbortConfirmationDialogOpen}
               dialogActions={
@@ -330,8 +327,9 @@ export const WorkflowInstancePage = ({
                   canAbort={canAbort}
                 />
               }
-              children={<AbortConfirmationDialogContent canAbort={canAbort} />}
-            />
+            >
+              <AbortConfirmationDialogContent canAbort={canAbort} />
+            </InfoDialog>
             <Grid container item justifyContent="flex-end" spacing={1}>
               <Grid item>
                 {canAbort && (
@@ -392,7 +390,6 @@ export const WorkflowInstancePage = ({
                   anchorEl={anchorRef.current}
                   open={openRerunMenu}
                   onClose={handleCloseMenu}
-                  getContentAnchorEl={null}
                   anchorOrigin={{
                     vertical: 'bottom',
                     horizontal: 'right',
@@ -403,11 +400,11 @@ export const WorkflowInstancePage = ({
                   }}
                 >
                   <MenuItem onClick={() => handleOptionClick('rerun')}>
-                    <StartIcon />
+                    <Start />
                     Entire workflow
                   </MenuItem>
                   <MenuItem onClick={() => handleOptionClick('retrigger')}>
-                    <SwipeRightAltOutlinedIcon />
+                    <SwipeRightAltOutlined />
                     From failure point
                   </MenuItem>
                 </Menu>
@@ -428,7 +425,7 @@ export const WorkflowInstancePage = ({
                   color="inherit"
                   onClick={handleAbortBarClose}
                 >
-                  <CloseIcon fontSize="small" />
+                  <Close fontSize="small" />
                 </IconButton>
               }
             >
@@ -449,7 +446,7 @@ export const WorkflowInstancePage = ({
                   color="inherit"
                   onClick={handleRerunBarClose}
                 >
-                  <CloseIcon fontSize="small" />
+                  <Close fontSize="small" />
                 </IconButton>
               }
             >

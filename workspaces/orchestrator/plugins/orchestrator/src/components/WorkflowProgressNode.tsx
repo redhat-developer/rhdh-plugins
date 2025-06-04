@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 import Moment from 'react-moment';
 
-import { Tooltip, Typography } from '@material-ui/core';
-import CancelIcon from '@material-ui/icons/Cancel';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import HourglassTopIcon from '@mui/icons-material/HourglassTop';
-import PauseCircleIcon from '@mui/icons-material/PauseCircle';
+import Cancel from '@mui/icons-material/Cancel';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import Error from '@mui/icons-material/Error';
+import HourglassTop from '@mui/icons-material/HourglassTop';
+import PauseCircle from '@mui/icons-material/PauseCircle';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 
 import { ProcessInstanceStatusDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -44,42 +46,42 @@ const WorkflowProgressNodeIcon: React.FC<{
             'Additional details about this error are not available'
           }
         >
-          <ErrorIcon className={color} />
+          <Error className={color} />
         </Tooltip>
       );
     }
     case ProcessInstanceStatusDTO.Completed: {
       return (
         <Tooltip title="Completed">
-          <CheckCircleIcon className={color} />
+          <CheckCircle className={color} />
         </Tooltip>
       );
     }
     case ProcessInstanceStatusDTO.Active: {
       return (
         <Tooltip title="Active">
-          <HourglassTopIcon className={color} />
+          <HourglassTop className={color} />
         </Tooltip>
       );
     }
     case ProcessInstanceStatusDTO.Aborted: {
       return (
         <Tooltip title="Aborted">
-          <CancelIcon className={color} />
+          <Cancel className={color} />
         </Tooltip>
       );
     }
     case ProcessInstanceStatusDTO.Suspended: {
       return (
         <Tooltip title="Suspended">
-          <PauseCircleIcon className={color} />
+          <PauseCircle className={color} />
         </Tooltip>
       );
     }
     case ProcessInstanceStatusDTO.Pending: {
       return (
         <Tooltip title="Pending">
-          <HourglassTopIcon className={color} />
+          <HourglassTop className={color} />
         </Tooltip>
       );
     }

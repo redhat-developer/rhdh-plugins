@@ -63,7 +63,12 @@ export type OrchestratorFormContextProps = {
  */
 export type FormDecoratorProps = Pick<
   FormProps<JsonObject, JSONSchema7, OrchestratorFormContextProps>,
-  'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate'
+  | 'formData'
+  | 'formContext'
+  | 'widgets'
+  | 'onChange'
+  | 'customValidate'
+  | 'templates'
 > & {
   getExtraErrors?: (
     formData: JsonObject,
