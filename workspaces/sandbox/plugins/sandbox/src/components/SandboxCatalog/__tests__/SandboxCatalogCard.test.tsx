@@ -15,28 +15,47 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { wrapInTestApp } from '@backstage/test-utils';
 import { SandboxCatalogCard } from '../SandboxCatalogCard';
 import { Product } from '../productData';
 import { AnsibleStatus } from '../../../utils/aap-utils';
 import { useSandboxContext } from '../../../hooks/useSandboxContext';
+import useGreenCorners from '../../../hooks/useGreenCorners';
 
+jest.useFakeTimers(); // control timers
 // Mock the hooks
-jest.mock('@backstage/core-plugin-api');
+jest.mock('../../../hooks/useGreenCorners');
 jest.mock('../../../hooks/useSandboxContext');
+
+const mockCreateAAP = jest.fn();
+const configMock = {
+  createAAP: mockCreateAAP,
+};
+
+jest.mock('@backstage/core-plugin-api', () => ({
+  ...jest.requireActual('@backstage/core-plugin-api'),
+  useApi: jest.fn(() => {
+    return configMock;
+  }),
+}));
 
 describe('SandboxCatalogCard', () => {
   const theme = createTheme();
 
+  const mockSetGreenCorners = jest.fn();
+  const mockGreenCorners = [{ id: 'openshift-console', show: false }];
   const mockRefetchUserData = jest.fn();
+  const mockShowGreenCorner = jest.fn();
   const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
     typeof useSandboxContext
   >;
+  const mockSignupUser = jest.fn();
+  const mockRefetchAAP = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // refetching the user data will return the actual user provisioned
     mockRefetchUserData.mockReturnValue({
       name: 'bob',
       consoleURL: 'https://sandboxcluster.test/',
@@ -48,6 +67,11 @@ describe('SandboxCatalogCard', () => {
       defaultUserNamespace: 'bob-2-dev',
       compliantUsername: 'bob-2',
       username: 'bob',
+      status: {
+        ready: true,
+        reason: 'Provisioned',
+        verificationRequired: false,
+      },
     } as any);
 
     mockUseSandboxContext.mockReturnValue({
@@ -58,106 +82,94 @@ describe('SandboxCatalogCard', () => {
       ansibleStatus: AnsibleStatus.UNKNOWN,
       verificationRequired: false,
       userData: undefined,
-      signupUser: jest.fn(),
-      refetchAAP: jest.fn(),
+      signupUser: mockSignupUser,
+      refetchAAP: mockRefetchAAP,
       ansibleData: undefined,
       ansibleUIUser: undefined,
     } as any);
+    (useGreenCorners as jest.Mock).mockReturnValue({
+      greenCorners: mockGreenCorners,
+      setGreenCorners: mockSetGreenCorners,
+    });
   });
 
   const defaultProps = {
     id: Product.OPENSHIFT_CONSOLE,
     title: 'Openshift',
     image: 'sometestimage.svg',
-    description: 'Test openshift',
+    description: [
+      { icon: <div>icon 1</div>, value: 'Description 1' },
+      { icon: <div>icon 2</div>, value: 'Description 2' },
+    ],
+    link: 'https://openshiftconsole.url.com',
+    greenCorner: false,
+    showGreenCorner: mockShowGreenCorner,
   };
 
   const renderCard = (props = {}) => {
     return render(
-      wrapInTestApp(
-        <ThemeProvider theme={theme}>
-          <SandboxCatalogCard {...defaultProps} {...props} />
-        </ThemeProvider>,
-      ),
+      <ThemeProvider theme={theme}>
+        <SandboxCatalogCard {...defaultProps} {...props} />
+      </ThemeProvider>,
     );
   };
 
   it('renders the card', () => {
     renderCard();
 
-    // Should render one card per product in productData
     const cards = screen.getAllByTestId('catalog-card');
     expect(cards).toHaveLength(1);
     expect(screen.getByText('Openshift')).toBeInTheDocument(); // title
-    expect(screen.getByText('Test openshift')).toBeInTheDocument(); // description
-    expect(screen.getByText('Test openshift')).toBeInTheDocument(); // description
-    const img = screen.getByAltText('sometestimage') as HTMLImageElement;
-    expect(img.src).toBe('sometestimage.svg');
-
+    expect(screen.getByText('Description 1')).toBeInTheDocument(); // description
+    expect(screen.getByText('Description 2')).toBeInTheDocument(); // description
+    expect(screen.getByText('icon 1')).toBeInTheDocument(); // icon
+    const img = screen.getByAltText('Openshift') as HTMLImageElement;
+    expect(img.src).toContain('sometestimage.svg');
     expect(screen.getByText('Try it')).toBeInTheDocument();
   });
 
-  // it('calls useGreenCorners hook with productData', () => {
-  //   renderGrid();
-  //   expect(useGreenCorners).toHaveBeenCalledWith(productData);
-  // });
-  //
-  // it('calls useProductURLs hook', () => {
-  //   renderGrid();
-  //   expect(useProductURLs).toHaveBeenCalled();
-  // });
-  //
-  // it('passes correct props to SandboxCatalogCard components', () => {
-  //   renderGrid();
-  //
-  //   expect(SandboxCatalogCard).toHaveBeenCalledTimes(productData.length);
-  //
-  //   // Check props for the first card
-  //   const firstCallProps = (SandboxCatalogCard as jest.Mock).mock.calls[0][0];
-  //   expect(firstCallProps.id).toBe(productData[0].id);
-  //   expect(firstCallProps.title).toBe(productData[0].title);
-  //   expect(firstCallProps.image).toBe(productData[0].image);
-  //   expect(firstCallProps.description).toBe(productData[0].description);
-  //   expect(firstCallProps.link).toBe(mockProductURLs[0].url);
-  //   expect(firstCallProps.greenCorner).toBe(false); // From mockGreenCorners
-  //   expect(typeof firstCallProps.showGreenCorner).toBe('function');
-  // });
-  //
-  // it('correctly handles missing URL in productURLs', () => {
-  //   // Modify the mock to remove a URL
-  //   const modifiedProductURLs = [
-  //     {id: 'openshift-console', url: 'https://console.example.com'},
-  //   ];
-  //   (useProductURLs as jest.Mock).mockReturnValue(modifiedProductURLs);
-  //
-  //   renderGrid();
-  //
-  //   // For the second card, the URL should be an empty string
-  //   const secondCallProps = (SandboxCatalogCard as jest.Mock).mock.calls[1][0];
-  //   expect(secondCallProps.link).toBe('');
-  // });
-  //
-  // it('calls setGreenCorners when showGreenCorner is triggered', () => {
-  //   renderGrid();
-  //
-  //   // Extract the showGreenCorner function from the first card's props
-  //   const firstCallProps = (SandboxCatalogCard as jest.Mock).mock.calls[0][0];
-  //   const showGreenCornerFn = firstCallProps.showGreenCorner;
-  //
-  //   // Call the function
-  //   showGreenCornerFn();
-  //
-  //   // Check that setGreenCorners was called with the correct updater function
-  //   expect(mockSetGreenCorners).toHaveBeenCalled();
-  //
-  //   // Simulate the updater function that was passed to setGreenCorners
-  //   const updaterFn = mockSetGreenCorners.mock.calls[0][0];
-  //   const result = updaterFn(mockGreenCorners);
-  //
-  //   // Verify that only the correct item was updated
-  //   expect(result).toEqual([
-  //     {id: 'openshift-console', show: true}, // Changed to true
-  //     {id: 'openshift-ai', show: true}, // Already true, unchanged
-  //   ]);
-  // });
+  it('opens the link when user signs up', async () => {
+    const mockOpen = jest.fn();
+    window.open = mockOpen; // override window.open with mock
+    renderCard();
+
+    // Find and click try it button/icon
+    const tryItButton = screen.getByRole('button', { name: /Try it/i });
+    fireEvent.click(tryItButton);
+
+    // advance timers to trigger all retries
+    for (let i = 0; i < 5; i++) {
+      jest.advanceTimersByTime(1000);
+      await Promise.resolve(); // allow awaiting the timer to flush
+    }
+
+    expect(mockSignupUser).toHaveBeenCalled(); // check it signs up the user
+    expect(mockRefetchUserData).toHaveBeenCalled();
+    expect(mockOpen).toHaveBeenCalledWith(
+      'https://sandboxcluster.test/',
+      '_blank',
+    ); // check it opens the url after signup
+    expect(mockShowGreenCorner).toHaveBeenCalled();
+  });
+
+  it('starts provisioning AAP when user signs up', async () => {
+    // AAP product card
+    renderCard({ id: Product.AAP });
+
+    // Find and click provision button/icon
+    const tryItButton = screen.getByRole('button', { name: /Provision/i });
+    fireEvent.click(tryItButton);
+
+    // advance timers to trigger all retries
+    for (let i = 0; i < 5; i++) {
+      jest.advanceTimersByTime(1000);
+      await Promise.resolve(); // allow awaiting the timer to flush
+    }
+
+    expect(mockSignupUser).toHaveBeenCalled(); // check it signs up the user
+    expect(mockRefetchUserData).toHaveBeenCalled();
+    expect(mockRefetchAAP).toHaveBeenCalled(); // check it calls the aap specific functionality
+    expect(mockCreateAAP).toHaveBeenCalledWith('bob-2-dev'); // check it creates the app instance in the user namespace
+    expect(mockShowGreenCorner).toHaveBeenCalled();
+  });
 });

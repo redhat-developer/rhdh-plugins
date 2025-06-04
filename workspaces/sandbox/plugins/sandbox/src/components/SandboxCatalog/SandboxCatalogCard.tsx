@@ -205,16 +205,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
       refetchAAP();
       setAnsibleCredsModalOpen(true);
     } else if (userFound && userReady && urlToOpen) {
-      const newWindow = window.open(urlToOpen, '_blank');
-      if (newWindow) {
-        newWindow.focus();
-      } else {
-        /* eslint-disable no-console */
-        console.error(
-          'Failed to open new tab. It may have been blocked by a popup blocker.',
-        );
-        /* eslint-enable no-console */
-      }
+      window.open(urlToOpen, '_blank');
     }
     showGreenCorner();
   };
