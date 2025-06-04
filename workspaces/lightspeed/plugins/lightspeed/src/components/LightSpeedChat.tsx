@@ -141,7 +141,11 @@ export const LightspeedChat = ({
 
   const queryClient = useQueryClient();
 
-  const { data: conversations = [] } = useConversations();
+  const {
+    data: conversations = [],
+    isLoading,
+    isRefetching,
+  } = useConversations();
   const { mutateAsync: deleteConversation } = useDeleteConversation();
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
   const samplePrompts = useWelcomePrompts();
@@ -151,6 +155,18 @@ export const LightspeedChat = ({
       setNewChatCreated(true);
     }
   }, [user, isReady, lastOpenedId, setConversationId]);
+
+  React.useEffect(() => {
+    // Clear last opened conversationId when there are no conversations.
+    if (
+      !isLoading &&
+      !isRefetching &&
+      conversations.length === 0 &&
+      lastOpenedId
+    ) {
+      clearLastOpenedId();
+    }
+  }, [isLoading, isRefetching, conversations, lastOpenedId, clearLastOpenedId]);
 
   React.useEffect(() => {
     // Update last opened conversation whenever `conversationId` changes
