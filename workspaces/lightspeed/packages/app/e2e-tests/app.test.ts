@@ -37,7 +37,9 @@ test('Verify scroll controls in Conversation', async ({ page }) => {
   const loadingIndicator = page.locator('div.pf-chatbot__message-loading');
   await loadingIndicator.waitFor({ state: 'visible' });
 
-  const menuItem = page.locator('.pf-v6-c-menu__item');
+  const menuItem = page
+    .getByRole('dialog', { name: 'Resize Close drawer panel New' })
+    .locator('li');
   await menuItem.waitFor({ state: 'visible' });
 
   const jumpTopButton = page.getByRole('button', { name: 'Jump top' });
