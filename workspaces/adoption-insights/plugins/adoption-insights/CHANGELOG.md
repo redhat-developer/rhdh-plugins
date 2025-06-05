@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.1.1
+
+### Patch Changes
+
+- 3f93232: Updated dependency `@mui/icons-material` to `5.17.1`.
+  Updated dependency `@mui/material` to `5.17.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.8.0`.
+
 ## 0.1.0
 
 ### Minor Changes
