@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.5.4
+
+### Patch Changes
+
+- 717a32b: Updated dependency `@patternfly/react-core` to `6.3.0-prerelease.16`.
+
 ## 0.5.3
 
 ### Patch Changes
