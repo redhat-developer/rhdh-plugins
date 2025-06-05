@@ -50,7 +50,7 @@ export async function assertDrawerState(page: Page, state: 'open' | 'closed') {
   }
 }
 
-export async function assertConversationExists(page: Page) {
+export async function verifySidePanelConversation(page: Page) {
   const sidePanel = page.locator('.pf-v6-c-drawer__panel');
   await expect(sidePanel).toBeVisible();
 
