@@ -75,6 +75,9 @@ async function main() {
     throw new Error('GITHUB_OUTPUT environment variable not set');
   }
 
+  // Ensure we have fetched the targetBranch
+  await runPlain('git', 'fetch', 'origin', targetBranch);
+
   const diff = await runPlain(
     'git',
     'diff',

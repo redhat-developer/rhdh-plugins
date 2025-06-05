@@ -83,7 +83,10 @@ jobs:
       - name: Check if release
         id: release_check
         if: inputs.force_release != true
-        run: node ../../scripts/ci/check-if-release.js
+        run: |
+          yarn install
+          node scripts/ci/check-if-release.js
+        working-directory: ./
         env:
           WORKSPACE_NAME: ${{ inputs.workspace }}
           COMMIT_SHA_BEFORE: '${{ github.event.before }}'
@@ -152,7 +155,7 @@ jobs:
       - name: publish
         run: |
           yarn config set -H 'npmAuthToken' "${{ secrets.RHDH_NPM_TOKEN }}"
-          yarn workspaces foreach -v --no-private npm publish --access public --tolerate-republish
+          yarn workspaces foreach -W -v --no-private npm publish --access public --tolerate-republish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.RHDH_NPM_TOKEN }}
 
