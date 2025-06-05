@@ -38,8 +38,8 @@ import {
   closeChatDrawer,
   openChatDrawer,
   assertDrawerState,
+  sidePanelAssertions,
 } from './utils/sidebar';
-import { sidePanelAssertions } from './utils/sidebar';
 
 const botQuery = 'Please respond';
 
