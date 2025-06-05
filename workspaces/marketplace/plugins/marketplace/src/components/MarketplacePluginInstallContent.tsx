@@ -16,7 +16,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { ErrorPage, Progress } from '@backstage/core-components';
+import { ErrorPage, Progress, WarningPanel } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
 import {
@@ -54,7 +54,12 @@ import Alert from '@mui/material/Alert';
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
-import { applyContent, getErrorMessage, getExampleAsMarkdown } from '../utils';
+import {
+  applyContent,
+  ExtensionsStatus,
+  getErrorMessage,
+  getExampleAsMarkdown,
+} from '../utils';
 
 import {
   CodeEditorContextProvider,
@@ -310,201 +315,250 @@ export const MarketplacePluginInstallContent = ({
     if (pluginConfigPermissions.data?.write !== 'ALLOW') {
       return "You don't have permission to install plugins or edit their configurations. Contact your administrator to request access or assistance.";
     }
-    if ((pluginConfig.data as any)?.error?.message) {
-      return getErrorMessage(
-        (pluginConfig.data as any)?.error?.reason,
-        (pluginConfig.data as any)?.error?.message,
-      );
-    }
     return '';
   };
 
-  return (
-    <Box
-      sx={{
-        height: dynamicHeight,
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <Grid
-        container
-        spacing={3}
-        sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
-      >
-        {packages.length > 0 && (
-          <Grid
-            item
-            xs={12}
-            md={6.5}
-            sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-          >
-            <Card
-              sx={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                borderRadius: 0,
-              }}
-            >
-              <CardContent
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'auto',
-                  scrollbarWidth: 'thin',
-                }}
-              >
-                <CodeEditor defaultLanguage="yaml" onLoaded={onLoaded} />
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
+  const showInstallationWarning =
+    (pluginConfig.data as any)?.error?.message &&
+    (pluginConfig.data as any)?.error?.reason !==
+      ExtensionsStatus.INSTALLATION_DISABLED;
 
-        {showRightCard && (
-          <Grid
-            item
-            xs={12}
-            md={5.5}
-            sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-          >
-            <Card
-              sx={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                borderRadius: 0,
-                width: '99.8%', // workaround for 'overflow: hidden' causing card to be missing a border
-              }}
+  const installationWarning = () => {
+    const error = getErrorMessage(
+      (pluginConfig.data as any)?.error?.reason,
+      (pluginConfig.data as any)?.error?.message,
+    );
+    return (
+      <>
+        <WarningPanel
+          title={error.title}
+          severity="info"
+          message={
+            <Markdown
+              content={`${error.message} 
+              ${
+                (pluginConfig.data as any)?.error?.reason ===
+                ExtensionsStatus.INVALID_CONFIG
+                  ? `
+\`\`\`yaml
+plugins:
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+    disabled: true
+\`\`\`
+`
+                  : `
+\`\`\`yaml
+extensions:
+  installation:
+    enabled: true
+    saveToSingleFile:
+      file: /<path-to>/dynamic-plugins.yaml
+\`\`\`
+`
+              }
+`}
+            />
+          }
+        />
+        <br />
+      </>
+    );
+  };
+
+  return (
+    <>
+      {showInstallationWarning && installationWarning()}
+      <Box
+        sx={{
+          height: dynamicHeight,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Grid
+          container
+          spacing={3}
+          sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
+        >
+          {packages.length > 0 && (
+            <Grid
+              item
+              xs={12}
+              md={6.5}
+              sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
             >
-              <CardHeader
-                title={
-                  <Typography variant="h3">
-                    Installation instructions
-                  </Typography>
-                }
-                action={
-                  <Typography
-                    component="a"
-                    href="/path-to-file.zip" // update this
-                    download
-                    sx={{
-                      fontSize: 16,
-                      display: 'none', // change to 'flex' when ready
-                      alignItems: 'center',
-                      gap: 0.5,
-                      color: 'primary.main',
-                      textDecoration: 'none',
-                      m: 1,
-                    }}
-                  >
-                    <FileDownloadOutlinedIcon fontSize="small" />
-                    Download
-                  </Typography>
-                }
-                sx={{ pb: 0 }}
-              />
-              <CardContent
+              <Card
                 sx={{
                   flex: 1,
                   display: 'flex',
                   flexDirection: 'column',
                   overflow: 'hidden',
+                  borderRadius: 0,
                 }}
               >
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <Tabs
-                    value={tabIndex}
-                    onChange={handleTabChange}
-                    aria-label="Plugin tabs"
-                  >
-                    {availableTabs.map((tab, index) => (
-                      <Tab
-                        key={tab.key}
-                        value={index}
-                        label={tab.label ?? ''}
-                      />
-                    ))}
-                  </Tabs>
-                </Box>
-                <Box
+                <CardContent
                   sx={{
                     flex: 1,
-                    overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
+                    overflow: 'auto',
+                    scrollbarWidth: 'thin',
                   }}
                 >
-                  {availableTabs.map(
-                    (tab, index) =>
-                      tabIndex === index && (
-                        <TabPanel
-                          key={tab.key}
-                          value={tabIndex}
-                          index={index}
-                          markdownContent={tab.content ?? ''}
-                          others={tab.others}
-                        />
-                      ),
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
-      </Grid>
+                  <CodeEditor defaultLanguage="yaml" onLoaded={onLoaded} />
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
 
-      <Box
-        sx={{
-          mt: 4,
-          flexShrink: 0,
-          backgroundColor: 'inherit',
-        }}
-      >
-        <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
-          <CheckboxList packages={packages} />
-        </Box>
-        {showErrorAlert && (
-          <Alert severity="error" sx={{ mb: '1rem' }}>
-            Error occured
-          </Alert>
-        )}
-        <Tooltip title={installTooltip()}>
-          <Typography component="span">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleInstall}
-              disabled={showDisableInstall}
+          {showRightCard && (
+            <Grid
+              item
+              xs={12}
+              md={5.5}
+              sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
             >
-              Install
-            </Button>
-          </Typography>
-        </Tooltip>
-        <Button
-          variant="outlined"
-          color="primary"
-          sx={{ ml: 2 }}
-          onClick={() => navigate(pluginLink)}
+              <Card
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: 0,
+                  width: '99.8%', // workaround for 'overflow: hidden' causing card to be missing a border
+                }}
+              >
+                <CardHeader
+                  title={
+                    <Typography variant="h3">
+                      Installation instructions
+                    </Typography>
+                  }
+                  action={
+                    <Typography
+                      component="a"
+                      href="/path-to-file.zip" // update this
+                      download
+                      sx={{
+                        fontSize: 16,
+                        display: 'none', // change to 'flex' when ready
+                        alignItems: 'center',
+                        gap: 0.5,
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        m: 1,
+                      }}
+                    >
+                      <FileDownloadOutlinedIcon fontSize="small" />
+                      Download
+                    </Typography>
+                  }
+                  sx={{ pb: 0 }}
+                />
+                <CardContent
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <Tabs
+                      value={tabIndex}
+                      onChange={handleTabChange}
+                      aria-label="Plugin tabs"
+                    >
+                      {availableTabs.map((tab, index) => (
+                        <Tab
+                          key={tab.key}
+                          value={index}
+                          label={tab.label ?? ''}
+                        />
+                      ))}
+                    </Tabs>
+                  </Box>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    {availableTabs.map(
+                      (tab, index) =>
+                        tabIndex === index && (
+                          <TabPanel
+                            key={tab.key}
+                            value={tabIndex}
+                            index={index}
+                            markdownContent={tab.content ?? ''}
+                            others={tab.others}
+                          />
+                        ),
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
+        </Grid>
+
+        <Box
+          sx={{
+            mt: 4,
+            flexShrink: 0,
+            backgroundColor: 'inherit',
+          }}
         >
-          Cancel
-        </Button>
-        {(pluginConfigPermissions.data?.write === 'ALLOW' ||
-          pluginConfigPermissions.data?.read === 'ALLOW') && (
+          <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
+            <CheckboxList packages={packages} />
+          </Box>
+          {showErrorAlert && (
+            <Alert severity="error" sx={{ mb: '1rem' }}>
+              Error occured
+            </Alert>
+          )}
+          <Tooltip title={installTooltip()}>
+            <Typography component="span">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleInstall}
+                disabled={showDisableInstall}
+                data-testid={
+                  showDisableInstall ? 'install-disabled' : 'install'
+                }
+              >
+                Install
+              </Button>
+            </Typography>
+          </Tooltip>
           <Button
-            variant="text"
+            variant="outlined"
             color="primary"
-            onClick={onLoaded}
-            sx={{ ml: 3 }}
+            sx={{ ml: 2 }}
+            onClick={() => navigate(pluginLink)}
           >
-            Reset
+            Cancel
           </Button>
-        )}
+          {(pluginConfigPermissions.data?.write === 'ALLOW' ||
+            pluginConfigPermissions.data?.read === 'ALLOW') && (
+            <Button
+              variant="text"
+              color="primary"
+              onClick={onLoaded}
+              sx={{ ml: 3 }}
+            >
+              Reset
+            </Button>
+          )}
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

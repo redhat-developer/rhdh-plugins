@@ -18,6 +18,7 @@ import {
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
 } from '@backstage/catalog-client';
+import { ConfigApi } from '@backstage/core-plugin-api';
 
 import type {
   ConfigurationResponse,
@@ -66,6 +67,7 @@ export type MarketplaceBackendClientOptions = {
   discoveryApi: DiscoveryApi;
   fetchApi: FetchApi;
   identityApi: IdentityApi;
+  configApi: ConfigApi;
 };
 
 /**
@@ -238,6 +240,10 @@ export class MarketplaceBackendClient implements MarketplaceApi {
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/authorize`,
       'GET',
     );
+  }
+
+  async getExtensionsConfiguration(): Promise<{ enabled: boolean }> {
+    return this.request(`/plugins/configure`, 'GET');
   }
 
   async getPluginConfigByName(

@@ -16,7 +16,7 @@
 
 import React from 'react';
 
-import { Content, LinkButton } from '@backstage/core-components';
+import { Content, LinkButton, WarningPanel } from '@backstage/core-components';
 import { CatalogFilterLayout } from '@backstage/plugin-catalog-react';
 
 import Card from '@mui/material/Card';
@@ -30,10 +30,12 @@ import Alert from '@mui/material/Alert';
 import { SearchTextField } from '../shared-components/SearchTextField';
 
 import { useCollections } from '../hooks/useCollections';
+import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { MarketplacePluginFilter } from './MarketplacePluginFilter';
 import { CollectionHorizontalScrollRow } from './CollectionHorizontalScrollRow';
+import { Markdown } from './Markdown';
 
 import notFoundImag from '../assets/notfound.png';
 
@@ -90,6 +92,7 @@ const EmptyState = ({ isError }: { isError?: boolean }) => (
 );
 
 export const MarketplaceCatalogContent = () => {
+  const extensionsConfig = useExtensionsConfiguration();
   const featuredCollections = useCollections({
     filter: {
       'metadata.name': 'featured',
@@ -117,17 +120,47 @@ export const MarketplaceCatalogContent = () => {
     return <EmptyState />;
   }
 
+  const isProductionEnvironment = process.env.NODE_ENV === 'production';
+  const showExtensionsConfigurationAlert =
+    !isProductionEnvironment && !extensionsConfig.data?.enabled;
+
   return (
     <CatalogFilterLayout>
       <CatalogFilterLayout.Filters>
         <MarketplacePluginFilter />
       </CatalogFilterLayout.Filters>
       <CatalogFilterLayout.Content>
-        <Alert severity="info" sx={{ mb: '1rem' }}>
-          <AlertTitle>
-            Plugin installation is disabled in the production environment.
-          </AlertTitle>
-        </Alert>
+        {!showExtensionsConfigurationAlert && (
+          <Alert severity="info" sx={{ mb: '1rem' }}>
+            <AlertTitle>
+              Plugin installation is disabled in the production environment.
+            </AlertTitle>
+          </Alert>
+        )}
+        {showExtensionsConfigurationAlert && (
+          <>
+            <WarningPanel
+              title="Plugin installation is disabled."
+              defaultExpanded
+              severity="info"
+              message={
+                <Markdown
+                  content={`
+\`\`\`yaml
+# Example how to enable extensions plugin installation
+extensions:
+  installation:
+    enabled: true
+    saveToSingleFile:
+      file: /<path-to>/dynamic-plugins.yaml
+\`\`\`
+`}
+                />
+              }
+            />
+            <br />
+          </>
+        )}
         <Stack direction="column" gap={3}>
           {featuredCollections.data?.items?.map(collection => (
             <CollectionHorizontalScrollRow
