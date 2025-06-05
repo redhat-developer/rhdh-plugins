@@ -25,6 +25,7 @@ import { mockApis, TestApiProvider } from '@backstage/test-utils';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
@@ -163,5 +164,16 @@ describe('LightspeedChat', () => {
       expect(screen.queryByText('New chat')).not.toBeInTheDocument();
       expect(JSON.parse(localStorage.getItem(localStorageKey)!)).toEqual({});
     });
+  });
+
+  it('should set correct accept attribute on file input', async () => {
+    render(setupLightspeedChat());
+
+    await userEvent.click(screen.getByRole('button', { name: 'Attach' }));
+    const input = screen.getByTestId('attachment-input') as HTMLInputElement;
+    expect(input).toHaveAttribute(
+      'accept',
+      'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml',
+    );
   });
 });

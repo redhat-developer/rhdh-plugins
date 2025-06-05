@@ -419,6 +419,16 @@ export const LightspeedChat = ({
                   hasAttachButton
                   handleAttach={handleAttach}
                   hasMicrophoneButton
+                  buttonProps={{
+                    attach: {
+                      inputTestId: 'attachment-input',
+                    },
+                  }}
+                  allowedFileTypes={{
+                    'text/plain': ['.txt'],
+                    'application/json': ['.json'],
+                    'application/yaml': ['.yaml', '.yml'],
+                  }}
                 />
                 <ChatbotFootnote {...getFootnoteProps(classes.footerPopover)} />
               </ChatbotFooter>
