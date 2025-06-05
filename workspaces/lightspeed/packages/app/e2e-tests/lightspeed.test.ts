@@ -38,7 +38,7 @@ import {
   closeChatDrawer,
   openChatDrawer,
   assertDrawerState,
-  sidePanelAssertions,
+  assertConversationExists,
 } from './utils/sidebar';
 
 const botQuery = 'Please respond';
@@ -177,15 +177,7 @@ test.describe('Conversation', () => {
 
   test('Conversation is created and shown in side panel', async ({ page }) => {
     await sendMessage('test', page);
-
-    const sidePanel = page.locator('.pf-v6-c-drawer__panel');
-    await expect(sidePanel).toBeVisible();
-
-    const newButton = sidePanel.getByRole('button', { name: 'new chat' });
-    await expect(newButton).toBeEnabled();
-
-    const conversation = sidePanel.locator('li.pf-chatbot__menu-item--active');
-    await expect(conversation).toBeVisible();
+    await assertConversationExists(page);
   });
 
   test('Verify scroll controls in Conversation', async ({ page }) => {
@@ -201,7 +193,7 @@ test.describe('Conversation', () => {
 
     const loadingIndicator = page.locator('div.pf-chatbot__message-loading');
     await loadingIndicator.waitFor({ state: 'visible' });
-    await sidePanelAssertions(page);
+    await assertConversationExists(page);
 
     const jumpTopButton = page.getByRole('button', { name: 'Jump top' });
     const jumpBottomButton = page.getByRole('button', { name: 'Jump bottom' });

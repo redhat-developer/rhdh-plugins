@@ -50,10 +50,13 @@ export async function assertDrawerState(page: Page, state: 'open' | 'closed') {
   }
 }
 
-export async function sidePanelAssertions(page: Page) {
+export async function assertConversationExists(page: Page) {
   const sidePanel = page.locator('.pf-v6-c-drawer__panel');
-  const conversation = sidePanel.locator('li.pf-chatbot__menu-item--active');
+  await expect(sidePanel).toBeVisible();
+
   const newButton = sidePanel.getByRole('button', { name: 'new chat' });
-  await conversation.waitFor({ state: 'visible' });
   await expect(newButton).toBeEnabled();
+
+  const conversation = sidePanel.locator('li.pf-chatbot__menu-item--active');
+  await expect(conversation).toBeVisible();
 }

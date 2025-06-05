@@ -90,10 +90,7 @@ export const contents = [
 
 const repeatedSentence =
   'OpenShift deployment is a way to manage applications on the OpenShift platform.';
-const openshiftLongParagraph = Array.from(
-  { length: 30 },
-  () => repeatedSentence,
-).join(' ');
+const openshiftLongParagraph = `${repeatedSentence} `.repeat(30);
 
 export const demoChatContent = [
   {
