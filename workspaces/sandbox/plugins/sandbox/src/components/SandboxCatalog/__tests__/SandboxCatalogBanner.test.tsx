@@ -56,8 +56,6 @@ describe('SandboxCatalogBanner', () => {
       userReady: false,
       verificationRequired: false,
       pendingApproval: false,
-      fetchError: null,
-      signupError: null,
       ansibleError: null,
       ansibleData: undefined,
       ansibleUIUser: undefined,
@@ -83,8 +81,6 @@ describe('SandboxCatalogBanner', () => {
       userReady: boolean;
       verificationRequired: boolean;
       pendingApproval: boolean;
-      fetchError: string | null;
-      signupError: string | null;
       ansibleError: string | null;
       ansibleStatus: AnsibleStatus;
     }> = {},
@@ -96,8 +92,6 @@ describe('SandboxCatalogBanner', () => {
       userReady: false,
       verificationRequired: false,
       pendingApproval: false,
-      fetchError: null,
-      signupError: null,
       ansibleError: null,
       ansibleStatus: AnsibleStatus.NEW,
       refetchUserData: jest.fn(),

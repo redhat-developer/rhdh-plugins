@@ -36,6 +36,8 @@ import { AnsibleStatus } from '../../utils/aap-utils';
 import { useApi } from '@backstage/core-plugin-api';
 import { aapApiRef, kubeApiRef } from '../../api';
 import { Product } from './productData';
+import { signupDataToStatus } from '../../utils/register-utils';
+import { productsURLMapping } from '../../hooks/useProductURLs';
 
 type SandboxCatalogCardProps = {
   id: Product;
@@ -107,14 +109,12 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   const theme = useTheme();
   const kubeApi = useApi(kubeApiRef);
   const aapApi = useApi(aapApiRef);
+  let { userData, userFound, userReady, verificationRequired } =
+    useSandboxContext();
   const {
-    userData,
     ansibleData,
     ansibleStatus,
     signupUser,
-    userFound,
-    userReady,
-    verificationRequired,
     refetchUserData,
     refetchAAP,
   } = useSandboxContext();
@@ -158,6 +158,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
 
   const handleTryButtonClick = async (pdt: Product) => {
     // User is not yet signed up
+    let urlToOpen = link;
     if (!userFound) {
       signupUser();
 
@@ -171,9 +172,19 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
 
         try {
           // Fetch the latest user data and check if user is found
-          const isUserFound = await refetchUserData();
-          if (isUserFound) {
-            break;
+          userData = await refetchUserData();
+          if (userData) {
+            userFound = true;
+            const userStatus = signupDataToStatus(userData);
+            verificationRequired = userStatus === 'verify';
+            userReady = userStatus === 'ready';
+            // if user is ready or verification is required we can stop fetching the data
+            if (userReady || verificationRequired) {
+              const productURLs = productsURLMapping(userData);
+              // find the link to open if any
+              urlToOpen = productURLs.find(pu => pu.id === id)?.url || '';
+              break;
+            }
           }
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -193,6 +204,8 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
       await handleAAPInstance();
       refetchAAP();
       setAnsibleCredsModalOpen(true);
+    } else if (userFound && userReady && urlToOpen) {
+      window.open(urlToOpen, '_blank');
     }
     showGreenCorner();
   };
@@ -235,6 +248,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   return (
     <>
       <Card
+        data-testid="catalog-card"
         elevation={0}
         key={id}
         sx={{

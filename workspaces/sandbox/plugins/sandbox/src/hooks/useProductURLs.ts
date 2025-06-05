@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSandboxContext } from './useSandboxContext';
 import { Product } from '../components/SandboxCatalog/productData';
+import { SignupData } from '../types';
 
 interface ProductURL {
   id: Product;
@@ -43,40 +44,41 @@ const getAppsURL = (
   return `https://${appRouteName}${appsURL}`;
 };
 
+export const productsURLMapping = (userData: SignupData | undefined) => {
+  const isProvisioned = userData?.status?.ready || false;
+  return [
+    {
+      id: Product.OPENSHIFT_CONSOLE,
+      url: isProvisioned ? userData?.consoleURL || '' : '',
+    },
+    {
+      id: Product.OPENSHIFT_AI,
+      url: isProvisioned ? userData?.rhodsMemberURL || '' : '',
+    },
+    {
+      id: Product.DEVSPACES,
+      url: isProvisioned
+        ? userData?.cheDashboardURL ||
+          getAppsURL(AppURL.DEVSPACES, userData?.consoleURL)
+        : '',
+    },
+    { id: Product.AAP, url: '' },
+    {
+      id: Product.OPENSHIFT_VIRT,
+      url: isProvisioned
+        ? `${userData?.consoleURL}/k8s/ns/${userData?.defaultUserNamespace}/virtualization-overview`
+        : '',
+    },
+  ];
+};
+
 const useProductURLs = (): ProductURL[] => {
   const { userData } = useSandboxContext();
   const [productURLs, setProductURLs] = useState<ProductURL[]>([]);
-  const defaultUserNamespace =
-    userData?.defaultUserNamespace ?? `${userData?.username}-dev`;
 
   useEffect(() => {
-    const isProvisioned = userData?.status?.ready || false;
-
-    setProductURLs([
-      {
-        id: Product.OPENSHIFT_CONSOLE,
-        url: isProvisioned ? userData?.consoleURL || '' : '',
-      },
-      {
-        id: Product.OPENSHIFT_AI,
-        url: isProvisioned ? userData?.rhodsMemberURL || '' : '',
-      },
-      {
-        id: Product.DEVSPACES,
-        url: isProvisioned
-          ? userData?.cheDashboardURL ||
-            getAppsURL(AppURL.DEVSPACES, userData?.consoleURL)
-          : '',
-      },
-      { id: Product.AAP, url: '' },
-      {
-        id: Product.OPENSHIFT_VIRT,
-        url: isProvisioned
-          ? `${userData?.consoleURL}/k8s/ns/${defaultUserNamespace}/virtualization-overview`
-          : '',
-      },
-    ]);
-  }, [userData, defaultUserNamespace]);
+    setProductURLs(productsURLMapping(userData));
+  }, [userData]);
 
   return productURLs;
 };

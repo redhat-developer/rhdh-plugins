@@ -66,8 +66,6 @@ describe('PhoneVerificationModal', () => {
       ansibleStatus: AnsibleStatus.UNKNOWN,
       verificationRequired: false,
       userData: undefined,
-      fetchError: null,
-      signupError: null,
       signupUser: jest.fn(),
       refetchAAP: jest.fn(),
       ansibleData: undefined,
