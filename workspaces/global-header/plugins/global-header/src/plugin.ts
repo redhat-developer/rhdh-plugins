@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ComponentType } from 'react';
 
 import {
   createPlugin,
@@ -86,7 +86,7 @@ export const GlobalHeader = globalHeaderPlugin.provide(
  *
  * @public
  */
-export const GlobalHeaderComponent: React.ComponentType<GlobalHeaderComponentProps> =
+export const GlobalHeaderComponent: ComponentType<GlobalHeaderComponentProps> =
   globalHeaderPlugin.provide(
     createComponentExtension({
       name: 'GlobalHeaderComponent',
@@ -147,7 +147,7 @@ export const HeaderIconButton = globalHeaderPlugin.provide(
  *
  * @public
  */
-export const SearchComponent: React.ComponentType = globalHeaderPlugin.provide(
+export const SearchComponent: ComponentType = globalHeaderPlugin.provide(
   createComponentExtension({
     name: 'SearchComponent',
     component: {
@@ -164,7 +164,7 @@ export const SearchComponent: React.ComponentType = globalHeaderPlugin.provide(
  *
  * @public
  */
-export const CreateDropdown: React.ComponentType<CreateDropdownProps> =
+export const CreateDropdown: ComponentType<CreateDropdownProps> =
   globalHeaderPlugin.provide(
     createComponentExtension({
       name: 'CreateDropdown',
@@ -182,7 +182,7 @@ export const CreateDropdown: React.ComponentType<CreateDropdownProps> =
  *
  * @public
  */
-export const ProfileDropdown: React.ComponentType<ProfileDropdownProps> =
+export const ProfileDropdown: ComponentType<ProfileDropdownProps> =
   globalHeaderPlugin.provide(
     createComponentExtension({
       name: 'ProfileDropdown',
@@ -200,7 +200,7 @@ export const ProfileDropdown: React.ComponentType<ProfileDropdownProps> =
  *
  * @public
  */
-export const SoftwareTemplatesSection: React.ComponentType<SoftwareTemplatesSectionProps> =
+export const SoftwareTemplatesSection: ComponentType<SoftwareTemplatesSectionProps> =
   globalHeaderPlugin.provide(
     createComponentExtension({
       name: 'SoftwareTemplatesSection',
@@ -218,7 +218,7 @@ export const SoftwareTemplatesSection: React.ComponentType<SoftwareTemplatesSect
  *
  * @public
  */
-export const RegisterAComponentSection: React.ComponentType<RegisterAComponentSectionProps> =
+export const RegisterAComponentSection: ComponentType<RegisterAComponentSectionProps> =
   globalHeaderPlugin.provide(
     createComponentExtension({
       name: 'RegisterAComponentSection',
@@ -236,7 +236,7 @@ export const RegisterAComponentSection: React.ComponentType<RegisterAComponentSe
  *
  * @public
  */
-export const MenuItemLink: React.ComponentType<MenuItemLinkProps> =
+export const MenuItemLink: ComponentType<MenuItemLinkProps> =
   globalHeaderPlugin.provide(
     createComponentExtension({
       name: 'MenuItemLink',
@@ -254,7 +254,7 @@ export const MenuItemLink: React.ComponentType<MenuItemLinkProps> =
  *
  * @public
  */
-export const LogoutButton: React.ComponentType = globalHeaderPlugin.provide(
+export const LogoutButton: ComponentType = globalHeaderPlugin.provide(
   createComponentExtension({
     name: 'LogoutButton',
     component: {

@@ -211,7 +211,7 @@ For more information about audit logs in RHDH, please refer to [the official doc
 
 The `orchestrator` plugin includes an extensible form for executing workflows. Details are available in the [extensible form documentation](./docs/extensibleForm.md).
 
-## Contributors
+## Run locally from this repo
 
 The orchestrator workspace is structured like a standard backstage application. To get it up and running locally run the following:
 
@@ -224,3 +224,9 @@ yarn dev
 This will trigger a docker container run of devmode SonataFlow as described in [Devmode local configuration](#devmode-local-configuration).
 
 More development guidelines available in the [contributors documentation](./docs/Contributors.md).
+
+## Enable in rhdh repo locally
+
+If you're running a local clone of [Red Hat Developer Hub (RHDH)](https://github.com/redhat-developer/rhdh) and want to use the Orchestrator plugin as a dynamic plugin, we've included a helper script to streamline this setup.
+
+Please refer to the [Enabling the Orchestrator Plugin in rhdh repo locally](./workspaces/orchestrator/README.md#-enabling-the-orchestrator-plugin-in-red-hat-developer-hub) section for detailed instructions.

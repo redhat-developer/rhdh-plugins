@@ -31,7 +31,7 @@ import {
 } from '@backstage/core-plugin-api';
 import type { JsonObject } from '@backstage/types';
 
-import { Grid } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
 import { JSONSchema7 } from 'json-schema';
 
 import {

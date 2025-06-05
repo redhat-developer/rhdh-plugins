@@ -68,7 +68,6 @@ const walkThrough: (
 export const useGetExtraErrors = () => {
   const fetchApi = useApi(fetchApiRef);
   const templateUnitEvaluator = useTemplateUnitEvaluator();
-
   return async (
     formData: JsonObject,
     uiSchema: OrchestratorFormContextProps['uiSchema'],
@@ -81,7 +80,7 @@ export const useGetExtraErrors = () => {
 
       if (
         validateUrl &&
-        ['ActiveTextInput', 'ActiveDropdown'].includes(
+        ['ActiveTextInput', 'ActiveDropdown', 'ActiveMultiSelect'].includes(
           uiSchemaProperty?.['ui:widget']?.toString() ?? '',
         )
       ) {

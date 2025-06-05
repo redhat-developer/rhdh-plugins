@@ -22,7 +22,8 @@
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "./scripts/postinstall"
+    "postinstall": "./scripts/postinstall",
+    "enable-in-rhdh-repo": "node scripts/export-to-rhdh-repo.js && node scripts/update-config-in-rhdh-repo.js"
   },
   "workspaces": {
     "packages": [

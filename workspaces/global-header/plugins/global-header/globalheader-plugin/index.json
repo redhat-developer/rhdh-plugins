@@ -1,0 +1,28 @@
+[
+  {
+    "red-hat-developer-hub-backstage-plugin-global-header": {
+      "name": "@red-hat-developer-hub/backstage-plugin-global-header-dynamic",
+      "version": "1.7.3",
+      "backstage": {
+        "role": "frontend-plugin",
+        "pluginId": "global-header",
+        "pluginPackages": [
+          "@red-hat-developer-hub/backstage-plugin-global-header"
+        ],
+        "supported-versions": "1.39.0"
+      },
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/redhat-developer/rhdh-plugins",
+        "directory": "workspaces/global-header/plugins/global-header"
+      },
+      "license": "Apache-2.0",
+      "keywords": [
+        "support:production",
+        "lifecycle:active",
+        "backstage",
+        "plugin"
+      ]
+    }
+  }
+]

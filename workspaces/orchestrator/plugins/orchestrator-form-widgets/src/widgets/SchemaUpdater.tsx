@@ -21,7 +21,7 @@ import {
   SchemaChunksResponse,
   OrchestratorFormContextProps,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { CircularProgress } from '@material-ui/core';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import {
   useRetriggerEvaluate,
@@ -38,7 +38,7 @@ export const SchemaUpdater: Widget<
 > = props => {
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const { formContext } = props;
+  const { id, formContext } = props;
   const formData = formContext?.formData;
 
   const updateSchema = formContext?.updateSchema;
@@ -91,7 +91,7 @@ export const SchemaUpdater: Widget<
   }, [data, props.id, updateSchema]);
 
   if (localError ?? error) {
-    return <ErrorText text={localError ?? error ?? ''} />;
+    return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
   if (loading) {

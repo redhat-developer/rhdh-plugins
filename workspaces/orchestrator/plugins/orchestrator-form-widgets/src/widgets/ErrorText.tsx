@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 import React from 'react';
-import { makeStyles, Theme } from '@material-ui/core';
+import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   error: {
     color: theme.palette.error.main,
   },
 }));
 
-export const ErrorText = ({ text }: { text: string }) => {
-  const classes = useStyles();
+export const ErrorText = ({ text, id }: { text: string; id: string }) => {
+  const { classes } = useStyles();
 
-  return <div className={classes.error}>{text}</div>;
+  return (
+    <div className={classes.error} data-testid={`${id}-error-text`}>
+      {text}
+    </div>
+  );
 };

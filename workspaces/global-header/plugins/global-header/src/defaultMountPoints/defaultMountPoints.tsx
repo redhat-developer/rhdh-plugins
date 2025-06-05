@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { CSSProperties, ComponentType } from 'react';
 import { LogoutButton } from '../components/LogoutButton/LogoutButton';
 import { CreateDropdown } from '../components/HeaderDropdownComponent/CreateDropdown';
 import { ProfileDropdown } from '../components/HeaderDropdownComponent/ProfileDropdown';
@@ -77,7 +78,7 @@ export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMoun
             md: 'block',
           },
           mr: 1.5,
-        } as any as React.CSSProperties, // I don't used MUI v5 specific `sx` types here to allow us changing the implementation later
+        } as any as CSSProperties, // I don't used MUI v5 specific `sx` types here to allow us changing the implementation later
       },
     },
     {
@@ -120,13 +121,13 @@ export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMoun
 
 export const defaultCreateDropdownMountPoints: CreateDropdownMountPoint[] = [
   {
-    Component: SoftwareTemplatesSection as React.ComponentType,
+    Component: SoftwareTemplatesSection as ComponentType,
     config: {
       priority: 200,
     },
   },
   {
-    Component: RegisterAComponentSection as React.ComponentType,
+    Component: RegisterAComponentSection as ComponentType,
     config: {
       priority: 100,
     },
@@ -135,7 +136,7 @@ export const defaultCreateDropdownMountPoints: CreateDropdownMountPoint[] = [
 
 export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
   {
-    Component: MenuItemLink as React.ComponentType,
+    Component: MenuItemLink as ComponentType,
     config: {
       priority: 200,
       props: {
@@ -156,7 +157,7 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
 export const defaultApplicationLauncherDropdownMountPoints: ApplicationLauncherDropdownMountPoint[] =
   [
     {
-      Component: MenuItemLink as React.ComponentType,
+      Component: MenuItemLink as ComponentType,
       config: {
         section: 'Red Hat AI',
         sectionLink: 'https://www.redhat.com/en/products/ai',
@@ -170,7 +171,7 @@ export const defaultApplicationLauncherDropdownMountPoints: ApplicationLauncherD
       },
     },
     {
-      Component: MenuItemLink as React.ComponentType,
+      Component: MenuItemLink as ComponentType,
       config: {
         section: 'Red Hat AI',
         priority: 180,
@@ -182,7 +183,7 @@ export const defaultApplicationLauncherDropdownMountPoints: ApplicationLauncherD
       },
     },
     {
-      Component: MenuItemLink as React.ComponentType,
+      Component: MenuItemLink as ComponentType,
       config: {
         section: 'Quick Links',
         priority: 150,
@@ -194,7 +195,7 @@ export const defaultApplicationLauncherDropdownMountPoints: ApplicationLauncherD
       },
     },
     {
-      Component: MenuItemLink as React.ComponentType,
+      Component: MenuItemLink as ComponentType,
       config: {
         section: 'Quick Links',
         priority: 130,

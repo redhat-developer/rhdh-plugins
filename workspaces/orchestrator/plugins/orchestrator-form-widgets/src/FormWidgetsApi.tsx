@@ -28,6 +28,7 @@ import {
   ActiveTextInput,
   ActiveText,
   ActiveDropdown,
+  ActiveMultiSelect,
 } from './widgets';
 import { useGetExtraErrors } from './utils';
 
@@ -35,8 +36,7 @@ const customValidate = (
   _formData: JsonObject | undefined,
   errors: FormValidation<JsonObject>,
 ): FormValidation<JsonObject> => {
-  // TODO: Trigger field validation
-  // Called synchronously
+  // Trigger synchronous field validation
   return errors;
 };
 
@@ -45,6 +45,7 @@ const widgets = {
   ActiveTextInput,
   ActiveText,
   ActiveDropdown,
+  ActiveMultiSelect,
 };
 
 export class FormWidgetsApi implements OrchestratorFormApi {
@@ -54,17 +55,11 @@ export class FormWidgetsApi implements OrchestratorFormApi {
 
     return (FormComponent: React.ComponentType<FormDecoratorProps>) => {
       return (props: OrchestratorFormContextProps) => {
-        const { setFormData } = props;
         const getExtraErrors = useGetExtraErrors();
 
         return (
           <FormComponent
             widgets={widgets}
-            onChange={e => {
-              if (e.formData) {
-                setFormData(e.formData);
-              }
-            }}
             formContext={props}
             customValidate={customValidate}
             getExtraErrors={getExtraErrors}

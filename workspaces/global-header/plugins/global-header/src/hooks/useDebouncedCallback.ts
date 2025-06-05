@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 
 export const useDebouncedCallback = <T extends (...args: any[]) => void>(
   callback: T,
   delay: number,
 ) => {
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -29,7 +29,7 @@ export const useDebouncedCallback = <T extends (...args: any[]) => void>(
     };
   }, []);
 
-  return React.useCallback(
+  return useCallback(
     (...args: Parameters<T>) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);

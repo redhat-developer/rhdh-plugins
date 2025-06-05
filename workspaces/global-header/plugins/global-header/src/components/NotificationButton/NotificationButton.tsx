@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
+import type { CSSProperties } from 'react';
 import { Link as BackstageLink } from '@backstage/core-components';
 
 import Badge from '@mui/material/Badge';
@@ -51,7 +50,7 @@ export interface NotificationButtonProps {
     | 'success'
     | 'warning';
   to?: string;
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 }
 
 // Backstage Link automatically detects external links and emits analytic events.

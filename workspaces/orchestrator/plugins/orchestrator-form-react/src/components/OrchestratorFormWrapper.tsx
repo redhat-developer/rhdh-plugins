@@ -19,7 +19,7 @@ import React from 'react';
 import { ErrorPanel } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
-import { Grid } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
 import { withTheme } from '@rjsf/core';
 import { Theme as MuiTheme } from '@rjsf/material-ui';
 import { ErrorSchema } from '@rjsf/utils';
@@ -123,7 +123,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           validator={validator}
           schema={schema}
           formData={formData}
-          formContext={decoratorProps.formContext}
+          formContext={formContext}
           noHtml5Validate
           extraErrors={extraErrors}
           onSubmit={e => onSubmit(e.formData || {})}

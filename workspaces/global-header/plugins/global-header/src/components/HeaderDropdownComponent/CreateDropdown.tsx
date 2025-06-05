@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
+import type { CSSProperties, ComponentType } from 'react';
 
 import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
 
@@ -39,7 +40,7 @@ interface SectionComponentProps {
  * Props for Create Dropdown
  */
 export interface CreateDropdownProps {
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 }
 
 export const CreateDropdown = ({ layout }: CreateDropdownProps) => {
@@ -50,7 +51,7 @@ export const CreateDropdown = ({ layout }: CreateDropdownProps) => {
   const menuSections = useMemo(() => {
     return (createDropdownMountPoints ?? [])
       .map(mp => ({
-        Component: mp.Component as React.ComponentType<SectionComponentProps>,
+        Component: mp.Component as ComponentType<SectionComponentProps>,
         priority: mp.config?.priority ?? 0,
       }))
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));

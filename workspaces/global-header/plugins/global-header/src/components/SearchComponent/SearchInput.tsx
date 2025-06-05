@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';

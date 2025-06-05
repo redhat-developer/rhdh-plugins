@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 // eslint-disable-next-line no-restricted-imports
 import { GlobalStyles } from '@mui/material';
 import { Navigate, Route } from 'react-router-dom';
