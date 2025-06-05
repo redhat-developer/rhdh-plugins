@@ -85,7 +85,7 @@ const FileAttachmentContextProvider: React.FC<{
       setShowAlert(true);
       setUploadError({
         message:
-          'Unsupported file type. Supported types are: .txt, .yaml, .json.',
+          'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
       });
       return;
     }
