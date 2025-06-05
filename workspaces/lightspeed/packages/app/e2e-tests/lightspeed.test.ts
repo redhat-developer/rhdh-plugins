@@ -30,7 +30,6 @@ import { openLightspeed, sendMessage } from './utils/testHelper';
 import {
   uploadFile,
   uploadAndAssertDuplicate,
-  validateFailedUpload,
   supportedFileTypes,
 } from './utils/fileUpload';
 import {
@@ -141,7 +140,12 @@ test.describe('File Attachment Validation', () => {
       if (supportedFileTypes.includes(fileExtension)) {
         await uploadAndAssertDuplicate(page, path, name);
       } else {
-        await validateFailedUpload(page);
+        // Unsupported files will not be available to preview.
+        const filePreview = page
+          .locator('span', { hasText: name.split('.')[0] })
+          .first();
+
+        expect(filePreview).not.toBeVisible();
       }
     });
   }

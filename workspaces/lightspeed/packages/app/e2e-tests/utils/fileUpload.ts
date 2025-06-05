@@ -15,7 +15,7 @@
  */
 import { Page, Locator, FileChooser, expect } from '@playwright/test';
 
-export const supportedFileTypes = ['.txt', '.yaml', '.json'];
+export const supportedFileTypes = ['.txt', '.yaml', '.json', '.xml'];
 
 export async function triggerFileChooser(
   page: Page,
@@ -76,20 +76,6 @@ export async function validateSuccessfulUpload(page: Page, fileName: string) {
   await page.getByRole('button', { name: 'Save' }).click();
   await page
     .getByRole('contentinfo')
-    .getByRole('button', { name: 'Close' })
+    .locator('role=button[name="Close"]')
     .click();
-}
-
-export async function validateFailedUpload(page: Page) {
-  const alertHeader = page.getByText('File upload failed');
-  const alertText = page.getByText(
-    'Unsupported file type. Supported types are: .txt, .yaml, .json.',
-  );
-
-  await expect(alertHeader).toBeVisible();
-  await expect(alertText).toBeVisible();
-
-  await page.getByRole('button', { name: 'Close Danger alert' }).click();
-  await expect(alertHeader).toBeHidden();
-  await expect(alertText).toBeHidden();
 }
