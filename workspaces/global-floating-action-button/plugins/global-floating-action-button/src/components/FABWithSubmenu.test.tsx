@@ -16,7 +16,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import GitIcon from '@mui/icons-material/GitHub';
 import SnowFlake from '@mui/icons-material/AcUnit';
-import * as React from 'react';
 import { Slot } from '../types';
 import { FABWithSubmenu } from './FABWithSubmenu';
 
