@@ -21,6 +21,7 @@ import {
   defaultConversation,
   conversations,
   contents,
+  demoChatContent,
   generateQueryResponse,
   botResponse,
   moreConversations,
@@ -38,6 +39,7 @@ import {
   openChatDrawer,
   assertDrawerState,
 } from './utils/sidebar';
+import { sidePanelAssertions } from './utils/sidebar';
 
 const botQuery = 'Please respond';
 
@@ -184,6 +186,40 @@ test.describe('Conversation', () => {
 
     const conversation = sidePanel.locator('li.pf-chatbot__menu-item--active');
     await expect(conversation).toBeVisible();
+  });
+
+  test('Verify scroll controls in Conversation', async ({ page }) => {
+    await page.route(`${modelBaseUrl}/conversations/user*`, async route => {
+      const json = { chat_history: demoChatContent };
+      await route.fulfill({ json });
+    });
+
+    await openLightspeed(page);
+
+    const message = demoChatContent[0].content;
+    await sendMessage(message, page);
+
+    const loadingIndicator = page.locator('div.pf-chatbot__message-loading');
+    await loadingIndicator.waitFor({ state: 'visible' });
+    await sidePanelAssertions(page);
+
+    const jumpTopButton = page.getByRole('button', { name: 'Jump top' });
+    const jumpBottomButton = page.getByRole('button', { name: 'Jump bottom' });
+
+    await expect(jumpTopButton).toBeVisible();
+    await jumpTopButton.click();
+    await page.waitForTimeout(500);
+    await expect(
+      page.locator('span').filter({ hasText: message }),
+    ).toBeVisible();
+
+    await expect(jumpBottomButton).toBeVisible();
+    await jumpBottomButton.click();
+
+    const responseMessage = page
+      .locator('div.pf-chatbot__message-response')
+      .last();
+    await expect(responseMessage).toHaveText(/OpenShift deployment/);
   });
 
   test('Filter and switch conversations', async ({ page }) => {

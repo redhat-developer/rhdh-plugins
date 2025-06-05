@@ -15,45 +15,13 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { openLightspeed, sendMessage } from './utils/testHelper';
-import { sidePanelAssertions } from './utils/sidebar';
 
-test.beforeEach(async ({ page }) => {
+test('App should render the welcome page', async ({ page }) => {
   await page.goto('/');
 
   const enterButton = page.getByRole('button', { name: 'Enter' });
   await expect(enterButton).toBeVisible();
   await enterButton.click();
-});
 
-test('App should render the welcome page', async ({ page }) => {
   await expect(page.getByText('Catalog')).toBeVisible();
-});
-
-test('Verify scroll controls in Conversation', async ({ page }) => {
-  await openLightspeed(page);
-  await page.waitForLoadState('networkidle');
-  const message = 'let me know about openshift deplyment in detail';
-  await sendMessage(message, page);
-
-  const loadingIndicator = page.locator('div.pf-chatbot__message-loading');
-  await loadingIndicator.waitFor({ state: 'visible' });
-  await sidePanelAssertions(page);
-
-  const jumpTopButton = page.getByRole('button', { name: 'Jump top' });
-  const jumpBottomButton = page.getByRole('button', { name: 'Jump bottom' });
-
-  await expect(jumpTopButton).toBeVisible();
-  await jumpTopButton.click();
-
-  await page.waitForTimeout(500);
-  await expect(page.locator('span').filter({ hasText: message })).toBeVisible();
-
-  await expect(jumpBottomButton).toBeVisible();
-  await jumpBottomButton.click();
-
-  const responseMessage = page
-    .locator('div.pf-chatbot__message-response')
-    .last();
-  await expect(responseMessage).toHaveText(/OpenShift deployment/);
 });
