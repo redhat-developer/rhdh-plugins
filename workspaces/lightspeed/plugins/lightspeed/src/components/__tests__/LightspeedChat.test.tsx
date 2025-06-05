@@ -183,7 +183,7 @@ describe('LightspeedChat', () => {
     const input = screen.getByTestId('attachment-input') as HTMLInputElement;
     expect(input).toHaveAttribute(
       'accept',
-      'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml',
+      'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml,application/xml,.xml',
     );
   });
 });

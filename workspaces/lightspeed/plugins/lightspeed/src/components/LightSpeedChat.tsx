@@ -428,6 +428,7 @@ export const LightspeedChat = ({
                     'text/plain': ['.txt'],
                     'application/json': ['.json'],
                     'application/yaml': ['.yaml', '.yml'],
+                    'application/xml': ['.xml'],
                   }}
                 />
                 <ChatbotFootnote {...getFootnoteProps(classes.footerPopover)} />
