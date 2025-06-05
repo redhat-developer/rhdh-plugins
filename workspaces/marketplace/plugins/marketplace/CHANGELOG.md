@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.6.0
+
+### Minor Changes
+
+- 7d138e5: Added extension permissions
+
+### Patch Changes
+
+- 017dc19: Highlight Category Chip when focus is given through keyboard navigation
+- aa27f64: Updated dependency `@scalprum/react-core` to `0.9.5`.
+- 8d10acc: Updated dependency `@mui/styles` to `5.17.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.8.0`.
+- a87ef79: show error state when backend is missing
+- 4413eef: updated `extension` to `extensions`
+  update marketplace pluginId to extensions
+- Updated dependencies [4413eef]
+- Updated dependencies [7d138e5]
+- Updated dependencies [f56908a]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.4.0
+
 ## 0.5.8
 
 ### Patch Changes
