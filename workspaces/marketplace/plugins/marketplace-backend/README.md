@@ -21,6 +21,19 @@ backend.add(
 );
 ```
 
+### Plugin Configurations
+
+Add the following extensions configuration in your `app-config.yaml` file:
+
+```yaml
+extensions:
+  ### Example for how to enable installation to a file.
+  installation:
+    enabled: true
+    saveToSingleFile:
+      file: <path-to>/dynamic-plugins.yaml
+```
+
 ## Development
 
 This plugin backend can be started in a standalone mode from directly in this

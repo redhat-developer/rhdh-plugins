@@ -71,15 +71,27 @@ export const applyContent = (
 };
 
 export const getErrorMessage = (reason: ExtensionsStatus, message: string) => {
-  if (
-    reason === ExtensionsStatus.INSTALLATION_DISABLED ||
-    reason === ExtensionsStatus.UNKNOWN ||
-    reason === ExtensionsStatus.FILE_CONFIG_VALUE_MISSING ||
-    reason === ExtensionsStatus.INVALID_CONFIG ||
-    reason === ExtensionsStatus.FILE_NOT_EXISTS
-  ) {
-    // Plugin installation is disabled. Contact your administrator for assistance.
-    return message;
+  if (reason === ExtensionsStatus.FILE_CONFIG_VALUE_MISSING) {
+    return {
+      title: 'Missing configuration file',
+      message: `${message}. Add the file to your app-config.yaml to enable the plugin installation. Edit the app-config.yaml as shown in the example below:`,
+    };
   }
-  return '';
+  if (reason === ExtensionsStatus.INVALID_CONFIG) {
+    return {
+      title: 'Invalid installation configuration',
+      message: `${message}. Provide valid installation configuration to view your configuration in the code editor. Edit your dynamic-plugins.yaml as shown in the example below:`,
+    };
+  }
+
+  if (reason === ExtensionsStatus.FILE_NOT_EXISTS) {
+    return {
+      title: `Configuration file doesn't exist`,
+      message: `${message}. Configure the configuration file in your app-config.yaml correctly to enable the plugin installation. Edit the app-config.yaml as shown in the example below:`,
+    };
+  }
+  if (reason === ExtensionsStatus.UNKNOWN) {
+    return { title: 'Error reading the configuration file. ', message };
+  }
+  return { title: '', message: '' };
 };
