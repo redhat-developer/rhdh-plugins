@@ -430,6 +430,7 @@ export const LightspeedChat = ({
                     'application/yaml': ['.yaml', '.yml'],
                     'application/xml': ['.xml'],
                   }}
+                  placeholder="Send a message and optionally upload a JSON, YAML, TXT, or XML file..."
                 />
                 <ChatbotFootnote {...getFootnoteProps(classes.footerPopover)} />
               </ChatbotFooter>
