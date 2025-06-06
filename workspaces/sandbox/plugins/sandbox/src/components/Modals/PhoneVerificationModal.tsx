@@ -23,31 +23,30 @@ import {
   PhoneNumberStep,
   VerificationCodeStep,
 } from './PhoneVerificationSteps';
-import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { errorMessage } from '../../utils/common';
+import { Product } from '../SandboxCatalog/productData';
 
 type PhoneVerificationModalProps = {
+  id: Product;
   modalOpen: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setAnsibleCredsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
+  id,
   modalOpen,
   setOpen,
+  setAnsibleCredsModalOpen,
 }) => {
   const registerApi = useApi(registerApiRef);
   const [enterOTP, setEnterOTP] = useState<boolean>(false);
-  const { refetchUserData } = useSandboxContext();
   const [phoneNumber, setPhoneNumber] = useState<E164Number | undefined>();
   const [country, setCountry] = useState<Country>('ES');
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [codeResent, setCodeResent] = useState<boolean>(false);
   const [phoneSubmitError, setPhoneSubmitError] = React.useState<
-    string | undefined
-  >();
-  const [verificationCodeError, setVerificationCodeError] = React.useState<
     string | undefined
   >();
 
@@ -58,8 +57,6 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
     setOpen(false);
     setEnterOTP(false);
     setPhoneSubmitError(undefined);
-    setVerificationCodeError(undefined);
-    setCodeResent(false);
   };
 
   const handlePhoneNumberSubmit = async () => {
@@ -84,44 +81,10 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
     }
   };
 
-  const handleStartTrialClick = async () => {
-    try {
-      setVerificationCodeError(undefined);
-      setLoading(true);
-      await registerApi.completePhoneVerification(otp.join(''));
-      await refetchUserData();
-      handleClose();
-    } catch (e) {
-      setVerificationCodeError(errorMessage(e));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleEditPhoneNumber = () => {
     setPhoneNumber(undefined);
     setEnterOTP(false);
     setOtp(['', '', '', '', '', '']);
-  };
-
-  const handleResendCode = async () => {
-    if (codeResent) return;
-
-    const countryCallingCode = `+${getCountryCallingCode(country)}`;
-    setOtp(['', '', '', '', '', '']);
-    try {
-      setVerificationCodeError(undefined);
-      setLoading(true);
-      await registerApi.initiatePhoneVerification(
-        countryCallingCode,
-        (phoneNumber as string)?.replace(countryCallingCode, ''),
-      );
-      setCodeResent(true);
-    } catch (e) {
-      setVerificationCodeError(errorMessage(e));
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -139,16 +102,16 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
         />
       ) : (
         <VerificationCodeStep
+          id={id}
           otp={otp}
           setOtp={setOtp}
-          handleResendCode={handleResendCode}
-          codeResent={codeResent}
           phoneNumber={phoneNumber}
           handleEditPhoneNumber={handleEditPhoneNumber}
-          handleStartTrialClick={handleStartTrialClick}
+          setAnsibleCredsModalOpen={setAnsibleCredsModalOpen}
           handleClose={handleClose}
           loading={loading}
-          error={verificationCodeError}
+          setLoading={setLoading}
+          country={country}
         />
       )}
     </Dialog>

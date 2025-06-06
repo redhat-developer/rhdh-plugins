@@ -32,7 +32,6 @@ import {
   PhoneVerificationModal,
 } from '../Modals';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
-import { AnsibleStatus } from '../../utils/aap-utils';
 import { useApi } from '@backstage/core-plugin-api';
 import { aapApiRef, kubeApiRef } from '../../api';
 import { Product } from './productData';
@@ -111,50 +110,14 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   const aapApi = useApi(aapApiRef);
   let { userData, userFound, userReady, verificationRequired } =
     useSandboxContext();
-  const {
-    ansibleData,
-    ansibleStatus,
-    signupUser,
-    refetchUserData,
-    refetchAAP,
-  } = useSandboxContext();
+  const { handleAAPInstance, signupUser, refetchUserData, refetchAAP } =
+    useSandboxContext();
   const [ansibleCredsModalOpen, setAnsibleCredsModalOpen] =
     React.useState(false);
   const [verifyPhoneModalOpen, setVerifyPhoneModalOpen] = useState(false);
   const [refetchingUserData, setRefetchingUserData] = useState(false);
   const [deleteAnsibleModalOpen, setDeleteAnsibleModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  const handleAAPInstance: () => Promise<void> = async () => {
-    refetchAAP();
-
-    if (
-      ansibleStatus === AnsibleStatus.PROVISIONING ||
-      ansibleStatus === AnsibleStatus.READY
-    ) {
-      return;
-    }
-
-    if (
-      ansibleStatus === AnsibleStatus.IDLED &&
-      ansibleData &&
-      ansibleData?.items?.length > 0
-    ) {
-      try {
-        await aapApi.unIdleAAP(userData?.defaultUserNamespace || '');
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e);
-      }
-      return;
-    }
-    try {
-      await aapApi.createAAP(userData?.defaultUserNamespace || '');
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
-    }
-  };
 
   const handleTryButtonClick = async (pdt: Product) => {
     // User is not yet signed up
@@ -201,7 +164,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
     }
     // User has signed up and the trial is ready and user selects the AAP Trial
     if (userFound && userReady && pdt === Product.AAP) {
-      await handleAAPInstance();
+      handleAAPInstance();
       refetchAAP();
       setAnsibleCredsModalOpen(true);
     } else if (userFound && userReady && urlToOpen) {
@@ -330,8 +293,10 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
         </CardActions>
       </Card>
       <PhoneVerificationModal
+        id={id}
         modalOpen={verifyPhoneModalOpen}
         setOpen={setVerifyPhoneModalOpen}
+        setAnsibleCredsModalOpen={setAnsibleCredsModalOpen}
       />
       <AnsibleLaunchInfoModal
         modalOpen={ansibleCredsModalOpen}
