@@ -33,10 +33,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage/core-components": "^0.17.0",
-    "@backstage/core-plugin-api": "^1.10.5",
     "@backstage/types": "^1.2.1",
-    "@mui/material": "^5.17.1",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
     "@rjsf/core": "^5.21.2",
     "@rjsf/material-ui": "^5.21.2",
@@ -47,10 +44,16 @@
     "tss-react": "^4.9.18"
   },
   "peerDependencies": {
+    "@backstage/core-components": "^0.17.0",
+    "@backstage/core-plugin-api": "^1.10.5",
+    "@mui/material": "^5.17.1",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
     "@backstage/cli": "^0.31.1",
+    "@backstage/core-components": "^0.17.0",
+    "@backstage/core-plugin-api": "^1.10.5",
+    "@mui/material": "^5.17.1",
     "@types/json-schema": "7.0.15",
     "@types/lodash": "^4.14.151",
     "@types/react": "^18.2.58",
