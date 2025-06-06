@@ -11531,6 +11531,7 @@ __metadata:
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
   peerDependencies:
+    "@backstage/core-plugin-api": ^1.10.5
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
   linkType: soft
@@ -11560,6 +11561,9 @@ __metadata:
     react-router-dom: ^6.3.0
     tss-react: ^4.9.18
   peerDependencies:
+    "@backstage/core-components": ^0.17.0
+    "@backstage/core-plugin-api": ^1.10.5
+    "@mui/material": ^5.17.1
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
   linkType: soft
@@ -11595,6 +11599,11 @@ __metadata:
     react-use: ^17.2.4
     tss-react: ^4.9.18
   peerDependencies:
+    "@backstage/core-components": ^0.17.0
+    "@backstage/core-plugin-api": ^1.10.1
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.17.1
+    "@mui/styles": 5.16.14
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
   linkType: soft
@@ -11644,6 +11653,9 @@ __metadata:
     uuid: ^11.0.3
     vscode-languageserver-types: 3.17.5
   peerDependencies:
+    "@backstage/core-components": ^0.16.4
+    "@backstage/core-plugin-api": ^1.10.4
+    "@material-ui/core": ^4.12.4
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.17.1
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
