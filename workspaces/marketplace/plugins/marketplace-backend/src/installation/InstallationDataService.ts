@@ -144,4 +144,16 @@ export class InstallationDataService {
     const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
     return this.installationStorage.getPackages(dynamicArtifacts);
   }
+
+  updatePackageConfig(packageDynamicArtifact: string, newConfig: string): void {
+    this.installationStorage.updatePackage(packageDynamicArtifact, newConfig);
+  }
+
+  async updatePluginConfig(
+    plugin: MarketplacePlugin,
+    newConfig: string,
+  ): Promise<void> {
+    const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
+    this.installationStorage.updatePackages(dynamicArtifacts, newConfig);
+  }
 }

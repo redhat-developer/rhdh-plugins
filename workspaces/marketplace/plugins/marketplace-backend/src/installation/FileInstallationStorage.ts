@@ -16,14 +16,12 @@
 
 import fs from 'fs';
 
+import { Document, isMap, parseDocument, type YAMLMap, YAMLSeq } from 'yaml';
 import {
-  Document,
-  isMap,
-  parseDocument,
-  type YAMLMap,
-  type YAMLSeq,
-} from 'yaml';
-import { validateConfigurationFormat } from '../validation/configValidation';
+  validateConfigurationFormat,
+  validatePackageFormat,
+  validatePluginFormat,
+} from '../validation/configValidation';
 import {
   InstallationInitError,
   InstallationInitErrorReason,
@@ -33,7 +31,9 @@ import type { JsonValue } from '@backstage/types';
 export interface InstallationStorage {
   initialize?(): void;
   getPackage(packageName: string): string | undefined;
+  updatePackage(packageName: string, newConfig: string): void;
   getPackages(packageNames: Set<string>): string | undefined;
+  updatePackages(packageNames: Set<string>, newConfig: string): void;
 }
 
 export class FileInstallationStorage implements InstallationStorage {
@@ -59,6 +59,10 @@ export class FileInstallationStorage implements InstallationStorage {
     return packages.items.find(
       p => isMap(p) && p.get('package') === packageName,
     );
+  }
+
+  private save() {
+    fs.writeFileSync(this.configFile, this.config.toString({ lineWidth: 0 }));
   }
 
   initialize(): void {
@@ -92,5 +96,45 @@ export class FileInstallationStorage implements InstallationStorage {
       }
     }
     return res.length === 0 ? undefined : this.toStringYaml(res);
+  }
+
+  updatePackage(packageName: string, newConfig: string): void {
+    const newNode = parseDocument(newConfig).contents;
+    validatePackageFormat(newNode, packageName);
+
+    const packages = this.config.get('plugins') as YAMLSeq<
+      YAMLMap<string, JsonValue>
+    >;
+
+    const existingPackage = packages.items.find(
+      item => item.get('package') === packageName,
+    );
+    if (existingPackage) {
+      existingPackage.items = newNode.items;
+    } else {
+      packages.items.push(newNode);
+    }
+    this.save();
+  }
+
+  updatePackages(packageNames: Set<string>, newConfig: string): void {
+    const newNodes = parseDocument(newConfig);
+    validatePluginFormat(newNodes, packageNames);
+
+    const packages = this.config.get('plugins') as YAMLSeq<
+      YAMLMap<string, JsonValue>
+    >;
+
+    const updatedPackages = new YAMLSeq<YAMLMap<string, JsonValue>>();
+    for (const item of packages.items) {
+      const name = item.get('package') as string;
+      if (!packageNames.has(name)) {
+        updatedPackages.items.push(item); // keep unchanged package of different plugin
+      }
+    }
+    updatedPackages.items.push(...newNodes.contents.items);
+
+    this.config.set('plugins', updatedPackages);
+    this.save();
   }
 }
