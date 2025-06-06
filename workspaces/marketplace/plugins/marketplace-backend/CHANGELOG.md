@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.5.0
+
+### Minor Changes
+
+- 7ae0ca0: Introduces POST endpoints for updating dynamic plugins and packages installation configuration: `/package/:namespace/:name/configuration` and `/plugin/:namespace/:name/configuration`.
+
+### Patch Changes
+
+- Updated dependencies [7ae0ca0]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes
