@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDebounce } from 'react-use';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import { useFormikContext } from 'formik';
-import debounce from 'lodash.debounce';
 
 import { useNumberOfApprovalTools } from '../../hooks';
 import {
@@ -41,29 +41,17 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
     setIsApprovalToolGitlab(values.approvalTool === ApprovalToolEnum.Gitlab);
   }, [values.approvalTool]);
   const [searchString, setSearchString] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
   const [page, setPage] = useState<number>(0);
 
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((str: string) => {
-        setSearchString(str);
-        setPage(0);
-      }, 300),
-    [],
-  );
-
-  const handleSearch = useCallback(
-    (str: string) => {
-      debouncedSearch(str);
+  useDebounce(
+    () => {
+      setSearchString(searchInput);
+      setPage(0);
     },
-    [debouncedSearch],
+    300,
+    [searchInput],
   );
-
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [debouncedSearch]);
 
   const { numberOfApprovalTools } = useNumberOfApprovalTools();
 
@@ -81,7 +69,7 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
             title ||
             `Selected  ${isApprovalToolGitlab ? 'projects' : 'repositories'}`
           }
-          setSearchString={handleSearch}
+          setSearchString={setSearchInput}
           onPageChange={setPage}
           isApprovalToolGitlab={isApprovalToolGitlab}
         />
