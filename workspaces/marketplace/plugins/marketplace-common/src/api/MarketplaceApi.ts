@@ -105,6 +105,8 @@ export interface MarketplaceApi {
     name: string,
   ): Promise<{ read: 'ALLOW' | 'DENY'; write: 'ALLOW' | 'DENY' }>;
 
+  getExtensionsConfiguration?(): Promise<{ enabled: boolean }>;
+
   getPluginConfigByName?(
     namespace: string,
     name: string,

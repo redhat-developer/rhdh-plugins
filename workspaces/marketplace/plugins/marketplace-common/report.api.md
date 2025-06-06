@@ -6,6 +6,7 @@
 
 import type { AuthService } from '@backstage/backend-plugin-api';
 import { CatalogApi } from '@backstage/catalog-client';
+import { ConfigApi } from '@backstage/core-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
 import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 import { GetEntityFacetsResponse } from '@backstage/catalog-client';
@@ -131,6 +132,13 @@ export interface GetEntitiesResponse<T> {
 }
 
 // @public (undocumented)
+export type IdentityApi = {
+    getCredentials(): Promise<{
+        token?: string;
+    }>;
+};
+
+// @public (undocumented)
 export function isMarketplaceCollection(entity?: Entity): entity is MarketplaceCollection;
 
 // @public (undocumented)
@@ -162,6 +170,10 @@ export interface MarketplaceApi {
     // (undocumented)
     getCollectionsFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
+    getExtensionsConfiguration?(): Promise<{
+        enabled: boolean;
+    }>;
+    // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
     getPackageConfigByName?(namespace: string, name: string): Promise<ConfigurationResponse>;
@@ -191,7 +203,7 @@ export interface MarketplaceApi {
     // (undocumented)
     installPlugin?(namespace: string, name: string, configYaml: string): Promise<{
         status: string;
-    }>;
+    } | Error>;
 }
 
 // @public (undocumented)
@@ -211,6 +223,10 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     getCollections(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplaceCollection>>;
     // (undocumented)
     getCollectionsFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
+    // (undocumented)
+    getExtensionsConfiguration(): Promise<{
+        enabled: boolean;
+    }>;
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
@@ -240,14 +256,16 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     }>;
     // (undocumented)
     installPlugin(namespace: string, name: string, configYaml: string): Promise<{
-        status: any;
-    }>;
+        status: string;
+    } | Error>;
 }
 
 // @public (undocumented)
 export type MarketplaceBackendClientOptions = {
     discoveryApi: DiscoveryApi;
     fetchApi: FetchApi;
+    identityApi: IdentityApi;
+    configApi: ConfigApi;
 };
 
 // @public (undocumented)

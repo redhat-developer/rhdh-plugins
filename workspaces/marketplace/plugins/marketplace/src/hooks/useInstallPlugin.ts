@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-import { createApiRef } from '@backstage/core-plugin-api';
+import { useMutation } from '@tanstack/react-query';
+import { useMarketplaceApi } from './useMarketplaceApi';
 
-import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+export const useInstallPlugin = () => {
+  const marketplaceApi = useMarketplaceApi();
 
-export const marketplaceApiRef = createApiRef<MarketplaceApi>({
-  id: 'plugin.extensions.api-ref',
-});
+  return useMutation({
+    mutationFn: async ({
+      namespace,
+      name,
+      configYaml,
+    }: {
+      namespace: string;
+      name: string;
+      configYaml: string;
+    }) => await marketplaceApi.installPlugin?.(namespace, name, configYaml),
+  });
+};

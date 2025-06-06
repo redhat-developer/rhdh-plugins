@@ -17,6 +17,14 @@
 import { Pair, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
 import { JsonObject } from '@backstage/types';
 
+export enum ExtensionsStatus {
+  INSTALLATION_DISABLED = 'INSTALLATION_DISABLED',
+  FILE_CONFIG_VALUE_MISSING = 'FILE_CONFIG_VALUE_MISSING',
+  FILE_NOT_EXISTS = 'FILE_NOT_EXISTS',
+  INVALID_CONFIG = 'INVALID_CONFIG',
+  UNKNOWN = 'UNKNOWN',
+}
+
 export const getExampleAsMarkdown = (content: string | JsonObject) => {
   if (!content) {
     return '';
@@ -61,3 +69,45 @@ export const applyContent = (
   }
   return content.toString();
 };
+
+export const getErrorMessage = (reason: ExtensionsStatus, message: string) => {
+  if (reason === ExtensionsStatus.FILE_CONFIG_VALUE_MISSING) {
+    return {
+      title: 'Missing configuration file',
+      message: `${message}. Add the file to your app-config.yaml to enable the plugin installation. Edit the app-config.yaml as shown in the example below:`,
+    };
+  }
+  if (reason === ExtensionsStatus.INVALID_CONFIG) {
+    return {
+      title: 'Invalid installation configuration',
+      message: `${message}. Provide valid installation configuration to view your configuration in the code editor. Edit your dynamic-plugins.yaml as shown in the example below:`,
+    };
+  }
+
+  if (reason === ExtensionsStatus.FILE_NOT_EXISTS) {
+    return {
+      title: `Configuration file doesn't exist`,
+      message: `${message}. Configure the configuration file in your app-config.yaml correctly to enable the plugin installation. Edit the app-config.yaml as shown in the example below:`,
+    };
+  }
+  if (reason === ExtensionsStatus.UNKNOWN) {
+    return { title: 'Error reading the configuration file. ', message };
+  }
+  return { title: '', message: '' };
+};
+
+export const isProductionEnvironment = process.env.NODE_ENV === 'production';
+
+ export const getPluginActionTooltipMessage = (permissions: {read: 'ALLOW' | 'DENY', write: 'ALLOW' | 'DENY'}) => {
+    if (isProductionEnvironment) {
+      return `Plugin installation is disabled in the production environment.`;
+    }
+    if (
+      permissions.read !== 'ALLOW' &&
+      permissions.write !== 'ALLOW'
+    ) {
+      return `You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.`;
+    }
+
+    return '';
+  };

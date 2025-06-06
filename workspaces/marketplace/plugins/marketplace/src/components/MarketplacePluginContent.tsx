@@ -45,13 +45,19 @@ import {
 } from '../labels';
 import { rootRouteRef, pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
+import { usePluginPackages } from '../hooks/usePluginPackages';
+import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
+import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 
 import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
-import { usePluginPackages } from '../hooks/usePluginPackages';
-import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
+
 import { Links } from './Links';
+import {
+  getPluginActionTooltipMessage,
+  isProductionEnvironment,
+} from '../utils';
 
 export const MarketplacePluginContentSkeleton = () => {
   return (
@@ -177,6 +183,7 @@ export const MarketplacePluginContent = ({
 }: {
   plugin: MarketplacePlugin;
 }) => {
+  const extensionsConfig = useExtensionsConfiguration();
   const params = useRouteRefParams(pluginRouteRef);
   const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(pluginInstallRouteRef);
@@ -198,12 +205,10 @@ export const MarketplacePluginContent = ({
   const pluginActionButton = () => {
     return (
       <Tooltip
-        title={
-          pluginConfigPerm.data?.read !== 'ALLOW' &&
-          pluginConfigPerm.data?.write !== 'ALLOW'
-            ? `You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.`
-            : ''
-        }
+        title={getPluginActionTooltipMessage({
+          read: pluginConfigPerm.data?.read ?? 'DENY',
+          write: pluginConfigPerm.data?.write ?? 'DENY',
+        })}
       >
         <div>
           <LinkButton
@@ -223,7 +228,9 @@ export const MarketplacePluginContent = ({
               pluginConfigPerm.data?.write !== 'ALLOW'
             }
           >
-            {pluginConfigPerm.data?.write !== 'ALLOW'
+            {isProductionEnvironment ||
+            pluginConfigPerm.data?.write !== 'ALLOW' ||
+            !extensionsConfig.data?.enabled
               ? 'View'
               : mapMarketplacePluginInstallStatusToButton[
                   plugin.spec?.installStatus ??

@@ -17,6 +17,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import Router from 'express-promise-router';
 import { InputError, NotAllowedError } from '@backstage/errors';
+import type { Config } from '@backstage/config';
+
 import {
   HttpAuthService,
   PermissionsService,
@@ -51,13 +53,19 @@ export type MarketplaceRouterOptions = {
   marketplaceApi: MarketplaceApi;
   permissions: PermissionsService;
   installationDataService: InstallationDataService;
+  config: Config;
 };
 
 export async function createRouter(
   options: MarketplaceRouterOptions,
 ): Promise<express.Router> {
-  const { httpAuth, marketplaceApi, permissions, installationDataService } =
-    options;
+  const {
+    httpAuth,
+    marketplaceApi,
+    permissions,
+    installationDataService,
+    config,
+  } = options;
 
   const requireInitializedInstallationDataService = (
     _req: Request,
@@ -223,6 +231,12 @@ export async function createRouter(
     res.json(facets);
   });
 
+  router.get('/plugins/configure', async (_req, res) => {
+    const isPluginInstallationEnabled =
+      config.getOptionalBoolean('extensions.installation.enabled') ?? false;
+    res.json({ enabled: isPluginInstallationEnabled });
+  });
+
   router.get('/plugin/:namespace/:name', async (req, res) => {
     const plugin = await marketplaceApi.getPluginByName(
       req.params.namespace,
@@ -294,7 +308,6 @@ export async function createRouter(
           `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
         );
       }
-
       const marketplacePlugin = await marketplaceApi.getPluginByName(
         req.params.namespace,
         req.params.name,
