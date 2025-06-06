@@ -4,10 +4,12 @@
 
 ```ts
 
+/// <reference types="react" />
+
 import { AppTheme } from '@backstage/core-plugin-api';
 import { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
 import { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
-import { default as React_2 } from 'react';
+import { ReactNode } from 'react';
 import { Theme } from '@mui/material/styles';
 import { UnifiedThemeOptions } from '@backstage/theme';
 
@@ -34,7 +36,7 @@ export { DarkIcon }
 
 // @public (undocumented)
 export const darkThemeProvider: (props: {
-    children: React_2.ReactNode;
+    children: ReactNode;
 }) => JSX.Element | null;
 
 // @public (undocumented)
@@ -47,7 +49,7 @@ export { LightIcon }
 
 // @public (undocumented)
 export const lightThemeProvider: (props: {
-    children: React_2.ReactNode;
+    children: ReactNode;
 }) => JSX.Element | null;
 
 // @public (undocumented)

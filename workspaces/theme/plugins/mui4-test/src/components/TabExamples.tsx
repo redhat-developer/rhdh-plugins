@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ChangeEvent } from 'react';
+
+import { useState } from 'react';
 import Tabs, { TabsProps } from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Box from '@material-ui/core/Box';
@@ -27,8 +29,8 @@ export const TabExamples = () => {
     'secondary',
   ];
 
-  const [selectedTab, setSelectedTab] = React.useState(0);
-  const handleChange = (_event: React.ChangeEvent<{}>, newValue: number) => {
+  const [selectedTab, setSelectedTab] = useState(0);
+  const handleChange = (_event: ChangeEvent<{}>, newValue: number) => {
     setSelectedTab(newValue);
   };
 
