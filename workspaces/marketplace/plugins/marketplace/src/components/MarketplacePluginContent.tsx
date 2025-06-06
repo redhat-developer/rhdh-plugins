@@ -45,14 +45,19 @@ import {
 } from '../labels';
 import { rootRouteRef, pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
+import { usePluginPackages } from '../hooks/usePluginPackages';
+import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
+import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 
 import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
-import { usePluginPackages } from '../hooks/usePluginPackages';
-import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
-import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
+
 import { Links } from './Links';
+import {
+  getPluginActionTooltipMessage,
+  isProductionEnvironment,
+} from '../utils';
 
 export const MarketplacePluginContentSkeleton = () => {
   return (
@@ -197,25 +202,14 @@ export const MarketplacePluginContent = ({
 
   const highlights = plugin.spec?.highlights ?? [];
 
-  const isProductionEnvironment = process.env.NODE_ENV === 'production';
-
-  const getTooltipMessage = () => {
-    if (isProductionEnvironment) {
-      return `Plugin installation is disabled in the production environment.`;
-    }
-    if (
-      pluginConfigPerm.data?.read !== 'ALLOW' &&
-      pluginConfigPerm.data?.write !== 'ALLOW'
-    ) {
-      return `You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.`;
-    }
-
-    return '';
-  };
-
   const pluginActionButton = () => {
     return (
-      <Tooltip title={getTooltipMessage()}>
+      <Tooltip
+        title={getPluginActionTooltipMessage({
+          read: pluginConfigPerm.data?.read ?? 'DENY',
+          write: pluginConfigPerm.data?.write ?? 'DENY',
+        })}
+      >
         <div>
           <LinkButton
             to={

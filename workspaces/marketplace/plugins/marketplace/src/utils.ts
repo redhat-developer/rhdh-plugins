@@ -95,3 +95,19 @@ export const getErrorMessage = (reason: ExtensionsStatus, message: string) => {
   }
   return { title: '', message: '' };
 };
+
+export const isProductionEnvironment = process.env.NODE_ENV === 'production';
+
+ export const getPluginActionTooltipMessage = (permissions: {read: 'ALLOW' | 'DENY', write: 'ALLOW' | 'DENY'}) => {
+    if (isProductionEnvironment) {
+      return `Plugin installation is disabled in the production environment.`;
+    }
+    if (
+      permissions.read !== 'ALLOW' &&
+      permissions.write !== 'ALLOW'
+    ) {
+      return `You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.`;
+    }
+
+    return '';
+  };

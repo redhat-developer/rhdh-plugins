@@ -5,5 +5,4 @@
 ---
 
 Added an alert for production environment
-Integrated the fetch configuration API call
-Updated the install plugin request to return a successful response
+Integrated the fetch configuration and install API calls

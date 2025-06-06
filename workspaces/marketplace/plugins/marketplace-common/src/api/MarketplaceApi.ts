@@ -107,8 +107,6 @@ export interface MarketplaceApi {
 
   getExtensionsConfiguration?(): Promise<{ enabled: boolean }>;
 
-  installPlugin?(namespace: string, name: string): Promise<{ status: any }>;
-
   getPluginConfigByName?(
     namespace: string,
     name: string,

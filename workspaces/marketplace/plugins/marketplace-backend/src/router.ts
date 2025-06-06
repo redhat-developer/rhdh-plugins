@@ -332,7 +332,7 @@ export async function createRouter(
   router.post(
     '/plugin/:namespace/:name/configuration',
     requireInitializedInstallationDataService,
-    async (req, _res) => {
+    async (req, res) => {
       // installs the plugin
       const installDecision = await authorizeConditional(
         req,
@@ -372,6 +372,7 @@ export async function createRouter(
         }
         throw e;
       }
+      res.status(200).json({ status: 'OK' });
     },
   );
 
