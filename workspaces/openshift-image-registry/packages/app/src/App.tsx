@@ -48,7 +48,6 @@ import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 import { OpenshiftImageRegistryPage } from '@red-hat-developer-hub/backstage-plugin-openshift-image-registry';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import React from 'react';
 import { Navigate, Route } from 'react-router-dom';
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
