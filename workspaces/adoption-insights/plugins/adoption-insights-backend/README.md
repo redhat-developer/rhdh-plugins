@@ -86,7 +86,7 @@ The Adoption Insights Backend plugin has support for the permission framework.
          }
      ```
 
-  3. start the application by running `yarn dev` from `workspaces/adoption-insights` directory.
+  3. start the application by running `yarn start` from `workspaces/adoption-insights` directory.
 
 ## Development
 
@@ -94,7 +94,7 @@ This plugin backend can be started in a standalone mode from directly in this
 package with `yarn start`. It is a limited setup that is most convenient when
 developing the plugin backend itself.
 
-If you want to run the entire project, including the frontend, run `yarn dev` from the root directory.
+If you want to run the entire project, including the frontend, run `yarn start` from the root directory.
 
 # Events API
 
