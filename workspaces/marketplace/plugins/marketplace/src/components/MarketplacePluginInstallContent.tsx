@@ -16,7 +16,12 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { ErrorPage, Progress, WarningPanel } from '@backstage/core-components';
+import {
+  CodeSnippet,
+  ErrorPage,
+  Progress,
+  WarningPanel,
+} from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
 import {
@@ -50,15 +55,19 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
 import {
   applyContent,
+  DYNAMIC_PLUGIN_CONFIG_YAML,
+  EXTENSIONS_CONFIG_YAML,
   ExtensionsStatus,
   getErrorMessage,
   getExampleAsMarkdown,
+  isProductionEnvironment,
 } from '../utils';
 
 import {
@@ -68,8 +77,8 @@ import {
 } from './CodeEditor';
 import { Markdown } from './Markdown';
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
-import { useMarketplaceApi } from '../hooks/useMarketplaceApi';
 import { usePluginConfig } from '../hooks/usePluginConfig';
+import { useInstallPlugin } from '../hooks/useInstallPlugin';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -199,10 +208,13 @@ export const MarketplacePluginInstallContent = ({
   plugin: MarketplacePlugin;
   packages: MarketplacePackage[];
 }) => {
+  const { mutateAsync: installPlugin } = useInstallPlugin();
   const params = useRouteRefParams(pluginInstallRouteRef);
-  const marketplaceApi = useMarketplaceApi();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const navigate = useNavigate();
-  const [showErrorAlert, setShowErrorAlert] = React.useState(false);
+  const [installationError, setInstallationError] = React.useState<
+    string | null
+  >(null);
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
   const pluginConfig = usePluginConfig(params.namespace, params.name);
 
@@ -223,7 +235,7 @@ export const MarketplacePluginInstallContent = ({
   });
 
   const onLoaded = React.useCallback(() => {
-    setShowErrorAlert(false);
+    setInstallationError(null);
 
     if (pluginConfig.isLoading) return;
 
@@ -247,9 +259,14 @@ export const MarketplacePluginInstallContent = ({
     }
   }, [codeEditor, packages, pluginConfig.data, pluginConfig.isLoading]);
 
+  const onReset = React.useCallback(() => {
+    pluginConfig.refetch();
+    onLoaded();
+  }, [onLoaded, pluginConfig]);
+
   useEffect(() => {
     onLoaded();
-  }, [onLoaded]);
+  }, [onLoaded, pluginConfig.data?.configYaml]);
 
   const pluginConfigPermissions = usePluginConfigurationPermissions(
     params.namespace,
@@ -285,28 +302,37 @@ export const MarketplacePluginInstallContent = ({
   };
 
   const handleInstall = async () => {
+    setIsSubmitting(true);
+    const content = yaml.parseDocument(codeEditor.getValue() ?? '');
+    const pluginsArray = content.get('plugins');
+
+    const pluginsYaml = new yaml.Document(pluginsArray);
+    const pluginsYamlString = pluginsYaml.toString();
+
     try {
-      const res = await marketplaceApi.installPlugin?.(
-        params.namespace,
-        params.name,
-      );
+      const res = await installPlugin({
+        namespace: plugin.metadata.namespace ?? 'default',
+        name: plugin.metadata.name,
+        configYaml: pluginsYamlString,
+      });
       if (res?.status === 'OK') {
         navigate('/extensions');
       } else {
-        setShowErrorAlert(true);
+        setIsSubmitting(false);
+        setInstallationError((res as any)?.error?.message);
       }
-    } catch (err) {
-      setShowErrorAlert(true);
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setInstallationError(err?.error?.message);
     }
   };
 
-  const isProductionEnvironment = process.env.NODE_ENV === 'production';
-
   const showDisableInstall =
     isProductionEnvironment ||
-    showErrorAlert ||
+    installationError ||
     pluginConfigPermissions.data?.write !== 'ALLOW' ||
-    (pluginConfig.data as any)?.error;
+    (pluginConfig.data as any)?.error ||
+    isSubmitting;
 
   const installTooltip = () => {
     if (isProductionEnvironment) {
@@ -324,42 +350,31 @@ export const MarketplacePluginInstallContent = ({
       ExtensionsStatus.INSTALLATION_DISABLED;
 
   const installationWarning = () => {
-    const error = getErrorMessage(
+    const errorMessage = getErrorMessage(
       (pluginConfig.data as any)?.error?.reason,
       (pluginConfig.data as any)?.error?.message,
     );
+
     return (
       <>
         <WarningPanel
-          title={error.title}
+          title={errorMessage.title}
           severity="info"
           message={
-            <Markdown
-              content={`${error.message} 
-              ${
-                (pluginConfig.data as any)?.error?.reason ===
-                ExtensionsStatus.INVALID_CONFIG
-                  ? `
-\`\`\`yaml
-plugins:
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
-    disabled: false
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
-    disabled: true
-\`\`\`
-`
-                  : `
-\`\`\`yaml
-extensions:
-  installation:
-    enabled: true
-    saveToSingleFile:
-      file: /<path-to>/dynamic-plugins.yaml
-\`\`\`
-`
-              }
-`}
-            />
+            <>
+              {errorMessage.message}
+              <CodeSnippet
+                language="yaml"
+                showLineNumbers
+                highlightedNumbers={errorMessage?.highlightedLineNumbers}
+                text={`${
+                  (pluginConfig.data as any)?.error?.reason ===
+                  ExtensionsStatus.INVALID_CONFIG
+                    ? DYNAMIC_PLUGIN_CONFIG_YAML
+                    : EXTENSIONS_CONFIG_YAML
+                }`}
+              />
+            </>
           }
         />
         <br />
@@ -370,6 +385,11 @@ extensions:
   return (
     <>
       {showInstallationWarning && installationWarning()}
+      {installationError && (
+        <Alert severity="error" sx={{ mb: '1rem' }}>
+          {installationError}
+        </Alert>
+      )}
       <Box
         sx={{
           height: dynamicHeight,
@@ -517,12 +537,23 @@ extensions:
           <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
             <CheckboxList packages={packages} />
           </Box>
-          {showErrorAlert && (
-            <Alert severity="error" sx={{ mb: '1rem' }}>
-              Error occured
-            </Alert>
-          )}
-          <Tooltip title={installTooltip()}>
+          <Tooltip
+            title={
+              installTooltip() ? (
+                <Box
+                  sx={{
+                    whiteSpace: 'normal',
+                    maxWidth: 250,
+                    overflowWrap: 'break-word',
+                  }}
+                >
+                  {installTooltip()}
+                </Box>
+              ) : (
+                ''
+              )
+            }
+          >
             <Typography component="span">
               <Button
                 variant="contained"
@@ -531,6 +562,11 @@ extensions:
                 disabled={showDisableInstall}
                 data-testid={
                   showDisableInstall ? 'install-disabled' : 'install'
+                }
+                startIcon={
+                  isSubmitting && (
+                    <CircularProgress size="20px" color="inherit" />
+                  )
                 }
               >
                 Install
@@ -550,7 +586,7 @@ extensions:
             <Button
               variant="text"
               color="primary"
-              onClick={onLoaded}
+              onClick={onReset}
               sx={{ ml: 3 }}
             >
               Reset

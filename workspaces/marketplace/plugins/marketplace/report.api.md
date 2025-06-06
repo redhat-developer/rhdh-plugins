@@ -27,10 +27,7 @@ export const MarketplaceIcon: IconComponent;
 
 // @public
 export const marketplacePlugin: BackstagePlugin<    {
-rootRouteRef: RouteRef<undefined>; /**
-* Marketplace page with header and tabs.
-* @public
-*/
+rootRouteRef: RouteRef<undefined>;
 pluginsRouteRef: SubRouteRef<undefined>;
 pluginRouteRef: SubRouteRef<PathParams<"/plugins/:namespace/:name">>;
 pluginInstallRouteRef: SubRouteRef<PathParams<"/plugins/:namespace/:name/install">>;

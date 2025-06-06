@@ -17,11 +17,17 @@ import React from 'react';
 import { renderInTestApp } from '@backstage/test-utils';
 import { MarketplaceCatalogContent } from './MarketplaceCatalogContent';
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
+import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 
 const useFilteredPluginsMock = useFilteredPlugins as jest.Mock;
+const useExtensionsConfigurationMock = useExtensionsConfiguration as jest.Mock;
 
 jest.mock('../hooks/useCollections', () => ({
   useCollections: jest.fn(),
+}));
+
+jest.mock('../hooks/useExtensionsConfiguration', () => ({
+  useExtensionsConfiguration: jest.fn(),
 }));
 
 jest.mock('../hooks/useFilteredPlugins', () => ({
@@ -30,6 +36,11 @@ jest.mock('../hooks/useFilteredPlugins', () => ({
 
 describe('MarketplaceCatalogContent', () => {
   it('should show empty state with no plugins', async () => {
+    useExtensionsConfigurationMock.mockReturnValue({
+      data: {
+        enabled: false,
+      },
+    });
     useFilteredPluginsMock.mockReturnValue({
       data: {
         totalItems: 0,

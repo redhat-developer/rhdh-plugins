@@ -91,7 +91,7 @@ describe('InstallationDataService', () => {
       });
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        "Installation feature is disabled. Error while loading data: Missing required config value at 'extensions.installation.saveToSingleFile.file'",
+        "Installation feature is disabled. Error while loading data: The 'extensions.installation.saveToSingleFile.file' config value is not being specified in the extensions configuration",
       );
       expect(installationDataService.getInitializationError()).toBeDefined();
       expect(installationDataService.getInitializationError()?.reason).toBe(
@@ -113,7 +113,7 @@ describe('InstallationDataService', () => {
       mockFileInstallationStorage.initialize.mockImplementationOnce(() => {
         throw new InstallationInitError(
           InstallationInitErrorReason.FILE_NOT_EXISTS,
-          'Installation config file does not exist',
+          'The file is missing',
         );
       });
 
@@ -124,7 +124,7 @@ describe('InstallationDataService', () => {
       });
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        'Installation feature is disabled. Error while loading data: Installation config file does not exist',
+        'Installation feature is disabled. Error while loading data: The file is missing',
       );
       expect(installationDataService.getInitializationError()).toBeDefined();
       expect(installationDataService.getInitializationError()?.reason).toBe(

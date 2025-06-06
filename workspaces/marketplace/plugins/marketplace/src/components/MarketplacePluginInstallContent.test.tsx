@@ -19,19 +19,29 @@ import { BrowserRouter } from 'react-router-dom';
 
 import { TestApiProvider } from '@backstage/test-utils';
 
-import { render, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import { usePluginConfig } from '../hooks/usePluginConfig';
 import { MarketplacePluginInstallContent } from './MarketplacePluginInstallContent';
 import { marketplaceApiRef } from '../api';
 import { alertApiRef } from '@backstage/core-plugin-api';
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
+import { useInstallPlugin } from '../hooks/useInstallPlugin';
 
 const usePluginConfigMock = usePluginConfig as jest.Mock;
-const useExtensionsConfigurationPermissionsMock =
+const usePluginConfigurationPermissionsMock =
   usePluginConfigurationPermissions as jest.Mock;
+const useInstallPluginMock = useInstallPlugin as jest.Mock;
 
 jest.mock('../hooks/usePluginConfig', () => ({
   usePluginConfig: jest.fn(),
+}));
+
+jest.mock('../hooks/useInstallPlugin', () => ({
+  useInstallPlugin: jest.fn(),
+}));
+
+jest.mock('../hooks/usePluginConfigurationPermissions', () => ({
+  usePluginConfigurationPermissions: jest.fn(),
 }));
 
 jest.mock('./CodeEditor', () => ({
@@ -50,9 +60,6 @@ jest.mock('@backstage/core-plugin-api', () => {
   };
 });
 
-jest.mock('../hooks/useExtensionsConfigurationPermissions', () => ({
-  useExtensionsConfigurationPermissions: jest.fn(),
-}));
 const mockCodeEditorSetValue = jest.fn();
 
 jest.mock('./CodeEditor', () => ({
@@ -64,10 +71,27 @@ jest.mock('./CodeEditor', () => ({
   },
   useCodeEditor: () => ({
     setValue: mockCodeEditorSetValue,
+    getValue: jest.fn(),
   }),
 }));
 
 beforeEach(() => {
+  usePluginConfigMock.mockReturnValue({
+    isLoading: false,
+    data: {},
+  });
+
+  usePluginConfigurationPermissionsMock.mockReturnValue({
+    data: {
+      write: 'ALLOW',
+    },
+    isLoading: false,
+    error: null,
+    refetch: jest.fn(),
+  });
+});
+
+afterEach(() => {
   jest.clearAllMocks();
 });
 
@@ -89,8 +113,6 @@ describe('MarketplacePluginInstallContent', () => {
         name: 'backstage-community-plugin-3scale-backend',
         namespace: 'marketplace-plugin-demo',
         title: '@backstage-community/plugin-3scale-backend',
-        links: [],
-        tags: [],
       },
       apiVersion: 'extensions.backstage.io/v1alpha1',
       kind: 'Package',
@@ -98,13 +120,7 @@ describe('MarketplacePluginInstallContent', () => {
         packageName: '@backstage-community/plugin-3scale-backend',
         dynamicArtifact:
           './dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic',
-        author: 'Red Hat',
-        support: 'tech-preview',
-        lifecycle: 'active',
-        partOf: ['backstage-community-plugin-3scale-backend'],
-        appConfigExamples: [],
       },
-      relations: [],
     },
   ];
 
@@ -119,27 +135,14 @@ describe('MarketplacePluginInstallContent', () => {
     apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: 'Plugin',
     spec: {
-      icon: 'https://janus-idp.io/images/plugins/3scale.svg',
       packages: ['backstage-community-plugin-3scale-backend'],
-      authors: [
-        {
-          name: 'Red Hat',
-        },
-      ],
     },
   };
   it('should load YAML from artifacts if pluginConfig is not found for the plugin', async () => {
-    usePluginConfigMock.mockReturnValue({
-      isLoading: false,
-      data: {},
-    });
-    useExtensionsConfigurationPermissionsMock.mockReturnValue({
-      data: {
-        write: 'ALLOW',
-      },
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
+    useInstallPluginMock.mockReturnValue({
+      mutateAsync: jest.fn().mockResolvedValue({
+        status: 'OK',
+      }),
     });
 
     const { getByTestId } = render(
@@ -176,14 +179,6 @@ describe('MarketplacePluginInstallContent', () => {
         configYaml,
       },
     });
-    useExtensionsConfigurationPermissionsMock.mockReturnValue({
-      data: {
-        write: 'ALLOW',
-      },
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
-    });
 
     const { getByTestId } = render(
       <TestApiProvider
@@ -217,7 +212,7 @@ describe('MarketplacePluginInstallContent', () => {
       },
     });
 
-    useExtensionsConfigurationPermissionsMock.mockReturnValue({
+    usePluginConfigurationPermissionsMock.mockReturnValue({
       data: {},
       isLoading: false,
       error: null,
@@ -240,5 +235,40 @@ describe('MarketplacePluginInstallContent', () => {
       </TestApiProvider>,
     );
     expect(getByTestId('install-disabled')).toBeInTheDocument();
+  });
+
+  it('should show an error when installation fails', async () => {
+    useInstallPluginMock.mockReturnValue({
+      mutateAsync: jest.fn().mockResolvedValue({
+        status: 'Installation error',
+        error: { message: 'Installation failed' },
+      }),
+    });
+
+    const { getByTestId, getByText } = render(
+      <TestApiProvider
+        apis={[
+          [marketplaceApiRef, mockMarketplaceApi],
+          [alertApiRef, mockAlertApiRef],
+        ]}
+      >
+        <BrowserRouter>
+          <MarketplacePluginInstallContent
+            packages={packages}
+            plugin={plugin}
+          />
+        </BrowserRouter>
+      </TestApiProvider>,
+    );
+    await waitFor(() => {
+      expect(mockCodeEditorSetValue).toHaveBeenCalled();
+    });
+    expect(getByTestId('install')).toBeInTheDocument();
+    const installButton = getByText('Install');
+    fireEvent.click(installButton);
+    await waitFor(() => {
+      expect(getByTestId('install-disabled')).toBeInTheDocument();
+      expect(getByText('Installation failed')).toBeInTheDocument();
+    });
   });
 });

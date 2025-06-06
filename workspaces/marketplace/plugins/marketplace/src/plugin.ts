@@ -49,7 +49,7 @@ export const marketplacePlugin = createPlugin({
         identityApi: identityApiRef,
         configApi: configApiRef,
       },
-      factory: ({ discoveryApi, fetchApi, identityApi , configApi}) =>
+      factory: ({ discoveryApi, fetchApi, identityApi, configApi }) =>
         new MarketplaceBackendClient({
           discoveryApi,
           fetchApi,

@@ -97,7 +97,6 @@ export class MarketplaceBackendClient implements MarketplaceApi {
 
     const options: RequestInit = {
       method: requestType,
-
       headers: {
         'Content-Type': 'application/json',
         ...(idToken && { Authorization: `Bearer ${idToken}` }),
@@ -108,11 +107,6 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     }
 
     const response = await this.fetchApi.fetch(url, options);
-    if (!response.ok) {
-      throw new Error(
-        `Unexpected status code: ${response.status} ${response.statusText}`,
-      );
-    }
 
     return response.json();
   }
