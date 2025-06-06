@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { ReactNode } from 'react';
+
+import { Fragment } from 'react';
 
 import {
   CodeSnippet,
@@ -55,7 +57,7 @@ export const TemplateSection = () => {
   });
   const catalogTemplatesLink = `/catalog?${params.toString()}`;
 
-  let content: React.ReactNode;
+  let content: ReactNode;
 
   if (isLoading) {
     content = (
@@ -82,7 +84,7 @@ export const TemplateSection = () => {
   } else {
     content = (
       <Box sx={{ padding: '8px 8px 8px 0' }}>
-        <React.Fragment>
+        <Fragment>
           <Grid container spacing={1} alignItems="stretch">
             {templates?.items.map((item: any) => (
               <Grid item xs={12} md={3} key={item.title}>
@@ -142,7 +144,7 @@ export const TemplateSection = () => {
               </ViewMoreLink>
             )}
           </Box>
-        </React.Fragment>
+        </Fragment>
       </Box>
     );
   }

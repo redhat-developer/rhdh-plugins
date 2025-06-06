@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useState, useEffect } from 'react';
 
 import { useUserProfile } from '@backstage/plugin-user-settings';
 import { useApi } from '@backstage/core-plugin-api';
@@ -33,7 +33,7 @@ import { LEARNING_SECTION_ITEMS } from '../../utils/constants';
 import useGreeting from '../../hooks/useGreeting';
 
 export const OnboardingSection = () => {
-  const [user, setUser] = React.useState<string | null>();
+  const [user, setUser] = useState<string | null>();
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
   const greeting = useGreeting();
@@ -44,7 +44,7 @@ export const OnboardingSection = () => {
   } = useUserProfile();
   const catalogApi = useApi(catalogApiRef);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchUserEntity = async () => {
       if (!backstageIdentity?.userEntityRef) {
         return;
