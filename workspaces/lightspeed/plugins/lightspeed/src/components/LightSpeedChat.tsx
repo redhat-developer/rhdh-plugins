@@ -21,6 +21,7 @@ import { ErrorPanel } from '@backstage/core-components';
 import { Box, makeStyles } from '@material-ui/core';
 import {
   Chatbot,
+  ChatbotAlert,
   ChatbotContent,
   ChatbotDisplayMode,
   ChatbotFooter,
@@ -70,6 +71,9 @@ const useStyles = makeStyles(theme => ({
   },
   header: {
     padding: `${theme.spacing(3)}px !important`,
+  },
+  errorContainer: {
+    padding: theme.spacing(3),
   },
   headerMenu: {
     // align hamburger icon with title
@@ -129,8 +133,14 @@ export const LightspeedChat = ({
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
 
-  const { fileContents, setFileContents, handleFileUpload } =
-    useFileAttachmentContext();
+  const {
+    uploadError,
+    showAlert,
+    fileContents,
+    setFileContents,
+    handleFileUpload,
+    setUploadError,
+  } = useFileAttachmentContext();
 
   // Sync conversationId with lastOpenedId whenever lastOpenedId changes
   React.useEffect(() => {
@@ -401,6 +411,19 @@ export const LightspeedChat = ({
           handleTextInputChange={handleFilter}
           drawerContent={
             <>
+              {showAlert && uploadError.message && (
+                <div className={classes.errorContainer}>
+                  <ChatbotAlert
+                    component="h4"
+                    title="File upload failed"
+                    variant={uploadError.type ?? 'danger'}
+                    isInline
+                    onClose={() => setUploadError({ message: null })}
+                  >
+                    {uploadError.message}
+                  </ChatbotAlert>
+                </div>
+              )}
               <ChatbotContent>
                 <LightspeedChatBox
                   userName={userName}
