@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { EmptyState, Progress } from '@backstage/core-components';
 
 import { useAllNsImageStreams } from '../../hooks/useAllNsImageStreams';
