@@ -24,7 +24,9 @@ export const openLightspeed = async (page: Page) => {
 };
 
 export const sendMessage = async (message: string, page: Page) => {
-  const inputLocator = page.getByRole('textbox', { name: 'Send a message...' });
+  const inputLocator = page.getByRole('textbox', {
+    name: 'Send a message and optionally upload a JSON, YAML, TXT, or XML file...',
+  });
   await inputLocator.fill(message);
   const sendButton = page.getByRole('button', { name: 'Send' });
   await sendButton.click();

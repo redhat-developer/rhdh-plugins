@@ -25,7 +25,9 @@ import { mockApis, TestApiProvider } from '@backstage/test-utils';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
+import { useConversations } from '../../hooks';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
 
@@ -80,6 +82,7 @@ jest.mock('@patternfly/chatbot', () => {
   };
 });
 
+const mockUseConversations = useConversations as jest.Mock;
 const mockUsePermission = usePermission as jest.MockedFunction<
   typeof usePermission
 >;
@@ -111,6 +114,13 @@ const setupLightspeedChat = () => (
 describe('LightspeedChat', () => {
   beforeEach(() => {
     mockUsePermission.mockReturnValue({ loading: true, allowed: true });
+    mockUseConversations.mockReturnValue({
+      data: [],
+      isRefetching: false,
+      isLoading: false,
+    });
+
+    localStorage.clear();
   });
   const localStorageKey = 'lastOpenedConversation';
   const mockUser = 'user:test';
@@ -124,22 +134,37 @@ describe('LightspeedChat', () => {
   });
 
   it('should not reset localstorage if the conversations are available', async () => {
-    jest.mock('../../hooks/useConversations', () => ({
-      useConversations: jest.fn().mockReturnValue({
-        data: [
-          {
-            conversation_id: 'test-conversation-id',
-            topic_summary: 'Greetings',
-            last_message_timestamp: 1749023603.806369,
-          },
-        ],
-        isRefetching: false,
-        isLoading: false,
-      }),
-    }));
+    mockUseConversations.mockReturnValue({
+      data: [
+        {
+          conversation_id: 'test-conversation-id',
+          topic_summary: 'Greetings',
+          last_message_timestamp: 1749023603.806369,
+        },
+      ],
+      isRefetching: false,
+      isLoading: false,
+    });
 
     const storedData = JSON.stringify({ [mockUser]: 'test-conversation-id' });
     localStorage.setItem(localStorageKey, storedData);
+
+    render(setupLightspeedChat());
+
+    await waitFor(() => {
+      expect(screen.getByText('Developer Hub Lightspeed')).toBeInTheDocument();
+
+      expect(screen.queryByText('New chat')).toBeInTheDocument();
+
+      expect(JSON.parse(localStorage.getItem(localStorageKey)!)).toEqual({
+        'user:test': 'test-conversation-id',
+      });
+    });
+  });
+
+  it('should reset localstorage if the conversations are empty', async () => {
+    const initialData = JSON.stringify({ [mockUser]: 'test-conversation-id' });
+    localStorage.setItem(localStorageKey, initialData);
 
     render(setupLightspeedChat());
 
@@ -151,17 +176,14 @@ describe('LightspeedChat', () => {
     });
   });
 
-  it('should reset localstorage if the conversations are empty', async () => {
-    const storedData = JSON.stringify({ [mockUser]: 'test-conversation-id' });
-    localStorage.setItem(localStorageKey, storedData);
-
+  it('should set correct accept attribute on file input', async () => {
     render(setupLightspeedChat());
 
-    await waitFor(() => {
-      expect(screen.getByText('Developer Hub Lightspeed')).toBeInTheDocument();
-
-      expect(screen.queryByText('New chat')).not.toBeInTheDocument();
-      expect(JSON.parse(localStorage.getItem(localStorageKey)!)).toEqual({});
-    });
+    await userEvent.click(screen.getByRole('button', { name: 'Attach' }));
+    const input = screen.getByTestId('attachment-input') as HTMLInputElement;
+    expect(input).toHaveAttribute(
+      'accept',
+      'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml,application/xml,.xml',
+    );
   });
 });
