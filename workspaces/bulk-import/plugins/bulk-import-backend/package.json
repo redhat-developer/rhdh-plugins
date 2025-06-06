@@ -78,7 +78,7 @@
     "@types/supertest": "2.0.16",
     "js-yaml-cli": "0.6.0",
     "msw": "1.3.5",
-    "openapicmd": "2.6.2",
+    "openapicmd": "2.7.0",
     "prettier": "3.5.3",
     "supertest": "6.3.4"
   },
