@@ -156,4 +156,9 @@ export class InstallationDataService {
     const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
     this.installationStorage.updatePackages(dynamicArtifacts, newConfig);
   }
+
+  async setPluginDisabled(plugin: MarketplacePlugin, disabled: boolean) {
+    const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
+    this.installationStorage.setPackagesDisabled(dynamicArtifacts, disabled);
+  }
 }

@@ -268,6 +268,19 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     );
   }
 
+  async disablePlugin(
+    namespace: string,
+    name: string,
+    disabled: boolean,
+  ): Promise<{ status: string }> {
+    return this.request(
+      `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/disable`,
+      'POST',
+      undefined,
+      { disabled },
+    );
+  }
+
   getPluginPackages(
     namespace: string,
     name: string,

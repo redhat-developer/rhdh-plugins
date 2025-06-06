@@ -16,7 +16,7 @@
 
 import fs from 'fs';
 
-import { Document, isMap, parseDocument, type YAMLMap, YAMLSeq } from 'yaml';
+import { Document, isMap, parseDocument, YAMLMap, YAMLSeq } from 'yaml';
 import {
   validateConfigurationFormat,
   validatePackageFormat,
@@ -34,6 +34,7 @@ export interface InstallationStorage {
   updatePackage(packageName: string, newConfig: string): void;
   getPackages(packageNames: Set<string>): string | undefined;
   updatePackages(packageNames: Set<string>, newConfig: string): void;
+  setPackagesDisabled(packageNames: Set<string>, disabled: boolean): void;
 }
 
 export class FileInstallationStorage implements InstallationStorage {
@@ -135,6 +136,27 @@ export class FileInstallationStorage implements InstallationStorage {
     updatedPackages.items.push(...newNodes.contents.items);
 
     this.config.set('plugins', updatedPackages);
+    this.save();
+  }
+
+  setPackagesDisabled(packageNames: Set<string>, disabled: boolean) {
+    const packages = this.config.get('plugins') as YAMLSeq<
+      YAMLMap<string, JsonValue>
+    >;
+    const packageMap = packages.items.reduce(
+      (map, item) => map.set(item.get('package') as string, item),
+      new Map<string, YAMLMap<string, JsonValue>>(),
+    );
+    for (const packageName of packageNames) {
+      let item = packageMap.get(packageName);
+      if (!item) {
+        item = new YAMLMap<string, JsonValue>();
+        item.set('package', packageName);
+        packages.add(item);
+      }
+      item.set('disabled', disabled);
+    }
+
     this.save();
   }
 }

@@ -162,6 +162,10 @@ export enum MarketplaceAnnotation {
 // @public (undocumented)
 export interface MarketplaceApi {
     // (undocumented)
+    disablePlugin?(namespace: string, name: string, disabled: boolean): Promise<{
+        status: string;
+    }>;
+    // (undocumented)
     getCollectionByName(namespace: string, name: string): Promise<MarketplaceCollection>;
     // (undocumented)
     getCollectionPlugins(namespace: string, name: string): Promise<MarketplacePlugin[]>;
@@ -219,6 +223,10 @@ export type MarketplaceAuthor = {
 // @public (undocumented)
 export class MarketplaceBackendClient implements MarketplaceApi {
     constructor(options: MarketplaceBackendClientOptions);
+    // (undocumented)
+    disablePlugin(namespace: string, name: string, disabled: boolean): Promise<{
+        status: string;
+    }>;
     // (undocumented)
     getCollectionByName(namespace: string, name: string): Promise<MarketplaceCollection>;
     // (undocumented)
