@@ -145,7 +145,7 @@ test.describe('File Attachment Validation', () => {
           .locator('span', { hasText: name.split('.')[0] })
           .first();
 
-        expect(filePreview).not.toBeVisible();
+        await expect(filePreview).not.toBeVisible();
       }
     });
   }
