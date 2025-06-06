@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { Table, TableColumn, Avatar } from '@backstage/core-components';
 
 interface User {

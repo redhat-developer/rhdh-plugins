@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { Header, Page, Content, InfoCard } from '@backstage/core-components';
 import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
 

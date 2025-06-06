@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -182,7 +182,7 @@ const DebugGridExamples = () => {
 };
 
 export const GridExamples = () => {
-  const [showDebugExamples, setShowDebugExamples] = React.useState(false);
+  const [showDebugExamples, setShowDebugExamples] = useState(false);
   return (
     <>
       <CommonGridExamples />

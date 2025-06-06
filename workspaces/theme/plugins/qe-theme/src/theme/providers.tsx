@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { lightTheme } from './lightTheme';
 import { darkTheme } from './darkTheme';
 import { UnifiedThemeProvider } from '@backstage/theme';
