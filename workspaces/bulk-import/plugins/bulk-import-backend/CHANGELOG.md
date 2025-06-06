@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 6.1.2
+
+### Patch Changes
+
+- 8c2e067: Updated dependency `openapicmd` to `2.7.0`.
+  Updated dependency `@mui/styles` to `5.17.1`.
+  Updated dependency `@playwright/test` to `1.52.0`.
+
 ## 6.1.1
 
 ### Patch Changes
