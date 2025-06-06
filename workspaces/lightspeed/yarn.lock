@@ -10553,7 +10553,7 @@ __metadata:
     "@types/supertest": 2.0.16
     express: ^4.21.1
     http-proxy-middleware: ^3.0.2
-    msw: 2.8.7
+    msw: 2.9.0
     node-fetch: 2.7.0
     prettier: 3.5.3
     supertest: 6.3.4
@@ -27135,9 +27135,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:2.8.7":
-  version: 2.8.7
-  resolution: "msw@npm:2.8.7"
+"msw@npm:2.9.0":
+  version: 2.9.0
+  resolution: "msw@npm:2.9.0"
   dependencies:
     "@bundled-es-modules/cookie": ^2.0.1
     "@bundled-es-modules/statuses": ^1.0.1
@@ -27164,7 +27164,7 @@ __metadata:
       optional: true
   bin:
     msw: cli/index.js
-  checksum: 9814e9306364d9cc17be7d9683d7000e3ea3c41b6325b473e192f26cc953c4a2e7f2160b01785880c883ebc2af560fc117aea6dda5cf22503979c0f5a4ec986b
+  checksum: 45368969053921e94d29070f06f610ad1cccea975be3318f12d0123f9a8e8c6c5e3bbf08978e3f348ad135711aa4a5393f120588bf1934ac34c8690cd0c0a138
   languageName: node
   linkType: hard
 
