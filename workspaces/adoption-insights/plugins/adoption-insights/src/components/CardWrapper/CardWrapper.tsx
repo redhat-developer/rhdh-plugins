@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { ReactNode, HTMLProps, FC } from 'react';
 
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 
-interface CardWrapperProps extends React.HTMLProps<HTMLDivElement> {
-  children: React.ReactNode;
+interface CardWrapperProps extends HTMLProps<HTMLDivElement> {
+  children: ReactNode;
   title: string;
-  filter?: React.ReactNode;
+  filter?: ReactNode;
 }
 
-const CardWrapper: React.FC<CardWrapperProps> = ({
+const CardWrapper: FC<CardWrapperProps> = ({
   children,
   title,
   filter,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useEffect, useCallback, useState } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 import { useAsyncRetry } from 'react-use';
@@ -28,14 +28,14 @@ export const useUsers = (): {
   error: Error | undefined;
   loading: boolean;
 } => {
-  const [loadingData, setLoadingData] = React.useState<boolean>(true);
-  const [users, setUsers] = React.useState<UsersResponse>({ data: [] });
+  const [loadingData, setLoadingData] = useState<boolean>(true);
+  const [users, setUsers] = useState<UsersResponse>({ data: [] });
 
   const { startDateRange, endDateRange } = useDateRange();
 
   const api = useApi(adoptionInsightsApiRef);
 
-  const getUsers = React.useCallback(async () => {
+  const getUsers = useCallback(async () => {
     return await api
       .getUsers({
         type: 'total_users',
@@ -51,7 +51,7 @@ export const useUsers = (): {
     return await getUsers();
   }, [getUsers]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     if (!loading && mounted) {
       setLoadingData(false);

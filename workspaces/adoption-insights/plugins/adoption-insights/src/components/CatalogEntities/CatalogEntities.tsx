@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import type { ChangeEvent } from 'react';
 
 import { ResponseErrorPanel } from '@backstage/core-components';
 import Box from '@mui/material/Box';
@@ -41,12 +42,13 @@ import FilterDropdown from './FilterDropdown';
 import EmptyChartState from '../Common/EmptyChartState';
 
 const CatalogEntities = () => {
-  const [page, setPage] = React.useState(0);
-  const [limit] = React.useState(20);
-  const [rowsPerPage, setRowsPerPage] = React.useState(3);
-  const [selectedOption, setSelectedOption] = React.useState('');
-  const [uniqueCatalogEntityKinds, setUniqueCatalogEntityKinds] =
-    React.useState<string[]>([]);
+  const [page, setPage] = useState(0);
+  const [limit] = useState(20);
+  const [rowsPerPage, setRowsPerPage] = useState(3);
+  const [selectedOption, setSelectedOption] = useState('');
+  const [uniqueCatalogEntityKinds, setUniqueCatalogEntityKinds] = useState<
+    string[]
+  >([]);
 
   const entityLink = useRouteRef(entityRouteRef);
 
@@ -55,7 +57,7 @@ const CatalogEntities = () => {
     kind: selectedOption === 'All' ? '' : selectedOption.toLocaleLowerCase(),
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (
       catalogEntities?.data?.length > 0 &&
       uniqueCatalogEntityKinds?.length === 0
@@ -65,26 +67,23 @@ const CatalogEntities = () => {
     }
   }, [catalogEntities, uniqueCatalogEntityKinds]);
 
-  const handleChangePage = React.useCallback(
-    (_event: unknown, newPage: number) => {
-      setPage(newPage);
-    },
-    [],
-  );
+  const handleChangePage = useCallback((_event: unknown, newPage: number) => {
+    setPage(newPage);
+  }, []);
 
-  const handleChangeRowsPerPage = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChangeRowsPerPage = useCallback(
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setRowsPerPage(+event.target.value);
       setPage(0);
     },
     [],
   );
 
-  const handleChange = React.useCallback((event: SelectChangeEvent<string>) => {
+  const handleChange = useCallback((event: SelectChangeEvent<string>) => {
     setSelectedOption(event.target.value);
   }, []);
 
-  const visibleCatalogEntities = React.useMemo(() => {
+  const visibleCatalogEntities = useMemo(() => {
     return catalogEntities.data
       ?.filter(entity => {
         if (selectedOption && selectedOption !== 'All') {

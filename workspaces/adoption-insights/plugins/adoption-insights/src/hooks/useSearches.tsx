@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useEffect, useCallback, useState } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 import { useAsyncRetry } from 'react-use';
@@ -29,8 +29,8 @@ export const useSearches = (): {
   error: Error | undefined;
   loading: boolean;
 } => {
-  const [loadingData, setLoadingData] = React.useState<boolean>(true);
-  const [searches, setSearches] = React.useState<SearchesResponse>({
+  const [loadingData, setLoadingData] = useState<boolean>(true);
+  const [searches, setSearches] = useState<SearchesResponse>({
     data: [],
   });
 
@@ -39,7 +39,7 @@ export const useSearches = (): {
 
   const api = useApi(adoptionInsightsApiRef);
 
-  const getSearches = React.useCallback(async () => {
+  const getSearches = useCallback(async () => {
     return await api
       .getSearches({
         type: 'top_searches',
@@ -58,7 +58,7 @@ export const useSearches = (): {
     return await getSearches();
   }, [getSearches]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     if (!loading && mounted) {
       setLoadingData(false);

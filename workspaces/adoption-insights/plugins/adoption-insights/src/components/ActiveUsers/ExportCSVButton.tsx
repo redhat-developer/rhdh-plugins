@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useRef, useState } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 import Button from '@mui/material/Button';
@@ -26,11 +26,11 @@ import { adoptionInsightsApiRef } from '../../api';
 import { useDateRange } from '../Header/DateRangeContext';
 
 const ExportCSVButton = () => {
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const api = useApi(adoptionInsightsApiRef);
   const { startDateRange, endDateRange } = useDateRange();
   const theme = useTheme();
-  const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleCSVDownload = async () => {
     try {

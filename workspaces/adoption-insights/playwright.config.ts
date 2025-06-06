@@ -27,7 +27,7 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_URL
     ? []
     : {
-        command: 'yarn dev',
+        command: 'yarn start',
         port: 3000,
         reuseExistingServer: false,
       },

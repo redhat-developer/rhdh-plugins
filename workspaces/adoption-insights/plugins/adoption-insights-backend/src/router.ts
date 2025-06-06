@@ -1,5 +1,3 @@
-import express, { Request, Response } from 'express';
-import Router from 'express-promise-router';
 /*
  * Copyright Red Hat, Inc.
  *
@@ -22,9 +20,11 @@ import {
 import { NotAllowedError } from '@backstage/errors';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
+import express, { Request, Response } from 'express';
+import Router from 'express-promise-router';
+
 import EventApiController from './controllers/EventApiController';
 import { QueryParams } from './types/event-request';
-import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
 export async function createRouter({
   httpAuth,
@@ -37,11 +37,6 @@ export async function createRouter({
 }): Promise<express.Router> {
   const router = Router();
 
-  const permissionIntegrationRouter = createPermissionIntegrationRouter({
-    permissions: [adoptionInsightsEventsReadPermission],
-  });
-
-  router.use(permissionIntegrationRouter);
   router.use(express.json());
 
   const authorizeUser = async (

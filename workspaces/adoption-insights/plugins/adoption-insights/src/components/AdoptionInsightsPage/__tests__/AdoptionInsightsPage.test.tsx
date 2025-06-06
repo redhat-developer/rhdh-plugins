@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { ReactNode } from 'react';
 
 import { screen, waitFor } from '@testing-library/react';
 import { useTheme } from '@mui/material/styles';
@@ -71,10 +71,10 @@ jest.mock('../../Users', () => ({
 }));
 
 jest.mock('@backstage/core-components', () => ({
-  Content: ({ children }: { children: React.ReactNode }) => (
+  Content: ({ children }: { children: ReactNode }) => (
     <div data-testid="mock-content">{children}</div>
   ),
-  Page: ({ children }: { children: React.ReactNode }) => (
+  Page: ({ children }: { children: ReactNode }) => (
     <div data-testid="mock-page">{children}</div>
   ),
 }));

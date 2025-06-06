@@ -14,7 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useCallback } from 'react';
+import type { FC, Dispatch, SetStateAction } from 'react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -30,18 +31,18 @@ import Typography from '@mui/material/Typography';
 
 interface DateRangePickerProps {
   startDate: Date | null;
-  setStartDate: React.Dispatch<React.SetStateAction<Date | null>>;
+  setStartDate: Dispatch<SetStateAction<Date | null>>;
   endDate: Date | null;
-  setEndDate: React.Dispatch<React.SetStateAction<Date | null>>;
+  setEndDate: Dispatch<SetStateAction<Date | null>>;
 }
 
-const DateRangePicker: React.FC<DateRangePickerProps> = ({
+const DateRangePicker: FC<DateRangePickerProps> = ({
   startDate,
   setStartDate,
   endDate,
   setEndDate,
 }) => {
-  const handleDateChange = React.useCallback(
+  const handleDateChange = useCallback(
     (date: Date | null) => {
       if (!date) return;
 
@@ -57,7 +58,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
     [startDate, endDate, setStartDate, setEndDate],
   );
 
-  const handleStartDateChange = React.useCallback(
+  const handleStartDateChange = useCallback(
     (date: Date | null) => {
       if (!date) return;
 
@@ -74,7 +75,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
     [endDate, setStartDate, setEndDate],
   );
 
-  const handleEndDateChange = React.useCallback(
+  const handleEndDateChange = useCallback(
     (date: Date | null) => {
       if (!date) return;
 
