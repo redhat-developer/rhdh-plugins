@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.13.0
+
+### Minor Changes
+
+- 2ac5cf5: Backstage version bump to v1.39.1
+
 ## 1.12.5
 
 ### Patch Changes
