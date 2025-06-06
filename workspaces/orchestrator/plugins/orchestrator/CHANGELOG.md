@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 3.0.4
+
+### Patch Changes
+
+- c02b521: match package versions with RHDH
+
 ## 3.0.3
 
 ### Patch Changes
