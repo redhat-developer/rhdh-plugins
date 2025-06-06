@@ -16,19 +16,16 @@
 import React from 'react';
 
 import { Divider } from '@material-ui/core';
-import { ChatbotAlert, FileDetailsLabel } from '@patternfly/chatbot';
+import { FileDetailsLabel } from '@patternfly/chatbot';
 
 import { useFileAttachmentContext } from './AttachmentContext';
 
 const FilePreview = () => {
   const {
-    showAlert,
     fileContents,
     isLoadingFile,
-    uploadError,
     modalState,
     setFileContents,
-    setUploadError,
     setCurrentFileContent,
   } = useFileAttachmentContext();
 
@@ -70,17 +67,6 @@ const FilePreview = () => {
             />
           ))}
         </div>
-      )}
-      {showAlert && uploadError.message && (
-        <ChatbotAlert
-          component="h4"
-          title="File upload failed"
-          variant={uploadError.type ?? 'danger'}
-          isInline
-          onClose={() => setUploadError({ message: null })}
-        >
-          {uploadError.message}
-        </ChatbotAlert>
       )}
     </>
   );
