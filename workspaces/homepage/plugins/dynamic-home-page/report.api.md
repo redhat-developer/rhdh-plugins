@@ -6,17 +6,18 @@
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { ClockConfig } from '@backstage/plugin-home';
+import type { ComponentType } from 'react';
 import { FeaturedDocsCardProps } from '@backstage/plugin-home';
-import { default as React_2 } from 'react';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { StarredEntitiesProps } from '@backstage/plugin-home';
 import { VisitedByTypeProps } from '@backstage/plugin-home';
 
 // @public (undocumented)
-export const CatalogStarredEntitiesCard: React_2.ComponentType<StarredEntitiesProps>;
+export const CatalogStarredEntitiesCard: ComponentType<StarredEntitiesProps>;
 
 // @public
-export const DynamicCustomizableHomePage: React_2.ComponentType<DynamicCustomizableHomePageProps>;
+export const DynamicCustomizableHomePage: ComponentType<DynamicCustomizableHomePageProps>;
 
 // @public
 export interface DynamicCustomizableHomePageProps {
@@ -35,7 +36,7 @@ export interface DynamicCustomizableHomePageProps {
 }
 
 // @public
-export const DynamicHomePage: React_2.ComponentType<DynamicHomePageProps>;
+export const DynamicHomePage: ComponentType<DynamicHomePageProps>;
 
 // @public
 export const dynamicHomePagePlugin: BackstagePlugin<    {
@@ -59,13 +60,13 @@ export interface DynamicHomePageProps {
 }
 
 // @public (undocumented)
-export const EntitySection: () => React_2.JSX.Element;
+export const EntitySection: () => JSX_2.Element;
 
 // @public (undocumented)
-export const FeaturedDocsCard: React_2.ComponentType<FeaturedDocsCardProps>;
+export const FeaturedDocsCard: ComponentType<FeaturedDocsCardProps>;
 
 // @public (undocumented)
-export const Headline: React_2.ComponentType<HeadlineProps>;
+export const Headline: ComponentType<HeadlineProps>;
 
 // @public (undocumented)
 export interface HeadlineProps {
@@ -76,7 +77,7 @@ export interface HeadlineProps {
 }
 
 // @public (undocumented)
-export const JokeCard: React_2.ComponentType<{
+export const JokeCard: ComponentType<{
     defaultCategory?: 'any' | 'programming';
 }>;
 
@@ -91,10 +92,10 @@ export interface LocalClockProps {
 }
 
 // @public (undocumented)
-export const Markdown: React_2.ComponentType<MarkdownProps>;
+export const Markdown: ComponentType<MarkdownProps>;
 
 // @public (undocumented)
-export const MarkdownCard: React_2.ComponentType<MarkdownCardProps>;
+export const MarkdownCard: ComponentType<MarkdownCardProps>;
 
 // @public (undocumented)
 export interface MarkdownCardProps {
@@ -113,10 +114,10 @@ export interface MarkdownProps {
 }
 
 // @public (undocumented)
-export const OnboardingSection: () => React_2.JSX.Element;
+export const OnboardingSection: () => JSX_2.Element;
 
 // @public (undocumented)
-export const Placeholder: React_2.ComponentType<PlaceholderProps>;
+export const Placeholder: ComponentType<PlaceholderProps>;
 
 // @public (undocumented)
 export interface PlaceholderProps {
@@ -127,7 +128,7 @@ export interface PlaceholderProps {
 }
 
 // @public (undocumented)
-export const QuickAccessCard: React_2.ComponentType<QuickAccessCardProps>;
+export const QuickAccessCard: ComponentType<QuickAccessCardProps>;
 
 // @public (undocumented)
 export interface QuickAccessCardProps {
@@ -138,10 +139,10 @@ export interface QuickAccessCardProps {
 }
 
 // @public (undocumented)
-export const RecentlyVisitedCard: React_2.ComponentType<VisitedByTypeProps>;
+export const RecentlyVisitedCard: ComponentType<VisitedByTypeProps>;
 
 // @public (undocumented)
-export const SearchBar: React_2.ComponentType<SearchBarProps>;
+export const SearchBar: ComponentType<SearchBarProps>;
 
 // @public (undocumented)
 export interface SearchBarProps {
@@ -152,16 +153,16 @@ export interface SearchBarProps {
 }
 
 // @public (undocumented)
-export const TemplateSection: () => React_2.JSX.Element;
+export const TemplateSection: () => JSX_2.Element;
 
 // @public (undocumented)
-export const TopVisitedCard: React_2.ComponentType<VisitedByTypeProps>;
+export const TopVisitedCard: ComponentType<VisitedByTypeProps>;
 
 // @public (undocumented)
-export const VisitListener: () => React_2.JSX.Element | null;
+export const VisitListener: () => JSX_2.Element | null;
 
 // @public (undocumented)
-export const WorldClock: ({ worldClocks, timeFormat, justifyContent, }: WorldClockProps) => React_2.JSX.Element;
+export const WorldClock: ({ worldClocks, timeFormat, justifyContent, }: WorldClockProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface WorldClockProps {

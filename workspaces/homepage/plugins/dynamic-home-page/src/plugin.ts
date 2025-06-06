@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ComponentType } from 'react';
 
 import {
   configApiRef,
@@ -94,7 +94,7 @@ export const dynamicHomePagePlugin = createPlugin({
  * Dynamic Home Page
  * @public
  */
-export const DynamicHomePage: React.ComponentType<DynamicHomePageProps> =
+export const DynamicHomePage: ComponentType<DynamicHomePageProps> =
   dynamicHomePagePlugin.provide(
     createRoutableExtension({
       name: 'DynamicHomePage',
@@ -108,7 +108,7 @@ export const DynamicHomePage: React.ComponentType<DynamicHomePageProps> =
  * Customizable Dynamic Home Page
  * @public
  */
-export const DynamicCustomizableHomePage: React.ComponentType<DynamicCustomizableHomePageProps> =
+export const DynamicCustomizableHomePage: ComponentType<DynamicCustomizableHomePageProps> =
   dynamicHomePagePlugin.provide(
     createRoutableExtension({
       name: 'DynamicCustomizableHomePage',
@@ -123,7 +123,7 @@ export const DynamicCustomizableHomePage: React.ComponentType<DynamicCustomizabl
 /**
  * @public
  */
-export const SearchBar: React.ComponentType<SearchBarProps> =
+export const SearchBar: ComponentType<SearchBarProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
       name: 'SearchBar',
@@ -136,7 +136,7 @@ export const SearchBar: React.ComponentType<SearchBarProps> =
 /**
  * @public
  */
-export const QuickAccessCard: React.ComponentType<QuickAccessCardProps> =
+export const QuickAccessCard: ComponentType<QuickAccessCardProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
       name: 'QuickAccessCard',
@@ -150,7 +150,7 @@ export const QuickAccessCard: React.ComponentType<QuickAccessCardProps> =
 /**
  * @public
  */
-export const Headline: React.ComponentType<HeadlineProps> =
+export const Headline: ComponentType<HeadlineProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
       name: 'Headline',
@@ -163,7 +163,7 @@ export const Headline: React.ComponentType<HeadlineProps> =
 /**
  * @public
  */
-export const Markdown: React.ComponentType<MarkdownProps> =
+export const Markdown: ComponentType<MarkdownProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
       name: 'Markdown',
@@ -176,7 +176,7 @@ export const Markdown: React.ComponentType<MarkdownProps> =
 /**
  * @public
  */
-export const MarkdownCard: React.ComponentType<MarkdownCardProps> =
+export const MarkdownCard: ComponentType<MarkdownCardProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
       name: 'MarkdownCard',
@@ -190,7 +190,7 @@ export const MarkdownCard: React.ComponentType<MarkdownCardProps> =
 /**
  * @public
  */
-export const Placeholder: React.ComponentType<PlaceholderProps> =
+export const Placeholder: ComponentType<PlaceholderProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
       name: 'MarkdownCard',
@@ -203,7 +203,7 @@ export const Placeholder: React.ComponentType<PlaceholderProps> =
 /**
  * @public
  */
-export const CatalogStarredEntitiesCard: React.ComponentType<StarredEntitiesProps> =
+export const CatalogStarredEntitiesCard: ComponentType<StarredEntitiesProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
       name: 'CatalogStarredEntitiesCard',
@@ -217,7 +217,7 @@ export const CatalogStarredEntitiesCard: React.ComponentType<StarredEntitiesProp
 /**
  * @public
  */
-export const RecentlyVisitedCard: React.ComponentType<VisitedByTypeProps> =
+export const RecentlyVisitedCard: ComponentType<VisitedByTypeProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
       name: 'RecentlyVisitedCard',
@@ -231,7 +231,7 @@ export const RecentlyVisitedCard: React.ComponentType<VisitedByTypeProps> =
 /**
  * @public
  */
-export const TopVisitedCard: React.ComponentType<VisitedByTypeProps> =
+export const TopVisitedCard: ComponentType<VisitedByTypeProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
       name: 'TopVisitedCard',
@@ -245,7 +245,7 @@ export const TopVisitedCard: React.ComponentType<VisitedByTypeProps> =
 /**
  * @public
  */
-export const FeaturedDocsCard: React.ComponentType<FeaturedDocsCardProps> =
+export const FeaturedDocsCard: ComponentType<FeaturedDocsCardProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
       name: 'FeaturedDocsCard',
@@ -259,7 +259,7 @@ export const FeaturedDocsCard: React.ComponentType<FeaturedDocsCardProps> =
 /**
  * @public
  */
-export const JokeCard: React.ComponentType<{
+export const JokeCard: ComponentType<{
   defaultCategory?: 'any' | 'programming';
 }> = dynamicHomePagePlugin.provide(
   createComponentExtension({

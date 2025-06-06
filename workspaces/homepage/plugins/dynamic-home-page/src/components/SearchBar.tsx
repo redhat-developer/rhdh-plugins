@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { SearchBarBase } from '@backstage/plugin-search-react';

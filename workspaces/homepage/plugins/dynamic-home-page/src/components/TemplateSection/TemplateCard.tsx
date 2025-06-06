@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { FC } from 'react';
 
 import { Link } from '@backstage/core-components';
 import { MarkdownContent } from '@backstage/core-components';
@@ -31,7 +31,7 @@ interface TemplateCardProps {
   kind: string;
 }
 
-const TemplateCard: React.FC<TemplateCardProps> = ({
+const TemplateCard: FC<TemplateCardProps> = ({
   link,
   title,
   description,

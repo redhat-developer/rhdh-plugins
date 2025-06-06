@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { ClockConfig, HeaderWorldClock } from '@backstage/plugin-home';
 
 /**

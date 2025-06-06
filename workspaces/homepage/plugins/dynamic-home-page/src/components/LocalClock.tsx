@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useState, useEffect } from 'react';
 
 import { HeaderLabel } from '@backstage/core-components';
 
@@ -41,11 +41,11 @@ export const LocalClock = (props: LocalClockProps) => {
   const format = props.format ?? 'time';
   const lang = props.lang ?? window.navigator.language;
 
-  const [time, setTime] = React.useState(() => new Date());
+  const [time, setTime] = useState(() => new Date());
 
   // Could be optimized to only update the time when needed, but it's aligned with
   // https://github.com/backstage/backstage/blob/master/plugins/home/src/homePageComponents/HeaderWorldClock/HeaderWorldClock.tsx for now
-  React.useEffect(() => {
+  useEffect(() => {
     if (format === 'none') {
       return () => null;
     }

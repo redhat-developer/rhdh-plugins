@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { ReactNode } from 'react';
 
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -22,7 +22,7 @@ import { Entity } from '@backstage/catalog-model';
 import EntityCard from './EntityCard';
 
 jest.mock('@backstage/plugin-catalog-react', () => ({
-  EntityRefLink: ({ children }: { children: React.ReactNode }) => (
+  EntityRefLink: ({ children }: { children: ReactNode }) => (
     <span>{children}</span>
   ),
 }));

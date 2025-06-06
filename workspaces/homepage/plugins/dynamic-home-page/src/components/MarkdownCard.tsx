@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { InfoCard, MarkdownContent } from '@backstage/core-components';
 
 /**

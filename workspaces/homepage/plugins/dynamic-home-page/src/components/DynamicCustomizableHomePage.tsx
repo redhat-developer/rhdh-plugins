@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import type { ClockConfig } from '@backstage/plugin-home';
 
 import { useDynamicHomePageCards } from '../hooks/useDynamicHomePageCards';

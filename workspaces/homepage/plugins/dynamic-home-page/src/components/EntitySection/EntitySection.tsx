@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { ReactNode } from 'react';
+
+import { useState, useEffect, Fragment } from 'react';
 
 import {
   CodeSnippet,
@@ -54,11 +56,11 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
 export const EntitySection = () => {
   const theme = useTheme();
   const { displayName, loading: profileLoading } = useUserProfile();
-  const [isRemoveFirstCard, setIsRemoveFirstCard] = React.useState(false);
-  const [showDiscoveryCard, setShowDiscoveryCard] = React.useState(true);
-  const [imgLoaded, setImgLoaded] = React.useState(false);
+  const [isRemoveFirstCard, setIsRemoveFirstCard] = useState(false);
+  const [showDiscoveryCard, setShowDiscoveryCard] = useState(true);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const isUserDismissedEntityIllustration =
       hasEntityIllustrationUserDismissed(displayName);
     setIsRemoveFirstCard(isUserDismissedEntityIllustration);
@@ -78,7 +80,7 @@ export const EntitySection = () => {
 
   const entities = data?.items ?? [];
 
-  let content: React.ReactNode;
+  let content: ReactNode;
 
   if (isLoading) {
     content = (
@@ -105,7 +107,7 @@ export const EntitySection = () => {
   } else {
     content = (
       <Box sx={{ padding: '8px 8px 8px 0' }}>
-        <React.Fragment>
+        <Fragment>
           <Grid container spacing={1} alignItems="stretch">
             {!isRemoveFirstCard && !profileLoading && (
               <Grid item xs={12} md={5} key="entities illustration">
@@ -231,7 +233,7 @@ export const EntitySection = () => {
               </ViewMoreLink>
             )}
           </Box>
-        </React.Fragment>
+        </Fragment>
       </Box>
     );
   }
