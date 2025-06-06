@@ -116,6 +116,12 @@ export interface MarketplaceApi {
     configYaml: string,
   ): Promise<{ status: string }>;
 
+  disablePlugin?(
+    namespace: string,
+    name: string,
+    disabled: boolean,
+  ): Promise<{ status: string }>;
+
   getPluginPackages(
     namespace: string,
     name: string,

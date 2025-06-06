@@ -488,6 +488,61 @@ describe('createRouter', () => {
     });
   });
 
+  describe('POST /plugin/:namespace/:name/configuration/disable', () => {
+    const pluginSetup = {
+      mockData: mockPlugins,
+      name: 'plugin1',
+      config: FILE_INSTALL_CONFIG,
+    };
+
+    it('should fail when disabled missing with InputError 400', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
+
+      const response = await request(backendServer).post(
+        '/api/extensions/plugin/default/plugin1/configuration/disable',
+      );
+      expectInputError(response, "'disabled' must be present boolean");
+    });
+
+    it('should fail when bad disabled format with InputError 400', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
+
+      const response = await request(backendServer)
+        .post('/api/extensions/plugin/default/plugin1/configuration/disable')
+        .send({ disabled: 'invalid' });
+      expectInputError(response, "'disabled' must be present boolean");
+    });
+
+    it('should fail when plugin not found with NotFoundError 404', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: [],
+        name: 'not-found',
+        config: FILE_INSTALL_CONFIG,
+      });
+
+      const response = await request(backendServer)
+        .post('/api/extensions/plugin/default/not-found/configuration/disable')
+        .send({ disabled: true });
+      expectNotFoundError(response, MarketplaceKind.Plugin);
+    });
+
+    it.each([
+      ['enable', false],
+      ['disable', true],
+    ])('should %s the plugin configuration', async (_, disabled) => {
+      const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
+
+      const response = await request(backendServer)
+        .post('/api/extensions/plugin/default/plugin1/configuration/disable')
+        .send({ disabled });
+      expect(
+        mockInstallationDataService.setPluginDisabled,
+      ).toHaveBeenCalledWith(mockPlugins[0], disabled);
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ status: 'OK' });
+    });
+  });
+
   describe('GET /package/:namespace/:name/configuration', () => {
     it('should fail when package not found with NotFoundError 404', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
