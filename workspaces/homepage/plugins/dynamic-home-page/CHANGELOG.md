@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.4.2
+
+### Patch Changes
+
+- 002f7c9: Updated dependency `@testing-library/user-event` to `14.6.1`.
+- 593ed08: Updated dependency `@mui/icons-material` to `5.17.1`.
+  Updated dependency `@mui/material` to `5.17.1`.
+  Updated dependency `@mui/styles` to `5.17.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.8.0`.
+
 ## 1.4.1
 
 ### Patch Changes
