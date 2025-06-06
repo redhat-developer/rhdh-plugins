@@ -316,48 +316,52 @@ export async function createRouter(
     },
   );
 
-  router.post('/plugin/:namespace/:name/configuration', async (req, res) => {
-    // installs the plugin
-    const installDecision = await authorizeConditional(
-      req,
-      extensionsPluginWritePermission,
-    );
-    if (installDecision.result === AuthorizeResult.DENY) {
-      throw new NotAllowedError(
-        `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
+  router.post(
+    '/plugin/:namespace/:name/configuration',
+    requireInitializedInstallationDataService,
+    async (req, res) => {
+      // installs the plugin
+      const installDecision = await authorizeConditional(
+        req,
+        extensionsPluginWritePermission,
       );
-    }
-
-    const plugin = await marketplaceApi.getPluginByName(
-      req.params.namespace,
-      req.params.name,
-    );
-
-    const hasInstallAccess =
-      installDecision.result === AuthorizeResult.ALLOW ||
-      (installDecision.result === AuthorizeResult.CONDITIONAL &&
-        matches(plugin, installDecision.conditions));
-
-    if (!hasInstallAccess) {
-      throw new NotAllowedError(
-        `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
-      );
-    }
-
-    const newConfig = req.body.configYaml;
-    if (!newConfig) {
-      throw new InputError("'configYaml' object must be present");
-    }
-    try {
-      await installationDataService.updatePluginConfig(plugin, newConfig);
-    } catch (e) {
-      if (e instanceof ConfigFormatError) {
-        throw new InputError(e.message);
+      if (installDecision.result === AuthorizeResult.DENY) {
+        throw new NotAllowedError(
+          `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
+        );
       }
-      throw e;
-    }
-    res.status(200).json({ status: 'OK' });
-  });
+
+      const plugin = await marketplaceApi.getPluginByName(
+        req.params.namespace,
+        req.params.name,
+      );
+
+      const hasInstallAccess =
+        installDecision.result === AuthorizeResult.ALLOW ||
+        (installDecision.result === AuthorizeResult.CONDITIONAL &&
+          matches(plugin, installDecision.conditions));
+
+      if (!hasInstallAccess) {
+        throw new NotAllowedError(
+          `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
+        );
+      }
+
+      const newConfig = req.body.configYaml;
+      if (!newConfig) {
+        throw new InputError("'configYaml' object must be present");
+      }
+      try {
+        await installationDataService.updatePluginConfig(plugin, newConfig);
+      } catch (e) {
+        if (e instanceof ConfigFormatError) {
+          throw new InputError(e.message);
+        }
+        throw e;
+      }
+      res.status(200).json({ status: 'OK' });
+    },
+  );
 
   router.get('/plugin/:namespace/:name/packages', async (req, res) => {
     const packages = await marketplaceApi.getPluginPackages(
