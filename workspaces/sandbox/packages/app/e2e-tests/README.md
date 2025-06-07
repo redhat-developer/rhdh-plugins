@@ -193,6 +193,30 @@ yarn test:firefox
 yarn test:webkit
 ```
 
+## Running E2E tests in E2E mode
+1. You need a OCP cluster 
+    - ROSA cluster from ClusterBot will not work since we are not able to modify the OAuth configuration of ROSA clusters created by the ClusterBot.
+2. Ensure you are using Node.js version 20
+    - to easily manage it, you can run `nvm use 20`
+3. `cd workspaces/sandbox`
+    - `make test-e2e SSO_USERNAME=${SSO_USERNAME} SSO_PASSWORD=${SSO_PASSWORD}`
+
+
+If you want to run with your local toolchain-e2e repo:
+1. Make sure the toolchain-e2e directory is located in the same parent folder as rhdh-plugins, like this:
+```
+<your-repos-folder>/
+  ├── toolchain-e2e
+  └── rhdh-plugins
+```
+2. `cd workspaces/sandbox`
+    - `make test-e2e-local SSO_USERNAME=${SSO_USERNAME} SSO_PASSWORD=${SSO_PASSWORD}`
+
+
+To clean both toolchain resources and Developer Sandbox UI, run `make clean-all-e2e-resources HOST_NS=<HOST_NS> SSO_USERNAME=<SSO_USERNAME>`.
+
+To clean only Developer Sandbox UI, run `make clean-sandbox-ui HOST_NS=<HOST_NS> SSO_USERNAME=<SSO_USERNAME>`.
+
 ---
 
 ## Additional Information
