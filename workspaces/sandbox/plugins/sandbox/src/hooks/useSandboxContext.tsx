@@ -35,6 +35,7 @@ interface SandboxContextType {
   refetchUserData: () => Promise<SignupData | undefined>;
   signupUser: () => void;
   refetchAAP: () => void;
+  handleAAPInstance: () => void;
   ansibleData: AAPData | undefined;
   ansibleUIUser: string | undefined;
   ansibleUIPassword: string;
@@ -163,6 +164,37 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const handleAAPInstance = async () => {
+    await getAAPData();
+
+    if (
+      ansibleStatus === AnsibleStatus.PROVISIONING ||
+      ansibleStatus === AnsibleStatus.READY
+    ) {
+      return;
+    }
+
+    if (
+      ansibleStatus === AnsibleStatus.IDLED &&
+      ansibleData &&
+      ansibleData?.items?.length > 0
+    ) {
+      try {
+        await aapApi.unIdleAAP(userData?.defaultUserNamespace || '');
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      }
+      return;
+    }
+    try {
+      await aapApi.createAAP(userData?.defaultUserNamespace || '');
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     fetchData(); // Initial fetch
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,6 +249,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
         refetchUserData: fetchData,
         signupUser,
         refetchAAP: getAAPData,
+        handleAAPInstance,
         ansibleData,
         ansibleUIUser,
         ansibleUIPassword,
