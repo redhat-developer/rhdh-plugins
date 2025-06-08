@@ -42,13 +42,13 @@ import {
   WorkflowResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { orchestratorApiRef } from '../api';
-import { executeWorkflowRouteRef } from '../routes';
-import { buildUrl } from '../utils/UrlUtils';
+import { orchestratorApiRef } from '../../api';
+import { executeWorkflowRouteRef } from '../../routes';
+import { buildUrl } from '../../utils/UrlUtils';
 import {
   WorkflowDescriptionModal,
   WorkflowDescriptionModalProps,
-} from './WorkflowDescriptionModal';
+} from '../WorkflowDescriptionModal';
 
 const useStyles = makeStyles()(theme => ({
   outputGrid: {
