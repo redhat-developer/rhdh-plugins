@@ -18,8 +18,8 @@ import React from 'react';
 
 import { ProcessInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { compareNodes } from '../utils/NodeInstanceUtils';
-import { Paragraph } from './Paragraph';
+import { compareNodes } from '../../utils/NodeInstanceUtils';
+import { Paragraph } from '../Paragraph';
 import { WorkflowProgressNode } from './WorkflowProgressNode';
 import { fromNodeInstanceToWorkflowProgressNodeModel } from './WorkflowProgressNodeModel';
 
