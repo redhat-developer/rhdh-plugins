@@ -219,7 +219,7 @@ To clean only Developer Sandbox UI, run `make clean-sandbox-ui HOST_NS=<HOST_NS>
 
 
 If you want to run the e2e tests in container:
-`make test-in-container E2E_REPO_PATH=<E2E_REPO_PATH> SSO_USERNAME=<SSO_USERNAME> SSO_PASSWORD=<SSO_PASSWORD> HOST_NS=<HOST_NS>`
+`make test-in-container E2E_REPO_PATH=<E2E_REPO_PATH> SSO_USERNAME=<SSO_USERNAME> SSO_PASSWORD=<SSO_PASSWORD>`
 
 ---
 
