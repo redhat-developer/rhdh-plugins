@@ -41,6 +41,7 @@ export type Components = UnifiedThemeOptions['components'] & {
   BackstageTableToolbar?: Component;
   CatalogReactUserListPicker?: Component;
   PrivateTabIndicator?: Component;
+  RHDHPageWithoutFixHeight?: Component;
 };
 
 export const createComponents = (themeConfig: ThemeConfig): Components => {
@@ -690,6 +691,35 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   }
 
   if (options.pages !== 'mui') {
+    components.RHDHPageWithoutFixHeight = {
+      styleOverrides: {
+        root: {
+          // Cancel out the spacing produced by the page inset border when
+          // the global header is present in the above-sidebar position.
+          '@media (min-width: 600px)': {
+            '#above-sidebar-header-container:has(*) ~ [class*="sidebarLayout"]':
+              {
+                "& [class*='BackstagePage-root'], & [class*='MuiLinearProgress-root']":
+                  {
+                    marginTop: `calc(-1 * ${general.pageInset})`,
+                  },
+              },
+          },
+        },
+        sidebarLayout: {
+          // Cancel out the spacing produced by the page inset border when
+          // the global header is present in the above-main-content position.
+          '@media (min-width: 600px)': {
+            '#above-main-content-header-container:has(*)': {
+              "& ~ [class*='BackstagePage-root'], & ~ [class*='MuiLinearProgress-root']":
+                {
+                  marginTop: `calc(-1 * ${general.pageInset})`,
+                },
+            },
+          },
+        },
+      },
+    };
     components.BackstageSidebarPage = {
       styleOverrides: {
         root: {
@@ -698,14 +728,19 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             backgroundColor: general.sidebarBackgroundColor,
             // Cancel out the spacing produced by the page inset border when
             // the sidebar is present
-            "& nav ~ main, & nav ~ [class*='MuiLinearProgress-root']": {
-              marginLeft: `calc(-1 * ${general.pageInset})`,
+            '& nav': {
+              "& ~ main, & ~ [class*='MuiLinearProgress-root']": {
+                marginLeft: `calc(-1 * ${general.pageInset})`,
+              },
             },
             // The border + border radius emulates the PF6 page inset look without
             // needing to change the markup
             "& > [class*='MuiLinearProgress-root'], & > main": {
               borderRadius: `calc(1rem + ${general.pageInset})`,
               border: `${general.pageInset} solid ${general.sidebarBackgroundColor}`,
+              // Enable overlay scrollbars on Chrome. This is required to have the
+              // border radius show up correctly on the scrollbar track.
+              scrollbarWidth: 'thin',
             },
             // The Backstage suspense is an MUI LinearProgress that is not wrapped by
             // a `main`. We need to give it 100vh height to fill the page for the page
