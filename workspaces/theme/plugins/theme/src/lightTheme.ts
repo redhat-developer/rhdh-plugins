@@ -48,6 +48,8 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
   },
   rhdh: {
     general: {
+      pageInset: '1.5rem',
+
       disabled: '#6A6E73',
       disabledBackground: '#D2D2D2',
 
@@ -77,6 +79,8 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
       tabsLinkHoverBackgroundColor: 'rgba(199, 199, 199, 0.2500)',
 
       contrastText: '#FFF',
+
+      appBarBackgroundScheme: 'light',
 
       appBarBackgroundColor: '#f2f2f2',
       appBarForegroundColor: '#1f1f1f',

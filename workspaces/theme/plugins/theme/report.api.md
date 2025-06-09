@@ -60,6 +60,7 @@ export interface RHDHThemePalette {
     };
     // (undocumented)
     general: {
+        pageInset: string;
         disabled: string;
         disabledBackground: string;
         paperBackgroundImage: string;
@@ -80,6 +81,7 @@ export interface RHDHThemePalette {
         tableBackgroundColor: string;
         tabsLinkHoverBackgroundColor: string;
         contrastText: string;
+        appBarBackgroundScheme: 'light' | 'dark';
         appBarBackgroundColor: string;
         appBarForegroundColor: string;
         appBarBackgroundImage: string;
