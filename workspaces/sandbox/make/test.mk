@@ -1,9 +1,9 @@
-E2E_REPO_PATH := ""
+E2E_REPO_PATH ?= ""
 
 .PHONY: test-e2e
 test-e2e: get-e2e-repo
 	# run the e2e tests via toolchain-e2e repo
-	$(MAKE) -C ${E2E_REPO_PATH} prepare-and-deploy-e2e deploy-and-test-sandbox-ui RHDH_PLUGINS_DIR=${PWD}/../..
+	$(MAKE) -C ${E2E_REPO_PATH} prepare-and-deploy-e2e deploy-and-test-sandbox-ui
 
 .PHONY: test-e2e-local
 test-e2e-local:
@@ -22,7 +22,7 @@ clean-sandbox-ui: get-e2e-repo
 
 .PHONY: get-e2e-repo
 get-e2e-repo:
-ifeq ($(E2E_REPO_PATH),"")
+ifeq (${E2E_REPO_PATH},"")
 	# set e2e repo path to tmp directory
 	$(eval E2E_REPO_PATH = /tmp/toolchain-e2e)
 	# delete to have clear environment
@@ -56,3 +56,36 @@ ifeq ($(E2E_REPO_PATH),"")
 		fi;
     endif
 endif
+
+UNIT_TEST_IMAGE_NAME=sandbox-ui-e2e-tests
+UNIT_TEST_DOCKERFILE=build/build-in-container/DockerfileFirefox
+
+# Build Developer Sandbox UI e2e tests image using podman
+.PHONY: build-sandbox-ui-e2e-tests
+build-sandbox-ui-e2e-tests:
+	@echo "building the $(UNIT_TEST_IMAGE_NAME) image with podman..."
+	podman build --arch amd64 --os linux -t $(UNIT_TEST_IMAGE_NAME) -f $(UNIT_TEST_DOCKERFILE) .
+
+CURRENT_RHDH_PLUGINS_DIR := $(shell realpath ${PWD}/../..)
+
+# Run Developer Sandbox UI e2e tests image using podman
+PHONY: test-in-container
+test-in-container: build-sandbox-ui-e2e-tests get-e2e-repo
+	@echo "pushing Developer Sandbox UI image..."
+	$(MAKE) -C ${E2E_REPO_PATH} push-sandbox-plugin
+	@echo "running the e2e tests in podman container..."
+	@echo CURRENT_RHDH_PLUGINS_DIR $(CURRENT_RHDH_PLUGINS_DIR)
+	podman run --arch amd64 --os linux --rm \
+	  -v $(KUBECONFIG):/root/.kube/config \
+	  -e KUBECONFIG=/root/.kube/config \
+	  -v $(E2E_REPO_PATH):/root/toolchain-e2e \
+	  -e E2E_REPO_PATH=/root/toolchain-e2e \
+	  -v $(CURRENT_RHDH_PLUGINS_DIR):/root/rhdh-plugins \
+	  -e RHDH_PLUGINS_DIR=/root/rhdh-plugins \
+	  -e SSO_USERNAME=$(SSO_USERNAME) \
+	  -e SSO_PASSWORD=$(SSO_PASSWORD) \
+	  -e QUAY_NAMESPACE=$(QUAY_NAMESPACE) \
+	  -e HOST_NS=$(HOST_NS) \
+	  -e TMP=/tmp/ \
+	  -e PUSH_SANDBOX_IMAGE=false \
+	  $(UNIT_TEST_IMAGE_NAME)
