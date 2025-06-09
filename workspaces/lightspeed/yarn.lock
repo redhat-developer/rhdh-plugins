@@ -9695,9 +9695,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.3.0-prerelease.17":
-  version: 6.3.0-prerelease.17
-  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.17"
+"@patternfly/chatbot@npm:6.3.0-prerelease.20":
+  version: 6.3.0-prerelease.20
+  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.20"
   dependencies:
     "@patternfly/react-code-editor": ^6.1.0
     "@patternfly/react-core": ^6.1.0
@@ -9718,7 +9718,7 @@ __metadata:
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: f29492ae053f6bcd90267eff96585c6fdf2eca52f8252ced0cc1b6579678df976d8d4d1d1b5aedea42dcfe64b6a865743c5af816d1d2620bc3231e82d5d5aa09
+  checksum: c1d4a561bb23dc96980477a2a17d251e85b2263cd99b7b5827e8cb71728b20dd826f325bacc7b1b17563eca8a998739cd8a2be4ac9f3dd8b0dd80711f472e863
   languageName: node
   linkType: hard
 
@@ -9739,9 +9739,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-core@npm:6.3.0-prerelease.16":
-  version: 6.3.0-prerelease.16
-  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.16"
+"@patternfly/react-core@npm:6.3.0-prerelease.17":
+  version: 6.3.0-prerelease.17
+  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.17"
   dependencies:
     "@patternfly/react-icons": ^6.3.0-prerelease.3
     "@patternfly/react-styles": ^6.3.0-prerelease.3
@@ -9752,7 +9752,7 @@ __metadata:
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: b8ed22b430f1995e003d47833851d3c1309204a9e62502cb36fdad00d3ccb81c22221b665a3555c5f5eb3823159732b66c4b95953c036bb8fab9936fddc11907
+  checksum: 6d2c4755d1318a52536a48ac310a282ae78617004f702d013bf9db771bc1ee97e3fa50da01a59dc1cc25600e23872ddffa5e302da895fe0620dab74deebea007
   languageName: node
   linkType: hard
 
@@ -10591,8 +10591,8 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
-    "@patternfly/chatbot": 6.3.0-prerelease.17
-    "@patternfly/react-core": 6.3.0-prerelease.16
+    "@patternfly/chatbot": 6.3.0-prerelease.20
+    "@patternfly/react-core": 6.3.0-prerelease.17
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@tanstack/react-query": ^5.59.15
