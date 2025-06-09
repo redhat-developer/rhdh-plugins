@@ -9961,6 +9961,7 @@ __metadata:
     "@backstage/core-components": ^0.17.2
     "@backstage/core-plugin-api": ^1.10.7
     "@backstage/dev-utils": ^1.1.10
+    "@backstage/plugin-catalog": ^1.30.0
     "@backstage/plugin-catalog-react": ^1.18.0
     "@backstage/plugin-permission-react": ^0.4.34
     "@backstage/test-utils": ^1.7.8
