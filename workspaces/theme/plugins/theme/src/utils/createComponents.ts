@@ -634,6 +634,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           width: 'calc(100% - 0.5rem) !important',
           marginLeft: '0.5rem !important',
           textDecorationLine: 'none',
+          '&:hover, &:focus-visible': {
+            backgroundColor: general.sidebarItemSelectedBackgroundColor,
+          },
         },
         label: {
           '&[class*="MuiTypography-subtitle2"]': {
@@ -701,7 +704,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               {
                 "& [class*='BackstagePage-root'], & [class*='MuiLinearProgress-root']":
                   {
-                    marginTop: `calc(-1 * ${general.pageInset})`,
+                    marginTop: '0 !important',
                   },
               },
           },
@@ -713,7 +716,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             '#above-main-content-header-container:has(*)': {
               "& ~ [class*='BackstagePage-root'], & ~ [class*='MuiLinearProgress-root']":
                 {
-                  marginTop: `calc(-1 * ${general.pageInset})`,
+                  marginTop: '0 !important',
                 },
             },
           },
@@ -726,21 +729,23 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           // Controls the page inset as in PF6 -- only in desktop view
           '@media (min-width: 600px)': {
             backgroundColor: general.sidebarBackgroundColor,
+            // Prevents the main content from scrolling weird
+            overflowY: 'auto',
             // Cancel out the spacing produced by the page inset border when
             // the sidebar is present
             '& nav': {
               "& ~ main, & ~ [class*='MuiLinearProgress-root']": {
-                marginLeft: `calc(-1 * ${general.pageInset})`,
+                marginLeft: '0 !important',
               },
             },
-            // The border + border radius emulates the PF6 page inset look without
-            // needing to change the markup
             "& > [class*='MuiLinearProgress-root'], & > main": {
-              borderRadius: `calc(1rem + ${general.pageInset})`,
-              border: `${general.pageInset} solid ${general.sidebarBackgroundColor}`,
-              // Enable overlay scrollbars on Chrome. This is required to have the
-              // border radius show up correctly on the scrollbar track.
-              scrollbarWidth: 'thin',
+              // Clip path also clips the scrollbar properly in Chrome compared to
+              // border-radius
+              clipPath: `rect(0 100% 100% 0 round ${general.pageInset})`,
+              // Emulate the PatternFly 6 page inset using a margin
+              margin: general.pageInset,
+              // Prevent overflow in the main container due to the margin
+              maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
             },
             // The Backstage suspense is an MUI LinearProgress that is not wrapped by
             // a `main`. We need to give it 100vh height to fill the page for the page
