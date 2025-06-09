@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { MouseEvent, ChangeEvent, FC } from 'react';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import TablePagination from '@mui/material/TablePagination';
@@ -23,15 +23,15 @@ interface TableFooterPaginationProps {
   rowsPerPage: number;
   page: number;
   handleChangePage: (
-    event: React.MouseEvent<HTMLButtonElement> | null,
+    event: MouseEvent<HTMLButtonElement> | null,
     newPage: number,
   ) => void;
   handleChangeRowsPerPage: (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
 }
 
-const TableFooterPagination: React.FC<TableFooterPaginationProps> = ({
+const TableFooterPagination: FC<TableFooterPaginationProps> = ({
   count,
   rowsPerPage,
   page,
