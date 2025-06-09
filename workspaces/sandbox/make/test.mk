@@ -85,7 +85,6 @@ test-in-container: build-sandbox-ui-e2e-tests get-e2e-repo
 	  -e SSO_USERNAME=$(SSO_USERNAME) \
 	  -e SSO_PASSWORD=$(SSO_PASSWORD) \
 	  -e QUAY_NAMESPACE=$(QUAY_NAMESPACE) \
-	  -e HOST_NS=$(HOST_NS) \
 	  -e TMP=/tmp/ \
 	  -e PUSH_SANDBOX_IMAGE=false \
 	  $(UNIT_TEST_IMAGE_NAME)
