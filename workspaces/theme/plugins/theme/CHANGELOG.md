@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.8.3
+
+### Patch Changes
+
+- 142818d: Added `theme.rhdh.general.pageInset` option for easier customizability. Removed broken global header styles.
+
 ## 0.8.2
 
 ### Patch Changes
