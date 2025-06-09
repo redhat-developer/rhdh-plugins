@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 import { useAsyncRetry } from 'react-use';
@@ -30,8 +30,8 @@ export const useTechdocs = ({
   error: Error | undefined;
   loading: boolean;
 } => {
-  const [loadingData, setLoadingData] = React.useState<boolean>(true);
-  const [techdocs, setTechdocs] = React.useState<TechdocsResponse>({
+  const [loadingData, setLoadingData] = useState<boolean>(true);
+  const [techdocs, setTechdocs] = useState<TechdocsResponse>({
     data: [],
   });
 
@@ -39,7 +39,7 @@ export const useTechdocs = ({
 
   const api = useApi(adoptionInsightsApiRef);
 
-  const getTechdocs = React.useCallback(async () => {
+  const getTechdocs = useCallback(async () => {
     return await api
       .getTechdocs({
         type: 'top_techdocs',
@@ -56,7 +56,7 @@ export const useTechdocs = ({
     return await getTechdocs();
   }, [getTechdocs]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     if (!loading && mounted) {
       setLoadingData(false);
