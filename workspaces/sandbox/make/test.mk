@@ -72,7 +72,7 @@ CURRENT_RHDH_PLUGINS_DIR := $(shell realpath ${PWD}/../..)
 PHONY: test-in-container
 test-in-container: build-sandbox-ui-e2e-tests get-e2e-repo
 	@echo "pushing Developer Sandbox UI image..."
-	$(MAKE) -C ${E2E_REPO_PATH} push-sandbox-plugin
+	$(MAKE) -C ${E2E_REPO_PATH} push-sandbox-plugin RHDH_PLUGINS_DIR=$(CURRENT_RHDH_PLUGINS_DIR)
 	@echo "running the e2e tests in podman container..."
 	@echo CURRENT_RHDH_PLUGINS_DIR $(CURRENT_RHDH_PLUGINS_DIR)
 	podman run --arch amd64 --os linux --rm \
