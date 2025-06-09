@@ -739,9 +739,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               },
             },
             "& > [class*='MuiLinearProgress-root'], & > main": {
-              // Clip path also clips the scrollbar properly in Chrome compared to
-              // border-radius
-              clipPath: `rect(0 100% 100% 0 round ${general.pageInset})`,
+              // clip-path clips the scrollbar properly in Chrome compared to
+              // border-radius. 1rem is the hardcoded border-radius of the page content.
+              clipPath: 'rect(0 100% 100% 0 round 1rem)',
               // Emulate the PatternFly 6 page inset using a margin
               margin: general.pageInset,
               // Prevent overflow in the main container due to the margin
