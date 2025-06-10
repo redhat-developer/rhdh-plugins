@@ -162,7 +162,8 @@ describe('SandboxCatalogCard', () => {
 
     expect(mockSignupUser).toHaveBeenCalled(); // check it signs up the user
     expect(mockRefetchUserData).toHaveBeenCalled();
-    expect(mockHandleAAPInstance).toHaveBeenCalled(); // check it calls the aap specific functionality
+    expect(mockHandleAAPInstance).toHaveBeenCalledWith('bob-2-dev'); // check it calls the aap specific functionality
     expect(mockShowGreenCorner).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /Stop/i })).toBeInTheDocument();
   });
 });

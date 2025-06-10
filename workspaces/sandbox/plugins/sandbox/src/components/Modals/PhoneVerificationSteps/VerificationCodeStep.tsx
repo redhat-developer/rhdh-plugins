@@ -49,6 +49,7 @@ type VerificationCodeProps = {
   handleEditPhoneNumber: () => void;
   handleClose: () => void;
   setAnsibleCredsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setRefetchingUserData: React.Dispatch<React.SetStateAction<boolean>>;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   loading?: boolean;
 };
@@ -61,6 +62,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
   phoneNumber,
   handleEditPhoneNumber,
   setAnsibleCredsModalOpen,
+  setRefetchingUserData,
   handleClose,
   loading,
   setLoading,
@@ -68,8 +70,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
   const theme = useTheme();
 
   const inputRefs = useRef<any>([]);
-  const { refetchUserData, handleAAPInstance, refetchAAP } =
-    useSandboxContext();
+  const { refetchUserData, handleAAPInstance } = useSandboxContext();
   const [verificationCodeError, setVerificationCodeError] = React.useState<
     string | undefined
   >();
@@ -155,6 +156,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
       let userFound = false;
       let userReady = false;
       for (let i = 0; i < maxAttempts; i++) {
+        setRefetchingUserData(true);
         await new Promise(resolve => setTimeout(resolve, retryInterval));
 
         // Fetch the latest user data and check if user is found
@@ -168,22 +170,32 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
             const productURLs = productsURLMapping(userData);
             // find the link to open if any
             urlToOpen = productURLs.find(pu => pu.id === id)?.url || '';
+            // User has signed up and the trial is ready and user selects the AAP Trial
+            if (userFound && userReady) {
+              if (pdt === Product.AAP) {
+                if (!userData?.defaultUserNamespace) {
+                  // eslint-disable-next-line
+                  console.error(
+                    'unable to provision AAP. user namespace is not defined.',
+                  );
+                  return;
+                }
+                handleAAPInstance(userData.defaultUserNamespace);
+                setAnsibleCredsModalOpen(true);
+              } else if (urlToOpen) {
+                window.open(urlToOpen, '_blank');
+              }
+            }
             break;
           }
         }
       }
-      // User has signed up and the trial is ready and user selects the AAP Trial
-      if (userFound && userReady && pdt === Product.AAP) {
-        handleAAPInstance();
-        refetchAAP();
-        setAnsibleCredsModalOpen(true);
-      } else if (userFound && userReady && urlToOpen) {
-        window.open(urlToOpen, '_blank');
-      }
+      handleClose();
     } catch (error) {
       setVerificationCodeError(errorMessage(error));
     } finally {
       setLoading(false);
+      setRefetchingUserData(false);
     }
   };
 

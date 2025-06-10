@@ -57,6 +57,7 @@ describe('VerificationCodeStep', () => {
   const mockSetLoading = jest.fn();
   const mockSetAnsibleCredsModalOpen = jest.fn();
   const mockRefetchUserData = jest.fn();
+  const mockSetRefetchingUserData = jest.fn();
   const mockHandleAAPInstance = jest.fn();
   const mockRefetchAAP = jest.fn();
   const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
@@ -104,6 +105,7 @@ describe('VerificationCodeStep', () => {
     handleClose: mockHandleClose,
     setLoading: mockSetLoading,
     setAnsibleCredsModalOpen: mockSetAnsibleCredsModalOpen,
+    setRefetchingUserData: mockSetRefetchingUserData,
     loading: false,
     country: mockCountry,
   };
@@ -166,7 +168,8 @@ describe('VerificationCodeStep', () => {
     }
 
     expect(mockRefetchUserData).toHaveBeenCalled();
-    expect(mockHandleAAPInstance).toHaveBeenCalled(); // check it calls the aap specific functionality
+    expect(mockHandleAAPInstance).toHaveBeenCalledWith('bob-2-dev'); // check it calls the aap specific functionality
+    expect(mockHandleClose).toHaveBeenCalled(); // it closes the modal after
   });
 
   test('closes the modal when the close button is clicked', () => {

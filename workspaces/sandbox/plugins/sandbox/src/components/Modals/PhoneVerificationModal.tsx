@@ -31,6 +31,7 @@ type PhoneVerificationModalProps = {
   modalOpen: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setAnsibleCredsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setRefetchingUserData: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
@@ -38,6 +39,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   modalOpen,
   setOpen,
   setAnsibleCredsModalOpen,
+  setRefetchingUserData,
 }) => {
   const registerApi = useApi(registerApiRef);
   const [enterOTP, setEnterOTP] = useState<boolean>(false);
@@ -108,6 +110,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
           phoneNumber={phoneNumber}
           handleEditPhoneNumber={handleEditPhoneNumber}
           setAnsibleCredsModalOpen={setAnsibleCredsModalOpen}
+          setRefetchingUserData={setRefetchingUserData}
           handleClose={handleClose}
           loading={loading}
           setLoading={setLoading}
