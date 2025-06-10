@@ -28,16 +28,9 @@ jest.useFakeTimers(); // control timers
 jest.mock('../../../hooks/useGreenCorners');
 jest.mock('../../../hooks/useSandboxContext');
 
-const mockCreateAAP = jest.fn();
-const configMock = {
-  createAAP: mockCreateAAP,
-};
-
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
-  useApi: jest.fn(() => {
-    return configMock;
-  }),
+  useApi: jest.fn(() => {}),
 }));
 
 describe('SandboxCatalogCard', () => {
@@ -51,7 +44,7 @@ describe('SandboxCatalogCard', () => {
     typeof useSandboxContext
   >;
   const mockSignupUser = jest.fn();
-  const mockRefetchAAP = jest.fn();
+  const mockHandleAAPInstance = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -83,7 +76,8 @@ describe('SandboxCatalogCard', () => {
       verificationRequired: false,
       userData: undefined,
       signupUser: mockSignupUser,
-      refetchAAP: mockRefetchAAP,
+      refetchAAP: jest.fn(),
+      handleAAPInstance: mockHandleAAPInstance,
       ansibleData: undefined,
       ansibleUIUser: undefined,
     } as any);
@@ -168,8 +162,8 @@ describe('SandboxCatalogCard', () => {
 
     expect(mockSignupUser).toHaveBeenCalled(); // check it signs up the user
     expect(mockRefetchUserData).toHaveBeenCalled();
-    expect(mockRefetchAAP).toHaveBeenCalled(); // check it calls the aap specific functionality
-    expect(mockCreateAAP).toHaveBeenCalledWith('bob-2-dev'); // check it creates the app instance in the user namespace
+    expect(mockHandleAAPInstance).toHaveBeenCalledWith('bob-2-dev'); // check it calls the aap specific functionality
     expect(mockShowGreenCorner).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /Stop/i })).toBeInTheDocument();
   });
 });

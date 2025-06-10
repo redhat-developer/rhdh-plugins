@@ -17,6 +17,8 @@ RHDH_LOCAL_DIR := "$(TMPDIR)rhdh-local"
 clone-rhdh-local:
 	rm -rf ${RHDH_LOCAL_DIR}; \
 	git clone https://github.com/redhat-developer/rhdh-local $(RHDH_LOCAL_DIR) && \
+	cd $(RHDH_LOCAL_DIR) && \
+	git checkout 37be302480b1458c3dfd3270c25726d65f0ffe75 && \
 	echo "cloned to $(RHDH_LOCAL_DIR)"
 
 
@@ -35,12 +37,11 @@ generate-env:
 start-rhdh-local: clone-rhdh-local generate-env
 	rm -rf plugins/sandbox/dist-dynamic
 	rm -rf red-hat-developer-hub-backstage-plugin-sandbox
-	podman run -it --rm -w /home -v $(PWD):/home node:20.19.2 bash -c "yarn install && npx --yes @janus-idp/cli@3.3.1 package package-dynamic-plugins --export-to .  && exit"
+	podman run -it --rm -w /home -v $(PWD):/home node:20 bash -c "yarn install && npx --yes @janus-idp/cli@latest package package-dynamic-plugins --export-to .  && exit"
 	cp -r red-hat-developer-hub-backstage-plugin-sandbox $(RHDH_LOCAL_DIR)/local-plugins/
 	cp deploy/base/app-config.yaml $(RHDH_LOCAL_DIR)/configs/app-config/app-config.yaml
 	cp deploy/base/dynamic-plugins.yaml $(RHDH_LOCAL_DIR)/configs/dynamic-plugins/dynamic-plugins.override.yaml
 	cd $(RHDH_LOCAL_DIR) && \
-	yq e 'del(.services.rhdh.volumes[] | select(. == "./configs:/opt/app-root/src/configs:Z"))' -i compose.yaml && \
 	yq e '.services.rhdh.ports = ["3000:3000"] | (.services.rhdh.ports) |= map(. style="double")' -i compose.yaml && \
 	podman-compose up -d  && \
 	echo "UI is up and running at: http://localhost:3000"
