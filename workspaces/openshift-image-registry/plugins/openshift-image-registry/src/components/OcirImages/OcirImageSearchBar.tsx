@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import useDebounce from 'react-use/lib/useDebounce';
 
 import {
@@ -40,9 +41,7 @@ const useStyles = makeStyles(_theme => ({
 
 type OcirImageSearchBarProps = {
   imageStreams: ImageStreamMetadata[];
-  setImageStreams: React.Dispatch<
-    React.SetStateAction<ImageStreamMetadata[] | undefined>
-  >;
+  setImageStreams: Dispatch<SetStateAction<ImageStreamMetadata[] | undefined>>;
 };
 
 export const OcirImageSearchBar = ({
@@ -51,7 +50,7 @@ export const OcirImageSearchBar = ({
 }: OcirImageSearchBarProps) => {
   const classes = useStyles();
 
-  const [search, setSearch] = React.useState<string>('');
+  const [search, setSearch] = useState<string>('');
 
   const searchByName = () => {
     const filteredImageStreams = imageStreams

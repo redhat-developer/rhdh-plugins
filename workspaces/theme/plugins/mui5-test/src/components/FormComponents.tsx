@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { InfoCard } from '@backstage/core-components';
 import Button, { ButtonProps } from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';

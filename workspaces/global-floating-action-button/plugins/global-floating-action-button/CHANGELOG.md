@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.2.0
+
+### Minor Changes
+
+- 1b21b0c: Bump to backstage version 1.39.1
+
 ## 1.1.6
 
 ### Patch Changes

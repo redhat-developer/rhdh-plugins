@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo } from 'react';
 import { AppTheme } from '@backstage/core-plugin-api';
 import { themes } from '@backstage/theme';
 
@@ -96,7 +96,7 @@ export const getAllThemes = (): AppTheme[] => {
 };
 
 export const useAllThemes = (): AppTheme[] => {
-  return React.useMemo(() => getAllThemes(), []);
+  return useMemo(() => getAllThemes(), []);
 };
 
 export const getThemes = (): AppTheme[] => {
@@ -119,11 +119,11 @@ export const getThemes = (): AppTheme[] => {
 };
 
 export const useThemes = (): AppTheme[] => {
-  return React.useMemo(() => getThemes(), []);
+  return useMemo(() => getThemes(), []);
 };
 
 export const useLoaderTheme = () => {
-  return React.useMemo(() => {
+  return useMemo(() => {
     const latestTheme = localStorage.getItem('theme');
     const mode = latestTheme?.includes('dark') ? 'dark' : 'light';
     const variant = latestTheme?.includes('backstage') ? 'backstage' : 'rhdh';

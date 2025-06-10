@@ -41,6 +41,7 @@ export type Components = UnifiedThemeOptions['components'] & {
   BackstageTableToolbar?: Component;
   CatalogReactUserListPicker?: Component;
   PrivateTabIndicator?: Component;
+  RHDHPageWithoutFixHeight?: Component;
 };
 
 export const createComponents = (themeConfig: ThemeConfig): Components => {
@@ -95,9 +96,15 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   if (options.buttons !== 'mui') {
     components.MuiTypography = {
       styleOverrides: {
-        button: {
-          textTransform: 'none',
+        root: {
+          fontFamily: redHatFonts.text,
           fontWeight: 'normal',
+          letterSpacing: '0.01em',
+          // This is required to override the default MUI styles
+          // that set the `font-weight` to `500` for the `h1` element.
+          '&.MuiTypography-h1': {
+            fontWeight: 'normal',
+          },
         },
       },
     };
@@ -626,6 +633,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           borderRadius: '6px',
           width: 'calc(100% - 0.5rem) !important',
           marginLeft: '0.5rem !important',
+          textDecorationLine: 'none',
+          '&:hover, &:focus-visible': {
+            backgroundColor: general.sidebarItemSelectedBackgroundColor,
+          },
         },
         label: {
           '&[class*="MuiTypography-subtitle2"]': {
@@ -683,30 +694,58 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   }
 
   if (options.pages !== 'mui') {
+    components.RHDHPageWithoutFixHeight = {
+      styleOverrides: {
+        root: {
+          // Cancel out the spacing produced by the page inset border when
+          // the global header is present in the above-sidebar position.
+          '@media (min-width: 600px)': {
+            '#above-sidebar-header-container:has(*) ~ [class*="sidebarLayout"]':
+              {
+                "& [class*='BackstagePage-root'], & [class*='MuiLinearProgress-root']":
+                  {
+                    marginTop: '0 !important',
+                  },
+              },
+          },
+        },
+        sidebarLayout: {
+          // Cancel out the spacing produced by the page inset border when
+          // the global header is present in the above-main-content position.
+          '@media (min-width: 600px)': {
+            '#above-main-content-header-container:has(*)': {
+              "& ~ [class*='BackstagePage-root'], & ~ [class*='MuiLinearProgress-root']":
+                {
+                  marginTop: '0 !important',
+                },
+            },
+          },
+        },
+      },
+    };
     components.BackstageSidebarPage = {
       styleOverrides: {
         root: {
           // Controls the page inset as in PF6 -- only in desktop view
           '@media (min-width: 600px)': {
-            // The size of the page inset border
-            '--rhdh-v1-page-inset': '1.5rem',
             backgroundColor: general.sidebarBackgroundColor,
-            // Cancel out the spacing produced by the page inset border when
-            // the global header is present
-            "& #global-header ~ main, & #global-header ~ [class*='MuiLinearProgress-root'], & #above-main-content-header-container ~ main, & #above-main-content-header-container ~ [class*='MuiLinearProgress-root']":
-              {
-                marginTop: 'calc(-1 * var(--rhdh-v1-page-inset))',
-              },
+            // Prevents the main content from scrolling weird
+            overflowY: 'auto',
             // Cancel out the spacing produced by the page inset border when
             // the sidebar is present
-            "& nav ~ main, & nav ~ [class*='MuiLinearProgress-root']": {
-              marginLeft: 'calc(-1 * var(--rhdh-v1-page-inset))',
+            '& nav': {
+              "& ~ main, & ~ [class*='MuiLinearProgress-root']": {
+                marginLeft: '0 !important',
+              },
             },
-            // The border + border radius emulates the PF6 page inset look without
-            // needing to change the markup
             "& > [class*='MuiLinearProgress-root'], & > main": {
-              borderRadius: 'calc(1rem + var(--rhdh-v1-page-inset))',
-              border: `var(--rhdh-v1-page-inset) solid ${general.sidebarBackgroundColor}`,
+              // clip-path clips the scrollbar properly in Chrome compared to
+              // border-radius. 1rem is the hardcoded border-radius of the page content.
+              clipPath: 'rect(0 100% 100% 0 round 1rem)',
+              // Emulate the PatternFly 6 page inset using a margin
+              margin: general.pageInset,
+              // Prevent overflow in the main container due to the margin
+              maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
             },
             // The Backstage suspense is an MUI LinearProgress that is not wrapped by
             // a `main`. We need to give it 100vh height to fill the page for the page

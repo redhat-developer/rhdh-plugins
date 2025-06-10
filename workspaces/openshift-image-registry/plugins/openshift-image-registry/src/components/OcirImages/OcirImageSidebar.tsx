@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { CopyTextButton, MarkdownContent } from '@backstage/core-components';
 
 import {

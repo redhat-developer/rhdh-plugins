@@ -16,18 +16,16 @@
 
 import React from 'react';
 import { useAsync } from 'react-use';
-import useObservable from 'react-use/esm/useObservable';
 
 import {
   CodeSnippet,
   Progress,
   ResponseErrorPanel,
 } from '@backstage/core-components';
-import { appThemeApiRef, useApi } from '@backstage/core-plugin-api';
+import { useApi } from '@backstage/core-plugin-api';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { useTheme } from '@mui/material/styles';
 
 import { InputSchemaResponseDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -44,13 +42,6 @@ const InputSchemaDialogContent = ({
   loading: boolean;
   error: Error | undefined;
 }) => {
-  const appThemeApi = useApi(appThemeApiRef);
-  const activeThemeId = useObservable(
-    appThemeApi.activeThemeId$(),
-    appThemeApi.getActiveThemeId(),
-  );
-  const theme = useTheme();
-
   if (loading) return <Progress />;
   if (error)
     return (
@@ -70,14 +61,6 @@ const InputSchemaDialogContent = ({
           showLineNumbers
           showCopyCodeButton
           customStyle={{
-            color:
-              activeThemeId === 'dark'
-                ? theme.palette.grey[100]
-                : theme.palette.grey[800],
-            backgroundColor:
-              activeThemeId === 'dark'
-                ? theme.palette.grey[900]
-                : theme.palette.grey[100],
             padding: '25px 0',
           }}
         />

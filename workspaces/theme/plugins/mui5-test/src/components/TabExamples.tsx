@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { SyntheticEvent } from 'react';
+
+import { useState } from 'react';
 import Tabs, { TabsProps } from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -27,8 +29,8 @@ export const TabExamples = () => {
     'secondary',
   ];
 
-  const [selectedTab, setSelectedTab] = React.useState(0);
-  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
+  const [selectedTab, setSelectedTab] = useState(0);
+  const handleChange = (_event: SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
   };
 
