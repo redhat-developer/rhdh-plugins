@@ -9580,7 +9580,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/private-theming@npm:^5.16.14, @mui/private-theming@npm:^5.17.1":
+"@mui/private-theming@npm:^5.17.1":
   version: 5.17.1
   resolution: "@mui/private-theming@npm:5.17.1"
   dependencies:
@@ -9632,37 +9632,6 @@ __metadata:
     "@emotion/styled":
       optional: true
   checksum: 5868683e6dd4004b34a0ce9de8842c180f7b7618c0b8cff904771659ef2da3aae574ea10b0c5ad6ffe59db396f699773ebb99f3f9d831d8b5adc398ecc618195
-  languageName: node
-  linkType: hard
-
-"@mui/styles@npm:5.16.14":
-  version: 5.16.14
-  resolution: "@mui/styles@npm:5.16.14"
-  dependencies:
-    "@babel/runtime": ^7.23.9
-    "@emotion/hash": ^0.9.1
-    "@mui/private-theming": ^5.16.14
-    "@mui/types": ^7.2.15
-    "@mui/utils": ^5.16.14
-    clsx: ^2.1.0
-    csstype: ^3.1.3
-    hoist-non-react-statics: ^3.3.2
-    jss: ^10.10.0
-    jss-plugin-camel-case: ^10.10.0
-    jss-plugin-default-unit: ^10.10.0
-    jss-plugin-global: ^10.10.0
-    jss-plugin-nested: ^10.10.0
-    jss-plugin-props-sort: ^10.10.0
-    jss-plugin-rule-value-function: ^10.10.0
-    jss-plugin-vendor-prefixer: ^10.10.0
-    prop-types: ^15.8.1
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 1d579e005f26a76e39feeda8634cbf41d041dcfe85ca6cfa19180ca1e6477bc909966a4738a6a875bd9d18b4157272d60869bbf94546c4813db551df19c0e6aa
   languageName: node
   linkType: hard
 
@@ -9756,7 +9725,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/types@npm:^7.2.15, @mui/types@npm:^7.2.19":
+"@mui/types@npm:^7.2.19":
   version: 7.4.3
   resolution: "@mui/types@npm:7.4.3"
   dependencies:
@@ -9782,7 +9751,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/utils@npm:^5.14.15, @mui/utils@npm:^5.16.14, @mui/utils@npm:^5.17.1":
+"@mui/utils@npm:^5.14.15, @mui/utils@npm:^5.17.1":
   version: 5.17.1
   resolution: "@mui/utils@npm:5.17.1"
   dependencies:
@@ -11579,7 +11548,7 @@ __metadata:
     "@janus-idp/cli": 3.6.1
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.17.1
-    "@mui/styles": 5.16.14
+    "@mui/styles": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^"
     "@rjsf/material-ui": ^5.21.2
     "@rjsf/utils": ^5.21.2

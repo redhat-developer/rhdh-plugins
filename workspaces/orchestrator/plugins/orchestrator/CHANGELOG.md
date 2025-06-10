@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 3.0.4
+
+### Patch Changes
+
+- c02b521: match package versions with RHDH
+- e5af42b: Use Code Snippet default colors in input schema dialog
+- 1cf9f22: Use CodeSnippet default colors
+
 ## 3.0.3
 
 ### Patch Changes

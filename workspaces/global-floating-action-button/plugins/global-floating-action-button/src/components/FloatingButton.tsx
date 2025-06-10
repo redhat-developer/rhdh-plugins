@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 
@@ -44,14 +44,12 @@ export const FloatingButton = ({
   floatingButtons: FloatingActionButton[];
   slot: Slot;
 }) => {
-  const timeoutRef = React.useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout>();
   const { pathname } = useLocation();
   const fabButton = useStyles();
-  const [targetElement, setTargetElement] = React.useState<Element | null>(
-    null,
-  );
+  const [targetElement, setTargetElement] = useState<Element | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const checkTargetElement = () => {
       const element =
         document.querySelector('[class^="BackstagePage-root"]') ??
@@ -68,7 +66,7 @@ export const FloatingButton = ({
     };
   }, [pathname, targetElement]);
 
-  const fabs = React.useMemo(
+  const fabs = useMemo(
     () => filterAndSortButtons(floatingButtons, pathname),
     [floatingButtons, pathname],
   );

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import { useRef, useState, useEffect } from 'react';
 import classnames from 'classnames';
 
 import { useLocation } from 'react-router-dom';
@@ -60,13 +60,13 @@ export const FABWithSubmenu = ({
   slot: Slot;
   className?: string;
 }) => {
-  const containerRef = React.useRef<HTMLElement>(null);
+  const containerRef = useRef<HTMLElement>(null);
   const styles = useStyles();
   const fab = useStyles();
   const { pathname } = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       setIsMenuOpen(false);
     };

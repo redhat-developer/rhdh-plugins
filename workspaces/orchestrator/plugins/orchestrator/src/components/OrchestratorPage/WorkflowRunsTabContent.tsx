@@ -47,7 +47,7 @@ import usePolling from '../../hooks/usePolling';
 import { workflowInstanceRouteRef, workflowRouteRef } from '../../routes';
 import { Selector } from '../Selector';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
-import { mapProcessInstanceToDetails } from '../WorkflowInstancePageContent';
+import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
 import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
 import { WorkflowRunDetail } from '../WorkflowRunDetail';
 

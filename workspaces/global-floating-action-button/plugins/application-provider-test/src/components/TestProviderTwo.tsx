@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { PropsWithChildren } from 'react';
+
+import { createContext, useState, useCallback, useMemo } from 'react';
 
 import { CountContextValue } from '../types';
 
-export const TestContextTwo = React.createContext<CountContextValue>(
+export const TestContextTwo = createContext<CountContextValue>(
   {} as CountContextValue,
 );
 
-export const TestProviderTwo = ({ children }: React.PropsWithChildren<{}>) => {
-  const [count, setCount] = React.useState(0);
-  const increment = React.useCallback(() => setCount(c => c + 1), []);
-  const decrement = React.useCallback(() => setCount(c => c - 1), []);
-  const value = React.useMemo<CountContextValue>(
+export const TestProviderTwo = ({ children }: PropsWithChildren<{}>) => {
+  const [count, setCount] = useState(0);
+  const increment = useCallback(() => setCount(c => c + 1), []);
+  const decrement = useCallback(() => setCount(c => c - 1), []);
+  const value = useMemo<CountContextValue>(
     () => ({
       count,
       increment,

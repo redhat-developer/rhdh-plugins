@@ -27,9 +27,9 @@ import Typography from '@mui/material/Typography';
 
 import { ProcessInstanceStatusDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { VALUE_UNAVAILABLE } from '../constants';
-import { useWorkflowInstanceStateColors } from '../hooks/useWorkflowInstanceStatusColors';
-import { Paragraph } from './Paragraph';
+import { VALUE_UNAVAILABLE } from '../../constants';
+import { useWorkflowInstanceStateColors } from '../../hooks/useWorkflowInstanceStatusColors';
+import { Paragraph } from '../Paragraph';
 import { WorkflowProgressNodeModel } from './WorkflowProgressNodeModel';
 
 const WorkflowProgressNodeIcon: React.FC<{

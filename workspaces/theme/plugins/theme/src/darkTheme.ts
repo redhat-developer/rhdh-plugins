@@ -48,6 +48,8 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
   },
   rhdh: {
     general: {
+      pageInset: '1.5rem',
+
       disabled: '#AAABAC',
       disabledBackground: '#444548',
 
@@ -77,6 +79,8 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
       tabsLinkHoverBackgroundColor: 'rgba(199, 199, 199, 0.1500)',
 
       contrastText: '#FFF',
+
+      appBarBackgroundScheme: 'dark',
 
       appBarBackgroundColor: '#151515',
       appBarForegroundColor: '#ffffff',

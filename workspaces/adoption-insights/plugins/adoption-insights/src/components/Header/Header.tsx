@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import type { FC, HTMLProps, MouseEvent } from 'react';
 
 import { Header } from '@backstage/core-components';
 import MenuItem from '@mui/material/MenuItem';
@@ -30,17 +31,16 @@ import { DATE_RANGE_OPTIONS } from '../../utils/constants';
 import { format, subDays } from 'date-fns';
 import { getDateRange } from '../../utils/utils';
 
-interface InsightsHeaderProps extends React.HTMLProps<HTMLDivElement> {
+interface InsightsHeaderProps extends HTMLProps<HTMLDivElement> {
   title: string;
 }
 
-const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
-  const [selectedOption, setSelectedOption] =
-    React.useState<string>('last-28-days');
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [startDate, setStartDate] = React.useState<Date | null>(null);
-  const [endDate, setEndDate] = React.useState<Date | null>(null);
-  const [menuOpen, setMenuOpen] = React.useState(false);
+const InsightsHeader: FC<InsightsHeaderProps> = ({ title }) => {
+  const [selectedOption, setSelectedOption] = useState<string>('last-28-days');
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const {
     startDateRange,
@@ -50,13 +50,13 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
     setIsDefaultDateRange,
   } = useDateRange();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const today = new Date();
     setStartDateRange(subDays(today, 27));
     setEndDateRange(today);
   }, [setStartDateRange, setEndDateRange]);
 
-  const handleChange = React.useCallback(
+  const handleChange = useCallback(
     (event: SelectChangeEvent<string>) => {
       const value = event.target.value;
       if (!value) return;
@@ -76,15 +76,15 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
     [setStartDateRange, setEndDateRange, setIsDefaultDateRange],
   );
 
-  const handleDateRangeClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleDateRangeClick = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = React.useCallback(() => {
+  const handleClose = useCallback(() => {
     setAnchorEl(null);
   }, []);
 
-  const handleDateRange = React.useCallback(() => {
+  const handleDateRange = useCallback(() => {
     if (startDate && endDate) {
       setStartDateRange(startDate);
       setEndDateRange(endDate);
@@ -102,7 +102,7 @@ const InsightsHeader: React.FC<InsightsHeaderProps> = ({ title }) => {
     setIsDefaultDateRange,
   ]);
 
-  const getLabel = React.useMemo(() => {
+  const getLabel = useMemo(() => {
     return (value: string) => {
       if (value === 'dateRange' && startDateRange && endDateRange)
         return `${format(startDateRange, 'PP')} - ${format(
