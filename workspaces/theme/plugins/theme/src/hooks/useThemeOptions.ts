@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo } from 'react';
 import { type UnifiedThemeOptions } from '@backstage/theme';
 import type { ThemeConfig } from '../types';
 import * as backstage from '../backstage';
@@ -28,7 +28,7 @@ import { createComponents } from '../utils/createComponents';
 export const useThemeOptions = (
   themeConfig: ThemeConfig,
 ): UnifiedThemeOptions => {
-  const theme = React.useMemo<UnifiedThemeOptions>(() => {
+  const theme = useMemo<UnifiedThemeOptions>(() => {
     const mode = themeConfig.mode ?? 'light';
     const variant = themeConfig.variant ?? 'rhdh';
 

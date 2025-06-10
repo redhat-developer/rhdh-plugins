@@ -6,8 +6,8 @@
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { default as DarkIcon } from '@material-ui/icons/Brightness2';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { default as LightIcon } from '@material-ui/icons/WbSunny';
-import { default as React_2 } from 'react';
 import { ReactNode } from 'react';
 
 export { DarkIcon }
@@ -15,14 +15,14 @@ export { DarkIcon }
 // @public (undocumented)
 export const darkThemeProvider: ({ children }: {
     children: ReactNode;
-}) => React_2.JSX.Element;
+}) => JSX_2.Element;
 
 export { LightIcon }
 
 // @public (undocumented)
 export const lightThemeProvider: ({ children }: {
     children: ReactNode;
-}) => React_2.JSX.Element;
+}) => JSX_2.Element;
 
 // @public (undocumented)
 const qeThemePlugin: BackstagePlugin<    {}, {}, {}>;
