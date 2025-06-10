@@ -21,6 +21,7 @@ import {
   defaultConversation,
   conversations,
   contents,
+  demoChatContent,
   generateQueryResponse,
   botResponse,
   moreConversations,
@@ -28,7 +29,7 @@ import {
 import { openLightspeed, sendMessage } from './utils/testHelper';
 import {
   uploadFile,
-  validateSuccessfulUpload,
+  uploadAndAssertDuplicate,
   validateFailedUpload,
   supportedFileTypes,
 } from './utils/fileUpload';
@@ -37,6 +38,7 @@ import {
   closeChatDrawer,
   openChatDrawer,
   assertDrawerState,
+  verifySidePanelConversation,
 } from './utils/sidebar';
 
 const botQuery = 'Please respond';
@@ -137,7 +139,7 @@ test.describe('File Attachment Validation', () => {
       await uploadFile(page, path);
 
       if (supportedFileTypes.includes(fileExtension)) {
-        await validateSuccessfulUpload(page, name);
+        await uploadAndAssertDuplicate(page, path, name);
       } else {
         await validateFailedUpload(page);
       }
@@ -175,15 +177,41 @@ test.describe('Conversation', () => {
 
   test('Conversation is created and shown in side panel', async ({ page }) => {
     await sendMessage('test', page);
+    await verifySidePanelConversation(page);
+  });
 
-    const sidePanel = page.locator('.pf-v6-c-drawer__panel');
-    await expect(sidePanel).toBeVisible();
+  test('Verify scroll controls in Conversation', async ({ page }) => {
+    await page.route(`${modelBaseUrl}/conversations/user*`, async route => {
+      const json = { chat_history: demoChatContent };
+      await route.fulfill({ json });
+    });
 
-    const newButton = sidePanel.getByRole('button', { name: 'new chat' });
-    await expect(newButton).toBeEnabled();
+    await openLightspeed(page);
 
-    const conversation = sidePanel.locator('li.pf-chatbot__menu-item--active');
-    await expect(conversation).toBeVisible();
+    const message = demoChatContent[0].content;
+    await sendMessage(message, page);
+
+    const loadingIndicator = page.locator('div.pf-chatbot__message-loading');
+    await loadingIndicator.waitFor({ state: 'visible' });
+    await verifySidePanelConversation(page);
+
+    const jumpTopButton = page.getByRole('button', { name: 'Jump top' });
+    const jumpBottomButton = page.getByRole('button', { name: 'Jump bottom' });
+
+    await expect(jumpTopButton).toBeVisible();
+    await jumpTopButton.click();
+    await page.waitForTimeout(500);
+    await expect(
+      page.locator('span').filter({ hasText: message }),
+    ).toBeVisible();
+
+    await expect(jumpBottomButton).toBeVisible();
+    await jumpBottomButton.click();
+
+    const responseMessage = page
+      .locator('div.pf-chatbot__message-response')
+      .last();
+    await expect(responseMessage).toHaveText(/OpenShift deployment/);
   });
 
   test('Filter and switch conversations', async ({ page }) => {

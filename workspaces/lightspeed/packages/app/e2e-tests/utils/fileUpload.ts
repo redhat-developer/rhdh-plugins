@@ -36,6 +36,19 @@ export async function uploadFile(page: Page, filePath: string) {
   await fileChooser.setFiles(filePath);
 }
 
+export async function uploadAndAssertDuplicate(
+  page: Page,
+  filePath: string,
+  fileName: string,
+) {
+  await validateSuccessfulUpload(page, fileName);
+  await uploadFile(page, filePath);
+  await expect(
+    page.getByRole('heading', { name: 'File upload failed' }),
+  ).toBeVisible();
+  await expect(page.getByText('File already exists.')).toBeVisible();
+}
+
 export async function validateSuccessfulUpload(page: Page, fileName: string) {
   const trimmerFilename = fileName.split('.')[0];
 
@@ -65,9 +78,6 @@ export async function validateSuccessfulUpload(page: Page, fileName: string) {
     .getByRole('contentinfo')
     .getByRole('button', { name: 'Close' })
     .click();
-  await page
-    .getByRole('button', { name: `Close ${trimmerFilename}` })
-    .click({ force: true });
 }
 
 export async function validateFailedUpload(page: Page) {
