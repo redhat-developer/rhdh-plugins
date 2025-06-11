@@ -49,7 +49,9 @@ export const productsURLMapping = (userData: SignupData | undefined) => {
   return [
     {
       id: Product.OPENSHIFT_CONSOLE,
-      url: isProvisioned ? userData?.consoleURL || '' : '',
+      url: isProvisioned
+        ? `${userData?.consoleURL}/add/ns/${userData?.defaultUserNamespace}`
+        : '',
     },
     {
       id: Product.OPENSHIFT_AI,
