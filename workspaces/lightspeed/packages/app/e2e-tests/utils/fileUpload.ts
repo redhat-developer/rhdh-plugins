@@ -79,3 +79,17 @@ export async function validateSuccessfulUpload(page: Page, fileName: string) {
     .locator('role=button[name="Close"]')
     .click();
 }
+
+export async function validateFailedUpload(page: Page) {
+  const alertHeader = page.getByText('File upload failed');
+  const alertText = page.getByText(
+    'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+  );
+
+  await expect(alertHeader).toBeVisible();
+  await expect(alertText).toBeVisible();
+
+  await page.getByRole('button', { name: 'Close Danger alert' }).click();
+  await expect(alertHeader).toBeHidden();
+  await expect(alertText).toBeHidden();
+}

@@ -15,6 +15,7 @@
  */
 
 import React from 'react';
+import { FileRejection } from 'react-dropzone/.';
 
 import { ErrorPanel } from '@backstage/core-components';
 
@@ -137,6 +138,7 @@ export const LightspeedChat = ({
     uploadError,
     showAlert,
     fileContents,
+    setShowAlert,
     setFileContents,
     handleFileUpload,
     setUploadError,
@@ -356,6 +358,18 @@ export const LightspeedChat = ({
     handleFileUpload(data);
   };
 
+  const onAttachRejected = (data: FileRejection[]) => {
+    data.forEach(attachment => {
+      if (!!attachment.errors.find(e => e.code === 'file-invalid-type')) {
+        setShowAlert(true);
+        setUploadError({
+          message:
+            'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+        });
+      }
+    });
+  };
+
   if (error) {
     return (
       <Box padding={1}>
@@ -453,6 +467,7 @@ export const LightspeedChat = ({
                     'application/yaml': ['.yaml', '.yml'],
                     'application/xml': ['.xml'],
                   }}
+                  onAttachRejected={onAttachRejected}
                   placeholder="Send a message and optionally upload a JSON, YAML, TXT, or XML file..."
                 />
                 <ChatbotFootnote {...getFootnoteProps(classes.footerPopover)} />
