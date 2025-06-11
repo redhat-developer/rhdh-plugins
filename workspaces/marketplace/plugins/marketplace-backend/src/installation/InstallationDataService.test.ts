@@ -219,6 +219,27 @@ describe('InstallationDataService', () => {
     });
   });
 
+  describe('addPackageDisabled', () => {
+    beforeEach(() => {
+      installationDataService = InstallationDataService.fromConfig({
+        config: validConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockLogger,
+      });
+    });
+
+    it('should add package with disabled', async () => {
+      installationDataService.addPackageDisabled(
+        mockDynamicPackage11.package,
+        false,
+      );
+
+      expect(
+        mockFileInstallationStorage.addPackageDisabled,
+      ).toHaveBeenCalledWith(mockDynamicPackage11.package, false);
+    });
+  });
+
   describe('setPluginDisabled', () => {
     beforeEach(() => {
       installationDataService = InstallationDataService.fromConfig({
@@ -228,7 +249,7 @@ describe('InstallationDataService', () => {
       });
     });
 
-    it('should set disabled', async () => {
+    it('should set plugin disabled', async () => {
       await installationDataService.setPluginDisabled(plugin, true);
 
       expect(

@@ -265,6 +265,33 @@ export async function createRouter(
     });
   });
 
+  router.post(
+    '/package/:namespace/:name/configuration/disable',
+    requireInitializedInstallationDataService,
+    async (req, res) => {
+      const marketplacePackage = await marketplaceApi.getPackageByName(
+        req.params.namespace,
+        req.params.name,
+      );
+
+      if (!marketplacePackage.spec?.dynamicArtifact) {
+        throw new Error(
+          `Package catalog entity ${marketplacePackage.metadata.name} is missing 'spec.dynamicArtifact'`,
+        );
+      }
+
+      const disabled = req.body.disabled;
+      if (typeof disabled !== 'boolean') {
+        throw new InputError("'disabled' must be present boolean");
+      }
+      installationDataService.addPackageDisabled(
+        marketplacePackage.spec.dynamicArtifact,
+        disabled,
+      );
+      res.status(200).json({ status: 'OK' });
+    },
+  );
+
   router.get('/plugins', async (req, res) => {
     const request = decodeGetEntitiesRequest(createSearchParams(req));
     const plugins = await marketplaceApi.getPlugins(request);
@@ -381,7 +408,7 @@ export async function createRouter(
     },
   );
 
-  router.post(
+  router.patch(
     '/plugin/:namespace/:name/configuration/disable',
     requireInitializedInstallationDataService,
     async (req, res) => {

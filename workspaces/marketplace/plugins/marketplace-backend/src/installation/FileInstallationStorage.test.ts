@@ -24,6 +24,7 @@ import {
   mockPackages,
 } from '../../__fixtures__/mockData';
 import { FileInstallationStorage } from './FileInstallationStorage';
+import { ConflictError } from '@backstage/errors';
 
 describe('FileInstallationStorage', () => {
   const newPackageName = './dynamic-plugins/dist/package3-backend-dynamic';
@@ -352,6 +353,65 @@ describe('FileInstallationStorage', () => {
     });
   });
 
+  describe('addPackageDisabled', () => {
+    afterEach(() => {
+      fs.writeFileSync(
+        resolve(__dirname, '../../__fixtures__/data/validPluginsConfig.yaml'),
+        stringify({
+          plugins: [
+            mockDynamicPackage11,
+            mockDynamicPackage12,
+            mockDynamicPackage21,
+          ],
+        }),
+      );
+    });
+
+    it('should add package with disabled', () => {
+      const configFileName = resolve(
+        __dirname,
+        '../../__fixtures__/data/validPluginsConfig.yaml',
+      );
+      const fileInstallationStorage = new FileInstallationStorage(
+        configFileName,
+      );
+      fileInstallationStorage.initialize();
+
+      fileInstallationStorage.addPackageDisabled(newPackageName, false);
+
+      const updatedCatalogInfoYaml = fs.readFileSync(configFileName, 'utf8');
+      const configYaml = parse(updatedCatalogInfoYaml);
+      expect(configYaml.plugins).toEqual([
+        mockDynamicPackage11,
+        mockDynamicPackage12,
+        mockDynamicPackage21,
+        { package: newPackageName, disabled: false },
+      ]);
+    });
+
+    it('should raise ConflictError for package already in the config', () => {
+      const configFileName = resolve(
+        __dirname,
+        '../../__fixtures__/data/validPluginsConfig.yaml',
+      );
+      const fileInstallationStorage = new FileInstallationStorage(
+        configFileName,
+      );
+      fileInstallationStorage.initialize();
+
+      expect(() => {
+        fileInstallationStorage.addPackageDisabled(
+          mockDynamicPackage11.package,
+          false,
+        );
+      }).toThrow(
+        new ConflictError(
+          `Package '${mockDynamicPackage11.package}' already exists in the configuration`,
+        ),
+      );
+    });
+  });
+
   describe('setPackagesDisabled', () => {
     afterEach(() => {
       fs.writeFileSync(
@@ -366,7 +426,7 @@ describe('FileInstallationStorage', () => {
       );
     });
 
-    it('should set disabled for existing plugin', () => {
+    it('should set disabled for plugin packages that are already in the config', () => {
       const configFileName = resolve(
         __dirname,
         '../../__fixtures__/data/validPluginsConfig.yaml',
@@ -387,7 +447,11 @@ describe('FileInstallationStorage', () => {
       fileInstallationStorage.initialize();
 
       fileInstallationStorage.setPackagesDisabled(
-        new Set([mockDynamicPackage11.package, mockDynamicPackage12.package]),
+        new Set([
+          mockDynamicPackage11.package,
+          mockDynamicPackage12.package,
+          './dynamic-plugins/dist/package13-backend-module-dynamic', // not added
+        ]),
         false,
       );
 
@@ -396,37 +460,6 @@ describe('FileInstallationStorage', () => {
       expect(configYaml.plugins).toEqual([
         ...updatedPlugin,
         mockDynamicPackage21,
-      ]);
-    });
-
-    it('should set disabled for new plugin', () => {
-      const configFileName = resolve(
-        __dirname,
-        '../../__fixtures__/data/validPluginsConfig.yaml',
-      );
-      const newPlugin = [
-        {
-          package: newPackageName,
-          disabled: false,
-        },
-      ];
-      const fileInstallationStorage = new FileInstallationStorage(
-        configFileName,
-      );
-      fileInstallationStorage.initialize();
-
-      fileInstallationStorage.setPackagesDisabled(
-        new Set([newPackageName]),
-        false,
-      );
-
-      const updatedCatalogInfoYaml = fs.readFileSync(configFileName, 'utf8');
-      const configYaml = parse(updatedCatalogInfoYaml);
-      expect(configYaml.plugins).toEqual([
-        mockDynamicPackage11,
-        mockDynamicPackage12,
-        mockDynamicPackage21,
-        newPlugin[0],
       ]);
     });
   });

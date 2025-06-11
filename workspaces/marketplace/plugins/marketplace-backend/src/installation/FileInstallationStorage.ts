@@ -27,6 +27,7 @@ import {
   InstallationInitErrorReason,
 } from '../errors/InstallationInitError';
 import type { JsonValue } from '@backstage/types';
+import { ConflictError } from '@backstage/errors';
 
 export interface InstallationStorage {
   initialize?(): void;
@@ -34,6 +35,7 @@ export interface InstallationStorage {
   updatePackage(packageName: string, newConfig: string): void;
   getPackages(packageNames: Set<string>): string | undefined;
   updatePackages(packageNames: Set<string>, newConfig: string): void;
+  addPackageDisabled(packageName: string, disabled: boolean): void;
   setPackagesDisabled(packageNames: Set<string>, disabled: boolean): void;
 }
 
@@ -46,6 +48,10 @@ export class FileInstallationStorage implements InstallationStorage {
     this.config = new Document();
   }
 
+  private get packages(): YAMLSeq<YAMLMap<string, JsonValue>> {
+    return this.config.get('plugins') as YAMLSeq<YAMLMap<string, JsonValue>>;
+  }
+
   private toStringYaml(mapNodes: YAMLMap<string, JsonValue>[]): string {
     const tempDoc = new Document(mapNodes);
     return tempDoc.toString({ lineWidth: 0 });
@@ -54,10 +60,7 @@ export class FileInstallationStorage implements InstallationStorage {
   private getPackageYamlMap(
     packageName: string,
   ): YAMLMap<string, JsonValue> | undefined {
-    const packages = this.config.get('plugins') as YAMLSeq<
-      YAMLMap<string, JsonValue>
-    >;
-    return packages.items.find(
+    return this.packages.items.find(
       p => isMap(p) && p.get('package') === packageName,
     );
   }
@@ -103,17 +106,13 @@ export class FileInstallationStorage implements InstallationStorage {
     const newNode = parseDocument(newConfig).contents;
     validatePackageFormat(newNode, packageName);
 
-    const packages = this.config.get('plugins') as YAMLSeq<
-      YAMLMap<string, JsonValue>
-    >;
-
-    const existingPackage = packages.items.find(
+    const existingPackage = this.packages.items.find(
       item => item.get('package') === packageName,
     );
     if (existingPackage) {
       existingPackage.items = newNode.items;
     } else {
-      packages.items.push(newNode);
+      this.packages.items.push(newNode);
     }
     this.save();
   }
@@ -122,12 +121,8 @@ export class FileInstallationStorage implements InstallationStorage {
     const newNodes = parseDocument(newConfig);
     validatePluginFormat(newNodes, packageNames);
 
-    const packages = this.config.get('plugins') as YAMLSeq<
-      YAMLMap<string, JsonValue>
-    >;
-
     const updatedPackages = new YAMLSeq<YAMLMap<string, JsonValue>>();
-    for (const item of packages.items) {
+    for (const item of this.packages.items) {
       const name = item.get('package') as string;
       if (!packageNames.has(name)) {
         updatedPackages.items.push(item); // keep unchanged package of different plugin
@@ -139,22 +134,27 @@ export class FileInstallationStorage implements InstallationStorage {
     this.save();
   }
 
+  addPackageDisabled(packageName: string, disabled: boolean) {
+    const existingPackage = this.getPackageYamlMap(packageName);
+    if (existingPackage) {
+      throw new ConflictError(
+        `Package '${packageName}' already exists in the configuration`,
+      );
+    }
+    const newPackage = new YAMLMap<string, JsonValue>();
+    newPackage.set('package', packageName);
+    newPackage.set('disabled', disabled);
+    this.packages.add(newPackage);
+    this.save();
+  }
+
   setPackagesDisabled(packageNames: Set<string>, disabled: boolean) {
-    const packages = this.config.get('plugins') as YAMLSeq<
-      YAMLMap<string, JsonValue>
-    >;
-    const packageMap = packages.items.reduce(
-      (map, item) => map.set(item.get('package') as string, item),
-      new Map<string, YAMLMap<string, JsonValue>>(),
-    );
-    for (const packageName of packageNames) {
-      let item = packageMap.get(packageName);
-      if (!item) {
-        item = new YAMLMap<string, JsonValue>();
-        item.set('package', packageName);
-        packages.add(item);
+    // Sets packages disabled if they are already in the config
+    for (const item of this.packages.items) {
+      const name = item.get('package') as string;
+      if (packageNames.has(name)) {
+        item.set('disabled', disabled);
       }
-      item.set('disabled', disabled);
     }
 
     this.save();
