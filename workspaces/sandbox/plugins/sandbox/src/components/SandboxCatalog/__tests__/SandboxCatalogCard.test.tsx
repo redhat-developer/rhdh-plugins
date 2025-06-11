@@ -140,7 +140,7 @@ describe('SandboxCatalogCard', () => {
     expect(mockSignupUser).toHaveBeenCalled(); // check it signs up the user
     expect(mockRefetchUserData).toHaveBeenCalled();
     expect(mockOpen).toHaveBeenCalledWith(
-      'https://sandboxcluster.test/',
+      'https://sandboxcluster.test//add/ns/bob-2-dev',
       '_blank',
     ); // check it opens the url after signup
     expect(mockShowGreenCorner).toHaveBeenCalled();
