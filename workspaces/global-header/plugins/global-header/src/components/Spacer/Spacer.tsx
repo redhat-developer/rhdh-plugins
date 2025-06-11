@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
+import type { CSSProperties } from 'react';
 /**
  * @public
  */
 export interface SpacerProps {
   growFactor?: number;
   minWidth?: number | string;
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 }
 
 /**

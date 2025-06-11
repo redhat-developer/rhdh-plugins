@@ -99,7 +99,7 @@ export const useRepositories = (
   } = useQuery(
     [options?.showOrganizations ? 'organizations' : 'repositories', options],
     () => fetchRepositories(options),
-    { refetchInterval: pollInterval || 60000 },
+    { refetchInterval: pollInterval || 60000, refetchOnWindowFocus: false },
   );
 
   const prepareData = useMemo(() => {

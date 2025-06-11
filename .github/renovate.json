@@ -7,12 +7,17 @@
     "group:test",
     ":preserveSemverRanges"
   ],
-  "ignorePresets": [":pinDevDependencies", ":pinDigest", "docker:pinDigests"],
+  "ignorePresets": [
+    ":pinDevDependencies",
+    ":pinDigest",
+    "docker:pinDigests",
+    "group:monorepos"
+  ],
   "labels": ["dependencies"],
   "postUpdateOptions": ["yarnDedupeHighest"],
-  "osvVulnerabilityAlerts": true,
+  "osvVulnerabilityAlerts": false,
   "vulnerabilityAlerts": {
-    "enabled": true,
+    "enabled": false,
     "labels": ["dependencies", "security"]
   },
   "npm": {
@@ -22,46 +27,6 @@
     "dependencyDashboardApproval": true
   },
   "packageRules": [
-    {
-      "groupName": "DevDependencies (minor)",
-      "matchDepTypes": ["devDependencies"],
-      "matchUpdateTypes": ["minor"]
-    },
-    {
-      "groupName": "DevDependencies (patch)",
-      "matchDepTypes": ["devDependencies"],
-      "matchUpdateTypes": ["patch"]
-    },
-    {
-      "groupName": "Test packages (minor)",
-      "matchDepNames": ["@playwright/{/,}**", "msw", "@testing-library/{/,}**"],
-      "matchUpdateTypes": ["minor"]
-    },
-    {
-      "groupName": "Test packages (patch)",
-      "matchDepNames": ["@playwright/{/,}**", "msw", "@testing-library/{/,}**"],
-      "matchUpdateTypes": ["patch"]
-    },
-    {
-      "groupName": "Kie Tools (minor)",
-      "matchDepNames": ["@kie-tools-core/{/,}**", "@kie-tools/{/,}**"],
-      "matchUpdateTypes": ["minor"]
-    },
-    {
-      "groupName": "Kie Tools (patch)",
-      "matchDepNames": ["@kie-tools-core/{/,}**", "@kie-tools/{/,}**"],
-      "matchUpdateTypes": ["patch"]
-    },
-    {
-      "groupName": "types (minor)",
-      "matchPackageNames": ["@types/{/,}**"],
-      "matchUpdateTypes": ["minor"]
-    },
-    {
-      "matchUpdateTypes": ["patch"],
-      "groupName": "types (patch)",
-      "matchPackageNames": ["@types/{/,}**"]
-    },
     {
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions"
@@ -77,6 +42,21 @@
     {
       "matchPackageNames": ["yn"],
       "allowedVersions": "<5.0.0"
+    },
+    {
+      "description": "all RHDH Plugins workspaces",
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-bulk-import-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-homepage-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-theme-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-global-ui-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-marketplace-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-adoption-insights-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-ai-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-orchestrator-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-sandbox-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-openshift-image-registry-presets.json"
+      ]
     },
     {
       "groupName": "Core Backstage packages",

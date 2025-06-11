@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
+import type { FC } from 'react';
 import {
   useEntityPresentation,
   useStarredEntities,
@@ -54,7 +53,7 @@ interface SectionComponentProps {
   handleClose: () => void;
 }
 
-const StarredItem: React.FC<SectionComponentProps> = ({
+const StarredItem: FC<SectionComponentProps> = ({
   entityRef,
   toggleStarredEntity,
   handleClose,

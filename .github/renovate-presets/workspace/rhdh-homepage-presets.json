@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all homepage minor updates",
+      "matchFileNames": ["workspaces/homepage/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Homepage)"
+      ],
+      "addLabels": ["team/rhdh", "homepage"]
+    },
+    {
+      "description": "all homepage patch updates",
+      "matchFileNames": ["workspaces/homepage/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Homepage)"
+      ],
+      "addLabels": ["team/rhdh", "homepage"]
+    },
+    {
+      "description": "all homepage dev dependency updates",
+      "matchFileNames": ["workspaces/homepage/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Homepage)"
+      ],
+      "addLabels": ["team/rhdh", "homepage"]
+    }
+  ]
+}

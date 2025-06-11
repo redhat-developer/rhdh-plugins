@@ -26,6 +26,7 @@ import CardActions from '@mui/material/CardActions';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from '@material-ui/core'; // Or @mui/styles if using MUI v5 with JSS
 
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
@@ -38,6 +39,16 @@ export interface PluginCardSkeletonProps {
 }
 
 export const PluginCardGrid = ItemCardGrid;
+
+const useStyles = makeStyles(() => ({
+  pluginCategoryLinkButton: {
+    fontWeight: 'normal',
+    padding: '2px 6px',
+    '&:focus-visible': {
+      border: `1px solid`,
+    },
+  },
+}));
 
 export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => (
   <Card variant="outlined">
@@ -78,6 +89,7 @@ export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => (
 
 // TODO: add link around card
 export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const classes = useStyles();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const getIndexPath = useRouteRef(rootRouteRef);
@@ -145,7 +157,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
                       plugin.spec.categories[0],
                     )}
                     variant="outlined"
-                    style={{ fontWeight: 'normal', padding: '2px 6px' }}
+                    className={classes.pluginCategoryLinkButton}
                     onClick={e => e.stopPropagation()}
                   >
                     {plugin.spec.categories[0]}

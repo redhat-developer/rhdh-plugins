@@ -1,5 +1,32 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.5.0
+
+### Minor Changes
+
+- 7ae0ca0: Introduces POST endpoints for updating dynamic plugins and packages installation configuration: `/package/:namespace/:name/configuration` and `/plugin/:namespace/:name/configuration`.
+
+### Patch Changes
+
+- Updated dependencies [7ae0ca0]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.5.0
+
+## 0.4.0
+
+### Minor Changes
+
+- 7d138e5: Added extension permissions
+- f56908a: Introduces GET endpoints for dynamic plugins configuration: `/package/:namespace/:name/configuration` and `/plugin/:namespace/:name/configuration`. Introduces optional config value `extensions.installation` which is used for installation configuration.
+
+### Patch Changes
+
+- 4413eef: updated `extension` to `extensions`
+  update marketplace pluginId to extensions
+- Updated dependencies [4413eef]
+- Updated dependencies [7d138e5]
+- Updated dependencies [f56908a]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes

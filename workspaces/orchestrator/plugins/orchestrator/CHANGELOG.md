@@ -1,5 +1,40 @@
 ### Dependencies
 
+## 3.0.4
+
+### Patch Changes
+
+- c02b521: match package versions with RHDH
+- e5af42b: Use Code Snippet default colors in input schema dialog
+- 1cf9f22: Use CodeSnippet default colors
+
+## 3.0.3
+
+### Patch Changes
+
+- dc01428: enable retrigger
+- 3b571b3: Updated dependency `@janus-idp/cli` to `3.6.1`.
+- 95c8073: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.8.0`.
+- Updated dependencies [4ecd9f0]
+- Updated dependencies [9bc8af0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.3
+
+## 3.0.2
+
+### Patch Changes
+
+- Updated dependencies [c6b54ad]
+- Updated dependencies [7f6ca8a]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.2
+
+## 3.0.1
+
+### Patch Changes
+
+- 56c160b: Add endpoind to ping workflow service
+- Updated dependencies [56c160b]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.1
+
 ## 3.0.0
 
 ### Major Changes

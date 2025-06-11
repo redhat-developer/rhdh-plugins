@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { ReactNode, FC } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { InfoCard } from '@backstage/core-components';
@@ -25,10 +25,10 @@ import { InfoCard } from '@backstage/core-components';
 interface DropdownEmptyStateProps {
   title: string;
   subTitle: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
 
-export const DropdownEmptyState: React.FC<DropdownEmptyStateProps> = ({
+export const DropdownEmptyState: FC<DropdownEmptyStateProps> = ({
   title,
   subTitle,
   icon,

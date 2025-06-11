@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import express, { Request } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import Router from 'express-promise-router';
-import { NotAllowedError } from '@backstage/errors';
+import { InputError, NotAllowedError } from '@backstage/errors';
 import {
   HttpAuthService,
   PermissionsService,
@@ -43,16 +43,34 @@ import { createSearchParams } from './utils/createSearchParams';
 import { removeVerboseSpecContent } from './utils/removeVerboseSpecContent';
 import { rules as extensionRules } from './permissions/rules';
 import { matches } from './utils/permissionUtils';
+import { InstallationDataService } from './installation/InstallationDataService';
+import { ConfigFormatError } from './errors/ConfigFormatError';
 
-export async function createRouter({
-  marketplaceApi,
-  httpAuth,
-  permissions,
-}: {
+export type MarketplaceRouterOptions = {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
   permissions: PermissionsService;
-}): Promise<express.Router> {
+  installationDataService: InstallationDataService;
+};
+
+export async function createRouter(
+  options: MarketplaceRouterOptions,
+): Promise<express.Router> {
+  const { httpAuth, marketplaceApi, permissions, installationDataService } =
+    options;
+
+  const requireInitializedInstallationDataService = (
+    _req: Request,
+    _res: Response,
+    next: NextFunction,
+  ) => {
+    const error = installationDataService.getInitializationError();
+    if (error) {
+      throw error;
+    }
+    next();
+  };
+
   const router = Router();
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
     resourceType: RESOURCE_TYPE_EXTENSIONS_PLUGIN,
@@ -138,6 +156,60 @@ export async function createRouter({
     );
   });
 
+  router.get(
+    '/package/:namespace/:name/configuration',
+    requireInitializedInstallationDataService,
+    async (req, res) => {
+      const marketplacePackage = await marketplaceApi.getPackageByName(
+        req.params.namespace,
+        req.params.name,
+      );
+
+      if (!marketplacePackage.spec?.dynamicArtifact) {
+        throw new Error(
+          `Package catalog entity ${marketplacePackage.metadata.name} is missing 'spec.dynamicArtifact'`,
+        );
+      }
+      const result = installationDataService.getPackageConfig(
+        marketplacePackage.spec?.dynamicArtifact,
+      );
+      res.status(200).json({ configYaml: result });
+    },
+  );
+
+  router.post(
+    '/package/:namespace/:name/configuration',
+    requireInitializedInstallationDataService,
+    async (req, res) => {
+      const marketplacePackage = await marketplaceApi.getPackageByName(
+        req.params.namespace,
+        req.params.name,
+      );
+      if (!marketplacePackage.spec?.dynamicArtifact) {
+        throw new Error(
+          `Package ${marketplacePackage.metadata.name} is missing 'spec.dynamicArtifact'`,
+        );
+      }
+
+      const newConfig = req.body.configYaml;
+      if (!newConfig) {
+        throw new InputError("'configYaml' object must be present");
+      }
+      try {
+        installationDataService.updatePackageConfig(
+          marketplacePackage.spec.dynamicArtifact,
+          newConfig,
+        );
+      } catch (e) {
+        if (e instanceof ConfigFormatError) {
+          throw new InputError(e.message);
+        }
+        throw e;
+      }
+      res.status(200).json({ status: 'OK' });
+    },
+  );
+
   router.get('/plugins', async (req, res) => {
     const request = decodeGetEntitiesRequest(createSearchParams(req));
     const plugins = await marketplaceApi.getPlugins(request);
@@ -209,65 +281,87 @@ export async function createRouter({
     },
   );
 
-  router.get('/plugin/:namespace/:name/configuration', async (req, res) => {
-    const readDecision = await authorizeConditional(
-      req,
-      extensionsPluginReadPermission,
-    );
-    if (readDecision.result === AuthorizeResult.DENY) {
-      throw new NotAllowedError(
-        `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
+  router.get(
+    '/plugin/:namespace/:name/configuration',
+    requireInitializedInstallationDataService,
+    async (req, res) => {
+      const readDecision = await authorizeConditional(
+        req,
+        extensionsPluginReadPermission,
       );
-    }
+      if (readDecision.result === AuthorizeResult.DENY) {
+        throw new NotAllowedError(
+          `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
+        );
+      }
 
-    const plugin = await marketplaceApi.getPluginByName(
-      req.params.namespace,
-      req.params.name,
-    );
-
-    const hasReadAccess =
-      readDecision.result === AuthorizeResult.ALLOW ||
-      (readDecision.result === AuthorizeResult.CONDITIONAL &&
-        matches(plugin, readDecision.conditions));
-    if (!hasReadAccess) {
-      throw new NotAllowedError(
-        `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
+      const marketplacePlugin = await marketplaceApi.getPluginByName(
+        req.params.namespace,
+        req.params.name,
       );
-    }
 
-    res.status(200).json({}); // This should return the configuration in YAML string
-  });
+      const hasReadAccess =
+        readDecision.result === AuthorizeResult.ALLOW ||
+        (readDecision.result === AuthorizeResult.CONDITIONAL &&
+          matches(marketplacePlugin, readDecision.conditions));
+      if (!hasReadAccess) {
+        throw new NotAllowedError(
+          `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
+        );
+      }
 
-  router.post('/plugin/:namespace/:name/configuration', async (req, res) => {
-    // installs the plugin
-    const installDecision = await authorizeConditional(
-      req,
-      extensionsPluginWritePermission,
-    );
-    if (installDecision.result === AuthorizeResult.DENY) {
-      throw new NotAllowedError(
-        `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
+      const result =
+        await installationDataService.getPluginConfig(marketplacePlugin);
+      res.status(200).json({ configYaml: result });
+    },
+  );
+
+  router.post(
+    '/plugin/:namespace/:name/configuration',
+    requireInitializedInstallationDataService,
+    async (req, res) => {
+      // installs the plugin
+      const installDecision = await authorizeConditional(
+        req,
+        extensionsPluginWritePermission,
       );
-    }
+      if (installDecision.result === AuthorizeResult.DENY) {
+        throw new NotAllowedError(
+          `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
+        );
+      }
 
-    const plugin = await marketplaceApi.getPluginByName(
-      req.params.namespace,
-      req.params.name,
-    );
-
-    const hasInstallAccess =
-      installDecision.result === AuthorizeResult.ALLOW ||
-      (installDecision.result === AuthorizeResult.CONDITIONAL &&
-        matches(plugin, installDecision.conditions));
-
-    if (!hasInstallAccess) {
-      throw new NotAllowedError(
-        `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
+      const plugin = await marketplaceApi.getPluginByName(
+        req.params.namespace,
+        req.params.name,
       );
-    }
 
-    res.status(200).json({});
-  });
+      const hasInstallAccess =
+        installDecision.result === AuthorizeResult.ALLOW ||
+        (installDecision.result === AuthorizeResult.CONDITIONAL &&
+          matches(plugin, installDecision.conditions));
+
+      if (!hasInstallAccess) {
+        throw new NotAllowedError(
+          `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
+        );
+      }
+
+      const newConfig = req.body.configYaml;
+      if (!newConfig) {
+        throw new InputError("'configYaml' object must be present");
+      }
+      try {
+        await installationDataService.updatePluginConfig(plugin, newConfig);
+      } catch (e) {
+        if (e instanceof ConfigFormatError) {
+          throw new InputError(e.message);
+        }
+        throw e;
+      }
+      res.status(200).json({ status: 'OK' });
+    },
+  );
 
   router.get('/plugin/:namespace/:name/packages', async (req, res) => {
     const packages = await marketplaceApi.getPluginPackages(

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -22,13 +22,7 @@ import InsightsHeader from '../Header';
 import { DateRangeProvider } from '../DateRangeContext';
 
 jest.mock('@backstage/core-components', () => ({
-  Header: ({
-    children,
-    title,
-  }: {
-    children: React.ReactNode;
-    title: React.ReactNode;
-  }) => (
+  Header: ({ children, title }: { children: ReactNode; title: ReactNode }) => (
     <div data-testid="backstage-header">
       {title}
       {children}
@@ -70,9 +64,7 @@ jest.mock('../DateRangeContext', () => ({
     setEndDateRange: mockSetEndDateRange,
     setIsDefaultDateRange: mockSetIsDefaultDateRange,
   }),
-  DateRangeProvider: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  DateRangeProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 describe('InsightsHeader', () => {

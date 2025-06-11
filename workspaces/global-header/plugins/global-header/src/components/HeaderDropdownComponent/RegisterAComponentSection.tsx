@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import React from 'react';
+import type { ComponentType } from 'react';
 import { MenuSection } from './MenuSection';
 import { MenuItemLink } from '../MenuItemLink/MenuItemLink';
 
@@ -41,7 +40,7 @@ export const RegisterAComponentSection = ({
           subLabel: 'Import it to the catalog page',
           link: '/catalog-import',
           icon: 'category',
-          Component: MenuItemLink as React.ComponentType,
+          Component: MenuItemLink as ComponentType,
         },
       ]}
       handleClose={handleClose}

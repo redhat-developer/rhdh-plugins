@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-
 const CustomCursor = (props: any) => {
   const { points, cursorHeight = 250 } = props;
   if (!points || points.length === 0) return null;

@@ -48,29 +48,6 @@ describe('SandboxCatalogBanner', () => {
     typeof useSandboxContext
   >;
 
-  beforeEach(() => {
-    mockUseSandboxContext.mockReturnValue({
-      loading: false,
-      userData: undefined,
-      userFound: false,
-      userReady: false,
-      verificationRequired: false,
-      pendingApproval: false,
-      fetchError: null,
-      signupError: null,
-      ansibleError: null,
-      ansibleData: undefined,
-      ansibleUIUser: undefined,
-      ansibleUIPassword: '',
-      ansibleUILink: undefined,
-      ansibleStatus: AnsibleStatus.NEW,
-      refetchUserData: jest.fn(),
-      signupUser: jest.fn(),
-      refetchAAP: jest.fn(),
-      userStatus: '',
-    });
-  });
-
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -83,8 +60,6 @@ describe('SandboxCatalogBanner', () => {
       userReady: boolean;
       verificationRequired: boolean;
       pendingApproval: boolean;
-      fetchError: string | null;
-      signupError: string | null;
       ansibleError: string | null;
       ansibleStatus: AnsibleStatus;
     }> = {},
@@ -96,8 +71,6 @@ describe('SandboxCatalogBanner', () => {
       userReady: false,
       verificationRequired: false,
       pendingApproval: false,
-      fetchError: null,
-      signupError: null,
       ansibleError: null,
       ansibleStatus: AnsibleStatus.NEW,
       refetchUserData: jest.fn(),
@@ -107,6 +80,7 @@ describe('SandboxCatalogBanner', () => {
       ansibleUIUser: undefined,
       ansibleUIPassword: '',
       ansibleUILink: undefined,
+      handleAAPInstance: jest.fn(),
       userStatus: '',
       ...contextValue,
     });

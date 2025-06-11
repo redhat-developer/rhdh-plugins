@@ -21,6 +21,7 @@ import ReadyIcon from '@mui/icons-material/CheckOutlined';
 import FailIcon from '@mui/icons-material/ErrorOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import {
@@ -72,7 +73,10 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
               style={{ verticalAlign: 'sub', paddingTop: '7px' }}
             />
           </Tooltip>
-          <span data-testid="failed"> Failed to create PR </span>
+          <Typography component="span" data-testid="failed">
+            {' '}
+            Failed to create PR{' '}
+          </Typography>
           <Link
             to={errorMessage.showRepositoryLink ? data.repoUrl || '' : ''}
             onClick={() =>

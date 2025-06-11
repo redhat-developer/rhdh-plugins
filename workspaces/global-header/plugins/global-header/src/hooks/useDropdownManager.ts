@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useState } from 'react';
+import type { MouseEvent } from 'react';
 
 export const useDropdownManager = () => {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+  const handleOpen = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 

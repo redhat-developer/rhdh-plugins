@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all theme minor updates",
+      "matchFileNames": ["workspaces/theme/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Theme)"
+      ],
+      "addLabels": ["team/rhdh", "theme"]
+    },
+    {
+      "description": "all theme patch updates",
+      "matchFileNames": ["workspaces/theme/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Theme)"
+      ],
+      "addLabels": ["team/rhdh", "theme"]
+    },
+    {
+      "description": "all theme dev dependency updates",
+      "matchFileNames": ["workspaces/theme/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Theme)"
+      ],
+      "addLabels": ["team/rhdh", "theme"]
+    }
+  ]
+}

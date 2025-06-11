@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-import { Page } from 'playwright';
+import { Page } from '@playwright/test';
 
 export const openLightspeed = async (page: Page) => {
-  const navLink = page.locator(`nav a:has-text("lightspeed")`).first();
-  await navLink.waitFor({ state: 'visible' });
+  const navLink = page.getByRole('link', { name: 'Lightspeed' });
   await navLink.click();
 
   await page.locator('.pf-chatbot__messagebox').waitFor({ state: 'visible' });
 };
 
 export const sendMessage = async (message: string, page: Page) => {
-  const inputLocator = page.getByRole('textbox').first();
-  await inputLocator.waitFor({ state: 'visible' });
+  const inputLocator = page.getByRole('textbox', { name: 'Send a message...' });
   await inputLocator.fill(message);
-  await page.locator('button[aria-label="Send button"]').click();
+  const sendButton = page.getByRole('button', { name: 'Send' });
+  await sendButton.click();
 };

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { ComponentType } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
@@ -70,7 +71,7 @@ export const SoftwareTemplatesSection = ({
     return entities
       .filter(e => e.kind === 'Template')
       .map(m => ({
-        Component: MenuItemLink as React.ComponentType,
+        Component: MenuItemLink as ComponentType,
         label: m.metadata.title ?? m.metadata.name,
         link: `/create/templates/default/${m.metadata.name}`,
       }));

@@ -8659,19 +8659,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.16.4":
-  version: 5.16.4
-  resolution: "@mui/icons-material@npm:5.16.4"
+"@mui/icons-material@npm:5.17.1, @mui/icons-material@npm:^5.17.1":
+  version: 5.17.1
+  resolution: "@mui/icons-material@npm:5.17.1"
   dependencies:
     "@babel/runtime": ^7.23.9
   peerDependencies:
     "@mui/material": ^5.0.0
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: b0559215a10819a082539a7ae43aedafb30bc109c5d6994ac6d748e46688d705e6b44b62693f89aea1fca3afdc6deb665d884c6bad0a2cffde9c5443027e3019
+  checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
   languageName: node
   linkType: hard
 
@@ -8708,7 +8708,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:^5.12.2":
+"@mui/material@npm:5.17.1, @mui/material@npm:^5.12.2":
   version: 5.17.1
   resolution: "@mui/material@npm:5.17.1"
   dependencies:
@@ -10669,11 +10669,11 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/icons": ^4.9.1
     "@material-ui/lab": ^4.0.0-alpha.61
-    "@mui/icons-material": 5.16.4
-    "@mui/material": 5.16.14
+    "@mui/icons-material": 5.17.1
+    "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-ai-experience-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-ai-experience-common": "workspace:^"
-    "@redhat-developer/red-hat-developer-hub-theme": 0.5.1
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.8.0
     "@tanstack/react-query": ^5.71.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
@@ -10740,25 +10740,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.8.0":
+  version: 0.8.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.8.2"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.10.4
+    "@backstage/theme": ^0.6.4
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 76488ae3fbb9fabdd936d7a1353fda0b1d11fa9439cb33333678eccfcd71fdd1c9cf60418828d94ee26f3b1874a873767996eebbedb01b3fbf57200dee5c562d
+  languageName: node
+  linkType: hard
+
 "@redhat-ai-dev/model-catalog-types@npm:^1.1.0":
   version: 1.1.0
   resolution: "@redhat-ai-dev/model-catalog-types@npm:1.1.0"
   checksum: 1974a2b6a3cc7cc1ef9da13e2794482bc00404f70aa6bfaf349992a7df4ad4ae7d8fe856bcd814595fcfef9f6a16c72967e0e6cf3d3d4a4d22398a355ae00b41
-  languageName: node
-  linkType: hard
-
-"@redhat-developer/red-hat-developer-hub-theme@npm:0.5.1, @redhat-developer/red-hat-developer-hub-theme@npm:^0.5.0":
-  version: 0.5.1
-  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.1"
-  peerDependencies:
-    "@backstage/theme": ^0.5.2
-    "@emotion/react": ^11.11.1
-    "@emotion/styled": ^11.11.0
-    "@material-ui/core": ^4.12.4
-    "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.14.19
-    "@mui/material": ^5.14.20
-  checksum: 4de9e62b9de390c7de82fcf123a03135366952ab39d423be51c3afb242c316e3deb78ecaa3e038d6bcc12695f8f03223b9efb45a689a40ea2c11139f4e3fc06d
   languageName: node
   linkType: hard
 
@@ -15281,7 +15282,7 @@ __metadata:
     "@playwright/test": ^1.32.3
     "@red-hat-developer-hub/backstage-plugin-ai-experience": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-global-header": ^1.4.0
-    "@redhat-developer/red-hat-developer-hub-theme": ^0.5.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.8.0
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0

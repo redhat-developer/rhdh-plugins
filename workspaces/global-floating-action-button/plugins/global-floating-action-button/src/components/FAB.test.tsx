@@ -15,7 +15,6 @@
  */
 import { render, screen } from '@testing-library/react';
 import GitIcon from '@mui/icons-material/GitHub';
-import * as React from 'react';
 import { CustomFab } from './CustomFab';
 
 jest.mock('react-router-dom', () => ({

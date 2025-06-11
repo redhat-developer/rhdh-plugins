@@ -34,6 +34,11 @@ export enum AssetType {
 }
 
 // @public (undocumented)
+export type ConfigurationResponse = {
+    configYaml: string;
+};
+
+// @public (undocumented)
 export const decodeGetEntitiesRequest: (searchParams: URLSearchParams) => GetEntitiesRequest;
 
 // @public (undocumented)
@@ -159,6 +164,8 @@ export interface MarketplaceApi {
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
+    getPackageConfigByName?(namespace: string, name: string): Promise<ConfigurationResponse>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
@@ -170,15 +177,21 @@ export interface MarketplaceApi {
         write: 'ALLOW' | 'DENY';
     }>;
     // (undocumented)
-    getPluginConfigByName?(namespace: string, name: string): Promise<{
-        configYaml: string;
-    }>;
+    getPluginConfigByName?(namespace: string, name: string): Promise<ConfigurationResponse>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPluginPackages(namespace: string, name: string): Promise<MarketplacePackage[]>;
     // (undocumented)
     getPlugins(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePlugin>>;
+    // (undocumented)
+    installPackage?(namespace: string, name: string, configYaml: string): Promise<{
+        status: string;
+    }>;
+    // (undocumented)
+    installPlugin?(namespace: string, name: string, configYaml: string): Promise<{
+        status: string;
+    }>;
 }
 
 // @public (undocumented)
@@ -201,6 +214,8 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
+    getPackageConfigByName(namespace: string, name: string): Promise<ConfigurationResponse>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
@@ -212,15 +227,21 @@ export class MarketplaceBackendClient implements MarketplaceApi {
         write: 'ALLOW' | 'DENY';
     }>;
     // (undocumented)
-    getPluginConfigByName(namespace: string, name: string): Promise<{
-        configYaml: string;
-    }>;
+    getPluginConfigByName(namespace: string, name: string): Promise<ConfigurationResponse>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPluginPackages(namespace: string, name: string): Promise<MarketplacePackage[]>;
     // (undocumented)
     getPlugins(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePlugin>>;
+    // (undocumented)
+    installPackage(namespace: string, name: string, configYaml: string): Promise<{
+        status: string;
+    }>;
+    // (undocumented)
+    installPlugin(namespace: string, name: string, configYaml: string): Promise<{
+        status: any;
+    }>;
 }
 
 // @public (undocumented)

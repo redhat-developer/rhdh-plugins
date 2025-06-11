@@ -53,8 +53,16 @@ export const orchestratorAdminViewPermission = createPermission({
   },
 });
 
+export const orchestratorInstanceAdminViewPermission = createPermission({
+  name: 'orchestrator.instanceAdminView',
+  attributes: {
+    action: 'read',
+  },
+});
+
 export const orchestratorPermissions = [
   orchestratorWorkflowPermission,
   orchestratorWorkflowUsePermission,
   orchestratorAdminViewPermission,
+  orchestratorInstanceAdminViewPermission,
 ];

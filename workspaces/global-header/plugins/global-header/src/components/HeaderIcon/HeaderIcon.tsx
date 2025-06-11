@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { CSSProperties } from 'react';
 import { useApp } from '@backstage/core-plugin-api';
 import MuiIcon from '@mui/material/Icon';
 import Box from '@mui/material/Box';
@@ -24,7 +24,7 @@ import Box from '@mui/material/Box';
 export interface HeaderIconProps {
   icon: string;
   size?: 'small' | 'medium' | 'large';
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 }
 
 /**

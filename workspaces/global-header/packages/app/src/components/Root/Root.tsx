@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-import React, { PropsWithChildren } from 'react';
+import { PropsWithChildren } from 'react';
 import { makeStyles } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import LibraryBooks from '@material-ui/icons/LibraryBooks';
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
 import {
   Sidebar,
-  sidebarConfig,
   SidebarDivider,
   SidebarGroup,
   SidebarItem,
   SidebarPage,
   SidebarScrollWrapper,
   SidebarSpace,
-  useSidebarOpenState,
-  Link,
 } from '@backstage/core-components';
 import MenuIcon from '@material-ui/icons/Menu';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
@@ -42,66 +37,85 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-global-header';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 
-const useSidebarLogoStyles = makeStyles({
-  root: {
-    width: sidebarConfig.drawerWidthClosed,
-    height: 3 * sidebarConfig.logoHeight,
-    display: 'flex',
-    flexFlow: 'row nowrap',
-    alignItems: 'center',
-    marginBottom: -14,
+const useStyles = makeStyles(() => ({
+  pageWithoutFixHeight: {
+    '> div[class*="-sidebarLayout"]': {
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    '> div > main': {
+      height: 'unset',
+      flexGrow: 1,
+    },
+    '.techdocs-reader-page > main': {
+      height: 'unset',
+    },
   },
-  link: {
-    width: sidebarConfig.drawerWidthClosed,
-    marginLeft: 24,
+  sidebarItem: {
+    textDecorationLine: 'none',
   },
-});
+  sidebarLayout: {
+    '& div[class*="BackstageSidebar-drawer"]': {
+      top: 'var(--global-header-default-height, 64px)',
+      height: 'calc(100vh - var(--global-header-default-height, 64px))',
+    },
+    '& main[class*="BackstagePage-root"]': {
+      height: `calc(100vh - (var(--global-header-default-height, 64px) - var(--rhdh-v1-page-inset, 1.5rem)))`,
+      marginTop: 'calc(-1 * var(--rhdh-v1-page-inset, 1.5rem))',
+      marginBottom: 'calc(-1 * var(--rhdh-v1-page-inset, 1.5rem))',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      '& article': {
+        flex: 1,
+        overflow: 'auto',
+      },
+    },
+  },
+}));
 
-const SidebarLogo = () => {
-  const classes = useSidebarLogoStyles();
-  const { isOpen } = useSidebarOpenState();
+export const Root = ({ children = null }: PropsWithChildren<{}>) => {
+  const { pageWithoutFixHeight, sidebarLayout } = useStyles();
 
   return (
-    <div className={classes.root}>
-      <Link to="/" underline="none" className={classes.link} aria-label="Home">
-        {isOpen ? <LogoFull /> : <LogoIcon />}
-      </Link>
+    <div className={pageWithoutFixHeight}>
+      <div>
+        {/* update globalHeaderMountPoints config to test Global header */}
+        <GlobalHeaderComponent
+          globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
+        />
+      </div>
+      <div className={sidebarLayout}>
+        <SidebarPage>
+          <Sidebar>
+            <SidebarGroup label="Menu" icon={<MenuIcon />}>
+              {/* Global nav, not org-specific */}
+              <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
+              <MyGroupsSidebarItem
+                singularTitle="My Group"
+                pluralTitle="My Groups"
+                icon={GroupIcon}
+              />
+              <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
+              <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+              <NotificationsSidebarItem
+                webNotificationsEnabled
+                titleCounterEnabled
+                snackbarEnabled
+              />
+              {/* End global nav */}
+              <SidebarDivider />
+              <SidebarScrollWrapper>
+                {/* Items in this group will be scrollable if they run out of space */}
+              </SidebarScrollWrapper>
+            </SidebarGroup>
+            <SidebarSpace />
+            <SidebarDivider />
+          </Sidebar>
+          {children}
+        </SidebarPage>
+      </div>
     </div>
   );
 };
-
-export const Root = ({ children = null }: PropsWithChildren<{}>) => (
-  <SidebarPage>
-    {/* update globalHeaderMountPoints config to test Global header */}
-    <GlobalHeaderComponent
-      globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
-    />
-    <Sidebar>
-      <SidebarLogo />
-      <SidebarGroup label="Menu" icon={<MenuIcon />}>
-        {/* Global nav, not org-specific */}
-        <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
-        <MyGroupsSidebarItem
-          singularTitle="My Group"
-          pluralTitle="My Groups"
-          icon={GroupIcon}
-        />
-        <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
-        <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
-        <NotificationsSidebarItem
-          webNotificationsEnabled
-          titleCounterEnabled
-          snackbarEnabled
-        />
-        {/* End global nav */}
-        <SidebarDivider />
-        <SidebarScrollWrapper>
-          {/* Items in this group will be scrollable if they run out of space */}
-        </SidebarScrollWrapper>
-      </SidebarGroup>
-      <SidebarSpace />
-      <SidebarDivider />
-    </Sidebar>
-    {children}
-  </SidebarPage>
-);

@@ -16,7 +16,7 @@
 import React from 'react';
 import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
 import { createDevApp } from '@backstage/dev-utils';
-import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import {
   aiExperiencePlugin,
   AiExperiencePage,

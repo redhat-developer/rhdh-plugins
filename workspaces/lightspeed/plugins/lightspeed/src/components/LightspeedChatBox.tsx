@@ -16,16 +16,23 @@
 
 import React from 'react';
 
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
+
 import { makeStyles } from '@material-ui/core';
 import {
   ChatbotWelcomePrompt,
   Message,
   MessageBox,
+  MessageBoxHandle,
   MessageProps,
   WelcomePrompt,
 } from '@patternfly/chatbot';
 import { Alert } from '@patternfly/react-core';
 
+import {
+  FUNCTION_DISCLAIMER,
+  FUNCTION_DISCLAIMER_WITHOUT_QUESTION_VALIDATION,
+} from '../const';
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { useBufferedMessages } from '../hooks/useBufferedMessages';
 
@@ -75,8 +82,11 @@ export const LightspeedChatBox = React.forwardRef(
   ) => {
     const classes = useStyles();
     const scrollQueued = React.useRef(false);
-    const containerRef = React.useRef<HTMLDivElement>(null);
+    const containerRef = React.useRef<MessageBoxHandle>(null);
 
+    const configApi = useApi(configApiRef);
+    const questionValidationEnabled =
+      configApi.getOptionalBoolean('lightspeed.questionValidation') ?? true;
     const cmessages = useBufferedMessages(messages, 30);
     const { autoScroll, scrollToBottom, scrollToTop } =
       useAutoScroll(containerRef);
@@ -141,13 +151,9 @@ export const LightspeedChatBox = React.forwardRef(
             isInline
             className={classes.alert}
           >
-            Red Hat Developer Hub Lightspeed can answer questions on many topics
-            using your preferred models. Lightspeed's responses are influenced
-            by the Red Hat Developer Hub documentation but Lightspeed does not
-            have access to your Software Catalog, TechDocs, or Templates etc. Do
-            NOT include personal or business sensitive information in your
-            input. Interactions with Developer Hub Lightspeed may be reviewed
-            and used to improve responses.
+            {questionValidationEnabled
+              ? FUNCTION_DISCLAIMER
+              : FUNCTION_DISCLAIMER_WITHOUT_QUESTION_VALIDATION}
           </Alert>
           <br />
         </div>

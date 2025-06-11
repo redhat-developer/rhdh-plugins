@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 0.2.2
+
+### Patch Changes
+
+- 72a99a5: Updated dependency `@mui/styles` to `5.17.1`.
+
+## 0.2.1
+
+### Patch Changes
+
+- 3b571b3: Updated dependency `@janus-idp/cli` to `3.6.1`.
+
 ## 0.2.0
 
 ### Minor Changes

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 import { useAsyncRetry } from 'react-use';
@@ -30,8 +30,8 @@ export const useTemplates = ({
   error: Error | undefined;
   loading: boolean;
 } => {
-  const [loadingData, setLoadingData] = React.useState<boolean>(true);
-  const [templates, setTemplates] = React.useState<TemplatesResponse>({
+  const [loadingData, setLoadingData] = useState<boolean>(true);
+  const [templates, setTemplates] = useState<TemplatesResponse>({
     data: [],
   });
 
@@ -39,7 +39,7 @@ export const useTemplates = ({
 
   const api = useApi(adoptionInsightsApiRef);
 
-  const getTemplates = React.useCallback(async () => {
+  const getTemplates = useCallback(async () => {
     return await api
       .getTemplates({
         type: 'top_templates',
@@ -58,7 +58,7 @@ export const useTemplates = ({
     return await getTemplates();
   }, [getTemplates]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     if (!loading && mounted) {
       setLoadingData(false);

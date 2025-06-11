@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import type { ChangeEvent } from 'react';
 
 import { ResponseErrorPanel } from '@backstage/core-components';
 import Table from '@mui/material/Table';
@@ -34,28 +35,25 @@ import { getLastUsedDay } from '../../utils/utils';
 import EmptyChartState from '../Common/EmptyChartState';
 
 const Techdocs = () => {
-  const [page, setPage] = React.useState(0);
-  const [limit] = React.useState(20);
-  const [rowsPerPage, setRowsPerPage] = React.useState(3);
+  const [page, setPage] = useState(0);
+  const [limit] = useState(20);
+  const [rowsPerPage, setRowsPerPage] = useState(3);
 
   const { techdocs, loading, error } = useTechdocs({ limit });
 
-  const handleChangePage = React.useCallback(
-    (_event: unknown, newPage: number) => {
-      setPage(newPage);
-    },
-    [],
-  );
+  const handleChangePage = useCallback((_event: unknown, newPage: number) => {
+    setPage(newPage);
+  }, []);
 
-  const handleChangeRowsPerPage = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChangeRowsPerPage = useCallback(
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setRowsPerPage(+event.target.value);
       setPage(0);
     },
     [],
   );
 
-  const visibleTechdocs = React.useMemo(() => {
+  const visibleTechdocs = useMemo(() => {
     return techdocs.data?.slice(
       page * rowsPerPage,
       page * rowsPerPage + rowsPerPage,

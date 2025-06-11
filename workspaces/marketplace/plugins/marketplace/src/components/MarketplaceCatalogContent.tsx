@@ -23,6 +23,7 @@ import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Launch from '@mui/icons-material/Launch';
 
 import { SearchTextField } from '../shared-components/SearchTextField';
 
@@ -34,7 +35,7 @@ import { CollectionHorizontalScrollRow } from './CollectionHorizontalScrollRow';
 
 import notFoundImag from '../assets/notfound.png';
 
-const NoPluginsFound = () => (
+const EmptyState = ({ isError }: { isError?: boolean }) => (
   <Content>
     <Grid
       container
@@ -43,19 +44,35 @@ const NoPluginsFound = () => (
     >
       <Grid item xs={6}>
         <Stack gap={3} justifyContent="center">
-          <Typography variant="h1">No plugins found</Typography>
+          <Typography variant="h1">
+            {isError
+              ? 'Must enable the Extensions backend plugin'
+              : 'No plugins found'}
+          </Typography>
           <Typography variant="body1">
-            There was an error with loading plugins. Check your configuration or
-            review plugin documentation to resolve. You can also explore other
-            available plugins.
+            {isError
+              ? "Configure the '@red-hat-developer-hub/backstage-plugin-marketplace-backend' plugin."
+              : 'There was an error with loading plugins. Check your configuration or review plugin documentation to resolve. You can also explore other available plugins.'}
           </Typography>
           <Grid container spacing={2}>
+            {!isError && (
+              <Grid item>
+                <LinkButton
+                  variant="contained"
+                  color="primary"
+                  to="https://developers.redhat.com/products/rhdh/plugins#communitypreinstalled"
+                  endIcon={<Launch />}
+                >
+                  View all plugins
+                </LinkButton>
+              </Grid>
+            )}
             <Grid item>
               <LinkButton
                 variant="outlined"
                 color="primary"
                 to="https://docs.redhat.com/en/documentation/red_hat_developer_hub/"
-                externalLinkIcon
+                endIcon={<Launch />}
               >
                 View documentation
               </LinkButton>
@@ -90,8 +107,12 @@ export const MarketplaceCatalogContent = () => {
     title += ` (${filteredPlugins.data.filteredItems})`;
   }
 
+  if (filteredPlugins.error?.message.includes('404')) {
+    return <EmptyState isError />;
+  }
+
   if (filteredPlugins.data?.totalItems === 0) {
-    return <NoPluginsFound />;
+    return <EmptyState />;
   }
 
   return (

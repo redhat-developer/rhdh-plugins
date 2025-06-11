@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { highlightMatch } from './stringUtils';
 import '@testing-library/jest-dom';

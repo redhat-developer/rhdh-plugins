@@ -20,6 +20,8 @@ export type BackstageThemePalette = UnifiedThemeOptions['palette'];
 
 export interface RHDHThemePalette {
   general: {
+    pageInset: string;
+
     disabled: string;
     disabledBackground: string;
 
@@ -47,6 +49,8 @@ export interface RHDHThemePalette {
     tabsLinkHoverBackgroundColor: string;
 
     contrastText: string;
+
+    appBarBackgroundScheme: 'light' | 'dark';
 
     appBarBackgroundColor: string;
     appBarForegroundColor: string;

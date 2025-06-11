@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useState, useMemo } from 'react';
+import type { CSSProperties } from 'react';
 
 import { MarkdownContent } from '@backstage/core-components';
 
@@ -39,13 +40,13 @@ export interface NotificationBannerProps {
   textColor?: string;
   backgroundColor?: string;
   borderColor?: string;
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 
   dismiss?: NotificationBannerDismiss;
 }
 
 export const NotificationBanner = (props: NotificationBannerProps) => {
-  const [dismissed, setDismissed] = React.useState<boolean>(() => {
+  const [dismissed, setDismissed] = useState<boolean>(() => {
     if (props.dismiss === 'localstorage') {
       try {
         const dismissedString =
@@ -61,7 +62,7 @@ export const NotificationBanner = (props: NotificationBannerProps) => {
     }
   });
 
-  const onClose = React.useMemo<(() => void) | undefined>(() => {
+  const onClose = useMemo<(() => void) | undefined>(() => {
     if (!props.dismiss || props.dismiss === 'none') {
       return undefined;
     } else if (props.dismiss === 'session') {

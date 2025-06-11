@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { ReactNode } from 'react';
 
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -59,13 +59,7 @@ jest.mock('../../../utils/constants', () => ({
 
 jest.mock('../../CardWrapper', () => ({
   __esModule: true,
-  default: ({
-    children,
-    title,
-  }: {
-    children: React.ReactNode;
-    title: string;
-  }) => (
+  default: ({ children, title }: { children: ReactNode; title: string }) => (
     <div data-testid="card-wrapper">
       <h2>{title}</h2>
       {children}

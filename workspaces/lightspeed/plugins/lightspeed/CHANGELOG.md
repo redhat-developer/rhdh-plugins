@@ -1,5 +1,32 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.5.3
+
+### Patch Changes
+
+- b3cca2b: Reset localstorage if the conversations are empty
+
+## 0.5.2
+
+### Patch Changes
+
+- fe413e3: Functional disclaimer with topic restriction
+- a9e5f32: Updated dependency `@openapitools/openapi-generator-cli` to `2.20.0`.
+  Updated dependency `prettier` to `3.5.3`.
+  Updated dependency `@redhat-developer/red-hat-developer-hub-theme` to `0.5.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.6.0`.
+  Updated dependency `@janus-idp/cli` to `3.5.0`.
+- 3a76aaf: Updated dependency `@patternfly/react-core` to `6.3.0-prerelease.4`.
+- 002f7c9: Updated dependency `@testing-library/user-event` to `14.6.1`.
+- ab6a532: Add configurable sample prompts
+- dc4ff7c: Add file attachment support
+  Update functional and legal disclaimers
+  Add citation links in the bot response
+  Update initial user prompts
+- db3257b: Upgrade PF chatbot
+- Updated dependencies [a9e5f32]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.3.1
+
 ## 0.5.1
 
 ### Patch Changes

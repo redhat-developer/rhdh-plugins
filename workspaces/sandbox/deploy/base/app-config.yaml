@@ -7,8 +7,6 @@ enableExperimentalRedirectFlow: true
 
 backend:
   baseUrl: http://localhost:3000
-  listen:
-    port: 3000
   csp:
     img-src:
       - "'self'"
@@ -28,6 +26,8 @@ backend:
     frame-src:
       - "'self'"
       - 'https://www.google.com'
+  listen:
+    port: 3000
   cors:
     origin: http://localhost:3000
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
@@ -52,7 +52,7 @@ auth:
               dangerouslyAllowSignInWithoutUserInCatalog: true
 signInPage: oidc
 sandbox:
-  signupAPI: https://registration-service-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com/api/v1
-  kubeAPI: https://api-toolchain-host-operator.apps.rstage.wybr.p1.openshiftapps.com
+  signupAPI: https://registration-service-toolchain-host-operator.apps.sandbox.x8i5.p1.openshiftapps.com/api/v1
+  kubeAPI: https://api-toolchain-host-operator.apps.sandbox.x8i5.p1.openshiftapps.com
   recaptcha:
     siteKey: 6Lc_164lAAAAAPvrC0WO-XDljvZ2DZ3UQ38A4XR0

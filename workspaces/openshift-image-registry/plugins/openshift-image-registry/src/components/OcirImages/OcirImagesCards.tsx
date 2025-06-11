@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import React from 'react';
+import { useCallback, useState } from 'react';
 
 import { EmptyState, ItemCardGrid } from '@backstage/core-components';
 
@@ -28,23 +27,23 @@ type OcirImagesCardsProps = {
 };
 
 export const OcirImagesCards = ({ imageStreams }: OcirImagesCardsProps) => {
-  const [isOpen, setIsOpen] = React.useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeImageStream, setActiveImageStream] =
-    React.useState<ImageStreamMetadata>();
-  const [filteredImageStreams, setFilteredImageStreams] = React.useState<
+    useState<ImageStreamMetadata>();
+  const [filteredImageStreams, setFilteredImageStreams] = useState<
     ImageStreamMetadata[] | undefined
   >();
 
   const imageStreamsList = filteredImageStreams ?? imageStreams;
 
-  const handleImageStreamSelected = React.useCallback(
+  const handleImageStreamSelected = useCallback(
     (imageStream: ImageStreamMetadata) => {
       setActiveImageStream(imageStream);
       setIsOpen(true);
     },
     [],
   );
-  const handleClose = React.useCallback(() => setIsOpen(false), [setIsOpen]);
+  const handleClose = useCallback(() => setIsOpen(false), [setIsOpen]);
 
   return (
     <>

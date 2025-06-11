@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-lightspeed-backend",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -63,7 +63,7 @@
     "@spotify/prettier-config": "^15.0.0",
     "@types/express": "4.17.22",
     "@types/supertest": "2.0.16",
-    "msw": "2.7.6",
+    "msw": "2.8.7",
     "prettier": "3.5.3",
     "supertest": "6.3.4"
   },

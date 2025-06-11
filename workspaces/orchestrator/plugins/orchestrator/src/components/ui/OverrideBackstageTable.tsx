@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import React from 'react';
 
 import {
@@ -20,31 +21,41 @@ import {
   TableProps,
 } from '@backstage/core-components';
 
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from 'tss-react/mui';
 
 // Workaround by issue created from overriding the tab theme in the backstage-showcase to add a gray background to disabled tabs.
 // This is achieved by overriding the global Mui-disabled class, which results in the actions column header background turning gray.
 // See https://github.com/janus-idp/backstage-showcase/blob/main/packages/app/src/themes/componentOverrides.ts#L59
 
-const useStyles = makeStyles(() => ({
-  orchestratorTable: ({ removeOutline }: { removeOutline: boolean }) => ({
+const useStyles = makeStyles()(() => ({
+  orchestratorTable: {
     '& .Mui-disabled': {
       backgroundColor: 'transparent',
     },
-    ...(removeOutline && {
-      '& [class^=MuiPaper]': {
-        outline: 'unset',
-      },
-    }),
-  }),
+  },
+  orchestratorTableWithOutline: {
+    '& .Mui-disabled': {
+      backgroundColor: 'transparent',
+    },
+    '& [class^=MuiPaper]': {
+      outline: 'unset',
+    },
+  },
 }));
 
 const OverrideBackstageTable = <T extends object>(
   props: TableProps<T> & { removeOutline?: boolean },
 ) => {
-  const classes = useStyles({ removeOutline: props.removeOutline || false });
+  const removeOutline = props.removeOutline ?? false;
+  const { classes } = useStyles();
   return (
-    <div className={classes.orchestratorTable}>
+    <div
+      className={
+        removeOutline
+          ? classes.orchestratorTable
+          : classes.orchestratorTableWithOutline
+      }
+    >
       <BackstageTable
         {...props}
         options={{ ...props.options, thirdSortClick: false }}

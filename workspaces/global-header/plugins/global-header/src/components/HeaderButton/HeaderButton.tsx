@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
+import type { CSSProperties } from 'react';
 import { LinkButton } from '@backstage/core-components';
 
 import Box from '@mui/material/Box';
@@ -36,7 +35,7 @@ export interface HeaderButtonProps {
   endIcon?: string;
   externalLinkIcon?: boolean;
   to: string;
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 }
 
 /**

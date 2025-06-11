@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { SearchResultItem } from './SearchResultItem';
 import { BrowserRouter as Router } from 'react-router-dom';

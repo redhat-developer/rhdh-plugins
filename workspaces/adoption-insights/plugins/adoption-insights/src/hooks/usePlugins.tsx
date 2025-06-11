@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 import { useAsyncRetry } from 'react-use';
@@ -31,8 +31,8 @@ export const usePlugins = ({
   error: Error | undefined;
   loading: boolean;
 } => {
-  const [loadingData, setLoadingData] = React.useState<boolean>(true);
-  const [plugins, setPlugins] = React.useState<PluginTrendResponse>({
+  const [loadingData, setLoadingData] = useState<boolean>(true);
+  const [plugins, setPlugins] = useState<PluginTrendResponse>({
     data: [],
   });
 
@@ -41,7 +41,7 @@ export const usePlugins = ({
 
   const api = useApi(adoptionInsightsApiRef);
 
-  const getPlugins = React.useCallback(async () => {
+  const getPlugins = useCallback(async () => {
     return await api
       .getPlugins({
         type: 'top_plugins',
@@ -59,7 +59,7 @@ export const usePlugins = ({
     return await getPlugins();
   }, [getPlugins]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     if (!loading && mounted) {
       setLoadingData(false);

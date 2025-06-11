@@ -8,6 +8,7 @@ p, role:default/workflowUser, orchestrator.workflow.use.yamlgreet, update, allow
 p, role:default/workflowAdmin, orchestrator.workflow, read, allow
 p, role:default/workflowAdmin, orchestrator.workflow.use, update, allow
 p, role:default/workflowAdmin, orchestrator.workflowAdminView, read, allow
+p, role:default/workflowAdmin, orchestrator.instanceAdminView, read, allow 
 
 p, role:default/workflowDenied, orchestrator.workflow, read, deny
 p, role:default/workflowDenied, orchestrator.workflow.use, update, deny 

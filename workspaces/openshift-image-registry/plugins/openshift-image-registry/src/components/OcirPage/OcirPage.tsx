@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { Content, Header, Page } from '@backstage/core-components';
 
 import { OcirImagesView } from '../OcirImages/OcirImagesView';

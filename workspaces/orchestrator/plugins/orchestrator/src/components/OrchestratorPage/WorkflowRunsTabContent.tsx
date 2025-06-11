@@ -29,7 +29,8 @@ import {
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
 
-import { Grid, TablePagination } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
+import TablePagination from '@mui/material/TablePagination';
 
 import {
   capitalize,
@@ -46,7 +47,7 @@ import usePolling from '../../hooks/usePolling';
 import { workflowInstanceRouteRef, workflowRouteRef } from '../../routes';
 import { Selector } from '../Selector';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
-import { mapProcessInstanceToDetails } from '../WorkflowInstancePageContent';
+import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
 import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
 import { WorkflowRunDetail } from '../WorkflowRunDetail';
 

@@ -35,8 +35,8 @@ import {
   VisitsStorageApi,
 } from '@backstage/plugin-home';
 
-import { QuickAccessApiClient, quickAccessApiRef } from './api';
 import { rootRouteRef } from './routes';
+import { QuickAccessApiClient, quickAccessApiRef } from './api';
 
 import type { DynamicHomePageProps } from './components/DynamicHomePage';
 import type { DynamicCustomizableHomePageProps } from './components/DynamicCustomizableHomePage';
@@ -292,6 +292,45 @@ export const WorldClock = dynamicHomePagePlugin.provide(
     name: 'WorldClock',
     component: {
       lazy: () => import('./components/WorldClock').then(m => m.WorldClock),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const OnboardingSection = dynamicHomePagePlugin.provide(
+  createComponentExtension({
+    name: 'OnboardingSection',
+    component: {
+      lazy: () =>
+        import('./components/OnboardingSection').then(m => m.OnboardingSection),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const EntitySection = dynamicHomePagePlugin.provide(
+  createComponentExtension({
+    name: 'EntitySection',
+    component: {
+      lazy: () =>
+        import('./components/EntitySection').then(m => m.EntitySection),
+    },
+  }),
+);
+
+/**
+ * @public
+ */
+export const TemplateSection = dynamicHomePagePlugin.provide(
+  createComponentExtension({
+    name: 'TemplateSection',
+    component: {
+      lazy: () =>
+        import('./components/TemplateSection').then(m => m.TemplateSection),
     },
   }),
 );

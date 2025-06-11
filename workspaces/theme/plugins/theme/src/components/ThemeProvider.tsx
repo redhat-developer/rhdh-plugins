@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ReactNode } from 'react';
 import { AppTheme } from '@backstage/core-plugin-api';
 import { UnifiedTheme, UnifiedThemeProvider } from '@backstage/theme';
 
@@ -42,7 +42,7 @@ const ThemeProvider = ({
   children,
 }: {
   theme: UnifiedTheme;
-  children: React.ReactNode;
+  children: ReactNode;
 }) => (
   <UnifiedThemeProvider theme={theme}>
     <StyledEngineProvider injectFirst>

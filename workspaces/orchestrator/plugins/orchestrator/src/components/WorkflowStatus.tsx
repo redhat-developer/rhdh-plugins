@@ -16,13 +16,15 @@
 
 import React from 'react';
 
-import { Box, makeStyles, Tooltip } from '@material-ui/core';
-import CheckCircleOutlinedIcon from '@material-ui/icons/CheckCircleOutlined';
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
+import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
+import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
+import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
+import { makeStyles } from 'tss-react/mui';
 
 import { AVAILABLE, UNAVAILABLE } from '../constants';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   warning: {
     color: theme.palette.warning.main,
   },
@@ -36,11 +38,11 @@ export const WorkflowStatus = ({
 }: {
   availability: string | undefined | boolean;
 }) => {
-  const styles = useStyles();
+  const { classes } = useStyles();
   if (availability === AVAILABLE || availability === true) {
     return (
       <Box display="flex" alignItems="center">
-        <CheckCircleOutlinedIcon className={styles.success} />
+        <CheckCircleOutlined className={classes.success} />
         &nbsp; {AVAILABLE}
       </Box>
     );
@@ -48,7 +50,7 @@ export const WorkflowStatus = ({
     return (
       <Tooltip title="Workflow is currently down or in an error state">
         <Box display="flex" alignItems="center">
-          <WarningAmberOutlinedIcon className={styles.warning} />
+          <WarningAmberOutlined className={classes.warning} />
           &nbsp; {UNAVAILABLE}
         </Box>
       </Tooltip>

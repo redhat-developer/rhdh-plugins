@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useContext } from 'react';
 
 import { InfoCard } from '@backstage/core-components';
 
@@ -23,7 +23,7 @@ import Button from '@mui/material/Button';
 import { TestContextOne } from './TestProviderOne';
 
 export const TestCardOne = () => {
-  const value = React.useContext(TestContextOne);
+  const value = useContext(TestContextOne);
   return (
     <InfoCard title="Context one">
       <div

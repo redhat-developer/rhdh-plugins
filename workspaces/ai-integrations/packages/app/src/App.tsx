@@ -40,7 +40,7 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { searchPage } from './components/search/SearchPage';
 import { Root } from './components/Root';
-import { getThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import {
   AlertDisplay,

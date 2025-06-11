@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,15 +16,31 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 
-import { WorkflowExecutionResponse } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
-
 import { DataIndexService } from './DataIndexService';
 import { SonataFlowService } from './SonataFlowService';
 
 describe('SonataFlowService', () => {
   let loggerMock: jest.Mocked<LoggerService>;
+  let dataIndexServiceMock: jest.Mocked<DataIndexService>;
   let sonataFlowService: SonataFlowService;
+  const serviceUrl = 'http://example.com/workflows';
+  const definitionId = 'workflow-123';
 
+  const setupTest = (responseConfig: {
+    ok: boolean;
+    status?: number;
+    statusText?: string;
+    json: any;
+  }): Partial<Response> => {
+    const mockResponse: Partial<Response> = {
+      ok: responseConfig.ok,
+      status: responseConfig.status || (responseConfig.ok ? 200 : 500),
+      statusText: responseConfig.statusText,
+      json: jest.fn().mockResolvedValue(responseConfig.json),
+    };
+    global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
+    return mockResponse;
+  };
   beforeAll(() => {
     loggerMock = {
       info: jest.fn(),
@@ -32,11 +48,9 @@ describe('SonataFlowService', () => {
       error: jest.fn(),
       warn: jest.fn(),
       child: jest.fn(),
-    };
-    sonataFlowService = new SonataFlowService(
-      {} as DataIndexService,
-      loggerMock,
-    );
+    } as any;
+    dataIndexServiceMock = {} as any;
+    sonataFlowService = new SonataFlowService(dataIndexServiceMock, loggerMock);
   });
 
   beforeEach(() => {
@@ -48,9 +62,8 @@ describe('SonataFlowService', () => {
   });
 
   describe('fetchWorkflowInfoOnService', () => {
-    const serviceUrl = 'http://example.com';
-    const definitionId = 'workflow-123';
-    const urlToFetch = 'http://example.com/management/processes/workflow-123';
+    const urlToFetch =
+      'http://example.com/workflows/management/processes/workflow-123';
     beforeEach(() => {
       jest.clearAllMocks();
     });
@@ -59,7 +72,7 @@ describe('SonataFlowService', () => {
       // Given
       const mockResponse: Partial<Response> = {
         ok: true,
-        json: jest.fn().mockResolvedValue({ id: 'workflow-123' }),
+        json: jest.fn().mockResolvedValue({ id: definitionId }),
       };
       global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
 
@@ -69,7 +82,6 @@ describe('SonataFlowService', () => {
         serviceUrl,
       });
 
-      // Then
       expect(fetch).toHaveBeenCalledWith(urlToFetch);
       expect(result).toEqual({ id: definitionId });
       expect(loggerMock.debug).toHaveBeenCalledWith(
@@ -82,8 +94,9 @@ describe('SonataFlowService', () => {
       const mockResponse: Partial<Response> = {
         ok: false,
         status: 500,
-        statusText: 'Not Found',
+        statusText: 'Internal Server Error',
         json: jest.fn().mockResolvedValue({
+          message: 'Something went wrong',
           details: 'Error details',
           stack: 'Error stack trace',
         }),
@@ -97,16 +110,29 @@ describe('SonataFlowService', () => {
           definitionId,
           serviceUrl,
         });
-      } catch (error) {
+      } catch (error: any) {
         result = error;
       }
 
+      // Then
       expect(result).toBeDefined();
+      expect(result.message).toContain(
+        `HTTP GET request to http://example.com/workflows/management/processes/workflow-123 failed.`,
+      );
+      expect(result.message).toContain(`Status Code: 500`);
+      expect(result.message).toContain(`Status Text: Internal Server Error`);
+      expect(result.message).toContain(`Message: Something went wrong`);
+      expect(result.message).toContain(`Details: Error details`);
+      expect(result.message).toContain(`Stack Trace: Error stack trace`);
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        'Error during operation \'Get workflow info\' on workflow workflow-123 with service URL http://example.com/workflows/management/processes/workflow-123: {"message":"Something went wrong","details":"Error details","stack":"Error stack trace"}',
+      );
     });
 
     it('should propagate thrown error when fetch throws an error', async () => {
       // Given
-      global.fetch = jest.fn().mockRejectedValue(new Error('Network Error'));
+      const errorMessage = 'Network Error';
+      global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
 
       // When
       let result;
@@ -115,19 +141,18 @@ describe('SonataFlowService', () => {
           definitionId,
           serviceUrl,
         });
-      } catch (error) {
+      } catch (error: any) {
         result = error;
       }
 
+      // Then
       expect(result).toBeDefined();
+      expect(result.message).toEqual(`Network Error`);
     });
   });
   describe('executeWorkflow', () => {
-    const serviceUrl = 'http://example.com/workflows';
-    const definitionId = 'workflow-123';
-    const urlToFetch = `${serviceUrl}/${definitionId}`;
     const inputData = { var1: 'value1' };
-
+    const urlToFetch = 'http://example.com/workflows/workflow-123';
     const expectedFetchRequestInit = (): RequestInit => {
       return {
         method: 'POST',
@@ -136,38 +161,28 @@ describe('SonataFlowService', () => {
       };
     };
 
-    const setupTest = (responseConfig: {
-      ok: boolean;
-      status?: number;
-      statusText?: string;
-      json: any;
-    }): Partial<Response> => {
-      const mockResponse: Partial<Response> = {
-        ok: responseConfig.ok,
-        status: responseConfig.status || (responseConfig.ok ? 200 : 500),
-        statusText: responseConfig.statusText,
-        json: jest.fn().mockResolvedValue(responseConfig.json),
-      };
-      global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
-      return mockResponse;
-    };
-
-    const runErrorTest = async (): Promise<
-      WorkflowExecutionResponse | undefined
-    > => {
-      return await sonataFlowService.executeWorkflow({
-        definitionId,
-        serviceUrl,
-        inputData,
-      });
+    const runErrorTest = async (): Promise<void> => {
+      try {
+        await sonataFlowService.executeWorkflow({
+          definitionId,
+          serviceUrl,
+          inputData,
+        });
+      } catch (error) {
+        throw error;
+      }
     };
 
     beforeEach(() => {
       jest.clearAllMocks();
     });
-    it('should return workflow execution response when the request is successful', async () => {
+    it('should return workflow execution response when ok is false but id is defined', async () => {
       // Given
-      setupTest({ ok: true, json: { id: definitionId, status: 'completed' } });
+      const mockResponse = {
+        ok: false,
+        json: { id: definitionId, status: 'completed' },
+      };
+      setupTest(mockResponse);
 
       // When
       const result = await sonataFlowService.executeWorkflow({
@@ -185,71 +200,65 @@ describe('SonataFlowService', () => {
       expect(loggerMock.debug).toHaveBeenCalledWith(
         'Execute workflow successful. Response: {"id":"workflow-123","status":"completed"}',
       );
-      // Verify that all other logger methods were not called
-      expect(loggerMock.debug).toHaveBeenCalledTimes(2);
-      expect(loggerMock.info).not.toHaveBeenCalled();
-      expect(loggerMock.error).not.toHaveBeenCalled();
-      expect(loggerMock.warn).not.toHaveBeenCalled();
-      expect(loggerMock.child).not.toHaveBeenCalled();
     });
 
-    it('should include businessKey in the URL if provided', async () => {
-      // Given
-      const businessKey = 'key-123';
-      setupTest({ ok: true, json: { id: definitionId, status: 'completed' } });
-
-      // When
-      const result = await sonataFlowService.executeWorkflow({
-        definitionId,
-        serviceUrl,
-        inputData,
-        businessKey,
-      });
-
-      // Then
-      expect(fetch).toHaveBeenCalledWith(
-        `${serviceUrl}/${definitionId}?businessKey=${businessKey}`,
-        expectedFetchRequestInit(),
-      );
-      expect(result).toEqual({ id: definitionId, status: 'completed' });
-    });
-    it('should propagate thrown error when the fetch response is not ok without extra info', async () => {
+    it('should propagate fetch thrown error', async () => {
       // When
       setupTest({
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
-        json: { details: undefined, stack: undefined },
+        json: {},
       });
 
+      const errorMessage = 'Network Error';
+      global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
       let result;
       try {
         await runErrorTest();
-      } catch (error) {
+      } catch (error: any) {
         result = error;
       }
 
       expect(result).toBeDefined();
+      expect(result.message).toEqual('Network Error');
     });
     it('should propagate thrown exception when the fetch response is not ok with extra info', async () => {
       // When
       setupTest({
         ok: false,
-        json: { details: 'Error details test', stack: 'Error stacktrace test' },
+        status: 400,
+        statusText: 'Bad Request',
+        json: {
+          details: 'Error details test',
+          stack: 'Error stacktrace test',
+          moreStuff: 'More details',
+        },
       });
 
       let result;
       try {
         await runErrorTest();
-      } catch (error) {
+      } catch (error: any) {
         result = error;
       }
 
       expect(result).toBeDefined();
+      expect(result.message).toContain(
+        `HTTP POST request to ${urlToFetch} failed.`,
+      );
+      expect(result.message).toContain(`Status Code: 400`);
+      expect(result.message).toContain(`Status Text: Bad Request`);
+      expect(result.message).toContain(`Details: Error details test`);
+      expect(result.message).toContain(`Stack Trace: Error stacktrace test`);
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        'Error during operation \'Execute\' on workflow workflow-123 with service URL http://example.com/workflows/workflow-123: {"details":"Error details test","stack":"Error stacktrace test","moreStuff":"More details"}',
+      );
     });
     it('should propagate thrown error when fetch throws an error', async () => {
       // Given
-      global.fetch = jest.fn().mockRejectedValue(new Error('Network Error'));
+      const errorMessage = 'Network Error';
+      global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
 
       // When
       let result;
@@ -259,118 +268,183 @@ describe('SonataFlowService', () => {
           serviceUrl,
           inputData: inputData,
         });
-      } catch (error) {
+      } catch (error: any) {
         result = error;
       }
 
       expect(result).toBeDefined();
+      expect(result.message).toEqual('Network Error');
     });
   });
 
-  describe('createPrefixFetchErrorMessage', () => {
-    // Constants
-    const TEST_URL = 'http://example.com';
-    const STATUS_TEXT_BAD_REQUEST = 'Bad Request';
-    const STATUS_TEXT_NOT_FOUND = 'Not Found';
-    const STATUS_TEXT_INTERNAL_SERVER_ERROR = 'Internal Server Error';
-    const DETAILS = 'Some error details';
-    const STACK_TRACE = 'Error stack trace';
+  describe('retriggerInstance', () => {
+    const instanceId = 'instance-456';
+    const urlToFetch = `http://example.com/workflows/management/processes/workflow-123/instances/${instanceId}/retrigger`;
 
-    it('should return the correct message with all fields provided', async () => {
+    const runErrorTest = async (): Promise<void> => {
+      try {
+        await sonataFlowService.retriggerInstance({
+          definitionId,
+          instanceId,
+          serviceUrl,
+        });
+      } catch (error) {
+        throw error;
+      }
+    };
+
+    it('should retrigger a workflow instance successfully', async () => {
       // Given
-      const mockResponseJson = { details: DETAILS, stack: STACK_TRACE };
-      const mockResponse = new Response(JSON.stringify(mockResponseJson), {
+      setupTest({ ok: true, json: {} });
+
+      // When
+      const result = await sonataFlowService.retriggerInstance({
+        definitionId,
+        instanceId,
+        serviceUrl,
+      });
+
+      // Then
+      expect(fetch).toHaveBeenCalledWith(urlToFetch, { method: 'POST' });
+      expect(result).toBe(true);
+    });
+
+    it('should handle errors when retriggering a workflow instance', async () => {
+      // Given
+      setupTest({
+        ok: false,
         status: 400,
-        statusText: STATUS_TEXT_BAD_REQUEST,
+        statusText: 'Bad Request',
+        json: { message: 'Invalid input' },
       });
 
       // When
-      const result = await sonataFlowService.createPrefixFetchErrorMessage(
-        TEST_URL,
-        mockResponse,
-        mockResponseJson,
-        'POST',
-      );
+      let result;
+      try {
+        await runErrorTest();
+      } catch (error: any) {
+        result = error;
+      }
 
       // Then
-      const expectedMessage = `Request POST ${TEST_URL} failed with: StatusCode: 400 StatusText: ${STATUS_TEXT_BAD_REQUEST}, Details: ${DETAILS}, Stack: ${STACK_TRACE}`;
-      expect(result).toBe(expectedMessage);
+      expect(result).toBeDefined();
+      expect(result.message).toContain(
+        `HTTP POST request to ${urlToFetch} failed.`,
+      );
+      expect(result.message).toContain(`Status Code: 400`);
+      expect(result.message).toContain(`Status Text: Bad Request`);
+      expect(result.message).toContain(`Message: Invalid input`);
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        'Error during operation \'Retrigger\' on workflow workflow-123 with service URL http://example.com/workflows/management/processes/workflow-123/instances/instance-456/retrigger: {"message":"Invalid input"}',
+      );
     });
 
-    it('should return the correct message without details and stack', async () => {
+    it('should propagate thrown error when fetch throws an error during retrigger', async () => {
       // Given
-      const mockResponseJson = {};
-      const mockResponse = new Response(JSON.stringify(mockResponseJson), {
+      const errorMessage = 'Network Error';
+      global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+      // When
+      let result;
+      try {
+        await sonataFlowService.retriggerInstance({
+          definitionId,
+          instanceId,
+          serviceUrl,
+        });
+      } catch (error: any) {
+        result = error;
+      }
+
+      // Then
+      expect(result).toBeDefined();
+      expect(result.message).toContain(`Network Error`);
+    });
+  });
+
+  describe('abortInstance', () => {
+    const instanceId = 'instance-456';
+    const urlToFetch = `http://example.com/workflows/management/processes/workflow-123/instances/${instanceId}`;
+    const operation = 'Abort';
+    const logErrorPrefix = `Error during operation '${operation}' on workflow ${definitionId} with service URL ${urlToFetch}`;
+
+    const runErrorTest = async (): Promise<void> => {
+      try {
+        await sonataFlowService.abortInstance({
+          definitionId,
+          instanceId,
+          serviceUrl,
+        });
+      } catch (error) {
+        throw error;
+      }
+    };
+
+    it('should abort a workflow instance successfully', async () => {
+      // Given
+      setupTest({ ok: true, status: 204, json: {} });
+
+      // When
+      await sonataFlowService.abortInstance({
+        definitionId,
+        instanceId,
+        serviceUrl,
+      });
+
+      // Then
+      expect(fetch).toHaveBeenCalledWith(urlToFetch, { method: 'DELETE' });
+    });
+
+    it('should handle errors when aborting a workflow instance', async () => {
+      // Given
+      setupTest({
+        ok: false,
         status: 404,
-        statusText: STATUS_TEXT_NOT_FOUND,
+        statusText: 'Not Found',
+        json: { message: 'Instance not found' },
       });
 
       // When
-      const result = await sonataFlowService.createPrefixFetchErrorMessage(
-        TEST_URL,
-        mockResponse,
-        mockResponseJson,
-      );
+      let result;
+      try {
+        await runErrorTest();
+      } catch (error: any) {
+        result = error;
+      }
 
       // Then
-      const expectedMessage = `Request GET ${TEST_URL} failed with: StatusCode: 404 StatusText: ${STATUS_TEXT_NOT_FOUND}`;
-      expect(result).toBe(expectedMessage);
+      expect(result).toBeDefined();
+      expect(result.message).toContain(
+        `HTTP DELETE request to ${urlToFetch} failed.`,
+      );
+      expect(result.message).toContain(`Status Code: 404`);
+      expect(result.message).toContain(`Status Text: Not Found`);
+      expect(result.message).toContain(`Message: Instance not found`);
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        `${logErrorPrefix}: {\"message\":\"Instance not found\"}`,
+      );
     });
 
-    it('should return the correct message with only status code', async () => {
+    it('should propagate thrown error when fetch throws an error during abort', async () => {
       // Given
-      const mockResponseJson = {};
-      const mockResponse = new Response(JSON.stringify(mockResponseJson), {
-        status: 500,
-      });
+      const errorMessage = 'Network Error';
+      global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
 
       // When
-      const result = await sonataFlowService.createPrefixFetchErrorMessage(
-        TEST_URL,
-        mockResponse,
-        mockResponseJson,
-      );
+      let result;
+      try {
+        await sonataFlowService.abortInstance({
+          definitionId,
+          instanceId,
+          serviceUrl,
+        });
+      } catch (error: any) {
+        result = error;
+      }
 
       // Then
-      const expectedMessage = `Request GET ${TEST_URL} failed with: StatusCode: 500 Unexpected error`;
-      expect(result).toBe(expectedMessage);
-    });
-
-    it('should return the unexpected error message if no other fields are present', async () => {
-      // Given
-      const mockResponseJson = {};
-      const mockResponse = new Response(JSON.stringify(mockResponseJson));
-
-      // When
-      const result = await sonataFlowService.createPrefixFetchErrorMessage(
-        TEST_URL,
-        mockResponse,
-        mockResponseJson,
-      );
-
-      // Then
-      const expectedMessage = `Request GET ${TEST_URL} failed with: StatusCode: 200 Unexpected error`;
-      expect(result).toBe(expectedMessage);
-    });
-
-    it('should handle response with undefined JSON gracefully', async () => {
-      // Given
-      const mockResponse = new Response(undefined, {
-        status: 500,
-        statusText: STATUS_TEXT_INTERNAL_SERVER_ERROR,
-      });
-      jest.spyOn(mockResponse, 'json').mockResolvedValue(undefined);
-
-      // When
-      const result = await sonataFlowService.createPrefixFetchErrorMessage(
-        TEST_URL,
-        mockResponse,
-        {},
-      );
-
-      // Then
-      const expectedMessage = `Request GET ${TEST_URL} failed with: StatusCode: 500 StatusText: ${STATUS_TEXT_INTERNAL_SERVER_ERROR}`;
-      expect(result).toBe(expectedMessage);
+      expect(result).toBeDefined();
+      expect(result.message).toContain(`Network Error`);
     });
   });
 });

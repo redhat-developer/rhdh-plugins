@@ -15,6 +15,7 @@
  */
 import React from 'react';
 
+import { makeStyles } from '@material-ui/core';
 import {
   AttachmentEdit,
   ChatbotDisplayMode,
@@ -23,6 +24,13 @@ import {
 
 import { useFileAttachmentContext } from './AttachmentContext';
 
+const useStyles = makeStyles(() => ({
+  modalFooter: {
+    '&>button': {
+      width: '12% !important',
+    },
+  },
+}));
 const Attachment = () => {
   const {
     currentFileContent,
@@ -30,6 +38,8 @@ const Attachment = () => {
     modalState,
     setCurrentFileContent,
   } = useFileAttachmentContext();
+  const classes = useStyles();
+
   if (!currentFileContent) {
     return null;
   }
@@ -49,6 +59,8 @@ const Attachment = () => {
         code={currentFileContent?.content}
         fileName={currentFileContent?.name}
         isModalOpen={isPreviewModalOpen}
+        secondaryActionButtonText="Close"
+        modalFooterClassName={classes.modalFooter}
         onEdit={() => {
           setIsPreviewModalOpen(false);
           setIsEditModalOpen(true);
@@ -65,6 +77,7 @@ const Attachment = () => {
         code={currentFileContent?.content}
         fileName={currentFileContent?.name}
         isModalOpen={isEditModalOpen}
+        modalFooterClassName={classes.modalFooter}
         onSave={(_, content) => {
           setCurrentFileContent({
             ...currentFileContent,

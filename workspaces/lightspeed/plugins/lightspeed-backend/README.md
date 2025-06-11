@@ -34,7 +34,8 @@ lightspeed:
   servers:
     - id: <server id>
       url: <serverURL>
-      token: <api key> # dummy token
+      token: <api key>
+      questionValidation: true # Optional - To disable question (prompt) validation set it to false.
 ```
 
 Example local development configuration:
@@ -45,6 +46,17 @@ lightspeed:
     - id: 'my-llm-server'
       url: 'https://localhost:443/v1'
       token: 'js92n-ssj28dbdk902' # dummy token
+```
+
+`questionValidation` is default to be enabled with topic restriction on RHDH related topics.
+If you want to disable the validation, set the value to be `false`.
+
+Example configuration to disable `questionValidation`:
+
+```yaml
+lightspeed:
+  questionValidation: false
+  servers: ... ...
 ```
 
 #### Permission Framework Support

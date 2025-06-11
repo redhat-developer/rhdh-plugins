@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { ComponentType, CSSProperties } from 'react';
+
 /**
  * Global Header Config
  *
@@ -67,12 +69,12 @@ export interface ApplicationLauncherDropdownMountPointConfig {
  * @public
  */
 export interface GlobalHeaderComponentMountPoint {
-  Component: React.ComponentType<{
-    layout?: React.CSSProperties;
+  Component: ComponentType<{
+    layout?: CSSProperties;
   }>;
   config?: GlobalHeaderComponentMountPointConfig & {
     props?: Record<string, any>;
-    layout?: React.CSSProperties;
+    layout?: CSSProperties;
   };
 }
 
@@ -82,7 +84,7 @@ export interface GlobalHeaderComponentMountPoint {
  * @public
  */
 export interface CreateDropdownMountPoint {
-  Component: React.ComponentType;
+  Component: ComponentType;
   config?: CreateDropdownMountPointConfig & {
     props?: Record<string, any>;
   };
@@ -94,14 +96,14 @@ export interface CreateDropdownMountPoint {
  * @public
  */
 export interface ProfileDropdownMountPoint {
-  Component: React.ComponentType;
+  Component: ComponentType;
   config?: ProfileDropdownMountPointConfig & {
     props?: Record<string, any>;
   };
 }
 
 export interface ApplicationLauncherDropdownMountPoint {
-  Component: React.ComponentType<any>;
+  Component: ComponentType<any>;
   config?: ApplicationLauncherDropdownMountPointConfig & {
     props?: Record<string, any>;
   };

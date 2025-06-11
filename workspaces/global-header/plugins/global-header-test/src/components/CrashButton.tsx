@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useState } from 'react';
 import Button from '@mui/material/Button';
 
 /**
@@ -25,7 +25,7 @@ export interface CrashButtonProps {
 }
 
 export const CrashButton = ({ label, ...props }: CrashButtonProps) => {
-  const [crash, setCrash] = React.useState(false);
+  const [crash, setCrash] = useState(false);
   if (crash) {
     throw new Error('This is an expected render-crash from CrashButton!');
   }

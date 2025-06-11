@@ -88,6 +88,36 @@ export const contents = [
   },
 ];
 
+const repeatedSentence =
+  'OpenShift deployment is a way to manage applications on the OpenShift platform.';
+const openshiftLongParagraph = `${repeatedSentence} `.repeat(30);
+
+export const demoChatContent = [
+  {
+    lc: 1,
+    type: 'constructor',
+    id: ['langchain_core', 'messages', 'HumanMessage'],
+    content: 'let me know about openshift deplyment in detail',
+    response_metadata: {
+      created_at: createdAt,
+    },
+    additional_kwargs: {},
+  },
+  {
+    lc: 1,
+    type: 'constructor',
+    id: ['langchain_core', 'messages', 'AIMessage'],
+    content: openshiftLongParagraph,
+    response_metadata: {
+      created_at: createdAt,
+      model: models[1].id,
+      tool_calls: [],
+      invalid_tool_calls: [],
+      additional_kwargs: {},
+    },
+  },
+];
+
 export const botResponse = `This is a placeholder message`;
 
 export const generateQueryResponse = (conversationId: string) => {

@@ -19,21 +19,22 @@ import React from 'react';
 import { InfoCard } from '@backstage/core-components';
 import { AboutField } from '@backstage/plugin-catalog';
 
-import { Grid, makeStyles } from '@material-ui/core';
-import { Skeleton } from '@material-ui/lab';
+import Grid from '@mui/material/Grid';
+import Skeleton from '@mui/material/Skeleton';
+import { makeStyles } from 'tss-react/mui';
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import WorkflowOverviewFormatter from '../../dataFormatters/WorkflowOverviewFormatter';
 import { WorkflowStatus } from '../WorkflowStatus';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()(() => ({
   details: {
     overflowY: 'auto',
     minHeight: '10rem',
     maxHeight: '15rem',
   },
-});
+}));
 
 const WorkflowDefinitionDetailsCard = ({
   loading,
@@ -42,7 +43,7 @@ const WorkflowDefinitionDetailsCard = ({
   loading: boolean;
   workflowOverview?: WorkflowOverviewDTO;
 }) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   const formattedWorkflowOverview = React.useMemo(
     () =>

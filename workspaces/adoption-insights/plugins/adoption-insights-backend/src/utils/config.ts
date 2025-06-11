@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { RootConfigService } from '@backstage/backend-plugin-api/index';
+import { RootConfigService } from '@backstage/backend-plugin-api';
 import { ProcessorConfigOptions } from '../domain/EventBatchProcessor';
 
 export const getConfigurationOptions = (

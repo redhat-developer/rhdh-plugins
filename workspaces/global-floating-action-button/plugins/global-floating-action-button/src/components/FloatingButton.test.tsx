@@ -17,7 +17,6 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import AddIcon from '@mui/icons-material/Add';
 import GitIcon from '@mui/icons-material/GitHub';
 import SnowFlake from '@mui/icons-material/AcUnit';
-import * as React from 'react';
 import { FloatingButton } from './FloatingButton';
 import { Slot } from '../types';
 

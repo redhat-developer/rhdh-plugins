@@ -18,6 +18,8 @@ import { isEqual } from 'lodash';
 import { JsonObject, JsonValue } from '@backstage/types';
 import { evaluateTemplateProps } from './evaluateTemplate';
 
+const EMPTY = [] as string[];
+
 export const useRetriggerEvaluate = (
   templateUnitEvaluator: evaluateTemplateProps['unitEvaluator'],
   formData = {} as JsonObject,
@@ -27,7 +29,7 @@ export const useRetriggerEvaluate = (
   useEffect(() => {
     if (!conditions) {
       if (!evaluated || evaluated.length > 0) {
-        setEvaluated([]);
+        setEvaluated(EMPTY);
       }
     } else {
       const doItAsync = async () => {

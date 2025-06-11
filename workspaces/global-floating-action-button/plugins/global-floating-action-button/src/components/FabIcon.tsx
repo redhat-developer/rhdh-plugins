@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as React from 'react';
+import type { ReactElement } from 'react';
+
+import { isValidElement } from 'react';
 import { useApp } from '@backstage/core-plugin-api';
 
 import MuiIcon from '@mui/material/Icon';
 
-export const FabIcon = ({ icon }: { icon: string | React.ReactElement }) => {
+export const FabIcon = ({ icon }: { icon: string | ReactElement }) => {
   const app = useApp();
 
   if (!icon) {
     return null;
   }
 
-  if (React.isValidElement(icon)) {
+  if (isValidElement(icon)) {
     return icon;
   }
 

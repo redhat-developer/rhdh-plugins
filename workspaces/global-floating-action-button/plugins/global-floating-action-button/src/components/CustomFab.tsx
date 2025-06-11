@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import type { ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import Fab from '@mui/material/Fab';
@@ -39,7 +39,7 @@ const FABLabel = ({
   label: string;
   slot: Slot;
   showExternalIcon: boolean;
-  icon?: string | React.ReactElement;
+  icon?: string | ReactElement;
   order: { externalIcon?: number; icon?: number };
 }) => {
   const styles = useStyles();

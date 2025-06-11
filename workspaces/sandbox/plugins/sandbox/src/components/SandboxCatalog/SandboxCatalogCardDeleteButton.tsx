@@ -37,13 +37,15 @@ export const SandboxCatalogCardDeleteButton: React.FC<
   if (
     id === Product.AAP &&
     (ansibleStatus === AnsibleStatus.READY ||
-      ansibleStatus === AnsibleStatus.PROVISIONING)
+      ansibleStatus === AnsibleStatus.PROVISIONING ||
+      ansibleStatus === AnsibleStatus.UNKNOWN)
   ) {
     return (
       <Button
         size="medium"
         color="primary"
         variant="contained"
+        data-testid="delete-aap"
         onClick={() => {
           handleDeleteButtonClick(id);
         }}
@@ -59,7 +61,7 @@ export const SandboxCatalogCardDeleteButton: React.FC<
           marginTop: theme.spacing(0.5),
         }}
       >
-        {ansibleStatus === AnsibleStatus.PROVISIONING ? 'Stop' : 'Delete'}
+        {ansibleStatus === AnsibleStatus.READY ? 'Delete' : 'Stop'}
       </Button>
     );
   }

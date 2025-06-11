@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React, { Fragment } from 'react';
+import { Fragment } from 'react';
+import type { ComponentType, FC } from 'react';
 import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
@@ -28,7 +29,7 @@ import ListSubheader from '@mui/material/ListSubheader';
  * @public
  */
 export interface MenuItemConfig {
-  Component: React.ComponentType<MenuItemLinkProps | {}>;
+  Component: ComponentType<MenuItemLinkProps | {}>;
   label: string;
   icon?: string;
   subLabel?: string;
@@ -44,7 +45,7 @@ export interface MenuSectionConfig {
   handleClose: () => void;
 }
 
-export const MenuSection: React.FC<MenuSectionConfig> = ({
+export const MenuSection: FC<MenuSectionConfig> = ({
   sectionLabel,
   optionalLink,
   optionalLinkLabel,

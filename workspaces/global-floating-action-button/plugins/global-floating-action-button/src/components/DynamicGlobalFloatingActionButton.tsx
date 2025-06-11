@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { useFabMountPoints } from '../hooks/useFabMountPoints';
 import { GlobalFloatingActionButton } from './GlobalFloatingActionButton';
 import { FloatingActionButton } from '../types';

@@ -24,7 +24,7 @@ import {
 } from '../routes';
 import { ExecuteWorkflowPage } from './ExecuteWorkflowPage/ExecuteWorkflowPage';
 import { OrchestratorPage } from './OrchestratorPage/OrchestratorPage';
-import { WorkflowInstancePage } from './WorkflowInstancePage';
+import { WorkflowInstancePage } from './WorkflowInstancePage/WorkflowInstancePage';
 import { WorkflowPage } from './WorkflowPage';
 
 export const Router = () => {

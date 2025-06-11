@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { createContext, useContext } from 'react';
+import { useState, useMemo, createContext, useContext } from 'react';
+import type { FC, ReactNode } from 'react';
 
 interface DateRange {
   startDateRange: Date | null;
@@ -28,15 +29,14 @@ export const DateRangeContext = createContext<DateRange | undefined>(
   undefined as any,
 );
 
-export const DateRangeProvider: React.FC<{ children: React.ReactNode }> = ({
+export const DateRangeProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [startDateRange, setStartDateRange] = React.useState<Date | null>(null);
-  const [endDateRange, setEndDateRange] = React.useState<Date | null>(null);
-  const [isDefaultDateRange, setIsDefaultDateRange] =
-    React.useState<boolean>(true);
+  const [startDateRange, setStartDateRange] = useState<Date | null>(null);
+  const [endDateRange, setEndDateRange] = useState<Date | null>(null);
+  const [isDefaultDateRange, setIsDefaultDateRange] = useState<boolean>(true);
 
-  const value = React.useMemo(
+  const value = useMemo(
     () => ({
       startDateRange,
       endDateRange,

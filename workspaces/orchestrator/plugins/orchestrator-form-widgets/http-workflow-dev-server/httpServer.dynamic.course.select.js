@@ -83,9 +83,11 @@ app.get('/coursedetailsschema', (req, res) => {
     room: {
       type: 'string',
       title:
-        'Room (backed by ActiveTextInput, fetches default value, validates externally the data but does not have autocomplete)',
+        'Room (example of ActiveTextInput supplied by SchemaUpdater, validation)',
       'ui:widget': 'ActiveTextInput',
       'ui:props': {
+        devonlycomment:
+          'Fetches default value, validates externally the data but does not have autocomplete.',
         'fetch:url':
           '$${{backend.baseUrl}}/api/proxy/mytesthttpserver/rooms?coursename=$${{current.courseName}}',
         'fetch:response:value': 'room.mydefault',
@@ -100,6 +102,10 @@ app.get('/coursedetailsschema', (req, res) => {
           courseName: '$${{current.courseName}}',
         },
       },
+    },
+    nickname: {
+      type: 'string',
+      title: 'Your nickname',
     },
   };
 
@@ -275,6 +281,56 @@ app.get('/suggested-courses', (req, res) => {
   res.send(JSON.stringify(response));
 });
 
+app.get('/drinks', (req, res) => {
+  logRequest(req);
+
+  // HTTP 200
+  res.send(
+    JSON.stringify({
+      allDrinks: [
+        'water',
+        'sparkling water',
+        'water with lemon',
+        'water on rocks',
+        'prohibited drink',
+      ],
+    }),
+  );
+});
+
+app.post('/validatedrinks', (req, res) => {
+  logRequest(req);
+
+  const field = req.body?.field;
+  const valueRaw = req.body?.value;
+
+  if (field === 'complimentaryDrinks') {
+    const value = JSON.parse(valueRaw);
+    if (!Array.isArray(value)) {
+      // any 4xx or 5xx is fine here
+      res.status(422);
+      res.send({
+        [field]: ['Unexpected validation error - list of drinks is expected'],
+      });
+
+      return;
+    }
+
+    if (value.includes('prohibited drink')) {
+      // any 4xx or 5xx is fine here
+      res.status(422);
+      res.send({
+        [field]: ['You can not have the prohibited drink, try something else'],
+      });
+
+      return;
+    }
+  }
+
+  // The HTTP 200 is important here. The response content "Valid" is not required, just a courtesy.
+  res.status(200);
+  res.send('Valid');
+});
 app.listen(port, () => {
   // eslint-disable-next-line no-console
   console.info(

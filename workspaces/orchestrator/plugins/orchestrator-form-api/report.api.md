@@ -14,7 +14,7 @@ import type { JSONSchema7 } from 'json-schema';
 import { UiSchema } from '@rjsf/utils';
 
 // @public
-export type FormDecoratorProps = Pick<FormProps<JsonObject, JSONSchema7, OrchestratorFormContextProps>, 'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate'> & {
+export type FormDecoratorProps = Pick<FormProps<JsonObject, JSONSchema7, OrchestratorFormContextProps>, 'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate' | 'templates'> & {
     getExtraErrors?: (formData: JsonObject, uiSchema: OrchestratorFormContextProps['uiSchema']) => Promise<ErrorSchema<JsonObject>> | undefined;
 };
 
