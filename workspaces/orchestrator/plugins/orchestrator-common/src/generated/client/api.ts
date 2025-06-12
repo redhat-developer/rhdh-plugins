@@ -441,6 +441,12 @@ export interface ProcessInstanceDTO {
     'businessKey'?: string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ProcessInstanceDTO
+     */
+    'executionSummary'?: Array<string>;
+    /**
+     * 
      * @type {Array<NodeInstanceDTO>}
      * @memberof ProcessInstanceDTO
      */
