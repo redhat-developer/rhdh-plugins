@@ -48,7 +48,7 @@ import {
 } from '../../routes';
 import { getErrorObject } from '../../utils/ErrorUtils';
 import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
-import JsonTextAreaForm from './JsonTextAreaForm';
+import MissingSchemaNotice from './MissingSchemaNotice';
 import { getSchemaUpdater } from './schemaUpdater';
 
 export const ExecuteWorkflowPage = () => {
@@ -75,9 +75,11 @@ export const ExecuteWorkflowPage = () => {
   }, [orchestratorApi, workflowId]);
 
   const [schema, setSchema] = useState<JSONSchema7 | undefined>();
+
   useEffect(() => {
     setSchema(value?.inputSchema);
   }, [value]);
+
   const updateSchema = useMemo(
     () => getSchemaUpdater(schema, setSchema),
     [schema],
@@ -116,7 +118,11 @@ export const ExecuteWorkflowPage = () => {
   const error = responseError || workflowNameError;
   let pageContent;
 
-  if (loading || workflowNameLoading) {
+  if (
+    loading ||
+    workflowNameLoading ||
+    (!loading && value?.inputSchema && !schema) // wait for useEffect to setSchema
+  ) {
     pageContent = <Progress />;
   } else if (error) {
     pageContent = <ResponseErrorPanel error={error} />;
@@ -140,7 +146,7 @@ export const ExecuteWorkflowPage = () => {
                 initialFormData={initialFormData}
               />
             ) : (
-              <JsonTextAreaForm
+              <MissingSchemaNotice
                 handleExecute={handleExecute}
                 isExecuting={isExecuting}
               />
