@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 1.13.1
+
+### Patch Changes
+
+- 2b037a9: Dev dependency update.
+- 2b037a9: Replaced internal usage of `formatByteSize` with a local implementation using the `filesize` library, matching the original output format.
+
 ## 1.13.0
 
 ### Minor Changes
