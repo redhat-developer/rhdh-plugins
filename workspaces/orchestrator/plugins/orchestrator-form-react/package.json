@@ -37,6 +37,7 @@
     "@backstage/core-plugin-api": "^1.10.5",
     "@backstage/types": "^1.2.1",
     "@mui/material": "^5.17.1",
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
     "@rjsf/core": "^5.21.2",
     "@rjsf/material-ui": "^5.21.2",

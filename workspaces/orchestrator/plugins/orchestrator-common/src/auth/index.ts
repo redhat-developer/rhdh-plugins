@@ -13,7 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-export { OrchestratorClient } from './OrchestratorClient';
-export type { OrchestratorClientOptions } from './OrchestratorClient';
-export { orchestratorApiRef } from './api';
+export * from './tokenDescriptorTypes';

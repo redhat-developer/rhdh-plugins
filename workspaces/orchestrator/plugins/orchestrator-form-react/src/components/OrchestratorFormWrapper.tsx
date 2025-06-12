@@ -34,6 +34,7 @@ import {
 
 import { useStepperContext } from '../utils/StepperContext';
 import useValidator from '../utils/useValidator';
+import { AuthRequester } from './AuthRequester';
 import StepperObjectField from './StepperObjectField';
 
 const MuiForm = withTheme<
@@ -118,6 +119,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       <Grid item>
         <MuiForm
           {...omit(decoratorProps, 'getExtraErrors')}
+          widgets={{ AuthRequester, ...decoratorProps.widgets }}
           fields={isMultiStep ? { ObjectField: StepperObjectField } : {}}
           uiSchema={uiSchema}
           validator={validator}

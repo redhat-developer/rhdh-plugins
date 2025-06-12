@@ -53,7 +53,7 @@ export interface AuthToken {
      * @type {string}
      * @memberof AuthToken
      */
-    'provider': string;
+    'provider': AuthTokenProviderEnum;
     /**
      * The auth token itself retrieved from the above specified provider name
      * @type {string}
@@ -61,6 +61,15 @@ export interface AuthToken {
      */
     'token': string;
 }
+
+export const AuthTokenProviderEnum = {
+    Github: 'github',
+    Gitlab: 'gitlab',
+    Microsoft: 'microsoft'
+} as const;
+
+export type AuthTokenProviderEnum = typeof AuthTokenProviderEnum[keyof typeof AuthTokenProviderEnum];
+
 /**
  * The ErrorResponse object represents a common structure for handling errors in API responses. It includes essential information about the error, such as the error message and additional optional details.
  * @export

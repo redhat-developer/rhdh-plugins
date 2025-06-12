@@ -33,6 +33,9 @@ import {
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
 
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
 export class SonataFlowService {
   constructor(
     private readonly dataIndexService: DataIndexService,
@@ -44,18 +47,24 @@ export class SonataFlowService {
     serviceUrl: string;
   }): Promise<WorkflowInfo | undefined> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}`;
-    const response = await fetch(urlToFetch);
-    const jsonResponse = await this.handleWorkflowServiceResponse(
-      'Get workflow info',
-      args.definitionId,
-      urlToFetch,
-      response,
-      'GET',
-    );
-    this.logger.debug(
-      `Fetch workflow info result: ${JSON.stringify(jsonResponse)}`,
-    );
-    return jsonResponse;
+    try {
+      const response = await fetch(urlToFetch);
+      const jsonResponse = await this.handleWorkflowServiceResponse(
+        'Get workflow info',
+        args.definitionId,
+        urlToFetch,
+        response,
+        'GET',
+      );
+      this.logger.debug(
+        `Fetch workflow info result: ${JSON.stringify(jsonResponse)}`,
+      );
+      return jsonResponse;
+    } catch (err) {
+      console.log('error', err);
+
+      throw err;
+    }
   }
 
   public async fetchWorkflowDefinition(
@@ -109,7 +118,7 @@ export class SonataFlowService {
     if (args.authTokens && Array.isArray(args.authTokens)) {
       args.authTokens.forEach(tokenObj => {
         if (tokenObj.provider && tokenObj.token) {
-          const headerKey = `X-Authorization-${tokenObj.provider}`;
+          const headerKey = `X-${capitalize(tokenObj.provider)}-Authorization`;
           headers[headerKey] = String(tokenObj.token); // Ensure token is a string
         }
       });

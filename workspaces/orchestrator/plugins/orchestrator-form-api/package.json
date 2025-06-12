@@ -29,6 +29,7 @@
   "dependencies": {
     "@backstage/core-plugin-api": "^1.10.5",
     "@backstage/types": "^1.2.1",
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@rjsf/core": "^5.21.2",
     "@rjsf/utils": "^5.21.2",
     "json-schema": "^0.4.0"

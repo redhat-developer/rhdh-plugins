@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
-export { OrchestratorClient } from './OrchestratorClient';
-export type { OrchestratorClientOptions } from './OrchestratorClient';
-export { orchestratorApiRef } from './api';
+import { createApiRef } from '@backstage/core-plugin-api';
+
+import {
+  AuthToken,
+  AuthTokenDescriptor,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
+export interface OrchestratorAuthAPi {
+  authenticate(tokenDescriptors: AuthTokenDescriptor[]): Promise<AuthToken[]>;
+}
+
+export const orchestratorAuthApiRef = createApiRef<OrchestratorAuthAPi>({
+  id: 'plugin.orchestrator.auth',
+});

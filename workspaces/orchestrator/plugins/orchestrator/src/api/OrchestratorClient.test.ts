@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  DiscoveryApi,
-  IdentityApi,
-  OAuthApi,
-} from '@backstage/core-plugin-api';
+
+import { DiscoveryApi, IdentityApi } from '@backstage/core-plugin-api';
 import type { JsonObject } from '@backstage/types';
 
 import axios, {
@@ -29,6 +26,7 @@ import axios, {
 
 import {
   AssessedProcessInstanceDTO,
+  AuthToken,
   DefaultApi,
   ExecuteWorkflowResponseDTO,
   PaginationInfoDTO,
@@ -55,16 +53,6 @@ describe('OrchestratorClient', () => {
   const mockToken = 'test-token';
   const defaultAuthHeaders = { Authorization: `Bearer ${mockToken}` };
 
-  /** OAuth mocks for the explicit-provider implementation */
-  const mockGithubAuthApi: jest.Mocked<OAuthApi> = {
-    getAccessToken: jest.fn().mockResolvedValue('mock-token'),
-    /* the rest of the OAuthApi methods are not used in these tests */
-  } as unknown as jest.Mocked<OAuthApi>;
-
-  const mockGitlabAuthApi: jest.Mocked<OAuthApi> = {
-    getAccessToken: jest.fn().mockResolvedValue(''),
-  } as unknown as jest.Mocked<OAuthApi>;
-
   beforeEach(() => {
     jest.clearAllMocks();
     // Create a mock DiscoveryApi with a mocked implementation of getBaseUrl
@@ -86,8 +74,6 @@ describe('OrchestratorClient', () => {
     orchestratorClientOptions = {
       discoveryApi: mockDiscoveryApi,
       identityApi: mockIdentityApi,
-      githubAuthApi: mockGithubAuthApi,
-      gitlabAuthApi: mockGitlabAuthApi,
       axiosInstance: axios,
     };
     orchestratorClient = new OrchestratorClient(orchestratorClientOptions);
@@ -116,7 +102,22 @@ describe('OrchestratorClient', () => {
       );
       axios.request = jest.fn().mockResolvedValueOnce(mockResponse);
 
-      const args = { workflowId, parameters, businessKey };
+      const args: {
+        workflowId: string;
+        parameters: JsonObject;
+        authTokens: AuthToken[];
+        businessKey?: string;
+      } = {
+        workflowId,
+        parameters,
+        authTokens: [
+          {
+            provider: 'github',
+            token: 'mock-token',
+          },
+        ],
+        businessKey,
+      };
 
       return { mockExecResponse, executeWorkflowSpy, args };
     };
