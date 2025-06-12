@@ -1,0 +1,53 @@
+FROM mcr.microsoft.com/playwright:v1.44.0-jammy as build-tools
+
+LABEL maintainer="Developer Sandbox <devsandbox@redhat.com>"
+LABEL author="Developer Sandbox <devsandbox@redhat.com>"
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    GOPATH=/tmp/go \
+    GOCACHE=/tmp/.cache \
+    PATH=$PATH:$GOPATH/bin \
+    GIT_COMMITTER_NAME="Developer Sandbox" \
+    GIT_COMMITTER_EMAIL=devsandbox@redhat.com \
+    GOLANG_VERSION=go1.22.12 \
+    GOLANG_SHA256=4fa4f869b0f7fc6bb1eb2660e74657fbf04cdd290b5aef905585c86051b34d43
+
+# Install additional tools
+# gettext for envsubst
+RUN apt-get update && apt-get install -y \
+    make \
+    gettext \
+    jq \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install kustomize
+RUN curl -s https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash \
+    && mv kustomize /usr/local/bin
+
+# Install yarn
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor -o /usr/share/keyrings/yarn-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/yarn-archive-keyring.gpg] https://dl.yarnpkg.com/debian stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+    apt-get update && apt-get install -y yarn && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install oc CLI
+RUN curl -LO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.15.0/openshift-client-linux.tar.gz && \
+    tar -xzvf openshift-client-linux.tar.gz -C /usr/local/bin oc && \
+    chmod +x /usr/local/bin/oc && \
+    rm -f openshift-client-linux.tar.gz
+
+# Download, verify, and install Go
+ENV PATH=$PATH:/usr/local/go/bin
+WORKDIR /tmp
+RUN curl -Lo ${GOLANG_VERSION}.linux-amd64.tar.gz https://dl.google.com/go/${GOLANG_VERSION}.linux-amd64.tar.gz \
+    && echo "${GOLANG_SHA256} ${GOLANG_VERSION}.linux-amd64.tar.gz" > ${GOLANG_VERSION}.linux-amd64.sha256 \
+    && sha256sum -c ${GOLANG_VERSION}.linux-amd64.sha256 \
+    && tar -C /usr/local -xzf ${GOLANG_VERSION}.linux-amd64.tar.gz \
+    && rm -f ${GOLANG_VERSION}.linux-amd64.tar.gz \
+    && go version
+
+# Set working directory and copy project files
+WORKDIR /app/workspaces/sandbox
+COPY . .
+
+CMD ["make", "test-e2e"]
