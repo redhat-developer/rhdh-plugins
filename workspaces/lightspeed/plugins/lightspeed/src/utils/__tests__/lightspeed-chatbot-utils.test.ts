@@ -300,6 +300,31 @@ describe('getMessageData', () => {
   });
 });
 
+describe('transformDocumentsToSources', () => {
+  it('should return undefined if invalid values are passed to referenced_documents', () => {
+    expect(
+      transformDocumentsToSources(undefined as unknown as any),
+    ).toBeUndefined();
+    expect(transformDocumentsToSources(null as unknown as any)).toBeUndefined();
+    expect(transformDocumentsToSources([] as unknown as any)).toBeUndefined();
+  });
+
+  it('should transform referenced documents into message sources', () => {
+    const sources = transformDocumentsToSources(referenced_documents);
+    expect(sources?.sources).toHaveLength(2);
+    expect(sources).toEqual(
+      expect.objectContaining({
+        sources: expect.arrayContaining([
+          expect.objectContaining({
+            isExternal: true,
+            link: expect.anything(),
+            title: expect.anything(),
+          }),
+        ]),
+      }),
+    );
+  });
+});
 describe('getCategorizeMessages', () => {
   const addProps = (c: ConversationSummary) => ({
     customProp: `prop-${c.conversation_id}`,
