@@ -165,26 +165,19 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
           userFound = true;
           const userStatus = signupDataToStatus(userData);
           userReady = userStatus === 'ready';
+          const userNamespaceReady = !!userData?.defaultUserNamespace;
+          // if user is ready or verification is required we can stop fetching the data
           // if user is ready we can stop fetching the data
-          if (userReady) {
+          if (userReady && userNamespaceReady) {
             const productURLs = productsURLMapping(userData);
             // find the link to open if any
             urlToOpen = productURLs.find(pu => pu.id === id)?.url || '';
             // User has signed up and the trial is ready and user selects the AAP Trial
-            if (userFound && userReady) {
-              if (pdt === Product.AAP) {
-                if (!userData?.defaultUserNamespace) {
-                  // eslint-disable-next-line
-                  console.error(
-                    'unable to provision AAP. user namespace is not defined.',
-                  );
-                  return;
-                }
-                handleAAPInstance(userData.defaultUserNamespace);
-                setAnsibleCredsModalOpen(true);
-              } else if (urlToOpen) {
-                window.open(urlToOpen, '_blank');
-              }
+            if (pdt === Product.AAP) {
+              handleAAPInstance(userData.defaultUserNamespace as string);
+              setAnsibleCredsModalOpen(true);
+            } else if (urlToOpen) {
+              window.open(urlToOpen, '_blank');
             }
             break;
           }

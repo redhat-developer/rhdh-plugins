@@ -141,14 +141,17 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
             const userStatus = signupDataToStatus(userData);
             verificationRequired = userStatus === 'verify';
             userReady = userStatus === 'ready';
+            const userNamespaceReady =
+              userData?.defaultUserNamespace !== undefined;
             // if user is ready or verification is required we can stop fetching the data
-            if (userReady || verificationRequired) {
+            if ((userReady || verificationRequired) && userNamespaceReady) {
               const productURLs = productsURLMapping(userData);
               // find the link to open if any
               urlToOpen = productURLs.find(pu => pu.id === id)?.url || '';
               if (urlToOpen && !verificationRequired) {
-                // open url if user is ready and not futher verification is required
+                // open url if user is ready and no further verification is required
                 window.open(urlToOpen, '_blank');
+                showGreenCorner();
               }
               break;
             }
@@ -165,7 +168,9 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
     // User has signed up but require verification
     if (userFound && verificationRequired) {
       setVerifyPhoneModalOpen(true);
+      return;
     }
+
     // User has signed up and the trial is ready and user selects the AAP Trial
     if (userFound && userReady && pdt === Product.AAP) {
       if (!userData?.defaultUserNamespace) {
@@ -177,8 +182,8 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
       }
       handleAAPInstance(userData.defaultUserNamespace);
       setAnsibleCredsModalOpen(true);
+      showGreenCorner();
     }
-    showGreenCorner();
   };
 
   const handleDeleteButtonClick = async (pdt: Product) => {
@@ -269,6 +274,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
           {description?.map(point => (
             <Typography
               key={point.value}
+              component="div"
               color="textPrimary"
               style={{ fontSize: '14px', paddingBottom: '8px' }}
             >
