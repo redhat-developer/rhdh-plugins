@@ -21,7 +21,6 @@ import { useAsync } from 'react-use';
 import { useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { useDrawer } from '@janus-idp/shared-react';
 import EditIcon from '@mui/icons-material/Edit';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import IconButton from '@mui/material/IconButton';
@@ -38,6 +37,7 @@ import {
   ImportJobStatus,
   RepositoryStatus,
 } from '../../types';
+import { useDrawer } from '../DrawerContext';
 
 const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
   const { setDrawerData, setOpenDrawer, drawerData } = useDrawer();
