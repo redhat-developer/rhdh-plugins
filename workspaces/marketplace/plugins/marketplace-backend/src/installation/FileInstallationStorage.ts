@@ -69,7 +69,7 @@ export class FileInstallationStorage implements InstallationStorage {
     if (!fs.existsSync(this.configFile)) {
       throw new InstallationInitError(
         InstallationInitErrorReason.FILE_NOT_EXISTS,
-        `Installation config file does not exist: ${this.configFile}`,
+        `The file ${this.configFile} is missing`,
       );
     }
     const rawContent = fs.readFileSync(this.configFile, 'utf-8');

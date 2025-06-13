@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 import { useAsyncRetry } from 'react-use';
@@ -31,15 +31,15 @@ export const useCatalogEntities = ({
   error: Error | undefined;
   loading: boolean;
 } => {
-  const [loadingData, setLoadingData] = React.useState<boolean>(true);
+  const [loadingData, setLoadingData] = useState<boolean>(true);
   const [catalogEntities, setCatalogEntities] =
-    React.useState<CatalogEntitiesResponse>({ data: [] });
+    useState<CatalogEntitiesResponse>({ data: [] });
 
   const { startDateRange, endDateRange } = useDateRange();
 
   const api = useApi(adoptionInsightsApiRef);
 
-  const getCatalogEntities = React.useCallback(async () => {
+  const getCatalogEntities = useCallback(async () => {
     return await api
       .getCatalogEntities({
         type: 'top_catalog_entities',
@@ -59,7 +59,7 @@ export const useCatalogEntities = ({
     return await getCatalogEntities();
   }, [getCatalogEntities]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     if (!loading && mounted) {
       setLoadingData(false);

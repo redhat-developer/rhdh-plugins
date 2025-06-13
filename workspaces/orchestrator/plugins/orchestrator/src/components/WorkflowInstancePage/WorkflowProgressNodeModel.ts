@@ -20,7 +20,7 @@ import {
   ProcessInstanceStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { isNonNullable } from '../utils/TypeGuards';
+import { isNonNullable } from '../../utils/TypeGuards';
 
 export type WorkflowProgressNodeModel = NodeInstanceDTO & {
   status?: ProcessInstanceStatusDTO;

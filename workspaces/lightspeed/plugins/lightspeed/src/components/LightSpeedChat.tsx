@@ -15,12 +15,14 @@
  */
 
 import React from 'react';
+import { FileRejection } from 'react-dropzone/.';
 
 import { ErrorPanel } from '@backstage/core-components';
 
 import { Box, makeStyles } from '@material-ui/core';
 import {
   Chatbot,
+  ChatbotAlert,
   ChatbotContent,
   ChatbotDisplayMode,
   ChatbotFooter,
@@ -70,6 +72,9 @@ const useStyles = makeStyles(theme => ({
   },
   header: {
     padding: `${theme.spacing(3)}px !important`,
+  },
+  errorContainer: {
+    padding: theme.spacing(3),
   },
   headerMenu: {
     // align hamburger icon with title
@@ -129,8 +134,15 @@ export const LightspeedChat = ({
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
 
-  const { fileContents, setFileContents, handleFileUpload } =
-    useFileAttachmentContext();
+  const {
+    uploadError,
+    showAlert,
+    fileContents,
+    setShowAlert,
+    setFileContents,
+    handleFileUpload,
+    setUploadError,
+  } = useFileAttachmentContext();
 
   // Sync conversationId with lastOpenedId whenever lastOpenedId changes
   React.useEffect(() => {
@@ -346,6 +358,18 @@ export const LightspeedChat = ({
     handleFileUpload(data);
   };
 
+  const onAttachRejected = (data: FileRejection[]) => {
+    data.forEach(attachment => {
+      if (!!attachment.errors.find(e => e.code === 'file-invalid-type')) {
+        setShowAlert(true);
+        setUploadError({
+          message:
+            'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+        });
+      }
+    });
+  };
+
   if (error) {
     return (
       <Box padding={1}>
@@ -401,6 +425,19 @@ export const LightspeedChat = ({
           handleTextInputChange={handleFilter}
           drawerContent={
             <>
+              {showAlert && uploadError.message && (
+                <div className={classes.errorContainer}>
+                  <ChatbotAlert
+                    component="h4"
+                    title="File upload failed"
+                    variant={uploadError.type ?? 'danger'}
+                    isInline
+                    onClose={() => setUploadError({ message: null })}
+                  >
+                    {uploadError.message}
+                  </ChatbotAlert>
+                </div>
+              )}
               <ChatbotContent>
                 <LightspeedChatBox
                   userName={userName}
@@ -419,6 +456,19 @@ export const LightspeedChat = ({
                   hasAttachButton
                   handleAttach={handleAttach}
                   hasMicrophoneButton
+                  buttonProps={{
+                    attach: {
+                      inputTestId: 'attachment-input',
+                    },
+                  }}
+                  allowedFileTypes={{
+                    'text/plain': ['.txt'],
+                    'application/json': ['.json'],
+                    'application/yaml': ['.yaml', '.yml'],
+                    'application/xml': ['.xml'],
+                  }}
+                  onAttachRejected={onAttachRejected}
+                  placeholder="Send a message and optionally upload a JSON, YAML, TXT, or XML file..."
                 />
                 <ChatbotFootnote {...getFootnoteProps(classes.footerPopover)} />
               </ChatbotFooter>

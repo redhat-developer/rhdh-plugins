@@ -19,10 +19,9 @@ import { useAsync } from 'react-use';
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { formatByteSize } from '@janus-idp/shared-react';
-
 import { openshiftImageRegistryApiRef } from '../api';
 import { ImageStream, ImageStreamMetadata } from '../types';
+import { formatByteSize } from '../utils';
 
 export const useImageStreamsMetadataFromTag = (imageStreams: ImageStream[]) => {
   const client = useApi(openshiftImageRegistryApiRef);

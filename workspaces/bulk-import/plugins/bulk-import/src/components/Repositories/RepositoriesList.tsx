@@ -20,7 +20,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Table } from '@backstage/core-components';
 
-import { useDeleteDialog, useDrawer } from '@janus-idp/shared-react';
 import Box from '@mui/material/Box';
 import TablePagination from '@mui/material/TablePagination';
 
@@ -32,6 +31,8 @@ import {
 } from '../../types';
 import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { RepositoriesHeader } from '../AddRepositories/RepositoriesHeader';
+import { useDeleteDialog } from '../DeleteDialogContext';
+import { useDrawer } from '../DrawerContext';
 import { AddedRepositoriesTableBody } from './AddedRepositoriesTableBody';
 import DeleteRepositoryDialog from './DeleteRepositoryDialog';
 import EditCatalogInfo from './EditCatalogInfo';

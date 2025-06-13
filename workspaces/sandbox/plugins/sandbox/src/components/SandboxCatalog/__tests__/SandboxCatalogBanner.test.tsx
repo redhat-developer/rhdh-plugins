@@ -48,27 +48,6 @@ describe('SandboxCatalogBanner', () => {
     typeof useSandboxContext
   >;
 
-  beforeEach(() => {
-    mockUseSandboxContext.mockReturnValue({
-      loading: false,
-      userData: undefined,
-      userFound: false,
-      userReady: false,
-      verificationRequired: false,
-      pendingApproval: false,
-      ansibleError: null,
-      ansibleData: undefined,
-      ansibleUIUser: undefined,
-      ansibleUIPassword: '',
-      ansibleUILink: undefined,
-      ansibleStatus: AnsibleStatus.NEW,
-      refetchUserData: jest.fn(),
-      signupUser: jest.fn(),
-      refetchAAP: jest.fn(),
-      userStatus: '',
-    });
-  });
-
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -101,6 +80,7 @@ describe('SandboxCatalogBanner', () => {
       ansibleUIUser: undefined,
       ansibleUIPassword: '',
       ansibleUILink: undefined,
+      handleAAPInstance: jest.fn(),
       userStatus: '',
       ...contextValue,
     });

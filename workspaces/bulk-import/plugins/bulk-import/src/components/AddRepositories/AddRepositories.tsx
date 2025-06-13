@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { useDrawer } from '@janus-idp/shared-react';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
 import { useFormikContext } from 'formik';
 
 import { AddRepositoriesFormValues, PullRequestPreviewData } from '../../types';
+import { useDrawer } from '../DrawerContext';
 import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
 // import { useFormikContext } from 'formik';
 // import { AddRepositoriesFormValues } from '../../types';

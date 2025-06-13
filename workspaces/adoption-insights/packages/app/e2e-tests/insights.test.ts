@@ -35,9 +35,7 @@ test.beforeAll(async ({ browser }) => {
 });
 
 test('Insights is available', async () => {
-  const navLink = page.locator(`nav a:has-text("Adoption Insights")`).first();
-  await navLink.waitFor({ state: 'visible' });
-  await navLink.click();
+  await navigate('Adoption Insights');
 
   const heading = page.getByRole('heading', { name: 'Insights' }).first();
 
@@ -68,7 +66,11 @@ test('Select date range', async () => {
 test('Active users panel shows 1 visitor', async () => {
   const panel = page.locator('.v5-MuiPaper-root', { hasText: 'Active users' });
   await expect(panel.locator('.recharts-surface')).toBeVisible();
-  await expect(panel).toContainText('1 active users per hour');
+  await expect(panel).toMatchAriaSnapshot(`
+    - heading "Active users" [level=5]
+    - button "Export CSV"
+    - paragraph: 1 active users per hour were conducted during this period.
+    `);
 });
 
 test('Total number of users panel shows 1 visitor of 100', async () => {
@@ -76,14 +78,32 @@ test('Total number of users panel shows 1 visitor of 100', async () => {
     hasText: 'Total number of users',
   });
   await expect(panel.locator('.recharts-surface')).toBeVisible();
-  await expect(panel).toContainText('1of 100');
-  await expect(panel).toContainText('1%have logged in');
+  await expect(panel).toMatchAriaSnapshot(`
+    - heading "Total number of users" [level=5]
+    - img:
+      - text: 1 of 100
+    - list:
+      - listitem: Logged-in users
+      - listitem: Licensed
+    - heading "1%" [level=1]
+    - paragraph: have logged in
+    `);
 });
 
 test('Top plugins shows catalog', async () => {
   const panel = page.locator('.v5-MuiPaper-root', { hasText: 'Top 3 plugins' });
-  const entries = panel.locator('tbody').getByRole('row');
-  await expect(entries.getByText('catalog')).toBeVisible();
+  await expect(panel).toMatchAriaSnapshot(`
+    - heading "Top 3 plugins" [level=5]
+    - table:
+      - rowgroup:
+        - row :
+          - columnheader "Name"
+          - columnheader "Trend"
+          - columnheader "Views"
+      - rowgroup:
+        - row :
+          - cell "catalog"
+    `);
 });
 
 test('Rest of the panels have no data', async () => {
@@ -128,8 +148,12 @@ test.describe(() => {
     // do a search
     await page.getByRole('button', { name: 'search' }).click();
     await page.getByRole('textbox').fill('searching for something');
-    await new Promise(res => setTimeout(res, 1000));
-    await page.locator(`button[aria-label='close']`).click();
+
+    const noSearchResults = page.getByRole('heading', {
+      name: 'Sorry, no results were found',
+    });
+    await noSearchResults.waitFor({ state: 'visible' });
+    await page.getByRole('button', { name: 'close' }).click();
 
     // wait for the flush interval to be sure
     await new Promise(res => setTimeout(res, 8000));
@@ -158,16 +182,18 @@ test.describe(() => {
 
   test('New data shows in searches', async () => {
     const panel = page.locator('.v5-MuiPaper-root', { hasText: '1 searches' });
+    await panel.scrollIntoViewIfNeeded();
+    await expect(panel.locator('.recharts-surface')).toBeVisible();
     await expect(panel).toContainText(
       'An average of 1 searches per hour were conducted during this period.',
     );
-    await expect(panel.locator('.recharts-surface')).toBeVisible();
   });
 
   test('New data shows in top templates', async () => {
     const panel = page.locator('.v5-MuiPaper-root', {
       hasText: 'Top 3 templates',
     });
+    await panel.scrollIntoViewIfNeeded();
     const entries = panel.locator('tbody').locator('tr');
     await expect(entries).toHaveCount(1);
     await expect(entries).toContainText('example-nodejs-template');

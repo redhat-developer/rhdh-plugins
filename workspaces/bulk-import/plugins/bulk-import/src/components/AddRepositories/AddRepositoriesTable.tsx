@@ -15,6 +15,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useDebounce } from 'react-use';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -40,11 +41,18 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
     setIsApprovalToolGitlab(values.approvalTool === ApprovalToolEnum.Gitlab);
   }, [values.approvalTool]);
   const [searchString, setSearchString] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
   const [page, setPage] = useState<number>(0);
-  const handleSearch = (str: string) => {
-    setSearchString(str);
-    setPage(0);
-  };
+
+  useDebounce(
+    () => {
+      setSearchString(searchInput);
+      setPage(0);
+    },
+    300,
+    [searchInput],
+  );
+
   const { numberOfApprovalTools } = useNumberOfApprovalTools();
 
   return (
@@ -61,7 +69,7 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
             title ||
             `Selected  ${isApprovalToolGitlab ? 'projects' : 'repositories'}`
           }
-          setSearchString={handleSearch}
+          setSearchString={setSearchInput}
           onPageChange={setPage}
           isApprovalToolGitlab={isApprovalToolGitlab}
         />

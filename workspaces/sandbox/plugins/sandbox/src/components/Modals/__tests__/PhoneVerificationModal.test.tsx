@@ -21,6 +21,7 @@ import { registerApiRef } from '../../../api';
 import { useSandboxContext } from '../../../hooks/useSandboxContext'; // Corrected path
 import { TestApiProvider } from '@backstage/test-utils';
 import { AnsibleStatus } from '../../../utils/aap-utils';
+import { Product } from '../../SandboxCatalog/productData';
 
 // Mock dependencies
 jest.mock('../../../hooks/useSandboxContext');
@@ -41,6 +42,8 @@ describe('PhoneVerificationModal', () => {
   const mockCompletePhoneVerification = jest.fn();
   const mockRefetchUserData = jest.fn();
   const mockSetOpen = jest.fn();
+  const mockSetRefetchingUserData = jest.fn();
+  const mockSetAnsibleCredsOpen = jest.fn();
 
   const mockRegisterApi = {
     initiatePhoneVerification: mockInitiatePhoneVerification,
@@ -73,10 +76,16 @@ describe('PhoneVerificationModal', () => {
     } as any);
   });
 
-  const renderComponent = (props = {}) => {
+  const renderComponent = () => {
     return render(
       <TestApiProvider apis={[[registerApiRef, mockRegisterApi]]}>
-        <PhoneVerificationModal modalOpen setOpen={mockSetOpen} {...props} />
+        <PhoneVerificationModal
+          id={Product.OPENSHIFT_CONSOLE}
+          modalOpen
+          setOpen={mockSetOpen}
+          setAnsibleCredsModalOpen={mockSetAnsibleCredsOpen}
+          setRefetchingUserData={mockSetRefetchingUserData}
+        />
       </TestApiProvider>,
     );
   };

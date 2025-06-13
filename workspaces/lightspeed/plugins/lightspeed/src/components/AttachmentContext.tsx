@@ -27,6 +27,7 @@ interface FileAttachmentContextType {
   handleFileUpload: (files: File[]) => void;
   setFileContents: React.Dispatch<React.SetStateAction<FileContent[]>>;
   setUploadError: React.Dispatch<React.SetStateAction<UploadError>>;
+  setShowAlert: React.Dispatch<React.SetStateAction<boolean>>;
   currentFileContent?: FileContent;
   setCurrentFileContent: React.Dispatch<
     React.SetStateAction<FileContent | undefined>
@@ -85,7 +86,7 @@ const FileAttachmentContextProvider: React.FC<{
       setShowAlert(true);
       setUploadError({
         message:
-          'Unsupported file type. Supported types are: .txt, .yaml, .json.',
+          'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
       });
       return;
     }
@@ -138,6 +139,7 @@ const FileAttachmentContextProvider: React.FC<{
         handleFileUpload,
         isLoadingFile,
         showAlert,
+        setShowAlert,
         uploadError,
         setUploadError,
         currentFileContent,

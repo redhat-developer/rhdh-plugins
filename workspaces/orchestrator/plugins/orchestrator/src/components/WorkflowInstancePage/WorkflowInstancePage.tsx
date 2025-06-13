@@ -56,15 +56,18 @@ import {
   QUERY_PARAM_INSTANCE_ID,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { orchestratorApiRef } from '../api';
-import { SHORT_REFRESH_INTERVAL } from '../constants';
-import { usePermissionArrayDecision } from '../hooks/usePermissionArray';
-import usePolling from '../hooks/usePolling';
-import { executeWorkflowRouteRef, workflowInstanceRouteRef } from '../routes';
-import { isNonNullable } from '../utils/TypeGuards';
-import { buildUrl } from '../utils/UrlUtils';
-import { BaseOrchestratorPage } from './BaseOrchestratorPage';
-import { InfoDialog } from './InfoDialog';
+import { orchestratorApiRef } from '../../api';
+import { SHORT_REFRESH_INTERVAL } from '../../constants';
+import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
+import usePolling from '../../hooks/usePolling';
+import {
+  executeWorkflowRouteRef,
+  workflowInstanceRouteRef,
+} from '../../routes';
+import { isNonNullable } from '../../utils/TypeGuards';
+import { buildUrl } from '../../utils/UrlUtils';
+import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
+import { InfoDialog } from '../InfoDialog';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 
 const useStyles = makeStyles()(theme => ({

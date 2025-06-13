@@ -30,8 +30,8 @@ import { openLightspeed, sendMessage } from './utils/testHelper';
 import {
   uploadFile,
   uploadAndAssertDuplicate,
-  validateFailedUpload,
   supportedFileTypes,
+  validateFailedUpload,
 } from './utils/fileUpload';
 import {
   assertChatDialogInitialState,
@@ -142,6 +142,12 @@ test.describe('File Attachment Validation', () => {
         await uploadAndAssertDuplicate(page, path, name);
       } else {
         await validateFailedUpload(page);
+        // Unsupported files will not be available to preview.
+        const filePreview = page
+          .locator('span', { hasText: name.split('.')[0] })
+          .first();
+
+        await expect(filePreview).not.toBeVisible();
       }
     });
   }

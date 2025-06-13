@@ -9695,9 +9695,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.3.0-prerelease.17":
-  version: 6.3.0-prerelease.17
-  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.17"
+"@patternfly/chatbot@npm:6.3.0-prerelease.23":
+  version: 6.3.0-prerelease.23
+  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.23"
   dependencies:
     "@patternfly/react-code-editor": ^6.1.0
     "@patternfly/react-core": ^6.1.0
@@ -9718,7 +9718,7 @@ __metadata:
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: f29492ae053f6bcd90267eff96585c6fdf2eca52f8252ced0cc1b6579678df976d8d4d1d1b5aedea42dcfe64b6a865743c5af816d1d2620bc3231e82d5d5aa09
+  checksum: 59e853d61fbee334ec2cae06a6461b4066d055d2afd138b43190eba19574d870cc823242ad9c531c86827bb95d696cc7aca848b1b77216872e72c1e483aa1aa2
   languageName: node
   linkType: hard
 
@@ -9739,9 +9739,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-core@npm:6.3.0-prerelease.16":
-  version: 6.3.0-prerelease.16
-  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.16"
+"@patternfly/react-core@npm:6.3.0-prerelease.17":
+  version: 6.3.0-prerelease.17
+  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.17"
   dependencies:
     "@patternfly/react-icons": ^6.3.0-prerelease.3
     "@patternfly/react-styles": ^6.3.0-prerelease.3
@@ -9752,7 +9752,7 @@ __metadata:
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: b8ed22b430f1995e003d47833851d3c1309204a9e62502cb36fdad00d3ccb81c22221b665a3555c5f5eb3823159732b66c4b95953c036bb8fab9936fddc11907
+  checksum: 6d2c4755d1318a52536a48ac310a282ae78617004f702d013bf9db771bc1ee97e3fa50da01a59dc1cc25600e23872ddffa5e302da895fe0620dab74deebea007
   languageName: node
   linkType: hard
 
@@ -10549,7 +10549,7 @@ __metadata:
     "@langchain/openai": ^0.5.0
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
-    "@types/express": 4.17.22
+    "@types/express": 4.17.23
     "@types/supertest": 2.0.16
     express: ^4.21.1
     http-proxy-middleware: ^3.0.2
@@ -10591,8 +10591,8 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
-    "@patternfly/chatbot": 6.3.0-prerelease.17
-    "@patternfly/react-core": 6.3.0-prerelease.16
+    "@patternfly/chatbot": 6.3.0-prerelease.23
+    "@patternfly/react-core": 6.3.0-prerelease.17
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@tanstack/react-query": ^5.59.15
@@ -13449,15 +13449,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:4.17.22, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
-  version: 4.17.22
-  resolution: "@types/express@npm:4.17.22"
+"@types/express@npm:4.17.23, @types/express@npm:^4.17.21, @types/express@npm:^4.17.6":
+  version: 4.17.23
+  resolution: "@types/express@npm:4.17.23"
   dependencies:
     "@types/body-parser": "*"
     "@types/express-serve-static-core": ^4.17.33
     "@types/qs": "*"
     "@types/serve-static": "*"
-  checksum: 977b1da93765983d823c32898c74c159f30b98341f4fd9400724f18196913fe0a07fa12eaa4efdad3cc8cf31e4036e06a16a88d43e9e1f78bbbb84365026aab0
+  checksum: f1a020c6ad6dc0169a3277199605d60649d463a72c920673e0f230ab1e76f2d3aa23daabd25ef8e62eda314e26b879306c58ec806e669e1e40ca37a4b73a44b0
   languageName: node
   linkType: hard
 

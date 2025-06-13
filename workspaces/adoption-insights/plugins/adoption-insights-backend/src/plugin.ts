@@ -17,6 +17,7 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
 import { createRouter } from './router';
 import { migrate } from './database/migration';
 import { DatabaseFactory } from './database/DatabaseFactory';
@@ -42,6 +43,7 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         database: coreServices.database,
         scheduler: coreServices.scheduler,
         permissions: coreServices.permissions,
+        permissionsRegistry: coreServices.permissionsRegistry,
       },
       async init({
         config,
@@ -51,7 +53,13 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         database,
         scheduler,
         permissions,
+        permissionsRegistry,
       }) {
+        // Register plugin permission
+        permissionsRegistry.addPermissions([
+          adoptionInsightsEventsReadPermission,
+        ]);
+
         // Queue configuration
         const options = getConfigurationOptions(config);
         const client = await database.getClient();

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { createDevApp } from '@backstage/dev-utils';
 import { mui4TestPlugin, MUI4TestPage } from '../src/plugin';
 

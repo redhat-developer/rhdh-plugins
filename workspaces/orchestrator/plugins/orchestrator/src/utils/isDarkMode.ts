@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useObservable } from 'react-use';
+import { useTheme } from '@mui/material/styles';
 
-import { appThemeApiRef, useApi } from '@backstage/core-plugin-api';
+export const useIsDarkMode = (): boolean => {
+  const theme = useTheme();
 
-export const useIsDarkMode = () => {
-  const appThemeApi = useApi(appThemeApiRef);
-  const activeThemeId = useObservable(
-    appThemeApi.activeThemeId$(),
-    appThemeApi.getActiveThemeId(),
-  );
-
-  return activeThemeId === 'dark';
+  return theme.palette.mode === 'dark';
 };

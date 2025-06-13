@@ -17,6 +17,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import Router from 'express-promise-router';
 import { InputError, NotAllowedError } from '@backstage/errors';
+import type { Config } from '@backstage/config';
+
 import {
   HttpAuthService,
   PermissionsService,
@@ -51,13 +53,19 @@ export type MarketplaceRouterOptions = {
   marketplaceApi: MarketplaceApi;
   permissions: PermissionsService;
   installationDataService: InstallationDataService;
+  config: Config;
 };
 
 export async function createRouter(
   options: MarketplaceRouterOptions,
 ): Promise<express.Router> {
-  const { httpAuth, marketplaceApi, permissions, installationDataService } =
-    options;
+  const {
+    httpAuth,
+    marketplaceApi,
+    permissions,
+    installationDataService,
+    config,
+  } = options;
 
   const requireInitializedInstallationDataService = (
     _req: Request,
@@ -88,6 +96,11 @@ export async function createRouter(
   ) => {
     const credentials = await httpAuth.credentials(request);
     let decision: PolicyDecision;
+    // No permission configured, always allow.
+    if (!permission) {
+      return { result: AuthorizeResult.ALLOW as const };
+    }
+
     if (permission.type === 'resource') {
       decision = (
         await permissions.authorizeConditional([{ permission }], {
@@ -210,6 +223,12 @@ export async function createRouter(
     },
   );
 
+  router.get('/environment', async (_req, res) => {
+    res.status(200).json({
+      nodeEnv: process.env.NODE_ENV || 'development',
+    });
+  });
+
   router.get('/plugins', async (req, res) => {
     const request = decodeGetEntitiesRequest(createSearchParams(req));
     const plugins = await marketplaceApi.getPlugins(request);
@@ -221,6 +240,12 @@ export async function createRouter(
     const request = decodeGetEntityFacetsRequest(createSearchParams(req));
     const facets = await marketplaceApi.getPluginFacets(request);
     res.json(facets);
+  });
+
+  router.get('/plugins/configure', async (_req, res) => {
+    const isPluginInstallationEnabled =
+      config.getOptionalBoolean('extensions.installation.enabled') ?? false;
+    res.json({ enabled: isPluginInstallationEnabled });
   });
 
   router.get('/plugin/:namespace/:name', async (req, res) => {
@@ -294,7 +319,6 @@ export async function createRouter(
           `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
         );
       }
-
       const marketplacePlugin = await marketplaceApi.getPluginByName(
         req.params.namespace,
         req.params.name,

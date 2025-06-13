@@ -34,7 +34,8 @@ interface SandboxContextType {
   loading: boolean;
   refetchUserData: () => Promise<SignupData | undefined>;
   signupUser: () => void;
-  refetchAAP: () => void;
+  refetchAAP: (userNamespace: string) => void;
+  handleAAPInstance: (userNamespace: string) => void;
   ansibleData: AAPData | undefined;
   ansibleUIUser: string | undefined;
   ansibleUIPassword: string;
@@ -111,9 +112,8 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
         setUserFound(false);
       }
     } catch (err) {
-      /* eslint-disable no-console */
+      // eslint-disable-next-line
       console.error('Error fetching user data:', err);
-      /* eslint-enable no-console */
       setData(undefined);
       setUserFound(false);
     } finally {
@@ -135,9 +135,9 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const getAAPData = async () => {
+  const getAAPData = async (userNamespace: string) => {
     try {
-      const data = await aapApi.getAAP(userData?.defaultUserNamespace ?? '');
+      const data = await aapApi.getAAP(userNamespace);
       setAnsibleData(data);
       const st = getReadyCondition(data, e => setAnsibleError(errorMessage(e)));
       setAnsibleStatus(st);
@@ -150,7 +150,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
         }
         if (data?.items[0]?.status?.adminPasswordSecret) {
           const adminSecret = await kubeApi.getSecret(
-            userData?.defaultUserNamespace ?? '',
+            userNamespace,
             data?.items[0]?.status?.adminPasswordSecret,
           );
           if (adminSecret?.data) {
@@ -163,17 +163,41 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const handleAAPInstance = async (userNamespace: string) => {
+    await getAAPData(userNamespace);
+
+    if (
+      ansibleStatus === AnsibleStatus.PROVISIONING ||
+      ansibleStatus === AnsibleStatus.READY
+    ) {
+      return;
+    }
+
+    if (
+      ansibleStatus === AnsibleStatus.IDLED &&
+      ansibleData &&
+      ansibleData?.items?.length > 0
+    ) {
+      try {
+        await aapApi.unIdleAAP(userNamespace);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      }
+      return;
+    }
+    try {
+      await aapApi.createAAP(userNamespace);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     fetchData(); // Initial fetch
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (userData?.defaultUserNamespace) {
-      getAAPData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData]);
 
   const pollStatus = userFound && !userReady;
   const pollInterval =
@@ -191,18 +215,19 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [pollStatus, pollInterval]);
 
   React.useEffect(() => {
-    if (
-      ansibleStatus === AnsibleStatus.PROVISIONING ||
-      ansibleStatus === AnsibleStatus.UNKNOWN
-    ) {
-      const handle = setInterval(getAAPData, SHORT_INTERVAL);
+    if (userData?.defaultUserNamespace) {
+      const handle = setInterval(
+        getAAPData,
+        SHORT_INTERVAL,
+        userData?.defaultUserNamespace,
+      );
       return () => {
         clearInterval(handle);
       };
     }
     return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userReady, ansibleStatus]);
+  }, [userData, ansibleStatus]);
 
   return (
     <SandboxContext.Provider
@@ -217,6 +242,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
         refetchUserData: fetchData,
         signupUser,
         refetchAAP: getAAPData,
+        handleAAPInstance,
         ansibleData,
         ansibleUIUser,
         ansibleUIPassword,

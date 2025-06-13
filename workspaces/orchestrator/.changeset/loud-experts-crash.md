@@ -2,4 +2,4 @@
 '@red-hat-developer-hub/backstage-plugin-orchestrator': patch
 ---
 
-match package versions with RHDH
+fix isDarkMode to work in auto mode
