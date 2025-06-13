@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.5.1
+
+### Patch Changes
+
+- 58ae1fe: Added an alert for production environment
+  Integrated the fetch configuration and install API calls
+  Fixed an import error
+- Updated dependencies [58ae1fe]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.5.1
+
 ## 0.5.0
 
 ### Minor Changes
