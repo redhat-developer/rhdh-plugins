@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import React, { act } from 'react';
+import type { ReactNode } from 'react';
+
+import { act } from 'react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 
 import { renderHook, screen } from '@testing-library/react';
@@ -28,7 +30,7 @@ const RenderLocation = () => {
 
 const createWrapper =
   (initialPath: string) =>
-  ({ children }: { children: React.ReactNode }) => {
+  ({ children }: { children: ReactNode }) => {
     return (
       <MemoryRouter initialEntries={[initialPath]}>
         <RenderLocation />

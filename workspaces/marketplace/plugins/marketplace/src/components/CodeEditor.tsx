@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ReactNode } from 'react';
+
+import {
+  createContext,
+  useRef,
+  useMemo,
+  useContext,
+  useState,
+  useCallback,
+} from 'react';
 
 import { Progress } from '@backstage/core-components';
 
@@ -54,15 +63,13 @@ interface CodeEditorContextValue {
   setValue: (value: string, autoFocus?: boolean) => void;
 }
 
-const CodeEditorContext = React.createContext<CodeEditorContextValue>(
+const CodeEditorContext = createContext<CodeEditorContextValue>(
   undefined as any as CodeEditorContextValue,
 );
 
-export const CodeEditorContextProvider = (props: {
-  children: React.ReactNode;
-}) => {
-  const editorRef = React.useRef<MonacoEditor.editor.ICodeEditor | null>(null);
-  const contextValue = React.useMemo<CodeEditorContextValue>(
+export const CodeEditorContextProvider = (props: { children: ReactNode }) => {
+  const editorRef = useRef<MonacoEditor.editor.ICodeEditor | null>(null);
+  const contextValue = useMemo<CodeEditorContextValue>(
     () => ({
       getEditor: () => editorRef.current,
       setEditor: (editor: MonacoEditor.editor.ICodeEditor) => {
@@ -95,7 +102,7 @@ export const CodeEditorContextProvider = (props: {
 };
 
 export const useCodeEditor = () => {
-  const contextValue = React.useContext(CodeEditorContext);
+  const contextValue = useContext(CodeEditorContext);
   if (!contextValue) {
     throw new Error(
       'useCodeEditor must be used within a CodeEditorContextProvider',
@@ -127,9 +134,9 @@ export const CodeEditor = ({
   const paletteMode = theme.palette.mode === 'dark' ? 'vs-dark' : 'vs-light';
 
   const codeEditor = useCodeEditor();
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const onMount = React.useCallback<OnMount>(
+  const onMount = useCallback<OnMount>(
     (editor, _monaco) => {
       codeEditor.setEditor(editor);
       onLoaded?.();

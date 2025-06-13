@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useState } from 'react';
+import type { SetStateAction } from 'react';
+
+import { useCallback, useEffect, useState } from 'react';
 
 import { ErrorPage, Progress } from '@backstage/core-components';
 import {
@@ -161,7 +163,7 @@ export const MarketplacePackageInstallContent = ({
     name: params.name,
   });
 
-  const onLoaded = React.useCallback(() => {
+  const onLoaded = useCallback(() => {
     const dynamicPluginYaml = {
       plugins: [
         {
@@ -187,7 +189,7 @@ export const MarketplacePackageInstallContent = ({
   const showRightCard = examples;
   const [tabIndex, setTabIndex] = useState(0);
 
-  const handleTabChange = (_: any, newValue: React.SetStateAction<number>) => {
+  const handleTabChange = (_: any, newValue: SetStateAction<number>) => {
     setTabIndex(newValue);
   };
 
