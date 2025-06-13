@@ -48,16 +48,14 @@ import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
+import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 
 import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
 
 import { Links } from './Links';
-import {
-  getPluginActionTooltipMessage,
-  isProductionEnvironment,
-} from '../utils';
+import { getPluginActionTooltipMessage } from '../utils';
 
 export const MarketplacePluginContentSkeleton = () => {
   return (
@@ -184,6 +182,7 @@ export const MarketplacePluginContent = ({
   plugin: MarketplacePlugin;
 }) => {
   const extensionsConfig = useExtensionsConfiguration();
+  const nodeEnvironment = useNodeEnvironment();
   const params = useRouteRefParams(pluginRouteRef);
   const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(pluginInstallRouteRef);
@@ -201,11 +200,13 @@ export const MarketplacePluginContent = ({
   const about = plugin.spec?.description ?? plugin.metadata.description ?? '';
 
   const highlights = plugin.spec?.highlights ?? [];
+  const isProductionEnvironment =
+    nodeEnvironment?.data?.nodeEnv === 'production';
 
   const pluginActionButton = () => {
     return (
       <Tooltip
-        title={getPluginActionTooltipMessage({
+        title={getPluginActionTooltipMessage(isProductionEnvironment, {
           read: pluginConfigPerm.data?.read ?? 'DENY',
           write: pluginConfigPerm.data?.write ?? 'DENY',
         })}

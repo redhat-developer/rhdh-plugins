@@ -36,6 +36,7 @@ import type {
   GetEntitiesResponse,
   MarketplaceApi,
 } from './MarketplaceApi';
+import { NodeEnvironmentType } from '../types/NodeEnvironmentType';
 
 /**
  * @public
@@ -238,6 +239,10 @@ export class MarketplaceBackendClient implements MarketplaceApi {
 
   async getExtensionsConfiguration(): Promise<{ enabled: boolean }> {
     return this.request(`/plugins/configure`, 'GET');
+  }
+
+  async getNodeEnvironment(): Promise<{ nodeEnv: NodeEnvironmentType }> {
+    return this.request(`/environment`, 'GET');
   }
 
   async getPluginConfigByName(

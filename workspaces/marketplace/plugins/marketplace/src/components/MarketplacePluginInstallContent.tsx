@@ -67,7 +67,7 @@ import {
   ExtensionsStatus,
   getErrorMessage,
   getExampleAsMarkdown,
-  isProductionEnvironment,
+  getPluginActionTooltipMessage,
 } from '../utils';
 
 import {
@@ -79,6 +79,8 @@ import { Markdown } from './Markdown';
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 import { usePluginConfig } from '../hooks/usePluginConfig';
 import { useInstallPlugin } from '../hooks/useInstallPlugin';
+import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
+import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -217,6 +219,14 @@ export const MarketplacePluginInstallContent = ({
   >(null);
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
   const pluginConfig = usePluginConfig(params.namespace, params.name);
+  const pluginConfigPermissions = usePluginConfigurationPermissions(
+    params.namespace,
+    params.name,
+  );
+  const extensionsConfig = useExtensionsConfiguration();
+  const nodeEnvironment = useNodeEnvironment();
+  const isProductionEnvironment =
+    nodeEnvironment?.data?.nodeEnv === 'production';
 
   useEffect(() => {
     const header = document.querySelector('nav#global-header');
@@ -268,10 +278,6 @@ export const MarketplacePluginInstallContent = ({
     onLoaded();
   }, [onLoaded, pluginConfig.data?.configYaml]);
 
-  const pluginConfigPermissions = usePluginConfigurationPermissions(
-    params.namespace,
-    params.name,
-  );
   const examples = packages[0]?.spec?.appConfigExamples;
   const installationInstructions = plugin.spec?.installation;
   const aboutMarkdown = plugin.spec?.description;
@@ -327,22 +333,22 @@ export const MarketplacePluginInstallContent = ({
     }
   };
 
-  const showDisableInstall =
+  const isInstallDisabled =
     isProductionEnvironment ||
     installationError ||
     pluginConfigPermissions.data?.write !== 'ALLOW' ||
     (pluginConfig.data as any)?.error ||
+    !extensionsConfig?.data?.enabled ||
     isSubmitting;
 
-  const installTooltip = () => {
-    if (isProductionEnvironment) {
-      return 'Plugin installation is disabled in the production environment.';
-    }
-    if (pluginConfigPermissions.data?.write !== 'ALLOW') {
-      return "You don't have permission to install plugins or edit their configurations. Contact your administrator to request access or assistance.";
-    }
-    return '';
-  };
+  const installTooltip = getPluginActionTooltipMessage(
+    isProductionEnvironment,
+    {
+      read: pluginConfigPermissions.data?.read ?? 'DENY',
+      write: pluginConfigPermissions.data?.write ?? 'DENY',
+    },
+    !extensionsConfig?.data?.enabled,
+  );
 
   const showInstallationWarning =
     (pluginConfig.data as any)?.error?.message &&
@@ -539,7 +545,7 @@ export const MarketplacePluginInstallContent = ({
           </Box>
           <Tooltip
             title={
-              installTooltip() ? (
+              installTooltip ? (
                 <Box
                   sx={{
                     whiteSpace: 'normal',
@@ -547,7 +553,7 @@ export const MarketplacePluginInstallContent = ({
                     overflowWrap: 'break-word',
                   }}
                 >
-                  {installTooltip()}
+                  {installTooltip}
                 </Box>
               ) : (
                 ''
@@ -559,10 +565,8 @@ export const MarketplacePluginInstallContent = ({
                 variant="contained"
                 color="primary"
                 onClick={handleInstall}
-                disabled={showDisableInstall}
-                data-testid={
-                  showDisableInstall ? 'install-disabled' : 'install'
-                }
+                disabled={isInstallDisabled}
+                data-testid={isInstallDisabled ? 'install-disabled' : 'install'}
                 startIcon={
                   isSubmitting && (
                     <CircularProgress size="20px" color="inherit" />
@@ -578,8 +582,9 @@ export const MarketplacePluginInstallContent = ({
             color="primary"
             sx={{ ml: 2 }}
             onClick={() => navigate(pluginLink)}
+            data-testId={isInstallDisabled ? 'back-button' : 'cancel-button'}
           >
-            Cancel
+            {isInstallDisabled ? 'Back' : 'Cancel'}
           </Button>
           {(pluginConfigPermissions.data?.write === 'ALLOW' ||
             pluginConfigPermissions.data?.read === 'ALLOW') && (

@@ -96,7 +96,12 @@ export async function createRouter(
   ) => {
     const credentials = await httpAuth.credentials(request);
     let decision: PolicyDecision;
-    if (permission?.type === 'resource') {
+    // No permission configured, always allow.
+    if (!permission) {
+      return { result: AuthorizeResult.ALLOW as const };
+    }
+
+    if (permission.type === 'resource') {
       decision = (
         await permissions.authorizeConditional([{ permission }], {
           credentials,
@@ -217,6 +222,12 @@ export async function createRouter(
       res.status(200).json({ status: 'OK' });
     },
   );
+
+  router.get('/environment', async (_req, res) => {
+    res.status(200).json({
+      nodeEnv: process.env.NODE_ENV || 'development',
+    });
+  });
 
   router.get('/plugins', async (req, res) => {
     const request = decodeGetEntitiesRequest(createSearchParams(req));

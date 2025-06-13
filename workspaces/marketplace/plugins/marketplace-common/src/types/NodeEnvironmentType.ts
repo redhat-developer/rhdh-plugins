@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-export * from './MarketplaceAuthor';
-export * from './MarketplaceCollection';
-export * from './MarketplaceKind';
-export * from './MarketplacePackage';
-export * from './MarketplacePlugin';
-export * from './ConfigurationResponse';
-export * from './NodeEnvironmentType';
+/**
+ * @public
+ */
+export type NodeEnvironmentType = 'production' | 'development' | 'test';

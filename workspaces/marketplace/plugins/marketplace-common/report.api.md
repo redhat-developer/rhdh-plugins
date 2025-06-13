@@ -174,6 +174,10 @@ export interface MarketplaceApi {
         enabled: boolean;
     }>;
     // (undocumented)
+    getNodeEnvironment?(): Promise<{
+        nodeEnv: NodeEnvironmentType;
+    }>;
+    // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
     // (undocumented)
     getPackageConfigByName?(namespace: string, name: string): Promise<ConfigurationResponse>;
@@ -226,6 +230,10 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     // (undocumented)
     getExtensionsConfiguration(): Promise<{
         enabled: boolean;
+    }>;
+    // (undocumented)
+    getNodeEnvironment(): Promise<{
+        nodeEnv: NodeEnvironmentType;
     }>;
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
@@ -432,6 +440,9 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     packages?: string[];
 }
+
+// @public (undocumented)
+export type NodeEnvironmentType = 'production' | 'development' | 'test';
 
 // @public (undocumented)
 export const RESOURCE_TYPE_EXTENSIONS_PACKAGE = "extensions-package";

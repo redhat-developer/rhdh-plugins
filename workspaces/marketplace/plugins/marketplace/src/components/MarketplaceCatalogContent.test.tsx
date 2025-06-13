@@ -30,9 +30,17 @@ jest.mock('../hooks/useExtensionsConfiguration', () => ({
   useExtensionsConfiguration: jest.fn(),
 }));
 
+jest.mock('../hooks/useNodeEnvironment', () => ({
+  useNodeEnvironment: jest.fn(),
+}));
+
 jest.mock('../hooks/useFilteredPlugins', () => ({
   useFilteredPlugins: jest.fn(),
 }));
+
+afterAll(() => {
+  jest.clearAllMocks();
+});
 
 describe('MarketplaceCatalogContent', () => {
   it('should show empty state with no plugins', async () => {

@@ -37,6 +37,7 @@ import { SearchTextField } from '../shared-components/SearchTextField';
 import { useCollections } from '../hooks/useCollections';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
+import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { MarketplacePluginFilter } from './MarketplacePluginFilter';
 import { CollectionHorizontalScrollRow } from './CollectionHorizontalScrollRow';
@@ -45,7 +46,6 @@ import notFoundImag from '../assets/notfound.png';
 import {
   EXTENSIONS_CONFIG_YAML,
   generateExtensionsEnableLineNumbers,
-  isProductionEnvironment,
 } from '../utils';
 
 const EmptyState = ({ isError }: { isError?: boolean }) => (
@@ -102,6 +102,7 @@ const EmptyState = ({ isError }: { isError?: boolean }) => (
 
 export const MarketplaceCatalogContent = () => {
   const extensionsConfig = useExtensionsConfiguration();
+  const nodeEnvironment = useNodeEnvironment();
   const featuredCollections = useCollections({
     filter: {
       'metadata.name': 'featured',
@@ -128,6 +129,9 @@ export const MarketplaceCatalogContent = () => {
   if (filteredPlugins.data?.totalItems === 0) {
     return <EmptyState />;
   }
+
+  const isProductionEnvironment =
+    nodeEnvironment?.data?.nodeEnv === 'production';
 
   const showExtensionsConfigurationAlert =
     !isProductionEnvironment && !extensionsConfig.data?.enabled;

@@ -25,6 +25,7 @@ import {
   MarketplaceCollection,
   MarketplacePackage,
   MarketplacePlugin,
+  NodeEnvironmentType,
 } from '../types';
 
 /**
@@ -106,6 +107,8 @@ export interface MarketplaceApi {
   ): Promise<{ read: 'ALLOW' | 'DENY'; write: 'ALLOW' | 'DENY' }>;
 
   getExtensionsConfiguration?(): Promise<{ enabled: boolean }>;
+
+  getNodeEnvironment?(): Promise<{ nodeEnv: NodeEnvironmentType }>;
 
   getPluginConfigByName?(
     namespace: string,
