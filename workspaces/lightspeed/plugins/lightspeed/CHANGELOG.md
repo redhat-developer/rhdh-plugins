@@ -1,5 +1,14 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.5.4
+
+### Patch Changes
+
+- ee1da3b: enable only supported file types in file picker
+- 13dd7b1: Updated dependency `@patternfly/chatbot` to `6.3.0-prerelease.20`.
+  Updated dependency `@patternfly/react-core` to `6.3.0-prerelease.17`.
+- 717a32b: Updated dependency `@patternfly/react-core` to `6.3.0-prerelease.16`.
+
 ## 0.5.3
 
 ### Patch Changes
