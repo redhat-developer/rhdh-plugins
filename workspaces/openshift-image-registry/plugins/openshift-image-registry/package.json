@@ -60,7 +60,7 @@
     "@backstage/test-utils": "^1.7.8",
     "@janus-idp/cli": "1.19.1",
     "@mui/icons-material": "^6.1.6",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.8.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.9.0",
     "@spotify/prettier-config": "^15.0.0",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "14.3.1",
