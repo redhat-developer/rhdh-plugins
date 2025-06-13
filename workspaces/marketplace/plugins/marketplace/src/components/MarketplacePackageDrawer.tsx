@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useState, useLayoutEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useRouteRef } from '@backstage/core-plugin-api';
@@ -31,8 +31,8 @@ import { packagesRouteRef } from '../routes';
 import { MarketplacePackageContentLoader } from './MarketplacePackageContent';
 
 export const MarketplacePackageDrawer = () => {
-  const [open, setOpen] = React.useState(false);
-  React.useLayoutEffect(() => {
+  const [open, setOpen] = useState(false);
+  useLayoutEffect(() => {
     setOpen(true);
   }, []);
 

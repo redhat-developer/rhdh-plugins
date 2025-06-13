@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ReactNode } from 'react';
 
 import { Content, ErrorPage, LinkButton } from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
@@ -34,13 +34,7 @@ import { packageInstallRouteRef } from '../routes';
 import { usePackage } from '../hooks/usePackage';
 import { Links } from './Links';
 
-const KeyValue = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) => {
+const KeyValue = ({ label, value }: { label: string; value: ReactNode }) => {
   if (!value) {
     return null;
   }

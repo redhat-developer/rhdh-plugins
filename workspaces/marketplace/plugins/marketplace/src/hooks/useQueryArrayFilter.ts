@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { SelectItem } from '@backstage/core-components/index';
-import React from 'react';
+import { SelectItem } from '@backstage/core-components';
+import { useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 const filterSearchParam = 'filter';
@@ -33,7 +33,7 @@ const evaluateParams = (
 export const useQueryArrayFilter = (filterName: string) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const current = React.useMemo(() => {
+  const current = useMemo(() => {
     return searchParams
       .getAll(filterSearchParam)
       .reduce((acc, keyValuePair) => {
@@ -50,7 +50,7 @@ export const useQueryArrayFilter = (filterName: string) => {
       }, [] as SelectItem[]);
   }, [filterName, searchParams]);
 
-  const set = React.useCallback(
+  const set = useCallback(
     (newValues: (string | number)[]) => {
       setSearchParams(
         params => {
@@ -88,7 +88,7 @@ export const useQueryArrayFilter = (filterName: string) => {
     [filterName, setSearchParams],
   );
 
-  const clear = React.useCallback(() => {
+  const clear = useCallback(() => {
     setSearchParams(
       params => {
         const newParams = new URLSearchParams();
@@ -109,7 +109,7 @@ export const useQueryArrayFilter = (filterName: string) => {
     );
   }, [filterName, setSearchParams]);
 
-  return React.useMemo(
+  return useMemo(
     () =>
       ({
         current,
