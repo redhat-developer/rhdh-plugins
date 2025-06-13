@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.7.0
+
+### Minor Changes
+
+- 58ae1fe: Added an alert for production environment
+  Integrated the fetch configuration and install API calls
+  Fixed an import error
+
+### Patch Changes
+
+- 835c5a5: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.9.0`.
+- Updated dependencies [58ae1fe]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.5.1
+
 ## 0.6.1
 
 ### Patch Changes
