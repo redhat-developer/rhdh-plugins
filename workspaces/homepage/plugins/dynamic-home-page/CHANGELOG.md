@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.5.0
+
+### Minor Changes
+
+- 6681eb9: Bump to backstage version 1.39.1
+
+### Patch Changes
+
+- 4face49: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.9.0`.
+
 ## 1.4.2
 
 ### Patch Changes
