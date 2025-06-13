@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 0.5.3
+
+### Patch Changes
+
+- 4db7d36: Updated dependency `msw` to `2.8.7`.
+- 5f129c4: Updated dependency `@types/express` to `4.17.23`.
+
 ## 0.5.2
 
 ### Patch Changes
