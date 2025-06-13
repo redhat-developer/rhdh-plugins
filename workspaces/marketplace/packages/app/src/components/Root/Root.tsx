@@ -27,6 +27,8 @@ import {
   UserSettingsSignInAvatar,
 } from '@backstage/plugin-user-settings';
 import { SidebarSearchModal } from '@backstage/plugin-search';
+import { Administration } from '@backstage-community/plugin-rbac';
+
 import {
   Sidebar,
   sidebarConfig,
@@ -94,6 +96,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
         <SidebarItem icon={MarketplaceIcon} to="extensions" text="Extensions" />
+        <Administration />
         {/* End global nav */}
         <SidebarDivider />
         <SidebarScrollWrapper>

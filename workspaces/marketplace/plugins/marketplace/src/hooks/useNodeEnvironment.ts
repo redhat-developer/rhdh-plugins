@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useQuery } from '@tanstack/react-query';
 
-import { createApiRef } from '@backstage/core-plugin-api';
+import { useMarketplaceApi } from './useMarketplaceApi';
 
-import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+export const useNodeEnvironment = () => {
+  const marketplaceApi = useMarketplaceApi();
 
-export const marketplaceApiRef = createApiRef<MarketplaceApi>({
-  id: 'plugin.extensions.api-ref',
-});
+  return useQuery({
+    queryKey: ['marketplaceApi', 'getNodeEnvironment'],
+    queryFn: () => marketplaceApi.getNodeEnvironment?.(),
+  });
+};

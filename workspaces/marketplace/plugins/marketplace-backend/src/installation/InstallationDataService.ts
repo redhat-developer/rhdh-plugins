@@ -91,7 +91,7 @@ export class InstallationDataService {
       if (!filePath) {
         return serviceWithInitializationError(
           InstallationInitErrorReason.FILE_CONFIG_VALUE_MISSING,
-          "Missing required config value at 'extensions.installation.saveToSingleFile.file'",
+          "The 'extensions.installation.saveToSingleFile.file' config value is not being specified in the extensions configuration",
         );
       }
 

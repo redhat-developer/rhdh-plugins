@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import { createApiRef } from '@backstage/core-plugin-api';
-
-import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-
-export const marketplaceApiRef = createApiRef<MarketplaceApi>({
-  id: 'plugin.extensions.api-ref',
-});
+/**
+ * @public
+ */
+export type NodeEnvironmentType = 'production' | 'development' | 'test';

@@ -17,6 +17,44 @@
 import { Pair, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
 import { JsonObject } from '@backstage/types';
 
+export enum ExtensionsStatus {
+  INSTALLATION_DISABLED = 'INSTALLATION_DISABLED',
+  FILE_CONFIG_VALUE_MISSING = 'FILE_CONFIG_VALUE_MISSING',
+  FILE_NOT_EXISTS = 'FILE_NOT_EXISTS',
+  INVALID_CONFIG = 'INVALID_CONFIG',
+  UNKNOWN = 'UNKNOWN',
+}
+
+export const DYNAMIC_PLUGIN_CONFIG_YAML = `plugins:
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+    disabled: false
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+    disabled: true`;
+
+export const EXTENSIONS_CONFIG_YAML = `extensions:
+  installation:
+    enabled: true
+    saveToSingleFile:
+      file: /<path-to>/dynamic-plugins.yaml`;
+
+const getExtensionsConfigLine = (str: string) =>
+  EXTENSIONS_CONFIG_YAML.split('\n').findIndex(line => line.includes(str));
+
+const generateFileConfigLineNumbers = () => {
+  const line = getExtensionsConfigLine(`saveToSingleFile:`) + 1;
+  return Array.from(Array(line).keys(), i => i + line);
+};
+
+const generateFilePathLineNumbers = () => {
+  const line = getExtensionsConfigLine(`file:`) + 1;
+  return Array.from(Array(line).keys(), i => i + line);
+};
+
+export const generateExtensionsEnableLineNumbers = () => {
+  const line = getExtensionsConfigLine(`extensions:`);
+  return Array.from(Array(line + 3).keys(), i => i + (line + 1));
+};
+
 export const getExampleAsMarkdown = (content: string | JsonObject) => {
   if (!content) {
     return '';
@@ -60,4 +98,53 @@ export const applyContent = (
     });
   }
   return content.toString();
+};
+
+export const getErrorMessage = (reason: ExtensionsStatus, message: string) => {
+  if (reason === ExtensionsStatus.FILE_CONFIG_VALUE_MISSING) {
+    return {
+      title: 'Missing configuration file',
+      message: `${message}. You need to add it to your app-config.yaml if you want to enable this tool. Edit the app-config.yaml file as shown in the example below:`,
+      highlightedLineNumbers: generateFileConfigLineNumbers(),
+    };
+  }
+  if (reason === ExtensionsStatus.INVALID_CONFIG) {
+    return {
+      title: 'Invalid configuration file',
+      message: `Failed to load 'extensions.installation.saveToSingleFile.file'. ${message}. Provide valid installation configuration if you want to enable this tool. Edit your dynamic-plugins.yaml file as shown in the example below:`,
+    };
+  }
+
+  if (reason === ExtensionsStatus.FILE_NOT_EXISTS) {
+    return {
+      title: `Configuration file is incorrect, misspelled or does not exist`,
+      message: `${message}. Please re-check the specified file name in your app-config.yaml if you want to enable this tool as highlighted in the example below:`,
+      highlightedLineNumbers: generateFilePathLineNumbers(),
+    };
+  }
+  if (reason === ExtensionsStatus.UNKNOWN) {
+    return { title: 'Error reading the configuration file. ', message };
+  }
+  return { title: '', message: '' };
+};
+
+export const getPluginActionTooltipMessage = (
+  isProductionEnvironment: boolean,
+  permissions: {
+    read: 'ALLOW' | 'DENY';
+    write: 'ALLOW' | 'DENY';
+  },
+  extensionsDisabled?: boolean,
+) => {
+  if (isProductionEnvironment) {
+    return `Plugin installation is disabled in the production environment.`;
+  }
+  if (extensionsDisabled) {
+    return 'Plugin installation is disabled. To enable it, update your extensions configuration in your app-config.yaml file.';
+  }
+  if (permissions.read !== 'ALLOW' && permissions.write !== 'ALLOW') {
+    return `You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.`;
+  }
+
+  return '';
 };

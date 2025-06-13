@@ -18,6 +18,7 @@ import {
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
 } from '@backstage/catalog-client';
+import { ConfigApi } from '@backstage/core-plugin-api';
 
 import type {
   ConfigurationResponse,
@@ -35,6 +36,7 @@ import type {
   GetEntitiesResponse,
   MarketplaceApi,
 } from './MarketplaceApi';
+import { NodeEnvironmentType } from '../types/NodeEnvironmentType';
 
 /**
  * @public
@@ -53,9 +55,20 @@ export type FetchApi = {
 /**
  * @public
  */
+export type IdentityApi = {
+  getCredentials(): Promise<{
+    token?: string;
+  }>;
+};
+
+/**
+ * @public
+ */
 export type MarketplaceBackendClientOptions = {
   discoveryApi: DiscoveryApi;
   fetchApi: FetchApi;
+  identityApi: IdentityApi;
+  configApi: ConfigApi;
 };
 
 /**
@@ -64,10 +77,12 @@ export type MarketplaceBackendClientOptions = {
 export class MarketplaceBackendClient implements MarketplaceApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
+  private readonly identityApi: IdentityApi;
 
   constructor(options: MarketplaceBackendClientOptions) {
     this.discoveryApi = options.discoveryApi;
     this.fetchApi = options.fetchApi;
+    this.identityApi = options.identityApi;
   }
 
   private async request(
@@ -76,6 +91,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     searchParams?: URLSearchParams,
     body?: any,
   ): Promise<any> {
+    const { token: idToken } = await this.identityApi.getCredentials();
     const baseUrl = await this.discoveryApi.getBaseUrl('extensions');
     const query = searchParams ? searchParams.toString() : '';
     const url = `${baseUrl}${path}${query ? '?' : ''}${query}`;
@@ -84,6 +100,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
       method: requestType,
       headers: {
         'Content-Type': 'application/json',
+        ...(idToken && { Authorization: `Bearer ${idToken}` }),
       },
     };
     if (body && requestType !== 'GET') {
@@ -91,11 +108,6 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     }
 
     const response = await this.fetchApi.fetch(url, options);
-    if (!response.ok) {
-      throw new Error(
-        `Unexpected status code: ${response.status} ${response.statusText}`,
-      );
-    }
 
     return response.json();
   }
@@ -225,6 +237,14 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     );
   }
 
+  async getExtensionsConfiguration(): Promise<{ enabled: boolean }> {
+    return this.request(`/plugins/configure`, 'GET');
+  }
+
+  async getNodeEnvironment(): Promise<{ nodeEnv: NodeEnvironmentType }> {
+    return this.request(`/environment`, 'GET');
+  }
+
   async getPluginConfigByName(
     namespace: string,
     name: string,
@@ -239,7 +259,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     namespace: string,
     name: string,
     configYaml: string,
-  ): Promise<{ status: any }> {
+  ): Promise<{ status: string }> {
     return this.request(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
       'POST',
