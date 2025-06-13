@@ -22,6 +22,7 @@ import { SandboxCatalogBanner } from './SandboxCatalogBanner';
 import { SandboxCatalogGrid } from './SandboxCatalogGrid';
 import { SandboxProvider } from '../../hooks/useSandboxContext';
 import { SandboxHeader } from '../SandboxHeader';
+import { SandboxCatalogFooter } from './SandboxCatalogFooter';
 
 const useStyles = makeStyles((theme: Theme) => ({
   content: {
@@ -46,10 +47,7 @@ export const SandboxCatalogPage = () => {
             <SandboxCatalogGrid />
           </Box>
 
-          {/*
-           /* TODO enable this later once https://issues.redhat.com/browse/SANDBOX-1161 is implemented
           <SandboxCatalogFooter />
-          */}
         </Content>
       </Page>
     </SandboxProvider>

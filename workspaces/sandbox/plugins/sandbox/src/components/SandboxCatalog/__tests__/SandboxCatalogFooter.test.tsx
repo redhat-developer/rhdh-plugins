@@ -99,4 +99,10 @@ describe('SandboxCatalogFooter', () => {
       .closest('p');
     expect(typography).toHaveStyle('text-align: center');
   });
+
+  it('show privacy statement', () => {
+    renderFooter(undefined);
+
+    expect(screen.queryByText('Privacy statement')).not.toBeInTheDocument();
+  });
 });
