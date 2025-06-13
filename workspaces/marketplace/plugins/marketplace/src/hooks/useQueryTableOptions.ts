@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useCallback, useRef, useMemo } from 'react';
 
 import { useSearchParams } from 'react-router-dom';
 
@@ -49,7 +49,7 @@ export const useQueryTableOptions = <DataRow extends object>(
   const searchText = searchParams.get('searchText') ?? undefined;
   const order = searchParams.get('order') ?? undefined;
 
-  const onPageChange = React.useCallback(
+  const onPageChange = useCallback(
     (newPage: number) => {
       setSearchParams(params => {
         if (newPage <= 0) {
@@ -63,7 +63,7 @@ export const useQueryTableOptions = <DataRow extends object>(
     [setSearchParams],
   );
 
-  const onRowsPerPageChange = React.useCallback(
+  const onRowsPerPageChange = useCallback(
     (newPageSize: number) => {
       setSearchParams(params => {
         if (newPageSize <= 0) {
@@ -77,9 +77,8 @@ export const useQueryTableOptions = <DataRow extends object>(
     [setSearchParams],
   );
 
-  const onSearchChangeDebounceTimeout =
-    React.useRef<ReturnType<typeof setTimeout>>();
-  const onSearchChange = React.useCallback(
+  const onSearchChangeDebounceTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const onSearchChange = useCallback(
     (newSearchText: string) => {
       clearTimeout(onSearchChangeDebounceTimeout.current);
       onSearchChangeDebounceTimeout.current = setTimeout(() => {
@@ -97,7 +96,7 @@ export const useQueryTableOptions = <DataRow extends object>(
     [setSearchParams],
   );
 
-  const onOrderChange = React.useCallback(
+  const onOrderChange = useCallback(
     (orderBy: number, orderDirection: 'asc' | 'desc') => {
       if (orderBy === -1) {
         setSearchParams(params => {
@@ -119,7 +118,7 @@ export const useQueryTableOptions = <DataRow extends object>(
     [setSearchParams, columns],
   );
 
-  return React.useMemo(
+  return useMemo(
     () => ({
       query: {
         offset: page * pageSize,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { SyntheticEvent } from 'react';
 import { SelectItem } from '@backstage/core-components';
 import Autocomplete from '@mui/material/Autocomplete';
 import Checkbox from '@mui/material/Checkbox';
@@ -29,7 +29,7 @@ export interface BackstageSelectFilterProps {
   label: string;
   items: SelectItem[];
   selectedItems: SelectItem[];
-  onChange: (event: React.SyntheticEvent, value: SelectItem[]) => void;
+  onChange: (event: SyntheticEvent, value: SelectItem[]) => void;
 }
 
 export const CustomSelectFilter = (props: BackstageSelectFilterProps) => {

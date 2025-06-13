@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
 
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';

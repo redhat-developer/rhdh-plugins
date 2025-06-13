@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { Link } from '@backstage/core-components';
 

@@ -1,0 +1,14 @@
+g, user:default/ciiay, role:default/admins
+p, role:default/admins, catalog-entity, read, allow
+p, role:default/admins, catalog.entity.create, create, allow
+p, role:default/admins, catalog.location.read , read, allow
+p, role:default/admins, catalog.location.create , create, allow
+p, role:default/admins, policy.entity.read, read, allow
+p, role:default/admins, policy.entity.delete, delete, allow
+p, role:default/admins, policy.entity.update, update, allow
+p, role:default/admins, policy.entity.create, create, allow
+p, role:default/admins, kubernetes.clusters.read, read, allow
+p, role:default/admins, kubernetes.resources.read, read, allow
+
+p, role:default/admins, extensions-plugin, read, allow
+p, role:default/admins, extensions-plugin, create, allow

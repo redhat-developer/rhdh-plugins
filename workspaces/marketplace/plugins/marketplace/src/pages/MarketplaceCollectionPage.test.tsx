@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
 import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
