@@ -10376,7 +10376,7 @@ __metadata:
     "@mui/material": 5.17.1
     "@mui/styles": 5.17.1
     "@openshift/dynamic-plugin-sdk": 5.0.1
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.8.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
     "@scalprum/react-core": 0.9.5
     "@testing-library/jest-dom": 6.6.3
     "@testing-library/react": 14.3.1
@@ -10393,19 +10393,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.8.0":
-  version: 0.8.2
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.8.2"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.9.0"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.10.4
-    "@backstage/theme": ^0.6.4
+    "@backstage/core-plugin-api": ^1.10.7
+    "@backstage/theme": ^0.6.6
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 76488ae3fbb9fabdd936d7a1353fda0b1d11fa9439cb33333678eccfcd71fdd1c9cf60418828d94ee26f3b1874a873767996eebbedb01b3fbf57200dee5c562d
+  checksum: 365e81ba8af0fe38587e21bd842ede6eb6ee2d1590dbad26c3e5e6ca42c885b4e19de3cfc9435f43113f67960cf57c4614011596d4332def1bac93b9a6199860
   languageName: node
   linkType: hard
 
