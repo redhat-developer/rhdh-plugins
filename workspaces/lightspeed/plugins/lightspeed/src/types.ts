@@ -29,6 +29,10 @@ export type Conversations = {
   };
 };
 
+export type ReferencedDocuments = {
+  doc_title: string;
+  doc_url: string;
+}[];
 export interface BaseMessage {
   name: string;
   type: string;
@@ -41,6 +45,7 @@ export interface BaseMessage {
   };
   sources?: SourcesCardProps;
   additional_kwargs: {
+    referenced_documents?: ReferencedDocuments;
     [_key: string]: any;
   };
   error?: AlertProps;

@@ -16,7 +16,12 @@
 import { Conversation, SourcesCardProps } from '@patternfly/chatbot';
 import { PopoverProps } from '@patternfly/react-core';
 
-import { BaseMessage, ConversationList, ConversationSummary } from '../types';
+import {
+  BaseMessage,
+  ConversationList,
+  ConversationSummary,
+  ReferencedDocuments,
+} from '../types';
 
 export const getFootnoteProps = (additionalClassName: string) => ({
   label: 'Always check AI/LLM generated responses for accuracy prior to use.',
@@ -133,6 +138,24 @@ export const getMessageData = (message: BaseMessage) => {
     model: message?.response_metadata?.model,
     content: message?.content || '',
     timestamp: getTimestamp(message?.response_metadata?.created_at * 1000),
+    referencedDocuments: message?.additional_kwargs?.referenced_documents ?? [],
+  };
+};
+
+export const transformDocumentsToSources = (
+  referenced_documents: ReferencedDocuments,
+): SourcesCardProps | undefined => {
+  if (!referenced_documents || referenced_documents?.length === 0) {
+    return undefined;
+  }
+  return {
+    sources: referenced_documents.map(
+      (doc: { doc_title: string; doc_url: string }) => ({
+        title: doc.doc_title,
+        link: doc?.doc_url,
+        isExternal: true,
+      }),
+    ),
   };
 };
 
