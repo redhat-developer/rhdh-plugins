@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useState, useEffect } from 'react';
 
 const getGreetingByTimeZone = (timeZone?: string) => {
   const hours = new Date().toLocaleString('en-US', {
@@ -33,11 +33,11 @@ const getGreetingByTimeZone = (timeZone?: string) => {
 };
 
 const useGreeting = (timeZone?: string) => {
-  const [greeting, setGreeting] = React.useState<string>(
+  const [greeting, setGreeting] = useState<string>(
     getGreetingByTimeZone(timeZone),
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
       setGreeting(getGreetingByTimeZone(timeZone));
     }, 60000); // Update every minute
