@@ -1,5 +1,26 @@
 ### Dependencies
 
+## 1.13.2
+
+### Patch Changes
+
+- bb1ba58: removed all janus-idp/shared-react dependencies
+- 002f7c9: Updated dependency `@testing-library/user-event` to `14.6.1`.
+- 8c2e067: Updated dependency `openapicmd` to `2.7.0`.
+  Updated dependency `@mui/styles` to `5.17.1`.
+  Updated dependency `@playwright/test` to `1.52.0`.
+- 37e6364: Updated dependency `@playwright/test` to `1.53.0`.
+- e99da2b: Improve Bulk Import UI performance by optimizing API call behavior:
+
+  - Prevent unnecessary API calls when switching between **Organizations** and **Repositories** tabs.
+  - Avoid redundant calls when clicking on pagination controls without changing page or page size.
+  - Suppress extraneous API requests triggered by random screen clicks.
+  - Introduce **debouncing** to the search input to reduce network load during fast typing.
+
+  These changes reduce client-side overhead and improve the responsiveness of the Bulk Import page.
+
+- d7a0dd1: Aligned eslint-rules as per other plugins.
+
 ## 1.13.1
 
 ### Patch Changes
