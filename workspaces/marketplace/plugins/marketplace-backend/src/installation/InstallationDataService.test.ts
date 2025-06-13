@@ -53,6 +53,13 @@ describe('InstallationDataService', () => {
 
   const mockLogger = mockServices.logger.mock();
 
+  const plugin = mockPlugins[0];
+  mockMarketplaceApi.getPluginPackages = jest.fn((namespace, name) => {
+    const isMatch =
+      name === plugin.metadata.name && namespace === plugin.metadata.namespace;
+    return Promise.resolve(isMatch ? [mockPackages[0], mockPackages[1]] : []);
+  });
+
   afterEach(async () => {
     jest.clearAllMocks();
     mockFileInstallationStorage.initialize.mockReset();
@@ -160,18 +167,7 @@ describe('InstallationDataService', () => {
     });
 
     it('should return plugin config', async () => {
-      const pluginToGet = mockPlugins[0];
-      mockMarketplaceApi.getPluginPackages = jest.fn((namespace, name) => {
-        const isMatch =
-          name === pluginToGet.metadata.name &&
-          namespace === pluginToGet.metadata.namespace;
-        return Promise.resolve(
-          isMatch ? [mockPackages[0], mockPackages[1]] : [],
-        );
-      });
-      const result = await installationDataService.getPluginConfig(
-        mockPlugins[0],
-      );
+      const result = await installationDataService.getPluginConfig(plugin);
       expect(result).toEqual(stringify(mockDynamicPlugin1));
     });
   });
@@ -211,17 +207,63 @@ describe('InstallationDataService', () => {
     it('should update plugin', async () => {
       const newConfig = stringify([mockDynamicPackage11]);
 
-      await installationDataService.updatePluginConfig(
-        mockPlugins[0],
-        newConfig,
-      );
+      await installationDataService.updatePluginConfig(plugin, newConfig);
 
       expect(mockFileInstallationStorage.updatePackages).toHaveBeenCalledWith(
         new Set([
-          mockPackages[0].spec?.dynamicArtifact,
-          mockPackages[1].spec?.dynamicArtifact,
+          mockPackages[0].spec.dynamicArtifact,
+          mockPackages[1].spec.dynamicArtifact,
         ]),
         newConfig,
+      );
+    });
+  });
+
+  describe('addPackageDisabled', () => {
+    beforeEach(() => {
+      installationDataService = InstallationDataService.fromConfig({
+        config: validConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockLogger,
+      });
+    });
+
+    it('should add package with disabled', async () => {
+      installationDataService.addPackageDisabled(
+        mockDynamicPackage11.package,
+        false,
+      );
+
+      expect(
+        mockFileInstallationStorage.addPackageDisabled,
+      ).toHaveBeenCalledWith(mockDynamicPackage11.package, false);
+    });
+  });
+
+  describe('setPluginDisabled', () => {
+    beforeEach(() => {
+      installationDataService = InstallationDataService.fromConfig({
+        config: validConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockLogger,
+      });
+    });
+
+    it('should set plugin disabled', async () => {
+      await installationDataService.setPluginDisabled(plugin, true);
+
+      expect(
+        mockFileInstallationStorage.setPackagesDisabled,
+      ).toHaveBeenCalled();
+
+      expect(
+        mockFileInstallationStorage.setPackagesDisabled,
+      ).toHaveBeenCalledWith(
+        new Set([
+          mockPackages[0].spec.dynamicArtifact,
+          mockPackages[1].spec.dynamicArtifact,
+        ]),
+        true,
       );
     });
   });

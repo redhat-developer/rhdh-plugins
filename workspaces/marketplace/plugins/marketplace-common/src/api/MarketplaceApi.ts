@@ -90,6 +90,12 @@ export interface MarketplaceApi {
     configYaml: string,
   ): Promise<{ status: string }>;
 
+  disablePackage?(
+    namespace: string,
+    name: string,
+    disabled: boolean,
+  ): Promise<{ status: string }>;
+
   getPlugins(
     request: GetEntitiesRequest,
   ): Promise<GetEntitiesResponse<MarketplacePlugin>>;
@@ -114,6 +120,12 @@ export interface MarketplaceApi {
     namespace: string,
     name: string,
     configYaml: string,
+  ): Promise<{ status: string }>;
+
+  disablePlugin?(
+    namespace: string,
+    name: string,
+    disabled: boolean,
   ): Promise<{ status: string }>;
 
   getPluginPackages(
