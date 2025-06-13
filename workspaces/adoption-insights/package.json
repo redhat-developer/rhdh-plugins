@@ -15,6 +15,7 @@
     "build:api-reports": "yarn build:api-reports:only",
     "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags",
     "build-image": "yarn workspace backend build-image",
+    "build:knip-reports": "backstage-repo-tools knip-reports",
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
     "test:all": "backstage-cli repo test --coverage",
