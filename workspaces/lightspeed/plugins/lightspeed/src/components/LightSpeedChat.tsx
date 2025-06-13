@@ -31,6 +31,7 @@ import {
   ChatbotHeaderMain,
   ChatbotHeaderMenu,
   ChatbotHeaderTitle,
+  FileDropZone,
   MessageBar,
   MessageProps,
 } from '@patternfly/chatbot';
@@ -38,7 +39,7 @@ import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/Chat
 import { DropdownItem, DropEvent, Title } from '@patternfly/react-core';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { TEMP_CONVERSATION_ID } from '../const';
+import { supportedFileTypes, TEMP_CONVERSATION_ID } from '../const';
 import {
   useBackstageUserIdentity,
   useConversationMessages,
@@ -232,11 +233,19 @@ export const LightspeedChat = ({
     (async () => {
       if (conversationId !== TEMP_CONVERSATION_ID) {
         setMessages([]);
+        setFileContents([]);
+        setUploadError({ message: null });
         setConversationId(TEMP_CONVERSATION_ID);
         setNewChatCreated(true);
       }
     })();
-  }, [conversationId, setConversationId, setMessages]);
+  }, [
+    conversationId,
+    setConversationId,
+    setMessages,
+    setUploadError,
+    setFileContents,
+  ]);
 
   const openDeleteModal = (conversation_id: string) => {
     setTargetConversationId(conversation_id);
@@ -324,9 +333,11 @@ export const LightspeedChat = ({
         }
         return c_id;
       });
+      setFileContents([]);
+      setUploadError({ message: null });
       scrollToBottomRef.current?.scrollToBottom();
     },
-    [setConversationId, scrollToBottomRef],
+    [setConversationId, setUploadError, setFileContents, scrollToBottomRef],
   );
 
   const conversationFound = !!conversations.find(
@@ -424,7 +435,13 @@ export const LightspeedChat = ({
           onNewChat={newChatCreated ? undefined : onNewChat}
           handleTextInputChange={handleFilter}
           drawerContent={
-            <>
+            <FileDropZone
+              onFileDrop={(e, data) => handleAttach(data, e)}
+              displayMode={ChatbotDisplayMode.embedded}
+              infoText="Supported file types are: .txt, .yaml, .json and .xml. The maximum file size is 25 MB."
+              allowedFileTypes={supportedFileTypes}
+              onAttachRejected={onAttachRejected}
+            >
               {showAlert && uploadError.message && (
                 <div className={classes.errorContainer}>
                   <ChatbotAlert
@@ -438,6 +455,7 @@ export const LightspeedChat = ({
                   </ChatbotAlert>
                 </div>
               )}
+
               <ChatbotContent>
                 <LightspeedChatBox
                   userName={userName}
@@ -461,18 +479,13 @@ export const LightspeedChat = ({
                       inputTestId: 'attachment-input',
                     },
                   }}
-                  allowedFileTypes={{
-                    'text/plain': ['.txt'],
-                    'application/json': ['.json'],
-                    'application/yaml': ['.yaml', '.yml'],
-                    'application/xml': ['.xml'],
-                  }}
+                  allowedFileTypes={supportedFileTypes}
                   onAttachRejected={onAttachRejected}
                   placeholder="Send a message and optionally upload a JSON, YAML, TXT, or XML file..."
                 />
                 <ChatbotFootnote {...getFootnoteProps(classes.footerPopover)} />
               </ChatbotFooter>
-            </>
+            </FileDropZone>
           }
         />
       </Chatbot>

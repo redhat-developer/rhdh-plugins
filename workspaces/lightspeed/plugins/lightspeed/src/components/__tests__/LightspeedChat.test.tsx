@@ -24,7 +24,13 @@ import { usePermission } from '@backstage/plugin-permission-react';
 import { mockApis, TestApiProvider } from '@backstage/test-utils';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useConversations } from '../../hooks';
@@ -185,5 +191,39 @@ describe('LightspeedChat', () => {
       'accept',
       'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml,application/xml,.xml',
     );
+  });
+
+  it('should show an alert when unsupported file types are dropped', async () => {
+    render(setupLightspeedChat());
+
+    const fileDropzone = screen.getByText('MessageBox')
+      .parentElement as HTMLElement;
+
+    const invalidFile = new File(['dummy'], 'file.pdf', {
+      type: 'application/pdf',
+    });
+
+    const dataTransfer = {
+      files: [invalidFile],
+      items: [
+        {
+          kind: 'file',
+          type: 'application/pdf',
+          getAsFile: () => invalidFile,
+        },
+      ],
+      types: ['Files'],
+    };
+    await act(async () => {
+      fireEvent.drop(fileDropzone, {
+        dataTransfer,
+      });
+    });
+
+    expect(
+      screen.getByText(
+        'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+      ),
+    ).toBeInTheDocument();
   });
 });
