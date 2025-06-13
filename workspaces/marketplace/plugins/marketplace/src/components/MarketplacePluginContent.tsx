@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Fragment } from 'react';
 
 import {
   Content,
@@ -384,7 +384,7 @@ export const MarketplacePluginContent = ({
                   style={{ fontWeight: 'normal' }}
                 >
                   {plugin.spec.authors.map((author, index) => (
-                    <React.Fragment key={author.name}>
+                    <Fragment key={author.name}>
                       {index > 0 ? ', ' : ' by '}
                       <Link
                         key={author.name}
@@ -394,7 +394,7 @@ export const MarketplacePluginContent = ({
                       >
                         {author.name}
                       </Link>
-                    </React.Fragment>
+                    </Fragment>
                   ))}
                 </Typography>
               ) : null}
