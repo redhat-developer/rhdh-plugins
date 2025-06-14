@@ -31,6 +31,7 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
       - [Types of PRs](#types-of-prs)
         - [Dependency Updates](#dependency-updates)
         - [Security Fixes](#security-fixes)
+    - [Opt-in to Knip Reports Check](#opt-in-to-knip-reports-check)
 
 ## License
 
@@ -325,3 +326,8 @@ This repository uses [Renovate](https://docs.renovatebot.com/) to automatically 
 
 - PRs can also be opened for security alerts. These PRs are distinguishable with a `[security]`suffix in its title and will also have a `security` label.
 
+### Opt-in to Knip Reports Check
+
+Plugin owners can opt in to Knip reports check in CI by creating a `bcp.json` file in the root of their workspace (`workspaces/${WORKSPACE}/.auto-version-bump`) and adding `"knip-reports": true`. This ensures that knip reports in your workspace stay up to date.
+
+[Knip](https://knip.dev/) is a tool that helps with clean-up and maintenance by identifying unused dependencies within workspaces. Regularly reviewing and addressing these reports can significantly improve code quality and reduce bloat.
