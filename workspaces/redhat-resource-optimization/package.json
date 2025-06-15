@@ -1,0 +1,80 @@
+{
+  "name": "@internal/redhat-resource-optimization",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "18 || 20"
+  },
+  "scripts": {
+    "start": "concurrently -c auto -n \"fe,be\" -p \"{name}:{pid}\" \"yarn start-app\" \"yarn start-backend\"",
+    "start-app": "yarn workspace app start",
+    "start-backend": "yarn workspace backend start",
+    "start:fe-plugin": "yarn workspace @red-hat-developer-hub/plugin-redhat-resource-optimization start",
+    "start:be-plugin": "yarn workspace @red-hat-developer-hub/plugin-redhat-resource-optimization-backend start",
+    "start:dev": "concurrently -c auto -n \"fe,be\" -p \"{name}:{pid}\" \"yarn start:fe-plugin\" \"yarn start:be-plugin\"",
+    "tsc": "tsc",
+    "tsc:full": "tsc --incremental false",
+    "build:all": "backstage-cli repo build --all",
+    "build:api-reports": "yarn build:api-reports:only --tsc",
+    "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags --allow-all-warnings",
+    "clean": "backstage-cli repo clean",
+    "test": "backstage-cli repo test",
+    "test:all": "backstage-cli repo test --coverage",
+    "fix": "backstage-cli repo fix",
+    "lint": "backstage-cli repo lint --since origin/main",
+    "lint:all": "backstage-cli repo lint",
+    "prettier:check": "prettier --check .",
+    "new": "backstage-cli new --scope @red-hat-developer-hub",
+    "postinstall": "cd ../../ && yarn install"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*",
+      "plugins/*"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/redhat-resource-optimization"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.29.4",
+    "@backstage/e2e-test-utils": "^0.1.1",
+    "@backstage/repo-tools": "^0.13.3",
+    "@changesets/cli": "^2.27.1",
+    "@microsoft/api-extractor-model": "^7.29.2",
+    "@microsoft/tsdoc": "^0.15.0",
+    "@microsoft/tsdoc-config": "^0.17.0",
+    "@useoptic/optic": "^0.55.0",
+    "concurrently": "^9.0.0",
+    "knip": "^5.27.4",
+    "node-gyp": "^9.0.0",
+    "prettier": "^2.3.2",
+    "typescript": "~5.3.0"
+  },
+  "resolutions": {
+    "@backstage/plugin-catalog-backend": "1.30.0",
+    "@backstage/plugin-catalog-backend-module-logs": "0.1.6",
+    "@backstage/plugin-catalog-backend-module-scaffolder-entity-model": "0.2.4",
+    "@backstage/plugin-catalog-backend-module-unprocessed": "0.5.4",
+    "@backstage/plugin-scaffolder": "1.27.5",
+    "@backstage/plugin-scaffolder-backend": "1.29.0",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "react": "^18",
+    "react-dom": "^18",
+    "@rjsf/core": "5.23.2",
+    "@rjsf/utils": "5.23.2"
+  },
+  "prettier": "@spotify/prettier-config",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}

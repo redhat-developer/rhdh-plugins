@@ -1,0 +1,12 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.plugin-redhat-resource-optimization:
+      appIcons:
+        - name: resourceOptimizationIconOutlined
+          importName: ResourceOptimizationIconOutlined
+      dynamicRoutes:
+        - path: /redhat-resource-optimization
+          importName: ResourceOptimizationPage
+          menuItem:
+            icon: resourceOptimizationIconOutlined
+            text: Optimizations
