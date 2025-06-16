@@ -28,7 +28,7 @@ import {
 } from './fixtures/responses';
 import { openLightspeed, sendMessage } from './utils/testHelper';
 import {
-  uploadFile,
+  uploadFiles,
   uploadAndAssertDuplicate,
   supportedFileTypes,
   validateFailedUpload,
@@ -137,7 +137,7 @@ test.describe('File Attachment Validation', () => {
   for (const { path, name } of testFiles) {
     test(`should validate file: ${name}`, async ({ page }) => {
       const fileExtension = `.${name.split('.').pop()}`;
-      await uploadFile(page, [path]);
+      await uploadFiles(page, [path]);
 
       if (supportedFileTypes.includes(fileExtension)) {
         await uploadAndAssertDuplicate(page, path, name);
@@ -155,7 +155,7 @@ test.describe('File Attachment Validation', () => {
   test(`Multiple file upload`, async ({ page }) => {
     const file1 = testFiles[0].path;
     const file2 = 'backstage.json';
-    await uploadFile(page, [file1, file2]);
+    await uploadFiles(page, [file1, file2]);
 
     const heading = page.getByRole('heading', {
       name: 'Danger alert: File upload',
