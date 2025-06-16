@@ -32,7 +32,7 @@ import {
   uploadAndAssertDuplicate,
   supportedFileTypes,
   validateFailedUpload,
-  verifyAlertPopup,
+  assertVisibilityState,
 } from './utils/fileUpload';
 import {
   assertChatDialogInitialState,
@@ -163,11 +163,11 @@ test.describe('File Attachment Validation', () => {
     const text = page.getByText('Uploaded more than one file.');
     const closeBtn = page.getByRole('button', { name: 'Close Danger alert:' });
 
-    await verifyAlertPopup('visible', heading, text, closeBtn);
+    await assertVisibilityState('visible', heading, text, closeBtn);
 
     await closeBtn.click();
 
-    await verifyAlertPopup('hidden', heading, text, closeBtn);
+    await assertVisibilityState('hidden', heading, text, closeBtn);
   });
 });
 

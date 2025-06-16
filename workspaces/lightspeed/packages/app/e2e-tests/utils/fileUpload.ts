@@ -94,7 +94,7 @@ export async function validateFailedUpload(page: Page) {
   await expect(alertText).toBeHidden();
 }
 
-export async function verifyAlertPopup(
+export async function assertVisibilityState(
   state: 'visible' | 'hidden',
   ...locators: Locator[]
 ) {
