@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 6.1.0
+
+### Minor Changes
+
+- 53f3ffb: implemented authorization widget for enabling specifying the required auth providers in the schema so the UI can pick it up from there and forward to workflow execution
+
+### Patch Changes
+
+- d68d693: Updated dependency `@types/express` to `4.17.23`.
+- Updated dependencies [53f3ffb]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.0
+
 ## 6.0.3
 
 ### Patch Changes
