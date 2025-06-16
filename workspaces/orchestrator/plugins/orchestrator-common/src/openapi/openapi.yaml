@@ -616,7 +616,7 @@ components:
           enum: ['github', 'gitlab', 'microsoft']
         token:
           description: The auth token itself retrieved from the above specified provider name
-          type: string          
+          type: string
       required:
         - provider
         - token

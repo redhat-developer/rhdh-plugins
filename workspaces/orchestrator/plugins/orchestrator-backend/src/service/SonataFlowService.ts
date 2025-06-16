@@ -16,6 +16,8 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 
+import capitalize from 'lodash/capitalize';
+
 import {
   AuthToken,
   extractWorkflowFormat,
@@ -33,9 +35,6 @@ import {
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
 
-function capitalize(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-}
 export class SonataFlowService {
   constructor(
     private readonly dataIndexService: DataIndexService,
@@ -47,24 +46,18 @@ export class SonataFlowService {
     serviceUrl: string;
   }): Promise<WorkflowInfo | undefined> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}`;
-    try {
-      const response = await fetch(urlToFetch);
-      const jsonResponse = await this.handleWorkflowServiceResponse(
-        'Get workflow info',
-        args.definitionId,
-        urlToFetch,
-        response,
-        'GET',
-      );
-      this.logger.debug(
-        `Fetch workflow info result: ${JSON.stringify(jsonResponse)}`,
-      );
-      return jsonResponse;
-    } catch (err) {
-      console.log('error', err);
-
-      throw err;
-    }
+    const response = await fetch(urlToFetch);
+    const jsonResponse = await this.handleWorkflowServiceResponse(
+      'Get workflow info',
+      args.definitionId,
+      urlToFetch,
+      response,
+      'GET',
+    );
+    this.logger.debug(
+      `Fetch workflow info result: ${JSON.stringify(jsonResponse)}`,
+    );
+    return jsonResponse;
   }
 
   public async fetchWorkflowDefinition(
