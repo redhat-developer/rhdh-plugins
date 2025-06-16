@@ -82,8 +82,6 @@ const mockCatalogApi: Partial<CatalogApi> = {
   getEntities: jest.fn().mockReturnValue(mockEntities),
 };
 
-const mockBulkImportApi = new MockBulkImportApi();
-
 jest.mock('./PreviewPullRequestForm', () => ({
   PreviewPullRequestForm: ({ repoId }: { repoId: string }) => (
     <div data-testid={`pr-form-${repoId}`}>
