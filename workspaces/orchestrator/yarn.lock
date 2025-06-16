@@ -11433,6 +11433,7 @@ __metadata:
     express-promise-router: ^4.1.1
     fs-extra: ^10.1.0
     isomorphic-git: ^1.23.0
+    lodash: ^4.17.21
     moment: ^2.29.4
     openapi-backend: ^5.10.5
     prettier: 3.5.3
@@ -11466,6 +11467,7 @@ __metadata:
     "@backstage/cli": ^0.31.1
     "@backstage/core-plugin-api": ^1.10.5
     "@backstage/types": ^1.2.1
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@rjsf/core": ^5.21.2
     "@rjsf/utils": ^5.21.2
     "@types/json-schema": 7.0.15
@@ -11489,6 +11491,7 @@ __metadata:
     "@backstage/core-plugin-api": ^1.10.5
     "@backstage/types": ^1.2.1
     "@mui/material": ^5.17.1
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^"
     "@rjsf/core": ^5.21.2
     "@rjsf/material-ui": ^5.21.2

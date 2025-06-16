@@ -31,6 +31,7 @@ type SingleStepFormProps = Pick<
   | 'uiSchema'
   | 'formData'
   | 'setFormData'
+  | 'setAuthTokenDescriptors'
 >;
 
 const SingleStepForm = (props: SingleStepFormProps) => {

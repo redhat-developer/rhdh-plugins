@@ -84,7 +84,6 @@ const authorize = async (
   httpAuth: HttpAuthService,
 ): Promise<AuthorizePermissionResponse> => {
   const credentials = await httpAuth.credentials(request);
-
   const decisionResponses: AuthorizePermissionResponse[][] = await Promise.all(
     anyOfPermissions.map(permission =>
       permissionsSvc.authorize([{ permission }], {
@@ -255,7 +254,7 @@ export async function createBackendRouter(
 
   const middleware = MiddlewareFactory.create({ logger, config });
 
-  router.use(middleware.error());
+  router.use(middleware.error({ logAllErrors: true })); // log also openapi errors
 
   return router;
 }
@@ -309,7 +308,7 @@ async function initRouterApi(
         _req: express.Request,
         res: express.Response,
       ) => {
-        console.log('validationFail', c.operation);
+        console.log('OPENAPI validationFail', c.operation);
         res.status(400).json({ err: c.validation.errors });
       },
       notFound: async (_c, req: express.Request, res: express.Response) => {

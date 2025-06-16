@@ -32,9 +32,10 @@ import {
 import type { JsonObject } from '@backstage/types';
 
 import Grid from '@mui/material/Grid';
-import { JSONSchema7 } from 'json-schema';
+import type { JSONSchema7 } from 'json-schema';
 
 import {
+  AuthTokenDescriptor,
   InputSchemaResponseDTO,
   QUERY_PARAM_ASSESSMENT_INSTANCE_ID,
   QUERY_PARAM_INSTANCE_ID,
@@ -42,6 +43,7 @@ import {
 import { OrchestratorForm } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
 
 import { orchestratorApiRef } from '../../api';
+import { orchestratorAuthApiRef } from '../../api/authApi';
 import {
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
@@ -53,6 +55,7 @@ import { getSchemaUpdater } from './schemaUpdater';
 
 export const ExecuteWorkflowPage = () => {
   const orchestratorApi = useApi(orchestratorApiRef);
+  const authApi = useApi(orchestratorAuthApiRef);
   const { workflowId } = useRouteRefParams(executeWorkflowRouteRef);
   const [isExecuting, setIsExecuting] = useState(false);
   const [updateError, setUpdateError] = React.useState<Error>();
@@ -75,6 +78,9 @@ export const ExecuteWorkflowPage = () => {
   }, [orchestratorApi, workflowId]);
 
   const [schema, setSchema] = useState<JSONSchema7 | undefined>();
+  const [authTokenDescriptors, setAuthTokenDescriptors] = useState<
+    AuthTokenDescriptor[]
+  >([]);
 
   useEffect(() => {
     setSchema(value?.inputSchema);
@@ -100,9 +106,11 @@ export const ExecuteWorkflowPage = () => {
       setUpdateError(undefined);
       try {
         setIsExecuting(true);
+        const authTokens = await authApi.authenticate(authTokenDescriptors);
         const response = await orchestratorApi.executeWorkflow({
           workflowId,
           parameters,
+          authTokens,
           businessKey: assessmentInstanceId,
         });
         navigate(instanceLink({ instanceId: response.data.id }));
@@ -112,7 +120,15 @@ export const ExecuteWorkflowPage = () => {
         setIsExecuting(false);
       }
     },
-    [orchestratorApi, workflowId, navigate, instanceLink, assessmentInstanceId],
+    [
+      orchestratorApi,
+      workflowId,
+      navigate,
+      instanceLink,
+      assessmentInstanceId,
+      authTokenDescriptors,
+      authApi,
+    ],
   );
 
   const error = responseError || workflowNameError;
@@ -144,6 +160,7 @@ export const ExecuteWorkflowPage = () => {
                 isExecuting={isExecuting}
                 isDataReadonly={!!assessmentInstanceId}
                 initialFormData={initialFormData}
+                setAuthTokenDescriptors={setAuthTokenDescriptors}
               />
             ) : (
               <MissingSchemaNotice
