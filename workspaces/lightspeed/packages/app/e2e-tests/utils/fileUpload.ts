@@ -28,7 +28,7 @@ export async function triggerFileChooser(
   return fileChooser;
 }
 
-export async function uploadFile(page: Page, filePath: string) {
+export async function uploadFile(page: Page, filePath: string[]) {
   const attachButton = page.getByRole('button', { name: 'Attach' });
   await expect(attachButton).toBeVisible();
 
@@ -42,7 +42,7 @@ export async function uploadAndAssertDuplicate(
   fileName: string,
 ) {
   await validateSuccessfulUpload(page, fileName);
-  await uploadFile(page, filePath);
+  await uploadFile(page, [filePath]);
   await expect(
     page.getByRole('heading', { name: 'File upload failed' }),
   ).toBeVisible();
@@ -92,4 +92,13 @@ export async function validateFailedUpload(page: Page) {
   await page.getByRole('button', { name: 'Close Danger alert' }).click();
   await expect(alertHeader).toBeHidden();
   await expect(alertText).toBeHidden();
+}
+
+export async function verifyAlertPopup(
+  state: 'visible' | 'hidden',
+  ...locators: Locator[]
+) {
+  for (const locator of locators) {
+    await expect(locator)[state === 'visible' ? 'toBeVisible' : 'toBeHidden']();
+  }
 }
