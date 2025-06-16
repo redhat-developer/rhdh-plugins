@@ -32,7 +32,7 @@ export const Divider = ({ layout }: DividerProps) => {
     <MUIDivider
       orientation="vertical"
       flexItem
-      sx={{ borderColor: '#383838', marginX: 1, ...layout }}
+      sx={{ borderColor: 'inherit', opacity: 0.25, marginX: 1, ...layout }}
     />
   );
 };
