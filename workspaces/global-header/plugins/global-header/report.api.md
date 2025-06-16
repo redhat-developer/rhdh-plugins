@@ -16,11 +16,11 @@ export const CompanyLogo: ({ logo, to }: CompanyLogoProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface CompanyLogoProps {
-  // (undocumented)
   layout?: CSSProperties;
-  // (undocumented)
-  logo?: string;
-  // (undocumented)
+  logo?: {
+    light: string;
+    dark: string;
+  };
   to?: string;
 }
 

@@ -18,6 +18,7 @@ import { Link } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import DefaultLogo from './DefaultLogo';
 import Box from '@mui/material/Box';
+import { useAppBarBackgroundScheme } from '../../hooks/useAppBarBackgroundScheme';
 
 const LogoRender = ({
   base64Logo,
@@ -46,16 +47,31 @@ const LogoRender = ({
  * @public
  */
 export interface CompanyLogoProps {
-  logo?: string;
+  /** An object containing the logo URLs */
+  logo?: {
+    /** The logo that will be used in global headers with a light-coloured background */
+    light: string;
+    /** The logo that will be used in global headers with a dark-coloured background */
+    dark: string;
+  };
+  /** The route to link the logo to */
   to?: string;
+  /** This prop is not used by this component. */
   layout?: CSSProperties;
 }
 
 export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
   const configApi = useApi(configApiRef);
-  const logoFullBase64URI = configApi.getOptionalString(
+  /** The fullLogo config specified by Backstage */
+  const darkLogoFullBase64URI = configApi.getOptionalString(
     'app.branding.fullLogo',
   );
+  /** The fullLogoLightTheme config specified by Red Hat Developer Hub */
+  const lightLogoFullBase64URI = configApi.getOptionalString(
+    'app.branding.fullLogoLightTheme',
+  );
+  const backgroundScheme = useAppBarBackgroundScheme();
+
   return (
     <Box
       sx={{
@@ -76,7 +92,13 @@ export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
         }}
       >
         <LogoRender
-          base64Logo={logo ?? logoFullBase64URI}
+          base64Logo={
+            (backgroundScheme === 'light'
+              ? logo?.light ?? lightLogoFullBase64URI
+              : undefined) ??
+            logo?.dark ??
+            darkLogoFullBase64URI
+          }
           defaultLogo={<DefaultLogo />}
         />
       </Link>

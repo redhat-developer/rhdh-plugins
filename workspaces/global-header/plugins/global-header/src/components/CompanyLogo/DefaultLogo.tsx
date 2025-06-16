@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { useTheme } from '@mui/material/styles';
-import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { useAppBarBackgroundScheme } from '../../hooks/useAppBarBackgroundScheme';
 
 const RedHatDeveloperHubSVG = ({
   textFill = 'black',
@@ -100,10 +99,8 @@ const RedHatDeveloperHubSVG = ({
 );
 
 const DefaultLogo = () => {
-  const theme = useTheme();
-  const isDarkMode =
-    (theme as ThemeConfig)?.palette?.rhdh?.general?.appBarBackgroundScheme ===
-    'dark';
+  const backgroundScheme = useAppBarBackgroundScheme();
+  const isDarkMode = backgroundScheme === 'dark';
   return <RedHatDeveloperHubSVG textFill={isDarkMode ? 'white' : 'black'} />;
 };
 
