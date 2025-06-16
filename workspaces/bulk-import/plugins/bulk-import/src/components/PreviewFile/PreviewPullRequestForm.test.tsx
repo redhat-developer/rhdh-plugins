@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-import { configApiRef } from '@backstage/core-plugin-api';
+import { configApiRef, errorApiRef } from '@backstage/core-plugin-api';
+import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 import { CatalogApi, catalogApiRef } from '@backstage/plugin-catalog-react';
-import { MockConfigApi, TestApiProvider } from '@backstage/test-utils';
+import {
+  mockApis,
+  MockConfigApi,
+  MockErrorApi,
+  TestApiProvider,
+} from '@backstage/test-utils';
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useFormikContext } from 'formik';
@@ -82,6 +88,8 @@ describe('Preview Pull Request Form', () => {
     const { getByText, getByPlaceholderText } = render(
       <TestApiProvider
         apis={[
+          [errorApiRef, new MockErrorApi()],
+          [translationApiRef, mockApis.translation()],
           [
             configApiRef,
             new MockConfigApi({
@@ -135,6 +143,8 @@ describe('Preview Pull Request Form', () => {
     const { getByText, getByPlaceholderText } = render(
       <TestApiProvider
         apis={[
+          [errorApiRef, new MockErrorApi()],
+          [translationApiRef, mockApis.translation()],
           [
             configApiRef,
             new MockConfigApi({
@@ -190,6 +200,8 @@ describe('Preview Pull Request Form', () => {
     const { getByPlaceholderText } = render(
       <TestApiProvider
         apis={[
+          [errorApiRef, new MockErrorApi()],
+          [translationApiRef, mockApis.translation()],
           [
             configApiRef,
             new MockConfigApi({

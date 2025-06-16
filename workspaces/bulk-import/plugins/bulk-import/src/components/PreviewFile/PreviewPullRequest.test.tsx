@@ -16,9 +16,15 @@
 
 import { useState } from 'react';
 
-import { configApiRef } from '@backstage/core-plugin-api';
+import { configApiRef, errorApiRef } from '@backstage/core-plugin-api';
+import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 import { CatalogApi, catalogApiRef } from '@backstage/plugin-catalog-react';
-import { MockConfigApi, TestApiProvider } from '@backstage/test-utils';
+import {
+  mockApis,
+  MockConfigApi,
+  MockErrorApi,
+  TestApiProvider,
+} from '@backstage/test-utils';
 
 import { render } from '@testing-library/react';
 import { useFormikContext } from 'formik';
@@ -40,6 +46,10 @@ jest.mock('formik', () => ({
 }));
 
 const setState = jest.fn();
+
+jest.mock('./PreviewPullRequestForm', () => ({
+  PreviewPullRequestForm: () => <div data-testid="mock-form" />,
+}));
 
 beforeEach(() => {
   (useState as jest.Mock).mockImplementation(initial => [initial, setState]);
@@ -78,6 +88,8 @@ describe('Preview Pull Request', () => {
     const { getByText } = render(
       <TestApiProvider
         apis={[
+          [errorApiRef, new MockErrorApi()],
+          [translationApiRef, mockApis.translation()],
           [
             configApiRef,
             new MockConfigApi({
@@ -147,6 +159,8 @@ describe('Preview Pull Request', () => {
     const { getByText } = render(
       <TestApiProvider
         apis={[
+          [errorApiRef, new MockErrorApi()],
+          [translationApiRef, mockApis.translation()],
           [
             configApiRef,
             new MockConfigApi({
@@ -202,6 +216,8 @@ describe('Preview Pull Request', () => {
     const { getByTestId } = render(
       <TestApiProvider
         apis={[
+          [errorApiRef, new MockErrorApi()],
+          [translationApiRef, mockApis.translation()],
           [
             configApiRef,
             new MockConfigApi({
@@ -262,6 +278,8 @@ describe('Preview Pull Request', () => {
     const { getByTestId, getByText } = render(
       <TestApiProvider
         apis={[
+          [errorApiRef, new MockErrorApi()],
+          [translationApiRef, mockApis.translation()],
           [
             configApiRef,
             new MockConfigApi({
