@@ -165,10 +165,23 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
           userFound = true;
           const userStatus = signupDataToStatus(userData);
           userReady = userStatus === 'ready';
-          const userNamespaceReady = !!userData?.defaultUserNamespace;
-          // if user is ready or verification is required we can stop fetching the data
+
+          const verificationRequired = userStatus === 'verify';
+          // if verification is required we can stop fetching the data
+          if (verificationRequired) {
+            break;
+          }
+
           // if user is ready we can stop fetching the data
-          if (userReady && userNamespaceReady) {
+          if (userReady) {
+            // if namespace is not defined we can continue fetching the data
+            if (!userData?.defaultUserNamespace) {
+              // eslint-disable-next-line
+              console.error(
+                'user is ready but default namespace is not defined yet...',
+              );
+              continue;
+            }
             const productURLs = productsURLMapping(userData);
             // find the link to open if any
             urlToOpen = productURLs.find(pu => pu.id === id)?.url || '';
@@ -261,6 +274,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
 
         <Typography
           data-testid="resend-code-link"
+          component="div"
           variant="body2"
           color="primary"
           sx={{

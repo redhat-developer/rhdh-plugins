@@ -34,3 +34,9 @@ Please, note that every time you want to re deploy, you need to run:
 
 NOTE: the app uses prod RH SSO as auth provider and sandbox stage backend by default
 ( those can be configured in `deploy/app-config.yaml` )
+
+Known issues:
+
+- sometimes the local node build fails and you'll have to run `make stop-rhdh-local` and `make start-rhdh-local` again.
+  This is what you will see when the build fails:
+  ![Known Issues](./images/known_build_issue.png)
