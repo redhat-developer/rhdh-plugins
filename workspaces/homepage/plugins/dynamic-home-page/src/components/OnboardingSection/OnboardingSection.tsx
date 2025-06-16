@@ -20,7 +20,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { UserEntity } from '@backstage/catalog-model';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
-import Grid from '@mui/material/Grid';
+import useResizeObserver from 'use-resize-observer';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -43,6 +43,12 @@ export const OnboardingSection = () => {
     loading: profileLoading,
   } = useUserProfile();
   const catalogApi = useApi(catalogApiRef);
+
+  const { ref, width = 1 } = useResizeObserver();
+  const gap = 16;
+  let cardWidth = '100%';
+  if (width >= 900) cardWidth = `calc((100% - ${gap * 3}px) / 4)`;
+  else if (width >= 600) cardWidth = `calc((100% - ${gap}px) / 2)`;
 
   useEffect(() => {
     const fetchUserEntity = async () => {
@@ -77,39 +83,48 @@ export const OnboardingSection = () => {
   };
 
   const content = (
-    <Box>
-      <Grid container margin="auto">
-        <Grid
-          item
-          xs={12}
-          md={6}
-          lg={3}
-          display="flex"
-          justifyContent="left"
-          alignItems="center"
+    <Box
+      ref={ref}
+      sx={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 2,
+        justifyContent: 'flex-start',
+      }}
+    >
+      <Box
+        sx={{
+          flex: `0 0 ${cardWidth}`,
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <Box
+          component="img"
+          src={
+            isDarkMode ? HomePageIllustrationDark : HomePageIllustrationLight
+          }
+          alt=""
+          sx={{
+            width: 'clamp(200px, 100%, 264px)',
+            display: 'block',
+            margin: 'auto',
+          }}
+        />
+      </Box>
+
+      {LEARNING_SECTION_ITEMS.map(item => (
+        <Box
+          key={item.title}
+          sx={{
+            flex: `0 0 ${cardWidth}`,
+            boxSizing: 'border-box',
+            minWidth: 0,
+            display: 'flex',
+            justifyContent: 'center',
+          }}
         >
-          <Box
-            component="img"
-            src={
-              isDarkMode ? HomePageIllustrationDark : HomePageIllustrationLight
-            }
-            alt=""
-            sx={{
-              width: 'clamp(200px, 20vw, 264px)',
-            }}
-          />
-        </Grid>
-        {LEARNING_SECTION_ITEMS.map(item => (
-          <Grid
-            item
-            xs={12}
-            md={6}
-            lg={3}
-            key={item.title}
-            display="flex"
-            justifyContent="left"
-            alignItems="center"
-          >
+          <Box sx={{ width: '100%' }}>
             <OnboardingCard
               title={item.title}
               description={item.description}
@@ -118,9 +133,9 @@ export const OnboardingSection = () => {
               target={item.target}
               ariaLabel={item.ariaLabel}
             />
-          </Grid>
-        ))}
-      </Grid>
+          </Box>
+        </Box>
+      ))}
     </Box>
   );
 
