@@ -68,7 +68,7 @@ All other properties are either ignored or required solely for schema validity.
 | ------------------------------- | ------------------ | -------- | --------------------------------------------------------------------- |
 | `ui:widget`                     | string             | Yes      | Must be `"AuthRequester"`                                             |
 | `ui:props.authTokenDescriptors` | array of objects   | Yes      | List of token requirements                                            |
-| — `provider`                    | string             | Yes      | One of `github`, `gitlab`, `microsoft`, etc.                          |
+| — `provider`                    | string             | Yes      | One of `github`, `gitlab`, `microsoft`                                |
 | — `tokenType`                   | string             | Yes      | `"oauth"` or `"openId"`                                               |
 | — `scope`                       | string or string[] | Optional | Scope or scopes to request, e.g., `"repo"` or `["repo", "read:user"]` |
 
@@ -98,11 +98,22 @@ All other properties are either ignored or required solely for schema validity.
 
 In this example, the form will trigger login/token requests for GitHub and Microsoft, using the specified scopes where given.
 
-## Where to Find Scopes
+## About `tokenType`
+
+The `tokenType` field defines which type of token Backstage should return:
+
+| `tokenType` | Description                                                                                                                                                                             |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"oauth"`   | Retrieves an **OAuth access token** — Uses backstage [`getAccessToken`](https://backstage.io/docs/reference/core-app-api.oauth2.getaccesstoken/).                                       |
+| `"openId"`  | Retrieves an **ID token** (OpenID Connect) — used mainly for identity verification. Uses backstage [`getIdToken`](https://backstage.io/docs/reference/core-app-api.oauth2.getidtoken/). |
+
+> ⚠️ Github backstage OAuth provider doesn't support openId tokens.
+
+## About Scopes
 
 When specifying the `scope` field, refer to the official documentation for available scopes and their meanings:
 
-### 🔒 GitHub
+### GitHub
 
 GitHub scopes control access to repositories, user data, and other GitHub features.
 
@@ -110,13 +121,13 @@ GitHub scopes control access to repositories, user data, and other GitHub featur
 
 **Examples:**
 
-- `"repo"` – Full control of private repositories
+- `"repo"` – Full control of private and public repositories
 - `"read:user"` – Read profile info
 - `"workflow"` – Access GitHub Actions
 
 ---
 
-### 🔒 GitLab
+### GitLab
 
 GitLab scopes are used in OAuth and determine what actions the token allows.
 
@@ -130,12 +141,11 @@ GitLab scopes are used in OAuth and determine what actions the token allows.
 
 ---
 
-### 🔒 Microsoft (Microsoft Graph / Azure AD)
+### Microsoft
 
 Microsoft tokens usually access Microsoft Graph, covering users, calendar, mail, Teams, and more.
 
 - [Microsoft Graph permissions reference](https://learn.microsoft.com/en-us/graph/permissions-reference)
-- [Scopes and permissions in Microsoft identity platform](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent)
 
 **Examples:**
 
@@ -145,9 +155,7 @@ Microsoft tokens usually access Microsoft Graph, covering users, calendar, mail,
 
 ---
 
-## Best Practices
+## Notes
 
-- Use this field to declare token requirements up front.
-- Only one `AuthRequester` field is needed per form, even for multiple providers.
-- Include `scope` when broader access is required beyond default login.
+- Only one `AuthRequester` field is needed per form, even for multiple providers. If multiple ones are included, only one of them will be applied.
 - Never rely on the value of this field — it will always be `undefined`.
