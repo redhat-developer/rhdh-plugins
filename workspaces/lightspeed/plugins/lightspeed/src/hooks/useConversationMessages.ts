@@ -31,6 +31,7 @@ import {
   createUserMessage,
   getMessageData,
   getTimestamp,
+  transformDocumentsToSources,
 } from '../utils/lightspeed-chatbox-utils';
 import { useCreateConversationMessage } from './useCreateCoversationMessage';
 
@@ -126,6 +127,7 @@ export const useConversationMessages = (
           model,
           content: botMessage,
           timestamp: botTimestamp,
+          referencedDocuments,
         } = getMessageData(aiMessage);
 
         _conversations[currentConversation].push(
@@ -142,6 +144,7 @@ export const useConversationMessages = (
               name: model ?? selectedModel,
               content: botMessage,
               timestamp: botTimestamp,
+              sources: transformDocumentsToSources(referencedDocuments),
             }),
           ],
         );
