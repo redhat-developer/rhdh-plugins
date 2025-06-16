@@ -63,7 +63,7 @@
     "@spotify/prettier-config": "^15.0.0",
     "@types/express": "4.17.23",
     "@types/supertest": "2.0.16",
-    "msw": "2.8.7",
+    "msw": "2.10.2",
     "prettier": "3.5.3",
     "supertest": "6.3.4"
   },
