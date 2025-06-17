@@ -153,7 +153,6 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
 
       // Poll until user is found or max attempts reached
       let urlToOpen = '';
-      let userFound = false;
       let userReady = false;
       for (let i = 0; i < maxAttempts; i++) {
         setRefetchingUserData(true);
@@ -162,29 +161,34 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
         // Fetch the latest user data and check if user is found
         const userData = await refetchUserData();
         if (userData) {
-          userFound = true;
           const userStatus = signupDataToStatus(userData);
           userReady = userStatus === 'ready';
+
+          const verificationRequired = userStatus === 'verify';
+          // if verification is required we can stop fetching the data
+          if (verificationRequired) {
+            break;
+          }
+
           // if user is ready we can stop fetching the data
           if (userReady) {
+            // if namespace is not defined we can continue fetching the data
+            if (!userData?.defaultUserNamespace) {
+              // eslint-disable-next-line
+              console.error(
+                'user is ready but default namespace is not defined yet...',
+              );
+              continue;
+            }
             const productURLs = productsURLMapping(userData);
             // find the link to open if any
             urlToOpen = productURLs.find(pu => pu.id === id)?.url || '';
             // User has signed up and the trial is ready and user selects the AAP Trial
-            if (userFound && userReady) {
-              if (pdt === Product.AAP) {
-                if (!userData?.defaultUserNamespace) {
-                  // eslint-disable-next-line
-                  console.error(
-                    'unable to provision AAP. user namespace is not defined.',
-                  );
-                  return;
-                }
-                handleAAPInstance(userData.defaultUserNamespace);
-                setAnsibleCredsModalOpen(true);
-              } else if (urlToOpen) {
-                window.open(urlToOpen, '_blank');
-              }
+            if (pdt === Product.AAP) {
+              handleAAPInstance(userData.defaultUserNamespace as string);
+              setAnsibleCredsModalOpen(true);
+            } else if (urlToOpen) {
+              window.open(urlToOpen, '_blank');
             }
             break;
           }
@@ -268,6 +272,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
 
         <Typography
           data-testid="resend-code-link"
+          component="div"
           variant="body2"
           color="primary"
           sx={{

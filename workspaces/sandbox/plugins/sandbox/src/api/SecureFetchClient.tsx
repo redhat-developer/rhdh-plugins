@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { OAuthApi } from '@backstage/core-plugin-api/index';
+import { OAuthApi } from '@backstage/core-plugin-api';
 
 export type SecureFetchClientOptions = {
   oauthApi: OAuthApi;
