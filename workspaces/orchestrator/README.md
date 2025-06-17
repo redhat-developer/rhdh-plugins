@@ -211,6 +211,10 @@ For more information about audit logs in RHDH, please refer to [the official doc
 
 The `orchestrator` plugin includes an extensible form for executing workflows. Details are available in the [extensible form documentation](./docs/extensibleForm.md).
 
+### Authentication in Workflows
+
+Workflows that call external APIs requiring authentication can request tokens in the input schema — [see docs/auth.md](docs/auth.md) for details.
+
 ## Run locally from this repo
 
 The orchestrator workspace is structured like a standard backstage application. To get it up and running locally run the following:
