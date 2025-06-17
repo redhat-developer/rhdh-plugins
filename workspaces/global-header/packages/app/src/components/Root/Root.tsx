@@ -15,7 +15,8 @@
  */
 
 import { PropsWithChildren } from 'react';
-import { makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
 import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import LibraryBooks from '@material-ui/icons/LibraryBooks';
@@ -37,57 +38,94 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-global-header';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 
-const useStyles = makeStyles(() => ({
-  pageWithoutFixHeight: {
-    '> div[class*="-sidebarLayout"]': {
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-    },
-    '> div > main': {
-      height: 'unset',
-      flexGrow: 1,
-    },
-    '.techdocs-reader-page > main': {
-      height: 'unset',
-    },
-  },
-  sidebarItem: {
-    textDecorationLine: 'none',
-  },
-  sidebarLayout: {
-    '& div[class*="BackstageSidebar-drawer"]': {
-      top: 'var(--global-header-default-height, 64px)',
-      height: 'calc(100vh - var(--global-header-default-height, 64px))',
-    },
-    '& main[class*="BackstagePage-root"]': {
-      height: `calc(100vh - (var(--global-header-default-height, 64px) - var(--rhdh-v1-page-inset, 1.5rem)))`,
-      marginTop: 'calc(-1 * var(--rhdh-v1-page-inset, 1.5rem))',
-      marginBottom: 'calc(-1 * var(--rhdh-v1-page-inset, 1.5rem))',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      '& article': {
-        flex: 1,
-        overflow: 'auto',
-      },
-    },
+/** This component is copy pasted from RHDH and should be kept in sync. */
+const PageWithoutFixHeight = styled(Box, {
+  name: 'RHDHPageWithoutFixHeight',
+  slot: 'root',
+})(() => ({
+  // Use the complete viewport (similar to how Backstage does it) and make the
+  // page content part scrollable below. We also need to compensate for the
+  // above-sidebar position of the global header as it takes up a fixed height
+  // at the top of the page.
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100vh',
+
+  // This solves the same issue for techdocs, which was reported as
+  // https://issues.redhat.com/browse/RHIDP-4637
+  '.techdocs-reader-page > main': {
+    height: 'unset',
   },
 }));
 
-export const Root = ({ children = null }: PropsWithChildren<{}>) => {
-  const { pageWithoutFixHeight, sidebarLayout } = useStyles();
+/** This component is copy pasted from RHDH and should be kept in sync. */
+const SidebarLayout = styled(Box, {
+  name: 'RHDHPageWithoutFixHeight',
+  slot: 'sidebarLayout',
+  shouldForwardProp: prop =>
+    prop !== 'aboveSidebarHeaderHeight' &&
+    prop !== 'aboveMainContentHeaderHeight',
+})(
+  ({
+    aboveSidebarHeaderHeight,
+    aboveMainContentHeaderHeight,
+  }: {
+    aboveSidebarHeaderHeight?: number;
+    aboveMainContentHeaderHeight?: number;
+  }) => ({
+    // We remove Backstage's 100vh on the content, and instead rely on flexbox
+    // to take up the whole viewport.
+    display: 'flex',
+    flexGrow: 1,
+    maxHeight: `calc(100vh - ${aboveSidebarHeaderHeight ?? 0}px)`,
 
+    '& div[class*="BackstageSidebarPage"]': {
+      display: 'flex',
+      flexDirection: 'column',
+      height: 'unset',
+      flexGrow: 1,
+      // Here we override the theme so that the Backstage default page suspense
+      // takes up the whole height of the page instead of 100vh. The difference
+      // lies in the height of the global header above the sidebar.
+      '@media (min-width: 600px)': {
+        '& > [class*="MuiLinearProgress-root"]': {
+          height: 'unset',
+          flexGrow: 1,
+        },
+      },
+    },
+
+    // The height is controlled by the flexbox in the BackstageSidebarPage.
+    '& main[class*="BackstagePage-root"]': {
+      height: `calc(100vh - ${
+        aboveSidebarHeaderHeight! + aboveMainContentHeaderHeight!
+      }px)`,
+      flexGrow: 1,
+    },
+
+    // We need to compensate for the above-sidebar position of the global header
+    // as it takes up a fixed height at the top of the page.
+    '& div[class*="BackstageSidebar-drawer"]': {
+      top: `max(0px, ${aboveSidebarHeaderHeight ?? 0}px)`,
+    },
+  }),
+);
+
+export const Root = ({ children = null }: PropsWithChildren<{}>) => {
   return (
-    <div className={pageWithoutFixHeight}>
-      <div>
+    <PageWithoutFixHeight>
+      <div id="above-sidebar-header-container">
         {/* update globalHeaderMountPoints config to test Global header */}
         <GlobalHeaderComponent
           globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
         />
       </div>
-      <div className={sidebarLayout}>
+      <SidebarLayout
+        aboveMainContentHeaderHeight={0}
+        aboveSidebarHeaderHeight={64}
+      >
         <SidebarPage>
+          <div id="above-main-content-header-container" />
           <Sidebar>
             <SidebarGroup label="Menu" icon={<MenuIcon />}>
               {/* Global nav, not org-specific */}
@@ -115,7 +153,7 @@ export const Root = ({ children = null }: PropsWithChildren<{}>) => {
           </Sidebar>
           {children}
         </SidebarPage>
-      </div>
-    </div>
+      </SidebarLayout>
+    </PageWithoutFixHeight>
   );
 };

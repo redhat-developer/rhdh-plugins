@@ -1,5 +1,16 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.5.4
+
+### Patch Changes
+
+- 555ef5b: Added support for Drag and Drop attachment upload
+- ee1da3b: enable only supported file types in file picker
+- 13dd7b1: Updated dependency `@patternfly/chatbot` to `6.3.0-prerelease.20`.
+  Updated dependency `@patternfly/react-core` to `6.3.0-prerelease.17`.
+- 717a32b: Updated dependency `@patternfly/react-core` to `6.3.0-prerelease.16`.
+- 6495f17: Make source card links as external links
+
 ## 0.5.3
 
 ### Patch Changes

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { FC } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
@@ -31,7 +31,7 @@ interface OnboardingCardProps {
   ariaLabel?: string;
 }
 
-const OnboardingCard: React.FC<OnboardingCardProps> = ({
+const OnboardingCard: FC<OnboardingCardProps> = ({
   title,
   description,
   buttonText,

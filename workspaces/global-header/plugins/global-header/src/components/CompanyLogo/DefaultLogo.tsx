@@ -15,6 +15,7 @@
  */
 
 import { useTheme } from '@mui/material/styles';
+import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const LightThemeLogoSVG = () => (
   <svg
@@ -269,7 +270,9 @@ const DarkThemeLogoSVG = () => (
 );
 const DefaultLogo = () => {
   const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
+  const isDarkMode =
+    (theme as ThemeConfig)?.palette?.rhdh?.general?.appBarBackgroundScheme ===
+    'dark';
   return isDarkMode ? <DarkThemeLogoSVG /> : <LightThemeLogoSVG />;
 };
 

@@ -79,6 +79,7 @@ export const SearchBar = (props: SearchBarProps) => {
             componentsProps={{
               paper: {
                 sx: {
+                  '&:empty': { visibility: 'hidden' }, // Removes underline-like effect
                   borderRadius: '4px',
                   outline: 'unset',
                   boxShadow:

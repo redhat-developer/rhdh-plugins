@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-api
 
+## 1.6.0
+
+### Minor Changes
+
+- 53f3ffb: implemented authorization widget for enabling specifying the required auth providers in the schema so the UI can pick it up from there and forward to workflow execution
+
+### Patch Changes
+
+- Updated dependencies [53f3ffb]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.0
+
 ## 1.5.0
 
 ### Minor Changes

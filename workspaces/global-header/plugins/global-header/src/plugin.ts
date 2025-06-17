@@ -267,7 +267,7 @@ export const LogoutButton: ComponentType = globalHeaderPlugin.provide(
 );
 
 /**
- * Spacer component that allow users to add a flexibel spacing between components.
+ * Spacer component that allow users to add a flexible spacing between components.
  *
  * Supports two props: `growFactor` with default 1 and `minWidth` width default 8 pixels.
  *

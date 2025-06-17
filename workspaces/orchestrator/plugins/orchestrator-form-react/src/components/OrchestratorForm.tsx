@@ -44,6 +44,7 @@ const getNumSteps = (schema: JSONSchema7): number | undefined => {
 export type OrchestratorFormProps = {
   schema: JSONSchema7;
   updateSchema: OrchestratorFormContextProps['updateSchema'];
+  setAuthTokenDescriptors: OrchestratorFormContextProps['setAuthTokenDescriptors'];
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
   initialFormData: JsonObject;
@@ -61,6 +62,7 @@ const OrchestratorForm = ({
   isExecuting,
   initialFormData,
   isDataReadonly,
+  setAuthTokenDescriptors,
 }: OrchestratorFormProps) => {
   // make the form a controlled component so the state will remain when moving between steps. see https://rjsf-team.github.io/react-jsonschema-form/docs/quickstart#controlled-component
   const [formData, setFormData] = React.useState<JsonObject>(
@@ -116,6 +118,7 @@ const OrchestratorForm = ({
           uiSchema={uiSchema}
           formData={formData}
           setFormData={setFormData}
+          setAuthTokenDescriptors={setAuthTokenDescriptors}
         >
           <Fragment />
         </OrchestratorFormWrapper> // it is required to pass the fragment so rjsf won't generate a Submit button
@@ -127,6 +130,7 @@ const OrchestratorForm = ({
           uiSchema={uiSchema}
           formData={formData}
           setFormData={setFormData}
+          setAuthTokenDescriptors={setAuthTokenDescriptors}
         />
       )}
     </StepperContextProvider>

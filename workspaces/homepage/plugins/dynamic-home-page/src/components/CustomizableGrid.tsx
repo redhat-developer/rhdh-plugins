@@ -20,7 +20,9 @@
 // https://github.com/backstage/backstage/blob/master/plugins/home/src/components/CustomHomepage/CustomHomepageGrid.tsx
 // but without the drag and drop functionality.
 
-import React, { useMemo } from 'react';
+import type { ComponentType } from 'react';
+
+import { useMemo } from 'react';
 import { Layout } from 'react-grid-layout';
 
 import { ErrorBoundary } from '@backstage/core-components';
@@ -35,7 +37,7 @@ import { HomePageCardMountPoint } from '../types';
 
 interface Card {
   id: string;
-  Component: React.ComponentType<any>;
+  Component: ComponentType<any>;
   props?: Record<string, any>;
   layouts: Record<string, Layout>;
 }

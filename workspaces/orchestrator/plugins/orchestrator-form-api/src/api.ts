@@ -21,8 +21,11 @@ import { FormProps } from '@rjsf/core';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 
+import { AuthTokenDescriptor } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
 import { defaultFormExtensionsApi } from './DefaultFormApi';
 
+/**
 /**
  * @public
  *
@@ -34,9 +37,11 @@ export type OrchestratorFormContextProps = {
   uiSchema: UiSchema<JsonObject, JSONSchema7>;
   formData: JsonObject;
   setFormData: (data: JsonObject) => void;
-
   children: React.ReactNode;
   onSubmit: (formData: JsonObject) => void;
+  setAuthTokenDescriptors: (
+    authTokenDescriptors: AuthTokenDescriptor[],
+  ) => void;
 };
 
 /**

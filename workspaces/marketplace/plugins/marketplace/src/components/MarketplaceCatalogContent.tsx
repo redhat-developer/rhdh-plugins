@@ -16,7 +16,12 @@
 
 import React from 'react';
 
-import { Content, LinkButton } from '@backstage/core-components';
+import {
+  CodeSnippet,
+  Content,
+  LinkButton,
+  WarningPanel,
+} from '@backstage/core-components';
 import { CatalogFilterLayout } from '@backstage/plugin-catalog-react';
 
 import Card from '@mui/material/Card';
@@ -24,16 +29,24 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Launch from '@mui/icons-material/Launch';
+import AlertTitle from '@mui/material/AlertTitle';
+import Alert from '@mui/material/Alert';
 
 import { SearchTextField } from '../shared-components/SearchTextField';
 
 import { useCollections } from '../hooks/useCollections';
+import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
+import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { MarketplacePluginFilter } from './MarketplacePluginFilter';
 import { CollectionHorizontalScrollRow } from './CollectionHorizontalScrollRow';
 
 import notFoundImag from '../assets/notfound.png';
+import {
+  EXTENSIONS_CONFIG_YAML,
+  generateExtensionsEnableLineNumbers,
+} from '../utils';
 
 const EmptyState = ({ isError }: { isError?: boolean }) => (
   <Content>
@@ -88,6 +101,8 @@ const EmptyState = ({ isError }: { isError?: boolean }) => (
 );
 
 export const MarketplaceCatalogContent = () => {
+  const extensionsConfig = useExtensionsConfiguration();
+  const nodeEnvironment = useNodeEnvironment();
   const featuredCollections = useCollections({
     filter: {
       'metadata.name': 'featured',
@@ -115,36 +130,72 @@ export const MarketplaceCatalogContent = () => {
     return <EmptyState />;
   }
 
+  const isProductionEnvironment =
+    nodeEnvironment?.data?.nodeEnv === 'production';
+
+  const showExtensionsConfigurationAlert =
+    !isProductionEnvironment && !extensionsConfig.data?.enabled;
+
   return (
-    <CatalogFilterLayout>
-      <CatalogFilterLayout.Filters>
-        <MarketplacePluginFilter />
-      </CatalogFilterLayout.Filters>
-      <CatalogFilterLayout.Content>
-        <Stack direction="column" gap={3}>
-          {featuredCollections.data?.items?.map(collection => (
-            <CollectionHorizontalScrollRow
-              key={`${collection.metadata.namespace}/${collection.metadata.name}`}
-              collection={collection}
-            />
-          ))}
+    <>
+      {isProductionEnvironment && (
+        <Alert severity="info" sx={{ mb: '1rem' }}>
+          <AlertTitle>
+            Plugin installation is disabled in the production environment.
+          </AlertTitle>
+        </Alert>
+      )}
+      {showExtensionsConfigurationAlert && (
+        <>
+          <WarningPanel
+            title="Plugin installation is disabled."
+            defaultExpanded
+            severity="info"
+            message={
+              <>
+                Example how to enable extensions plugin installation
+                <CodeSnippet
+                  language="yaml"
+                  showLineNumbers
+                  highlightedNumbers={generateExtensionsEnableLineNumbers()}
+                  text={EXTENSIONS_CONFIG_YAML}
+                />
+              </>
+            }
+          />
+          <br />
+        </>
+      )}
+      <CatalogFilterLayout>
+        <CatalogFilterLayout.Filters>
+          <MarketplacePluginFilter />
+        </CatalogFilterLayout.Filters>
+        <CatalogFilterLayout.Content>
+          <Stack direction="column" gap={3}>
+            {featuredCollections.data?.items?.map(collection => (
+              <CollectionHorizontalScrollRow
+                key={`${collection.metadata.namespace}/${collection.metadata.name}`}
+                collection={collection}
+              />
+            ))}
 
-          <Card>
-            <Stack gap={3} sx={{ p: 2 }}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Typography variant="h4">{title}</Typography>
-                <SearchTextField variant="search" />
+            <Card>
+              <Stack gap={3} sx={{ p: 2 }}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography variant="h4">{title}</Typography>
+                  <SearchTextField variant="search" />
+                </Stack>
+
+                <MarketplaceCatalogGrid />
               </Stack>
-
-              <MarketplaceCatalogGrid />
-            </Stack>
-          </Card>
-        </Stack>
-      </CatalogFilterLayout.Content>
-    </CatalogFilterLayout>
+            </Card>
+          </Stack>
+        </CatalogFilterLayout.Content>
+      </CatalogFilterLayout>
+    </>
   );
 };

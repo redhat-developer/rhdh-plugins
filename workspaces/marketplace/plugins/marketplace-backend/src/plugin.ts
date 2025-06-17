@@ -75,6 +75,7 @@ export const marketplacePlugin = createBackendPlugin({
             installationDataService,
             marketplaceApi,
             permissions,
+            config,
           }),
         );
       },

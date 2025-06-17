@@ -58,7 +58,7 @@ describe('FileInstallationStorage', () => {
 
       expect(() => {
         fileInstallationStorage.initialize();
-      }).toThrow(`Installation config file does not exist: ${configFileName}`);
+      }).toThrow(`The file ${configFileName} is missing`);
     });
 
     it('should throw on initialize when bad plugins format', async () => {

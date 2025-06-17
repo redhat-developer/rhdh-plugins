@@ -15,13 +15,14 @@
  */
 
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { E164Number } from 'libphonenumber-js/types';
 import { parsePhoneNumber } from 'libphonenumber-js/min';
 import VerificationCodeStep from '../VerificationCodeStep';
 import { Product } from '../../../SandboxCatalog/productData';
 import { Country } from 'react-phone-number-input';
 import { useSandboxContext } from '../../../../hooks/useSandboxContext';
+import { act } from 'react-dom/test-utils';
 
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
@@ -56,45 +57,30 @@ describe('VerificationCodeStep', () => {
   const mockHandleEditPhoneNumber = jest.fn();
   const mockSetLoading = jest.fn();
   const mockSetAnsibleCredsModalOpen = jest.fn();
-  const mockRefetchUserData = jest.fn();
-  const mockSetRefetchingUserData = jest.fn();
-  const mockHandleAAPInstance = jest.fn();
+  const mockRefetchingUserData = jest.fn();
   const mockRefetchAAP = jest.fn();
-  const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
-    typeof useSandboxContext
-  >;
   const mockOpen = jest.fn();
   const otpCode: string[] = ['1', '2', '3', '4', '5'];
   const phoneNumber = parsePhoneNumber('8 (800) 555-35-35', 'RU');
   const mockCountry: Country = 'RU';
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    // refetching the user data will return the actual user provisioned
-    mockRefetchUserData.mockReturnValue({
-      name: 'bob',
-      consoleURL: 'https://sandboxcluster.test/',
-      cheDashboardURL: 'https://devspaces.test/',
-      proxyURL: 'https://api-sandboxcluster.test',
-      rhodsMemberURL: 'https://rhods-dashboard.test/',
-      apiEndpoint: 'https://api.test:6443',
-      clusterName: 'sandboxcluster.test',
-      defaultUserNamespace: 'bob-2-dev',
-      compliantUsername: 'bob-2',
-      username: 'bob',
-      status: {
-        ready: true,
-        reason: 'Provisioned',
-        verificationRequired: false,
-      },
-    } as any);
-
-    mockUseSandboxContext.mockReturnValue({
-      refetchUserData: mockRefetchUserData,
-      refetchAAP: mockRefetchAAP,
-      handleAAPInstance: mockHandleAAPInstance,
-    } as any);
-  });
+  const defaultUserData = {
+    name: 'bob',
+    consoleURL: 'https://sandboxcluster.test/',
+    cheDashboardURL: 'https://devspaces.test/',
+    proxyURL: 'https://api-sandboxcluster.test',
+    rhodsMemberURL: 'https://rhods-dashboard.test/',
+    apiEndpoint: 'https://api.test:6443',
+    clusterName: 'sandboxcluster.test',
+    defaultUserNamespace: 'bob-2-dev',
+    compliantUsername: 'bob-2',
+    username: 'bob',
+    status: {
+      ready: true,
+      reason: 'Provisioned',
+      verificationRequired: false,
+    },
+  } as any;
 
   const defaultProps = {
     id: Product.OPENSHIFT_CONSOLE,
@@ -105,7 +91,7 @@ describe('VerificationCodeStep', () => {
     handleClose: mockHandleClose,
     setLoading: mockSetLoading,
     setAnsibleCredsModalOpen: mockSetAnsibleCredsModalOpen,
-    setRefetchingUserData: mockSetRefetchingUserData,
+    setRefetchingUserData: mockRefetchingUserData,
     loading: false,
     country: mockCountry,
   };
@@ -115,6 +101,17 @@ describe('VerificationCodeStep', () => {
   }
 
   test('should render modal', () => {
+    const mockRefetchUserData = jest.fn();
+    const mockHandleAAPInstance = jest.fn();
+    const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
+      typeof useSandboxContext
+    >;
+    mockUseSandboxContext.mockReturnValue({
+      refetchUserData: mockRefetchUserData,
+      refetchAAP: mockRefetchAAP,
+      handleAAPInstance: mockHandleAAPInstance,
+    } as any);
+
     renderComponent();
     // expected text should be there
     expect(screen.getByText('Enter the verification code')).toBeInTheDocument();
@@ -138,6 +135,17 @@ describe('VerificationCodeStep', () => {
 
   test('should submit opt code when clicking start trial and open selected url', async () => {
     window.open = mockOpen; // override window.open with mock
+    const mockRefetchUserData = jest.fn().mockReturnValue(defaultUserData);
+    const mockHandleAAPInstance = jest.fn();
+    const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
+      typeof useSandboxContext
+    >;
+    mockUseSandboxContext.mockReturnValue({
+      refetchUserData: mockRefetchUserData,
+      refetchAAP: mockRefetchAAP,
+      handleAAPInstance: mockHandleAAPInstance,
+    } as any);
+
     renderComponent();
     const submitButton = screen.getByRole('button', { name: /Start trial/i });
     fireEvent.click(submitButton);
@@ -153,10 +161,21 @@ describe('VerificationCodeStep', () => {
       'https://sandboxcluster.test//add/ns/bob-2-dev',
       '_blank',
     ); // check it opens the url after signup
+    mockOpen.mockRestore();
   });
 
   test('should submit opt code when clicking start trial and provision AAP', async () => {
-    window.open = mockOpen; // override window.open with mock
+    const mockRefetchUserData = jest.fn().mockReturnValue(defaultUserData);
+    const mockHandleAAPInstance = jest.fn();
+    const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
+      typeof useSandboxContext
+    >;
+    mockUseSandboxContext.mockReturnValue({
+      refetchUserData: mockRefetchUserData,
+      refetchAAP: mockRefetchAAP,
+      handleAAPInstance: mockHandleAAPInstance,
+    } as any);
+
     renderComponent({ id: Product.AAP });
     const submitButton = screen.getByRole('button', { name: /Start trial/i });
     fireEvent.click(submitButton);
@@ -173,9 +192,172 @@ describe('VerificationCodeStep', () => {
   });
 
   test('closes the modal when the close button is clicked', () => {
+    const mockRefetchUserData = jest.fn();
+    const mockHandleAAPInstance = jest.fn();
+    const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
+      typeof useSandboxContext
+    >;
+    mockUseSandboxContext.mockReturnValue({
+      refetchUserData: mockRefetchUserData,
+      refetchAAP: mockRefetchAAP,
+      handleAAPInstance: mockHandleAAPInstance,
+    } as any);
+
     renderComponent();
     const closeButton = screen.getByRole('button', { name: /Cancel/i });
     fireEvent.click(closeButton);
     expect(mockHandleClose).toHaveBeenCalled();
+  });
+
+  test('does not open URL when defaultUserNamespace is undefined', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    window.open = mockOpen; // override window.open with mock
+    const mockHandleAAPInstance = jest.fn();
+    const mockRefetchUserData = jest.fn().mockReturnValue({
+      ...defaultUserData,
+      defaultUserNamespace: undefined,
+    });
+    const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
+      typeof useSandboxContext
+    >;
+    mockUseSandboxContext.mockReturnValue({
+      refetchUserData: mockRefetchUserData,
+      refetchAAP: mockRefetchAAP,
+      handleAAPInstance: mockHandleAAPInstance,
+    } as any);
+
+    renderComponent();
+    const submitButton = screen.getByRole('button', { name: /Start trial/i });
+    await act(async () => {
+      fireEvent.click(submitButton);
+      // advance timers to trigger all retries
+      for (let i = 0; i < 5; i++) {
+        jest.advanceTimersByTime(1000);
+        await Promise.resolve(); // allow awaiting the timer to flush
+      }
+    });
+
+    expect(mockRefetchUserData).toHaveBeenCalled();
+    await waitFor(
+      () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'user is ready but default namespace is not defined yet...',
+        );
+      },
+      { timeout: 6000 },
+    );
+    consoleErrorSpy.mockRestore();
+    expect(mockOpen).not.toHaveBeenCalled(); // verify window.open is not called
+    mockOpen.mockRestore();
+  });
+
+  test('does not invoke handleAAP when defaultUserNamespace is undefined', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    const mockHandleAAPInstance = jest.fn();
+    const mockRefetchUserData = jest.fn().mockReturnValue({
+      ...defaultUserData,
+      defaultUserNamespace: undefined,
+    });
+    const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
+      typeof useSandboxContext
+    >;
+    mockUseSandboxContext.mockReturnValue({
+      refetchUserData: mockRefetchUserData,
+      refetchAAP: mockRefetchAAP,
+      handleAAPInstance: mockHandleAAPInstance,
+    } as any);
+
+    renderComponent({ id: Product.AAP });
+    const submitButton = screen.getByRole('button', { name: /Start trial/i });
+    await act(async () => {
+      fireEvent.click(submitButton);
+      // advance timers to trigger all retries
+      for (let i = 0; i < 5; i++) {
+        jest.advanceTimersByTime(1000);
+        await Promise.resolve(); // allow awaiting the timer to flush
+      }
+    });
+
+    expect(mockRefetchUserData).toHaveBeenCalled();
+    expect(mockHandleAAPInstance).not.toHaveBeenCalled(); // verify handleAAP is not called
+    await waitFor(
+      () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'user is ready but default namespace is not defined yet...',
+        );
+      },
+      { timeout: 6000 },
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
+  test('does not open URL when verification is required', async () => {
+    window.open = mockOpen; // override window.open with mock
+    const mockHandleAAPInstance = jest.fn();
+    const mockRefetchUserData = jest.fn().mockReturnValue({
+      ...defaultUserData,
+      status: {
+        ready: false,
+        reason: 'VerificationRequired',
+        verificationRequired: true,
+      },
+    });
+    const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
+      typeof useSandboxContext
+    >;
+    mockUseSandboxContext.mockReturnValue({
+      refetchUserData: mockRefetchUserData,
+      refetchAAP: mockRefetchAAP,
+      handleAAPInstance: mockHandleAAPInstance,
+    } as any);
+
+    renderComponent();
+    const submitButton = screen.getByRole('button', { name: /Start trial/i });
+    await act(async () => {
+      fireEvent.click(submitButton);
+      // advance timers to trigger all retries
+      for (let i = 0; i < 5; i++) {
+        jest.advanceTimersByTime(1000);
+        await Promise.resolve(); // allow awaiting the timer to flush
+      }
+    });
+
+    expect(mockRefetchUserData).toHaveBeenCalled();
+    expect(mockOpen).not.toHaveBeenCalled(); // verify window.open is not called
+    mockOpen.mockRestore();
+  });
+
+  test('does not invoke handleAAP when verification is required', async () => {
+    const mockHandleAAPInstance = jest.fn();
+    const mockRefetchUserData = jest.fn().mockReturnValue({
+      ...defaultUserData,
+      status: {
+        ready: false,
+        reason: 'VerificationRequired',
+        verificationRequired: true,
+      },
+    });
+    const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
+      typeof useSandboxContext
+    >;
+    mockUseSandboxContext.mockReturnValue({
+      refetchUserData: mockRefetchUserData,
+      refetchAAP: mockRefetchAAP,
+      handleAAPInstance: mockHandleAAPInstance,
+    } as any);
+
+    renderComponent({ id: Product.AAP });
+    const submitButton = screen.getByRole('button', { name: /Start trial/i });
+    await act(async () => {
+      fireEvent.click(submitButton);
+      // advance timers to trigger all retries
+      for (let i = 0; i < 5; i++) {
+        jest.advanceTimersByTime(1000);
+        await Promise.resolve(); // allow awaiting the timer to flush
+      }
+    });
+
+    expect(mockRefetchUserData).toHaveBeenCalled();
+    expect(mockHandleAAPInstance).not.toHaveBeenCalled(); // verify handleAAP is not called
   });
 });

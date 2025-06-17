@@ -19,10 +19,6 @@ import { useRef } from 'react';
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import {
-  DeleteDialogContextProvider,
-  DrawerContextProvider,
-} from '@janus-idp/shared-react';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
@@ -36,6 +32,8 @@ import {
   ApprovalTool,
   RepositorySelection,
 } from '../types';
+import { DeleteDialogContextProvider } from './DeleteDialogContext';
+import { DrawerContextProvider } from './DrawerContext';
 import { RepositoriesList } from './Repositories/RepositoriesList';
 
 export const BulkImportPage = () => {

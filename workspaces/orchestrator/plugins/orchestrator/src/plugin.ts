@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   createApiFactory,
   createPlugin,
@@ -21,9 +22,12 @@ import {
   githubAuthApiRef,
   gitlabAuthApiRef,
   identityApiRef,
+  microsoftAuthApiRef,
 } from '@backstage/core-plugin-api';
 
 import { orchestratorApiRef, OrchestratorClient } from './api';
+import { orchestratorAuthApiRef } from './api/authApi';
+import { OrchestratorAuth } from './api/OrchestratorAuth';
 import { orchestratorRootRouteRef } from './routes';
 
 /**
@@ -34,19 +38,31 @@ export const orchestratorPlugin = createPlugin({
   id: 'orchestrator',
   apis: [
     createApiFactory({
+      api: orchestratorAuthApiRef,
+      deps: {
+        githubAuthApi: githubAuthApiRef,
+        gitlabAuthApi: gitlabAuthApiRef,
+        microsoftAuthApi: microsoftAuthApiRef,
+      },
+      factory({ githubAuthApi, gitlabAuthApi, microsoftAuthApi }) {
+        return new OrchestratorAuth({
+          githubAuthApi,
+          gitlabAuthApi,
+          microsoftAuthApi,
+        });
+      },
+    }),
+    createApiFactory({
       api: orchestratorApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
         identityApi: identityApiRef,
-        githubAuthApi: githubAuthApiRef,
-        gitlabAuthApi: gitlabAuthApiRef,
+        orchestratorAuthApi: orchestratorAuthApiRef,
       },
-      factory({ discoveryApi, identityApi, githubAuthApi, gitlabAuthApi }) {
+      factory({ discoveryApi, identityApi }) {
         return new OrchestratorClient({
           discoveryApi,
           identityApi,
-          githubAuthApi,
-          gitlabAuthApi,
         });
       },
     }),

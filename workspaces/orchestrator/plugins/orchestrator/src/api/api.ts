@@ -21,6 +21,7 @@ import { AxiosResponse } from 'axios';
 
 import {
   AssessedProcessInstanceDTO,
+  AuthToken,
   ExecuteWorkflowResponseDTO,
   Filter,
   InputSchemaResponseDTO,
@@ -41,6 +42,7 @@ export interface OrchestratorApi {
   executeWorkflow(args: {
     workflowId: string;
     parameters: JsonObject;
+    authTokens: AuthToken[];
     businessKey?: string;
   }): Promise<AxiosResponse<ExecuteWorkflowResponseDTO>>;
 

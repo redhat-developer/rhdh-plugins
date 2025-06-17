@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.10.1
+
+### Patch Changes
+
+- df2776b: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.9.0`.
+  Removed the shadow underline when the search box is focused.
+  Changed the `Divider` border color to inherit instead of using a hardcoded value.
+
 ## 1.10.0
 
 ### Minor Changes

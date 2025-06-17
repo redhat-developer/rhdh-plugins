@@ -15,7 +15,7 @@
  */
 import { Page, Locator, FileChooser, expect } from '@playwright/test';
 
-export const supportedFileTypes = ['.txt', '.yaml', '.json'];
+export const supportedFileTypes = ['.txt', '.yaml', '.json', '.xml'];
 
 export async function triggerFileChooser(
   page: Page,
@@ -28,7 +28,7 @@ export async function triggerFileChooser(
   return fileChooser;
 }
 
-export async function uploadFile(page: Page, filePath: string) {
+export async function uploadFiles(page: Page, filePath: string[]) {
   const attachButton = page.getByRole('button', { name: 'Attach' });
   await expect(attachButton).toBeVisible();
 
@@ -42,7 +42,7 @@ export async function uploadAndAssertDuplicate(
   fileName: string,
 ) {
   await validateSuccessfulUpload(page, fileName);
-  await uploadFile(page, filePath);
+  await uploadFiles(page, [filePath]);
   await expect(
     page.getByRole('heading', { name: 'File upload failed' }),
   ).toBeVisible();
@@ -76,14 +76,14 @@ export async function validateSuccessfulUpload(page: Page, fileName: string) {
   await page.getByRole('button', { name: 'Save' }).click();
   await page
     .getByRole('contentinfo')
-    .getByRole('button', { name: 'Close' })
+    .locator('role=button[name="Close"]')
     .click();
 }
 
 export async function validateFailedUpload(page: Page) {
   const alertHeader = page.getByText('File upload failed');
   const alertText = page.getByText(
-    'Unsupported file type. Supported types are: .txt, .yaml, .json.',
+    'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
   );
 
   await expect(alertHeader).toBeVisible();
@@ -92,4 +92,13 @@ export async function validateFailedUpload(page: Page) {
   await page.getByRole('button', { name: 'Close Danger alert' }).click();
   await expect(alertHeader).toBeHidden();
   await expect(alertText).toBeHidden();
+}
+
+export async function assertVisibilityState(
+  state: 'visible' | 'hidden',
+  ...locators: Locator[]
+) {
+  for (const locator of locators) {
+    await expect(locator)[state === 'visible' ? 'toBeVisible' : 'toBeHidden']();
+  }
 }

@@ -28,10 +28,11 @@ import {
 } from './fixtures/responses';
 import { openLightspeed, sendMessage } from './utils/testHelper';
 import {
-  uploadFile,
+  uploadFiles,
   uploadAndAssertDuplicate,
-  validateFailedUpload,
   supportedFileTypes,
+  validateFailedUpload,
+  assertVisibilityState,
 } from './utils/fileUpload';
 import {
   assertChatDialogInitialState,
@@ -136,15 +137,38 @@ test.describe('File Attachment Validation', () => {
   for (const { path, name } of testFiles) {
     test(`should validate file: ${name}`, async ({ page }) => {
       const fileExtension = `.${name.split('.').pop()}`;
-      await uploadFile(page, path);
+      await uploadFiles(page, [path]);
 
       if (supportedFileTypes.includes(fileExtension)) {
         await uploadAndAssertDuplicate(page, path, name);
       } else {
         await validateFailedUpload(page);
+        // Unsupported files will not be available to preview.
+        const filePreview = page
+          .locator('span', { hasText: name.split('.')[0] })
+          .first();
+
+        await expect(filePreview).not.toBeVisible();
       }
     });
   }
+  test(`Multiple file upload`, async ({ page }) => {
+    const file1 = testFiles[0].path;
+    const file2 = 'backstage.json';
+    await uploadFiles(page, [file1, file2]);
+
+    const heading = page.getByRole('heading', {
+      name: 'Danger alert: File upload',
+    });
+    const text = page.getByText('Uploaded more than one file.');
+    const closeBtn = page.getByRole('button', { name: 'Close Danger alert:' });
+
+    await assertVisibilityState('visible', heading, text, closeBtn);
+
+    await closeBtn.click();
+
+    await assertVisibilityState('hidden', heading, text, closeBtn);
+  });
 });
 
 test.describe('Conversation', () => {
