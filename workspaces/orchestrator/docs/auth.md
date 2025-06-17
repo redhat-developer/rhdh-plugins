@@ -1,6 +1,6 @@
 # Requesting Authentication in Workflow Input Schema
 
-This guide explains how to declare authentication requirements in a SonataFlow workflow input schema for the orchestrator plugin. This is necessary when a workflow interacts with external APIs that require user authorization.
+This guide explains how to declare authentication requirements in a SonataFlow workflow input schema for the orchestrator plugin. It enables workflows to access external APIs on behalf of the user by forwarding authentication tokens from the user’s active Backstage session to SonataFlow.
 
 ## Key Concept
 
@@ -129,3 +129,11 @@ Microsoft tokens usually access Microsoft Graph, covering users, calendar, mail,
 - "User.Read" – Read user profile
 - "Mail.Read" – Read email
 - "Calendars.Read" – Read calendar events
+
+## ⚙️ Required Backstage Auth Configuration
+
+To use this feature, the relevant authentication providers must be properly configured in your Backstage app. This ensures the necessary tokens can be obtained when the workflow requests them. Each provider must be declared under the `auth.providers` section in `app-config.yaml`.
+
+- [Backstage GitHub Auth Provider](https://backstage.io/docs/auth/github/provider)
+- [Backstage GitLab Auth Provider](https://backstage.io/docs/auth/gitlab/provider)
+- [Backstage Microsoft Auth Provider](https://backstage.io/docs/auth/microsoft/provider)
