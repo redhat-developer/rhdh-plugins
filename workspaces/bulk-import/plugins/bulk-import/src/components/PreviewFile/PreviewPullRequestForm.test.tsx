@@ -71,6 +71,31 @@ const mockCatalogApi: Partial<CatalogApi> = {
   getEntities: jest.fn().mockReturnValue(mockEntities),
 };
 
+const renderWithProviders = (ui: React.ReactElement) => {
+  return render(
+    <TestApiProvider
+      apis={[
+        [errorApiRef, new MockErrorApi()],
+        [translationApiRef, mockApis.translation()],
+        [
+          configApiRef,
+          new MockConfigApi({
+            catalog: {
+              import: {
+                entityFilename: 'test.yaml',
+              },
+            },
+          }),
+        ],
+        [catalogApiRef, mockCatalogApi],
+        [bulkImportApiRef, mockBulkImportApi],
+      ]}
+    >
+      {ui}
+    </TestApiProvider>,
+  );
+};
+
 describe('Preview Pull Request Form', () => {
   // Enable this test when Service Now approval tool is supported
   // eslint-disable-next-line jest/no-disabled-tests
@@ -85,43 +110,24 @@ describe('Preview Pull Request Form', () => {
       },
     });
 
-    const { getByText, getByPlaceholderText } = render(
-      <TestApiProvider
-        apis={[
-          [errorApiRef, new MockErrorApi()],
-          [translationApiRef, mockApis.translation()],
-          [
-            configApiRef,
-            new MockConfigApi({
-              catalog: {
-                import: {
-                  entityFilename: 'test.yaml',
-                },
-              },
-            }),
-          ],
-          [catalogApiRef, mockCatalogApi],
-          [bulkImportApiRef, mockBulkImportApi],
-        ]}
-      >
-        <PreviewPullRequestForm
-          repoId="org/dessert/cupcake"
-          repoUrl="https://github.com/org/dessert/cupcake"
-          pullRequest={{
-            cupcake: getPRTemplate(
-              'org/dessert/cupcake',
-              'org/dessert',
-              'user:default/guest',
-              'https://localhost:3001',
-              'https://github.com/org/dessert/cupcake',
-              'main',
-            ),
-          }}
-          setFormErrors={() => jest.fn()}
-          formErrors={{}}
-          setPullRequest={() => jest.fn()}
-        />
-      </TestApiProvider>,
+    const { getByText, getByPlaceholderText } = renderWithProviders(
+      <PreviewPullRequestForm
+        repoId="org/dessert/cupcake"
+        repoUrl="https://github.com/org/dessert/cupcake"
+        pullRequest={{
+          cupcake: getPRTemplate(
+            'org/dessert/cupcake',
+            'org/dessert',
+            'user:default/guest',
+            'https://localhost:3001',
+            'https://github.com/org/dessert/cupcake',
+            'main',
+          ),
+        }}
+        setFormErrors={() => jest.fn()}
+        formErrors={{}}
+        setPullRequest={() => jest.fn()}
+      />,
     );
     expect(getByText(/ServiceNow ticket details/i)).toBeInTheDocument();
     expect(getByText(/Preview ServiceNow ticket/i)).toBeInTheDocument();
@@ -140,43 +146,24 @@ describe('Preview Pull Request Form', () => {
       },
     });
 
-    const { getByText, getByPlaceholderText } = render(
-      <TestApiProvider
-        apis={[
-          [errorApiRef, new MockErrorApi()],
-          [translationApiRef, mockApis.translation()],
-          [
-            configApiRef,
-            new MockConfigApi({
-              catalog: {
-                import: {
-                  entityFilename: 'test.yaml',
-                },
-              },
-            }),
-          ],
-          [catalogApiRef, mockCatalogApi],
-          [bulkImportApiRef, mockBulkImportApi],
-        ]}
-      >
-        <PreviewPullRequestForm
-          repoId="org/dessert/cupcake"
-          repoUrl="https://github.com/org/dessert/cupcake"
-          pullRequest={{
-            'org/dessert/cupcake': getPRTemplate(
-              'org/dessert/cupcake',
-              'org/dessert',
-              'user:default/guest',
-              'https://localhost:3001',
-              'https://github.com/org/dessert/cupcake',
-              'main',
-            ),
-          }}
-          setFormErrors={() => jest.fn()}
-          formErrors={{}}
-          setPullRequest={() => jest.fn()}
-        />
-      </TestApiProvider>,
+    const { getByText, getByPlaceholderText } = renderWithProviders(
+      <PreviewPullRequestForm
+        repoId="org/dessert/cupcake"
+        repoUrl="https://github.com/org/dessert/cupcake"
+        pullRequest={{
+          'org/dessert/cupcake': getPRTemplate(
+            'org/dessert/cupcake',
+            'org/dessert',
+            'user:default/guest',
+            'https://localhost:3001',
+            'https://github.com/org/dessert/cupcake',
+            'main',
+          ),
+        }}
+        setFormErrors={() => jest.fn()}
+        formErrors={{}}
+        setPullRequest={() => jest.fn()}
+      />,
     );
     expect(getByText(/Pull request details/i)).toBeInTheDocument();
     expect(getByText(/Preview pull request/i)).toBeInTheDocument();
@@ -197,43 +184,24 @@ describe('Preview Pull Request Form', () => {
 
     const setFormErrors = jest.fn();
 
-    const { getByPlaceholderText } = render(
-      <TestApiProvider
-        apis={[
-          [errorApiRef, new MockErrorApi()],
-          [translationApiRef, mockApis.translation()],
-          [
-            configApiRef,
-            new MockConfigApi({
-              catalog: {
-                import: {
-                  entityFilename: 'test.yaml',
-                },
-              },
-            }),
-          ],
-          [catalogApiRef, mockCatalogApi],
-          [bulkImportApiRef, mockBulkImportApi],
-        ]}
-      >
-        <PreviewPullRequestForm
-          repoId="org/dessert/cupcake"
-          repoUrl="https://github.com/org/dessert/cupcake"
-          pullRequest={{
-            'org/dessert/cupcake': getPRTemplate(
-              'org/dessert/cupcake',
-              'org/dessert',
-              'user:default/guest',
-              'https://localhost:3001',
-              'https://github.com/org/dessert/cupcake',
-              'main',
-            ),
-          }}
-          setFormErrors={setFormErrors}
-          formErrors={{}}
-          setPullRequest={() => jest.fn()}
-        />
-      </TestApiProvider>,
+    const { getByPlaceholderText } = renderWithProviders(
+      <PreviewPullRequestForm
+        repoId="org/dessert/cupcake"
+        repoUrl="https://github.com/org/dessert/cupcake"
+        pullRequest={{
+          'org/dessert/cupcake': getPRTemplate(
+            'org/dessert/cupcake',
+            'org/dessert',
+            'user:default/guest',
+            'https://localhost:3001',
+            'https://github.com/org/dessert/cupcake',
+            'main',
+          ),
+        }}
+        setFormErrors={setFormErrors}
+        formErrors={{}}
+        setPullRequest={() => jest.fn()}
+      />,
     );
     const prTitle = getByPlaceholderText(
       /Add Backstage catalog entity descriptor files/,
