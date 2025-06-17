@@ -16,6 +16,8 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 
+import capitalize from 'lodash/capitalize';
+
 import {
   AuthToken,
   extractWorkflowFormat,
@@ -109,7 +111,7 @@ export class SonataFlowService {
     if (args.authTokens && Array.isArray(args.authTokens)) {
       args.authTokens.forEach(tokenObj => {
         if (tokenObj.provider && tokenObj.token) {
-          const headerKey = `X-Authorization-${tokenObj.provider}`;
+          const headerKey = `X-${capitalize(tokenObj.provider)}-Authorization`;
           headers[headerKey] = String(tokenObj.token); // Ensure token is a string
         }
       });

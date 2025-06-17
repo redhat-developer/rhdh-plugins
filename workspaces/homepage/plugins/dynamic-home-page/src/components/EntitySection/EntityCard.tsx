@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { FC } from 'react';
 
 import { EntityRefLink } from '@backstage/plugin-catalog-react';
 import { Entity } from '@backstage/catalog-model';
@@ -35,7 +35,7 @@ interface EntityCardProps {
   entity: Entity;
 }
 
-const EntityCard: React.FC<EntityCardProps> = ({
+const EntityCard: FC<EntityCardProps> = ({
   title,
   description,
   tags,

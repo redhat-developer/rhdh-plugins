@@ -617,7 +617,7 @@ spec:
               type: array
               items:
                 $ref: '#/components/schemas/AuthToken'
-              minItems: 1
+              minItems: 0
               additionalProperties: true
         AuthToken:
           type: object
@@ -625,6 +625,7 @@ spec:
             provider:
               description: The auth token provider name
               type: string
+              enum: ['github', 'gitlab', 'microsoft']
             token:
               description: The auth token itself retrieved from the above specified provider name
               type: string

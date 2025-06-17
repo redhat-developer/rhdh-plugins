@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ComponentType } from 'react';
 
 import { createDevApp, DevAppPageOptions } from '@backstage/dev-utils';
 import { TestApiProvider } from '@backstage/test-utils';
@@ -79,7 +79,7 @@ const defaultMountPoints: HomePageCardMountPoint[] = [
     },
   },
   {
-    Component: QuickAccessCard as React.ComponentType,
+    Component: QuickAccessCard as ComponentType,
     config: {
       // prettier-ignore
       layouts: {
@@ -388,7 +388,7 @@ createDevApp()
       pageTitle: 'SearchBar',
       mountPoints: [
         {
-          Component: SearchBar as React.ComponentType,
+          Component: SearchBar as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -405,7 +405,7 @@ createDevApp()
           },
         },
         {
-          Component: SearchBar as React.ComponentType,
+          Component: SearchBar as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -422,7 +422,7 @@ createDevApp()
           },
         },
         {
-          Component: SearchBar as React.ComponentType,
+          Component: SearchBar as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -447,7 +447,7 @@ createDevApp()
       pageTitle: 'QuickAccessCard',
       mountPoints: [
         {
-          Component: QuickAccessCard as React.ComponentType,
+          Component: QuickAccessCard as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -461,7 +461,7 @@ createDevApp()
           },
         },
         {
-          Component: QuickAccessCard as React.ComponentType,
+          Component: QuickAccessCard as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -483,7 +483,7 @@ createDevApp()
       pageTitle: 'Headline',
       mountPoints: [
         {
-          Component: Headline as React.ComponentType,
+          Component: Headline as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -500,7 +500,7 @@ createDevApp()
           },
         },
         {
-          Component: Headline as React.ComponentType,
+          Component: Headline as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -518,7 +518,7 @@ createDevApp()
           },
         },
         {
-          Component: Headline as React.ComponentType,
+          Component: Headline as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -544,7 +544,7 @@ createDevApp()
       pageTitle: 'MarkdownCard',
       mountPoints: [
         {
-          Component: MarkdownCard as React.ComponentType,
+          Component: MarkdownCard as ComponentType,
           config: {
             props: {
               title: 'Markdown example',
@@ -562,7 +562,7 @@ createDevApp()
       pageTitle: 'Markdown',
       mountPoints: [
         {
-          Component: Markdown as React.ComponentType,
+          Component: Markdown as ComponentType,
           config: {
             props: {
               title: 'Markdown example',
@@ -580,7 +580,7 @@ createDevApp()
       pageTitle: 'Placeholder',
       mountPoints: [
         {
-          Component: Placeholder as React.ComponentType,
+          Component: Placeholder as ComponentType,
           config: {
             props: {
               showBorder: true,
@@ -607,7 +607,7 @@ createDevApp()
       pageTitle: 'FeaturedDocsCard',
       mountPoints: [
         {
-          Component: FeaturedDocsCard as React.ComponentType,
+          Component: FeaturedDocsCard as ComponentType,
         },
       ],
     }),
@@ -618,7 +618,7 @@ createDevApp()
       pageTitle: 'RecentlyVisitedCard',
       mountPoints: [
         {
-          Component: RecentlyVisitedCard as React.ComponentType,
+          Component: RecentlyVisitedCard as ComponentType,
         },
       ],
     }),
@@ -629,7 +629,7 @@ createDevApp()
       pageTitle: 'TopVisitedCard',
       mountPoints: [
         {
-          Component: TopVisitedCard as React.ComponentType,
+          Component: TopVisitedCard as ComponentType,
         },
       ],
     }),
@@ -651,7 +651,7 @@ createDevApp()
       pageTitle: 'WorldClock',
       mountPoints: [
         {
-          Component: WorldClock as React.ComponentType,
+          Component: WorldClock as ComponentType,
           config: {
             props: {
               worldClocks: [
@@ -690,7 +690,7 @@ createDevApp()
       pageTitle: 'Layout test 1',
       mountPoints: [
         {
-          Component: Placeholder as React.ComponentType,
+          Component: Placeholder as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -708,7 +708,7 @@ createDevApp()
           },
         },
         {
-          Component: Placeholder as React.ComponentType,
+          Component: Placeholder as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -726,7 +726,7 @@ createDevApp()
           },
         },
         {
-          Component: Placeholder as React.ComponentType,
+          Component: Placeholder as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -752,7 +752,7 @@ createDevApp()
       pageTitle: 'Layout test 2',
       mountPoints: [
         {
-          Component: Placeholder as React.ComponentType,
+          Component: Placeholder as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -770,7 +770,7 @@ createDevApp()
           },
         },
         {
-          Component: Placeholder as React.ComponentType,
+          Component: Placeholder as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -788,7 +788,7 @@ createDevApp()
           },
         },
         {
-          Component: Placeholder as React.ComponentType,
+          Component: Placeholder as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -814,7 +814,7 @@ createDevApp()
       pageTitle: 'Layout test 3',
       mountPoints: [
         {
-          Component: Placeholder as React.ComponentType,
+          Component: Placeholder as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -832,7 +832,7 @@ createDevApp()
           },
         },
         {
-          Component: Placeholder as React.ComponentType,
+          Component: Placeholder as ComponentType,
           config: {
             // prettier-ignore
             layouts: {
@@ -850,7 +850,7 @@ createDevApp()
           },
         },
         {
-          Component: Placeholder as React.ComponentType,
+          Component: Placeholder as ComponentType,
           config: {
             // prettier-ignore
             layouts: {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import type { ReactElement } from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
@@ -38,7 +38,7 @@ describe('OnboardingCard', () => {
     target: '_blank',
   };
 
-  const renderWithTheme = (ui: React.ReactElement) => {
+  const renderWithTheme = (ui: ReactElement) => {
     const theme = createTheme();
     return render(
       <MemoryRouter>

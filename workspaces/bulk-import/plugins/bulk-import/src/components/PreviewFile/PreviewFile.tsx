@@ -16,7 +16,6 @@
 
 import { Link } from '@backstage/core-components';
 
-import { useDrawer } from '@janus-idp/shared-react';
 import ReadyIcon from '@mui/icons-material/CheckOutlined';
 import FailIcon from '@mui/icons-material/ErrorOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -35,6 +34,7 @@ import {
   getCustomisedErrorMessage,
   gitlabFeatureFlag,
 } from '../../utils/repository-utils';
+import { useDrawer } from '../DrawerContext';
 
 export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
   const { status, values } = useFormikContext<AddRepositoriesFormValues>();

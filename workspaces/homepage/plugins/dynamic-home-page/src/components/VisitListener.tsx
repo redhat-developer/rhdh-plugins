@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo } from 'react';
 
 import { VisitListener as VisitListenerComponent } from '@backstage/plugin-home';
 import { useDynamicHomePageCards } from '../hooks/useDynamicHomePageCards';
@@ -22,7 +22,7 @@ import { useDynamicHomePageCards } from '../hooks/useDynamicHomePageCards';
 export const VisitListener = () => {
   const cards = useDynamicHomePageCards();
 
-  const shouldLoadVisitListener = React.useMemo<boolean>(() => {
+  const shouldLoadVisitListener = useMemo<boolean>(() => {
     if (!cards) {
       return false;
     }

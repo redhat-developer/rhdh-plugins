@@ -18,7 +18,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { DrawerContextProvider } from '@janus-idp/shared-react';
 import { useMutation } from '@tanstack/react-query';
 import { Formik, FormikHelpers } from 'formik';
 
@@ -34,6 +33,7 @@ import {
   getJobErrors,
   prepareDataForSubmission,
 } from '../../utils/repository-utils';
+import { DrawerContextProvider } from '../DrawerContext';
 import { AddRepositories } from './AddRepositories';
 
 export const AddRepositoriesForm = () => {

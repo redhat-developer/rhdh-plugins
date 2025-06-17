@@ -1,5 +1,21 @@
 ### Dependencies
 
+## 3.1.0
+
+### Minor Changes
+
+- 53f3ffb: implemented authorization widget for enabling specifying the required auth providers in the schema so the UI can pick it up from there and forward to workflow execution
+
+### Patch Changes
+
+- e337a39: fix isDarkMode to work in auto mode
+- b6bfdb7: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.9.0`.
+- ce61d0a: "fix(orchestrator):remove workflow input editor"
+- Updated dependencies [53f3ffb]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.6.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.6.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.0
+
 ## 3.0.4
 
 ### Patch Changes

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { Content, EmptyState, Page } from '@backstage/core-components';
 

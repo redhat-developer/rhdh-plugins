@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo } from 'react';
 
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 import { Header as BackstageHeader } from '@backstage/core-components';
@@ -59,7 +59,7 @@ export const Header = (props: HeaderProps) => {
   const identityApi = useApi(identityApiRef);
   const { value: profile } = useAsync(() => identityApi.getProfileInfo());
 
-  const title = React.useMemo<string>(() => {
+  const title = useMemo<string>(() => {
     if (profile?.displayName && props.personalizedTitle) {
       return getPersonalizedTitle(props.personalizedTitle, profile.displayName);
     } else if (props.title) {
@@ -69,7 +69,7 @@ export const Header = (props: HeaderProps) => {
     return getPersonalizedTitle('Welcome back!', profile?.displayName);
   }, [profile?.displayName, props.personalizedTitle, props.title]);
 
-  const subtitle = React.useMemo<string | undefined>(() => {
+  const subtitle = useMemo<string | undefined>(() => {
     return props.subtitle
       ? getPersonalizedTitle(props.subtitle, profile?.displayName)
       : undefined;

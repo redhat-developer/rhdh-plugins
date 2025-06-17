@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ReactNode } from 'react';
 
 import {
   CodeSnippet,
@@ -61,7 +61,7 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
   const { classes } = useStyles();
   const { data, error, isLoading } = useQuickAccessLinks(props.path);
 
-  let content: React.ReactNode;
+  let content: ReactNode;
 
   if (isLoading) {
     content = (
