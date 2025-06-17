@@ -153,7 +153,6 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
 
       // Poll until user is found or max attempts reached
       let urlToOpen = '';
-      let userFound = false;
       let userReady = false;
       for (let i = 0; i < maxAttempts; i++) {
         setRefetchingUserData(true);
@@ -162,7 +161,6 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
         // Fetch the latest user data and check if user is found
         const userData = await refetchUserData();
         if (userData) {
-          userFound = true;
           const userStatus = signupDataToStatus(userData);
           userReady = userStatus === 'ready';
 
