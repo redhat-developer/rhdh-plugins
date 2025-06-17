@@ -37,7 +37,6 @@ import {
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { VALUE_UNAVAILABLE } from '../../constants';
 import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../../dataFormatters/WorkflowOverviewFormatter';
@@ -257,22 +256,25 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
       {
         title: 'Last run status',
         field: 'lastRunStatus',
-        render: rowData =>
-          rowData.lastRunStatus !== VALUE_UNAVAILABLE &&
-          rowData.lastRunId !== VALUE_UNAVAILABLE ? (
+        render: rowData => {
+          const originalRawData = items.find(
+            item => item.workflowId === rowData.id,
+          );
+          return (
             <WorkflowInstanceStatusIndicator
-              status={rowData.lastRunStatus as ProcessInstanceStatusDTO}
+              status={
+                originalRawData?.lastRunStatus as ProcessInstanceStatusDTO
+              }
               lastRunId={
                 canViewInstance(rowData.id) ? rowData.lastRunId : undefined
               }
             />
-          ) : (
-            VALUE_UNAVAILABLE
-          ),
+          );
+        },
       },
       { title: 'Description', field: 'description', minWidth: '25vw' },
     ],
-    [canViewInstance, canViewWorkflow, definitionLink],
+    [canViewInstance, canViewWorkflow, definitionLink, items],
   );
 
   const options = useMemo<TableProps['options']>(
