@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
-
-import * as React from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import {
   CodeSnippet,
@@ -78,6 +76,11 @@ import {
   useCodeEditor,
 } from './CodeEditor';
 import { Markdown } from './Markdown';
+import {
+  InstallationType,
+  useInstallationContext,
+} from './InstallationContext';
+
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 import { usePluginConfig } from '../hooks/usePluginConfig';
 import { useInstallPlugin } from '../hooks/useInstallPlugin';
@@ -213,12 +216,13 @@ export const MarketplacePluginInstallContent = ({
   packages: MarketplacePackage[];
 }) => {
   const { mutateAsync: installPlugin } = useInstallPlugin();
+  const { installedPlugins, setInstalledPlugins } = useInstallationContext();
   const params = useRouteRefParams(pluginInstallRouteRef);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const [installationError, setInstallationError] = React.useState<
-    string | null
-  >(null);
+  const [installationError, setInstallationError] = useState<string | null>(
+    null,
+  );
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
   const pluginConfig = usePluginConfig(params.namespace, params.name);
   const pluginConfigPermissions = usePluginConfigurationPermissions(
@@ -246,7 +250,7 @@ export const MarketplacePluginInstallContent = ({
     name: params.name,
   });
 
-  const onLoaded = React.useCallback(() => {
+  const onLoaded = useCallback(() => {
     setInstallationError(null);
 
     if (pluginConfig.isLoading) return;
@@ -271,7 +275,7 @@ export const MarketplacePluginInstallContent = ({
     }
   }, [codeEditor, packages, pluginConfig.data, pluginConfig.isLoading]);
 
-  const onReset = React.useCallback(() => {
+  const onReset = useCallback(() => {
     pluginConfig.refetch();
     onLoaded();
   }, [onLoaded, pluginConfig]);
@@ -324,6 +328,11 @@ export const MarketplacePluginInstallContent = ({
         configYaml: pluginsYamlString,
       });
       if (res?.status === 'OK') {
+        const updatedPlugins: InstallationType = {
+          ...installedPlugins,
+          [plugin.metadata.title ?? plugin.metadata.name]: 'Plugin installed',
+        };
+        setInstalledPlugins(updatedPlugins);
         navigate('/extensions');
       } else {
         setIsSubmitting(false);
@@ -341,7 +350,8 @@ export const MarketplacePluginInstallContent = ({
     pluginConfigPermissions.data?.write !== 'ALLOW' ||
     (pluginConfig.data as any)?.error ||
     !extensionsConfig?.data?.enabled ||
-    isSubmitting;
+    isSubmitting ||
+    packages.length === 0;
 
   const installTooltip = getPluginActionTooltipMessage(
     isProductionEnvironment,
