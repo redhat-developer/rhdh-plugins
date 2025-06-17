@@ -16,9 +16,15 @@
 
 import { useState } from 'react';
 
-import { configApiRef } from '@backstage/core-plugin-api';
+import { configApiRef, errorApiRef } from '@backstage/core-plugin-api';
+import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 import { CatalogApi, catalogApiRef } from '@backstage/plugin-catalog-react';
-import { MockConfigApi, TestApiProvider } from '@backstage/test-utils';
+import {
+  mockApis,
+  MockConfigApi,
+  MockErrorApi,
+  TestApiProvider,
+} from '@backstage/test-utils';
 
 import { render } from '@testing-library/react';
 import { useFormikContext } from 'formik';
@@ -41,12 +47,40 @@ jest.mock('formik', () => ({
 
 const setState = jest.fn();
 
+jest.mock('./PreviewPullRequestForm', () => ({
+  PreviewPullRequestForm: () => <div data-testid="mock-form" />,
+}));
+
 beforeEach(() => {
   (useState as jest.Mock).mockImplementation(initial => [initial, setState]);
 });
 
 const mockCatalogApi: Partial<CatalogApi> = {
   getEntities: jest.fn().mockReturnValue(mockEntities),
+};
+
+const renderWithProviders = (ui: React.ReactElement) => {
+  return render(
+    <TestApiProvider
+      apis={[
+        [errorApiRef, new MockErrorApi()],
+        [translationApiRef, mockApis.translation()],
+        [
+          configApiRef,
+          new MockConfigApi({
+            catalog: {
+              import: {
+                entityFilename: 'test.yaml',
+              },
+            },
+          }),
+        ],
+        [catalogApiRef, mockCatalogApi],
+      ]}
+    >
+      {ui}
+    </TestApiProvider>,
+  );
 };
 
 describe('Preview Pull Request', () => {
@@ -75,41 +109,25 @@ describe('Preview Pull Request', () => {
       },
     });
 
-    const { getByText } = render(
-      <TestApiProvider
-        apis={[
-          [
-            configApiRef,
-            new MockConfigApi({
-              catalog: {
-                import: {
-                  entityFilename: 'test.yaml',
-                },
-              },
-            }),
-          ],
-          [catalogApiRef, mockCatalogApi],
-        ]}
-      >
-        <PreviewPullRequest
-          repoId="org/dessert/cupcake"
-          repoUrl="https://github.com/org/dessert/cupcake"
-          repoBranch="main"
-          pullRequest={{
-            'org/dessert/cupcake': getPRTemplate(
-              'org/dessert/cupcake',
-              'org/dessert',
-              'user:default/guest',
-              'https://localhost:3001',
-              'https://github.com/org/dessert/cupcake',
-              'main',
-            ),
-          }}
-          setFormErrors={() => jest.fn()}
-          formErrors={{}}
-          setPullRequest={() => jest.fn()}
-        />
-      </TestApiProvider>,
+    const { getByText } = renderWithProviders(
+      <PreviewPullRequest
+        repoId="org/dessert/cupcake"
+        repoUrl="https://github.com/org/dessert/cupcake"
+        repoBranch="main"
+        pullRequest={{
+          'org/dessert/cupcake': getPRTemplate(
+            'org/dessert/cupcake',
+            'org/dessert',
+            'user:default/guest',
+            'https://localhost:3001',
+            'https://github.com/org/dessert/cupcake',
+            'main',
+          ),
+        }}
+        setFormErrors={() => jest.fn()}
+        formErrors={{}}
+        setPullRequest={() => jest.fn()}
+      />,
     );
     expect(getByText(/Failed to create PR/)).toBeInTheDocument();
     expect(
@@ -144,41 +162,25 @@ describe('Preview Pull Request', () => {
       },
     });
 
-    const { getByText } = render(
-      <TestApiProvider
-        apis={[
-          [
-            configApiRef,
-            new MockConfigApi({
-              catalog: {
-                import: {
-                  entityFilename: 'test.yaml',
-                },
-              },
-            }),
-          ],
-          [catalogApiRef, mockCatalogApi],
-        ]}
-      >
-        <PreviewPullRequest
-          repoId="org/dessert/cupcake"
-          repoUrl="https://github.com/org/dessert/cupcake"
-          repoBranch="main"
-          pullRequest={{
-            'org/dessert/cupcake': getPRTemplate(
-              'org/dessert/cupcake',
-              'org/dessert',
-              'user:default/guest',
-              'https://localhost:3001',
-              'https://github.com/org/dessert/cupcake',
-              'main',
-            ),
-          }}
-          setFormErrors={() => jest.fn()}
-          formErrors={{}}
-          setPullRequest={() => jest.fn()}
-        />
-      </TestApiProvider>,
+    const { getByText } = renderWithProviders(
+      <PreviewPullRequest
+        repoId="org/dessert/cupcake"
+        repoUrl="https://github.com/org/dessert/cupcake"
+        repoBranch="main"
+        pullRequest={{
+          'org/dessert/cupcake': getPRTemplate(
+            'org/dessert/cupcake',
+            'org/dessert',
+            'user:default/guest',
+            'https://localhost:3001',
+            'https://github.com/org/dessert/cupcake',
+            'main',
+          ),
+        }}
+        setFormErrors={() => jest.fn()}
+        formErrors={{}}
+        setPullRequest={() => jest.fn()}
+      />,
     );
     expect(
       getByText(
@@ -199,44 +201,28 @@ describe('Preview Pull Request', () => {
       },
     });
 
-    const { getByTestId } = render(
-      <TestApiProvider
-        apis={[
-          [
-            configApiRef,
-            new MockConfigApi({
-              catalog: {
-                import: {
-                  entityFilename: 'test.yaml',
-                },
-              },
-            }),
-          ],
-          [catalogApiRef, mockCatalogApi],
-        ]}
-      >
-        <PreviewPullRequest
-          repoId="org/dessert/cupcake"
-          repoUrl="https://github.com/org/dessert/cupcake"
-          repoBranch="main"
-          pullRequest={{
-            'org/dessert/cupcake': {
-              ...getPRTemplate(
-                'org/dessert/cupcake',
-                'org/dessert',
-                'user:default/guest',
-                'https://localhost:3001',
-                'https://github.com/org/dessert/cupcake',
-                'main',
-              ),
-              pullRequestUrl: 'https://github.com/org/dessert/cupcake/pulls/9',
-            },
-          }}
-          setFormErrors={() => jest.fn()}
-          formErrors={{}}
-          setPullRequest={() => jest.fn()}
-        />
-      </TestApiProvider>,
+    const { getByTestId } = renderWithProviders(
+      <PreviewPullRequest
+        repoId="org/dessert/cupcake"
+        repoUrl="https://github.com/org/dessert/cupcake"
+        repoBranch="main"
+        pullRequest={{
+          'org/dessert/cupcake': {
+            ...getPRTemplate(
+              'org/dessert/cupcake',
+              'org/dessert',
+              'user:default/guest',
+              'https://localhost:3001',
+              'https://github.com/org/dessert/cupcake',
+              'main',
+            ),
+            pullRequestUrl: 'https://github.com/org/dessert/cupcake/pulls/9',
+          },
+        }}
+        setFormErrors={() => jest.fn()}
+        formErrors={{}}
+        setPullRequest={() => jest.fn()}
+      />,
     );
     expect(getByTestId('pull-request-info')).toBeInTheDocument();
   });
@@ -259,44 +245,28 @@ describe('Preview Pull Request', () => {
       },
     });
 
-    const { getByTestId, getByText } = render(
-      <TestApiProvider
-        apis={[
-          [
-            configApiRef,
-            new MockConfigApi({
-              catalog: {
-                import: {
-                  entityFilename: 'test.yaml',
-                },
-              },
-            }),
-          ],
-          [catalogApiRef, mockCatalogApi],
-        ]}
-      >
-        <PreviewPullRequest
-          repoId="org/dessert/cupcake"
-          repoUrl="https://github.com/org/dessert/cupcake"
-          repoBranch="main"
-          pullRequest={{
-            'org/dessert/cupcake': {
-              ...getPRTemplate(
-                'org/dessert/cupcake',
-                'org/dessert',
-                'user:default/guest',
-                'https://localhost:3001',
-                'https://github.com/org/dessert/cupcake',
-                'main',
-              ),
-              pullRequestUrl: 'https://github.com/org/dessert/cupcake/pulls/9',
-            },
-          }}
-          setFormErrors={() => jest.fn()}
-          formErrors={{}}
-          setPullRequest={() => jest.fn()}
-        />
-      </TestApiProvider>,
+    const { getByTestId, getByText } = renderWithProviders(
+      <PreviewPullRequest
+        repoId="org/dessert/cupcake"
+        repoUrl="https://github.com/org/dessert/cupcake"
+        repoBranch="main"
+        pullRequest={{
+          'org/dessert/cupcake': {
+            ...getPRTemplate(
+              'org/dessert/cupcake',
+              'org/dessert',
+              'user:default/guest',
+              'https://localhost:3001',
+              'https://github.com/org/dessert/cupcake',
+              'main',
+            ),
+            pullRequestUrl: 'https://github.com/org/dessert/cupcake/pulls/9',
+          },
+        }}
+        setFormErrors={() => jest.fn()}
+        formErrors={{}}
+        setPullRequest={() => jest.fn()}
+      />,
     );
     expect(getByTestId('other-info')).toBeInTheDocument();
     expect(getByText('invalid entity YAML')).toBeInTheDocument();
