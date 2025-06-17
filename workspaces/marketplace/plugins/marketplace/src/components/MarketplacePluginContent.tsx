@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useState, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Fragment } from 'react';
 
@@ -197,10 +198,10 @@ export const MarketplacePluginContent = ({
 }) => {
   const extensionsConfig = useExtensionsConfiguration();
   const nodeEnvironment = useNodeEnvironment();
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [isPluginEnabled, setIsPluginEnabled] = React.useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isPluginEnabled, setIsPluginEnabled] = useState<boolean>(false);
   const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const navigate = useNavigate();
