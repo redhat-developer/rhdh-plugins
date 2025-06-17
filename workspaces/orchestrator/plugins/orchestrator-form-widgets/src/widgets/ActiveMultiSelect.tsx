@@ -15,6 +15,7 @@
  */
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { makeStyles } from 'tss-react/mui';
 import Box from '@mui/material/Box';
 import Autocomplete, { AutocompleteValue } from '@mui/material/Autocomplete';
 import FormControl from '@mui/material/FormControl';
@@ -36,11 +37,21 @@ import {
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
 
+const useStyles = makeStyles()(_ => ({
+  chipBox: {
+    '& > div': {
+      // not referencing the chip's <div> directly to avoid interference with getTagProps()
+      'margin-bottom': 0,
+    },
+  },
+}));
+
 export const ActiveMultiSelect: Widget<
   JsonObject,
   JSONSchema7,
   OrchestratorFormContextProps
 > = props => {
+  const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
   const { id, name, label, value: rawValue, onChange, formContext } = props;
   const value = rawValue as string[];
@@ -137,7 +148,7 @@ export const ActiveMultiSelect: Widget<
             )}
             renderTags={(values, getTagProps) =>
               values.map((item, index) => (
-                <Box key={item} title={item}>
+                <Box key={item} title={item} className={classes.chipBox}>
                   <Chip
                     data-testid={`${id}-chip-${item}`}
                     variant="outlined"
