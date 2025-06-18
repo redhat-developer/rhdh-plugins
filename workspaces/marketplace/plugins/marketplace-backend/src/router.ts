@@ -118,6 +118,42 @@ export async function createRouter(
     return decision;
   };
 
+  const getAuthorizedPlugin = async (
+    request: Request,
+    permission:
+      | ResourcePermission<'extensions-plugin' | 'extensions-package'>
+      | BasicPermission,
+  ) => {
+    const decision = await authorizeConditional(request, permission);
+    const action =
+      permission.attributes.action === 'create'
+        ? 'write'
+        : permission.attributes.action;
+
+    if (decision.result === AuthorizeResult.DENY) {
+      throw new NotAllowedError(
+        `Not allowed to ${action} the configuration of ${request.params.namespace}:${request.params.name}`,
+      );
+    }
+
+    const plugin = await marketplaceApi.getPluginByName(
+      request.params.namespace,
+      request.params.name,
+    );
+
+    const hasAccess =
+      decision.result === AuthorizeResult.ALLOW ||
+      (decision.result === AuthorizeResult.CONDITIONAL &&
+        matches(plugin, decision.conditions));
+    if (!hasAccess) {
+      throw new NotAllowedError(
+        `Not allowed to ${action} the configuration of ${request.params.namespace}:${request.params.name}`,
+      );
+    }
+
+    return plugin;
+  };
+
   router.get('/collections', async (req, res) => {
     const request = decodeGetEntitiesRequest(createSearchParams(req));
     const collections = await marketplaceApi.getCollections(request);
@@ -229,6 +265,33 @@ export async function createRouter(
     });
   });
 
+  router.post(
+    '/package/:namespace/:name/configuration/disable',
+    requireInitializedInstallationDataService,
+    async (req, res) => {
+      const marketplacePackage = await marketplaceApi.getPackageByName(
+        req.params.namespace,
+        req.params.name,
+      );
+
+      if (!marketplacePackage.spec?.dynamicArtifact) {
+        throw new Error(
+          `Package catalog entity ${marketplacePackage.metadata.name} is missing 'spec.dynamicArtifact'`,
+        );
+      }
+
+      const disabled = req.body.disabled;
+      if (typeof disabled !== 'boolean') {
+        throw new InputError("'disabled' must be present boolean");
+      }
+      installationDataService.addPackageDisabled(
+        marketplacePackage.spec.dynamicArtifact,
+        disabled,
+      );
+      res.status(200).json({ status: 'OK' });
+    },
+  );
+
   router.get('/plugins', async (req, res) => {
     const request = decodeGetEntitiesRequest(createSearchParams(req));
     const plugins = await marketplaceApi.getPlugins(request);
@@ -310,32 +373,11 @@ export async function createRouter(
     '/plugin/:namespace/:name/configuration',
     requireInitializedInstallationDataService,
     async (req, res) => {
-      const readDecision = await authorizeConditional(
+      const plugin = await getAuthorizedPlugin(
         req,
         extensionsPluginReadPermission,
       );
-      if (readDecision.result === AuthorizeResult.DENY) {
-        throw new NotAllowedError(
-          `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
-        );
-      }
-      const marketplacePlugin = await marketplaceApi.getPluginByName(
-        req.params.namespace,
-        req.params.name,
-      );
-
-      const hasReadAccess =
-        readDecision.result === AuthorizeResult.ALLOW ||
-        (readDecision.result === AuthorizeResult.CONDITIONAL &&
-          matches(marketplacePlugin, readDecision.conditions));
-      if (!hasReadAccess) {
-        throw new NotAllowedError(
-          `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
-        );
-      }
-
-      const result =
-        await installationDataService.getPluginConfig(marketplacePlugin);
+      const result = await installationDataService.getPluginConfig(plugin);
       res.status(200).json({ configYaml: result });
     },
   );
@@ -345,31 +387,10 @@ export async function createRouter(
     requireInitializedInstallationDataService,
     async (req, res) => {
       // installs the plugin
-      const installDecision = await authorizeConditional(
+      const plugin = await getAuthorizedPlugin(
         req,
         extensionsPluginWritePermission,
       );
-      if (installDecision.result === AuthorizeResult.DENY) {
-        throw new NotAllowedError(
-          `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
-        );
-      }
-
-      const plugin = await marketplaceApi.getPluginByName(
-        req.params.namespace,
-        req.params.name,
-      );
-
-      const hasInstallAccess =
-        installDecision.result === AuthorizeResult.ALLOW ||
-        (installDecision.result === AuthorizeResult.CONDITIONAL &&
-          matches(plugin, installDecision.conditions));
-
-      if (!hasInstallAccess) {
-        throw new NotAllowedError(
-          `Not allowed to configure ${req.params.namespace}:${req.params.name}`,
-        );
-      }
 
       const newConfig = req.body.configYaml;
       if (!newConfig) {
@@ -383,6 +404,23 @@ export async function createRouter(
         }
         throw e;
       }
+      res.status(200).json({ status: 'OK' });
+    },
+  );
+
+  router.patch(
+    '/plugin/:namespace/:name/configuration/disable',
+    requireInitializedInstallationDataService,
+    async (req, res) => {
+      const plugin = await getAuthorizedPlugin(
+        req,
+        extensionsPluginWritePermission,
+      );
+      const disabled = req.body.disabled;
+      if (typeof disabled !== 'boolean') {
+        throw new InputError("'disabled' must be present boolean");
+      }
+      await installationDataService.setPluginDisabled(plugin, disabled);
       res.status(200).json({ status: 'OK' });
     },
   );
