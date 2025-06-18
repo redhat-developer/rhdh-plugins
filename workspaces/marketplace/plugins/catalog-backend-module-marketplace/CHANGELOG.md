@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [3973839]
+- Updated dependencies [58ae1fe]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.6.0
+
 ## 0.3.2
 
 ### Patch Changes
