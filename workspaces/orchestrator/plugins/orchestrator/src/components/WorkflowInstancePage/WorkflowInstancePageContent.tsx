@@ -71,6 +71,9 @@ const useStyles = makeStyles()(() => ({
   topRowCard: {
     height: '24rem',
     overflow: 'auto',
+    '& > div:nth-child(2)': {
+      overflow: 'auto',
+    },
   },
   bottomRowCard: {
     height: '42rem',

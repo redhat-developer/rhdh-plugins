@@ -40,9 +40,7 @@ export type ParentComponentRef = HTMLDivElement;
 
 const useStyles = makeStyles()(theme => ({
   closeBtn: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
+    flexShrink: 0,
   },
   dialogActions: {
     justifyContent: 'flex-start',
@@ -51,7 +49,9 @@ const useStyles = makeStyles()(theme => ({
   },
   titleContainer: {
     display: 'flex',
-    alignItems: 'center',
+  },
+  title: {
+    width: '100%',
   },
   titleIcon: {
     marginRight: theme.spacing(1),
@@ -86,9 +86,11 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
       <DialogTitle>
         <Box className={classes.titleContainer}>
           {titleIcon && <Box className={classes.titleIcon}>{titleIcon}</Box>}
-          <Typography variant="h4">
+
+          <Typography variant="h4" className={classes.title}>
             <b>{title}</b>
           </Typography>
+
           <IconButton
             className={classes.closeBtn}
             aria-label="close"
