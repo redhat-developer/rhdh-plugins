@@ -23,7 +23,6 @@ import { AboutField } from '@backstage/plugin-catalog';
 
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from 'tss-react/mui';
 
 import {
   capitalize,
@@ -44,17 +43,10 @@ type WorkflowDetailsCardProps = {
   details: WorkflowRunDetail;
 };
 
-const useStyles = makeStyles()(() => ({
-  root: {
-    overflowY: 'auto',
-  },
-}));
-
 export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
   assessedBy,
   details,
 }) => {
-  const { classes } = useStyles();
   const orchestratorApi = useApi(orchestratorApiRef);
   const { value, loading, error } =
     useAsync(async (): Promise<WorkflowOverviewDTO> => {
@@ -67,7 +59,7 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
   const workflowPageLink = useRouteRef(workflowRouteRef);
 
   return (
-    <Grid container className={classes.root} alignContent="flex-start">
+    <Grid container alignContent="flex-start">
       <Grid item md={7} key="Workflow">
         <AboutField label="Workflow">
           <Link to={workflowPageLink({ workflowId: details.workflowId })}>

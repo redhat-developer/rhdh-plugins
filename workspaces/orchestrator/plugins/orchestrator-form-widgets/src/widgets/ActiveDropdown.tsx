@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { makeStyles } from 'tss-react/mui';
 import { Widget } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
 import { JSONSchema7 } from 'json-schema';
@@ -34,11 +35,23 @@ import {
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
 
+const useStyles = makeStyles()(_ => ({
+  menuItem: {
+    // Workaround, we still have mix of Material 4 and 5 CSS in production, conflict with MuiButtonBase-root
+    display: 'flex !important',
+    justifyContent: 'flex-start !important',
+    paddingTop: '8px !important',
+    paddingBottom: '8px !important',
+    paddingLeft: '16px !important',
+  },
+}));
+
 export const ActiveDropdown: Widget<
   JsonObject,
   JSONSchema7,
   OrchestratorFormContextProps
 > = props => {
+  const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
   const { id, label, value, onChange, formContext } = props;
@@ -130,6 +143,7 @@ export const ActiveDropdown: Widget<
             key={values[idx]}
             value={values[idx]}
             data-testid={`${id}-menuitem-${values[idx]}`}
+            className={classes.menuItem}
           >
             {itemLabel}
           </MenuItem>
