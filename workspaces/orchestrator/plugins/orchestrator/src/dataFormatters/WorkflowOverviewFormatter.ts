@@ -42,6 +42,13 @@ const formatIsAvailable = (availablity: boolean | undefined) => {
   return VALUE_UNAVAILABLE;
 };
 
+const formatLastRunStatus = (lastRunStatus: string | undefined) => {
+  if (lastRunStatus === 'ERROR') return 'FAILED';
+  else if (lastRunStatus === 'ACTIVE') return 'RUNNING';
+  else if (lastRunStatus) return lastRunStatus?.toString();
+  return VALUE_UNAVAILABLE;
+};
+
 const WorkflowOverviewFormatter: DataFormatter<
   WorkflowOverviewDTO,
   FormattedWorkflowOverview
@@ -53,7 +60,7 @@ const WorkflowOverviewFormatter: DataFormatter<
       lastTriggered: data.lastTriggeredMs
         ? moment(data.lastTriggeredMs).toDate().toLocaleString()
         : VALUE_UNAVAILABLE,
-      lastRunStatus: data.lastRunStatus?.toString() ?? VALUE_UNAVAILABLE,
+      lastRunStatus: formatLastRunStatus(data.lastRunStatus),
       lastRunId: data.lastRunId ?? VALUE_UNAVAILABLE,
       category: data.category ?? VALUE_UNAVAILABLE,
       description: data.description ?? VALUE_UNAVAILABLE,

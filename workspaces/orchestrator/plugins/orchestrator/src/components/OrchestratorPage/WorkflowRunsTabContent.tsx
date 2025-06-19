@@ -51,19 +51,13 @@ import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowIns
 import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
 import { WorkflowRunDetail } from '../WorkflowRunDetail';
 
-const makeSelectItemsFromProcessInstanceValues = () =>
-  [
-    ProcessInstanceStatusDTO.Active,
-    ProcessInstanceStatusDTO.Error,
-    ProcessInstanceStatusDTO.Completed,
-    ProcessInstanceStatusDTO.Aborted,
-    ProcessInstanceStatusDTO.Suspended,
-  ].map(
-    (status): SelectItem => ({
-      label: capitalize(status),
-      value: status,
-    }),
-  );
+const makeSelectItemsFromProcessInstanceValues = (): SelectItem[] => [
+  { label: 'Running', value: ProcessInstanceStatusDTO.Active },
+  { label: 'Failed', value: ProcessInstanceStatusDTO.Error },
+  { label: 'Completed', value: ProcessInstanceStatusDTO.Completed },
+  { label: 'Aborted', value: ProcessInstanceStatusDTO.Aborted },
+  { label: 'Suspended', value: ProcessInstanceStatusDTO.Suspended },
+];
 
 const statuses = makeSelectItemsFromProcessInstanceValues();
 const started = ['Today', 'Yesterday', 'Last 7 days', 'This month'].map(
