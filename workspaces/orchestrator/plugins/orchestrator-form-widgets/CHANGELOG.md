@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 0.2.4
+
+### Patch Changes
+
+- 488852f: Fixing alignment of the ActiveMultiSelect widget's chips.
+
 ## 0.2.3
 
 ### Patch Changes
