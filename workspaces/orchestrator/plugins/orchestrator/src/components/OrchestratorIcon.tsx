@@ -16,7 +16,7 @@
 
 import React from 'react';
 
-import { SvgIcon, SvgIconProps } from '@material-ui/core';
+import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 
 /**
  * @public

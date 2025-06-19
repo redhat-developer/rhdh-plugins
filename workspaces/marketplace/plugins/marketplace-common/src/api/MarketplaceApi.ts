@@ -15,15 +15,17 @@
  */
 
 import {
-  QueryEntitiesInitialRequest,
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
+  QueryEntitiesInitialRequest,
 } from '@backstage/catalog-client';
 
 import {
+  ConfigurationResponse,
   MarketplaceCollection,
   MarketplacePackage,
   MarketplacePlugin,
+  NodeEnvironmentType,
 } from '../types';
 
 /**
@@ -78,6 +80,23 @@ export interface MarketplaceApi {
     name: string,
   ): Promise<MarketplacePackage>;
 
+  getPackageConfigByName?(
+    namespace: string,
+    name: string,
+  ): Promise<ConfigurationResponse>;
+
+  installPackage?(
+    namespace: string,
+    name: string,
+    configYaml: string,
+  ): Promise<{ status: string }>;
+
+  disablePackage?(
+    namespace: string,
+    name: string,
+    disabled: boolean,
+  ): Promise<{ status: string }>;
+
   getPlugins(
     request: GetEntitiesRequest,
   ): Promise<GetEntitiesResponse<MarketplacePlugin>>;
@@ -93,10 +112,26 @@ export interface MarketplaceApi {
     name: string,
   ): Promise<{ read: 'ALLOW' | 'DENY'; write: 'ALLOW' | 'DENY' }>;
 
+  getExtensionsConfiguration?(): Promise<{ enabled: boolean }>;
+
+  getNodeEnvironment?(): Promise<{ nodeEnv: NodeEnvironmentType }>;
+
   getPluginConfigByName?(
     namespace: string,
     name: string,
-  ): Promise<{ configYaml: string }>;
+  ): Promise<ConfigurationResponse>;
+
+  installPlugin?(
+    namespace: string,
+    name: string,
+    configYaml: string,
+  ): Promise<{ status: string }>;
+
+  disablePlugin?(
+    namespace: string,
+    name: string,
+    disabled: boolean,
+  ): Promise<{ status: string }>;
 
   getPluginPackages(
     namespace: string,

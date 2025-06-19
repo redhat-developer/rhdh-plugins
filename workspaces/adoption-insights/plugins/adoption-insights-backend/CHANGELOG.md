@@ -1,5 +1,27 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 
+## 0.2.0
+
+### Minor Changes
+
+- 3a80c30: Backstage version bump to v1.39.1
+
+### Patch Changes
+
+- Updated dependencies [3a80c30]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.3.0
+
+## 0.1.0
+
+### Minor Changes
+
+- a66e0b0: Backstage version bump to v1.36.1
+
+### Patch Changes
+
+- Updated dependencies [a66e0b0]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.2.0
+
 ## 0.0.4
 
 ### Patch Changes

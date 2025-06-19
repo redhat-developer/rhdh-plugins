@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo } from 'react';
 import { ConfigApi, configApiRef, useApi } from '@backstage/core-plugin-api';
 import { Branding } from '../types';
 
@@ -26,7 +26,7 @@ export const useBranding = (): Branding | undefined => {
   } catch (err) {
     // useApi won't be initialized initially in createApp theme provider, and will get updated later
   }
-  return React.useMemo(() => {
+  return useMemo(() => {
     const branding = configApi?.getOptional<Branding>('app.branding');
     return branding;
   }, [configApi]);

@@ -32,10 +32,11 @@ import {
   PhoneVerificationModal,
 } from '../Modals';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
-import { AnsibleStatus } from '../../utils/aap-utils';
 import { useApi } from '@backstage/core-plugin-api';
 import { aapApiRef, kubeApiRef } from '../../api';
 import { Product } from './productData';
+import { signupDataToStatus } from '../../utils/register-utils';
+import { productsURLMapping } from '../../hooks/useProductURLs';
 
 type SandboxCatalogCardProps = {
   id: Product;
@@ -107,17 +108,10 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   const theme = useTheme();
   const kubeApi = useApi(kubeApiRef);
   const aapApi = useApi(aapApiRef);
-  const {
-    userData,
-    ansibleData,
-    ansibleStatus,
-    signupUser,
-    userFound,
-    userReady,
-    verificationRequired,
-    refetchUserData,
-    refetchAAP,
-  } = useSandboxContext();
+  let { userData, userFound, userReady, verificationRequired } =
+    useSandboxContext();
+  const { handleAAPInstance, signupUser, refetchUserData, refetchAAP } =
+    useSandboxContext();
   const [ansibleCredsModalOpen, setAnsibleCredsModalOpen] =
     React.useState(false);
   const [verifyPhoneModalOpen, setVerifyPhoneModalOpen] = useState(false);
@@ -125,39 +119,9 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
   const [deleteAnsibleModalOpen, setDeleteAnsibleModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const handleAAPInstance: () => Promise<void> = async () => {
-    refetchAAP();
-
-    if (
-      ansibleStatus === AnsibleStatus.PROVISIONING ||
-      ansibleStatus === AnsibleStatus.READY
-    ) {
-      return;
-    }
-
-    if (
-      ansibleStatus === AnsibleStatus.IDLED &&
-      ansibleData &&
-      ansibleData?.items?.length > 0
-    ) {
-      try {
-        await aapApi.unIdleAAP(userData?.defaultUserNamespace || '');
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e);
-      }
-      return;
-    }
-    try {
-      await aapApi.createAAP(userData?.defaultUserNamespace || '');
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
-    }
-  };
-
   const handleTryButtonClick = async (pdt: Product) => {
     // User is not yet signed up
+    let urlToOpen = link;
     if (!userFound) {
       signupUser();
 
@@ -171,9 +135,26 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
 
         try {
           // Fetch the latest user data and check if user is found
-          const isUserFound = await refetchUserData();
-          if (isUserFound) {
-            break;
+          userData = await refetchUserData();
+          if (userData) {
+            userFound = true;
+            const userStatus = signupDataToStatus(userData);
+            verificationRequired = userStatus === 'verify';
+            userReady = userStatus === 'ready';
+            const userNamespaceReady =
+              userData?.defaultUserNamespace !== undefined;
+            // if user is ready or verification is required we can stop fetching the data
+            if ((userReady || verificationRequired) && userNamespaceReady) {
+              const productURLs = productsURLMapping(userData);
+              // find the link to open if any
+              urlToOpen = productURLs.find(pu => pu.id === id)?.url || '';
+              if (urlToOpen && !verificationRequired) {
+                // open url if user is ready and no further verification is required
+                window.open(urlToOpen, '_blank');
+                showGreenCorner();
+              }
+              break;
+            }
           }
         } catch (error) {
           // eslint-disable-next-line no-console
@@ -187,14 +168,22 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
     // User has signed up but require verification
     if (userFound && verificationRequired) {
       setVerifyPhoneModalOpen(true);
+      return;
     }
+
     // User has signed up and the trial is ready and user selects the AAP Trial
     if (userFound && userReady && pdt === Product.AAP) {
-      await handleAAPInstance();
-      refetchAAP();
+      if (!userData?.defaultUserNamespace) {
+        // eslint-disable-next-line
+        console.error(
+          'unable to provision AAP. user namespace is not defined.',
+        );
+        return;
+      }
+      handleAAPInstance(userData.defaultUserNamespace);
       setAnsibleCredsModalOpen(true);
+      showGreenCorner();
     }
-    showGreenCorner();
   };
 
   const handleDeleteButtonClick = async (pdt: Product) => {
@@ -204,9 +193,16 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
 
     setDeleteAnsibleModalOpen(false);
     setDeleting(true);
+    const userNamespace = userData?.defaultUserNamespace;
+    if (!userNamespace) {
+      // eslint-disable-next-line
+      console.error(
+        'unable to delete aap instance. user namespace is undefined',
+      );
+      return;
+    }
     if (pdt === Product.AAP) {
-      refetchAAP();
-      const userNamespace = userData?.defaultUserNamespace || '';
+      refetchAAP(userNamespace);
       const aapLabelSelector =
         'app.kubernetes.io%2Fmanaged-by+in+%28aap-gateway-operator%2Caap-operator%2Cautomationcontroller-operator%2Cautomationhub-operator%2Ceda-operator%2Clightspeed-operator%29&limit=50';
 
@@ -219,7 +215,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
           userNamespace,
           aapLabelSelector,
         );
-        await aapApi.deleteAAPCR(userData?.defaultUserNamespace || '');
+        await aapApi.deleteAAPCR(userNamespace);
         await kubeApi.deleteSecretsAndPVCs(aapDeployments, userNamespace);
         await kubeApi.deleteSecretsAndPVCs(aapStatefulSets, userNamespace);
         await kubeApi.deletePVCsForSTS(aapStatefulSets, userNamespace);
@@ -228,13 +224,14 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
         console.error(e);
       }
     }
-    refetchAAP();
+    refetchAAP(userNamespace);
     setDeleting(false);
   };
 
   return (
     <>
       <Card
+        data-testid="catalog-card"
         elevation={0}
         key={id}
         sx={{
@@ -277,6 +274,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
           {description?.map(point => (
             <Typography
               key={point.value}
+              component="div"
               color="textPrimary"
               style={{ fontSize: '14px', paddingBottom: '8px' }}
             >
@@ -316,8 +314,11 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
         </CardActions>
       </Card>
       <PhoneVerificationModal
+        id={id}
         modalOpen={verifyPhoneModalOpen}
         setOpen={setVerifyPhoneModalOpen}
+        setAnsibleCredsModalOpen={setAnsibleCredsModalOpen}
+        setRefetchingUserData={setRefetchingUserData}
       />
       <AnsibleLaunchInfoModal
         modalOpen={ansibleCredsModalOpen}

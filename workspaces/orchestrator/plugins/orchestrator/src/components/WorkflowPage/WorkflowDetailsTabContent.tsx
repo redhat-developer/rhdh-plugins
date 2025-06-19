@@ -21,7 +21,7 @@ import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import { useApi, useRouteRefParams } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { Grid } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
 
 import {
   orchestratorAdminViewPermission,

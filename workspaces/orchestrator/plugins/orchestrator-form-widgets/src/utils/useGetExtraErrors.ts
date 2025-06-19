@@ -21,7 +21,7 @@ import {
   // useWrapperFormPropsContext,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { JsonObject } from '@backstage/types';
-import { ErrorSchema } from '@rjsf/utils';
+import { ERRORS_KEY, ErrorSchema } from '@rjsf/utils';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 import { evaluateTemplate } from './evaluateTemplate';
 import { getRequestInit } from './useRequestInit';
@@ -68,7 +68,6 @@ const walkThrough: (
 export const useGetExtraErrors = () => {
   const fetchApi = useApi(fetchApiRef);
   const templateUnitEvaluator = useTemplateUnitEvaluator();
-
   return async (
     formData: JsonObject,
     uiSchema: OrchestratorFormContextProps['uiSchema'],
@@ -81,7 +80,7 @@ export const useGetExtraErrors = () => {
 
       if (
         validateUrl &&
-        ['ActiveTextInput', 'ActiveDropdown'].includes(
+        ['ActiveTextInput', 'ActiveDropdown', 'ActiveMultiSelect'].includes(
           uiSchemaProperty?.['ui:widget']?.toString() ?? '',
         )
       ) {
@@ -117,7 +116,7 @@ export const useGetExtraErrors = () => {
                 ) as string[];
 
                 safeSet(errors, path, {
-                  __errors: array.map(e => e?.toString()),
+                  [ERRORS_KEY]: array.map(e => e?.toString()),
                 });
               }
             });

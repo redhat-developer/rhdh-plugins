@@ -15,6 +15,7 @@
  */
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   Content,
@@ -28,9 +29,19 @@ import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import EditIcon from '@mui/icons-material/Edit';
+import MenuItem from '@mui/material/MenuItem';
+import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
+import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
+
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
 
 import {
   MarketplacePackage,
@@ -45,13 +56,18 @@ import {
 } from '../labels';
 import { rootRouteRef, pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
+import { usePluginPackages } from '../hooks/usePluginPackages';
+import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
+import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
+import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
+import { getPluginActionTooltipMessage } from '../utils';
 
 import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
-import { usePluginPackages } from '../hooks/usePluginPackages';
-import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
+
 import { Links } from './Links';
+import { ActionsMenu } from './ActionsMenu';
 
 export const MarketplacePluginContentSkeleton = () => {
   return (
@@ -174,9 +190,21 @@ const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
 
 export const MarketplacePluginContent = ({
   plugin,
+  enableActionsButtonFeature = false,
 }: {
   plugin: MarketplacePlugin;
+  enableActionsButtonFeature?: boolean;
 }) => {
+  const extensionsConfig = useExtensionsConfiguration();
+  const nodeEnvironment = useNodeEnvironment();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [isPluginEnabled, setIsPluginEnabled] = React.useState<boolean>(false);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const navigate = useNavigate();
+
   const params = useRouteRefParams(pluginRouteRef);
   const getIndexPath = useRouteRef(rootRouteRef);
   const getInstallPath = useRouteRef(pluginInstallRouteRef);
@@ -184,6 +212,24 @@ export const MarketplacePluginContent = ({
     params.namespace,
     params.name,
   );
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleEdit = () => {
+    navigate({
+      pathname: getInstallPath({
+        namespace: plugin.metadata.namespace!,
+        name: plugin.metadata.name,
+      }),
+    });
+  };
+
+  const handleToggle = () => {
+    setIsPluginEnabled(isEnabled => !isEnabled);
+    // Make the appropriate API call to perform the enable/disable action
+  };
 
   const withFilter = (name: string, value: string) =>
     `${getIndexPath()}?filter=${encodeURIComponent(name)}=${encodeURIComponent(
@@ -194,44 +240,129 @@ export const MarketplacePluginContent = ({
   const about = plugin.spec?.description ?? plugin.metadata.description ?? '';
 
   const highlights = plugin.spec?.highlights ?? [];
+  const isProductionEnvironment =
+    nodeEnvironment?.data?.nodeEnv === 'production';
 
   const pluginActionButton = () => {
+    const disablePluginActions =
+      pluginConfigPerm.data?.read !== 'ALLOW' &&
+      pluginConfigPerm.data?.write !== 'ALLOW';
+
+    if (disablePluginActions) {
+      return (
+        <Tooltip
+          title={getPluginActionTooltipMessage(isProductionEnvironment, {
+            read: pluginConfigPerm.data?.read ?? 'DENY',
+            write: pluginConfigPerm.data?.write ?? 'DENY',
+          })}
+        >
+          <div>
+            <Button
+              color="primary"
+              variant="contained"
+              disabled={disablePluginActions}
+              data-testId="install-disabled"
+            >
+              Install
+            </Button>
+          </div>
+        </Tooltip>
+      );
+    }
+
+    if (
+      plugin.spec?.installStatus === MarketplacePluginInstallStatus.Installed &&
+      enableActionsButtonFeature
+    ) {
+      return (
+        <>
+          <Button
+            variant="contained"
+            disableElevation
+            onClick={handleClick}
+            endIcon={<KeyboardArrowDownIcon />}
+            color="primary"
+            data-testId="plugin-actions"
+          >
+            Actions
+          </Button>
+          <ActionsMenu
+            id="actions-button"
+            data-testId="actions-button"
+            MenuListProps={{
+              'aria-labelledby': 'actions-button',
+            }}
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+          >
+            {/* Comment out the Edit menu, if edit is not functional */}
+            <MenuItem onClick={handleEdit} disableRipple>
+              <ListItemIcon>
+                <EditIcon />
+              </ListItemIcon>
+              <ListItemText primary="Edit" secondary="Plugin configurations" />
+            </MenuItem>
+            {/* Make the appropriate API call to check the plugin status and show Enable/Disable action accordingly */}
+            {!isPluginEnabled && (
+              <MenuItem
+                data-testId="enable-plugin"
+                onClick={handleToggle}
+                disableRipple
+              >
+                <ListItemIcon>
+                  <ToggleOffOutlinedIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Enable"
+                  secondary="Plugin currently disabled"
+                />
+              </MenuItem>
+            )}
+            {isPluginEnabled && (
+              <MenuItem
+                data-testId="disable-plugin"
+                onClick={handleToggle}
+                disableRipple
+              >
+                <ListItemIcon>
+                  <ToggleOnOutlinedIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Disable"
+                  secondary="Plugin currently enabled"
+                />
+              </MenuItem>
+            )}
+          </ActionsMenu>
+        </>
+      );
+    }
+
     return (
-      <Tooltip
-        title={
-          pluginConfigPerm.data?.read !== 'ALLOW' &&
-          pluginConfigPerm.data?.write !== 'ALLOW'
-            ? `You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.`
+      <LinkButton
+        to={
+          pluginConfigPerm.data?.write === 'ALLOW' ||
+          pluginConfigPerm.data?.read === 'ALLOW'
+            ? getInstallPath({
+                namespace: plugin.metadata.namespace!,
+                name: plugin.metadata.name,
+              })
             : ''
         }
+        color="primary"
+        variant="contained"
+        data-testId="install-enabled"
       >
-        <div>
-          <LinkButton
-            to={
-              pluginConfigPerm.data?.write === 'ALLOW' ||
-              pluginConfigPerm.data?.read === 'ALLOW'
-                ? getInstallPath({
-                    namespace: plugin.metadata.namespace!,
-                    name: plugin.metadata.name,
-                  })
-                : ''
-            }
-            color="primary"
-            variant="contained"
-            disabled={
-              pluginConfigPerm.data?.read !== 'ALLOW' &&
-              pluginConfigPerm.data?.write !== 'ALLOW'
-            }
-          >
-            {pluginConfigPerm.data?.write !== 'ALLOW'
-              ? 'View'
-              : mapMarketplacePluginInstallStatusToButton[
-                  plugin.spec?.installStatus ??
-                    MarketplacePluginInstallStatus.NotInstalled
-                ]}
-          </LinkButton>
-        </div>
-      </Tooltip>
+        {isProductionEnvironment ||
+        pluginConfigPerm.data?.write !== 'ALLOW' ||
+        !extensionsConfig.data?.enabled
+          ? 'View'
+          : mapMarketplacePluginInstallStatusToButton[
+              plugin.spec?.installStatus ??
+                MarketplacePluginInstallStatus.NotInstalled
+            ]}
+      </LinkButton>
     );
   };
 

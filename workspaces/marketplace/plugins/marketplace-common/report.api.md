@@ -6,6 +6,7 @@
 
 import type { AuthService } from '@backstage/backend-plugin-api';
 import { CatalogApi } from '@backstage/catalog-client';
+import { ConfigApi } from '@backstage/core-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
 import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 import { GetEntityFacetsResponse } from '@backstage/catalog-client';
@@ -32,6 +33,11 @@ export enum AssetType {
     // (undocumented)
     image = "image"
 }
+
+// @public (undocumented)
+export type ConfigurationResponse = {
+    configYaml: string;
+};
 
 // @public (undocumented)
 export const decodeGetEntitiesRequest: (searchParams: URLSearchParams) => GetEntitiesRequest;
@@ -126,6 +132,13 @@ export interface GetEntitiesResponse<T> {
 }
 
 // @public (undocumented)
+export type IdentityApi = {
+    getCredentials(): Promise<{
+        token?: string;
+    }>;
+};
+
+// @public (undocumented)
 export function isMarketplaceCollection(entity?: Entity): entity is MarketplaceCollection;
 
 // @public (undocumented)
@@ -149,6 +162,14 @@ export enum MarketplaceAnnotation {
 // @public (undocumented)
 export interface MarketplaceApi {
     // (undocumented)
+    disablePackage?(namespace: string, name: string, disabled: boolean): Promise<{
+        status: string;
+    }>;
+    // (undocumented)
+    disablePlugin?(namespace: string, name: string, disabled: boolean): Promise<{
+        status: string;
+    }>;
+    // (undocumented)
     getCollectionByName(namespace: string, name: string): Promise<MarketplaceCollection>;
     // (undocumented)
     getCollectionPlugins(namespace: string, name: string): Promise<MarketplacePlugin[]>;
@@ -157,7 +178,17 @@ export interface MarketplaceApi {
     // (undocumented)
     getCollectionsFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
+    getExtensionsConfiguration?(): Promise<{
+        enabled: boolean;
+    }>;
+    // (undocumented)
+    getNodeEnvironment?(): Promise<{
+        nodeEnv: NodeEnvironmentType;
+    }>;
+    // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
+    // (undocumented)
+    getPackageConfigByName?(namespace: string, name: string): Promise<ConfigurationResponse>;
     // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
@@ -170,15 +201,21 @@ export interface MarketplaceApi {
         write: 'ALLOW' | 'DENY';
     }>;
     // (undocumented)
-    getPluginConfigByName?(namespace: string, name: string): Promise<{
-        configYaml: string;
-    }>;
+    getPluginConfigByName?(namespace: string, name: string): Promise<ConfigurationResponse>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPluginPackages(namespace: string, name: string): Promise<MarketplacePackage[]>;
     // (undocumented)
     getPlugins(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePlugin>>;
+    // (undocumented)
+    installPackage?(namespace: string, name: string, configYaml: string): Promise<{
+        status: string;
+    }>;
+    // (undocumented)
+    installPlugin?(namespace: string, name: string, configYaml: string): Promise<{
+        status: string;
+    }>;
 }
 
 // @public (undocumented)
@@ -191,6 +228,14 @@ export type MarketplaceAuthor = {
 export class MarketplaceBackendClient implements MarketplaceApi {
     constructor(options: MarketplaceBackendClientOptions);
     // (undocumented)
+    disablePackage(namespace: string, name: string, disabled: boolean): Promise<{
+        status: string;
+    }>;
+    // (undocumented)
+    disablePlugin(namespace: string, name: string, disabled: boolean): Promise<{
+        status: string;
+    }>;
+    // (undocumented)
     getCollectionByName(namespace: string, name: string): Promise<MarketplaceCollection>;
     // (undocumented)
     getCollectionPlugins(namespace: string, name: string): Promise<MarketplacePlugin[]>;
@@ -199,7 +244,17 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     // (undocumented)
     getCollectionsFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
+    getExtensionsConfiguration(): Promise<{
+        enabled: boolean;
+    }>;
+    // (undocumented)
+    getNodeEnvironment(): Promise<{
+        nodeEnv: NodeEnvironmentType;
+    }>;
+    // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
+    // (undocumented)
+    getPackageConfigByName(namespace: string, name: string): Promise<ConfigurationResponse>;
     // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
@@ -212,21 +267,29 @@ export class MarketplaceBackendClient implements MarketplaceApi {
         write: 'ALLOW' | 'DENY';
     }>;
     // (undocumented)
-    getPluginConfigByName(namespace: string, name: string): Promise<{
-        configYaml: string;
-    }>;
+    getPluginConfigByName(namespace: string, name: string): Promise<ConfigurationResponse>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPluginPackages(namespace: string, name: string): Promise<MarketplacePackage[]>;
     // (undocumented)
     getPlugins(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePlugin>>;
+    // (undocumented)
+    installPackage(namespace: string, name: string, configYaml: string): Promise<{
+        status: string;
+    }>;
+    // (undocumented)
+    installPlugin(namespace: string, name: string, configYaml: string): Promise<{
+        status: string;
+    }>;
 }
 
 // @public (undocumented)
 export type MarketplaceBackendClientOptions = {
     discoveryApi: DiscoveryApi;
     fetchApi: FetchApi;
+    identityApi: IdentityApi;
+    configApi: ConfigApi;
 };
 
 // @public (undocumented)
@@ -393,6 +456,9 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     packages?: string[];
 }
+
+// @public (undocumented)
+export type NodeEnvironmentType = 'production' | 'development' | 'test';
 
 // @public (undocumented)
 export const RESOURCE_TYPE_EXTENSIONS_PACKAGE = "extensions-package";

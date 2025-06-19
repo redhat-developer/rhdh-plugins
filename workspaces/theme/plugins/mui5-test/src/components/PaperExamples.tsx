@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import Paper from '@mui/material/Paper';
 
 export const PaperExamples = () => {

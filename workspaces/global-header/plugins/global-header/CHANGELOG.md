@@ -1,5 +1,45 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.10.1
+
+### Patch Changes
+
+- df2776b: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.9.0`.
+  Removed the shadow underline when the search box is focused.
+  Changed the `Divider` border color to inherit instead of using a hardcoded value.
+
+## 1.10.0
+
+### Minor Changes
+
+- e4996c9: Backstage version bump to v1.39.1
+
+## 1.9.0
+
+### Minor Changes
+
+- 3a9b336: Backstage version bump to v1.39.0
+
+## 1.8.0
+
+### Minor Changes
+
+- dfc984b: Added Company Logo component
+
+## 1.7.3
+
+### Patch Changes
+
+- 106af07: Updated dependency `@mui/styles` to `5.17.1`.
+  Updated dependency `@mui/icons-material` to `5.17.1`.
+  Updated dependency `@mui/material` to `5.17.1`.
+
+## 1.7.2
+
+### Patch Changes
+
+- e1914ce: Updated dependency `@scalprum/react-core` to `0.9.5`.
+
 ## 1.7.1
 
 ### Patch Changes

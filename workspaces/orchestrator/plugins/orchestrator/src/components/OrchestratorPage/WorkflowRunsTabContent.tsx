@@ -29,7 +29,8 @@ import {
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
 
-import { Grid, TablePagination } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
+import TablePagination from '@mui/material/TablePagination';
 
 import {
   capitalize,
@@ -46,23 +47,17 @@ import usePolling from '../../hooks/usePolling';
 import { workflowInstanceRouteRef, workflowRouteRef } from '../../routes';
 import { Selector } from '../Selector';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
-import { mapProcessInstanceToDetails } from '../WorkflowInstancePageContent';
+import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
 import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
 import { WorkflowRunDetail } from '../WorkflowRunDetail';
 
-const makeSelectItemsFromProcessInstanceValues = () =>
-  [
-    ProcessInstanceStatusDTO.Active,
-    ProcessInstanceStatusDTO.Error,
-    ProcessInstanceStatusDTO.Completed,
-    ProcessInstanceStatusDTO.Aborted,
-    ProcessInstanceStatusDTO.Suspended,
-  ].map(
-    (status): SelectItem => ({
-      label: capitalize(status),
-      value: status,
-    }),
-  );
+const makeSelectItemsFromProcessInstanceValues = (): SelectItem[] => [
+  { label: 'Running', value: ProcessInstanceStatusDTO.Active },
+  { label: 'Failed', value: ProcessInstanceStatusDTO.Error },
+  { label: 'Completed', value: ProcessInstanceStatusDTO.Completed },
+  { label: 'Aborted', value: ProcessInstanceStatusDTO.Aborted },
+  { label: 'Suspended', value: ProcessInstanceStatusDTO.Suspended },
+];
 
 const statuses = makeSelectItemsFromProcessInstanceValues();
 const started = ['Today', 'Yesterday', 'Last 7 days', 'This month'].map(

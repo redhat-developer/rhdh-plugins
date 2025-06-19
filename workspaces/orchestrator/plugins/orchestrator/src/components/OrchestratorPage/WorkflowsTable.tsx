@@ -21,9 +21,11 @@ import { Link, TableColumn, TableProps } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import DeveloperModeOutlinedIcon from '@material-ui/icons/DeveloperModeOutlined';
-import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
-import PlayArrow from '@material-ui/icons/PlayArrow';
+// Workaround since we use the newer @mui library but Backstage still uses deprecated @material-ui
+import { SvgIcon } from '@material-ui/core';
+import DeveloperModeOutlinedMui from '@mui/icons-material/DeveloperModeOutlined';
+import FormatListBulletedMui from '@mui/icons-material/FormatListBulleted';
+import PlayArrowMui from '@mui/icons-material/PlayArrow';
 
 import {
   capitalize,
@@ -35,7 +37,6 @@ import {
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { VALUE_UNAVAILABLE } from '../../constants';
 import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../../dataFormatters/WorkflowOverviewFormatter';
@@ -53,6 +54,13 @@ import { InputSchemaDialog } from './InputSchemaDialog';
 export interface WorkflowsTableProps {
   items: WorkflowOverviewDTO[];
 }
+
+// Workaround
+type SvgIconComponent = typeof SvgIcon;
+const PlayArrow = PlayArrowMui as unknown as SvgIconComponent;
+const FormatListBulleted = FormatListBulletedMui as unknown as SvgIconComponent;
+const DeveloperModeOutlined =
+  DeveloperModeOutlinedMui as unknown as SvgIconComponent;
 
 const usePermittedToUseBatch = (
   items: WorkflowOverviewDTO[],
@@ -198,7 +206,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
         onClick: () => handleViewVariables(rowData),
       }),
       rowData => ({
-        icon: DeveloperModeOutlinedIcon,
+        icon: DeveloperModeOutlined,
         tooltip: 'View input schema',
         disabled: !canViewWorkflow(rowData.id),
         onClick: () => handleViewInputSchema(rowData),
@@ -248,22 +256,25 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
       {
         title: 'Last run status',
         field: 'lastRunStatus',
-        render: rowData =>
-          rowData.lastRunStatus !== VALUE_UNAVAILABLE &&
-          rowData.lastRunId !== VALUE_UNAVAILABLE ? (
+        render: rowData => {
+          const originalRawData = items.find(
+            item => item.workflowId === rowData.id,
+          );
+          return (
             <WorkflowInstanceStatusIndicator
-              status={rowData.lastRunStatus as ProcessInstanceStatusDTO}
+              status={
+                originalRawData?.lastRunStatus as ProcessInstanceStatusDTO
+              }
               lastRunId={
                 canViewInstance(rowData.id) ? rowData.lastRunId : undefined
               }
             />
-          ) : (
-            VALUE_UNAVAILABLE
-          ),
+          );
+        },
       },
       { title: 'Description', field: 'description', minWidth: '25vw' },
     ],
-    [canViewInstance, canViewWorkflow, definitionLink],
+    [canViewInstance, canViewWorkflow, definitionLink, items],
   );
 
   const options = useMemo<TableProps['options']>(

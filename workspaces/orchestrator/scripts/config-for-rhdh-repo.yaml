@@ -1,0 +1,72 @@
+app:
+  title: RHDH
+  baseUrl: http://localhost:3001
+organization:
+  name: My Org
+backend:
+  baseUrl: http://localhost:7008
+  listen:
+    port: 7008
+  csp:
+    connect-src:
+      - "'self'"
+      - 'http:'
+      - 'https:'
+  cors:
+    origin: http://localhost:3001
+    credentials: true
+    methods:
+      - GET
+      - HEAD
+      - PATCH
+      - POST
+      - PUT
+      - DELETE
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+proxy:
+  skipInvalidProxies: true
+  endpoints: {}
+lighthouse:
+  baseUrl: temp
+dynatrace:
+  baseUrl: temp
+techdocs:
+  builder: external
+auth:
+  # see https://backstage.io/docs/auth/ to learn about auth providers
+  environment: development
+  providers:
+    guest: {}
+    gitlab:
+      development:
+        clientId: ${AUTH_GITLAB_CLIENT_ID}
+        clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
+            # - resolver: usernameMatchingUserEntityName
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow:
+        - Component
+        - System
+        - Group
+        - Resource
+        - Location
+        - Template
+        - API
+  locations:
+    - type: file
+      target: ../../catalog-entities/all.yaml

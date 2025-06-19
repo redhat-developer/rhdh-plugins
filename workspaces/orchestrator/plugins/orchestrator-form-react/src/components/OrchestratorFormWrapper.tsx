@@ -19,7 +19,7 @@ import React from 'react';
 import { ErrorPanel } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
-import { Grid } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
 import { withTheme } from '@rjsf/core';
 import { Theme as MuiTheme } from '@rjsf/material-ui';
 import { ErrorSchema } from '@rjsf/utils';
@@ -34,6 +34,7 @@ import {
 
 import { useStepperContext } from '../utils/StepperContext';
 import useValidator from '../utils/useValidator';
+import { AuthRequester } from './AuthRequester';
 import StepperObjectField from './StepperObjectField';
 
 const MuiForm = withTheme<
@@ -118,12 +119,13 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       <Grid item>
         <MuiForm
           {...omit(decoratorProps, 'getExtraErrors')}
+          widgets={{ AuthRequester, ...decoratorProps.widgets }}
           fields={isMultiStep ? { ObjectField: StepperObjectField } : {}}
           uiSchema={uiSchema}
           validator={validator}
           schema={schema}
           formData={formData}
-          formContext={decoratorProps.formContext}
+          formContext={formContext}
           noHtml5Validate
           extraErrors={extraErrors}
           onSubmit={e => onSubmit(e.formData || {})}

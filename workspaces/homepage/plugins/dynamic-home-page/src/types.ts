@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ComponentType } from 'react';
 
 import type { Tool } from '@backstage/plugin-home';
 
@@ -40,7 +40,7 @@ export interface HomePageCardMountPointConfig {
 }
 
 export interface HomePageCardMountPoint {
-  Component: React.ComponentType;
+  Component: ComponentType;
   config?: HomePageCardMountPointConfig & {
     props?: Record<string, any>;
   };

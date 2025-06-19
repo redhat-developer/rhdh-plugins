@@ -29,6 +29,10 @@ export type Conversations = {
   };
 };
 
+export type ReferencedDocuments = {
+  doc_title: string;
+  doc_url: string;
+}[];
 export interface BaseMessage {
   name: string;
   type: string;
@@ -41,6 +45,7 @@ export interface BaseMessage {
   };
   sources?: SourcesCardProps;
   additional_kwargs: {
+    referenced_documents?: ReferencedDocuments;
     [_key: string]: any;
   };
   error?: AlertProps;
@@ -55,6 +60,7 @@ export enum SupportedFileType {
   JSON = 'application/json',
   YAML = 'application/x-yaml',
   TEXT = 'text/plain',
+  XML = 'text/xml',
 }
 export interface FileContent {
   content: string;
@@ -69,3 +75,8 @@ export type Attachment = {
 };
 
 export type ConversationList = ConversationSummary[];
+
+export type SamplePrompts = {
+  title: string;
+  message: string;
+}[];

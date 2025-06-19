@@ -16,17 +16,15 @@
 
 import React, { forwardRef, ForwardRefRenderFunction } from 'react';
 
-import {
-  Box,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  makeStyles,
-  Typography,
-} from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
+import Close from '@mui/icons-material/Close';
+import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from 'tss-react/mui';
 
 export type InfoDialogProps = {
   title: React.ReactNode;
@@ -38,13 +36,11 @@ export type InfoDialogProps = {
   wideDialog?: boolean;
 };
 
-export type ParentComponentRef = HTMLElement;
+export type ParentComponentRef = HTMLDivElement;
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeBtn: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
+    flexShrink: 0,
   },
   dialogActions: {
     justifyContent: 'flex-start',
@@ -53,7 +49,9 @@ const useStyles = makeStyles(theme => ({
   },
   titleContainer: {
     display: 'flex',
-    alignItems: 'center',
+  },
+  title: {
+    width: '100%',
   },
   titleIcon: {
     marginRight: theme.spacing(1),
@@ -73,7 +71,7 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
     dialogActions,
     wideDialog,
   } = props;
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   return (
     <Dialog
@@ -88,15 +86,17 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
       <DialogTitle>
         <Box className={classes.titleContainer}>
           {titleIcon && <Box className={classes.titleIcon}>{titleIcon}</Box>}
-          <Typography variant="h4">
+
+          <Typography variant="h4" className={classes.title}>
             <b>{title}</b>
           </Typography>
+
           <IconButton
             className={classes.closeBtn}
             aria-label="close"
             onClick={onClose}
           >
-            <CloseIcon />
+            <Close />
           </IconButton>
         </Box>
       </DialogTitle>

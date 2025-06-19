@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { E164Number, parsePhoneNumber } from 'libphonenumber-js/min';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -31,37 +31,54 @@ import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CircularProgress from '@mui/material/CircularProgress';
 import { isValidOTP } from '../../../utils/phone-utils';
+import { Product } from '../../SandboxCatalog/productData';
+import { signupDataToStatus } from '../../../utils/register-utils';
+import { productsURLMapping } from '../../../hooks/useProductURLs';
+import { errorMessage } from '../../../utils/common';
+import { useSandboxContext } from '../../../hooks/useSandboxContext';
+import { Country, getCountryCallingCode } from 'react-phone-number-input';
+import { useApi } from '@backstage/core-plugin-api';
+import { registerApiRef } from '../../../api';
 
 type VerificationCodeProps = {
+  id: Product;
   otp: string[];
   setOtp: React.Dispatch<React.SetStateAction<string[]>>;
-  handleResendCode: () => void;
-  codeResent: boolean;
+  country: Country;
   phoneNumber: E164Number | undefined;
   handleEditPhoneNumber: () => void;
-  handleStartTrialClick: () => void;
   handleClose: () => void;
+  setAnsibleCredsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setRefetchingUserData: React.Dispatch<React.SetStateAction<boolean>>;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   loading?: boolean;
-  error?: string;
 };
 
 export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
+  id,
   otp,
   setOtp,
-  handleResendCode,
-  codeResent,
+  country,
   phoneNumber,
   handleEditPhoneNumber,
-  handleStartTrialClick,
+  setAnsibleCredsModalOpen,
+  setRefetchingUserData,
   handleClose,
   loading,
-  error,
+  setLoading,
 }) => {
   const theme = useTheme();
 
   const inputRefs = useRef<any>([]);
+  const { refetchUserData, handleAAPInstance } = useSandboxContext();
+  const [verificationCodeError, setVerificationCodeError] = React.useState<
+    string | undefined
+  >();
+  const [codeResent, setCodeResent] = useState<boolean>(false);
+  const registerApi = useApi(registerApiRef);
 
   useEffect(() => {
+    // Focus on the first input box when modal opens
     if (!otp[0]) {
       // Focus on the first input box when modal opens
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
@@ -106,6 +123,86 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
     }
   };
 
+  const handleResendCode = async () => {
+    if (codeResent) return;
+
+    const countryCallingCode = `+${getCountryCallingCode(country)}`;
+    setOtp(['', '', '', '', '', '']);
+    try {
+      setVerificationCodeError(undefined);
+      setLoading(true);
+      await registerApi.initiatePhoneVerification(
+        countryCallingCode,
+        (phoneNumber as string)?.replace(countryCallingCode, ''),
+      );
+      setCodeResent(true);
+    } catch (e) {
+      setVerificationCodeError(errorMessage(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartTrialClick = async (pdt: Product) => {
+    try {
+      setVerificationCodeError(undefined);
+      setLoading(true);
+      await registerApi.completePhoneVerification(otp.join(''));
+      const maxAttempts = 5;
+      const retryInterval = 1000; // 1 second
+
+      // Poll until user is found or max attempts reached
+      let urlToOpen = '';
+      let userReady = false;
+      for (let i = 0; i < maxAttempts; i++) {
+        setRefetchingUserData(true);
+        await new Promise(resolve => setTimeout(resolve, retryInterval));
+
+        // Fetch the latest user data and check if user is found
+        const userData = await refetchUserData();
+        if (userData) {
+          const userStatus = signupDataToStatus(userData);
+          userReady = userStatus === 'ready';
+
+          const verificationRequired = userStatus === 'verify';
+          // if verification is required we can stop fetching the data
+          if (verificationRequired) {
+            break;
+          }
+
+          // if user is ready we can stop fetching the data
+          if (userReady) {
+            // if namespace is not defined we can continue fetching the data
+            if (!userData?.defaultUserNamespace) {
+              // eslint-disable-next-line
+              console.error(
+                'user is ready but default namespace is not defined yet...',
+              );
+              continue;
+            }
+            const productURLs = productsURLMapping(userData);
+            // find the link to open if any
+            urlToOpen = productURLs.find(pu => pu.id === id)?.url || '';
+            // User has signed up and the trial is ready and user selects the AAP Trial
+            if (pdt === Product.AAP) {
+              handleAAPInstance(userData.defaultUserNamespace as string);
+              setAnsibleCredsModalOpen(true);
+            } else if (urlToOpen) {
+              window.open(urlToOpen, '_blank');
+            }
+            break;
+          }
+        }
+      }
+      handleClose();
+    } catch (error) {
+      setVerificationCodeError(errorMessage(error));
+    } finally {
+      setLoading(false);
+      setRefetchingUserData(false);
+    }
+  };
+
   return (
     <>
       <DialogTitle
@@ -115,6 +212,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
         Enter the verification code
       </DialogTitle>
       <IconButton
+        data-testid="close-opt-button"
         aria-label="close"
         onClick={handleClose}
         sx={{
@@ -128,6 +226,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
       </IconButton>
       <DialogContent sx={{ padding: '6px 24px' }}>
         <DialogContentText
+          data-testid="sent-message-dialog"
           id="alert-dialog-description"
           color="textPrimary"
           style={{
@@ -151,6 +250,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
             {otp.map((digit, index) => (
               <TextField
                 key={index}
+                data-testid="opt-inputs"
                 value={digit}
                 onChange={e => handleChange(index, e)}
                 onKeyDown={e =>
@@ -171,6 +271,8 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
         </div>
 
         <Typography
+          data-testid="resend-code-link"
+          component="div"
           variant="body2"
           color="primary"
           sx={{
@@ -197,24 +299,25 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
           </div>
         </Typography>
 
-        {error && (
+        {verificationCodeError && (
           <Typography
             color="error"
             style={{ fontSize: '16px', fontWeight: 400, marginTop: '16px' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <ErrorIcon color="error" style={{ fontSize: '16px' }} />
-              {error}
+              {verificationCodeError}
             </div>
           </Typography>
         )}
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'flex-start', padding: '24px' }}>
         <Button
+          data-testid="submit-opt-button"
           variant="contained"
           type="submit"
-          onClick={handleStartTrialClick}
-          disabled={otp.some(digit => !digit) || loading || !!error}
+          onClick={() => handleStartTrialClick(id)}
+          disabled={otp.some(digit => !digit) || loading}
           endIcon={
             loading && <CircularProgress size={20} sx={{ color: '#AFAFAF' }} />
           }
@@ -222,6 +325,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
           Start trial
         </Button>
         <Button
+          data-testid="close-opt-button"
           variant="outlined"
           onClick={handleClose}
           sx={{

@@ -512,6 +512,8 @@ components:
           type: string
         workflowdata:
           $ref: '#/components/schemas/WorkflowDataDTO'
+        initiatorEntity:
+          type: string
         businessKey:
           type: string
         nodes:
@@ -603,7 +605,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AuthToken'
-          minItems: 1
+          minItems: 0
           additionalProperties: true
     AuthToken:
       type: object
@@ -611,6 +613,7 @@ components:
         provider:
           description: The auth token provider name
           type: string
+          enum: ['github', 'gitlab', 'microsoft']
         token:
           description: The auth token itself retrieved from the above specified provider name
           type: string
@@ -690,6 +693,19 @@ components:
       oneOf:
         - $ref: '#/components/schemas/LogicalFilter'
         - $ref: '#/components/schemas/FieldFilter'
+        - $ref: '#/components/schemas/NestedFilter'
+    NestedFilter:
+      type: object
+      required:
+        - field
+        - nested
+      properties:
+        field:
+          type: string
+        nested:
+          oneOf:
+            - $ref: '#/components/schemas/FieldFilter'
+            - $ref: '#/components/schemas/NestedFilter'
     LogicalFilter:
       type: object
       required:

@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
+import type { CSSProperties } from 'react';
 import MUIDivider from '@mui/material/Divider';
 
 /**
  * @public
  */
 export interface DividerProps {
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 }
 
 /**
@@ -33,7 +32,7 @@ export const Divider = ({ layout }: DividerProps) => {
     <MUIDivider
       orientation="vertical"
       flexItem
-      sx={{ borderColor: '#383838', marginX: 1, ...layout }}
+      sx={{ borderColor: 'inherit', opacity: 0.25, marginX: 1, ...layout }}
     />
   );
 };

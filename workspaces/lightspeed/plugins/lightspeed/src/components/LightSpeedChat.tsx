@@ -15,12 +15,14 @@
  */
 
 import React from 'react';
+import { FileRejection } from 'react-dropzone/.';
 
 import { ErrorPanel } from '@backstage/core-components';
 
 import { Box, makeStyles } from '@material-ui/core';
 import {
   Chatbot,
+  ChatbotAlert,
   ChatbotContent,
   ChatbotDisplayMode,
   ChatbotFooter,
@@ -29,6 +31,7 @@ import {
   ChatbotHeaderMain,
   ChatbotHeaderMenu,
   ChatbotHeaderTitle,
+  FileDropZone,
   MessageBar,
   MessageProps,
 } from '@patternfly/chatbot';
@@ -36,7 +39,7 @@ import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/Chat
 import { DropdownItem, DropEvent, Title } from '@patternfly/react-core';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { TEMP_CONVERSATION_ID } from '../const';
+import { supportedFileTypes, TEMP_CONVERSATION_ID } from '../const';
 import {
   useBackstageUserIdentity,
   useConversationMessages,
@@ -46,6 +49,7 @@ import {
   useLastOpenedConversation,
   useLightspeedDeletePermission,
 } from '../hooks';
+import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
 import { ConversationSummary } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
 import {
@@ -69,6 +73,9 @@ const useStyles = makeStyles(theme => ({
   },
   header: {
     padding: `${theme.spacing(3)}px !important`,
+  },
+  errorContainer: {
+    padding: theme.spacing(3),
   },
   headerMenu: {
     // align hamburger icon with title
@@ -128,8 +135,15 @@ export const LightspeedChat = ({
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
 
-  const { fileContents, setFileContents, handleFileUpload } =
-    useFileAttachmentContext();
+  const {
+    uploadError,
+    showAlert,
+    fileContents,
+    setShowAlert,
+    setFileContents,
+    handleFileUpload,
+    setUploadError,
+  } = useFileAttachmentContext();
 
   // Sync conversationId with lastOpenedId whenever lastOpenedId changes
   React.useEffect(() => {
@@ -140,16 +154,32 @@ export const LightspeedChat = ({
 
   const queryClient = useQueryClient();
 
-  const { data: conversations = [] } = useConversations();
+  const {
+    data: conversations = [],
+    isLoading,
+    isRefetching,
+  } = useConversations();
   const { mutateAsync: deleteConversation } = useDeleteConversation();
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
-
+  const samplePrompts = useWelcomePrompts();
   React.useEffect(() => {
     if (user && lastOpenedId === null && isReady) {
       setConversationId(TEMP_CONVERSATION_ID);
       setNewChatCreated(true);
     }
   }, [user, isReady, lastOpenedId, setConversationId]);
+
+  React.useEffect(() => {
+    // Clear last opened conversationId when there are no conversations.
+    if (
+      !isLoading &&
+      !isRefetching &&
+      conversations.length === 0 &&
+      lastOpenedId
+    ) {
+      clearLastOpenedId();
+    }
+  }, [isLoading, isRefetching, conversations, lastOpenedId, clearLastOpenedId]);
 
   React.useEffect(() => {
     // Update last opened conversation whenever `conversationId` changes
@@ -203,11 +233,19 @@ export const LightspeedChat = ({
     (async () => {
       if (conversationId !== TEMP_CONVERSATION_ID) {
         setMessages([]);
+        setFileContents([]);
+        setUploadError({ message: null });
         setConversationId(TEMP_CONVERSATION_ID);
         setNewChatCreated(true);
       }
     })();
-  }, [conversationId, setConversationId, setMessages]);
+  }, [
+    conversationId,
+    setConversationId,
+    setMessages,
+    setUploadError,
+    setFileContents,
+  ]);
 
   const openDeleteModal = (conversation_id: string) => {
     setTargetConversationId(conversation_id);
@@ -295,9 +333,11 @@ export const LightspeedChat = ({
         }
         return c_id;
       });
+      setFileContents([]);
+      setUploadError({ message: null });
       scrollToBottomRef.current?.scrollToBottom();
     },
-    [setConversationId, scrollToBottomRef],
+    [setConversationId, setUploadError, setFileContents, scrollToBottomRef],
   );
 
   const conversationFound = !!conversations.find(
@@ -307,35 +347,13 @@ export const LightspeedChat = ({
   const welcomePrompts =
     (newChatCreated && conversationMessages.length === 0) ||
     (!conversationFound && conversationMessages.length === 0)
-      ? [
-          {
-            title: 'Getting Started with Backstage',
-            message:
-              'Can you guide me through the first steps to start using Backstage as a developer, like exploring the Software Catalog and adding my service?',
-            onClick: () =>
-              sendMessage(
-                'Can you guide me through the first steps to start using Backstage as a developer, like exploring the Software Catalog and adding my service?',
-              ),
+      ? samplePrompts?.map(prompt => ({
+          title: prompt.title,
+          message: prompt.message,
+          onClick: () => {
+            sendMessage(prompt.message);
           },
-          {
-            title: 'Get Help On Code Readability',
-            message:
-              'Can you suggest techniques I can use to make my code more readable and maintainable?',
-            onClick: () =>
-              sendMessage(
-                'Can you suggest techniques I can use to make my code more readable and maintainable?',
-              ),
-          },
-          {
-            title: 'Create An OpenShift Deployment',
-            message:
-              'Can you guide me through creating a new deployment in OpenShift for a containerized application?',
-            onClick: () =>
-              sendMessage(
-                'Can you guide me through creating a new deployment in OpenShift for a containerized application?',
-              ),
-          },
-        ]
+        }))
       : [];
 
   const handleFilter = React.useCallback((value: string) => {
@@ -349,6 +367,18 @@ export const LightspeedChat = ({
   const handleAttach = (data: File[], event: DropEvent) => {
     event.preventDefault();
     handleFileUpload(data);
+  };
+
+  const onAttachRejected = (data: FileRejection[]) => {
+    data.forEach(attachment => {
+      if (!!attachment.errors.find(e => e.code === 'file-invalid-type')) {
+        setShowAlert(true);
+        setUploadError({
+          message:
+            'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+        });
+      }
+    });
   };
 
   if (error) {
@@ -405,7 +435,27 @@ export const LightspeedChat = ({
           onNewChat={newChatCreated ? undefined : onNewChat}
           handleTextInputChange={handleFilter}
           drawerContent={
-            <>
+            <FileDropZone
+              onFileDrop={(e, data) => handleAttach(data, e)}
+              displayMode={ChatbotDisplayMode.embedded}
+              infoText="Supported file types are: .txt, .yaml, .json and .xml. The maximum file size is 25 MB."
+              allowedFileTypes={supportedFileTypes}
+              onAttachRejected={onAttachRejected}
+            >
+              {showAlert && uploadError.message && (
+                <div className={classes.errorContainer}>
+                  <ChatbotAlert
+                    component="h4"
+                    title="File upload failed"
+                    variant={uploadError.type ?? 'danger'}
+                    isInline
+                    onClose={() => setUploadError({ message: null })}
+                  >
+                    {uploadError.message}
+                  </ChatbotAlert>
+                </div>
+              )}
+
               <ChatbotContent>
                 <LightspeedChatBox
                   userName={userName}
@@ -424,10 +474,18 @@ export const LightspeedChat = ({
                   hasAttachButton
                   handleAttach={handleAttach}
                   hasMicrophoneButton
+                  buttonProps={{
+                    attach: {
+                      inputTestId: 'attachment-input',
+                    },
+                  }}
+                  allowedFileTypes={supportedFileTypes}
+                  onAttachRejected={onAttachRejected}
+                  placeholder="Send a message and optionally upload a JSON, YAML, TXT, or XML file..."
                 />
                 <ChatbotFootnote {...getFootnoteProps(classes.footerPopover)} />
               </ChatbotFooter>
-            </>
+            </FileDropZone>
           }
         />
       </Chatbot>

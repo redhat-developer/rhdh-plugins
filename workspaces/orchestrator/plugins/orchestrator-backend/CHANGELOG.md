@@ -1,5 +1,47 @@
 ### Dependencies
 
+## 6.1.0
+
+### Minor Changes
+
+- 53f3ffb: implemented authorization widget for enabling specifying the required auth providers in the schema so the UI can pick it up from there and forward to workflow execution
+
+### Patch Changes
+
+- d68d693: Updated dependency `@types/express` to `4.17.23`.
+- Updated dependencies [53f3ffb]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.0
+
+## 6.0.3
+
+### Patch Changes
+
+- 4ecd9f0: Limit access to workflow instances to initiators only
+- 9bc8af0: remove failed nodes from previous executions/retriggers
+- 3b571b3: Updated dependency `@janus-idp/cli` to `3.6.1`.
+- 7509a73: skip cache availability check in selected functions
+- Updated dependencies [4ecd9f0]
+- Updated dependencies [9bc8af0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.3
+
+## 6.0.2
+
+### Patch Changes
+
+- 7f6ca8a: add filter by variables and nested variables
+- Updated dependencies [c6b54ad]
+- Updated dependencies [7f6ca8a]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.2
+
+## 6.0.1
+
+### Patch Changes
+
+- 56c160b: Add endpoind to ping workflow service
+- 571d93e: Updated dependency `@types/express` to `4.17.22`.
+- Updated dependencies [56c160b]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.27.1
+
 ## 6.0.0
 
 ### Major Changes

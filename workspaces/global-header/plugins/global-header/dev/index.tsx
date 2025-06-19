@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo } from 'react';
+import type { PropsWithChildren } from 'react';
 
 import { createDevApp } from '@backstage/dev-utils';
 import { mockApis, MockFetchApi, TestApiProvider } from '@backstage/test-utils';
@@ -130,8 +131,8 @@ const client = new NotificationsClient({ discoveryApi, fetchApi });
 
 const Providers = ({
   mountPoints,
-}: React.PropsWithChildren<{ mountPoints: Record<string, any> }>) => {
-  const scalprumState = React.useMemo<ScalprumState>(
+}: PropsWithChildren<{ mountPoints: Record<string, any> }>) => {
+  const scalprumState = useMemo<ScalprumState>(
     () => ({
       initialized: true,
       api: {

@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { useDeleteDialog } from '@janus-idp/shared-react';
 import Delete from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 
 import { AddRepositoryData } from '../../types';
+import { useDeleteDialog } from '../DeleteDialogContext';
 
 const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
   const { setDeleteComponent, setOpenDialog } = useDeleteDialog();
@@ -36,7 +37,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
 
   return (
     <Tooltip title={tooltipMessage}>
-      <span data-testid="delete-repository">
+      <Typography component="span" data-testid="delete-repository">
         <IconButton
           color="inherit"
           onClick={() => openDialog(data)}
@@ -46,7 +47,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
         >
           <Delete />
         </IconButton>
-      </span>
+      </Typography>
     </Tooltip>
   );
 };

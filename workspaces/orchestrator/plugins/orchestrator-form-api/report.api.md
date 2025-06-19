@@ -7,6 +7,7 @@
 /// <reference types="react" />
 
 import { ApiRef } from '@backstage/core-plugin-api';
+import { AuthTokenDescriptor } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { ErrorSchema } from '@rjsf/utils';
 import { FormProps } from '@rjsf/core';
 import { JsonObject } from '@backstage/types';
@@ -14,7 +15,7 @@ import type { JSONSchema7 } from 'json-schema';
 import { UiSchema } from '@rjsf/utils';
 
 // @public
-export type FormDecoratorProps = Pick<FormProps<JsonObject, JSONSchema7, OrchestratorFormContextProps>, 'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate'> & {
+export type FormDecoratorProps = Pick<FormProps<JsonObject, JSONSchema7, OrchestratorFormContextProps>, 'formData' | 'formContext' | 'widgets' | 'onChange' | 'customValidate' | 'templates'> & {
     getExtraErrors?: (formData: JsonObject, uiSchema: OrchestratorFormContextProps['uiSchema']) => Promise<ErrorSchema<JsonObject>> | undefined;
 };
 
@@ -26,7 +27,7 @@ export interface OrchestratorFormApi {
 // @public
 export const orchestratorFormApiRef: ApiRef<OrchestratorFormApi>;
 
-// @public (undocumented)
+// @public
 export type OrchestratorFormContextProps = {
     schema: JSONSchema7;
     updateSchema: OrchestratorFormSchemaUpdater;
@@ -36,6 +37,7 @@ export type OrchestratorFormContextProps = {
     setFormData: (data: JsonObject) => void;
     children: React.ReactNode;
     onSubmit: (formData: JsonObject) => void;
+    setAuthTokenDescriptors: (authTokenDescriptors: AuthTokenDescriptor[]) => void;
 };
 
 // @public
@@ -56,8 +58,7 @@ export const useOrchestratorFormApiOrDefault: () => OrchestratorFormApi;
 
 // Warnings were encountered during analysis:
 //
-// src/api.d.ts:10:1 - (ae-undocumented) Missing documentation for "OrchestratorFormContextProps".
-// src/api.d.ts:94:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
+// src/api.d.ts:97:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
 
 // (No @packageDocumentation comment for this package)
 

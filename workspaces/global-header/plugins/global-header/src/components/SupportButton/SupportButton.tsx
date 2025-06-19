@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
+import type { CSSProperties } from 'react';
 import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
 import { Link as BackstageLink } from '@backstage/core-components';
 
@@ -41,7 +40,7 @@ export interface SupportButtonProps {
     | 'warning';
   size?: 'small' | 'medium' | 'large';
   to?: string;
-  layout?: React.CSSProperties;
+  layout?: CSSProperties;
 }
 
 // Backstage Link automatically detects external links and emits analytic events.

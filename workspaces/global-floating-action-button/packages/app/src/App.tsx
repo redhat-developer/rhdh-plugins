@@ -46,8 +46,7 @@ import {
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
-import { getThemes } from '@redhat-developer/red-hat-developer-hub-theme';
-import React from 'react';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { Navigate, Route } from 'react-router-dom';
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';

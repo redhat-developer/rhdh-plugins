@@ -53,7 +53,7 @@ export interface AuthToken {
      * @type {string}
      * @memberof AuthToken
      */
-    'provider': string;
+    'provider': AuthTokenProviderEnum;
     /**
      * The auth token itself retrieved from the above specified provider name
      * @type {string}
@@ -61,6 +61,15 @@ export interface AuthToken {
      */
     'token': string;
 }
+
+export const AuthTokenProviderEnum = {
+    Github: 'github',
+    Gitlab: 'gitlab',
+    Microsoft: 'microsoft'
+} as const;
+
+export type AuthTokenProviderEnum = typeof AuthTokenProviderEnum[keyof typeof AuthTokenProviderEnum];
+
 /**
  * The ErrorResponse object represents a common structure for handling errors in API responses. It includes essential information about the error, such as the error message and additional optional details.
  * @export
@@ -162,7 +171,7 @@ export type FieldFilterValue = any | boolean | number | string;
  * @type Filter
  * @export
  */
-export type Filter = FieldFilter | LogicalFilter;
+export type Filter = FieldFilter | LogicalFilter | NestedFilter;
 
 /**
  * 
@@ -229,6 +238,31 @@ export const LogicalFilterOperatorEnum = {
 } as const;
 
 export type LogicalFilterOperatorEnum = typeof LogicalFilterOperatorEnum[keyof typeof LogicalFilterOperatorEnum];
+
+/**
+ * 
+ * @export
+ * @interface NestedFilter
+ */
+export interface NestedFilter {
+    /**
+     * 
+     * @type {string}
+     * @memberof NestedFilter
+     */
+    'field': string;
+    /**
+     * 
+     * @type {NestedFilterNested}
+     * @memberof NestedFilter
+     */
+    'nested': NestedFilterNested;
+}
+/**
+ * @type NestedFilterNested
+ * @export
+ */
+export type NestedFilterNested = FieldFilter | NestedFilter;
 
 /**
  * 
@@ -402,6 +436,12 @@ export interface ProcessInstanceDTO {
      * @memberof ProcessInstanceDTO
      */
     'workflowdata'?: WorkflowDataDTO;
+    /**
+     * 
+     * @type {string}
+     * @memberof ProcessInstanceDTO
+     */
+    'initiatorEntity'?: string;
     /**
      * 
      * @type {string}

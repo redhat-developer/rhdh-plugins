@@ -16,7 +16,14 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { ErrorPage, Progress } from '@backstage/core-components';
+import {
+  CodeSnippet,
+  ErrorPage,
+  Progress,
+  WarningPanel,
+} from '@backstage/core-components';
+import { JsonObject } from '@backstage/types';
+
 import {
   alertApiRef,
   useApi,
@@ -33,8 +40,6 @@ import {
   MarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { JsonObject } from '@backstage/types';
-
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
@@ -49,11 +54,21 @@ import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
-import { applyContent, getExampleAsMarkdown } from '../utils';
+import {
+  applyContent,
+  DYNAMIC_PLUGIN_CONFIG_YAML,
+  EXTENSIONS_CONFIG_YAML,
+  ExtensionsStatus,
+  getErrorMessage,
+  getExampleAsMarkdown,
+  getPluginActionTooltipMessage,
+} from '../utils';
 
 import {
   CodeEditorContextProvider,
@@ -62,6 +77,10 @@ import {
 } from './CodeEditor';
 import { Markdown } from './Markdown';
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
+import { usePluginConfig } from '../hooks/usePluginConfig';
+import { useInstallPlugin } from '../hooks/useInstallPlugin';
+import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
+import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -191,7 +210,23 @@ export const MarketplacePluginInstallContent = ({
   plugin: MarketplacePlugin;
   packages: MarketplacePackage[];
 }) => {
+  const { mutateAsync: installPlugin } = useInstallPlugin();
+  const params = useRouteRefParams(pluginInstallRouteRef);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const navigate = useNavigate();
+  const [installationError, setInstallationError] = React.useState<
+    string | null
+  >(null);
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
+  const pluginConfig = usePluginConfig(params.namespace, params.name);
+  const pluginConfigPermissions = usePluginConfigurationPermissions(
+    params.namespace,
+    params.name,
+  );
+  const extensionsConfig = useExtensionsConfiguration();
+  const nodeEnvironment = useNodeEnvironment();
+  const isProductionEnvironment =
+    nodeEnvironment?.data?.nodeEnv === 'production';
 
   useEffect(() => {
     const header = document.querySelector('nav#global-header');
@@ -203,7 +238,6 @@ export const MarketplacePluginInstallContent = ({
     : 'calc(100vh - 160px)';
 
   const codeEditor = useCodeEditor();
-  const params = useRouteRefParams(pluginInstallRouteRef);
 
   const pluginLink = useRouteRef(pluginRouteRef)({
     namespace: params.namespace,
@@ -211,20 +245,39 @@ export const MarketplacePluginInstallContent = ({
   });
 
   const onLoaded = React.useCallback(() => {
-    const dynamicPluginYaml = {
-      plugins: (packages ?? []).map(pkg => ({
-        package: pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....',
-        disabled: false,
-      })),
-    };
-    codeEditor.setValue(yaml.stringify(dynamicPluginYaml));
-  }, [codeEditor, packages]);
+    setInstallationError(null);
 
-  const navigate = useNavigate();
-  const pluginConfigPermissions = usePluginConfigurationPermissions(
-    params.namespace,
-    params.name,
-  );
+    if (pluginConfig.isLoading) return;
+
+    if (pluginConfig.data?.configYaml) {
+      const configArray = yaml.parseDocument(pluginConfig.data.configYaml);
+
+      const configObject = {
+        plugins: configArray,
+      };
+
+      const configYaml = yaml.stringify(configObject);
+      codeEditor.setValue(configYaml);
+    } else {
+      const dynamicPluginYaml = {
+        plugins: (packages ?? []).map(pkg => ({
+          package: pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....',
+          disabled: false,
+        })),
+      };
+      codeEditor.setValue(yaml.stringify(dynamicPluginYaml));
+    }
+  }, [codeEditor, packages, pluginConfig.data, pluginConfig.isLoading]);
+
+  const onReset = React.useCallback(() => {
+    pluginConfig.refetch();
+    onLoaded();
+  }, [onLoaded, pluginConfig]);
+
+  useEffect(() => {
+    onLoaded();
+  }, [onLoaded, pluginConfig.data?.configYaml]);
+
   const examples = packages[0]?.spec?.appConfigExamples;
   const installationInstructions = plugin.spec?.installation;
   const aboutMarkdown = plugin.spec?.description;
@@ -254,188 +307,299 @@ export const MarketplacePluginInstallContent = ({
     setTabIndex(newValue);
   };
 
-  return (
-    <Box
-      sx={{
-        height: dynamicHeight,
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <Grid
-        container
-        spacing={3}
-        sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
-      >
-        {packages.length > 0 && (
-          <Grid
-            item
-            xs={12}
-            md={6.5}
-            sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-          >
-            <Card
-              sx={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                borderRadius: 0,
-              }}
-            >
-              <CardContent
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'auto',
-                  scrollbarWidth: 'thin',
-                }}
-              >
-                <CodeEditor defaultLanguage="yaml" onLoaded={onLoaded} />
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
+  const handleInstall = async () => {
+    setIsSubmitting(true);
+    const content = yaml.parseDocument(codeEditor.getValue() ?? '');
+    const pluginsArray = content.get('plugins');
 
-        {showRightCard && (
-          <Grid
-            item
-            xs={12}
-            md={5.5}
-            sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-          >
-            <Card
-              sx={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                borderRadius: 0,
-                width: '99.8%', // workaround for 'overflow: hidden' causing card to be missing a border
-              }}
-            >
-              <CardHeader
-                title={
-                  <Typography variant="h3">
-                    Installation instructions
-                  </Typography>
-                }
-                action={
-                  <Typography
-                    component="a"
-                    href="/path-to-file.zip" // update this
-                    download
-                    sx={{
-                      fontSize: 16,
-                      display: 'none', // change to 'flex' when ready
-                      alignItems: 'center',
-                      gap: 0.5,
-                      color: 'primary.main',
-                      textDecoration: 'none',
-                      m: 1,
-                    }}
-                  >
-                    <FileDownloadOutlinedIcon fontSize="small" />
-                    Download
-                  </Typography>
-                }
-                sx={{ pb: 0 }}
+    const pluginsYaml = new yaml.Document(pluginsArray);
+    const pluginsYamlString = pluginsYaml.toString();
+
+    try {
+      const res = await installPlugin({
+        namespace: plugin.metadata.namespace ?? 'default',
+        name: plugin.metadata.name,
+        configYaml: pluginsYamlString,
+      });
+      if (res?.status === 'OK') {
+        navigate('/extensions');
+      } else {
+        setIsSubmitting(false);
+        setInstallationError((res as any)?.error?.message);
+      }
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setInstallationError(err?.error?.message);
+    }
+  };
+
+  const isInstallDisabled =
+    isProductionEnvironment ||
+    installationError ||
+    pluginConfigPermissions.data?.write !== 'ALLOW' ||
+    (pluginConfig.data as any)?.error ||
+    !extensionsConfig?.data?.enabled ||
+    isSubmitting;
+
+  const installTooltip = getPluginActionTooltipMessage(
+    isProductionEnvironment,
+    {
+      read: pluginConfigPermissions.data?.read ?? 'DENY',
+      write: pluginConfigPermissions.data?.write ?? 'DENY',
+    },
+    !extensionsConfig?.data?.enabled,
+  );
+
+  const showInstallationWarning =
+    (pluginConfig.data as any)?.error?.message &&
+    (pluginConfig.data as any)?.error?.reason !==
+      ExtensionsStatus.INSTALLATION_DISABLED;
+
+  const installationWarning = () => {
+    const errorMessage = getErrorMessage(
+      (pluginConfig.data as any)?.error?.reason,
+      (pluginConfig.data as any)?.error?.message,
+    );
+
+    return (
+      <>
+        <WarningPanel
+          title={errorMessage.title}
+          severity="info"
+          message={
+            <>
+              {errorMessage.message}
+              <CodeSnippet
+                language="yaml"
+                showLineNumbers
+                highlightedNumbers={errorMessage?.highlightedLineNumbers}
+                text={`${
+                  (pluginConfig.data as any)?.error?.reason ===
+                  ExtensionsStatus.INVALID_CONFIG
+                    ? DYNAMIC_PLUGIN_CONFIG_YAML
+                    : EXTENSIONS_CONFIG_YAML
+                }`}
               />
-              <CardContent
+            </>
+          }
+        />
+        <br />
+      </>
+    );
+  };
+
+  return (
+    <>
+      {showInstallationWarning && installationWarning()}
+      {installationError && (
+        <Alert severity="error" sx={{ mb: '1rem' }}>
+          {installationError}
+        </Alert>
+      )}
+      <Box
+        sx={{
+          height: dynamicHeight,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Grid
+          container
+          spacing={3}
+          sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
+        >
+          {packages.length > 0 && (
+            <Grid
+              item
+              xs={12}
+              md={6.5}
+              sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+            >
+              <Card
                 sx={{
                   flex: 1,
                   display: 'flex',
                   flexDirection: 'column',
                   overflow: 'hidden',
+                  borderRadius: 0,
                 }}
               >
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <Tabs
-                    value={tabIndex}
-                    onChange={handleTabChange}
-                    aria-label="Plugin tabs"
-                  >
-                    {availableTabs.map((tab, index) => (
-                      <Tab
-                        key={tab.key}
-                        value={index}
-                        label={tab.label ?? ''}
-                      />
-                    ))}
-                  </Tabs>
-                </Box>
-                <Box
+                <CardContent
                   sx={{
                     flex: 1,
-                    overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
+                    overflow: 'auto',
+                    scrollbarWidth: 'thin',
                   }}
                 >
-                  {availableTabs.map(
-                    (tab, index) =>
-                      tabIndex === index && (
-                        <TabPanel
-                          key={tab.key}
-                          value={tabIndex}
-                          index={index}
-                          markdownContent={tab.content ?? ''}
-                          others={tab.others}
-                        />
-                      ),
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
-      </Grid>
+                  <CodeEditor defaultLanguage="yaml" onLoaded={onLoaded} />
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
 
-      <Box
-        sx={{
-          mt: 4,
-          flexShrink: 0,
-          backgroundColor: 'inherit',
-        }}
-      >
-        <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
-          <CheckboxList packages={packages} />
-        </Box>
-        <Tooltip
-          title={
-            pluginConfigPermissions.data?.write !== 'ALLOW'
-              ? "You don't have permission to install plugins or edit their configurations. Contact your administrator to request access or assistance."
-              : ''
-          }
+          {showRightCard && (
+            <Grid
+              item
+              xs={12}
+              md={5.5}
+              sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+            >
+              <Card
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: 0,
+                  width: '99.8%', // workaround for 'overflow: hidden' causing card to be missing a border
+                }}
+              >
+                <CardHeader
+                  title={
+                    <Typography variant="h3">
+                      Installation instructions
+                    </Typography>
+                  }
+                  action={
+                    <Typography
+                      component="a"
+                      href="/path-to-file.zip" // update this
+                      download
+                      sx={{
+                        fontSize: 16,
+                        display: 'none', // change to 'flex' when ready
+                        alignItems: 'center',
+                        gap: 0.5,
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        m: 1,
+                      }}
+                    >
+                      <FileDownloadOutlinedIcon fontSize="small" />
+                      Download
+                    </Typography>
+                  }
+                  sx={{ pb: 0 }}
+                />
+                <CardContent
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <Tabs
+                      value={tabIndex}
+                      onChange={handleTabChange}
+                      aria-label="Plugin tabs"
+                    >
+                      {availableTabs.map((tab, index) => (
+                        <Tab
+                          key={tab.key}
+                          value={index}
+                          label={tab.label ?? ''}
+                        />
+                      ))}
+                    </Tabs>
+                  </Box>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    {availableTabs.map(
+                      (tab, index) =>
+                        tabIndex === index && (
+                          <TabPanel
+                            key={tab.key}
+                            value={tabIndex}
+                            index={index}
+                            markdownContent={tab.content ?? ''}
+                            others={tab.others}
+                          />
+                        ),
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
+        </Grid>
+
+        <Box
+          sx={{
+            mt: 4,
+            flexShrink: 0,
+            backgroundColor: 'inherit',
+          }}
         >
-          <Typography component="span">
-            <Button variant="contained" color="primary" disabled>
-              Install
-            </Button>
-          </Typography>
-        </Tooltip>
-        <Button
-          variant="outlined"
-          color="primary"
-          sx={{ ml: 2 }}
-          onClick={() => navigate(pluginLink)}
-        >
-          Cancel
-        </Button>
-        {(pluginConfigPermissions.data?.write === 'ALLOW' ||
-          pluginConfigPermissions.data?.read === 'ALLOW') && (
-          <Button
-            variant="text"
-            color="primary"
-            onClick={onLoaded}
-            sx={{ ml: 3 }}
+          <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
+            <CheckboxList packages={packages} />
+          </Box>
+          <Tooltip
+            title={
+              installTooltip ? (
+                <Box
+                  sx={{
+                    whiteSpace: 'normal',
+                    maxWidth: 250,
+                    overflowWrap: 'break-word',
+                  }}
+                >
+                  {installTooltip}
+                </Box>
+              ) : (
+                ''
+              )
+            }
           >
-            Reset
+            <Typography component="span">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleInstall}
+                disabled={isInstallDisabled}
+                data-testid={isInstallDisabled ? 'install-disabled' : 'install'}
+                startIcon={
+                  isSubmitting && (
+                    <CircularProgress size="20px" color="inherit" />
+                  )
+                }
+              >
+                Install
+              </Button>
+            </Typography>
+          </Tooltip>
+          <Button
+            variant="outlined"
+            color="primary"
+            sx={{ ml: 2 }}
+            onClick={() => navigate(pluginLink)}
+            data-testId={isInstallDisabled ? 'back-button' : 'cancel-button'}
+          >
+            {isInstallDisabled ? 'Back' : 'Cancel'}
           </Button>
-        )}
+          {(pluginConfigPermissions.data?.write === 'ALLOW' ||
+            pluginConfigPermissions.data?.read === 'ALLOW') && (
+            <Button
+              variant="text"
+              color="primary"
+              onClick={onReset}
+              sx={{ ml: 3 }}
+            >
+              Reset
+            </Button>
+          )}
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   SearchResultState,
   SearchResultProps,
@@ -79,6 +79,7 @@ export const SearchBar = (props: SearchBarProps) => {
             componentsProps={{
               paper: {
                 sx: {
+                  '&:empty': { visibility: 'hidden' }, // Removes underline-like effect
                   borderRadius: '4px',
                   outline: 'unset',
                   boxShadow:

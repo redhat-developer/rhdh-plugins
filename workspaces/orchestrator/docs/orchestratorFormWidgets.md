@@ -118,6 +118,10 @@ Referenced as: `"ui:widget": "ActiveTextInput"`.
 
 A smart component based on the [@mui/material/TextField](https://mui.com/material-ui/react-text-field/) keeping look&feel with other RJSF-default fields.
 
+![example](./widgets/ActiveTextInput_01.png)
+
+![example](./widgets/ActiveTextInput_02.png)
+
 ### ActiveTextInput Data fetching
 
 When instantiated, it loads (prefetch) the **default** value using a single HTTP call based on the `fetch:*` from the `ui:props`.
@@ -201,6 +205,10 @@ Referenced as: `"ui:widget": "ActiveDropdown"`.
 
 A smart component based on the [@mui/material/Select](https://mui.com/material-ui/react-select/) keeping look&feel with other RJSF-default fields.
 
+![example](./widgets/ActiveDropdown_01.png)
+
+![example](./widgets/ActiveDropdown_02.png)
+
 ### ActiveDropdown Data Fetching and validation
 
 Retrieving a list of items (each consisting of a value and a label) and validating the field operates similarly to the `ActiveTextInput` component.
@@ -221,6 +229,48 @@ The widget supports following `ui:props`:
 - fetch:retrigger
 - fetch:response:value
 - fetch:response:label
+- validate:url
+- validate:method
+- validate:headers
+- validate:body
+- validate:retrigger
+
+[Check more details](#content-of-uiprops)
+
+## ActiveMultiSelect widget
+
+Referenced as: `"ui:widget": "ActiveMultiSelect"`.
+
+A smart component based on the [@mui/material/TextField](https://mui.com/material-ui/react-text-field/) keeping look&feel with other RJSF-default fields with autocompletion.
+
+The selected items are represented as chips, the value of the field is an array of strings.
+
+Users can only enter values that are provided in the list returned by `fetch:url` and `fetch:response:autocomplete`.
+
+![example](./widgets/ActiveMultiSelect_01.png)
+
+![example](./widgets/ActiveMultiSelect_02.png)
+
+![example](./widgets/ActiveMultiSelect_03.png)
+
+![example](./widgets/ActiveMultiSelect_04.png)
+
+### ActiveMultiSelect Data Fetching and validation
+
+Retrieving a list of autocomplete items (array of strings for autocompletion) and validating the field operates similarly to the `ActiveTextInput` component.
+
+Validation is similar to the `ActiveTextInput` as well, just the value being passed is an array of strings.
+
+### ActiveMultiSelect widget ui:props
+
+The widget supports following `ui:props`:
+
+- fetch:url
+- fetch:headers
+- fetch:method
+- fetch:body
+- fetch:retrigger
+- fetch:response:autocomplete
 - validate:url
 - validate:method
 - validate:headers
@@ -390,19 +440,19 @@ The widgets manage waiting for asynchronous promises and chains of functions to 
 When exposing additional keys in the future, we will consider not only the [frontend-visibility](https://backstage.io/docs/conf/defining/#visibility) but security as well, since a malicious workflow can retrieve configuration of plugins or Backstage, eventually with their secrets.
 That’s the reason for listing the exposed keys explicitly.
 
-|                                 Key Family                                  |              Key              |                                                         Value of at runtime\<br\>(skipping promises for simplicity)                                                          |
-| :-------------------------------------------------------------------------: | :---------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-|                                   current                                   |  \[whatever property name\]   | Value of other field/property of the form. The properties build hierarchy separated by `.` (dots) matching the structure of fields/objects defined by the data input schema. |
-|                                 identityApi                                 |             token             |                                                                      IdentityApi.getCredentials().token                                                                      |
-|                                                                             |         userEntityRef         |                                                               IdentityApi.getBackstageIdentity().userEntityRef                                                               |
-|                                                                             |         profileEmail          |                                                                      IdentityApi.getProfileInfo().email                                                                      |
-|                                                                             |          displayName          |                                                                   IdentityApi.getProfileInfo().displayName                                                                   |
-|                microsoftAuthApi gitlabAuthApi googleAuthApi                 |          openIdToken          |                                 OpenIdConnectApi.getIdToken(undefined /\* defaults \*/) Mind this is not available for Github and Atlassian                                  |
-| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |             token             |                                                                OAuthApi.getAccessToken(undefined, undefined)                                                                 |
-| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |         profileEmail          |                                                                  ProfileInfoApi.getProfile(undefined).email                                                                  |
-| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |          profileName          |                                                               ProfileInfoApi.getProfile(undefined).displayName                                                               |
-|                                 rjsfConfig                                  | orchestrator.\[whatever key\] |                                                configApi.getOptionalString(\`${orchestrator.rjsf-widgets.\[whatever key\]}\`)                                                |
-|                                   backend                                   |            baseUrl            |                                 configApi.getString('backend.baseUrl') - useful for building URLs with proxy without hardcoding the backend                                  |
+|                                 Key Family                                  |              Key              |                                                                                                                  Value of at runtime\<br\>(skipping promises for simplicity)                                                                                                                  |
+| :-------------------------------------------------------------------------: | :---------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|                                   current                                   |  \[whatever property name\]   | Value of other field/property of the form. The properties build hierarchy separated by `.` (dots) matching the structure of fields/objects defined by the data input schema. Arrays or branches of a complex object structure can be passed as well, data are encoded into JSON in that case. |
+|                                 identityApi                                 |             token             |                                                                                                                              IdentityApi.getCredentials().token                                                                                                                               |
+|                                                                             |         userEntityRef         |                                                                                                                       IdentityApi.getBackstageIdentity().userEntityRef                                                                                                                        |
+|                                                                             |         profileEmail          |                                                                                                                              IdentityApi.getProfileInfo().email                                                                                                                               |
+|                                                                             |          displayName          |                                                                                                                           IdentityApi.getProfileInfo().displayName                                                                                                                            |
+|                microsoftAuthApi gitlabAuthApi googleAuthApi                 |          openIdToken          |                                                                                          OpenIdConnectApi.getIdToken(undefined /\* defaults \*/) Mind this is not available for Github and Atlassian                                                                                          |
+| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |             token             |                                                                                                                         OAuthApi.getAccessToken(undefined, undefined)                                                                                                                         |
+| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |         profileEmail          |                                                                                                                          ProfileInfoApi.getProfile(undefined).email                                                                                                                           |
+| atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |          profileName          |                                                                                                                       ProfileInfoApi.getProfile(undefined).displayName                                                                                                                        |
+|                                 rjsfConfig                                  | orchestrator.\[whatever key\] |                                                                                                        configApi.getOptionalString(\`${orchestrator.rjsf-widgets.\[whatever key\]}\`)                                                                                                         |
+|                                   backend                                   |            baseUrl            |                                                                                          configApi.getString('backend.baseUrl') - useful for building URLs with proxy without hardcoding the backend                                                                                          |
 
 ## Retrieving Data from Backstage Catalog
 

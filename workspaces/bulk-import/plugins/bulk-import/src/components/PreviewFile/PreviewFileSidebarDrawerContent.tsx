@@ -62,7 +62,7 @@ export const PreviewFileSidebarDrawerContent = ({
   if (isLoading) {
     return (
       <Stack spacing={5} sx={{ p: 2.5 }}>
-        <span style={{ display: 'flex', height: '10%' }}>
+        <Typography component="span" style={{ display: 'flex', height: '10%' }}>
           <Skeleton variant="rectangular" width="100%" height="100%" />
           <IconButton
             key="dismiss"
@@ -73,7 +73,7 @@ export const PreviewFileSidebarDrawerContent = ({
           >
             <CloseIcon fontSize="small" />
           </IconButton>
-        </span>
+        </Typography>
         <Skeleton variant="rectangular" width="100%" height={750} />
         <Skeleton variant="rectangular" width="100%" height="10%" />
       </Stack>

@@ -75,6 +75,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
   ) {
     return (
       <TextField
+        data-testid="tel-input"
         inputRef={ref}
         error={!!error}
         {...props}
@@ -104,6 +105,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
     };
     return (
       <Select
+        data-testid="country-code-select"
         value={value}
         MenuProps={{
           anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
@@ -185,9 +187,8 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         >
           <RPNInput
             required
-            defaultCountry="ES"
+            defaultCountry={country || 'ES'}
             label="Phone number"
-            placeholder="(000) 000 0000"
             value={phoneNumber}
             onChange={setPhoneNumber}
             inputComponent={PhoneInputField}
@@ -208,10 +209,11 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'flex-start', padding: '24px' }}>
         <Button
+          data-testid="submit-phone-button"
           variant="contained"
           onClick={handlePhoneNumberSubmit}
           type="submit"
-          disabled={!phoneNumber || loading || !!error}
+          disabled={!phoneNumber || loading}
           endIcon={
             loading && <CircularProgress size={20} sx={{ color: '#AFAFAF' }} />
           }
@@ -219,6 +221,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
           Send code
         </Button>
         <Button
+          data-testid="close-phone-button"
           variant="outlined"
           onClick={handleClose}
           sx={{

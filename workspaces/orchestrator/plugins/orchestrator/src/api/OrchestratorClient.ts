@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  AuthRequestOptions,
-  DiscoveryApi,
-  IdentityApi,
-  OAuthApi,
-} from '@backstage/core-plugin-api';
+import { DiscoveryApi, IdentityApi } from '@backstage/core-plugin-api';
 import type { JsonObject } from '@backstage/types';
 
 import axios, {
@@ -32,8 +27,10 @@ import axios, {
 
 import {
   AssessedProcessInstanceDTO,
+  AuthToken,
   Configuration,
   DefaultApi,
+  ExecuteWorkflowRequestDTO,
   ExecuteWorkflowResponseDTO,
   Filter,
   InputSchemaResponseDTO,
@@ -60,23 +57,17 @@ const getError = (err: unknown): Error => {
 export interface OrchestratorClientOptions {
   discoveryApi: DiscoveryApi;
   identityApi: IdentityApi;
-  githubAuthApi?: OAuthApi;
-  gitlabAuthApi?: OAuthApi;
   axiosInstance?: AxiosInstance;
 }
 export class OrchestratorClient implements OrchestratorApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly identityApi: IdentityApi;
-  private readonly githubAuthApi?: OAuthApi;
-  private readonly gitlabAuthApi?: OAuthApi;
   private axiosInstance?: AxiosInstance;
 
   private baseUrl: string | null = null;
   constructor(options: OrchestratorClientOptions) {
     this.discoveryApi = options.discoveryApi;
     this.identityApi = options.identityApi;
-    this.githubAuthApi = options.githubAuthApi;
-    this.gitlabAuthApi = options.gitlabAuthApi;
     this.axiosInstance = options.axiosInstance;
   }
 
@@ -111,54 +102,17 @@ export class OrchestratorClient implements OrchestratorApi {
   async executeWorkflow(args: {
     workflowId: string;
     parameters: JsonObject;
+    authTokens: AuthToken[];
     businessKey?: string;
   }): Promise<AxiosResponse<ExecuteWorkflowResponseDTO>> {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
       await this.getDefaultReqConfig();
-    const authTokens: { provider: string; token: string }[] = [];
 
-    const authRequestOptions: AuthRequestOptions = { optional: true };
-    /** Build one promise per provider (guard against missing APIs) */
-    const tokenPromises = [
-      this.githubAuthApi
-        ? this.githubAuthApi
-            .getAccessToken?.(undefined, authRequestOptions)
-            .then(tok => ({ provider: 'github' as const, token: tok }))
-        : undefined,
-
-      this.gitlabAuthApi
-        ? this.gitlabAuthApi
-            .getAccessToken?.(undefined, authRequestOptions)
-            .then(tok => ({ provider: 'gitlab' as const, token: tok }))
-        : undefined,
-    ].filter(Boolean) as Promise<{
-      provider: string;
-      token: string | undefined;
-    }>[];
-
-    const results = await Promise.allSettled(tokenPromises);
-
-    /** keep only fulfilled + non-empty tokens */
-    for (const r of results) {
-      if (r.status === 'fulfilled') {
-        const { provider, token } = r.value;
-        if (token) {
-          authTokens.push({ provider, token });
-        }
-      } else if (r.status === 'rejected') {
-        // eslint-disable-next-line no-console
-        console.warn('SCM token fetch failed:', r.reason);
-      }
-    }
-    const requestBody: JsonObject = {
+    const requestBody: ExecuteWorkflowRequestDTO = {
       inputData: args.parameters,
+      authTokens: args.authTokens,
     };
-    // The ExecuteWorkflowRequestDTO has minItems set to 1
-    if (authTokens.length > 0) {
-      requestBody.authTokens = authTokens;
-    }
-
     try {
       return await defaultApi.executeWorkflow(
         args.workflowId,

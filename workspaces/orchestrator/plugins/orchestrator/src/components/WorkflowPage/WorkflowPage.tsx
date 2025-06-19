@@ -20,7 +20,7 @@ import { useAsync } from 'react-use';
 import { TabbedLayout } from '@backstage/core-components';
 import { useApi, useRouteRefParams } from '@backstage/core-plugin-api';
 
-import { Grid } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
 
 import { orchestratorApiRef } from '../../api';
 import { workflowRouteRef, workflowRunsRoutePath } from '../../routes';
@@ -44,7 +44,7 @@ export const WorkflowPage = () => {
   return (
     <BaseOrchestratorPage
       title={workflowOverviewDTO?.data.name || workflowId}
-      type="orchestrator"
+      type="Orchestrator"
       typeLink="/orchestrator"
       noPadding
     >

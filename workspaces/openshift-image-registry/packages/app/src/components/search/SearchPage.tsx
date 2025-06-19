@@ -40,7 +40,6 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import React from 'react';
 
 const useStyles = makeStyles((theme: Theme) => ({
   bar: {

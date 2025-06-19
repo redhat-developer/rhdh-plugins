@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { Page, Header, TabbedLayout } from '@backstage/core-components';
 import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
 

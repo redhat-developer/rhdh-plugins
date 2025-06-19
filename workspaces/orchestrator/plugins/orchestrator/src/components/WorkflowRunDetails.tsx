@@ -21,7 +21,8 @@ import { Link } from '@backstage/core-components';
 import { useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
 
-import { Grid, makeStyles, Typography } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 
 import {
   capitalize,
@@ -42,17 +43,10 @@ type WorkflowDetailsCardProps = {
   details: WorkflowRunDetail;
 };
 
-const useStyles = makeStyles({
-  root: {
-    overflowY: 'auto',
-  },
-});
-
 export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
   assessedBy,
   details,
 }) => {
-  const styles = useStyles();
   const orchestratorApi = useApi(orchestratorApiRef);
   const { value, loading, error } =
     useAsync(async (): Promise<WorkflowOverviewDTO> => {
@@ -65,7 +59,7 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
   const workflowPageLink = useRouteRef(workflowRouteRef);
 
   return (
-    <Grid container className={styles.root} alignContent="flex-start">
+    <Grid container alignContent="flex-start">
       <Grid item md={7} key="Workflow">
         <AboutField label="Workflow">
           <Link to={workflowPageLink({ workflowId: details.workflowId })}>
