@@ -39,6 +39,9 @@ export interface HomePageCardMountPointConfig {
   layouts?: Record<Breakpoint, Layout>;
 }
 
+/**
+ * @public
+ */
 export interface HomePageCardMountPoint {
   Component: ComponentType;
   config?: HomePageCardMountPointConfig & {

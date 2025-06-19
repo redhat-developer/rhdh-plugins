@@ -77,6 +77,20 @@ export interface HeadlineProps {
 }
 
 // @public (undocumented)
+export interface HomePageCardMountPoint {
+    // (undocumented)
+    Component: ComponentType;
+    // Warning: (ae-forgotten-export) The symbol "HomePageCardMountPointConfig" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    config?: HomePageCardMountPointConfig & {
+        props?: Record<string, any>;
+    };
+    // (undocumented)
+    enabled?: boolean;
+}
+
+// @public (undocumented)
 export const JokeCard: ComponentType<{
     defaultCategory?: 'any' | 'programming';
 }>;
