@@ -25,9 +25,9 @@ import fetch from 'node-fetch';
 // const fetch = (await import('node-fetch')).default;
 
 import {
-  lightspeedConversationsCreatePermission,
-  lightspeedConversationsDeletePermission,
-  lightspeedConversationsReadPermission,
+  lightspeedChatCreatePermission,
+  lightspeedChatDeletePermission,
+  lightspeedChatReadPermission,
   lightspeedPermissions,
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
@@ -74,10 +74,7 @@ export async function createRouter(
 
     logger.info(`receives call from user: ${userEntity}`);
     try {
-      await authorizer.authorizeUser(
-        lightspeedConversationsReadPermission,
-        credentials,
-      );
+      await authorizer.authorizeUser(lightspeedChatReadPermission, credentials);
     } catch (error) {
       if (error instanceof NotAllowedError) {
         logger.error(error.message);
@@ -112,12 +109,12 @@ export async function createRouter(
     try {
       if (req.method === 'GET') {
         await authorizer.authorizeUser(
-          lightspeedConversationsReadPermission,
+          lightspeedChatReadPermission,
           credentials,
         );
       } else if (req.method === 'DELETE') {
         await authorizer.authorizeUser(
-          lightspeedConversationsDeletePermission,
+          lightspeedChatDeletePermission,
           credentials,
         );
       }
@@ -166,7 +163,7 @@ export async function createRouter(
         logger.info(`/v1/query receives call from user: ${user_id}`);
 
         await authorizer.authorizeUser(
-          lightspeedConversationsCreatePermission,
+          lightspeedChatCreatePermission,
           credentials,
         );
         const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;

@@ -17,21 +17,21 @@
 import { usePermission } from '@backstage/plugin-permission-react';
 
 import {
-  lightspeedConversationsCreatePermission,
-  lightspeedConversationsReadPermission,
+  lightspeedChatCreatePermission,
+  lightspeedChatReadPermission,
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
 export const useLightspeedViewPermission = () => {
-  const canReadConversations = usePermission({
-    permission: lightspeedConversationsReadPermission,
+  const canReadChats = usePermission({
+    permission: lightspeedChatReadPermission,
   });
 
-  const canCreateConversations = usePermission({
-    permission: lightspeedConversationsCreatePermission,
+  const canCreateChats = usePermission({
+    permission: lightspeedChatCreatePermission,
   });
 
   return {
-    loading: canReadConversations.loading || canCreateConversations.loading,
-    allowed: canReadConversations.allowed && canCreateConversations.allowed,
+    loading: canReadChats.loading || canCreateChats.loading,
+    allowed: canReadChats.allowed && canCreateChats.allowed,
   };
 };
