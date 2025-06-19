@@ -45,8 +45,8 @@ const PermissionRequiredState = () => {
         description={
           <Typography variant="subtitle1">
             To view lightspeed plugin, contact your administrator to give the{' '}
-            <b>lightspeed.conversations.read</b> and{' '}
-            <b>lightspeed.conversations.create</b> permissions.
+            <b>lightspeed.chat.read</b> and <b>lightspeed.chat.create</b>{' '}
+            permissions.
           </Typography>
         }
         missing={{ customImage: <PermissionRequiredIcon /> }}

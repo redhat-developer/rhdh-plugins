@@ -19,8 +19,8 @@ import { createPermission } from '@backstage/plugin-permission-common';
 /** This permission is used to access the lightspeed read conversations endpoint
  * @public
  */
-export const lightspeedConversationsReadPermission = createPermission({
-  name: 'lightspeed.conversations.read',
+export const lightspeedChatReadPermission = createPermission({
+  name: 'lightspeed.chat.read',
   attributes: {
     action: 'read',
   },
@@ -29,8 +29,8 @@ export const lightspeedConversationsReadPermission = createPermission({
 /** This permission is used to access the lightspeed create conversations endpoint
  * @public
  */
-export const lightspeedConversationsCreatePermission = createPermission({
-  name: 'lightspeed.conversations.create',
+export const lightspeedChatCreatePermission = createPermission({
+  name: 'lightspeed.chat.create',
   attributes: {
     action: 'create',
   },
@@ -39,8 +39,8 @@ export const lightspeedConversationsCreatePermission = createPermission({
 /** This permission is used to access the lightspeed delete endpoint
  * @public
  */
-export const lightspeedConversationsDeletePermission = createPermission({
-  name: 'lightspeed.conversations.delete',
+export const lightspeedChatDeletePermission = createPermission({
+  name: 'lightspeed.chat.delete',
   attributes: {
     action: 'delete',
   },
@@ -51,7 +51,7 @@ export const lightspeedConversationsDeletePermission = createPermission({
  * @public
  */
 export const lightspeedPermissions = [
-  lightspeedConversationsReadPermission,
-  lightspeedConversationsCreatePermission,
-  lightspeedConversationsDeletePermission,
+  lightspeedChatReadPermission,
+  lightspeedChatCreatePermission,
+  lightspeedChatDeletePermission,
 ];

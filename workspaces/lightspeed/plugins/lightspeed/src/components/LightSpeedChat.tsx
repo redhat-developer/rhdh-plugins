@@ -434,6 +434,7 @@ export const LightspeedChat = ({
           conversations={filterConversations(filterValue)}
           onNewChat={newChatCreated ? undefined : onNewChat}
           handleTextInputChange={handleFilter}
+          searchInputPlaceholder="Search previous chats..."
           drawerContent={
             <FileDropZone
               onFileDrop={(e, data) => handleAttach(data, e)}
