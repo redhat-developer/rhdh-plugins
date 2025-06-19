@@ -57,7 +57,12 @@ export type { MarkdownCardProps } from './components/MarkdownCard';
 export type { PlaceholderProps } from './components/Placeholder';
 export type { LocalClockProps } from './components/LocalClock';
 export type { WorldClockProps } from './components/WorldClock';
-export type { HomePageCardMountPoint } from './types';
+export type {
+  HomePageCardMountPoint,
+  HomePageCardMountPointConfig,
+  Breakpoint,
+  Layout,
+} from './types';
 
 /**
  * Dynamic Home Page Plugin
