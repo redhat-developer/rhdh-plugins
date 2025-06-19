@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 import React, { useEffect, useMemo, useState } from 'react';
+import clsx from 'clsx';
 
+import { makeStyles } from 'tss-react/mui';
+import { Theme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Autocomplete, { AutocompleteValue } from '@mui/material/Autocomplete';
 import FormControl from '@mui/material/FormControl';
@@ -36,11 +39,22 @@ import {
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
 
+const useStyles = makeStyles()(
+  (theme: Theme & { rhdh?: { cardBorderColor: string } }) => ({
+    chip: {
+      // Workaround, we still have mix of Material 4 and 5 CSS in production, conflict with MuiButtonBase-root
+      borderRadius: `16px !important` /* theme.shape.borderRadius is ugly 8px */,
+      outline: `1px solid ${theme.rhdh?.cardBorderColor ?? '#A3A3A3'} !important`,
+    },
+  }),
+);
+
 export const ActiveMultiSelect: Widget<
   JsonObject,
   JSONSchema7,
   OrchestratorFormContextProps
 > = props => {
+  const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
   const { id, name, label, value: rawValue, onChange, formContext } = props;
   const value = rawValue as string[];
@@ -136,16 +150,20 @@ export const ActiveMultiSelect: Widget<
               />
             )}
             renderTags={(values, getTagProps) =>
-              values.map((item, index) => (
-                <Box key={item} title={item}>
-                  <Chip
-                    data-testid={`${id}-chip-${item}`}
-                    variant="outlined"
-                    label={item}
-                    {...getTagProps({ index })}
-                  />
-                </Box>
-              ))
+              values.map((item, index) => {
+                const tagProps = getTagProps({ index });
+                tagProps.className = clsx(tagProps.className, classes.chip);
+                return (
+                  <Box key={item} title={item}>
+                    <Chip
+                      data-testid={`${id}-chip-${item}`}
+                      variant="outlined"
+                      label={item}
+                      {...tagProps}
+                    />
+                  </Box>
+                );
+              })
             }
           />
         </FormControl>
