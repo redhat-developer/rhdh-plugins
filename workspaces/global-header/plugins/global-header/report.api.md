@@ -17,10 +17,7 @@ export const CompanyLogo: ({ logo, to }: CompanyLogoProps) => JSX_2.Element;
 // @public (undocumented)
 export interface CompanyLogoProps {
   layout?: CSSProperties;
-  logo?: {
-    light: string;
-    dark: string;
-  };
+  logo?: LogoURLs;
   to?: string;
 }
 
@@ -167,6 +164,12 @@ export interface HeaderIconProps {
   layout?: CSSProperties;
   // (undocumented)
   size?: 'small' | 'medium' | 'large';
+}
+
+// @public
+export interface LogoURLs {
+  dark: string;
+  light: string;
 }
 
 // @public
