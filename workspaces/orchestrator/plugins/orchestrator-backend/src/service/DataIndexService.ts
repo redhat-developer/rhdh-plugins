@@ -271,7 +271,7 @@ export class DataIndexService {
     const graphQlQuery = buildGraphQlQuery({
       type: 'ProcessInstances',
       queryBody:
-        'id, processName, processId, businessKey, state, start, end, nodes { id }, variables, parentProcessInstance {id, processName, businessKey}',
+        'id, processName, processId, businessKey, executionSummary, state, start, end, nodes { id }, variables, parentProcessInstance {id, processName, businessKey}',
       whereClause,
       pagination,
     });
@@ -422,6 +422,7 @@ export class DataIndexService {
           processId
           serviceUrl
           businessKey
+          executionSummary
           state
           start
           end

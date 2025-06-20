@@ -81,79 +81,124 @@ const ResultMessage = ({
   status,
   error,
   resultMessage,
+  executionSummary: executionSummary,
 }: {
   status?: ProcessInstanceStatusDTO;
   error?: ProcessInstanceErrorDTO;
   resultMessage?: WorkflowResultDTO['message'];
+  executionSummary?: string[];
 }) => {
   const errorMessage = error?.message || error?.toString();
+  const executionSummaryArray: string[] = executionSummary ?? [];
 
-  let statusComponent: ReactNode = <></>;
+  const getTimeFromExecutionSummary = (
+    keyword: 'started' | 'failed' | 'retriggered' | 'waiting' | 'completed',
+  ): string[] => {
+    const matchingMessage = executionSummaryArray.find(str =>
+      str.includes(keyword),
+    );
+    if (!matchingMessage) return [''];
+
+    const timeMatch = matchingMessage.match(
+      /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z)/,
+    );
+    if (!timeMatch) return [''];
+
+    const formattedDate = new Date(timeMatch[1]).toLocaleString();
+
+    return keyword === 'waiting'
+      ? [formattedDate, matchingMessage]
+      : [` at ${formattedDate}`];
+  };
+
+  const checkIfWaiting = (): string => {
+    const [formattedTime, waitingMessage] =
+      getTimeFromExecutionSummary('waiting');
+
+    if (waitingMessage) {
+      const nodeMatch = waitingMessage.match(/node (\S+) since/);
+      const node = nodeMatch?.[1] ?? 'unknown';
+      return `Workflow is running - waiting at node ${node} since ${formattedTime}`;
+    }
+    const [startedTime] = getTimeFromExecutionSummary('started');
+
+    if (startedTime !== '') {
+      return ` Workflow is running. Started ${startedTime}`;
+    }
+    return '';
+  };
+
+  let alertProps: {
+    title: ReactNode;
+    message: string | undefined;
+    severity: 'warning' | 'error' | 'success' | 'info';
+  } = {
+    // default values to make ts happy
+    title: 'Run completed',
+    message: 'The workflow provided no additional info about the status.',
+    severity: 'success' as const,
+  };
 
   if (error) {
     // The resultMessage won't be displayed even if it's defined when there's an error.
-
     if (status === ProcessInstanceStatusDTO.Completed) {
       // we are receiving confusing data from the backend - Completed but with error message
-      statusComponent = (
-        <Box sx={{ width: '100%' }}>
-          <Alert severity="warning">
-            <AlertTitle>Run completed with message</AlertTitle>
-            {errorMessage}
-          </Alert>
-        </Box>
-      );
+      alertProps = {
+        title: `Run completed ${getTimeFromExecutionSummary('completed')} with message`,
+        message: errorMessage,
+        severity: 'warning',
+      };
     } else {
-      statusComponent = (
-        <Box sx={{ width: '100%' }}>
-          <Alert severity="error">
-            <AlertTitle>Run has failed</AlertTitle>
-            {errorMessage}
-          </Alert>
-        </Box>
-      );
+      alertProps = {
+        title: `Run has failed ${getTimeFromExecutionSummary('failed')}`,
+        message: errorMessage,
+        severity: 'error',
+      };
     }
   } else if (!error && resultMessage) {
-    statusComponent = (
-      <Box sx={{ width: '100%' }}>
-        <Alert severity="success">
-          <AlertTitle>Run completed</AlertTitle>
-          {resultMessage}
-        </Alert>
-      </Box>
-    );
+    alertProps = {
+      title: `Run completed ${getTimeFromExecutionSummary('completed')}`,
+      message: resultMessage,
+      severity: 'success',
+    };
   } else if (!error && !resultMessage) {
     if (status === ProcessInstanceStatusDTO.Aborted) {
-      statusComponent = (
-        <Box sx={{ width: '100%' }}>
-          <Alert severity="info">
-            <AlertTitle> Run has aborted</AlertTitle>
-          </Alert>
-        </Box>
-      );
+      alertProps = {
+        title: 'Run has aborted',
+        message: '',
+        severity: 'info',
+      };
     } else if (status && finalStates.includes(status)) {
-      statusComponent = (
-        <Box sx={{ width: '100%' }}>
-          <Alert severity="success">
-            <AlertTitle>Run completed</AlertTitle>
-            The workflow provided no additional info about the status.
-          </Alert>
-        </Box>
-      );
+      alertProps = {
+        title: `Run completed ${getTimeFromExecutionSummary('completed')}`,
+        message: 'The workflow provided no additional info about the status.',
+        severity: 'success',
+      };
     } else {
-      statusComponent = (
-        <Box sx={{ width: '100%' }}>
-          <Alert severity="info">
-            <AlertTitle>
-              <CircularProgress size="0.75rem" /> Workflow is Running...
-            </AlertTitle>
-            Results will be displayed here once the run is complete.
-          </Alert>
-        </Box>
-      );
+      const activeMessage = checkIfWaiting();
+      const isWaiting = activeMessage.includes('waiting');
+
+      alertProps = {
+        title: (
+          <>
+            {!isWaiting && <CircularProgress size="0.75rem" />}
+            {activeMessage}
+          </>
+        ),
+        message: 'Results will be displayed here once the run is complete.',
+        severity: 'info',
+      };
     }
   }
-  return statusComponent;
+
+  return (
+    <Box sx={{ width: '100%' }}>
+      <Alert severity={alertProps.severity}>
+        <AlertTitle>{alertProps.title}</AlertTitle>
+        {alertProps.message}
+      </Alert>
+    </Box>
+  );
 };
 
 const NextWorkflows = ({
@@ -334,6 +379,7 @@ export const WorkflowResult: React.FC<{
           status={instance.state}
           error={instance.error}
           resultMessage={result?.message}
+          executionSummary={instance.executionSummary}
         />
       }
       divider={false}
