@@ -100,8 +100,14 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent>
-        <Box>{children}</Box>
+      <DialogContent
+        sx={{
+          '& > div': {
+            backgroundColor: 'transparent', // to avoid generated bg-color
+          },
+        }}
+      >
+        {children}
       </DialogContent>
       <DialogActions className={classes.dialogActions}>
         {dialogActions}
@@ -109,5 +115,4 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
     </Dialog>
   );
 };
-
 export const InfoDialog = forwardRef(RefForwardingInfoDialog);
