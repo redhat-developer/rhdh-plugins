@@ -27,13 +27,13 @@ import {
   MarketplacePackageInstallStatus,
   isMarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import type { DynamicPlugin } from '@backstage/backend-dynamic-feature-service';
 
 /**
  * @public
  */
 export type CachedData = {
-  [key: string]: number | string[];
-  plugins: any;
+  plugins: string[];
   cachedTime: number;
 };
 
@@ -57,15 +57,17 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     return 'DynamicPackageInstallStatusProcessor';
   }
 
-  async getInstalledPlugins() {
-    const scalprumUrl = await this.discovery.getBaseUrl('scalprum');
+  async getInstalledPlugins(): Promise<DynamicPlugin[]> {
+    const dynamicPluginsInfoUrl = await this.discovery.getBaseUrl(
+      'dynamic-plugins-info',
+    );
 
     const { token } = await this.auth.getPluginRequestToken({
       onBehalfOf: await this.auth.getOwnServiceCredentials(),
-      targetPluginId: 'catalog',
+      targetPluginId: 'dynamic-plugins-info',
     });
 
-    const response = await fetch(`${scalprumUrl}/plugins`, {
+    const response = await fetch(`${dynamicPluginsInfoUrl}/loaded-plugins`, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
@@ -88,7 +90,8 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
   ): Promise<CachedData> {
     let cachedData = (await cache.get(entityRef)) as CachedData;
     if (!cachedData || this.isExpired(cachedData)) {
-      const plugins = await this.getInstalledPlugins();
+      const pluginsList = await this.getInstalledPlugins();
+      const plugins = pluginsList.map(plugin => plugin.name);
       cachedData = { plugins, cachedTime: Date.now() };
       await cache.set(entityRef, cachedData);
     }
@@ -115,15 +118,29 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     cache: CatalogProcessorCache,
   ): Promise<Entity> {
     if (isMarketplacePackage(entity)) {
-      if (entity.spec?.packageName && !entity.spec?.installStatus) {
-        const packageName = entity.spec.packageName;
-
+      if (
+        entity.spec?.packageName &&
+        (!entity.spec?.installStatus ||
+          entity.spec.installStatus ===
+            MarketplacePackageInstallStatus.NotInstalled)
+      ) {
         const entityRef = stringifyEntityRef(entity);
 
         const data = await this.getCachedPlugins(cache, entityRef);
-        const installedPackageNames = Object.keys(data?.plugins);
+        const installedPackageNames = data.plugins;
 
-        if (installedPackageNames.includes(packageName)) {
+        // account for wrapper names
+        let transformedName = entity.spec.packageName
+          .replace('@', '')
+          .replace(/\//g, '-');
+        if (transformedName.includes('backend')) {
+          transformedName += '-dynamic';
+        }
+        if (
+          [entity.spec.packageName, transformedName].some(packageName =>
+            installedPackageNames.includes(packageName),
+          )
+        ) {
           return {
             ...entity,
             spec: {
