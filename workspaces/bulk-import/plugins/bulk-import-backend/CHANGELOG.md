@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 6.1.3
+
+### Patch Changes
+
+- 22e947b: Bump to backstage version 1.39.1
+- Updated dependencies [22e947b]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.7.1
+
 ## 6.1.2
 
 ### Patch Changes
