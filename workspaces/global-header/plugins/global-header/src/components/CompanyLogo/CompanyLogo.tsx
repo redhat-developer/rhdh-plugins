@@ -18,13 +18,16 @@ import { Link } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import DefaultLogo from './DefaultLogo';
 import Box from '@mui/material/Box';
+import { useAppBarBackgroundScheme } from '../../hooks/useAppBarBackgroundScheme';
 
 const LogoRender = ({
   base64Logo,
   defaultLogo,
+  width = 150,
 }: {
   base64Logo: string | undefined;
   defaultLogo: JSX.Element;
+  width?: number;
 }) => {
   return base64Logo ? (
     <img
@@ -36,6 +39,7 @@ const LogoRender = ({
         maxHeight: '40px',
         maxWidth: '150px',
       }}
+      width={width}
     />
   ) : (
     defaultLogo
@@ -43,19 +47,68 @@ const LogoRender = ({
 };
 
 /**
+ * An interface representing the URLs for light and dark variants of a logo.
+ * @public
+ */
+export type LogoURLs =
+  | {
+      /** The logo that will be used in global headers with a light-coloured background */
+      light: string;
+      /** The logo that will be used in global headers with a dark-coloured background */
+      dark: string;
+    }
+  | string
+  | undefined;
+
+/**
  * @public
  */
 export interface CompanyLogoProps {
-  logo?: string;
+  /** An object containing the logo URLs */
+  logo?: LogoURLs;
+  /** The route to link the logo to */
   to?: string;
+  /**
+   * The width of the logo in pixels (defaults to 150px). This prop fixes an
+   * issue where encoded SVGs without an explicit width would not render.
+   * You likely do not need to set this prop.
+   */
+  logoWidth?: number;
+  /** This prop is not used by this component. */
   layout?: CSSProperties;
 }
 
-export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
+/**
+ * Gets a themed image based on the current theme.
+ */
+const useFullLogo = (logo: LogoURLs): string | undefined => {
+  const appBarBackgroundScheme = useAppBarBackgroundScheme();
+
   const configApi = useApi(configApiRef);
-  const logoFullBase64URI = configApi.getOptionalString(
-    'app.branding.fullLogo',
-  );
+
+  /** The fullLogo config specified by app.branding.fullLogo */
+  const fullLogo = configApi.getOptional<LogoURLs>('app.branding.fullLogo');
+
+  /** The URI of the logo specified by app.branding.fullLogo */
+  const fullLogoURI =
+    typeof fullLogo === 'string'
+      ? fullLogo
+      : fullLogo?.[appBarBackgroundScheme];
+
+  /** The URI of the logo specified by CompanyLogo props */
+  const propsLogoURI =
+    typeof logo === 'string' ? logo : logo?.[appBarBackgroundScheme];
+
+  return propsLogoURI ?? fullLogoURI ?? undefined;
+};
+
+export const CompanyLogo = ({
+  logo,
+  logoWidth,
+  to = '/',
+}: CompanyLogoProps) => {
+  const logoURL = useFullLogo(logo);
+
   return (
     <Box
       sx={{
@@ -76,8 +129,9 @@ export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
         }}
       >
         <LogoRender
-          base64Logo={logo ?? logoFullBase64URI}
+          base64Logo={logoURL}
           defaultLogo={<DefaultLogo />}
+          width={logoWidth}
         />
       </Link>
     </Box>
