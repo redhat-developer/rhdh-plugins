@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.9.1
+
+### Patch Changes
+
+- 8e33ca2: Use `id` instead of `class` to select components due to differences in classNames in production
+
 ## 0.9.0
 
 ### Minor Changes
