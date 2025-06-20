@@ -16,7 +16,11 @@
 import { useEffect, useState } from 'react';
 import { isEqual } from 'lodash';
 import { JsonObject } from '@backstage/types';
-import { evaluateTemplate, evaluateTemplateProps } from './evaluateTemplate';
+import {
+  evaluateTemplate,
+  evaluateTemplateProps,
+  evaluateTemplateString,
+} from './evaluateTemplate';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 
 const ALLOWED_METHODS = ['GET', 'POST'];
@@ -83,7 +87,7 @@ export const getRequestInit = async (
       const keys = Object.keys(headers);
       const values = await Promise.all(
         keys.map(key =>
-          evaluateTemplate({
+          evaluateTemplateString({
             unitEvaluator,
             key,
             formData,
