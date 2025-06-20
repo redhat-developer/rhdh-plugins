@@ -114,7 +114,7 @@ const SidebarLayout = styled(Box, {
 export const Root = ({ children = null }: PropsWithChildren<{}>) => {
   return (
     <PageWithoutFixHeight>
-      <div id="above-sidebar-header-container">
+      <div id="rhdh-above-sidebar-header-container">
         {/* update globalHeaderMountPoints config to test Global header */}
         <GlobalHeaderComponent
           globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
@@ -125,7 +125,7 @@ export const Root = ({ children = null }: PropsWithChildren<{}>) => {
         aboveSidebarHeaderHeight={64}
       >
         <SidebarPage>
-          <div id="above-main-content-header-container" />
+          <div id="rhdh-above-main-content-header-container" />
           <Sidebar>
             <SidebarGroup label="Menu" icon={<MenuIcon />}>
               {/* Global nav, not org-specific */}

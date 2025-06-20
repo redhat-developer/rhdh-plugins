@@ -141,10 +141,6 @@ export default app.createRoot(
     <GlobalStyles
       styles={{
         html: { overflowY: 'hidden' },
-        ':root': {
-          '--rhdh-v1-page-inset': '1.5rem',
-          '--global-header-default-height': '64px',
-        },
       }}
     />
     <AlertDisplay />
