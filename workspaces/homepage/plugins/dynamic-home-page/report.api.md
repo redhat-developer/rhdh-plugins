@@ -14,6 +14,22 @@ import { StarredEntitiesProps } from '@backstage/plugin-home';
 import { VisitedByTypeProps } from '@backstage/plugin-home';
 
 // @public (undocumented)
+export enum Breakpoint {
+    // (undocumented)
+    lg = "lg",
+    // (undocumented)
+    md = "md",
+    // (undocumented)
+    sm = "sm",
+    // (undocumented)
+    xl = "xl",
+    // (undocumented)
+    xs = "xs",
+    // (undocumented)
+    xxs = "xxs"
+}
+
+// @public (undocumented)
 export const CatalogStarredEntitiesCard: ComponentType<StarredEntitiesProps>;
 
 // @public
@@ -77,9 +93,41 @@ export interface HeadlineProps {
 }
 
 // @public (undocumented)
+export interface HomePageCardMountPoint {
+    // (undocumented)
+    Component: ComponentType;
+    // (undocumented)
+    config?: HomePageCardMountPointConfig & {
+        props?: Record<string, any>;
+    };
+    // (undocumented)
+    enabled?: boolean;
+}
+
+// @public (undocumented)
+export interface HomePageCardMountPointConfig {
+    // (undocumented)
+    layouts?: Record<Breakpoint, Layout>;
+    // (undocumented)
+    priority?: number;
+}
+
+// @public (undocumented)
 export const JokeCard: ComponentType<{
     defaultCategory?: 'any' | 'programming';
 }>;
+
+// @public (undocumented)
+export interface Layout {
+    // (undocumented)
+    h?: number;
+    // (undocumented)
+    w?: number;
+    // (undocumented)
+    x?: number;
+    // (undocumented)
+    y?: number;
+}
 
 // @public (undocumented)
 export interface LocalClockProps {
