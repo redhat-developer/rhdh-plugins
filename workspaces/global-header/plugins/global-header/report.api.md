@@ -12,12 +12,17 @@ import { JSX as JSX_2 } from 'react/jsx-runtime';
 export const ApplicationLauncherDropdown: () => JSX_2.Element;
 
 // @public
-export const CompanyLogo: ({ logo, to }: CompanyLogoProps) => JSX_2.Element;
+export const CompanyLogo: ({
+  logo,
+  logoWidth,
+  to,
+}: CompanyLogoProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface CompanyLogoProps {
   layout?: CSSProperties;
   logo?: LogoURLs;
+  logoWidth?: number;
   to?: string;
 }
 

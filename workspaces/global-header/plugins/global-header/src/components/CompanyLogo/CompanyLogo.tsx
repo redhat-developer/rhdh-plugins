@@ -23,9 +23,11 @@ import { useAppBarBackgroundScheme } from '../../hooks/useAppBarBackgroundScheme
 const LogoRender = ({
   base64Logo,
   defaultLogo,
+  width = 150,
 }: {
   base64Logo: string | undefined;
   defaultLogo: JSX.Element;
+  width?: number;
 }) => {
   return base64Logo ? (
     <img
@@ -37,6 +39,7 @@ const LogoRender = ({
         maxHeight: '40px',
         maxWidth: '150px',
       }}
+      width={width}
     />
   ) : (
     defaultLogo
@@ -65,6 +68,12 @@ export interface CompanyLogoProps {
   logo?: LogoURLs;
   /** The route to link the logo to */
   to?: string;
+  /**
+   * The width of the logo in pixels (defaults to 150px). This prop fixes an
+   * issue where encoded SVGs without an explicit width would not render.
+   * You likely do not need to set this prop.
+   */
+  logoWidth?: number;
   /** This prop is not used by this component. */
   layout?: CSSProperties;
 }
@@ -93,7 +102,11 @@ const useFullLogo = (logo: LogoURLs): string | undefined => {
   return propsLogoURI ?? fullLogoURI ?? undefined;
 };
 
-export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
+export const CompanyLogo = ({
+  logo,
+  logoWidth,
+  to = '/',
+}: CompanyLogoProps) => {
   const logoURL = useFullLogo(logo);
 
   return (
@@ -115,7 +128,11 @@ export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
           alignItems: 'center',
         }}
       >
-        <LogoRender base64Logo={logoURL} defaultLogo={<DefaultLogo />} />
+        <LogoRender
+          base64Logo={logoURL}
+          defaultLogo={<DefaultLogo />}
+          width={logoWidth}
+        />
       </Link>
     </Box>
   );
