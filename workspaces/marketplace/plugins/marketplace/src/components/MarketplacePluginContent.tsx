@@ -309,6 +309,7 @@ export const MarketplacePluginContent = ({
                 data-testId="enable-plugin"
                 onClick={handleToggle}
                 disableRipple
+                sx={{ minWidth: '300px' }}
               >
                 <ListItemIcon>
                   <ToggleOffOutlinedIcon />
@@ -324,6 +325,7 @@ export const MarketplacePluginContent = ({
                 data-testId="disable-plugin"
                 onClick={handleToggle}
                 disableRipple
+                sx={{ minWidth: '300px' }}
               >
                 <ListItemIcon>
                   <ToggleOnOutlinedIcon />
