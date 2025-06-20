@@ -2798,11 +2798,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-backend@npm:6.2.6":
-  version: 6.2.6
-  resolution: "@backstage-community/plugin-rbac-backend@npm:6.2.6"
+"@backstage-community/plugin-rbac-backend@npm:6.3.0":
+  version: 6.3.0
+  resolution: "@backstage-community/plugin-rbac-backend@npm:6.3.0"
   dependencies:
-    "@backstage-community/plugin-rbac-common": ^1.16.1
+    "@backstage-community/plugin-rbac-common": ^1.17.0
     "@backstage-community/plugin-rbac-node": ^1.11.1
     "@backstage/backend-defaults": ^0.9.0
     "@backstage/backend-plugin-api": ^1.3.0
@@ -2824,17 +2824,17 @@ __metadata:
     typeorm-adapter: ^1.6.1
     zod: ^3.22.4
     zod-to-json-schema: ^3.24.5
-  checksum: 16e0f78c244390ae6ac8c46e12b6228a29e823a72ceeb6fb196d8d3d9c4311441b68b9c828d632f022e8fdc18cb31bb1e0985fdb77d2e9ed58f70412e6410d3f
+  checksum: d8f0b737eb5e2aff1d4a31e09cf65f7da74531b47cae315c1f486e2a631cf2980a28e5ce1588ec2b58f2b15440a59453a51106b69d976ab43f09bb3441b05c0b
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-common@npm:^1.16.1":
-  version: 1.16.1
-  resolution: "@backstage-community/plugin-rbac-common@npm:1.16.1"
+"@backstage-community/plugin-rbac-common@npm:^1.16.1, @backstage-community/plugin-rbac-common@npm:^1.17.0":
+  version: 1.17.0
+  resolution: "@backstage-community/plugin-rbac-common@npm:1.17.0"
   peerDependencies:
     "@backstage/errors": ^1.2.7
     "@backstage/plugin-permission-common": ^0.8.4
-  checksum: 52ade8526c2a3935646f83eab5a062318838137c42f70074703d69826a6c90573057b55603bbe3b21c0a8e8928bff08aa85fe7b6ff936872e521ab05ea2885ed
+  checksum: e165b34cd811fc2326504dcc32611e254ecda32b643b0f7ccfb192177ad79fbda86650046060a0500e5048f2914dd23e34872f9a323b18a7f1755a773f0cc3ff
   languageName: node
   linkType: hard
 
@@ -16263,7 +16263,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:packages/backend"
   dependencies:
-    "@backstage-community/plugin-rbac-backend": 6.2.6
+    "@backstage-community/plugin-rbac-backend": 6.3.0
     "@backstage/backend-defaults": ^0.8.1
     "@backstage/cli": ^0.30.0
     "@backstage/config": ^1.3.2
