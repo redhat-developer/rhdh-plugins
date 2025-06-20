@@ -17,7 +17,7 @@ import { Page, expect, Locator } from '@playwright/test';
 
 export async function assertChatDialogInitialState(page: Page) {
   await expect(page.getByLabel('Chatbot', { exact: true })).toContainText(
-    'Developer Hub Lightspeed',
+    'Developer Lightspeed',
   );
   await expect(page.getByRole('button', { name: 'Toggle menu' })).toBeVisible();
   await assertDrawerState(page, 'open');

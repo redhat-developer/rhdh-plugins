@@ -411,7 +411,7 @@ export const LightspeedChat = ({
             />
             <ChatbotHeaderTitle className={classes.headerTitle}>
               <Title headingLevel="h1" size="3xl">
-                Developer Hub Lightspeed
+                Developer Lightspeed
               </Title>
             </ChatbotHeaderTitle>
           </ChatbotHeaderMain>
