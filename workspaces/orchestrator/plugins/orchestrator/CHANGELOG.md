@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 3.1.1
+
+### Patch Changes
+
+- a9ab22e: fix search and filter for "running" and "failed"
+- 18bda47: capitalize "Orchestrator" in path
+
 ## 3.1.0
 
 ### Minor Changes
