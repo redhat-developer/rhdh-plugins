@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -27,6 +27,17 @@ interface SandboxHeaderProps {
 }
 
 export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
+  useEffect(() => {
+    // Check if script is already loaded
+    if (!document.getElementById('trustarc')) {
+      const script = document.createElement('script');
+      script.id = 'trustarc';
+      script.src =
+        '//static.redhat.com/libs/redhat/marketing/latest/trustarc/trustarc.js';
+      document.body.appendChild(script);
+    }
+  }, []);
+
   const theme = useTheme();
   return (
     <Header

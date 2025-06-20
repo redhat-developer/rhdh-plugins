@@ -1,0 +1,13 @@
+.chr-c-footer {
+  .pf-v6-c-icon {
+    --pf-v6-c-icon__content--Color: var(--pf-t--global--icon--color--inverse);
+    --pf-v6-c-icon__content--FontSize: 2.5em;
+    &:hover {
+      --pf-v6-c-icon__content--Color: var(--pf-t--global--icon--color--inverse);
+    }
+  }
+  .pf-v6-c-content {
+    --pf-v6-c-content--a--Color: var(--pf-t--global--text--color--inverse);
+    --pf-v6-c-content--a--hover--Color: var(--pf-t--global--text--color--inverse);
+  }
+}

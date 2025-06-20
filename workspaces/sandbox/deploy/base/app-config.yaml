@@ -12,20 +12,28 @@ backend:
       - "'self'"
       - 'data:'
       - 'https://catamphetamine.github.io'
+      - 'https://consent.trustarc.com'
     script-src:
       - "'self'"
       - "'unsafe-eval'"
       - 'https://cdn.segment.com'
       - 'https://www.google.com'
       - 'https://www.gstatic.com'
+      - 'https://static.redhat.com'
+      - 'https://consent.trustarc.com'
     script-src-elem:
       - "'self'"
       - 'https://cdn.segment.com'
       - 'https://www.google.com'
       - 'https://www.gstatic.com'
+      - 'https://static.redhat.com'
+      - 'https://consent.trustarc.com'
     frame-src:
       - "'self'"
       - 'https://www.google.com'
+      - 'https://static.redhat.com'
+      - 'https://consent.trustarc.com'
+      - 'https://consent-pref.trustarc.com'
   listen:
     port: 3000
   cors:

@@ -241,35 +241,25 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
             <EditIcon />
           </IconButton>
         </DialogContentText>
-        <div
-          style={{
-            backgroundColor: theme.palette.mode === 'dark' ? '#47494b' : '#fff',
-          }}
-        >
-          <Stack direction="row" spacing={2} sx={{ mt: 2, marginRight: 20 }}>
-            {otp.map((digit, index) => (
-              <TextField
-                key={index}
-                data-testid="opt-inputs"
-                value={digit}
-                onChange={e => handleChange(index, e)}
-                onKeyDown={e =>
-                  handleKeyDown(
-                    index,
-                    e as React.KeyboardEvent<HTMLInputElement>,
-                  )
-                }
-                inputRef={el => (inputRefs.current[index] = el)}
-                variant="outlined"
-                inputProps={{
-                  maxLength: 1,
-                  style: { textAlign: 'center', fontWeight: 400 },
-                }}
-              />
-            ))}
-          </Stack>
-        </div>
-
+        <Stack direction="row" spacing={2} sx={{ mt: 2, marginRight: 20 }}>
+          {otp.map((digit, index) => (
+            <TextField
+              key={index}
+              data-testid="opt-inputs"
+              value={digit}
+              onChange={e => handleChange(index, e)}
+              onKeyDown={e =>
+                handleKeyDown(index, e as React.KeyboardEvent<HTMLInputElement>)
+              }
+              inputRef={el => (inputRefs.current[index] = el)}
+              variant="outlined"
+              inputProps={{
+                maxLength: 1,
+                style: { textAlign: 'center', fontWeight: 400 },
+              }}
+            />
+          ))}
+        </Stack>
         <Typography
           data-testid="resend-code-link"
           component="div"
