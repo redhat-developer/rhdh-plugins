@@ -18,7 +18,7 @@ import { JsonObject } from '@backstage/types/index';
 import React, { useState } from 'react';
 import { UiProps } from '../uiPropTypes';
 import { getErrorMessage } from './errorUtils';
-import { evaluateTemplate } from './evaluateTemplate';
+import { evaluateTemplateString } from './evaluateTemplate';
 import { useFetch } from './useFetch';
 import { useRetriggerEvaluate } from './useRetriggerEvaluate';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
@@ -54,7 +54,7 @@ export const useFetchAndEvaluate = (
         try {
           setLoading(true);
           setError(undefined);
-          const evaluatedText = await evaluateTemplate({
+          const evaluatedText = await evaluateTemplateString({
             template,
             key: fieldId,
             unitEvaluator,
@@ -91,6 +91,6 @@ export const useFetchAndEvaluate = (
   return {
     text: resultText,
     loading: loading || fetchLoading,
-    error: error || fetchError,
+    error: error ?? fetchError,
   };
 };
