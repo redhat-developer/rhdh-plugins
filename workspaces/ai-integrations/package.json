@@ -62,5 +62,9 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.4",
+    "zod-to-json-schema": "^3.24.5"
   }
 }
