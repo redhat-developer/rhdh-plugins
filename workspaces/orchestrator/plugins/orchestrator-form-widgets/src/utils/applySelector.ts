@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 import jsonata from 'jsonata';
-import { JsonObject } from '@backstage/types';
+import { JsonObject, JsonValue } from '@backstage/types';
+
+export function isJsonObject(value?: JsonValue): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 export const applySelectorArray = async (
   data: JsonObject,
@@ -28,7 +32,7 @@ export const applySelectorArray = async (
   }
 
   throw new Error(
-    `Unexpected result of "${selector}" selector, expected string[] type. Value "${value}"`,
+    `Unexpected result of "${selector}" selector, expected string[] type. Value "${JSON.stringify(value)}"`,
   );
 };
 
@@ -44,6 +48,22 @@ export const applySelectorString = async (
   }
 
   throw new Error(
-    `Unexpected result of "${selector}" selector, expected string type. Value "${value}"`,
+    `Unexpected result of "${selector}" selector, expected string type. Value "${JSON.stringify(value)}"`,
+  );
+};
+
+export const applySelectorObject = async (
+  data: JsonObject,
+  selector: string,
+): Promise<JsonObject> => {
+  const expression = jsonata(selector);
+  const value = await expression.evaluate(data);
+
+  if (isJsonObject(value)) {
+    return value;
+  }
+
+  throw new Error(
+    `Unexpected result of "${selector}" selector, expected object type. Value "${JSON.stringify(value)}"`,
   );
 };
