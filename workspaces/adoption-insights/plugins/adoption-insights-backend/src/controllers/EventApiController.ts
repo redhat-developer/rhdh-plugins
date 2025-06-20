@@ -25,7 +25,11 @@ import { toEndOfDayUTC, toStartOfDayUTC } from '../utils/date';
 import { EventSchema } from '../validation/event';
 import { EventRequestSchema } from '../validation/event-request';
 import { ValidationError } from '../validation/ValidationError';
-import { RootConfigService } from '@backstage/backend-plugin-api';
+import {
+  AuditorService,
+  AuditorServiceEvent,
+  RootConfigService,
+} from '@backstage/backend-plugin-api';
 import { getLicensedUsersCount } from '../utils/config';
 import { TechDocsCount, TopTechDocsCount } from '../types/event';
 
@@ -33,22 +37,28 @@ class EventApiController {
   private readonly database: EventDatabase;
   private readonly config: RootConfigService;
   private readonly processor: EventBatchProcessor;
+  private readonly auditor: AuditorService;
 
   constructor(
     eventDatabase: EventDatabase,
     processor: EventBatchProcessor,
     config: RootConfigService,
+    auditor: AuditorService,
   ) {
     this.database = eventDatabase;
     this.processor = processor;
     this.config = config;
+    this.auditor = auditor;
   }
 
   async getBaseUrl(pluginId: string): Promise<string> {
     return `${this.config.getString('backend.baseUrl')}/api/${pluginId}`;
   }
 
-  private processIncomingEvents(events: AnalyticsEvent[]): void {
+  private processIncomingEvents(
+    events: AnalyticsEvent[],
+    auditEvent: AuditorServiceEvent,
+  ): void {
     const proccessedEvents = events
       .filter(e => !!e.context?.userId)
       .map(event => new Event(event, this.database.isJsonSupported()));
@@ -57,18 +67,29 @@ class EventApiController {
       const result = EventSchema.safeParse(event);
 
       if (!result.success) {
+        auditEvent.fail({
+          error: new Error(JSON.stringify(result.error.flatten())),
+        });
         throw new ValidationError('Invalid event data', result.error.flatten());
       }
-
+      auditEvent.success({ meta: { eventId: event.id } });
       return this.processor.addEvent(event);
     });
   }
 
-  trackEvents(req: Request<{}, {}, AnalyticsEvent[]>, res: Response): void {
+  async trackEvents(
+    req: Request<{}, {}, AnalyticsEvent[]>,
+    res: Response,
+  ): Promise<void> {
     const events = req.body;
 
+    const auditEvent = await this.auditor.createEvent({
+      eventId: 'events-mutate',
+      request: req,
+    });
+
     try {
-      this.processIncomingEvents(events);
+      this.processIncomingEvents(events, auditEvent);
       res.status(200).json({ success: true, message: 'Event received' });
     } catch (error) {
       res
