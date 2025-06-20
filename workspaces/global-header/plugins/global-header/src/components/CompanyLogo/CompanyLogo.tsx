@@ -47,15 +47,15 @@ const LogoRender = ({
  * An interface representing the URLs for light and dark variants of a logo.
  * @public
  */
-export interface LogoURLs {
-  /** The logo that will be used in global headers with a light-coloured background */
-  light: string;
-  /** The logo that will be used in global headers with a dark-coloured background */
-  dark: string;
-}
-
-/** the type of app.branding.fullLogo */
-type fullLogo = string | LogoURLs | undefined;
+export type LogoURLs =
+  | {
+      /** The logo that will be used in global headers with a light-coloured background */
+      light: string;
+      /** The logo that will be used in global headers with a dark-coloured background */
+      dark: string;
+    }
+  | string
+  | undefined;
 
 /**
  * @public
@@ -72,30 +72,29 @@ export interface CompanyLogoProps {
 /**
  * Gets a themed image based on the current theme.
  */
-const useFullLogo = (lightLogoURL?: string, darkLogoURL?: string) => {
+const useFullLogo = (logo: LogoURLs): string | undefined => {
   const appBarBackgroundScheme = useAppBarBackgroundScheme();
 
   const configApi = useApi(configApiRef);
 
-  /** The fullLogo config specified by Red Hat Developer Hub */
-  const fullLogo = configApi.getOptional<fullLogo>('app.branding.fullLogo');
+  /** The fullLogo config specified by app.branding.fullLogo */
+  const fullLogo = configApi.getOptional<LogoURLs>('app.branding.fullLogo');
 
-  /** The dark theme full logo config */
-  const darkLogoFullBase64URI =
-    darkLogoURL ?? (typeof fullLogo === 'string' ? fullLogo : fullLogo?.dark);
+  /** The URI of the logo specified by app.branding.fullLogo */
+  const fullLogoURI =
+    typeof fullLogo === 'string'
+      ? fullLogo
+      : fullLogo?.[appBarBackgroundScheme];
 
-  /** The light theme full logo config */
-  const lightLogoFullBase64URI =
-    lightLogoURL ??
-    (typeof fullLogo === 'string' ? undefined : fullLogo?.light);
+  /** The URI of the logo specified by CompanyLogo props */
+  const propsLogoURI =
+    typeof logo === 'string' ? logo : logo?.[appBarBackgroundScheme];
 
-  return appBarBackgroundScheme === 'dark'
-    ? darkLogoURL ?? darkLogoFullBase64URI
-    : lightLogoURL ?? lightLogoFullBase64URI ?? darkLogoFullBase64URI;
+  return propsLogoURI ?? fullLogoURI ?? undefined;
 };
 
 export const CompanyLogo = ({ logo, to = '/' }: CompanyLogoProps) => {
-  const logoURL = useFullLogo(logo?.light, logo?.dark);
+  const logoURL = useFullLogo(logo);
 
   return (
     <Box

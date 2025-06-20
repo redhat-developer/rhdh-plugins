@@ -167,10 +167,13 @@ export interface HeaderIconProps {
 }
 
 // @public
-export interface LogoURLs {
-  dark: string;
-  light: string;
-}
+export type LogoURLs =
+  | {
+      light: string;
+      dark: string;
+    }
+  | string
+  | undefined;
 
 // @public
 export const LogoutButton: ComponentType;
