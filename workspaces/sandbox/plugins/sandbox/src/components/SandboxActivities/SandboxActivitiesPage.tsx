@@ -14,26 +14,22 @@
  * limitations under the License.
  */
 import React from 'react';
-import { makeStyles } from '@material-ui/core';
-import { Theme } from '@mui/material/styles';
 import { Page, Content } from '@backstage/core-components';
 import { SandboxHeader } from '../SandboxHeader';
 import { SandboxActivitiesGrid } from './SandboxActivitiesGrid';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  content: {
-    backgroundColor: theme.palette.background.default,
-  },
-}));
+import { SandboxCatalogFooter } from '../SandboxCatalog/SandboxCatalogFooter';
+import { SandboxProvider } from '../../hooks/useSandboxContext';
 
 export const SandboxActivitiesPage = () => {
-  const classes = useStyles();
   return (
-    <Page themeId="sandbox">
-      <SandboxHeader pageTitle="Sandbox activities" />
-      <Content noPadding className={classes.content}>
-        <SandboxActivitiesGrid />
-      </Content>
-    </Page>
+    <SandboxProvider>
+      <Page themeId="sandbox">
+        <SandboxHeader pageTitle="Sandbox activities" />
+        <Content noPadding>
+          <SandboxActivitiesGrid />
+          <SandboxCatalogFooter />
+        </Content>
+      </Page>
+    </SandboxProvider>
   );
 };
