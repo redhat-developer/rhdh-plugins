@@ -9695,9 +9695,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.3.0-prerelease.23":
-  version: 6.3.0-prerelease.23
-  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.23"
+"@patternfly/chatbot@npm:6.3.0-prerelease.25":
+  version: 6.3.0-prerelease.25
+  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.25"
   dependencies:
     "@patternfly/react-code-editor": ^6.1.0
     "@patternfly/react-core": ^6.1.0
@@ -9718,7 +9718,7 @@ __metadata:
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 59e853d61fbee334ec2cae06a6461b4066d055d2afd138b43190eba19574d870cc823242ad9c531c86827bb95d696cc7aca848b1b77216872e72c1e483aa1aa2
+  checksum: d61f5cb972384980c02a45491ed37ee49998f8d0f365b5da42aeeeb049cf49ac5bb58f02853cb7724fa13a8cd9066657c8193aab78d26e990b35e5aa1c08c76e
   languageName: node
   linkType: hard
 
@@ -9739,20 +9739,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-core@npm:6.3.0-prerelease.17":
-  version: 6.3.0-prerelease.17
-  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.17"
+"@patternfly/react-core@npm:6.3.0-prerelease.24":
+  version: 6.3.0-prerelease.24
+  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.24"
   dependencies:
-    "@patternfly/react-icons": ^6.3.0-prerelease.3
-    "@patternfly/react-styles": ^6.3.0-prerelease.3
-    "@patternfly/react-tokens": ^6.3.0-prerelease.3
+    "@patternfly/react-icons": ^6.3.0-prerelease.7
+    "@patternfly/react-styles": ^6.3.0-prerelease.7
+    "@patternfly/react-tokens": ^6.3.0-prerelease.7
     focus-trap: 7.6.4
     react-dropzone: ^14.3.5
     tslib: ^2.8.1
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 6d2c4755d1318a52536a48ac310a282ae78617004f702d013bf9db771bc1ee97e3fa50da01a59dc1cc25600e23872ddffa5e302da895fe0620dab74deebea007
+  checksum: b35671240e33d66a12e7284d124d669d481a6ac3ad5588c7141b916e2a67e8ef72f0bbc0a3b128b3b89213de5309a743d144845bc6791921af608c5c98523c7a
   languageName: node
   linkType: hard
 
@@ -9783,13 +9783,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-icons@npm:^6.3.0-prerelease.3":
-  version: 6.3.0-prerelease.3
-  resolution: "@patternfly/react-icons@npm:6.3.0-prerelease.3"
+"@patternfly/react-icons@npm:^6.3.0-prerelease.7":
+  version: 6.3.0-prerelease.8
+  resolution: "@patternfly/react-icons@npm:6.3.0-prerelease.8"
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 4d55667f3aa5b64c1e217b9c84697d95fc223083b58b16d02932a40a4a0392ae728bb1d545ade0f69580dce166769f572fb0f24f658132e36d9465b0a98e4887
+  checksum: ec8eecf87371a50b141cb6674a4b989c58cd1eab67e739e1f00a474e85708f64ba060d4edbddd2763748697d90f4844e8529394a624a2b934a723993e1f37362
   languageName: node
   linkType: hard
 
@@ -9800,10 +9800,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-styles@npm:^6.3.0-prerelease.3":
-  version: 6.3.0-prerelease.3
-  resolution: "@patternfly/react-styles@npm:6.3.0-prerelease.3"
-  checksum: 8a1b1785a7fd292a16546e4e1dd2b4804006fe18f2c56275b346760f0ad3a347cf7dafd3506045cd022252684f5ac4bb93ca27780d3f841dfd4ba0ba3d72d7af
+"@patternfly/react-styles@npm:^6.3.0-prerelease.7":
+  version: 6.3.0-prerelease.8
+  resolution: "@patternfly/react-styles@npm:6.3.0-prerelease.8"
+  checksum: dce596bad738804c8675462e13fef2c655084c8ca1855deb6bdfbdfaa8b6d76305053749e1070677f382c517e3f0b467aa8d44fdcfd9126fffabd47e668180b8
   languageName: node
   linkType: hard
 
@@ -9831,10 +9831,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-tokens@npm:^6.3.0-prerelease.3":
-  version: 6.3.0-prerelease.3
-  resolution: "@patternfly/react-tokens@npm:6.3.0-prerelease.3"
-  checksum: 7c004777bcb6bb3ed9eb34294662fe7b8c1bcfc6a2746b28ed5466cdf8a39cb862c31efdc3001912dd1fa64e98661343c6be08931af38cb5a7b2cdd14650d6b5
+"@patternfly/react-tokens@npm:^6.3.0-prerelease.7":
+  version: 6.3.0-prerelease.8
+  resolution: "@patternfly/react-tokens@npm:6.3.0-prerelease.8"
+  checksum: 252e30ae92da88eb3ed80659ce5ef6b074a5239826f0b721996ef3ee6301f2a9dd53e0f98f2ac6be585ed2f96982b1fdef7c2389694ab216168444975867cbcd
   languageName: node
   linkType: hard
 
@@ -10591,8 +10591,8 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
-    "@patternfly/chatbot": 6.3.0-prerelease.23
-    "@patternfly/react-core": 6.3.0-prerelease.17
+    "@patternfly/chatbot": 6.3.0-prerelease.25
+    "@patternfly/react-core": 6.3.0-prerelease.24
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@tanstack/react-query": ^5.59.15
