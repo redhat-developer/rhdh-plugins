@@ -11,11 +11,11 @@ Options:
   -h, --help
 
 Commands:
-  init
-  generate [options]
-  verify
   export-csv [options]
+  generate [options]
   help [command]
+  init
+  verify
 ```
 
 ### `marketplace-cli export-csv`
@@ -24,11 +24,11 @@ Commands:
 Usage: marketplace-cli export-csv [options]
 
 Options:
+  -h, --help
   -o, --output-file [path]
   -p, --plugins-yaml-path [path]
   -r, --recursive
   -t, --type [type]
-  -h, --help
 ```
 
 ### `marketplace-cli generate`
@@ -37,11 +37,11 @@ Options:
 Usage: marketplace-cli generate [options]
 
 Options:
-  -p, --default-dynamic-plugins-config [path]
-  -o, --output-dir [path]
   --namespace [namespace]
   --owner [owner]
   -h, --help
+  -o, --output-dir [path]
+  -p, --default-dynamic-plugins-config [path]
 ```
 
 ### `marketplace-cli init`

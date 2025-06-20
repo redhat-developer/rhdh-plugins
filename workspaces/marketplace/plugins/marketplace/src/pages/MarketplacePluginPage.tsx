@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import {
   Page,

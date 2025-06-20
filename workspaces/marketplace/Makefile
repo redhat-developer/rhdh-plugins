@@ -58,7 +58,7 @@ copy-config-to-rhdh:
 	@echo
 	@echo You can start your rhdh now with
 	@echo
-	@echo yarn dev
+	@echo yarn start
 	@echo
 
 remove-from-rhdh:

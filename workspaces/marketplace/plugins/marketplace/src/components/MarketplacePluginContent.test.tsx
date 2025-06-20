@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
-import { TestApiProvider } from '@backstage/test-utils';
+import { mockApis, MockErrorApi, TestApiProvider } from '@backstage/test-utils';
 
 import { fireEvent, render } from '@testing-library/react';
 import { MarketplacePluginContent } from './MarketplacePluginContent';
@@ -28,6 +28,8 @@ import { usePluginPackages } from '../hooks/usePluginPackages';
 import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
+import { errorApiRef } from '@backstage/core-plugin-api';
+import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 
 jest.mock('@backstage/core-plugin-api', () => {
   const actual = jest.requireActual('@backstage/core-plugin-api');
@@ -99,9 +101,15 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-const renderWithProviders = (ui: React.ReactNode) =>
+const renderWithProviders = (ui: ReactNode) =>
   render(
-    <TestApiProvider apis={[[marketplaceApiRef, mockMarketplaceApi]]}>
+    <TestApiProvider
+      apis={[
+        [marketplaceApiRef, mockMarketplaceApi],
+        [errorApiRef, new MockErrorApi()],
+        [translationApiRef, mockApis.translation()],
+      ]}
+    >
       <BrowserRouter>{ui}</BrowserRouter>
     </TestApiProvider>,
   );
