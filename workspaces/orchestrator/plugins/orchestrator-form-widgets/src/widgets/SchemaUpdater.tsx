@@ -27,6 +27,7 @@ import {
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
   useFetch,
+  applySelectorObject,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -47,6 +48,8 @@ export const SchemaUpdater: Widget<
     () => (props.options?.props ?? {}) as UiProps,
     [props.options?.props],
   );
+  const valueSelector = uiProps['fetch:response:value']?.toString();
+
   const [localError, setLocalError] = useState<string>();
 
   const retrigger = useRetriggerEvaluate(
@@ -68,27 +71,39 @@ export const SchemaUpdater: Widget<
       return;
     }
 
-    const typedData = data as unknown as SchemaChunksResponse;
+    const doItAsync = async () => {
+      let typedData: SchemaChunksResponse =
+        data as unknown as SchemaChunksResponse;
+      if (valueSelector) {
+        typedData = (await applySelectorObject(
+          data,
+          valueSelector,
+        )) as unknown as SchemaChunksResponse;
+      }
 
-    // validate received response before updating
-    Object.keys(typedData).forEach(key => {
-      if (!typedData[key]?.type) {
+      // validate received response before updating
+      Object.keys(typedData).forEach(key => {
+        if (!typedData[key]?.type) {
+          // eslint-disable-next-line no-console
+          console.error('JSON response malformed: ', typedData);
+          setLocalError(
+            `JSON response malformed for SchemaUpdater, missing "type" field for "${key}" key.`,
+          );
+        }
+      });
+
+      try {
+        updateSchema(typedData);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error when updating schema', props.id, err);
         setLocalError(
-          `JSON response malformed for SchemaUpdater, missing "type" field for "${key}" key.`,
+          `Failed to update schema update by the ${props.id} SchemaUpdater`,
         );
       }
-    });
-
-    try {
-      updateSchema(typedData);
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Error when updating schema', props.id, err);
-      setLocalError(
-        `Failed to update schema update by the ${props.id} SchemaUpdater`,
-      );
-    }
-  }, [data, props.id, updateSchema]);
+    };
+    doItAsync();
+  }, [data, props.id, updateSchema, valueSelector]);
 
   if (localError ?? error) {
     return <ErrorText text={localError ?? error ?? ''} id={id} />;

@@ -39,7 +39,7 @@ A headless widget used for fetching snippets of JSON schema and dynamically upda
 
 Thanks to this component, complex subparts of the form can be changed based on data entered in other fields by the user.
 
-Example of use in workflow's input data schema:
+### Example of the SchemaUpdater use in workflow's input data schema
 
 ```json
 {
@@ -67,6 +67,8 @@ Example of use in workflow's input data schema:
 }
 ```
 
+### Expected response for the SchemaUpdater
+
 The response of `fetch:url` endpoint is expected to be a JSON document conforming structure defined by the `SchemaChunksResponse` type.
 
 Considering the data-input schema structure above, the response can look like:
@@ -86,10 +88,15 @@ Considering the data-input schema structure above, the response can look like:
 }
 ```
 
-Please note: The response must be a single JSON object whose property names correspond to the identifiers defined in the data-input JSON Schema.
+Please note: The response must be
 
-A provided snipped can be of `"type": "object"` and so inject/replace fields for a complex data structure.
-Additional `SchemaUpdater` widgets can be instantiated this way as well.
+- a single JSON object
+- whose property names correspond to the identifiers defined in the data-input JSON Schema
+- and values are valid replacements for the UI schema.
+
+A provided snipped can be of `"type": "object"` and so inject/replace fields for a complex data structure, so the use is not limited to just a single string or numeric properties.
+
+**Additional `SchemaUpdater` widgets can be instantiated this way as well.**
 
 The `SchemaUpdater` widget scans for the identifiers, the top-level property names in the response, and replaces any matching ones with the corresponding values from the response.
 Identifiers that do not exist in the current schema are ignored.
@@ -100,7 +107,63 @@ You can instantiate multiple `SchemaUpdater` widgets simultaneously. It is up to
 
 It is highly recommended that endpoints are implemented as stateless and free from side effects, consistently returning the same response for identical input sets.
 
-### SchmeaUpdater widget ui:props
+### Using selector to narrow complex response in SchemaUpdater
+
+As stated above, the `SchemaUpdater` expects a single object of the desired structure as its input.
+
+If the response does not meet that condition, meaning it contains additional data or the structure is malformed, the `fetch:response:value` selector can be used to pick-up a single object in the desired format.
+
+Example complex HTTP response:
+
+```json
+{
+  "foo": "bar",
+  "prop1": {
+    "subprop": "a lot of complex but useless stuff"
+  },
+  "mydataroot": {
+    "mydata": {
+      "sendCertificatesAs": {
+        "type": "string",
+        "title": "Send certificates via",
+        "ui:widget": "ActiveText",
+        "ui:props": {
+          "ui:variant": "caption",
+          "ui:text": "This course does not provide certificate"
+        }
+      }
+    }
+  }
+}
+```
+
+For the schema:
+
+```json
+{
+  "properties": {
+    ...
+     "sendCertificatesAs": {
+      "type": "object",
+      "title": "This title will never be displayed. Will be managed by the 'mySchemaUpdaterForCertificates'.",
+      "ui:widget": "hidden"
+    },
+    "mySchemaUpdaterForCertificates": {
+      "type": "string",
+      "title": "This title will never be displayed.",
+      "ui:widget": "SchemaUpdater",
+      "ui:props": {
+        "fetch:url": "$${{backend.baseUrl}}/api/proxy/mytesthttpserver/certificatesschema",
+        "fetch:response:value": "mydataroot.mydata",
+        ...
+      }
+    },
+    ...
+  }
+}
+```
+
+### SchemaUpdater widget ui:props
 
 The widget supports following `ui:props`:
 
@@ -108,6 +171,7 @@ The widget supports following `ui:props`:
 - fetch:headers
 - fetch:method
 - fetch:body
+- fetch:response:value
 - fetch:retrigger
 
 [Check mode details](#content-of-uiprops)
