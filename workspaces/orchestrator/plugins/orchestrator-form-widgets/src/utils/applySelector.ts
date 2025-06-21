@@ -23,9 +23,14 @@ export function isJsonObject(value?: JsonValue): value is JsonObject {
 export const applySelectorArray = async (
   data: JsonObject,
   selector: string,
+  createArrayIfNeeded: boolean = false,
 ): Promise<string[]> => {
   const expression = jsonata(selector);
   const value = await expression.evaluate(data);
+
+  if (typeof value === 'string' && createArrayIfNeeded) {
+    return [value];
+  }
 
   if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
     return value;
