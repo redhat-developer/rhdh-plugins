@@ -15,12 +15,7 @@ Key Differentiators:
   - Provide default data or option lists.
   - Handle complex validation logic for widgets.
 
-Implementation of the HTTP endpoints is out of the scope of this library.
-
-Deployment Considerations:
-
-- Use one or multiple servers depending on organizational needs.
-- Ensure endpoint structures and response formats exactly match the naming conventions and data structures defined in your schema’s `ui:props` by the creator of workflow's `data input schema`.
+Implementation of the HTTP endpoints is out of the scope of this library, they are expected to be custom developed to match rules and data sources of target environment.
 
 ## Content
 
@@ -29,13 +24,19 @@ The frontend plugin provides implementation of `OrchestratorFormApi` (for `orche
 ## Context
 
 The provided widgets enable forms to incorporate dynamically retrieved data.
+
 This data can be fetched from external HTTP servers, the Backstage API, as well as from other form fields, with all evaluations performed in real time during use.
+
+## Deployment considerations
+
+- Use one or multiple servers depending on organizational needs.
+- Ensure endpoint structures and response formats exactly match the naming conventions and data structures defined in your schema’s `ui:props` by the creator of workflow's `data input schema`.
 
 ## SchemaUpdater widget
 
 Referenced as: `"ui:widget": "SchemaUpdater"`.
 
-A headless widget used for fetching snippets of JSON schema and dynamically updating the RJSF form JSON schema on the fly.
+A **headless** widget used for fetching snippets of JSON schema and dynamically updating the RJSF form JSON schema on the fly.
 
 Thanks to this component, complex subparts of the form can be changed based on data entered in other fields by the user.
 
@@ -163,6 +164,12 @@ For the schema:
 }
 ```
 
+### Default mandatory data
+
+When the optional `fetch:response:mandatory` JSONata selector is provided, it must return an array of strings that act as default values, which the user can not unselect.
+
+Together with `fetch:retrigger` and other fetch-related parameters, the endpoint can continuously update the data for the selector.
+
 ### SchemaUpdater widget ui:props
 
 The widget supports following `ui:props`:
@@ -172,6 +179,7 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:response:value
+- fetch:response:mandatory
 - fetch:retrigger
 
 [Check mode details](#content-of-uiprops)

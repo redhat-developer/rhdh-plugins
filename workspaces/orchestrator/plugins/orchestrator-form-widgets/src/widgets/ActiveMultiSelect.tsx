@@ -67,6 +67,7 @@ export const ActiveMultiSelect: Widget<
 
   const autocompleteSelector =
     uiProps['fetch:response:autocomplete']?.toString();
+  const mandatorySelector = uiProps['fetch:response:mandatory']?.toString();
 
   const [localError] = useState<string | undefined>(
     autocompleteSelector
@@ -74,6 +75,7 @@ export const ActiveMultiSelect: Widget<
       : `Missing fetch:response:autocomplete selector for ${id}`,
   );
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
+  const [mandatoryValues, setMandatoryValues] = useState<string[]>();
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -97,10 +99,29 @@ export const ActiveMultiSelect: Widget<
         );
         setAutocompleteOptions(autocompleteValues);
       }
+
+      if (mandatorySelector) {
+        const mandatory = await applySelectorArray(
+          data,
+          mandatorySelector,
+          true,
+        );
+        setMandatoryValues(mandatory);
+        if (!mandatory.every(item => value.includes(item))) {
+          onChange([...new Set([...mandatory, ...value])]);
+        }
+      }
     };
 
     doItAsync();
-  }, [autocompleteSelector, data, props.id, value]);
+  }, [
+    autocompleteSelector,
+    mandatorySelector,
+    data,
+    props.id,
+    value,
+    onChange,
+  ]);
 
   const handleChange = (
     _: React.SyntheticEvent,
@@ -152,14 +173,21 @@ export const ActiveMultiSelect: Widget<
             renderTags={(values, getTagProps) =>
               values.map((item, index) => {
                 const tagProps = getTagProps({ index });
-                tagProps.className = clsx(tagProps.className, classes.chip);
+                const { className, onDelete, ...restTagProps } = tagProps;
+
                 return (
                   <Box key={item} title={item}>
                     <Chip
                       data-testid={`${id}-chip-${item}`}
                       variant="outlined"
                       label={item}
-                      {...tagProps}
+                      className={clsx(tagProps.className, classes.chip)}
+                      onDelete={
+                        mandatoryValues?.includes(item)
+                          ? undefined /* mandatory - can not be deleted */
+                          : onDelete
+                      }
+                      {...restTagProps}
                     />
                   </Box>
                 );
