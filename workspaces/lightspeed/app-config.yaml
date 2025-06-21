@@ -1,5 +1,5 @@
 app:
-  title: RHDH Lightspeed
+  title: Developer Lightspeed
   baseUrl: http://localhost:3000
 
 organization:
