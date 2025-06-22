@@ -33,7 +33,7 @@ export type evaluateTemplateProps = {
   uiProps?: UiProps;
 };
 
-export const evaluateTemplate = async (
+export const evaluateTemplateString = async (
   props: evaluateTemplateProps,
 ): Promise<string> => {
   const { template, key, unitEvaluator, formData, responseData, uiProps } =
@@ -72,7 +72,7 @@ export const evaluateTemplate = async (
     }
 
     if (template.length > stopIndex + 2) {
-      evaluated += await evaluateTemplate({
+      evaluated += await evaluateTemplateString({
         ...props,
         template: template.substring(stopIndex + 2),
       });
@@ -80,6 +80,31 @@ export const evaluateTemplate = async (
   }
 
   return evaluated;
+};
+
+export const evaluateTemplate = async (
+  props: evaluateTemplateProps,
+): Promise<string | string[]> => {
+  const { template, ...restProps } = props;
+  const { key } = restProps;
+
+  if (Array.isArray(template)) {
+    if (!template.every(item => typeof item === 'string')) {
+      throw new Error(
+        `Items of array templates can be strings only, template: "${JSON.stringify(template)}"`,
+      );
+    }
+
+    return await Promise.all(
+      template.map(item =>
+        evaluateTemplateString({ template: item, ...restProps }),
+      ),
+    );
+  } else if (typeof template === 'string') {
+    return evaluateTemplateString(props);
+  }
+
+  throw new Error(`Template can be either a string or an array, key: ${key}`);
 };
 
 export const useEvaluateTemplate = ({
@@ -92,12 +117,12 @@ export const useEvaluateTemplate = ({
   key: string;
   formData: JsonObject;
   setError: (e: string) => void;
-}) => {
+}): string | undefined => {
   const unitEvaluator = useTemplateUnitEvaluator();
   const [evaluated, setEvaluated] = useState<string>();
 
   useEffect(() => {
-    evaluateTemplate({ template, key, unitEvaluator, formData })
+    evaluateTemplateString({ template, key, unitEvaluator, formData })
       .then(setEvaluated)
       .catch(reason => setError(reason.toString()));
   }, [template, unitEvaluator, formData, key, setError]);

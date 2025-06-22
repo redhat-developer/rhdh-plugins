@@ -23,7 +23,7 @@ import {
 import { JsonObject } from '@backstage/types';
 import { ERRORS_KEY, ErrorSchema } from '@rjsf/utils';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
-import { evaluateTemplate } from './evaluateTemplate';
+import { evaluateTemplateString } from './evaluateTemplate';
 import { getRequestInit } from './useRequestInit';
 import { safeSet } from './safeSet';
 
@@ -86,7 +86,7 @@ export const useGetExtraErrors = () => {
       ) {
         const value = get(formData, path);
         if (value !== undefined) {
-          const evaluatedValidateUrl = await evaluateTemplate({
+          const evaluatedValidateUrl = await evaluateTemplateString({
             template: validateUrl,
             key: 'validate:url',
             unitEvaluator: templateUnitEvaluator,
