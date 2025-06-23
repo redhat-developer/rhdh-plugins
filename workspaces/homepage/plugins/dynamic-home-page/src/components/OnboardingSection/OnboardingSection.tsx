@@ -122,6 +122,7 @@ export const OnboardingSection = () => {
             minWidth: 0,
             display: 'flex',
             justifyContent: 'center',
+            alignItems: 'center',
           }}
         >
           <Box sx={{ width: '100%' }}>
