@@ -431,7 +431,7 @@ export const getApi = (
 };
 
 export const getCustomisedErrorMessage = (
-  status: RepositoryStatus[] | undefined,
+  status: (RepositoryStatus | string)[] | undefined,
 ) => {
   let message = '';
   let showRepositoryLink = false;

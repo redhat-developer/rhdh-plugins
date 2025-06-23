@@ -39,7 +39,7 @@ A headless widget used for fetching snippets of JSON schema and dynamically upda
 
 Thanks to this component, complex subparts of the form can be changed based on data entered in other fields by the user.
 
-Example of use in workflow's input data schema:
+### Example of the SchemaUpdater use in workflow's input data schema
 
 ```json
 {
@@ -67,6 +67,8 @@ Example of use in workflow's input data schema:
 }
 ```
 
+### Expected response for the SchemaUpdater
+
 The response of `fetch:url` endpoint is expected to be a JSON document conforming structure defined by the `SchemaChunksResponse` type.
 
 Considering the data-input schema structure above, the response can look like:
@@ -86,10 +88,15 @@ Considering the data-input schema structure above, the response can look like:
 }
 ```
 
-Please note: The response must be a single JSON object whose property names correspond to the identifiers defined in the data-input JSON Schema.
+Please note: The response must be
 
-A provided snipped can be of `"type": "object"` and so inject/replace fields for a complex data structure.
-Additional `SchemaUpdater` widgets can be instantiated this way as well.
+- a single JSON object
+- whose property names correspond to the identifiers defined in the data-input JSON Schema
+- and values are valid replacements for the UI schema.
+
+A provided snipped can be of `"type": "object"` and so inject/replace fields for a complex data structure, so the use is not limited to just a single string or numeric properties.
+
+**Additional `SchemaUpdater` widgets can be instantiated this way as well.**
 
 The `SchemaUpdater` widget scans for the identifiers, the top-level property names in the response, and replaces any matching ones with the corresponding values from the response.
 Identifiers that do not exist in the current schema are ignored.
@@ -100,7 +107,63 @@ You can instantiate multiple `SchemaUpdater` widgets simultaneously. It is up to
 
 It is highly recommended that endpoints are implemented as stateless and free from side effects, consistently returning the same response for identical input sets.
 
-### SchmeaUpdater widget ui:props
+### Using selector to narrow complex response in SchemaUpdater
+
+As stated above, the `SchemaUpdater` expects a single object of the desired structure as its input.
+
+If the response does not meet that condition, meaning it contains additional data or the structure is malformed, the `fetch:response:value` selector can be used to pick-up a single object in the desired format.
+
+Example complex HTTP response:
+
+```json
+{
+  "foo": "bar",
+  "prop1": {
+    "subprop": "a lot of complex but useless stuff"
+  },
+  "mydataroot": {
+    "mydata": {
+      "sendCertificatesAs": {
+        "type": "string",
+        "title": "Send certificates via",
+        "ui:widget": "ActiveText",
+        "ui:props": {
+          "ui:variant": "caption",
+          "ui:text": "This course does not provide certificate"
+        }
+      }
+    }
+  }
+}
+```
+
+For the schema:
+
+```json
+{
+  "properties": {
+    ...
+     "sendCertificatesAs": {
+      "type": "object",
+      "title": "This title will never be displayed. Will be managed by the 'mySchemaUpdaterForCertificates'.",
+      "ui:widget": "hidden"
+    },
+    "mySchemaUpdaterForCertificates": {
+      "type": "string",
+      "title": "This title will never be displayed.",
+      "ui:widget": "SchemaUpdater",
+      "ui:props": {
+        "fetch:url": "$${{backend.baseUrl}}/api/proxy/mytesthttpserver/certificatesschema",
+        "fetch:response:value": "mydataroot.mydata",
+        ...
+      }
+    },
+    ...
+  }
+}
+```
+
+### SchemaUpdater widget ui:props
 
 The widget supports following `ui:props`:
 
@@ -108,6 +171,7 @@ The widget supports following `ui:props`:
 - fetch:headers
 - fetch:method
 - fetch:body
+- fetch:response:value
 - fetch:retrigger
 
 [Check mode details](#content-of-uiprops)
@@ -355,24 +419,24 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 
 ### List of widget properties
 
-|    Property of ui:props     |                                                                                                                                                                                                                            Description                                                                                                                                                                                                                             |                        Example value                        |
-| :-------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------: |
-|          fetch:url          |                                                                                                        The URL to fetch the widget’s data from, can be accompanied by other properties listed below. Can contain `${{...}}` templates, i.e. to pass GET request parameters. Check the Backend Proxy chapter for details about accessing external services.                                                                                                         |      `/my.app.config.proxy/v1/$${current.customerId}`       |
-|        fetch:headers        |                                                                                                                             HTTP headers of the request. Valid for both the POST and GET. By default, following header is automatically added unless explicitly overridden in the fetch:headers: `"Content-Type": "application/json"`                                                                                                                              |   `{ "Authorization": "Bearer $${{identityApi.token}}"}`    |
-|        fetch:method         |                                                                                                                                                                                                              HTTP method to use. The default is GET.                                                                                                                                                                                                               | GET, POST (So far no identified use-case for PUT or DELETE) |
-|         fetch:body          |                                                                                                                                                                                                  The body of an HTTP POST request. Not used with the GET method.                                                                                                                                                                                                   |          `{“foo”: “bar $${{identityApi.token}}”}`           |
-|       fetch:retrigger       |                                                                                                                                                An array of keys/key families as described in the Backstage API Exposed Parts. If the value referenced by any key from this list is changed, the fetch is triggered.                                                                                                                                                |    `["current.solutionName", "identityApi.profileName"]`    |
-| fetch:response:\[YOUR_KEY\] |                                                                                                                           A json selector of data from the fetch-response. There can be any count of the \[YOUR_KEY\] properties, so a single fetch response can be used to retrieve multiple records to be used i.e. by the StaticText                                                                                                                            |               Account.Order.Product.ProductID               |
-|    fetch:response:label     |                                                                                                                                                                         Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used i.e. by the ActiveDropdown to label the items.                                                                                                                                                                         |                                                             |
-|    fetch:response:value     |                                                                                                                                                                Like fetch:response:label, but gives i.e. ActiveDropdown item values (not visible to the user but actually used as the field value)                                                                                                                                                                 |                                                             |
-| fetch:response:autocomplete |                                                                                                                                                            Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used for selecting list of strings for autocomplete feature (ActiveTextInput)                                                                                                                                                            |                                                             |
-|        validate:url         |                                                                                                                                                                                          Like fetch:url but triggered for validation on form submit, form page transition                                                                                                                                                                                          |                                                             |
-|       validate:method       |                                                                                                                                                                                                                      Similar to fetch:method                                                                                                                                                                                                                       |                                                             |
-|     validate:retrigger      | An array similar to fetch:retrigger. Force revalidation of the field if a dependency is changed. In the most simple case when just the value of the particular field is listed (sort of \[“current.myField”\], the validation is triggered “on input”, i.e. when the user types a character in ActiveInputBox. The network calls are throttled. No matter if validate:retrigger is used, the validation happens at least on submit or transition to the next page. |                                                             |
-|        validate:body        |                                                                                                                                                                                                                       Similar to fetch:body                                                                                                                                                                                                                        |                                                             |
-|      validate:headers       |                                                                                                                                                                                                                    Similar to validate:headers                                                                                                                                                                                                                     |                                                             |
-|         ui:variant          |                                                                                                                                                                                   So far specific for StaticText widget only. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                                   |                                                             |
-|           ui:text           |                                                                                                                                                                    So far specific for StaticText widget only. Check the description there. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                     |                                                             |
+|    Property of ui:props     |                                                                                                                                                                                                                            Description                                                                                                                                                                                                                             |                                          Example value                                          |
+| :-------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------: |
+|          fetch:url          |                                                                                                        The URL to fetch the widget’s data from, can be accompanied by other properties listed below. Can contain `${{...}}` templates, i.e. to pass GET request parameters. Check the Backend Proxy chapter for details about accessing external services.                                                                                                         |                        `/my.app.config.proxy/v1/$${current.customerId}`                         |
+|        fetch:headers        |                                                                                                                             HTTP headers of the request. Valid for both the POST and GET. By default, following header is automatically added unless explicitly overridden in the fetch:headers: `"Content-Type": "application/json"`                                                                                                                              |                     `{ "Authorization": "Bearer $${{identityApi.token}}"}`                      |
+|        fetch:method         |                                                                                                                                                                                                              HTTP method to use. The default is GET.                                                                                                                                                                                                               |                   GET, POST (So far no identified use-case for PUT or DELETE)                   |
+|         fetch:body          |                                                                                                                                                 An object representing the body of an HTTP POST request. Not used with the GET method. Property value can be a string template or an array of strings. templates.                                                                                                                                                  | `{“foo”: “bar $${{identityApi.token}}”, "myArray": ["constant", "$${{current.solutionName}}"]}` |
+|       fetch:retrigger       |                                                                                                                                                An array of keys/key families as described in the Backstage API Exposed Parts. If the value referenced by any key from this list is changed, the fetch is triggered.                                                                                                                                                |                      `["current.solutionName", "identityApi.profileName"]`                      |
+| fetch:response:\[YOUR_KEY\] |                                                                                                                           A json selector of data from the fetch-response. There can be any count of the \[YOUR_KEY\] properties, so a single fetch response can be used to retrieve multiple records to be used i.e. by the StaticText                                                                                                                            |                                 Account.Order.Product.ProductID                                 |
+|    fetch:response:label     |                                                                                                                                                                         Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used i.e. by the ActiveDropdown to label the items.                                                                                                                                                                         |                                                                                                 |
+|    fetch:response:value     |                                                                                                                                                                Like fetch:response:label, but gives i.e. ActiveDropdown item values (not visible to the user but actually used as the field value)                                                                                                                                                                 |                                                                                                 |
+| fetch:response:autocomplete |                                                                                                                                                            Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used for selecting list of strings for autocomplete feature (ActiveTextInput)                                                                                                                                                            |                                                                                                 |
+|        validate:url         |                                                                                                                                                                                          Like fetch:url but triggered for validation on form submit, form page transition                                                                                                                                                                                          |                                                                                                 |
+|       validate:method       |                                                                                                                                                                                                                      Similar to fetch:method                                                                                                                                                                                                                       |                                                                                                 |
+|     validate:retrigger      | An array similar to fetch:retrigger. Force revalidation of the field if a dependency is changed. In the most simple case when just the value of the particular field is listed (sort of \[“current.myField”\], the validation is triggered “on input”, i.e. when the user types a character in ActiveInputBox. The network calls are throttled. No matter if validate:retrigger is used, the validation happens at least on submit or transition to the next page. |                                                                                                 |
+|        validate:body        |                                                                                                                                                                                                                       Similar to fetch:body                                                                                                                                                                                                                        |                                                                                                 |
+|      validate:headers       |                                                                                                                                                                                                                    Similar to validate:headers                                                                                                                                                                                                                     |                                                                                                 |
+|         ui:variant          |                                                                                                                                                                                   So far specific for StaticText widget only. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                                   |                                                                                                 |
+|           ui:text           |                                                                                                                                                                    So far specific for StaticText widget only. Check the description there. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                     |                                                                                                 |
 
 ### Authentication
 
@@ -422,6 +486,7 @@ The URLs can look like:
 ## Templating and Backstage API Exposed Parts
 
 Values under the `ui:props` can be dynamically composed via `$${{[Key Family].[Key]}}` templates which are evaluated at the time of actual use.
+The templates can be either strings or arrays of strings (like `['constant', `$${{[Key Family].[Key]}}`]`).
 
 This feature can be useful to compose URLs based on values in any form-fields, to pass tokens via headers, to pass data for validation, to enrich the queries for values provides in other fields or to write conditions for retrigger.
 

@@ -14,13 +14,5 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
-
 export { orchestratorPlugin, OrchestratorPage } from './plugin';
 export { default as OrchestratorIcon } from './components/OrchestratorIcon';

@@ -68,6 +68,19 @@ const FILE_INSTALL_CONFIG = {
   },
 };
 
+const PLUGIN_SETUP = {
+  mockData: mockPlugins,
+  name: 'plugin1',
+  config: FILE_INSTALL_CONFIG,
+};
+
+const PACKAGE_SETUP = {
+  mockData: mockPackages,
+  name: 'package11',
+  kind: MarketplaceKind.Package,
+  config: FILE_INSTALL_CONFIG,
+};
+
 async function startBackendServer(
   config?: JsonObject,
 ): Promise<ExtendedHttpServer> {
@@ -429,14 +442,8 @@ describe('createRouter', () => {
   });
 
   describe('POST /plugin/:namespace/:name/configuration', () => {
-    const pluginSetup = {
-      mockData: mockPlugins,
-      name: 'plugin1',
-      config: FILE_INSTALL_CONFIG,
-    };
-
     it('should fail when config missing with InputError 400', async () => {
-      const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
+      const { backendServer } = await setupTestWithMockCatalog(PLUGIN_SETUP);
 
       const response = await request(backendServer).post(
         '/api/extensions/plugin/default/plugin1/configuration',
@@ -445,7 +452,7 @@ describe('createRouter', () => {
     });
 
     it('should fail when bad config format with InputError 400', async () => {
-      const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
+      const { backendServer } = await setupTestWithMockCatalog(PLUGIN_SETUP);
 
       const errorMessage =
         'Invalid installation configuration, plugin packages must be a list';
@@ -475,7 +482,7 @@ describe('createRouter', () => {
     });
 
     it('should install the plugin configuration', async () => {
-      const { backendServer } = await setupTestWithMockCatalog(pluginSetup);
+      const { backendServer } = await setupTestWithMockCatalog(PLUGIN_SETUP);
 
       const response = await request(backendServer)
         .post('/api/extensions/plugin/default/plugin1/configuration')
@@ -483,6 +490,55 @@ describe('createRouter', () => {
       expect(
         mockInstallationDataService.updatePluginConfig,
       ).toHaveBeenCalledWith(mockPlugins[0], stringify(mockDynamicPlugin1));
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ status: 'OK' });
+    });
+  });
+
+  describe('PATCH /plugin/:namespace/:name/configuration/disable', () => {
+    it('should fail when disabled missing with InputError 400', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(PLUGIN_SETUP);
+
+      const response = await request(backendServer).patch(
+        '/api/extensions/plugin/default/plugin1/configuration/disable',
+      );
+      expectInputError(response, "'disabled' must be present boolean");
+    });
+
+    it('should fail when bad disabled format with InputError 400', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(PLUGIN_SETUP);
+
+      const response = await request(backendServer)
+        .patch('/api/extensions/plugin/default/plugin1/configuration/disable')
+        .send({ disabled: 'invalid' });
+      expectInputError(response, "'disabled' must be present boolean");
+    });
+
+    it('should fail when plugin not found with NotFoundError 404', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: [],
+        name: 'not-found',
+        config: FILE_INSTALL_CONFIG,
+      });
+
+      const response = await request(backendServer)
+        .patch('/api/extensions/plugin/default/not-found/configuration/disable')
+        .send({ disabled: true });
+      expectNotFoundError(response, MarketplaceKind.Plugin);
+    });
+
+    it.each([
+      ['enable', false],
+      ['disable', true],
+    ])('should %s the plugin configuration', async (_, disabled) => {
+      const { backendServer } = await setupTestWithMockCatalog(PLUGIN_SETUP);
+
+      const response = await request(backendServer)
+        .patch('/api/extensions/plugin/default/plugin1/configuration/disable')
+        .send({ disabled });
+      expect(
+        mockInstallationDataService.setPluginDisabled,
+      ).toHaveBeenCalledWith(mockPlugins[0], disabled);
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({ status: 'OK' });
     });
@@ -524,15 +580,8 @@ describe('createRouter', () => {
   });
 
   describe('POST /package/:namespace/:name/configuration', () => {
-    const packageSetup = {
-      mockData: mockPackages,
-      name: 'package11',
-      kind: MarketplaceKind.Package,
-      config: FILE_INSTALL_CONFIG,
-    };
-
     it('should fail when config missing with InputError 400', async () => {
-      const { backendServer } = await setupTestWithMockCatalog(packageSetup);
+      const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
       const response = await request(backendServer).post(
         '/api/extensions/package/default/package11/configuration',
       );
@@ -540,7 +589,7 @@ describe('createRouter', () => {
     });
 
     it('should fail when bad config format with InputError 400', async () => {
-      const { backendServer } = await setupTestWithMockCatalog(packageSetup);
+      const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
       const errorMessage =
         'Invalid installation configuration, package item must be a map';
@@ -571,7 +620,7 @@ describe('createRouter', () => {
     });
 
     it('should install the package configuration', async () => {
-      const { backendServer } = await setupTestWithMockCatalog(packageSetup);
+      const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
       const response = await request(backendServer)
         .post('/api/extensions/package/default/package11/configuration')
@@ -582,6 +631,56 @@ describe('createRouter', () => {
         mockDynamicPackage11.package,
         stringify(mockDynamicPackage11),
       );
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ status: 'OK' });
+    });
+  });
+
+  describe('POST /package/:namespace/:name/configuration/disable', () => {
+    it('should fail when disabled missing with InputError 400', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
+
+      const response = await request(backendServer).post(
+        '/api/extensions/package/default/package11/configuration/disable',
+      );
+      expectInputError(response, "'disabled' must be present boolean");
+    });
+
+    it('should fail when bad disabled format with InputError 400', async () => {
+      const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
+
+      const response = await request(backendServer)
+        .post('/api/extensions/package/default/package11/configuration/disable')
+        .send({ disabled: 'invalid' });
+      expectInputError(response, "'disabled' must be present boolean");
+    });
+
+    it('should fail when package not found with NotFoundError 404', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: [],
+        name: 'not-found',
+        kind: MarketplaceKind.Package,
+        config: FILE_INSTALL_CONFIG,
+      });
+
+      const response = await request(backendServer)
+        .post('/api/extensions/package/default/not-found/configuration/disable')
+        .send({ disabled: true });
+      expectNotFoundError(response, MarketplaceKind.Package);
+    });
+
+    it.each([
+      ['enable', false],
+      ['disable', true],
+    ])('should %s the package configuration', async (_, disabled) => {
+      const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
+
+      const response = await request(backendServer)
+        .post('/api/extensions/package/default/package11/configuration/disable')
+        .send({ disabled });
+      expect(
+        mockInstallationDataService.addPackageDisabled,
+      ).toHaveBeenCalledWith(mockDynamicPackage11.package, disabled);
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({ status: 'OK' });
     });

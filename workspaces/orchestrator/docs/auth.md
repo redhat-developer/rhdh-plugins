@@ -1,80 +1,57 @@
 # Requesting Authentication in Workflow Input Schema
 
-This guide explains how to declare authentication requirements in a SonataFlow workflow input schema. This is necessary when a workflow interacts with external APIs that require user authorization — such as GitHub, GitLab, or Microsoft Graph.
-
-Common use cases include:
-
-- Creating a GitHub pull request
-- Accessing private GitLab repositories
-- Calling Microsoft Graph APIs on behalf of the user
+This guide explains how to declare authentication requirements in a SonataFlow workflow input schema for the orchestrator plugin. It enables workflows to access external APIs on behalf of the user by forwarding authentication tokens from the user’s active Backstage session to SonataFlow.
 
 ## Key Concept
 
-To request tokens, you define a **virtual field** in the input schema that triggers Backstage’s authentication system. This field:
+To request tokens, you define a **virtual field** in the workflow’s input schema that triggers Backstage’s authentication system. Once tokens are obtained, Backstage forwards them to the SonataFlow `execute` API as HTTP headers. These headers must match the configuration defined in the workflow’s OpenAPI specification.
+
+## Workflow Header Configuration
+
+These are the headers Backstage will send:
+
+| Provider  | Header                      |
+| --------- | --------------------------- |
+| GitHub    | `X-Github-Authorization`    |
+| GitLab    | `X-Gitlab-Authorization`    |
+| Microsoft | `X-Microsoft-Authorization` |
+
+### Example `application.properties` Configuration
+
+```
+quarkus.openapi-generator.github_yaml.auth.BearerToken.token-propagation=true
+quarkus.openapi-generator.github_yaml.auth.BearerToken.header-name=X-Github-Authorization
+```
+
+> 🔗 See the [SonataFlow token propagation documentation](https://www.rhdhorchestrator.io/main/docs/serverless-workflows/configuration/token-propagation/) for more details.
+
+## Input Schema AuthRequester Field
+
+### Field Behavior
 
 - Does **not appear** in the form
 - Is **not persisted** or included in the workflow input data
 - Can have **any field name**
-- Uses a special widget to signal token requirements
-
-## What Matters
-
-Only the following properties control behavior:
-
-- `"ui:widget": "AuthRequester"` — activates token acquisition
-- `"ui:props.authTokenDescriptors"` — declares which tokens and scopes are needed
-
-All other properties are either ignored or required solely for schema validity.
-
-## Example Schema
-
-```json
-{
-  "anyFieldName": {
-    "type": "string",
-    "ui:widget": "AuthRequester",
-    "ui:props": {
-      "authTokenDescriptors": [
-        {
-          "provider": "github",
-          "tokenType": "oauth",
-          "scope": "repo"
-        }
-      ]
-    }
-  }
-}
-```
-
-### ✅ Field name: can be anything
-
-### ✅ `type`: required only for schema validation
-
-### ✅ `ui:widget`: must be `"AuthRequester"`
-
-### ✅ `ui:props.authTokenDescriptors`: required
-
-## Field Definition Reference
+- Must **not be listed** in the schema's `required` array
+- Only one `AuthRequester` field is needed, even for multiple providers. If multiple are included, only one will be applied.
 
 ### Required JSON Schema Properties
 
-| Property | Type   | Required | Description                          |
-| -------- | ------ | -------- | ------------------------------------ |
-| `type`   | string | Yes      | Must be included for schema validity |
+`type` – use the value `string` just for schema validity.
 
 ### UI Schema (`ui:widget` and `ui:props`)
 
-| Property                        | Type               | Required | Description                                                           |
-| ------------------------------- | ------------------ | -------- | --------------------------------------------------------------------- |
-| `ui:widget`                     | string             | Yes      | Must be `"AuthRequester"`                                             |
-| `ui:props.authTokenDescriptors` | array of objects   | Yes      | List of token requirements                                            |
-| — `provider`                    | string             | Yes      | One of `github`, `gitlab`, `microsoft`                                |
-| — `tokenType`                   | string             | Yes      | `"oauth"` or `"openId"`                                               |
-| — `scope`                       | string or string[] | Optional | Scope or scopes to request, e.g., `"repo"` or `["repo", "read:user"]` |
+| Property                        | Type               | Required | Description                                                    |
+| ------------------------------- | ------------------ | -------- | -------------------------------------------------------------- |
+| `ui:widget`                     | string             | Yes      | Must be `"AuthRequester"`                                      |
+| `ui:props.authTokenDescriptors` | array of objects   | Yes      | List of token requirements                                     |
+| — `provider`                    | string             | Yes      | One of `github`, `gitlab`, `microsoft`                         |
+| — `tokenType`                   | string             | Yes      | `"oauth"` or `"openId"`                                        |
+| — `scope`                       | string or string[] | Optional | Scope(s) to request, e.g., `"repo"` or `["repo", "read:user"]` |
 
-## Multiple Providers Example
+## Example
 
-```json
+```
 {
   "authSetup": {
     "type": "string",
@@ -96,20 +73,20 @@ All other properties are either ignored or required solely for schema validity.
 }
 ```
 
-In this example, the form will trigger login/token requests for GitHub and Microsoft, using the specified scopes where given.
+In this example, the form will trigger the login popup for GitHub and Microsoft, using the specified scopes where given. If the user is already logged in with the specified scopes, the popup will not appear, and the tokens from earlier login will be propagated.
 
-## About `tokenType`
+## `tokenType` details
 
 The `tokenType` field defines which type of token Backstage should return:
 
-| `tokenType` | Description                                                                                                                                                                             |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `"oauth"`   | Retrieves an **OAuth access token** — Uses backstage [`getAccessToken`](https://backstage.io/docs/reference/core-app-api.oauth2.getaccesstoken/).                                       |
-| `"openId"`  | Retrieves an **ID token** (OpenID Connect) — used mainly for identity verification. Uses backstage [`getIdToken`](https://backstage.io/docs/reference/core-app-api.oauth2.getidtoken/). |
+| `tokenType` | Description                                                                                                                                                                           |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"oauth"`   | Retrieves an **OAuth access token** — Uses Backstage [getAccessToken](https://backstage.io/docs/reference/core-app-api.oauth2.getaccesstoken/).                                       |
+| `"openId"`  | Retrieves an **ID token** (OpenID Connect) — used mainly for identity verification. Uses Backstage [getIdToken](https://backstage.io/docs/reference/core-app-api.oauth2.getidtoken/). |
 
-> ⚠️ Github backstage OAuth provider doesn't support openId tokens.
+> ⚠️ GitHub's Backstage OAuth provider does **not** support `openId` tokens.
 
-## About Scopes
+## Scopes details
 
 When specifying the `scope` field, refer to the official documentation for available scopes and their meanings:
 
@@ -121,9 +98,9 @@ GitHub scopes control access to repositories, user data, and other GitHub featur
 
 **Examples:**
 
-- `"repo"` – Full control of private and public repositories
-- `"read:user"` – Read profile info
-- `"workflow"` – Access GitHub Actions
+- "repo" – Full control of private and public repositories
+- "read:user" – Read profile info
+- "workflow" – Access GitHub Actions
 
 ---
 
@@ -135,9 +112,9 @@ GitLab scopes are used in OAuth and determine what actions the token allows.
 
 **Examples:**
 
-- `"read_user"` – Read user profile
-- `"api"` – Full API access
-- `"write_repository"` – Push access
+- "read_user" – Read user profile
+- "api" – Full API access
+- "write_repository" – Push access
 
 ---
 
@@ -149,13 +126,14 @@ Microsoft tokens usually access Microsoft Graph, covering users, calendar, mail,
 
 **Examples:**
 
-- `"User.Read"` – Read user profile
-- `"Mail.Read"` – Read email
-- `"Calendars.Read"` – Read calendar events
+- "User.Read" – Read user profile
+- "Mail.Read" – Read email
+- "Calendars.Read" – Read calendar events
 
----
+## ⚙️ Required Backstage Auth Configuration
 
-## Notes
+To use this feature, the relevant authentication providers must be properly configured in your Backstage app. This ensures the necessary tokens can be obtained when the workflow requests them. Each provider must be declared under the `auth.providers` section in `app-config.yaml`.
 
-- Only one `AuthRequester` field is needed per form, even for multiple providers. If multiple ones are included, only one of them will be applied.
-- Never rely on the value of this field — it will always be `undefined`.
+- [Backstage GitHub Auth Provider](https://backstage.io/docs/auth/github/provider)
+- [Backstage GitLab Auth Provider](https://backstage.io/docs/auth/gitlab/provider)
+- [Backstage Microsoft Auth Provider](https://backstage.io/docs/auth/microsoft/provider)

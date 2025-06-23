@@ -1,0 +1,75 @@
+{
+  "backstage": {
+    "pluginId": "redhat-resource-optimization-backend",
+    "pluginPackages": [
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend"
+    ],
+    "role": "backend-plugin"
+  },
+  "configSchema": "config.d.ts",
+  "dependencies": {
+    "@backstage/backend-defaults": "^0.7.0",
+    "@backstage/backend-dynamic-feature-service": "^0.5.3",
+    "@backstage/backend-plugin-api": "^1.1.1",
+    "@backstage/config": "^1.3.2",
+    "@backstage/plugin-permission-common": "^0.8.4",
+    "@backstage/plugin-permission-node": "^0.8.7",
+    "@red-hat-developer-hub/plugin-redhat-resource-optimization-common": "workspace:^",
+    "@types/express": "4.17.21",
+    "express": "^4.17.1",
+    "express-promise-router": "^4.1.0",
+    "lodash": "4.17.21",
+    "node-fetch": "^2.6.7",
+    "winston": "^3.2.1",
+    "yn": "^4.0.0"
+  },
+  "devDependencies": {
+    "@backstage/backend-test-utils": "^1.2.1",
+    "@backstage/cli": "^0.29.4",
+    "@backstage/plugin-auth-backend": "^0.24.2",
+    "@backstage/plugin-auth-backend-module-guest-provider": "^0.2.4",
+    "@backstage/plugin-proxy-backend": "^0.5.10",
+    "@types/lodash": "4.17.5",
+    "@types/supertest": "^6.0.0",
+    "msw": "^1.0.0",
+    "supertest": "^7.0.0"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "app-config.janus-idp.yaml",
+    "dist",
+    "config.d.ts"
+  ],
+  "license": "Apache-2.0",
+  "main": "src/index.ts",
+  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "directory": "workspaces/redhat-resource-optimization/plugins/redhat-resource-optimization-backend",
+    "type": "git",
+    "url": "https://github.com/backstage/community-plugins"
+  },
+  "scripts": {
+    "build": "backstage-cli package build",
+    "clean": "backstage-cli package clean",
+    "lint": "backstage-cli package lint",
+    "postpack": "backstage-cli package postpack",
+    "prepack": "backstage-cli package prepack",
+    "start": "backstage-cli package start",
+    "test": "backstage-cli package test"
+  },
+  "types": "src/index.ts",
+  "typesVersions": {
+    "*": {
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
+  "version": "1.1.0"
+}

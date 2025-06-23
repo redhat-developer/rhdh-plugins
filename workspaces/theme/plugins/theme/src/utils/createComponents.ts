@@ -700,12 +700,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           // Cancel out the spacing produced by the page inset border when
           // the global header is present in the above-sidebar position.
           '@media (min-width: 600px)': {
-            '#above-sidebar-header-container:has(*) ~ [class*="sidebarLayout"]':
+            '#rhdh-above-sidebar-header-container:has(*) ~ #rhdh-sidebar-layout':
               {
-                "& [class*='BackstagePage-root'], & [class*='MuiLinearProgress-root']":
-                  {
-                    marginTop: '0 !important',
-                  },
+                "& main, & [class*='MuiLinearProgress-root']": {
+                  marginTop: '0 !important',
+                },
               },
           },
         },
@@ -713,11 +712,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           // Cancel out the spacing produced by the page inset border when
           // the global header is present in the above-main-content position.
           '@media (min-width: 600px)': {
-            '#above-main-content-header-container:has(*)': {
-              "& ~ [class*='BackstagePage-root'], & ~ [class*='MuiLinearProgress-root']":
-                {
-                  marginTop: '0 !important',
-                },
+            '#rhdh-above-main-content-header-container:has(*)': {
+              "& ~ main, & ~ [class*='MuiLinearProgress-root']": {
+                marginTop: '0 !important',
+              },
             },
           },
         },
