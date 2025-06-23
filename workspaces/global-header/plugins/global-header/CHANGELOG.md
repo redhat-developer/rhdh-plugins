@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.11.1
+
+### Patch Changes
+
+- ce4ffa7: Update config.d.ts to expect the updated app-config schema
+
 ## 1.11.0
 
 ### Minor Changes
