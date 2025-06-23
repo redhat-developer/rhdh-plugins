@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
 
-import { CodeSnippet } from '@backstage/core-components';
+import React from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -26,7 +25,9 @@ import {
   WorkflowDataDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { useIsDarkMode } from '../../utils/isDarkMode';
 import { InfoDialog } from '../InfoDialog';
+import { JsonCodeBlock } from '../ui/JsonCodeBlock';
 
 export const VariablesDialog = ({
   open,
@@ -37,6 +38,9 @@ export const VariablesDialog = ({
   onClose: () => void;
   instanceVariables: WorkflowDataDTO;
 }) => {
+  const isDarkMode = useIsDarkMode();
+  const hasVariables = Object.keys(instanceVariables).length > 0;
+
   return (
     <InfoDialog
       title="Run Variables"
@@ -49,24 +53,18 @@ export const VariablesDialog = ({
       }
       wideDialog
     >
-      <Box>
-        {Object.entries(instanceVariables).map(([key, value]) => (
-          <div key={key} style={{ marginBottom: '16px' }}>
-            <Typography variant="h6" style={{ marginBottom: '8px' }}>
+      {hasVariables ? (
+        Object.entries(instanceVariables).map(([key, value]) => (
+          <Box key={key} m={2}>
+            <Typography variant="h6" mb={1}>
               {capitalize(key)}
             </Typography>
-            <CodeSnippet
-              text={JSON.stringify(value, null, 2)}
-              language="json"
-              showLineNumbers
-              showCopyCodeButton
-              customStyle={{
-                padding: '25px 0',
-              }}
-            />
-          </div>
-        ))}
-      </Box>
+            <JsonCodeBlock isDarkMode={isDarkMode} value={value} />
+          </Box>
+        ))
+      ) : (
+        <Typography>No variables found for this run.</Typography>
+      )}
     </InfoDialog>
   );
 };
