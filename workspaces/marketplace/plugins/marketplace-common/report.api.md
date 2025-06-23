@@ -190,6 +190,8 @@ export interface MarketplaceApi {
     // (undocumented)
     getPackageConfigByName?(namespace: string, name: string): Promise<ConfigurationResponse>;
     // (undocumented)
+    getPackageConfigStatusByName?(namespace: string, name: string): Promise<MarketplacePackageStatus>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
@@ -202,6 +204,8 @@ export interface MarketplaceApi {
     }>;
     // (undocumented)
     getPluginConfigByName?(namespace: string, name: string): Promise<ConfigurationResponse>;
+    // (undocumented)
+    getPluginConfigStatusByName?(namespace: string, name: string): Promise<MarketplacePluginStatus>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
@@ -256,6 +260,8 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     // (undocumented)
     getPackageConfigByName(namespace: string, name: string): Promise<ConfigurationResponse>;
     // (undocumented)
+    getPackageConfigStatusByName(namespace: string, name: string): Promise<MarketplacePackageStatus>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
@@ -268,6 +274,8 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     }>;
     // (undocumented)
     getPluginConfigByName(namespace: string, name: string): Promise<ConfigurationResponse>;
+    // (undocumented)
+    getPluginConfigStatusByName(namespace: string, name: string): Promise<MarketplacePluginStatus>;
     // (undocumented)
     getPluginFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
@@ -412,6 +420,12 @@ export interface MarketplacePackageSpecAppConfigExample extends JsonObject {
 }
 
 // @public (undocumented)
+export type MarketplacePackageStatus = {
+    installStatus: MarketplacePackageInstallStatus;
+    disabled: boolean;
+};
+
+// @public (undocumented)
 export interface MarketplacePlugin extends Entity {
     // (undocumented)
     spec?: MarketplacePluginSpec;
@@ -456,6 +470,12 @@ export interface MarketplacePluginSpec extends JsonObject {
     // (undocumented)
     packages?: string[];
 }
+
+// @public (undocumented)
+export type MarketplacePluginStatus = {
+    installStatus: MarketplacePluginInstallStatus;
+    disabled: boolean;
+};
 
 // @public (undocumented)
 export type NodeEnvironmentType = 'production' | 'development' | 'test';

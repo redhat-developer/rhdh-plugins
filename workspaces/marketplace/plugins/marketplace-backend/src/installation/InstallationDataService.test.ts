@@ -19,8 +19,8 @@ import { InstallationDataService } from './InstallationDataService';
 import {
   mockDynamicPackage11,
   mockDynamicPlugin1,
+  mockDynamicPluginsService,
   mockFileInstallationStorage,
-  mockMarketplaceApi,
   mockPackages,
   mockPlugins,
 } from '../../__fixtures__/mockData';
@@ -54,11 +54,13 @@ describe('InstallationDataService', () => {
   const mockLogger = mockServices.logger.mock();
 
   const plugin = mockPlugins[0];
-  mockMarketplaceApi.getPluginPackages = jest.fn((namespace, name) => {
-    const isMatch =
-      name === plugin.metadata.name && namespace === plugin.metadata.namespace;
-    return Promise.resolve(isMatch ? [mockPackages[0], mockPackages[1]] : []);
-  });
+  const pluginDynamicArtifacts = new Set([
+    mockPackages[0].spec.dynamicArtifact,
+    mockPackages[1].spec.dynamicArtifact,
+  ]);
+  mockDynamicPluginsService.getPluginDynamicArtifacts.mockResolvedValue(
+    pluginDynamicArtifacts,
+  );
 
   afterEach(async () => {
     jest.clearAllMocks();
@@ -73,7 +75,7 @@ describe('InstallationDataService', () => {
 
       installationDataService = InstallationDataService.fromConfig({
         config: disabledConfig,
-        marketplaceApi: mockMarketplaceApi,
+        dynamicPluginsService: mockDynamicPluginsService,
         logger: mockLogger,
       });
 
@@ -93,7 +95,7 @@ describe('InstallationDataService', () => {
 
       installationDataService = InstallationDataService.fromConfig({
         config: missingFileConfig,
-        marketplaceApi: mockMarketplaceApi,
+        dynamicPluginsService: mockDynamicPluginsService,
         logger: mockLogger,
       });
 
@@ -126,7 +128,7 @@ describe('InstallationDataService', () => {
 
       installationDataService = InstallationDataService.fromConfig({
         config: fileNotFoundConfig,
-        marketplaceApi: mockMarketplaceApi,
+        dynamicPluginsService: mockDynamicPluginsService,
         logger: mockLogger,
       });
 
@@ -144,7 +146,7 @@ describe('InstallationDataService', () => {
     beforeEach(async () => {
       installationDataService = InstallationDataService.fromConfig({
         config: validConfig,
-        marketplaceApi: mockMarketplaceApi,
+        dynamicPluginsService: mockDynamicPluginsService,
         logger: mockServices.logger.mock(),
       });
     });
@@ -161,7 +163,7 @@ describe('InstallationDataService', () => {
     beforeEach(async () => {
       installationDataService = InstallationDataService.fromConfig({
         config: validConfig,
-        marketplaceApi: mockMarketplaceApi,
+        dynamicPluginsService: mockDynamicPluginsService,
         logger: mockServices.logger.mock(),
       });
     });
@@ -176,7 +178,7 @@ describe('InstallationDataService', () => {
     beforeEach(() => {
       installationDataService = InstallationDataService.fromConfig({
         config: validConfig,
-        marketplaceApi: mockMarketplaceApi,
+        dynamicPluginsService: mockDynamicPluginsService,
         logger: mockLogger,
       });
     });
@@ -199,7 +201,7 @@ describe('InstallationDataService', () => {
     beforeEach(() => {
       installationDataService = InstallationDataService.fromConfig({
         config: validConfig,
-        marketplaceApi: mockMarketplaceApi,
+        dynamicPluginsService: mockDynamicPluginsService,
         logger: mockLogger,
       });
     });
@@ -223,7 +225,7 @@ describe('InstallationDataService', () => {
     beforeEach(() => {
       installationDataService = InstallationDataService.fromConfig({
         config: validConfig,
-        marketplaceApi: mockMarketplaceApi,
+        dynamicPluginsService: mockDynamicPluginsService,
         logger: mockLogger,
       });
     });
@@ -244,7 +246,7 @@ describe('InstallationDataService', () => {
     beforeEach(() => {
       installationDataService = InstallationDataService.fromConfig({
         config: validConfig,
-        marketplaceApi: mockMarketplaceApi,
+        dynamicPluginsService: mockDynamicPluginsService,
         logger: mockLogger,
       });
     });
@@ -258,13 +260,7 @@ describe('InstallationDataService', () => {
 
       expect(
         mockFileInstallationStorage.setPackagesDisabled,
-      ).toHaveBeenCalledWith(
-        new Set([
-          mockPackages[0].spec.dynamicArtifact,
-          mockPackages[1].spec.dynamicArtifact,
-        ]),
-        true,
-      );
+      ).toHaveBeenCalledWith(pluginDynamicArtifacts, true);
     });
   });
 });
