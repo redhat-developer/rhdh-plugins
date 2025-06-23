@@ -61,8 +61,8 @@
     },
     {
       "groupName": "Core Backstage packages",
-      "dependencyDashboardApproval": true,
-      "matchDepNames": ["/^@backstage//"]
+      "enabled": false,
+      "matchDepNames": ["/^@backstage//", "/^@backstage-community//"]
     }
   ],
   "ignorePaths": ["**/dist-dynamic/**"]
