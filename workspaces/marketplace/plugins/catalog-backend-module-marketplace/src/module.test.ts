@@ -17,6 +17,7 @@
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
 import { catalogModuleMarketplace } from './module';
 import { startTestBackend } from '@backstage/backend-test-utils';
+import { dynamicPluginsFeatureLoader } from '@backstage/backend-dynamic-feature-service';
 
 describe('catalogModuleMarketplace', () => {
   it('should register the extension point', async () => {
@@ -26,7 +27,7 @@ describe('catalogModuleMarketplace', () => {
     };
     await startTestBackend({
       extensionPoints: [[catalogProcessingExtensionPoint, extensionPoint]],
-      features: [catalogModuleMarketplace],
+      features: [catalogModuleMarketplace, dynamicPluginsFeatureLoader()],
     });
 
     expect(extensionPoint.addProcessor).toHaveBeenCalledTimes(5);

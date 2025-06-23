@@ -27,6 +27,7 @@ import { LocalPackageInstallStatusProcessor } from './processors/LocalPackageIns
 import { MarketplacePackageProcessor } from './processors/MarketplacePackageProcessor';
 import { MarketplacePluginProvider } from './providers/MarketplacePluginProvider';
 import { MarketplacePackageProvider } from './providers/MarketplacePackageProvider';
+import { dynamicPluginsServiceRef } from '@backstage/backend-dynamic-feature-service';
 
 /**
  * @public
@@ -39,11 +40,10 @@ export const catalogModuleMarketplace = createBackendModule({
       deps: {
         logger: coreServices.logger,
         catalog: catalogProcessingExtensionPoint,
-        discovery: coreServices.discovery,
-        auth: coreServices.auth,
+        pluginProvider: dynamicPluginsServiceRef,
         scheduler: coreServices.scheduler,
       },
-      async init({ logger, catalog, discovery, auth, scheduler }) {
+      async init({ logger, catalog, scheduler, pluginProvider }) {
         logger.info(
           'Adding Marketplace providers and processors to catalog...',
         );
@@ -63,7 +63,7 @@ export const catalogModuleMarketplace = createBackendModule({
         catalog.addProcessor(new LocalPackageInstallStatusProcessor());
         catalog.addProcessor(new MarketplacePackageProcessor());
         catalog.addProcessor(
-          new DynamicPackageInstallStatusProcessor(discovery, auth),
+          new DynamicPackageInstallStatusProcessor(pluginProvider),
         );
       },
     });
