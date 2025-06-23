@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { AuthService, DiscoveryService } from '@backstage/backend-plugin-api';
 import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
 import {
@@ -27,7 +26,7 @@ import {
   MarketplacePackageInstallStatus,
   isMarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import type { DynamicPlugin } from '@backstage/backend-dynamic-feature-service';
+import { DynamicPluginProvider } from '@backstage/backend-dynamic-feature-service';
 
 /**
  * @public
@@ -41,47 +40,18 @@ export type CachedData = {
  * @public
  */
 export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
-  private discovery: DiscoveryService;
-  private auth: AuthService;
+  private readonly pluginProvider: DynamicPluginProvider;
   private readonly cacheTTLMilliseconds = durationToMilliseconds({
     minutes: 1,
   });
 
-  constructor(discovery: DiscoveryService, auth: AuthService) {
-    this.discovery = discovery;
-    this.auth = auth;
+  constructor(pluginProvider: DynamicPluginProvider) {
+    this.pluginProvider = pluginProvider;
   }
 
   // Return processor name
   getProcessorName(): string {
     return 'DynamicPackageInstallStatusProcessor';
-  }
-
-  async getInstalledPlugins(): Promise<DynamicPlugin[]> {
-    const dynamicPluginsInfoUrl = await this.discovery.getBaseUrl(
-      'dynamic-plugins-info',
-    );
-
-    const { token } = await this.auth.getPluginRequestToken({
-      onBehalfOf: await this.auth.getOwnServiceCredentials(),
-      targetPluginId: 'dynamic-plugins-info',
-    });
-
-    const response = await fetch(`${dynamicPluginsInfoUrl}/loaded-plugins`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      console.log(
-        `Unexpected status code: ${response.status} ${response.statusText}`,
-      );
-      return [];
-    }
-
-    return await response.json();
   }
 
   async getCachedPlugins(
@@ -90,8 +60,7 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
   ): Promise<CachedData> {
     let cachedData = (await cache.get(entityRef)) as CachedData;
     if (!cachedData || this.isExpired(cachedData)) {
-      const pluginsList = await this.getInstalledPlugins();
-      const plugins = pluginsList.map(plugin => plugin.name);
+      const plugins = this.pluginProvider.plugins().map(plugin => plugin.name);
       cachedData = { plugins, cachedTime: Date.now() };
       await cache.set(entityRef, cachedData);
     }
