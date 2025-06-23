@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import { useState, MouseEvent } from 'react';
+import { Fragment, useState, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Fragment } from 'react';
 
 import {
   Content,
