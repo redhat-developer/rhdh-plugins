@@ -6,15 +6,19 @@ An example of using these actions can be found in the `workspaces/orchestrator/e
 
 ## Installation
 
-### As a static plugin
+### Static Plugin Installation
 
 In `packages/backend/src/index.ts`:
 
-```
-backend.add(import('@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'));
+```ts
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'
+  ),
+);
 ```
 
-# The software template generating templates from workflows - convertWorkflowToTemplate
+## convertWorkflowToTemplate: A Software Template for Converting Workflows into Templates
 
 The `workspaces/orchestrator/entities/convertWorkflowToTemplate.yaml` scaffolder software template is used for generating templates to be used to execute a serverless workflow via the Orchestrator.
 
@@ -26,7 +30,7 @@ The rest of parameters cover details about the target GitHub repository to eithe
 
 The generated yaml template is accompanied by a README file highlighting instructions how to register the new template in the Backstage catalog.
 
-## Important Note on Template Input Structure
+**Important Note on Template Input Structure:**
 
 The structure of the template input differs from that of the page used for collecting input parameters for workflows, despite some similarities. These two pages are supported by distinct implementations. While the set of parameters should remain consistent, their visual representation and especially grouping into steps may vary.
 
@@ -35,7 +39,7 @@ The structure of the template input differs from that of the page used for colle
 The `[workflowId]` matches the identifier from the workflow definition.
 For example, in the [workflow definition](https://github.com/rhdhorchestrator/serverless-workflows/blob/main/workflows/greeting/greeting.sw.yaml) below, the identifier is `greeting`:
 
-```yaml greeting.sw.yaml
+```yaml
 id: greeting
 version: '1.0'
 specVersion: '0.8'
@@ -48,6 +52,52 @@ extensions:
   - extensionid: workflow-output-schema
     outputSchema: schemas/workflow-output-schema.json
 ```
+
+## Available Actions
+
+### Action: `orchestrator:workflow:run`
+
+Runs a SonataFlow workflow from a Software Template.
+
+**Input:**
+
+- `workflow_id` (string, required): The workflow ID from the definition.
+- `parameters` (object, required): Input parameters for the workflow.
+
+**Dry Run:** Supported — logs the event without executing the call.
+
+**Example:**
+
+```yaml
+steps:
+  - id: runWorkflow
+    name: Run workflow
+    action: orchestrator:workflow:run
+    input:
+      workflow_id: yamlgreet
+      parameters: ${{ parameters }}
+```
+
+---
+
+### Action: `orchestrator:workflow:get_params`
+
+Retrieves metadata and input schema from a SonataFlow workflow.
+
+**Input:**
+
+- `workflow_id` (string, required): The workflow ID.
+- `indent` (number, optional): Indentation level for the resulting YAML.
+
+**Output:**
+
+- `title`
+- `description`
+- `parameters`
+
+**Dry Run:** Not supported.
+
+---
 
 ## GitHub integration
 
@@ -76,18 +126,26 @@ export GITHUB_TOKEN=.......
 
 - configure `app-config.yaml`:
 
-```
-integrations:
-  github:
-    - token: ${GITHUB_TOKEN}
-```
+  ```yaml
+  integrations:
+    github:
+      - token: ${GITHUB_TOKEN}
+  ```
+
+---
+
+## Hints
+
+- When using **Node.js 20+**, add this environment variable **before** running the backend:
+
+  ```bash
+  export NODE_OPTIONS="${NODE_OPTIONS:-} --no-node-snapshot"
+  ```
+
+  [Reference from Backstage documentation](https://backstage.io/docs/features/software-templates/#getting-started)
+
+---
 
 ## Resources
 
-- [Upstream documentation](https://backstage.io/docs/features/software-templates/builtin-actions)
-
-# Hints
-
-Mind using `export NODE_OPTIONS="${NODE_OPTIONS:-} --no-node-snapshot"` before running the Backstage backend app with Node 20+ (per actual [warning in the upstream documentation](https://backstage.io/docs/features/software-templates/#getting-started)) - this might be changed in the future.
-
-Before running the Backstage backend app with **Node 20+**, be sure to execute `export NODE_OPTIONS="${NODE_OPTIONS:-} --no-node-snapshot` as recommended by the [warning in the upstream documentation](https://backstage.io/docs/features/software-templates/#getting-started) (this might be changed in the future).
+- [Backstage Template Actions Documentation](https://backstage.io/docs/features/software-templates/builtin-actions)
