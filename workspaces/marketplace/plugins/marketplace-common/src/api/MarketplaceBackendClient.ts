@@ -24,7 +24,9 @@ import type {
   ConfigurationResponse,
   MarketplaceCollection,
   MarketplacePackage,
+  MarketplacePackageStatus,
   MarketplacePlugin,
+  MarketplacePluginStatus,
 } from '../types';
 import {
   encodeGetEntitiesRequest,
@@ -188,6 +190,16 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     );
   }
 
+  async getPackageConfigStatusByName(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePackageStatus> {
+    return this.request(
+      `/package/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/status`,
+      'GET',
+    );
+  }
+
   async installPackage(
     namespace: string,
     name: string,
@@ -264,6 +276,16 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   ): Promise<ConfigurationResponse> {
     return this.request(
       `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration`,
+      'GET',
+    );
+  }
+
+  async getPluginConfigStatusByName(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePluginStatus> {
+    return this.request(
+      `/plugin/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/status`,
       'GET',
     );
   }

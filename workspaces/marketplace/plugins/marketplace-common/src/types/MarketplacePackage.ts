@@ -40,6 +40,14 @@ export enum MarketplacePackageInstallStatus {
 /**
  * @public
  */
+export type MarketplacePackageStatus = {
+  installStatus: MarketplacePackageInstallStatus;
+  disabled: boolean;
+};
+
+/**
+ * @public
+ */
 export interface MarketplacePackageSpec extends JsonObject {
   packageName?: string;
   version?: string;

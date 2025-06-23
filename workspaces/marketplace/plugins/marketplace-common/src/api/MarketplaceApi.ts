@@ -24,7 +24,9 @@ import {
   ConfigurationResponse,
   MarketplaceCollection,
   MarketplacePackage,
+  MarketplacePackageStatus,
   MarketplacePlugin,
+  MarketplacePluginStatus,
   NodeEnvironmentType,
 } from '../types';
 
@@ -85,6 +87,11 @@ export interface MarketplaceApi {
     name: string,
   ): Promise<ConfigurationResponse>;
 
+  getPackageConfigStatusByName?(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePackageStatus>;
+
   installPackage?(
     namespace: string,
     name: string,
@@ -120,6 +127,11 @@ export interface MarketplaceApi {
     namespace: string,
     name: string,
   ): Promise<ConfigurationResponse>;
+
+  getPluginConfigStatusByName?(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePluginStatus>;
 
   installPlugin?(
     namespace: string,

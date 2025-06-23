@@ -80,6 +80,14 @@ export enum MarketplacePluginInstallStatus {
 /**
  * @public
  */
+export type MarketplacePluginStatus = {
+  installStatus: MarketplacePluginInstallStatus;
+  disabled: boolean;
+};
+
+/**
+ * @public
+ */
 export interface MarketplacePluginSpec extends JsonObject {
   icon?: string;
 
