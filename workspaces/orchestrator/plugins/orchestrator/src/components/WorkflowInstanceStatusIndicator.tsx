@@ -18,6 +18,7 @@ import React from 'react';
 import { Link } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
+import { Box } from '@material-ui/core';
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import ErrorOutlineOutlined from '@mui/icons-material/ErrorOutlineOutlined';
 import HourglassEmptyOutlined from '@mui/icons-material/HourglassEmptyOutlined';
@@ -79,10 +80,9 @@ export const WorkflowInstanceStatusIndicator = ({
   }
 
   return (
-    <div
-      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
-    >
+    <Box display="flex" alignItems="center">
       {icon}
+      &nbsp;{' '}
       {lastRunId ? (
         <Link to={workflowInstanceLink({ instanceId: lastRunId })}>
           {capitalize(title)}
@@ -90,6 +90,6 @@ export const WorkflowInstanceStatusIndicator = ({
       ) : (
         <>{capitalize(title)}</>
       )}
-    </div>
+    </Box>
   );
 };

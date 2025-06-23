@@ -684,7 +684,7 @@ function setupInternalRoutes(
           inputData = Object.keys(inputSchemaProps)
             .filter(k => k in workflowData)
             .reduce((result, k) => {
-              if (!workflowData[k]) {
+              if (workflowData[k] === undefined) {
                 return result;
               }
               result[k] = workflowData[k];

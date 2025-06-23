@@ -47,6 +47,11 @@ const useStyles = makeStyles()(theme => ({
     paddingLeft: theme.spacing(3),
     paddingBottom: theme.spacing(2),
   },
+  dialogContent: {
+    '& > div': {
+      backgroundColor: 'transparent',
+    },
+  },
   titleContainer: {
     display: 'flex',
   },
@@ -100,8 +105,8 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent>
-        <Box>{children}</Box>
+      <DialogContent className={classes.dialogContent}>
+        {children}
       </DialogContent>
       <DialogActions className={classes.dialogActions}>
         {dialogActions}
@@ -109,5 +114,4 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
     </Dialog>
   );
 };
-
 export const InfoDialog = forwardRef(RefForwardingInfoDialog);
