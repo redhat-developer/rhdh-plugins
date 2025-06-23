@@ -340,7 +340,7 @@ export const WorkflowResult: React.FC<{
       className={className}
       cardClassName={cardClassName}
     >
-      <Grid container alignContent="flex-start">
+      <Grid container alignContent="flex-start" spacing="1rem">
         <NextWorkflows
           instanceId={instance.id}
           nextWorkflows={result?.nextWorkflows}
