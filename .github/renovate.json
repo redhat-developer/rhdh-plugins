@@ -60,7 +60,7 @@
       ]
     },
     {
-      "groupName": "Core Backstage packages",
+      "groupName": "Upstream Backstage packages",
       "enabled": false,
       "matchDepNames": ["/^@backstage//", "/^@backstage-community//"]
     }
