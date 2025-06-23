@@ -28,7 +28,8 @@ export const WorkflowInputs: React.FC<{
   value: any;
   loading: any;
   responseError: any;
-}> = ({ className, value, loading, responseError }) => {
+  cardClassName: string;
+}> = ({ className, value, loading, responseError, cardClassName }) => {
   const inputs = value?.data;
   return (
     <InfoCard
@@ -40,6 +41,7 @@ export const WorkflowInputs: React.FC<{
       }
       divider={false}
       className={className}
+      cardClassName={cardClassName}
     >
       {loading ? <Progress /> : null}
 
