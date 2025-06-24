@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.3.3
+
+### Patch Changes
+
+- ca2e330: Bump to backstage version 1.39.1
+- 85ce547: Fix dynamic plugins install status
+- Updated dependencies [ca2e330]
+- Updated dependencies [3973839]
+- Updated dependencies [58ae1fe]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.6.0
+
 ## 0.3.2
 
 ### Patch Changes

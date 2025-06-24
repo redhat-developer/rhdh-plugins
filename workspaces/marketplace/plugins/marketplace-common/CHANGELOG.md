@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.6.0
+
+### Minor Changes
+
+- 3973839: Introduces PUT endpoint for enabling or disabling dynamic plugins: `/plugin/:namespace/:name/configuration/disable` and POST endpoint for enabling or disabling dynamic packages `/package/:namespace/:name/configuration/disable` not already existing in `EXTENSIONS_PLUGIN_CONFIG`.
+
+### Patch Changes
+
+- ca2e330: Bump to backstage version 1.39.1
+- 58ae1fe: Added an alert for production environment
+  Integrated the fetch configuration and install API calls
+  Fixed an import error
+
 ## 0.5.0
 
 ### Minor Changes
