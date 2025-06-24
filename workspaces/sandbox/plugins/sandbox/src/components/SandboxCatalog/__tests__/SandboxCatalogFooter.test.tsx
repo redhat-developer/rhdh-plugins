@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { default as React } from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';

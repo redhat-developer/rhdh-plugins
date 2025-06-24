@@ -37,7 +37,7 @@ generate-env:
 start-rhdh-local: clone-rhdh-local generate-env
 	rm -rf plugins/sandbox/dist-dynamic
 	rm -rf red-hat-developer-hub-backstage-plugin-sandbox
-	podman run -it --rm -w /home -v $(PWD):/home node:20 bash -c "yarn install && npx --yes @janus-idp/cli@latest package package-dynamic-plugins --export-to .  && exit"
+	podman run -it --rm -w /home -v $(PWD):/home node:22 bash -c "yarn install && npx --yes @janus-idp/cli@latest package package-dynamic-plugins --export-to .  && exit"
 	cp -r red-hat-developer-hub-backstage-plugin-sandbox $(RHDH_LOCAL_DIR)/local-plugins/
 	cp deploy/base/app-config.yaml $(RHDH_LOCAL_DIR)/configs/app-config/app-config.yaml
 	cp deploy/base/dynamic-plugins.yaml $(RHDH_LOCAL_DIR)/configs/dynamic-plugins/dynamic-plugins.override.yaml
