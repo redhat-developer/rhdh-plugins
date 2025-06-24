@@ -10,6 +10,7 @@ import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
 import { DiscoveryService } from '@backstage/backend-plugin-api';
+import type { DynamicPlugin } from '@backstage/backend-dynamic-feature-service';
 import { Entity } from '@backstage/catalog-model';
 import { EntityProvider } from '@backstage/plugin-catalog-node';
 import { EntityProviderConnection } from '@backstage/plugin-catalog-node';
@@ -36,8 +37,7 @@ export abstract class BaseEntityProvider<T extends Entity> implements EntityProv
 
 // @public (undocumented)
 export type CachedData = {
-    [key: string]: number | string[];
-    plugins: any;
+    plugins: string[];
     cachedTime: number;
 };
 
@@ -51,7 +51,7 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     // (undocumented)
     getCachedPlugins(cache: CatalogProcessorCache, entityRef: string): Promise<CachedData>;
     // (undocumented)
-    getInstalledPlugins(): Promise<any>;
+    getInstalledPlugins(): Promise<DynamicPlugin[]>;
     // (undocumented)
     getProcessorName(): string;
     // (undocumented)
