@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { HorizontalScrollGrid, Link } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 

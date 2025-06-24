@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { PropsWithChildren } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
@@ -33,7 +33,7 @@ queryClient.setDefaultOptions({
   queries: { retry: false },
 });
 
-const Providers = ({ children }: React.PropsWithChildren<{}>) => (
+const Providers = ({ children }: PropsWithChildren<{}>) => (
   <TestApiProvider apis={apis}>
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   </TestApiProvider>
