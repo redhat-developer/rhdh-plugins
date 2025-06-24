@@ -77,10 +77,10 @@ test.beforeEach(async ({ page }) => {
 
 test('Lightspeed is available', async ({ page }) => {
   expect(page.url()).toContain('/lightspeed');
-  expect(await page.title()).toContain('RHDH Lightspeed');
+  expect(await page.title()).toContain('Developer Lightspeed');
 
   const headings = page.getByRole('heading');
-  await expect(headings.first()).toContainText('Developer Hub Lightspeed');
+  await expect(headings.first()).toContainText('Developer Lightspeed');
   await expect(headings.last()).toContainText('How can I help');
 });
 
@@ -256,9 +256,7 @@ test.describe('Conversation', () => {
     const chats = sidePanel.locator('li.pf-chatbot__menu-item');
     await expect(chats).toHaveCount(2);
 
-    const searchBox = sidePanel.getByPlaceholder(
-      'Search previous conversations...',
-    );
+    const searchBox = sidePanel.getByPlaceholder('Search previous chats...');
     await searchBox.fill('new');
     await expect(chats).toHaveCount(1);
     await expect(chats).toHaveText(moreConversations[1].topic_summary);

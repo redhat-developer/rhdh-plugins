@@ -135,7 +135,7 @@ describe('LightspeedChat', () => {
     render(setupLightspeedChat());
 
     await waitFor(() => {
-      expect(screen.getByText('Developer Hub Lightspeed')).toBeInTheDocument();
+      expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
     });
   });
 
@@ -158,7 +158,7 @@ describe('LightspeedChat', () => {
     render(setupLightspeedChat());
 
     await waitFor(() => {
-      expect(screen.getByText('Developer Hub Lightspeed')).toBeInTheDocument();
+      expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
 
       expect(screen.queryByText('New chat')).toBeInTheDocument();
 
@@ -175,7 +175,7 @@ describe('LightspeedChat', () => {
     render(setupLightspeedChat());
 
     await waitFor(() => {
-      expect(screen.getByText('Developer Hub Lightspeed')).toBeInTheDocument();
+      expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
 
       expect(screen.queryByText('New chat')).not.toBeInTheDocument();
       expect(JSON.parse(localStorage.getItem(localStorageKey)!)).toEqual({});

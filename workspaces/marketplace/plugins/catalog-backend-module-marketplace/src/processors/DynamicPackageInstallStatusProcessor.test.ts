@@ -98,9 +98,11 @@ describe('DynamicPackageInstallStatusProcessor', () => {
 
       const result = await processor.getInstalledPlugins();
       expect(result).toEqual(pluginsMock);
-      expect(discoveryService.getBaseUrl).toHaveBeenCalledWith('scalprum');
+      expect(discoveryService.getBaseUrl).toHaveBeenCalledWith(
+        'dynamic-plugins-info',
+      );
       expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:7007/api/scalprum/plugins',
+        'http://localhost:7007/api/dynamic-plugins-info/loaded-plugins',
         expect.any(Object),
       );
     });
@@ -139,10 +141,10 @@ describe('DynamicPackageInstallStatusProcessor', () => {
 
     it('should fetch and cache data if expired', async () => {
       const cachedData = {
-        plugins: { plugin1: {} },
+        plugins: [{ name: 'plugin1' }],
         cachedTime: Date.now() - 120000, // Expired
       };
-      const pluginsMock = { plugin2: {} };
+      const pluginsMock = [{ name: 'plugin2' }];
       (cache.get as jest.Mock).mockResolvedValue(cachedData);
       (fetch as jest.Mock).mockResolvedValue(
         new Response(JSON.stringify(pluginsMock), { status: 200 }),
@@ -154,7 +156,7 @@ describe('DynamicPackageInstallStatusProcessor', () => {
       );
 
       const result = await processor.getCachedPlugins(cache, 'some-entity-ref');
-      expect(result.plugins).toEqual(pluginsMock);
+      expect(result.plugins).toEqual(pluginsMock.map(p => p.name));
       expect(cache.set).toHaveBeenCalledWith(
         'some-entity-ref',
         expect.any(Object),
@@ -165,6 +167,7 @@ describe('DynamicPackageInstallStatusProcessor', () => {
   describe('preProcessEntity', () => {
     afterEach(() => {
       jest.clearAllMocks();
+      jest.restoreAllMocks();
     });
 
     it('should not process without packageName', async () => {
@@ -188,6 +191,38 @@ describe('DynamicPackageInstallStatusProcessor', () => {
       );
 
       expect(entity.spec?.installStatus).toBe(undefined);
+    });
+
+    it('should return Installed for the backend package name', async () => {
+      const processor = new DynamicPackageInstallStatusProcessor(
+        discoveryService,
+        authService,
+      );
+
+      const loadedPluginsMock = [
+        { name: 'red-hat-developer-hub-test-backend-plugin-dynamic' },
+      ];
+      (fetch as jest.Mock).mockResolvedValue(
+        new Response(JSON.stringify(loadedPluginsMock), { status: 200 }),
+      );
+
+      const entity = await processor.preProcessEntity(
+        {
+          ...packageEntity,
+          spec: {
+            ...packageEntity.spec,
+            packageName: '@red-hat-developer-hub/test-backend-plugin',
+          },
+        },
+        locationSpec,
+        jest.fn(),
+        locationSpec,
+        cache,
+      );
+
+      expect(entity.spec?.installStatus).toBe(
+        MarketplacePackageInstallStatus.Installed,
+      );
     });
 
     it('should not process if the installStatus is already set', async () => {
@@ -214,7 +249,7 @@ describe('DynamicPackageInstallStatusProcessor', () => {
     });
 
     it('should return Installed if the package is installed', async () => {
-      const pluginsMock = { 'test-package': {} };
+      const pluginsMock = [{ name: 'test-package' }];
       (fetch as jest.Mock).mockResolvedValue(
         new Response(JSON.stringify(pluginsMock), { status: 200 }),
       );
@@ -238,7 +273,7 @@ describe('DynamicPackageInstallStatusProcessor', () => {
     });
 
     it('should set undefined if the plugin is not found', async () => {
-      const pluginsMock = { 'another-plugin': {} };
+      const pluginsMock = [{ name: 'another-plugin' }];
       (fetch as jest.Mock).mockResolvedValue(
         new Response(JSON.stringify(pluginsMock), { status: 200 }),
       );

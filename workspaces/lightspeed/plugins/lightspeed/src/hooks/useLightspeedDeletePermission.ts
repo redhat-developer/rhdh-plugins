@@ -16,11 +16,11 @@
 
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { lightspeedConversationsDeletePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
+import { lightspeedChatDeletePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
 export const useLightspeedDeletePermission = () => {
   const lightspeedDeletePermissionResult = usePermission({
-    permission: lightspeedConversationsDeletePermission,
+    permission: lightspeedChatDeletePermission,
   });
 
   return lightspeedDeletePermissionResult;
