@@ -252,7 +252,7 @@ export function OptimizationsPage() {
             }}
             localization={{
               toolbar: {
-                searchPlaceholder: 'Search Container',
+                searchPlaceholder: 'Search container name',
               },
             }}
             data={data}

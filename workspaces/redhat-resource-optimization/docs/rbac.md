@@ -64,3 +64,5 @@ permission:
       users:
         - name: user:default/YOUR_USER
 ```
+
+[Refer to this link](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.6/html/authorization_in_red_hat_developer_hub/index) to configure and enable RBAC for Red Hat Developer Hub.
