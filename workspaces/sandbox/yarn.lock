@@ -3761,6 +3761,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lit/react@npm:^1.0.5":
+  version: 1.0.7
+  resolution: "@lit/react@npm:1.0.7"
+  peerDependencies:
+    "@types/react": 17 || 18 || 19
+  checksum: b14c44d317fa52ced1b24d9f902967273486a4b22bc9b52f98870816cac67a61eff2ad3082d0b12b476e7edd919f2c5c59c1e6d414de09c5eb9c6a39c0cba6df
+  languageName: node
+  linkType: hard
+
 "@lit/reactive-element@npm:^1.6.2 || ^2.1.0, @lit/reactive-element@npm:^2.1.0":
   version: 2.1.0
   resolution: "@lit/reactive-element@npm:2.1.0"
@@ -5170,7 +5179,7 @@ __metadata:
     "@backstage/dev-utils": ^1.1.10
     "@backstage/test-utils": ^1.7.8
     "@backstage/theme": ^0.6.6
-    "@material-ui/core": ^4.12.4
+    "@lit/react": ^1.0.5
     "@mui/icons-material": ^5.16.14
     "@mui/material": ^5.16.14
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
