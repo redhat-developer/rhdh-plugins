@@ -15,41 +15,33 @@
  */
 import React from 'react';
 import Box from '@mui/material/Box';
-import { Theme } from '@mui/material/styles';
-import { makeStyles } from '@material-ui/core/styles';
+import { useTheme } from '@mui/material/styles';
 import { Page, Content } from '@backstage/core-components';
 import { SandboxCatalogBanner } from './SandboxCatalogBanner';
 import { SandboxCatalogGrid } from './SandboxCatalogGrid';
 import { SandboxProvider } from '../../hooks/useSandboxContext';
 import { SandboxHeader } from '../SandboxHeader';
-
-const useStyles = makeStyles((theme: Theme) => ({
-  content: {
-    backgroundColor: theme.palette.background.default,
-  },
-}));
+import { SandboxCatalogFooter } from './SandboxCatalogFooter';
 
 export const SandboxCatalogPage = () => {
-  const classes = useStyles();
+  const theme = useTheme();
 
   return (
     <SandboxProvider>
       <Page themeId="sandbox">
         <SandboxHeader pageTitle="Developer Sandbox" />
-        <Content className={classes.content} noPadding>
+        <Content noPadding>
           <SandboxCatalogBanner />
           <Box
             style={{
               padding: '48px 60px 48px 60px',
+              backgroundColor: theme.palette.background.default,
+              minHeight: '100%',
             }}
           >
             <SandboxCatalogGrid />
           </Box>
-
-          {/*
-           /* TODO enable this later once https://issues.redhat.com/browse/SANDBOX-1161 is implemented
           <SandboxCatalogFooter />
-          */}
         </Content>
       </Page>
     </SandboxProvider>
