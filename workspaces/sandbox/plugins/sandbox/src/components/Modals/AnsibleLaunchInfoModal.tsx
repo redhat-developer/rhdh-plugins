@@ -41,7 +41,7 @@ import { AnsibleStatus } from '../../utils/aap-utils';
 
 // Import the logos
 import AnsibleLogo from '../../assets/logos/ansible.svg';
-import RedHatLogo from '../../assets/logos/openshift.svg';
+import RedHatLogo from '../../assets/logos/logo_hat-only.svg';
 
 type AnsibleLaunchInfoModalProps = {
   modalOpen: boolean;
