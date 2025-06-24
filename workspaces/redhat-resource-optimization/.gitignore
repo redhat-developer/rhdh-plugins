@@ -15,6 +15,13 @@ coverage
 # Dependencies
 node_modules/
 
+# NPM directories
+.npm/
+.npm-global/
+
+# Corepack cache directory
+.cache/
+
 # Yarn 3 files
 .pnp.*
 .yarn/*
