@@ -71,31 +71,44 @@ describe('AnsibleLaunchInfoModal', () => {
   it('renders the ready state with correct content', () => {
     renderModal();
 
-    // Check for header - use a more flexible matcher due to potential whitespace issues
+    // Check for header
     expect(
       screen.getByText(/Ansible Automation Platform instance provisioned/i),
     ).toBeInTheDocument();
 
-    // Check for credentials section
+    // Check for the introductory text with "two different accounts"
     expect(
-      screen.getByText(/Log in to your AAP trial account/i),
+      screen.getByText(/To get started with your AAP instance, you will need/i),
     ).toBeInTheDocument();
+    expect(screen.getByText(/two different accounts/i)).toBeInTheDocument();
 
-    // The username value is in a TextField, which might not be directly accessible via getByText
+    // Check for numbered sections
+    expect(screen.getByText('1.')).toBeInTheDocument();
+    expect(screen.getByText('2.')).toBeInTheDocument();
+
+    // Check for section titles
+    expect(screen.getByText('AAP admin account')).toBeInTheDocument();
+    expect(screen.getByText('Red Hat account')).toBeInTheDocument();
+
+    // Check for credentials section
     const usernameLabel = screen.getByText('Username:');
     expect(usernameLabel).toBeInTheDocument();
 
     const passwordLabel = screen.getByText('Password:');
     expect(passwordLabel).toBeInTheDocument();
 
-    // Check for login button
+    // Check for the new "Get started" button
     expect(
       screen.getByRole('button', {
-        name: /Log in to Ansible Automation Platform/i,
+        name: /Get started/i,
       }),
     ).toBeInTheDocument();
 
-    // Find the close button using exact text match
+    // Check for logos (by alt text)
+    expect(screen.getByAltText('Ansible')).toBeInTheDocument();
+    expect(screen.getByAltText('Red Hat')).toBeInTheDocument();
+
+    // Find the close button
     const closeButtons = screen.getAllByRole('button', { name: /Close/i });
     expect(closeButtons.length).toBeGreaterThan(0);
   });
@@ -125,7 +138,7 @@ describe('AnsibleLaunchInfoModal', () => {
     );
   });
 
-  it('calls setOpen when close button is clicked', () => {
+  it('calls setOpen with false when close button is clicked', () => {
     renderModal();
 
     const closeButton = screen.getByText('Close');
@@ -216,5 +229,48 @@ describe('AnsibleLaunchInfoModal', () => {
     const errorIcon = document.querySelector('[data-testid="ErrorIcon"]');
     expect(errorIcon).toBeInTheDocument();
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
+  });
+
+  it('contains section descriptions for both accounts', () => {
+    renderModal();
+
+    // Check for AAP admin account description
+    expect(
+      screen.getByText(/Log in to your AAP admin account within the new tab/i),
+    ).toBeInTheDocument();
+
+    // Check for Red Hat account description
+    expect(
+      screen.getByText(
+        /Once logged in, you'll need to activate your subscription/i,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('has the correct link target for the Get started button', () => {
+    renderModal();
+
+    const getStartedButton = screen.getByRole('button', {
+      name: /Get started/i,
+    });
+
+    // The button should be wrapped in a Link component that targets the ansible URL
+    const linkElement = getStartedButton.closest('a');
+    expect(linkElement).toHaveAttribute('href', 'https://ansible.example.com');
+    expect(linkElement).toHaveAttribute('target', '_blank');
+  });
+
+  it('displays the launch button instruction text', () => {
+    renderModal();
+
+    expect(
+      screen.getByText(/Access this information again by clicking the/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Launch/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /button on the Ansible Automation Platform sandbox card/i,
+      ),
+    ).toBeInTheDocument();
   });
 });
