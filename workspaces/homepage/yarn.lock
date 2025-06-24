@@ -14287,6 +14287,7 @@ __metadata:
     "@backstage/theme": ^0.6.6
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
     "@playwright/test": 1.53.1
     "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "workspace:^"
     "@scalprum/react-core": 0.9.5
