@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/marketplace-cli
 
+## 0.4.7
+
+### Patch Changes
+
+- ca2e330: Bump to backstage version 1.39.1
+- 58ae1fe: Added an alert for production environment
+  Integrated the fetch configuration and install API calls
+  Fixed an import error
+- Updated dependencies [ca2e330]
+- Updated dependencies [3973839]
+- Updated dependencies [58ae1fe]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.6.0
+
 ## 0.4.6
 
 ### Patch Changes
