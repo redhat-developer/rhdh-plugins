@@ -256,9 +256,7 @@ test.describe('Conversation', () => {
     const chats = sidePanel.locator('li.pf-chatbot__menu-item');
     await expect(chats).toHaveCount(2);
 
-    const searchBox = sidePanel.getByPlaceholder(
-      'Search previous conversations...',
-    );
+    const searchBox = sidePanel.getByPlaceholder('Search previous chats...');
     await searchBox.fill('new');
     await expect(chats).toHaveCount(1);
     await expect(chats).toHaveText(moreConversations[1].topic_summary);
