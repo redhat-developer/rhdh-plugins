@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { useCallback, useMemo } from 'react';
-import { get } from 'lodash';
+import get from 'lodash/get';
 import { JsonObject } from '@backstage/types';
 import {
   atlassianAuthApiRef,
