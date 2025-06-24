@@ -70,14 +70,9 @@ export const mapProcessInstanceToDetails = (
 const useStyles = makeStyles()(() => ({
   topRowCard: {
     height: '24rem',
-    overflow: 'auto',
-    '& > div:nth-child(2)': {
-      overflow: 'auto',
-    },
   },
   bottomRowCard: {
     height: '42rem',
-    overflow: 'auto',
   },
   recommendedLabelContainer: {
     display: 'flex',
@@ -85,6 +80,9 @@ const useStyles = makeStyles()(() => ({
     whiteSpace: 'nowrap',
   },
   recommendedLabel: { margin: '0 0.25rem' },
+  cardClassName: {
+    overflow: 'auto',
+  },
 }));
 
 export const WorkflowInstancePageContent: React.FC<{
@@ -164,6 +162,7 @@ export const WorkflowInstancePageContent: React.FC<{
             title="Details"
             divider={false}
             className={classes.topRowCard}
+            cardClassName={classes.cardClassName}
             icon={viewVariables}
           >
             <WorkflowRunDetails
@@ -176,6 +175,7 @@ export const WorkflowInstancePageContent: React.FC<{
         <Grid item xs={6}>
           <WorkflowResult
             className={classes.topRowCard}
+            cardClassName={classes.cardClassName}
             assessedInstance={assessedInstance}
           />
         </Grid>
@@ -183,6 +183,7 @@ export const WorkflowInstancePageContent: React.FC<{
         <Grid item xs={6}>
           <WorkflowInputs
             className={classes.bottomRowCard}
+            cardClassName={classes.cardClassName}
             value={value}
             loading={loading}
             responseError={responseError}
@@ -194,6 +195,7 @@ export const WorkflowInstancePageContent: React.FC<{
             title="Workflow progress"
             divider={false}
             className={classes.bottomRowCard}
+            cardClassName={classes.cardClassName}
           >
             <WorkflowProgress
               workflowError={assessedInstance.instance.error}

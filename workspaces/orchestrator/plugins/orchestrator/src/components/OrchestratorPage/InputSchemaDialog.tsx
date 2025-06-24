@@ -17,21 +17,20 @@
 import React from 'react';
 import { useAsync } from 'react-use';
 
-import {
-  CodeSnippet,
-  Progress,
-  ResponseErrorPanel,
-} from '@backstage/core-components';
+import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 import { InputSchemaResponseDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api/api';
 import { FormattedWorkflowOverview } from '../../dataFormatters/WorkflowOverviewFormatter';
+import { useIsDarkMode } from '../../utils/isDarkMode';
 import { InfoDialog } from '../InfoDialog';
+import { JsonCodeBlock } from '../ui/JsonCodeBlock';
 
 const InputSchemaDialogContent = ({
   inputSchema,
@@ -42,6 +41,8 @@ const InputSchemaDialogContent = ({
   loading: boolean;
   error: Error | undefined;
 }) => {
+  const isDarkMode = useIsDarkMode();
+
   if (loading) return <Progress />;
   if (error)
     return (
@@ -53,16 +54,11 @@ const InputSchemaDialogContent = ({
   return (
     <Box>
       {inputSchema?.inputSchema === undefined ? (
-        'No input schema is defined for this workflow'
+        <Typography>No input schema is defined for this workflow.</Typography>
       ) : (
-        <CodeSnippet
-          text={JSON.stringify(inputSchema, null, 2)}
-          language="json"
-          showLineNumbers
-          showCopyCodeButton
-          customStyle={{
-            padding: '25px 0',
-          }}
+        <JsonCodeBlock
+          isDarkMode={isDarkMode}
+          value={inputSchema?.inputSchema}
         />
       )}
     </Box>

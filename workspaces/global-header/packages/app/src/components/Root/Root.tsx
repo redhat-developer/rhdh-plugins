@@ -121,6 +121,7 @@ export const Root = ({ children = null }: PropsWithChildren<{}>) => {
         />
       </div>
       <SidebarLayout
+        id="rhdh-sidebar-layout"
         aboveMainContentHeaderHeight={0}
         aboveSidebarHeaderHeight={64}
       >
