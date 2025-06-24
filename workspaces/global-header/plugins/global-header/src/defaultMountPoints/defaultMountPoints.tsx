@@ -163,50 +163,24 @@ export const defaultApplicationLauncherDropdownMountPoints: ApplicationLauncherD
     {
       Component: MenuItemLink as ComponentType,
       config: {
-        section: 'Red Hat AI',
-        sectionLink: 'https://www.redhat.com/en/products/ai',
-        sectionLinkLabel: 'Read more',
-        priority: 200,
-        props: {
-          title: 'Podman Desktop',
-          icon: 'https://podman-desktop.io/img/logo.svg',
-          link: 'https://podman-desktop.io/',
-        },
-      },
-    },
-    {
-      Component: MenuItemLink as ComponentType,
-      config: {
-        section: 'Red Hat AI',
-        priority: 180,
-        props: {
-          title: 'OpenShift AI',
-          icon: 'https://upload.wikimedia.org/wikipedia/commons/d/d8/Red_Hat_logo.svg',
-          link: 'https://www.redhat.com/en/technologies/cloud-computing/openshift/openshift-ai',
-        },
-      },
-    },
-    {
-      Component: MenuItemLink as ComponentType,
-      config: {
-        section: 'Quick Links',
+        section: 'Documentation',
         priority: 150,
         props: {
-          title: 'Slack',
-          icon: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg',
-          link: 'https://slack.com/',
+          title: 'Developer Hub',
+          icon: 'developerHub',
+          link: 'https://docs.redhat.com/en/documentation/red_hat_developer_hub',
         },
       },
     },
     {
       Component: MenuItemLink as ComponentType,
       config: {
-        section: 'Quick Links',
+        section: 'Developer Tools',
         priority: 130,
         props: {
-          title: 'ArgoCD',
-          icon: 'https://argo-cd.readthedocs.io/en/stable/assets/logo.png',
-          link: 'https://argo-cd.readthedocs.io/en/stable/',
+          title: 'RHDH Local',
+          icon: 'developerHub',
+          link: 'https://github.com/redhat-developer/rhdh-local',
         },
       },
     },
