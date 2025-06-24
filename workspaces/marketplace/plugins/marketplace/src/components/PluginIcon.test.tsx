@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { render } from '@testing-library/react';
 
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';

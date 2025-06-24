@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ChangeEvent } from 'react';
+
+import { useRef, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 const fullTextSearchParam = 'q';
@@ -25,9 +27,9 @@ export const useQueryFullTextSearch = (debounce?: number) => {
 
   const current = searchParams.get(fullTextSearchParam) ?? '';
 
-  const onChangeDebounceTimeout = React.useRef<ReturnType<typeof setTimeout>>();
+  const onChangeDebounceTimeout = useRef<ReturnType<typeof setTimeout>>();
 
-  const set = React.useCallback(
+  const set = useCallback(
     (newValue: string) => {
       setSearchParams(params => {
         if (!newValue) {
@@ -42,8 +44,8 @@ export const useQueryFullTextSearch = (debounce?: number) => {
     [setSearchParams],
   );
 
-  const onChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
       const newValue = event.target.value;
       if (debounce && debounce > 0) {
         clearTimeout(onChangeDebounceTimeout.current);
@@ -58,7 +60,7 @@ export const useQueryFullTextSearch = (debounce?: number) => {
     [debounce, set],
   );
 
-  const clear = React.useCallback(() => {
+  const clear = useCallback(() => {
     setSearchParams(
       params => {
         params.delete(fullTextSearchParam);
@@ -71,7 +73,7 @@ export const useQueryFullTextSearch = (debounce?: number) => {
     );
   }, [setSearchParams]);
 
-  return React.useMemo(
+  return useMemo(
     () =>
       ({
         current,

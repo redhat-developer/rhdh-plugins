@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { ErrorPanel, Table, TableColumn } from '@backstage/core-components';
 
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';

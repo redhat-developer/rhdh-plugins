@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
 import { TestApiProvider } from '@backstage/test-utils';
@@ -75,7 +75,7 @@ const mockCodeEditorSetValue = jest.fn();
 
 jest.mock('./CodeEditor', () => ({
   CodeEditor: ({ onLoaded }: any) => {
-    React.useEffect(() => {
+    useEffect(() => {
       onLoaded?.();
     }, [onLoaded]);
     return <div>Code Editor Mock</div>;

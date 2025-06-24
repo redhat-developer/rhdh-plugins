@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import CardMedia from '@mui/material/CardMedia';
 import NoIconIcon from '@mui/icons-material/PowerOutlined';
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo, useCallback } from 'react';
 
 import { SelectItem } from '@backstage/core-components';
 import { useSearchParams } from 'react-router-dom';
@@ -32,7 +32,7 @@ const CategoryFilter = () => {
   const filter = useQueryArrayFilter('spec.categories');
   const categories = categoriesFacet.data;
 
-  const items = React.useMemo(() => {
+  const items = useMemo(() => {
     if (!categories) return [];
     return categories.map(category => ({
       label: category.value,
@@ -40,7 +40,7 @@ const CategoryFilter = () => {
     }));
   }, [categories]);
 
-  const handleChange = React.useCallback(
+  const handleChange = useCallback(
     (_e: any, value: SelectItem[]) => {
       const newSelection = value.map(v => v.value);
       filter.set(newSelection);
@@ -63,7 +63,7 @@ const AuthorFilter = () => {
   const authors = authorsFacet.data;
   const filter = useQueryArrayFilter('spec.authors.name');
 
-  const items = React.useMemo(() => {
+  const items = useMemo(() => {
     if (!authors) return [];
     return authors.map(author => ({
       label: author.value,
@@ -71,7 +71,7 @@ const AuthorFilter = () => {
     }));
   }, [authors]);
 
-  const handleChange = React.useCallback(
+  const handleChange = useCallback(
     (_e: any, value: SelectItem[]) => {
       const newSelection = value.map(v => v.label);
       filter.set(newSelection);
@@ -113,7 +113,7 @@ const SupportTypeFilter = () => {
 
   const facets = pluginFacets.data;
 
-  const items = React.useMemo(() => {
+  const items = useMemo(() => {
     if (!facets) return [];
     const allSupportTypeItems: SelectItem[] = [];
 
@@ -154,7 +154,7 @@ const SupportTypeFilter = () => {
     return allSupportTypeItems;
   }, [facets]);
 
-  const selected = React.useMemo(() => {
+  const selected = useMemo(() => {
     const selectedFilters = searchParams
       .getAll('filter')
       .filter(filter =>
@@ -165,7 +165,7 @@ const SupportTypeFilter = () => {
     );
   }, [searchParams, items]);
 
-  const onChange = React.useCallback(
+  const onChange = useCallback(
     (newValues: SelectItem[]) => {
       const newSelection = newValues.map(v => v.value);
       setSearchParams(
