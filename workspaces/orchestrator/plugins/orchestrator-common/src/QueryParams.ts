@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const QUERY_PARAM_BUSINESS_KEY = 'businessKey' as const;
+
 export const QUERY_PARAM_INSTANCE_ID = 'instanceId' as const;
-export const QUERY_PARAM_INCLUDE_ASSESSMENT = 'includeAssessment' as const;
 export const QUERY_PARAM_ASSESSMENT_INSTANCE_ID =
   'assessmentInstanceId' as const;

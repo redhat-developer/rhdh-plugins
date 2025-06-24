@@ -52,8 +52,6 @@ import {
   orchestratorWorkflowSpecificPermission,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
-  QUERY_PARAM_BUSINESS_KEY,
-  QUERY_PARAM_INCLUDE_ASSESSMENT,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -450,18 +448,12 @@ function setupInternalRoutes(
         manageDenyAuthorization(auditEvent);
       }
 
-      const businessKey = routerApi.v2.extractQueryParam(
-        c.request,
-        QUERY_PARAM_BUSINESS_KEY,
-      );
-
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
         .executeWorkflow(
           executeWorkflowRequestDTO,
           workflowId,
-          businessKey,
           initiatorEntity,
         )
         .then(result => {
@@ -874,15 +866,9 @@ function setupInternalRoutes(
         },
       });
 
-      const includeAssessment = routerApi.v2.extractQueryParam(
-        c.request,
-        QUERY_PARAM_INCLUDE_ASSESSMENT,
-      );
-
       try {
         const assessedInstance = await routerApi.v2.getInstanceById(
           instanceId,
-          !!includeAssessment,
         );
 
         const workflowId = assessedInstance.instance.processId;
