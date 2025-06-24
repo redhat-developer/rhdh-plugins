@@ -15,7 +15,18 @@ The architecture adheres to standard Backstage plugin guidelines and requires th
    - Provides the frontend interface.
 
 2. **`backstage-plugin-orchestrator-backend`**
+
    - Serves as a backend proxy between Backstage and SonataFlow.
+
+3. **`backstage-plugin-orchestrator-form-widgets`**
+
+   - Provides custom widgets for the workflow execution form.
+   - Check for [more details](./docs/orchestratorFormWidgets.md).
+
+4. **`scaffolder-backend-module-orchestrator`**
+
+   - Provides callable actions from [scaffolder templates](https://backstage.io/docs/features/software-templates/writing-custom-actions), like `orchestrator:workflow:run` or `orchestrator:workflow:get_params`.
+   - Check for [more details](./plugins/scaffolder-backend-module-orchestrator/README.md).
 
 These plugins farther import following isolated plugins:
 
@@ -35,10 +46,6 @@ These plugins farther import following isolated plugins:
 
    - Defines the API for extending the workflow execution form.
    - For more details, see the [Extensible Form Documentation](./docs/extensibleForm.md).
-
-5. **`backstage-plugin-orchestrator-form-widgets`**
-
-   - Provides the workflow execution form custom widgets.
 
 For more details about architecture, see the [Architecture](https://www.rhdhorchestrator.io/main/docs/architecture/) page.
 
@@ -118,7 +125,7 @@ Follows these instructions to install the orchestrator plugin in a backstage env
 
 ## Install as a dynamic plugin in Red Hat Developer Hub
 
-Follow [these guidelines](https://github.com/rhdhorchestrator/orchestrator-helm-operator/blob/main/docs/release-1.3/existing-rhdh.md#install-the-orchestrator-operator) to install the orchestrator operator and configure the orchestrator as a dynamic plugin in Red Hat Developer Hub.
+Follow [these guidelines](https://github.com/rhdhorchestrator/orchestrator-helm-operator/blob/main/docs/main/existing-rhdh.md#install-the-orchestrator-operator) to install the orchestrator operator and configure the orchestrator as a dynamic plugin in Red Hat Developer Hub.
 
 ## Configuration
 
@@ -204,7 +211,7 @@ Their implementation lives in the [plugins/scaffolder-backend-module-orchestrato
 
 The orchestrator backend has audit logs for all incoming requests.
 
-For more information about audit logs in RHDH, please refer to [the official documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.4/html/audit_log/assembly-audit-log).
+For more information about audit logs in RHDH, please refer to [the official documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.6/html/audit_logs_in_red_hat_developer_hub/index).
 [The official Log storage OpenShift documentation](https://docs.openshift.com/container-platform/4.15/observability/logging/log_storage/about-log-storage.html) may also be of interest.
 
 ## Extensible workflow execution form
@@ -229,8 +236,6 @@ This will trigger a docker container run of devmode SonataFlow as described in [
 
 More development guidelines available in the [contributors documentation](./docs/Contributors.md).
 
-## Enable in rhdh repo locally
+## Enable in RHDH repo locally
 
 If you're running a local clone of [Red Hat Developer Hub (RHDH)](https://github.com/redhat-developer/rhdh) and want to use the Orchestrator plugin as a dynamic plugin, we've included a helper script to streamline this setup.
-
-Please refer to the [Enabling the Orchestrator Plugin in rhdh repo locally](./workspaces/orchestrator/README.md#-enabling-the-orchestrator-plugin-in-red-hat-developer-hub) section for detailed instructions.
