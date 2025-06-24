@@ -137,3 +137,13 @@ To use this feature, the relevant authentication providers must be properly conf
 - [Backstage GitHub Auth Provider](https://backstage.io/docs/auth/github/provider)
 - [Backstage GitLab Auth Provider](https://backstage.io/docs/auth/gitlab/provider)
 - [Backstage Microsoft Auth Provider](https://backstage.io/docs/auth/microsoft/provider)
+
+### Backstage Token Header
+
+In addition to provider-specific tokens, The orchestrator plugin will always include the user’s session token in the `X-Backstage-Authorization` header when invoking SonataFlow. This token represents the currently authenticated Backstage user and can be used to call backstage plugin APIs from a workflow.
+To use it, include it in the application.properties. For example:
+
+```
+quarkus.openapi-generator.backstagecatalog_yaml.auth.BearerToken.token-propagation=true
+quarkus.openapi-generator.backstagecatalog_yaml.auth.BearerToken.header-name=X-Backstage-Authorization
+```

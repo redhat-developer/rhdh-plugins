@@ -36,7 +36,7 @@ import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-
 import type { JsonObject, JsonValue } from '@backstage/types';
 
 import { UnauthorizedError } from '@backstage-community/plugin-rbac-common';
-import { fullFormats } from 'ajv-formats/dist/formats';
+import { fullFormats } from 'ajv-formats';
 import express, { Router } from 'express';
 import { Request as HttpRequest } from 'express-serve-static-core';
 import { OpenAPIBackend, Request } from 'openapi-backend';
@@ -423,6 +423,7 @@ function setupInternalRoutes(
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
       const credentials = await httpAuth.credentials(req);
+      const token = req.headers.authorization?.split(' ')[1];
       const initiatorEntity = await (
         await userInfo.getUserInfo(credentials)
       ).userEntityRef;
@@ -451,7 +452,12 @@ function setupInternalRoutes(
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
-        .executeWorkflow(executeWorkflowRequestDTO, workflowId, initiatorEntity)
+        .executeWorkflow(
+          executeWorkflowRequestDTO,
+          workflowId,
+          initiatorEntity,
+          token,
+        )
         .then(result => {
           auditEvent.success({ meta: { id: result.id } });
           return res.status(200).json(result);
