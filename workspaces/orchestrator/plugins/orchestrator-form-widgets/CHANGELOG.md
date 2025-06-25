@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 0.2.4
+
+### Patch Changes
+
+- a034e5b: Pass bools and numbers as primitive values (not converted to strings).
+- f5e85c5: Add support for selectors in SchemaUpdater. A complex response can be narrowed by the selector to produce the object structure as desired by the SchemaUpdater.
+- 488852f: Fixing alignment of the ActiveMultiSelect widget's chips.
+- b9be64b: Added "fetch:response:mandatory" selector for the ActiveMultiSelect widget.
+- 112d44f: Adding suuport for template arrays for the Orchestrator widgets.
+- 891844f: Template units can be evaluated to primitive values, complex objects and arrays.
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.6.1
+
 ## 0.2.3
 
 ### Patch Changes
