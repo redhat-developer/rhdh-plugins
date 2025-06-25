@@ -63,7 +63,6 @@ export const mapProcessInstanceToDetails = (
     category: instance.category,
     state: instance.state,
     description: instance.description,
-    businessKey: instance.businessKey,
   };
 };
 

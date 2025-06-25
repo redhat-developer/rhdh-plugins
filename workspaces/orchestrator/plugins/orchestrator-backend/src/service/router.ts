@@ -52,8 +52,6 @@ import {
   orchestratorWorkflowSpecificPermission,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
-  QUERY_PARAM_BUSINESS_KEY,
-  QUERY_PARAM_INCLUDE_ASSESSMENT,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -425,6 +423,7 @@ function setupInternalRoutes(
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
       const credentials = await httpAuth.credentials(req);
+      const token = req.headers.authorization?.split(' ')[1];
       const initiatorEntity = await (
         await userInfo.getUserInfo(credentials)
       ).userEntityRef;
@@ -450,19 +449,14 @@ function setupInternalRoutes(
         manageDenyAuthorization(auditEvent);
       }
 
-      const businessKey = routerApi.v2.extractQueryParam(
-        c.request,
-        QUERY_PARAM_BUSINESS_KEY,
-      );
-
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
         .executeWorkflow(
           executeWorkflowRequestDTO,
           workflowId,
-          businessKey,
           initiatorEntity,
+          token,
         )
         .then(result => {
           auditEvent.success({ meta: { id: result.id } });
@@ -874,16 +868,8 @@ function setupInternalRoutes(
         },
       });
 
-      const includeAssessment = routerApi.v2.extractQueryParam(
-        c.request,
-        QUERY_PARAM_INCLUDE_ASSESSMENT,
-      );
-
       try {
-        const assessedInstance = await routerApi.v2.getInstanceById(
-          instanceId,
-          !!includeAssessment,
-        );
+        const assessedInstance = await routerApi.v2.getInstanceById(instanceId);
 
         const workflowId = assessedInstance.instance.processId;
 

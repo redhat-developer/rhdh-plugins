@@ -86,7 +86,7 @@ describe('LocalPackageInstallStatusProcessor', () => {
       spec: {
         ...packageEntity.spec,
         packageName: '@backstage/plugin-search-backend',
-        version: '^2.0.1',
+        version: '^1.0.1',
       },
     };
     const result = await processor.preProcessEntity(searchBackendPackage);
@@ -103,7 +103,7 @@ describe('LocalPackageInstallStatusProcessor', () => {
       spec: {
         ...packageEntity.spec,
         packageName: '@backstage/plugin-search-backend',
-        version: '^1.0.1',
+        version: '^2.0.2',
       },
     };
     const result = await processor.preProcessEntity(searchBackendPackage);

@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.11.2
+
+### Patch Changes
+
+- 25fd302: Remove the CompanyLogo `max-width` and align the rendered image to the left
+- 4200b27: Updated the default mount points and dynamic plugin config to include application launcher quick links.
+
 ## 1.11.1
 
 ### Patch Changes

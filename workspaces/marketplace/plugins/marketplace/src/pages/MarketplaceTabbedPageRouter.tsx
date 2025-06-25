@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 import { Page, Header, TabbedLayout } from '@backstage/core-components';

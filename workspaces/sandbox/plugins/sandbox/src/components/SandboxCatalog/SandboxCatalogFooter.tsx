@@ -78,6 +78,7 @@ export const SandboxCatalogFooter = () => {
             Click here
           </Link>
         </Typography>
+        <div id="consent_blackbar" />
       </Box>
       <AccessCodeInputModal
         modalOpen={accessCodeModalOpen}
@@ -141,7 +142,6 @@ export const SandboxCatalogFooter = () => {
             </a>
           </li>
           <CookieConsentElement />
-          <div id="consent_blackbar" />
         </ul>
         <FooterCopyright
           slot="links-secondary"

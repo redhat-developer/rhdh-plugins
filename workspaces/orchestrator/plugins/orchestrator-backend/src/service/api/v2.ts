@@ -22,7 +22,6 @@ import {
   ExecuteWorkflowRequestDTO,
   ExecuteWorkflowResponseDTO,
   Filter,
-  ProcessInstance,
   ProcessInstanceListResultDTO,
   ProcessInstanceState,
   WorkflowDTO,
@@ -127,7 +126,6 @@ export class V2 {
 
   public async getInstanceById(
     instanceId: string,
-    includeAssessment: boolean = false,
   ): Promise<AssessedProcessInstanceDTO> {
     const instance = await this.orchestratorService.fetchInstance({
       instanceId,
@@ -137,27 +135,17 @@ export class V2 {
       throw new Error(`Couldn't fetch process instance ${instanceId}`);
     }
 
-    let assessedByInstance: ProcessInstance | undefined;
-
-    if (includeAssessment && instance.businessKey) {
-      assessedByInstance = await this.orchestratorService.fetchInstance({
-        instanceId: instance.businessKey,
-      });
-    }
-
     return {
       instance: mapToProcessInstanceDTO(instance),
-      assessedBy: assessedByInstance
-        ? mapToProcessInstanceDTO(assessedByInstance)
-        : undefined,
+      assessedBy: undefined,
     };
   }
 
   public async executeWorkflow(
     executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO,
     workflowId: string,
-    businessKey: string | undefined,
     initiatorEntity: string,
+    backstageToken: string | undefined,
   ): Promise<ExecuteWorkflowResponseDTO> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
@@ -176,7 +164,7 @@ export class V2 {
       },
       authTokens: executeWorkflowRequestDTO.authTokens as Array<AuthToken>,
       serviceUrl: definition.serviceUrl,
-      businessKey,
+      backstageToken,
     });
 
     if (!executionResponse) {

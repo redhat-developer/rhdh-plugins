@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import type { ComponentType } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 import {
@@ -44,7 +44,7 @@ import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer
 import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
 
 export interface PluginTab {
-  Component: React.ComponentType;
+  Component: ComponentType;
   config: {
     path: string;
     title: string;

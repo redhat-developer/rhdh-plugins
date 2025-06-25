@@ -22,14 +22,20 @@ declare module '@backstage/config' {
       branding?: {
         /**
          * Base64 URI for the full logo. If the value is a string, it is used as the logo for both themes.
-         * @deepVisibility frontend
+         * @visibility frontend
          */
         fullLogo?:
           | string
           | {
-              /** Base64 URI for the logo in light theme */
+              /**
+               * Base64 URI for the logo in light theme
+               * @visibility frontend
+               */
               light: string;
-              /** Base64 URI for the logo in dark theme */
+              /**
+               * Base64 URI for the logo in dark theme
+               * @visibility frontend
+               */
               dark: string;
             };
       };

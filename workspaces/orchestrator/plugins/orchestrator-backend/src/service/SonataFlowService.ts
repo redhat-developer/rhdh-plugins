@@ -98,11 +98,9 @@ export class SonataFlowService {
     serviceUrl: string;
     inputData?: ProcessInstanceVariables;
     authTokens?: Array<AuthToken>;
-    businessKey?: string;
+    backstageToken?: string | undefined;
   }): Promise<WorkflowExecutionResponse | undefined> {
-    const urlToFetch = args.businessKey
-      ? `${args.serviceUrl}/${args.definitionId}?businessKey=${args.businessKey}`
-      : `${args.serviceUrl}/${args.definitionId}`;
+    const urlToFetch = `${args.serviceUrl}/${args.definitionId}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
@@ -111,7 +109,7 @@ export class SonataFlowService {
     if (args.authTokens && Array.isArray(args.authTokens)) {
       args.authTokens.forEach(tokenObj => {
         if (tokenObj.provider && tokenObj.token) {
-          const headerKey = `X-${capitalize(tokenObj.provider)}-Authorization`;
+          const headerKey = `X-Authorization-${capitalize(tokenObj.provider)}`;
           headers[headerKey] = String(tokenObj.token); // Ensure token is a string
         }
       });
@@ -119,6 +117,10 @@ export class SonataFlowService {
       this.logger.debug(
         'No authTokens provided or authTokens is not an array.',
       );
+    }
+
+    if (args.backstageToken) {
+      headers['X-Authorization-Backstage'] = args.backstageToken;
     }
 
     const response = await fetch(urlToFetch, {

@@ -203,13 +203,6 @@ paths:
           description: ID of the workflow instance
           schema:
             type: string
-        - name: includeAssessment
-          in: query
-          required: false
-          description: Whether to include assessment
-          schema:
-            type: boolean
-            default: false
       responses:
         '200':
           description: Successful response
@@ -253,12 +246,6 @@ paths:
           in: path
           description: ID of the workflow to execute
           required: true
-          schema:
-            type: string
-        - name: businessKey
-          in: query
-          description: ID of the parent workflow
-          required: false
           schema:
             type: string
       requestBody:
@@ -513,8 +500,6 @@ components:
         workflowdata:
           $ref: '#/components/schemas/WorkflowDataDTO'
         initiatorEntity:
-          type: string
-        businessKey:
           type: string
         nodes:
           type: array

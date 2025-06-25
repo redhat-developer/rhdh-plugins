@@ -47,7 +47,7 @@ No authorization required
 
 <a name="executeWorkflow"></a>
 # **executeWorkflow**
-> ExecuteWorkflowResponseDTO executeWorkflow(workflowId, ExecuteWorkflowRequestDTO, businessKey)
+> ExecuteWorkflowResponseDTO executeWorkflow(workflowId, ExecuteWorkflowRequestDTO)
 
 Execute a workflow
 
@@ -59,7 +59,6 @@ Execute a workflow
 |------------- | ------------- | ------------- | -------------|
 | **workflowId** | **String**| ID of the workflow to execute | [default to null] |
 | **ExecuteWorkflowRequestDTO** | [**ExecuteWorkflowRequestDTO**](../Models/ExecuteWorkflowRequestDTO.md)|  | |
-| **businessKey** | **String**| ID of the parent workflow | [optional] [default to null] |
 
 ### Return type
 
@@ -76,7 +75,7 @@ No authorization required
 
 <a name="getInstanceById"></a>
 # **getInstanceById**
-> AssessedProcessInstanceDTO getInstanceById(instanceId, includeAssessment)
+> AssessedProcessInstanceDTO getInstanceById(instanceId)
 
 Get Workflow Instance by ID
 
@@ -87,7 +86,6 @@ Get Workflow Instance by ID
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **instanceId** | **String**| ID of the workflow instance | [default to null] |
-| **includeAssessment** | **Boolean**| Whether to include assessment | [optional] [default to false] |
 
 ### Return type
 
