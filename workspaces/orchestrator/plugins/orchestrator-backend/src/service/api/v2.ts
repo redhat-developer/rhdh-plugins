@@ -145,6 +145,7 @@ export class V2 {
     executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO,
     workflowId: string,
     initiatorEntity: string,
+    backstageToken: string | undefined,
   ): Promise<ExecuteWorkflowResponseDTO> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
@@ -163,6 +164,7 @@ export class V2 {
       },
       authTokens: executeWorkflowRequestDTO.authTokens as Array<AuthToken>,
       serviceUrl: definition.serviceUrl,
+      backstageToken,
     });
 
     if (!executionResponse) {

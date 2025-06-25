@@ -423,6 +423,7 @@ function setupInternalRoutes(
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
       const credentials = await httpAuth.credentials(req);
+      const token = req.headers.authorization?.split(' ')[1];
       const initiatorEntity = await (
         await userInfo.getUserInfo(credentials)
       ).userEntityRef;
@@ -451,7 +452,12 @@ function setupInternalRoutes(
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
-        .executeWorkflow(executeWorkflowRequestDTO, workflowId, initiatorEntity)
+        .executeWorkflow(
+          executeWorkflowRequestDTO,
+          workflowId,
+          initiatorEntity,
+          token,
+        )
         .then(result => {
           auditEvent.success({ meta: { id: result.id } });
           return res.status(200).json(result);

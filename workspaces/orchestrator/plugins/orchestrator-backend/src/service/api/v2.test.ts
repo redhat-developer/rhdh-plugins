@@ -382,6 +382,7 @@ describe('executeWorkflow', () => {
       workflowData,
       workflowInfo.id,
       'someUserEntity',
+      'someToken',
     );
 
     // Assert
