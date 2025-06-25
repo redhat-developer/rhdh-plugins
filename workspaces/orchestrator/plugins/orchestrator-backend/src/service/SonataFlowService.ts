@@ -109,7 +109,7 @@ export class SonataFlowService {
     if (args.authTokens && Array.isArray(args.authTokens)) {
       args.authTokens.forEach(tokenObj => {
         if (tokenObj.provider && tokenObj.token) {
-          const headerKey = `X-${capitalize(tokenObj.provider)}-Authorization`;
+          const headerKey = `X-Authorization-${capitalize(tokenObj.provider)}`;
           headers[headerKey] = String(tokenObj.token); // Ensure token is a string
         }
       });
