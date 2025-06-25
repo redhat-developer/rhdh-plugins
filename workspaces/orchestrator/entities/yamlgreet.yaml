@@ -1,7 +1,7 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: yamlgreet # matches workflow ID
+  name: greet
   title: Greeting
   description: Greeting workflow
   tags:
@@ -35,6 +35,7 @@ spec:
       name: Run workflow
       action: orchestrator:workflow:run
       input:
+        workflow_id: yamlgreet
         parameters: ${{ parameters }}
 
   output:
