@@ -84,7 +84,7 @@ class EventApiController {
     const events = req.body;
 
     const auditEvent = await this.auditor.createEvent({
-      eventId: 'events-mutate',
+      eventId: 'capture-event',
       request: req,
     });
 
@@ -92,6 +92,9 @@ class EventApiController {
       this.processIncomingEvents(events, auditEvent);
       res.status(200).json({ success: true, message: 'Event received' });
     } catch (error) {
+      auditEvent.fail({
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
       res
         .status(400)
         .json({ message: error.message, errors: error.details.fieldErrors });
@@ -103,8 +106,21 @@ class EventApiController {
     req: Request<{}, {}, {}, QueryParams>,
     res: Response,
   ): Promise<void> {
+    const auditEvent = await this.auditor.createEvent({
+      eventId: 'get-insights',
+      request: req,
+    });
+
     const parsed = EventRequestSchema.safeParse(req.query);
     if (!parsed.success) {
+      auditEvent.fail({
+        error: new Error(
+          JSON.stringify({
+            message: 'Invalid query',
+            errors: parsed.error.flatten().fieldErrors,
+          }),
+        ),
+      });
       res.status(400).json({
         message: 'Invalid query',
         errors: parsed.error.flatten().fieldErrors,
@@ -139,6 +155,14 @@ class EventApiController {
         await this.getTechdocsMetadata(req, result);
       }
 
+      auditEvent.success({
+        meta: {
+          queryType: type,
+          format: format,
+          resultsCount: result.data?.length || 0,
+        },
+      });
+
       if (format === 'csv' && result.data) {
         const csv = Parser(result.data);
         res.header('Content-Type', 'text/csv');
@@ -148,6 +172,9 @@ class EventApiController {
       }
       res.json(result);
     } catch (error) {
+      auditEvent.fail({
+        error: error instanceof Error ? error : new Error(String(error)),
+      });
       res.status(500).json({ error: 'Internal Server Error' });
       return;
     }
