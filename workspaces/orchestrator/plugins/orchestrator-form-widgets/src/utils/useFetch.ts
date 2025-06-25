@@ -65,6 +65,18 @@ export const useFetch = (
       const fetchData = async () => {
         try {
           setError(undefined);
+          if (typeof evaluatedFetchUrl !== 'string') {
+            // eslint-disable-next-line no-console
+            console.error('The fetch:url is not evaluated to a string: ', {
+              fetchUrl,
+              evaluatedFetchUrl,
+            });
+            setError(
+              `The fetch:url is not evaluated to a string: "${fetchUrl}"`,
+            );
+            return;
+          }
+
           setLoading(true);
 
           const response = await fetchApi.fetch(
