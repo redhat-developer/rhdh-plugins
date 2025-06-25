@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import { AuthService } from '@backstage/backend-plugin-api';
-import { parseEntityRef } from '@backstage/catalog-model';
 import { DiscoveryApi } from '@backstage/plugin-permission-common/index';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { JsonObject } from '@backstage/types';
@@ -23,7 +22,10 @@ import { isAxiosError } from 'axios';
 
 import { getOrchestratorApi, getRequestConfigOption } from './utils';
 
-type RunWorkflowTemplateActionInput = { parameters: JsonObject };
+type RunWorkflowTemplateActionInput = {
+  parameters: JsonObject;
+  workflow_id: string;
+};
 type RunWorkflowTemplateActionOutput = { instanceUrl: string };
 
 const getError = (err: unknown): Error => {
@@ -77,9 +79,15 @@ export const createRunWorkflowAction = (
         return;
       }
 
+      if (!ctx.input.workflow_id) {
+        throw new Error(
+          "Missing required 'workflow_id' input. Ensure that the step invoking the 'orchestrator:workflow:run' action includes an explicit 'workflow_id' field in its input.",
+        );
+      }
+
       try {
         const { data } = await api.executeWorkflow(
-          parseEntityRef(entity).name,
+          ctx.input.workflow_id,
           { inputData: ctx.input.parameters },
           reqConfigOption,
         );
