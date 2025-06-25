@@ -34,6 +34,8 @@ import { Spacer } from '../components/Spacer/Spacer';
 import { StarredDropdown } from '../components/HeaderDropdownComponent/StarredDropdown';
 import { ApplicationLauncherDropdown } from '../components/HeaderDropdownComponent/ApplicationLauncherDropdown';
 import { CompanyLogo } from '../components/CompanyLogo/CompanyLogo';
+import ManageAccounts from '@mui/icons-material/ManageAccountsOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 
 /**
  * default Global Header Components mount points
@@ -145,8 +147,18 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
       priority: 200,
       props: {
         title: 'Settings',
-        icon: 'manageAccounts',
+        icon: ManageAccounts,
         link: '/settings',
+      },
+    },
+  },
+  {
+    Component: MenuItemLink as ComponentType,
+    config: {
+      priority: 150,
+      props: {
+        title: 'My profile',
+        icon: AccountCircleOutlinedIcon,
       },
     },
   },
