@@ -12,15 +12,15 @@ These are the headers Backstage will send:
 
 | Provider  | Header                      |
 | --------- | --------------------------- |
-| GitHub    | `X-Github-Authorization`    |
-| GitLab    | `X-Gitlab-Authorization`    |
-| Microsoft | `X-Microsoft-Authorization` |
+| GitHub    | `X-Authorization-Github`    |
+| GitLab    | `X-Authorization-Gitlab`    |
+| Microsoft | `X-Authorization-Microsoft` |
 
 ### Example `application.properties` Configuration
 
 ```
 quarkus.openapi-generator.github_yaml.auth.BearerToken.token-propagation=true
-quarkus.openapi-generator.github_yaml.auth.BearerToken.header-name=X-Github-Authorization
+quarkus.openapi-generator.github_yaml.auth.BearerToken.header-name=X-Authorization-Github
 ```
 
 > 🔗 See the [SonataFlow token propagation documentation](https://www.rhdhorchestrator.io/main/docs/serverless-workflows/configuration/token-propagation/) for more details.
@@ -140,10 +140,10 @@ To use this feature, the relevant authentication providers must be properly conf
 
 ### Backstage Token Header
 
-In addition to provider-specific tokens, The orchestrator plugin will always include the user’s session token in the `X-Backstage-Authorization` header when invoking SonataFlow. This token represents the currently authenticated Backstage user and can be used to call backstage plugin APIs from a workflow.
+In addition to provider-specific tokens, The orchestrator plugin will always include the user’s session token in the `X-Authorization-Backstage` header when invoking SonataFlow workflow execution. This token represents the currently authenticated Backstage user and can be used to call backstage plugin APIs from a workflow.
 To use it, include it in the application.properties. For example:
 
 ```
 quarkus.openapi-generator.backstagecatalog_yaml.auth.BearerToken.token-propagation=true
-quarkus.openapi-generator.backstagecatalog_yaml.auth.BearerToken.header-name=X-Backstage-Authorization
+quarkus.openapi-generator.backstagecatalog_yaml.auth.BearerToken.header-name=X-Authorization-Backstage
 ```

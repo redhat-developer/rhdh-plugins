@@ -120,7 +120,7 @@ export class SonataFlowService {
     }
 
     if (args.backstageToken) {
-      headers['X-Backstage-Authorization'] = args.backstageToken;
+      headers['X-Authorization-Backstage'] = args.backstageToken;
     }
 
     const response = await fetch(urlToFetch, {
