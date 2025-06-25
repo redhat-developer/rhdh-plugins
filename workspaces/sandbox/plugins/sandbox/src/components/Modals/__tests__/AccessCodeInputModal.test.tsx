@@ -74,16 +74,18 @@ describe('AccessCodeInputModal', () => {
   it('renders modal when open', () => {
     renderComponent(true);
 
-    expect(screen.getByText('Enter the access code')).toBeInTheDocument();
+    expect(screen.getByText('Enter the activation code')).toBeInTheDocument();
     expect(
-      screen.getByText('If you have an access code, enter it now.'),
+      screen.getByText('If you have an activation code, enter it now.'),
     ).toBeInTheDocument();
   });
 
   it('does not render modal when closed', () => {
     renderComponent(false);
 
-    expect(screen.queryByText('Enter the access code')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Enter the activation code'),
+    ).not.toBeInTheDocument();
   });
 
   it('renders 5 input fields', () => {
@@ -258,7 +260,7 @@ describe('AccessCodeInputModal', () => {
 
   it('displays error message when verification fails', async () => {
     const user = userEvent.setup();
-    const errorMessage = 'Invalid access code';
+    const errorMessage = 'Invalid activation code';
     mockRegisterApi.verifyActivationCode.mockRejectedValue(
       new Error(errorMessage),
     );
