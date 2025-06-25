@@ -529,7 +529,8 @@ Input schema:
     "myArray": ["foo", "$${{current.studentName}}", "Some text $${{current.studentName}}"],
     "myObject": {"studentName": "$${{current.studentName}}"},
     "myDataAsObject": {"studentName": "$${{current.myComplexField}}"},
-    "myDataAsJsonString": {"studentName": "Some text $${{current.myComplexField}}"}
+    "myDataAsJsonString": {"studentName": "Some text $${{current.myComplexField}}"},
+    "myObjectWithBools" { "constantTrue": true, "textWithTrue": "something $${{current.fooTrue}}", "pureTrue": "$${{current.fooTrue}}" }
   }
   ...
 }
@@ -539,6 +540,7 @@ Assuming there is another top-level field
 
 - `studentName` which current value (entered by the user) is `Marek`,
 - `myComplexField` containing sub-fields `foo` and `bar`,
+- `fooTrue` contains boolean value of `true` (so not converted to string),
 
 then the templates will be evaluated to:
 
@@ -551,7 +553,8 @@ then the templates will be evaluated to:
     "myArray": ["foo", "Marek", "Some text Marek"],
     "myObject": {"studentName": "Marek"},
     "myDataAsObject": {"studentName": {"foo": "...", "bar": "..."}},
-    "myDataAsJsonString": {"studentName": "Some text \"{\"foo\": \"...\", \"bar\": \"...\"}\""}
+    "myDataAsJsonString": {"studentName": "Some text \"{\"foo\": \"...\", \"bar\": \"...\"}\""},
+    "myObjectWithBools" { "constantTrue": true, "textWithTrue": "something true", "pureTrue": true }
   }
   ...
 }
