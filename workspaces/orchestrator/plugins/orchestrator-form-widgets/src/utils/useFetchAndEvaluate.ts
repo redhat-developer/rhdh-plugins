@@ -62,7 +62,7 @@ export const useFetchAndEvaluate = (
             responseData: data,
             uiProps,
           });
-          setResultText(evaluatedText);
+          setResultText(evaluatedText?.toString());
         } catch (err) {
           const prefix = `Failed to evaluate text '${template}' for field ${fieldId}`;
           const msg = getErrorMessage(prefix, err);
