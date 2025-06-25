@@ -115,7 +115,7 @@ export const AccessCodeInputModal: React.FC<AccessCodeInputModalProps> = ({
         variant="h5"
         sx={{ fontWeight: 700, padding: '32px 24px 0 24px' }}
       >
-        Enter the access code
+        Enter the activation code
       </DialogTitle>
       <IconButton
         aria-label="close"
@@ -140,7 +140,7 @@ export const AccessCodeInputModal: React.FC<AccessCodeInputModalProps> = ({
             alignItems: 'center',
           }}
         >
-          If you have an access code, enter it now.
+          If you have an activation code, enter it now.
         </DialogContentText>
         <Stack
           direction="row"
