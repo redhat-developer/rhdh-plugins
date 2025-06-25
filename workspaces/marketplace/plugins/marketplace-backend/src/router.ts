@@ -47,14 +47,12 @@ import { rules as extensionRules } from './permissions/rules';
 import { matches } from './utils/permissionUtils';
 import { InstallationDataService } from './installation/InstallationDataService';
 import { ConfigFormatError } from './errors/ConfigFormatError';
-import { DynamicPluginsService } from './installation/DynamicPluginsService';
 
 export type MarketplaceRouterOptions = {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
   permissions: PermissionsService;
   installationDataService: InstallationDataService;
-  dynamicPluginsService: DynamicPluginsService;
   config: Config;
 };
 
@@ -66,7 +64,6 @@ export async function createRouter(
     marketplaceApi,
     permissions,
     installationDataService,
-    dynamicPluginsService,
     config,
   } = options;
 
@@ -229,18 +226,6 @@ export async function createRouter(
     },
   );
 
-  router.get(
-    '/package/:namespace/:name/configuration/status',
-    async (req, res) => {
-      const marketplacePackage = await marketplaceApi.getPackageByName(
-        req.params.namespace,
-        req.params.name,
-      );
-
-      res.send(dynamicPluginsService.packageStatus(marketplacePackage));
-    },
-  );
-
   router.post(
     '/package/:namespace/:name/configuration',
     requireInitializedInstallationDataService,
@@ -394,26 +379,6 @@ export async function createRouter(
       );
       const result = await installationDataService.getPluginConfig(plugin);
       res.status(200).json({ configYaml: result });
-    },
-  );
-
-  router.get(
-    '/plugin/:namespace/:name/configuration/status',
-    async (req, res) => {
-      const readDecision = await authorizeConditional(
-        req,
-        extensionsPluginReadPermission,
-      );
-      if (readDecision.result === AuthorizeResult.DENY) {
-        throw new NotAllowedError(
-          `Not allowed to read the configuration of ${req.params.namespace}:${req.params.name}`,
-        );
-      }
-      const marketplacePlugin = await marketplaceApi.getPluginByName(
-        req.params.namespace,
-        req.params.name,
-      );
-      res.send(await dynamicPluginsService.pluginStatus(marketplacePlugin));
     },
   );
 

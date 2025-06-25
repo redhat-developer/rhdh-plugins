@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  MarketplaceApi,
+  MarketplacePlugin,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { DEFAULT_NAMESPACE } from '@backstage/catalog-model';
 import {
   FileInstallationStorage,
   InstallationStorage,
@@ -27,11 +31,10 @@ import {
 } from '../errors/InstallationInitError';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ConfigFormatError } from '../errors/ConfigFormatError';
-import { DynamicPluginsService } from './DynamicPluginsService';
 
 export class InstallationDataService {
   private constructor(
-    private readonly dynamicPluginsService: DynamicPluginsService,
+    private readonly marketplaceApi: MarketplaceApi,
     private readonly _installationStorage?: InstallationStorage,
     private readonly initializationError?: InstallationInitError,
   ) {}
@@ -47,10 +50,10 @@ export class InstallationDataService {
 
   static fromConfig(deps: {
     config: Config;
-    dynamicPluginsService: DynamicPluginsService;
+    marketplaceApi: MarketplaceApi;
     logger: LoggerService;
   }): InstallationDataService {
-    const { config, dynamicPluginsService, logger } = deps;
+    const { config, marketplaceApi, logger } = deps;
 
     const serviceWithInitializationError = (
       reason: InstallationInitErrorReasonKeys,
@@ -65,7 +68,7 @@ export class InstallationDataService {
         );
       }
       return new InstallationDataService(
-        dynamicPluginsService,
+        marketplaceApi,
         undefined,
         new InstallationInitError(reason, message, cause),
       );
@@ -94,7 +97,7 @@ export class InstallationDataService {
 
       const storage = new FileInstallationStorage(filePath);
       storage.initialize();
-      return new InstallationDataService(dynamicPluginsService, storage);
+      return new InstallationDataService(marketplaceApi, storage);
     } catch (e) {
       let reason: InstallationInitErrorReasonKeys;
       if (e instanceof InstallationInitError) {
@@ -112,6 +115,21 @@ export class InstallationDataService {
     }
   }
 
+  private async getPluginDynamicArtifacts(
+    plugin: MarketplacePlugin,
+  ): Promise<Set<string>> {
+    const marketplacePackages = await this.marketplaceApi.getPluginPackages(
+      plugin.metadata.namespace ?? DEFAULT_NAMESPACE,
+      plugin.metadata.name,
+    );
+
+    return new Set(
+      marketplacePackages.flatMap(p =>
+        p.spec?.dynamicArtifact ? [p.spec.dynamicArtifact] : [],
+      ),
+    );
+  }
+
   getInitializationError(): InstallationInitError | undefined {
     return this.initializationError;
   }
@@ -123,8 +141,7 @@ export class InstallationDataService {
   async getPluginConfig(
     plugin: MarketplacePlugin,
   ): Promise<string | undefined> {
-    const dynamicArtifacts =
-      await this.dynamicPluginsService.getPluginDynamicArtifacts(plugin);
+    const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
     return this.installationStorage.getPackages(dynamicArtifacts);
   }
 
@@ -136,8 +153,7 @@ export class InstallationDataService {
     plugin: MarketplacePlugin,
     newConfig: string,
   ): Promise<void> {
-    const dynamicArtifacts =
-      await this.dynamicPluginsService.getPluginDynamicArtifacts(plugin);
+    const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
     this.installationStorage.updatePackages(dynamicArtifacts, newConfig);
   }
 
@@ -149,8 +165,7 @@ export class InstallationDataService {
   }
 
   async setPluginDisabled(plugin: MarketplacePlugin, disabled: boolean) {
-    const dynamicArtifacts =
-      await this.dynamicPluginsService.getPluginDynamicArtifacts(plugin);
+    const dynamicArtifacts = await this.getPluginDynamicArtifacts(plugin);
     this.installationStorage.setPackagesDisabled(dynamicArtifacts, disabled);
   }
 }

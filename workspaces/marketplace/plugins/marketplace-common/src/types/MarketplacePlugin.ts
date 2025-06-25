@@ -74,16 +74,9 @@ export enum MarketplacePluginInstallStatus {
   NotInstalled = 'NotInstalled',
   Installed = 'Installed',
   PartiallyInstalled = 'PartiallyInstalled',
+  Disabled = 'Disabled',
   UpdateAvailable = 'UpdateAvailable',
 }
-
-/**
- * @public
- */
-export type MarketplacePluginStatus = {
-  installStatus: MarketplacePluginInstallStatus;
-  disabled: boolean;
-};
 
 /**
  * @public

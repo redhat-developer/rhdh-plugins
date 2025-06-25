@@ -21,7 +21,6 @@ import { FileInstallationStorage } from '../src/installation/FileInstallationSto
 import { type JsonObject } from '@backstage/types';
 import { stringify } from 'yaml';
 import { InstallationDataService } from '../src/installation/InstallationDataService';
-import { DynamicPluginsService } from '../src/installation/DynamicPluginsService';
 
 export const mockCollections = [
   {
@@ -181,7 +180,3 @@ export const mockMarketplaceApi = {
   getPackageByName: jest.fn(),
   getPluginPackages: jest.fn(),
 } as unknown as jest.Mocked<MarketplaceApi>;
-
-export const mockDynamicPluginsService = {
-  getPluginDynamicArtifacts: jest.fn(),
-} as unknown as jest.Mocked<DynamicPluginsService>;

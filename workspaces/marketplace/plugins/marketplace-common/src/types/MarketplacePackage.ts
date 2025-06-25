@@ -34,16 +34,9 @@ export interface MarketplacePackage extends Entity {
 export enum MarketplacePackageInstallStatus {
   NotInstalled = 'NotInstalled',
   Installed = 'Installed',
+  Disabled = 'Disabled',
   UpdateAvailable = 'UpdateAvailable',
 }
-
-/**
- * @public
- */
-export type MarketplacePackageStatus = {
-  installStatus: MarketplacePackageInstallStatus;
-  disabled: boolean;
-};
 
 /**
  * @public
