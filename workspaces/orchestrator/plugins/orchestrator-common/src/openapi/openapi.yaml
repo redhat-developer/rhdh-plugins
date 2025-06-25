@@ -255,12 +255,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: businessKey
-          in: query
-          description: ID of the parent workflow
-          required: false
-          schema:
-            type: string
       requestBody:
         required: true
         content:
@@ -513,8 +507,6 @@ components:
         workflowdata:
           $ref: '#/components/schemas/WorkflowDataDTO'
         initiatorEntity:
-          type: string
-        businessKey:
           type: string
         nodes:
           type: array

@@ -100,9 +100,7 @@ export class SonataFlowService {
     authTokens?: Array<AuthToken>;
     businessKey?: string;
   }): Promise<WorkflowExecutionResponse | undefined> {
-    const urlToFetch = args.businessKey
-      ? `${args.serviceUrl}/${args.definitionId}?businessKey=${args.businessKey}`
-      : `${args.serviceUrl}/${args.definitionId}`;
+    const urlToFetch = `${args.serviceUrl}/${args.definitionId}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
