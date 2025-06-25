@@ -86,17 +86,27 @@ export const getRequestInit = async (
 
       const keys = Object.keys(headers);
       const values = await Promise.all(
-        keys.map(key =>
-          evaluateTemplateString({
+        keys.map(key => {
+          const value = headersObject[key];
+          if (typeof value !== 'string') {
+            throw new Error(
+              `HTTP header must be a string. See "${key}" header.`,
+            );
+          }
+
+          return evaluateTemplateString({
             unitEvaluator,
             key,
             formData,
-            template: headersObject[key],
-          }),
-        ),
+            template: value,
+          });
+        }),
       );
       keys.forEach((key, idx) => {
-        headersInit[key] = values[idx];
+        // Header must be a string
+        const value = values[idx];
+        headersInit[key] =
+          typeof value === 'string' ? value : JSON.stringify(value);
       });
     } else {
       throw new Error('fetch:body must be object for POST requests');

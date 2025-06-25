@@ -489,14 +489,75 @@ The URLs can look like:
       }
 ```
 
-`
-
 ## Templating and Backstage API Exposed Parts
 
-Values under the `ui:props` can be dynamically composed via `$${{[Key Family].[Key]}}` templates which are evaluated at the time of actual use.
-The templates can be either strings or arrays of strings (like `['constant', `$${{[Key Family].[Key]}}`]`).
+Values under the `ui:props` can be dynamically composed via `$${{[Key Family].[Key]}}` templates which are evaluated at the time of their actual use.
 
-This feature can be useful to compose URLs based on values in any form-fields, to pass tokens via headers, to pass data for validation, to enrich the queries for values provides in other fields or to write conditions for retrigger.
+The templates can be either
+
+- strings
+  - example: `"Mr. $${{current.studentName}} $${{current.suffix}}"`,
+- objects
+  - example:
+  ```json
+  {
+    "foo": "$${{current.studentName}}",
+    "myArray": ["constant", "$${{current.myField}}"],
+    "myNestedObject": {
+      "loggedInUser": "$${{identityApi.displayName}}",
+      "myArray": []
+    }
+  }
+  ```
+- or arrays of strings
+  - example: `["constant", "$${{[Key Family].[Key]}}"]`).
+
+Values of object properties or array items can be primitive values, other objects or arrays.
+
+If a template unit is evaluated to an object or array and it is either preceded or followed by any other text (including white characters), it is serialized to a JSON string. Otherwise when the template unit stays isolated, the value is passed as it is respecting the data type.
+
+### Example
+
+Input schema:
+
+```json
+"ui:props": {
+  ...
+  "fetch:body": {
+    "myConstant": "constant",
+    "mySimpleObject": {"foo": "bar"},
+    "myArray": ["foo", "$${{current.studentName}}", "Some text $${{current.studentName}}"],
+    "myObject": {"studentName": "$${{current.studentName}}"},
+    "myDataAsObject": {"studentName": "$${{current.myComplexField}}"},
+    "myDataAsJsonString": {"studentName": "Some text $${{current.myComplexField}}"}
+  }
+  ...
+}
+```
+
+Assuming there is another top-level field
+
+- `studentName` which current value (entered by the user) is `Marek`,
+- `myComplexField` containing sub-fields `foo` and `bar`,
+
+then the templates will be evaluated to:
+
+```json
+"ui:props": {
+  ...
+  "fetch:body": {
+    "myConstant": "constant",
+    "mySimpleObject": {"foo": "bar"},
+    "myArray": ["foo", "Marek", "Some text Marek"],
+    "myObject": {"studentName": "Marek"},
+    "myDataAsObject": {"studentName": {"foo": "...", "bar": "..."}},
+    "myDataAsJsonString": {"studentName": "Some text \"{\"foo\": \"...\", \"bar\": \"...\"}\""}
+  }
+  ...
+}
+```
+
+The templates are especially useful to compose URLs, fetch/validate POST bodies based on values of other form-fields, to pass tokens via headers, to enrich the queries for values provides in other fields or to write conditions for retrigger.
 
 Example:
 

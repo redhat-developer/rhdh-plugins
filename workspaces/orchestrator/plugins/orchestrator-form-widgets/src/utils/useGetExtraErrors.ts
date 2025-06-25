@@ -93,33 +93,44 @@ export const useGetExtraErrors = () => {
             formData,
           });
 
-          const evaluatedRequestInit = await getRequestInit(
-            uiProps,
-            'validate',
-            templateUnitEvaluator,
-            formData,
-          );
-
-          const response = await fetchApi.fetch(
-            evaluatedValidateUrl,
-            evaluatedRequestInit,
-          );
-          if (response.status !== 200) {
-            const data = (await response.json()) as JsonObject;
-
-            Object.keys(data).forEach(key => {
-              // @ts-ignore
-              const issues = data[key];
-              if (issues) {
-                const array = (
-                  Array.isArray(issues) ? issues : [issues]
-                ) as string[];
-
-                safeSet(errors, path, {
-                  [ERRORS_KEY]: array.map(e => e?.toString()),
-                });
-              }
+          if (typeof evaluatedValidateUrl !== 'string') {
+            // eslint-disable-next-line no-console
+            console.error('The validate:url is not evaluated to a string: ', {
+              validateUrl,
+              evaluatedValidateUrl,
             });
+            safeSet(errors, path, {
+              [ERRORS_KEY]: `The validate:url is not evaluated to a string: "${validateUrl}"`,
+            });
+          } else {
+            const evaluatedRequestInit = await getRequestInit(
+              uiProps,
+              'validate',
+              templateUnitEvaluator,
+              formData,
+            );
+
+            const response = await fetchApi.fetch(
+              evaluatedValidateUrl,
+              evaluatedRequestInit,
+            );
+            if (response.status !== 200) {
+              const data = (await response.json()) as JsonObject;
+
+              Object.keys(data).forEach(key => {
+                // @ts-ignore
+                const issues = data[key];
+                if (issues) {
+                  const array = (
+                    Array.isArray(issues) ? issues : [issues]
+                  ) as string[];
+
+                  safeSet(errors, path, {
+                    [ERRORS_KEY]: array.map(e => e?.toString()),
+                  });
+                }
+              });
+            }
           }
         }
       }
