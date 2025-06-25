@@ -1,5 +1,18 @@
 ### Dependencies
 
+## 3.1.1
+
+### Patch Changes
+
+- 3dda068: fix CSS bugs for variables dialog and input schema dialog
+- a9a6095: removing business key
+- a9ab22e: fix search and filter for "running" and "failed"
+- 18bda47: capitalize "Orchestrator" in path
+- Updated dependencies [a9a6095]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.6.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.6.1
+
 ## 3.1.0
 
 ### Minor Changes

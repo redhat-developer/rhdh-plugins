@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 6.1.1
+
+### Patch Changes
+
+- a9a6095: remove business key
+- Updated dependencies [a9a6095]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.1
+
 ## 6.1.0
 
 ### Minor Changes
