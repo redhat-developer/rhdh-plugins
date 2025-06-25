@@ -451,11 +451,7 @@ function setupInternalRoutes(
       const executeWorkflowRequestDTO = req.body;
 
       return routerApi.v2
-        .executeWorkflow(
-          executeWorkflowRequestDTO,
-          workflowId,
-          initiatorEntity,
-        )
+        .executeWorkflow(executeWorkflowRequestDTO, workflowId, initiatorEntity)
         .then(result => {
           auditEvent.success({ meta: { id: result.id } });
           return res.status(200).json(result);
@@ -867,9 +863,7 @@ function setupInternalRoutes(
       });
 
       try {
-        const assessedInstance = await routerApi.v2.getInstanceById(
-          instanceId,
-        );
+        const assessedInstance = await routerApi.v2.getInstanceById(instanceId);
 
         const workflowId = assessedInstance.instance.processId;
 

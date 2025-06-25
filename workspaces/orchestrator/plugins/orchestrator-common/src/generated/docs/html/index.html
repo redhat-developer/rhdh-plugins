@@ -2376,7 +2376,7 @@ $(document).ready(function() {
                           <div class="tab-pane active" id="examples-Default-getInstanceById-0-curl">
                             <pre class="prettyprint"><code class="language-bsh">curl -X GET \
  -H "Accept: application/json" \
- "http://localhost/v2/workflows/instances/{instanceId}?includeAssessment=true"
+ "http://localhost/v2/workflows/instances/{instanceId}"
 </code></pre>
                           </div>
                           <div class="tab-pane" id="examples-Default-getInstanceById-0-java">
@@ -2394,10 +2394,9 @@ public class DefaultApiExample {
         // Create an instance of the API class
         DefaultApi apiInstance = new DefaultApi();
         String instanceId = instanceId_example; // String | ID of the workflow instance
-        Boolean includeAssessment = true; // Boolean | Whether to include assessment
 
         try {
-            AssessedProcessInstanceDTO result = apiInstance.getInstanceById(instanceId, includeAssessment);
+            AssessedProcessInstanceDTO result = apiInstance.getInstanceById(instanceId);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#getInstanceById");
@@ -2414,10 +2413,9 @@ public class DefaultApiExample {
 final api_instance = DefaultApi();
 
 final String instanceId = new String(); // String | ID of the workflow instance
-final Boolean includeAssessment = new Boolean(); // Boolean | Whether to include assessment
 
 try {
-    final result = await api_instance.getInstanceById(instanceId, includeAssessment);
+    final result = await api_instance.getInstanceById(instanceId);
     print(result);
 } catch (e) {
     print('Exception when calling DefaultApi->getInstanceById: $e\n');
@@ -2433,10 +2431,9 @@ public class DefaultApiExample {
     public static void main(String[] args) {
         DefaultApi apiInstance = new DefaultApi();
         String instanceId = instanceId_example; // String | ID of the workflow instance
-        Boolean includeAssessment = true; // Boolean | Whether to include assessment
 
         try {
-            AssessedProcessInstanceDTO result = apiInstance.getInstanceById(instanceId, includeAssessment);
+            AssessedProcessInstanceDTO result = apiInstance.getInstanceById(instanceId);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#getInstanceById");
@@ -2455,11 +2452,9 @@ public class DefaultApiExample {
 // Create an instance of the API class
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 String *instanceId = instanceId_example; // ID of the workflow instance (default to null)
-Boolean *includeAssessment = true; // Whether to include assessment (optional) (default to false)
 
 // Get Workflow Instance by ID
 [apiInstance getInstanceByIdWith:instanceId
-    includeAssessment:includeAssessment
               completionHandler: ^(AssessedProcessInstanceDTO output, NSError* error) {
     if (output) {
         NSLog(@"%@", output);
@@ -2477,9 +2472,6 @@ Boolean *includeAssessment = true; // Whether to include assessment (optional) (
 // Create an instance of the API class
 var api = new OrchestratorPlugin.DefaultApi()
 var instanceId = instanceId_example; // {String} ID of the workflow instance
-var opts = {
-  'includeAssessment': true // {Boolean} Whether to include assessment
-};
 
 var callback = function(error, data, response) {
   if (error) {
@@ -2488,7 +2480,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.getInstanceById(instanceId, opts, callback);
+api.getInstanceById(instanceId, callback);
 </code></pre>
                             </div>
 
@@ -2512,11 +2504,10 @@ namespace Example
             // Create an instance of the API class
             var apiInstance = new DefaultApi();
             var instanceId = instanceId_example;  // String | ID of the workflow instance (default to null)
-            var includeAssessment = true;  // Boolean | Whether to include assessment (optional)  (default to false)
 
             try {
                 // Get Workflow Instance by ID
-                AssessedProcessInstanceDTO result = apiInstance.getInstanceById(instanceId, includeAssessment);
+                AssessedProcessInstanceDTO result = apiInstance.getInstanceById(instanceId);
                 Debug.WriteLine(result);
             } catch (Exception e) {
                 Debug.Print("Exception when calling DefaultApi.getInstanceById: " + e.Message );
@@ -2534,10 +2525,9 @@ require_once(__DIR__ . '/vendor/autoload.php');
 // Create an instance of the API class
 $api_instance = new OpenAPITools\Client\Api\DefaultApi();
 $instanceId = instanceId_example; // String | ID of the workflow instance
-$includeAssessment = true; // Boolean | Whether to include assessment
 
 try {
-    $result = $api_instance->getInstanceById($instanceId, $includeAssessment);
+    $result = $api_instance->getInstanceById($instanceId);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DefaultApi->getInstanceById: ', $e->getMessage(), PHP_EOL;
@@ -2553,10 +2543,9 @@ use WWW::OPenAPIClient::DefaultApi;
 # Create an instance of the API class
 my $api_instance = WWW::OPenAPIClient::DefaultApi->new();
 my $instanceId = instanceId_example; # String | ID of the workflow instance
-my $includeAssessment = true; # Boolean | Whether to include assessment
 
 eval {
-    my $result = $api_instance->getInstanceById(instanceId => $instanceId, includeAssessment => $includeAssessment);
+    my $result = $api_instance->getInstanceById(instanceId => $instanceId);
     print Dumper($result);
 };
 if ($@) {
@@ -2574,11 +2563,10 @@ from pprint import pprint
 # Create an instance of the API class
 api_instance = openapi_client.DefaultApi()
 instanceId = instanceId_example # String | ID of the workflow instance (default to null)
-includeAssessment = true # Boolean | Whether to include assessment (optional) (default to false)
 
 try:
     # Get Workflow Instance by ID
-    api_response = api_instance.get_instance_by_id(instanceId, includeAssessment=includeAssessment)
+    api_response = api_instance.get_instance_by_id(instanceId)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling DefaultApi->getInstanceById: %s\n" % e)</code></pre>
@@ -2589,10 +2577,9 @@ except ApiException as e:
 
 pub fn main() {
     let instanceId = instanceId_example; // String
-    let includeAssessment = true; // Boolean
 
     let mut context = DefaultApi::Context::default();
-    let result = client.getInstanceById(instanceId, includeAssessment, &context).wait();
+    let result = client.getInstanceById(instanceId, &context).wait();
 
     println!("{:?}", result);
 }
@@ -2641,33 +2628,6 @@ ID of the workflow instance
 
 
 
-                            <div class="methodsubtabletitle">Query parameters</div>
-                            <table id="methodsubtable">
-                              <tr>
-                                <th width="150px">Name</th>
-                                <th>Description</th>
-                              </tr>
-                                <tr><td style="width:150px;">includeAssessment</td>
-<td>
-
-
-    <div id="d2e199_getInstanceById_includeAssessment">
-        <div class="json-schema-view">
-            <div class="primitive">
-                <span class="type">
-                    Boolean
-                </span>
-
-                    <div class="inner description marked">
-Whether to include assessment
-                    </div>
-            </div>
-        </div>
-    </div>
-</td>
-</tr>
-
-                            </table>
 
                           <h2>Responses</h2>
                             <h3 id="examples-Default-getInstanceById-title-200"></h3>
