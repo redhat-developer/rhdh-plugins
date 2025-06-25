@@ -89,6 +89,7 @@ export const OnboardingSection = () => {
         display: 'flex',
         flexWrap: 'wrap',
         gap: 2,
+        pt: 1,
         justifyContent: 'flex-start',
       }}
     >
@@ -144,7 +145,7 @@ export const OnboardingSection = () => {
     <Card
       elevation={0}
       sx={{
-        padding: '24px',
+        p: 3,
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
         overflow: 'auto',
         '$::-webkit-scrollbar': {

@@ -133,7 +133,7 @@ export const EntitySection = () => {
                       height={300}
                       sx={{
                         borderRadius: 3,
-                        width: 'clamp(140px, 14vw, 266px)',
+                        width: 'clamp(46%, 46%, 80%)',
                       }}
                     />
                   )}
@@ -144,7 +144,7 @@ export const EntitySection = () => {
                     alt=""
                     height={300}
                     sx={{
-                      width: 'clamp(140px, 14vw, 266px)',
+                      width: 'clamp(46%, 46%, 80%)',
                     }}
                   />
                   <Box sx={{ p: 2 }}>

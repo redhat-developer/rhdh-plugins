@@ -30,8 +30,8 @@ dynamicPlugins:
               lg: { w: 12, h: 5 }
               md: { w: 12, h: 5 }
               sm: { w: 12, h: 5 }
-              xs: { w: 12, h: 7 }
-              xxs: { w: 12, h: 12 }
+              xs: { w: 12, h: 14 }
+              xxs: { w: 12, h: 14 }
         - mountPoint: home.page/cards
           importName: EntitySection
           config:
