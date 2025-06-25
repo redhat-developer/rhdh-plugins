@@ -27,7 +27,6 @@ import {
 
 import { createRouter } from './router';
 import { InstallationDataService } from './installation/InstallationDataService';
-import { DynamicPluginsService } from './installation/DynamicPluginsService';
 
 /**
  * marketplacePlugin backend plugin
@@ -63,12 +62,10 @@ export const marketplacePlugin = createBackendPlugin({
           catalogApi,
         });
 
-        const dynamicPluginsService: DynamicPluginsService =
-          DynamicPluginsService.fromConfig({ config, logger, marketplaceApi });
         const installationDataService: InstallationDataService =
           InstallationDataService.fromConfig({
             config,
-            dynamicPluginsService,
+            marketplaceApi,
             logger,
           });
 
@@ -78,7 +75,6 @@ export const marketplacePlugin = createBackendPlugin({
             installationDataService,
             marketplaceApi,
             permissions,
-            dynamicPluginsService,
             config,
           }),
         );

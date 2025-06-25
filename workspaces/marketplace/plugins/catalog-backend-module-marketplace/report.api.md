@@ -4,17 +4,17 @@
 
 ```ts
 
-import { AuthService } from '@backstage/backend-plugin-api';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
-import { DiscoveryService } from '@backstage/backend-plugin-api';
-import type { DynamicPlugin } from '@backstage/backend-dynamic-feature-service';
+import type { Config } from '@backstage/config';
+import { DynamicPluginProvider } from '@backstage/backend-dynamic-feature-service';
 import { Entity } from '@backstage/catalog-model';
 import { EntityProvider } from '@backstage/plugin-catalog-node';
 import { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
+import { LoggerService } from '@backstage/backend-plugin-api';
 import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
@@ -37,7 +37,7 @@ export abstract class BaseEntityProvider<T extends Entity> implements EntityProv
 
 // @public (undocumented)
 export type CachedData = {
-    plugins: string[];
+    plugins: Plugins;
     cachedTime: number;
 };
 
@@ -47,15 +47,28 @@ export default catalogModuleMarketplace;
 
 // @public (undocumented)
 export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
-    constructor(discovery: DiscoveryService, auth: AuthService);
+    constructor(deps: {
+        logger: LoggerService;
+        pluginProvider: DynamicPluginProvider;
+        dynamicPluginsService: DynamicPluginsService;
+    });
     // (undocumented)
     getCachedPlugins(cache: CatalogProcessorCache, entityRef: string): Promise<CachedData>;
-    // (undocumented)
-    getInstalledPlugins(): Promise<DynamicPlugin[]>;
     // (undocumented)
     getProcessorName(): string;
     // (undocumented)
     preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec, cache: CatalogProcessorCache): Promise<Entity>;
+}
+
+// @public (undocumented)
+export class DynamicPluginsService {
+    // (undocumented)
+    static fromConfig(deps: {
+        config: Config;
+        logger: LoggerService;
+    }): DynamicPluginsService;
+    // (undocumented)
+    isPackageDisabledViaConfig(marketplacePackage: MarketplacePackage): boolean;
 }
 
 // @public (undocumented)
@@ -128,5 +141,10 @@ export class MarketplacePluginProvider extends BaseEntityProvider<MarketplacePlu
     // (undocumented)
     getProviderName(): string;
 }
+
+// @public (undocumented)
+export type Plugins = {
+    [pluginName: string]: string;
+};
 
 ```
