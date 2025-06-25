@@ -983,11 +983,10 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * Get a workflow execution/run (instance)
          * @summary Get Workflow Instance by ID
          * @param {string} instanceId ID of the workflow instance
-         * @param {boolean} [includeAssessment] Whether to include assessment
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getInstanceById: async (instanceId: string, includeAssessment?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getInstanceById: async (instanceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'instanceId' is not null or undefined
             assertParamExists('getInstanceById', 'instanceId', instanceId)
             const localVarPath = `/v2/workflows/instances/{instanceId}`
@@ -1002,10 +1001,6 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
-
-            if (includeAssessment !== undefined) {
-                localVarQueryParameter['includeAssessment'] = includeAssessment;
-            }
 
 
     
@@ -1369,12 +1364,11 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * Get a workflow execution/run (instance)
          * @summary Get Workflow Instance by ID
          * @param {string} instanceId ID of the workflow instance
-         * @param {boolean} [includeAssessment] Whether to include assessment
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getInstanceById(instanceId: string, includeAssessment?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssessedProcessInstanceDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getInstanceById(instanceId, includeAssessment, options);
+        async getInstanceById(instanceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssessedProcessInstanceDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getInstanceById(instanceId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.getInstanceById']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1528,12 +1522,11 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * Get a workflow execution/run (instance)
          * @summary Get Workflow Instance by ID
          * @param {string} instanceId ID of the workflow instance
-         * @param {boolean} [includeAssessment] Whether to include assessment
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getInstanceById(instanceId: string, includeAssessment?: boolean, options?: any): AxiosPromise<AssessedProcessInstanceDTO> {
-            return localVarFp.getInstanceById(instanceId, includeAssessment, options).then((request) => request(axios, basePath));
+        getInstanceById(instanceId: string, options?: any): AxiosPromise<AssessedProcessInstanceDTO> {
+            return localVarFp.getInstanceById(instanceId, options).then((request) => request(axios, basePath));
         },
         /**
          * Retrieve an array of workflow executions (instances)
@@ -1661,13 +1654,12 @@ export class DefaultApi extends BaseAPI {
      * Get a workflow execution/run (instance)
      * @summary Get Workflow Instance by ID
      * @param {string} instanceId ID of the workflow instance
-     * @param {boolean} [includeAssessment] Whether to include assessment
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public getInstanceById(instanceId: string, includeAssessment?: boolean, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).getInstanceById(instanceId, includeAssessment, options).then((request) => request(this.axios, this.basePath));
+    public getInstanceById(instanceId: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getInstanceById(instanceId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

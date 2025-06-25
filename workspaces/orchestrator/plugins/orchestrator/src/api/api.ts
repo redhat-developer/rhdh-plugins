@@ -50,7 +50,6 @@ export interface OrchestratorApi {
 
   getInstance(
     instanceId: string,
-    includeAssessment: boolean,
   ): Promise<AxiosResponse<AssessedProcessInstanceDTO>>;
 
   getWorkflowDataInputSchema(

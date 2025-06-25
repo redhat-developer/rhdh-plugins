@@ -486,26 +486,6 @@ describe('getInstanceById', () => {
     expect(processInstanceV2.assessedBy).toBeUndefined();
     expect(processInstanceV2.instance.id).toEqual(processInstance.id);
   });
-
-  it('Instance exists, assessment non empty string', async () => {
-    const processInstance = generateProcessInstance(1);
-    const assessedBy = generateProcessInstance(1);
-
-    (mockOrchestratorService.fetchInstance as jest.Mock)
-      .mockResolvedValueOnce(processInstance)
-      .mockResolvedValueOnce(assessedBy);
-
-    // Act
-    const processInstanceV2: AssessedProcessInstanceDTO =
-      await v2.getInstanceById(processInstance.id);
-
-    // Assert
-    expect(mockOrchestratorService.fetchInstance).toHaveBeenCalledTimes(2);
-    expect(processInstanceV2).toBeDefined();
-    expect(processInstanceV2.instance).toBeDefined();
-    expect(processInstanceV2.assessedBy).toBeDefined();
-    expect(processInstanceV2.instance.id).toEqual(processInstance.id);
-  });
 });
 
 describe('getWorkflowStatuses', () => {

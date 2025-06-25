@@ -203,13 +203,6 @@ paths:
           description: ID of the workflow instance
           schema:
             type: string
-        - name: includeAssessment
-          in: query
-          required: false
-          description: Whether to include assessment
-          schema:
-            type: boolean
-            default: false
       responses:
         '200':
           description: Successful response
