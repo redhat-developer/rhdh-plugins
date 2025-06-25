@@ -205,17 +205,12 @@ export class OrchestratorClient implements OrchestratorApi {
 
   async getInstance(
     instanceId: string,
-    includeAssessment = false,
   ): Promise<AxiosResponse<AssessedProcessInstanceDTO>> {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
       await this.getDefaultReqConfig();
     try {
-      return await defaultApi.getInstanceById(
-        instanceId,
-        includeAssessment,
-        reqConfigOption,
-      );
+      return await defaultApi.getInstanceById(instanceId, reqConfigOption);
     } catch (err) {
       throw getError(err);
     }

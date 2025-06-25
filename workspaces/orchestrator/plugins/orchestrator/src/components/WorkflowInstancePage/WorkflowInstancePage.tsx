@@ -185,7 +185,6 @@ export const WorkflowInstancePage = ({
     }
     const res = await orchestratorApi.getInstance(
       instanceId ?? queryInstanceId,
-      true,
     );
     return res.data;
   }, [instanceId, orchestratorApi, queryInstanceId]);

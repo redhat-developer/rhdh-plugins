@@ -75,7 +75,7 @@ No authorization required
 
 <a name="getInstanceById"></a>
 # **getInstanceById**
-> AssessedProcessInstanceDTO getInstanceById(instanceId, includeAssessment)
+> AssessedProcessInstanceDTO getInstanceById(instanceId)
 
 Get Workflow Instance by ID
 
@@ -86,7 +86,6 @@ Get Workflow Instance by ID
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **instanceId** | **String**| ID of the workflow instance | [default to null] |
-| **includeAssessment** | **Boolean**| Whether to include assessment | [optional] [default to false] |
 
 ### Return type
 
