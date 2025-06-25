@@ -74,16 +74,18 @@ describe('AccessCodeInputModal', () => {
   it('renders modal when open', () => {
     renderComponent(true);
 
-    expect(screen.getByText('Enter the access code')).toBeInTheDocument();
+    expect(screen.getByText('Enter the activation code')).toBeInTheDocument();
     expect(
-      screen.getByText('If you have an access code, enter it now.'),
+      screen.getByText('If you have an activation code, enter it now.'),
     ).toBeInTheDocument();
   });
 
   it('does not render modal when closed', () => {
     renderComponent(false);
 
-    expect(screen.queryByText('Enter the access code')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Enter the activation code'),
+    ).not.toBeInTheDocument();
   });
 
   it('renders 5 input fields', () => {
@@ -198,13 +200,24 @@ describe('AccessCodeInputModal', () => {
 
     const inputs = screen.getAllByRole('textbox');
 
-    // Fill all inputs
+    // Fill all inputs one by one, waiting for each to be processed
     for (let i = 0; i < inputs.length; i++) {
+      await user.click(inputs[i]);
       await user.type(inputs[i], 'A');
+      // Small delay to ensure state updates
+      await waitFor(() => {
+        expect(inputs[i]).toHaveValue('A');
+      });
     }
 
-    const startTrialButton = screen.getByText('Start trial');
-    expect(startTrialButton).not.toBeDisabled();
+    // Wait for the button to become enabled with longer timeout
+    await waitFor(
+      () => {
+        const startTrialButton = screen.getByText('Start trial');
+        expect(startTrialButton).not.toBeDisabled();
+      },
+      { timeout: 5000 },
+    );
   });
 
   it('calls verifyActivationCode with correct code when Start trial is clicked', async () => {
@@ -216,12 +229,26 @@ describe('AccessCodeInputModal', () => {
     const inputs = screen.getAllByRole('textbox');
     const testCode = ['A', 'B', 'C', 'D', 'E'];
 
-    // Fill all inputs
+    // Fill all inputs one by one, waiting for each to be processed
     for (let i = 0; i < inputs.length; i++) {
+      await user.click(inputs[i]);
       await user.type(inputs[i], testCode[i]);
+      // Small delay to ensure state updates
+      await waitFor(() => {
+        expect(inputs[i]).toHaveValue(testCode[i]);
+      });
     }
 
-    const startTrialButton = screen.getByText('Start trial');
+    // Wait for button to be enabled before clicking with longer timeout
+    const startTrialButton = await waitFor(
+      () => {
+        const button = screen.getByText('Start trial');
+        expect(button).not.toBeDisabled();
+        return button;
+      },
+      { timeout: 5000 },
+    );
+
     await user.click(startTrialButton);
 
     await waitFor(() => {
@@ -233,7 +260,7 @@ describe('AccessCodeInputModal', () => {
 
   it('displays error message when verification fails', async () => {
     const user = userEvent.setup();
-    const errorMessage = 'Invalid access code';
+    const errorMessage = 'Invalid activation code';
     mockRegisterApi.verifyActivationCode.mockRejectedValue(
       new Error(errorMessage),
     );
@@ -242,12 +269,26 @@ describe('AccessCodeInputModal', () => {
 
     const inputs = screen.getAllByRole('textbox');
 
-    // Fill all inputs
+    // Fill all inputs one by one, waiting for each to be processed
     for (let i = 0; i < inputs.length; i++) {
+      await user.click(inputs[i]);
       await user.type(inputs[i], 'A');
+      // Small delay to ensure state updates
+      await waitFor(() => {
+        expect(inputs[i]).toHaveValue('A');
+      });
     }
 
-    const startTrialButton = screen.getByText('Start trial');
+    // Wait for button to be enabled before clicking with longer timeout
+    const startTrialButton = await waitFor(
+      () => {
+        const button = screen.getByText('Start trial');
+        expect(button).not.toBeDisabled();
+        return button;
+      },
+      { timeout: 5000 },
+    );
+
     await user.click(startTrialButton);
 
     await waitFor(() => {
@@ -289,12 +330,26 @@ describe('AccessCodeInputModal', () => {
 
     const inputs = screen.getAllByRole('textbox');
 
-    // Fill all inputs
+    // Fill all inputs one by one, waiting for each to be processed
     for (let i = 0; i < inputs.length; i++) {
+      await user.click(inputs[i]);
       await user.type(inputs[i], 'A');
+      // Small delay to ensure state updates
+      await waitFor(() => {
+        expect(inputs[i]).toHaveValue('A');
+      });
     }
 
-    const startTrialButton = screen.getByText('Start trial');
+    // Wait for button to be enabled with a longer timeout
+    const startTrialButton = await waitFor(
+      () => {
+        const button = screen.getByText('Start trial');
+        expect(button).not.toBeDisabled();
+        return button;
+      },
+      { timeout: 5000 },
+    );
+
     await user.click(startTrialButton);
 
     await waitFor(() => {
