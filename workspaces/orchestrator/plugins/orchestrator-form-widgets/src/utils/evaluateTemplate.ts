@@ -99,9 +99,11 @@ export const evaluateTemplateString = async (
         // For both Arrays and JsonObjects
         // wrapped by additional text, so it must be serialized
         evaluated += JSON.stringify(evaluatedUnit);
-      } else {
-        // string
+      } else if (evaluated) {
         evaluated += evaluatedUnit;
+      } else {
+        // avoid type conversion to string
+        evaluated = evaluatedUnit;
       }
 
       if (!isTheLastOne) {
@@ -111,7 +113,11 @@ export const evaluateTemplateString = async (
           iteration: iteration + 1,
         });
 
-        evaluated += typeof rest === 'string' ? rest : JSON.stringify(rest);
+        if (['string', 'boolean', 'number'].includes(typeof rest)) {
+          evaluated += (rest ?? '').toString();
+        } else {
+          evaluated += JSON.stringify(rest);
+        }
       }
     }
   }
@@ -124,6 +130,10 @@ export const evaluateTemplate = async (
 ): Promise<JsonValue> => {
   const { template, ...restProps } = props;
   const { key } = restProps;
+
+  if (typeof template === 'boolean' || typeof template === 'number') {
+    return template;
+  }
 
   if (typeof template === 'string') {
     return evaluateTemplateString({ ...props, template: template.toString() });
@@ -168,7 +178,9 @@ export const evaluateTemplate = async (
     return result;
   }
 
-  throw new Error(`Template can be either a string or an array, key: ${key}`);
+  throw new Error(
+    `Template can be either a string, number, boolean, object or an array, key: ${key}`,
+  );
 };
 
 export const useEvaluateTemplate = ({
