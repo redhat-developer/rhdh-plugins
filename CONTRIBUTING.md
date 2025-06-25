@@ -65,7 +65,7 @@ Most plugins come with a standalone runner that you should be able to utilize in
 
 There could be times when there is a need for a more rich development environment for a workspace. Say that the workspace and it's plugin depend on a full catalog, and maybe the kubernetes plugin already running too, that could be a bit of a pain to set up. In that case, there might be a full Backstage environment that you can run with `yarn dev` in the workspace root, which will start up a full Backstage environment located in `$WORKSPACE_ROOT/packages/app` and `$WORKSPACE_ROOT/packages/backend`.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > Both the full Backstage environment and standalone runners are configured on a per-workspace basis. Be sure to check the workspace `README.md` for specific instructions on setting up the development environment for each plugin.
 
 ## Coding Guidelines
@@ -100,7 +100,7 @@ To create a changeset, follow these steps:
 
 Once the changeset is merged, it will trigger the release process for the plugin and create a "Version packages ($workspace_name)" PR. Once the PR is merged, a new version of the plugin will be published based on the type of change made.
 
-> [!NOTE]  
+> [!NOTE]
 > It's important to create a changeset for each individual change you make to a plugin. This ensures that the release process is properly managed and that dependencies between plugins are correctly updated.
 
 ## Release
@@ -116,7 +116,7 @@ A release is automatically triggered by merging the plugins â€œVersion Packagesâ
 
 For workspaces the name should reflect the name of the plugins contained in a simple manner (e.g. for the plugins `todo` & `todo-backend` the workspace would be called `todo`).
 
-For plugins we will continue to follow the naming pattern suggested by the ADR on the [backstage](https://github.com/backstage/backstage/tree/master) repository: https://backstage.io/docs/architecture-decisions/adrs-adr011.
+For plugins we will continue to follow the naming pattern suggested by the ADR on the [backstage](https://github.com/backstage/backstage/tree/master) repository: <https://backstage.io/docs/architecture-decisions/adrs-adr011>.
 
 You can create a workspace by running the following:
 
@@ -209,6 +209,7 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
      ```
 
    - For `backstage/rhdh-plugins`:
+
      ```bash
      git checkout -b "migrate-workspace-name"
      ```
@@ -221,13 +222,14 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
    - The `maintainers` array of arguments is the github usernames of those individuals that should be listed as the maintainers for the migrated plugins. Please separate each maintainer by a comma while supplying this value.
 
    - example usage:
+
      ```bash
       yarn rhdh-cli janus-plugin migrate --monorepo-path ../backstage-plugins --workspace-name workspace-name --branch deprecate-workspace-name --maintainers @maintainer1,@maintainer2,@maintainer3
      ```
 
 4. The script will generate changesets in both repositories. Be sure to commit these changes and open pull requests.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > This script updates metadata commonly found across all plugins. Please review your migrated plugins to ensure that all references to "janus" have been updated to point to "rhdh-plugins."
 
 5. If you run into CI issues take a look at [this github gist](https://gist.github.com/Fortune-Ndlovu/1562789f3905b4fe818b9079a3032982) which outlines the process taken to migrate argocd plugins in great detail.
@@ -267,6 +269,8 @@ Each plugin/package has its own API Report which means you might see more than o
 
 When you've got your contribution working, tested, and committed to your branch it's time to create a Pull Request (PR). If you are unsure how to do this GitHub's [Creating a pull request from a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) documentation will help you with that.
 
+> [!NOTE]
+> Only [repository maintainers](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-maintainers) can bypass the SonarCloud test. We typically grant a one-time exception for new plugins that require a full application instead of a standalone development server. If this applies to your pull request, please mention it in the description.
 
 ## Plugin Owner Responsibilities
 
@@ -282,15 +286,14 @@ As a plugin owner, you are responsible for the ongoing health and maintenance of
   - Renovate PRs (See [Updating Dependencies with Renovate](#updating-dependencies-with-renovate))
   - Dependabot PRs
   - Version package PRs
-- **Keep your workspace(s) up to date** with the latest Backstage version supported by RHDH.  
+- **Keep your workspace(s) up to date** with the latest Backstage version supported by RHDH.
   See [Keeping Workspaces Up to Date](#keeping-workspaces-up-to-date-with-backstage).
-- **Manage security updates and patches**:  
+- **Manage security updates and patches**:
   Work with your security team to address vulnerabilities according to SLA and product lifecycle requirements.
-  Since this repository does not maintain release branches, Renovate only opens PRs against the latest code.  
+  Since this repository does not maintain release branches, Renovate only opens PRs against the latest code.
   If your plugin is used in multiple product versions, you are responsible for backporting critical patches.
-- **Justify Dependency-Related PR closures**:  
+- **Justify Dependency-Related PR closures**:
   If you choose not to merge a Renovate or dependency-related PR, include a brief explanation when closing it.
-
 
 ### Keeping Workspaces Up to Date with Backstage
 
