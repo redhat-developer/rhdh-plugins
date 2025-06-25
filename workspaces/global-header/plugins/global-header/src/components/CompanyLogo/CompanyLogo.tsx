@@ -35,9 +35,9 @@ const LogoRender = ({
       src={base64Logo}
       alt="Home logo"
       style={{
-        display: 'block',
-        maxHeight: '40px',
-        maxWidth: '150px',
+        objectFit: 'contain',
+        objectPosition: 'left',
+        maxHeight: '40px', // "kind of" aligns with PF's MastheadLogo height
       }}
       width={width}
     />
@@ -71,7 +71,8 @@ export interface CompanyLogoProps {
   /**
    * The width of the logo in pixels (defaults to 150px). This prop fixes an
    * issue where encoded SVGs without an explicit width would not render.
-   * You likely do not need to set this prop.
+   * You likely do not need to set this prop, but we recommend setting it
+   * to a value under 200px.
    */
   logoWidth?: number;
   /** This prop is not used by this component. */
@@ -111,8 +112,10 @@ export const CompanyLogo = ({
 
   return (
     <Box
+      data-testid="global-header-company-logo"
       sx={{
-        width: '224px',
+        minWidth: '200px',
+        marginRight: '13px', // align with BackstageContent
         display: 'flex',
         justifyContent: 'flex-start',
         alignItems: 'center',
