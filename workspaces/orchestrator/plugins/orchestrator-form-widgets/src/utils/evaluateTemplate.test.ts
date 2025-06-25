@@ -16,59 +16,49 @@
 
 import { JsonValue } from '@backstage/types/index';
 import { evaluateTemplate, evaluateTemplateProps } from './evaluateTemplate';
+import get from 'lodash/get';
 
 const unitEvaluator: evaluateTemplateProps['unitEvaluator'] = async (
   unit,
-  _,
+  formData,
 ) => {
   if (!unit) {
     throw new Error('Template unit can not be empty');
   }
 
   // Just a copy for testing purposes
-  return Promise.resolve(unit);
+  return Promise.resolve(get(formData, unit));
 };
 
 describe('evaluate template', () => {
-  const props = { unitEvaluator, key: 'myKey', formData: {} };
+  const props = {
+    unitEvaluator,
+    key: 'myKey',
+    formData: {
+      foo: 'foo',
+      bar: 'BAR',
+      fooTrue: true,
+      barFalse: false,
+      current: { bar: 'CURRENT_BAR' },
+    },
+  };
 
-  it('fails on incorrect input', async () => {
+  it('fails on incorrect template', async () => {
     const cases = [
       {
-        input: undefined,
-        throws: 'Template can be either a string or an array, key: myKey',
-      },
-      { input: '$${{}}', throws: 'Template unit can not be empty' },
-      { input: '$${{foo', throws: 'Template unit is not closed by }}' },
-      {
-        input: ['constant', []],
+        template: undefined,
         throws:
-          'Items of array templates can be strings only, template: "["constant",[]]"',
+          'Template can be either a string, number, boolean, object or an array, key: myKey',
       },
+      { template: '$${{}}', throws: 'Template unit can not be empty' },
+      { template: '$${{foo', throws: 'Template unit is not closed by }}' },
       {
-        input: [[]],
-        throws:
-          'Items of array templates can be strings only, template: "[[]]"',
+        template: [undefined],
+        throws: 'Template can not be undefined, key: myKey',
       },
       {
-        input: [{}],
-        throws:
-          'Items of array templates can be strings only, template: "[{}]"',
-      },
-      {
-        input: ['constant', {}],
-        throws:
-          'Items of array templates can be strings only, template: "["constant",{}]"',
-      },
-      {
-        input: [undefined],
-        throws:
-          'Items of array templates can be strings only, template: "[null]"',
-      },
-      {
-        input: ['constant', undefined],
-        throws:
-          'Items of array templates can be strings only, template: "["constant",null]"',
+        template: ['constant', undefined],
+        throws: 'Template can not be undefined, key: myKey',
       },
     ];
 
@@ -78,61 +68,173 @@ describe('evaluate template', () => {
           evaluateTemplate({
             ...props,
             template:
-              c.input as JsonValue /* retype since we are testing malformed inputs */,
+              c.template as JsonValue /* retype since we are testing malformed templates */,
           }),
         ).rejects.toThrow(c.throws),
       ),
     );
   });
 
-  it('can parse input template to units', async () => {
+  it('can parse template template to units', async () => {
     const cases = [
-      { input: 'zz', expected: 'zz' },
-      { input: '}}', expected: '}}' },
-      { input: '${{foo}}', expected: '${{foo}}' },
-      { input: '$${{foo}}', expected: 'foo' },
-      { input: '$${{foo}} $${{bar}}', expected: 'foo bar' },
-      { input: '$${{foo}}$${{bar}}', expected: 'foobar' },
-      { input: ' $${{foo}}$${{bar}} ', expected: ' foobar ' },
-      { input: 'a$${{foo}}$${{bar}} b', expected: 'afoobar b' },
-      { input: 'a$${{foo}}$${{bar}} b$${{zz}}', expected: 'afoobar bzz' },
-    ];
-
-    await Promise.all(
-      cases.map(c =>
-        expect(evaluateTemplate({ ...props, template: c.input })).resolves.toBe(
-          c.expected,
-        ),
-      ),
-    );
-  });
-
-  it('can parse input template to units without nesting', async () => {
-    await expect(
-      evaluateTemplate({ ...props, template: 'a$${{foo}}$${{$${{xx}}}}b' }),
-    ).resolves.toBe('afoo$${{xx}}b');
-  });
-
-  it('can parse array templates', async () => {
-    const cases = [
-      { input: [], expected: [] },
-      { input: [''], expected: [''] },
+      { template: 'zz', expected: 'zz' },
+      { template: '}}', expected: '}}' },
+      { template: '${{foo}}', expected: '${{foo}}' },
+      { template: '$${{foo}}', expected: 'foo' },
+      { template: '$${{foo}} $${{current.bar}}', expected: 'foo CURRENT_BAR' },
+      { template: '$${{foo}}$${{bar}}', expected: 'fooBAR' },
+      { template: ' $${{foo}}$${{bar}} ', expected: ' fooBAR ' },
+      { template: 'a$${{foo}}$${{bar}} b', expected: 'afooBAR b' },
       {
-        input: ['constantA', 'constantB'],
-        expected: ['constantA', 'constantB'],
+        template: 'a$${{foo}}$${{bar}} b$${{zz}}',
+        expected: 'afooBAR b___undefined___',
       },
-      { input: ['$${{foo}}'], expected: ['foo'] },
-      {
-        input: ['$${{foo}}', 'constant', '$${{bar}}'],
-        expected: ['foo', 'constant', 'bar'],
-      },
-      { input: ['$${{foo}}$${{bar}}'], expected: ['foobar'] },
     ];
 
     await Promise.all(
       cases.map(c =>
         expect(
-          evaluateTemplate({ ...props, template: c.input }),
+          evaluateTemplate({ ...props, template: c.template }),
+        ).resolves.toBe(c.expected),
+      ),
+    );
+  });
+
+  it('can parse template template to units without nesting', async () => {
+    await expect(
+      evaluateTemplate({ ...props, template: 'a$${{foo}}$${{$${{foo}}}}b' }),
+    ).resolves.toBe('afoo___undefined___}}b');
+  });
+
+  it('can parse array templates', async () => {
+    const cases = [
+      { template: [], expected: [] },
+      { template: [''], expected: [''] },
+      {
+        template: ['constantA', 'constantB'],
+        expected: ['constantA', 'constantB'],
+      },
+      { template: ['$${{foo}}'], expected: ['foo'] },
+      {
+        template: ['$${{foo}}', 'constant', '$${{bar}}'],
+        expected: ['foo', 'constant', 'BAR'],
+      },
+      { template: ['$${{foo}}$${{bar}}'], expected: ['fooBAR'] },
+      {
+        template: [
+          'constantA',
+          { foo: 'fff', zz: '$${{foo}}', aa: ['aaValue'] },
+        ],
+        expected: ['constantA', { foo: 'fff', zz: 'foo', aa: ['aaValue'] }],
+      },
+      {
+        template: ['constant', []],
+        expected: ['constant', []],
+      },
+      {
+        template: [[]],
+        expected: [[]],
+      },
+      {
+        template: [{}],
+        expected: [{}],
+      },
+      {
+        template: ['constant', {}],
+        expected: ['constant', {}],
+      },
+      {
+        template: ['constant', true, false],
+        expected: ['constant', true, false],
+      },
+    ];
+
+    await Promise.all(
+      cases.map(c =>
+        expect(
+          evaluateTemplate({ ...props, template: c.template }),
+        ).resolves.toStrictEqual(c.expected),
+      ),
+    );
+  });
+
+  it('can parse object templates', async () => {
+    const cases = [
+      { template: {}, expected: {} },
+      { template: { foo: 'bar' }, expected: { foo: 'bar' } },
+      {
+        template: { foo: 'bar', zz: '$${{foo}}' },
+        expected: { foo: 'bar', zz: 'foo' },
+      },
+      {
+        template: { foo: 'bar', zz: 'Hi$${{foo}}$${{bar}}' },
+        expected: { foo: 'bar', zz: 'HifooBAR' },
+      },
+      {
+        template: { myBool: true, myAnotherBool: false },
+        expected: { myBool: true, myAnotherBool: false },
+      },
+      {
+        template: { fooTrue: '$${{fooTrue}}', barFalse: '$${{barFalse}}' },
+        expected: { fooTrue: true, barFalse: false },
+      },
+      {
+        template: {
+          fooTrue: 'something $${{fooTrue}}',
+          barFalse: '$${{barFalse}} something',
+        },
+        expected: { fooTrue: 'something true', barFalse: 'false something' },
+      },
+      {
+        template: { foo: 'bar', zz: '$${{foo}}', nested: {} },
+        expected: { foo: 'bar', zz: 'foo', nested: {} },
+      },
+      {
+        template: { foo: 'bar', zz: '$${{foo}}', nested: { aa: 'aa' } },
+        expected: { foo: 'bar', zz: 'foo', nested: { aa: 'aa' } },
+      },
+      {
+        template: { foo: 'bar', zz: '$${{foo}}', nested: { aa: '$${{foo}}' } },
+        expected: { foo: 'bar', zz: 'foo', nested: { aa: 'foo' } },
+      },
+      {
+        template: {
+          foo: 'bar',
+          zz: '$${{foo}}',
+          nested: { aa: '$${{foo}}', bb: ['bbValue'] },
+        },
+        expected: {
+          foo: 'bar',
+          zz: 'foo',
+          nested: { aa: 'foo', bb: ['bbValue'] },
+        },
+      },
+      {
+        template: {
+          foo: 'bar',
+          zz: '$${{foo}}',
+          nested: {
+            aa: '$${{foo}}',
+            bb: ['bbValue'],
+            nestedNested: { cc: 'ccValue' },
+          },
+        },
+        expected: {
+          foo: 'bar',
+          zz: 'foo',
+          nested: {
+            aa: 'foo',
+            bb: ['bbValue'],
+            nestedNested: { cc: 'ccValue' },
+          },
+        },
+      },
+    ];
+
+    await Promise.all(
+      cases.map(c =>
+        expect(
+          evaluateTemplate({ ...props, template: c.template }),
         ).resolves.toStrictEqual(c.expected),
       ),
     );
