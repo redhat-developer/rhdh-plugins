@@ -42,15 +42,6 @@ backend:
       - 'https://s.ytimg.com'
       - 'https://adobedc.demdex.net'
       - 'https://smetrics.redhat.com'
-    connect-src:
-      - "'self'"
-      - 'https://adobedc.demdex.net'
-      - 'https://smetrics.redhat.com'
-      - 'https://cdn.segment.com'
-      - 'https://api.segment.io'
-      - 'https://consent-pref.trustarc.com'
-      - 'https://adobedc.demdex.net'
-      - 'https://smetrics.redhat.com'
     frame-src:
       - "'self'"
       - 'https://www.google.com'
