@@ -346,20 +346,6 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
                 Get started
               </Button>
             </Link>
-            <Button
-              variant="outlined"
-              onClick={handleClose}
-              sx={{
-                textTransform: 'none',
-                border: `1px solid ${theme.palette.primary.main}`,
-                '&:hover': {
-                  backgroundColor: 'rgba(25, 118, 210, 0.04)',
-                  borderColor: '#1976d2',
-                },
-              }}
-            >
-              Close
-            </Button>
           </DialogActions>
         </>
       ) : (
