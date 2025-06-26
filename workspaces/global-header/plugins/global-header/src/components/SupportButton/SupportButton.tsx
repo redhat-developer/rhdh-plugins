@@ -14,50 +14,31 @@
  * limitations under the License.
  */
 
-import type { CSSProperties } from 'react';
 import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
-import { Link as BackstageLink } from '@backstage/core-components';
-
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import HelpIcon from '@mui/icons-material/HelpOutline';
+import { Link } from '@backstage/core-components';
+import MenuItem from '@mui/material/MenuItem';
+import { MenuItemLink } from '../MenuItemLink/MenuItemLink';
+import { CSSProperties } from 'react';
 
 /**
  * @public
  */
 export interface SupportButtonProps {
+  icon?: string;
   title?: string;
-  tooltip?: string;
-  color?:
-    | 'inherit'
-    | 'default'
-    | 'primary'
-    | 'secondary'
-    | 'error'
-    | 'info'
-    | 'success'
-    | 'warning';
-  size?: 'small' | 'medium' | 'large';
   to?: string;
-  layout?: CSSProperties;
+  tooltip?: string;
+  style?: CSSProperties;
 }
-
-// Backstage Link automatically detects external links and emits analytic events.
-const Link = (props: any) => (
-  <BackstageLink {...props} color="inherit" externalLinkIcon={false} />
-);
-
 /**
  * @public
  */
 export const SupportButton = ({
   title = 'Support',
-  tooltip,
-  color = 'inherit',
-  size = 'small',
   to,
-  layout,
+  icon = 'support',
+  tooltip,
+  style,
 }: SupportButtonProps) => {
   const apiHolder = useApiHolder();
   const config = apiHolder.get(configApiRef);
@@ -67,26 +48,19 @@ export const SupportButton = ({
     return null;
   }
 
-  const isExternalLink =
-    supportUrl.startsWith('http://') || supportUrl.startsWith('https://');
-
   return (
-    <Box sx={layout}>
-      <Tooltip
-        title={tooltip ?? `${title}${isExternalLink ? ' (external link)' : ''}`}
-      >
-        <div>
-          <IconButton
-            component={Link}
-            color={color}
-            size={size}
-            to={supportUrl}
-            aria-label={title}
-          >
-            <HelpIcon fontSize={size} />
-          </IconButton>
-        </div>
-      </Tooltip>
-    </Box>
+    <MenuItem
+      to={supportUrl}
+      component={Link}
+      sx={{ width: '100%', color: 'inherit', ...style }}
+      data-testid="support-button"
+    >
+      <MenuItemLink
+        to={supportUrl}
+        title={title}
+        icon={icon}
+        tooltip={tooltip}
+      />
+    </MenuItem>
   );
 };
