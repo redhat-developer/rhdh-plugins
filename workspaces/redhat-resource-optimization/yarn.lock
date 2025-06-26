@@ -12333,9 +12333,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:5.23.2":
-  version: 5.23.2
-  resolution: "@rjsf/core@npm:5.23.2"
+"@rjsf/core@npm:5.24.12":
+  version: 5.24.12
+  resolution: "@rjsf/core@npm:5.24.12"
   dependencies:
     lodash: ^4.17.21
     lodash-es: ^4.17.21
@@ -12343,9 +12343,9 @@ __metadata:
     nanoid: ^3.3.7
     prop-types: ^15.8.1
   peerDependencies:
-    "@rjsf/utils": ^5.23.x
+    "@rjsf/utils": ^5.24.x
     react: ^16.14.0 || >=17
-  checksum: 36b2505afd5402368a31a06a4b9d2264f63cab9766f2060cd3c3ecf8b4c08fc7fc8b1b82dd00788f357a2ca649d76c5b6e324152572dbf333bd2b93a0bcc99fd
+  checksum: 115bcb3e692494623b09df5808375d6b92be3ed5f72019df6673ff450851ba61de3658b494b8cdb67fad28e2a8c22d243316a15bb5a1fe7470ddd7eb891ce685
   languageName: node
   linkType: hard
 
@@ -12390,9 +12390,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.23.2":
-  version: 5.23.2
-  resolution: "@rjsf/utils@npm:5.23.2"
+"@rjsf/utils@npm:5.24.12":
+  version: 5.24.12
+  resolution: "@rjsf/utils@npm:5.24.12"
   dependencies:
     json-schema-merge-allof: ^0.8.1
     jsonpointer: ^5.0.1
@@ -12401,7 +12401,7 @@ __metadata:
     react-is: ^18.2.0
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 16980013258bab7accaff961c533e4bb8e3326c37a84670a7667b2a10c1ca395451eb51a6cf819ccbafb1aa8838df325ff1f314b410bb186fef98856135e1a06
+  checksum: 8ada729aaa4d79122d6bccce7d6f6bbdc37399d0e67dc8fe60ccd375833d262968e1033bba946bc674897df86cf6303dc7434a94daed9cbf6a0d24ac0e93c701
   languageName: node
   linkType: hard
 
