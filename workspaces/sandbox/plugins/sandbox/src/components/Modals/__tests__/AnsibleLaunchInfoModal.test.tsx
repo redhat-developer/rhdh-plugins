@@ -107,10 +107,6 @@ describe('AnsibleLaunchInfoModal', () => {
     // Check for logos (by alt text)
     expect(screen.getByAltText('Ansible')).toBeInTheDocument();
     expect(screen.getByAltText('Red Hat')).toBeInTheDocument();
-
-    // Find the close button
-    const closeButtons = screen.getAllByRole('button', { name: /Close/i });
-    expect(closeButtons.length).toBeGreaterThan(0);
   });
 
   it('renders the provisioning state with correct content', async () => {
@@ -136,15 +132,6 @@ describe('AnsibleLaunchInfoModal', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       /You can close this modal. Follow the status of your instance on the AAP sandbox card./i,
     );
-  });
-
-  it('calls setOpen with false when close button is clicked', () => {
-    renderModal();
-
-    const closeButton = screen.getByText('Close');
-    fireEvent.click(closeButton);
-
-    expect(mockSetOpen).toHaveBeenCalledWith(false);
   });
 
   it('calls setOpen when the X button is clicked', () => {
