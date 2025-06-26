@@ -36,6 +36,12 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
         '//static.redhat.com/libs/redhat/marketing/latest/trustarc/trustarc.js';
       document.body.appendChild(script);
     }
+    if (!document.getElementById('dpal')) {
+      const script = document.createElement('script');
+      script.id = 'dpal';
+      script.src = 'https://www.redhat.com/ma/dpal.js';
+      document.body.appendChild(script);
+    }
   }, []);
 
   const theme = useTheme();
