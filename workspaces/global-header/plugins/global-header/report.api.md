@@ -341,35 +341,18 @@ export const StarredDropdown: () => JSX_2.Element;
 // @public (undocumented)
 export const SupportButton: ({
   title,
-  tooltip,
-  color,
-  size,
   to,
-  layout,
+  icon,
 }: SupportButtonProps) => JSX_2.Element | null;
 
 // @public (undocumented)
 export interface SupportButtonProps {
   // (undocumented)
-  color?:
-    | 'inherit'
-    | 'default'
-    | 'primary'
-    | 'secondary'
-    | 'error'
-    | 'info'
-    | 'success'
-    | 'warning';
-  // (undocumented)
-  layout?: CSSProperties;
-  // (undocumented)
-  size?: 'small' | 'medium' | 'large';
+  icon?: string;
   // (undocumented)
   title?: string;
   // (undocumented)
   to?: string;
-  // (undocumented)
-  tooltip?: string;
 }
 
 // (No @packageDocumentation comment for this package)
