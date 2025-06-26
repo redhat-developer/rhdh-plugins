@@ -41,6 +41,7 @@ const TemplateCard: FC<TemplateCardProps> = ({
     <Card
       elevation={0}
       sx={{
+        width: '100%',
         border: theme => `1px solid ${theme.palette.grey[400]}`,
         overflow: 'auto',
         maxHeight: '100%',

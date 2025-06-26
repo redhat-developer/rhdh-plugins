@@ -132,6 +132,8 @@ const entities /* : Entity[]*/ = [
     metadata: {
       name: 'service-a',
       description: 'Hello, I am service A',
+      title: 'Service A',
+      tags: ['service', 'a'],
     },
   },
   {
@@ -140,6 +142,28 @@ const entities /* : Entity[]*/ = [
     metadata: {
       name: 'service-b',
       description: 'Hello, I am service B',
+      title: 'Service B',
+      tags: ['service', 'b'],
+    },
+  },
+  {
+    apiVersion: '1',
+    kind: 'Component',
+    metadata: {
+      name: 'service-a',
+      description: 'Hello, I am service A',
+      title: 'Service A',
+      tags: ['service', 'a'],
+    },
+  },
+  {
+    apiVersion: '1',
+    kind: 'Component',
+    metadata: {
+      name: 'service-b',
+      description: 'Hello, I am service B',
+      title: 'Service B',
+      tags: ['service', 'b'],
     },
   },
 ];
