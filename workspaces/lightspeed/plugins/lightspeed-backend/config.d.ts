@@ -43,9 +43,9 @@ export interface Config {
      */
     questionValidation?: boolean;
     /**
-     * configure the port number for backend service.
+     * configure the port number for the lightspeed service.
      * @visibility backend
      */
-    port?: number;
+    servicePort?: number;
   };
 }

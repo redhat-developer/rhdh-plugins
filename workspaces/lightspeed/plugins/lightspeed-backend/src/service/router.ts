@@ -51,7 +51,7 @@ export async function createRouter(
   const router = Router();
   router.use(express.json());
 
-  const port = config.getOptionalNumber('lightspeed.port') ?? 8080;
+  const port = config.getOptionalNumber('lightspeed.servicePort') ?? 8080;
 
   router.get('/health', (_, response) => {
     response.json({ status: 'ok' });

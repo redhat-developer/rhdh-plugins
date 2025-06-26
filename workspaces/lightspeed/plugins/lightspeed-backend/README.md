@@ -36,7 +36,7 @@ lightspeed:
       url: <serverURL>
       token: <api key>
   questionValidation: true # Optional - To disable question (prompt) validation set it to false.
-  port: <portNumber> # Optional - Change the LS service port nubmer. Defaults to 8080.
+  servicePort: <portNumber> # Optional - Change the LS service port nubmer. Defaults to 8080.
 ```
 
 Example local development configuration:
