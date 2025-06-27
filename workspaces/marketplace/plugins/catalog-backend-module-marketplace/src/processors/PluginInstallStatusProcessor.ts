@@ -64,10 +64,10 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
 
   // Return processor name
   getProcessorName(): string {
-    return 'DynamicPluginInstallStatusProcessor';
+    return 'PluginInstallStatusProcessor';
   }
 
-  async getPluginInstallStatus(
+  private async getPluginInstallStatus(
     marketplacePlugin: MarketplacePlugin,
   ): Promise<MarketplacePluginInstallStatus | undefined> {
     const pluginPackageRefs = marketplacePlugin.spec?.packages?.map(
@@ -107,48 +107,47 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
       return undefined;
     }
 
-    // disabled when any of plugin packages set to disabled:true
-    const isDisabled = pluginPackages.some(
-      p => p.spec.installStatus === MarketplacePackageInstallStatus.Disabled,
+    const statusCounts = pluginPackages.reduce(
+      (counts, p) => {
+        const status = p.spec.installStatus;
+        counts[status] = counts[status] + 1;
+        return counts;
+      },
+      {
+        [MarketplacePackageInstallStatus.NotInstalled]: 0,
+        [MarketplacePackageInstallStatus.Installed]: 0,
+        [MarketplacePackageInstallStatus.Disabled]: 0,
+        [MarketplacePackageInstallStatus.UpdateAvailable]: 0,
+      } as Record<MarketplacePackageInstallStatus, number>,
     );
-    if (isDisabled) {
+    const totalPackagesCount = pluginPackages.length;
+
+    // Disabled when any package is disabled
+    if (statusCounts[MarketplacePackageInstallStatus.Disabled] > 0) {
       return MarketplacePluginInstallStatus.Disabled;
     }
-
-    const installStatus = pluginPackages.reduce<MarketplacePluginInstallStatus>(
-      (acc, p) => {
-        const newPackageStatus = p.spec.installStatus;
-        // PartiallyInstalled
-        if (
-          acc === MarketplacePluginInstallStatus.PartiallyInstalled ||
-          ([
-            MarketplacePluginInstallStatus.Installed,
-            MarketplacePluginInstallStatus.UpdateAvailable,
-          ].includes(acc) &&
-            newPackageStatus === MarketplacePackageInstallStatus.NotInstalled)
-        ) {
-          return MarketplacePluginInstallStatus.PartiallyInstalled;
-        }
-        // UpdateAvailable
-        if (
-          acc === MarketplacePluginInstallStatus.UpdateAvailable ||
-          newPackageStatus === MarketplacePackageInstallStatus.UpdateAvailable
-        ) {
-          return MarketplacePluginInstallStatus.UpdateAvailable;
-        }
-        // Installed
-        if (
-          acc === MarketplacePluginInstallStatus.NotInstalled &&
-          newPackageStatus === MarketplacePackageInstallStatus.Installed
-        ) {
-          return MarketplacePluginInstallStatus.Installed;
-        }
-        return acc;
-      },
-      MarketplacePluginInstallStatus.NotInstalled,
-    );
-
-    return installStatus;
+    // NotInstalled when all packages are not installed
+    if (
+      statusCounts[MarketplacePackageInstallStatus.NotInstalled] ===
+      totalPackagesCount
+    ) {
+      return MarketplacePluginInstallStatus.NotInstalled;
+    }
+    // Installed when all packages are installed
+    if (
+      statusCounts[MarketplacePackageInstallStatus.Installed] ===
+      totalPackagesCount
+    ) {
+      return MarketplacePluginInstallStatus.Installed;
+    }
+    // UpdateAvailable when any package has update available and no packages are not installed
+    if (
+      statusCounts[MarketplacePackageInstallStatus.UpdateAvailable] > 0 &&
+      statusCounts[MarketplacePackageInstallStatus.NotInstalled] === 0
+    ) {
+      return MarketplacePluginInstallStatus.UpdateAvailable;
+    }
+    return MarketplacePluginInstallStatus.PartiallyInstalled;
   }
 
   async preProcessEntity(
