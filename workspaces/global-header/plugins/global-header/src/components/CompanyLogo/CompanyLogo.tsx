@@ -39,7 +39,7 @@ const LogoRender = ({
       style={{
         objectFit: 'contain',
         objectPosition: 'left',
-        maxHeight: height, // "kind of" aligns with PF's MastheadLogo height
+        maxHeight: height,
       }}
       width={width}
     />
