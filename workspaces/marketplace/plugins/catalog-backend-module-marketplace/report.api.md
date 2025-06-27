@@ -68,6 +68,8 @@ export class DynamicPluginsService {
         logger: LoggerService;
     }): DynamicPluginsService;
     // (undocumented)
+    initialize(): void;
+    // (undocumented)
     isPackageDisabledViaConfig(marketplacePackage: MarketplacePackage): boolean;
 }
 

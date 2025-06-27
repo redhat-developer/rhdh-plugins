@@ -45,8 +45,7 @@
     "find-root": "^1.1.0",
     "glob": "^8.1.0",
     "js-yaml": "^4.1.0",
-    "semver": "^7.6.3",
-    "yaml": "^2.7.0"
+    "semver": "^7.6.3"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.5.0",

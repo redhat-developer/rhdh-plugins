@@ -16,21 +16,53 @@
 
 import fs from 'fs';
 
-import { Document, isMap, parseDocument } from 'yaml';
+import { load } from 'js-yaml';
 import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import path from 'path';
 import type { Config } from '@backstage/config';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { findPaths } from '@backstage/cli-common';
+import { JsonObject } from '@backstage/types/index';
+
+type DynamicPackagesFinalConfig = {
+  [packageName: string]: {
+    disabled: boolean;
+    hash?: string;
+    package: string;
+    pluginConfig?: JsonObject;
+  };
+};
 
 /**
  * @public
  */
 export class DynamicPluginsService {
-  private readonly config: Document;
+  private readonly logger: LoggerService;
+  private readonly configFile?: string;
+  private config: DynamicPackagesFinalConfig;
 
-  private constructor(config?: Document) {
-    this.config = config ?? new Document();
+  private constructor(logger: LoggerService, rootDirectory?: string) {
+    this.logger = logger;
+    this.configFile = rootDirectory;
+    this.config = {};
+  }
+
+  public initialize(): void {
+    if (!this.configFile) {
+      this.logger.info(`'dynamicPlugins.rootDirectory' is missing`);
+      this.config = {};
+      return;
+    }
+
+    if (!fs.existsSync(this.configFile)) {
+      this.logger.warn(`File '${this.configFile}' is missing`);
+      this.config = {};
+      return;
+    }
+    const rawContent = fs.readFileSync(this.configFile, 'utf-8');
+    const parsedContent = load(rawContent);
+    this.config =
+      (parsedContent as unknown as DynamicPackagesFinalConfig) || {};
   }
 
   static fromConfig(deps: {
@@ -44,7 +76,7 @@ export class DynamicPluginsService {
 
     if (!dynamicPluginsRoot) {
       logger.info(`'dynamicPlugins.rootDirectory' is missing`);
-      return new DynamicPluginsService();
+      return new DynamicPluginsService(logger);
     }
 
     // eslint-disable-next-line no-restricted-syntax
@@ -58,14 +90,7 @@ export class DynamicPluginsService {
           dynamicPluginsConfigFile,
         );
 
-    if (!fs.existsSync(dynamicPluginsConfigFilePath)) {
-      logger.warn(`File '${dynamicPluginsConfigFilePath}' is missing`);
-      return new DynamicPluginsService();
-    }
-
-    const rawContent = fs.readFileSync(dynamicPluginsConfigFilePath, 'utf-8');
-    const pluginsConfig = parseDocument(rawContent);
-    return new DynamicPluginsService(pluginsConfig);
+    return new DynamicPluginsService(logger, dynamicPluginsConfigFilePath);
   }
 
   public isPackageDisabledViaConfig(
@@ -78,7 +103,7 @@ export class DynamicPluginsService {
       );
     }
 
-    const entry = this.config.get(packageDynamicArtifact);
-    return isMap(entry) && entry.get('disabled') === true;
+    const entry = this.config[packageDynamicArtifact];
+    return entry && entry.disabled === true;
   }
 }
