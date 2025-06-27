@@ -42,5 +42,10 @@ export interface Config {
      * @visibility frontend
      */
     questionValidation?: boolean;
+    /**
+     * configure the port number for backend service.
+     * @visibility backend
+     */
+    port?: number;
   };
 }
