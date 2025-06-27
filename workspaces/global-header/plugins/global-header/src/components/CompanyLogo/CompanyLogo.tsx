@@ -145,7 +145,7 @@ export const CompanyLogo = ({
         <LogoRender
           base64Logo={logoURL}
           defaultLogo={<DefaultLogo />}
-          width={width || fullLogoWidth}
+          width={width ?? fullLogoWidth}
           height={height}
         />
       </Link>
