@@ -27,3 +27,4 @@
 | @types/dockerode                 | package.json:63:6 | error    |
 | @types/express                   | package.json:64:6 | error    |
 | @types/luxon                     | package.json:66:6 | error    |
+
