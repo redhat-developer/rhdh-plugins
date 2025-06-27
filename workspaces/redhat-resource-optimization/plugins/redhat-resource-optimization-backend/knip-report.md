@@ -13,12 +13,11 @@
 ## Unused devDependencies (1)
 
 | Name | Location          | Severity |
-| :-- | :---------------- | :------- |
-| msw | package.json:34:6 | error    |
+| :--- | :---------------- | :------- |
+| msw  | package.json:34:6 | error    |
 
 ## Unlisted dependencies (1)
 
 | Name                      | Location                     | Severity |
 | :------------------------ | :--------------------------- | :------- |
 | express-serve-static-core | src/util/checkPermissions.ts | error    |
-
