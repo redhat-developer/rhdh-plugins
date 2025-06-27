@@ -97,7 +97,7 @@ export const demoChatContent = [
     lc: 1,
     type: 'constructor',
     id: ['langchain_core', 'messages', 'HumanMessage'],
-    content: 'let me know about openshift deplyment in detail',
+    content: 'let me know about openshift deployment in detail',
     response_metadata: {
       created_at: createdAt,
     },
