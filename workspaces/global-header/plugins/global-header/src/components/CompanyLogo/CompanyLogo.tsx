@@ -77,7 +77,10 @@ export interface CompanyLogoProps {
    * to a value under 200px.
    */
   width?: string | number;
-  /** The maximum height of the logo in pixels (defaults to 40px). **/
+  /** 
+   * The maximum height of the logo in pixels (defaults to 40px). 
+   * Note that changing this value may result in changes in the height of the global header. 
+   **/
   height?: string | number;
   /** This prop is not used by this component. */
   layout?: CSSProperties;
