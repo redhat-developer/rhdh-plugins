@@ -14,16 +14,18 @@ export const ApplicationLauncherDropdown: () => JSX_2.Element;
 // @public
 export const CompanyLogo: ({
   logo,
-  logoWidth,
+  width,
+  height,
   to,
 }: CompanyLogoProps) => JSX_2.Element;
 
 // @public (undocumented)
 export interface CompanyLogoProps {
+  height?: string | number;
   layout?: CSSProperties;
   logo?: LogoURLs;
-  logoWidth?: number;
   to?: string;
+  width?: string | number;
 }
 
 // @public
