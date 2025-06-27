@@ -71,6 +71,7 @@ export const catalogModuleMarketplace = createBackendModule({
           config,
           logger,
         });
+        dynamicPluginsService.initialize();
 
         catalog.addEntityProvider(new MarketplacePackageProvider(taskRunner));
         catalog.addEntityProvider(new MarketplacePluginProvider(taskRunner));

@@ -10728,7 +10728,6 @@ __metadata:
     glob: ^8.1.0
     js-yaml: ^4.1.0
     semver: ^7.6.3
-    yaml: ^2.7.0
   languageName: unknown
   linkType: soft
 
