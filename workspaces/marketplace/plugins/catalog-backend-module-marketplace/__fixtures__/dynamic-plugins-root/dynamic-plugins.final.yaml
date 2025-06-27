@@ -1,0 +1,44 @@
+./dynamic-plugins/dist/backstage-community-plugin-topology:
+  disabled: true
+  hash: aaa
+  package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+        backstage-community.plugin-topology:
+          mountPoints:
+            - config:
+                if:
+                  anyOf:
+                    - hasAnnotation: backstage.io/kubernetes-id
+                    - hasAnnotation: backstage.io/kubernetes-namespace
+                layout:
+                  gridColumn: 1 / -1
+                  height: 75vh
+              importName: TopologyPage
+              mountPoint: entity.page.topology/cards
+./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic:
+  disabled: false
+  hash: bb
+  package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic
+./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import:
+  disabled: false
+  hash: ccc
+  package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+        red-hat-developer-hub.backstage-plugin-bulk-import:
+          appIcons:
+            - importName: BulkImportIcon
+              name: bulkImportIcon
+          dynamicRoutes:
+            - importName: BulkImportPage
+              menuItem:
+                icon: bulkImportIcon
+                text: Bulk import
+              path: /bulk-import/repositories
+./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic:
+  disabled: false
+  hash: ddd
+  package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
