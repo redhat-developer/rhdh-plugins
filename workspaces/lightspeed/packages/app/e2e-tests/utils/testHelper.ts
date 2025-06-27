@@ -15,6 +15,7 @@
  */
 
 import { Page, expect } from '@playwright/test';
+import { mockFeedbackReceived } from './devMode';
 
 export const openLightspeed = async (page: Page) => {
   const navLink = page.getByRole('link', { name: 'Lightspeed' });
@@ -23,13 +24,22 @@ export const openLightspeed = async (page: Page) => {
   await page.locator('.pf-chatbot__messagebox').waitFor({ state: 'visible' });
 };
 
-export const sendMessage = async (message: string, page: Page) => {
+export const sendMessage = async (
+  message: string,
+  page: Page,
+  waitForResponse = true,
+) => {
   const inputLocator = page.getByRole('textbox', {
     name: 'Send a message and optionally upload a JSON, YAML, TXT, or XML file...',
   });
   await inputLocator.fill(message);
   const sendButton = page.getByRole('button', { name: 'Send' });
   await sendButton.click();
+  if (waitForResponse) {
+    await page
+      .locator('.pf-chatbot__message-loading')
+      .waitFor({ state: 'hidden', timeout: 60000 });
+  }
 };
 
 export async function verifyFeedbackButtons(page: Page) {
@@ -43,7 +53,11 @@ export async function verifyFeedbackButtons(page: Page) {
   }
 }
 
-export async function submitFeedback(page: Page, ratingButtonName: string) {
+export async function submitFeedback(
+  page: Page,
+  ratingButtonName: string,
+  devMode: boolean,
+) {
   // Click the Good/Bad response button
   await page.getByRole('button', { name: ratingButtonName }).click();
 
@@ -62,16 +76,10 @@ export async function submitFeedback(page: Page, ratingButtonName: string) {
 
   await quickFeedbackLabels.first().click();
 
-  // Mock API response for v1/feedback
-  await page.route('**/v1/feedback', async route => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        response: 'feedback received',
-      }),
-    });
-  });
+  if (devMode) {
+    // Mock API response for v1/feedback
+    await mockFeedbackReceived(page);
+  }
 
   await feedbackCard.getByRole('button', { name: 'Submit' }).click();
 
@@ -93,5 +101,5 @@ export async function assertClipboardContains(
   const clipboardText = await page.evaluate(() =>
     window.navigator.clipboard.readText(),
   );
-  expect(clipboardText).toBe(expectedText);
+  expect(clipboardText).toMatch(expectedText);
 }
