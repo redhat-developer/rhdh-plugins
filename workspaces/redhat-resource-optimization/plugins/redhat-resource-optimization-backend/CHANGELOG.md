@@ -1,5 +1,20 @@
 # @backstage-community/plugin-redhat-resource-optimization-backend
 
+## 2.0.0
+
+### Major Changes
+
+- 02bf923: plugin for viewing and applying RedHat Insight recommendations
+- 67c18a8: sync with original repo
+
+### Patch Changes
+
+- 54ca4c1: Updated dependency `@types/express` to `4.17.23`.
+  Updated dependency `@types/lodash` to `4.17.18`.
+- Updated dependencies [02bf923]
+- Updated dependencies [67c18a8]
+  - @red-hat-developer-hub/plugin-redhat-resource-optimization-common@2.0.0
+
 ## 1.1.0
 
 ### Minor Changes
