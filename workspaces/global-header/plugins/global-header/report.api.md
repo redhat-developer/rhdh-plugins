@@ -7,7 +7,7 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import type { ComponentType } from 'react';
 import type { CSSProperties } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
-import type { SvgIconProps } from '@mui/material';
+import type { SvgIconProps } from '@mui/material/SvgIcon';
 
 // @public
 export const ApplicationLauncherDropdown: () => JSX_2.Element;
