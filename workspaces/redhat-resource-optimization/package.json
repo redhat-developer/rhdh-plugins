@@ -64,8 +64,8 @@
     "@types/react-dom": "^18",
     "react": "^18",
     "react-dom": "^18",
-    "@rjsf/core": "5.23.2",
-    "@rjsf/utils": "5.23.2"
+    "@rjsf/core": "5.24.12",
+    "@rjsf/utils": "5.24.12"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
