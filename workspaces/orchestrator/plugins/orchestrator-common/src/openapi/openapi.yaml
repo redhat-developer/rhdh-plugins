@@ -501,6 +501,10 @@ components:
           $ref: '#/components/schemas/WorkflowDataDTO'
         initiatorEntity:
           type: string
+        executionSummary:
+          type: array
+          items:
+            type: string
         nodes:
           type: array
           items:
