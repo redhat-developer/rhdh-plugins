@@ -59,12 +59,13 @@ const OrchestratorFormStepper = ({
 }: {
   steps: OrchestratorFormStep[];
 }) => {
+  const { classes } = useStyles();
   const { activeStep, reviewStep } = useStepperContext();
   const stepsWithReview = [
     ...steps,
     { content: reviewStep, title: 'Review', key: 'review' },
   ];
-  const { classes } = useStyles();
+
   return (
     <>
       <Stepper

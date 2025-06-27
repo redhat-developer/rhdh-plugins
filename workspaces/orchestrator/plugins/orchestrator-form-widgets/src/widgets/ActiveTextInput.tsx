@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import clsx from 'clsx';
 import { JsonObject } from '@backstage/types';
 import { Widget } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
 
+import { Theme } from '@mui/material/styles';
+import { makeStyles } from 'tss-react/mui';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
@@ -37,11 +40,18 @@ import {
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
 
+const useStyles = makeStyles()((theme: Theme) => ({
+  autocompleteOptionSelected: {
+    backgroundColor: `${theme.palette.action.selected} !important`,
+  },
+}));
+
 export const ActiveTextInput: Widget<
   JsonObject,
   JSONSchema7,
   OrchestratorFormContextProps
 > = props => {
+  const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
   const { id, label, value, onChange, formContext } = props;
@@ -139,6 +149,21 @@ export const ActiveTextInput: Widget<
           value={value}
           onChange={(_, v) => handleChange(v)}
           renderInput={renderInput}
+          renderOption={(liProps, item, state) => {
+            return (
+              <li
+                {...liProps}
+                key={item}
+                data-testid={`${id}-autocomplete-option-${item}`}
+                className={clsx(
+                  state.selected && classes.autocompleteOptionSelected,
+                  liProps.className,
+                )}
+              >
+                {item}
+              </li>
+            );
+          }}
         />
       </FormControl>
     );

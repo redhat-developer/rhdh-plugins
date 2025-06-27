@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import clsx from 'clsx';
 import { makeStyles } from 'tss-react/mui';
 import { Widget } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
@@ -35,7 +36,7 @@ import {
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
 
-const useStyles = makeStyles()(_ => ({
+const useStyles = makeStyles()(theme => ({
   menuItem: {
     // Workaround, we still have mix of Material 4 and 5 CSS in production, conflict with MuiButtonBase-root
     display: 'flex !important',
@@ -43,6 +44,9 @@ const useStyles = makeStyles()(_ => ({
     paddingTop: '8px !important',
     paddingBottom: '8px !important',
     paddingLeft: '16px !important',
+  },
+  menuItemSelected: {
+    backgroundColor: `${theme.palette.action.selected} !important`,
   },
 }));
 
@@ -143,7 +147,10 @@ export const ActiveDropdown: Widget<
             key={values[idx]}
             value={values[idx]}
             data-testid={`${id}-menuitem-${values[idx]}`}
-            className={classes.menuItem}
+            className={clsx(
+              classes.menuItem,
+              value === values[idx] && classes.menuItemSelected,
+            )}
           >
             {itemLabel}
           </MenuItem>
