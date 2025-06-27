@@ -24,10 +24,12 @@ const LogoRender = ({
   base64Logo,
   defaultLogo,
   width = 150,
+  height = 40,
 }: {
   base64Logo: string | undefined;
   defaultLogo: JSX.Element;
-  width?: number;
+  width?: number | string;
+  height?: number | string;
 }) => {
   return base64Logo ? (
     <img
@@ -37,7 +39,7 @@ const LogoRender = ({
       style={{
         objectFit: 'contain',
         objectPosition: 'left',
-        maxHeight: '40px', // "kind of" aligns with PF's MastheadLogo height
+        maxHeight: height, // "kind of" aligns with PF's MastheadLogo height
       }}
       width={width}
     />
@@ -74,7 +76,9 @@ export interface CompanyLogoProps {
    * You likely do not need to set this prop, but we recommend setting it
    * to a value under 200px.
    */
-  logoWidth?: number;
+  width?: string | number;
+  /** The maximum height of the logo in pixels (defaults to 40px). **/
+  height?: string | number;
   /** This prop is not used by this component. */
   layout?: CSSProperties;
 }
@@ -105,11 +109,15 @@ const useFullLogo = (logo: LogoURLs): string | undefined => {
 
 export const CompanyLogo = ({
   logo,
-  logoWidth,
+  width,
+  height,
   to = '/',
 }: CompanyLogoProps) => {
   const logoURL = useFullLogo(logo);
-
+  const configApi = useApi(configApiRef);
+  const fullLogoWidth = configApi.getOptional<number | string>(
+    'app.branding.fullLogoWidth',
+  );
   return (
     <Box
       data-testid="global-header-company-logo"
@@ -134,7 +142,8 @@ export const CompanyLogo = ({
         <LogoRender
           base64Logo={logoURL}
           defaultLogo={<DefaultLogo />}
-          width={logoWidth}
+          width={width || fullLogoWidth}
+          height={height}
         />
       </Link>
     </Box>
