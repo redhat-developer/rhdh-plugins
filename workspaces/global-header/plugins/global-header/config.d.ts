@@ -38,6 +38,13 @@ declare module '@backstage/config' {
                */
               dark: string;
             };
+        /**
+         * Fallback width for the full logo in the global header.
+         * Accepts any valid CSS length (e.g. `'200px'`, `'12rem'`).
+         * Used only when a `width` prop isn’t supplied through the extension configuration.
+         * @visibility frontend
+         */
+        fullLogoWidth?: string | number;
       };
     };
   }
