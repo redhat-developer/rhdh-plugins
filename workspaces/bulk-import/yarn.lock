@@ -6738,6 +6738,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@isaacs/balanced-match@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "@isaacs/balanced-match@npm:4.0.1"
+  checksum: 102fbc6d2c0d5edf8f6dbf2b3feb21695a21bc850f11bc47c4f06aa83bd8884fde3fe9d6d797d619901d96865fdcb4569ac2a54c937992c48885c5e3d9967fe8
+  languageName: node
+  linkType: hard
+
+"@isaacs/brace-expansion@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@isaacs/brace-expansion@npm:5.0.0"
+  dependencies:
+    "@isaacs/balanced-match": ^4.0.1
+  checksum: d7a3b8b0ddbf0ccd8eeb1300e29dd0a0c02147e823d8138f248375a365682360620895c66d113e05ee02389318c654379b0e538b996345b83c914941786705b1
+  languageName: node
+  linkType: hard
+
 "@isaacs/cliui@npm:^8.0.2":
   version: 8.0.2
   resolution: "@isaacs/cliui@npm:8.0.2"
@@ -8240,6 +8256,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/common@npm:11.1.3":
+  version: 11.1.3
+  resolution: "@nestjs/common@npm:11.1.3"
+  dependencies:
+    file-type: 21.0.0
+    iterare: 1.2.1
+    load-esm: 1.0.2
+    tslib: 2.8.1
+    uid: 2.0.2
+  peerDependencies:
+    class-transformer: ">=0.4.1"
+    class-validator: ">=0.13.2"
+    reflect-metadata: ^0.1.12 || ^0.2.0
+    rxjs: ^7.1.0
+  peerDependenciesMeta:
+    class-transformer:
+      optional: true
+    class-validator:
+      optional: true
+  checksum: a6d739a40d2f0fbcc9b77f05a1a7d995a0a4ae8498a2f3f1b4e84a31fcd018fd5e263c19d7549d0573a0065f20e0f792d9992eb5ac0e105adfeeb4ce37f85170
+  languageName: node
+  linkType: hard
+
 "@nestjs/core@npm:11.1.1":
   version: 11.1.1
   resolution: "@nestjs/core@npm:11.1.1"
@@ -8265,6 +8304,34 @@ __metadata:
     "@nestjs/websockets":
       optional: true
   checksum: 3e2055a3766a078b3999190eea44b0eaad82a69b39dd74b467fcb03e981a0a1d24e111cd5ec98b972c8f9bdb68485287297fd43d284aa222065369239ed2b882
+  languageName: node
+  linkType: hard
+
+"@nestjs/core@npm:11.1.3":
+  version: 11.1.3
+  resolution: "@nestjs/core@npm:11.1.3"
+  dependencies:
+    "@nuxt/opencollective": 0.4.1
+    fast-safe-stringify: 2.1.1
+    iterare: 1.2.1
+    path-to-regexp: 8.2.0
+    tslib: 2.8.1
+    uid: 2.0.2
+  peerDependencies:
+    "@nestjs/common": ^11.0.0
+    "@nestjs/microservices": ^11.0.0
+    "@nestjs/platform-express": ^11.0.0
+    "@nestjs/websockets": ^11.0.0
+    reflect-metadata: ^0.1.12 || ^0.2.0
+    rxjs: ^7.1.0
+  peerDependenciesMeta:
+    "@nestjs/microservices":
+      optional: true
+    "@nestjs/platform-express":
+      optional: true
+    "@nestjs/websockets":
+      optional: true
+  checksum: a0d948c4780d5d3d8138b87d5be2c269ea600cc2bd4c7b56371ff81385cafb92e7b2e5de9b80598b1cb75dcce3efe21a5fd930ff79edd729e37e75c3cf186b5d
   languageName: node
   linkType: hard
 
@@ -9475,7 +9542,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openapitools/openapi-generator-cli@npm:2.20.2, @openapitools/openapi-generator-cli@npm:^2.7.0":
+"@openapitools/openapi-generator-cli@npm:2.20.5":
+  version: 2.20.5
+  resolution: "@openapitools/openapi-generator-cli@npm:2.20.5"
+  dependencies:
+    "@nestjs/axios": 4.0.0
+    "@nestjs/common": 11.1.3
+    "@nestjs/core": 11.1.3
+    "@nuxtjs/opencollective": 0.3.2
+    axios: 1.9.0
+    chalk: 4.1.2
+    commander: 8.3.0
+    compare-versions: 4.1.4
+    concurrently: 6.5.1
+    console.table: 0.10.0
+    fs-extra: 11.3.0
+    glob: 11.0.3
+    inquirer: 8.2.6
+    lodash: 4.17.21
+    proxy-agent: 6.5.0
+    reflect-metadata: 0.2.2
+    rxjs: 7.8.2
+    tslib: 2.8.1
+  bin:
+    openapi-generator-cli: main.js
+  checksum: 97cd34ff358e417e9ac859ddeec95b911b7a11a2955df3de165defe9fe20371f548f9776c8c4211c198bdd13ede67c2ba31e8ecb23d3bae967853a4d5f687e36
+  languageName: node
+  linkType: hard
+
+"@openapitools/openapi-generator-cli@npm:^2.7.0":
   version: 2.20.2
   resolution: "@openapitools/openapi-generator-cli@npm:2.20.2"
   dependencies:
@@ -10224,7 +10319,7 @@ __metadata:
     "@backstage/types": ^1.2.1
     "@octokit/auth-app": ^6.0.3
     "@octokit/rest": ^20.0.2
-    "@openapitools/openapi-generator-cli": 2.20.2
+    "@openapitools/openapi-generator-cli": 2.20.5
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@types/express": 4.17.23
@@ -12798,7 +12893,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tokenizer/inflate@npm:^0.2.6":
+"@tokenizer/inflate@npm:^0.2.6, @tokenizer/inflate@npm:^0.2.7":
   version: 0.2.7
   resolution: "@tokenizer/inflate@npm:0.2.7"
   dependencies:
@@ -17577,14 +17672,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-spawn@npm:^7.0.0, cross-spawn@npm:^7.0.1, cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.3":
-  version: 7.0.3
-  resolution: "cross-spawn@npm:7.0.3"
+"cross-spawn@npm:^7.0.0, cross-spawn@npm:^7.0.1, cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.3, cross-spawn@npm:^7.0.6":
+  version: 7.0.6
+  resolution: "cross-spawn@npm:7.0.6"
   dependencies:
     path-key: ^3.1.0
     shebang-command: ^2.0.0
     which: ^2.0.1
-  checksum: 671cc7c7288c3a8406f3c69a3ae2fc85555c04169e9d611def9a675635472614f1c0ed0ef80955d5b6d4e724f6ced67f0ad1bb006c2ea643488fcfef994d7f52
+  checksum: 8d306efacaf6f3f60e0224c287664093fa9185680b2d195852ba9a863f85d02dcc737094c6e512175f8ee0161f9b87c73c6826034c2422e39de7d6569cf4503b
   languageName: node
   linkType: hard
 
@@ -20309,6 +20404,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"file-type@npm:21.0.0":
+  version: 21.0.0
+  resolution: "file-type@npm:21.0.0"
+  dependencies:
+    "@tokenizer/inflate": ^0.2.7
+    strtok3: ^10.2.2
+    token-types: ^6.0.0
+    uint8array-extras: ^1.4.0
+  checksum: cc3ad4928a99829b8e44cf8607e8769e8e5d4a8588d8e1e223c24f20a41f6cf0340d132a516c73146dedec8e08d8c9e405dda8d33c9ca158a0f4070ee2b4da0d
+  languageName: node
+  linkType: hard
+
 "file-type@npm:^16.5.4":
   version: 16.5.4
   resolution: "file-type@npm:16.5.4"
@@ -20501,6 +20608,16 @@ __metadata:
     cross-spawn: ^7.0.0
     signal-exit: ^4.0.1
   checksum: 1989698488f725b05b26bc9afc8a08f08ec41807cd7b92ad85d96004ddf8243fd3e79486b8348c64a3011ae5cc2c9f0936af989e1f28339805d8bc178a75b451
+  languageName: node
+  linkType: hard
+
+"foreground-child@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "foreground-child@npm:3.3.1"
+  dependencies:
+    cross-spawn: ^7.0.6
+    signal-exit: ^4.0.1
+  checksum: b2c1a6fc0bf0233d645d9fefdfa999abf37db1b33e5dab172b3cbfb0662b88bfbd2c9e7ab853533d199050ec6b65c03fcf078fc212d26e4990220e98c6930eef
   languageName: node
   linkType: hard
 
@@ -21094,6 +21211,22 @@ __metadata:
   version: 0.4.1
   resolution: "glob-to-regexp@npm:0.4.1"
   checksum: e795f4e8f06d2a15e86f76e4d92751cf8bbfcf0157cea5c2f0f35678a8195a750b34096b1256e436f0cebc1883b5ff0888c47348443e69546a5a87f9e1eb1167
+  languageName: node
+  linkType: hard
+
+"glob@npm:11.0.3":
+  version: 11.0.3
+  resolution: "glob@npm:11.0.3"
+  dependencies:
+    foreground-child: ^3.3.1
+    jackspeak: ^4.1.1
+    minimatch: ^10.0.3
+    minipass: ^7.1.2
+    package-json-from-dist: ^1.0.0
+    path-scurry: ^2.0.0
+  bin:
+    glob: dist/esm/bin.mjs
+  checksum: 65ddc1e3c969e87999880580048763cc8b5bdd375930dd43b8100a5ba481d2e2563e4553de42875790800c602522a98aa8d3ed1c5bd4d27621609e6471eb371d
   languageName: node
   linkType: hard
 
@@ -23259,6 +23392,15 @@ __metadata:
     "@pkgjs/parseargs":
       optional: true
   checksum: be31027fc72e7cc726206b9f560395604b82e0fddb46c4cbf9f97d049bcef607491a5afc0699612eaa4213ca5be8fd3e1e7cd187b3040988b65c9489838a7c00
+  languageName: node
+  linkType: hard
+
+"jackspeak@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "jackspeak@npm:4.1.1"
+  dependencies:
+    "@isaacs/cliui": ^8.0.2
+  checksum: daca714c5adebfb80932c0b0334025307b68602765098d73d52ec546bc4defdb083292893384261c052742255d0a77d8fcf96f4c669bcb4a99b498b94a74955e
   languageName: node
   linkType: hard
 
@@ -25433,6 +25575,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lru-cache@npm:^11.0.0":
+  version: 11.1.0
+  resolution: "lru-cache@npm:11.1.0"
+  checksum: 6274e90b5fdff87570fe26fe971467a5ae1f25f132bebe187e71c5627c7cd2abb94b47addd0ecdad034107667726ebde1abcef083d80f2126e83476b2c4e7c82
+  languageName: node
+  linkType: hard
+
 "lru-cache@npm:^4.0.1":
   version: 4.1.5
   resolution: "lru-cache@npm:4.1.5"
@@ -26453,6 +26602,15 @@ __metadata:
   dependencies:
     brace-expansion: ^2.0.1
   checksum: 253487976bf485b612f16bf57463520a14f512662e592e95c571afdab1442a6a6864b6c88f248ce6fc4ff0b6de04ac7aa6c8bb51e868e99d1d65eb0658a708b5
+  languageName: node
+  linkType: hard
+
+"minimatch@npm:^10.0.3":
+  version: 10.0.3
+  resolution: "minimatch@npm:10.0.3"
+  dependencies:
+    "@isaacs/brace-expansion": ^5.0.0
+  checksum: 20bfb708095a321cb43c20b78254e484cb7d23aad992e15ca3234a3331a70fa9cd7a50bc1a7c7b2b9c9890c37ff0685f8380028fcc28ea5e6de75b1d4f9374aa
   languageName: node
   linkType: hard
 
@@ -28734,6 +28892,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"path-scurry@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "path-scurry@npm:2.0.0"
+  dependencies:
+    lru-cache: ^11.0.0
+    minipass: ^7.1.2
+  checksum: 9953ce3857f7e0796b187a7066eede63864b7e1dfc14bf0484249801a5ab9afb90d9a58fc533ebb1b552d23767df8aa6a2c6c62caf3f8a65f6ce336a97bbb484
+  languageName: node
+  linkType: hard
+
 "path-to-regexp@npm:0.1.10":
   version: 0.1.10
   resolution: "path-to-regexp@npm:0.1.10"
@@ -28802,13 +28970,6 @@ __metadata:
   version: 4.1.0
   resolution: "peek-readable@npm:4.1.0"
   checksum: 02c673f9bc816f8e4e74a054c097225ad38d457d745b775e2b96faf404a54473b2f62f5bcd496f5ebc28696708bcc5e95bed409856f4bef5ed62eae9b4ac0dab
-  languageName: node
-  linkType: hard
-
-"peek-readable@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "peek-readable@npm:7.0.0"
-  checksum: d2955dba9478b1999e817300e00728a249e28e5218c802bad540cae614ee8968a6a556dc815c3c05fb462c01857ed8aa4145558b8e064b43b02aa745fcca8ae8
   languageName: node
   linkType: hard
 
@@ -33156,13 +33317,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strtok3@npm:^10.2.0":
-  version: 10.2.2
-  resolution: "strtok3@npm:10.2.2"
+"strtok3@npm:^10.2.0, strtok3@npm:^10.2.2":
+  version: 10.3.1
+  resolution: "strtok3@npm:10.3.1"
   dependencies:
     "@tokenizer/token": ^0.3.0
-    peek-readable: ^7.0.0
-  checksum: 3d73bae03bc57240011db3a22ed71a94e5eb2a0fce96e63b5a8a35694abd09be3072f7c68071f3eefde6ebc7446966d1df9c5d053131f4cce30e1dfd11c7f86a
+  checksum: 1d0d7817bdbbc385cc8363026825c10737975f4478dcaf99e299c7209df8fc5814c894b1e8b050111b0c3d8489bd1c2059e8e1cbd410bf625c64603884779f10
   languageName: node
   linkType: hard
 
