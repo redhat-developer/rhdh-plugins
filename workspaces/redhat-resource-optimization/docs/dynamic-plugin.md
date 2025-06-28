@@ -1,6 +1,6 @@
 ## Installing as Dynamic Plugin
 
-Unlike static plugins that necessitate source code modifications, dynamic plugins can be seamlessly integrated through configuration entries in the `app-config.yaml` file.
+Unlike static plugins that necessitate source code modifications, dynamic plugins can be seamlessly integrated through configuration entries in the `dynamic-plugins-rhdh.yaml` file.
 Red Hat Developer Hub (RHDH) leverages dynamic plugins to efficiently deploy plugins on a Backstage instance.
 
 The procedure involves the following steps:
@@ -12,7 +12,7 @@ The procedure involves the following steps:
 
 3. Specially, make sure you have configured
 
-   - ConfigMaps: `app-config-rhdh`, `dynamic-plugins-rhdh`
+   - ConfigMaps: `dynamic-plugins-rhdh`
    - Secrets: `secrets-rhdh`
 
 4. Add the following configuration to each one of the objects mentioned above respectively
@@ -24,20 +24,6 @@ The procedure involves the following steps:
 
    ROS_CLIENT_ID: # <as base64 string>
    ROS_CLIENT_SECRET: # <as base64 string>
-   ```
-
-   ```yaml
-   # Add to app-config-rhdh ConfigMap
-
-   proxy:
-     endpoints:
-       '/cost-management/v1':
-         target: https://console.redhat.com/api/cost-management/v1
-         allowedHeaders: ['Authorization']
-         credentials: dangerously-allow-unauthenticated
-     resourceOptimization:
-       clientId: '${ROS_CLIENT_ID}'
-       clientSecret: '${ROS_CLIENT_SECRET}'
    ```
 
    ```yaml
