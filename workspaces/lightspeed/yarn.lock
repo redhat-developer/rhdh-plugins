@@ -7321,7 +7321,7 @@ __metadata:
     "@backstage/repo-tools": ^0.13.0
     "@changesets/cli": ^2.27.1
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
-    "@playwright/test": 1.53.0
+    "@playwright/test": 1.53.1
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -9695,9 +9695,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.3.0-prerelease.23":
-  version: 6.3.0-prerelease.23
-  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.23"
+"@patternfly/chatbot@npm:6.3.0-prerelease.25":
+  version: 6.3.0-prerelease.25
+  resolution: "@patternfly/chatbot@npm:6.3.0-prerelease.25"
   dependencies:
     "@patternfly/react-code-editor": ^6.1.0
     "@patternfly/react-core": ^6.1.0
@@ -9718,7 +9718,7 @@ __metadata:
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 59e853d61fbee334ec2cae06a6461b4066d055d2afd138b43190eba19574d870cc823242ad9c531c86827bb95d696cc7aca848b1b77216872e72c1e483aa1aa2
+  checksum: d61f5cb972384980c02a45491ed37ee49998f8d0f365b5da42aeeeb049cf49ac5bb58f02853cb7724fa13a8cd9066657c8193aab78d26e990b35e5aa1c08c76e
   languageName: node
   linkType: hard
 
@@ -9739,20 +9739,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-core@npm:6.3.0-prerelease.17":
-  version: 6.3.0-prerelease.17
-  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.17"
+"@patternfly/react-core@npm:6.3.0-prerelease.27":
+  version: 6.3.0-prerelease.27
+  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.27"
   dependencies:
-    "@patternfly/react-icons": ^6.3.0-prerelease.3
-    "@patternfly/react-styles": ^6.3.0-prerelease.3
-    "@patternfly/react-tokens": ^6.3.0-prerelease.3
+    "@patternfly/react-icons": ^6.3.0-prerelease.9
+    "@patternfly/react-styles": ^6.3.0-prerelease.9
+    "@patternfly/react-tokens": ^6.3.0-prerelease.9
     focus-trap: 7.6.4
     react-dropzone: ^14.3.5
     tslib: ^2.8.1
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 6d2c4755d1318a52536a48ac310a282ae78617004f702d013bf9db771bc1ee97e3fa50da01a59dc1cc25600e23872ddffa5e302da895fe0620dab74deebea007
+  checksum: e865f6455779d68093882c8928941eff2c8798c7ee948a3261b23a4a1300ad319065d65a8b3e909d576405ea4ebfde71021a853c9e86f5779cfc4dc4199eb9a1
   languageName: node
   linkType: hard
 
@@ -9783,13 +9783,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-icons@npm:^6.3.0-prerelease.3":
-  version: 6.3.0-prerelease.3
-  resolution: "@patternfly/react-icons@npm:6.3.0-prerelease.3"
+"@patternfly/react-icons@npm:^6.3.0-prerelease.9":
+  version: 6.3.0-prerelease.9
+  resolution: "@patternfly/react-icons@npm:6.3.0-prerelease.9"
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 4d55667f3aa5b64c1e217b9c84697d95fc223083b58b16d02932a40a4a0392ae728bb1d545ade0f69580dce166769f572fb0f24f658132e36d9465b0a98e4887
+  checksum: e73c641965fcb9e54465b0cf7a3687dd28b70daabb2eac624b0d1f5183023b53d0174276baf27d36e9604fb48202bdfb96cf7431272d2a4637212094a8e86f84
   languageName: node
   linkType: hard
 
@@ -9800,10 +9800,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-styles@npm:^6.3.0-prerelease.3":
-  version: 6.3.0-prerelease.3
-  resolution: "@patternfly/react-styles@npm:6.3.0-prerelease.3"
-  checksum: 8a1b1785a7fd292a16546e4e1dd2b4804006fe18f2c56275b346760f0ad3a347cf7dafd3506045cd022252684f5ac4bb93ca27780d3f841dfd4ba0ba3d72d7af
+"@patternfly/react-styles@npm:^6.3.0-prerelease.9":
+  version: 6.3.0-prerelease.9
+  resolution: "@patternfly/react-styles@npm:6.3.0-prerelease.9"
+  checksum: 0283e9454bf745381b66a4ee0e2264f66598a4dd6fae71e4de1bc8b479a92636015436de2c7e30e3789b200e0f9392edae7fe125b9d97469b823df5bc3221596
   languageName: node
   linkType: hard
 
@@ -9831,10 +9831,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-tokens@npm:^6.3.0-prerelease.3":
-  version: 6.3.0-prerelease.3
-  resolution: "@patternfly/react-tokens@npm:6.3.0-prerelease.3"
-  checksum: 7c004777bcb6bb3ed9eb34294662fe7b8c1bcfc6a2746b28ed5466cdf8a39cb862c31efdc3001912dd1fa64e98661343c6be08931af38cb5a7b2cdd14650d6b5
+"@patternfly/react-tokens@npm:^6.3.0-prerelease.9":
+  version: 6.3.0-prerelease.9
+  resolution: "@patternfly/react-tokens@npm:6.3.0-prerelease.9"
+  checksum: 5e243bc9025a467e1bc3a1e2104d08d7a2cdba4a234ccd1c16376f74f41e6d52ab5d45204291cb25b21fbc7459c3c6f642da8f9dcc1b53816a9ac0038ed185df
   languageName: node
   linkType: hard
 
@@ -9845,14 +9845,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.53.0":
-  version: 1.53.0
-  resolution: "@playwright/test@npm:1.53.0"
+"@playwright/test@npm:1.53.1":
+  version: 1.53.1
+  resolution: "@playwright/test@npm:1.53.1"
   dependencies:
-    playwright: 1.53.0
+    playwright: 1.53.1
   bin:
     playwright: cli.js
-  checksum: 63c8264134b9ceb1a9e40af9a2e262f11f74c791c739ade6d39177de42a28016d3a9c807ce893048b2c3247a633b5e8c7805e013c6f87c85b1360a83363d74ba
+  checksum: 9d7c09d27c6e24740e1be6aa1ed98cc0257a5a1d9b2d44f94f7f12c5f9804a58ac2855b7a0e8330551527c94b9d4d46bb122c4bb362d1bc6cd72c75beb5e6a84
   languageName: node
   linkType: hard
 
@@ -10591,8 +10591,8 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
-    "@patternfly/chatbot": 6.3.0-prerelease.23
-    "@patternfly/react-core": 6.3.0-prerelease.17
+    "@patternfly/chatbot": 6.3.0-prerelease.25
+    "@patternfly/react-core": 6.3.0-prerelease.27
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@tanstack/react-query": ^5.59.15
@@ -15114,7 +15114,7 @@ __metadata:
     "@backstage/theme": ^0.6.3
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
-    "@playwright/test": 1.53.0
+    "@playwright/test": 1.53.1
     "@red-hat-developer-hub/backstage-plugin-lightspeed": "*"
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
@@ -29024,27 +29024,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.53.0":
-  version: 1.53.0
-  resolution: "playwright-core@npm:1.53.0"
+"playwright-core@npm:1.53.1":
+  version: 1.53.1
+  resolution: "playwright-core@npm:1.53.1"
   bin:
     playwright-core: cli.js
-  checksum: 00d6c8f566608681e1ab529ecb86a4e8c818f77605438e38e1b7ebf04b41b4df115217fe89cfe535d0a0a9f08807ab0b66d4f9da61c5609060cc68859c7c4354
+  checksum: 19600abe104c7f1793212ad12d8c66c6b42c534a2b760aab55ee9c198c058f0027c8f3ba469bb4f2e268e20e8f84272ea32aeb9ea840b184b58f58f71d29549d
   languageName: node
   linkType: hard
 
-"playwright@npm:1.53.0":
-  version: 1.53.0
-  resolution: "playwright@npm:1.53.0"
+"playwright@npm:1.53.1":
+  version: 1.53.1
+  resolution: "playwright@npm:1.53.1"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.53.0
+    playwright-core: 1.53.1
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: a8e69cecac82515e018f68aeccdae0bd8d4e18e3741330e79129c1705780fef6591294c0fe0f71f1ab4242a00032c3896eae9ceb40c5e03d53265f993de8cd42
+  checksum: 6d9b0ae3f4abe794528b213bb0b492be0d93ee611efca3122aca81a8127b0a13206a91c97f5b22449b1b97d5d65979dd70e1286b015c93c45143e722293d3b95
   languageName: node
   linkType: hard
 
