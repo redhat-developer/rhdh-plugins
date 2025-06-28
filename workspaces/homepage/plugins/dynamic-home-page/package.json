@@ -46,7 +46,7 @@
     "@mui/material": "5.17.1",
     "@mui/styles": "5.17.1",
     "@scalprum/react-core": "0.9.5",
-    "react-grid-layout": "1.5.1",
+    "react-grid-layout": "1.5.2",
     "react-use": "17.6.0",
     "tss-react": "4.9.18"
   },
