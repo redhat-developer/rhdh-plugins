@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { FC } from 'react';
+import type { FC, ComponentType } from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { HeaderIcon } from '../HeaderIcon/HeaderIcon';
 import { useTheme } from '@mui/material/styles';
 import LaunchIcon from '@mui/icons-material/Launch';
+import type { SvgIconProps } from '@mui/material/SvgIcon';
 
 interface MenuItemLinkContentProps {
-  icon?: string;
+  icon?: string | ComponentType<SvgIconProps>;
   label?: string;
   subLabel?: string;
   isExternalLink?: boolean;

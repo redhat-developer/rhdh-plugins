@@ -19,7 +19,7 @@ import type { CSSProperties } from 'react';
 import { useUserProfile } from '@backstage/plugin-user-settings';
 import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
-import { UserEntity } from '@backstage/catalog-model';
+import { parseEntityRef, UserEntity } from '@backstage/catalog-model';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import Avatar from '@mui/material/Avatar';
@@ -27,7 +27,7 @@ import Typography from '@mui/material/Typography';
 import { lighten } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 
-import { MenuSection } from './MenuSection';
+import { MenuItemConfig, MenuSection } from './MenuSection';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
 import { useDropdownManager } from '../../hooks';
@@ -43,6 +43,7 @@ export interface ProfileDropdownProps {
 export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
   const [user, setUser] = useState<string | null>();
+  const [profileLink, setProfileLink] = useState<string | null>();
   const {
     displayName,
     backstageIdentity,
@@ -76,18 +77,30 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   useEffect(() => {
     const fetchUserEntity = async () => {
       let userProfile;
+      let profileUrl: string | null = null;
+
       try {
         if (backstageIdentity?.userEntityRef) {
+          const { namespace = 'default', name } = parseEntityRef(
+            backstageIdentity.userEntityRef,
+          );
+          profileUrl = `/catalog/${namespace}/user/${name}`;
+
           userProfile = (await catalogApi.getEntityByRef(
             backstageIdentity.userEntityRef,
           )) as unknown as UserEntity;
+          setUser(
+            userProfile?.spec?.profile?.displayName ??
+              userProfile?.metadata?.title,
+          );
+          setProfileLink(profileUrl);
+        } else {
+          setUser(null);
+          setProfileLink(null);
         }
-        setUser(
-          userProfile?.spec?.profile?.displayName ??
-            userProfile?.metadata?.title,
-        );
       } catch (_err) {
         setUser(null);
+        setProfileLink(null);
       }
     };
 
@@ -96,15 +109,30 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
 
   const menuItems = useMemo(() => {
     return (profileDropdownMountPoints ?? [])
-      .map(mp => ({
-        Component: mp.Component,
-        icon: mp.config?.props?.icon ?? '',
-        label: mp.config?.props?.title ?? '',
-        link: mp.config?.props?.link ?? '',
-        priority: mp.config?.priority ?? 0,
-      }))
+      .map(mp => {
+        const {
+          title = '',
+          icon = '',
+          link: staticLink = '',
+        } = mp.config?.props ?? {};
+        const isMyProfile = title.toLowerCase() === 'my profile';
+        const link = isMyProfile ? profileLink ?? '' : staticLink;
+
+        if (!link && title) {
+          return null;
+        }
+
+        return {
+          Component: mp.Component,
+          label: title,
+          link,
+          priority: mp.config?.priority ?? 0,
+          ...(icon && { icon }),
+        };
+      })
+      .filter((item: MenuItemConfig) => item !== null)
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-  }, [profileDropdownMountPoints]);
+  }, [profileDropdownMountPoints, profileLink]);
 
   if (menuItems.length === 0) {
     return null;
