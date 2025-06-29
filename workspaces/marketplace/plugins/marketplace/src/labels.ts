@@ -31,6 +31,7 @@ export const mapMarketplacePluginInstallStatusToLabel: Record<
 > = {
   [MarketplacePluginInstallStatus.NotInstalled]: 'Not installed',
   [MarketplacePluginInstallStatus.Installed]: 'Installed',
+  [MarketplacePluginInstallStatus.Disabled]: 'Disabled',
   [MarketplacePluginInstallStatus.PartiallyInstalled]: 'Partially installed',
   [MarketplacePluginInstallStatus.UpdateAvailable]: 'Update available',
 };
@@ -41,6 +42,7 @@ export const mapMarketplacePluginInstallStatusToButton: Record<
 > = {
   [MarketplacePluginInstallStatus.NotInstalled]: 'Install',
   [MarketplacePluginInstallStatus.Installed]: 'Uninstall',
+  [MarketplacePluginInstallStatus.Disabled]: 'Enable',
   [MarketplacePluginInstallStatus.PartiallyInstalled]: 'Uninstall',
   [MarketplacePluginInstallStatus.UpdateAvailable]: 'Update',
 };
@@ -51,6 +53,7 @@ export const mapPackageInstallStatusToLabel: Record<
 > = {
   [MarketplacePackageInstallStatus.NotInstalled]: 'Not installed',
   [MarketplacePackageInstallStatus.Installed]: 'Installed',
+  [MarketplacePackageInstallStatus.Disabled]: 'Disabled',
   [MarketplacePackageInstallStatus.UpdateAvailable]: 'Update available',
 };
 
@@ -60,5 +63,6 @@ export const mapPackageInstallStatusToButton: Record<
 > = {
   [MarketplacePackageInstallStatus.NotInstalled]: 'Install',
   [MarketplacePackageInstallStatus.Installed]: 'Uninstall',
+  [MarketplacePackageInstallStatus.Disabled]: 'Enable',
   [MarketplacePackageInstallStatus.UpdateAvailable]: 'Update',
 };

@@ -15,6 +15,7 @@
  */
 
 import { createBackend } from '@backstage/backend-defaults';
+import { dynamicPluginsFeatureLoader } from '@backstage/backend-dynamic-feature-service';
 
 const backend = createBackend();
 
@@ -22,6 +23,8 @@ backend.add(import('@backstage/plugin-app-backend'));
 backend.add(import('@backstage/plugin-proxy-backend'));
 backend.add(import('@backstage/plugin-scaffolder-backend/alpha'));
 backend.add(import('@backstage/plugin-techdocs-backend/alpha'));
+
+backend.add(dynamicPluginsFeatureLoader());
 
 // auth plugin
 backend.add(import('@backstage/plugin-auth-backend'));

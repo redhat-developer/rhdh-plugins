@@ -6,7 +6,7 @@
 
 import type { AuthService } from '@backstage/backend-plugin-api';
 import { CatalogApi } from '@backstage/catalog-client';
-import { ConfigApi } from '@backstage/core-plugin-api';
+import type { ConfigApi } from '@backstage/core-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
 import { GetEntityFacetsRequest } from '@backstage/catalog-client';
 import { GetEntityFacetsResponse } from '@backstage/catalog-client';
@@ -366,6 +366,8 @@ export interface MarketplacePackageBackstage extends JsonObject {
 // @public (undocumented)
 export enum MarketplacePackageInstallStatus {
     // (undocumented)
+    Disabled = "Disabled",
+    // (undocumented)
     Installed = "Installed",
     // (undocumented)
     NotInstalled = "NotInstalled",
@@ -419,6 +421,8 @@ export interface MarketplacePlugin extends Entity {
 
 // @public (undocumented)
 export enum MarketplacePluginInstallStatus {
+    // (undocumented)
+    Disabled = "Disabled",
     // (undocumented)
     Installed = "Installed",
     // (undocumented)
