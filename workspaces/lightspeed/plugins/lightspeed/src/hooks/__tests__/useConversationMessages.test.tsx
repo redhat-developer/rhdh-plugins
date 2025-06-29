@@ -299,13 +299,7 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
     (useApi as jest.Mock).mockReturnValue(mockApi);
 
     const { result } = renderHook(
-      () =>
-        useConversationMessages(
-          'testConversationId',
-          'test-user',
-          'gpt-3',
-          'avatar.png',
-        ),
+      () => useConversationMessages('testConversationId', 'test-user', 'gpt-3'),
       {
         wrapper,
       },
@@ -328,7 +322,7 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
         role: 'user',
         content: prompt,
         timestamp: userTimestamp,
-        avatar: 'avatar.png',
+        avatar: 'user-avatar.svg',
         name: 'test-user',
         isLoading: false,
       },
@@ -336,7 +330,7 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
         role: 'bot',
         content: '',
         timestamp: '',
-        avatar: 'logo.svg',
+        avatar: 'bot-avatar.svg',
         name: 'gpt-3',
         isLoading: true,
       },
