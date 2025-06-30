@@ -95,6 +95,7 @@ export interface ProcessInstance {
   error?: ProcessInstanceError;
   addons?: string[];
   businessKey?: string;
+  executionSummary?: string[];
   isSelected?: boolean;
   errorMessage?: string;
   isOpen?: boolean;
