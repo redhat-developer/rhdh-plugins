@@ -15,3 +15,4 @@
 | Name           | Location                                                                                                                                                                                                                               | Severity |
 | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------- |
 | @formatjs/intl | src/pages/optimizations-breakdown/components/optimization-engine-tab/components/chart-info-card/components/intl-breakdown-chart/components/optimizations-breakdown-chart/components/optimizations-breakdown-chart/utils/chart-datum.ts | error    |
+
