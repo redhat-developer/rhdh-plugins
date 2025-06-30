@@ -425,6 +425,7 @@ function setupInternalRoutes(
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
       const credentials = await httpAuth.credentials(req);
+      const token = req.headers.authorization?.split(' ')[1];
       const initiatorEntity = await (
         await userInfo.getUserInfo(credentials)
       ).userEntityRef;
@@ -463,6 +464,7 @@ function setupInternalRoutes(
           workflowId,
           businessKey,
           initiatorEntity,
+          token,
         )
         .then(result => {
           auditEvent.success({ meta: { id: result.id } });
