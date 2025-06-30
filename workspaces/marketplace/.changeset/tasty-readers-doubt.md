@@ -4,4 +4,4 @@
 '@red-hat-developer-hub/backstage-plugin-marketplace-common': minor
 ---
 
-Introduces GET endpoints for fetching installation status: `/plugin/:namespace/:name/configuration/status` and `/package/:namespace/:name/configuration/status`. Changes `catalog-backend-module-marketplace` to directly use `DynamicPluginProvider` from `backend-dynamic-feature-service`.
+Removes separate providers for plugins, packages and collections and introduces unified provider `marketplace-provider`. The provider adds `installStatus` of packages and plugins. Introduces new `installStatus` values: `MarketplacePackageInstallStatus.Disabled` and `MarketplacePluginInstallStatus.Disabled`.
