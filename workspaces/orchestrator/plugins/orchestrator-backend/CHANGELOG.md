@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 6.1.3
+
+### Patch Changes
+
+- Updated dependencies [a3df181]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.3
+
 ## 6.1.2
 
 ### Patch Changes

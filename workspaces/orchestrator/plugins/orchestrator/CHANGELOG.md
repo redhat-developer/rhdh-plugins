@@ -1,5 +1,14 @@
 ### Dependencies
 
+## 3.1.3
+
+### Patch Changes
+
+- Updated dependencies [a3df181]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.6.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.6.3
+
 ## 3.1.2
 
 ### Patch Changes
