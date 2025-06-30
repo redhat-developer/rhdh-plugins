@@ -32,11 +32,11 @@ export const createPartition = async (
   maxRetries = 1,
 ) => {
   const startObject = DateTime.fromObject(
-    { year, month: month - 1, day: 1 },
+    { year, month, day: 1 },
     { zone: 'UTC' },
   );
   const endObject = DateTime.fromObject(
-    { year, month, day: 1 },
+    { year, month: month + 1, day: 1 },
     { zone: 'UTC' },
   );
   if (!endObject.isValid || !startObject.isValid) {
