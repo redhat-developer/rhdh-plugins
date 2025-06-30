@@ -17,37 +17,36 @@
 import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
-import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import {
-  isMarketplacePackage,
   MarketplacePackage,
   MarketplacePackageInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { LoggerService } from '@backstage/backend-plugin-api';
+import { stringifyEntityRef } from '@backstage/catalog-model';
 
 /**
  * @public
  */
-export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
-  private workspacesPath = this.findWorkspacesPath();
-  private customPaths;
+export class LocalPackageInstallStatusResolver {
+  private readonly logger: LoggerService;
+  private readonly workspacesPath = this.findWorkspacesPath();
+  private readonly customPaths;
 
   /**
    *
-   * @param paths - pass the workspaces to find the installed packages. Defaults to backstage default workspaces ['packages/app', 'packages/backend']
+   * @param deps - Dependencies object containing logger
+   * @param options - Optional object containing paths - custom workspace paths to find the installed packages. Defaults to backstage default workspaces ['packages/app', 'packages/backend']
    */
-  constructor(paths?: string[]) {
+  constructor(deps: { logger: LoggerService }, options?: { paths: string[] }) {
+    this.logger = deps.logger;
     this.customPaths =
-      paths ??
+      options?.paths ??
       ['packages/app', 'packages/backend']?.map(
         cpath => `${this.workspacesPath}/${cpath}/package.json`,
       );
   }
 
-  getProcessorName(): string {
-    return 'LocalPackageInstallStatusProcessor';
-  }
-
-  findWorkspacesPath(startPath = process.cwd()) {
+  findWorkspacesPath(startPath = process.cwd()): string {
     let currentPath = path.resolve(startPath);
 
     while (currentPath !== path.parse(currentPath).root) {
@@ -72,7 +71,7 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
     packageName: string,
     packageJsonPath: string,
     versionRange?: string,
-  ): MarketplacePackageInstallStatus | null {
+  ): MarketplacePackageInstallStatus | undefined {
     try {
       const absolutePackageJsonPath = path.resolve(packageJsonPath);
 
@@ -89,7 +88,7 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
       const devDependencies = packageJson.devDependencies;
 
       const isInPackageJson =
-        dependencies?.[packageName] || devDependencies?.[packageName];
+        dependencies?.[packageName] ?? devDependencies?.[packageName];
 
       const nodeModulesPath = path.resolve(
         this.workspacesPath,
@@ -118,51 +117,40 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
         return MarketplacePackageInstallStatus.UpdateAvailable;
       }
 
-      return null;
+      return undefined;
     } catch (error) {
-      console.warn('xxx', error);
-      return null;
+      this.logger.warn(
+        `Error occurred while computing 'installStatus' for ${packageName}`,
+        error,
+      );
+      return undefined;
     }
   }
 
-  async preProcessEntity(
+  public getPackageInstallStatus(
     entity: MarketplacePackage,
-  ): Promise<MarketplacePackage> {
-    if (isMarketplacePackage(entity)) {
-      if (entity.spec?.packageName && !entity.spec.installStatus) {
-        const packageName = entity.spec.packageName;
-        const version = entity.spec.version;
+  ): MarketplacePackageInstallStatus | undefined {
+    const packageName = entity.spec?.packageName;
+    if (!packageName) {
+      this.logger.warn(
+        `Entity ${stringifyEntityRef(entity)} missing 'entity.spec.packageName', unable to determine 'spec.installStatus'`,
+      );
+      return undefined;
+    }
 
-        let installStatus: MarketplacePackageInstallStatus | undefined =
-          undefined;
-
-        this.customPaths.forEach(customPaths => {
-          if (!installStatus) {
-            const status = this.isPackageInstalled(
-              packageName,
-              customPaths,
-              version,
-            );
-            if (status) {
-              installStatus = status;
-            }
-          }
-        });
-
-        if (!installStatus) {
-          installStatus = MarketplacePackageInstallStatus.NotInstalled;
-        }
-
-        return {
-          ...entity,
-          spec: {
-            ...entity.spec,
-            installStatus,
-          },
-        };
+    let installStatus: MarketplacePackageInstallStatus | undefined = undefined;
+    for (const customPath of this.customPaths) {
+      const status = this.isPackageInstalled(
+        packageName,
+        customPath,
+        entity.spec?.version,
+      );
+      if (status) {
+        installStatus = status;
+        break;
       }
     }
 
-    return entity;
+    return installStatus ?? MarketplacePackageInstallStatus.NotInstalled;
   }
 }

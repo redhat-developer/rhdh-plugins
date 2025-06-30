@@ -13,7 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './BaseEntityProvider';
-export * from './MarketplacePluginProvider';
-export * from './MarketplaceCollectionProvider';
-export * from './MarketplacePackageProvider';
+export * from './MarketplaceProvider';

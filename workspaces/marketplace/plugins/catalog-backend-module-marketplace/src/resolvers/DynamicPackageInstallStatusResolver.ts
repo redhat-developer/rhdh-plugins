@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
-import { LocationSpec } from '@backstage/plugin-catalog-common';
-import {
-  CatalogProcessor,
-  CatalogProcessorCache,
-  CatalogProcessorEmit,
-} from '@backstage/plugin-catalog-node';
 import { durationToMilliseconds } from '@backstage/types';
 import {
   MarketplacePackage,
   MarketplacePackageInstallStatus,
-  isMarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { DynamicPluginProvider } from '@backstage/backend-dynamic-feature-service';
 import { DynamicPluginsService } from './DynamicPluginsService';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import semver from 'semver';
+import { stringifyEntityRef } from '@backstage/catalog-model';
 
 /**
  * @public
@@ -42,7 +35,7 @@ export type Plugins = {
 /**
  * @public
  */
-export type CachedData = {
+export type CachedPlugins = {
   plugins: Plugins;
   cachedTime: number;
 };
@@ -50,13 +43,14 @@ export type CachedData = {
 /**
  * @public
  */
-export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
+export class DynamicPackageInstallStatusResolver {
   private readonly pluginProvider: DynamicPluginProvider;
   private readonly logger: LoggerService;
   private readonly dynamicPluginsService: DynamicPluginsService;
   private readonly cacheTTLMilliseconds = durationToMilliseconds({
     minutes: 1,
   });
+  private _cachedPlugins?: CachedPlugins;
 
   constructor(deps: {
     logger: LoggerService;
@@ -69,27 +63,16 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     this.dynamicPluginsService = dynamicPluginsService;
   }
 
-  // Return processor name
-  getProcessorName(): string {
-    return 'DynamicPackageInstallStatusProcessor';
-  }
-
-  async getCachedPlugins(
-    cache: CatalogProcessorCache,
-    entityRef: string,
-  ): Promise<CachedData> {
-    let cachedData = (await cache.get(entityRef)) as CachedData;
-    if (!cachedData || this.isExpired(cachedData)) {
+  private get cachedPlugins(): CachedPlugins {
+    if (!this._cachedPlugins || this.isExpired(this._cachedPlugins)) {
       const plugins = this.pluginProvider.plugins().reduce((acc, plugin) => {
         acc[plugin.name] = plugin.version;
         return acc;
       }, {} as Plugins);
 
-      cachedData = { plugins, cachedTime: Date.now() };
-      await cache.set(entityRef, cachedData);
+      this._cachedPlugins = { plugins, cachedTime: Date.now() };
     }
-
-    return cachedData;
+    return this._cachedPlugins;
   }
 
   /**
@@ -98,22 +81,26 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
    * @param cachedData - The cached data for this entity
    * @returns True if data is expired
    */
-  private isExpired(cachedData: CachedData): boolean {
+  private isExpired(cachedData: CachedPlugins): boolean {
     const elapsed = Date.now() - cachedData.cachedTime;
     return elapsed > this.cacheTTLMilliseconds;
   }
 
-  private getPackageInstallStatus(
+  public getPackageInstallStatus(
     marketplacePackage: MarketplacePackage,
-    installedPackages: Plugins,
   ): MarketplacePackageInstallStatus | undefined {
     if (!marketplacePackage.spec?.packageName) {
-      this.logger.error(
-        "Missing 'entity.spec.packageName', unable to determine 'spec.installStatus'",
+      this.logger.warn(
+        `Entity ${stringifyEntityRef(marketplacePackage)} missing 'entity.spec.packageName', unable to determine 'spec.installStatus'`,
       );
       return undefined;
     }
-
+    if (!marketplacePackage.spec?.dynamicArtifact) {
+      this.logger.warn(
+        `Entity ${stringifyEntityRef(marketplacePackage)} missing 'entity.spec.dynamicArtifact', unable to determine 'spec.installStatus'`,
+      );
+      return undefined;
+    }
     const versionRange = marketplacePackage.spec.version;
 
     // account for wrapper names
@@ -128,8 +115,8 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
       marketplacePackage.spec.packageName,
       transformedName,
     ]) {
-      if (packageName in installedPackages) {
-        const installedVersion = installedPackages[packageName];
+      if (packageName in this.cachedPlugins.plugins) {
+        const installedVersion = this.cachedPlugins.plugins[packageName];
         if (!versionRange || semver.satisfies(installedVersion, versionRange)) {
           return MarketplacePackageInstallStatus.Installed;
         }
@@ -140,45 +127,12 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     if (
       this.dynamicPluginsService.isPackageDisabledViaConfig(marketplacePackage)
     ) {
+      this.logger.info(
+        `${marketplacePackage.spec?.dynamicArtifact} is disabled`,
+      );
       return MarketplacePackageInstallStatus.Disabled;
     }
 
     return MarketplacePackageInstallStatus.NotInstalled;
-  }
-
-  async preProcessEntity(
-    entity: Entity,
-    _location: LocationSpec,
-    _emit: CatalogProcessorEmit,
-    _originLocation: LocationSpec,
-    cache: CatalogProcessorCache,
-  ): Promise<Entity> {
-    if (isMarketplacePackage(entity)) {
-      if (
-        entity.spec?.packageName &&
-        (!entity.spec?.installStatus ||
-          entity.spec.installStatus ===
-            MarketplacePackageInstallStatus.NotInstalled)
-      ) {
-        const entityRef = stringifyEntityRef(entity);
-        const data = await this.getCachedPlugins(cache, entityRef);
-        const installStatus = this.getPackageInstallStatus(
-          entity,
-          data.plugins,
-        );
-
-        if (installStatus) {
-          return {
-            ...entity,
-            spec: {
-              ...entity.spec,
-              installStatus,
-            },
-          };
-        }
-      }
-    }
-
-    return entity;
   }
 }

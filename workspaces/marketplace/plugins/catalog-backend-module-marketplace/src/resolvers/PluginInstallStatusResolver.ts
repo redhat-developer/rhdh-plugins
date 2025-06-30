@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  Entity,
-  parseEntityRef,
-  stringifyEntityRef,
-} from '@backstage/catalog-model';
-import { LocationSpec } from '@backstage/plugin-catalog-common';
-import {
-  CatalogProcessor,
-  CatalogProcessorEmit,
-} from '@backstage/plugin-catalog-node';
+import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
 import {
   MarketplaceKind,
   MarketplacePackage,
@@ -31,11 +22,8 @@ import {
   MarketplacePackageSpec,
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
-  isMarketplacePackage,
-  isMarketplacePlugin,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { CatalogApi } from '@backstage/catalog-client';
-import { AuthService, LoggerService } from '@backstage/backend-plugin-api';
+import { LoggerService } from '@backstage/backend-plugin-api';
 
 type MarketplacePackageWithInstallStatus = Omit<MarketplacePackage, 'spec'> & {
   spec: Omit<MarketplacePackageSpec, 'installStatus'> & {
@@ -46,70 +34,48 @@ type MarketplacePackageWithInstallStatus = Omit<MarketplacePackage, 'spec'> & {
 /**
  * @public
  */
-export class PluginInstallStatusProcessor implements CatalogProcessor {
-  private readonly auth: AuthService;
-  private readonly catalog: CatalogApi;
+export class PluginInstallStatusResolver {
   private readonly logger: LoggerService;
 
-  constructor(deps: {
-    auth: AuthService;
-    catalog: CatalogApi;
-    logger: LoggerService;
-  }) {
-    const { auth, catalog, logger } = deps;
-    this.auth = auth;
-    this.catalog = catalog;
-    this.logger = logger;
+  constructor(deps: { logger: LoggerService }) {
+    this.logger = deps.logger;
   }
 
-  // Return processor name
-  getProcessorName(): string {
-    return 'PluginInstallStatusProcessor';
-  }
-
-  private async getPluginInstallStatus(
+  public getPluginInstallStatus(
     marketplacePlugin: MarketplacePlugin,
-  ): Promise<MarketplacePluginInstallStatus | undefined> {
-    const pluginPackageRefs = marketplacePlugin.spec?.packages?.map(
-      pluginName => {
-        const pluginRef = parseEntityRef(pluginName, {
-          defaultKind: MarketplaceKind.Package,
-          defaultNamespace: marketplacePlugin.metadata.namespace,
-        });
-        return stringifyEntityRef(pluginRef);
-      },
-    );
-
-    if (!pluginPackageRefs || pluginPackageRefs.length === 0) {
-      this.logger.error(
-        "Missing 'spec.packages', unable to determine 'spec.installStatus'",
+    packagesMap: Map<string, MarketplacePackage>,
+  ): MarketplacePluginInstallStatus | undefined {
+    const pluginPackageRefs = marketplacePlugin.spec?.packages?.map(pkgName => {
+      const pluginRef = parseEntityRef(pkgName, {
+        defaultKind: MarketplaceKind.Package,
+        defaultNamespace: marketplacePlugin.metadata.namespace,
+      });
+      return stringifyEntityRef(pluginRef);
+    });
+    if (!pluginPackageRefs) {
+      this.logger.warn(
+        `Entity ${stringifyEntityRef(marketplacePlugin)} is missing packages, unable to determine 'spec.installStatus'`,
       );
       return undefined;
     }
 
-    const token = await this.auth.getPluginRequestToken({
-      onBehalfOf: await this.auth.getOwnServiceCredentials(),
-      targetPluginId: 'catalog',
-    });
-    const pluginPackagesResponse = await this.catalog.getEntitiesByRefs(
-      { entityRefs: pluginPackageRefs },
-      token,
-    );
-    const pluginPackages = pluginPackagesResponse.items
-      .filter(isMarketplacePackage)
+    const pluginPackages = pluginPackageRefs
+      .map(pkgRef =>
+        packagesMap.has(pkgRef) ? packagesMap.get(pkgRef) : undefined,
+      )
       .filter(
-        p => p.spec?.installStatus !== undefined,
+        pkg => pkg !== undefined && pkg.spec?.installStatus,
       ) as MarketplacePackageWithInstallStatus[];
     if (pluginPackageRefs.length !== pluginPackages.length) {
       this.logger.warn(
-        "Did not fetch all plugin packages with 'spec.installStatus', unable to determine 'spec.installStatus'",
+        `Missing all definitions for ${stringifyEntityRef(marketplacePlugin)} packages installStatus, unable to determine 'spec.installStatus'`,
       );
       return undefined;
     }
 
     const statusCounts = pluginPackages.reduce(
-      (counts, p) => {
-        const status = p.spec.installStatus;
+      (counts, pkg) => {
+        const status = pkg.spec.installStatus;
         counts[status] = counts[status] + 1;
         return counts;
       },
@@ -148,35 +114,5 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
       return MarketplacePluginInstallStatus.UpdateAvailable;
     }
     return MarketplacePluginInstallStatus.PartiallyInstalled;
-  }
-
-  async preProcessEntity(
-    entity: Entity,
-    _location: LocationSpec,
-    _emit: CatalogProcessorEmit,
-    _originLocation: LocationSpec,
-  ): Promise<Entity> {
-    if (isMarketplacePlugin(entity)) {
-      if (
-        entity.spec?.packages &&
-        entity.spec.packages.length > 0 &&
-        (!entity.spec?.installStatus ||
-          entity.spec.installStatus ===
-            MarketplacePluginInstallStatus.NotInstalled)
-      ) {
-        const installStatus = await this.getPluginInstallStatus(entity);
-        if (installStatus) {
-          return {
-            ...entity,
-            spec: {
-              ...entity.spec,
-              installStatus,
-            },
-          };
-        }
-      }
-    }
-
-    return entity;
   }
 }

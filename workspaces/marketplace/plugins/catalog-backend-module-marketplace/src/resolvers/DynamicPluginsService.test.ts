@@ -15,7 +15,6 @@
  */
 
 import { resolve } from 'path';
-import { DynamicPluginsService } from './DynamicPluginsService';
 import { ConfigReader } from '@backstage/config';
 import { mockServices } from '@backstage/backend-test-utils';
 import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
@@ -23,6 +22,7 @@ import {
   mockTopologyPackage,
   mockMarketplacePackage,
 } from '../../__fixtures__/mockData';
+import { DynamicPluginsService } from './DynamicPluginsService';
 
 const logger = mockServices.logger.mock();
 

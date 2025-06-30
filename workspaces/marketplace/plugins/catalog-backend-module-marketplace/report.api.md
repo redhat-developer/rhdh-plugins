@@ -6,7 +6,6 @@
 
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
-import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
 import type { Config } from '@backstage/config';
 import { DynamicPluginProvider } from '@backstage/backend-dynamic-feature-service';
@@ -15,28 +14,14 @@ import { EntityProvider } from '@backstage/plugin-catalog-node';
 import { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 
 // @public (undocumented)
-export abstract class BaseEntityProvider<T extends Entity> implements EntityProvider {
-    constructor(taskRunner: SchedulerServiceTaskRunner);
-    // (undocumented)
-    connect(connection: EntityProviderConnection): Promise<void>;
-    // (undocumented)
-    getEntities(allEntities: JsonFileData<T>[]): T[];
-    // (undocumented)
-    abstract getKind(): string;
-    // (undocumented)
-    abstract getProviderName(): string;
-    // (undocumented)
-    run(): Promise<void>;
-}
-
-// @public (undocumented)
-export type CachedData = {
+export type CachedPlugins = {
     plugins: Plugins;
     cachedTime: number;
 };
@@ -46,18 +31,14 @@ const catalogModuleMarketplace: BackendFeature;
 export default catalogModuleMarketplace;
 
 // @public (undocumented)
-export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
+export class DynamicPackageInstallStatusResolver {
     constructor(deps: {
         logger: LoggerService;
         pluginProvider: DynamicPluginProvider;
         dynamicPluginsService: DynamicPluginsService;
     });
     // (undocumented)
-    getCachedPlugins(cache: CatalogProcessorCache, entityRef: string): Promise<CachedData>;
-    // (undocumented)
-    getProcessorName(): string;
-    // (undocumented)
-    preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec, cache: CatalogProcessorCache): Promise<Entity>;
+    getPackageInstallStatus(marketplacePackage: MarketplacePackage): MarketplacePackageInstallStatus | undefined;
 }
 
 // @public (undocumented)
@@ -80,14 +61,16 @@ export type JsonFileData<T> = {
 };
 
 // @public (undocumented)
-export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
-    constructor(paths?: string[]);
+export class LocalPackageInstallStatusResolver {
+    constructor(deps: {
+        logger: LoggerService;
+    }, options?: {
+        paths: string[];
+    });
     // (undocumented)
     findWorkspacesPath(startPath?: string): string;
     // (undocumented)
-    getProcessorName(): string;
-    // (undocumented)
-    preProcessEntity(entity: MarketplacePackage): Promise<MarketplacePackage>;
+    getPackageInstallStatus(entity: MarketplacePackage): MarketplacePackageInstallStatus | undefined;
 }
 
 // @public (undocumented)
@@ -101,14 +84,6 @@ export class MarketplaceCollectionProcessor implements CatalogProcessor {
 }
 
 // @public (undocumented)
-export class MarketplaceCollectionProvider extends BaseEntityProvider<MarketplaceCollection> {
-    // (undocumented)
-    getKind(): string;
-    // (undocumented)
-    getProviderName(): string;
-}
-
-// @public (undocumented)
 export class MarketplacePackageProcessor implements CatalogProcessor {
     // (undocumented)
     getProcessorName(): string;
@@ -116,14 +91,6 @@ export class MarketplacePackageProcessor implements CatalogProcessor {
     postProcessEntity(entity: MarketplacePackage, _location: LocationSpec, emit: CatalogProcessorEmit): Promise<Entity>;
     // (undocumented)
     validateEntityKind(entity: Entity): Promise<boolean>;
-}
-
-// @public (undocumented)
-export class MarketplacePackageProvider extends BaseEntityProvider<MarketplacePackage> {
-    // (undocumented)
-    getKind(): string;
-    // (undocumented)
-    getProviderName(): string;
 }
 
 // @public (undocumented)
@@ -137,11 +104,38 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
 }
 
 // @public (undocumented)
-export class MarketplacePluginProvider extends BaseEntityProvider<MarketplacePlugin> {
+export class MarketplaceProvider implements EntityProvider {
+    constructor(deps: {
+        taskRunner: SchedulerServiceTaskRunner;
+        logger: LoggerService;
+        packageInstallStatusResolver: PackageInstallStatusResolver;
+        pluginInstallStatusResolver: PluginInstallStatusResolver;
+    });
     // (undocumented)
-    getKind(): string;
+    connect(connection: EntityProviderConnection): Promise<void>;
     // (undocumented)
     getProviderName(): string;
+    // (undocumented)
+    run(): Promise<void>;
+}
+
+// @public (undocumented)
+export class PackageInstallStatusResolver {
+    constructor(deps: {
+        dynamicPackageInstallStatusResolver: DynamicPackageInstallStatusResolver;
+        localPackageInstallStatusResolver: LocalPackageInstallStatusResolver;
+    });
+    // (undocumented)
+    getPackageInstallStatus(pkg: MarketplacePackage): MarketplacePackageInstallStatus | undefined;
+}
+
+// @public (undocumented)
+export class PluginInstallStatusResolver {
+    constructor(deps: {
+        logger: LoggerService;
+    });
+    // (undocumented)
+    getPluginInstallStatus(marketplacePlugin: MarketplacePlugin, packagesMap: Map<string, MarketplacePackage>): MarketplacePluginInstallStatus | undefined;
 }
 
 // @public (undocumented)

@@ -16,7 +16,4 @@
 
 export * from './MarketplacePluginProcessor';
 export * from './MarketplaceCollectionProcessor';
-export * from './DynamicPackageInstallStatusProcessor';
-export * from './LocalPackageInstallStatusProcessor';
 export * from './MarketplacePackageProcessor';
-export * from './DynamicPluginsService';

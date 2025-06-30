@@ -24,7 +24,7 @@ import { LoggerService } from '@backstage/backend-plugin-api';
 import { findPaths } from '@backstage/cli-common';
 import { JsonObject } from '@backstage/types/index';
 
-type DynamicPackagesFinalConfig = {
+type DynamicPackagesConfig = {
   [packageName: string]: {
     disabled: boolean;
     hash?: string;
@@ -39,7 +39,7 @@ type DynamicPackagesFinalConfig = {
 export class DynamicPluginsService {
   private readonly logger: LoggerService;
   private readonly configFile?: string;
-  private config: DynamicPackagesFinalConfig;
+  private config: DynamicPackagesConfig;
 
   private constructor(logger: LoggerService, rootDirectory?: string) {
     this.logger = logger;
@@ -61,8 +61,7 @@ export class DynamicPluginsService {
     }
     const rawContent = fs.readFileSync(this.configFile, 'utf-8');
     const parsedContent = load(rawContent);
-    this.config =
-      (parsedContent as unknown as DynamicPackagesFinalConfig) || {};
+    this.config = (parsedContent as unknown as DynamicPackagesConfig) || {};
   }
 
   static fromConfig(deps: {

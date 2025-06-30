@@ -30,6 +30,6 @@ describe('catalogModuleMarketplace', () => {
       features: [catalogModuleMarketplace, dynamicPluginsFeatureLoader()],
     });
 
-    expect(extensionPoint.addProcessor).toHaveBeenCalledTimes(6);
+    expect(extensionPoint.addProcessor).toHaveBeenCalledTimes(3);
   });
 });

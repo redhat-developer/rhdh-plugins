@@ -30,6 +30,7 @@ export const packageEntity: MarketplacePackage = {
     tags: ['3scale', 'api'],
   },
   spec: {
+    dynamicArtifact: './dist/test-package',
     packageName: 'test-package',
   },
 };
@@ -93,9 +94,4 @@ export const mockMarketplacePlugin = {
       'package:marketplace-plugin-demo/red-hat-developer-hub-backstage-plugin-marketplace-backend',
     ],
   },
-};
-
-export const locationSpec = {
-  type: '',
-  target: '',
 };

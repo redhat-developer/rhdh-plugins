@@ -19,18 +19,18 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
-
-import { MarketplacePluginProcessor } from './processors/MarketplacePluginProcessor';
-import { MarketplaceCollectionProcessor } from './processors/MarketplaceCollectionProcessor';
-import { DynamicPackageInstallStatusProcessor } from './processors/DynamicPackageInstallStatusProcessor';
-import { LocalPackageInstallStatusProcessor } from './processors/LocalPackageInstallStatusProcessor';
-import { MarketplacePackageProcessor } from './processors/MarketplacePackageProcessor';
-import { MarketplacePluginProvider } from './providers/MarketplacePluginProvider';
-import { MarketplacePackageProvider } from './providers/MarketplacePackageProvider';
 import { dynamicPluginsServiceRef } from '@backstage/backend-dynamic-feature-service';
-import { DynamicPluginsService } from './processors/DynamicPluginsService';
-import { CatalogClient } from '@backstage/catalog-client';
-import { PluginInstallStatusProcessor } from './processors/PluginInstallStatusProcessor';
+import { DynamicPluginsService } from './resolvers/DynamicPluginsService';
+import { MarketplaceProvider } from './providers/MarketplaceProvider';
+import { PackageInstallStatusResolver } from './resolvers/PackageInstallStatusResolver';
+import { DynamicPackageInstallStatusResolver } from './resolvers/DynamicPackageInstallStatusResolver';
+import { LocalPackageInstallStatusResolver } from './resolvers/LocalPackageInstallStatusResolver';
+import { PluginInstallStatusResolver } from './resolvers/PluginInstallStatusResolver';
+import {
+  MarketplacePackageProcessor,
+  MarketplacePluginProcessor,
+} from './processors';
+import { MarketplaceCollectionProcessor } from './processors/MarketplaceCollectionProcessor';
 
 /**
  * @public
@@ -42,22 +42,12 @@ export const catalogModuleMarketplace = createBackendModule({
     reg.registerInit({
       deps: {
         logger: coreServices.logger,
-        auth: coreServices.auth,
-        discovery: coreServices.discovery,
         catalog: catalogProcessingExtensionPoint,
         config: coreServices.rootConfig,
         pluginProvider: dynamicPluginsServiceRef,
         scheduler: coreServices.scheduler,
       },
-      async init({
-        logger,
-        auth,
-        discovery,
-        catalog,
-        config,
-        pluginProvider,
-        scheduler,
-      }) {
+      async init({ logger, catalog, config, pluginProvider, scheduler }) {
         logger.info(
           'Adding Marketplace providers and processors to catalog...',
         );
@@ -66,37 +56,39 @@ export const catalogModuleMarketplace = createBackendModule({
           timeout: { minutes: 10 },
         });
 
-        const catalogApi = new CatalogClient({ discoveryApi: discovery });
         const dynamicPluginsService = DynamicPluginsService.fromConfig({
           config,
           logger,
         });
         dynamicPluginsService.initialize();
 
-        catalog.addEntityProvider(new MarketplacePackageProvider(taskRunner));
-        catalog.addEntityProvider(new MarketplacePluginProvider(taskRunner));
-        // Disabling the collection provider as collections/all.yaml is already commented in RHDH 1.5 image.
-        // catalog.addEntityProvider(
-        //   new MarketplaceCollectionProvider(taskRunner),
-        // );
-        catalog.addProcessor(new MarketplacePluginProcessor());
-        catalog.addProcessor(new MarketplaceCollectionProcessor());
-        catalog.addProcessor(new LocalPackageInstallStatusProcessor());
-        catalog.addProcessor(
-          new DynamicPackageInstallStatusProcessor({
+        const dynamicPackageInstallStatusResolver =
+          new DynamicPackageInstallStatusResolver({
             logger,
             pluginProvider,
             dynamicPluginsService,
-          }),
-        );
-        catalog.addProcessor(new MarketplacePackageProcessor());
-        catalog.addProcessor(
-          new PluginInstallStatusProcessor({
-            auth,
-            catalog: catalogApi,
+          });
+        const localPackageInstallStatusResolver =
+          new LocalPackageInstallStatusResolver({ logger });
+        const packageInstallStatusResolver = new PackageInstallStatusResolver({
+          dynamicPackageInstallStatusResolver,
+          localPackageInstallStatusResolver,
+        });
+        const pluginInstallStatusResolver = new PluginInstallStatusResolver({
+          logger,
+        });
+        catalog.addEntityProvider(
+          new MarketplaceProvider({
+            taskRunner,
             logger,
+            packageInstallStatusResolver,
+            pluginInstallStatusResolver,
           }),
         );
+
+        catalog.addProcessor(new MarketplacePluginProcessor());
+        catalog.addProcessor(new MarketplacePackageProcessor());
+        catalog.addProcessor(new MarketplaceCollectionProcessor());
       },
     });
   },

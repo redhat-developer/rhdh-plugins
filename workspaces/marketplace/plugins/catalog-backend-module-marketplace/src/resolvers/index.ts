@@ -13,21 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  MarketplaceKind,
-  MarketplacePackage,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { BaseEntityProvider } from './BaseEntityProvider';
-
-/**
- * @public
- */
-export class MarketplacePackageProvider extends BaseEntityProvider<MarketplacePackage> {
-  getKind(): string {
-    return MarketplaceKind.Package;
-  }
-
-  getProviderName(): string {
-    return 'marketplace-package-provider';
-  }
-}
+export * from './DynamicPluginsService';
+export * from './DynamicPackageInstallStatusResolver';
+export * from './LocalPackageInstallStatusResolver';
+export * from './PackageInstallStatusResolver';
+export * from './PluginInstallStatusResolver';
+export * from './PackageInstallStatusResolver';
