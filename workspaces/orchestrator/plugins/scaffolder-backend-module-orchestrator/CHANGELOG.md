@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 0.3.6
+
+### Patch Changes
+
+- 74dcca0: - update orchestrator:workflow:run to use workflow_id
+  - update README for scaffolder-backend-module-orchestrator
+- Updated dependencies [da78550]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.2
+
 ## 0.3.5
 
 ### Patch Changes
