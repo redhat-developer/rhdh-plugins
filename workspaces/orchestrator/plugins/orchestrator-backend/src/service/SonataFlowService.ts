@@ -99,6 +99,7 @@ export class SonataFlowService {
     inputData?: ProcessInstanceVariables;
     authTokens?: Array<AuthToken>;
     businessKey?: string;
+    backstageToken?: string | undefined;
   }): Promise<WorkflowExecutionResponse | undefined> {
     const urlToFetch = args.businessKey
       ? `${args.serviceUrl}/${args.definitionId}?businessKey=${args.businessKey}`
@@ -119,6 +120,10 @@ export class SonataFlowService {
       this.logger.debug(
         'No authTokens provided or authTokens is not an array.',
       );
+    }
+
+    if (args.backstageToken) {
+      headers['X-Authorization-Backstage'] = args.backstageToken;
     }
 
     const response = await fetch(urlToFetch, {
