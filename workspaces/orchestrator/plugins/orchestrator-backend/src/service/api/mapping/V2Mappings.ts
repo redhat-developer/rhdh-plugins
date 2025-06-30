@@ -135,6 +135,7 @@ export function mapToProcessInstanceDTO(
     processName: processInstance.processName,
     description: processInstance.description,
     serviceUrl: processInstance.serviceUrl,
+    executionSummary: processInstance.executionSummary,
     endpoint: processInstance.endpoint,
     error: processInstance.error,
     category: mapWorkflowCategoryDTO(processInstance.category),
