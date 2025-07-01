@@ -20,12 +20,12 @@ import type { JsonObject } from '@backstage/types';
 import { AxiosResponse } from 'axios';
 
 import {
-  AssessedProcessInstanceDTO,
   AuthToken,
   ExecuteWorkflowResponseDTO,
   Filter,
   InputSchemaResponseDTO,
   PaginationInfoDTO,
+  ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
@@ -48,9 +48,7 @@ export interface OrchestratorApi {
 
   getWorkflowSource(workflowId: string): Promise<AxiosResponse<string>>;
 
-  getInstance(
-    instanceId: string,
-  ): Promise<AxiosResponse<AssessedProcessInstanceDTO>>;
+  getInstance(instanceId: string): Promise<AxiosResponse<ProcessInstanceDTO>>;
 
   getWorkflowDataInputSchema(
     workflowId: string,

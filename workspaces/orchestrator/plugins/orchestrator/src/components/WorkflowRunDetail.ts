@@ -26,7 +26,6 @@ export type WorkflowRunDetail = {
   state?: string;
   start: string;
   duration: string;
-  category?: string;
   description?: string;
   businessKey?: string;
 };

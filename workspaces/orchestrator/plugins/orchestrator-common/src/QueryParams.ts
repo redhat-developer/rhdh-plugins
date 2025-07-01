@@ -15,5 +15,3 @@
  */
 
 export const QUERY_PARAM_INSTANCE_ID = 'instanceId' as const;
-export const QUERY_PARAM_ASSESSMENT_INSTANCE_ID =
-  'assessmentInstanceId' as const;

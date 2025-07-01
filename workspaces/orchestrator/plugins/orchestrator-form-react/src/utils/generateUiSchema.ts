@@ -177,7 +177,7 @@ const addReadonly = (
   uiSchema: UiSchema<JsonObject>,
   isMultiStep: boolean,
 ) => {
-  // make inputs that came from assessment instance variables readonly
+  // make inputs that came from existing instance variables readonly
   if (!isMultiStep) {
     for (const key of Object.keys(data)) {
       uiSchema[key] = {
