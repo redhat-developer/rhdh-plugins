@@ -17,7 +17,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 const CustomTooltip = ({
   active,
@@ -31,6 +31,7 @@ const CustomTooltip = ({
   grouping?: string;
 }) => {
   const theme = useTheme();
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   if (active && payload?.length) {
     const date = label ? new Date(label) : new Date();
@@ -51,8 +52,8 @@ const CustomTooltip = ({
           }}
         >
           {grouping === 'hourly'
-            ? format(date, 'MMMM dd, yyyy hh:mm a')
-            : format(date, 'MMMM, dd yyyy')}
+            ? formatInTimeZone(date, timeZone, 'MMMM dd, yyyy hh:mm a zzz')
+            : formatInTimeZone(date, timeZone, 'MMMM, dd yyyy')}
         </Typography>
 
         <Box display="flex" justifyContent="space-between" alignItems="center">

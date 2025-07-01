@@ -62,7 +62,7 @@ export const hasZFormat = (dateStr: string): boolean => {
 
 export const convertToLocalTimezone = (
   date: string | Date,
-  timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone,
+  timeZone: string = new Intl.DateTimeFormat().resolvedOptions().timeZone,
 ) => {
   const dateString = date instanceof Date ? date.toISOString() : date;
 

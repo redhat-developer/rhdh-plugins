@@ -122,7 +122,7 @@ const Users = () => {
                     ))}
 
                     <Label
-                      value={logged_in_users.toLocaleString()}
+                      value={logged_in_users.toLocaleString('en-US')}
                       position="center"
                       style={{
                         fontSize: '24px',
@@ -131,7 +131,7 @@ const Users = () => {
                       }}
                     />
                     <Label
-                      value={`of ${licensed_users.toLocaleString()}`}
+                      value={`of ${licensed_users.toLocaleString('en-US')}`}
                       position="center"
                       dy={20}
                       style={{

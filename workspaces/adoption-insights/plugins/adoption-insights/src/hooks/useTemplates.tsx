@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { adoptionInsightsApiRef } from '../api';
 import { APIsViewOptions, TemplatesResponse } from '../types';
 import { useDateRange } from '../components/Header/DateRangeContext';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export const useTemplates = ({
   limit = 20,
@@ -40,13 +41,16 @@ export const useTemplates = ({
   const api = useApi(adoptionInsightsApiRef);
 
   const getTemplates = useCallback(async () => {
+    const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     return await api
       .getTemplates({
         type: 'top_templates',
         start_date: startDateRange
-          ? format(startDateRange, 'yyyy-MM-dd')
+          ? formatInTimeZone(startDateRange, timezone, 'yyyy-MM-dd')
           : undefined,
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
+        timezone,
         limit,
       })
       .then((response: TemplatesResponse) =>

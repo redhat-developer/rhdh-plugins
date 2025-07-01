@@ -32,7 +32,7 @@ export class PostgresAdapter extends BaseDatabaseAdapter {
   getDate(): string {
     const timeZone =
       this.filters?.timezone ||
-      Intl.DateTimeFormat().resolvedOptions().timeZone;
+      new Intl.DateTimeFormat().resolvedOptions().timeZone;
     return this.db
       .raw(
         `to_char(created_at AT AT TIME ZONE ?,'YYYY-MM-DD"T"HH24:MI:SS.MSZ')`,
@@ -44,7 +44,7 @@ export class PostgresAdapter extends BaseDatabaseAdapter {
   getLastUsedDate(): string {
     const timeZone =
       this.filters?.timezone ||
-      Intl.DateTimeFormat().resolvedOptions().timeZone;
+      new Intl.DateTimeFormat().resolvedOptions().timeZone;
     return this.db
       .raw(
         `to_char(MAX(created_at) AT TIME ZONE ?,'YYYY-MM-DD"T"HH24:MI:SS.FF3') || 'Z' AS last_used`,
@@ -94,7 +94,7 @@ export class PostgresAdapter extends BaseDatabaseAdapter {
   ): string {
     const timeZone =
       this.filters?.timezone ||
-      Intl.DateTimeFormat().resolvedOptions().timeZone;
+      new Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     const rawQuery = (query: any, bindings: any) =>
       this.db.raw(query, bindings).toQuery();
@@ -105,29 +105,30 @@ export class PostgresAdapter extends BaseDatabaseAdapter {
               `to_char(date_trunc('hour', created_at AT TIME ZONE ?) AT TIME ZONE ?, 'YYYY-MM-DD"T"HH24:MI:SSOF')`,
               [timeZone, timeZone],
             )
-          : rawQuery(`date_trunc('hour', created_at AT TIME ZONE ?)`, [
-              timeZone,
-            ]);
+          : rawQuery(
+              `date_trunc('hour', created_at AT TIME ZONE ?) AT TIME ZONE ?`,
+              [timeZone, timeZone],
+            );
       case 'daily':
         return rawQuery(`to_char(created_at AT TIME ZONE ?, 'YYYY-MM-DD')`, [
           timeZone,
         ]);
       case 'weekly':
         return rawQuery(
-          `to_char(date_trunc('week', created_at AT TIME ZONE ?), 'YYYY-MM-DD')`,
-          [timeZone],
+          `to_char(date_trunc('week', created_at AT TIME ZONE ?) AT TIME ZONE ?, 'YYYY-MM-DD"T"HH24:MI:SSOF')`,
+          [timeZone, timeZone],
         );
       case 'monthly':
         return rawQuery(
           `to_char(
            LEAST (
-              (date_trunc('month', created_at AT TIME ZONE ?) 
+              (date_trunc('month', created_at AT TIME ZONE ?) AT TIME ZONE ?
               + interval '1 month' - interval '1 day'), 
               ?::date
-              ),
-              'YYYY-MM-DD'
+              ) AT TIME ZONE ?,
+              'YYYY-MM-DD"T"HH24:MI:SSOF'
           )`,
-          [timeZone, this.filters?.end_date],
+          [timeZone, timeZone, this.filters?.end_date, timeZone],
         );
       default:
         throw new Error('Invalid date grouping');

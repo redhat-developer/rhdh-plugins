@@ -87,11 +87,9 @@ const ActiveUsers = () => {
         <>
           <Typography style={{ margin: '20px 36px' }}>
             <b>
-              {`${Math.round(
-                getAverage(data, 'total_users'),
-              ).toLocaleString()} active users per ${
-                grouping === 'hourly' ? 'hour' : 'day'
-              }`}
+              {`${Math.round(getAverage(data, 'total_users')).toLocaleString(
+                'en-Us',
+              )} active users per ${grouping === 'hourly' ? 'hour' : 'day'}`}
             </b>{' '}
             were conducted during this period.
           </Typography>
@@ -138,7 +136,7 @@ const ActiveUsers = () => {
                   tick={{ fill: theme.palette.text.primary }}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={value => value.toLocaleString()}
+                  tickFormatter={value => value.toLocaleString('en-Us')}
                   tickMargin={20}
                 />
                 <Tooltip

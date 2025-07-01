@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { utcToZonedTime } from 'date-fns-tz';
 import {
   getDateRange,
   getXAxisTickValues,
@@ -23,47 +24,64 @@ import {
   generateEventsUrl,
   determineGrouping,
   getUniqueCatalogEntityKinds,
+  formatRange,
 } from '../utils';
 import {
   format,
-  startOfToday,
   subDays,
   startOfYear,
   startOfWeek,
   startOfMonth,
+  subYears,
+  endOfYear,
+  subMonths,
+  endOfMonth,
+  subWeeks,
+  endOfWeek,
 } from 'date-fns';
 
 describe('getDateRange', () => {
   it('should return correct range for today', () => {
-    const today = format(startOfToday(), 'yyyy-MM-dd');
-    expect(getDateRange('today')).toEqual({ startDate: today, endDate: today });
+    const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const today = utcToZonedTime(new Date(), timeZone);
+    expect(getDateRange('today')).toEqual(formatRange(today, today));
   });
 
   it('should return correct range for last-week', () => {
-    const today = format(startOfToday(), 'yyyy-MM-dd');
-    const lastWeek = format(startOfWeek(startOfToday()), 'yyyy-MM-dd');
+    const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const today = utcToZonedTime(new Date(), timeZone);
+    const lastWeekStart = startOfWeek(subWeeks(today, 1), {
+      weekStartsOn: 1,
+    });
+    const lastWeekEnd = endOfWeek(subWeeks(today, 1), { weekStartsOn: 1 });
     expect(getDateRange('last-week')).toEqual({
-      startDate: lastWeek,
-      endDate: today,
+      startDate: `${format(lastWeekStart, 'yyyy-MM-dd')}T00:00:00`,
+      endDate: `${format(lastWeekEnd, 'yyyy-MM-dd')}T23:59:59.999`,
     });
   });
 
   it('should return correct range for last-month', () => {
-    const today = format(startOfToday(), 'yyyy-MM-dd');
-    const lastMonth = format(startOfMonth(startOfToday()), 'yyyy-MM-dd');
+    const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const today = utcToZonedTime(new Date(), timeZone);
+    const lastMonth = subMonths(today, 1);
+    const start = startOfMonth(lastMonth);
+    const end = endOfMonth(lastMonth);
     expect(getDateRange('last-month')).toEqual({
-      startDate: lastMonth,
-      endDate: today,
+      startDate: `${format(start, 'yyyy-MM-dd')}T00:00:00`,
+      endDate: `${format(end, 'yyyy-MM-dd')}T23:59:59.999`,
     });
   });
 
   it('should return correct range for last-year', () => {
-    const today = format(startOfToday(), 'yyyy-MM-dd');
-    const lastYear = format(startOfYear(startOfToday()), 'yyyy-MM-dd');
-    expect(getDateRange('last-year')).toEqual({
-      startDate: lastYear,
-      endDate: today,
-    });
+    const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const today = utcToZonedTime(new Date(), timeZone);
+    const lastYear = subYears(today, 1);
+
+    const startOfLastYear = startOfYear(lastYear);
+    const endOfLastYear = endOfYear(lastYear);
+    const finalDate = formatRange(startOfLastYear, endOfLastYear);
+
+    expect(getDateRange('last-year')).toEqual(finalDate);
   });
 
   it('should return null for an invalid range', () => {

@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { UsersResponse } from '../types';
 import { adoptionInsightsApiRef } from '../api';
 import { useDateRange } from '../components/Header/DateRangeContext';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export const useUsers = (): {
   users: UsersResponse;
@@ -36,13 +37,16 @@ export const useUsers = (): {
   const api = useApi(adoptionInsightsApiRef);
 
   const getUsers = useCallback(async () => {
+    const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     return await api
       .getUsers({
         type: 'total_users',
         start_date: startDateRange
-          ? format(startDateRange, 'yyyy-MM-dd')
+          ? formatInTimeZone(startDateRange, timezone, 'yyyy-MM-dd')
           : undefined,
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
+        timezone,
       })
       .then(response => setUsers(response ?? { data: [] }));
   }, [api, startDateRange, endDateRange]);
