@@ -20,3 +20,4 @@ export * from './DynamicPackageInstallStatusProcessor';
 export * from './LocalPackageInstallStatusProcessor';
 export * from './MarketplacePackageProcessor';
 export * from './DynamicPluginsService';
+export * from './PluginInstallStatusProcessor';

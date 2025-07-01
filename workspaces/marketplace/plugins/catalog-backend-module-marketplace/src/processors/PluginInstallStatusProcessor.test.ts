@@ -15,6 +15,8 @@
  */
 
 import {
+  MarketplaceKind,
+  MarketplacePackage,
   MarketplacePackageInstallStatus,
   MarketplacePluginInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
@@ -30,33 +32,141 @@ import {
 import { PluginInstallStatusProcessor } from './PluginInstallStatusProcessor';
 import { mockServices } from '@backstage/backend-test-utils';
 import { CatalogClient } from '@backstage/catalog-client';
+import { stringifyEntityRef } from '@backstage/catalog-model';
 
 const mockCatalogClient = {
   getEntitiesByRefs: jest.fn(),
 } as unknown as CatalogClient;
 
 describe('PluginInstallStatusProcessor', () => {
-  it('should return processor name', () => {
-    const processor = new PluginInstallStatusProcessor({
+  let processor: PluginInstallStatusProcessor;
+  const logger = mockServices.logger.mock();
+  const runner = jest.fn();
+  const scheduler = mockServices.scheduler.mock({
+    createScheduledTaskRunner(_) {
+      return { run: runner };
+    },
+  });
+  const cache = mockServices.cache.mock();
+
+  const marketplacePackageRef = stringifyEntityRef(mockMarketplacePackage);
+  const marketplaceBackendPackageRef = stringifyEntityRef(
+    mockMarketplaceBackendPackage,
+  );
+
+  const mockMarketplaceCatalogPackage = {
+    ...packageEntity,
+    metadata: {
+      name: 'red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace',
+      namespace: 'marketplace-plugin-demo',
+    },
+    spec: {
+      packageName:
+        '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace',
+      dynamicArtifact:
+        './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic',
+    },
+  };
+  const marketplacePluginExtended = {
+    ...mockMarketplacePlugin,
+    spec: {
+      packages: [
+        ...mockMarketplacePlugin.spec.packages,
+        'marketplace-plugin-demo/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace',
+      ],
+    },
+  };
+
+  const getWithInstallStatus = (
+    pkg: MarketplacePackage,
+    installStatus: MarketplacePackageInstallStatus,
+  ) => {
+    return {
+      ...pkg,
+      spec: { ...pkg.spec, installStatus },
+    };
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    processor = new PluginInstallStatusProcessor({
       auth: mockServices.auth.mock(),
       catalog: mockCatalogClient,
-      logger: mockServices.logger.mock(),
+      logger,
+      cache,
+      scheduler,
     });
+  });
+
+  it('should return processor name', () => {
     expect(processor.getProcessorName()).toBe('PluginInstallStatusProcessor');
   });
 
-  describe('preProcessEntity', () => {
-    afterEach(() => {
-      jest.clearAllMocks();
+  it('should set up scheduled task runner for refreshing packages', () => {
+    expect(scheduler.createScheduledTaskRunner).toHaveBeenCalledWith({
+      frequency: { minutes: 30 },
+      timeout: { minutes: 10 },
+      initialDelay: { seconds: 10 },
+      scope: 'global',
     });
+    expect(runner).toHaveBeenCalledWith({
+      id: 'PluginInstallStatusProcessor:refresh-packages',
+      fn: expect.any(Function),
+    });
+  });
 
-    it('should not process without packages', async () => {
-      const processor = new PluginInstallStatusProcessor({
-        auth: mockServices.auth.mock(),
-        catalog: mockCatalogClient,
-        logger: mockServices.logger.mock(),
+  describe('refreshPackages', () => {
+    it('should fetch marketplace packages and cache defined install statuses', async () => {
+      const marketplacePackage = getWithInstallStatus(
+        mockMarketplacePackage,
+        MarketplacePackageInstallStatus.Installed,
+      );
+      const marketplaceBackendPackage = getWithInstallStatus(
+        mockMarketplaceBackendPackage,
+        MarketplacePackageInstallStatus.UpdateAvailable,
+      );
+      mockCatalogClient.getEntities = jest.fn().mockResolvedValue({
+        items: [
+          marketplacePackage,
+          marketplaceBackendPackage,
+          mockMarketplaceCatalogPackage,
+        ],
       });
 
+      const refreshTaskRun = runner.mock.calls[0][0];
+      await refreshTaskRun.fn(); // call refreshPackages
+      expect(mockCatalogClient.getEntities).toHaveBeenCalledWith(
+        {
+          filter: {
+            kind: MarketplaceKind.Package,
+          },
+        },
+        undefined,
+      );
+
+      expect(cache.set).toHaveBeenCalledTimes(2); // mockMarketplaceCatalogPackage not cached because missing installStatus
+      expect(cache.set).toHaveBeenCalledWith(
+        marketplacePackageRef,
+        MarketplacePackageInstallStatus.Installed,
+        { ttl: { minutes: 30 } },
+      );
+      expect(cache.set).toHaveBeenCalledWith(
+        marketplaceBackendPackageRef,
+        MarketplacePackageInstallStatus.UpdateAvailable,
+        { ttl: { minutes: 30 } },
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'Refreshing package install statuses for PluginInstallStatusProcessor',
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        'PluginInstallStatusProcessor:refresh-packages cached 2 marketplace package install statuses',
+      );
+    });
+  });
+
+  describe('preProcessEntity', () => {
+    it('should not process without packages', async () => {
       const entity = await processor.preProcessEntity(
         {
           ...pluginEntity,
@@ -74,12 +184,6 @@ describe('PluginInstallStatusProcessor', () => {
     });
 
     it('should not process if the installStatus is already set', async () => {
-      const processor = new PluginInstallStatusProcessor({
-        auth: mockServices.auth.mock(),
-        catalog: mockCatalogClient,
-        logger: mockServices.logger.mock(),
-      });
-
       const entity = await processor.preProcessEntity(
         {
           ...pluginEntity,
@@ -132,47 +236,18 @@ describe('PluginInstallStatusProcessor', () => {
     ])(
       'should return $expected when $description',
       async ({ package1, package2, package3, expected }) => {
-        const processor = new PluginInstallStatusProcessor({
-          auth: mockServices.auth.mock(),
-          catalog: mockCatalogClient,
-          logger: mockServices.logger.mock(),
-        });
-
-        const mockMarketplaceCatalogPackage = {
-          ...packageEntity,
-          metadata: {
-            name: 'red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace',
-            namespace: 'marketplace-plugin-demo',
-          },
-          spec: {
-            packageName:
-              '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace',
-            dynamicArtifact:
-              './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic',
-          },
-        };
-
-        const marketplacePackage = {
-          ...mockMarketplacePackage,
-          spec: { installStatus: package1 },
-        };
-        const marketplaceBackendPackage = {
-          ...mockMarketplaceBackendPackage,
-          spec: { installStatus: package2 },
-        };
-        const marketplaceCatalogPackage = {
-          ...mockMarketplaceCatalogPackage,
-          spec: { installStatus: package3 },
-        };
-        const marketplacePlugin = {
-          ...mockMarketplacePlugin,
-          spec: {
-            packages: [
-              ...mockMarketplacePlugin.spec.packages,
-              'marketplace-plugin-demo/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace',
-            ],
-          },
-        };
+        const marketplacePackage = getWithInstallStatus(
+          mockMarketplacePackage,
+          package1,
+        );
+        const marketplaceBackendPackage = getWithInstallStatus(
+          mockMarketplaceBackendPackage,
+          package2,
+        );
+        const marketplaceCatalogPackage = getWithInstallStatus(
+          mockMarketplaceCatalogPackage,
+          package3,
+        );
 
         mockCatalogClient.getEntitiesByRefs = jest.fn().mockResolvedValue({
           items: [
@@ -183,7 +258,7 @@ describe('PluginInstallStatusProcessor', () => {
         });
 
         const entity = await processor.preProcessEntity(
-          marketplacePlugin,
+          marketplacePluginExtended,
           locationSpec,
           jest.fn(),
           locationSpec,
@@ -193,16 +268,15 @@ describe('PluginInstallStatusProcessor', () => {
       },
     );
 
-    it('should return undefined and log warning when not all packages', async () => {
-      const logger = mockServices.logger.mock();
-      const processor = new PluginInstallStatusProcessor({
-        auth: mockServices.auth.mock(),
-        catalog: mockCatalogClient,
-        logger,
-      });
-
+    it('should return undefined and log warning when some packages are missing', async () => {
       mockCatalogClient.getEntitiesByRefs = jest.fn().mockResolvedValue({
-        items: [mockMarketplacePackage], // missing marketplaceBackendPackage
+        items: [
+          // missing marketplaceBackendPackage
+          getWithInstallStatus(
+            mockMarketplacePackage,
+            MarketplacePackageInstallStatus.Installed,
+          ),
+        ],
       });
 
       const entity = await processor.preProcessEntity(
@@ -214,17 +288,35 @@ describe('PluginInstallStatusProcessor', () => {
 
       expect(entity.spec?.installStatus).toBe(undefined);
       expect(logger.warn).toHaveBeenCalledWith(
-        "Did not fetch all plugin packages with 'spec.installStatus', unable to determine 'spec.installStatus'",
+        "Could not fetch all packages of entity plugin:marketplace-plugin-demo/marketplace with set installStatus, unable to determine 'spec.installStatus'",
+      );
+    });
+
+    it('should return undefined and log warning when some packages are missing installStatus', async () => {
+      mockCatalogClient.getEntitiesByRefs = jest.fn().mockResolvedValue({
+        items: [
+          mockMarketplaceBackendPackage,
+          getWithInstallStatus(
+            mockMarketplacePackage,
+            MarketplacePackageInstallStatus.Installed,
+          ),
+        ],
+      });
+
+      const entity = await processor.preProcessEntity(
+        mockMarketplacePlugin,
+        locationSpec,
+        jest.fn(),
+        locationSpec,
+      );
+
+      expect(entity.spec?.installStatus).toBe(undefined);
+      expect(logger.warn).toHaveBeenCalledWith(
+        "Could not fetch all packages of entity plugin:marketplace-plugin-demo/marketplace with set installStatus, unable to determine 'spec.installStatus'",
       );
     });
 
     it('should return the entity unchanged for non-plugin entities', async () => {
-      const processor = new PluginInstallStatusProcessor({
-        auth: mockServices.auth.mock(),
-        catalog: mockCatalogClient,
-        logger: mockServices.logger.mock(),
-      });
-
       const result = await processor.preProcessEntity(
         packageEntity,
         locationSpec,
@@ -232,6 +324,75 @@ describe('PluginInstallStatusProcessor', () => {
         locationSpec,
       );
       expect(result).toBe(packageEntity);
+    });
+
+    it('should use cached packages if available', async () => {
+      cache.get.mockImplementation(async (ref: string) => {
+        if (
+          ref === marketplacePackageRef ||
+          ref === marketplaceBackendPackageRef
+        ) {
+          return MarketplacePackageInstallStatus.Installed;
+        }
+        return undefined;
+      });
+
+      const result = await processor.preProcessEntity(
+        mockMarketplacePlugin,
+        locationSpec,
+        jest.fn(),
+        locationSpec,
+      );
+
+      expect(cache.get).toHaveBeenCalledWith(marketplacePackageRef);
+      expect(cache.get).toHaveBeenCalledWith(marketplaceBackendPackageRef);
+      expect(mockCatalogClient.getEntitiesByRefs).not.toHaveBeenCalled();
+      expect(result.spec?.installStatus).toBe(
+        MarketplacePluginInstallStatus.Installed,
+      );
+    });
+
+    it('should cache fetched packages', async () => {
+      cache.get.mockImplementation(async (key: string) => {
+        if (key === marketplacePackageRef) {
+          return MarketplacePackageInstallStatus.Installed;
+        }
+        return undefined; // marketplaceBackendPackageRef not cached
+      });
+
+      const mockMarketplaceBackendPackageWithStatus = {
+        ...mockMarketplaceBackendPackage,
+        spec: {
+          ...mockMarketplaceBackendPackage.spec,
+          installStatus: MarketplacePackageInstallStatus.UpdateAvailable,
+        },
+      };
+      mockCatalogClient.getEntitiesByRefs = jest.fn().mockResolvedValue({
+        items: [mockMarketplaceBackendPackageWithStatus],
+      });
+
+      const result = await processor.preProcessEntity(
+        mockMarketplacePlugin,
+        locationSpec,
+        jest.fn(),
+        locationSpec,
+      );
+
+      expect(cache.get).toHaveBeenCalledWith(marketplacePackageRef);
+      expect(cache.get).toHaveBeenCalledWith(marketplaceBackendPackageRef);
+      expect(mockCatalogClient.getEntitiesByRefs).toHaveBeenCalledWith(
+        { entityRefs: [marketplaceBackendPackageRef] },
+        undefined,
+      );
+      expect(cache.set).toHaveBeenCalledWith(
+        marketplaceBackendPackageRef,
+        MarketplacePackageInstallStatus.UpdateAvailable,
+        { ttl: { minutes: 30 } },
+      );
+
+      expect(result.spec?.installStatus).toBe(
+        MarketplacePluginInstallStatus.UpdateAvailable,
+      );
     });
   });
 });

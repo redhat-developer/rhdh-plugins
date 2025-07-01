@@ -4,7 +4,10 @@
 
 ```ts
 
+import type { AuthService } from '@backstage/backend-plugin-api';
 import { BackendFeature } from '@backstage/backend-plugin-api';
+import type { CacheService } from '@backstage/backend-plugin-api';
+import type { CatalogApi } from '@backstage/catalog-client';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
@@ -18,6 +21,7 @@ import { LoggerService } from '@backstage/backend-plugin-api';
 import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import type { SchedulerService } from '@backstage/backend-plugin-api';
 import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 
 // @public (undocumented)
@@ -142,6 +146,21 @@ export class MarketplacePluginProvider extends BaseEntityProvider<MarketplacePlu
     getKind(): string;
     // (undocumented)
     getProviderName(): string;
+}
+
+// @public (undocumented)
+export class PluginInstallStatusProcessor implements CatalogProcessor {
+    constructor(deps: {
+        auth: AuthService;
+        catalog: CatalogApi;
+        logger: LoggerService;
+        cache: CacheService;
+        scheduler: SchedulerService;
+    });
+    // (undocumented)
+    getProcessorName(): string;
+    // (undocumented)
+    preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec): Promise<Entity>;
 }
 
 // @public (undocumented)

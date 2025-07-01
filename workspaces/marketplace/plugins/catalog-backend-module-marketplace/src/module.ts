@@ -47,6 +47,7 @@ export const catalogModuleMarketplace = createBackendModule({
         catalog: catalogProcessingExtensionPoint,
         config: coreServices.rootConfig,
         pluginProvider: dynamicPluginsServiceRef,
+        cache: coreServices.cache,
         scheduler: coreServices.scheduler,
       },
       async init({
@@ -56,6 +57,7 @@ export const catalogModuleMarketplace = createBackendModule({
         catalog,
         config,
         pluginProvider,
+        cache,
         scheduler,
       }) {
         logger.info(
@@ -64,6 +66,11 @@ export const catalogModuleMarketplace = createBackendModule({
         const taskRunner = scheduler.createScheduledTaskRunner({
           frequency: { minutes: 30 },
           timeout: { minutes: 10 },
+        });
+        const delayedTaskRunner = scheduler.createScheduledTaskRunner({
+          frequency: { minutes: 30 },
+          timeout: { minutes: 10 },
+          initialDelay: { seconds: 20 },
         });
 
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
@@ -74,7 +81,9 @@ export const catalogModuleMarketplace = createBackendModule({
         dynamicPluginsService.initialize();
 
         catalog.addEntityProvider(new MarketplacePackageProvider(taskRunner));
-        catalog.addEntityProvider(new MarketplacePluginProvider(taskRunner));
+        catalog.addEntityProvider(
+          new MarketplacePluginProvider(delayedTaskRunner),
+        );
         // Disabling the collection provider as collections/all.yaml is already commented in RHDH 1.5 image.
         // catalog.addEntityProvider(
         //   new MarketplaceCollectionProvider(taskRunner),
@@ -95,6 +104,8 @@ export const catalogModuleMarketplace = createBackendModule({
             auth,
             catalog: catalogApi,
             logger,
+            cache,
+            scheduler,
           }),
         );
       },

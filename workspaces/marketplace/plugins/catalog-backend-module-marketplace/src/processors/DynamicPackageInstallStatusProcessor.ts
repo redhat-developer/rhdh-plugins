@@ -137,6 +137,13 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
       }
     }
 
+    if (!marketplacePackage.spec?.dynamicArtifact) {
+      this.logger.warn(
+        "Missing 'entity.spec.dynamicArtifact', unable to determine 'spec.installStatus'",
+      );
+      return undefined;
+    }
+
     if (
       this.dynamicPluginsService.isPackageDisabledViaConfig(marketplacePackage)
     ) {

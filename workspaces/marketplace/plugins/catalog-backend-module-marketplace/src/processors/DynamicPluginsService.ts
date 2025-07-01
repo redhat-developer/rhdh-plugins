@@ -49,7 +49,6 @@ export class DynamicPluginsService {
 
   public initialize(): void {
     if (!this.configFile) {
-      this.logger.info(`'dynamicPlugins.rootDirectory' is missing`);
       this.config = {};
       return;
     }
