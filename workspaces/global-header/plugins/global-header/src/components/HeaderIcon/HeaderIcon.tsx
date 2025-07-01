@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { CSSProperties, ComponentType } from 'react';
+import type { CSSProperties } from 'react';
 import { useApp } from '@backstage/core-plugin-api';
 import MuiIcon from '@mui/material/Icon';
 import Box from '@mui/material/Box';
-import type { SvgIconProps } from '@mui/material/SvgIcon';
 
 /**
  * @public
  */
 export interface HeaderIconProps {
-  icon: string | ComponentType<SvgIconProps>;
+  icon: string;
   size?: 'small' | 'medium' | 'large';
   layout?: CSSProperties;
 }
@@ -39,11 +38,6 @@ export const HeaderIcon = ({
   const app = useApp();
   if (!icon) {
     return null;
-  }
-
-  if (typeof icon === 'function' || typeof icon === 'object') {
-    const IconComponent = icon;
-    return <IconComponent fontSize={size} sx={layout} />;
   }
 
   const SystemIcon = app.getSystemIcon(icon);

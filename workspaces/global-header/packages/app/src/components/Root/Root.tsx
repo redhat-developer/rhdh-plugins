@@ -101,7 +101,6 @@ const SidebarLayout = styled(Box, {
         aboveSidebarHeaderHeight! + aboveMainContentHeaderHeight!
       }px)`,
       flexGrow: 1,
-      marginTop: 0,
     },
 
     // We need to compensate for the above-sidebar position of the global header

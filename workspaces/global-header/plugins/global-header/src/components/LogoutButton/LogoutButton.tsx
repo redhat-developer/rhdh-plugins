@@ -23,7 +23,6 @@ import {
 import MenuItem from '@mui/material/MenuItem';
 
 import { MenuItemLinkContent } from '../MenuItemLink/MenuItemLinkContent';
-import Logout from '@mui/icons-material/LogoutOutlined';
 
 export const LogoutButton = () => {
   const errorApi = useApi(errorApiRef);
@@ -38,7 +37,7 @@ export const LogoutButton = () => {
       onClick={handleLogout}
       sx={{ cursor: 'pointer', width: '100%', color: 'inherit' }}
     >
-      <MenuItemLinkContent icon={Logout} label="Sign out" />
+      <MenuItemLinkContent icon="logout" label="Sign out" />
     </MenuItem>
   );
 };
