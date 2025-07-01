@@ -15,7 +15,7 @@
  */
 import type { ReactNode } from 'react';
 
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 
 import {
   CodeSnippet,
@@ -24,6 +24,7 @@ import {
 } from '@backstage/core-components';
 import { useUserProfile } from '@backstage/plugin-user-settings';
 
+import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import IconButton from '@mui/material/IconButton';
@@ -33,8 +34,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import CircularProgress from '@mui/material/CircularProgress';
 import CardContent from '@mui/material/CardContent';
 import { useTheme, styled } from '@mui/material/styles';
-
-import { Layouts, Responsive, WidthProvider } from 'react-grid-layout';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import EntityCard from './EntityCard';
 import { ViewMoreLink } from './ViewMoreLink';
@@ -44,7 +44,6 @@ import {
   addDismissedEntityIllustrationUsers,
   hasEntityIllustrationUserDismissed,
 } from '../../utils/utils';
-import { CARD_BREAKPOINTS, CARD_COLUMNS } from '../../utils/constants';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -55,16 +54,23 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
   borderRadius: 4,
 }));
 
-// eslint-disable-next-line new-cap
-const ResponsiveGridLayout = WidthProvider(Responsive);
-
 export const EntitySection = () => {
   const theme = useTheme();
   const { displayName, loading: profileLoading } = useUserProfile();
   const [isRemoveFirstCard, setIsRemoveFirstCard] = useState(false);
   const [showDiscoveryCard, setShowDiscoveryCard] = useState(true);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [breakPoint, setBreakPoint] = useState('xl');
+  const [isMediumBreakpoint, setIsMediumBreakpoint] = useState(false);
+
+  const isMd = useMediaQuery(theme.breakpoints.only('md'));
+
+  useEffect(() => {
+    if (isMd) {
+      setIsMediumBreakpoint(true);
+    } else {
+      setIsMediumBreakpoint(false);
+    }
+  }, [isMd]);
 
   useEffect(() => {
     const isUserDismissedEntityIllustration =
@@ -111,228 +117,131 @@ export const EntitySection = () => {
       </WarningPanel>
     );
   } else {
-    const handleBreakpointChange = (newBreakpoint: string) => {
-      setBreakPoint(newBreakpoint);
-    };
-
-    const layouts: Layouts = {};
-
-    Object.keys(CARD_BREAKPOINTS).forEach(breakpoint => {
-      const layout = [];
-
-      // Add illustration card if needed
-      if (!isRemoveFirstCard && !profileLoading) {
-        let width;
-
-        if (breakpoint === 'sm') {
-          width = 6;
-        } else if (breakpoint === 'xs' || breakpoint === 'xxs') {
-          width = 12;
-        } else {
-          width = 5;
-        }
-        layout.push({
-          i: 'entities-illustration',
-          x: 0,
-          y: 0,
-          w: width,
-          h: 2,
-        });
-      }
-
-      // Add entity cards
-      // eslint-disable-next-line no-nested-ternary
-      entities
-        ?.slice(
-          0,
-          isRemoveFirstCard
-            ? 4
-            : breakPoint === 'sm' || breakPoint === 'xs' || breakPoint === 'xxs'
-              ? 3
-              : 2,
-        )
-        .forEach((_item, index) => {
-          let xPosition;
-          let yPosition;
-          let width;
-
-          if (breakPoint === 'sm') {
-            if (isRemoveFirstCard) {
-              xPosition = (index % 2) * 6;
-              yPosition = Math.floor(index / 2);
-            } else {
-              xPosition = ((index + 1) % 2) * 6;
-              yPosition = Math.floor((index + 1) / 2);
-            }
-            width = 6;
-          } else if (breakPoint === 'xs' || breakPoint === 'xxs') {
-            xPosition = 0;
-            yPosition = index;
-            width = 12;
-          } else {
-            if (isRemoveFirstCard) {
-              xPosition = index * 3;
-              width = 3;
-            } else {
-              if (index === 0) {
-                xPosition = 5;
-              } else {
-                xPosition = 8.5;
-              }
-              width = 3.5;
-            }
-            yPosition = 0;
-          }
-
-          layout.push({
-            i: `entity-${index}`,
-            x: xPosition,
-            y: yPosition,
-            w: width,
-            h: 2,
-          });
-        });
-
-      // Empty state
-      if (entities?.length === 0) {
-        layout.push({
-          i: 'empty',
-          x: 5,
-          y: 0,
-          w: isRemoveFirstCard ? 12 : 7,
-          h: 2,
-        });
-      }
-
-      layouts[breakpoint] = layout;
-    });
+    let entityCardCount = 2;
+    if (isMediumBreakpoint) entityCardCount = 3;
 
     content = (
-      <ResponsiveGridLayout
-        className="layout"
-        layouts={layouts}
-        breakpoints={CARD_BREAKPOINTS}
-        cols={CARD_COLUMNS}
-        containerPadding={[16, 16]}
-        margin={[10, 10]}
-        onBreakpointChange={handleBreakpointChange}
-        isResizable={false}
-        isDraggable={false}
-      >
-        {!isRemoveFirstCard && !profileLoading && (
-          <div key="entities-illustration">
-            <Card
-              elevation={0}
-              sx={{
-                border: `1px solid ${theme.palette.grey[400]}`,
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                position: 'relative',
-                opacity: showDiscoveryCard ? 1 : 0,
-                transform: showDiscoveryCard
-                  ? 'translateX(0)'
-                  : 'translateX(-50px)',
-                transition: 'opacity 0.5s ease-out, transform 0.5s ease-in-out',
-              }}
-            >
-              {!imgLoaded && (
-                <Skeleton
-                  variant="rectangular"
-                  height={300}
-                  style={{
-                    borderRadius: 3,
-                    width: 'clamp(140px, 14vw, 266px)',
-                  }}
-                />
-              )}
-              <Box
-                component="img"
-                src={HomePageEntityIllustration}
-                onLoad={() => setImgLoaded(true)}
-                alt=""
-                height={300}
-                sx={{ width: 'clamp(140px, 14vw, 266px)' }}
-              />
-              <Box sx={{ p: 2 }}>
-                <Typography variant="body2" paragraph>
-                  Browse the Systems, Components, Resources, and APIs that are
-                  available in your organization.
-                </Typography>
-                {entities?.length > 0 && (
-                  <IconButton
-                    onClick={handleClose}
-                    aria-label="close"
-                    style={{ position: 'absolute', top: '8px', right: '8px' }}
-                  >
-                    <CloseIcon style={{ width: '16px', height: '16px' }} />
-                  </IconButton>
-                )}
-              </Box>
-            </Card>
-          </div>
-        )}
-
-        {(() => {
-          let entityCardCount = 2;
-          if (isRemoveFirstCard) {
-            entityCardCount = 4;
-          } else if (['sm', 'xs', 'xxs'].includes(breakPoint)) {
-            entityCardCount = 3;
-          }
-
-          return entities
-            ?.slice(0, entityCardCount)
-            .map((item: any, index: number) => (
-              <div key={`entity-${index}`}>
-                <EntityCard
-                  entity={item}
-                  title={item.spec?.profile?.displayName ?? item.metadata.name}
-                  version="latest"
-                  description={item.metadata.description ?? ''}
-                  tags={item.metadata?.tags ?? []}
-                  kind={item.kind}
-                />
-              </div>
-            ));
-        })()}
-
-        {entities?.length === 0 && (
-          <div key="empty">
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: 300,
-                border: muiTheme => `1px solid ${muiTheme.palette.grey[400]}`,
-                borderRadius: 3,
-                overflow: 'hidden',
-              }}
-            >
-              <CardContent>
-                <Typography sx={{ fontSize: '1.125rem', fontWeight: 500 }}>
-                  No software catalog added yet
-                </Typography>
-                <Typography
+      <Box sx={{ padding: '8px 8px 8px 0' }}>
+        <Fragment>
+          <Grid container spacing={1} alignItems="stretch">
+            {!isRemoveFirstCard && !profileLoading && (
+              <Grid item xs={12} md={6} lg={5} key="entities illustration">
+                <Card
+                  elevation={0}
                   sx={{
-                    fontSize: '0.875rem',
-                    fontWeight: 400,
-                    mt: '20px',
-                    mb: '16px',
+                    border: `1px solid ${theme.palette.grey[400]}`,
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    position: 'relative',
+                    transition:
+                      'opacity 0.5s ease-out, transform 0.5s ease-in-out',
+                    opacity: showDiscoveryCard ? 1 : 0,
+                    transform: showDiscoveryCard
+                      ? 'translateX(0)'
+                      : 'translateX(-50px)',
                   }}
                 >
-                  Once software catalogs are added, this space will showcase
-                  relevant content tailored to your experience.
-                </Typography>
-                <StyledLink to="/catalog-import" underline="none">
-                  Register a component
-                </StyledLink>
-              </CardContent>
-            </Box>
-          </div>
-        )}
-      </ResponsiveGridLayout>
+                  {!imgLoaded && (
+                    <Skeleton
+                      variant="rectangular"
+                      height={300}
+                      sx={{
+                        borderRadius: 3,
+                        width: 'clamp(140px, 14vw, 266px)',
+                      }}
+                    />
+                  )}
+                  <Box
+                    component="img"
+                    src={HomePageEntityIllustration}
+                    onLoad={() => setImgLoaded(true)}
+                    alt=""
+                    height={300}
+                    sx={{
+                      width: 'clamp(140px, 14vw, 266px)',
+                    }}
+                  />
+                  <Box sx={{ p: 2 }}>
+                    <Box>
+                      <Typography variant="body2" paragraph>
+                        Browse the Systems, Components, Resources, and APIs that
+                        are available in your organization.
+                      </Typography>
+                    </Box>
+                    {entities?.length > 0 && (
+                      <IconButton
+                        onClick={handleClose}
+                        aria-label="close"
+                        style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                        }}
+                      >
+                        <CloseIcon style={{ width: '16px', height: '16px' }} />
+                      </IconButton>
+                    )}
+                  </Box>
+                </Card>
+              </Grid>
+            )}
+            {entities
+              ?.slice(0, isRemoveFirstCard ? 4 : entityCardCount)
+              .map((item: any) => (
+                <Grid item xs={12} md={6} lg={3.5} key={item.metadata.name}>
+                  <EntityCard
+                    entity={item}
+                    title={
+                      item.spec?.profile?.displayName ?? item.metadata.name
+                    }
+                    version="latest"
+                    description={item.metadata.description ?? ''}
+                    tags={item.metadata?.tags ?? []}
+                    kind={item.kind}
+                  />
+                </Grid>
+              ))}
+
+            {entities?.length === 0 && (
+              <Grid item md={isRemoveFirstCard ? 12 : 7}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 300,
+                    border: muiTheme =>
+                      `1px solid ${muiTheme.palette.grey[400]}`,
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <CardContent>
+                    <Typography sx={{ fontSize: '1.125rem', fontWeight: 500 }}>
+                      No software catalog added yet
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: '0.875rem',
+                        fontWeight: 400,
+                        mt: '20px',
+                        mb: '16px',
+                      }}
+                    >
+                      Once software catalogs are added, this space will showcase
+                      relevant content tailored to your experience.
+                    </Typography>
+                    <StyledLink to="/catalog-import" underline="none">
+                      Register a component
+                    </StyledLink>
+                  </CardContent>
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        </Fragment>
+      </Box>
     );
   }
 
