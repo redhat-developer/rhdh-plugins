@@ -41,19 +41,18 @@ const configWithoutSupportUrl = mockApis.config({
 
 describe('SupportButton', () => {
   it('renders a button when the support url is defined', async () => {
-    const { getByRole } = await renderInTestApp(
+    const { getByTestId } = await renderInTestApp(
       <TestApiProvider apis={[[configApiRef, configWithSupportUrl]]}>
         <SupportButton />
       </TestApiProvider>,
     );
-    expect(getByRole('link')).toBeInTheDocument();
-    expect(getByRole('link').getAttribute('aria-label')).toEqual(
-      'Support, Opens in a new window',
-    );
-    expect(getByRole('link').getAttribute('href')).toEqual(
+    expect(getByTestId('support-button')).toBeInTheDocument();
+    expect(getByTestId('support-button').getAttribute('href')).toEqual(
       'https://access.redhat.com/products/red-hat-developer-hub',
     );
-    expect(getByRole('link').getAttribute('target')).toEqual('_blank');
+    expect(getByTestId('support-button').getAttribute('target')).toEqual(
+      '_blank',
+    );
   });
 
   it('renders no button when the support url is not defined', async () => {
@@ -66,34 +65,30 @@ describe('SupportButton', () => {
   });
 
   it('uses the to prop also when the support url is defined', async () => {
-    const { getByRole } = await renderInTestApp(
+    const { getByTestId } = await renderInTestApp(
       <TestApiProvider apis={[[configApiRef, configWithSupportUrl]]}>
         <SupportButton to="https://access.redhat.com/documentation/en-us/red_hat_developer_hub" />
       </TestApiProvider>,
     );
-    expect(getByRole('link')).toBeInTheDocument();
-    expect(getByRole('link').getAttribute('aria-label')).toEqual(
-      'Support, Opens in a new window',
-    );
-    expect(getByRole('link').getAttribute('href')).toEqual(
+    expect(getByTestId('support-button').getAttribute('href')).toEqual(
       'https://access.redhat.com/documentation/en-us/red_hat_developer_hub',
     );
-    expect(getByRole('link').getAttribute('target')).toEqual('_blank');
+    expect(getByTestId('support-button').getAttribute('target')).toEqual(
+      '_blank',
+    );
   });
 
   it('uses the to prop also when the support url is not defined', async () => {
-    const { getByRole } = await renderInTestApp(
+    const { getByTestId } = await renderInTestApp(
       <TestApiProvider apis={[[configApiRef, configWithoutSupportUrl]]}>
         <SupportButton to="https://access.redhat.com/documentation/en-us/red_hat_developer_hub" />
       </TestApiProvider>,
     );
-    expect(getByRole('link')).toBeInTheDocument();
-    expect(getByRole('link').getAttribute('aria-label')).toEqual(
-      'Support, Opens in a new window',
-    );
-    expect(getByRole('link').getAttribute('href')).toEqual(
+    expect(getByTestId('support-button').getAttribute('href')).toEqual(
       'https://access.redhat.com/documentation/en-us/red_hat_developer_hub',
     );
-    expect(getByRole('link').getAttribute('target')).toEqual('_blank');
+    expect(getByTestId('support-button').getAttribute('target')).toEqual(
+      '_blank',
+    );
   });
 });

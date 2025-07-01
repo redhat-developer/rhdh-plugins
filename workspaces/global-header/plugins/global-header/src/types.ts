@@ -46,7 +46,19 @@ export interface ProfileDropdownMountPointConfig {
   link?: string;
   props?: Record<string, any>;
 }
-
+/**
+ * Help Dropdown Config
+ *
+ * @public
+ */
+export interface HelpDropdownMountPointConfig {
+  priority?: number;
+  icon?: string;
+  title?: string;
+  link?: string;
+  style?: CSSProperties;
+  props?: Record<string, any>;
+}
 /**
  * Application Launcher Dropdown Config
  *
@@ -102,6 +114,13 @@ export interface ProfileDropdownMountPoint {
   };
 }
 
+export interface HelpDropdownMountPoint {
+  Component: ComponentType<any>;
+  config?: HelpDropdownMountPointConfig & {
+    props?: Record<string, any>;
+  };
+}
+
 export interface ApplicationLauncherDropdownMountPoint {
   Component: ComponentType<any>;
   config?: ApplicationLauncherDropdownMountPointConfig & {
@@ -122,6 +141,7 @@ export interface ScalprumState {
         'global.header/create': CreateDropdownMountPoint[];
         'global.header/profile': ProfileDropdownMountPoint[];
         'global.header/application-launcher': ApplicationLauncherDropdownMountPoint[];
+        'global.header/help': HelpDropdownMountPoint[];
       };
     };
   };

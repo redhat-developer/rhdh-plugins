@@ -67,9 +67,19 @@ dynamicPlugins:
               link: https://github.com/redhat-developer/rhdh-local
 
         - mountPoint: global.header/component
-          importName: SupportButton
+          importName: HelpDropdown
           config:
             priority: 80
+
+        - mountPoint: global.header/help
+          importName: QuickstartButton
+          config:
+            priority: 100
+
+        - mountPoint: global.header/help
+          importName: SupportButton
+          config:
+            priority: 10
 
         - mountPoint: global.header/component
           importName: NotificationButton
