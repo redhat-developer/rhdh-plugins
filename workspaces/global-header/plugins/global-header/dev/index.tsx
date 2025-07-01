@@ -50,6 +50,7 @@ import {
   defaultApplicationLauncherDropdownMountPoints,
   defaultCreateDropdownMountPoints,
   defaultGlobalHeaderComponentsMountPoints,
+  defaultHelpDropdownMountPoints,
   defaultProfileDropdownMountPoints,
 } from '../src/defaultMountPoints/defaultMountPoints';
 
@@ -176,6 +177,7 @@ createDevApp()
           'global.header/profile': defaultProfileDropdownMountPoints,
           'global.header/application-launcher':
             defaultApplicationLauncherDropdownMountPoints,
+          'global.header/help': defaultHelpDropdownMountPoints,
         }}
       >
         <GlobalHeader />

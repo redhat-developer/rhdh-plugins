@@ -5,7 +5,7 @@
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import type { ComponentType } from 'react';
-import type { CSSProperties } from 'react';
+import { CSSProperties } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 
 // @public
@@ -343,29 +343,18 @@ export const StarredDropdown: () => JSX_2.Element;
 // @public (undocumented)
 export const SupportButton: ({
   title,
-  tooltip,
-  color,
-  size,
   to,
-  layout,
+  icon,
+  tooltip,
+  style,
 }: SupportButtonProps) => JSX_2.Element | null;
 
 // @public (undocumented)
 export interface SupportButtonProps {
   // (undocumented)
-  color?:
-    | 'inherit'
-    | 'default'
-    | 'primary'
-    | 'secondary'
-    | 'error'
-    | 'info'
-    | 'success'
-    | 'warning';
+  icon?: string;
   // (undocumented)
-  layout?: CSSProperties;
-  // (undocumented)
-  size?: 'small' | 'medium' | 'large';
+  style?: CSSProperties;
   // (undocumented)
   title?: string;
   // (undocumented)

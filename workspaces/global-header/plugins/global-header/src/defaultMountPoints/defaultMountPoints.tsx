@@ -25,6 +25,7 @@ import {
   ApplicationLauncherDropdownMountPoint,
   CreateDropdownMountPoint,
   GlobalHeaderComponentMountPoint,
+  HelpDropdownMountPoint,
   ProfileDropdownMountPoint,
 } from '../types';
 import { NotificationButton } from '../components/NotificationButton/NotificationButton';
@@ -34,6 +35,7 @@ import { Spacer } from '../components/Spacer/Spacer';
 import { StarredDropdown } from '../components/HeaderDropdownComponent/StarredDropdown';
 import { ApplicationLauncherDropdown } from '../components/HeaderDropdownComponent/ApplicationLauncherDropdown';
 import { CompanyLogo } from '../components/CompanyLogo/CompanyLogo';
+import { HelpDropdown } from '../components/HeaderDropdownComponent/HelpDropdown';
 
 /**
  * default Global Header Components mount points
@@ -98,7 +100,7 @@ export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMoun
       },
     },
     {
-      Component: SupportButton,
+      Component: HelpDropdown,
       config: {
         priority: 80,
       },
@@ -154,6 +156,26 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
     Component: LogoutButton,
     config: {
       priority: 100,
+    },
+  },
+];
+
+export const defaultHelpDropdownMountPoints: HelpDropdownMountPoint[] = [
+  {
+    Component: MenuItemLink as ComponentType,
+    config: {
+      priority: 100,
+      props: {
+        title: 'Quick start',
+        icon: 'quickstart',
+        link: 'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/',
+      },
+    },
+  },
+  {
+    Component: SupportButton,
+    config: {
+      priority: 10,
     },
   },
 ];
