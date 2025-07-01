@@ -9928,6 +9928,7 @@ __metadata:
     "@backstage/plugin-permission-common": ^0.9.0
     "@red-hat-developer-hub/backstage-plugin-adoption-insights-common": "workspace:^"
     "@types/express": ^4.17.6
+    "@types/luxon": ^3.5.0
     "@types/supertest": ^2.0.12
     express: ^4.17.1
     express-promise-router: ^4.1.0
@@ -13084,7 +13085,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/luxon@npm:^3.0.0, @types/luxon@npm:~3.4.0":
+"@types/luxon@npm:^3.0.0, @types/luxon@npm:^3.5.0":
+  version: 3.6.2
+  resolution: "@types/luxon@npm:3.6.2"
+  checksum: fa7bf7d74544c77c2010739337d359c5d6f9b0424de0e0eb273f7bae203996168cc33c2ad6f3b35771eac8fea8b7e5bcce72b91d129924d0f84b91dc216de42e
+  languageName: node
+  linkType: hard
+
+"@types/luxon@npm:~3.4.0":
   version: 3.4.2
   resolution: "@types/luxon@npm:3.4.2"
   checksum: 6f92d5bd02e89f310395753506bcd9cef3a56f5940f7a50db2a2b9822bce753553ac767d143cb5b4f9ed5ddd4a84e64f89ff538082ceb4d18739af7781b56925
