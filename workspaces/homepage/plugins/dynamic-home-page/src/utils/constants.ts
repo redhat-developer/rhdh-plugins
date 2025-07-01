@@ -59,3 +59,14 @@ export const KINDS = {
     fill: '#FF9E80',
   },
 };
+
+export const CARD_BREAKPOINTS = {
+  xl: 1518,
+  lg: 1118,
+  md: 914,
+  sm: 686,
+  xs: 398,
+  xxs: 0,
+};
+
+export const CARD_COLUMNS = { xl: 12, lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 };

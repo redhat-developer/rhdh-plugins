@@ -20,20 +20,30 @@ import { useApi } from '@backstage/core-plugin-api';
 import { UserEntity } from '@backstage/catalog-model';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import { useTheme } from '@mui/material/styles';
 
+import { Responsive, WidthProvider } from 'react-grid-layout';
+
 import OnboardingCard from './OnboardingCard';
 import HomePageIllustrationDark from '../../images/homepage-illustration-dark.svg';
 import HomePageIllustrationLight from '../../images/homepage-illustration-light.svg';
-import { LEARNING_SECTION_ITEMS } from '../../utils/constants';
+import {
+  CARD_BREAKPOINTS,
+  CARD_COLUMNS,
+  LEARNING_SECTION_ITEMS,
+} from '../../utils/constants';
 import useGreeting from '../../hooks/useGreeting';
+import { generateOnboardingLayouts } from '../../utils/utils';
+
+// eslint-disable-next-line new-cap
+const ResponsiveGridLayout = WidthProvider(Responsive);
 
 export const OnboardingSection = () => {
   const [user, setUser] = useState<string | null>();
+  const [imgMarginAlign, setImgMarginAlign] = useState<string>('auto');
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
   const greeting = useGreeting();
@@ -76,17 +86,32 @@ export const OnboardingSection = () => {
     return name;
   };
 
+  const onboardingItems = ['image', 'card1', 'card2', 'card3'];
+  const onboardingLayouts = generateOnboardingLayouts(onboardingItems);
+
+  const handleBreakpointChange = (newBreakpoint: string) => {
+    if (newBreakpoint === 'xxs' || newBreakpoint === 'xs') {
+      setImgMarginAlign('unset');
+    } else {
+      setImgMarginAlign('auto');
+    }
+  };
+
   const content = (
-    <Box>
-      <Grid container margin="auto">
-        <Grid
-          item
-          xs={12}
-          md={6}
-          lg={3}
-          display="flex"
-          justifyContent="left"
-          alignItems="center"
+    <ResponsiveGridLayout
+      className="layout"
+      layouts={onboardingLayouts}
+      breakpoints={CARD_BREAKPOINTS}
+      cols={CARD_COLUMNS}
+      onBreakpointChange={handleBreakpointChange}
+      containerPadding={[16, 16]}
+      margin={[0, 0]}
+      isResizable={false}
+      isDraggable={false}
+    >
+      <div key="image">
+        <Box
+          sx={{ display: 'flex', justifyContent: 'left', alignItems: 'center' }}
         >
           <Box
             component="img"
@@ -94,22 +119,14 @@ export const OnboardingSection = () => {
               isDarkMode ? HomePageIllustrationDark : HomePageIllustrationLight
             }
             alt=""
-            sx={{
-              width: 'clamp(200px, 20vw, 264px)',
-            }}
+            sx={{ width: 'clamp(200px, 100%, 264px)', margin: imgMarginAlign }}
           />
-        </Grid>
-        {LEARNING_SECTION_ITEMS.map(item => (
-          <Grid
-            item
-            xs={12}
-            md={6}
-            lg={3}
-            key={item.title}
-            display="flex"
-            justifyContent="left"
-            alignItems="center"
-          >
+        </Box>
+      </div>
+
+      {LEARNING_SECTION_ITEMS.map((item, index) => (
+        <div key={`card${index + 1}`}>
+          <Box sx={{ padding: 1 }}>
             <OnboardingCard
               title={item.title}
               description={item.description}
@@ -118,10 +135,10 @@ export const OnboardingSection = () => {
               target={item.target}
               ariaLabel={item.ariaLabel}
             />
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+          </Box>
+        </div>
+      ))}
+    </ResponsiveGridLayout>
   );
 
   return (
@@ -131,10 +148,6 @@ export const OnboardingSection = () => {
         padding: '24px',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
         overflow: 'auto',
-        '$::-webkit-scrollbar': {
-          display: 'none',
-        },
-        scrollbarWidth: 'none',
       }}
     >
       {!profileLoading && (

@@ -15,15 +15,12 @@
  */
 import type { ReactNode } from 'react';
 
-import { Fragment } from 'react';
-
 import {
   CodeSnippet,
   WarningPanel,
   Link as BackstageLink,
 } from '@backstage/core-components';
 
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -31,9 +28,13 @@ import CardContent from '@mui/material/CardContent';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
+import { Responsive, WidthProvider } from 'react-grid-layout';
+
 import TemplateCard from './TemplateCard';
 import { useEntities } from '../../hooks/useEntities';
 import { ViewMoreLink } from './ViewMoreLink';
+import { CARD_BREAKPOINTS, CARD_COLUMNS } from '../../utils/constants';
+import { generateTemplateSectionLayouts } from '../../utils/utils';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -43,6 +44,9 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
   border: `1px solid ${theme.palette.primary.main}`,
   borderRadius: 4,
 }));
+
+// eslint-disable-next-line new-cap
+const ResponsiveGridLayout = WidthProvider(Responsive);
 
 export const TemplateSection = () => {
   const {
@@ -82,70 +86,72 @@ export const TemplateSection = () => {
       </WarningPanel>
     );
   } else {
+    const templateLayouts = generateTemplateSectionLayouts({
+      breakpoints: CARD_BREAKPOINTS,
+      templates: templates?.items || [],
+      templateKeys: ['template-0', 'template-1', 'template-2', 'template-3'],
+    });
+
     content = (
-      <Box sx={{ padding: '8px 8px 8px 0' }}>
-        <Fragment>
-          <Grid container spacing={1} alignItems="stretch">
-            {templates?.items.map((item: any) => (
-              <Grid item xs={12} md={3} key={item.title}>
-                <TemplateCard
-                  link={`/create/templates/${item.metadata.namespace}/${item.metadata.name}`}
-                  title={item.metadata.title}
-                  description={item.metadata.description}
-                  kind="Template"
-                />
-              </Grid>
-            ))}
-            {templates?.items.length === 0 && (
-              <Grid item xs={12} md={12}>
-                <Box
+      <ResponsiveGridLayout
+        className="layout"
+        layouts={templateLayouts}
+        breakpoints={CARD_BREAKPOINTS}
+        cols={CARD_COLUMNS}
+        containerPadding={[16, 16]}
+        margin={[10, 10]}
+        isResizable={false}
+        isDraggable={false}
+      >
+        {templates?.items.map((item: any, index: number) => (
+          <div key={`template-${index}`}>
+            <TemplateCard
+              link={`/create/templates/${item.metadata.namespace}/${item.metadata.name}`}
+              title={item.metadata.title}
+              description={item.metadata.description}
+              kind="Template"
+            />
+          </div>
+        ))}
+        {templates?.items.length === 0 && (
+          <div key="empty">
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: muiTheme => `1px solid ${muiTheme.palette.grey[400]}`,
+                borderRadius: 3,
+                overflow: 'hidden',
+              }}
+            >
+              <CardContent
+                sx={{
+                  margin: '1rem',
+                }}
+              >
+                <Typography sx={{ fontSize: '1.125rem', fontWeight: 500 }}>
+                  No templates added yet
+                </Typography>
+                <Typography
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: muiTheme =>
-                      `1px solid ${muiTheme.palette.grey[400]}`,
-                    borderRadius: 3,
-                    overflow: 'hidden',
+                    fontSize: '0.875rem',
+                    fontWeight: 400,
+                    mt: '20px',
+                    mb: '16px',
                   }}
                 >
-                  <CardContent
-                    sx={{
-                      margin: '1rem',
-                    }}
-                  >
-                    <Typography sx={{ fontSize: '1.125rem', fontWeight: 500 }}>
-                      No templates added yet
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: '0.875rem',
-                        fontWeight: 400,
-                        mt: '20px',
-                        mb: '16px',
-                      }}
-                    >
-                      Once templates are added, this space will showcase
-                      relevant content tailored to your experience.
-                    </Typography>
-                    <StyledLink to="/catalog-import" underline="none">
-                      Register a template
-                    </StyledLink>
-                  </CardContent>
-                </Box>
-              </Grid>
-            )}
-          </Grid>
-          <Box sx={{ pt: 2 }}>
-            {templates?.items.length > 0 && (
-              <ViewMoreLink to={catalogTemplatesLink} underline="always">
-                View all {templates?.totalItems ? templates?.totalItems : ''}{' '}
-                templates
-              </ViewMoreLink>
-            )}
-          </Box>
-        </Fragment>
-      </Box>
+                  Once templates are added, this space will showcase relevant
+                  content tailored to your experience.
+                </Typography>
+                <StyledLink to="/catalog-import" underline="none">
+                  Register a template
+                </StyledLink>
+              </CardContent>
+            </Box>
+          </div>
+        )}
+      </ResponsiveGridLayout>
     );
   }
 
@@ -156,10 +162,6 @@ export const TemplateSection = () => {
         padding: '24px',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
         overflow: 'auto',
-        '$::-webkit-scrollbar': {
-          display: 'none',
-        },
-        scrollbarWidth: 'none',
       }}
     >
       <Typography
@@ -174,6 +176,14 @@ export const TemplateSection = () => {
         Explore Templates
       </Typography>
       {content}
+      {templates?.items && templates?.items.length > 0 && (
+        <Box sx={{ pt: 2 }}>
+          <ViewMoreLink to={catalogTemplatesLink} underline="always">
+            View all {templates?.totalItems ? templates?.totalItems : ''}{' '}
+            templates
+          </ViewMoreLink>
+        </Box>
+      )}
     </Card>
   );
 };

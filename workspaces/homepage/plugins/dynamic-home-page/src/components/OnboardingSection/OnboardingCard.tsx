@@ -60,7 +60,7 @@ const OnboardingCard: FC<OnboardingCardProps> = ({
             pl: '0px',
             display: '-webkit-box',
             webkitBoxOrient: 'vertical',
-            width: '240px',
+            maxWidth: '240px',
             webkitLineClamp: 2,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
