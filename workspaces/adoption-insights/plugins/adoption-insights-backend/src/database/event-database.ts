@@ -31,6 +31,7 @@ export interface Filters {
   end_date: string;
   limit?: number | undefined;
   kind?: string | undefined;
+  timezone: string;
   grouping?: Grouping | undefined;
 }
 

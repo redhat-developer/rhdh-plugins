@@ -27,6 +27,7 @@ export const EventRequestSchema = z
     grouping: z.enum(['hourly', 'weekly', 'daily', 'monthly']).optional(),
     start_date: dateRequiredSchema('start_date'),
     end_date: dateRequiredSchema('end_date'),
+    timezone: z.string(),
     limit: z.string().regex(/^\d+$/).transform(Number).optional(),
     kind: z.string().optional(),
     type: z.enum(QUERY_TYPES, {

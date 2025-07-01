@@ -53,7 +53,7 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
     }));
   }
 
-  getDynamicDateGrouping(onlyText: boolean = false): string {
+  getDynamicDateGrouping({ onlyText = false }): string {
     const { start_date, end_date, grouping: groupingStrategy } = this.filters!;
     const dateDiff = calculateDateRange(start_date, end_date);
 

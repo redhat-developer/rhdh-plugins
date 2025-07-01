@@ -60,19 +60,30 @@ export const hasZFormat = (dateStr: string): boolean => {
   return dateStr.includes('Z') || dateStr.includes('T');
 };
 
-export const convertToLocalTimezone = (date: string) => {
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+export const convertToLocalTimezone = (
+  date: string | Date,
+  timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone,
+) => {
+  const dateString = date instanceof Date ? date.toISOString() : date;
 
-  const parsedDate = hasZFormat(date.toString())
-    ? new Date(date).toISOString()
-    : date;
+  const isoParsed = DateTime.fromISO(dateString, { setZone: true });
 
-  if (DateTime.fromISO(parsedDate, { zone: timeZone }).isValid) {
-    return DateTime.fromISO(parsedDate, { zone: timeZone }).toFormat(
-      'yyyy-MM-dd HH:mm:ss ZZZZ',
-    );
+  console.log({ date, isoParsed });
+
+  if (isoParsed.isValid) {
+    return isoParsed.setZone(timeZone).toISO();
   }
-  return DateTime.fromFormat(parsedDate, 'yyyy-MM-dd HH:mm:ss', {
-    zone: timeZone,
-  }).toFormat('yyyy-MM-dd HH:mm:ss ZZZZ');
+
+  // If not valid ISO, try parsing as 'yyyy-MM-dd HH:mm:ss' in UTC
+  const fallback = DateTime.fromFormat(dateString, 'yyyy-MM-dd HH:mm:ss', {
+    zone: 'UTC',
+  });
+
+  if (fallback.isValid) {
+    return fallback.setZone(timeZone).toISO();
+  }
+
+  // Last resort: return the original date
+  console.warn('Unable to parse date:', date);
+  return date;
 };

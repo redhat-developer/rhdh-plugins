@@ -103,7 +103,10 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const db = this.db;
 
     const groupedEventsQuery = db('events')
-      .select(db.raw(this.getDynamicDateGrouping()), 'user_ref')
+      .select(
+        db.raw(this.getDynamicDateGrouping({ useTimestamp: true })),
+        'user_ref',
+      )
       .whereBetween('created_at', [start_date, end_date])
       .groupByRaw('date, user_ref');
 
@@ -189,7 +192,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const { start_date, end_date, limit } = this.filters!;
     const query = db('events')
       .select(
-        db.raw(this.getDynamicDateGrouping()),
+        db.raw(this.getDynamicDateGrouping({ useTimestamp: true })),
         db.raw('CAST(COUNT(*) as INTEGER) AS count'),
       )
       .whereBetween('created_at', [start_date, end_date])
@@ -262,7 +265,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     const getTrendDataQuery = (qb: Knex.QueryBuilder) => {
       const trend_data_columns = [
         'plugin_id',
-        db.raw(this.getDynamicDateGrouping()),
+        db.raw(this.getDynamicDateGrouping({ useTimestamp: false })),
         db.raw('CAST(COUNT(*) as INTEGER) AS count'),
       ];
 
@@ -334,7 +337,10 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
   abstract isJsonSupported(): boolean;
   abstract isPartitionSupported(): boolean;
   abstract getDateBetweenQuery(): string;
-  abstract getDynamicDateGrouping(onlyText?: boolean): Grouping | string;
+  abstract getDynamicDateGrouping(options?: {
+    onlyText?: boolean;
+    useTimestamp?: boolean;
+  }): Grouping | string;
   abstract getFormatedDate(column: string): string;
   abstract getJsonAggregationQuery(...args: any[]): string;
 
@@ -359,7 +365,10 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     if (obj[datePath]) {
       return {
         ...obj,
-        [datePath]: convertToLocalTimezone(obj[datePath] as string),
+        [datePath]: convertToLocalTimezone(
+          obj[datePath] as string,
+          this.filters?.timezone,
+        ),
       };
     }
     return obj;
@@ -388,7 +397,9 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     data: T,
     datePath: string = 'date',
   ): ResponseWithGrouping<T> => {
-    const grouping = this.getDynamicDateGrouping(true) as Grouping;
+    const grouping = this.getDynamicDateGrouping({
+      onlyText: true,
+    }) as Grouping;
 
     if (grouping === 'hourly') {
       return {
