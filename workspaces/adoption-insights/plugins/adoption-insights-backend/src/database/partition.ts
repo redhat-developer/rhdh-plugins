@@ -20,6 +20,7 @@ import {
   isPartitionOverlapError,
   parsePartitionDate,
 } from '../utils/partition';
+import { DateTime } from 'luxon';
 
 type AttemptTracker = Map<string, number>;
 
@@ -30,11 +31,22 @@ export const createPartition = async (
   attempts: AttemptTracker = new Map(),
   maxRetries = 1,
 ) => {
-  const start = new Date(year, month - 1, 1);
-  const end = new Date(year, month, 1);
+  const startObject = DateTime.fromObject(
+    { year, month, day: 1 },
+    { zone: 'UTC' },
+  );
+  const endObject = DateTime.fromObject(
+    { year, month: month + 1, day: 1 },
+    { zone: 'UTC' },
+  );
+  if (!endObject.isValid || !startObject.isValid) {
+    throw new Error(
+      `The combination of year ${year} and month ${month} is invalid.`,
+    );
+  }
 
-  const startDate = start.toISOString().slice(0, 10);
-  const endDate = end.toISOString().slice(0, 10);
+  const startDate = startObject.toISODate();
+  const endDate = endObject.toISODate();
 
   const partitionName = `events_${year}_${month.toString().padStart(2, '0')}`;
   const key = `${year}_${month}`;

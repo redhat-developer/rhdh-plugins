@@ -86,4 +86,13 @@ describe('createPartition', () => {
 
     expect(mockRaw).toHaveBeenCalledTimes(1);
   });
+
+  it('should create a partition for the right date range', () => {
+    createPartition(knex, 2025, 5);
+    expect(mockRaw).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `FOR VALUES FROM ('2025-05-01') TO ('2025-06-01');`,
+      ),
+    );
+  });
 });
