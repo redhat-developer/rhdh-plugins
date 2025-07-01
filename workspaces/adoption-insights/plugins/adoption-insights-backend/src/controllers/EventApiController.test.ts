@@ -48,6 +48,13 @@ const mockProcessor = {
   addEvent: jest.fn(),
 } as unknown as jest.Mocked<EventBatchProcessor>;
 
+const mockAuditor = {
+  createEvent: jest.fn().mockResolvedValue({
+    success: jest.fn(),
+    fail: jest.fn(),
+  }),
+} as any;
+
 const mockEvent: AnalyticsEvent = {
   action: 'test-action',
   subject: 'test-subject',
@@ -71,6 +78,7 @@ describe('trackEvents', () => {
       mockEventDb,
       mockProcessor,
       mockServices.rootConfig.mock(),
+      mockAuditor,
     );
 
     mockProcessIncomingEvents = jest.spyOn(
@@ -96,12 +104,15 @@ describe('trackEvents', () => {
     jest.restoreAllMocks();
   });
 
-  it('should process events and return 200 on success', () => {
+  it('should process events and return 200 on success', async () => {
     mockProcessIncomingEvents.mockImplementation(() => {});
 
-    controller.trackEvents(req as Request, res as Response);
+    await controller.trackEvents(req as Request, res as Response);
 
-    expect(mockProcessIncomingEvents).toHaveBeenCalledWith(req.body);
+    expect(mockProcessIncomingEvents).toHaveBeenCalledWith(
+      req.body,
+      expect.any(Object),
+    );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -109,7 +120,7 @@ describe('trackEvents', () => {
     });
   });
 
-  it('should throw validation error if the request is missing some fields', () => {
+  it('should throw validation error if the request is missing some fields', async () => {
     jest.clearAllMocks();
     mockProcessIncomingEvents.mockClear();
     const request = {
@@ -127,16 +138,18 @@ describe('trackEvents', () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
-    controller.trackEvents(request as Request, res as Response);
+    await controller.trackEvents(request as Request, res as Response);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
-      errors: { action: ['Action is required'] },
+      errors: {
+        action: ['Action is required'],
+      },
       message: 'Invalid event data',
     });
   });
 
-  it('should return 400 on failure with error message', () => {
+  it('should return 400 on failure with error message', async () => {
     const error = new Error('Validation error') as any;
     error.details = { fieldErrors: ['Invalid user_ref'] };
 
@@ -144,7 +157,7 @@ describe('trackEvents', () => {
       throw error;
     });
 
-    controller.trackEvents(req as Request, res as Response);
+    await controller.trackEvents(req as Request, res as Response);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
@@ -153,7 +166,7 @@ describe('trackEvents', () => {
     });
   });
 
-  it('should not process events without user information', () => {
+  it('should not process events without user information', async () => {
     jest.clearAllMocks();
     mockProcessIncomingEvents.mockClear();
     const request = {
@@ -167,7 +180,7 @@ describe('trackEvents', () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
-    controller.trackEvents(request as Request, res as Response);
+    await controller.trackEvents(request as Request, res as Response);
 
     expect(mockProcessorAddEvent).toHaveBeenCalledTimes(0);
     expect(res.status).toHaveBeenCalledWith(200);
@@ -177,7 +190,7 @@ describe('trackEvents', () => {
     });
   });
 
-  it('should process events only with user information', () => {
+  it('should process events only with user information', async () => {
     jest.clearAllMocks();
     mockProcessIncomingEvents.mockClear();
     const request = {
@@ -197,7 +210,7 @@ describe('trackEvents', () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
-    controller.trackEvents(request as Request, res as Response);
+    await controller.trackEvents(request as Request, res as Response);
 
     expect(mockProcessorAddEvent).toHaveBeenCalledTimes(1);
     expect(res.status).toHaveBeenCalledWith(200);
@@ -214,6 +227,7 @@ describe('GetInsights', () => {
       mockEventDb,
       mockProcessor,
       mockServices.rootConfig.mock(),
+      mockAuditor,
     );
 
     global.fetch = jest.fn().mockResolvedValue({} as any);
@@ -235,8 +249,8 @@ describe('GetInsights', () => {
     jest.restoreAllMocks();
   });
 
-  it('should return validation errors', () => {
-    controller.getInsights(
+  it('should return validation errors', async () => {
+    await controller.getInsights(
       req as unknown as Request<{}, {}, {}, QueryParams>,
       res as Response,
     );
@@ -244,7 +258,7 @@ describe('GetInsights', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       errors: {
-        type: [`Invalid type. Allowed values: ${QUERY_TYPES.join(',')}`],
+        type: [`Invalid type. Allowed values: ${QUERY_TYPES}`],
       },
       message: 'Invalid query',
     });
@@ -270,18 +284,27 @@ describe('GetInsights', () => {
     });
   });
 
-  it('should call the api endpoints based on type', () => {
-    QUERY_TYPES.forEach(type => {
+  it('should call the api endpoints based on type', async () => {
+    // Mock return values for all database methods as QueryBuilders
+    mockEventDb.getUsers.mockResolvedValue({} as any);
+    mockEventDb.getDailyUsers.mockResolvedValue({} as any);
+    mockEventDb.getTopSearches.mockResolvedValue({} as any);
+    mockEventDb.getTopPluginViews.mockResolvedValue({} as any);
+    mockEventDb.getTopTemplateViews.mockResolvedValue({} as any);
+    mockEventDb.getTopTechDocsViews.mockResolvedValue({} as any);
+    mockEventDb.getTopCatalogEntitiesViews.mockResolvedValue({} as any);
+
+    for (const type of QUERY_TYPES) {
       req.query = {
         ...req.query,
         type: type,
       };
 
-      controller.getInsights(
+      await controller.getInsights(
         req as unknown as Request<{}, {}, {}, QueryParams>,
         res as Response,
       );
-    });
+    }
 
     expect(mockEventDb.getUsers).toHaveBeenCalled();
     expect(mockEventDb.getDailyUsers).toHaveBeenCalled();
