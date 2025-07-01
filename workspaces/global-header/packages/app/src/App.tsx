@@ -58,8 +58,16 @@ import { NotificationsPage } from '@backstage/plugin-notifications';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import ManageAccounts from '@mui/icons-material/ManageAccountsOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import Logout from '@mui/icons-material/LogoutOutlined';
 
 const app = createApp({
+  icons: {
+    manageAccounts: ManageAccounts,
+    account: AccountCircleOutlinedIcon,
+    logout: Logout,
+  },
   apis,
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
