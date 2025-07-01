@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.13.0
+
+### Minor Changes
+
+- ba5e13c: Add dynamic profile link support to ProfileDropdown based on current user identity.
+
 ## 1.12.0
 
 ### Minor Changes
