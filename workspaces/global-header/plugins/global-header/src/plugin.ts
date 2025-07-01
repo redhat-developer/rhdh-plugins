@@ -27,6 +27,8 @@ import { SoftwareTemplatesSectionProps } from './components/HeaderDropdownCompon
 import { RegisterAComponentSectionProps } from './components/HeaderDropdownComponent/RegisterAComponentSection';
 import { CreateDropdownProps } from './components/HeaderDropdownComponent/CreateDropdown';
 import { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
+import { QuickstartButtonProps } from './components/QuickstartButton/QuickstartButton';
+import { SupportButtonProps } from './plugin';
 
 export type { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
 
@@ -43,6 +45,7 @@ export type { RegisterAComponentSectionProps } from './components/HeaderDropdown
 export type { DividerProps } from './components/Divider/Divider';
 export type { SpacerProps } from './components/Spacer/Spacer';
 export type { SupportButtonProps } from './components/SupportButton/SupportButton';
+export type { QuickstartButtonProps } from './components/QuickstartButton/QuickstartButton';
 export type { NotificationButtonProps } from './components/NotificationButton/NotificationButton';
 export type {
   LogoURLs,
@@ -300,17 +303,34 @@ export const Divider = globalHeaderPlugin.provide(
 /**
  * @public
  */
-export const SupportButton = globalHeaderPlugin.provide(
-  createComponentExtension({
-    name: 'SupportButton',
-    component: {
-      lazy: () =>
-        import('./components/SupportButton/SupportButton').then(
-          m => m.SupportButton,
-        ),
-    },
-  }),
-);
+export const SupportButton: ComponentType<SupportButtonProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'SupportButton',
+      component: {
+        lazy: () =>
+          import('./components/SupportButton/SupportButton').then(
+            m => m.SupportButton,
+          ),
+      },
+    }),
+  );
+
+/**
+ * @public
+ */
+export const QuickstartButton: ComponentType<QuickstartButtonProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'QuickstartButton',
+      component: {
+        lazy: () =>
+          import('./components/QuickstartButton/QuickstartButton').then(
+            m => m.QuickstartButton,
+          ),
+      },
+    }),
+  );
 
 /**
  * @public
