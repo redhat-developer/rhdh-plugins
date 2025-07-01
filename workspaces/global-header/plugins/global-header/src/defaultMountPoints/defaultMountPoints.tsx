@@ -36,6 +36,7 @@ import { StarredDropdown } from '../components/HeaderDropdownComponent/StarredDr
 import { ApplicationLauncherDropdown } from '../components/HeaderDropdownComponent/ApplicationLauncherDropdown';
 import { CompanyLogo } from '../components/CompanyLogo/CompanyLogo';
 import { HelpDropdown } from '../components/HeaderDropdownComponent/HelpDropdown';
+import { QuickstartButton } from '../components/QuickstartButton/QuickstartButton';
 
 /**
  * default Global Header Components mount points
@@ -162,14 +163,9 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
 
 export const defaultHelpDropdownMountPoints: HelpDropdownMountPoint[] = [
   {
-    Component: MenuItemLink as ComponentType,
+    Component: QuickstartButton,
     config: {
       priority: 100,
-      props: {
-        title: 'Quick start',
-        icon: 'quickstart',
-        link: 'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/',
-      },
     },
   },
   {

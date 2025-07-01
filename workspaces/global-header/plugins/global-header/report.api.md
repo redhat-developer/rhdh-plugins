@@ -299,6 +299,21 @@ export interface ProfileDropdownProps {
   layout?: CSSProperties;
 }
 
+// @public (undocumented)
+export const QuickstartButton: ComponentType<QuickstartButtonProps>;
+
+// @public (undocumented)
+export interface QuickstartButtonProps {
+  // (undocumented)
+  icon?: string;
+  // (undocumented)
+  style?: CSSProperties;
+  // (undocumented)
+  title?: string;
+  // (undocumented)
+  tooltip?: string;
+}
+
 // @public
 export const RegisterAComponentSection: ComponentType<RegisterAComponentSectionProps>;
 
@@ -341,13 +356,7 @@ export interface SpacerProps {
 export const StarredDropdown: () => JSX_2.Element;
 
 // @public (undocumented)
-export const SupportButton: ({
-  title,
-  to,
-  icon,
-  tooltip,
-  style,
-}: SupportButtonProps) => JSX_2.Element | null;
+export const SupportButton: ComponentType<SupportButtonProps>;
 
 // @public (undocumented)
 export interface SupportButtonProps {
