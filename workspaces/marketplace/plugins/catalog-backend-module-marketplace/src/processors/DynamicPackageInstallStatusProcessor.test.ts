@@ -151,45 +151,54 @@ describe('DynamicPackageInstallStatusProcessor', () => {
       expect(entity.spec?.installStatus).toBe('unknown-status');
     });
 
-    it('should return Installed for the backend package name', async () => {
-      mockPluginProvider._plugins = [
-        { name: 'red-hat-developer-hub-test-backend-plugin-dynamic' },
-      ];
+    it.each([
+      {
+        description: 'frontend wrapper name',
+        packageName: 'red-hat-developer-hub-backstage-plugin-marketplace',
+        entityPackageName:
+          '@red-hat-developer-hub/backstage-plugin-marketplace',
+      },
+      {
+        description: 'backend wrapper name',
+        packageName:
+          'red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic',
+        entityPackageName:
+          '@red-hat-developer-hub/backstage-plugin-marketplace-backend',
+      },
+      {
+        description: 'frontend export-dynamic-plugin name',
+        packageName: '@backstage-community/plugin-playlist-dynamic',
+        entityPackageName: '@backstage-community/plugin-playlist',
+      },
+      {
+        description: 'backend export-dynamic-plugin name',
+        packageName: '@backstage-community/plugin-playlist-backend-dynamic',
+        entityPackageName: '@backstage-community/plugin-playlist-backend',
+      },
+    ])(
+      'should return Installed if the package is installed for the $description',
+      async ({ packageName, entityPackageName }) => {
+        mockPluginProvider._plugins = [{ name: packageName }];
 
-      const entity = await processor.preProcessEntity(
-        {
-          ...packageEntity,
-          spec: {
-            ...packageEntity.spec,
-            packageName: '@red-hat-developer-hub/test-backend-plugin',
+        const entity = await processor.preProcessEntity(
+          {
+            ...packageEntity,
+            spec: {
+              ...packageEntity.spec,
+              packageName: entityPackageName,
+            },
           },
-        },
-        locationSpec,
-        jest.fn(),
-        locationSpec,
-        cache,
-      );
+          locationSpec,
+          jest.fn(),
+          locationSpec,
+          cache,
+        );
 
-      expect(entity.spec?.installStatus).toBe(
-        MarketplacePackageInstallStatus.Installed,
-      );
-    });
-
-    it('should return Installed if the package is installed', async () => {
-      mockPluginProvider._plugins = [{ name: 'test-package' }];
-
-      const entity = await processor.preProcessEntity(
-        packageEntity,
-        locationSpec,
-        jest.fn(),
-        locationSpec,
-        cache,
-      );
-
-      expect(entity.spec?.installStatus).toBe(
-        MarketplacePackageInstallStatus.Installed,
-      );
-    });
+        expect(entity.spec?.installStatus).toBe(
+          MarketplacePackageInstallStatus.Installed,
+        );
+      },
+    );
 
     it("should return undefined if the package is not in installed packages and missing 'spec.dynamicArtifact'", async () => {
       mockPluginProvider._plugins = [

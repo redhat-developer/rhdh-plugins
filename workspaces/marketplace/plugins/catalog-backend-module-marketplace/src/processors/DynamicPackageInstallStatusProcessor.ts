@@ -108,7 +108,7 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     installedPackages: Plugins,
   ): MarketplacePackageInstallStatus | undefined {
     if (!marketplacePackage.spec?.packageName) {
-      this.logger.error(
+      this.logger.warn(
         "Missing 'entity.spec.packageName', unable to determine 'spec.installStatus'",
       );
       return undefined;
@@ -116,18 +116,17 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
 
     const versionRange = marketplacePackage.spec.version;
 
-    // account for wrapper names
-    let transformedName = marketplacePackage.spec.packageName
+    // account for possible names
+    const nameOptions = [marketplacePackage.spec.packageName];
+    const transformedName = marketplacePackage.spec.packageName
       .replace('@', '')
       .replace(/\//g, '-');
-    if (transformedName.includes('backend')) {
-      transformedName += '-dynamic';
+    nameOptions.push(transformedName);
+    if (!marketplacePackage.spec.packageName.includes('dynamic')) {
+      nameOptions.push(`${transformedName}-dynamic`);
+      nameOptions.push(`${marketplacePackage.spec.packageName}-dynamic`);
     }
-
-    for (const packageName of [
-      marketplacePackage.spec.packageName,
-      transformedName,
-    ]) {
+    for (const packageName of nameOptions) {
       if (packageName in installedPackages) {
         const installedVersion = installedPackages[packageName];
         if (!versionRange || semver.satisfies(installedVersion, versionRange)) {
