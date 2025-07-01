@@ -34,10 +34,9 @@ import ListItem from '@mui/material/ListItem';
 import { makeStyles } from 'tss-react/mui';
 
 import {
-  AssessedProcessInstanceDTO,
+  ProcessInstanceDTO,
   ProcessInstanceErrorDTO,
   ProcessInstanceStatusDTO,
-  QUERY_PARAM_ASSESSMENT_INSTANCE_ID,
   WorkflowOverviewDTO,
   WorkflowResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -195,10 +194,8 @@ const ResultMessage = ({
 };
 
 const NextWorkflows = ({
-  instanceId,
   nextWorkflows,
 }: {
-  instanceId: string;
   nextWorkflows: WorkflowResultDTO['nextWorkflows'];
 }) => {
   const { classes } = useStyles();
@@ -225,11 +222,8 @@ const NextWorkflows = ({
         executeWorkflowLink({
           workflowId: currentOpenedWorkflowDescriptionModalID,
         }),
-        {
-          [QUERY_PARAM_ASSESSMENT_INSTANCE_ID]: instanceId,
-        },
       ),
-    [currentOpenedWorkflowDescriptionModalID, executeWorkflowLink, instanceId],
+    [currentOpenedWorkflowDescriptionModalID, executeWorkflowLink],
   );
 
   const openWorkflowDescriptionModal = React.useCallback(
@@ -357,11 +351,10 @@ const WorkflowOutputs = ({
 };
 
 export const WorkflowResult: React.FC<{
-  assessedInstance: AssessedProcessInstanceDTO;
+  instance: ProcessInstanceDTO;
   className: string;
   cardClassName?: string;
-}> = ({ assessedInstance, className, cardClassName }) => {
-  const instance = assessedInstance.instance;
+}> = ({ instance, className, cardClassName }) => {
   const result = instance.workflowdata?.result;
 
   return (
@@ -380,10 +373,7 @@ export const WorkflowResult: React.FC<{
       cardClassName={cardClassName}
     >
       <Grid container alignContent="flex-start" spacing="1rem">
-        <NextWorkflows
-          instanceId={instance.id}
-          nextWorkflows={result?.nextWorkflows}
-        />
+        <NextWorkflows nextWorkflows={result?.nextWorkflows} />
         <WorkflowOutputs outputs={result?.outputs} />
       </Grid>
     </InfoCard>

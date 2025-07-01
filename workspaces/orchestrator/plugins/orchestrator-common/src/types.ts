@@ -19,7 +19,7 @@ import type { JsonObject } from '@backstage/types';
 import type { Specification } from '@severlessworkflow/sdk-typescript';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
-import type { ProcessInstance, ProcessInstanceStateValues } from './models';
+import type { ProcessInstanceStateValues } from './models';
 
 type Id<T> = { [P in keyof T]: T[P] };
 
@@ -94,11 +94,6 @@ export interface WorkflowExecutionResponse {
   id: string;
 }
 
-export enum WorkflowCategory {
-  ASSESSMENT = 'assessment',
-  INFRASTRUCTURE = 'infrastructure',
-}
-
 export interface WorkflowOverview {
   workflowId: string;
   format: WorkflowFormat;
@@ -106,7 +101,6 @@ export interface WorkflowOverview {
   lastRunId?: string;
   lastTriggeredMs?: number;
   lastRunStatus?: ProcessInstanceStateValues;
-  category?: string;
   avgDurationMs?: number;
   description?: string;
   isAvailable?: boolean;
@@ -134,9 +128,4 @@ export interface Node {
   name?: string;
   uniqueId?: string;
   nodeDefinitionId?: string;
-}
-
-export interface AssessedProcessInstance {
-  instance: ProcessInstance;
-  assessedBy?: ProcessInstance;
 }

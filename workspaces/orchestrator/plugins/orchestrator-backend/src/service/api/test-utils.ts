@@ -20,7 +20,6 @@ import {
   ProcessInstance,
   ProcessInstanceState,
   ProcessInstanceStateValues,
-  WorkflowCategory,
   WorkflowDefinition,
   WorkflowExecutionResponse,
   WorkflowFormat,
@@ -38,7 +37,6 @@ interface WorkflowOverviewParams {
   format?: WorkflowFormat;
   lastTriggeredMs?: number;
   lastRunStatus?: ProcessInstanceStateValues;
-  category?: string;
   description?: string;
 }
 export function generateTestWorkflowOverview(
@@ -51,7 +49,6 @@ export function generateTestWorkflowOverview(
     lastTriggeredMs:
       params.lastTriggeredMs ?? Date.parse('2024-02-09T10:34:56Z'),
     lastRunStatus: params.lastRunStatus ?? ProcessInstanceState.Completed,
-    category: params.category ?? 'assessment', // validate input
     description: params.description ?? 'Test Workflow Description',
   };
 }
@@ -133,7 +130,6 @@ export function generateProcessInstance(id: number): ProcessInstance {
       'Workflow started at 2025-06-08T11:36:22.967Z',
       'Workflow completed at 2025-06-08T11:36:22.970Z',
     ],
-    category: WorkflowCategory.INFRASTRUCTURE,
     description: 'test description 1',
     variables: {
       foo: 'bar',

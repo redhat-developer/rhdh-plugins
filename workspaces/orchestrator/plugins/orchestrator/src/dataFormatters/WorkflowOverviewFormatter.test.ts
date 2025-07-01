@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   ProcessInstanceStatusDTO,
-  WorkflowCategoryDTO,
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -31,7 +31,6 @@ describe('WorkflowOverviewAdapter', () => {
       name: 'Sample Workflow',
       lastTriggeredMs: 1697276096000,
       lastRunStatus: ProcessInstanceStatusDTO.Completed,
-      category: WorkflowCategoryDTO.Infrastructure,
       description: 'Sample description',
       format: 'yaml',
     };
@@ -45,7 +44,6 @@ describe('WorkflowOverviewAdapter', () => {
       new Date(mockWorkflowOverview.lastTriggeredMs!).toLocaleString(),
     );
     expect(adaptedData.lastRunStatus).toBe(mockWorkflowOverview.lastRunStatus);
-    expect(adaptedData.category).toBe(mockWorkflowOverview.category);
     expect(adaptedData.description).toBe(mockWorkflowOverview.description);
     expect(adaptedData.format).toBe('yaml'); // Adjust based on your expected value
   });
@@ -63,7 +61,6 @@ describe('WorkflowOverviewAdapter', () => {
     expect(adaptedData.name).toBe('---');
     expect(adaptedData.lastTriggered).toBe('---');
     expect(adaptedData.lastRunStatus).toBe('---');
-    expect(adaptedData.category).toBe('---');
     expect(adaptedData.description).toBe('---');
     expect(adaptedData.format).toBe('yaml');
   });
