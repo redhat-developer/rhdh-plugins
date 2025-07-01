@@ -128,6 +128,9 @@ describe('DynamicPackageInstallStatusProcessor', () => {
       );
 
       expect(entity.spec?.installStatus).toBe(undefined);
+      expect(logger.warn).toHaveBeenCalledWith(
+        "Entity package:default/testpackage is missing spec.packageName, unable to determine 'spec.installStatus'",
+      );
     });
 
     it('should not process if the installStatus is already set', async () => {

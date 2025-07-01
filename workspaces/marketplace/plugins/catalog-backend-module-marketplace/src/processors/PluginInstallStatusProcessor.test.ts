@@ -181,6 +181,9 @@ describe('PluginInstallStatusProcessor', () => {
       );
 
       expect(entity.spec?.installStatus).toBe(undefined);
+      expect(logger.warn).toHaveBeenCalledWith(
+        "Entity plugin:default/plugin1 is missing packages, unable to determine 'spec.installStatus'",
+      );
     });
 
     it('should not process if the installStatus is already set', async () => {
@@ -288,7 +291,7 @@ describe('PluginInstallStatusProcessor', () => {
 
       expect(entity.spec?.installStatus).toBe(undefined);
       expect(logger.warn).toHaveBeenCalledWith(
-        "Could not fetch all packages of entity plugin:marketplace-plugin-demo/marketplace with set installStatus, unable to determine 'spec.installStatus'",
+        "Missing all definitions for plugin:marketplace-plugin-demo/marketplace packages installStatus, unable to determine 'spec.installStatus'",
       );
     });
 
@@ -312,7 +315,7 @@ describe('PluginInstallStatusProcessor', () => {
 
       expect(entity.spec?.installStatus).toBe(undefined);
       expect(logger.warn).toHaveBeenCalledWith(
-        "Could not fetch all packages of entity plugin:marketplace-plugin-demo/marketplace with set installStatus, unable to determine 'spec.installStatus'",
+        "Missing all definitions for plugin:marketplace-plugin-demo/marketplace packages installStatus, unable to determine 'spec.installStatus'",
       );
     });
 

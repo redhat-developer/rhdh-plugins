@@ -205,7 +205,7 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
       await this.getPluginPackageInstallStatuses(pluginPackageRefs);
     if (pluginPackageRefs.length !== pluginPackageStatuses.length) {
       this.logger.warn(
-        `Could not fetch all packages of entity ${stringifyEntityRef(marketplacePlugin)} with set installStatus, unable to determine 'spec.installStatus'`,
+        `Missing all definitions for ${stringifyEntityRef(marketplacePlugin)} packages installStatus, unable to determine 'spec.installStatus'`,
       );
       return undefined;
     }
@@ -259,12 +259,17 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
     _originLocation: LocationSpec,
   ): Promise<Entity> {
     if (isMarketplacePlugin(entity)) {
+      if (!entity.spec?.packages || entity.spec.packages.length === 0) {
+        this.logger.warn(
+          `Entity ${stringifyEntityRef(entity)} is missing packages, unable to determine 'spec.installStatus'`,
+        );
+        return entity;
+      }
+
       if (
-        entity.spec?.packages &&
-        entity.spec.packages.length > 0 &&
-        (!entity.spec?.installStatus ||
-          entity.spec.installStatus ===
-            MarketplacePluginInstallStatus.NotInstalled)
+        !entity.spec?.installStatus ||
+        entity.spec.installStatus ===
+          MarketplacePluginInstallStatus.NotInstalled
       ) {
         const installStatus = await this.getPluginInstallStatus(entity);
         if (installStatus) {

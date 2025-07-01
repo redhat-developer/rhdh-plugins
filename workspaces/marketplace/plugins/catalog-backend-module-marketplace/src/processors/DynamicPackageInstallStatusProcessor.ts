@@ -161,11 +161,17 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     cache: CatalogProcessorCache,
   ): Promise<Entity> {
     if (isMarketplacePackage(entity)) {
+      if (!entity.spec?.packageName) {
+        this.logger.warn(
+          `Entity ${stringifyEntityRef(entity)} is missing spec.packageName, unable to determine 'spec.installStatus'`,
+        );
+        return entity;
+      }
+
       if (
-        entity.spec?.packageName &&
-        (!entity.spec?.installStatus ||
-          entity.spec.installStatus ===
-            MarketplacePackageInstallStatus.NotInstalled)
+        !entity.spec?.installStatus ||
+        entity.spec.installStatus ===
+          MarketplacePackageInstallStatus.NotInstalled
       ) {
         const entityRef = stringifyEntityRef(entity);
         const data = await this.getCachedPlugins(cache, entityRef);
