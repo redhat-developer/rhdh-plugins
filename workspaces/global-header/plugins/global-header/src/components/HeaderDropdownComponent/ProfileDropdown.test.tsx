@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import type { CatalogApi } from '@backstage/catalog-client';
 import { useUserProfile } from '@backstage/plugin-user-settings';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
@@ -25,110 +25,153 @@ jest.mock('@backstage/plugin-user-settings', () => ({
   useUserProfile: jest.fn(),
 }));
 
-jest.mock('../../hooks/useProfileDropdownMountPoints', () => ({
-  useProfileDropdownMountPoints: () => [
-    {
-      Component: jest.fn(),
-      config: {
-        props: {
-          icon: 'someicon',
-          title: 'sometitle',
-          link: 'somelink',
+jest.mock('../../hooks/useProfileDropdownMountPoints', () => {
+  const MockComponent = ({ title }: { title: string }) => <span>{title}</span>;
+  return {
+    useProfileDropdownMountPoints: () => [
+      {
+        Component: MockComponent,
+        config: {
+          props: {
+            icon: 'someicon',
+            title: 'sometitle',
+            link: 'somelink',
+          },
+          priority: '100',
         },
-        priority: '100',
       },
-    },
-  ],
-}));
+      {
+        Component: MockComponent,
+        config: {
+          props: {
+            icon: 'account',
+            title: 'My profile',
+          },
+          priority: '90',
+        },
+      },
+    ],
+  };
+});
+
+const createMockCatalogApi = (entity: Partial<CatalogApi['getEntityByRef']>) =>
+  ({
+    getEntityByRef: jest.fn().mockResolvedValue(entity),
+  } as unknown as CatalogApi);
+
+const setUserProfileMock = ({
+  displayName,
+  userEntityRef,
+}: {
+  displayName: string;
+  userEntityRef: string;
+}) => {
+  (useUserProfile as jest.Mock).mockReturnValue({
+    displayName,
+    backstageIdentity: { userEntityRef },
+    profile: { picture: 'picture' },
+    loading: false,
+  });
+};
+
+const renderComponent = async (mockCatalogApi: CatalogApi) => {
+  await renderInTestApp(
+    <TestApiProvider apis={[[catalogApiRef, mockCatalogApi]]}>
+      <ProfileDropdown />
+    </TestApiProvider>,
+  );
+};
 
 describe('ProfileDropdown', () => {
   it('should render the configured profile displayname', async () => {
-    (useUserProfile as jest.Mock).mockReturnValue({
+    setUserProfileMock({
       displayName: 'Test User',
-      backstageIdentity: { userEntityRef: 'user:default/test-user' },
-      profile: { picture: 'picture' },
-      loading: false,
+      userEntityRef: 'user:default/test-user',
     });
-    const mockCatalogApi = {
-      getEntityByRef: () => ({
-        apiVersion: 'backstage.io/v1alpha1',
-        kind: 'User',
-        metadata: {
-          name: 'test-user',
-          title: 'Test User',
-        },
-        spec: {
-          profile: { displayName: 'Test User DN' },
-          memberOf: ['janus-authors'],
-        },
-      }),
-    } as any as CatalogApi;
 
-    await renderInTestApp(
-      <TestApiProvider apis={[[catalogApiRef, mockCatalogApi]]}>
-        <ProfileDropdown />
-      </TestApiProvider>,
-    );
+    const catalogApi = createMockCatalogApi({
+      metadata: {
+        name: 'test-user',
+        title: 'Test User',
+      },
+      spec: {
+        profile: { displayName: 'Test User DN' },
+      },
+    });
+
+    await renderComponent(catalogApi);
 
     expect(screen.getByText(/Test User DN/i)).toBeInTheDocument();
   });
 
   it('should render the title if profile displayname is not configured', async () => {
-    (useUserProfile as jest.Mock).mockReturnValue({
+    setUserProfileMock({
       displayName: 'testuser1',
-      backstageIdentity: { userEntityRef: 'user:default/test-user' },
-      profile: { picture: 'picture' },
-      loading: false,
+      userEntityRef: 'user:default/test-user',
     });
-    const mockCatalogApi = {
-      getEntityByRef: () => ({
-        apiVersion: 'backstage.io/v1alpha1',
-        kind: 'User',
-        metadata: {
-          name: 'test-user',
-          title: 'Test User',
-        },
-        spec: {
-          memberOf: ['janus-authors'],
-        },
-      }),
-    } as any as CatalogApi;
 
-    await renderInTestApp(
-      <TestApiProvider apis={[[catalogApiRef, mockCatalogApi]]}>
-        <ProfileDropdown />
-      </TestApiProvider>,
-    );
+    const catalogApi = createMockCatalogApi({
+      metadata: {
+        name: 'test-user',
+        title: 'Test User',
+      },
+      spec: {},
+    });
+
+    await renderComponent(catalogApi);
 
     expect(screen.getByText(/Test User/i)).toBeInTheDocument();
   });
 
   it('should render the user entity ref when user is not configured in the catalog', async () => {
-    (useUserProfile as jest.Mock).mockReturnValue({
+    setUserProfileMock({
       displayName: 'user:default/test',
-      backstageIdentity: { userEntityRef: 'user:default/test' },
-      profile: { picture: 'picture' },
-      loading: false,
+      userEntityRef: 'user:default/test',
     });
-    const mockCatalogApi = {
-      getEntityByRef: () => ({
-        apiVersion: 'backstage.io/v1alpha1',
-        kind: 'User',
-        metadata: {
-          name: 'test-user',
-        },
-        spec: {
-          memberOf: ['janus-authors'],
-        },
-      }),
-    } as any as CatalogApi;
 
-    await renderInTestApp(
-      <TestApiProvider apis={[[catalogApiRef, mockCatalogApi]]}>
-        <ProfileDropdown />
-      </TestApiProvider>,
-    );
+    const catalogApi = createMockCatalogApi({
+      metadata: {
+        name: 'test-user',
+      },
+      spec: {},
+    });
+
+    await renderComponent(catalogApi);
 
     expect(screen.getByText(/Test/i)).toBeInTheDocument();
+  });
+
+  it('should render the My Profile menu item with the correct dynamic link', async () => {
+    setUserProfileMock({
+      displayName: 'Test User',
+      userEntityRef: 'user:default/test-user',
+    });
+
+    const catalogApi = createMockCatalogApi({
+      metadata: {
+        name: 'test-user',
+        title: 'Test User',
+      },
+      spec: {
+        profile: { displayName: 'Test User DN' },
+      },
+    });
+
+    await renderComponent(catalogApi);
+    const profileButton = screen.getByRole('button', {
+      name: /Profile picture Test User DN/i,
+    });
+    fireEvent.click(profileButton);
+
+    await waitFor(() => {
+      const myProfileLink = screen.getByRole('menuitem', {
+        name: /My profile/i,
+      });
+      expect(myProfileLink).toBeInTheDocument();
+      expect(myProfileLink).toHaveAttribute(
+        'href',
+        '/catalog/default/user/test-user',
+      );
+    });
   });
 });

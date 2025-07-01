@@ -154,6 +154,16 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
     },
   },
   {
+    Component: MenuItemLink as ComponentType,
+    config: {
+      priority: 150,
+      props: {
+        title: 'My profile',
+        icon: 'account',
+      },
+    },
+  },
+  {
     Component: LogoutButton,
     config: {
       priority: 100,
