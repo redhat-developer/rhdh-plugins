@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import moment from 'moment';
 
 import {
@@ -34,7 +35,6 @@ import {
   mapToProcessInstanceDTO,
   mapToWorkflowOverviewDTO,
   mapToWorkflowRunStatusDTO,
-  mapWorkflowCategoryDTOFromString,
 } from './V2Mappings';
 
 describe('scenarios to verify executeWorkflowResponseDTO', () => {
@@ -61,9 +61,7 @@ describe('scenarios to verify executeWorkflowResponseDTO', () => {
 describe('scenarios to verify mapToWorkflowOverviewDTO', () => {
   it('correctly maps WorkflowOverview', () => {
     // Arrange
-    const overview: WorkflowOverview = generateTestWorkflowOverview({
-      category: 'assessment',
-    });
+    const overview: WorkflowOverview = generateTestWorkflowOverview({});
 
     // Act
     const result = mapToWorkflowOverviewDTO(overview);
@@ -79,30 +77,9 @@ describe('scenarios to verify mapToWorkflowOverviewDTO', () => {
         ? getProcessInstancesStatusDTOFromString(overview.lastRunStatus)
         : undefined,
     );
-    expect(result.category).toBe('assessment');
     expect(result.description).toBe(overview.description);
   });
 });
-describe('scenarios to verify mapWorkflowCategoryDTOFromString', () => {
-  test.each([
-    { input: 'assessment', expected: 'assessment' },
-    { input: 'infrastructure', expected: 'infrastructure' },
-    { input: 'random category', expected: 'infrastructure' },
-  ])('mapWorkflowCategoryDTOFromString($input)', ({ input, expected }) => {
-    // Arrange
-    const overview: WorkflowOverview = generateTestWorkflowOverview({
-      category: input,
-    });
-
-    // Act
-    const resultCategory = mapWorkflowCategoryDTOFromString(overview.category);
-
-    // Assert
-    expect(resultCategory).toBeDefined();
-    expect(resultCategory).toBe(expected);
-  });
-});
-
 describe('scenarios to verify mapToProcessInstanceDTO', () => {
   it('correctly maps ProcessInstanceDTO for not completed workflow', () => {
     // Arrange
@@ -126,7 +103,6 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
       ),
     );
     expect(result.description).toEqual(processInstanceV1.description);
-    expect(result.category).toEqual('infrastructure');
     expect(result.workflowdata).toEqual(
       // @ts-ignore
       processInstanceV1?.variables?.workflowdata,
@@ -166,7 +142,6 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     expect(result.duration).toEqual(duration);
     expect(result.duration).toEqual('an hour');
     expect(result.description).toEqual(processIntanceV1.description);
-    expect(result.category).toEqual('infrastructure');
     expect(result.workflowdata).toEqual(
       // @ts-ignore
       processIntanceV1?.variables?.workflowdata,

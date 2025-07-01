@@ -25,11 +25,11 @@ import axios, {
 } from 'axios';
 
 import {
-  AssessedProcessInstanceDTO,
   AuthToken,
   DefaultApi,
   ExecuteWorkflowResponseDTO,
   PaginationInfoDTO,
+  ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
   WorkflowFormatDTO,
   WorkflowOverviewDTO,
@@ -468,17 +468,13 @@ describe('OrchestratorClient', () => {
     it('should return instance when successful', async () => {
       // Given
       const instanceId = 'instance123';
-      const instanceIdParent = 'instance000';
-      const mockInstance: AssessedProcessInstanceDTO = {
-        instance: { id: instanceId, processId: 'process002', nodes: [] },
-        assessedBy: {
-          id: instanceIdParent,
-          processId: 'process001',
-          nodes: [],
-        },
+      const mockInstance: ProcessInstanceDTO = {
+        id: instanceId,
+        processId: 'process002',
+        nodes: [],
       };
 
-      const mockResponse: AxiosResponse<AssessedProcessInstanceDTO> = {
+      const mockResponse: AxiosResponse<ProcessInstanceDTO> = {
         data: mockInstance,
         status: 200,
         statusText: 'OK',

@@ -26,25 +26,22 @@ import Typography from '@mui/material/Typography';
 
 import {
   capitalize,
-  ProcessInstanceDTO,
   ProcessInstanceStatusDTO,
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../api';
 import { VALUE_UNAVAILABLE } from '../constants';
-import { workflowInstanceRouteRef, workflowRouteRef } from '../routes';
+import { workflowRouteRef } from '../routes';
 import { WorkflowInstanceStatusIndicator } from './WorkflowInstanceStatusIndicator';
 import { WorkflowRunDetail } from './WorkflowRunDetail';
 import { WorkflowStatus } from './WorkflowStatus';
 
 type WorkflowDetailsCardProps = {
-  assessedBy?: ProcessInstanceDTO;
   details: WorkflowRunDetail;
 };
 
 export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
-  assessedBy,
   details,
 }) => {
   const orchestratorApi = useApi(orchestratorApiRef);
@@ -54,7 +51,6 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
 
       return res.data;
     }, [orchestratorApi]);
-  const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
 
   const workflowPageLink = useRouteRef(workflowRouteRef);
 
@@ -121,23 +117,6 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
-      {assessedBy ? (
-        <Grid item md={12} key="Assessed by">
-          <AboutField label="Assessed by">
-            <Typography variant="subtitle2" component="div">
-              <b>
-                <Link
-                  to={workflowInstanceLink({
-                    instanceId: assessedBy.id,
-                  })}
-                >
-                  {assessedBy.processName}
-                </Link>
-              </b>
-            </Typography>
-          </AboutField>
-        </Grid>
-      ) : null}
     </Grid>
   );
 };

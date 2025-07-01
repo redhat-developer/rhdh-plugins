@@ -21,7 +21,6 @@ import { Client, fetchExchange, gql } from '@urql/core';
 import {
   Filter,
   fromWorkflowSource,
-  getWorkflowCategory,
   IntrospectionField,
   parseWorkflowVariables,
   ProcessInstance,
@@ -304,11 +303,7 @@ export class DataIndexService {
         `Workflow defintion is required to fetch instance ${instance.id}`,
       );
     }
-    const workflowDefinitionSrc: WorkflowDefinition = fromWorkflowSource(
-      workflowInfo.source,
-    );
     if (workflowInfo) {
-      instance.category = getWorkflowCategory(workflowDefinitionSrc);
       instance.description = workflowInfo.description;
     }
     return instance;
@@ -481,7 +476,6 @@ export class DataIndexService {
       workflowInfo.source,
     );
     if (workflowInfo) {
-      instance.category = getWorkflowCategory(workflowDefinitionSrc);
       instance.description = workflowDefinitionSrc.description;
     }
     return instance;

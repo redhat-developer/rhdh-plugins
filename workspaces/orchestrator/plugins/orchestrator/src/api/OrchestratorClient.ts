@@ -26,7 +26,6 @@ import axios, {
 } from 'axios';
 
 import {
-  AssessedProcessInstanceDTO,
   AuthToken,
   Configuration,
   DefaultApi,
@@ -35,6 +34,7 @@ import {
   Filter,
   InputSchemaResponseDTO,
   PaginationInfoDTO,
+  ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
@@ -205,7 +205,7 @@ export class OrchestratorClient implements OrchestratorApi {
 
   async getInstance(
     instanceId: string,
-  ): Promise<AxiosResponse<AssessedProcessInstanceDTO>> {
+  ): Promise<AxiosResponse<ProcessInstanceDTO>> {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
       await this.getDefaultReqConfig();

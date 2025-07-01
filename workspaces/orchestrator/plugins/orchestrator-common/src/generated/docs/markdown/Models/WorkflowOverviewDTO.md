@@ -9,7 +9,6 @@
 | **lastRunId** | **String** |  | [optional] [default to null] |
 | **lastTriggeredMs** | **BigDecimal** |  | [optional] [default to null] |
 | **lastRunStatus** | [**ProcessInstanceStatusDTO**](ProcessInstanceStatusDTO.md) |  | [optional] [default to null] |
-| **category** | [**WorkflowCategoryDTO**](WorkflowCategoryDTO.md) |  | [optional] [default to null] |
 | **description** | **String** |  | [optional] [default to null] |
 | **isAvailable** | **Boolean** |  | [optional] [default to null] |
 

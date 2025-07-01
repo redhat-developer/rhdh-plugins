@@ -23,7 +23,6 @@ import {
   extractWorkflowFormat,
   Filter,
   fromWorkflowSource,
-  getWorkflowCategory,
   ProcessInstanceStateValues,
   ProcessInstanceVariables,
   WorkflowDefinition,
@@ -233,7 +232,6 @@ export class SonataFlowService {
       lastRunId,
       lastTriggeredMs: lastTriggered.getTime(),
       lastRunStatus,
-      category: getWorkflowCategory(definition),
       description: definition.description,
     };
   }
