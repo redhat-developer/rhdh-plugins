@@ -36,6 +36,7 @@ export const adoptionInsightsPlugin = createBackendPlugin({
   register(env) {
     env.registerInit({
       deps: {
+        auditor: coreServices.auditor,
         config: coreServices.rootConfig,
         logger: coreServices.logger,
         httpAuth: coreServices.httpAuth,
@@ -46,6 +47,7 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         permissionsRegistry: coreServices.permissionsRegistry,
       },
       async init({
+        auditor,
         config,
         logger,
         httpAuth,
@@ -69,6 +71,7 @@ export const adoptionInsightsPlugin = createBackendPlugin({
           db,
           processor,
           config,
+          auditor,
         );
 
         // Migrate database

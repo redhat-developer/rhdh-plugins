@@ -1,20 +1,20 @@
-// /*
-//  * Copyright Red Hat, Inc.
-//  *
-//  * Licensed under the Apache License, Version 2.0 (the "License");
-//  * you may not use this file except in compliance with the License.
-//  * You may obtain a copy of the License at
-//  *
-//  *     http://www.apache.org/licenses/LICENSE-2.0
-//  *
-//  * Unless required by applicable law or agreed to in writing, software
-//  * distributed under the License is distributed on an "AS IS" BASIS,
-//  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  * See the License for the specific language governing permissions and
-//  * limitations under the License.
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 import express from 'express';
 import request from 'supertest';
-//  */
 import {
   mockCredentials,
   mockErrorHandler,
@@ -39,6 +39,7 @@ describe('createRouter', () => {
       pluginId: 'test-plugin',
       extension: 'routeRef',
       userName: 'test-user',
+      userId: 'user:default/test-user', // Added userId to pass the filter
       timestamp: '2025-03-02T16:25:32.819Z',
     },
     attributes: { key: 'value' },
@@ -47,11 +48,29 @@ describe('createRouter', () => {
   const setupApp = async (
     authorizeResult: AuthorizeResult.ALLOW | AuthorizeResult.DENY,
   ) => {
+    const mockEventDatabase = {
+      isJsonSupported: jest.fn().mockReturnValue(true),
+    };
+
+    const mockEventBatchProcessor = {
+      addEvent: jest.fn(),
+    };
+
+    const mockAuditor = {
+      createEvent: jest.fn().mockResolvedValue({
+        fail: jest.fn(),
+        success: jest.fn(),
+        commit: jest.fn(),
+      }),
+    };
+
     const eventApiController = new EventApiController(
-      jest.fn() as any,
-      jest.fn() as any,
+      mockEventDatabase as any,
+      mockEventBatchProcessor as any,
       mockServices.rootConfig.mock(),
+      mockAuditor as any,
     );
+
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
       eventApiController,
