@@ -189,7 +189,13 @@ export const EntitySection = () => {
             {entities
               ?.slice(0, isRemoveFirstCard ? 4 : entityCardCount)
               .map((item: any) => (
-                <Grid item xs={12} md={6} lg={3.5} key={item.metadata.name}>
+                <Grid
+                  item
+                  xs={12}
+                  md={6}
+                  lg={isRemoveFirstCard ? 3 : 3.5}
+                  key={item.metadata.name}
+                >
                   <EntityCard
                     entity={item}
                     title={
