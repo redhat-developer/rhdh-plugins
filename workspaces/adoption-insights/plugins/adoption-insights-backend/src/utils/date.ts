@@ -68,8 +68,6 @@ export const convertToLocalTimezone = (
 
   const isoParsed = DateTime.fromISO(dateString, { setZone: true });
 
-  console.log({ date, isoParsed });
-
   if (isoParsed.isValid) {
     return isoParsed.setZone(timeZone).toISO();
   }

@@ -51,6 +51,7 @@ export const useSearches = (): {
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
         timezone,
         grouping,
+        limit: 24,
       })
       .then(response =>
         setSearches(response ?? { grouping: undefined, data: [] }),
