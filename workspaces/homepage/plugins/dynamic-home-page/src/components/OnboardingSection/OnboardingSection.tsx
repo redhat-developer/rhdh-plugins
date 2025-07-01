@@ -81,7 +81,7 @@ export const OnboardingSection = () => {
       <Grid container margin="auto">
         <Grid
           item
-          xs={1}
+          xs={12}
           md={6}
           lg={3}
           display="flex"

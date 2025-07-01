@@ -15,7 +15,7 @@
  */
 import type { ReactNode } from 'react';
 
-import { Fragment, useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 
 import {
   CodeSnippet,
@@ -202,7 +202,6 @@ export const EntitySection = () => {
                   />
                 </Grid>
               ))}
-
             {entities?.length === 0 && (
               <Grid item md={isRemoveFirstCard ? 12 : 7}>
                 <Box

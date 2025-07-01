@@ -29,8 +29,8 @@ dynamicPlugins:
               xl: { w: 12, h: 5 }
               lg: { w: 12, h: 5 }
               md: { w: 12, h: 5 }
-              sm: { w: 12, h: 7 }
-              xs: { w: 12, h: 13 }
+              sm: { w: 12, h: 5 }
+              xs: { w: 12, h: 7 }
               xxs: { w: 12, h: 13 }
         - mountPoint: home.page/cards
           importName: EntitySection
@@ -39,9 +39,9 @@ dynamicPlugins:
               xl: { w: 12, h: 6 }
               lg: { w: 12, h: 6 }
               md: { w: 12, h: 6 }
-              sm: { w: 12, h: 10.5 }
-              xs: { w: 12, h: 19 }
-              xxs: { w: 12, h: 19 }
+              sm: { w: 12, h: 6 }
+              xs: { w: 12, h: 10 }
+              xxs: { w: 12, h: 14.5 }
         - mountPoint: home.page/cards
           importName: TemplateSection
           config:
@@ -49,9 +49,9 @@ dynamicPlugins:
               xl: { w: 12, h: 5 }
               lg: { w: 12, h: 5 }
               md: { w: 12, h: 5 }
-              sm: { w: 12, h: 8 }
-              xs: { w: 12, h: 14.5 }
-              xxs: { w: 12, h: 14.5 }
+              sm: { w: 12, h: 5 }
+              xs: { w: 12, h: 7.5 }
+              xxs: { w: 12, h: 13.5 }
 ```
 
 ## Adding cards from a plugin
