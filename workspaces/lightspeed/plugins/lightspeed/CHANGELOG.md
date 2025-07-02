@@ -1,5 +1,20 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.5.5
+
+### Patch Changes
+
+- 5d80736: Renamed permissions to align with the updated naming convention:
+
+  - `lightspeed.conversations.read` → `lightspeed.chat.read`
+  - `lightspeed.conversations.create` → `lightspeed.chat.create`
+  - `lightspeed.conversations.delete` → `lightspeed.chat.delete`
+
+- 936c52c: Update the plugin name to Developer lightspeed
+- 717c505: change the lightspeed user and bot avatars
+- Updated dependencies [5d80736]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.3.2
+
 ## 0.5.4
 
 ### Patch Changes
