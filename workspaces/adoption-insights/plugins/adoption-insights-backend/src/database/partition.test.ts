@@ -95,4 +95,22 @@ describe('createPartition', () => {
       ),
     );
   });
+
+  it('should create a correct partition for december', () => {
+    createPartition(knex, 2025, 12);
+    expect(mockRaw).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `FOR VALUES FROM ('2025-12-01') TO ('2026-01-01');`,
+      ),
+    );
+  });
+
+  it('should create a correct partition for january', () => {
+    createPartition(knex, 2025, 1);
+    expect(mockRaw).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');`,
+      ),
+    );
+  });
 });
