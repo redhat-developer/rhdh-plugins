@@ -131,10 +131,6 @@ export const OnboardingSection = () => {
         padding: '24px',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
         overflow: 'auto',
-        '$::-webkit-scrollbar': {
-          display: 'none',
-        },
-        scrollbarWidth: 'none',
       }}
     >
       {!profileLoading && (

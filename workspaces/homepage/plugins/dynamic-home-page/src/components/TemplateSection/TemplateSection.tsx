@@ -87,7 +87,7 @@ export const TemplateSection = () => {
         <Fragment>
           <Grid container spacing={1} alignItems="stretch">
             {templates?.items.map((item: any) => (
-              <Grid item xs={12} md={3} key={item.title}>
+              <Grid item xs={12} md={6} lg={3} key={item.title}>
                 <TemplateCard
                   link={`/create/templates/${item.metadata.namespace}/${item.metadata.name}`}
                   title={item.metadata.title}
@@ -136,14 +136,6 @@ export const TemplateSection = () => {
               </Grid>
             )}
           </Grid>
-          <Box sx={{ pt: 2 }}>
-            {templates?.items.length > 0 && (
-              <ViewMoreLink to={catalogTemplatesLink} underline="always">
-                View all {templates?.totalItems ? templates?.totalItems : ''}{' '}
-                templates
-              </ViewMoreLink>
-            )}
-          </Box>
         </Fragment>
       </Box>
     );
@@ -156,10 +148,6 @@ export const TemplateSection = () => {
         padding: '24px',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
         overflow: 'auto',
-        '$::-webkit-scrollbar': {
-          display: 'none',
-        },
-        scrollbarWidth: 'none',
       }}
     >
       <Typography
@@ -174,6 +162,14 @@ export const TemplateSection = () => {
         Explore Templates
       </Typography>
       {content}
+      {templates?.items && templates?.items.length > 0 && (
+        <Box sx={{ pt: 2 }}>
+          <ViewMoreLink to={catalogTemplatesLink} underline="always">
+            View all {templates?.totalItems ? templates?.totalItems : ''}{' '}
+            templates
+          </ViewMoreLink>
+        </Box>
+      )}
     </Card>
   );
 };

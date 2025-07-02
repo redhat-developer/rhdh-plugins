@@ -34,6 +34,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import CircularProgress from '@mui/material/CircularProgress';
 import CardContent from '@mui/material/CardContent';
 import { useTheme, styled } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 import EntityCard from './EntityCard';
 import { ViewMoreLink } from './ViewMoreLink';
@@ -59,6 +60,17 @@ export const EntitySection = () => {
   const [isRemoveFirstCard, setIsRemoveFirstCard] = useState(false);
   const [showDiscoveryCard, setShowDiscoveryCard] = useState(true);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [isMediumBreakpoint, setIsMediumBreakpoint] = useState(false);
+
+  const isMd = useMediaQuery(theme.breakpoints.only('md'));
+
+  useEffect(() => {
+    if (isMd) {
+      setIsMediumBreakpoint(true);
+    } else {
+      setIsMediumBreakpoint(false);
+    }
+  }, [isMd]);
 
   useEffect(() => {
     const isUserDismissedEntityIllustration =
@@ -105,12 +117,15 @@ export const EntitySection = () => {
       </WarningPanel>
     );
   } else {
+    let entityCardCount = 2;
+    if (isMediumBreakpoint) entityCardCount = 3;
+
     content = (
       <Box sx={{ padding: '8px 8px 8px 0' }}>
         <Fragment>
           <Grid container spacing={1} alignItems="stretch">
             {!isRemoveFirstCard && !profileLoading && (
-              <Grid item xs={12} md={5} key="entities illustration">
+              <Grid item xs={12} md={6} lg={5} key="entities illustration">
                 <Card
                   elevation={0}
                   sx={{
@@ -171,23 +186,28 @@ export const EntitySection = () => {
                 </Card>
               </Grid>
             )}
-            {entities?.slice(0, isRemoveFirstCard ? 4 : 2).map((item: any) => (
-              <Grid
-                item
-                xs={12}
-                md={isRemoveFirstCard ? 3 : 3.5}
-                key={item.metadata.name}
-              >
-                <EntityCard
-                  entity={item}
-                  title={item.spec?.profile?.displayName ?? item.metadata.name}
-                  version="latest"
-                  description={item.metadata.description ?? ''}
-                  tags={item.metadata?.tags ?? []}
-                  kind={item.kind}
-                />
-              </Grid>
-            ))}
+            {entities
+              ?.slice(0, isRemoveFirstCard ? 4 : entityCardCount)
+              .map((item: any) => (
+                <Grid
+                  item
+                  xs={12}
+                  md={6}
+                  lg={isRemoveFirstCard ? 3 : 3.5}
+                  key={item.metadata.name}
+                >
+                  <EntityCard
+                    entity={item}
+                    title={
+                      item.spec?.profile?.displayName ?? item.metadata.name
+                    }
+                    version="latest"
+                    description={item.metadata.description ?? ''}
+                    tags={item.metadata?.tags ?? []}
+                    kind={item.kind}
+                  />
+                </Grid>
+              ))}
             {entities?.length === 0 && (
               <Grid item md={isRemoveFirstCard ? 12 : 7}>
                 <Box
@@ -225,14 +245,6 @@ export const EntitySection = () => {
               </Grid>
             )}
           </Grid>
-          <Box sx={{ pt: 2 }}>
-            {entities?.length > 0 && (
-              <ViewMoreLink to="/catalog">
-                View all {data?.totalItems ? data?.totalItems : ''} catalog
-                entities
-              </ViewMoreLink>
-            )}
-          </Box>
         </Fragment>
       </Box>
     );
@@ -245,10 +257,6 @@ export const EntitySection = () => {
         padding: '24px',
         border: muitheme => `1px solid ${muitheme.palette.grey[300]}`,
         overflow: 'auto',
-        '$::-webkit-scrollbar': {
-          display: 'none',
-        },
-        scrollbarWidth: 'none',
       }}
     >
       <Typography
@@ -263,6 +271,13 @@ export const EntitySection = () => {
         Explore Your Software Catalog
       </Typography>
       {content}
+      {entities?.length > 0 && (
+        <Box sx={{ pt: 2 }}>
+          <ViewMoreLink to="/catalog">
+            View all {data?.totalItems ? data?.totalItems : ''} catalog entities
+          </ViewMoreLink>
+        </Box>
+      )}
     </Card>
   );
 };

@@ -59,50 +59,53 @@ import {
   SearchBar,
   TopVisitedCard,
   WorldClock,
+  OnboardingSection,
+  EntitySection,
+  TemplateSection,
 } from '../src/plugin';
 import { HomePageCardMountPoint, QuickAccessLink } from '../src/types';
 import defaultQuickAccess from './quickaccess-default.json';
 
 const defaultMountPoints: HomePageCardMountPoint[] = [
   {
-    Component: SearchBar,
+    Component: OnboardingSection,
     config: {
       // prettier-ignore
       layouts: {
-        xl:  { w: 10, h: 1, x: 1 },
-        lg:  { w: 10, h: 1, x: 1 },
-        md:  { w: 10, h: 1, x: 1 },
-        sm:  { w: 10, h: 1, x: 1 },
-        xs:  { w: 12, h: 1 },
-        xxs: { w: 12, h: 1 },
+        xl: { w: 12, h: 5 },
+        lg: { w: 12, h: 5 },
+        md: { w: 12, h: 5 },
+        sm: { w: 12, h: 5 },
+        xs: { w: 12, h: 7 },
+        xxs: { w: 12, h: 13 },
       },
     },
   },
   {
-    Component: QuickAccessCard as ComponentType,
+    Component: EntitySection,
     config: {
       // prettier-ignore
       layouts: {
-        xl:  { w:  7, h: 8 },
-        lg:  { w:  7, h: 8 },
-        md:  { w:  7, h: 8 },
-        sm:  { w: 12, h: 8 },
-        xs:  { w: 12, h: 8 },
-        xxs: { w: 12, h: 8 },
+        xl: { w: 12, h: 6 },
+        lg: { w: 12, h: 6 },
+        md: { w: 12, h: 6 },
+        sm: { w: 12, h: 6 },
+        xs: { w: 12, h: 10 },
+        xxs: { w: 12, h: 14.5 },
       },
     },
   },
   {
-    Component: CatalogStarredEntitiesCard,
+    Component: TemplateSection,
     config: {
       // prettier-ignore
       layouts: {
-        xl:  { w:  5, h: 4, x: 7 },
-        lg:  { w:  5, h: 4, x: 7 },
-        md:  { w:  5, h: 4, x: 7 },
-        sm:  { w: 12, h: 4 },
-        xs:  { w: 12, h: 4 },
-        xxs: { w: 12, h: 4 },
+        xl:  { w: 12, h: 5 },
+        lg:  { w: 12, h: 5 },
+        md:  { w: 12, h: 5 },
+        sm:  { w: 12, h: 5 },
+        xs:  { w: 12, h: 7.5 },
+        xxs: { w: 12, h: 13.5 },
       },
     },
   },
@@ -128,6 +131,7 @@ const entities /* : Entity[]*/ = [
     kind: 'Component',
     metadata: {
       name: 'service-a',
+      description: 'Hello, I am service A',
     },
   },
   {
@@ -135,6 +139,23 @@ const entities /* : Entity[]*/ = [
     kind: 'Component',
     metadata: {
       name: 'service-b',
+      description: 'Hello, I am service B',
+    },
+  },
+  {
+    apiVersion: '1',
+    kind: 'Component',
+    metadata: {
+      name: 'service-c',
+      description: 'Hello, I am service C',
+    },
+  },
+  {
+    apiVersion: '1',
+    kind: 'Component',
+    metadata: {
+      name: 'service-d',
+      description: 'Hello, I am service D',
     },
   },
 ];
@@ -147,6 +168,14 @@ const mockCatalogApi: Partial<CatalogApi> = {
   // getEntitiesByRefs(request: GetEntitiesByRefsRequest, options?: CatalogRequestOptions): Promise<GetEntitiesByRefsResponse>
   getEntitiesByRefs: async () => ({
     items: entities,
+  }),
+  queryEntities: async () => ({
+    items: entities,
+    totalItems: entities.length,
+    pageInfo: {
+      nextCursor: undefined,
+      prevCursor: undefined,
+    },
   }),
 };
 

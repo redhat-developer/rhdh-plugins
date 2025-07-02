@@ -36,6 +36,7 @@ import {
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { searchPage } from './components/search/SearchPage';
@@ -53,10 +54,15 @@ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
-
+import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
+import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 import {
   DynamicHomePage,
+  OnboardingSection,
+  EntitySection,
+  TemplateSection,
   VisitListener,
+  HomePageCardMountPoint,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
 
 const identityProviders: IdentityProviders = [
@@ -71,6 +77,7 @@ const identityProviders: IdentityProviders = [
 
 const app = createApp({
   apis,
+  themes: getThemes(),
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,
@@ -95,9 +102,73 @@ const app = createApp({
   },
 });
 
+const mountPoints: HomePageCardMountPoint[] = [
+  {
+    Component: OnboardingSection,
+    config: {
+      layouts: {
+        xl: { w: 12, h: 5 },
+        lg: { w: 12, h: 5 },
+        md: { w: 12, h: 5 },
+        sm: { w: 12, h: 5 },
+        xs: { w: 12, h: 7 },
+        xxs: { w: 12, h: 13 },
+      },
+    },
+  },
+  {
+    Component: EntitySection,
+    config: {
+      layouts: {
+        xl: { w: 12, h: 6 },
+        lg: { w: 12, h: 6 },
+        md: { w: 12, h: 6 },
+        sm: { w: 12, h: 6 },
+        xs: { w: 12, h: 10 },
+        xxs: { w: 12, h: 14.5 },
+      },
+    },
+  },
+  {
+    Component: TemplateSection,
+    config: {
+      layouts: {
+        xl: { w: 12, h: 5 },
+        lg: { w: 12, h: 5 },
+        md: { w: 12, h: 5 },
+        sm: { w: 12, h: 5 },
+        xs: { w: 12, h: 7.5 },
+        xxs: { w: 12, h: 13.5 },
+      },
+    },
+  },
+];
+
+const scalprumState: ScalprumState = {
+  initialized: true,
+  api: mountPoints
+    ? {
+        dynamicRootConfig: {
+          mountPoints: {
+            'home.page/cards': mountPoints,
+          },
+        },
+      }
+    : undefined,
+  config: {},
+  pluginStore: new PluginStore(),
+};
+
 const routes = (
   <FlatRoutes>
-    <Route path="/" element={<DynamicHomePage />} />
+    <Route
+      path="/"
+      element={
+        <ScalprumContext.Provider value={scalprumState}>
+          <DynamicHomePage />
+        </ScalprumContext.Provider>
+      }
+    />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"
