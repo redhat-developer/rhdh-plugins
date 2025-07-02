@@ -335,7 +335,8 @@ describe('formatDateWithRange', () => {
     const endDateRange = new Date('2025-07-01T00:00:00Z');
     const result = formatDateWithRange(date, startDateRange, endDateRange);
 
-    const match = result.match(/\((.*?)\)/);
+    // Safe regex - static pattern, no user input involved
+    const match = result.match(/\((.*?)\)/); // NOSONAR
     expect(match).not.toBeNull();
     expect(match![1]).toBe('Jul, 2 2024 – Jul, 1 2025');
   });
