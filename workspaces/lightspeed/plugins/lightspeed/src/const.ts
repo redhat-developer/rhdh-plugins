@@ -81,7 +81,7 @@ export const RHDH_SAMPLE_PROMPTS: SamplePrompts = [
     'Can you guide me through creating a new deployment in OpenShift for a containerized application?',
   ),
   createPrompt(
-    'Getting Started with Backstage',
-    'Can you guide me through the first steps to start using Backstage as a developer, like exploring the Software Catalog and adding my service?',
+    'Getting Started with Red Hat Developer Hub',
+    'Can you guide me through the first steps to start using Developer Hub as a developer, like exploring the Software Catalog and adding my service?',
   ),
 ];
