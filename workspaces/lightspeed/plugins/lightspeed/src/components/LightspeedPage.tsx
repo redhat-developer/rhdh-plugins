@@ -17,7 +17,7 @@
 import React from 'react';
 import { useAsync } from 'react-use';
 
-import { Content, Page } from '@backstage/core-components';
+import { Content, Header, Page } from '@backstage/core-components';
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
@@ -83,6 +83,11 @@ const LightspeedPageInner = () => {
 
   return (
     <Page themeId="tool">
+      <Header
+        title="Lightspeed"
+        style={{ display: 'none' }}
+        pageTitleOverride="Developer Lightspeed"
+      />
       <Content className={classes.container}>
         {!hasViewAccess ? (
           <PermissionRequiredState />
