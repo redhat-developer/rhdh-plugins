@@ -94,7 +94,7 @@ describe('convertToLocalTimezone', () => {
       } as Intl.ResolvedDateTimeFormatOptions);
 
     expect(convertToLocalTimezone('2025-03-02 23:30:00')).toBe(
-      '2025-03-02 23:30:00 GMT+5:30',
+      '2025-03-03T05:00:00.000+05:30',
     );
   });
   it('should return the UTC date converted to local timezone', () => {
@@ -105,7 +105,7 @@ describe('convertToLocalTimezone', () => {
       } as Intl.ResolvedDateTimeFormatOptions);
 
     expect(convertToLocalTimezone('2025-03-02T18:00:00.000Z')).toBe(
-      '2025-03-02 23:30:00 GMT+5:30',
+      '2025-03-02T23:30:00.000+05:30',
     );
   });
 });

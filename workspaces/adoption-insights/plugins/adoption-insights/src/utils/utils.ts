@@ -63,9 +63,6 @@ export const getDateRange = (value: string) => {
     }
 
     case 'last-year': {
-      // const lastYear = subYears(today, 1);
-      // const startOfLastYear = startOfYear(lastYear);
-      // const endOfLastYear = endOfYear(lastYear);
       const startOfTheYear = subDays(today, 364); // 364 days before today
       return formatRange(startOfTheYear, today, timeZone);
     }
