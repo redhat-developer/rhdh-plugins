@@ -117,6 +117,7 @@ const InsightsHeader: FC<InsightsHeaderProps> = ({ title }) => {
 
   return (
     <Header
+      pageTitleOverride="Adoption Insights"
       title={
         <Typography
           variant="h3"
