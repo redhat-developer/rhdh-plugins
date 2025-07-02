@@ -51,6 +51,8 @@ export async function createRouter(
   const router = Router();
   router.use(express.json());
 
+  const port = config.getOptionalNumber('lightspeed.servicePort') ?? 8080;
+
   router.get('/health', (_, response) => {
     response.json({ status: 'ok' });
   });
@@ -127,7 +129,7 @@ export async function createRouter(
     // Proxy middleware configuration
     const apiProxy = createProxyMiddleware({
       // target: config.getConfigArray('lightspeed.servers')[0].getString('url'), // currently only single llm server is supported
-      target: 'http://0.0.0.0:8080',
+      target: `http://0.0.0.0:${port}`,
       changeOrigin: true,
       pathRewrite: (path, _) => {
         // Add user query parameter from the authenticated user
@@ -170,7 +172,7 @@ export async function createRouter(
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
         const requestBody = JSON.stringify(request.body);
         const fetchResponse = await fetch(
-          `http://0.0.0.0:8080/v1/streaming_query?${userQueryParam}`,
+          `http://0.0.0.0:${port}/v1/streaming_query?${userQueryParam}`,
           {
             method: 'POST',
             headers: {
