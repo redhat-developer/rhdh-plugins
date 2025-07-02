@@ -46,7 +46,15 @@ export class SonataFlowService {
     serviceUrl: string;
   }): Promise<WorkflowInfo | undefined> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}`;
-    const response = await fetch(urlToFetch);
+    let response: Response | undefined;
+    try {
+      response = await fetch(urlToFetch);
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
+      );
+    }
+
     const jsonResponse = await this.handleWorkflowServiceResponse(
       'Get workflow info',
       args.definitionId,
@@ -123,11 +131,18 @@ export class SonataFlowService {
       headers['X-Authorization-Backstage'] = args.backstageToken;
     }
 
-    const response = await fetch(urlToFetch, {
-      method: 'POST',
-      body: JSON.stringify(args.inputData || {}),
-      headers,
-    });
+    let response: Response | undefined;
+    try {
+      response = await fetch(urlToFetch, {
+        method: 'POST',
+        body: JSON.stringify(args.inputData || {}),
+        headers,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
+      );
+    }
 
     const json = await this.handleWorkflowServiceResponse(
       'Execute',
@@ -157,9 +172,17 @@ export class SonataFlowService {
   }): Promise<boolean> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}/instances/${args.instanceId}/retrigger`;
 
-    const response = await fetch(urlToFetch, {
-      method: 'POST',
-    });
+    let response: Response | undefined;
+    try {
+      response = await fetch(urlToFetch, {
+        method: 'POST',
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
+      );
+    }
+
     await this.handleWorkflowServiceResponse(
       'Retrigger',
       args.definitionId,
@@ -178,9 +201,16 @@ export class SonataFlowService {
   }): Promise<void> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}/instances/${args.instanceId}`;
 
-    const response = await fetch(urlToFetch, {
-      method: 'DELETE',
-    });
+    let response: Response | undefined;
+    try {
+      response = await fetch(urlToFetch, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
+      );
+    }
 
     await this.handleWorkflowServiceResponse(
       'Abort',
@@ -243,21 +273,31 @@ export class SonataFlowService {
     serviceUrl: string;
   }): Promise<boolean> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}`;
-    const response = await fetch(urlToFetch);
+    let response: Response | undefined;
+    try {
+      response = await fetch(urlToFetch);
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
+      );
+      return false;
+    }
     return response.ok;
   }
 
   private async handleWorkflowServiceResponse(
     operation: 'Abort' | 'Execute' | 'Retrigger' | 'Get workflow info',
     workflowId: string,
-    serviceUrl: string,
-    response: Response,
+    urlToFetch: string,
+    response: Response | undefined,
     httpMethod: Request['method'],
   ): Promise<any> {
-    const logErrorPrefix = `Error during operation '${operation}' on workflow ${workflowId} with service URL ${serviceUrl}`;
-
+    const logErrorPrefix = `Error during operation '${operation}' on workflow ${workflowId} with service URL ${urlToFetch}`;
+    if (!response) {
+      throw new Error(`${logErrorPrefix} : fetch failed`);
+    }
     const errorLines: string[] = [];
-    errorLines.push(`HTTP ${httpMethod} request to ${serviceUrl} failed.`);
+    errorLines.push(`HTTP ${httpMethod} request to ${urlToFetch} failed.`);
     errorLines.push(`Status Code: ${response.status}`);
     if (response.statusText) {
       errorLines.push(`Status Text: ${response.statusText}`);

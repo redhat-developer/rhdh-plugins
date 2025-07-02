@@ -129,7 +129,7 @@ describe('SonataFlowService', () => {
       );
     });
 
-    it('should propagate thrown error when fetch throws an error', async () => {
+    it('should throw informative error when fetch throws an error', async () => {
       // Given
       const errorMessage = 'Network Error';
       global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
@@ -147,7 +147,12 @@ describe('SonataFlowService', () => {
 
       // Then
       expect(result).toBeDefined();
-      expect(result.message).toEqual(`Network Error`);
+      expect(result.message).toContain(
+        `Error during operation 'Get workflow info' on workflow ${definitionId} with service URL ${urlToFetch} : fetch failed`,
+      );
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        expect.stringContaining('Network Error'),
+      );
     });
   });
   describe('executeWorkflow', () => {
@@ -202,27 +207,6 @@ describe('SonataFlowService', () => {
       );
     });
 
-    it('should propagate fetch thrown error', async () => {
-      // When
-      setupTest({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-        json: {},
-      });
-
-      const errorMessage = 'Network Error';
-      global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
-      let result;
-      try {
-        await runErrorTest();
-      } catch (error: any) {
-        result = error;
-      }
-
-      expect(result).toBeDefined();
-      expect(result.message).toEqual('Network Error');
-    });
     it('should propagate thrown exception when the fetch response is not ok with extra info', async () => {
       // When
       setupTest({
@@ -255,7 +239,7 @@ describe('SonataFlowService', () => {
         'Error during operation \'Execute\' on workflow workflow-123 with service URL http://example.com/workflows/workflow-123: {"details":"Error details test","stack":"Error stacktrace test","moreStuff":"More details"}',
       );
     });
-    it('should propagate thrown error when fetch throws an error', async () => {
+    it('should throw informative error when fetch throws an error', async () => {
       // Given
       const errorMessage = 'Network Error';
       global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
@@ -263,17 +247,18 @@ describe('SonataFlowService', () => {
       // When
       let result;
       try {
-        await sonataFlowService.executeWorkflow({
-          definitionId,
-          serviceUrl,
-          inputData: inputData,
-        });
+        await runErrorTest();
       } catch (error: any) {
         result = error;
       }
 
       expect(result).toBeDefined();
-      expect(result.message).toEqual('Network Error');
+      expect(result.message).toContain(
+        `Error during operation 'Execute' on workflow ${definitionId} with service URL ${urlToFetch} : fetch failed`,
+      );
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        expect.stringContaining('Network Error'),
+      );
     });
   });
 
@@ -339,7 +324,7 @@ describe('SonataFlowService', () => {
       );
     });
 
-    it('should propagate thrown error when fetch throws an error during retrigger', async () => {
+    it('should throw informative error when fetch throws an error during retrigger', async () => {
       // Given
       const errorMessage = 'Network Error';
       global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
@@ -358,7 +343,12 @@ describe('SonataFlowService', () => {
 
       // Then
       expect(result).toBeDefined();
-      expect(result.message).toContain(`Network Error`);
+      expect(result.message).toContain(
+        `Error during operation 'Retrigger' on workflow ${definitionId} with service URL ${urlToFetch} : fetch failed`,
+      );
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        expect.stringContaining('Network Error'),
+      );
     });
   });
 
@@ -425,7 +415,7 @@ describe('SonataFlowService', () => {
       );
     });
 
-    it('should propagate thrown error when fetch throws an error during abort', async () => {
+    it('should throw informative error when fetch throws an error during abort', async () => {
       // Given
       const errorMessage = 'Network Error';
       global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
@@ -444,7 +434,12 @@ describe('SonataFlowService', () => {
 
       // Then
       expect(result).toBeDefined();
-      expect(result.message).toContain(`Network Error`);
+      expect(result.message).toContain(
+        `Error during operation '${operation}' on workflow ${definitionId} with service URL ${urlToFetch} : fetch failed`,
+      );
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        expect.stringContaining('Network Error'),
+      );
     });
   });
 });
