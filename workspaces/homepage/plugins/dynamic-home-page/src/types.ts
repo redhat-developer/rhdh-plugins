@@ -18,6 +18,9 @@ import type { ComponentType } from 'react';
 
 import type { Tool } from '@backstage/plugin-home';
 
+/**
+ * @public
+ */
 export enum Breakpoint {
   xl = 'xl',
   lg = 'lg',
@@ -27,6 +30,9 @@ export enum Breakpoint {
   xxs = 'xxs',
 }
 
+/**
+ * @public
+ */
 export interface Layout {
   x?: number;
   y?: number;
@@ -34,11 +40,17 @@ export interface Layout {
   h?: number;
 }
 
+/**
+ * @public
+ */
 export interface HomePageCardMountPointConfig {
   priority?: number;
   layouts?: Record<Breakpoint, Layout>;
 }
 
+/**
+ * @public
+ */
 export interface HomePageCardMountPoint {
   Component: ComponentType;
   config?: HomePageCardMountPointConfig & {
