@@ -42,5 +42,10 @@ export interface Config {
      * @visibility frontend
      */
     questionValidation?: boolean;
+    /**
+     * configure the port number for the lightspeed service.
+     * @visibility backend
+     */
+    servicePort?: number;
   };
 }
