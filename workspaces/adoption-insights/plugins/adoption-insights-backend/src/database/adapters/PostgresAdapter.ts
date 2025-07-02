@@ -78,8 +78,7 @@ export class PostgresAdapter extends BaseDatabaseAdapter {
     this.ensureFiltersSet();
     const { start_date, end_date, grouping: groupingStrategy } = this.filters!;
     const dateDiff = calculateDateRange(start_date, end_date);
-    const grouping =
-      groupingStrategy || getDateGroupingType(dateDiff, start_date, end_date);
+    const grouping = groupingStrategy || getDateGroupingType(dateDiff);
 
     if (onlyText) {
       return grouping;

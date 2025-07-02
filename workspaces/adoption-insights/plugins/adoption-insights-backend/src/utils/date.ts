@@ -45,14 +45,10 @@ export const isSameMonth = (start_date: string, end_date: string): boolean => {
   return start.hasSame(end, 'month');
 };
 
-export const getDateGroupingType = (
-  dateDiff: number,
-  start_date: string,
-  end_date: string,
-): Grouping => {
+export const getDateGroupingType = (dateDiff: number): Grouping => {
   if (dateDiff === 0) return 'hourly';
   if (dateDiff <= 7) return 'daily';
-  if (dateDiff <= 30 && isSameMonth(start_date, end_date)) return 'weekly';
+  if (dateDiff <= 30) return 'weekly';
   return 'monthly';
 };
 
@@ -60,7 +56,7 @@ export const hasZFormat = (dateStr: string): boolean => {
   return dateStr.includes('Z') || dateStr.includes('T');
 };
 
-export const convertToLocalTimezone = (
+export const convertToTargetTimezone = (
   date: string | Date,
   timeZone: string = new Intl.DateTimeFormat().resolvedOptions().timeZone,
 ) => {

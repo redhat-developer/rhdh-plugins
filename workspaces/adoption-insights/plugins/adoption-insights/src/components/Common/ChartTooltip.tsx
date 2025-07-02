@@ -57,7 +57,7 @@ const ChartTooltip = ({
       case 'monthly':
         return formatDateWithRange(date, startDateRange, endDateRange);
       default:
-        return formatInTimeZone(date, timeZone, 'MMMM, d yyyy');
+        return formatInTimeZone(date, timeZone, 'MMMM d, yyyy');
     }
   };
 
@@ -65,7 +65,9 @@ const ChartTooltip = ({
     return null;
   }
 
-  const date = label ? new Date(label) : new Date();
+  const date = label
+    ? new Date(formatInTimeZone(label, timeZone, "yyyy-MM-dd'T'HH:mm:ssXXX"))
+    : new Date();
   return (
     <Paper
       elevation={1}
@@ -82,7 +84,11 @@ const ChartTooltip = ({
           marginBottom: '12px',
         }}
       >
-        {formatBucketLabel(date)}
+        {formatBucketLabel(date)
+          .split('\n')
+          .map((line, i) => (
+            <div key={i}>{line}</div>
+          ))}
       </Typography>
 
       <Box display="flex" justifyContent="space-between" alignItems="center">

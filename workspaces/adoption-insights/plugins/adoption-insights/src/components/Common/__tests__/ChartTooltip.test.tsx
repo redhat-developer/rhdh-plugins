@@ -26,7 +26,7 @@ const mockPayload = [
 describe('ChartTooltip Component', () => {
   it('should render tooltip with correct data when active', () => {
     const label = '2025-03-09T00:00:00.000Z';
-    const formattedDate = format(new Date(label), 'MMMM, d yyyy');
+    const formattedDate = format(new Date(label), 'MMMM d, yyyy');
 
     render(
       <DateRangeProvider>

@@ -125,7 +125,9 @@ export const getXAxisformat = (date: string, grouping: string) => {
   const dateObj = new Date(date);
   const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  if (isNaN(dateObj.getTime())) return date;
+  if (isNaN(dateObj.getTime())) {
+    return formatInTimeZone(date, timeZone, 'd MMMM yy');
+  }
 
   if (grouping === 'hourly') {
     return formatInTimeZone(dateObj, timeZone, 'hh:mm a');
@@ -235,11 +237,11 @@ export const formatWithTimeZone = (
 export const formatHourlyBucket = (date: Date): string => {
   const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const start = formatInTimeZone(date, timeZone, 'h a');
-  const end = formatInTimeZone(addHours(date, 1), timeZone, 'h a');
-  const labelDate = formatInTimeZone(date, timeZone, 'MMMM, d yyyy');
+  const start = formatInTimeZone(date, timeZone, 'h:mm');
+  const end = formatInTimeZone(addHours(date, 1), timeZone, 'h:mm a');
+  const labelDate = formatInTimeZone(date, timeZone, 'MMMM d, yyyy');
 
-  return `${labelDate} ${start} – ${end}`;
+  return `${labelDate}, ${start}–${end}`;
 };
 
 export const formatDateWithRange = (
@@ -252,10 +254,10 @@ export const formatDateWithRange = (
   const end = endDateRange ?? today;
   const start = startDateRange ?? subDays(end, 364);
 
-  const startLabel = formatInTimeZone(start, timeZone, 'MMM, d yyyy');
-  const endLabel = formatInTimeZone(end, timeZone, 'MMM, d yyyy');
-  const labelDate = formatInTimeZone(date, timeZone, 'MMMM, d yyyy');
-  return `${labelDate} (${startLabel} – ${endLabel})`;
+  const startLabel = formatInTimeZone(start, timeZone, 'MMM d, yyyy');
+  const endLabel = formatInTimeZone(end, timeZone, 'MMM d, yyyy');
+  const labelDate = formatInTimeZone(date, timeZone, 'MMMM d, yyyy');
+  return `${labelDate}\n  (filtered by ${startLabel} – ${endLabel})`;
 };
 
 export const formatWeeklyBucket = (date: Date): string => {
@@ -268,9 +270,9 @@ export const formatWeeklyBucket = (date: Date): string => {
   const startLabel = formatInTimeZone(
     start,
     timeZone,
-    sameYear ? 'MMM d' : 'MMM, d yyyy',
+    sameYear ? 'MMM d' : 'MMM d, yyyy',
   );
-  const endLabel = formatInTimeZone(end, timeZone, 'MMM, d yyyy');
+  const endLabel = formatInTimeZone(end, timeZone, 'MMM d, yyyy');
 
   return `${startLabel} – ${endLabel}`;
 };

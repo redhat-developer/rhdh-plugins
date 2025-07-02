@@ -23,7 +23,7 @@ import {
   ResponseData,
   ResponseWithGrouping,
 } from '../../types/event';
-import { convertToLocalTimezone } from '../../utils/date';
+import { convertToTargetTimezone } from '../../utils/date';
 
 export abstract class BaseDatabaseAdapter implements EventDatabase {
   protected db: Knex;
@@ -365,7 +365,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     if (obj[datePath]) {
       return {
         ...obj,
-        [datePath]: convertToLocalTimezone(
+        [datePath]: convertToTargetTimezone(
           obj[datePath] as string,
           this.filters?.timezone,
         ),
