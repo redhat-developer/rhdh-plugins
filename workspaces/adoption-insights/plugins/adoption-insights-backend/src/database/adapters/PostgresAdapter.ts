@@ -125,10 +125,10 @@ export class PostgresAdapter extends BaseDatabaseAdapter {
               (date_trunc('month', created_at AT TIME ZONE ?) AT TIME ZONE ?
               + interval '1 month' - interval '1 day'), 
               ?::date
-              ) AT TIME ZONE ?,
+              ),
               'YYYY-MM-DD"T"HH24:MI:SSOF'
           )`,
-          [timeZone, timeZone, this.filters?.end_date, timeZone],
+          [timeZone, timeZone, this.filters?.end_date],
         );
       default:
         throw new Error('Invalid date grouping');

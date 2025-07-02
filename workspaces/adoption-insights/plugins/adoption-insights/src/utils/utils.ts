@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 import {
-  startOfYear,
+  addDays,
+  addHours,
+  getYear,
   isToday,
   isYesterday,
-  startOfMonth,
   startOfWeek,
   subDays,
-  endOfWeek,
-  subWeeks,
-  subMonths,
-  endOfMonth,
-  subYears,
-  endOfYear,
 } from 'date-fns';
 
 import { utcToZonedTime, format, formatInTimeZone } from 'date-fns-tz';
@@ -53,18 +48,13 @@ export const getDateRange = (value: string) => {
       return formatRange(today, today, timeZone);
 
     case 'last-week': {
-      const lastWeekStart = startOfWeek(subWeeks(today, 1), {
-        weekStartsOn: 1,
-      });
-      const lastWeekEnd = endOfWeek(subWeeks(today, 1), { weekStartsOn: 1 });
-      return formatRange(lastWeekStart, lastWeekEnd, timeZone);
+      const startingDate = subDays(today, 6);
+      return formatRange(startingDate, today, timeZone);
     }
 
     case 'last-month': {
-      const lastMonth = subMonths(today, 1);
-      const start = startOfMonth(lastMonth);
-      const end = endOfMonth(lastMonth);
-      return formatRange(start, end, timeZone);
+      const startDay = subDays(today, 29);
+      return formatRange(startDay, today, timeZone);
     }
 
     case 'last-28-days': {
@@ -73,10 +63,11 @@ export const getDateRange = (value: string) => {
     }
 
     case 'last-year': {
-      const lastYear = subYears(today, 1);
-      const startOfLastYear = startOfYear(lastYear);
-      const endOfLastYear = endOfYear(lastYear);
-      return formatRange(startOfLastYear, endOfLastYear, timeZone);
+      // const lastYear = subYears(today, 1);
+      // const startOfLastYear = startOfYear(lastYear);
+      // const endOfLastYear = endOfYear(lastYear);
+      const startOfTheYear = subDays(today, 364); // 364 days before today
+      return formatRange(startOfTheYear, today, timeZone);
     }
 
     default:
@@ -136,6 +127,8 @@ export const getXAxisTickValues = (data: any, grouping: string): string[] => {
 export const getXAxisformat = (date: string, grouping: string) => {
   const dateObj = new Date(date);
   const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  if (isNaN(dateObj.getTime())) return date;
 
   if (grouping === 'hourly') {
     return formatInTimeZone(dateObj, timeZone, 'hh:mm a');
@@ -240,4 +233,56 @@ export const formatWithTimeZone = (
 ) => {
   const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
   return formatInTimeZone(date, timezone, formatStr);
+};
+
+export const formatHourlyBucket = (date: Date): string => {
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const start = formatInTimeZone(date, timeZone, 'h a');
+  const end = formatInTimeZone(addHours(date, 1), timeZone, 'h a');
+  const labelDate = formatInTimeZone(date, timeZone, 'MMMM, d yyyy');
+
+  return `${labelDate} ${start} – ${end}`;
+};
+
+export const formatDateWithRange = (
+  date: Date,
+  startDateRange?: Date | null,
+  endDateRange?: Date | null,
+): string => {
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const today = utcToZonedTime(new Date(), timeZone);
+  const end = endDateRange ?? today;
+  const start = startDateRange ?? subDays(end, 364);
+
+  const startLabel = formatInTimeZone(start, timeZone, 'MMM, d yyyy');
+  const endLabel = formatInTimeZone(end, timeZone, 'MMM, d yyyy');
+  const labelDate = formatInTimeZone(date, timeZone, 'MMMM, d yyyy');
+  return `${labelDate} (${startLabel} – ${endLabel})`;
+};
+
+export const formatWeeklyBucket = (date: Date): string => {
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const start = startOfWeek(date, { weekStartsOn: 1 }); // Monday start
+  const end = addDays(start, 6);
+
+  const sameYear = getYear(start) === getYear(end);
+
+  const startLabel = formatInTimeZone(
+    start,
+    timeZone,
+    sameYear ? 'MMM d' : 'MMM, d yyyy',
+  );
+  const endLabel = formatInTimeZone(end, timeZone, 'MMM, d yyyy');
+
+  return `${startLabel} – ${endLabel}`;
+};
+
+export const formatTooltipHeaderLabel = (key: string) => {
+  const words = key.replace(/_/g, ' ').toLowerCase().split(' ');
+  return words
+    .map((word, index) =>
+      index === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word,
+    )
+    .join(' ');
 };

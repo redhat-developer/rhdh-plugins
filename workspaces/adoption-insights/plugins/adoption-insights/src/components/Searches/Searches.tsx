@@ -37,8 +37,8 @@ import {
   getXAxisTickValues,
 } from '../../utils/utils';
 import CustomCursor from '../Common/CustomCursor';
-import CustomTooltip from './CustomTooltip';
 import EmptyChartState from '../Common/EmptyChartState';
+import ChartTooltip from '../Common/ChartTooltip';
 
 const Searches = () => {
   const theme = useTheme();
@@ -124,7 +124,7 @@ const Searches = () => {
                 />
                 <Tooltip
                   cursor={<CustomCursor cursorHeight={280} />}
-                  content={<CustomTooltip grouping={grouping} />}
+                  content={<ChartTooltip grouping={grouping} />}
                 />
                 <Line
                   type="linear"

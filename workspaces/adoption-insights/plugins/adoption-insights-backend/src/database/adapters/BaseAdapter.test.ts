@@ -190,6 +190,7 @@ describe('BaseAdapter', () => {
       type: 'active_users',
       start_date: '2024-03-01',
       end_date: '2024-03-31',
+      timezone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
     db.setFilters(filters);
     await db.getDailyUsers();
@@ -230,6 +231,7 @@ describe('BaseAdapter', () => {
       p_db.then = jest.fn().mockImplementation(() => mockPluginCount);
       const db = new PostgresAdapter(p_db, logger);
       db.setFilters({
+        timezone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
         start_date: new Date('2025-03-01').toISOString(),
         end_date: new Date('2025-03-02').toISOString(),
       });
@@ -260,6 +262,7 @@ describe('BaseAdapter', () => {
       const db = new PostgresAdapter(mockpostgresDb, logger);
       db.setConfig({ licensedUsers: 10 });
       db.setFilters({
+        timezone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
         start_date: new Date('2025-03-02').toISOString(),
         end_date: new Date('2025-03-05').toISOString(),
       });
@@ -277,7 +280,7 @@ describe('BaseAdapter', () => {
       const db = new PostgresAdapter(mockKnex, logger);
       expect(db.modifyDateInObject(object)).toEqual({
         count: 100,
-        date: '2025-03-02 23:30:00 UTC',
+        date: '2025-03-02T23:30:00.000Z',
       });
     });
     it('should return the original object if the date is not present in the given object', async () => {
@@ -303,7 +306,7 @@ describe('BaseAdapter', () => {
         data: [
           {
             ...object[0],
-            date: '2025-03-02 23:30:00 UTC',
+            date: '2025-03-02T23:30:00.000Z',
           },
         ],
       });
@@ -332,7 +335,7 @@ describe('BaseAdapter', () => {
             trend: [
               {
                 ...object[0].trend[0],
-                date: '2025-03-02 23:30:00 GMT+5:30',
+                date: '2025-03-02T23:30:00.000+05:30',
               },
             ],
           },
@@ -352,6 +355,7 @@ describe('BaseAdapter', () => {
 
       const db = new PostgresAdapter(mockKnex, logger);
       db.setFilters({
+        timezone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
         start_date: new Date('2025-03-02').toISOString(),
         end_date: new Date('2025-03-05').toISOString(),
       });
@@ -371,6 +375,7 @@ describe('BaseAdapter', () => {
 
       const db = new PostgresAdapter(mockKnex, logger);
       db.setFilters({
+        timezone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
         start_date: new Date('2025-03-02').toISOString(),
         end_date: new Date('2025-03-05').toISOString(),
         grouping: 'hourly',
@@ -380,7 +385,7 @@ describe('BaseAdapter', () => {
         data: [
           {
             ...data[0],
-            date: '2025-03-02 23:30:00 GMT+5:30',
+            date: '2025-03-02T23:30:00.000+05:30',
           },
         ],
       });
@@ -400,6 +405,7 @@ describe('BaseAdapter', () => {
 
       const db = new PostgresAdapter(mockKnex, logger);
       db.setFilters({
+        timezone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
         start_date: new Date('2025-03-02').toISOString(),
         end_date: new Date('2025-03-05').toISOString(),
         grouping: 'hourly',
@@ -412,7 +418,7 @@ describe('BaseAdapter', () => {
             trend: [
               {
                 ...data[0].trend[0],
-                date: '2025-03-02 23:30:00 GMT+5:30',
+                date: '2025-03-02T23:30:00.000+05:30',
               },
             ],
           },
