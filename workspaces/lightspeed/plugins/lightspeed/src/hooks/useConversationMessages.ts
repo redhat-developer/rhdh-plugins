@@ -24,7 +24,8 @@ import { useQuery } from '@tanstack/react-query';
 import { lightspeedApiRef } from '../api/api';
 import { ScrollContainerHandle } from '../components/LightspeedChatBox';
 import { TEMP_CONVERSATION_ID } from '../const';
-import logo from '../images/logo.svg';
+import botAvatar from '../images/bot-avatar.svg';
+import userAvatar from '../images/user-avatar.svg';
 import { Attachment } from '../types';
 import {
   createBotMessage,
@@ -54,8 +55,6 @@ export const useFetchConversationMessages = (currentConversation: string) => {
 
 type Conversations = { [_key: string]: MessageProps[] };
 
-const defaultAvatar =
-  'https://img.freepik.com/premium-photo/graphic-designer-digital-avatar-generative-ai_934475-9292.jpg';
 /**
  * Fetches all the messages for given conversation_id
  * @param conversationId
@@ -68,7 +67,7 @@ export const useConversationMessages = (
   conversationId: string,
   userName: string | undefined,
   selectedModel: string,
-  avatar: string = defaultAvatar,
+  avatar: string = userAvatar,
   onComplete?: (message: string) => void,
   onStart?: (conversation_id: string) => void,
 ) => {
@@ -139,7 +138,7 @@ export const useConversationMessages = (
               timestamp: userTimestamp,
             }),
             createBotMessage({
-              avatar: logo,
+              avatar: botAvatar,
               isLoading: false,
               name: model ?? selectedModel,
               content: botMessage,
@@ -183,7 +182,7 @@ export const useConversationMessages = (
           timestamp: getTimestamp(Date.now()) ?? '',
         }),
         createBotMessage({
-          avatar: logo,
+          avatar: botAvatar,
           isLoading: true,
           name: selectedModel,
           content: '',
