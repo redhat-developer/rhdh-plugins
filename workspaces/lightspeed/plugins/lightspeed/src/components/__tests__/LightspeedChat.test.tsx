@@ -68,6 +68,10 @@ jest.mock('../../hooks/useConversations', () => ({
     isLoading: false,
   }),
 }));
+
+jest.mock('../../hooks/useFeedbackActions', () => ({
+  useFeedbackActions: jest.fn().mockReturnValue([]),
+}));
 jest.mock('../../hooks/useDeleteConversation', () => ({
   useDeleteConversation: jest.fn().mockResolvedValue({
     data: [],
