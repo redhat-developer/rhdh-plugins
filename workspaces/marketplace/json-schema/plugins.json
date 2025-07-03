@@ -134,6 +134,9 @@
         },
         "history": {
           "$ref": "#/$defs/History"
+        },
+        "installStatus": {
+          "type": "string"
         }
       }
     },
