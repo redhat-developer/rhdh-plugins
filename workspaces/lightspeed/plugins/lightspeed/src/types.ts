@@ -29,10 +29,13 @@ export type Conversations = {
   };
 };
 
-export type ReferencedDocuments = {
+export type ReferencedDocument = {
   doc_title: string;
   doc_url: string;
-}[];
+  doc_description?: string;
+};
+
+export type ReferencedDocuments = ReferencedDocument[];
 export interface BaseMessage {
   name: string;
   type: string;

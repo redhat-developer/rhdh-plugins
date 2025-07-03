@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { ConversationList, ConversationSummary } from '../../types';
+import {
+  ConversationList,
+  ConversationSummary,
+  ReferencedDocuments,
+} from '../../types';
 import {
   createBotMessage,
   createMessage,
@@ -27,13 +31,15 @@ import {
   transformDocumentsToSources,
 } from '../lightspeed-chatbox-utils';
 
-const referenced_documents = [
+const referenced_documents: ReferencedDocuments = [
   {
     doc_title: 'About Red Hat Developer Hub',
+    doc_description: 'Document description test',
     doc_url:
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.6/html-single/about_red_hat_developer_hub/index',
   },
   {
+    doc_description: undefined,
     doc_title: 'Adoption Insights in Red Hat Developer Hub',
     doc_url:
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.6/html-single/adoption_insights_in_red_hat_developer_hub/index',
@@ -319,6 +325,28 @@ describe('transformDocumentsToSources', () => {
             isExternal: true,
             link: expect.anything(),
             title: expect.anything(),
+          }),
+        ]),
+      }),
+    );
+  });
+
+  it('should add document description in referenced documents into message sources', () => {
+    const sources = transformDocumentsToSources(
+      referenced_documents.map(rd => ({
+        ...rd,
+        doc_description: 'Document description test',
+      })),
+    );
+    expect(sources?.sources).toHaveLength(2);
+    expect(sources).toEqual(
+      expect.objectContaining({
+        sources: expect.arrayContaining([
+          expect.objectContaining({
+            isExternal: true,
+            link: expect.anything(),
+            title: expect.anything(),
+            body: 'Document description test',
           }),
         ]),
       }),
