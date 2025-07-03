@@ -1,5 +1,15 @@
 ### Dependencies
 
+## 6.1.4
+
+### Patch Changes
+
+- 1dbc797: Handle errors on fetch calls by adding try/catch blocks and logging
+- ff0f69e: update API - fetch executionSummary field
+  Use execution summary for results card
+- Updated dependencies [ff0f69e]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.4
+
 ## 6.1.3
 
 ### Patch Changes
