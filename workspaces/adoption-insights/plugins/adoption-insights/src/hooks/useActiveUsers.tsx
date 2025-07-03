@@ -17,7 +17,7 @@ import { useEffect, useCallback, useState } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 import { useAsyncRetry } from 'react-use';
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 import { ActiveUsersResponse } from '../types';
 import { adoptionInsightsApiRef } from '../api';
@@ -41,13 +41,17 @@ export const useActiveUsers = (): {
   const api = useApi(adoptionInsightsApiRef);
 
   const getActiveUsers = useCallback(async () => {
+    const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
     return await api
       .getActiveUsers({
         type: 'active_users',
         start_date: startDateRange
-          ? format(startDateRange, 'yyyy-MM-dd')
+          ? formatInTimeZone(startDateRange, timezone, 'yyyy-MM-dd')
           : undefined,
-        end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
+        end_date: endDateRange
+          ? formatInTimeZone(endDateRange, timezone, 'yyyy-MM-dd')
+          : undefined,
+        timezone,
         grouping,
       })
       .then(response =>

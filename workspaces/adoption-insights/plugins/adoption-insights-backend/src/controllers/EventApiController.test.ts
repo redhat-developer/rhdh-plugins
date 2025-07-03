@@ -236,6 +236,7 @@ describe('GetInsights', () => {
       query: {
         start_date: '2025-02-03',
         end_date: '2025-02-04',
+        timezone: 'Asia/kolkata',
       },
     };
 
@@ -275,8 +276,15 @@ describe('GetInsights', () => {
     );
 
     expect(mockEventDb.setFilters).toHaveBeenCalledWith({
-      start_date: toStartOfDayUTC(req.query?.start_date as string),
-      end_date: toEndOfDayUTC(req.query?.end_date as string),
+      start_date: toStartOfDayUTC(
+        req.query?.start_date as string,
+        req.query?.timezone as string,
+      ),
+      end_date: toEndOfDayUTC(
+        req.query?.end_date as string,
+        req.query?.timezone as string,
+      ),
+      timezone: 'Asia/kolkata',
     });
 
     expect(mockEventDb.setConfig).toHaveBeenCalledWith({

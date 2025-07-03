@@ -29,7 +29,6 @@ import {
 } from 'recharts';
 
 import CardWrapper from '../CardWrapper';
-import CustomTooltip from './CustomTooltip';
 import CustomCursor from '../Common/CustomCursor';
 import CustomLegend from './CustomLegend';
 import {
@@ -41,6 +40,7 @@ import { useActiveUsers } from '../../hooks/useActiveUsers';
 import { Typography } from '@material-ui/core';
 import ExportCSVButton from './ExportCSVButton';
 import EmptyChartState from '../Common/EmptyChartState';
+import ChartTooltip from '../Common/ChartTooltip';
 
 const ActiveUsers = () => {
   const theme = useTheme();
@@ -48,7 +48,6 @@ const ActiveUsers = () => {
 
   const { activeUsers, loading, error } = useActiveUsers();
   const { data, grouping = 'daily' } = activeUsers;
-
   if (error) {
     return (
       <CardWrapper title="Active users">
@@ -87,11 +86,9 @@ const ActiveUsers = () => {
         <>
           <Typography style={{ margin: '20px 36px' }}>
             <b>
-              {`${Math.round(
-                getAverage(data, 'total_users'),
-              ).toLocaleString()} active users per ${
-                grouping === 'hourly' ? 'hour' : 'day'
-              }`}
+              {`${Math.round(getAverage(data, 'total_users')).toLocaleString(
+                'en-Us',
+              )} active users per ${grouping === 'hourly' ? 'hour' : 'day'}`}
             </b>{' '}
             were conducted during this period.
           </Typography>
@@ -100,6 +97,7 @@ const ActiveUsers = () => {
               <AreaChart
                 data={data}
                 margin={{ top: 10, right: 50, left: 20, bottom: 0 }}
+                key={JSON.stringify(data.map(d => d))}
               >
                 <defs>
                   <linearGradient id="new_users" x1="0" y1="0" x2="0" y2="1">
@@ -138,12 +136,12 @@ const ActiveUsers = () => {
                   tick={{ fill: theme.palette.text.primary }}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={value => value.toLocaleString()}
+                  tickFormatter={value => value.toLocaleString('en-Us')}
                   tickMargin={20}
                 />
                 <Tooltip
                   cursor={<CustomCursor cursorHeight={250} />}
-                  content={<CustomTooltip grouping={grouping} />}
+                  content={<ChartTooltip grouping={grouping} />}
                 />
                 <Area
                   type="linear"

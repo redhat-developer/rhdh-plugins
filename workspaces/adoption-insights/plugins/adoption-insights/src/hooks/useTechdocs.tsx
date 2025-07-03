@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { adoptionInsightsApiRef } from '../api';
 import { APIsViewOptions, TechdocsResponse } from '../types';
 import { useDateRange } from '../components/Header/DateRangeContext';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export const useTechdocs = ({
   limit = 20,
@@ -40,13 +41,16 @@ export const useTechdocs = ({
   const api = useApi(adoptionInsightsApiRef);
 
   const getTechdocs = useCallback(async () => {
+    const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     return await api
       .getTechdocs({
         type: 'top_techdocs',
         start_date: startDateRange
-          ? format(startDateRange, 'yyyy-MM-dd')
+          ? formatInTimeZone(startDateRange, timezone, 'yyyy-MM-dd')
           : undefined,
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
+        timezone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
         limit,
       })
       .then(response => setTechdocs(response ?? { data: [] }));

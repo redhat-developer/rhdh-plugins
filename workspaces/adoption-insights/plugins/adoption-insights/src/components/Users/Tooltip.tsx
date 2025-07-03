@@ -40,8 +40,8 @@ const Tooltip = ({ active, payload, licensed_users, logged_in_users }: any) => {
           style={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}
         >
           {name === 'Licensed'
-            ? (value - logged_in_users).toLocaleString()
-            : value.toLocaleString()}
+            ? (value - logged_in_users).toLocaleString('en-US')
+            : value.toLocaleString('en-US')}
         </Typography>
         <Typography
           style={{

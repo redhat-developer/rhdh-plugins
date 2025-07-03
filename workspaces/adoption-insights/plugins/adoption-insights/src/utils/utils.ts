@@ -14,52 +14,58 @@
  * limitations under the License.
  */
 import {
-  format,
-  startOfToday,
-  startOfYear,
+  addDays,
+  addHours,
+  getYear,
   isToday,
   isYesterday,
-  startOfMonth,
   startOfWeek,
   subDays,
 } from 'date-fns';
+
+import { utcToZonedTime, format, formatInTimeZone } from 'date-fns-tz';
+
 import { APIsViewOptions } from '../types';
+
+export const formatRange = (
+  start: Date,
+  end: Date,
+  timeZone: string = 'UTC',
+): { startDate: string; endDate: string } => ({
+  startDate: `${formatInTimeZone(start, timeZone, 'yyyy-MM-dd')}T00:00:00`,
+  endDate: `${formatInTimeZone(end, timeZone, 'yyyy-MM-dd')}T23:59:59.999`,
+});
 
 export const getDateRange = (value: string) => {
   const startDate: Date | null = null;
   const endDate: Date | null = null;
-  const today = startOfToday();
+
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const today = utcToZonedTime(new Date(), timeZone);
 
   switch (value) {
     case 'today':
-      return {
-        startDate: format(today, 'yyyy-MM-dd'),
-        endDate: format(today, 'yyyy-MM-dd'),
-      };
+      return formatRange(today, today, timeZone);
 
-    case 'last-week':
-      return {
-        startDate: format(startOfWeek(today), 'yyyy-MM-dd'),
-        endDate: format(today, 'yyyy-MM-dd'),
-      };
+    case 'last-week': {
+      const startingDate = subDays(today, 6);
+      return formatRange(startingDate, today, timeZone);
+    }
 
-    case 'last-month':
-      return {
-        startDate: format(startOfMonth(today), 'yyyy-MM-dd'),
-        endDate: format(today, 'yyyy-MM-dd'),
-      };
+    case 'last-month': {
+      const startDay = subDays(today, 29);
+      return formatRange(startDay, today, timeZone);
+    }
 
-    case 'last-28-days':
-      return {
-        startDate: format(subDays(today, 27), 'yyyy-MM-dd'),
-        endDate: format(today, 'yyyy-MM-dd'),
-      };
+    case 'last-28-days': {
+      const startDay = subDays(today, 27);
+      return formatRange(startDay, today, timeZone);
+    }
 
-    case 'last-year':
-      return {
-        startDate: format(startOfYear(today), 'yyyy-MM-dd'),
-        endDate: format(today, 'yyyy-MM-dd'),
-      };
+    case 'last-year': {
+      const startOfTheYear = subDays(today, 364); // 364 days before today
+      return formatRange(startOfTheYear, today, timeZone);
+    }
 
     default:
       return { startDate, endDate };
@@ -117,17 +123,22 @@ export const getXAxisTickValues = (data: any, grouping: string): string[] => {
 
 export const getXAxisformat = (date: string, grouping: string) => {
   const dateObj = new Date(date);
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  if (isNaN(dateObj.getTime())) {
+    return formatInTimeZone(date, timeZone, 'd MMMM yy');
+  }
 
   if (grouping === 'hourly') {
-    return format(dateObj, 'hh:mm a');
+    return formatInTimeZone(dateObj, timeZone, 'hh:mm a');
   }
 
   if (grouping === 'daily' || grouping === 'weekly') {
-    return format(dateObj, 'd MMMM yy');
+    return formatInTimeZone(dateObj, timeZone, 'd MMMM yy');
   }
 
   if (grouping === 'monthly') {
-    return format(dateObj, 'MMM yyyy');
+    return formatInTimeZone(dateObj, timeZone, 'MMM yyyy');
   }
 
   return date;
@@ -213,4 +224,64 @@ export const determineGrouping = (
   }
 
   return 'monthly';
+};
+
+export const formatWithTimeZone = (
+  date: Date,
+  formatStr: string = 'yyyy-MM-dd',
+) => {
+  const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return formatInTimeZone(date, timezone, formatStr);
+};
+
+export const formatHourlyBucket = (date: Date): string => {
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const start = formatInTimeZone(date, timeZone, 'h:mm');
+  const end = formatInTimeZone(addHours(date, 1), timeZone, 'h:mm a');
+  const labelDate = formatInTimeZone(date, timeZone, 'MMMM d, yyyy');
+
+  return `${labelDate}, ${start}–${end}`;
+};
+
+export const formatDateWithRange = (
+  date: Date,
+  startDateRange?: Date | null,
+  endDateRange?: Date | null,
+): string => {
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const today = utcToZonedTime(new Date(), timeZone);
+  const end = endDateRange ?? today;
+  const start = startDateRange ?? subDays(end, 364);
+
+  const startLabel = formatInTimeZone(start, timeZone, 'MMM d, yyyy');
+  const endLabel = formatInTimeZone(end, timeZone, 'MMM d, yyyy');
+  const labelDate = formatInTimeZone(date, timeZone, 'MMMM d, yyyy');
+  return `${labelDate}\n  (filtered by ${startLabel} – ${endLabel})`;
+};
+
+export const formatWeeklyBucket = (date: Date): string => {
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const start = startOfWeek(date, { weekStartsOn: 1 }); // Monday start
+  const end = addDays(start, 6);
+
+  const sameYear = getYear(start) === getYear(end);
+
+  const startLabel = formatInTimeZone(
+    start,
+    timeZone,
+    sameYear ? 'MMM d' : 'MMM d, yyyy',
+  );
+  const endLabel = formatInTimeZone(end, timeZone, 'MMM d, yyyy');
+
+  return `${startLabel} – ${endLabel}`;
+};
+
+export const formatTooltipHeaderLabel = (key: string) => {
+  const words = key.replace(/_/g, ' ').toLowerCase().split(' ');
+  return words
+    .map((word, index) =>
+      index === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word,
+    )
+    .join(' ');
 };

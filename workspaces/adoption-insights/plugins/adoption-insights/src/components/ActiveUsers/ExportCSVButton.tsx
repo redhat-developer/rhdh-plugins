@@ -40,6 +40,7 @@ const ExportCSVButton = () => {
           ? format(startDateRange, 'yyyy-MM-dd')
           : undefined,
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
+        timezone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
         format: 'csv',
       });
     } catch (error) {

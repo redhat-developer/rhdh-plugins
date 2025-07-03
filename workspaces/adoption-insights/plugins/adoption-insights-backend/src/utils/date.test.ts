@@ -15,7 +15,7 @@
  */
 import {
   calculateDateRange,
-  convertToLocalTimezone,
+  convertToTargetTimezone,
   getDateGroupingType,
   isSameMonth,
   toEndOfDayUTC,
@@ -66,26 +66,25 @@ describe('isSameMonth', () => {
 
 describe('getDateGroupingType', () => {
   it('should return "hourly" if dateDiff is 0', () => {
-    expect(getDateGroupingType(0, '2024-03-11', '2024-03-11')).toBe('hourly');
+    expect(getDateGroupingType(0)).toBe('hourly');
   });
 
   it('should return "daily" if dateDiff is 7 or less', () => {
-    expect(getDateGroupingType(3, '2024-03-01', '2024-03-04')).toBe('daily');
-    expect(getDateGroupingType(7, '2024-03-01', '2024-03-08')).toBe('daily');
+    expect(getDateGroupingType(3)).toBe('daily');
+    expect(getDateGroupingType(7)).toBe('daily');
   });
 
   it('should return "weekly" if dateDiff is between 8 and 30, and in the same month', () => {
-    expect(getDateGroupingType(14, '2024-03-01', '2024-03-15')).toBe('weekly');
-    expect(getDateGroupingType(28, '2024-03-01', '2024-03-29')).toBe('weekly');
+    expect(getDateGroupingType(14)).toBe('weekly');
+    expect(getDateGroupingType(28)).toBe('weekly');
   });
 
   it('should return "monthly" if dateDiff is greater than 30 or in different months', () => {
-    expect(getDateGroupingType(31, '2024-03-01', '2024-04-01')).toBe('monthly');
-    expect(getDateGroupingType(10, '2024-03-25', '2024-04-04')).toBe('monthly');
+    expect(getDateGroupingType(31)).toBe('monthly');
   });
 });
 
-describe('convertToLocalTimezone', () => {
+describe('convertToTargetTimezone', () => {
   it('should return the date time converted to local timestamp', () => {
     jest
       .spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
@@ -93,8 +92,8 @@ describe('convertToLocalTimezone', () => {
         timeZone: 'Asia/Kolkata',
       } as Intl.ResolvedDateTimeFormatOptions);
 
-    expect(convertToLocalTimezone('2025-03-02 23:30:00')).toBe(
-      '2025-03-02 23:30:00 GMT+5:30',
+    expect(convertToTargetTimezone('2025-03-02 23:30:00')).toBe(
+      '2025-03-03T05:00:00.000+05:30',
     );
   });
   it('should return the UTC date converted to local timezone', () => {
@@ -104,8 +103,8 @@ describe('convertToLocalTimezone', () => {
         timeZone: 'Asia/Kolkata',
       } as Intl.ResolvedDateTimeFormatOptions);
 
-    expect(convertToLocalTimezone('2025-03-02T18:00:00.000Z')).toBe(
-      '2025-03-02 23:30:00 GMT+5:30',
+    expect(convertToTargetTimezone('2025-03-02T18:00:00.000Z')).toBe(
+      '2025-03-02T23:30:00.000+05:30',
     );
   });
 });

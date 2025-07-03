@@ -131,8 +131,8 @@ class EventApiController {
     const licensedUsers = getLicensedUsersCount(this.config);
     const filters: Filters = {
       ...params,
-      end_date: toEndOfDayUTC(params.end_date) as string,
-      start_date: toStartOfDayUTC(params.start_date) as string,
+      end_date: toEndOfDayUTC(params.end_date, params.timezone) as string,
+      start_date: toStartOfDayUTC(params.start_date, params.timezone) as string,
     };
     const db = this.database;
 

@@ -198,7 +198,7 @@ const CatalogEntities = () => {
                   {getLastUsedDay(entity.last_used) ?? '--'}
                 </TableCell>
                 <TableCell sx={{ width: '25%' }}>
-                  {Number(entity.count).toLocaleString() ?? '--'}
+                  {Number(entity.count).toLocaleString('en-US') ?? '--'}
                 </TableCell>
               </TableRow>
             ))

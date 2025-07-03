@@ -23,6 +23,7 @@ import { SearchesResponse } from '../types';
 import { adoptionInsightsApiRef } from '../api';
 import { useDateRange } from '../components/Header/DateRangeContext';
 import { determineGrouping } from '../utils/utils';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export const useSearches = (): {
   searches: SearchesResponse;
@@ -40,14 +41,17 @@ export const useSearches = (): {
   const api = useApi(adoptionInsightsApiRef);
 
   const getSearches = useCallback(async () => {
+    const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
     return await api
       .getSearches({
         type: 'top_searches',
         start_date: startDateRange
-          ? format(startDateRange, 'yyyy-MM-dd')
+          ? formatInTimeZone(startDateRange, timezone, 'yyyy-MM-dd')
           : undefined,
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
+        timezone,
         grouping,
+        limit: 24,
       })
       .then(response =>
         setSearches(response ?? { grouping: undefined, data: [] }),
