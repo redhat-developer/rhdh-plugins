@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 0.5.4
+
+### Patch Changes
+
+- 5d80736: Renamed permissions to align with the updated naming convention:
+
+  - `lightspeed.conversations.read` → `lightspeed.chat.read`
+  - `lightspeed.conversations.create` → `lightspeed.chat.create`
+  - `lightspeed.conversations.delete` → `lightspeed.chat.delete`
+
+- d51643f: Make Lightspeed service port configurable
+- 7ca64e4: Updated dependency `msw` to `2.10.2`.
+- Updated dependencies [5d80736]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.3.2
+
 ## 0.5.3
 
 ### Patch Changes
