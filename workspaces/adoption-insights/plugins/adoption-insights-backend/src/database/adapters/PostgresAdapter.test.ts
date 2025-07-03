@@ -30,6 +30,7 @@ describe('PostgresAdapter', () => {
 
     expect(postgresAdapter).toBeInstanceOf(BaseDatabaseAdapter);
     expect(postgresAdapter.isJsonSupported()).toBe(true);
+    expect(postgresAdapter.isTimezoneSupported()).toBe(true);
     expect(postgresAdapter.isPartitionSupported()).toBe(true);
   });
 });

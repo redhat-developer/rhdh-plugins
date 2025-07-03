@@ -81,3 +81,9 @@ export const convertToTargetTimezone = (
   console.warn('Unable to parse date:', date);
   return date;
 };
+
+export const getTimeZoneOffsetString = () => {
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const now = DateTime.now().setZone(timeZone);
+  return now.toFormat('ZZ');
+};

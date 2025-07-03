@@ -47,6 +47,7 @@ export interface EventDatabase {
     maxRetries: number,
   ): Promise<void>;
   isJsonSupported(): boolean;
+  isTimezoneSupported(): boolean;
   isPartitionSupported(): boolean;
   setFilters(filters: Filters): void;
   setConfig(userConfig: UserConfig): void;

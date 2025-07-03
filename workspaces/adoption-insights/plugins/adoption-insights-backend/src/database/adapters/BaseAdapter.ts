@@ -335,6 +335,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
   abstract getDate(): string;
   abstract getLastUsedDate(): string;
   abstract isJsonSupported(): boolean;
+  abstract isTimezoneSupported(): boolean;
   abstract isPartitionSupported(): boolean;
   abstract getDateBetweenQuery(): string;
   abstract getDynamicDateGrouping(options?: {
@@ -365,10 +366,14 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     if (obj[datePath]) {
       return {
         ...obj,
-        [datePath]: convertToTargetTimezone(
-          obj[datePath] as string,
-          this.filters?.timezone,
-        ),
+        ...(this.isTimezoneSupported()
+          ? {
+              [datePath]: convertToTargetTimezone(
+                obj[datePath] as string,
+                this.filters?.timezone,
+              ),
+            }
+          : {}),
       };
     }
     return obj;

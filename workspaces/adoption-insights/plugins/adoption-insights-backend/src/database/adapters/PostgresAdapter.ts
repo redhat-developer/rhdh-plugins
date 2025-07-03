@@ -25,6 +25,10 @@ export class PostgresAdapter extends BaseDatabaseAdapter {
     return true;
   }
 
+  isTimezoneSupported(): boolean {
+    return true;
+  }
+
   getFormatedDate(column: string): string {
     return `${column}::timestamp`;
   }

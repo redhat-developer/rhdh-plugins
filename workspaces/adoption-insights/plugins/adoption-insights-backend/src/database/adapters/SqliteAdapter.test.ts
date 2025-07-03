@@ -27,6 +27,7 @@ describe('SqliteAdapter', () => {
 
     expect(sqliteAdapter).toBeInstanceOf(BaseDatabaseAdapter);
     expect(sqliteAdapter.isJsonSupported()).toBe(false);
+    expect(sqliteAdapter.isTimezoneSupported()).toBe(false);
     expect(sqliteAdapter.isPartitionSupported()).toBe(false);
   });
 });
