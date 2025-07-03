@@ -28,6 +28,7 @@ export interface QuickstartButtonProps {
   title?: string;
   tooltip?: string;
   style?: CSSProperties;
+  onClick?: () => void;
 }
 
 /**
@@ -38,6 +39,7 @@ export const QuickstartButton = ({
   title = 'Quick start',
   tooltip,
   style,
+  onClick = () => {},
 }: QuickstartButtonProps) => {
   const isAllowed = useQuickstartButtonPermission();
   const toggleDrawer = useCallback(() => {
@@ -47,7 +49,8 @@ export const QuickstartButton = ({
       QUICKSTART_DRAWER_OPEN_KEY,
       (!isDrawerOpen).toString(),
     );
-  }, []);
+    onClick();
+  }, [onClick]);
 
   return isAllowed ? (
     <MenuItem

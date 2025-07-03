@@ -20,7 +20,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 import { QuickstartDrawerContext } from './QuickstartDrawerContext';
 import { QuickstartDrawer } from './QuickstartDrawer';
-import Box from '@mui/material/Box';
 import { useQuickstartPermission } from '../hooks/useQuickstartPermission';
 import { useLocalStorageState } from '../hooks/useLocalStorageState';
 
@@ -34,6 +33,25 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const [showNotification, setShowNotification] = useState(false);
   const [hasShownNotification, setHasShownNotification] = useState(false);
   const [drawerWidth, setDrawerWidth] = useState<number>(500);
+
+  // Single useEffect - sets class on document.body
+  useEffect(() => {
+    if (isDrawerOpen) {
+      document.body.classList.add('quickstart-drawer-open');
+      document.body.style.setProperty(
+        '--quickstart-drawer-margin',
+        `calc(${drawerWidth}px + 1.5rem)`,
+      );
+    } else {
+      document.body.classList.remove('quickstart-drawer-open');
+      document.body.style.removeProperty('--quickstart-drawer-margin');
+    }
+
+    return () => {
+      document.body.classList.remove('quickstart-drawer-open');
+      document.body.style.removeProperty('--quickstart-drawer-margin');
+    };
+  }, [isDrawerOpen, drawerWidth]);
 
   useEffect(() => {
     const hasVisited = localStorage.getItem('quickstart-visited');
@@ -49,7 +67,8 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
     }
 
     setHasShownNotification(notificationShown === 'true');
-  }, [isAllowed, setIsDrawerOpen]);
+    localStorage.setItem('quickstart-drawer-width', drawerWidth.toString());
+  }, [drawerWidth, isAllowed, setIsDrawerOpen]);
 
   const openDrawer = () => setIsDrawerOpen(true);
   const closeDrawer = () => {
@@ -74,15 +93,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
         drawerWidth,
       }}
     >
-      <Box
-        sx={{
-          ...(!isDrawerOpen
-            ? { marginRight: '0px' }
-            : { marginRight: `${drawerWidth}px` }),
-        }}
-      >
-        {children}
-      </Box>
+      {children}
       <QuickstartDrawer />
       <Snackbar
         sx={{ top: '80px !important' }}

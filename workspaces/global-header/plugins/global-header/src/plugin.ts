@@ -29,6 +29,7 @@ import { CreateDropdownProps } from './components/HeaderDropdownComponent/Create
 import { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
 import { QuickstartButtonProps } from './components/QuickstartButton/QuickstartButton';
 import { SupportButtonProps } from './plugin';
+import { HelpDropdownProps } from './components/HeaderDropdownComponent/HelpDropdown';
 
 export type { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
 
@@ -37,6 +38,7 @@ export type { HeaderIconProps } from './components/HeaderIcon/HeaderIcon';
 export type { HeaderIconButtonProps } from './components/HeaderIconButton/HeaderIconButton';
 export type { CreateDropdownProps } from './components/HeaderDropdownComponent/CreateDropdown';
 export type { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
+export type { HelpDropdownProps } from './components/HeaderDropdownComponent/HelpDropdown';
 
 export type { MenuItemLinkProps } from './components/MenuItemLink/MenuItemLink';
 export type { MenuItemConfig } from './components/HeaderDropdownComponent/MenuSection';
@@ -196,6 +198,24 @@ export const ProfileDropdown: ComponentType<ProfileDropdownProps> =
         lazy: () =>
           import('./components/HeaderDropdownComponent/ProfileDropdown').then(
             m => m.ProfileDropdown,
+          ),
+      },
+    }),
+  );
+
+/**
+ * Help Dropdown
+ *
+ * @public
+ */
+export const HelpDropdown: ComponentType<HelpDropdownProps> =
+  globalHeaderPlugin.provide(
+    createComponentExtension({
+      name: 'HelpDropdown',
+      component: {
+        lazy: () =>
+          import('./components/HeaderDropdownComponent/HelpDropdown').then(
+            m => m.HelpDropdown,
           ),
       },
     }),
