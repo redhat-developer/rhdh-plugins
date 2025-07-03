@@ -65,6 +65,7 @@ type LightspeedChatBoxProps = {
   announcement: string | undefined;
   welcomePrompts: WelcomePrompt[];
   conversationId: string;
+  isStreaming: boolean;
 };
 
 export interface ScrollContainerHandle {
@@ -80,6 +81,7 @@ export const LightspeedChatBox = React.forwardRef(
       conversationId,
       profileLoading,
       welcomePrompts,
+      isStreaming,
     }: LightspeedChatBoxProps,
     ref: React.ForwardedRef<ScrollContainerHandle>,
   ) => {
@@ -93,7 +95,11 @@ export const LightspeedChatBox = React.forwardRef(
     const cmessages = useBufferedMessages(messages, 30);
     const { autoScroll, scrollToBottom, scrollToTop } =
       useAutoScroll(containerRef);
-    const conversationMessages = useFeedbackActions(cmessages, conversationId);
+    const conversationMessages = useFeedbackActions(
+      cmessages,
+      conversationId,
+      isStreaming,
+    );
 
     React.useImperativeHandle(ref, () => ({
       scrollToBottom: () => {

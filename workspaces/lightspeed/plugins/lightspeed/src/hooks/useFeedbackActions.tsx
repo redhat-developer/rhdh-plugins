@@ -41,6 +41,7 @@ const quickResponses: { [key in Sentiment]: QuickResponse[] } = {
 export const useFeedbackActions = <T extends MessageProps>(
   messages: T[],
   conversationId: string,
+  isStreaming: boolean,
 ): T[] => {
   const copyButtonRef = useRef<HTMLButtonElement>(null);
   const speakingButtonRef = useRef<HTMLButtonElement>(null);
@@ -231,7 +232,11 @@ export const useFeedbackActions = <T extends MessageProps>(
   return useMemo(() => {
     return feedbackEnabled
       ? messages.map((message, index) => {
-          if (message.role === 'user') return message;
+          if (
+            message.role === 'user' ||
+            (isStreaming && messages.length - 1 === index)
+          )
+            return message;
 
           const messageId = `${conversationId}-${message.role}-${index}`;
           const { sentiment, copied, isSpeaking } =
@@ -315,6 +320,7 @@ export const useFeedbackActions = <T extends MessageProps>(
     messages,
     state,
     dispatch,
+    isStreaming,
     speakMessage,
     feedbackForms,
     cancelSpeaking,
