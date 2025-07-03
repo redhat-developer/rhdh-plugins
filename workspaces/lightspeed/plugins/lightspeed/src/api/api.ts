@@ -18,7 +18,12 @@ import { createApiRef } from '@backstage/core-plugin-api';
 
 import OpenAI from 'openai';
 
-import { Attachment, BaseMessage, ConversationList } from '../types';
+import {
+  Attachment,
+  BaseMessage,
+  CaptureFeedback,
+  ConversationList,
+} from '../types';
 
 export type LightspeedAPI = {
   getAllModels: () => Promise<OpenAI.Models.Model[]>;
@@ -33,6 +38,8 @@ export type LightspeedAPI = {
     conversation_id: string,
   ) => Promise<{ success: boolean }>;
   getConversations: () => Promise<ConversationList>;
+  getFeedbackStatus: () => Promise<boolean>;
+  captureFeedback: (payload: CaptureFeedback) => Promise<{ response: string }>;
 };
 
 export const lightspeedApiRef = createApiRef<LightspeedAPI>({

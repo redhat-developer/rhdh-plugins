@@ -35,6 +35,7 @@ import {
 } from '../const';
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { useBufferedMessages } from '../hooks/useBufferedMessages';
+import { useFeedbackActions } from '../hooks/useFeedbackActions';
 
 const useStyles = makeStyles(theme => ({
   prompt: {
@@ -63,6 +64,7 @@ type LightspeedChatBoxProps = {
   profileLoading: boolean;
   announcement: string | undefined;
   welcomePrompts: WelcomePrompt[];
+  conversationId: string;
 };
 
 export interface ScrollContainerHandle {
@@ -75,6 +77,7 @@ export const LightspeedChatBox = React.forwardRef(
       userName,
       messages,
       announcement,
+      conversationId,
       profileLoading,
       welcomePrompts,
     }: LightspeedChatBoxProps,
@@ -90,6 +93,7 @@ export const LightspeedChatBox = React.forwardRef(
     const cmessages = useBufferedMessages(messages, 30);
     const { autoScroll, scrollToBottom, scrollToTop } =
       useAutoScroll(containerRef);
+    const conversationMessages = useFeedbackActions(cmessages, conversationId);
 
     React.useImperativeHandle(ref, () => ({
       scrollToBottom: () => {
@@ -166,7 +170,7 @@ export const LightspeedChatBox = React.forwardRef(
         ) : (
           <br />
         )}
-        {cmessages.map((message, index) => {
+        {conversationMessages.map((message, index) => {
           if (index === cmessages.length - 1) {
             return (
               <React.Fragment key={`${message.role}-${index}`}>

@@ -465,6 +465,7 @@ export const LightspeedChat = ({
                   announcement={announcement}
                   ref={scrollToBottomRef}
                   welcomePrompts={welcomePrompts}
+                  conversationId={conversationId}
                 />
               </ChatbotContent>
               <ChatbotFooter className={classes.footer}>

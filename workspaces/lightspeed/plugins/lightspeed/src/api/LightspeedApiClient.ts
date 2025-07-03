@@ -17,7 +17,7 @@
 import { ConfigApi, FetchApi } from '@backstage/core-plugin-api';
 
 import { TEMP_CONVERSATION_ID } from '../const';
-import { Attachment } from '../types';
+import { Attachment, CaptureFeedback } from '../types';
 import { LightspeedAPI } from './api';
 
 export type Options = {
@@ -171,4 +171,44 @@ export class LightspeedApiClient implements LightspeedAPI {
     }
     return { success: true };
   }
+
+  getFeedbackStatus = async () => {
+    const baseUrl = await this.getBaseUrl();
+
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/v1/feedback/status`,
+      {
+        method: 'GET',
+        headers: {},
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `failed to GET feedback status, status ${response.status}: ${response.statusText}`,
+      );
+    }
+    const result = await response.json();
+    return result?.status?.enabled ?? false;
+  };
+
+  captureFeedback = async (payload: CaptureFeedback) => {
+    const baseUrl = await this.getBaseUrl();
+
+    const response = await this.fetchApi.fetch(`${baseUrl}/v1/feedback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        accept: 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `failed to capture feedback, status ${response.status}: ${response.statusText}`,
+      );
+    }
+    return await response.json();
+  };
 }

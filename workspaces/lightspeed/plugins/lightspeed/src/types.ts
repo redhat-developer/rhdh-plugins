@@ -80,3 +80,11 @@ export type SamplePrompts = {
   title: string;
   message: string;
 }[];
+
+export type CaptureFeedback = {
+  conversation_id: string;
+  user_question: string;
+  llm_response: string;
+  user_feedback: string;
+  sentiment: number;
+};
