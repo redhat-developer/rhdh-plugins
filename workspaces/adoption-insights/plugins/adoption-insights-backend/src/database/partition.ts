@@ -36,9 +36,9 @@ export const createPartition = async (
     { zone: 'UTC' },
   );
   const endObject = DateTime.fromObject(
-    { year, month: month + 1, day: 1 },
+    { year, month: month, day: 1 },
     { zone: 'UTC' },
-  );
+  ).plus({ month: 1 });
   if (!endObject.isValid || !startObject.isValid) {
     throw new Error(
       `The combination of year ${year} and month ${month} is invalid.`,
