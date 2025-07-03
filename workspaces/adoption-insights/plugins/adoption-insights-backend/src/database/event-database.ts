@@ -31,6 +31,7 @@ export interface Filters {
   end_date: string;
   limit?: number | undefined;
   kind?: string | undefined;
+  timezone: string;
   grouping?: Grouping | undefined;
 }
 
@@ -46,6 +47,7 @@ export interface EventDatabase {
     maxRetries: number,
   ): Promise<void>;
   isJsonSupported(): boolean;
+  isTimezoneSupported(): boolean;
   isPartitionSupported(): boolean;
   setFilters(filters: Filters): void;
   setConfig(userConfig: UserConfig): void;

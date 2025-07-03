@@ -23,6 +23,8 @@ import request from 'supertest';
 // however, just like anyone who installs your plugin might replace the
 // services with their own implementations.
 describe('plugin', () => {
+  const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   // eslint-disable-next-line jest/expect-expect
   it('should throw Bad request when query params are not passed', async () => {
     const { server } = await startTestBackend({
@@ -30,7 +32,7 @@ describe('plugin', () => {
     });
 
     await request(server)
-      .get('/api/adoption-insights/events')
+      .get(`/api/adoption-insights/events?timezone=${timezone}`)
       .expect(400, {
         message: 'Invalid query',
         errors: {
@@ -67,10 +69,9 @@ describe('plugin', () => {
         }),
       ],
     });
-
     await request(server)
       .get(
-        '/api/adoption-insights/events?type=active_users&start_date=1990-03-02&end_date=1990-03-04',
+        `/api/adoption-insights/events?type=active_users&start_date=1990-03-02&end_date=1990-03-04&timezone=${timezone}`,
       )
       .expect(200, { grouping: 'daily', data: [] });
   });

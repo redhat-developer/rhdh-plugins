@@ -37,8 +37,8 @@ import {
   getXAxisTickValues,
 } from '../../utils/utils';
 import CustomCursor from '../Common/CustomCursor';
-import CustomTooltip from './CustomTooltip';
 import EmptyChartState from '../Common/EmptyChartState';
+import ChartTooltip from '../Common/ChartTooltip';
 
 const Searches = () => {
   const theme = useTheme();
@@ -72,7 +72,7 @@ const Searches = () => {
 
   return (
     <CardWrapper
-      title={`${getTotal(data, 'count')?.toLocaleString()} searches`}
+      title={`${getTotal(data, 'count')?.toLocaleString('en-US')} searches`}
     >
       {loading ? (
         <Box
@@ -88,11 +88,9 @@ const Searches = () => {
           <Typography style={{ margin: '20px 36px' }}>
             An average of{' '}
             <b>
-              {`${Math.round(
-                getAverage(data, 'count'),
-              ).toLocaleString()} searches per ${
-                grouping === 'hourly' ? 'hour' : 'day'
-              }`}
+              {`${Math.round(getAverage(data, 'count')).toLocaleString(
+                'en-US',
+              )} searches per ${grouping === 'hourly' ? 'hour' : 'day'}`}
             </b>{' '}
             were conducted during this period.
           </Typography>
@@ -121,12 +119,12 @@ const Searches = () => {
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: theme.palette.text.primary }}
-                  tickFormatter={value => value.toLocaleString()}
+                  tickFormatter={value => value.toLocaleString('en-US')}
                   tickMargin={20}
                 />
                 <Tooltip
                   cursor={<CustomCursor cursorHeight={280} />}
-                  content={<CustomTooltip grouping={grouping} />}
+                  content={<ChartTooltip grouping={grouping} />}
                 />
                 <Line
                   type="linear"

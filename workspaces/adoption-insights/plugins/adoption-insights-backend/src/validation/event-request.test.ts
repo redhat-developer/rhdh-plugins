@@ -24,6 +24,7 @@ describe('EventRequestSchema', () => {
       kind: 'component',
       type: 'top_catalog_entities',
       format: 'json',
+      timezone: 'Asia/kolkata',
     };
 
     expect(() => EventRequestSchema.parse(validData)).not.toThrow();
@@ -34,6 +35,7 @@ describe('EventRequestSchema', () => {
       start_date: '2025-03-03',
       end_date: '2025-03-02',
       type: 'top_catalog_entities',
+      timezone: 'Asia/kolkata',
     };
 
     expect(() => EventRequestSchema.parse(invalidData)).toThrow(
@@ -46,6 +48,7 @@ describe('EventRequestSchema', () => {
       start_date: '2025-03-01',
       end_date: '2025-03-02',
       type: 'top_catalog_entities',
+      timezone: 'Asia/kolkata',
     };
 
     expect(() => EventRequestSchema.parse(minimalValidData)).not.toThrow();
@@ -82,6 +85,7 @@ describe('EventRequestSchema', () => {
       end_date: '2025-03-02',
       type: 'top_catalog_entities',
       limit: '5', // String input
+      timezone: 'Asia/kolkata',
     };
 
     const parsed = EventRequestSchema.parse(validData);
@@ -104,6 +108,7 @@ describe('EventRequestSchema', () => {
       start_date: '2024-03-01',
       end_date: '2024-03-10',
       type: 'top_catalog_entities',
+      timezone: 'Asia/kolkata',
     });
 
     expect(result.success).toBe(true);
@@ -114,6 +119,7 @@ describe('EventRequestSchema', () => {
       start_date: '2024-03-1',
       end_date: '2024-03-10',
       type: 'top_catalog_entities',
+      timezone: 'Asia/kolkata',
     });
 
     expect(result.success).toBe(false);
@@ -128,6 +134,7 @@ describe('EventRequestSchema', () => {
       start_date: '2024-03-01',
       end_date: '2024-03-4',
       type: 'top_catalog_entities',
+      timezone: 'Asia/kolkata',
     });
 
     expect(result.success).toBe(false);
@@ -142,6 +149,7 @@ describe('EventRequestSchema', () => {
       start_date: '2024-03-10',
       end_date: '2024-03-01',
       type: 'top_catalog_entities',
+      timezone: 'Asia/kolkata',
     });
 
     expect(result.success).toBe(false);
@@ -156,6 +164,7 @@ describe('EventRequestSchema', () => {
       start_date: '2024-03-10',
       end_date: '2024-03-10',
       type: 'top_catalog_entities',
+      timezone: 'Asia/kolkata',
     });
 
     expect(result.success).toBe(true);

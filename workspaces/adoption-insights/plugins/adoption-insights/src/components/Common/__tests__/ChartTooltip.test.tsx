@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 import { render, screen } from '@testing-library/react';
-import CustomTooltip from '../CustomTooltip';
 import { format } from 'date-fns';
+import ChartTooltip from '../ChartTooltip';
+import { DateRangeProvider } from '../../Header/DateRangeContext';
 
-const mockPayload = [{ value: 10 }, { value: 5 }];
+const mockPayload = [
+  { dataKey: 'returning_users', value: 10 },
+  { dataKey: 'new_users', value: 5 },
+];
 
-describe('CustomTooltip Component', () => {
+describe('ChartTooltip Component', () => {
   it('should render tooltip with correct data when active', () => {
     const label = '2025-03-09T00:00:00.000Z';
-    const formattedDate = format(new Date(label), 'MMMM, dd yyyy');
+    const formattedDate = format(new Date(label), 'MMMM d, yyyy');
 
-    render(<CustomTooltip active payload={mockPayload} label={label} />);
+    render(
+      <DateRangeProvider>
+        <ChartTooltip active payload={mockPayload} label={label} />
+      </DateRangeProvider>,
+    );
 
     expect(screen.getByText(formattedDate)).toBeInTheDocument();
     expect(screen.getByText('Returning users')).toBeInTheDocument();
@@ -35,13 +43,19 @@ describe('CustomTooltip Component', () => {
 
   it('should return null when inactive', () => {
     const { container } = render(
-      <CustomTooltip active={false} payload={mockPayload} label="" />,
+      <DateRangeProvider>
+        <ChartTooltip active={false} payload={mockPayload} label="" />,
+      </DateRangeProvider>,
     );
-    expect(container.firstChild).toBeNull();
+    expect(container.firstElementChild).toBeNull();
   });
 
   it('should handle missing payload safely', () => {
-    render(<CustomTooltip active payload={[]} label="" />);
+    render(
+      <DateRangeProvider>
+        <ChartTooltip active payload={[]} label="" />
+      </DateRangeProvider>,
+    );
     expect(screen.queryByText('Returning users')).not.toBeInTheDocument();
     expect(screen.queryByText('New users')).not.toBeInTheDocument();
   });

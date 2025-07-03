@@ -33,6 +33,7 @@ export type APIsViewOptions = {
   type?: string;
   start_date?: string;
   end_date?: string;
+  timezone?: string;
   limit?: number;
   intervalMs?: number;
   kind?: string;

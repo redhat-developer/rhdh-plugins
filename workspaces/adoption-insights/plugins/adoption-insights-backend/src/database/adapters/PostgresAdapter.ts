@@ -25,25 +25,33 @@ export class PostgresAdapter extends BaseDatabaseAdapter {
     return true;
   }
 
+  isTimezoneSupported(): boolean {
+    return true;
+  }
+
   getFormatedDate(column: string): string {
     return `${column}::timestamp`;
   }
 
   getDate(): string {
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timeZone =
+      this.filters?.timezone ||
+      new Intl.DateTimeFormat().resolvedOptions().timeZone;
     return this.db
       .raw(
-        `to_char(created_at AT TIME ZONE 'UTC' AT TIME ZONE ?,'YYYY-MM-DD"T"HH24:MI:SS.MSZ')`,
+        `to_char(created_at AT AT TIME ZONE ?,'YYYY-MM-DD"T"HH24:MI:SS.MSZ')`,
         [timeZone],
       )
       .toQuery();
   }
 
   getLastUsedDate(): string {
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timeZone =
+      this.filters?.timezone ||
+      new Intl.DateTimeFormat().resolvedOptions().timeZone;
     return this.db
       .raw(
-        `to_char(MAX(created_at)  AT TIME ZONE 'UTC' AT TIME ZONE ?,'YYYY-MM-DD"T"HH24:MI:SS.FF3') || 'Z' AS last_used`,
+        `to_char(MAX(created_at) AT TIME ZONE ?,'YYYY-MM-DD"T"HH24:MI:SS.FF3') || 'Z' AS last_used`,
         [timeZone],
       )
       .toQuery();
@@ -70,50 +78,60 @@ export class PostgresAdapter extends BaseDatabaseAdapter {
     return data;
   }
 
-  getDynamicDateGrouping(onlyText: boolean = false): string {
+  getDynamicDateGrouping({ onlyText = false, useTimestamp = false }): string {
     this.ensureFiltersSet();
     const { start_date, end_date, grouping: groupingStrategy } = this.filters!;
     const dateDiff = calculateDateRange(start_date, end_date);
-    const grouping =
-      groupingStrategy || getDateGroupingType(dateDiff, start_date, end_date);
+    const grouping = groupingStrategy || getDateGroupingType(dateDiff);
 
     if (onlyText) {
       return grouping;
     }
 
-    return `${this.getDateGroupingQuery(grouping)} as date`;
+    return `${this.getDateGroupingQuery(grouping, useTimestamp)} as date`;
   }
 
-  private getDateGroupingQuery(grouping: string): string {
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  private getDateGroupingQuery(
+    grouping: string,
+    useTimeStamp: boolean = false,
+  ): string {
+    const timeZone =
+      this.filters?.timezone ||
+      new Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     const rawQuery = (query: any, bindings: any) =>
       this.db.raw(query, bindings).toQuery();
     switch (grouping) {
       case 'hourly':
-        return rawQuery(`date_trunc('hour', created_at AT TIME ZONE ?)`, [
-          timeZone,
-        ]);
+        return useTimeStamp
+          ? rawQuery(
+              `to_char(date_trunc('hour', created_at AT TIME ZONE ?) AT TIME ZONE ?, 'YYYY-MM-DD"T"HH24:MI:SSOF')`,
+              [timeZone, timeZone],
+            )
+          : rawQuery(
+              `date_trunc('hour', created_at AT TIME ZONE ?) AT TIME ZONE ?`,
+              [timeZone, timeZone],
+            );
       case 'daily':
         return rawQuery(`to_char(created_at AT TIME ZONE ?, 'YYYY-MM-DD')`, [
           timeZone,
         ]);
       case 'weekly':
         return rawQuery(
-          `to_char(date_trunc('week', created_at AT TIME ZONE ?), 'YYYY-MM-DD')`,
-          [timeZone],
+          `to_char(date_trunc('week', created_at AT TIME ZONE ?) AT TIME ZONE ?, 'YYYY-MM-DD"T"HH24:MI:SSOF')`,
+          [timeZone, timeZone],
         );
       case 'monthly':
         return rawQuery(
           `to_char(
            LEAST (
-              (date_trunc('month', created_at AT TIME ZONE ?) 
+              (date_trunc('month', created_at AT TIME ZONE ?) AT TIME ZONE ?
               + interval '1 month' - interval '1 day'), 
               ?::date
               ),
-              'YYYY-MM-DD'
+              'YYYY-MM-DD"T"HH24:MI:SSOF'
           )`,
-          [timeZone, this.filters?.end_date],
+          [timeZone, timeZone, this.filters?.end_date],
         );
       default:
         throw new Error('Invalid date grouping');

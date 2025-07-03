@@ -191,7 +191,7 @@ export class AdoptionInsightsApiClient implements AdoptionInsightsApi {
   async downloadBlob(options: APIsViewOptions): Promise<void> {
     const baseUrl = await this.getBaseUrl();
     const response = await this.fetchApi.fetch(
-      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&format=${options.format}`,
+      `${baseUrl}/events?type=${options.type}&start_date=${options.start_date}&end_date=${options.end_date}&format=${options.format}&timezone=${options.timezone}`,
     );
     const blob = await response.blob();
     const blobUrl = window.URL.createObjectURL(blob);

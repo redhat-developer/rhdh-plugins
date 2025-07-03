@@ -147,7 +147,7 @@ const Templates = () => {
                     </Link>
                   </TableCell>
                   <TableCell sx={{ width: '50%' }}>
-                    {Number(template.count).toLocaleString() ?? '--'}
+                    {Number(template.count).toLocaleString('en-US') ?? '--'}
                   </TableCell>
                 </TableRow>
               );

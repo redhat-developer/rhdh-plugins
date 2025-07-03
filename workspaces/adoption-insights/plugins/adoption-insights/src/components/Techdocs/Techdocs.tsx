@@ -169,7 +169,7 @@ const Techdocs = () => {
                     {getLastUsedDay(techdoc.last_used) ?? '--'}
                   </TableCell>
                   <TableCell>
-                    {Number(techdoc.count).toLocaleString() ?? '--'}
+                    {Number(techdoc.count).toLocaleString('en-US') ?? '--'}
                   </TableCell>
                 </TableRow>
               );

@@ -23,6 +23,7 @@ import { adoptionInsightsApiRef } from '../api';
 import { APIsViewOptions, PluginTrendResponse } from '../types';
 import { useDateRange } from '../components/Header/DateRangeContext';
 import { determineGrouping } from '../utils/utils';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export const usePlugins = ({
   limit = 20,
@@ -42,13 +43,15 @@ export const usePlugins = ({
   const api = useApi(adoptionInsightsApiRef);
 
   const getPlugins = useCallback(async () => {
+    const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
     return await api
       .getPlugins({
         type: 'top_plugins',
         start_date: startDateRange
-          ? format(startDateRange, 'yyyy-MM-dd')
+          ? formatInTimeZone(startDateRange, timezone, 'yyyy-MM-dd')
           : undefined,
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
+        timezone,
         limit,
         grouping,
       })

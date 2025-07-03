@@ -30,6 +30,7 @@ describe('EventBatchProcessor', () => {
     setConfig: jest.fn().mockReturnThis(),
     setFilters: jest.fn().mockReturnThis(),
     isJsonSupported: jest.fn().mockReturnValue(true),
+    isTimezoneSupported: jest.fn().mockReturnValue(true),
     isPartitionSupported: jest.fn().mockReturnValue(true),
     insertEvents: mockInsertEvents.mockResolvedValue(undefined),
     insertFailedEvent: mockInsertFailedEvent.mockResolvedValue(undefined),

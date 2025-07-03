@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 import { BaseDatabaseAdapter } from './BaseAdapter';
-import { calculateDateRange, getDateGroupingType } from '../../utils/date';
+import {
+  calculateDateRange,
+  getDateGroupingType,
+  getTimeZoneOffsetString,
+} from '../../utils/date';
 
 export class SqliteAdapter extends BaseDatabaseAdapter {
   isJsonSupported(): boolean {
@@ -25,12 +29,16 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
     return false;
   }
 
+  isTimezoneSupported(): boolean {
+    return false;
+  }
+
   getDate(): string {
-    return `strftime('%Y-%m-%d', created_at, 'localtime') AS date`;
+    return `strftime('%Y-%m-%d', datetime(created_at, '${getTimeZoneOffsetString()}')) AS date`;
   }
 
   getLastUsedDate(): string {
-    return `strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) AS last_used`;
+    return `strftime('%Y-%m-%dT%H:%M:%SZ', MAX(datetime(created_at, '${getTimeZoneOffsetString()}'))) AS last_used`;
   }
 
   getFormatedDate(column: string): string {
@@ -53,12 +61,11 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
     }));
   }
 
-  getDynamicDateGrouping(onlyText: boolean = false): string {
+  getDynamicDateGrouping({ onlyText = false }): string {
     const { start_date, end_date, grouping: groupingStrategy } = this.filters!;
     const dateDiff = calculateDateRange(start_date, end_date);
 
-    const grouping =
-      groupingStrategy || getDateGroupingType(dateDiff, start_date, end_date);
+    const grouping = groupingStrategy || getDateGroupingType(dateDiff);
 
     if (onlyText) {
       return grouping;
@@ -70,15 +77,16 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
   }
 
   private getDateGroupingQuery(grouping: string): string {
+    const offsetStr = getTimeZoneOffsetString();
     switch (grouping) {
       case 'hourly':
-        return `strftime('%Y-%m-%d %H:00:00', created_at, 'localtime')`;
+        return `strftime('%Y-%m-%d %H:00:00', datetime(created_at, '${offsetStr}'))`;
       case 'daily':
-        return `strftime('%Y-%m-%d', created_at, 'localtime')`;
+        return `strftime('%Y-%m-%d', datetime(created_at, '${offsetStr}'))`;
       case 'weekly':
-        return `strftime('%Y-%m-%d', date(created_at, 'weekday 0', '-7 days'))`;
+        return `strftime('%Y-%m-%d', datetime(created_at, '${offsetStr}', 'weekday 0', '-6 days'))`;
       case 'monthly':
-        return `strftime('%Y-%m-01', date(created_at, 'localtime'))`;
+        return `strftime('%Y-%m-%d', datetime(created_at, '${offsetStr}'))`;
       default:
         throw new Error('Invalid date grouping');
     }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { utcToZonedTime } from 'date-fns-tz';
 import {
   getDateRange,
   getXAxisTickValues,
@@ -23,47 +24,46 @@ import {
   generateEventsUrl,
   determineGrouping,
   getUniqueCatalogEntityKinds,
+  formatRange,
+  formatHourlyBucket,
+  formatDateWithRange,
+  formatWeeklyBucket,
+  formatTooltipHeaderLabel,
 } from '../utils';
-import {
-  format,
-  startOfToday,
-  subDays,
-  startOfYear,
-  startOfWeek,
-  startOfMonth,
-} from 'date-fns';
+import { format, subDays } from 'date-fns';
 
 describe('getDateRange', () => {
   it('should return correct range for today', () => {
-    const today = format(startOfToday(), 'yyyy-MM-dd');
-    expect(getDateRange('today')).toEqual({ startDate: today, endDate: today });
+    const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const today = utcToZonedTime(new Date(), timeZone);
+    expect(getDateRange('today')).toEqual(formatRange(today, today));
   });
 
   it('should return correct range for last-week', () => {
-    const today = format(startOfToday(), 'yyyy-MM-dd');
-    const lastWeek = format(startOfWeek(startOfToday()), 'yyyy-MM-dd');
+    const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const today = utcToZonedTime(new Date(), timeZone);
     expect(getDateRange('last-week')).toEqual({
-      startDate: lastWeek,
-      endDate: today,
+      startDate: `${format(subDays(today, 6), 'yyyy-MM-dd')}T00:00:00`,
+      endDate: `${format(today, 'yyyy-MM-dd')}T23:59:59.999`,
     });
   });
 
   it('should return correct range for last-month', () => {
-    const today = format(startOfToday(), 'yyyy-MM-dd');
-    const lastMonth = format(startOfMonth(startOfToday()), 'yyyy-MM-dd');
+    const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const today = utcToZonedTime(new Date(), timeZone);
     expect(getDateRange('last-month')).toEqual({
-      startDate: lastMonth,
-      endDate: today,
+      startDate: `${format(subDays(today, 29), 'yyyy-MM-dd')}T00:00:00`,
+      endDate: `${format(today, 'yyyy-MM-dd')}T23:59:59.999`,
     });
   });
 
   it('should return correct range for last-year', () => {
-    const today = format(startOfToday(), 'yyyy-MM-dd');
-    const lastYear = format(startOfYear(startOfToday()), 'yyyy-MM-dd');
-    expect(getDateRange('last-year')).toEqual({
-      startDate: lastYear,
-      endDate: today,
-    });
+    const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const today = utcToZonedTime(new Date(), timeZone);
+
+    const finalDate = formatRange(subDays(today, 364), today);
+
+    expect(getDateRange('last-year')).toEqual(finalDate);
   });
 
   it('should return null for an invalid range', () => {
@@ -310,5 +310,56 @@ describe('determineGrouping', () => {
     expect(() =>
       determineGrouping(new Date('2025-03-05'), new Date('invalid')),
     ).toThrow('Invalid date format');
+  });
+});
+
+describe('formatHourlyBucket', () => {
+  it('formats hourly bucket with correct start and end hour in timezone', () => {
+    const date = new Date('2025-07-01T10:00:00Z'); // 10am UTC
+    const result = formatHourlyBucket(date);
+    expect(result).toMatch(/July 1, 2025, \d{1,2}:\d{2}–\d{1,2}:\d{2} (AM|PM)/);
+  });
+});
+
+describe('formatDateWithRange', () => {
+  it('should include the date label and date range in proper format', () => {
+    const date = new Date('2025-07-01T00:00:00Z');
+    const result = formatDateWithRange(date);
+
+    expect(result).toMatch(/July 1, 2025\n\s+\(.* – .*\)/);
+  });
+
+  it('should include last 365-day range in proper format', () => {
+    const date = new Date('2025-07-01T00:00:00Z');
+    const startDateRange = new Date('2024-07-02T00:00:00Z');
+    const endDateRange = new Date('2025-07-01T00:00:00Z');
+    const result = formatDateWithRange(date, startDateRange, endDateRange);
+
+    // Safe regex - static pattern, no user input involved
+    const match = result.match(/\((.*?)\)/); // NOSONAR
+    expect(match).not.toBeNull();
+    expect(match![1]).toBe('filtered by Jul 2, 2024 – Jul 1, 2025');
+  });
+});
+
+describe('formatWeeklyBucket', () => {
+  it('returns the week range Monday–Sunday for the given date', () => {
+    const date = new Date('2025-07-03');
+    const result = formatWeeklyBucket(date);
+
+    expect(result).toMatch(/Jun 30 – Jul 6, 2025/);
+  });
+});
+
+describe('formatTooltipHeaderLabel', () => {
+  it('converts snake_case key to title case', () => {
+    expect(formatTooltipHeaderLabel('returning_users')).toBe('Returning users');
+    expect(formatTooltipHeaderLabel('number_of_clicks')).toBe(
+      'Number of clicks',
+    );
+  });
+
+  it('handles single word key', () => {
+    expect(formatTooltipHeaderLabel('count')).toBe('Count');
   });
 });

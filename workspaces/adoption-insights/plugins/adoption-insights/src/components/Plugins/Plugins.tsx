@@ -160,7 +160,7 @@ const Plugins = () => {
                   </TableCell>
                 )}
                 <TableCell sx={isDefaultDateRange ? {} : { width: '20%' }}>
-                  {Number(plugin.visit_count).toLocaleString() ?? '--'}
+                  {Number(plugin.visit_count).toLocaleString('en-US') ?? '--'}
                 </TableCell>
               </TableRow>
             ))

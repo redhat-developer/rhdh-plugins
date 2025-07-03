@@ -45,14 +45,10 @@ export const isSameMonth = (start_date: string, end_date: string): boolean => {
   return start.hasSame(end, 'month');
 };
 
-export const getDateGroupingType = (
-  dateDiff: number,
-  start_date: string,
-  end_date: string,
-): Grouping => {
+export const getDateGroupingType = (dateDiff: number): Grouping => {
   if (dateDiff === 0) return 'hourly';
   if (dateDiff <= 7) return 'daily';
-  if (dateDiff <= 30 && isSameMonth(start_date, end_date)) return 'weekly';
+  if (dateDiff <= 30) return 'weekly';
   return 'monthly';
 };
 
@@ -60,19 +56,34 @@ export const hasZFormat = (dateStr: string): boolean => {
   return dateStr.includes('Z') || dateStr.includes('T');
 };
 
-export const convertToLocalTimezone = (date: string) => {
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+export const convertToTargetTimezone = (
+  date: string | Date,
+  timeZone: string = new Intl.DateTimeFormat().resolvedOptions().timeZone,
+) => {
+  const dateString = date instanceof Date ? date.toISOString() : date;
 
-  const parsedDate = hasZFormat(date.toString())
-    ? new Date(date).toISOString()
-    : date;
+  const isoParsed = DateTime.fromISO(dateString, { setZone: true });
 
-  if (DateTime.fromISO(parsedDate, { zone: timeZone }).isValid) {
-    return DateTime.fromISO(parsedDate, { zone: timeZone }).toFormat(
-      'yyyy-MM-dd HH:mm:ss ZZZZ',
-    );
+  if (isoParsed.isValid) {
+    return isoParsed.setZone(timeZone).toISO();
   }
-  return DateTime.fromFormat(parsedDate, 'yyyy-MM-dd HH:mm:ss', {
-    zone: timeZone,
-  }).toFormat('yyyy-MM-dd HH:mm:ss ZZZZ');
+
+  // If not valid ISO, try parsing as 'yyyy-MM-dd HH:mm:ss' in UTC
+  const fallback = DateTime.fromFormat(dateString, 'yyyy-MM-dd HH:mm:ss', {
+    zone: 'UTC',
+  });
+
+  if (fallback.isValid) {
+    return fallback.setZone(timeZone).toISO();
+  }
+
+  // Last resort: return the original date
+  console.warn('Unable to parse date:', date);
+  return date;
+};
+
+export const getTimeZoneOffsetString = () => {
+  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const now = DateTime.now().setZone(timeZone);
+  return now.toFormat('ZZ');
 };
