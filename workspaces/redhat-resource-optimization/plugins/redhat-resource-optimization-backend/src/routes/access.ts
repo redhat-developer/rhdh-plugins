@@ -53,12 +53,16 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
       return response.json(body);
     }
 
-    // Filtering logic
-    const ALL_CLUSTERS_CACHE_KEY = 'all_clusters';
-    let allClusters: string[] = [];
+    // RBAC Filtering logic for Cluster
+    const ALL_CLUSTERS_MAP_CACHE_KEY = 'all_clusters_map';
+    let clusterDataMap: Record<string, string> = {};
 
-    if (await cache.get(ALL_CLUSTERS_CACHE_KEY)) {
-      allClusters = (await cache.get(ALL_CLUSTERS_CACHE_KEY)) || [];
+    // Check the cluster data in the cache first
+    const clusterMapDataFromCache = (await cache.get(
+      ALL_CLUSTERS_MAP_CACHE_KEY,
+    )) as Record<string, string> | undefined;
+    if (clusterMapDataFromCache) {
+      clusterDataMap = clusterMapDataFromCache;
     } else {
       // token
       const token = await getTokenFromApi(options);
@@ -82,22 +86,16 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
           camelCase as (value: string | number) => string,
         ) as RecommendationList;
 
-        // retrive all clusters and project Ids from the API result
+        // retrive cluster data from the API result
         if (camelCaseTransformedResponse.data) {
-          const clusterDataFromResponse = camelCaseTransformedResponse.data.map(
-            recommendation => recommendation.clusterAlias,
-          );
-
-          allClusters = [
-            ...new Set<string>(
-              clusterDataFromResponse.filter(
-                (cluster): cluster is string => cluster !== undefined,
-              ),
-            ),
-          ];
+          camelCaseTransformedResponse.data.map(recommendation => {
+            if (recommendation.clusterAlias && recommendation.clusterUuid)
+              clusterDataMap[recommendation.clusterAlias] =
+                recommendation.clusterUuid;
+          });
 
           // store it in Cache
-          await cache.set(ALL_CLUSTERS_CACHE_KEY, allClusters, {
+          await cache.set(ALL_CLUSTERS_MAP_CACHE_KEY, clusterDataMap, {
             ttl: 15 * 60 * 1000,
           });
         }
@@ -110,7 +108,7 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
       _,
       permissions,
       httpAuth,
-      allClusters,
+      clusterDataMap,
     );
 
     if (authorizeClusterIds.length > 0) {

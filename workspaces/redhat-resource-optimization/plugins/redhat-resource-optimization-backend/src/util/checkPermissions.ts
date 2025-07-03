@@ -59,21 +59,27 @@ export const filterAuthorizedClusterIds = async (
   request: HttpRequest,
   permissionsSvc: PermissionsService,
   httpAuth: HttpAuthService,
-  allClusters: string[],
+  clusterDataMap: Record<string, string>,
 ): Promise<string[]> => {
   const credentials = await httpAuth.credentials(request);
+  const allClusterNames: string[] = Object.keys(clusterDataMap);
 
-  const specificClusterRequests: AuthorizePermissionRequest[] = allClusters.map(
-    clusterId => ({
-      permission: rosClusterSpecificPermission(clusterId),
-    }),
-  );
+  const specificClusterRequests: AuthorizePermissionRequest[] =
+    allClusterNames.map(clusterName => ({
+      permission: rosClusterSpecificPermission(clusterName),
+    }));
 
   const decisions = await permissionsSvc.authorize(specificClusterRequests, {
     credentials,
   });
 
-  return allClusters.filter(
+  const authorizeClusterNames = allClusterNames.filter(
     (_, idx) => decisions[idx].result === AuthorizeResult.ALLOW,
   );
+
+  const authorizedClusterIds = authorizeClusterNames.map(
+    clusterName => clusterDataMap[clusterName],
+  );
+
+  return authorizedClusterIds;
 };
