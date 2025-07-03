@@ -224,13 +224,33 @@ Workflows that call external APIs requiring authentication can request tokens in
 
 ## Run locally from this repo
 
-The orchestrator workspace is structured like a standard backstage application. To get it up and running locally run the following:
+The orchestrator workspace is structured like a standard Backstage application. To get it up and running locally, follow these steps:
 
-```
-cd workspaces/orchestrator
-yarn install
-yarn dev
-```
+1. Ensure you have the following developer tools installed:
+
+   - **Fedora/Red Hat-based Linux**:
+
+     ```bash
+     sudo dnf install python3 make g++ zlib-devel brotli-devel openssl-devel libuv-devel
+     ```
+
+   - **Debian/Ubuntu-based Linux**:
+
+     ```bash
+     sudo apt-get install python3 g++ build-essential
+     ```
+
+   - **Windows**: Follow the [Windows setup instructions](https://github.com/nodejs/node-gyp#on-windows) in the `node-gyp` documentation.
+
+   - **macOS**: Follow the [macOS setup instructions](https://github.com/nodejs/node-gyp#on-macos) in the `node-gyp` documentation.
+
+2. Navigate to the orchestrator workspace and start the app:
+
+   ```bash
+   cd workspaces/orchestrator
+   yarn install
+   yarn dev
+   ```
 
 This will trigger a docker container run of devmode SonataFlow as described in [Devmode local configuration](#devmode-local-configuration).
 
@@ -238,4 +258,4 @@ More development guidelines available in the [contributors documentation](./docs
 
 ## Enable in RHDH repo locally
 
-If you're running a local clone of [Red Hat Developer Hub (RHDH)](https://github.com/redhat-developer/rhdh) and want to use the Orchestrator plugin as a dynamic plugin, we've included a helper script to streamline this setup.
+If you're running a local clone of [Red Hat Developer Hub (RHDH)](https://github.com/redhat-developer/rhdh) and want to use the Orchestrator plugin as a dynamic plugin, we've included a helper script to streamline this setup. More details available [here](./docs/enableInRhdhRepo.md).
