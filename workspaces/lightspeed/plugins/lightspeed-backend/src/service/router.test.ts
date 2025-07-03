@@ -221,7 +221,6 @@ describe('lightspeed router tests', () => {
       const response = await request(backendServer).get(
         `/api/lightspeed/conversations/${encodedConversationId}`,
       );
-      console.log(response);
       expect(response.statusCode).toEqual(200);
       // Parse response body
       const responseData = response.body;
@@ -289,6 +288,74 @@ describe('lightspeed router tests', () => {
       );
       expect(response.statusCode).toEqual(500);
       expect(response.body.error).toContain('not found');
+    });
+  });
+
+  describe('POST /v1/feedback', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should send the feedback successfully', async () => {
+      const backendServer = await startBackendServer();
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/feedback')
+        .send({
+          conversation_id: '12345678-abcd-0000-0123-456789abcdef',
+          llm_response: 'bar',
+          sentiment: 1,
+          user_feedback: 'Great service!',
+          user_question: 'foo',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        response: 'feedback received',
+      });
+    });
+
+    it('should fail with unauthorized error in feedback API', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const feedbackResponse = await request(backendServer)
+        .post('/api/lightspeed/v1/feedback')
+        .send({
+          conversation_id: '12345678-abcd-0000-0123-456789abcdef',
+          llm_response: 'bar',
+          sentiment: 1,
+          user_feedback: 'Great service!',
+          user_question: 'foo',
+        });
+      expect(feedbackResponse.statusCode).toEqual(403);
+    });
+  });
+
+  describe('GET /v1/feedback/status', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should send the feedback successfully', async () => {
+      const backendServer = await startBackendServer();
+
+      const response = await request(backendServer).get(
+        '/api/lightspeed/v1/feedback/status',
+      );
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        functionality: 'feedback',
+        status: { enabled: true },
+      });
+    });
+
+    it('should fail with unauthorized error in feedback staus API', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const feedbackResponse = await request(backendServer).get(
+        '/api/lightspeed/v1/feedback/status',
+      );
+
+      expect(feedbackResponse.statusCode).toEqual(403);
     });
   });
 

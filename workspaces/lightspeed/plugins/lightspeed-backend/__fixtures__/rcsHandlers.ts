@@ -90,6 +90,16 @@ export const rcsHandlers = [
     });
   }),
 
+  http.get(`${LOCAL_RCS_ADDR}/v1/feedback/status`, () => {
+    const response = { functionality: 'feedback', status: { enabled: true } };
+    return HttpResponse.json(response);
+  }),
+
+  http.post(`${LOCAL_RCS_ADDR}/v1/feedback`, () => {
+    const response = { response: 'feedback received' };
+    return HttpResponse.json(response);
+  }),
+
   http.get(`${LOCAL_RCS_ADDR}/conversations/:conversation_id`, ({ params }) => {
     const conversation_id = params.conversation_id as string;
     if (conversation_id in chatHistory) {
