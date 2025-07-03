@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 3.1.4
+
+### Patch Changes
+
+- ff0f69e: update API - fetch executionSummary field
+  Use execution summary for results card
+- Updated dependencies [ff0f69e]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@1.28.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.6.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.6.4
+
 ## 3.1.3
 
 ### Patch Changes
