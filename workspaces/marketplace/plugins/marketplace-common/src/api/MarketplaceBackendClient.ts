@@ -18,7 +18,7 @@ import {
   GetEntityFacetsRequest,
   GetEntityFacetsResponse,
 } from '@backstage/catalog-client';
-import { ConfigApi } from '@backstage/core-plugin-api';
+import type { ConfigApi } from '@backstage/core-plugin-api';
 
 import type {
   ConfigurationResponse,

@@ -74,6 +74,7 @@ export enum MarketplacePluginInstallStatus {
   NotInstalled = 'NotInstalled',
   Installed = 'Installed',
   PartiallyInstalled = 'PartiallyInstalled',
+  Disabled = 'Disabled',
   UpdateAvailable = 'UpdateAvailable',
 }
 

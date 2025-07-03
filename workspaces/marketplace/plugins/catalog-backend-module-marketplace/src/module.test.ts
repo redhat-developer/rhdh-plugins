@@ -16,19 +16,37 @@
 
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
 import { catalogModuleMarketplace } from './module';
-import { startTestBackend } from '@backstage/backend-test-utils';
+import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
+import { dynamicPluginsFeatureLoader } from '@backstage/backend-dynamic-feature-service';
+import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-plugin-api';
 
 describe('catalogModuleMarketplace', () => {
   it('should register the extension point', async () => {
+    const runner = jest.fn();
+    let usedSchedule: SchedulerServiceTaskScheduleDefinition | undefined;
+    const scheduler = mockServices.scheduler.mock({
+      createScheduledTaskRunner(schedule) {
+        usedSchedule = schedule;
+        return { run: runner };
+      },
+    });
+
     const extensionPoint = {
       addProcessor: jest.fn(),
       addEntityProvider: jest.fn(),
     };
     await startTestBackend({
       extensionPoints: [[catalogProcessingExtensionPoint, extensionPoint]],
-      features: [catalogModuleMarketplace],
+      features: [
+        catalogModuleMarketplace,
+        dynamicPluginsFeatureLoader(),
+        scheduler.factory,
+      ],
     });
 
-    expect(extensionPoint.addProcessor).toHaveBeenCalledTimes(5);
+    expect(extensionPoint.addProcessor).toHaveBeenCalledTimes(6);
+    expect(extensionPoint.addEntityProvider).toHaveBeenCalledTimes(2);
+    expect(usedSchedule?.frequency).toEqual({ minutes: 30 });
+    expect(usedSchedule?.timeout).toEqual({ minutes: 10 });
   });
 });

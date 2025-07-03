@@ -14,27 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  MarketplacePackage,
-  MarketplacePackageInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { packageEntity } from '../../__fixtures__/mockData';
 
 import { LocalPackageInstallStatusProcessor } from './LocalPackageInstallStatusProcessor';
-
-const packageEntity: MarketplacePackage = {
-  apiVersion: 'extensions.backstage.io/v1alpha1',
-  kind: 'Package',
-  metadata: {
-    namespace: 'default',
-    name: 'testpackage',
-    title: 'APIs with Test package',
-    description: 'Test package.',
-    tags: ['3scale', 'api'],
-  },
-  spec: {
-    packageName: 'test-package',
-  },
-};
 
 describe('LocalPackageInstallStatusProcessor', () => {
   it('should return processor name', () => {
