@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 1.28.4
+
+### Patch Changes
+
+- ff0f69e: update API - fetch executionSummary field
+  Use execution summary for results card
+
 ## 1.28.3
 
 ### Patch Changes
