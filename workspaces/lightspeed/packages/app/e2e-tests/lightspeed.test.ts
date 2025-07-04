@@ -26,7 +26,13 @@ import {
   botResponse,
   moreConversations,
 } from './fixtures/responses';
-import { openLightspeed, sendMessage } from './utils/testHelper';
+import {
+  openLightspeed,
+  sendMessage,
+  verifyFeedbackButtons,
+  submitFeedback,
+  assertClipboardContains,
+} from './utils/testHelper';
 import {
   uploadFiles,
   uploadAndAssertDuplicate,
@@ -187,7 +193,9 @@ test.describe('Conversation', () => {
     });
   });
 
-  test('Bot responds', async ({ page }) => {
+  test('Bot response, feedback submission, and copy to clipboard', async ({
+    page,
+  }) => {
     await sendMessage(botQuery, page);
 
     const userMessage = page.locator('.pf-chatbot__message--user');
@@ -197,6 +205,11 @@ test.describe('Conversation', () => {
     await expect(userMessage).toContainText(botQuery);
     await expect(botMessage).toBeVisible();
     await expect(botMessage).toContainText(botResponse);
+    await verifyFeedbackButtons(page);
+    await submitFeedback(page, 'Good response');
+    await submitFeedback(page, 'Bad response');
+    await page.getByRole('button', { name: 'Copy' }).click();
+    await assertClipboardContains(page, botResponse);
   });
 
   test('Conversation is created and shown in side panel', async ({ page }) => {
