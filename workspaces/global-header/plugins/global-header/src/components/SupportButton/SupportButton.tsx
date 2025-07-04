@@ -29,6 +29,7 @@ export interface SupportButtonProps {
   to?: string;
   tooltip?: string;
   style?: CSSProperties;
+  onClick?: () => void;
 }
 /**
  * @public
@@ -39,6 +40,7 @@ export const SupportButton = ({
   icon = 'support',
   tooltip,
   style,
+  onClick = () => {},
 }: SupportButtonProps) => {
   const apiHolder = useApiHolder();
   const config = apiHolder.get(configApiRef);
@@ -53,6 +55,7 @@ export const SupportButton = ({
       to={supportUrl}
       component={Link}
       sx={{ width: '100%', color: 'inherit', ...style }}
+      onClick={onClick}
       data-testid="support-button"
     >
       <MenuItemLink

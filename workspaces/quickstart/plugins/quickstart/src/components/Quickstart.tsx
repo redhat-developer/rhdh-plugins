@@ -52,11 +52,18 @@ export const Quickstart = ({
   }, [quickstartItems, itemCount, calculateProgress]);
 
   return (
-    <>
+    <Box
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Box
         sx={{
-          padding: theme =>
-            `${theme.spacing(10.5)} ${theme.spacing(3)} ${theme.spacing(3)}`,
+          flex: 1,
+          padding: theme => theme.spacing(3),
+          overflowY: 'auto',
         }}
       >
         <QuickstartHeader />
@@ -74,6 +81,6 @@ export const Quickstart = ({
         handleDrawerClose={handleDrawerClose}
         progress={progress}
       />
-    </>
+    </Box>
   );
 };

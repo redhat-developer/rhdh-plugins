@@ -43,6 +43,13 @@ export const QuickstartDrawer = () => {
             }`,
           justifyContent: 'space-between',
         },
+        // Only apply header offset when global header exists
+        'body:has(#global-header) &': {
+          '& .v5-MuiDrawer-paper': {
+            top: '64px !important',
+            height: 'calc(100vh - 64px) !important',
+          },
+        },
       }}
       variant="persistent"
       anchor="right"

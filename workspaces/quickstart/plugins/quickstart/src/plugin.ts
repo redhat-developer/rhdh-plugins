@@ -19,6 +19,9 @@ import {
   createPlugin,
 } from '@backstage/core-plugin-api';
 import { PropsWithChildren } from 'react';
+import { QuickstartButtonProps } from './components/QuickstartButton/QuickstartButton';
+
+export type { QuickstartButtonProps } from './components/QuickstartButton/QuickstartButton';
 
 /**
  * Quick start plugin
@@ -42,6 +45,24 @@ export const QuickstartDrawerProvider: React.ComponentType<PropsWithChildren> =
         lazy: () =>
           import('./components/QuickstartDrawerProvider').then(
             m => m.QuickstartDrawerProvider,
+          ),
+      },
+    }),
+  );
+
+/**
+ * Quick start button for global header help dropdown
+ *
+ * @public
+ */
+export const QuickstartButton: React.ComponentType<QuickstartButtonProps> =
+  quickstartPlugin.provide(
+    createComponentExtension({
+      name: 'QuickstartButton',
+      component: {
+        lazy: () =>
+          import('./components/QuickstartButton/QuickstartButton').then(
+            m => m.QuickstartButton,
           ),
       },
     }),

@@ -20,22 +20,36 @@ import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 import { QuickstartDrawerContext } from './QuickstartDrawerContext';
 import { QuickstartDrawer } from './QuickstartDrawer';
-import Box from '@mui/material/Box';
 import { useQuickstartPermission } from '../hooks/useQuickstartPermission';
-import { useLocalStorageState } from '../hooks/useLocalStorageState';
 
 export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const isAllowed = useQuickstartPermission();
-  const [isDrawerOpen, setIsDrawerOpen] = useLocalStorageState<boolean>(
-    'quickstart-drawer-open',
-    false,
-    isAllowed,
-  );
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [showNotification, setShowNotification] = useState(false);
   const [hasShownNotification, setHasShownNotification] = useState(false);
   const [drawerWidth, setDrawerWidth] = useState<number>(500);
 
+  // Single useEffect - sets class on document.body
   useEffect(() => {
+    if (isDrawerOpen) {
+      document.body.classList.add('quickstart-drawer-open');
+      document.body.style.setProperty(
+        '--quickstart-drawer-width',
+        `${drawerWidth}px`,
+      );
+    } else {
+      document.body.classList.remove('quickstart-drawer-open');
+      document.body.style.removeProperty('--quickstart-drawer-width');
+    }
+
+    return () => {
+      document.body.classList.remove('quickstart-drawer-open');
+      document.body.style.removeProperty('--quickstart-drawer-width');
+    };
+  }, [isDrawerOpen, drawerWidth]);
+
+  useEffect(() => {
+    const wasOpen = localStorage.getItem('quickstart-open');
     const hasVisited = localStorage.getItem('quickstart-visited');
     const notificationShown = localStorage.getItem(
       'quickstart-notification-shown',
@@ -45,13 +59,19 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
       if (!hasVisited) {
         setIsDrawerOpen(true);
         localStorage.setItem('quickstart-visited', 'true');
+      } else if (wasOpen === 'true') {
+        setIsDrawerOpen(true);
       }
     }
 
     setHasShownNotification(notificationShown === 'true');
-  }, [isAllowed, setIsDrawerOpen]);
+  }, [isAllowed]);
 
-  const openDrawer = () => setIsDrawerOpen(true);
+  const openDrawer = () => {
+    setIsDrawerOpen(true);
+    localStorage.setItem('quickstart-open', 'true');
+  };
+
   const closeDrawer = () => {
     setIsDrawerOpen(false);
     if (!hasShownNotification) {
@@ -59,8 +79,14 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
       setHasShownNotification(true);
       localStorage.setItem('quickstart-notification-shown', 'true');
     }
+    localStorage.setItem('quickstart-open', 'false');
   };
-  const toggleDrawer = () => setIsDrawerOpen(!isDrawerOpen);
+
+  const toggleDrawer = () => {
+    setIsDrawerOpen(!isDrawerOpen);
+    localStorage.setItem('quickstart-open', (!isDrawerOpen).toString());
+  };
+
   const handleNotificationClose = () => setShowNotification(false);
 
   return (
@@ -74,15 +100,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
         drawerWidth,
       }}
     >
-      <Box
-        sx={{
-          ...(!isDrawerOpen
-            ? { marginRight: '0px' }
-            : { marginRight: `${drawerWidth}px` }),
-        }}
-      >
-        {children}
-      </Box>
+      {children}
       <QuickstartDrawer />
       <Snackbar
         sx={{ top: '80px !important' }}

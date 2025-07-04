@@ -7,6 +7,7 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import type { ComponentType } from 'react';
 import { CSSProperties } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { MenuItemProps } from '@mui/material/MenuItem';
 
 // @public
 export const ApplicationLauncherDropdown: () => JSX_2.Element;
@@ -174,6 +175,15 @@ export interface HeaderIconProps {
 }
 
 // @public
+export const HelpDropdown: ComponentType<HelpDropdownProps>;
+
+// @public
+export interface HelpDropdownProps {
+  // (undocumented)
+  layout?: CSSProperties;
+}
+
+// @public
 export type LogoURLs =
   | {
       light: string;
@@ -188,7 +198,7 @@ export const LogoutButton: ComponentType;
 // @public
 export interface MenuItemConfig {
   // (undocumented)
-  Component: ComponentType<MenuItemLinkProps | {}>;
+  Component: ComponentType<MenuItemLinkProps | MenuItemProps | {}>;
   // (undocumented)
   icon?: string;
   // (undocumented)
@@ -299,21 +309,6 @@ export interface ProfileDropdownProps {
   layout?: CSSProperties;
 }
 
-// @public (undocumented)
-export const QuickstartButton: ComponentType<QuickstartButtonProps>;
-
-// @public (undocumented)
-export interface QuickstartButtonProps {
-  // (undocumented)
-  icon?: string;
-  // (undocumented)
-  style?: CSSProperties;
-  // (undocumented)
-  title?: string;
-  // (undocumented)
-  tooltip?: string;
-}
-
 // @public
 export const RegisterAComponentSection: ComponentType<RegisterAComponentSectionProps>;
 
@@ -362,6 +357,8 @@ export const SupportButton: ComponentType<SupportButtonProps>;
 export interface SupportButtonProps {
   // (undocumented)
   icon?: string;
+  // (undocumented)
+  onClick?: () => void;
   // (undocumented)
   style?: CSSProperties;
   // (undocumented)

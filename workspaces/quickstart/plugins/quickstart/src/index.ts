@@ -22,6 +22,7 @@ ClassNameGenerator.configure(componentName => {
     : `v5-${componentName}`;
 });
 
-export { quickstartPlugin, QuickstartDrawerProvider } from './plugin';
+export * from './plugin';
+
 export { useQuickstartDrawerContext } from './hooks/useQuickstartDrawerContext';
 export type { QuickstartDrawerContextType } from './components/QuickstartDrawerContext';

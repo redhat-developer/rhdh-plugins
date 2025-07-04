@@ -26,12 +26,18 @@ import { filterAndSortButtons } from '../utils';
 
 const useStyles = makeStyles(theme => ({
   'page-end': {
-    bottom: theme?.spacing?.(2) ?? '16px',
-    right: theme?.spacing?.(2) ?? '16px',
+    bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
+    right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
     alignItems: 'end',
+
+    // When quickstart drawer is open, adjust margin
+    '.quickstart-drawer-open &': {
+      transition: 'margin-right 0.3s ease',
+      marginRight: 'var(--quickstart-drawer-width, 500px) ',
+    },
   },
   'bottom-left': {
-    bottom: theme?.spacing?.(2) ?? '16px',
+    bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
     paddingLeft: theme?.spacing?.(2) ?? '16px',
     alignItems: 'start',
   },
