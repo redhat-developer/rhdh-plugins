@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.8.0
+
+### Minor Changes
+
+- 7aac60c: Introduces `PluginInstallStatusProcessor` to add `spec.installStatus` for Marketplace plugins. Introduces new `installStatus` values: `MarketplacePackageInstallStatus.Disabled` and `MarketplacePluginInstallStatus.Disabled`.
+
+### Patch Changes
+
+- Updated dependencies [7aac60c]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.7.0
+
 ## 0.7.0
 
 ### Minor Changes
