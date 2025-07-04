@@ -39,7 +39,8 @@ export default defineConfig({
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
-    trace: 'on-first-retry',
+    trace: 'on',
+    permissions: ['clipboard-read', 'clipboard-write'],
   },
 
   outputDir: 'node_modules/.cache/e2e-test-results',
