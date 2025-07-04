@@ -63,4 +63,4 @@ The procedure involves the following steps:
 
 - [Installing ROS-OCP RHDH plugin on Red Hat Developer Hub on a Openshift Cluster](https://docs.google.com/document/d/1tExe7cEBYMJplkk9ppSdBINwE-14KmxURczGjloHqZ4/edit?usp=sharing)
 
-- [Documentation to understand how to export this plugin as a dynamic plugin](https://github.com/janus-idp/backstage-showcase/blob/main/docs/dynamic-plugins/export-derived-package.md)
+- [Documentation to understand how to export, package & publish plugin as a dynamic plugin](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/packaging-dynamic-plugins.md#packaging-and-publishing-backstage-plugin-as-a-dynamic-plugin)
