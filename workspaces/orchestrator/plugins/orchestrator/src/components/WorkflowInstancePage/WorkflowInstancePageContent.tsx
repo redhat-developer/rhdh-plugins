@@ -27,7 +27,6 @@ import moment from 'moment';
 import { makeStyles } from 'tss-react/mui';
 
 import {
-  AssessedProcessInstanceDTO,
   InputSchemaResponseDTO,
   orchestratorAdminViewPermission,
   ProcessInstanceDTO,
@@ -60,7 +59,6 @@ export const mapProcessInstanceToDetails = (
     workflowId: instance.processId,
     start: started,
     duration,
-    category: instance.category,
     state: instance.state,
     description: instance.description,
   };
@@ -85,17 +83,17 @@ const useStyles = makeStyles()(() => ({
 }));
 
 export const WorkflowInstancePageContent: React.FC<{
-  assessedInstance: AssessedProcessInstanceDTO;
-}> = ({ assessedInstance }) => {
+  instance: ProcessInstanceDTO;
+}> = ({ instance }) => {
   const { classes } = useStyles();
   const orchestratorApi = useApi(orchestratorApiRef);
 
   const details = React.useMemo(
-    () => mapProcessInstanceToDetails(assessedInstance.instance),
-    [assessedInstance.instance],
+    () => mapProcessInstanceToDetails(instance),
+    [instance],
   );
 
-  const workflowdata = assessedInstance.instance?.workflowdata;
+  const workflowdata = instance?.workflowdata;
   let instanceVariables: WorkflowDataDTO = {};
   if (workflowdata) {
     instanceVariables = {
@@ -106,8 +104,8 @@ export const WorkflowInstancePageContent: React.FC<{
       delete instanceVariables.result;
     }
   }
-  const workflowId = assessedInstance.instance.processId;
-  const instanceId = assessedInstance.instance.id;
+  const workflowId = instance.processId;
+  const instanceId = instance.id;
   const {
     value,
     loading,
@@ -164,10 +162,7 @@ export const WorkflowInstancePageContent: React.FC<{
             cardClassName={classes.cardClassName}
             icon={viewVariables}
           >
-            <WorkflowRunDetails
-              details={details}
-              assessedBy={assessedInstance.assessedBy}
-            />
+            <WorkflowRunDetails details={details} />
           </InfoCard>
         </Grid>
 
@@ -175,7 +170,7 @@ export const WorkflowInstancePageContent: React.FC<{
           <WorkflowResult
             className={classes.topRowCard}
             cardClassName={classes.cardClassName}
-            assessedInstance={assessedInstance}
+            instance={instance}
           />
         </Grid>
 
@@ -197,9 +192,9 @@ export const WorkflowInstancePageContent: React.FC<{
             cardClassName={classes.cardClassName}
           >
             <WorkflowProgress
-              workflowError={assessedInstance.instance.error}
-              workflowNodes={assessedInstance.instance.nodes}
-              workflowStatus={assessedInstance.instance.state}
+              workflowError={instance.error}
+              workflowNodes={instance.nodes}
+              workflowStatus={instance.state}
             />
           </InfoCard>
         </Grid>

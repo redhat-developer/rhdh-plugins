@@ -28,7 +28,6 @@ import FormatListBulletedMui from '@mui/icons-material/FormatListBulleted';
 import PlayArrowMui from '@mui/icons-material/PlayArrow';
 
 import {
-  capitalize,
   orchestratorWorkflowPermission,
   orchestratorWorkflowSpecificPermission,
   orchestratorWorkflowUsePermission,
@@ -239,11 +238,6 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
           ) : (
             rowData.name
           ),
-      },
-      {
-        title: 'Category',
-        field: 'category',
-        render: rowData => capitalize(rowData.category),
       },
       {
         title: 'Workflow status',
