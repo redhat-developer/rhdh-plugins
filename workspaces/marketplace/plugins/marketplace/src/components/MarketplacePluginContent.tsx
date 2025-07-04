@@ -271,7 +271,10 @@ export const MarketplacePluginContent = ({
     }
 
     if (
-      plugin.spec?.installStatus === MarketplacePluginInstallStatus.Installed &&
+      (plugin.spec?.installStatus ===
+        MarketplacePluginInstallStatus.Installed ||
+        plugin.spec?.installStatus ===
+          MarketplacePluginInstallStatus.UpdateAvailable) &&
       enableActionsButtonFeature
     ) {
       return (
@@ -441,7 +444,12 @@ export const MarketplacePluginContentLoader = () => {
   if (plugin.isLoading) {
     return <MarketplacePluginContentSkeleton />;
   } else if (plugin.data) {
-    return <MarketplacePluginContent plugin={plugin.data} />;
+    return (
+      <MarketplacePluginContent
+        plugin={plugin.data}
+        enableActionsButtonFeature
+      />
+    );
   } else if (plugin.error) {
     return <ErrorPage statusMessage={plugin.error.toString()} />;
   }
