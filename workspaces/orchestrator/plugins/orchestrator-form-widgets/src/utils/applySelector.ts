@@ -24,9 +24,14 @@ export const applySelectorArray = async (
   data: JsonObject,
   selector: string,
   createArrayIfNeeded: boolean = false,
+  emptyArrayIfNeeded: boolean = false,
 ): Promise<string[]> => {
   const expression = jsonata(selector);
   const value = await expression.evaluate(data);
+
+  if (emptyArrayIfNeeded && !value) {
+    return [];
+  }
 
   if (typeof value === 'string' && createArrayIfNeeded) {
     return [value];

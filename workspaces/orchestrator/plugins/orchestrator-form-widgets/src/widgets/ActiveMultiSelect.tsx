@@ -95,6 +95,8 @@ export const ActiveMultiSelect: Widget<
         const autocompleteValues = await applySelectorArray(
           data,
           autocompleteSelector,
+          true,
+          true,
         );
         setAutocompleteOptions(autocompleteValues);
       }
