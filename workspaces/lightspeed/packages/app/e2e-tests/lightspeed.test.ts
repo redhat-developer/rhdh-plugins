@@ -191,6 +191,18 @@ test.describe('Conversation', () => {
       const json = { chat_history: contents };
       await route.fulfill({ json });
     });
+    await page.route('**/v1/feedback/status', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          functionality: 'feedback',
+          status: {
+            enabled: true,
+          },
+        }),
+      });
+    });
   });
 
   test('Bot response, feedback submission, and copy to clipboard', async ({
