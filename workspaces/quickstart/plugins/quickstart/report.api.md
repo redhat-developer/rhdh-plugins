@@ -6,7 +6,18 @@
 /// <reference types="react" />
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { CSSProperties } from 'react';
 import { PropsWithChildren } from 'react';
+
+// @public
+export const QuickstartButton: React.ComponentType<QuickstartButtonProps>;
+
+// @public
+export interface QuickstartButtonProps {
+  onClick?: () => void;
+  style?: CSSProperties;
+  title?: string;
+}
 
 // @public
 export interface QuickstartDrawerContextType {

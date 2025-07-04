@@ -47,12 +47,7 @@ export const GlobalHeaderComponent = ({
   }, [globalHeaderMountPoints]);
 
   return (
-    <AppBar
-      position="sticky"
-      component="nav"
-      id="global-header"
-      sx={{ zIndex: '1300' }}
-    >
+    <AppBar position="sticky" component="nav" id="global-header">
       <Toolbar
         sx={{
           gap: 1,

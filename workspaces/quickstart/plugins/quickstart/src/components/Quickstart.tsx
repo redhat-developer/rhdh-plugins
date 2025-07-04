@@ -62,8 +62,7 @@ export const Quickstart = ({
       <Box
         sx={{
           flex: 1,
-          padding: theme =>
-            `${theme.spacing(10.5)} ${theme.spacing(3)} ${theme.spacing(3)}`,
+          padding: theme => theme.spacing(3),
           overflowY: 'auto',
         }}
       >

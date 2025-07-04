@@ -309,23 +309,6 @@ export interface ProfileDropdownProps {
   layout?: CSSProperties;
 }
 
-// @public (undocumented)
-export const QuickstartButton: ComponentType<QuickstartButtonProps>;
-
-// @public (undocumented)
-export interface QuickstartButtonProps {
-  // (undocumented)
-  icon?: string;
-  // (undocumented)
-  onClick?: () => void;
-  // (undocumented)
-  style?: CSSProperties;
-  // (undocumented)
-  title?: string;
-  // (undocumented)
-  tooltip?: string;
-}
-
 // @public
 export const RegisterAComponentSection: ComponentType<RegisterAComponentSectionProps>;
 
