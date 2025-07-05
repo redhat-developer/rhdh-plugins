@@ -26,7 +26,7 @@ import { ScrollContainerHandle } from '../components/LightspeedChatBox';
 import { TEMP_CONVERSATION_ID } from '../const';
 import botAvatar from '../images/bot-avatar.svg';
 import userAvatar from '../images/user-avatar.svg';
-import { Attachment } from '../types';
+import { Attachment, ReferencedDocument } from '../types';
 import {
   createBotMessage,
   createUserMessage,
@@ -313,12 +313,11 @@ export const useConversationMessages = (
 
                   if (documents.length) {
                     lastMessage.sources = {
-                      sources: documents.map(
-                        (doc: { doc_title: string; doc_url: string }) => ({
-                          title: doc.doc_title,
-                          link: doc.doc_url,
-                        }),
-                      ),
+                      sources: documents.map((doc: ReferencedDocument) => ({
+                        title: doc.doc_title,
+                        link: doc.doc_url,
+                        body: doc.doc_description,
+                      })),
                     };
                   }
 
