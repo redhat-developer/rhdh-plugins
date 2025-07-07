@@ -38,6 +38,7 @@ import {
   MarketplacePackage,
   MarketplacePackageSpecAppConfigExample,
   MarketplacePlugin,
+  MarketplacePluginInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import Box from '@mui/material/Box';
@@ -86,6 +87,7 @@ import { usePluginConfig } from '../hooks/usePluginConfig';
 import { useInstallPlugin } from '../hooks/useInstallPlugin';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
+import { mapMarketplacePluginInstallStatusToInstallPageButton } from '../labels';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -585,7 +587,12 @@ export const MarketplacePluginInstallContent = ({
                   )
                 }
               >
-                Install
+                {
+                  mapMarketplacePluginInstallStatusToInstallPageButton[
+                    plugin.spec?.installStatus ??
+                      MarketplacePluginInstallStatus.NotInstalled
+                  ]
+                }
               </Button>
             </Typography>
           </Tooltip>
