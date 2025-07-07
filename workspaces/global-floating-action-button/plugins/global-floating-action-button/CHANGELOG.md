@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.2.1
+
+### Patch Changes
+
+- 7eb9524: - Add correct right margin when quickstart drawer is open.
+  - Fix bug where page inset was hiding floating action buttons.
+
 ## 1.2.0
 
 ### Minor Changes
