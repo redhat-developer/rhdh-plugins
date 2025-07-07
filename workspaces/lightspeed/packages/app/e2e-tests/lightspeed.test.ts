@@ -212,6 +212,7 @@ test.describe('Conversation', () => {
 
     const userMessage = page.locator('.pf-chatbot__message--user');
     const botMessage = page.locator('.pf-chatbot__message--bot');
+    const copyButton = page.getByRole('button', { name: 'Copy' });
 
     await expect(userMessage).toBeVisible();
     await expect(userMessage).toContainText(botQuery);
@@ -220,7 +221,7 @@ test.describe('Conversation', () => {
     await verifyFeedbackButtons(page);
     await submitFeedback(page, 'Good response');
     await submitFeedback(page, 'Bad response');
-    await page.getByRole('button', { name: 'Copy' }).click();
+    await copyButton.click();
     await assertClipboardContains(page, botResponse);
   });
 
