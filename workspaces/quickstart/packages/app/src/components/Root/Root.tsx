@@ -82,8 +82,11 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
   return (
     <Box
       sx={{
-        '.v5-MuiAppBar-root': {
-          zIndex: 1250,
+        '.quickstart-drawer-open &': {
+          "& main[class*='BackstagePage-root']": {
+            marginRight: 'calc(var(--quickstart-drawer-width, 500px) + 1.5em) ',
+            transition: 'margin-right 0.3s ease',
+          },
         },
       }}
     >
