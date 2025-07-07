@@ -72,11 +72,6 @@ dynamicPlugins:
             priority: 80
 
         - mountPoint: global.header/help
-          importName: QuickstartButton
-          config:
-            priority: 100
-
-        - mountPoint: global.header/help
           importName: SupportButton
           config:
             priority: 10
