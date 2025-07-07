@@ -28,7 +28,6 @@ import { MarketplacePackageProcessor } from './processors/MarketplacePackageProc
 import { MarketplacePluginProvider } from './providers/MarketplacePluginProvider';
 import { MarketplacePackageProvider } from './providers/MarketplacePackageProvider';
 import { dynamicPluginsServiceRef } from '@backstage/backend-dynamic-feature-service';
-import { DynamicPluginsService } from './processors/DynamicPluginsService';
 import { CatalogClient } from '@backstage/catalog-client';
 import { PluginInstallStatusProcessor } from './processors/PluginInstallStatusProcessor';
 
@@ -45,7 +44,6 @@ export const catalogModuleMarketplace = createBackendModule({
         auth: coreServices.auth,
         discovery: coreServices.discovery,
         catalog: catalogProcessingExtensionPoint,
-        config: coreServices.rootConfig,
         pluginProvider: dynamicPluginsServiceRef,
         cache: coreServices.cache,
         scheduler: coreServices.scheduler,
@@ -55,7 +53,6 @@ export const catalogModuleMarketplace = createBackendModule({
         auth,
         discovery,
         catalog,
-        config,
         pluginProvider,
         cache,
         scheduler,
@@ -74,11 +71,6 @@ export const catalogModuleMarketplace = createBackendModule({
         });
 
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
-        const dynamicPluginsService = DynamicPluginsService.fromConfig({
-          config,
-          logger,
-        });
-        dynamicPluginsService.initialize();
 
         catalog.addEntityProvider(new MarketplacePackageProvider(taskRunner));
         catalog.addEntityProvider(
@@ -95,7 +87,6 @@ export const catalogModuleMarketplace = createBackendModule({
           new DynamicPackageInstallStatusProcessor({
             logger,
             pluginProvider,
-            dynamicPluginsService,
           }),
         );
         catalog.addProcessor(new MarketplacePackageProcessor());
