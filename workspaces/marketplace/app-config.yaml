@@ -124,6 +124,10 @@ kubernetes:
 permission:
   # setting this to `false` will disable permissions
   enabled: true
+  rbac:
+    pluginsWithPermission:
+      - catalog
+      - extensions
 
 extensions:
   ### Example for how to enable installation to a file.

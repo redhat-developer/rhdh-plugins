@@ -245,4 +245,21 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     // Double check that we return (only) the right Packages
     return result.items.filter(isMarketplacePackage);
   }
+
+  async getPackagePlugins(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePlugin[]> {
+    const entityRef = stringifyEntityRef({
+      kind: MarketplaceKind.Package,
+      namespace,
+      name,
+    });
+    const token = await this.getServiceToken();
+    const result = await this.catalog.getEntities(
+      { filter: { kind: 'Plugin', 'relations.hasPart': entityRef } },
+      token,
+    );
+    return result.items;
+  }
 }

@@ -24,6 +24,10 @@ import { BackendFeature } from '@backstage/backend-plugin-api';
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import type { JsonObject } from '@backstage/types';
 import {
+  AuthorizeResult,
+  type QueryPermissionResponse,
+} from '@backstage/plugin-permission-common';
+import {
   MarketplaceCollection,
   MarketplaceKind,
   MarketplacePackage,
@@ -75,14 +79,35 @@ const PLUGIN_SETUP = {
 };
 
 const PACKAGE_SETUP = {
-  mockData: mockPackages,
+  mockData: [...mockPackages, ...mockPlugins],
   name: 'package11',
   kind: MarketplaceKind.Package,
   config: FILE_INSTALL_CONFIG,
+  relationName: 'plugin1',
 };
+
+const mockedAuthorizeConditional = async (): Promise<
+  QueryPermissionResponse[]
+> => [
+  {
+    result: AuthorizeResult.CONDITIONAL as const,
+    pluginId: 'extensions',
+    resourceType: 'extensions-plugin',
+    conditions: {
+      anyOf: [
+        {
+          rule: 'HAS_NAME',
+          resourceType: 'extensions-plugin',
+          params: { pluginNames: ['other-plugin'] },
+        },
+      ],
+    },
+  },
+];
 
 async function startBackendServer(
   config?: JsonObject,
+  authorizeResult?: AuthorizeResult,
 ): Promise<ExtendedHttpServer> {
   const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
     marketplacePlugin,
@@ -91,6 +116,24 @@ async function startBackendServer(
       data: { ...BASE_CONFIG, ...(config ?? {}) },
     }),
   ];
+
+  if (
+    authorizeResult === AuthorizeResult.ALLOW ||
+    authorizeResult === AuthorizeResult.DENY
+  ) {
+    features.push(
+      mockServices.permissions.mock({
+        authorizeConditional: async () => [{ result: authorizeResult }],
+      }).factory,
+    );
+  }
+  if (authorizeResult === AuthorizeResult.CONDITIONAL) {
+    features.push(
+      mockServices.permissions.mock({
+        authorizeConditional: mockedAuthorizeConditional,
+      }).factory,
+    );
+  }
 
   return (await startTestBackend({ features })).server;
 }
@@ -114,6 +157,19 @@ const expectInputError = async (
   expect(response.body.error).toEqual({
     message: errorMessage,
     name: 'InputError',
+  });
+};
+
+const expectPermissionError = async (
+  response: request.Response,
+  action: string,
+  namespace: string,
+  name: string,
+) => {
+  expect(response.status).toEqual(403);
+  expect(response.body.error).toEqual({
+    message: `Not allowed to ${action} the configuration of ${namespace}:${name}`,
+    name: 'NotAllowedError',
   });
 };
 
@@ -163,16 +219,21 @@ describe('createRouter', () => {
     name,
     kind = MarketplaceKind.Plugin,
     config,
+    authorizeResult,
   }: {
     mockData: MockMarketplaceEntity[] | {};
     name?: string;
     kind?: string;
     config?: JsonObject;
+    authorizeResult?: AuthorizeResult;
   }): Promise<{
     backendServer: ExtendedHttpServer;
   }> => {
     const { server } = testSetup();
-    const backendServer: ExtendedHttpServer = await startBackendServer(config);
+    const backendServer: ExtendedHttpServer = await startBackendServer(
+      config,
+      authorizeResult,
+    );
     server.use(
       rest.get(
         `http://localhost:${backendServer.port()}/api/catalog/entities/by-query`,
@@ -201,6 +262,20 @@ describe('createRouter', () => {
             ctx.status(foundEntity ? 200 : 404),
             ctx.json(foundEntity),
           );
+        },
+      ),
+      rest.get(
+        `http://localhost:${backendServer.port()}/api/catalog/entities`,
+        (_, res, ctx) => {
+          if (!Array.isArray(mockData)) {
+            throw new Error('Internal server error');
+          }
+          const hasPackage = (r: { type: string; targetRef: string }) =>
+            r.type === 'hasPart' && r.targetRef === `package:${name}`;
+          const foundEntities = mockData.filter(
+            e => e.kind === 'Plugin' && e.relations.some(hasPackage),
+          );
+          return res(ctx.json(foundEntities));
         },
       ),
     );
@@ -560,7 +635,7 @@ describe('createRouter', () => {
 
     it('should get the package configuration', async () => {
       const { backendServer } = await setupTestWithMockCatalog({
-        mockData: mockPackages,
+        mockData: [...mockPackages, ...mockPlugins],
         name: 'package11',
         kind: MarketplaceKind.Package,
         config: FILE_INSTALL_CONFIG,
@@ -684,5 +759,90 @@ describe('createRouter', () => {
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({ status: 'OK' });
     });
+  });
+
+  describe('Denial when missing permissions', () => {
+    const permissionTestCases = [
+      {
+        description: 'GET /package/:namespace/:name/configuration',
+        reqBuilder: (req: request.SuperTest<request.Test>) =>
+          req.get('/api/extensions/package/default/package11/configuration'),
+        body: undefined,
+      },
+      {
+        description: 'POST /package/:namespace/:name/configuration',
+        reqBuilder: (req: request.SuperTest<request.Test>) =>
+          req.post('/api/extensions/package/default/package11/configuration'),
+        body: { configYaml: stringify(mockDynamicPackage11) },
+      },
+      {
+        description: 'POST /package/:namespace/:name/configuration/disable',
+        reqBuilder: (req: request.SuperTest<request.Test>) =>
+          req.post(
+            '/api/extensions/package/default/package11/configuration/disable',
+          ),
+        body: { disabled: true },
+      },
+      {
+        description: 'GET /plugin/:namespace/:name/configuration',
+        reqBuilder: (req: request.SuperTest<request.Test>) =>
+          req.get('/api/extensions/plugin/default/plugin1/configuration'),
+        body: undefined,
+      },
+      {
+        description: 'POST /plugin/:namespace/:name/configuration',
+        reqBuilder: (req: request.SuperTest<request.Test>) =>
+          req.post('/api/extensions/package/default/plugin1/configuration'),
+        body: { configYaml: stringify(mockDynamicPlugin1) },
+      },
+      {
+        description: 'PATCH /plugin/:namespace/:name/configuration/disable',
+        reqBuilder: (req: request.SuperTest<request.Test>) =>
+          req.patch(
+            '/api/extensions/plugin/default/plugin1/configuration/disable',
+          ),
+        body: { disabled: true },
+      },
+    ];
+
+    const authorizeResults = [
+      { result: AuthorizeResult.DENY, denyAction: 'outright denied' },
+      {
+        result: AuthorizeResult.CONDITIONAL,
+        denyAction: 'conditionally denied',
+      },
+    ];
+
+    const allTestCases = authorizeResults.flatMap(({ result, denyAction }) =>
+      permissionTestCases.map(testCase => ({
+        ...testCase,
+        denyAction,
+        result,
+      })),
+    );
+
+    it.each(allTestCases)(
+      '$description: returns 403 when $denyAction by permission framework',
+      async ({ description, reqBuilder, body, result }) => {
+        const isPackage = description.includes('/package');
+        const name = isPackage ? 'package11' : 'plugin1';
+        const { backendServer } = await setupTestWithMockCatalog({
+          mockData: [...mockPackages, ...mockPlugins],
+          name,
+          kind: isPackage ? MarketplaceKind.Package : MarketplaceKind.Plugin,
+          config: FILE_INSTALL_CONFIG,
+          authorizeResult: result,
+        });
+
+        const requestBuilder = reqBuilder(request(backendServer));
+        const response = body
+          ? await requestBuilder.send(body)
+          : await requestBuilder;
+
+        expect(response.status).toEqual(403);
+        const action = description.includes('GET') ? 'read' : 'write';
+        expectPermissionError(response, action, 'default', name);
+      },
+    );
   });
 });
