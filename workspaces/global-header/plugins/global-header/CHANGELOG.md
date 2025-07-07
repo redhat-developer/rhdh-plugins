@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.14.0
+
+### Minor Changes
+
+- 7eb9524: - Add suuport for closing Help dropdown on menu-item click and removed QuickstartButton to better align with quickstart context.
+
 ## 1.13.0
 
 ### Minor Changes
