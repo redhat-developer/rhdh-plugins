@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 0.2.8
+
+### Patch Changes
+
+- dd72e99: ActiveMultiSelect automatically builds an array from simple strings returned by jsonata selector.
+
 ## 0.2.7
 
 ### Patch Changes
