@@ -24,20 +24,25 @@ export const applySelectorArray = async (
   data: JsonObject,
   selector: string,
   createArrayIfNeeded: boolean = false,
+  emptyArrayIfNeeded: boolean = false,
 ): Promise<string[]> => {
   const expression = jsonata(selector);
   const value = await expression.evaluate(data);
+
+  if (emptyArrayIfNeeded && !value) {
+    return [];
+  }
 
   if (typeof value === 'string' && createArrayIfNeeded) {
     return [value];
   }
 
   if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
-    return value;
+    return [...value];
   }
 
   throw new Error(
-    `Unexpected result of "${selector}" selector, expected string[] type. Value "${JSON.stringify(value)}"`,
+    `Unexpected result of "${selector}" selector, expected string[] type. Value ${JSON.stringify(value)}`,
   );
 };
 
