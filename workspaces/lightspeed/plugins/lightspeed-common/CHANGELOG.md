@@ -5,7 +5,6 @@
 ### Patch Changes
 
 - 5d80736: Renamed permissions to align with the updated naming convention:
-
   - `lightspeed.conversations.read` → `lightspeed.chat.read`
   - `lightspeed.conversations.create` → `lightspeed.chat.create`
   - `lightspeed.conversations.delete` → `lightspeed.chat.delete`
