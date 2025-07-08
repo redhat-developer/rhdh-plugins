@@ -103,14 +103,12 @@ The Bulk Import Backend plugin emits audit events for various operations. Events
 - **`org-read`**: tracks `GET` requests to the `/organizations` endpoint, which returns the list of organizations accessible from all configured GitHub Integrations.
 
   Filter on `queryType`.
-
   - **`all`**: tracks fetching all organizations. (GET `/organizations`)
   - **`by-query`**: tracks fetching organization filtered by the query parameter 'search'. (GET `/organizations`)
 
 - **`repo-read`**: tracks `GET` requests to the endpoint, which returns the list of repositories accessible from all configured GitHub Integrations.
 
   Filter on `queryType`.
-
   - **`all`**: tracks fetching a list of all repositories accessible by Backstage Github Integrations. (GET `/repositories`)
   - **`by-query`**: tracks fetching a list of repositories filtered by the query parameter 'search'. (GET `/repositories`)
   - **`by-org`**: tracks `GET` requests to the `/organizations/:orgName/repositories` endpoint, which returns the list of repositories for the specified organization (accessible from any of the configured GitHub Integrations)
@@ -118,20 +116,17 @@ The Bulk Import Backend plugin emits audit events for various operations. Events
 - **`import-read`**: tracks `GET` requests to the `/imports` endpoint, which returns the list of existing import jobs along with their statuses.
 
   Filter on `queryType`.
-
   - **`all`**: tracks fetching all imports.
   - **`by-query`**: tracks fetching imports filtered by the query parameter 'search'.
 
 - **`import-status-read`**: tracks `GET` requests to the `/import/by-repo` endpoint, which fetches details about the import job for the specified repository.
 
   Filter on `queryType`.
-
   - **`by-query`**: tracks fetching import status filtered by the query parameter 'repo'. (GET `/import/by-repo`).
 
 - **`import-write`** tracks events about midification imports.
 
   Filter on `actionType`.
-
   - **`create`**: tracks creating import job. Event submitted on `POST` `/imports`, which allows to submit requests to bulk-import one or many repositories into the Backstage Catalog, by eventually creating import Pull Requests in the target repositories.
   - **`delete`**: tracks deleting import by query parameter 'repo'. Event submitted on `DELETE` `/import/by-repo` requests, which deletes any existing import job for the specified repository, by closing any open import Pull Request that could have been created.
 

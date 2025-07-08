@@ -20,7 +20,6 @@
   Updated dependency `@playwright/test` to `1.52.0`.
 - 37e6364: Updated dependency `@playwright/test` to `1.53.0`.
 - e99da2b: Improve Bulk Import UI performance by optimizing API call behavior:
-
   - Prevent unnecessary API calls when switching between **Organizations** and **Repositories** tabs.
   - Avoid redundant calls when clicking on pagination controls without changing page or page size.
   - Suppress extraneous API requests triggered by random screen clicks.
