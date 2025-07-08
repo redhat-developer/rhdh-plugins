@@ -38,11 +38,11 @@ export const applySelectorArray = async (
   }
 
   if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
-    return value;
+    return [...value];
   }
 
   throw new Error(
-    `Unexpected result of "${selector}" selector, expected string[] type. Value "${JSON.stringify(value)}"`,
+    `Unexpected result of "${selector}" selector, expected string[] type. Value ${JSON.stringify(value)}`,
   );
 };
 
