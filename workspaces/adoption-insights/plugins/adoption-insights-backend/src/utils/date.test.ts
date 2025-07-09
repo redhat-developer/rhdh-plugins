@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { DateTime } from 'luxon';
 import {
   calculateDateRange,
   convertToTargetTimezone,
   getDateGroupingType,
+  getTimeZoneOffsetString,
   isSameMonth,
   toEndOfDayUTC,
   toStartOfDayUTC,
@@ -106,5 +108,43 @@ describe('convertToTargetTimezone', () => {
     expect(convertToTargetTimezone('2025-03-02T18:00:00.000Z')).toBe(
       '2025-03-02T23:30:00.000+05:30',
     );
+  });
+});
+
+describe('getTimeZoneOffsetString', () => {
+  const fixedISODate = '2025-07-09T12:00:00.000Z';
+
+  beforeAll(() => {
+    jest
+      .spyOn(DateTime, 'now')
+      .mockReturnValue(DateTime.fromISO(fixedISODate) as DateTime<true>);
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('should return +05:30 for Asia/Kolkata', () => {
+    const offset = getTimeZoneOffsetString('Asia/Kolkata');
+    expect(offset).toBe('+05:30');
+  });
+
+  it('should return +00:00 for UTC', () => {
+    const offset = getTimeZoneOffsetString('UTC');
+    expect(offset).toBe('+00:00');
+  });
+
+  it('should return -04:00 for America/New_York (DST in July)', () => {
+    const offset = getTimeZoneOffsetString('America/New_York');
+    expect(offset).toBe('-04:00');
+  });
+
+  it('should use the default system timezone if none is provided', () => {
+    const offset = getTimeZoneOffsetString();
+    const systemZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const expected = DateTime.fromISO(fixedISODate)
+      .setZone(systemZone)
+      .toFormat('ZZ');
+    expect(offset).toBe(expected);
   });
 });

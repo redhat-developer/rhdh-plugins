@@ -82,8 +82,9 @@ export const convertToTargetTimezone = (
   return date;
 };
 
-export const getTimeZoneOffsetString = () => {
-  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+export const getTimeZoneOffsetString = (
+  timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone,
+) => {
   const now = DateTime.now().setZone(timeZone);
   return now.toFormat('ZZ');
 };
