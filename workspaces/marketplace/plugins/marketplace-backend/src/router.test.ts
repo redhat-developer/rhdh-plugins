@@ -25,7 +25,7 @@ import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import type { JsonObject } from '@backstage/types';
 import {
   AuthorizeResult,
-  type QueryPermissionResponse,
+  PolicyDecision,
 } from '@backstage/plugin-permission-common';
 import {
   MarketplaceCollection,
@@ -86,28 +86,9 @@ const PACKAGE_SETUP = {
   relationName: 'plugin1',
 };
 
-const mockedAuthorizeConditional = async (): Promise<
-  QueryPermissionResponse[]
-> => [
-  {
-    result: AuthorizeResult.CONDITIONAL as const,
-    pluginId: 'extensions',
-    resourceType: 'extensions-plugin',
-    conditions: {
-      anyOf: [
-        {
-          rule: 'HAS_NAME',
-          resourceType: 'extensions-plugin',
-          params: { pluginNames: ['other-plugin'] },
-        },
-      ],
-    },
-  },
-];
-
 async function startBackendServer(
   config?: JsonObject,
-  authorizeResult?: AuthorizeResult,
+  authorizeResult?: PolicyDecision,
 ): Promise<ExtendedHttpServer> {
   const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
     marketplacePlugin,
@@ -117,20 +98,10 @@ async function startBackendServer(
     }),
   ];
 
-  if (
-    authorizeResult === AuthorizeResult.ALLOW ||
-    authorizeResult === AuthorizeResult.DENY
-  ) {
+  if (authorizeResult) {
     features.push(
       mockServices.permissions.mock({
-        authorizeConditional: async () => [{ result: authorizeResult }],
-      }).factory,
-    );
-  }
-  if (authorizeResult === AuthorizeResult.CONDITIONAL) {
-    features.push(
-      mockServices.permissions.mock({
-        authorizeConditional: mockedAuthorizeConditional,
+        authorizeConditional: async () => [authorizeResult],
       }).factory,
     );
   }
@@ -219,20 +190,20 @@ describe('createRouter', () => {
     name,
     kind = MarketplaceKind.Plugin,
     config,
-    authorizeResult,
+    policyDecision,
   }: {
     mockData: MockMarketplaceEntity[] | {};
     name?: string;
     kind?: string;
     config?: JsonObject;
-    authorizeResult?: AuthorizeResult;
+    policyDecision?: PolicyDecision;
   }): Promise<{
     backendServer: ExtendedHttpServer;
   }> => {
     const { server } = testSetup();
     const backendServer: ExtendedHttpServer = await startBackendServer(
       config,
-      authorizeResult,
+      policyDecision,
     );
     server.use(
       rest.get(
@@ -805,25 +776,47 @@ describe('createRouter', () => {
       },
     ];
 
-    const authorizeResults = [
-      { result: AuthorizeResult.DENY, denyAction: 'outright denied' },
+    const policyDecisions: {
+      policyDecision: PolicyDecision;
+      denyAction: string;
+    }[] = [
       {
-        result: AuthorizeResult.CONDITIONAL,
+        policyDecision: {
+          result: AuthorizeResult.DENY,
+        },
+        denyAction: 'outright denied',
+      },
+      {
+        policyDecision: {
+          result: AuthorizeResult.CONDITIONAL,
+          pluginId: 'extensions',
+          resourceType: 'extensions-plugin',
+          conditions: {
+            anyOf: [
+              {
+                rule: 'HAS_NAME',
+                resourceType: 'extensions-plugin',
+                params: { pluginNames: ['other-plugin'] },
+              },
+            ],
+          },
+        },
         denyAction: 'conditionally denied',
       },
     ];
 
-    const allTestCases = authorizeResults.flatMap(({ result, denyAction }) =>
-      permissionTestCases.map(testCase => ({
-        ...testCase,
-        denyAction,
-        result,
-      })),
+    const allTestCases = policyDecisions.flatMap(
+      ({ policyDecision, denyAction }) =>
+        permissionTestCases.map(testCase => ({
+          ...testCase,
+          denyAction,
+          policyDecision,
+        })),
     );
 
     it.each(allTestCases)(
       '$description: returns 403 when $denyAction by permission framework',
-      async ({ description, reqBuilder, body, result }) => {
+      async ({ description, reqBuilder, body, policyDecision }) => {
         const isPackage = description.includes('/package');
         const name = isPackage ? 'package11' : 'plugin1';
         const { backendServer } = await setupTestWithMockCatalog({
@@ -831,7 +824,7 @@ describe('createRouter', () => {
           name,
           kind: isPackage ? MarketplaceKind.Package : MarketplaceKind.Plugin,
           config: FILE_INSTALL_CONFIG,
-          authorizeResult: result,
+          policyDecision,
         });
 
         const requestBuilder = reqBuilder(request(backendServer));
