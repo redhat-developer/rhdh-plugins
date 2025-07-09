@@ -121,14 +121,10 @@ export async function createRouter(
     permission: ResourcePermission<'extensions-plugin'> | BasicPermission,
   ) => {
     const decision = await authorizeConditional(request, permission);
-    const action =
-      permission.attributes.action === 'create'
-        ? 'write'
-        : permission.attributes.action;
 
     if (decision.result === AuthorizeResult.DENY) {
       throw new NotAllowedError(
-        `Not allowed to ${action} the configuration of ${request.params.namespace}:${request.params.name}`,
+        `Not allowed to ${permission.attributes.action} the configuration of ${request.params.namespace}:${request.params.name}`,
       );
     }
 
@@ -143,7 +139,7 @@ export async function createRouter(
         matches(plugin, decision.conditions));
     if (!hasAccess) {
       throw new NotAllowedError(
-        `Not allowed to ${action} the configuration of ${request.params.namespace}:${request.params.name}`,
+        `Not allowed to ${permission.attributes.action} the configuration of ${request.params.namespace}:${request.params.name}`,
       );
     }
 
@@ -155,14 +151,10 @@ export async function createRouter(
     permission: ResourcePermission<'extensions-plugin'> | BasicPermission,
   ) => {
     const decision = await authorizeConditional(request, permission);
-    const action =
-      permission.attributes.action === 'create'
-        ? 'write'
-        : permission.attributes.action;
 
     if (decision.result === AuthorizeResult.DENY) {
       throw new NotAllowedError(
-        `Not allowed to ${action} the configuration of ${request.params.namespace}:${request.params.name}`,
+        `Not allowed to ${permission.attributes.action} the configuration of ${request.params.namespace}:${request.params.name}`,
       );
     }
 
@@ -176,7 +168,7 @@ export async function createRouter(
         packagePlugins.some(plugin => matches(plugin, decision.conditions)));
     if (!hasAccess) {
       throw new NotAllowedError(
-        `Not allowed to ${action} the configuration of ${request.params.namespace}:${request.params.name}`,
+        `Not allowed to ${permission.attributes.action} the configuration of ${request.params.namespace}:${request.params.name}`,
       );
     }
 

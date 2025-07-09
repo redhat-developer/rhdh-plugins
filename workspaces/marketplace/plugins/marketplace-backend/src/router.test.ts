@@ -833,7 +833,7 @@ describe('createRouter', () => {
           : await requestBuilder;
 
         expect(response.status).toEqual(403);
-        const action = description.includes('GET') ? 'read' : 'write';
+        const action = description.includes('GET') ? 'read' : 'create';
         expectPermissionError(response, action, 'default', name);
       },
     );
