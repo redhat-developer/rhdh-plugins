@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { UiSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 
@@ -526,6 +527,415 @@ describe('extract ui schema', () => {
         },
       },
     });
+    expect(uiSchema).toEqual(expected);
+  });
+});
+
+describe('processOrder function', () => {
+  it('should extract ui:order from root schema properties', () => {
+    const schemaWithOrder: JSONSchema7 = {
+      title: 'Form with order',
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          title: 'Name',
+        },
+        email: {
+          type: 'string',
+          title: 'Email',
+        },
+        age: {
+          type: 'number',
+          title: 'Age',
+        },
+      },
+      'ui:order': ['email', 'name', 'age'],
+    } as JSONSchema7;
+
+    const expected = {
+      'ui:order': ['email', 'name', 'age'],
+      name: { 'ui:autofocus': true },
+    };
+
+    const uiSchema = generateUiSchema(schemaWithOrder, false);
+    expect(uiSchema).toEqual(expected);
+  });
+
+  it('should extract ui:order from nested object properties', () => {
+    const schemaWithNestedOrder: JSONSchema7 = {
+      title: 'Form with nested order',
+      type: 'object',
+      properties: {
+        personalInfo: {
+          type: 'object',
+          properties: {
+            firstName: {
+              type: 'string',
+              title: 'First Name',
+            },
+            lastName: {
+              type: 'string',
+              title: 'Last Name',
+            },
+            middleName: {
+              type: 'string',
+              title: 'Middle Name',
+            },
+          },
+          'ui:order': ['lastName', 'firstName', 'middleName'],
+        },
+        contactInfo: {
+          type: 'object',
+          properties: {
+            phone: {
+              type: 'string',
+              title: 'Phone',
+            },
+            email: {
+              type: 'string',
+              title: 'Email',
+            },
+          },
+          'ui:order': ['phone', 'email'],
+        },
+      },
+    } as unknown as JSONSchema7;
+
+    const expected = {
+      personalInfo: {
+        firstName: { 'ui:autofocus': true },
+        'ui:order': ['lastName', 'firstName', 'middleName'],
+      },
+      contactInfo: {
+        phone: { 'ui:autofocus': true },
+        'ui:order': ['phone', 'email'],
+      },
+    };
+
+    const uiSchema = generateUiSchema(schemaWithNestedOrder, true);
+    expect(uiSchema).toEqual(expected);
+  });
+
+  it('should extract ui:order from array items', () => {
+    const schemaWithArrayOrder: JSONSchema7 = {
+      title: 'Form with array order',
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                title: 'Name',
+              },
+              description: {
+                type: 'string',
+                title: 'Description',
+              },
+              priority: {
+                type: 'number',
+                title: 'Priority',
+              },
+            },
+            'ui:order': ['priority', 'name', 'description'],
+          },
+        },
+      },
+    } as unknown as JSONSchema7;
+
+    const expected = {
+      items: {
+        items: {
+          'ui:order': ['priority', 'name', 'description'],
+        },
+        'ui:autofocus': true,
+      },
+    };
+
+    const uiSchema = generateUiSchema(schemaWithArrayOrder, false);
+    expect(uiSchema).toEqual(expected);
+  });
+
+  it('should extract ui:order from fixed array items', () => {
+    const schemaWithFixedArrayOrder: JSONSchema7 = {
+      title: 'Form with fixed array order',
+      type: 'object',
+      properties: {
+        fixedItems: {
+          type: 'array',
+          items: [
+            {
+              type: 'object',
+              properties: {
+                field1: { type: 'string' },
+                field2: { type: 'string' },
+                field3: { type: 'string' },
+              },
+              'ui:order': ['field3', 'field1', 'field2'],
+            },
+            {
+              type: 'object',
+              properties: {
+                fieldA: { type: 'string' },
+                fieldB: { type: 'string' },
+              },
+              'ui:order': ['fieldB', 'fieldA'],
+            },
+          ],
+        },
+      },
+    } as unknown as JSONSchema7;
+
+    const expected = {
+      fixedItems: {
+        items: [
+          {
+            'ui:order': ['field3', 'field1', 'field2'],
+          },
+          {
+            'ui:order': ['fieldB', 'fieldA'],
+          },
+        ],
+        'ui:autofocus': true,
+      },
+    };
+
+    const uiSchema = generateUiSchema(schemaWithFixedArrayOrder, false);
+    expect(uiSchema).toEqual(expected);
+  });
+
+  it('should extract ui:order from anyOf schemas', () => {
+    const schemaWithAnyOfOrder: JSONSchema7 = {
+      title: 'Form with anyOf order',
+      type: 'object',
+      properties: {
+        variant: {
+          anyOf: [
+            {
+              type: 'object',
+              properties: {
+                type: { type: 'string' },
+                value: { type: 'string' },
+                label: { type: 'string' },
+              },
+              'ui:order': ['label', 'type', 'value'],
+            },
+            {
+              type: 'object',
+              properties: {
+                id: { type: 'number' },
+                name: { type: 'string' },
+              },
+              'ui:order': ['name', 'id'],
+            },
+          ],
+        },
+      },
+    } as unknown as JSONSchema7;
+
+    const expected = {
+      variant: {
+        anyOf: [
+          {
+            'ui:order': ['label', 'type', 'value'],
+          },
+          {
+            'ui:order': ['name', 'id'],
+          },
+        ],
+        'ui:autofocus': true,
+      },
+    };
+
+    const uiSchema = generateUiSchema(schemaWithAnyOfOrder, false);
+    expect(uiSchema).toEqual(expected);
+  });
+
+  it('should extract ui:order from oneOf schemas', () => {
+    const schemaWithOneOfOrder: JSONSchema7 = {
+      title: 'Form with oneOf order',
+      type: 'object',
+      properties: {
+        choice: {
+          oneOf: [
+            {
+              type: 'object',
+              properties: {
+                optionA: { type: 'string' },
+                optionB: { type: 'string' },
+                optionC: { type: 'string' },
+              },
+              'ui:order': ['optionC', 'optionA', 'optionB'],
+            },
+          ],
+        },
+      },
+    } as unknown as JSONSchema7;
+
+    const expected = {
+      choice: {
+        oneOf: [
+          {
+            'ui:order': ['optionC', 'optionA', 'optionB'],
+          },
+        ],
+        'ui:autofocus': true,
+      },
+    };
+
+    const uiSchema = generateUiSchema(schemaWithOneOfOrder, false);
+    expect(uiSchema).toEqual(expected);
+  });
+
+  it('should extract ui:order from allOf schemas', () => {
+    const schemaWithAllOfOrder: JSONSchema7 = {
+      title: 'Form with allOf order',
+      type: 'object',
+      properties: {
+        combined: {
+          allOf: [
+            {
+              type: 'object',
+              properties: {
+                field1: { type: 'string' },
+                field2: { type: 'string' },
+              },
+              'ui:order': ['field2', 'field1'],
+            },
+          ],
+        },
+      },
+    } as unknown as JSONSchema7;
+
+    const expected = {
+      combined: {
+        allOf: [
+          {
+            'ui:order': ['field2', 'field1'],
+          },
+        ],
+        'ui:autofocus': true,
+      },
+    };
+
+    const uiSchema = generateUiSchema(schemaWithAllOfOrder, false);
+    expect(uiSchema).toEqual(expected);
+  });
+
+  it('should extract ui:order from referenced schemas', () => {
+    const schemaWithRefOrder: JSONSchema7 = {
+      title: 'Form with referenced order',
+      type: 'object',
+      properties: {
+        user: {
+          $ref: '#/definitions/User',
+        },
+      },
+      definitions: {
+        User: {
+          type: 'object',
+          properties: {
+            firstName: { type: 'string' },
+            lastName: { type: 'string' },
+            email: { type: 'string' },
+          },
+          'ui:order': ['email', 'firstName', 'lastName'],
+        },
+      },
+    } as unknown as JSONSchema7;
+
+    const expected = {
+      user: {
+        firstName: { 'ui:autofocus': true },
+        'ui:order': ['email', 'firstName', 'lastName'],
+      },
+    };
+
+    const uiSchema = generateUiSchema(schemaWithRefOrder, true);
+    expect(uiSchema).toEqual(expected);
+  });
+
+  it('should handle multiple ui:order properties at different levels', () => {
+    const complexSchemaWithMultipleOrders: JSONSchema7 = {
+      title: 'Complex form with multiple orders',
+      type: 'object',
+      properties: {
+        section1: {
+          type: 'object',
+          properties: {
+            field1: { type: 'string' },
+            field2: { type: 'string' },
+          },
+          'ui:order': ['field2', 'field1'],
+        },
+        section2: {
+          type: 'object',
+          properties: {
+            fieldA: { type: 'string' },
+            fieldB: { type: 'string' },
+          },
+          'ui:order': ['fieldB', 'fieldA'],
+        },
+      },
+      'ui:order': ['section2', 'section1'],
+    } as unknown as JSONSchema7;
+
+    const expected = {
+      'ui:order': ['section2', 'section1'],
+      section1: {
+        field1: { 'ui:autofocus': true },
+        'ui:order': ['field2', 'field1'],
+      },
+      section2: {
+        fieldA: { 'ui:autofocus': true },
+        'ui:order': ['fieldB', 'fieldA'],
+      },
+    };
+
+    const uiSchema = generateUiSchema(complexSchemaWithMultipleOrders, true);
+    expect(uiSchema).toEqual(expected);
+  });
+
+  it('should handle ui:order with wildcard (*)', () => {
+    const schemaWithWildcardOrder: JSONSchema7 = {
+      title: 'Form with wildcard order',
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        email: { type: 'string' },
+        phone: { type: 'string' },
+        address: { type: 'string' },
+      },
+      'ui:order': ['name', '*', 'address'],
+    } as unknown as JSONSchema7;
+
+    const expected = {
+      'ui:order': ['name', '*', 'address'],
+      name: { 'ui:autofocus': true },
+    };
+
+    const uiSchema = generateUiSchema(schemaWithWildcardOrder, false);
+    expect(uiSchema).toEqual(expected);
+  });
+
+  it('should handle schema without ui:order properties', () => {
+    const schemaWithoutOrder: JSONSchema7 = {
+      title: 'Form without order',
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        email: { type: 'string' },
+      },
+    };
+
+    const expected = {
+      name: { 'ui:autofocus': true },
+    };
+
+    const uiSchema = generateUiSchema(schemaWithoutOrder, false);
     expect(uiSchema).toEqual(expected);
   });
 });
