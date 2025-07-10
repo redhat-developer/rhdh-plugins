@@ -21,6 +21,7 @@ import { JsonObject } from '@backstage/types';
 import { UiSchema } from '@rjsf/utils';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import get from 'lodash/get';
+import merge from 'lodash/merge';
 import set from 'lodash/set';
 
 /**
@@ -110,7 +111,17 @@ function extractUiSchema(mixedSchema: JSONSchema7): UiSchema<JsonObject> {
     } else {
       processLeafSchema(curSchema, path);
     }
+    processOrder(curSchema, path);
     processComposedSchema(curSchema, path);
+  };
+
+  const processOrder = (curSchema: JSONSchema7Definition, path: string) => {
+    const uiOrder = get(curSchema, 'ui:order');
+    if (uiOrder) {
+      const diff = {};
+      set(diff, getStringAfterDot(`${path}.ui:order`), uiOrder);
+      merge(result, diff);
+    }
   };
 
   const processLeafSchema = (
