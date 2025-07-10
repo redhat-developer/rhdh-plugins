@@ -17,7 +17,11 @@ import { useCallback, useMemo } from 'react';
 import get from 'lodash/get';
 import { JsonObject } from '@backstage/types';
 import {
+  AnyApiFactory,
+  ApiHolder,
+  ApiRef,
   atlassianAuthApiRef,
+  BackstagePlugin,
   ConfigApi,
   configApiRef,
   githubAuthApiRef,
@@ -29,7 +33,10 @@ import {
   OAuthApi,
   OpenIdConnectApi,
   ProfileInfoApi,
+  SessionApi,
   useApi,
+  useApiHolder,
+  useApp,
 } from '@backstage/core-plugin-api';
 import { isFetchResponseKey, UiProps } from '../uiPropTypes';
 import { applySelectorString } from './applySelector';
@@ -93,6 +100,69 @@ const templateUnitEvaluatorOpenId = async (
   throw new Error(`Unknown template key "${key}" in "${keyFamily}"`);
 };
 
+const templateUnitEvaluatorCustomAuthApi = async (
+  apiHolder: ApiHolder,
+  allPlugins: BackstagePlugin[],
+  providerKey: string,
+) => {
+  const providerApiId = providerKey.substring(0, providerKey.lastIndexOf('.'));
+  const key = providerKey.substring(providerKey.lastIndexOf('.') + 1);
+
+  const apiRef = allPlugins
+    .flatMap(plugin => Array.from(plugin.getApis()))
+    .filter((api: AnyApiFactory) => api.api.id === providerApiId)
+    .at(0)?.api as
+    | ApiRef<OpenIdConnectApi & OAuthApi & ProfileInfoApi & SessionApi>
+    | undefined;
+
+  if (!apiRef) {
+    throw new Error(
+      `Unknown custom auth provider API of id "${providerApiId}". The provider id must match its ApiRef id, unit example: customAuthApi.my.auth.github-two.token , so: [KEY_FAMILY].[PLUGIN_ID].[PROVIDER_ID].[KEY] for provider id "my.auth.github-two".`,
+    );
+  }
+
+  const api = apiHolder.get(apiRef);
+  if (!api) {
+    throw new Error(`No implementation available for ${apiRef}`);
+  }
+
+  if (key === 'token') {
+    if (api.getAccessToken) {
+      return await api.getAccessToken();
+    }
+    throw new Error(
+      `The ${apiRef} API does not provide a getAccessToken method.`,
+    );
+  }
+
+  if (key === 'openIdToken') {
+    if (api.getIdToken) {
+      return await api.getIdToken();
+    }
+    throw new Error(
+      `The ${apiRef} API does not provide a OpenIdConnectApi method.`,
+    );
+  }
+
+  if (key === 'profileEmail') {
+    if (api.getProfile) {
+      return (await api.getProfile())?.email;
+    }
+    throw new Error(`The ${apiRef} API does not provide a getProfile method.`);
+  }
+
+  if (key === 'profileName') {
+    if (api.getProfile) {
+      return (await api.getProfile())?.displayName;
+    }
+    throw new Error(`The ${apiRef} API does not provide a getProfile method.`);
+  }
+
+  throw new Error(
+    `Unknown template key "${key}" for custom provider "${providerApiId}" API in "${providerKey}"`,
+  );
+};
+
 const templateUnitEvaluatorBackend = (configApi: ConfigApi, key: string) => {
   if (key === 'baseUrl') {
     return configApi.getString('backend.baseUrl');
@@ -101,6 +171,8 @@ const templateUnitEvaluatorBackend = (configApi: ConfigApi, key: string) => {
 };
 
 export const useTemplateUnitEvaluator = () => {
+  const app = useApp();
+  const apiHolder = useApiHolder();
   const configApi = useApi(configApiRef);
   const identityApi = useApi(identityApiRef);
   const githubAuthApi = useApi(githubAuthApiRef);
@@ -125,6 +197,8 @@ export const useTemplateUnitEvaluator = () => {
     }),
     [googleAuthApi, microsoftAuthApi, gitlabAuthApi],
   );
+
+  const allPlugins = useMemo(() => app.getPlugins(), [app]);
 
   return useCallback(
     async (
@@ -156,6 +230,15 @@ export const useTemplateUnitEvaluator = () => {
         return await templateUnitEvaluatorIdentityApi(identityApi, key);
       }
 
+      if (keyFamily === 'customAuthApi') {
+        // unit example: customAuthApi.my.auth.github-two.token , so: [KEY_FAMILY].[PLUGIN_ID].[PROVIDER_ID].[KEY]
+        return await templateUnitEvaluatorCustomAuthApi(
+          apiHolder,
+          allPlugins,
+          key,
+        );
+      }
+
       if (scmApis[keyFamily]) {
         return await templateUnitEvaluatorSCM(scmApis, keyFamily, key);
       }
@@ -180,6 +263,6 @@ export const useTemplateUnitEvaluator = () => {
 
       throw new Error(`Unknown template unit "${unit}"`);
     },
-    [configApi, identityApi, scmApis, scmOpenIdApis],
+    [configApi, identityApi, scmApis, scmOpenIdApis, apiHolder, allPlugins],
   );
 };
