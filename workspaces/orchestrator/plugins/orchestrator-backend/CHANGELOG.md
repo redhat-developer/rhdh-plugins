@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 6.1.5
+
+### Patch Changes
+
+- a79f849: Updated dependency `prettier` to `3.6.2`.
+
 ## 6.1.4
 
 ### Patch Changes
