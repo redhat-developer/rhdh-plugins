@@ -1,0 +1,17 @@
+.openapi-generator-ignore
+Apis/PluginsApi.md
+Apis/SystemApi.md
+Models/Plugin.md
+Models/PluginAuthorizationResponse.md
+Models/PluginConfigurationResponse.md
+Models/PluginConfigurationStatusResponse.md
+Models/PluginDisableRequest.md
+Models/PluginInstallationConfigResponse.md
+Models/Plugin_metadata.md
+Models/Plugin_relations_inner.md
+Models/Plugin_spec.md
+Models/Plugin_spec_authors_inner.md
+Models/getNodeEnvironment_200_response.md
+Models/getPlugins_200_response.md
+Models/installPlugin_request.md
+README.md
