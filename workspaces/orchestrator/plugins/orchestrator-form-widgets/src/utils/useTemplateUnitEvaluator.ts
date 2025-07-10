@@ -105,19 +105,19 @@ const templateUnitEvaluatorCustomAuthApi = async (
   allPlugins: BackstagePlugin[],
   providerKey: string,
 ) => {
-  const provider = providerKey.substring(0, providerKey.lastIndexOf('.'));
+  const providerApiId = providerKey.substring(0, providerKey.lastIndexOf('.'));
   const key = providerKey.substring(providerKey.lastIndexOf('.') + 1);
 
   const apiRef = allPlugins
     .flatMap(plugin => Array.from(plugin.getApis()))
-    .filter((api: AnyApiFactory) => api.api.id === provider)
+    .filter((api: AnyApiFactory) => api.api.id === providerApiId)
     .at(0)?.api as
     | ApiRef<OpenIdConnectApi & OAuthApi & ProfileInfoApi & SessionApi>
     | undefined;
 
   if (!apiRef) {
     throw new Error(
-      `Unknown custom auth provider of id "${provider}". The provider id must match its ApiRef id, unit example: customAuthApi.my.auth.github-two.token , so: [KEY_FAMILY].[PLUGIN_ID].[PROVIDER_ID].[KEY] for provider id "my.auth.github-two".`,
+      `Unknown custom auth provider API of id "${providerApiId}". The provider id must match its ApiRef id, unit example: customAuthApi.my.auth.github-two.token , so: [KEY_FAMILY].[PLUGIN_ID].[PROVIDER_ID].[KEY] for provider id "my.auth.github-two".`,
     );
   }
 
@@ -159,7 +159,7 @@ const templateUnitEvaluatorCustomAuthApi = async (
   }
 
   throw new Error(
-    `Unknown template key "${key}" for custom provider "${provider}" API in "${providerKey}"`,
+    `Unknown template key "${key}" for custom provider "${providerApiId}" API in "${providerKey}"`,
   );
 };
 
