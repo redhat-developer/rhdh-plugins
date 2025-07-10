@@ -48,6 +48,7 @@ import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
+import { customAuthProviderPlugin } from 'custom-authentication-provider-module';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
@@ -104,7 +105,7 @@ const app = createApp({
   themes: getThemes(),
   /* Hardcoded deployment of the Orchestrator Form Widget library in our DEV-only instance.
     In a production deployment, the plugin will be loaded dynamically. */
-  plugins: [orchestratorFormWidgetsPlugin],
+  plugins: [orchestratorFormWidgetsPlugin, customAuthProviderPlugin],
 });
 
 const routes = (

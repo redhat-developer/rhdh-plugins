@@ -91,6 +91,13 @@ auth:
         signIn:
           resolvers:
             - resolver: emailMatchingUserEntityProfileEmail
+    github-two:
+      development:
+        clientId: ${GITHUB_APP_TWO_CLIENT_ID}
+        clientSecret: ${GITHUB_APP_TWO_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
 
 # permission:
 #   enabled: true

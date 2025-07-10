@@ -1,0 +1,66 @@
+{
+  "name": "custom-authentication-provider-module-backend",
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "license": "Apache-2.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/orchestrator/plugins/custom-authentication-provider-module-backend"
+  },
+  "backstage": {
+    "role": "backend-plugin",
+    "supported-versions": "1.36.1",
+    "pluginId": "custom-authentication-provider-module",
+    "pluginPackages": [
+      "custom-authentication-provider-module",
+      "custom-authentication-provider-module-backend"
+    ]
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "build": "backstage-cli package build",
+    "prettier:check": "prettier --ignore-unknown --check .",
+    "prettier:fix": "prettier --ignore-unknown --write .",
+    "lint:check": "backstage-cli package lint",
+    "lint:fix": "backstage-cli package lint --fix",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "clean": "backstage-cli package clean",
+    "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
+    "export-dynamic": "janus-cli package export-dynamic-plugin",
+    "export-dynamic:clean": "run export-dynamic --clean"
+  },
+  "dependencies": {
+    "@backstage/backend-defaults": "0.7.0",
+    "@backstage/backend-plugin-api": "1.1.1",
+    "@backstage/plugin-auth-backend": "0.24.2",
+    "@backstage/plugin-auth-backend-module-github-provider": "0.2.4",
+    "@backstage/plugin-auth-node": "0.5.6",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.29.6",
+    "@backstage/types": "^1.2.1",
+    "@janus-idp/cli": "3.2.0",
+    "prettier": "3.6.2",
+    "typescript": "5.6.3"
+  },
+  "files": [
+    "dist",
+    "dist-dynamic/*.*",
+    "dist-dynamic/dist/**"
+  ]
+}
