@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-common
 
+## 0.3.3
+
+### Patch Changes
+
+- a79f849: Updated dependency `prettier` to `3.6.2`.
+
 ## 0.3.2
 
 ### Patch Changes

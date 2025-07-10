@@ -1,5 +1,16 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.5.6
+
+### Patch Changes
+
+- 2ba3742: Add feedback API endpoints and controls in the UI to collect user feedback
+- bab4647: Update functional and legal disclaimers
+- 9133ae8: Add description in message source card
+- a79f849: Updated dependency `prettier` to `3.6.2`.
+- Updated dependencies [a79f849]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.3.3
+
 ## 0.5.5
 
 ### Patch Changes
