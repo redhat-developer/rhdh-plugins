@@ -20,6 +20,7 @@ import {
   BaseMessage,
   ConversationList,
   ConversationSummary,
+  ReferencedDocument,
   ReferencedDocuments,
 } from '../types';
 
@@ -149,13 +150,12 @@ export const transformDocumentsToSources = (
     return undefined;
   }
   return {
-    sources: referenced_documents.map(
-      (doc: { doc_title: string; doc_url: string }) => ({
-        title: doc.doc_title,
-        link: doc?.doc_url,
-        isExternal: true,
-      }),
-    ),
+    sources: referenced_documents.map((doc: ReferencedDocument) => ({
+      body: doc.doc_description,
+      title: doc.doc_title,
+      link: doc?.doc_url,
+      isExternal: true,
+    })),
   };
 };
 

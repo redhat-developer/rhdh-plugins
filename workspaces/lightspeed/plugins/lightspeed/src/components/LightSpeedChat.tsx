@@ -465,6 +465,8 @@ export const LightspeedChat = ({
                   announcement={announcement}
                   ref={scrollToBottomRef}
                   welcomePrompts={welcomePrompts}
+                  conversationId={conversationId}
+                  isStreaming={isSendButtonDisabled}
                 />
               </ChatbotContent>
               <ChatbotFooter className={classes.footer}>
