@@ -66,9 +66,9 @@ export async function createRouter(
 
   // Middleware proxy to exclude passthroughPaths
   router.use('/v1', async (req, res, next) => {
-    const passthroughPaths = ['/query', '/feedback', '/feedback/status'];
+    const passthroughPaths = ['/query', '/feedback'];
 
-    if (passthroughPaths.includes(req.path)) {
+    if (passthroughPaths.some(path => req.path.startsWith(path))) {
       return next(); // This will skip proxying and go to rcs endpoint handlers.
     }
     // TODO: parse server_id from req.body and get URL and token when multi-server is supported
@@ -171,7 +171,7 @@ export async function createRouter(
       const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
       const requestBody = JSON.stringify(request.body);
       const fetchResponse = await fetch(
-        `http://0.0.0.0:8080/v1/feedback?${userQueryParam}`,
+        `http://0.0.0.0:${port}/v1/feedback?${userQueryParam}`,
         {
           method: 'POST',
           headers: {
