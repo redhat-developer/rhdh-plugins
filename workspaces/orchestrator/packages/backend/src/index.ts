@@ -72,4 +72,7 @@ backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 // for integrating templates with gitlab
 backend.add(import('@backstage/plugin-scaffolder-backend-module-gitlab'));
 
+// custom authentication provider module
+backend.add(import('custom-authentication-provider-module-backend'));
+
 backend.start();

@@ -32,7 +32,7 @@ import { GithubAuth } from '@backstage/core-app-api';
 export const ghTwoAuthApiRef: ApiRef<
   OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
 > = createApiRef({
-  id: 'core.auth.github-two',
+  id: 'my.custom.auth.github-two',
 });
 
 export const ghTwoApi: any = createApiFactory({
