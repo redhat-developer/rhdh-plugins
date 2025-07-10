@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 
+## 0.2.2
+
+### Patch Changes
+
+- 2b1a830: Fixed Timezone offset inconsistency in time-based SQLite grouping queries
+
 ## 0.2.1
 
 ### Patch Changes
