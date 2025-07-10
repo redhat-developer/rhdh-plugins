@@ -5,6 +5,11 @@
   "types": "src/index.ts",
   "license": "Apache-2.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/orchestrator/plugins/custom-authentication-provider-module"
+  },
   "backstage": {
     "role": "frontend-plugin",
     "supported-versions": "1.36.1",
