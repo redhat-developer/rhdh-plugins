@@ -30,6 +30,8 @@ import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration'
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '../queryclient';
 
 jest.mock('@backstage/core-plugin-api', () => {
   const actual = jest.requireActual('@backstage/core-plugin-api');
@@ -69,6 +71,10 @@ const usePluginPackagesMock = usePluginPackages as jest.Mock;
 const usePluginConfigurationPermissionsMock =
   usePluginConfigurationPermissions as jest.Mock;
 const useExtensionsConfigurationMock = useExtensionsConfiguration as jest.Mock;
+
+queryClient.setDefaultOptions({
+  queries: { retry: false },
+});
 
 beforeEach(() => {
   usePluginConfigurationPermissionsMock.mockReturnValue({
@@ -110,7 +116,9 @@ const renderWithProviders = (ui: ReactNode) =>
         [translationApiRef, mockApis.translation()],
       ]}
     >
-      <BrowserRouter>{ui}</BrowserRouter>
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+      </BrowserRouter>
     </TestApiProvider>,
   );
 
@@ -179,7 +187,9 @@ describe('MarketplacePluginContent', () => {
     });
 
     const { getByText } = renderWithProviders(
-      <MarketplacePluginContent plugin={plugin} enableActionsButtonFeature />,
+      <QueryClientProvider client={queryClient}>
+        <MarketplacePluginContent plugin={plugin} enableActionsButtonFeature />,
+      </QueryClientProvider>,
     );
     expect(getByText('View')).toBeInTheDocument();
   });
@@ -236,6 +246,6 @@ describe('MarketplacePluginContent', () => {
     fireEvent.click(actionsButton);
 
     expect(getByTestId('actions-button')).toBeInTheDocument();
-    expect(getByTestId('enable-plugin')).toBeInTheDocument();
+    expect(getByTestId('disable-plugin')).toBeInTheDocument();
   });
 });
