@@ -34,11 +34,15 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
   }
 
   getDate(): string {
-    return `strftime('%Y-%m-%d', datetime(created_at, '${getTimeZoneOffsetString()}')) AS date`;
+    return `strftime('%Y-%m-%d', datetime(created_at, '${getTimeZoneOffsetString(
+      this.filters?.timezone,
+    )}')) AS date`;
   }
 
   getLastUsedDate(): string {
-    return `strftime('%Y-%m-%dT%H:%M:%SZ', MAX(datetime(created_at, '${getTimeZoneOffsetString()}'))) AS last_used`;
+    return `strftime('%Y-%m-%dT%H:%M:%SZ', MAX(datetime(created_at, '${getTimeZoneOffsetString(
+      this.filters?.timezone,
+    )}'))) AS last_used`;
   }
 
   getFormatedDate(column: string): string {
@@ -77,7 +81,7 @@ export class SqliteAdapter extends BaseDatabaseAdapter {
   }
 
   private getDateGroupingQuery(grouping: string): string {
-    const offsetStr = getTimeZoneOffsetString();
+    const offsetStr = getTimeZoneOffsetString(this.filters?.timezone);
     switch (grouping) {
       case 'hourly':
         return `strftime('%Y-%m-%d %H:00:00', datetime(created_at, '${offsetStr}'))`;
