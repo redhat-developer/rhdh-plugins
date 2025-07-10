@@ -12,7 +12,6 @@
 | **start** | **String** |  | [optional] [default to null] |
 | **end** | **String** |  | [optional] [default to null] |
 | **duration** | **String** |  | [optional] [default to null] |
-| **category** | [**WorkflowCategoryDTO**](WorkflowCategoryDTO.md) |  | [optional] [default to null] |
 | **description** | **String** |  | [optional] [default to null] |
 | **workflowdata** | [**WorkflowDataDTO**](WorkflowDataDTO.md) |  | [optional] [default to null] |
 | **initiatorEntity** | **String** |  | [optional] [default to null] |

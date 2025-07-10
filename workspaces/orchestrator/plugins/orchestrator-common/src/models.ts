@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { WorkflowCategory, WorkflowDefinition } from './types';
+import { WorkflowDefinition } from './types';
 
 export enum ProcessInstanceState {
   Active = 'ACTIVE',
@@ -94,7 +94,6 @@ export interface ProcessInstance {
   childProcessInstances?: ProcessInstance[];
   error?: ProcessInstanceError;
   addons?: string[];
-  businessKey?: string;
   executionSummary?: string[];
   isSelected?: boolean;
   errorMessage?: string;
@@ -102,7 +101,6 @@ export interface ProcessInstance {
   diagram?: string;
   nodeDefinitions?: TriggerableNode[];
   source?: string;
-  category?: WorkflowCategory;
   description?: WorkflowDefinition['description'];
 }
 export interface IntrospectionQuery {
