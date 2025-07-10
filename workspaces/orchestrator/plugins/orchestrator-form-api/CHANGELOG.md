@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-api
 
+## 1.6.5
+
+### Patch Changes
+
+- a79f849: Updated dependency `prettier` to `3.6.2`.
+
 ## 1.6.4
 
 ### Patch Changes
