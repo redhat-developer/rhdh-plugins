@@ -25,6 +25,7 @@
       ]
     }
   },
+  "sideEffects": false,
   "scripts": {
     "tsc": "tsc",
     "build": "backstage-cli package build",
