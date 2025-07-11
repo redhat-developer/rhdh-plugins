@@ -158,7 +158,7 @@ describe('VerificationCodeStep', () => {
 
     expect(mockRefetchUserData).toHaveBeenCalled();
     expect(mockOpen).toHaveBeenCalledWith(
-      'https://sandboxcluster.test//add/ns/bob-2-dev',
+      'https://sandboxcluster.test//k8s/cluster/projects/bob-2-dev',
       '_blank',
     ); // check it opens the url after signup
     mockOpen.mockRestore();

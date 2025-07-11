@@ -50,7 +50,7 @@ export const productsURLMapping = (userData: SignupData | undefined) => {
     {
       id: Product.OPENSHIFT_CONSOLE,
       url: isProvisioned
-        ? `${userData?.consoleURL}/add/ns/${userData?.defaultUserNamespace}`
+        ? `${userData?.consoleURL}/k8s/cluster/projects/${userData?.defaultUserNamespace}`
         : '',
     },
     {
