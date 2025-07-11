@@ -168,7 +168,7 @@ describe('MarketplacePluginContent', () => {
   });
   it('should have the Install button enabled', async () => {
     const { getByText } = renderWithProviders(
-      <MarketplacePluginContent plugin={plugin} enableActionsButtonFeature />,
+      <MarketplacePluginContent plugin={plugin} />,
     );
     expect(getByText('Install')).toBeInTheDocument();
     const installButton = getByText('Install');
@@ -188,7 +188,7 @@ describe('MarketplacePluginContent', () => {
 
     const { getByText } = renderWithProviders(
       <QueryClientProvider client={queryClient}>
-        <MarketplacePluginContent plugin={plugin} enableActionsButtonFeature />,
+        <MarketplacePluginContent plugin={plugin} />,
       </QueryClientProvider>,
     );
     expect(getByText('View')).toBeInTheDocument();
@@ -202,7 +202,7 @@ describe('MarketplacePluginContent', () => {
     });
 
     const { getByText } = renderWithProviders(
-      <MarketplacePluginContent plugin={plugin} enableActionsButtonFeature />,
+      <MarketplacePluginContent plugin={plugin} />,
     );
     expect(getByText('View')).toBeInTheDocument();
   });
@@ -219,7 +219,7 @@ describe('MarketplacePluginContent', () => {
     });
 
     const { getByText } = renderWithProviders(
-      <MarketplacePluginContent plugin={plugin} enableActionsButtonFeature />,
+      <MarketplacePluginContent plugin={plugin} />,
     );
     expect(getByText('Install')).toBeInTheDocument();
     const installButton = getByText('Install');
@@ -236,10 +236,7 @@ describe('MarketplacePluginContent', () => {
     };
 
     const { getByText, getByTestId } = renderWithProviders(
-      <MarketplacePluginContent
-        plugin={installedPlugin}
-        enableActionsButtonFeature
-      />,
+      <MarketplacePluginContent plugin={installedPlugin} />,
     );
     expect(getByText('Actions')).toBeInTheDocument();
     const actionsButton = getByTestId('plugin-actions');

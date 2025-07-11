@@ -69,6 +69,10 @@ import { Markdown } from './Markdown';
 import { Links } from './Links';
 import { ActionsMenu } from './ActionsMenu';
 import { useEnablePlugin } from '../hooks/useEnablePlugin';
+import {
+  InstallationType,
+  useInstallationContext,
+} from './InstallationContext';
 
 export const MarketplacePluginContentSkeleton = () => {
   return (
@@ -191,16 +195,15 @@ const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
 
 export const MarketplacePluginContent = ({
   plugin,
-  enableActionsButtonFeature = false,
 }: {
   plugin: MarketplacePlugin;
-  enableActionsButtonFeature?: boolean;
 }) => {
   const extensionsConfig = useExtensionsConfiguration();
   const nodeEnvironment = useNodeEnvironment();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isPluginEnabled, setIsPluginEnabled] = useState<boolean>(false);
   const open = Boolean(anchorEl);
+  const { installedPlugins, setInstalledPlugins } = useInstallationContext();
 
   useEffect(() => {
     if (!plugin.spec) {
@@ -261,6 +264,15 @@ export const MarketplacePluginContent = ({
           `[Plugin Toggle] Plugin toggle responded with non-OK status:`,
           (res as any)?.error?.message ?? res,
         );
+      } else {
+        const updatedPlugins: InstallationType = {
+          ...installedPlugins,
+          [plugin.metadata.title ?? plugin.metadata.name]:
+            `Plugin ${isPluginEnabled ? 'disabled' : 'enabled'}`,
+        };
+        setInstalledPlugins(updatedPlugins);
+        handleClose();
+        navigate('/extensions');
       }
     } catch (err: any) {
       // eslint-disable-next-line no-console
@@ -324,11 +336,10 @@ export const MarketplacePluginContent = ({
     }
 
     if (
-      (plugin.spec?.installStatus ===
-        MarketplacePluginInstallStatus.Installed ||
-        plugin.spec?.installStatus ===
-          MarketplacePluginInstallStatus.UpdateAvailable) &&
-      enableActionsButtonFeature
+      plugin.spec?.installStatus === MarketplacePluginInstallStatus.Installed ||
+      plugin.spec?.installStatus ===
+        MarketplacePluginInstallStatus.UpdateAvailable ||
+      plugin.spec?.installStatus === MarketplacePluginInstallStatus.Disabled
     ) {
       return (
         <>
@@ -474,12 +485,7 @@ export const MarketplacePluginContentLoader = () => {
   if (plugin.isLoading) {
     return <MarketplacePluginContentSkeleton />;
   } else if (plugin.data) {
-    return (
-      <MarketplacePluginContent
-        plugin={plugin.data}
-        enableActionsButtonFeature
-      />
-    );
+    return <MarketplacePluginContent plugin={plugin.data} />;
   } else if (plugin.error) {
     return <ErrorPage statusMessage={plugin.error.toString()} />;
   }

@@ -40,7 +40,8 @@ const PluginInstallHeader = () => {
   const isPluginInstalled =
     pluginInstallStatus === MarketplacePluginInstallStatus.Installed ||
     pluginInstallStatus === MarketplacePluginInstallStatus.UpdateAvailable ||
-    pluginInstallStatus === MarketplacePluginInstallStatus.PartiallyInstalled;
+    pluginInstallStatus === MarketplacePluginInstallStatus.PartiallyInstalled ||
+    pluginInstallStatus === MarketplacePluginInstallStatus.Disabled;
   const title = isPluginInstalled
     ? `Edit ${displayName} configurations`
     : `Install ${displayName}`;
