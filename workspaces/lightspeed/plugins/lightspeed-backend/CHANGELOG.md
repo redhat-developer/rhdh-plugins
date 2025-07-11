@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 0.5.6
+
+### Patch Changes
+
+- 0e00cb6: Upgrade backstage to 1.39.1
+- Updated dependencies [0e00cb6]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.3.4
+
 ## 0.5.5
 
 ### Patch Changes
