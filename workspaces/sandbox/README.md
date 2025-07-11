@@ -40,3 +40,13 @@ Known issues:
 - sometimes the local node build fails and you'll have to run `make stop-rhdh-local` and `make start-rhdh-local` again.
   This is what you will see when the build fails:
   ![Known Issues](./images/known_build_issue.png)
+
+## Upgrading backstage
+
+For upgrading backstage the `backstage-cli` should be used, for example:
+
+```shell
+npx backstage-cli versions:bump --release 1.36.1
+```
+
+More details on the upgrade process are available [keeping-backstage-updated](https://backstage.io/docs/getting-started/keeping-backstage-updated/)
