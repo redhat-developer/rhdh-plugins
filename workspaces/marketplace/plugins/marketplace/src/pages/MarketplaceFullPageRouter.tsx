@@ -30,6 +30,7 @@ import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
 
 import { MarketplaceCollectionsPage } from './MarketplaceCollectionsPage';
 import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
+import { InstallationContextProvider } from '../components/InstallationContext';
 
 const NotFound = () => {
   const NotFoundErrorPage = useApp().getComponents().NotFoundErrorPage;
@@ -38,35 +39,37 @@ const NotFound = () => {
 
 export const MarketplaceFullPageRouter = () => {
   return (
-    <Routes>
-      <Route path="/" Component={MarketplaceHomePage} />
+    <InstallationContextProvider>
+      <Routes>
+        <Route path="/" Component={MarketplaceHomePage} />
 
-      <Route path="/plugins" Component={MarketplacePluginsPage} />
-      <Route
-        path="/plugins/:namespace/:name"
-        Component={MarketplacePluginPage}
-      />
-      <Route
-        path="/plugins/:namespace/:name/install"
-        Component={MarketplacePluginInstallPage}
-      />
+        <Route path="/plugins" Component={MarketplacePluginsPage} />
+        <Route
+          path="/plugins/:namespace/:name"
+          Component={MarketplacePluginPage}
+        />
+        <Route
+          path="/plugins/:namespace/:name/install"
+          Component={MarketplacePluginInstallPage}
+        />
 
-      <Route path="/packages" Component={MarketplacePackagesPage} />
-      <Route
-        path="/packages/:namespace/:name"
-        Component={MarketplacePackagePage}
-      />
-      <Route
-        path="/packages/:namespace/:name/install"
-        Component={MarketplacePackageInstallPage}
-      />
+        <Route path="/packages" Component={MarketplacePackagesPage} />
+        <Route
+          path="/packages/:namespace/:name"
+          Component={MarketplacePackagePage}
+        />
+        <Route
+          path="/packages/:namespace/:name/install"
+          Component={MarketplacePackageInstallPage}
+        />
 
-      <Route path="/collections" Component={MarketplaceCollectionsPage} />
-      <Route
-        path="/collection/:namespace/:name"
-        Component={MarketplaceCollectionPage}
-      />
-      <Route path="*" Component={NotFound} />
-    </Routes>
+        <Route path="/collections" Component={MarketplaceCollectionsPage} />
+        <Route
+          path="/collection/:namespace/:name"
+          Component={MarketplaceCollectionPage}
+        />
+        <Route path="*" Component={NotFound} />
+      </Routes>
+    </InstallationContextProvider>
   );
 };

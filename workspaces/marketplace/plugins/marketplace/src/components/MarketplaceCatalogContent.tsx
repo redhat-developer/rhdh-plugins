@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
 import {
   CodeSnippet,
   Content,
@@ -28,6 +29,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Launch from '@mui/icons-material/Launch';
 import AlertTitle from '@mui/material/AlertTitle';
+import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
 
 import { SearchTextField } from '../shared-components/SearchTextField';
@@ -39,7 +41,8 @@ import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { MarketplacePluginFilter } from './MarketplacePluginFilter';
 import { CollectionHorizontalScrollRow } from './CollectionHorizontalScrollRow';
-
+import { useInstallationContext } from './InstallationContext';
+import { InstalledPluginsDialog } from './InstalledPluginsDialog';
 import notFoundImag from '../assets/notfound.png';
 import {
   EXTENSIONS_CONFIG_YAML,
@@ -99,14 +102,16 @@ const EmptyState = ({ isError }: { isError?: boolean }) => (
 );
 
 export const MarketplaceCatalogContent = () => {
+  const [openInstalledPluginsDialog, setOpenInstalledPluginsDialog] =
+    useState(false);
   const extensionsConfig = useExtensionsConfiguration();
+  const { installedPlugins } = useInstallationContext();
   const nodeEnvironment = useNodeEnvironment();
   const featuredCollections = useCollections({
     filter: {
       'metadata.name': 'featured',
     },
   });
-
   const filteredPlugins = useFilteredPlugins();
 
   let title = 'Plugins';
@@ -133,6 +138,28 @@ export const MarketplaceCatalogContent = () => {
 
   const showExtensionsConfigurationAlert =
     !isProductionEnvironment && !extensionsConfig.data?.enabled;
+
+  const installedPluginsCount = Object.entries(installedPlugins)?.length ?? 0;
+
+  const alertMessages = {
+    multiplePlugins: (count: number) =>
+      `You have ${count} plugins that require a restart of your backend system to either finish installing or updating.`,
+    singlePlugin: (name: string) => (
+      <>
+        The <b>{name}</b> plugin requires a restart of the backend system to
+        finish installing or updating.
+      </>
+    ),
+  };
+
+  const pluginInfo = () => {
+    if (installedPluginsCount > 1) {
+      return <>{alertMessages.multiplePlugins(installedPluginsCount)}</>;
+    }
+
+    const pluginName = Object.keys(installedPlugins)[0];
+    return <>{alertMessages.singlePlugin(pluginName)}</>;
+  };
 
   return (
     <>
@@ -164,6 +191,25 @@ export const MarketplaceCatalogContent = () => {
           <br />
         </>
       )}
+      {installedPluginsCount > 0 && (
+        <Alert severity="info" sx={{ mb: '1rem' }}>
+          <AlertTitle>Backend restart required</AlertTitle>
+          {pluginInfo()}
+          {installedPluginsCount > 1 && (
+            <Typography component="div" sx={{ pt: '8px' }}>
+              <Link
+                component="button"
+                underline="none"
+                onClick={() => {
+                  setOpenInstalledPluginsDialog(true);
+                }}
+              >
+                View plugins
+              </Link>
+            </Typography>
+          )}
+        </Alert>
+      )}
       <CatalogFilterLayout>
         <CatalogFilterLayout.Filters>
           <MarketplacePluginFilter />
@@ -194,6 +240,10 @@ export const MarketplaceCatalogContent = () => {
           </Stack>
         </CatalogFilterLayout.Content>
       </CatalogFilterLayout>
+      <InstalledPluginsDialog
+        open={openInstalledPluginsDialog}
+        onClose={setOpenInstalledPluginsDialog}
+      />
     </>
   );
 };

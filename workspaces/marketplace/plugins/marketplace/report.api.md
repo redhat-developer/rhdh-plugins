@@ -4,10 +4,14 @@
 
 ```ts
 
+/// <reference types="react" />
+
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { JSXElementConstructor } from 'react';
 import { PathParams } from '@backstage/core-plugin-api';
+import { ReactElement } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 
@@ -16,6 +20,11 @@ export const DynamicMarketplacePluginContent: () => JSX_2.Element;
 
 // @public (undocumented)
 export const DynamicMarketplacePluginRouter: () => JSX_2.Element;
+
+// @public (undocumented)
+export const InstallationContextProvider: ({ children, }: {
+    children: ReactElement<any, string | JSXElementConstructor<any>>;
+}) => JSX_2.Element;
 
 // @public
 export const MarketplaceFullPageRouter: () => JSX_2.Element;
