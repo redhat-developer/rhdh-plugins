@@ -8288,7 +8288,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.17.1, @mui/icons-material@npm:^5.17.1":
+"@mui/icons-material@npm:5.17.1":
   version: 5.17.1
   resolution: "@mui/icons-material@npm:5.17.1"
   dependencies:
@@ -8301,6 +8301,22 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
+  languageName: node
+  linkType: hard
+
+"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.17.1":
+  version: 5.18.0
+  resolution: "@mui/icons-material@npm:5.18.0"
+  dependencies:
+    "@babel/runtime": ^7.23.9
+  peerDependencies:
+    "@mui/material": ^5.0.0
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 1ee4ee2817278c72095860c81e742270ee01fd320e48f865d371abfeacf83e43a7c6edbfd060ee66ef2a4f02c6cf79de0aca1e73a4d5f6320112bbfcac8176c3
   languageName: node
   linkType: hard
 
@@ -10320,7 +10336,7 @@ __metadata:
     "@backstage/dev-utils": ^1.1.10
     "@backstage/test-utils": ^1.7.8
     "@backstage/theme": ^0.6.6
-    "@mui/icons-material": 5.17.1
+    "@mui/icons-material": 5.18.0
     "@mui/material": 5.17.1
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
     "@testing-library/jest-dom": ^6.0.0
@@ -14726,7 +14742,7 @@ __metadata:
     "@backstage/theme": ^0.6.6
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
-    "@mui/icons-material": 5.17.1
+    "@mui/icons-material": 5.18.0
     "@mui/material": 5.17.1
     "@playwright/test": ^1.32.3
     "@red-hat-developer-hub/backstage-plugin-global-header": 1.11.1
