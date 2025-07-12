@@ -38,6 +38,7 @@ import {
   MarketplacePackage,
   MarketplacePackageSpecAppConfigExample,
   MarketplacePlugin,
+  MarketplacePluginInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import Box from '@mui/material/Box';
@@ -86,6 +87,8 @@ import { usePluginConfig } from '../hooks/usePluginConfig';
 import { useInstallPlugin } from '../hooks/useInstallPlugin';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
+import { mapMarketplacePluginInstallStatusToInstallPageButton } from '../labels';
+import { useTheme } from '@mui/material/styles';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -233,6 +236,10 @@ export const MarketplacePluginInstallContent = ({
   const nodeEnvironment = useNodeEnvironment();
   const isProductionEnvironment =
     nodeEnvironment?.data?.nodeEnv === 'production';
+
+  const theme = useTheme();
+  // TODO: add divider color in theme plugin
+  const dividerColor = theme.palette.mode === 'dark' ? '#A3A3A3' : '#C7C7C7';
 
   useEffect(() => {
     const header = document.querySelector('nav#global-header');
@@ -501,6 +508,7 @@ export const MarketplacePluginInstallContent = ({
                     display: 'flex',
                     flexDirection: 'column',
                     overflow: 'hidden',
+                    px: 0,
                   }}
                 >
                   <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -508,6 +516,7 @@ export const MarketplacePluginInstallContent = ({
                       value={tabIndex}
                       onChange={handleTabChange}
                       aria-label="Plugin tabs"
+                      sx={{ px: 0 }}
                     >
                       {availableTabs.map((tab, index) => (
                         <Tab
@@ -544,10 +553,16 @@ export const MarketplacePluginInstallContent = ({
             </Grid>
           )}
         </Grid>
-
         <Box
           sx={{
-            mt: 4,
+            mx: -3,
+            borderBottom: `1px solid ${dividerColor}`,
+            mt: 2,
+            mb: 3,
+          }}
+        />
+        <Box
+          sx={{
             flexShrink: 0,
             backgroundColor: 'inherit',
           }}
@@ -585,7 +600,12 @@ export const MarketplacePluginInstallContent = ({
                   )
                 }
               >
-                Install
+                {
+                  mapMarketplacePluginInstallStatusToInstallPageButton[
+                    plugin.spec?.installStatus ??
+                      MarketplacePluginInstallStatus.NotInstalled
+                  ]
+                }
               </Button>
             </Typography>
           </Tooltip>

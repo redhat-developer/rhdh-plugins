@@ -141,24 +141,24 @@ export const MarketplaceCatalogContent = () => {
 
   const installedPluginsCount = Object.entries(installedPlugins)?.length ?? 0;
 
-  const alertMessages = {
-    multiplePlugins: (count: number) =>
-      `You have ${count} plugins that require a restart of your backend system to either finish installing or updating.`,
-    singlePlugin: (name: string) => (
+  const getPluginAlertMessage = (count: number, pluginName?: string) => {
+    if (count > 1) {
+      return `You have ${count} plugins that require a restart of your backend system to either finish installing, updating, enabling or disabling.`;
+      // Later: t('alert.multiple', { count })
+    }
+
+    return (
       <>
-        The <b>{name}</b> plugin requires a restart of the backend system to
-        finish installing or updating.
+        The <b>{pluginName}</b> plugin requires a restart of the backend system
+        to finish installing, updating, enabling or disabling.
+        {/* Later: t('alert.single', { name: pluginName, bold: (...text) => <b>{text}</b> }) */}
       </>
-    ),
+    );
   };
 
   const pluginInfo = () => {
-    if (installedPluginsCount > 1) {
-      return <>{alertMessages.multiplePlugins(installedPluginsCount)}</>;
-    }
-
     const pluginName = Object.keys(installedPlugins)[0];
-    return <>{alertMessages.singlePlugin(pluginName)}</>;
+    return <>{getPluginAlertMessage(installedPluginsCount, pluginName)}</>;
   };
 
   return (
