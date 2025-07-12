@@ -69,6 +69,7 @@ import {
   getErrorMessage,
   getExampleAsMarkdown,
   getPluginActionTooltipMessage,
+  isPluginInstalled,
 } from '../utils';
 
 import {
@@ -337,7 +338,11 @@ export const MarketplacePluginInstallContent = ({
       if (res?.status === 'OK') {
         const updatedPlugins: InstallationType = {
           ...installedPlugins,
-          [plugin.metadata.title ?? plugin.metadata.name]: 'Plugin installed',
+          [plugin.metadata.title ?? plugin.metadata.name]: isPluginInstalled(
+            plugin?.spec?.installStatus,
+          )
+            ? 'Plugin updated'
+            : 'Plugin installed',
         };
         setInstalledPlugins(updatedPlugins);
         navigate('/extensions');
@@ -373,6 +378,15 @@ export const MarketplacePluginInstallContent = ({
     (pluginConfig.data as any)?.error?.message &&
     (pluginConfig.data as any)?.error?.reason !==
       ExtensionsStatus.INSTALLATION_DISABLED;
+
+  const getInstallButtonDatatestid = () => {
+    if (isInstallDisabled) {
+      return isPluginInstalled(plugin?.spec?.installStatus)
+        ? 'edit-disabled'
+        : 'install-disabled';
+    }
+    return isPluginInstalled(plugin.spec?.installStatus) ? 'edit' : 'install';
+  };
 
   const installationWarning = () => {
     const errorMessage = getErrorMessage(
@@ -478,7 +492,9 @@ export const MarketplacePluginInstallContent = ({
                 <CardHeader
                   title={
                     <Typography variant="h3">
-                      Installation instructions
+                      {isPluginInstalled(plugin.spec?.installStatus)
+                        ? 'Edit instructions'
+                        : 'Installation instructions'}
                     </Typography>
                   }
                   action={
@@ -593,7 +609,7 @@ export const MarketplacePluginInstallContent = ({
                 color="primary"
                 onClick={handleInstall}
                 disabled={isInstallDisabled}
-                data-testid={isInstallDisabled ? 'install-disabled' : 'install'}
+                data-testid={getInstallButtonDatatestid()}
                 startIcon={
                   isSubmitting && (
                     <CircularProgress size="20px" color="inherit" />

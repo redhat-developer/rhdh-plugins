@@ -21,28 +21,23 @@ import {
   Content,
   ErrorBoundary,
 } from '@backstage/core-components';
+import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 
 import { themeId } from '../consts';
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePlugin } from '../hooks/usePlugin';
 import { MarketplacePluginInstallContentLoader } from '../components/MarketplacePluginInstallContent';
-import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
-import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+
+import { isPluginInstalled } from '../utils';
 
 const PluginInstallHeader = () => {
   const params = useRouteRefParams(pluginInstallRouteRef);
   const plugin = usePlugin(params.namespace, params.name);
 
   const displayName = plugin.data?.metadata?.title ?? params.name;
-  const pluginInstallStatus = plugin.data?.spec?.installStatus;
-  const isPluginInstalled =
-    pluginInstallStatus === MarketplacePluginInstallStatus.Installed ||
-    pluginInstallStatus === MarketplacePluginInstallStatus.UpdateAvailable ||
-    pluginInstallStatus === MarketplacePluginInstallStatus.PartiallyInstalled ||
-    pluginInstallStatus === MarketplacePluginInstallStatus.Disabled;
-  const title = isPluginInstalled
+  const title = isPluginInstalled(plugin.data?.spec?.installStatus)
     ? `Edit ${displayName} configurations`
     : `Install ${displayName}`;
   const pluginLink = useRouteRef(pluginRouteRef)({
