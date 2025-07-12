@@ -9019,9 +9019,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/styles@npm:5.17.1":
-  version: 5.17.1
-  resolution: "@mui/styles@npm:5.17.1"
+"@mui/styles@npm:5.18.0":
+  version: 5.18.0
+  resolution: "@mui/styles@npm:5.18.0"
   dependencies:
     "@babel/runtime": ^7.23.9
     "@emotion/hash": ^0.9.1
@@ -9046,7 +9046,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 3e9de5bc582cc99be5ea8bf3c6ec81cd1472d96c7c11fef70fa21e1e5ea7f3dc10d1a9be793ea39e37eb1896e44263adc313e42d711fdf9c4e2d9172d00997df
+  checksum: 290cd7b7d738277c7024ac3f0840b2fd9f973008bd18a67294a8e1f401ffbca992311101c9af5cc1b799abd8c3ec469a0096c5d8cccc6b540218c433b0040f28
   languageName: node
   linkType: hard
 
@@ -10796,7 +10796,7 @@ __metadata:
     "@monaco-editor/react": ^4.7.0
     "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
-    "@mui/styles": 5.17.1
+    "@mui/styles": 5.18.0
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
     "@scalprum/react-core": 0.9.5
