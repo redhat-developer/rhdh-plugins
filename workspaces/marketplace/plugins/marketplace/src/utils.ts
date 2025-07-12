@@ -16,6 +16,7 @@
 
 import { Pair, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
 import { JsonObject } from '@backstage/types';
+import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export enum ExtensionsStatus {
   INSTALLATION_DISABLED = 'INSTALLATION_DISABLED',
@@ -147,4 +148,18 @@ export const getPluginActionTooltipMessage = (
   }
 
   return '';
+};
+
+export const isPluginInstalled = (
+  pluginInstallStatus: MarketplacePluginInstallStatus | undefined,
+) => {
+  if (!pluginInstallStatus) {
+    return false;
+  }
+  return (
+    pluginInstallStatus === MarketplacePluginInstallStatus.Installed ||
+    pluginInstallStatus === MarketplacePluginInstallStatus.UpdateAvailable ||
+    pluginInstallStatus === MarketplacePluginInstallStatus.PartiallyInstalled ||
+    pluginInstallStatus === MarketplacePluginInstallStatus.Disabled
+  );
 };
