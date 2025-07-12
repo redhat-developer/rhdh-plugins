@@ -36,9 +36,9 @@
     "@backstage/core-components": "^0.17.2",
     "@backstage/core-plugin-api": "^1.10.7",
     "@backstage/theme": "^0.6.6",
-    "@mui/icons-material": "5.17.1",
-    "@mui/material": "5.17.1",
-    "@mui/styled-engine": "5.16.14"
+    "@mui/icons-material": "5.18.0",
+    "@mui/material": "5.18.0",
+    "@mui/styled-engine": "5.18.0"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
