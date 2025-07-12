@@ -54,7 +54,7 @@
   "devDependencies": {
     "@backstage/cli": "^0.29.6",
     "@backstage/types": "^1.2.1",
-    "@janus-idp/cli": "3.2.0",
+    "@janus-idp/cli": "3.6.1",
     "prettier": "3.6.2",
     "typescript": "5.6.3"
   },
