@@ -245,4 +245,30 @@ describe('MarketplacePluginContent', () => {
     expect(getByTestId('actions-button')).toBeInTheDocument();
     expect(getByTestId('disable-plugin')).toBeInTheDocument();
   });
+
+  it('should have the View button when user has read only access even when the plugin is installed', async () => {
+    usePluginConfigurationPermissionsMock.mockReturnValue({
+      data: {
+        write: 'DENY',
+        read: 'ALLOW',
+      },
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    const installedPlugin = {
+      ...plugin,
+      spec: {
+        ...plugin.spec,
+        installStatus: MarketplacePluginInstallStatus.Installed,
+      },
+    };
+
+    const { getByText } = renderWithProviders(
+      <QueryClientProvider client={queryClient}>
+        <MarketplacePluginContent plugin={installedPlugin} />,
+      </QueryClientProvider>,
+    );
+    expect(getByText('View')).toBeInTheDocument();
+  });
 });
