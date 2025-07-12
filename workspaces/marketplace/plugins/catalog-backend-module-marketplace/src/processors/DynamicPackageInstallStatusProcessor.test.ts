@@ -19,7 +19,6 @@ import { MarketplacePackageInstallStatus } from '@red-hat-developer-hub/backstag
 
 import { DynamicPackageInstallStatusProcessor } from './DynamicPackageInstallStatusProcessor';
 import { DynamicPluginManager } from '@backstage/backend-dynamic-feature-service';
-import { DynamicPluginsService } from './DynamicPluginsService';
 import { mockServices } from '@backstage/backend-test-utils';
 import {
   locationSpec,
@@ -46,10 +45,6 @@ mockPluginProvider._plugins = [
   { name: 'plugin2', version: '2.2.0' },
 ];
 
-const mockDynamicPluginsService = {
-  isPackageDisabledViaConfig: jest.fn().mockReturnValue(false),
-} as unknown as jest.Mocked<DynamicPluginsService>;
-
 describe('DynamicPackageInstallStatusProcessor', () => {
   let processor: DynamicPackageInstallStatusProcessor;
   const logger = mockServices.logger.mock();
@@ -59,7 +54,6 @@ describe('DynamicPackageInstallStatusProcessor', () => {
     processor = new DynamicPackageInstallStatusProcessor({
       logger,
       pluginProvider: mockPluginProvider,
-      dynamicPluginsService: mockDynamicPluginsService,
     });
   });
 
@@ -103,14 +97,6 @@ describe('DynamicPackageInstallStatusProcessor', () => {
     afterEach(() => {
       jest.clearAllMocks();
     });
-
-    const packageEntityWithDynamicArtifact = {
-      ...packageEntity,
-      spec: {
-        ...packageEntity.spec,
-        dynamicArtifact: './dynamic-plugins/dist/test-package',
-      },
-    };
 
     it('should not process without packageName', async () => {
       const entity = await processor.preProcessEntity(
@@ -218,10 +204,17 @@ describe('DynamicPackageInstallStatusProcessor', () => {
       );
     });
 
-    it('should set NotInstalled if the package is not in installed packages', async () => {
+    it('should set NotInstalled if the package is not in installed packages and is not preinstalled', async () => {
       mockPluginProvider._plugins = [
         { name: 'another-plugin', version: '3.3.0' },
       ];
+      const packageEntityWithDynamicArtifact = {
+        ...packageEntity,
+        spec: {
+          ...packageEntity.spec,
+          dynamicArtifact: '"@marketplace-demo/test-plugin@1.0.0"',
+        },
+      };
       const result = await processor.preProcessEntity(
         packageEntityWithDynamicArtifact,
         locationSpec,
@@ -234,13 +227,18 @@ describe('DynamicPackageInstallStatusProcessor', () => {
       );
     });
 
-    it('should return Disabled if the package is not in installed packages and disabled in config', async () => {
+    it('should return Disabled if the package is not in installed packages and is preinstalled', async () => {
       mockPluginProvider._plugins = [
         { name: 'another-plugin', version: '3.3.0' },
       ];
-      mockDynamicPluginsService.isPackageDisabledViaConfig.mockReturnValueOnce(
-        true,
-      );
+
+      const packageEntityWithDynamicArtifact = {
+        ...packageEntity,
+        spec: {
+          ...packageEntity.spec,
+          dynamicArtifact: './dynamic-plugins/dist/test-package',
+        },
+      };
 
       const result = await processor.preProcessEntity(
         packageEntityWithDynamicArtifact,
@@ -258,9 +256,6 @@ describe('DynamicPackageInstallStatusProcessor', () => {
       mockPluginProvider._plugins = [
         { name: 'backstage-plugin-search-backend-dynamic', version: '1.0.0' },
       ];
-      mockDynamicPluginsService.isPackageDisabledViaConfig.mockReturnValueOnce(
-        true,
-      );
       const searchBackendPackage = {
         ...packageEntity,
         spec: {

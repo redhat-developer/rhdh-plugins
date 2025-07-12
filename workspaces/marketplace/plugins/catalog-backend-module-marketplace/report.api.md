@@ -11,7 +11,6 @@ import type { CatalogApi } from '@backstage/catalog-client';
 import { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
 import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
-import type { Config } from '@backstage/config';
 import { DynamicPluginProvider } from '@backstage/backend-dynamic-feature-service';
 import { Entity } from '@backstage/catalog-model';
 import { EntityProvider } from '@backstage/plugin-catalog-node';
@@ -54,7 +53,6 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     constructor(deps: {
         logger: LoggerService;
         pluginProvider: DynamicPluginProvider;
-        dynamicPluginsService: DynamicPluginsService;
     });
     // (undocumented)
     getCachedPlugins(cache: CatalogProcessorCache, entityRef: string): Promise<CachedData>;
@@ -62,19 +60,6 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     getProcessorName(): string;
     // (undocumented)
     preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec, cache: CatalogProcessorCache): Promise<Entity>;
-}
-
-// @public (undocumented)
-export class DynamicPluginsService {
-    // (undocumented)
-    static fromConfig(deps: {
-        config: Config;
-        logger: LoggerService;
-    }): DynamicPluginsService;
-    // (undocumented)
-    initialize(): void;
-    // (undocumented)
-    isPackageDisabledViaConfig(marketplacePackage: MarketplacePackage): boolean;
 }
 
 // @public (undocumented)
