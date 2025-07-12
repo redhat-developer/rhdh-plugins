@@ -82,12 +82,14 @@ const mockQueryEntities = jest.fn();
 const mockEntityFacets = jest.fn();
 const mockGetEntityByRef = jest.fn();
 const mockQueryEntitiesByRefs = jest.fn();
+const mockGetEntities = jest.fn();
 
 const mockCatalogClient = {
   queryEntities: mockQueryEntities,
   getEntityFacets: mockEntityFacets,
   getEntityByRef: mockGetEntityByRef,
   getEntitiesByRefs: mockQueryEntitiesByRefs,
+  getEntities: mockGetEntities,
 } as unknown as CatalogClient;
 
 beforeEach(() => {
@@ -561,6 +563,32 @@ describe('MarketplaceCatalogClient', () => {
       await expect(
         api.getPluginPackages('default', 'not-found'),
       ).rejects.toThrow('Plugin default/not-found not found');
+    });
+  });
+
+  describe('getPackagePlugins', () => {
+    beforeEach(() => {
+      mockGetEntities.mockResolvedValue({ items: [mockPlugins[0]] });
+    });
+
+    it('should call catalog with right kind filter', async () => {
+      const api = new MarketplaceCatalogClient(options);
+      const plugins = await api.getPackagePlugins('default', 'package1');
+
+      expect(mockGetEntities).toHaveBeenCalledTimes(1);
+      expect(mockGetEntities).toHaveBeenCalledWith(
+        {
+          filter: {
+            kind: 'Plugin',
+            'relations.hasPart': 'package:default/package1',
+          },
+        },
+        {
+          token: 'mockedToken',
+        },
+      );
+
+      expect(plugins).toEqual([mockPlugins[0]]);
     });
   });
 });

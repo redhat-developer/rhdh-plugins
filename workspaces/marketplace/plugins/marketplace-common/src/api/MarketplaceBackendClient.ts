@@ -303,4 +303,14 @@ export class MarketplaceBackendClient implements MarketplaceApi {
       'GET',
     );
   }
+
+  getPackagePlugins(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePlugin[]> {
+    return this.request(
+      `/package/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/plugins`,
+      'GET',
+    );
+  }
 }
