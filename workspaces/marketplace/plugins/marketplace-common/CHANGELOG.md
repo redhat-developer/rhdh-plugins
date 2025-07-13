@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.7.0
+
+### Minor Changes
+
+- f70ccb1: Use plugin permissions in package configuration endpoints. `AuthorizeResult` for particular package is based upon if user has ALLOW permission for any of plugins that contain this package. Removes unused `extensions-package` permissions.
+- 7aac60c: Introduces `PluginInstallStatusProcessor` to add `spec.installStatus` for Marketplace plugins. Introduces new `installStatus` values: `MarketplacePackageInstallStatus.Disabled` and `MarketplacePluginInstallStatus.Disabled`.
+
 ## 0.6.0
 
 ### Minor Changes
