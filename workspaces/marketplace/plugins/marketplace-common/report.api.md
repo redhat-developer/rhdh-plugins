@@ -83,18 +83,6 @@ export const encodeGetEntityFacetsRequest: (request: GetEntityFacetsRequest) => 
 // @public (undocumented)
 export const EXTENSIONS_API_VERSION = "extensions.backstage.io/v1alpha1";
 
-// @public
-export const extensionsPackageDeletePermission: ResourcePermission<"extensions-package">;
-
-// @public
-export type ExtensionsPackagePermission = ResourcePermission<typeof RESOURCE_TYPE_EXTENSIONS_PACKAGE>;
-
-// @public
-export const extensionsPackageReadPermission: ResourcePermission<"extensions-package">;
-
-// @public
-export const extensionsPackageWritePermission: ResourcePermission<"extensions-package">;
-
 // @public (undocumented)
 export const extensionsPermissions: ResourcePermission<"extensions-plugin">[];
 
@@ -190,6 +178,8 @@ export interface MarketplaceApi {
     // (undocumented)
     getPackageConfigByName?(namespace: string, name: string): Promise<ConfigurationResponse>;
     // (undocumented)
+    getPackagePlugins(namespace: string, name: string): Promise<MarketplacePlugin[]>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
@@ -256,6 +246,8 @@ export class MarketplaceBackendClient implements MarketplaceApi {
     // (undocumented)
     getPackageConfigByName(namespace: string, name: string): Promise<ConfigurationResponse>;
     // (undocumented)
+    getPackagePlugins(namespace: string, name: string): Promise<MarketplacePlugin[]>;
+    // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
     getPackagesFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
@@ -305,6 +297,8 @@ export class MarketplaceCatalogClient implements MarketplaceApi {
     getCollectionsFacets(request: GetEntityFacetsRequest): Promise<GetEntityFacetsResponse>;
     // (undocumented)
     getPackageByName(namespace: string, name: string): Promise<MarketplacePackage>;
+    // (undocumented)
+    getPackagePlugins(namespace: string, name: string): Promise<MarketplacePlugin[]>;
     // (undocumented)
     getPackages(request: GetEntitiesRequest): Promise<GetEntitiesResponse<MarketplacePackage>>;
     // (undocumented)
@@ -463,9 +457,6 @@ export interface MarketplacePluginSpec extends JsonObject {
 
 // @public (undocumented)
 export type NodeEnvironmentType = 'production' | 'development' | 'test';
-
-// @public (undocumented)
-export const RESOURCE_TYPE_EXTENSIONS_PACKAGE = "extensions-package";
 
 // @public (undocumented)
 export const RESOURCE_TYPE_EXTENSIONS_PLUGIN = "extensions-plugin";

@@ -137,4 +137,9 @@ export interface MarketplaceApi {
     namespace: string,
     name: string,
   ): Promise<MarketplacePackage[]>;
+
+  getPackagePlugins(
+    namespace: string,
+    name: string,
+  ): Promise<MarketplacePlugin[]>;
 }
