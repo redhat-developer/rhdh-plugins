@@ -82,21 +82,20 @@ red-hat-developer-hub.backstage-plugin-global-header:
     - mountPoint: application/header
       importName: GlobalHeader
       config:
-        position: above-main-content  # Options: above-sidebar | above-main-content
+        position: above-main-content # Options: above-sidebar | above-main-content
 
     - mountPoint: global.header/component
       importName: CompanyLogo
       config:
         priority: 200
         props:
-          to: '/catalog'  # Path to navigate when logo is clicked
-          width: 300       # Optional; fallback chain applies
-          height: 200      # Optional; default max height is 40px
-         #logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATQAAACkCAMAAAAuT...' # Single logo for all themes.
+          to: '/catalog' # Path to navigate when logo is clicked
+          width: 300 # Optional; fallback chain applies
+          height: 200 # Optional; default max height is 40px
+          #logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATQAAACkCAMAAAAuT...' # Single logo for all themes.
           logo:
             dark: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATQAAACkCAMAAAAuT...' # will be shown in dark theme
-            light: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgUAAABhCAMAAAB...'  # will be shown in light theme
-
+            light: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgUAAABhCAMAAAB...' # will be shown in light theme
 ```
 
 ### Fallback Configuration Example
@@ -107,10 +106,10 @@ In addition to the Global Header, theme-specific logo support is also available 
 app:
   branding:
     fullLogoWidth: 220 #fallback width
-  # fullLogo: "data:image/svg+xml;base64,PHN2ZyB4bWxu…" # Single image for all themes
+    # fullLogo: "data:image/svg+xml;base64,PHN2ZyB4bWxu…" # Single image for all themes
     fullLogo:
-      light: "data:image/svg+xml;base64,PHN2ZyB4bWxu…"  # will be shown in light theme
-      dark:  "data:image/svg+xml;base64,PHN2ZyB4bWxu…"  # will be shown in dark theme
+      light: 'data:image/svg+xml;base64,PHN2ZyB4bWxu…' # will be shown in light theme
+      dark: 'data:image/svg+xml;base64,PHN2ZyB4bWxu…' # will be shown in dark theme
 ```
 
 ### Fallback Behavior
