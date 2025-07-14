@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.4.1
+
+### Patch Changes
+
+- 62d10e4: Update the definition of `Disabled` installStatus for plugins and packages to refer to those that are preinstalled rather than those that are marked as disabled in the configuration.
+
 ## 0.4.0
 
 ### Minor Changes
