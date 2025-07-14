@@ -13,11 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useCallback } from 'react';
+
 import {
+  AnyApiFactory,
   ApiRef,
   githubAuthApiRef,
   gitlabAuthApiRef,
   microsoftAuthApiRef,
+  OAuthApi,
+  OpenIdConnectApi,
+  useApi,
+  useApiHolder,
+  useApp,
 } from '@backstage/core-plugin-api';
 
 import {
@@ -25,74 +33,131 @@ import {
   AuthTokenDescriptor,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { OrchestratorAuthAPi } from './authApi';
+export const useOrchestratorAuth = () => {
+  const app = useApp();
+  const apiHolder = useApiHolder();
+  const githubAuthApi = useApi(githubAuthApiRef);
+  const gitlabAuthApi = useApi(gitlabAuthApiRef);
+  const microsoftAuthApi = useApi(microsoftAuthApiRef);
 
-type ExtractApiRefType<T> = T extends ApiRef<infer U> ? U : never;
-
-export interface OrchestratorAuthDependencies {
-  githubAuthApi: ExtractApiRefType<typeof githubAuthApiRef>;
-  gitlabAuthApi: ExtractApiRefType<typeof gitlabAuthApiRef>;
-  microsoftAuthApi: ExtractApiRefType<typeof microsoftAuthApiRef>;
-}
-export class OrchestratorAuth implements OrchestratorAuthAPi {
-  private readonly deps: OrchestratorAuthDependencies;
-  constructor(deps: OrchestratorAuthDependencies) {
-    this.deps = deps;
-  }
-
-  private async getToken(
-    tokenDescriptor: AuthTokenDescriptor,
-  ): Promise<AuthToken> {
-    let token: string;
-    switch (tokenDescriptor.provider) {
-      case 'github': {
-        if (tokenDescriptor.tokenType === 'openId') {
-          throw new Error(
-            'Github backstage auth API does not support oidc auth tokens',
-          );
-        } else {
-          token = await this.deps.githubAuthApi.getAccessToken(
-            tokenDescriptor.scope,
-          );
+  const getProviderToken = useCallback(
+    async (
+      authApi: OAuthApi | (OAuthApi & OpenIdConnectApi),
+      tokenDescriptor: AuthTokenDescriptor,
+    ): Promise<string> => {
+      if (tokenDescriptor.tokenType === 'openId') {
+        if (
+          'getIdToken' in authApi &&
+          typeof authApi.getIdToken === 'function'
+        ) {
+          return await authApi.getIdToken();
         }
-        break;
-      }
-      case 'gitlab': {
-        if (tokenDescriptor.tokenType === 'openId') {
-          token = await this.deps.gitlabAuthApi.getIdToken();
-        } else {
-          token = await this.deps.gitlabAuthApi.getAccessToken();
-        }
-
-        break;
-      }
-      case 'microsoft': {
-        if (tokenDescriptor.tokenType === 'openId') {
-          token = await this.deps.microsoftAuthApi.getIdToken();
-        } else {
-          token = await this.deps.microsoftAuthApi.getAccessToken();
-        }
-        break;
-      }
-      default: {
         throw new Error(
-          `Schema contains unsupported authentication provider: ${tokenDescriptor.provider}. The supported providers are: github, gitlab and microsoft`,
+          `${tokenDescriptor.provider} auth API does not support OpenID Connect tokens`,
+        );
+      } else {
+        return await authApi.getAccessToken(tokenDescriptor.scope);
+      }
+    },
+    [],
+  );
+
+  const findCustomProvider = useCallback(
+    async (
+      providerApiId: string,
+    ): Promise<OAuthApi | (OAuthApi & OpenIdConnectApi) | undefined> => {
+      const allPlugins = app.getPlugins();
+
+      // Find the API reference for the custom provider
+      const apiRef = allPlugins
+        .flatMap(plugin => Array.from(plugin.getApis()))
+        .filter((api: AnyApiFactory) => api.api.id === providerApiId)
+        .at(0)?.api as ApiRef<OpenIdConnectApi & OAuthApi> | undefined;
+
+      if (!apiRef) {
+        throw new Error(
+          `Unknown custom auth provider API of id "${providerApiId}". The provider API id should match the ApiRef id.`,
         );
       }
-    }
-    return {
-      token,
-      provider: tokenDescriptor.provider,
-    };
-  }
 
-  public async authenticate(
-    tokenDescriptors: AuthTokenDescriptor[],
-  ): Promise<Array<AuthToken>> {
-    const authTokens: Array<AuthToken> = [];
-    for (const tokenDescriptor of tokenDescriptors) {
-      authTokens.push(await this.getToken(tokenDescriptor));
-    }
-    return authTokens;
-  }
-}
+      const api = apiHolder.get(apiRef);
+      if (!api || typeof api.getAccessToken !== 'function') {
+        throw new Error(
+          `API with id "${providerApiId}" was found but does not implement the required getAccessToken method for authentication.`,
+        );
+      }
+
+      return api;
+    },
+    [app, apiHolder],
+  );
+
+  const getToken = useCallback(
+    async (tokenDescriptor: AuthTokenDescriptor): Promise<AuthToken> => {
+      // First try built-in providers
+      let authApi: OAuthApi | (OAuthApi & OpenIdConnectApi) | undefined;
+
+      switch (tokenDescriptor.provider.toLocaleLowerCase('en-US')) {
+        case 'github':
+          authApi = githubAuthApi;
+          break;
+        case 'gitlab':
+          authApi = gitlabAuthApi;
+          break;
+        case 'microsoft':
+          authApi = microsoftAuthApi;
+          break;
+        default:
+          if (!tokenDescriptor.custonmProviderApiId) {
+            throw new Error(
+              `Custom authentication provider API id is required for provider: ${tokenDescriptor.provider}`,
+            );
+          }
+          authApi = await findCustomProvider(
+            tokenDescriptor.custonmProviderApiId,
+          );
+          break;
+      }
+
+      if (authApi) {
+        const token = await getProviderToken(authApi, tokenDescriptor);
+        return {
+          token,
+          provider: tokenDescriptor.provider,
+        };
+      }
+
+      throw new Error(
+        `Unsupported authentication provider: ${tokenDescriptor.provider}. The supported built-in providers are: github, gitlab and microsoft`,
+      );
+    },
+    [
+      githubAuthApi,
+      gitlabAuthApi,
+      microsoftAuthApi,
+      findCustomProvider,
+      getProviderToken,
+    ],
+  );
+
+  const authenticate = useCallback(
+    async (
+      tokenDescriptors: AuthTokenDescriptor[],
+    ): Promise<Array<AuthToken>> => {
+      if (!app) {
+        throw new Error('App context is required for authentication');
+      }
+
+      const authTokens: Array<AuthToken> = [];
+      for (const tokenDescriptor of tokenDescriptors) {
+        authTokens.push(await getToken(tokenDescriptor));
+      }
+      return authTokens;
+    },
+    [app, getToken],
+  );
+
+  return {
+    authenticate,
+  };
+};
