@@ -20,7 +20,6 @@ import { JsonObject } from '@backstage/types';
 export enum ExtensionsStatus {
   INSTALLATION_DISABLED = 'INSTALLATION_DISABLED',
   FILE_CONFIG_VALUE_MISSING = 'FILE_CONFIG_VALUE_MISSING',
-  FILE_NOT_EXISTS = 'FILE_NOT_EXISTS',
   INVALID_CONFIG = 'INVALID_CONFIG',
   UNKNOWN = 'UNKNOWN',
 }
@@ -42,11 +41,6 @@ const getExtensionsConfigLine = (str: string) =>
 
 const generateFileConfigLineNumbers = () => {
   const line = getExtensionsConfigLine(`saveToSingleFile:`) + 1;
-  return Array.from(Array(line).keys(), i => i + line);
-};
-
-const generateFilePathLineNumbers = () => {
-  const line = getExtensionsConfigLine(`file:`) + 1;
   return Array.from(Array(line).keys(), i => i + line);
 };
 
@@ -115,13 +109,6 @@ export const getErrorMessage = (reason: ExtensionsStatus, message: string) => {
     };
   }
 
-  if (reason === ExtensionsStatus.FILE_NOT_EXISTS) {
-    return {
-      title: `Configuration file is incorrect, misspelled or does not exist`,
-      message: `${message}. Please re-check the specified file name in your app-config.yaml if you want to enable this tool as highlighted in the example below:`,
-      highlightedLineNumbers: generateFilePathLineNumbers(),
-    };
-  }
   if (reason === ExtensionsStatus.UNKNOWN) {
     return { title: 'Error reading the configuration file. ', message };
   }
