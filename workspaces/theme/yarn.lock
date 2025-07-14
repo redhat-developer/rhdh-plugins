@@ -6893,7 +6893,7 @@ __metadata:
     "@backstage/e2e-test-utils": ^0.1.1
     "@backstage/repo-tools": ^0.13.4
     "@changesets/cli": ^2.27.1
-    "@playwright/test": 1.53.2
+    "@playwright/test": 1.54.0
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -9232,14 +9232,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.53.2":
-  version: 1.53.2
-  resolution: "@playwright/test@npm:1.53.2"
+"@playwright/test@npm:1.54.0":
+  version: 1.54.0
+  resolution: "@playwright/test@npm:1.54.0"
   dependencies:
-    playwright: 1.53.2
+    playwright: 1.54.0
   bin:
     playwright: cli.js
-  checksum: b13cb56e60132ad1b0cfa245a89b203623c43287251e359e164380e6fd3a439435133ece52c6242bc925c96cc7afd15b52e596fd2e20f7c87b95d574a157da15
+  checksum: b31b9311cb6242ec06d3963e61d9a9596272c192562b35bb6da4cf27ae34eef97e5bbaceb782f4796a7e2a3a85935643e80ec2a01d9beeffd08765711db1b4a7
   languageName: node
   linkType: hard
 
@@ -14260,7 +14260,7 @@ __metadata:
     "@backstage/theme": ^0.6.6
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
-    "@playwright/test": 1.53.2
+    "@playwright/test": 1.54.0
     "@red-hat-developer-hub/backstage-plugin-bc-test": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-mui4-test": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-mui5-test": "workspace:^"
@@ -27058,27 +27058,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.53.2":
-  version: 1.53.2
-  resolution: "playwright-core@npm:1.53.2"
+"playwright-core@npm:1.54.0":
+  version: 1.54.0
+  resolution: "playwright-core@npm:1.54.0"
   bin:
     playwright-core: cli.js
-  checksum: 01530abe93a094482e5cc171e195001bd351c1b75430fb8820e17a2cfc6d67e34e0e59871dd738e1754cd2720fb0c797acb10295bcdc092a268cd297ae4bb3bd
+  checksum: 83c285486d04a02c09ea727c4e662482aeaf5874e5781ca114ecea147634aff65ef0353ff5b75f2488a22512d4dd18206da419f47d583ebd5c5f072410d5ccab
   languageName: node
   linkType: hard
 
-"playwright@npm:1.53.2":
-  version: 1.53.2
-  resolution: "playwright@npm:1.53.2"
+"playwright@npm:1.54.0":
+  version: 1.54.0
+  resolution: "playwright@npm:1.54.0"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.53.2
+    playwright-core: 1.54.0
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: f5a1cb319eb8f1c30d4f934bbc0c48a3cb0c796286bbb008c82cb2b0666a318c6f910ed5db6cf44f68bac64e6d42485e834306b8bed08f6385ff348337b23c61
+  checksum: 57db38e75aa0a2c1581b56bbc7b2a0d200992dee7c1e08fc7ceeffd3c6facf618bc549dfa49f41f50669c3c3a8d6b0074d5dec6f74b03d1c4f51e882afe4ecf0
   languageName: node
   linkType: hard
 
