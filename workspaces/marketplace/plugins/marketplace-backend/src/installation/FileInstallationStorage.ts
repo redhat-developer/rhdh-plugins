@@ -25,7 +25,7 @@ import {
 import type { JsonValue } from '@backstage/types';
 import { ConflictError } from '@backstage/errors';
 import { type LoggerService } from '@backstage/backend-plugin-api';
-import { defaultConfig } from './defaultConfig';
+import { defaultSingleFileInstallationConfig } from './defaultConfig';
 
 export interface InstallationStorage {
   initialize?(): void;
@@ -71,7 +71,19 @@ export class FileInstallationStorage implements InstallationStorage {
 
   initialize(): void {
     if (!fs.existsSync(this.configFile)) {
-      const config = new Document(defaultConfig);
+      const config = new Document(defaultSingleFileInstallationConfig);
+      config.setIn(
+        [
+          'plugins',
+          0,
+          'pluginConfig',
+          'extensions',
+          'installation',
+          'saveToSingleFile',
+          'file',
+        ],
+        this.configFile,
+      );
       this.config = config;
       this.save();
       this.logger.info(`Created missing ${this.configFile}`);

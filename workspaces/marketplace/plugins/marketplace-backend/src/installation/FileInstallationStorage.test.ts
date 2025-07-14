@@ -26,18 +26,19 @@ import {
 import { FileInstallationStorage } from './FileInstallationStorage';
 import { ConflictError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
+import { defaultSingleFileInstallationConfig } from './defaultConfig';
 
 describe('FileInstallationStorage', () => {
   const newPackageName = './dynamic-plugins/dist/package3-backend-dynamic';
-  const defaultConfigFile = resolve(
+  const newConfigFile = resolve(
     __dirname,
-    '../../__fixtures__/data/dynamic-plugins.marketplace.yaml',
+    '../../__fixtures__/data/dynamic-plugins.marketplace-custom.yaml',
   );
 
   describe('initialize', () => {
     afterEach(async () => {
-      if (fs.existsSync(defaultConfigFile)) {
-        fs.unlinkSync(defaultConfigFile);
+      if (fs.existsSync(newConfigFile)) {
+        fs.unlinkSync(newConfigFile);
       }
     });
 
@@ -63,15 +64,19 @@ describe('FileInstallationStorage', () => {
     });
 
     it('should create config file on initialize when config file does not exist', () => {
-      const configFileName = resolve(__dirname, defaultConfigFile);
       const fileInstallationStorage = new FileInstallationStorage(
         mockServices.logger.mock(),
-        configFileName,
+        newConfigFile,
       );
       fileInstallationStorage.initialize();
+      const expected = defaultSingleFileInstallationConfig;
+      expected.plugins[0].pluginConfig.extensions.installation.saveToSingleFile.file =
+        newConfigFile;
 
-      expect(fs.existsSync(configFileName)).toBeTruthy();
-      expect(fileInstallationStorage.getConfigYaml()).toEqual('plugins: []\n');
+      expect(fs.existsSync(newConfigFile)).toBeTruthy();
+      expect(fileInstallationStorage.getConfigYaml()).toEqual(
+        stringify(expected),
+      );
     });
 
     it('should throw on initialize when bad plugins format', async () => {

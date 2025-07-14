@@ -14,6 +14,22 @@
  * limitations under the License.
  */
 
-export const defaultConfig = {
-  plugins: [],
+export const defaultSingleFileInstallationConfig = {
+  plugins: [
+    {
+      package:
+        './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic',
+      disabled: false,
+      pluginConfig: {
+        extensions: {
+          installation: {
+            enabled: true,
+            saveToSingleFile: {
+              file: '/opt/app-root/src/dynamic-plugins-root/dynamic-plugins.marketplace.yaml',
+            },
+          },
+        },
+      },
+    },
+  ],
 };
