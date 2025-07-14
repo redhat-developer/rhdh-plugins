@@ -209,7 +209,6 @@ export const MarketplacePluginContent = ({
     if (!plugin.spec) {
       return;
     }
-    // When Update API is ready, adjust this logic to apply the correct status
     if (
       plugin.spec?.installStatus === MarketplacePluginInstallStatus.Installed ||
       plugin.spec?.installStatus ===
@@ -299,6 +298,10 @@ export const MarketplacePluginContent = ({
     const disablePluginActions =
       pluginConfigPerm.data?.read !== 'ALLOW' &&
       pluginConfigPerm.data?.write !== 'ALLOW';
+    const viewOnly =
+      isProductionEnvironment ||
+      pluginConfigPerm.data?.write !== 'ALLOW' ||
+      !extensionsConfig.data?.enabled;
 
     const icon = isPluginEnabled ? (
       <ToggleOnOutlinedIcon />
@@ -335,6 +338,22 @@ export const MarketplacePluginContent = ({
       );
     }
 
+    if (viewOnly) {
+      return (
+        <LinkButton
+          to={getInstallPath({
+            namespace: plugin.metadata.namespace!,
+            name: plugin.metadata.name,
+          })}
+          color="primary"
+          variant="contained"
+          data-testId="view"
+        >
+          View
+        </LinkButton>
+      );
+    }
+
     if (
       plugin.spec?.installStatus === MarketplacePluginInstallStatus.Installed ||
       plugin.spec?.installStatus ===
@@ -363,14 +382,16 @@ export const MarketplacePluginContent = ({
             open={open}
             onClose={handleClose}
           >
-            {/* Comment out the Edit menu, if edit is not functional */}
-            <MenuItem onClick={handleEdit} disableRipple>
+            <MenuItem
+              data-testId="edit-configuration"
+              onClick={handleEdit}
+              disableRipple
+            >
               <ListItemIcon>
                 <EditIcon />
               </ListItemIcon>
               <ListItemText primary="Edit" secondary="Plugin configurations" />
             </MenuItem>
-            {/* Make the appropriate API call to check the plugin status and show Enable/Disable action accordingly */}
             <MenuItem
               data-testId={testId}
               onClick={handleToggle}
@@ -387,27 +408,20 @@ export const MarketplacePluginContent = ({
 
     return (
       <LinkButton
-        to={
-          pluginConfigPerm.data?.write === 'ALLOW' ||
-          pluginConfigPerm.data?.read === 'ALLOW'
-            ? getInstallPath({
-                namespace: plugin.metadata.namespace!,
-                name: plugin.metadata.name,
-              })
-            : ''
-        }
+        to={getInstallPath({
+          namespace: plugin.metadata.namespace!,
+          name: plugin.metadata.name,
+        })}
         color="primary"
         variant="contained"
-        data-testId="install-enabled"
+        data-testId="install"
       >
-        {isProductionEnvironment ||
-        pluginConfigPerm.data?.write !== 'ALLOW' ||
-        !extensionsConfig.data?.enabled
-          ? 'View'
-          : mapMarketplacePluginInstallStatusToButton[
-              plugin.spec?.installStatus ??
-                MarketplacePluginInstallStatus.NotInstalled
-            ]}
+        {
+          mapMarketplacePluginInstallStatusToButton[
+            plugin.spec?.installStatus ??
+              MarketplacePluginInstallStatus.NotInstalled
+          ]
+        }
       </LinkButton>
     );
   };
