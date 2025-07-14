@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
-
-import * as React from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import {
   CodeSnippet,
@@ -40,6 +38,7 @@ import {
   MarketplacePackage,
   MarketplacePackageSpecAppConfigExample,
   MarketplacePlugin,
+  MarketplacePluginInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import Box from '@mui/material/Box';
@@ -70,6 +69,7 @@ import {
   getErrorMessage,
   getExampleAsMarkdown,
   getPluginActionTooltipMessage,
+  isPluginInstalled,
 } from '../utils';
 
 import {
@@ -78,11 +78,18 @@ import {
   useCodeEditor,
 } from './CodeEditor';
 import { Markdown } from './Markdown';
+import {
+  InstallationType,
+  useInstallationContext,
+} from './InstallationContext';
+
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 import { usePluginConfig } from '../hooks/usePluginConfig';
 import { useInstallPlugin } from '../hooks/useInstallPlugin';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
+import { mapMarketplacePluginInstallStatusToInstallPageButton } from '../labels';
+import { useTheme } from '@mui/material/styles';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -213,12 +220,13 @@ export const MarketplacePluginInstallContent = ({
   packages: MarketplacePackage[];
 }) => {
   const { mutateAsync: installPlugin } = useInstallPlugin();
+  const { installedPlugins, setInstalledPlugins } = useInstallationContext();
   const params = useRouteRefParams(pluginInstallRouteRef);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const [installationError, setInstallationError] = React.useState<
-    string | null
-  >(null);
+  const [installationError, setInstallationError] = useState<string | null>(
+    null,
+  );
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
   const pluginConfig = usePluginConfig(params.namespace, params.name);
   const pluginConfigPermissions = usePluginConfigurationPermissions(
@@ -229,6 +237,10 @@ export const MarketplacePluginInstallContent = ({
   const nodeEnvironment = useNodeEnvironment();
   const isProductionEnvironment =
     nodeEnvironment?.data?.nodeEnv === 'production';
+
+  const theme = useTheme();
+  // TODO: add divider color in theme plugin
+  const dividerColor = theme.palette.mode === 'dark' ? '#A3A3A3' : '#C7C7C7';
 
   useEffect(() => {
     const header = document.querySelector('nav#global-header');
@@ -246,7 +258,7 @@ export const MarketplacePluginInstallContent = ({
     name: params.name,
   });
 
-  const onLoaded = React.useCallback(() => {
+  const onLoaded = useCallback(() => {
     setInstallationError(null);
 
     if (pluginConfig.isLoading) return;
@@ -271,7 +283,7 @@ export const MarketplacePluginInstallContent = ({
     }
   }, [codeEditor, packages, pluginConfig.data, pluginConfig.isLoading]);
 
-  const onReset = React.useCallback(() => {
+  const onReset = useCallback(() => {
     pluginConfig.refetch();
     onLoaded();
   }, [onLoaded, pluginConfig]);
@@ -324,6 +336,15 @@ export const MarketplacePluginInstallContent = ({
         configYaml: pluginsYamlString,
       });
       if (res?.status === 'OK') {
+        const updatedPlugins: InstallationType = {
+          ...installedPlugins,
+          [plugin.metadata.title ?? plugin.metadata.name]: isPluginInstalled(
+            plugin?.spec?.installStatus,
+          )
+            ? 'Plugin updated'
+            : 'Plugin installed',
+        };
+        setInstalledPlugins(updatedPlugins);
         navigate('/extensions');
       } else {
         setIsSubmitting(false);
@@ -341,7 +362,8 @@ export const MarketplacePluginInstallContent = ({
     pluginConfigPermissions.data?.write !== 'ALLOW' ||
     (pluginConfig.data as any)?.error ||
     !extensionsConfig?.data?.enabled ||
-    isSubmitting;
+    isSubmitting ||
+    packages.length === 0;
 
   const installTooltip = getPluginActionTooltipMessage(
     isProductionEnvironment,
@@ -356,6 +378,15 @@ export const MarketplacePluginInstallContent = ({
     (pluginConfig.data as any)?.error?.message &&
     (pluginConfig.data as any)?.error?.reason !==
       ExtensionsStatus.INSTALLATION_DISABLED;
+
+  const getInstallButtonDatatestid = () => {
+    if (isInstallDisabled) {
+      return isPluginInstalled(plugin?.spec?.installStatus)
+        ? 'edit-disabled'
+        : 'install-disabled';
+    }
+    return isPluginInstalled(plugin.spec?.installStatus) ? 'edit' : 'install';
+  };
 
   const installationWarning = () => {
     const errorMessage = getErrorMessage(
@@ -461,7 +492,9 @@ export const MarketplacePluginInstallContent = ({
                 <CardHeader
                   title={
                     <Typography variant="h3">
-                      Installation instructions
+                      {isPluginInstalled(plugin.spec?.installStatus)
+                        ? 'Edit instructions'
+                        : 'Installation instructions'}
                     </Typography>
                   }
                   action={
@@ -491,6 +524,7 @@ export const MarketplacePluginInstallContent = ({
                     display: 'flex',
                     flexDirection: 'column',
                     overflow: 'hidden',
+                    px: 0,
                   }}
                 >
                   <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -498,6 +532,7 @@ export const MarketplacePluginInstallContent = ({
                       value={tabIndex}
                       onChange={handleTabChange}
                       aria-label="Plugin tabs"
+                      sx={{ px: 0 }}
                     >
                       {availableTabs.map((tab, index) => (
                         <Tab
@@ -534,10 +569,16 @@ export const MarketplacePluginInstallContent = ({
             </Grid>
           )}
         </Grid>
-
         <Box
           sx={{
-            mt: 4,
+            mx: -3,
+            borderBottom: `1px solid ${dividerColor}`,
+            mt: 2,
+            mb: 3,
+          }}
+        />
+        <Box
+          sx={{
             flexShrink: 0,
             backgroundColor: 'inherit',
           }}
@@ -568,14 +609,19 @@ export const MarketplacePluginInstallContent = ({
                 color="primary"
                 onClick={handleInstall}
                 disabled={isInstallDisabled}
-                data-testid={isInstallDisabled ? 'install-disabled' : 'install'}
+                data-testid={getInstallButtonDatatestid()}
                 startIcon={
                   isSubmitting && (
                     <CircularProgress size="20px" color="inherit" />
                   )
                 }
               >
-                Install
+                {
+                  mapMarketplacePluginInstallStatusToInstallPageButton[
+                    plugin.spec?.installStatus ??
+                      MarketplacePluginInstallStatus.NotInstalled
+                  ]
+                }
               </Button>
             </Typography>
           </Tooltip>

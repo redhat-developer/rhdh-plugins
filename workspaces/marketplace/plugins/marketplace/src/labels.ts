@@ -47,6 +47,17 @@ export const mapMarketplacePluginInstallStatusToButton: Record<
   [MarketplacePluginInstallStatus.UpdateAvailable]: 'Update',
 };
 
+export const mapMarketplacePluginInstallStatusToInstallPageButton: Record<
+  MarketplacePluginInstallStatus,
+  string
+> = {
+  [MarketplacePluginInstallStatus.NotInstalled]: 'Install',
+  [MarketplacePluginInstallStatus.Installed]: 'Save',
+  [MarketplacePluginInstallStatus.Disabled]: 'Save',
+  [MarketplacePluginInstallStatus.PartiallyInstalled]: 'Save',
+  [MarketplacePluginInstallStatus.UpdateAvailable]: 'Save',
+};
+
 export const mapPackageInstallStatusToLabel: Record<
   MarketplacePackageInstallStatus,
   string

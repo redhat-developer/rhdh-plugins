@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all quickstart minor updates",
+      "matchFileNames": ["workspaces/quickstart/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Quickstart)"
+      ],
+      "addLabels": ["team/rhdh", "quickstart"]
+    },
+    {
+      "description": "all quickstart patch updates",
+      "matchFileNames": ["workspaces/quickstart/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Quickstart)"
+      ],
+      "addLabels": ["team/rhdh", "quickstart"]
+    },
+    {
+      "description": "all quickstart dev dependency updates",
+      "matchFileNames": ["workspaces/quickstart/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Quickstart)"
+      ],
+      "addLabels": ["team/rhdh", "quickstart"]
+    }
+  ]
+}

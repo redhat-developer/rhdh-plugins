@@ -28,7 +28,6 @@ import {
   isMarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { DynamicPluginProvider } from '@backstage/backend-dynamic-feature-service';
-import { DynamicPluginsService } from './DynamicPluginsService';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import semver from 'semver';
 
@@ -53,7 +52,6 @@ export type CachedData = {
 export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
   private readonly pluginProvider: DynamicPluginProvider;
   private readonly logger: LoggerService;
-  private readonly dynamicPluginsService: DynamicPluginsService;
   private readonly cacheTTLMilliseconds = durationToMilliseconds({
     minutes: 1,
   });
@@ -61,12 +59,10 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
   constructor(deps: {
     logger: LoggerService;
     pluginProvider: DynamicPluginProvider;
-    dynamicPluginsService: DynamicPluginsService;
   }) {
-    const { logger, pluginProvider, dynamicPluginsService } = deps;
+    const { logger, pluginProvider } = deps;
     this.logger = logger;
     this.pluginProvider = pluginProvider;
-    this.dynamicPluginsService = dynamicPluginsService;
   }
 
   // Return processor name
@@ -143,9 +139,7 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
       return undefined;
     }
 
-    if (
-      this.dynamicPluginsService.isPackageDisabledViaConfig(marketplacePackage)
-    ) {
+    if (marketplacePackage.spec.dynamicArtifact.startsWith('./')) {
       return MarketplacePackageInstallStatus.Disabled;
     }
 

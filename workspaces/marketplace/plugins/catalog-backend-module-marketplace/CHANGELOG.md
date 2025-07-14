@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.4.1
+
+### Patch Changes
+
+- 62d10e4: Update the definition of `Disabled` installStatus for plugins and packages to refer to those that are preinstalled rather than those that are marked as disabled in the configuration.
+
+## 0.4.0
+
+### Minor Changes
+
+- 7aac60c: Introduces `PluginInstallStatusProcessor` to add `spec.installStatus` for Marketplace plugins. Introduces new `installStatus` values: `MarketplacePackageInstallStatus.Disabled` and `MarketplacePluginInstallStatus.Disabled`.
+
+### Patch Changes
+
+- Updated dependencies [f70ccb1]
+- Updated dependencies [7aac60c]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.7.0
+
 ## 0.3.3
 
 ### Patch Changes

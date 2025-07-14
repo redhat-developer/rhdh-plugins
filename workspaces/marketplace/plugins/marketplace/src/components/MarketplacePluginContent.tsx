@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Fragment, useState, MouseEvent } from 'react';
+import { Fragment, useState, MouseEvent, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -68,6 +68,11 @@ import { Markdown } from './Markdown';
 
 import { Links } from './Links';
 import { ActionsMenu } from './ActionsMenu';
+import { useEnablePlugin } from '../hooks/useEnablePlugin';
+import {
+  InstallationType,
+  useInstallationContext,
+} from './InstallationContext';
 
 export const MarketplacePluginContentSkeleton = () => {
   return (
@@ -190,16 +195,30 @@ const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
 
 export const MarketplacePluginContent = ({
   plugin,
-  enableActionsButtonFeature = false,
 }: {
   plugin: MarketplacePlugin;
-  enableActionsButtonFeature?: boolean;
 }) => {
   const extensionsConfig = useExtensionsConfiguration();
   const nodeEnvironment = useNodeEnvironment();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isPluginEnabled, setIsPluginEnabled] = useState<boolean>(false);
   const open = Boolean(anchorEl);
+  const { installedPlugins, setInstalledPlugins } = useInstallationContext();
+
+  useEffect(() => {
+    if (!plugin.spec) {
+      return;
+    }
+    if (
+      plugin.spec?.installStatus === MarketplacePluginInstallStatus.Installed ||
+      plugin.spec?.installStatus ===
+        MarketplacePluginInstallStatus.UpdateAvailable
+    ) {
+      setIsPluginEnabled(true);
+    } else {
+      setIsPluginEnabled(false);
+    }
+  }, [plugin]);
   const handleClick = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -212,6 +231,8 @@ export const MarketplacePluginContent = ({
     params.namespace,
     params.name,
   );
+
+  const { mutateAsync: enablePlugin } = useEnablePlugin();
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -226,9 +247,39 @@ export const MarketplacePluginContent = ({
     });
   };
 
-  const handleToggle = () => {
-    setIsPluginEnabled(isEnabled => !isEnabled);
-    // Make the appropriate API call to perform the enable/disable action
+  const handleToggle = async () => {
+    const newValue = !isPluginEnabled;
+    setIsPluginEnabled(newValue);
+
+    try {
+      const res = await enablePlugin({
+        namespace: plugin.metadata.namespace ?? 'default',
+        name: plugin.metadata.name,
+        disabled: !newValue,
+      });
+      if (res?.status !== 'OK') {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[Plugin Toggle] Plugin toggle responded with non-OK status:`,
+          (res as any)?.error?.message ?? res,
+        );
+      } else {
+        const updatedPlugins: InstallationType = {
+          ...installedPlugins,
+          [plugin.metadata.title ?? plugin.metadata.name]:
+            `Plugin ${isPluginEnabled ? 'disabled' : 'enabled'}`,
+        };
+        setInstalledPlugins(updatedPlugins);
+        handleClose();
+        navigate('/extensions');
+      }
+    } catch (err: any) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[Plugin Toggle] Failed to toggle plugin:`,
+        err?.error?.message ?? err,
+      );
+    }
   };
 
   const withFilter = (name: string, value: string) =>
@@ -247,6 +298,23 @@ export const MarketplacePluginContent = ({
     const disablePluginActions =
       pluginConfigPerm.data?.read !== 'ALLOW' &&
       pluginConfigPerm.data?.write !== 'ALLOW';
+    const viewOnly =
+      isProductionEnvironment ||
+      pluginConfigPerm.data?.write !== 'ALLOW' ||
+      !extensionsConfig.data?.enabled;
+
+    const icon = isPluginEnabled ? (
+      <ToggleOnOutlinedIcon />
+    ) : (
+      <ToggleOffOutlinedIcon />
+    );
+
+    const primaryText = isPluginEnabled ? 'Disable' : 'Enable';
+    const secondaryText = isPluginEnabled
+      ? 'Plugin currently enabled'
+      : 'Plugin currently disabled';
+
+    const testId = isPluginEnabled ? 'disable-plugin' : 'enable-plugin';
 
     if (disablePluginActions) {
       return (
@@ -270,9 +338,27 @@ export const MarketplacePluginContent = ({
       );
     }
 
+    if (viewOnly) {
+      return (
+        <LinkButton
+          to={getInstallPath({
+            namespace: plugin.metadata.namespace!,
+            name: plugin.metadata.name,
+          })}
+          color="primary"
+          variant="contained"
+          data-testId="view"
+        >
+          View
+        </LinkButton>
+      );
+    }
+
     if (
-      plugin.spec?.installStatus === MarketplacePluginInstallStatus.Installed &&
-      enableActionsButtonFeature
+      plugin.spec?.installStatus === MarketplacePluginInstallStatus.Installed ||
+      plugin.spec?.installStatus ===
+        MarketplacePluginInstallStatus.UpdateAvailable ||
+      plugin.spec?.installStatus === MarketplacePluginInstallStatus.Disabled
     ) {
       return (
         <>
@@ -296,46 +382,25 @@ export const MarketplacePluginContent = ({
             open={open}
             onClose={handleClose}
           >
-            {/* Comment out the Edit menu, if edit is not functional */}
-            <MenuItem onClick={handleEdit} disableRipple>
+            <MenuItem
+              data-testId="edit-configuration"
+              onClick={handleEdit}
+              disableRipple
+            >
               <ListItemIcon>
                 <EditIcon />
               </ListItemIcon>
               <ListItemText primary="Edit" secondary="Plugin configurations" />
             </MenuItem>
-            {/* Make the appropriate API call to check the plugin status and show Enable/Disable action accordingly */}
-            {!isPluginEnabled && (
-              <MenuItem
-                data-testId="enable-plugin"
-                onClick={handleToggle}
-                disableRipple
-                sx={{ minWidth: '300px' }}
-              >
-                <ListItemIcon>
-                  <ToggleOffOutlinedIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Enable"
-                  secondary="Plugin currently disabled"
-                />
-              </MenuItem>
-            )}
-            {isPluginEnabled && (
-              <MenuItem
-                data-testId="disable-plugin"
-                onClick={handleToggle}
-                disableRipple
-                sx={{ minWidth: '300px' }}
-              >
-                <ListItemIcon>
-                  <ToggleOnOutlinedIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Disable"
-                  secondary="Plugin currently enabled"
-                />
-              </MenuItem>
-            )}
+            <MenuItem
+              data-testId={testId}
+              onClick={handleToggle}
+              disableRipple
+              sx={{ minWidth: '300px' }}
+            >
+              <ListItemIcon>{icon}</ListItemIcon>
+              <ListItemText primary={primaryText} secondary={secondaryText} />
+            </MenuItem>
           </ActionsMenu>
         </>
       );
@@ -343,27 +408,20 @@ export const MarketplacePluginContent = ({
 
     return (
       <LinkButton
-        to={
-          pluginConfigPerm.data?.write === 'ALLOW' ||
-          pluginConfigPerm.data?.read === 'ALLOW'
-            ? getInstallPath({
-                namespace: plugin.metadata.namespace!,
-                name: plugin.metadata.name,
-              })
-            : ''
-        }
+        to={getInstallPath({
+          namespace: plugin.metadata.namespace!,
+          name: plugin.metadata.name,
+        })}
         color="primary"
         variant="contained"
-        data-testId="install-enabled"
+        data-testId="install"
       >
-        {isProductionEnvironment ||
-        pluginConfigPerm.data?.write !== 'ALLOW' ||
-        !extensionsConfig.data?.enabled
-          ? 'View'
-          : mapMarketplacePluginInstallStatusToButton[
-              plugin.spec?.installStatus ??
-                MarketplacePluginInstallStatus.NotInstalled
-            ]}
+        {
+          mapMarketplacePluginInstallStatusToButton[
+            plugin.spec?.installStatus ??
+              MarketplacePluginInstallStatus.NotInstalled
+          ]
+        }
       </LinkButton>
     );
   };

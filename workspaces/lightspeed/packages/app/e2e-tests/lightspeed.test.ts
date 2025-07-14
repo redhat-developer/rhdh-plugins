@@ -26,7 +26,13 @@ import {
   botResponse,
   moreConversations,
 } from './fixtures/responses';
-import { openLightspeed, sendMessage } from './utils/testHelper';
+import {
+  openLightspeed,
+  sendMessage,
+  verifyFeedbackButtons,
+  submitFeedback,
+  assertClipboardContains,
+} from './utils/testHelper';
 import {
   uploadFiles,
   uploadAndAssertDuplicate,
@@ -185,18 +191,38 @@ test.describe('Conversation', () => {
       const json = { chat_history: contents };
       await route.fulfill({ json });
     });
+    await page.route('**/v1/feedback/status', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          functionality: 'feedback',
+          status: {
+            enabled: true,
+          },
+        }),
+      });
+    });
   });
 
-  test('Bot responds', async ({ page }) => {
+  test('Bot response, feedback submission, and copy to clipboard', async ({
+    page,
+  }) => {
     await sendMessage(botQuery, page);
 
     const userMessage = page.locator('.pf-chatbot__message--user');
     const botMessage = page.locator('.pf-chatbot__message--bot');
+    const copyButton = page.getByRole('button', { name: 'Copy' });
 
     await expect(userMessage).toBeVisible();
     await expect(userMessage).toContainText(botQuery);
     await expect(botMessage).toBeVisible();
     await expect(botMessage).toContainText(botResponse);
+    await verifyFeedbackButtons(page);
+    await submitFeedback(page, 'Good response');
+    await submitFeedback(page, 'Bad response');
+    await copyButton.click();
+    await assertClipboardContains(page, botResponse);
   });
 
   test('Conversation is created and shown in side panel', async ({ page }) => {

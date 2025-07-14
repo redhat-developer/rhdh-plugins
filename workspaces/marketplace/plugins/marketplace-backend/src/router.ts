@@ -90,9 +90,7 @@ export async function createRouter(
 
   const authorizeConditional = async (
     request: Request,
-    permission:
-      | ResourcePermission<'extensions-plugin' | 'extensions-package'>
-      | BasicPermission,
+    permission: ResourcePermission<'extensions-plugin'> | BasicPermission,
   ) => {
     const credentials = await httpAuth.credentials(request);
     let decision: PolicyDecision;
@@ -120,19 +118,13 @@ export async function createRouter(
 
   const getAuthorizedPlugin = async (
     request: Request,
-    permission:
-      | ResourcePermission<'extensions-plugin' | 'extensions-package'>
-      | BasicPermission,
+    permission: ResourcePermission<'extensions-plugin'> | BasicPermission,
   ) => {
     const decision = await authorizeConditional(request, permission);
-    const action =
-      permission.attributes.action === 'create'
-        ? 'write'
-        : permission.attributes.action;
 
     if (decision.result === AuthorizeResult.DENY) {
       throw new NotAllowedError(
-        `Not allowed to ${action} the configuration of ${request.params.namespace}:${request.params.name}`,
+        `Not allowed to ${permission.attributes.action} the configuration of ${request.params.namespace}:${request.params.name}`,
       );
     }
 
@@ -147,11 +139,43 @@ export async function createRouter(
         matches(plugin, decision.conditions));
     if (!hasAccess) {
       throw new NotAllowedError(
-        `Not allowed to ${action} the configuration of ${request.params.namespace}:${request.params.name}`,
+        `Not allowed to ${permission.attributes.action} the configuration of ${request.params.namespace}:${request.params.name}`,
       );
     }
 
     return plugin;
+  };
+
+  const getAuthorizedPackage = async (
+    request: Request,
+    permission: ResourcePermission<'extensions-plugin'> | BasicPermission,
+  ) => {
+    const decision = await authorizeConditional(request, permission);
+
+    if (decision.result === AuthorizeResult.DENY) {
+      throw new NotAllowedError(
+        `Not allowed to ${permission.attributes.action} the configuration of ${request.params.namespace}:${request.params.name}`,
+      );
+    }
+
+    const packagePlugins = await marketplaceApi.getPackagePlugins(
+      request.params.namespace,
+      request.params.name,
+    );
+    const hasAccess =
+      decision.result === AuthorizeResult.ALLOW ||
+      (decision.result === AuthorizeResult.CONDITIONAL &&
+        packagePlugins.some(plugin => matches(plugin, decision.conditions)));
+    if (!hasAccess) {
+      throw new NotAllowedError(
+        `Not allowed to ${permission.attributes.action} the configuration of ${request.params.namespace}:${request.params.name}`,
+      );
+    }
+
+    return await marketplaceApi.getPackageByName(
+      request.params.namespace,
+      request.params.name,
+    );
   };
 
   router.get('/collections', async (req, res) => {
@@ -209,9 +233,9 @@ export async function createRouter(
     '/package/:namespace/:name/configuration',
     requireInitializedInstallationDataService,
     async (req, res) => {
-      const marketplacePackage = await marketplaceApi.getPackageByName(
-        req.params.namespace,
-        req.params.name,
+      const marketplacePackage = await getAuthorizedPackage(
+        req,
+        extensionsPluginReadPermission,
       );
 
       if (!marketplacePackage.spec?.dynamicArtifact) {
@@ -230,9 +254,9 @@ export async function createRouter(
     '/package/:namespace/:name/configuration',
     requireInitializedInstallationDataService,
     async (req, res) => {
-      const marketplacePackage = await marketplaceApi.getPackageByName(
-        req.params.namespace,
-        req.params.name,
+      const marketplacePackage = await getAuthorizedPackage(
+        req,
+        extensionsPluginWritePermission,
       );
       if (!marketplacePackage.spec?.dynamicArtifact) {
         throw new Error(
@@ -269,9 +293,9 @@ export async function createRouter(
     '/package/:namespace/:name/configuration/disable',
     requireInitializedInstallationDataService,
     async (req, res) => {
-      const marketplacePackage = await marketplaceApi.getPackageByName(
-        req.params.namespace,
-        req.params.name,
+      const marketplacePackage = await getAuthorizedPackage(
+        req,
+        extensionsPluginWritePermission,
       );
 
       if (!marketplacePackage.spec?.dynamicArtifact) {

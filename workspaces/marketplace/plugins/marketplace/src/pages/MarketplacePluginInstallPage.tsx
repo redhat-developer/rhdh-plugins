@@ -21,6 +21,8 @@ import {
   Content,
   ErrorBoundary,
 } from '@backstage/core-components';
+import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 
 import { themeId } from '../consts';
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
@@ -28,18 +30,42 @@ import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePlugin } from '../hooks/usePlugin';
 import { MarketplacePluginInstallContentLoader } from '../components/MarketplacePluginInstallContent';
 
+import { isPluginInstalled } from '../utils';
+
 const PluginInstallHeader = () => {
   const params = useRouteRefParams(pluginInstallRouteRef);
   const plugin = usePlugin(params.namespace, params.name);
 
   const displayName = plugin.data?.metadata?.title ?? params.name;
-  const title = `Install ${displayName}`;
+  const title = isPluginInstalled(plugin.data?.spec?.installStatus)
+    ? `Edit ${displayName} configurations`
+    : `Install ${displayName}`;
   const pluginLink = useRouteRef(pluginRouteRef)({
     namespace: params.namespace,
     name: params.name,
   });
 
-  return <Header title={title} type="Plugin" typeLink={pluginLink} />;
+  const theme = useTheme();
+  const headerBorderBottomColor =
+    theme.palette.mode === 'dark' ? '#A3A3A3' : '#C7C7C7';
+
+  return (
+    // TODO: add header border color and Breadcrumbs styles in theme plugin
+    <Box
+      sx={{
+        display: 'contents',
+        width: '100%',
+        '& > header': {
+          borderBottom: `1px solid ${headerBorderBottomColor}`,
+        },
+        '& > header div[class*="BreadcrumbsCurrentPage-root"] > p': {
+          fontStyle: 'italic',
+        },
+      }}
+    >
+      <Header title={title} type="Plugin" typeLink={pluginLink} />
+    </Box>
+  );
 };
 
 export const MarketplacePluginInstallPage = () => (

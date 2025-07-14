@@ -14,9 +14,21 @@
  * limitations under the License.
  */
 
-export * from './MarketplacePluginProcessor';
-export * from './MarketplaceCollectionProcessor';
-export * from './DynamicPackageInstallStatusProcessor';
-export * from './LocalPackageInstallStatusProcessor';
-export * from './MarketplacePackageProcessor';
-export * from './PluginInstallStatusProcessor';
+import { useMutation } from '@tanstack/react-query';
+import { useMarketplaceApi } from './useMarketplaceApi';
+
+export const useEnablePlugin = () => {
+  const marketplaceApi = useMarketplaceApi();
+
+  return useMutation({
+    mutationFn: async ({
+      namespace,
+      name,
+      disabled,
+    }: {
+      namespace: string;
+      name: string;
+      disabled: boolean;
+    }) => await marketplaceApi.disablePlugin?.(namespace, name, disabled),
+  });
+};
