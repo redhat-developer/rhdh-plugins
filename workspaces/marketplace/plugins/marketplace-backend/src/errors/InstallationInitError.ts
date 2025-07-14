@@ -18,7 +18,6 @@ import { CustomErrorBase } from '@backstage/errors';
 export const InstallationInitErrorReason = {
   INSTALLATION_DISABLED: 'INSTALLATION_DISABLED',
   FILE_CONFIG_VALUE_MISSING: 'FILE_CONFIG_VALUE_MISSING',
-  FILE_NOT_EXISTS: 'FILE_NOT_EXISTS',
   INVALID_CONFIG: 'INVALID_CONFIG',
   UNKNOWN: 'UNKNOWN',
 } as const;

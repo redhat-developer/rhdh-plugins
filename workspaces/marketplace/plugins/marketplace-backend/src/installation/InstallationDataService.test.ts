@@ -26,10 +26,8 @@ import {
 } from '../../__fixtures__/mockData';
 import { stringify } from 'yaml';
 import { mockServices } from '@backstage/backend-test-utils';
-import {
-  InstallationInitError,
-  InstallationInitErrorReason,
-} from '../errors/InstallationInitError';
+import { InstallationInitErrorReason } from '../errors/InstallationInitError';
+import { ConfigFormatError } from '../errors/ConfigFormatError';
 
 jest.mock('./FileInstallationStorage', () => {
   return {
@@ -118,9 +116,8 @@ describe('InstallationDataService', () => {
         },
       });
       mockFileInstallationStorage.initialize.mockImplementationOnce(() => {
-        throw new InstallationInitError(
-          InstallationInitErrorReason.FILE_NOT_EXISTS,
-          'The file is missing',
+        throw new ConfigFormatError(
+          'Invalid installation configuration, expected a map',
         );
       });
 
@@ -131,11 +128,11 @@ describe('InstallationDataService', () => {
       });
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        'Installation feature is disabled. Error while loading data: The file is missing',
+        'Installation feature is disabled. Error while loading data: Invalid installation configuration, expected a map',
       );
       expect(installationDataService.getInitializationError()).toBeDefined();
       expect(installationDataService.getInitializationError()?.reason).toBe(
-        InstallationInitErrorReason.FILE_NOT_EXISTS,
+        InstallationInitErrorReason.INVALID_CONFIG,
       );
     });
   });

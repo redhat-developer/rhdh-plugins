@@ -25,17 +25,29 @@ import {
 } from '../../__fixtures__/mockData';
 import { FileInstallationStorage } from './FileInstallationStorage';
 import { ConflictError } from '@backstage/errors';
+import { mockServices } from '@backstage/backend-test-utils';
 
 describe('FileInstallationStorage', () => {
   const newPackageName = './dynamic-plugins/dist/package3-backend-dynamic';
+  const defaultConfigFile = resolve(
+    __dirname,
+    '../../__fixtures__/data/dynamic-plugins.marketplace.yaml',
+  );
 
   describe('initialize', () => {
+    afterEach(async () => {
+      if (fs.existsSync(defaultConfigFile)) {
+        fs.unlinkSync(defaultConfigFile);
+      }
+    });
+
     it('should initialize valid config', () => {
       const configFileName = resolve(
         __dirname,
         '../../__fixtures__/data/validPluginsConfig.yaml',
       );
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -50,18 +62,16 @@ describe('FileInstallationStorage', () => {
       expect(fileInstallationStorage.getConfigYaml()).toEqual(expected);
     });
 
-    it('should throw on initialize when config file does not exist', () => {
-      const configFileName = resolve(
-        __dirname,
-        '../../__fixtures__/data/nonExistentConfigFile.yaml',
-      );
+    it('should create config file on initialize when config file does not exist', () => {
+      const configFileName = resolve(__dirname, defaultConfigFile);
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
+      fileInstallationStorage.initialize();
 
-      expect(() => {
-        fileInstallationStorage.initialize();
-      }).toThrow(`The file ${configFileName} is missing`);
+      expect(fs.existsSync(configFileName)).toBeTruthy();
+      expect(fileInstallationStorage.getConfigYaml()).toEqual('plugins: []\n');
     });
 
     it('should throw on initialize when bad plugins format', async () => {
@@ -70,6 +80,7 @@ describe('FileInstallationStorage', () => {
         '../../__fixtures__/data/invalidPluginsConfigBadPluginsFormat.yaml',
       );
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
 
@@ -86,6 +97,7 @@ describe('FileInstallationStorage', () => {
         '../../__fixtures__/data/invalidPluginsConfigBadPackageFormat.yaml',
       );
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
 
@@ -104,6 +116,7 @@ describe('FileInstallationStorage', () => {
         '../../__fixtures__/data/validPluginsConfig.yaml',
       );
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -123,6 +136,7 @@ describe('FileInstallationStorage', () => {
         '../../__fixtures__/data/validPluginsConfig.yaml',
       );
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -162,6 +176,7 @@ describe('FileInstallationStorage', () => {
         disabled: false,
       };
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -190,6 +205,7 @@ describe('FileInstallationStorage', () => {
         disabled: true,
       };
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -213,6 +229,7 @@ describe('FileInstallationStorage', () => {
         '../../__fixtures__/data/validPluginsConfig.yaml',
       );
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -282,6 +299,7 @@ describe('FileInstallationStorage', () => {
         addedPackage,
       ];
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -315,6 +333,7 @@ describe('FileInstallationStorage', () => {
         },
       ];
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -338,6 +357,7 @@ describe('FileInstallationStorage', () => {
         '../../__fixtures__/data/validPluginsConfig.yaml',
       );
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -373,6 +393,7 @@ describe('FileInstallationStorage', () => {
         '../../__fixtures__/data/validPluginsConfig.yaml',
       );
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -395,6 +416,7 @@ describe('FileInstallationStorage', () => {
         '../../__fixtures__/data/validPluginsConfig.yaml',
       );
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();
@@ -442,6 +464,7 @@ describe('FileInstallationStorage', () => {
         },
       ];
       const fileInstallationStorage = new FileInstallationStorage(
+        mockServices.logger.mock(),
         configFileName,
       );
       fileInstallationStorage.initialize();

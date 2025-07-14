@@ -22,12 +22,10 @@ import {
   validatePackageFormat,
   validatePluginFormat,
 } from '../validation/configValidation';
-import {
-  InstallationInitError,
-  InstallationInitErrorReason,
-} from '../errors/InstallationInitError';
 import type { JsonValue } from '@backstage/types';
 import { ConflictError } from '@backstage/errors';
+import { type LoggerService } from '@backstage/backend-plugin-api';
+import { defaultConfig } from './defaultConfig';
 
 export interface InstallationStorage {
   initialize?(): void;
@@ -40,10 +38,12 @@ export interface InstallationStorage {
 }
 
 export class FileInstallationStorage implements InstallationStorage {
+  private readonly logger: LoggerService;
   private readonly configFile: string;
   private config: Document;
 
-  constructor(configFile: string) {
+  constructor(logger: LoggerService, configFile: string) {
+    this.logger = logger;
     this.configFile = configFile;
     this.config = new Document();
   }
@@ -71,11 +71,13 @@ export class FileInstallationStorage implements InstallationStorage {
 
   initialize(): void {
     if (!fs.existsSync(this.configFile)) {
-      throw new InstallationInitError(
-        InstallationInitErrorReason.FILE_NOT_EXISTS,
-        `The file ${this.configFile} is missing`,
-      );
+      const config = new Document(defaultConfig);
+      this.config = config;
+      this.save();
+      this.logger.info(`Created missing ${this.configFile}`);
+      return;
     }
+
     const rawContent = fs.readFileSync(this.configFile, 'utf-8');
     const parsedContent = parseDocument(rawContent);
     validateConfigurationFormat(parsedContent);

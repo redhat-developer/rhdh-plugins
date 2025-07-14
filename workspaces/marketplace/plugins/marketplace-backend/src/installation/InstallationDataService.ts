@@ -95,7 +95,7 @@ export class InstallationDataService {
         );
       }
 
-      const storage = new FileInstallationStorage(filePath);
+      const storage = new FileInstallationStorage(logger, filePath);
       storage.initialize();
       return new InstallationDataService(marketplaceApi, storage);
     } catch (e) {
