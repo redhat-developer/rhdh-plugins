@@ -42,7 +42,7 @@ import {
 import { OrchestratorForm } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
 
 import { orchestratorApiRef } from '../../api';
-import { useOrchestratorAuth } from '../../api/OrchestratorAuth';
+import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
 import {
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,

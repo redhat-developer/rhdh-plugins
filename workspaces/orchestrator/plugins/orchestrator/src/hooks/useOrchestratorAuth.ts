@@ -17,7 +17,6 @@ import { useCallback } from 'react';
 
 import {
   AnyApiFactory,
-  ApiRef,
   githubAuthApiRef,
   gitlabAuthApiRef,
   microsoftAuthApiRef,
@@ -33,6 +32,14 @@ import {
   AuthTokenDescriptor,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+const isAuthApi = (api: any): api is OAuthApi => {
+  return api && typeof api.getAccessToken === 'function';
+};
+
+const isOpenIdAuthApi = (api: any): api is OpenIdConnectApi => {
+  return api && 'getIdToken' in api && typeof api.getIdToken === 'function';
+};
+
 export const useOrchestratorAuth = () => {
   const app = useApp();
   const apiHolder = useApiHolder();
@@ -42,37 +49,41 @@ export const useOrchestratorAuth = () => {
 
   const getProviderToken = useCallback(
     async (
-      authApi: OAuthApi | (OAuthApi & OpenIdConnectApi),
+      api: unknown,
       tokenDescriptor: AuthTokenDescriptor,
     ): Promise<string> => {
       if (tokenDescriptor.tokenType === 'openId') {
-        if (
-          'getIdToken' in authApi &&
-          typeof authApi.getIdToken === 'function'
-        ) {
-          return await authApi.getIdToken();
+        if (isOpenIdAuthApi(api)) {
+          return await api.getIdToken();
         }
         throw new Error(
-          `${tokenDescriptor.provider} auth API does not support OpenID Connect tokens`,
+          `${tokenDescriptor.provider} auth API does not support OpenID Connect tokens, since it does not implement the getIdToken method`,
+        );
+      } else if (
+        !tokenDescriptor.tokenType ||
+        tokenDescriptor.tokenType === 'oauth'
+      ) {
+        if (isAuthApi(api)) {
+          return await api.getAccessToken(tokenDescriptor.scope);
+        }
+        throw new Error(
+          `${tokenDescriptor.provider} auth API does not support OAuth tokens, since it does not implement the getAccessToken method`,
         );
       } else {
-        return await authApi.getAccessToken(tokenDescriptor.scope);
+        throw new Error(
+          `Unsupported token type: ${tokenDescriptor.tokenType}. The supported token types are: openId and oauth`,
+        );
       }
     },
     [],
   );
 
   const findCustomProvider = useCallback(
-    async (
-      providerApiId: string,
-    ): Promise<OAuthApi | (OAuthApi & OpenIdConnectApi) | undefined> => {
+    async (providerApiId: string): Promise<unknown> => {
       const allPlugins = app.getPlugins();
-
-      // Find the API reference for the custom provider
       const apiRef = allPlugins
         .flatMap(plugin => Array.from(plugin.getApis()))
-        .filter((api: AnyApiFactory) => api.api.id === providerApiId)
-        .at(0)?.api as ApiRef<OpenIdConnectApi & OAuthApi> | undefined;
+        .find((api: AnyApiFactory) => api.api.id === providerApiId)?.api;
 
       if (!apiRef) {
         throw new Error(
@@ -81,12 +92,11 @@ export const useOrchestratorAuth = () => {
       }
 
       const api = apiHolder.get(apiRef);
-      if (!api || typeof api.getAccessToken !== 'function') {
+      if (!api) {
         throw new Error(
-          `API with id "${providerApiId}" was found but does not implement the required getAccessToken method for authentication.`,
+          `API with id "${providerApiId}" was not found in the API holder.`,
         );
       }
-
       return api;
     },
     [app, apiHolder],
@@ -94,8 +104,7 @@ export const useOrchestratorAuth = () => {
 
   const getToken = useCallback(
     async (tokenDescriptor: AuthTokenDescriptor): Promise<AuthToken> => {
-      // First try built-in providers
-      let authApi: OAuthApi | (OAuthApi & OpenIdConnectApi) | undefined;
+      let authApi: unknown;
 
       switch (tokenDescriptor.provider.toLocaleLowerCase('en-US')) {
         case 'github':
@@ -108,28 +117,22 @@ export const useOrchestratorAuth = () => {
           authApi = microsoftAuthApi;
           break;
         default:
-          if (!tokenDescriptor.custonmProviderApiId) {
+          if (!tokenDescriptor.customProviderApiId) {
             throw new Error(
               `Custom authentication provider API id is required for provider: ${tokenDescriptor.provider}`,
             );
           }
           authApi = await findCustomProvider(
-            tokenDescriptor.custonmProviderApiId,
+            tokenDescriptor.customProviderApiId,
           );
           break;
       }
 
-      if (authApi) {
-        const token = await getProviderToken(authApi, tokenDescriptor);
-        return {
-          token,
-          provider: tokenDescriptor.provider,
-        };
-      }
-
-      throw new Error(
-        `Unsupported authentication provider: ${tokenDescriptor.provider}. The supported built-in providers are: github, gitlab and microsoft`,
-      );
+      const token = await getProviderToken(authApi, tokenDescriptor);
+      return {
+        token,
+        provider: tokenDescriptor.provider,
+      };
     },
     [
       githubAuthApi,
