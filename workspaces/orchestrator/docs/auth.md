@@ -4,23 +4,33 @@ This guide explains how to declare authentication requirements in a SonataFlow w
 
 ## Key Concept
 
-To request tokens, you define a **virtual field** in the workflow’s input schema that triggers Backstage’s authentication system. Once tokens are obtained, Backstage forwards them to the SonataFlow `execute` API as HTTP headers. These headers must match the configuration defined in the workflow’s OpenAPI specification.
+To request tokens, you define a **virtual field** in the workflow's input schema that triggers Backstage's authentication system. Once tokens are obtained, Backstage forwards them to the SonataFlow `execute` API as HTTP headers. These headers must match the configuration defined in the workflow's OpenAPI specification. The orchestrator plugin supports three built-in providers: github, gitlab and microsoft. Additionally, it supports custom authentication providers - for these, you must specify a `customProviderApiId` that corresponds to the Backstage ApiRef id of the custom provider plugin.
 
-## Workflow Header Configuration
+## Authentication Headers and SonataFlow Configuration
 
-These are the headers Backstage will send:
+Backstage forwards authentication tokens to SonataFlow as HTTP headers. The header name follows the pattern `X-Authorization-<Provider>`. The matching between the provider specified in the workflow schema and the header is case insensitive.
 
-| Provider  | Header                      |
-| --------- | --------------------------- |
-| GitHub    | `X-Authorization-Github`    |
-| GitLab    | `X-Authorization-Gitlab`    |
-| Microsoft | `X-Authorization-Microsoft` |
+### Provider Headers
 
-### Example `application.properties` Configuration
+| Provider   | Header                       | Type     |
+| ---------- | ---------------------------- | -------- |
+| gitHub     | `X-Authorization-Github`     | Built-in |
+| gitLab     | `X-Authorization-Gitlab`     | Built-in |
+| microsoft  | `X-Authorization-Microsoft`  | Built-in |
+| github-two | `X-Authorization-Github-two` | Custom   |
 
-```
+### SonataFlow Configuration
+
+Configure your `application.properties` to accept provider headers:
+
+```properties
+# Built-in provider example
 quarkus.openapi-generator.github_yaml.auth.BearerToken.token-propagation=true
 quarkus.openapi-generator.github_yaml.auth.BearerToken.header-name=X-Authorization-Github
+
+# Custom provider example (github-two from [custom-authentication-provider-module](../plugins/custom-authentication-provider-module/) plugin)
+quarkus.openapi-generator.githubtwo_yaml.auth.BearerToken.token-propagation=true
+quarkus.openapi-generator.githubtwo_yaml.auth.BearerToken.header-name=X-Authorization-Github-Two
 ```
 
 > 🔗 See the [SonataFlow token propagation documentation](https://www.rhdhorchestrator.io/main/docs/serverless-workflows/configuration/token-propagation/) for more details.
@@ -41,17 +51,18 @@ quarkus.openapi-generator.github_yaml.auth.BearerToken.header-name=X-Authorizati
 
 ### UI Schema (`ui:widget` and `ui:props`)
 
-| Property                        | Type               | Required | Description                                                    |
-| ------------------------------- | ------------------ | -------- | -------------------------------------------------------------- |
-| `ui:widget`                     | string             | Yes      | Must be `"AuthRequester"`                                      |
-| `ui:props.authTokenDescriptors` | array of objects   | Yes      | List of token requirements                                     |
-| — `provider`                    | string             | Yes      | One of `github`, `gitlab`, `microsoft`                         |
-| — `tokenType`                   | string             | Yes      | `"oauth"` or `"openId"`                                        |
-| — `scope`                       | string or string[] | Optional | Scope(s) to request, e.g., `"repo"` or `["repo", "read:user"]` |
+| Property                        | Type               | Required             | Description                                                                                                                                                                                            |
+| ------------------------------- | ------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ui:widget`                     | string             | Yes                  | Must be `"AuthRequester"`                                                                                                                                                                              |
+| `ui:props.authTokenDescriptors` | array of objects   | Yes                  | List of token requirements                                                                                                                                                                             |
+| — `provider`                    | string             | Yes                  | Built-in: `github`, `gitlab`, `microsoft` or custom provider identifier. Must match the part after X-Authorization- in the header defined in application properties. The matching is case insensitive. |
+| — `customProviderApiId`         | string             | For custom providers | Backstage ApiRef id of the custom provider plugin (e.g., `my.custom.auth.github-two` from the [custom-authentication-provider-module](../plugins/custom-authentication-provider-module/) plugin)       |
+| — `tokenType`                   | string             | Optional             | `"oauth"` or `"openId"` (default: `"oauth"`)                                                                                                                                                           |
+| — `scope`                       | string or string[] | Optional             | Scope(s) to request, e.g., `"repo"` or `["repo", "read:user"]`                                                                                                                                         |
 
 ## Example
 
-```
+```json
 {
   "authSetup": {
     "type": "string",
@@ -66,6 +77,12 @@ quarkus.openapi-generator.github_yaml.auth.BearerToken.header-name=X-Authorizati
         {
           "provider": "microsoft",
           "tokenType": "openId"
+        },
+        {
+          "provider": "github-two",
+          "customProviderApiId": "my.custom.auth.github-two",
+          "tokenType": "oauth",
+          "scope": ["read:user"]
         }
       ]
     }
@@ -73,7 +90,9 @@ quarkus.openapi-generator.github_yaml.auth.BearerToken.header-name=X-Authorizati
 }
 ```
 
-In this example, the form will trigger the login popup for GitHub and Microsoft, using the specified scopes where given. If the user is already logged in with the specified scopes, the popup will not appear, and the tokens from earlier login will be propagated.
+This example uses the `github-two` custom provider from the [`custom-authentication-provider-module`](../plugins/custom-authentication-provider-module/) plugin included in this repository. The plugin demonstrates how to create a custom authentication provider that extends the built-in GitHub authentication.
+
+In these examples, the form will trigger the login popup for the specified providers, using the given scopes. If the user is already logged in with the specified scopes, the popup will not appear, and the tokens from earlier login will be propagated.
 
 ## `tokenType` details
 
@@ -141,9 +160,10 @@ To use this feature, the relevant authentication providers must be properly conf
 ### Backstage Token Header
 
 In addition to provider-specific tokens, The orchestrator plugin will always include the user’s session token in the `X-Authorization-Backstage` header when invoking SonataFlow workflow execution. This token represents the currently authenticated Backstage user and can be used to call backstage plugin APIs from a workflow.
-To use it, include it in the application.properties. For example:
+To use it, include it in your `application.properties`:
 
-```
+```properties
+# Backstage session token
 quarkus.openapi-generator.backstagecatalog_yaml.auth.BearerToken.token-propagation=true
 quarkus.openapi-generator.backstagecatalog_yaml.auth.BearerToken.header-name=X-Authorization-Backstage
 ```

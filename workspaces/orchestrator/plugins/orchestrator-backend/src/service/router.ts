@@ -869,9 +869,9 @@ function setupInternalRoutes(
       });
 
       try {
-        const assessedInstance = await routerApi.v2.getInstanceById(instanceId);
+        const instance = await routerApi.v2.getInstanceById(instanceId);
 
-        const workflowId = assessedInstance.instance.processId;
+        const workflowId = instance.processId;
 
         const decision = await authorize(
           request,
@@ -899,8 +899,7 @@ function setupInternalRoutes(
 
         // If not an admin, enforce initiatorEntity check
         if (!isUserAuthorizedForInstanceAdminView) {
-          const instanceInitiatorEntity =
-            assessedInstance.instance.initiatorEntity;
+          const instanceInitiatorEntity = instance.initiatorEntity;
           if (instanceInitiatorEntity !== initiatorEntity) {
             throw new Error(
               `Unauthorized to access instance ${instanceId} not initiated by user.`,
@@ -909,7 +908,7 @@ function setupInternalRoutes(
         }
 
         auditEvent.success();
-        res.status(200).json(assessedInstance);
+        res.status(200).json(instance);
       } catch (error) {
         auditEvent.fail({ error });
         next(error);
@@ -933,8 +932,8 @@ function setupInternalRoutes(
       });
 
       try {
-        const assessedInstance = await routerApi.v2.getInstanceById(instanceId);
-        const workflowId = assessedInstance.instance.processId;
+        const instance = await routerApi.v2.getInstanceById(instanceId);
+        const workflowId = instance.processId;
 
         const decision = await authorize(
           request,

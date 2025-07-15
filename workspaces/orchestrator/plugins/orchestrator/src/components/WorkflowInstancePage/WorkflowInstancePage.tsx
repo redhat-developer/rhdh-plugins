@@ -48,11 +48,10 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import {
-  AssessedProcessInstanceDTO,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
+  ProcessInstanceDTO,
   ProcessInstanceStatusDTO,
-  QUERY_PARAM_ASSESSMENT_INSTANCE_ID,
   QUERY_PARAM_INSTANCE_ID,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -190,18 +189,18 @@ export const WorkflowInstancePage = ({
   }, [instanceId, orchestratorApi, queryInstanceId]);
 
   const { loading, error, value, restart } = usePolling<
-    AssessedProcessInstanceDTO | undefined
+    ProcessInstanceDTO | undefined
   >(
     fetchInstance,
     SHORT_REFRESH_INTERVAL,
-    (curValue: AssessedProcessInstanceDTO | undefined) =>
+    (curValue: ProcessInstanceDTO | undefined) =>
       !!curValue &&
-      (curValue.instance.state === ProcessInstanceStatusDTO.Active ||
-        curValue.instance.state === ProcessInstanceStatusDTO.Pending ||
-        !curValue.instance.state),
+      (curValue.state === ProcessInstanceStatusDTO.Active ||
+        curValue.state === ProcessInstanceStatusDTO.Pending ||
+        !curValue.state),
   );
 
-  const workflowId = value?.instance?.processId;
+  const workflowId = value?.processId;
   const permittedToUse = usePermissionArrayDecision(
     workflowId
       ? [
@@ -212,13 +211,13 @@ export const WorkflowInstancePage = ({
   );
 
   const canAbort =
-    value?.instance.state === ProcessInstanceStatusDTO.Active ||
-    value?.instance.state === ProcessInstanceStatusDTO.Error;
+    value?.state === ProcessInstanceStatusDTO.Active ||
+    value?.state === ProcessInstanceStatusDTO.Error;
 
   const canRerun =
-    value?.instance.state === ProcessInstanceStatusDTO.Completed ||
-    value?.instance.state === ProcessInstanceStatusDTO.Aborted ||
-    value?.instance.state === ProcessInstanceStatusDTO.Error;
+    value?.state === ProcessInstanceStatusDTO.Completed ||
+    value?.state === ProcessInstanceStatusDTO.Aborted ||
+    value?.state === ProcessInstanceStatusDTO.Error;
 
   const toggleAbortConfirmationDialog = React.useCallback(() => {
     setIsAbortConfirmationDialogOpen(prev => !prev);
@@ -229,7 +228,7 @@ export const WorkflowInstancePage = ({
       setIsAborting(true);
 
       try {
-        await orchestratorApi.abortWorkflowInstance(value.instance.id);
+        await orchestratorApi.abortWorkflowInstance(value.id);
         restart();
       } catch (e) {
         setAbortError(`Abort failed: ${(e as Error).message}`);
@@ -246,12 +245,11 @@ export const WorkflowInstancePage = ({
       return;
     }
     const routeUrl = executeWorkflowLink({
-      workflowId: value.instance.processId,
+      workflowId: value.processId,
     });
 
     const urlToNavigate = buildUrl(routeUrl, {
-      [QUERY_PARAM_INSTANCE_ID]: value.instance.id,
-      [QUERY_PARAM_ASSESSMENT_INSTANCE_ID]: value.assessedBy?.id,
+      [QUERY_PARAM_INSTANCE_ID]: value.id,
     });
     navigate(urlToNavigate);
   }, [value, navigate, executeWorkflowLink]);
@@ -260,10 +258,7 @@ export const WorkflowInstancePage = ({
     if (value) {
       setIsRetrigger(true);
       try {
-        await orchestratorApi.retriggerInstance(
-          value.instance.processId,
-          value.instance.id,
-        );
+        await orchestratorApi.retriggerInstance(value.processId, value.id);
         restart();
       } catch (retriggerInstanceError) {
         if (retriggerInstanceError.toString().includes('Failed Node ID')) {
@@ -307,8 +302,8 @@ export const WorkflowInstancePage = ({
 
   return (
     <BaseOrchestratorPage
-      title={value?.instance.id}
-      type={value?.instance.processName}
+      title={value?.id}
+      type={value?.processName}
       typeLink={`/orchestrator/workflows/${workflowId}`}
     >
       {loading ? <Progress /> : null}
@@ -364,20 +359,18 @@ export const WorkflowInstancePage = ({
                     }
                     disabled={!permittedToUse.allowed || !canRerun}
                     onClick={
-                      value?.instance.state === ProcessInstanceStatusDTO.Error
+                      value?.state === ProcessInstanceStatusDTO.Error
                         ? handleClick
                         : handleRerun
                     }
                     endIcon={
-                      value?.instance.state ===
-                      ProcessInstanceStatusDTO.Error ? (
+                      value?.state === ProcessInstanceStatusDTO.Error ? (
                         <ArrowDropDown />
                       ) : null
                     }
                     style={{ color: 'white' }}
                   >
-                    {value.instance.state ===
-                    ProcessInstanceStatusDTO.Active ? (
+                    {value.state === ProcessInstanceStatusDTO.Active ? (
                       <>
                         <CircularProgress color="inherit" size="0.75rem" />
                         &nbsp;Running...
@@ -455,7 +448,7 @@ export const WorkflowInstancePage = ({
               {retriggerError}
             </Alert>
           </Snackbar>
-          <WorkflowInstancePageContent assessedInstance={value} />
+          <WorkflowInstancePageContent instance={value} />
         </>
       ) : null}
     </BaseOrchestratorPage>

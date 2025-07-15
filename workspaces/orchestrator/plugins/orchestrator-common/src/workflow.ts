@@ -17,8 +17,7 @@
 import { Specification } from '@severlessworkflow/sdk-typescript';
 import { dump } from 'js-yaml';
 
-import { ASSESSMENT_WORKFLOW_TYPE } from './constants';
-import { WorkflowCategory, WorkflowDefinition, WorkflowFormat } from './types';
+import { WorkflowDefinition, WorkflowFormat } from './types';
 
 export function fromWorkflowSource(content: string): WorkflowDefinition {
   const parsed = Specification.Workflow.fromSource(content);
@@ -59,19 +58,6 @@ export function extractWorkflowFormatFromUri(uri: string): WorkflowFormat {
     }
   }
   throw new Error(`Unsupported workflow format for uri ${uri}`);
-}
-
-export function getWorkflowCategory(
-  definition: WorkflowDefinition | undefined,
-): WorkflowCategory {
-  if (definition === undefined) {
-    return WorkflowCategory.INFRASTRUCTURE;
-  }
-  return definition?.annotations?.find(
-    annotation => annotation === ASSESSMENT_WORKFLOW_TYPE,
-  )
-    ? WorkflowCategory.ASSESSMENT
-    : WorkflowCategory.INFRASTRUCTURE;
 }
 
 function removeProperty<T>(obj: T, propToDelete: string): T {

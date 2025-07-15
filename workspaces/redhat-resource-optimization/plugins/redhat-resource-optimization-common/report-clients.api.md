@@ -13,6 +13,8 @@ export interface GetAccessResponse {
   // (undocumented)
   authorizeClusterIds: string[];
   // (undocumented)
+  authorizeProjects: string[];
+  // (undocumented)
   decision: string;
 }
 

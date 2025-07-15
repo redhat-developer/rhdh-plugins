@@ -37,13 +37,12 @@ import type { JSONSchema7 } from 'json-schema';
 import {
   AuthTokenDescriptor,
   InputSchemaResponseDTO,
-  QUERY_PARAM_ASSESSMENT_INSTANCE_ID,
   QUERY_PARAM_INSTANCE_ID,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { OrchestratorForm } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
 
 import { orchestratorApiRef } from '../../api';
-import { orchestratorAuthApiRef } from '../../api/authApi';
+import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
 import {
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
@@ -55,14 +54,11 @@ import { getSchemaUpdater } from './schemaUpdater';
 
 export const ExecuteWorkflowPage = () => {
   const orchestratorApi = useApi(orchestratorApiRef);
-  const authApi = useApi(orchestratorAuthApiRef);
+  const { authenticate } = useOrchestratorAuth();
   const { workflowId } = useRouteRefParams(executeWorkflowRouteRef);
   const [isExecuting, setIsExecuting] = useState(false);
   const [updateError, setUpdateError] = React.useState<Error>();
   const [instanceId] = useQueryParamState<string>(QUERY_PARAM_INSTANCE_ID);
-  const [assessmentInstanceId] = useQueryParamState<string>(
-    QUERY_PARAM_ASSESSMENT_INSTANCE_ID,
-  );
   const navigate = useNavigate();
   const instanceLink = useRouteRef(workflowInstanceRouteRef);
   const {
@@ -72,7 +68,7 @@ export const ExecuteWorkflowPage = () => {
   } = useAsync(async (): Promise<InputSchemaResponseDTO> => {
     const res = await orchestratorApi.getWorkflowDataInputSchema(
       workflowId,
-      assessmentInstanceId || instanceId,
+      instanceId,
     );
     return res.data;
   }, [orchestratorApi, workflowId]);
@@ -106,12 +102,11 @@ export const ExecuteWorkflowPage = () => {
       setUpdateError(undefined);
       try {
         setIsExecuting(true);
-        const authTokens = await authApi.authenticate(authTokenDescriptors);
+        const authTokens = await authenticate(authTokenDescriptors);
         const response = await orchestratorApi.executeWorkflow({
           workflowId,
           parameters,
           authTokens,
-          businessKey: assessmentInstanceId,
         });
         navigate(instanceLink({ instanceId: response.data.id }));
       } catch (err) {
@@ -125,9 +120,8 @@ export const ExecuteWorkflowPage = () => {
       workflowId,
       navigate,
       instanceLink,
-      assessmentInstanceId,
       authTokenDescriptors,
-      authApi,
+      authenticate,
     ],
   );
 
@@ -158,7 +152,7 @@ export const ExecuteWorkflowPage = () => {
                 updateSchema={updateSchema}
                 handleExecute={handleExecute}
                 isExecuting={isExecuting}
-                isDataReadonly={!!assessmentInstanceId}
+                isDataReadonly={!!instanceId}
                 initialFormData={initialFormData}
                 setAuthTokenDescriptors={setAuthTokenDescriptors}
               />

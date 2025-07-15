@@ -18,7 +18,9 @@ import type { RequestHandler } from 'express';
 import type { RouterOptions } from '../models/RouterOptions';
 import {
   authorize,
+  ClusterProjectResult,
   filterAuthorizedClusterIds,
+  filterAuthorizedClusterProjectIds,
 } from '../util/checkPermissions';
 import { rosPluginPermissions } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/permissions';
 import { getTokenFromApi } from '../util/tokenUtil';
@@ -53,16 +55,24 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
       return response.json(body);
     }
 
-    // RBAC Filtering logic for Cluster
+    // RBAC Filtering logic for Cluster & Project
     const ALL_CLUSTERS_MAP_CACHE_KEY = 'all_clusters_map';
-    let clusterDataMap: Record<string, string> = {};
+    const ALL_PROJECTS_CACHE_KEY = 'all_projects';
 
-    // Check the cluster data in the cache first
+    let clusterDataMap: Record<string, string> = {};
+    let allProjects: string[] = [];
+
+    // Check the cluster & project data in the cache first
     const clusterMapDataFromCache = (await cache.get(
       ALL_CLUSTERS_MAP_CACHE_KEY,
     )) as Record<string, string> | undefined;
-    if (clusterMapDataFromCache) {
+    const projectDataFromCache = (await cache.get(ALL_PROJECTS_CACHE_KEY)) as
+      | string[]
+      | undefined;
+
+    if (clusterMapDataFromCache && projectDataFromCache) {
       clusterDataMap = clusterMapDataFromCache;
+      allProjects = projectDataFromCache;
     } else {
       // token
       const token = await getTokenFromApi(options);
@@ -94,8 +104,19 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
                 recommendation.clusterUuid;
           });
 
+          allProjects = [
+            ...new Set(
+              camelCaseTransformedResponse.data.map(
+                recommendation => recommendation.project,
+              ),
+            ),
+          ].filter(project => project !== undefined) as string[];
+
           // store it in Cache
           await cache.set(ALL_CLUSTERS_MAP_CACHE_KEY, clusterDataMap, {
+            ttl: 15 * 60 * 1000,
+          });
+          await cache.set(ALL_PROJECTS_CACHE_KEY, allProjects, {
             ttl: 15 * 60 * 1000,
           });
         }
@@ -104,11 +125,31 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
       }
     }
 
-    const authorizeClusterIds: string[] = await filterAuthorizedClusterIds(
+    let authorizeClusterIds: string[] = await filterAuthorizedClusterIds(
       _,
       permissions,
       httpAuth,
       clusterDataMap,
+    );
+
+    const authorizeClustersProjects: ClusterProjectResult[] =
+      await filterAuthorizedClusterProjectIds(
+        _,
+        permissions,
+        httpAuth,
+        clusterDataMap,
+        allProjects,
+      );
+
+    authorizeClusterIds = [
+      ...new Set([
+        ...authorizeClusterIds,
+        ...authorizeClustersProjects.map(result => result.cluster),
+      ]),
+    ];
+
+    const authorizeProjects = authorizeClustersProjects.map(
+      result => result.project,
     );
 
     if (authorizeClusterIds.length > 0) {
@@ -120,6 +161,7 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
     const body = {
       decision: finalDecision,
       authorizeClusterIds,
+      authorizeProjects,
     };
 
     return response.json(body);

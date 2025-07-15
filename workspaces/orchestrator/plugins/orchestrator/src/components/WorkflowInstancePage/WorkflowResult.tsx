@@ -34,10 +34,10 @@ import ListItem from '@mui/material/ListItem';
 import { makeStyles } from 'tss-react/mui';
 
 import {
-  AssessedProcessInstanceDTO,
+  ProcessInstanceDTO,
   ProcessInstanceErrorDTO,
   ProcessInstanceStatusDTO,
-  QUERY_PARAM_ASSESSMENT_INSTANCE_ID,
+  QUERY_PARAM_INSTANCE_ID,
   WorkflowOverviewDTO,
   WorkflowResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -226,7 +226,7 @@ const NextWorkflows = ({
           workflowId: currentOpenedWorkflowDescriptionModalID,
         }),
         {
-          [QUERY_PARAM_ASSESSMENT_INSTANCE_ID]: instanceId,
+          [QUERY_PARAM_INSTANCE_ID]: instanceId,
         },
       ),
     [currentOpenedWorkflowDescriptionModalID, executeWorkflowLink, instanceId],
@@ -357,11 +357,10 @@ const WorkflowOutputs = ({
 };
 
 export const WorkflowResult: React.FC<{
-  assessedInstance: AssessedProcessInstanceDTO;
+  instance: ProcessInstanceDTO;
   className: string;
   cardClassName?: string;
-}> = ({ assessedInstance, className, cardClassName }) => {
-  const instance = assessedInstance.instance;
+}> = ({ instance, className, cardClassName }) => {
   const result = instance.workflowdata?.result;
 
   return (

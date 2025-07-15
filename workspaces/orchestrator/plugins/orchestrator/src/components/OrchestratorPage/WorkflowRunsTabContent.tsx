@@ -33,7 +33,6 @@ import Grid from '@mui/material/Grid';
 import TablePagination from '@mui/material/TablePagination';
 
 import {
-  capitalize,
   FieldFilter,
   Filter,
   PaginationInfoDTO,
@@ -42,7 +41,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
-import { DEFAULT_TABLE_PAGE_SIZE, VALUE_UNAVAILABLE } from '../../constants';
+import { DEFAULT_TABLE_PAGE_SIZE } from '../../constants';
 import usePolling from '../../hooks/usePolling';
 import { workflowInstanceRouteRef, workflowRouteRef } from '../../routes';
 import { Selector } from '../Selector';
@@ -268,17 +267,6 @@ export const WorkflowRunsTabContent = () => {
           />
         ),
       },
-      ...(workflowId
-        ? []
-        : [
-            {
-              title: 'Category',
-              field: 'category',
-              render: (data: WorkflowRunDetail) =>
-                capitalize(data.category ?? VALUE_UNAVAILABLE),
-              sorting: false,
-            },
-          ]),
       { title: 'Started', field: 'start', customSort: applyBackendSort },
       { title: 'Duration', field: 'duration', sorting: false },
     ],

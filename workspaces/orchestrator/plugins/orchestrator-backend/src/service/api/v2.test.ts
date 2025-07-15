@@ -17,9 +17,9 @@
 import { Request } from 'express';
 
 import {
-  AssessedProcessInstanceDTO,
   ExecuteWorkflowResponseDTO,
   FieldFilterOperatorEnum,
+  ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
   SearchRequest,
   toWorkflowYaml,
@@ -292,7 +292,6 @@ describe('getWorkflowOverviewById', () => {
     expect(overviewV2.format).toBeUndefined();
     expect(overviewV2.lastTriggeredMs).toBeUndefined();
     expect(overviewV2.lastRunStatus).toBeUndefined();
-    expect(overviewV2.category).toEqual('infrastructure');
     expect(overviewV2.description).toBeUndefined();
   });
 
@@ -349,7 +348,6 @@ describe('getWorkflowById', () => {
     expect(workflowV2.name).toEqual(wfDefinition.name);
     expect(workflowV2.format).toEqual(testFormat);
     expect(workflowV2.description).toEqual(wfDefinition.description);
-    expect(workflowV2.category).toEqual('infrastructure');
     expect(workflowV2.annotations).toBeDefined();
   });
 });
@@ -469,7 +467,7 @@ describe('getInstanceById', () => {
     await expect(promise).rejects.toThrow('No instance');
   });
 
-  it('Instance exists and do not include assessment', async () => {
+  it('Instance exists', async () => {
     const processInstance = generateProcessInstance(1);
 
     (mockOrchestratorService.fetchInstance as jest.Mock).mockResolvedValue(
@@ -477,15 +475,14 @@ describe('getInstanceById', () => {
     );
 
     // Act
-    const processInstanceV2: AssessedProcessInstanceDTO =
-      await v2.getInstanceById(processInstance.id);
+    const processInstanceV2: ProcessInstanceDTO = await v2.getInstanceById(
+      processInstance.id,
+    );
 
     // Assert
     expect(mockOrchestratorService.fetchInstance).toHaveBeenCalledTimes(1);
     expect(processInstanceV2).toBeDefined();
-    expect(processInstanceV2.instance).toBeDefined();
-    expect(processInstanceV2.assessedBy).toBeUndefined();
-    expect(processInstanceV2.instance.id).toEqual(processInstance.id);
+    expect(processInstanceV2).toBeDefined();
   });
 });
 

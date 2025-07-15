@@ -21,16 +21,12 @@ import {
   ExecuteWorkflowResponseDTO,
   extractWorkflowFormat,
   fromWorkflowSource,
-  getWorkflowCategory,
   NodeInstance,
   NodeInstanceDTO,
   ProcessInstance,
   ProcessInstanceDTO,
   ProcessInstanceState,
   ProcessInstanceStatusDTO,
-  WorkflowCategory,
-  WorkflowCategoryDTO,
-  WorkflowDefinition,
   WorkflowDTO,
   WorkflowExecutionResponse,
   WorkflowFormatDTO,
@@ -54,23 +50,8 @@ export function mapToWorkflowOverviewDTO(
       ? getProcessInstancesStatusDTOFromString(overview.lastRunStatus)
       : undefined,
     lastTriggeredMs: overview.lastTriggeredMs,
-    category: mapWorkflowCategoryDTOFromString(overview.category),
     isAvailable: overview.isAvailable,
   };
-}
-
-export function mapWorkflowCategoryDTOFromString(
-  category?: string,
-): WorkflowCategoryDTO {
-  return category?.toLocaleLowerCase() === 'assessment'
-    ? 'assessment'
-    : 'infrastructure';
-}
-
-export function getWorkflowCategoryDTO(
-  definition: WorkflowDefinition | undefined,
-): WorkflowCategoryDTO {
-  return getWorkflowCategory(definition);
 }
 
 export function getWorkflowFormatDTO(source: string): WorkflowFormatDTO {
@@ -81,21 +62,11 @@ export function mapToWorkflowDTO(source: string): WorkflowDTO {
   const definition = fromWorkflowSource(source);
   return {
     annotations: definition.annotations,
-    category: getWorkflowCategoryDTO(definition),
     description: definition.description,
     name: definition.name,
     format: getWorkflowFormatDTO(source),
     id: definition.id,
   };
-}
-
-export function mapWorkflowCategoryDTO(
-  category?: WorkflowCategory,
-): WorkflowCategoryDTO {
-  if (category === WorkflowCategory.ASSESSMENT) {
-    return 'assessment';
-  }
-  return 'infrastructure';
 }
 
 export function getProcessInstancesStatusDTOFromString(
@@ -138,7 +109,6 @@ export function mapToProcessInstanceDTO(
     executionSummary: processInstance.executionSummary,
     endpoint: processInstance.endpoint,
     error: processInstance.error,
-    category: mapWorkflowCategoryDTO(processInstance.category),
     start: processInstance.start,
     end: processInstance.end,
     duration: duration,

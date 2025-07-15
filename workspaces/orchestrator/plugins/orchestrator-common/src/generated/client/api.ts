@@ -26,25 +26,6 @@ import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerM
 /**
  * 
  * @export
- * @interface AssessedProcessInstanceDTO
- */
-export interface AssessedProcessInstanceDTO {
-    /**
-     * 
-     * @type {ProcessInstanceDTO}
-     * @memberof AssessedProcessInstanceDTO
-     */
-    'instance': ProcessInstanceDTO;
-    /**
-     * 
-     * @type {ProcessInstanceDTO}
-     * @memberof AssessedProcessInstanceDTO
-     */
-    'assessedBy'?: ProcessInstanceDTO;
-}
-/**
- * 
- * @export
  * @interface AuthToken
  */
 export interface AuthToken {
@@ -53,7 +34,7 @@ export interface AuthToken {
      * @type {string}
      * @memberof AuthToken
      */
-    'provider': AuthTokenProviderEnum;
+    'provider': string;
     /**
      * The auth token itself retrieved from the above specified provider name
      * @type {string}
@@ -61,15 +42,6 @@ export interface AuthToken {
      */
     'token': string;
 }
-
-export const AuthTokenProviderEnum = {
-    Github: 'github',
-    Gitlab: 'gitlab',
-    Microsoft: 'microsoft'
-} as const;
-
-export type AuthTokenProviderEnum = typeof AuthTokenProviderEnum[keyof typeof AuthTokenProviderEnum];
-
 /**
  * The ErrorResponse object represents a common structure for handling errors in API responses. It includes essential information about the error, such as the error message and additional optional details.
  * @export
@@ -420,12 +392,6 @@ export interface ProcessInstanceDTO {
     'duration'?: string;
     /**
      * 
-     * @type {WorkflowCategoryDTO}
-     * @memberof ProcessInstanceDTO
-     */
-    'category'?: WorkflowCategoryDTO;
-    /**
-     * 
      * @type {string}
      * @memberof ProcessInstanceDTO
      */
@@ -545,20 +511,6 @@ export interface SearchRequest {
     'paginationInfo'?: PaginationInfoDTO;
 }
 /**
- * Category of the workflow
- * @export
- * @enum {string}
- */
-
-export const WorkflowCategoryDTO = {
-    Assessment: 'assessment',
-    Infrastructure: 'infrastructure'
-} as const;
-
-export type WorkflowCategoryDTO = typeof WorkflowCategoryDTO[keyof typeof WorkflowCategoryDTO];
-
-
-/**
  * 
  * @export
  * @interface WorkflowDTO
@@ -582,12 +534,6 @@ export interface WorkflowDTO {
      * @memberof WorkflowDTO
      */
     'format': WorkflowFormatDTO;
-    /**
-     * 
-     * @type {WorkflowCategoryDTO}
-     * @memberof WorkflowDTO
-     */
-    'category': WorkflowCategoryDTO;
     /**
      * Description of the workflow
      * @type {string}
@@ -691,12 +637,6 @@ export interface WorkflowOverviewDTO {
      * @memberof WorkflowOverviewDTO
      */
     'lastRunStatus'?: ProcessInstanceStatusDTO;
-    /**
-     * 
-     * @type {WorkflowCategoryDTO}
-     * @memberof WorkflowOverviewDTO
-     */
-    'category'?: WorkflowCategoryDTO;
     /**
      * 
      * @type {string}
@@ -1373,7 +1313,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getInstanceById(instanceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<AssessedProcessInstanceDTO>> {
+        async getInstanceById(instanceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProcessInstanceDTO>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getInstanceById(instanceId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.getInstanceById']?.[localVarOperationServerIndex]?.url;
@@ -1531,7 +1471,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getInstanceById(instanceId: string, options?: any): AxiosPromise<AssessedProcessInstanceDTO> {
+        getInstanceById(instanceId: string, options?: any): AxiosPromise<ProcessInstanceDTO> {
             return localVarFp.getInstanceById(instanceId, options).then((request) => request(axios, basePath));
         },
         /**
