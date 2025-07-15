@@ -63,5 +63,8 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "enquirer": "^2.4.1"
   }
 }
