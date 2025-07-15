@@ -5,6 +5,14 @@
 ```ts
 import { BasicPermission } from '@backstage/plugin-permission-common';
 
+// Warning: (ae-missing-release-tag) "rosClusterProjectPermission" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export const rosClusterProjectPermission: (
+  clusterName: string,
+  projectName: string,
+) => BasicPermission;
+
 // @public (undocumented)
 export const rosClusterSpecificPermission: (
   clusterName: string,
