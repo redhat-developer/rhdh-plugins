@@ -110,7 +110,7 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
                 recommendation => recommendation.project,
               ),
             ),
-          ].filter(project => project !== undefined);
+          ].filter(project => project !== undefined) as string[];
 
           // store it in Cache
           await cache.set(ALL_CLUSTERS_MAP_CACHE_KEY, clusterDataMap, {
