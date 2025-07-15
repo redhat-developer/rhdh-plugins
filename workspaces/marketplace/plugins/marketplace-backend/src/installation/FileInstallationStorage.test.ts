@@ -426,7 +426,7 @@ describe('FileInstallationStorage', () => {
       );
     });
 
-    it('should set disabled for plugin packages that are already in the config', () => {
+    it('should set disabled for existing plugin in the config', () => {
       const configFileName = resolve(
         __dirname,
         '../../__fixtures__/data/validPluginsConfig.yaml',
@@ -447,11 +447,7 @@ describe('FileInstallationStorage', () => {
       fileInstallationStorage.initialize();
 
       fileInstallationStorage.setPackagesDisabled(
-        new Set([
-          mockDynamicPackage11.package,
-          mockDynamicPackage12.package,
-          './dynamic-plugins/dist/package13-backend-module-dynamic', // not added
-        ]),
+        new Set([mockDynamicPackage11.package, mockDynamicPackage12.package]),
         false,
       );
 
@@ -460,6 +456,37 @@ describe('FileInstallationStorage', () => {
       expect(configYaml.plugins).toEqual([
         ...updatedPlugin,
         mockDynamicPackage21,
+      ]);
+    });
+
+    it('should set disabled for new plugin in the config', () => {
+      const configFileName = resolve(
+        __dirname,
+        '../../__fixtures__/data/validPluginsConfig.yaml',
+      );
+      const newPlugin = [
+        {
+          package: newPackageName,
+          disabled: false,
+        },
+      ];
+      const fileInstallationStorage = new FileInstallationStorage(
+        configFileName,
+      );
+      fileInstallationStorage.initialize();
+
+      fileInstallationStorage.setPackagesDisabled(
+        new Set([newPackageName]),
+        false,
+      );
+
+      const updatedCatalogInfoYaml = fs.readFileSync(configFileName, 'utf8');
+      const configYaml = parse(updatedCatalogInfoYaml);
+      expect(configYaml.plugins).toEqual([
+        mockDynamicPackage11,
+        mockDynamicPackage12,
+        mockDynamicPackage21,
+        newPlugin[0],
       ]);
     });
   });
