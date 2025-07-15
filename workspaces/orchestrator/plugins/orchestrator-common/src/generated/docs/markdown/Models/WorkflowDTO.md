@@ -6,7 +6,6 @@
 | **id** | **String** | Workflow unique identifier | [default to null] |
 | **name** | **String** | Workflow name | [optional] [default to null] |
 | **format** | [**WorkflowFormatDTO**](WorkflowFormatDTO.md) |  | [default to null] |
-| **category** | [**WorkflowCategoryDTO**](WorkflowCategoryDTO.md) |  | [default to null] |
 | **description** | **String** | Description of the workflow | [optional] [default to null] |
 | **annotations** | **List** |  | [optional] [default to null] |
 

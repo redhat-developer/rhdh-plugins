@@ -17,11 +17,11 @@
 import { ParsedRequest } from 'openapi-backend';
 
 import {
-  AssessedProcessInstanceDTO,
   AuthToken,
   ExecuteWorkflowRequestDTO,
   ExecuteWorkflowResponseDTO,
   Filter,
+  ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
   ProcessInstanceState,
   WorkflowDTO,
@@ -126,7 +126,7 @@ export class V2 {
 
   public async getInstanceById(
     instanceId: string,
-  ): Promise<AssessedProcessInstanceDTO> {
+  ): Promise<ProcessInstanceDTO> {
     const instance = await this.orchestratorService.fetchInstance({
       instanceId,
     });
@@ -135,10 +135,7 @@ export class V2 {
       throw new Error(`Couldn't fetch process instance ${instanceId}`);
     }
 
-    return {
-      instance: mapToProcessInstanceDTO(instance),
-      assessedBy: undefined,
-    };
+    return mapToProcessInstanceDTO(instance);
   }
 
   public async executeWorkflow(

@@ -846,17 +846,6 @@ ul.nav-tabs {
   <script>
     // Script section to load models into a JS Var
     var defs = {}
-    defs["AssessedProcessInstanceDTO"] = {
-  "required" : [ "instance" ],
-  "properties" : {
-    "instance" : {
-      "$ref" : "#/components/schemas/ProcessInstanceDTO"
-    },
-    "assessedBy" : {
-      "$ref" : "#/components/schemas/ProcessInstanceDTO"
-    }
-  }
-};
     defs["AuthToken"] = {
   "required" : [ "provider", "token" ],
   "properties" : {
@@ -1092,9 +1081,6 @@ ul.nav-tabs {
     "duration" : {
       "type" : "string"
     },
-    "category" : {
-      "$ref" : "#/components/schemas/WorkflowCategoryDTO"
-    },
     "description" : {
       "type" : "string"
     },
@@ -1167,13 +1153,8 @@ ul.nav-tabs {
     }
   }
 };
-    defs["WorkflowCategoryDTO"] = {
-  "type" : "string",
-  "description" : "Category of the workflow",
-  "enum" : [ "assessment", "infrastructure" ]
-};
     defs["WorkflowDTO"] = {
-  "required" : [ "category", "format", "id" ],
+  "required" : [ "format", "id" ],
   "properties" : {
     "id" : {
       "minLength" : 1,
@@ -1187,9 +1168,6 @@ ul.nav-tabs {
     },
     "format" : {
       "$ref" : "#/components/schemas/WorkflowFormatDTO"
-    },
-    "category" : {
-      "$ref" : "#/components/schemas/WorkflowCategoryDTO"
     },
     "description" : {
       "type" : "string",
@@ -1255,9 +1233,6 @@ ul.nav-tabs {
     },
     "lastRunStatus" : {
       "$ref" : "#/components/schemas/ProcessInstanceStatusDTO"
-    },
-    "category" : {
-      "$ref" : "#/components/schemas/WorkflowCategoryDTO"
     },
     "description" : {
       "type" : "string"
@@ -2402,7 +2377,7 @@ public class DefaultApiExample {
         String instanceId = instanceId_example; // String | ID of the workflow instance
 
         try {
-            AssessedProcessInstanceDTO result = apiInstance.getInstanceById(instanceId);
+            ProcessInstanceDTO result = apiInstance.getInstanceById(instanceId);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#getInstanceById");
@@ -2439,7 +2414,7 @@ public class DefaultApiExample {
         String instanceId = instanceId_example; // String | ID of the workflow instance
 
         try {
-            AssessedProcessInstanceDTO result = apiInstance.getInstanceById(instanceId);
+            ProcessInstanceDTO result = apiInstance.getInstanceById(instanceId);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#getInstanceById");
@@ -2461,7 +2436,7 @@ String *instanceId = instanceId_example; // ID of the workflow instance (default
 
 // Get Workflow Instance by ID
 [apiInstance getInstanceByIdWith:instanceId
-              completionHandler: ^(AssessedProcessInstanceDTO output, NSError* error) {
+              completionHandler: ^(ProcessInstanceDTO output, NSError* error) {
     if (output) {
         NSLog(@"%@", output);
     }
@@ -2513,7 +2488,7 @@ namespace Example
 
             try {
                 // Get Workflow Instance by ID
-                AssessedProcessInstanceDTO result = apiInstance.getInstanceById(instanceId);
+                ProcessInstanceDTO result = apiInstance.getInstanceById(instanceId);
                 Debug.WriteLine(result);
             } catch (Exception e) {
                 Debug.Print("Exception when calling DefaultApi.getInstanceById: " + e.Message );

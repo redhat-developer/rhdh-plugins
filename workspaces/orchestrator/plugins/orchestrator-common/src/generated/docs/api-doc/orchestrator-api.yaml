@@ -221,7 +221,7 @@ spec:
               content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/AssessedProcessInstanceDTO'
+                    $ref: '#/components/schemas/ProcessInstanceDTO'
             '500':
               description: Error fetching instance
               content:
@@ -393,8 +393,6 @@ spec:
               minimum: 0
             lastRunStatus:
               $ref: '#/components/schemas/ProcessInstanceStatusDTO'
-            category:
-              $ref: '#/components/schemas/WorkflowCategoryDTO'
             description:
               type: string
             isAvailable:
@@ -422,12 +420,6 @@ spec:
           enum:
             - yaml
             - json
-        WorkflowCategoryDTO:
-          type: string
-          description: Category of the workflow
-          enum:
-            - assessment
-            - infrastructure
         WorkflowListResultDTO:
           type: object
           properties:
@@ -453,8 +445,6 @@ spec:
               minLength: 1
             format:
               $ref: '#/components/schemas/WorkflowFormatDTO'
-            category:
-              $ref: '#/components/schemas/WorkflowCategoryDTO'
             description:
               type: string
               description: Description of the workflow
@@ -464,7 +454,6 @@ spec:
                 type: string
           required:
             - id
-            - category
             - format
         ProcessInstanceListResultDTO:
           type: object
@@ -475,15 +464,6 @@ spec:
                 $ref: '#/components/schemas/ProcessInstanceDTO'
             paginationInfo:
               $ref: '#/components/schemas/PaginationInfoDTO'
-        AssessedProcessInstanceDTO:
-          type: object
-          properties:
-            instance:
-              $ref: '#/components/schemas/ProcessInstanceDTO'
-            assessedBy:
-              $ref: '#/components/schemas/ProcessInstanceDTO'
-          required:
-            - instance
         ProcessInstanceDTO:
           type: object
           properties:
@@ -505,8 +485,6 @@ spec:
               type: string
             duration:
               type: string
-            category:
-              $ref: '#/components/schemas/WorkflowCategoryDTO'
             description:
               type: string
             workflowdata:

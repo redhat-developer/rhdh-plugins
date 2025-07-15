@@ -209,7 +209,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssessedProcessInstanceDTO'
+                $ref: '#/components/schemas/ProcessInstanceDTO'
         '500':
           description: Error fetching instance
           content:
@@ -381,8 +381,6 @@ components:
           minimum: 0
         lastRunStatus:
           $ref: '#/components/schemas/ProcessInstanceStatusDTO'
-        category:
-          $ref: '#/components/schemas/WorkflowCategoryDTO'
         description:
           type: string
         isAvailable:
@@ -410,12 +408,6 @@ components:
       enum:
         - yaml
         - json
-    WorkflowCategoryDTO:
-      type: string
-      description: Category of the workflow
-      enum:
-        - assessment
-        - infrastructure
     WorkflowListResultDTO:
       type: object
       properties:
@@ -441,8 +433,6 @@ components:
           minLength: 1
         format:
           $ref: '#/components/schemas/WorkflowFormatDTO'
-        category:
-          $ref: '#/components/schemas/WorkflowCategoryDTO'
         description:
           type: string
           description: Description of the workflow
@@ -452,7 +442,6 @@ components:
             type: string
       required:
         - id
-        - category
         - format
     ProcessInstanceListResultDTO:
       type: object
@@ -463,15 +452,6 @@ components:
             $ref: '#/components/schemas/ProcessInstanceDTO'
         paginationInfo:
           $ref: '#/components/schemas/PaginationInfoDTO'
-    AssessedProcessInstanceDTO:
-      type: object
-      properties:
-        instance:
-          $ref: '#/components/schemas/ProcessInstanceDTO'
-        assessedBy:
-          $ref: '#/components/schemas/ProcessInstanceDTO'
-      required:
-        - instance
     ProcessInstanceDTO:
       type: object
       properties:
@@ -493,8 +473,6 @@ components:
           type: string
         duration:
           type: string
-        category:
-          $ref: '#/components/schemas/WorkflowCategoryDTO'
         description:
           type: string
         workflowdata:

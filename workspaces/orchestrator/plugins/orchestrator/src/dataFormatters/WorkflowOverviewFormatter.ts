@@ -30,7 +30,6 @@ export interface FormattedWorkflowOverview {
   readonly lastTriggered: string;
   readonly lastRunStatus: string;
   readonly lastRunId: string;
-  readonly category: string;
   readonly description: string;
   readonly format: WorkflowFormatDTO;
   readonly availablity?: string;
@@ -62,7 +61,6 @@ const WorkflowOverviewFormatter: DataFormatter<
         : VALUE_UNAVAILABLE,
       lastRunStatus: formatLastRunStatus(data.lastRunStatus),
       lastRunId: data.lastRunId ?? VALUE_UNAVAILABLE,
-      category: data.category ?? VALUE_UNAVAILABLE,
       description: data.description ?? VALUE_UNAVAILABLE,
       format: data.format,
       availablity: formatIsAvailable(data.isAvailable),

@@ -75,7 +75,7 @@ No authorization required
 
 <a name="getInstanceById"></a>
 # **getInstanceById**
-> AssessedProcessInstanceDTO getInstanceById(instanceId)
+> ProcessInstanceDTO getInstanceById(instanceId)
 
 Get Workflow Instance by ID
 
@@ -89,7 +89,7 @@ Get Workflow Instance by ID
 
 ### Return type
 
-[**AssessedProcessInstanceDTO**](../Models/AssessedProcessInstanceDTO.md)
+[**ProcessInstanceDTO**](../Models/ProcessInstanceDTO.md)
 
 ### Authorization
 

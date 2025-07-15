@@ -24,7 +24,6 @@ All URIs are relative to *http://localhost*
 <a name="documentation-for-models"></a>
 ## Documentation for Models
 
- - [AssessedProcessInstanceDTO](./Models/AssessedProcessInstanceDTO.md)
  - [AuthToken](./Models/AuthToken.md)
  - [ErrorResponse](./Models/ErrorResponse.md)
  - [ExecuteWorkflowRequestDTO](./Models/ExecuteWorkflowRequestDTO.md)
@@ -44,7 +43,6 @@ All URIs are relative to *http://localhost*
  - [ProcessInstanceListResultDTO](./Models/ProcessInstanceListResultDTO.md)
  - [ProcessInstanceStatusDTO](./Models/ProcessInstanceStatusDTO.md)
  - [SearchRequest](./Models/SearchRequest.md)
- - [WorkflowCategoryDTO](./Models/WorkflowCategoryDTO.md)
  - [WorkflowDTO](./Models/WorkflowDTO.md)
  - [WorkflowDataDTO](./Models/WorkflowDataDTO.md)
  - [WorkflowFormatDTO](./Models/WorkflowFormatDTO.md)
