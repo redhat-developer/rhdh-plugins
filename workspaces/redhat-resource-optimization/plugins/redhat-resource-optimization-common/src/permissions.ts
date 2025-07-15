@@ -29,5 +29,14 @@ export const rosClusterSpecificPermission = (clusterName: string) =>
     attributes: { action: 'read' },
   });
 
+export const rosClusterProjectPermission = (
+  clusterName: string,
+  projectName: string,
+) =>
+  createPermission({
+    name: `ros.${clusterName}.${projectName}`,
+    attributes: { action: 'read' },
+  });
+
 /** @public */
 export const rosPluginPermissions = [rosPluginReadPermission];

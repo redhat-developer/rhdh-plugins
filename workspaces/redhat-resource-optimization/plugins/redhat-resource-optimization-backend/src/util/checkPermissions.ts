@@ -25,7 +25,15 @@ import {
   PermissionsService,
   HttpAuthService,
 } from '@backstage/backend-plugin-api';
-import { rosClusterSpecificPermission } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/permissions';
+import {
+  rosClusterProjectPermission,
+  rosClusterSpecificPermission,
+} from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/permissions';
+
+export interface ClusterProjectResult {
+  cluster: string;
+  project: string;
+}
 
 export const authorize = async (
   request: HttpRequest,
@@ -82,4 +90,48 @@ export const filterAuthorizedClusterIds = async (
   );
 
   return authorizedClusterIds;
+};
+
+export const filterAuthorizedClusterProjectIds = async (
+  request: HttpRequest,
+  permissionsSvc: PermissionsService,
+  httpAuth: HttpAuthService,
+  clusterDataMap: Record<string, string>,
+  allProjects: string[],
+): Promise<ClusterProjectResult[]> => {
+  const credentials = await httpAuth.credentials(request);
+  const allClusterNames: string[] = Object.keys(clusterDataMap);
+  const allClusterIds: string[] = Object.values(clusterDataMap);
+
+  const specificClusterProjectRequests: AuthorizePermissionRequest[] = [];
+  const clusterProjectMap: ClusterProjectResult[] = [];
+
+  for (let i = 0; i < allClusterNames.length; i++) {
+    for (let j = 0; j < allProjects.length; j++) {
+      specificClusterProjectRequests.push({
+        permission: rosClusterProjectPermission(
+          allClusterNames[i],
+          allProjects[j],
+        ),
+      });
+
+      clusterProjectMap.push({
+        cluster: allClusterIds[i],
+        project: allProjects[j],
+      });
+    }
+  }
+
+  const decisions = await permissionsSvc.authorize(
+    specificClusterProjectRequests,
+    {
+      credentials,
+    },
+  );
+
+  const finalResult = clusterProjectMap.filter(
+    (_, idx) => decisions[idx].result === AuthorizeResult.ALLOW,
+  );
+
+  return finalResult;
 };
