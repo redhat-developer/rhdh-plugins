@@ -47,5 +47,10 @@ export interface Config {
      * @visibility backend
      */
     servicePort?: number;
+    /**
+     * customize system prompt for the lightspeed service.
+     * @visibility backend
+     */
+    systemPrompt?: string;
   };
 }
