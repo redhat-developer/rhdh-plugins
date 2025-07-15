@@ -15,12 +15,30 @@
  */
 import { OAuthScope } from '@backstage/core-plugin-api';
 
-export type ScmTokenProvider = 'gitlab' | 'github';
-
-export type TokenProvider = ScmTokenProvider | 'microsoft';
-
+/**
+ * Descriptor for authentication token configuration
+ */
 export type AuthTokenDescriptor = {
-  provider: TokenProvider;
+  /**
+   * The provider is the same as in the same provider that appears in the auth section of the app-config.yaml file.
+   * The built in providers supported are: github, gitlab and microsoft.
+   * The provider matching is case insensitive (e.g., provider: 'github' matches header: 'X-Authorization-Github')
+   * For custom provider the same applies (e.g., provider: 'my-custom-provider' matches header: 'X-Authorization-My-Custom-Provider')
+   */
+  provider: string;
+
+  /**
+   * Backstage apiRef id for custom authentication provider. Must match the backstage ApiRef id of the custom provider plugin.
+   */
+  customProviderApiId?: string;
+
+  /**
+   * OAuth scope for token permissions (e.g., 'repo' for GitHub repository write permissions)
+   */
   scope?: OAuthScope;
-  tokenType: 'openId' | 'oauth';
+
+  /**
+   * Type of authentication token to request. If not provided, the default is 'oauth'.
+   */
+  tokenType?: 'openId' | 'oauth';
 };

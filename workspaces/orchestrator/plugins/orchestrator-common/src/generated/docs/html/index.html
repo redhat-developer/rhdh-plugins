@@ -851,8 +851,7 @@ ul.nav-tabs {
   "properties" : {
     "provider" : {
       "type" : "string",
-      "description" : "The auth token provider name",
-      "enum" : [ "github", "gitlab", "microsoft" ]
+      "description" : "The auth token provider name"
     },
     "token" : {
       "type" : "string",
@@ -1877,10 +1876,10 @@ The identifier of the workflow instance to abort.
  -d '{
   &quot;inputData&quot; : &quot;{}&quot;,
   &quot;authTokens&quot; : [ {
-    &quot;provider&quot; : &quot;github&quot;,
+    &quot;provider&quot; : &quot;provider&quot;,
     &quot;token&quot; : &quot;token&quot;
   }, {
-    &quot;provider&quot; : &quot;github&quot;,
+    &quot;provider&quot; : &quot;provider&quot;,
     &quot;token&quot; : &quot;token&quot;
   } ]
 }'

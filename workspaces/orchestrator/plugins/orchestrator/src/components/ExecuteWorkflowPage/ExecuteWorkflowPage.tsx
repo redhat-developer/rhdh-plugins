@@ -42,7 +42,7 @@ import {
 import { OrchestratorForm } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
 
 import { orchestratorApiRef } from '../../api';
-import { orchestratorAuthApiRef } from '../../api/authApi';
+import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
 import {
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
@@ -54,7 +54,7 @@ import { getSchemaUpdater } from './schemaUpdater';
 
 export const ExecuteWorkflowPage = () => {
   const orchestratorApi = useApi(orchestratorApiRef);
-  const authApi = useApi(orchestratorAuthApiRef);
+  const { authenticate } = useOrchestratorAuth();
   const { workflowId } = useRouteRefParams(executeWorkflowRouteRef);
   const [isExecuting, setIsExecuting] = useState(false);
   const [updateError, setUpdateError] = React.useState<Error>();
@@ -102,7 +102,7 @@ export const ExecuteWorkflowPage = () => {
       setUpdateError(undefined);
       try {
         setIsExecuting(true);
-        const authTokens = await authApi.authenticate(authTokenDescriptors);
+        const authTokens = await authenticate(authTokenDescriptors);
         const response = await orchestratorApi.executeWorkflow({
           workflowId,
           parameters,
@@ -121,7 +121,7 @@ export const ExecuteWorkflowPage = () => {
       navigate,
       instanceLink,
       authTokenDescriptors,
-      authApi,
+      authenticate,
     ],
   );
 
