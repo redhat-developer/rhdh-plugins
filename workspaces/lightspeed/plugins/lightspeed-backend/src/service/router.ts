@@ -226,7 +226,7 @@ export async function createRouter(
         const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
 
-        // if system_prompt is defined in lightspeede config
+        // if system_prompt is defined in lightspeed config
         // set system_prompt to override the default rhdh system prompt
         if (system_prompt && system_prompt.trim().length > 0) {
           request.body.system_prompt = system_prompt;
