@@ -39,7 +39,7 @@ function _januscli_dynamic_plugins {
   if [[ "$_pocker" =~ docker$ ]]; then
     args+=( --container-tool docker )
   fi
-  yarn janus-cli package package-dynamic-plugins "${args[@]}" "$@"
+  npx @janus-idp/cli@latest package package-dynamic-plugins "${args[@]}" "$@"
 }
 
 function clean {
