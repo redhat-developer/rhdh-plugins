@@ -73,6 +73,7 @@ export class OptimizationsClient implements OptimizationsApi {
   private readonly defaultClient: DefaultApiClient;
   private token?: string;
   private clusterIds?: string[];
+  private projectNames?: string[];
 
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi }) {
     this.defaultClient = new DefaultApiClient({
@@ -169,12 +170,14 @@ export class OptimizationsClient implements OptimizationsApi {
       throw error;
     }
 
-    const { authorizeClusterIds } = accessAPIResponse;
+    const { authorizeClusterIds, authorizeProjects } = accessAPIResponse;
     this.clusterIds = authorizeClusterIds;
+    this.projectNames = authorizeProjects;
 
     const clusterParams = {
       query: {
         cluster: this.clusterIds,
+        project: this.projectNames,
       },
     };
 

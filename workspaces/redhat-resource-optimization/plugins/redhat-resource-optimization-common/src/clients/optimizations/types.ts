@@ -39,6 +39,7 @@ export interface GetTokenResponse {
 export interface GetAccessResponse {
   decision: string;
   authorizeClusterIds: string[];
+  authorizeProjects: string[];
 }
 
 /** @public */
