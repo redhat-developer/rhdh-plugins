@@ -28,18 +28,30 @@ import { themeId } from '../consts';
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePlugin } from '../hooks/usePlugin';
+import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { MarketplacePluginInstallContentLoader } from '../components/MarketplacePluginInstallContent';
 
 import { isPluginInstalled } from '../utils';
 
 const PluginInstallHeader = () => {
+  const nodeEnvironment = useNodeEnvironment();
   const params = useRouteRefParams(pluginInstallRouteRef);
   const plugin = usePlugin(params.namespace, params.name);
 
+  const isProductionEnvironment =
+    nodeEnvironment?.data?.nodeEnv === 'production';
+
   const displayName = plugin.data?.metadata?.title ?? params.name;
-  const title = isPluginInstalled(plugin.data?.spec?.installStatus)
-    ? `Edit ${displayName} configurations`
-    : `Install ${displayName}`;
+  const getTitle = () => {
+    if (isProductionEnvironment) {
+      return displayName;
+    }
+    if (isPluginInstalled(plugin.data?.spec?.installStatus)) {
+      return `Edit ${displayName} configurations`;
+    }
+    return `Install ${displayName}`;
+  };
+
   const pluginLink = useRouteRef(pluginRouteRef)({
     namespace: params.namespace,
     name: params.name,
@@ -63,7 +75,7 @@ const PluginInstallHeader = () => {
         },
       }}
     >
-      <Header title={title} type="Plugin" typeLink={pluginLink} />
+      <Header title={getTitle()} type="Plugin" typeLink={pluginLink} />
     </Box>
   );
 };

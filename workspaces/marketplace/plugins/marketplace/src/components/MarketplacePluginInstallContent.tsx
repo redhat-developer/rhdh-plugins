@@ -381,11 +381,22 @@ export const MarketplacePluginInstallContent = ({
 
   const getInstallButtonDatatestid = () => {
     if (isInstallDisabled) {
-      return isPluginInstalled(plugin?.spec?.installStatus)
+      return isPluginInstalled(plugin?.spec?.installStatus) &&
+        !isProductionEnvironment
         ? 'edit-disabled'
         : 'install-disabled';
     }
     return isPluginInstalled(plugin.spec?.installStatus) ? 'edit' : 'install';
+  };
+
+  const getCardHeaderTitle = () => {
+    if (isProductionEnvironment) {
+      return 'Instructions';
+    }
+    if (isPluginInstalled(plugin.spec?.installStatus)) {
+      return 'Edit instructions';
+    }
+    return 'Installation instructions';
   };
 
   const installationWarning = () => {
@@ -491,11 +502,7 @@ export const MarketplacePluginInstallContent = ({
               >
                 <CardHeader
                   title={
-                    <Typography variant="h3">
-                      {isPluginInstalled(plugin.spec?.installStatus)
-                        ? 'Edit instructions'
-                        : 'Installation instructions'}
-                    </Typography>
+                    <Typography variant="h3">{getCardHeaderTitle()}</Typography>
                   }
                   action={
                     <Typography
