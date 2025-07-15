@@ -15,14 +15,6 @@ import { OAuthScope } from '@backstage/core-plugin-api';
 import type { RawAxiosRequestConfig } from 'axios';
 import type { Specification } from '@severlessworkflow/sdk-typescript';
 
-// Warning: (ae-missing-release-tag) "AssessedProcessInstance" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public
-export interface AssessedProcessInstance {
-    assessedBy?: ProcessInstance;
-    instance: ProcessInstance;
-}
-
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
 // Warning: (ae-missing-release-tag) "AuthToken" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -63,7 +55,7 @@ export type Capitalized<S extends string> = Capitalize<Lowercase<S>>;
 
 // Warning: (ae-missing-release-tag) "ComposedSchema" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export type ComposedSchema = Omit<JSONSchema7, 'properties'> & {
     properties: {
         [key: string]: Omit<JSONSchema7, 'properties'> & {
@@ -561,17 +553,17 @@ export interface IntrospectionTypeRef {
 
 // Warning: (ae-missing-release-tag) "isComposedSchema" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export const isComposedSchema: (schema: JSONSchema7 | ComposedSchema) => schema is ComposedSchema;
 
 // Warning: (ae-missing-release-tag) "isJsonObjectSchema" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export const isJsonObjectSchema: (schema: JSONSchema7 | JsonObjectSchema | JSONSchema7Definition) => schema is JsonObjectSchema;
 
 // Warning: (ae-missing-release-tag) "JsonObjectSchema" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export type JsonObjectSchema = Omit<JSONSchema7, 'properties'> & {
     properties: {
         [key: string]: JSONSchema7;
@@ -662,12 +654,17 @@ export type NestedFilterNested = FieldFilter | NestedFilter;
 
 // Warning: (ae-missing-release-tag) "Node" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 interface Node_2 {
+    // (undocumented)
     id: string;
+    // (undocumented)
     name?: string;
+    // (undocumented)
     nodeDefinitionId?: string;
+    // (undocumented)
     type?: string;
+    // (undocumented)
     uniqueId?: string;
 }
 export { Node_2 as Node }
@@ -749,7 +746,7 @@ export interface NodeInstanceDTO {
 // Warning: (ae-forgotten-export) The symbol "OmitDistributive" needs to be exported by the entry point index.d.ts
 // Warning: (ae-missing-release-tag) "OmitRecursively" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export type OmitRecursively<T, K extends PropertyKey> = Omit<{
     [P in keyof T]: OmitDistributive<T[P], K>;
 }, K>;
@@ -1157,14 +1154,6 @@ export enum TypeName {
     String = "StringArgument"
 }
 
-// Warning: (ae-missing-release-tag) "WorkflowCategory" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public
-export enum WorkflowCategory {
-    ASSESSMENT = "assessment",
-    INFRASTRUCTURE = "infrastructure"
-}
-
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
 // Warning: (ae-missing-release-tag) "WorkflowDataDTO" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -1180,7 +1169,7 @@ export interface WorkflowDataDTO {
 
 // Warning: (ae-missing-release-tag) "WorkflowDefinition" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export type WorkflowDefinition = OmitRecursively<Specification.Workflow, 'normalize'>;
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
@@ -1218,14 +1207,15 @@ export interface WorkflowDTO {
 
 // Warning: (ae-missing-release-tag) "WorkflowExecutionResponse" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export interface WorkflowExecutionResponse {
+    // (undocumented)
     id: string;
 }
 
 // Warning: (ae-missing-release-tag) "WorkflowFormat" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export type WorkflowFormat = 'yaml' | 'json';
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
@@ -1246,26 +1236,39 @@ export type WorkflowFormatDTO = typeof WorkflowFormatDTO[keyof typeof WorkflowFo
 
 // Warning: (ae-missing-release-tag) "WorkflowInfo" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export interface WorkflowInfo {
+    // (undocumented)
     annotations?: string[];
+    // (undocumented)
     description?: string;
+    // (undocumented)
     endpoint?: string;
+    // (undocumented)
     id: string;
+    // (undocumented)
     inputSchema?: JSONSchema7;
+    // (undocumented)
     metadata?: Map<string, string>;
+    // (undocumented)
     name?: string;
+    // (undocumented)
     nodes?: Node_2[];
+    // (undocumented)
     roles?: string[];
+    // (undocumented)
     serviceUrl?: string;
+    // (undocumented)
     source?: string;
+    // (undocumented)
     type?: string;
+    // (undocumented)
     version?: string;
 }
 
 // Warning: (ae-missing-release-tag) "WorkflowInputSchemaStep" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export type WorkflowInputSchemaStep = {
     schema: JsonObjectSchema;
     title: string;
@@ -1276,7 +1279,7 @@ export type WorkflowInputSchemaStep = {
 
 // Warning: (ae-missing-release-tag) "WorkflowListResult" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export type WorkflowListResult = {
     items: WorkflowDefinition[];
     offset: number;
@@ -1303,17 +1306,25 @@ export interface WorkflowListResultDTO {
 
 // Warning: (ae-missing-release-tag) "WorkflowOverview" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export interface WorkflowOverview {
+    // (undocumented)
     avgDurationMs?: number;
-    category?: string;
+    // (undocumented)
     description?: string;
+    // (undocumented)
     format: WorkflowFormat;
+    // (undocumented)
     isAvailable?: boolean;
+    // (undocumented)
     lastRunId?: string;
+    // (undocumented)
     lastRunStatus?: ProcessInstanceStateValues;
+    // (undocumented)
     lastTriggeredMs?: number;
+    // (undocumented)
     name?: string;
+    // (undocumented)
     workflowId: string;
 }
 
@@ -1367,7 +1378,7 @@ export interface WorkflowOverviewDTO {
 
 // Warning: (ae-missing-release-tag) "WorkflowOverviewListResult" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public
+// @public (undocumented)
 export type WorkflowOverviewListResult = {
     items: WorkflowOverview[];
     offset: number;
@@ -1980,6 +1991,48 @@ export interface WorkflowRunStatusDTO {
 // src/permissions.d.ts:5:22 - (ae-undocumented) Missing documentation for "orchestratorAdminViewPermission".
 // src/permissions.d.ts:6:22 - (ae-undocumented) Missing documentation for "orchestratorInstanceAdminViewPermission".
 // src/permissions.d.ts:7:22 - (ae-undocumented) Missing documentation for "orchestratorPermissions".
+// src/types.d.ts:9:1 - (ae-undocumented) Missing documentation for "OmitRecursively".
+// src/types.d.ts:12:1 - (ae-undocumented) Missing documentation for "WorkflowDefinition".
+// src/types.d.ts:13:1 - (ae-undocumented) Missing documentation for "WorkflowListResult".
+// src/types.d.ts:18:1 - (ae-undocumented) Missing documentation for "WorkflowOverviewListResult".
+// src/types.d.ts:23:1 - (ae-undocumented) Missing documentation for "WorkflowFormat".
+// src/types.d.ts:24:1 - (ae-undocumented) Missing documentation for "WorkflowInputSchemaStep".
+// src/types.d.ts:31:1 - (ae-undocumented) Missing documentation for "JsonObjectSchema".
+// src/types.d.ts:36:1 - (ae-undocumented) Missing documentation for "ComposedSchema".
+// src/types.d.ts:45:22 - (ae-undocumented) Missing documentation for "isJsonObjectSchema".
+// src/types.d.ts:46:22 - (ae-undocumented) Missing documentation for "isComposedSchema".
+// src/types.d.ts:47:1 - (ae-undocumented) Missing documentation for "WorkflowExecutionResponse".
+// src/types.d.ts:48:5 - (ae-undocumented) Missing documentation for "id".
+// src/types.d.ts:50:1 - (ae-undocumented) Missing documentation for "WorkflowOverview".
+// src/types.d.ts:51:5 - (ae-undocumented) Missing documentation for "workflowId".
+// src/types.d.ts:52:5 - (ae-undocumented) Missing documentation for "format".
+// src/types.d.ts:53:5 - (ae-undocumented) Missing documentation for "name".
+// src/types.d.ts:54:5 - (ae-undocumented) Missing documentation for "lastRunId".
+// src/types.d.ts:55:5 - (ae-undocumented) Missing documentation for "lastTriggeredMs".
+// src/types.d.ts:56:5 - (ae-undocumented) Missing documentation for "lastRunStatus".
+// src/types.d.ts:57:5 - (ae-undocumented) Missing documentation for "avgDurationMs".
+// src/types.d.ts:58:5 - (ae-undocumented) Missing documentation for "description".
+// src/types.d.ts:59:5 - (ae-undocumented) Missing documentation for "isAvailable".
+// src/types.d.ts:61:1 - (ae-undocumented) Missing documentation for "WorkflowInfo".
+// src/types.d.ts:62:5 - (ae-undocumented) Missing documentation for "id".
+// src/types.d.ts:63:5 - (ae-undocumented) Missing documentation for "type".
+// src/types.d.ts:64:5 - (ae-undocumented) Missing documentation for "name".
+// src/types.d.ts:65:5 - (ae-undocumented) Missing documentation for "version".
+// src/types.d.ts:66:5 - (ae-undocumented) Missing documentation for "annotations".
+// src/types.d.ts:67:5 - (ae-undocumented) Missing documentation for "description".
+// src/types.d.ts:68:5 - (ae-undocumented) Missing documentation for "inputSchema".
+// src/types.d.ts:69:5 - (ae-undocumented) Missing documentation for "endpoint".
+// src/types.d.ts:70:5 - (ae-undocumented) Missing documentation for "serviceUrl".
+// src/types.d.ts:71:5 - (ae-undocumented) Missing documentation for "roles".
+// src/types.d.ts:72:5 - (ae-undocumented) Missing documentation for "source".
+// src/types.d.ts:73:5 - (ae-undocumented) Missing documentation for "metadata".
+// src/types.d.ts:74:5 - (ae-undocumented) Missing documentation for "nodes".
+// src/types.d.ts:76:1 - (ae-undocumented) Missing documentation for "Node".
+// src/types.d.ts:77:5 - (ae-undocumented) Missing documentation for "id".
+// src/types.d.ts:78:5 - (ae-undocumented) Missing documentation for "type".
+// src/types.d.ts:79:5 - (ae-undocumented) Missing documentation for "name".
+// src/types.d.ts:80:5 - (ae-undocumented) Missing documentation for "uniqueId".
+// src/types.d.ts:81:5 - (ae-undocumented) Missing documentation for "nodeDefinitionId".
 // src/utils/StringUtils.d.ts:1:1 - (ae-undocumented) Missing documentation for "Capitalized".
 // src/utils/StringUtils.d.ts:2:22 - (ae-undocumented) Missing documentation for "capitalize".
 // src/utils/StringUtils.d.ts:3:22 - (ae-undocumented) Missing documentation for "ellipsis".
