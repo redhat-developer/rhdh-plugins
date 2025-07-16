@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.8.2
+
+### Patch Changes
+
+- 465bac5: fix install page title in prod env
+
 ## 0.8.1
 
 ### Patch Changes
