@@ -149,12 +149,21 @@ export class FileInstallationStorage implements InstallationStorage {
   }
 
   setPackagesDisabled(packageNames: Set<string>, disabled: boolean) {
-    // Sets packages disabled if they are already in the config
-    for (const item of this.packages.items) {
-      const name = item.get('package') as string;
-      if (packageNames.has(name)) {
-        item.set('disabled', disabled);
+    const packages = this.config.get('plugins') as YAMLSeq<
+      YAMLMap<string, JsonValue>
+    >;
+    const packageMap = packages.items.reduce(
+      (map, item) => map.set(item.get('package') as string, item),
+      new Map<string, YAMLMap<string, JsonValue>>(),
+    );
+    for (const packageName of packageNames) {
+      let item = packageMap.get(packageName);
+      if (!item) {
+        item = new YAMLMap<string, JsonValue>();
+        item.set('package', packageName);
+        packages.add(item);
       }
+      item.set('disabled', disabled);
     }
 
     this.save();
