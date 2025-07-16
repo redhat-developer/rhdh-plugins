@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.7.1
+
+### Patch Changes
+
+- 8ada066: Update all plugin packages via PATCH `/plugin/:namespace/:name/configuration/disable`
+
 ## 0.7.0
 
 ### Minor Changes
