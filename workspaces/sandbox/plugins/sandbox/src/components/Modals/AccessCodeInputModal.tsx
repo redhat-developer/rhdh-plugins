@@ -110,7 +110,19 @@ export const AccessCodeInputModal: React.FC<AccessCodeInputModalProps> = ({
   };
 
   return (
-    <Dialog open={modalOpen} onClose={handleClose} fullWidth>
+    <Dialog
+      open={modalOpen}
+      onClose={handleClose}
+      fullWidth
+      PaperProps={{
+        sx: {
+          backgroundColor:
+            theme.palette.mode === 'dark'
+              ? '#383838'
+              : theme.palette.background.paper,
+        },
+      }}
+    >
       <DialogTitle
         variant="h5"
         sx={{ fontWeight: 700, padding: '32px 24px 0 24px' }}
@@ -129,7 +141,9 @@ export const AccessCodeInputModal: React.FC<AccessCodeInputModalProps> = ({
       >
         <CloseIcon />
       </IconButton>
-      <DialogContent sx={{ padding: '6px 24px' }}>
+      <DialogContent
+        sx={{ padding: '6px 24px', backgroundColor: 'transparent !important' }}
+      >
         <DialogContentText
           id="alert-dialog-description"
           color="textPrimary"
@@ -148,7 +162,7 @@ export const AccessCodeInputModal: React.FC<AccessCodeInputModalProps> = ({
           sx={{
             mt: 2,
             marginRight: 20,
-            backgroundColor: theme.palette.mode === 'dark' ? '#47494b' : '#fff',
+            backgroundColor: 'transparent !important',
           }}
         >
           {accessCode.map((digit, index) => (
