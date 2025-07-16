@@ -169,7 +169,9 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         <CloseIcon />
       </IconButton>
 
-      <DialogContent sx={{ padding: '6px 24px' }}>
+      <DialogContent
+        sx={{ padding: '6px 24px', backgroundColor: 'transparent !important' }}
+      >
         <DialogContentText
           id="alert-dialog-description"
           color="textPrimary"
@@ -182,7 +184,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
           style={{
             marginTop: '24px',
             display: 'flex',
-            backgroundColor: theme.palette.mode === 'dark' ? '#47494b' : '#fff',
+            backgroundColor: 'transparent',
           }}
         >
           <RPNInput

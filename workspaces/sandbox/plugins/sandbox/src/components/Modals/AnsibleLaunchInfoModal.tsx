@@ -71,7 +71,19 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
   };
 
   return (
-    <Dialog open={modalOpen} onClose={handleClose} fullWidth>
+    <Dialog
+      open={modalOpen}
+      onClose={handleClose}
+      fullWidth
+      PaperProps={{
+        sx: {
+          backgroundColor:
+            theme.palette.mode === 'dark'
+              ? '#383838'
+              : theme.palette.background.paper,
+        },
+      }}
+    >
       {ansibleStatus === AnsibleStatus.READY ? (
         <>
           <DialogTitle
@@ -104,7 +116,9 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
           >
             <CloseIcon />
           </IconButton>
-          <DialogContent sx={{ padding: '24px' }}>
+          <DialogContent
+            sx={{ padding: '24px', backgroundColor: 'transparent !important' }}
+          >
             <Typography
               variant="body1"
               sx={{ mb: 3, fontSize: '16px', fontWeight: 400 }}
@@ -117,9 +131,15 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
             </Typography>
 
             {/* Section 1: AAP admin account */}
-            <Box sx={{ mb: 4 }}>
+            <Box sx={{ mb: 4, backgroundColor: 'transparent !important' }}>
               <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  mb: 2,
+                  backgroundColor: 'transparent !important',
+                }}
               >
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mr: 1 }}>
                   1.
@@ -143,7 +163,7 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
                 provided username and password to access your AAP instance.
               </Typography>
 
-              <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 3, backgroundColor: 'transparent !important' }}>
                 <Stack
                   direction="row"
                   sx={{
@@ -151,6 +171,7 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
                     alignItems: 'center',
                     gap: '5px',
                     mb: 1,
+                    backgroundColor: 'transparent !important',
                   }}
                 >
                   <InputLabel
@@ -203,6 +224,7 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '5px',
+                    backgroundColor: 'transparent !important',
                   }}
                 >
                   <InputLabel
@@ -265,9 +287,15 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
             </Box>
 
             {/* Section 2: Red Hat account */}
-            <Box sx={{ mb: 4 }}>
+            <Box sx={{ mb: 4, backgroundColor: 'transparent !important' }}>
               <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  mb: 2,
+                  backgroundColor: 'transparent !important',
+                }}
               >
                 <Typography variant="h6" sx={{ fontWeight: 'bold', mr: 1 }}>
                   2.
@@ -373,7 +401,12 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
           >
             <CloseIcon />
           </IconButton>{' '}
-          <DialogContent sx={{ padding: '6px 24px' }}>
+          <DialogContent
+            sx={{
+              padding: '6px 24px',
+              backgroundColor: 'transparent !important',
+            }}
+          >
             <Typography
               variant="body1"
               sx={{ mr: 2, my: 0.5, fontSize: '16px', fontWeight: 420 }}

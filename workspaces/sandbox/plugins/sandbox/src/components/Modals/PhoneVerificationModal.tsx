@@ -17,6 +17,7 @@ import React, { useState } from 'react';
 import { E164Number } from 'libphonenumber-js/types.cjs';
 import { Country, getCountryCallingCode } from 'react-phone-number-input';
 import Dialog from '@mui/material/Dialog';
+import { useTheme } from '@mui/material/styles';
 import { useApi } from '@backstage/core-plugin-api';
 import { registerApiRef } from '../../api';
 import {
@@ -41,6 +42,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   setAnsibleCredsModalOpen,
   setRefetchingUserData,
 }) => {
+  const theme = useTheme();
   const registerApi = useApi(registerApiRef);
   const [enterOTP, setEnterOTP] = useState<boolean>(false);
   const [phoneNumber, setPhoneNumber] = useState<E164Number | undefined>();
@@ -90,7 +92,18 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   };
 
   return (
-    <Dialog open={modalOpen} onClose={handleClose}>
+    <Dialog
+      open={modalOpen}
+      onClose={handleClose}
+      PaperProps={{
+        sx: {
+          backgroundColor:
+            theme.palette.mode === 'dark'
+              ? '#383838'
+              : theme.palette.background.paper,
+        },
+      }}
+    >
       {!enterOTP ? (
         <PhoneNumberStep
           phoneNumber={phoneNumber}

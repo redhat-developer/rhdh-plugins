@@ -224,7 +224,9 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
       >
         <CloseIcon />
       </IconButton>
-      <DialogContent sx={{ padding: '6px 24px' }}>
+      <DialogContent
+        sx={{ padding: '6px 24px', backgroundColor: 'transparent !important' }}
+      >
         <DialogContentText
           data-testid="sent-message-dialog"
           id="alert-dialog-description"
@@ -241,7 +243,15 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
             <EditIcon />
           </IconButton>
         </DialogContentText>
-        <Stack direction="row" spacing={2} sx={{ mt: 2, marginRight: 20 }}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{
+            mt: 2,
+            marginRight: 20,
+            backgroundColor: 'transparent !important',
+          }}
+        >
           {otp.map((digit, index) => (
             <TextField
               key={index}
@@ -271,6 +281,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
             justifyContent: 'left',
             fontSize: '16px',
             fontWeight: 400,
+            backgroundColor: 'transparent !important',
           }}
           onClick={() => {
             handleResendCode();
