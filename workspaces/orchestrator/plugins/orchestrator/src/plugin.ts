@@ -19,15 +19,10 @@ import {
   createPlugin,
   createRoutableExtension,
   discoveryApiRef,
-  githubAuthApiRef,
-  gitlabAuthApiRef,
   identityApiRef,
-  microsoftAuthApiRef,
 } from '@backstage/core-plugin-api';
 
 import { orchestratorApiRef, OrchestratorClient } from './api';
-import { orchestratorAuthApiRef } from './api/authApi';
-import { OrchestratorAuth } from './api/OrchestratorAuth';
 import { orchestratorRootRouteRef } from './routes';
 
 /**
@@ -38,26 +33,10 @@ export const orchestratorPlugin = createPlugin({
   id: 'orchestrator',
   apis: [
     createApiFactory({
-      api: orchestratorAuthApiRef,
-      deps: {
-        githubAuthApi: githubAuthApiRef,
-        gitlabAuthApi: gitlabAuthApiRef,
-        microsoftAuthApi: microsoftAuthApiRef,
-      },
-      factory({ githubAuthApi, gitlabAuthApi, microsoftAuthApi }) {
-        return new OrchestratorAuth({
-          githubAuthApi,
-          gitlabAuthApi,
-          microsoftAuthApi,
-        });
-      },
-    }),
-    createApiFactory({
       api: orchestratorApiRef,
       deps: {
         discoveryApi: discoveryApiRef,
         identityApi: identityApiRef,
-        orchestratorAuthApi: orchestratorAuthApiRef,
       },
       factory({ discoveryApi, identityApi }) {
         return new OrchestratorClient({
