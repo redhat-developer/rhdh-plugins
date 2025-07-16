@@ -1,5 +1,12 @@
 # @backstage-community/plugin-redhat-resource-optimization-backend
 
+## 2.0.1
+
+### Patch Changes
+
+- 59b885a: Updated dependency `@types/lodash` to `4.17.19`.
+- 5681ed0: Updated dependency `@types/lodash` to `4.17.20`.
+
 ## 2.0.0
 
 ### Major Changes
