@@ -30,7 +30,7 @@ quarkus.openapi-generator.github_yaml.auth.BearerToken.header-name=X-Authorizati
 
 # Custom provider example (github-two from [custom-authentication-provider-module](../plugins/custom-authentication-provider-module/) plugin)
 quarkus.openapi-generator.githubtwo_yaml.auth.BearerToken.token-propagation=true
-quarkus.openapi-generator.githubtwo_yaml.auth.BearerToken.header-name=X-Authorization-Github-Two
+quarkus.openapi-generator.githubtwo_yaml.auth.BearerToken.header-name=X-Authorization-Github-two
 ```
 
 > 🔗 See the [SonataFlow token propagation documentation](https://www.rhdhorchestrator.io/main/docs/serverless-workflows/configuration/token-propagation/) for more details.
