@@ -8830,6 +8830,7 @@ __metadata:
     "@backstage/repo-tools": ^0.13.1
     "@changesets/cli": ^2.27.1
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
+    enquirer: ^2.4.1
     knip: ^5.40.0
     node-gyp: ^9.0.0
     prettier: 3.6.2
@@ -21585,7 +21586,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"enquirer@npm:^2.3.0":
+"enquirer@npm:^2.3.0, enquirer@npm:^2.4.1":
   version: 2.4.1
   resolution: "enquirer@npm:2.4.1"
   dependencies:
