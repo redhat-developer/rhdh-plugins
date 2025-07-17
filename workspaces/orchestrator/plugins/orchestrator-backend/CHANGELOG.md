@@ -1,5 +1,20 @@
 ### Dependencies
 
+## 7.0.0
+
+### Major Changes
+
+- 66b7b7c: removing assessment code
+
+### Patch Changes
+
+- a79f849: Updated dependency `prettier` to `3.6.2`.
+- d7d2490: enable custom auth provider for executing workflows
+- Updated dependencies [e590195]
+- Updated dependencies [66b7b7c]
+- Updated dependencies [d7d2490]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@2.0.0
+
 ## 6.1.4
 
 ### Patch Changes
