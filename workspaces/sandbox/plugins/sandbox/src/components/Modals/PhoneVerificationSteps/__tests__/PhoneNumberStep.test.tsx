@@ -29,8 +29,8 @@ declare module '../PhoneNumberStep' {
     setPhoneNumber: React.Dispatch<
       React.SetStateAction<E164Number | undefined>
     >;
-    setCountry: React.Dispatch<React.SetStateAction<Country>>;
-    country: Country;
+    setCountry: React.Dispatch<React.SetStateAction<Country | undefined>>;
+    country: Country | undefined;
     handleClose: () => void;
     handlePhoneNumberSubmit: () => void;
     loading?: boolean;
@@ -117,5 +117,32 @@ describe('PhoneNumberStep', () => {
     const closeButton = screen.getByRole('button', { name: /Cancel/i });
     fireEvent.click(closeButton);
     expect(mockHandleClose).toHaveBeenCalled();
+  });
+
+  test('should not have a default country when no country is provided', () => {
+    render(
+      <PhoneNumberStep
+        phoneNumber={undefined}
+        setPhoneNumber={mockSetPhoneNumber}
+        handleClose={mockHandleClose}
+        handlePhoneNumberSubmit={mockHandlePhoneNumberSubmit}
+        setCountry={mockSetCountry}
+        country={undefined as any}
+      />,
+    );
+
+    // The country select should be present but not have a default selected value
+    const countrySelect = screen.getByTestId('country-code-select');
+    expect(countrySelect).toBeInTheDocument();
+
+    // The input value should be empty (no default country)
+    const selectInput = countrySelect.querySelector('input');
+    expect(selectInput).toHaveValue('');
+
+    // No country calling code should be displayed when no country is selected
+    const phoneInput = screen.getByTestId('tel-input');
+    expect(
+      phoneInput.querySelector('[data-testid="tel-input"] input'),
+    ).toHaveValue('');
   });
 });

@@ -41,7 +41,7 @@ const FLAG_FETCH_URL =
   'https://catamphetamine.github.io/country-flag-icons/3x2';
 
 type CountrySelectFieldProps = {
-  value: Country;
+  value: Country | undefined;
   onChange: (value: Country) => void;
   options: { label: string; value: Country }[];
 };
@@ -49,8 +49,8 @@ type CountrySelectFieldProps = {
 type PhoneNumberFormProps = {
   phoneNumber: E164Number | undefined;
   setPhoneNumber: React.Dispatch<React.SetStateAction<E164Number | undefined>>;
-  setCountry: React.Dispatch<React.SetStateAction<Country>>;
-  country: Country;
+  setCountry: React.Dispatch<React.SetStateAction<Country | undefined>>;
+  country: Country | undefined;
   handleClose: () => void;
   handlePhoneNumberSubmit: () => void;
   loading?: boolean;
@@ -82,13 +82,13 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         // eslint-disable-next-line jsx-a11y/no-autofocus
         autoFocus
         InputProps={{
-          startAdornment: (
+          startAdornment: country ? (
             <InputAdornment position="start">
               <Typography color="textPrimary" style={{ fontSize: '16px' }}>
                 +{getCountryCallingCode(country)}
               </Typography>
             </InputAdornment>
-          ),
+          ) : undefined,
         }}
       />
     );
@@ -116,12 +116,16 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         onChange={handleSelect}
         renderValue={() => (
           <Box display="flex" alignItems="center">
-            <img
-              src={`${FLAG_FETCH_URL}/${country}.svg`}
-              alt={country}
-              width="30"
-              height="20"
-            />
+            {value ? (
+              <img
+                src={`${FLAG_FETCH_URL}/${value}.svg`}
+                alt={value}
+                width="30"
+                height="20"
+              />
+            ) : (
+              <Box width="30" height="20" />
+            )}
           </Box>
         )}
       >
@@ -189,7 +193,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         >
           <RPNInput
             required
-            defaultCountry={country || 'ES'}
+            country={country}
             label="Phone number"
             value={phoneNumber}
             onChange={setPhoneNumber}

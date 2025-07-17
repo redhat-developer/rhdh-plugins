@@ -44,7 +44,7 @@ type VerificationCodeProps = {
   id: Product;
   otp: string[];
   setOtp: React.Dispatch<React.SetStateAction<string[]>>;
-  country: Country;
+  country: Country | undefined;
   phoneNumber: E164Number | undefined;
   handleEditPhoneNumber: () => void;
   handleClose: () => void;
@@ -124,7 +124,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
   };
 
   const handleResendCode = async () => {
-    if (codeResent) return;
+    if (codeResent || !country) return;
 
     const countryCallingCode = `+${getCountryCallingCode(country)}`;
     setOtp(['', '', '', '', '', '']);
