@@ -46,7 +46,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   const registerApi = useApi(registerApiRef);
   const [enterOTP, setEnterOTP] = useState<boolean>(false);
   const [phoneNumber, setPhoneNumber] = useState<E164Number | undefined>();
-  const [country, setCountry] = useState<Country>('ES');
+  const [country, setCountry] = useState<Country | undefined>(undefined);
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -55,7 +55,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   >();
 
   const handleClose = () => {
-    setCountry('ES');
+    setCountry(undefined);
     setPhoneNumber(undefined);
     setOtp(['', '', '', '', '', '']);
     setOpen(false);
@@ -64,6 +64,8 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   };
 
   const handlePhoneNumberSubmit = async () => {
+    if (!country) return;
+
     const countryCallingCode = `+${getCountryCallingCode(country)}`;
     const phoneWithoutCountryCode = (phoneNumber as string)?.replace(
       countryCallingCode,
@@ -86,7 +88,6 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   };
 
   const handleEditPhoneNumber = () => {
-    setPhoneNumber(undefined);
     setEnterOTP(false);
     setOtp(['', '', '', '', '', '']);
   };

@@ -200,15 +200,16 @@ describe('AccessCodeInputModal', () => {
 
     const inputs = screen.getAllByRole('textbox');
 
-    // Fill all inputs one by one, waiting for each to be processed
-    for (let i = 0; i < inputs.length; i++) {
-      await user.click(inputs[i]);
-      await user.type(inputs[i], 'A');
-      // Small delay to ensure state updates
-      await waitFor(() => {
-        expect(inputs[i]).toHaveValue('A');
+    // Fill all inputs by typing once in the first input - auto-focus will handle the rest
+    await user.click(inputs[0]);
+    await user.type(inputs[0], 'ABCDEF'); // Type enough characters to fill all inputs
+
+    // Wait for all inputs to be filled
+    await waitFor(() => {
+      inputs.forEach((input, index) => {
+        expect(input).toHaveValue(String.fromCharCode(65 + index)); // A, B, C, D, E, F
       });
-    }
+    });
 
     // Wait for the button to become enabled with longer timeout
     await waitFor(
@@ -227,17 +228,18 @@ describe('AccessCodeInputModal', () => {
     renderComponent();
 
     const inputs = screen.getAllByRole('textbox');
-    const testCode = ['A', 'B', 'C', 'D', 'E'];
+    const testCode = 'ABCDE';
 
-    // Fill all inputs one by one, waiting for each to be processed
-    for (let i = 0; i < inputs.length; i++) {
-      await user.click(inputs[i]);
-      await user.type(inputs[i], testCode[i]);
-      // Small delay to ensure state updates
-      await waitFor(() => {
-        expect(inputs[i]).toHaveValue(testCode[i]);
+    // Fill all inputs by typing the code in the first input - auto-focus will distribute
+    await user.click(inputs[0]);
+    await user.type(inputs[0], testCode);
+
+    // Wait for all inputs to be filled
+    await waitFor(() => {
+      inputs.forEach((input, index) => {
+        expect(input).toHaveValue(testCode[index]);
       });
-    }
+    });
 
     // Wait for button to be enabled before clicking with longer timeout
     const startTrialButton = await waitFor(
@@ -269,15 +271,16 @@ describe('AccessCodeInputModal', () => {
 
     const inputs = screen.getAllByRole('textbox');
 
-    // Fill all inputs one by one, waiting for each to be processed
-    for (let i = 0; i < inputs.length; i++) {
-      await user.click(inputs[i]);
-      await user.type(inputs[i], 'A');
-      // Small delay to ensure state updates
-      await waitFor(() => {
-        expect(inputs[i]).toHaveValue('A');
+    // Fill all inputs by typing the code in the first input - auto-focus will distribute
+    await user.click(inputs[0]);
+    await user.type(inputs[0], 'AAAAA');
+
+    // Wait for all inputs to be filled
+    await waitFor(() => {
+      inputs.forEach(input => {
+        expect(input).toHaveValue('A');
       });
-    }
+    });
 
     // Wait for button to be enabled before clicking with longer timeout
     const startTrialButton = await waitFor(
@@ -330,15 +333,16 @@ describe('AccessCodeInputModal', () => {
 
     const inputs = screen.getAllByRole('textbox');
 
-    // Fill all inputs one by one, waiting for each to be processed
-    for (let i = 0; i < inputs.length; i++) {
-      await user.click(inputs[i]);
-      await user.type(inputs[i], 'A');
-      // Small delay to ensure state updates
-      await waitFor(() => {
-        expect(inputs[i]).toHaveValue('A');
+    // Fill all inputs by typing the code in the first input - auto-focus will distribute
+    await user.click(inputs[0]);
+    await user.type(inputs[0], 'AAAAA');
+
+    // Wait for all inputs to be filled
+    await waitFor(() => {
+      inputs.forEach(input => {
+        expect(input).toHaveValue('A');
       });
-    }
+    });
 
     // Wait for button to be enabled with a longer timeout
     const startTrialButton = await waitFor(

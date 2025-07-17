@@ -41,7 +41,7 @@ declare module '../VerificationCodeStep' {
     id: Product;
     otp: string[];
     setOtp: React.Dispatch<React.SetStateAction<string[]>>;
-    country: Country;
+    country: Country | undefined;
     phoneNumber: E164Number | undefined;
     handleEditPhoneNumber: () => void;
     handleClose: () => void;
