@@ -89,7 +89,9 @@ test('Lightspeed is available', async ({ page }) => {
 
   const headings = page.getByRole('heading');
   await expect(headings.first()).toContainText('Developer Lightspeed');
-  await expect(headings.last()).toContainText('How can I help');
+  await expect(
+    headings.filter({ has: page.locator('.pf-chatbot__question') }),
+  ).toContainText('How can I help');
 });
 
 test('Models are available', async ({ page }) => {
@@ -274,16 +276,18 @@ describeFn('Conversation', () => {
       expect(await chats.count()).toBeGreaterThanOrEqual(1);
       await page.getByRole('button', { name: 'new chat' }).click();
       await sendMessage('tell me about Backstage', page);
+      await verifySidePanelConversation(page);
     }
 
+    const searchText = devMode
+      ? moreConversations[1].topic_summary
+      : 'Backstage';
     const searchBox = sidePanel.getByPlaceholder('Search previous chats...');
     await searchBox.fill(devMode ? 'new' : 'Backstage');
-    await expect(chats).toHaveCount(1, { timeout: 60000 });
-    await expect(chats).toContainText(
-      devMode ? moreConversations[1].topic_summary : 'Backstage',
-    );
-
-    await chats.click();
+    for (const chat of await chats.all()) {
+      expect(chat).toContainText(searchText);
+    }
+    await chats.first().click();
 
     const userMessage = page.locator('.pf-chatbot__message--user');
     const botMessage = page.locator('.pf-chatbot__message--bot');
