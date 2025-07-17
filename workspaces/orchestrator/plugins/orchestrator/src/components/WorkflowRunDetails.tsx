@@ -76,13 +76,6 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
-      <Grid item md={5} key="Duration">
-        <AboutField label="Duration">
-          <Typography variant="subtitle2" component="div">
-            <b>{details.duration}</b>
-          </Typography>
-        </AboutField>
-      </Grid>
       <Grid item md={7} key="Workflow Status">
         <AboutField label="Workflow Status">
           <Typography variant="subtitle2" component="div">
@@ -96,10 +89,10 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
-      <Grid item md={5} key="Started">
-        <AboutField label="Started">
+      <Grid item md={5} key="Duration">
+        <AboutField label="Duration">
           <Typography variant="subtitle2" component="div">
-            <b>{details.start}</b>
+            <b>{details.duration}</b>
           </Typography>
         </AboutField>
       </Grid>
@@ -107,6 +100,13 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
         <AboutField label="Description">
           <Typography variant="subtitle2" component="div">
             <b>{details.description ?? VALUE_UNAVAILABLE}</b>
+          </Typography>
+        </AboutField>
+      </Grid>
+      <Grid item md={5} key="Started">
+        <AboutField label="Started">
+          <Typography variant="subtitle2" component="div">
+            <b>{details.start}</b>
           </Typography>
         </AboutField>
       </Grid>
