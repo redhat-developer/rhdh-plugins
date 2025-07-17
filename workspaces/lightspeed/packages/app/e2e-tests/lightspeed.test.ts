@@ -16,13 +16,10 @@
 
 import { test, expect } from '@playwright/test';
 import {
-  modelBaseUrl,
-  models,
-  defaultConversation,
+  models as fakeModels,
   conversations,
   contents,
   demoChatContent,
-  generateQueryResponse,
   botResponse,
   moreConversations,
 } from './fixtures/responses';
@@ -47,47 +44,54 @@ import {
   assertDrawerState,
   verifySidePanelConversation,
 } from './utils/sidebar';
+import { login } from './utils/login';
+import {
+  mockChatHistory,
+  mockConversations,
+  mockFeedbackStatus,
+  mockModels,
+  mockQuery,
+} from './utils/devMode';
 
 const botQuery = 'Please respond';
+const devMode = !process.env.PLAYWRIGHT_URL;
+let models = fakeModels;
+
+if (!devMode) {
+  test.beforeAll(async () => {
+    const response = await fetch(`${process.env.LIGHTSPEED_URL}/models`, {
+      headers: {
+        Authorization: `Bearer ${process.env.LIGHTSPEED_API_KEY}`,
+      },
+    });
+    models = (await response.json()).data;
+  });
+}
 
 test.beforeEach(async ({ page }) => {
-  await page.route(`${modelBaseUrl}/v1/models`, async route => {
-    const json = { object: 'list', data: models };
-    await route.fulfill({ json });
-  });
-  await page.route(`${modelBaseUrl}/conversations`, async route => {
-    if (route.request().method() === 'GET') {
-      const json = [];
-      await route.fulfill({ json });
-    }
-  });
-  await page.route(`${modelBaseUrl}/conversations/user*`, async route => {
-    const json = [];
-    await route.fulfill({ json });
-  });
-  await page.route(`${modelBaseUrl}/v1/query`, async route => {
-    const payload = route.request().postDataJSON();
-
-    const body = generateQueryResponse(
-      payload.query === botQuery
-        ? (conversations[1].conversation_id = payload.conversation_id)
-        : conversations[0].conversation_id,
-    );
-    await route.fulfill({ body });
-  });
+  if (devMode) {
+    await mockModels(page, models);
+    await mockConversations(page);
+    await mockChatHistory(page);
+    await mockQuery(page, botQuery, conversations);
+  }
 
   await page.goto('/');
-  await page.getByRole('button', { name: 'Enter' }).click();
+  await login(page, process.env.RHDH_USER, process.env.RHDH_PASSWORD);
   await openLightspeed(page);
 });
 
 test('Lightspeed is available', async ({ page }) => {
   expect(page.url()).toContain('/lightspeed');
-  expect(await page.title()).toContain('Developer Lightspeed');
+  if (devMode) {
+    expect(await page.title()).toContain('Developer Lightspeed');
+  }
 
   const headings = page.getByRole('heading');
   await expect(headings.first()).toContainText('Developer Lightspeed');
-  await expect(headings.last()).toContainText('How can I help');
+  await expect(
+    headings.filter({ has: page.locator('.pf-chatbot__question') }),
+  ).toContainText('How can I help');
 });
 
 test('Models are available', async ({ page }) => {
@@ -118,7 +122,7 @@ test('Verify sidebar: initial state, close and reopen', async ({ page }) => {
 
 test('verify default prompts are visible', async ({ page }) => {
   await expect(page.getByLabel('Scrollable message log')).toMatchAriaSnapshot(`
-    - heading "Hello, Guest How can I help you today?" [level=1]
+    - heading /Hello, .+ How can I help you today?/ [level=1]
     - button 
     - text: ''
     - button 
@@ -158,6 +162,7 @@ test.describe('File Attachment Validation', () => {
       }
     });
   }
+
   test(`Multiple file upload`, async ({ page }) => {
     const file1 = testFiles[0].path;
     const file2 = 'backstage.json';
@@ -177,33 +182,15 @@ test.describe('File Attachment Validation', () => {
   });
 });
 
-test.describe('Conversation', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.route(`${modelBaseUrl}/conversations`, async route => {
-      if (route.request().method() === 'GET') {
-        const json = { conversations };
-        await route.fulfill({ json });
-      } else {
-        await route.fulfill();
-      }
+const describeFn = devMode ? test.describe : test.describe.serial;
+describeFn('Conversation', () => {
+  if (devMode) {
+    test.beforeEach(async ({ page }) => {
+      await mockConversations(page, conversations, true);
+      await mockChatHistory(page, contents);
+      await mockFeedbackStatus(page);
     });
-    await page.route(`${modelBaseUrl}/conversations/user*`, async route => {
-      const json = { chat_history: contents };
-      await route.fulfill({ json });
-    });
-    await page.route('**/v1/feedback/status', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          functionality: 'feedback',
-          status: {
-            enabled: true,
-          },
-        }),
-      });
-    });
-  });
+  }
 
   test('Bot response, feedback submission, and copy to clipboard', async ({
     page,
@@ -216,13 +203,18 @@ test.describe('Conversation', () => {
 
     await expect(userMessage).toBeVisible();
     await expect(userMessage).toContainText(botQuery);
+
+    const response = devMode
+      ? botResponse
+      : `I'm the Red Hat Developer Hub Lightspeed assistant`;
+
     await expect(botMessage).toBeVisible();
-    await expect(botMessage).toContainText(botResponse);
+    await expect(botMessage).toContainText(response);
     await verifyFeedbackButtons(page);
-    await submitFeedback(page, 'Good response');
-    await submitFeedback(page, 'Bad response');
+    await submitFeedback(page, 'Good response', devMode);
+    await submitFeedback(page, 'Bad response', devMode);
     await copyButton.click();
-    await assertClipboardContains(page, botResponse);
+    await assertClipboardContains(page, response);
   });
 
   test('Conversation is created and shown in side panel', async ({ page }) => {
@@ -231,19 +223,18 @@ test.describe('Conversation', () => {
   });
 
   test('Verify scroll controls in Conversation', async ({ page }) => {
-    await page.route(`${modelBaseUrl}/conversations/user*`, async route => {
-      const json = { chat_history: demoChatContent };
-      await route.fulfill({ json });
-    });
+    if (devMode) {
+      await mockChatHistory(page, demoChatContent);
+    }
 
-    await openLightspeed(page);
-
-    const message = demoChatContent[0].content;
-    await sendMessage(message, page);
-
-    const loadingIndicator = page.locator('div.pf-chatbot__message-loading');
-    await loadingIndicator.waitFor({ state: 'visible' });
-    await verifySidePanelConversation(page);
+    let message = demoChatContent[0].content;
+    if (!devMode) {
+      message =
+        (await page
+          .locator('.pf-v6-c-card__body', { hasText: 'Tekton' })
+          .textContent()) || '';
+    }
+    await sendMessage(message, page, false);
 
     const jumpTopButton = page.getByRole('button', { name: 'Jump top' });
     const jumpBottomButton = page.getByRole('button', { name: 'Jump bottom' });
@@ -255,44 +246,57 @@ test.describe('Conversation', () => {
       page.locator('span').filter({ hasText: message }),
     ).toBeVisible();
 
+    await verifySidePanelConversation(page);
     await expect(jumpBottomButton).toBeVisible();
     await jumpBottomButton.click();
 
+    const responseText = devMode ? /OpenShift deployment/ : /Tekton/;
     const responseMessage = page
       .locator('div.pf-chatbot__message-response')
       .last();
-    await expect(responseMessage).toHaveText(/OpenShift deployment/);
+    await expect(responseMessage).toHaveText(responseText);
   });
 
   test('Filter and switch conversations', async ({ page }) => {
-    await page.route(`${modelBaseUrl}/conversations`, async route => {
-      if (route.request().method() === 'GET') {
-        const json = { conversations: moreConversations };
-        await route.fulfill({ json });
-      } else {
-        await route.fulfill();
-      }
-    });
+    if (devMode) {
+      await mockConversations(page, moreConversations);
+    }
     await sendMessage('test', page);
     const sidePanel = page.locator('.pf-v6-c-drawer__panel');
 
     const currentChat = sidePanel.locator('li.pf-chatbot__menu-item--active');
-    await expect(currentChat).toHaveText(moreConversations[0].topic_summary);
+    await expect(currentChat).toHaveText(
+      devMode ? moreConversations[0].topic_summary : /<[\w\s]+topic[\w\s]*>/,
+    );
 
     const chats = sidePanel.locator('li.pf-chatbot__menu-item');
-    await expect(chats).toHaveCount(2);
+    if (devMode) {
+      await expect(chats).toHaveCount(2);
+    } else {
+      expect(await chats.count()).toBeGreaterThanOrEqual(1);
+      await page.getByRole('button', { name: 'new chat' }).click();
+      await sendMessage('tell me about Backstage', page);
+      await verifySidePanelConversation(page);
+    }
 
+    const searchText = devMode
+      ? moreConversations[1].topic_summary
+      : 'Backstage';
     const searchBox = sidePanel.getByPlaceholder('Search previous chats...');
-    await searchBox.fill('new');
-    await expect(chats).toHaveCount(1);
-    await expect(chats).toHaveText(moreConversations[1].topic_summary);
-
-    await chats.click();
+    await searchBox.fill(devMode ? 'new' : 'Backstage');
+    for (const chat of await chats.all()) {
+      expect(chat).toContainText(searchText);
+    }
+    await chats.first().click();
 
     const userMessage = page.locator('.pf-chatbot__message--user');
     const botMessage = page.locator('.pf-chatbot__message--bot');
 
-    await expect(userMessage).toContainText(contents[0].content);
-    await expect(botMessage).toContainText(contents[1].content);
+    await expect(userMessage).toContainText(
+      devMode ? contents[0].content : 'tell me about Backstage',
+    );
+    await expect(botMessage).toContainText(
+      devMode ? contents[1].content : 'Backstage',
+    );
   });
 });
