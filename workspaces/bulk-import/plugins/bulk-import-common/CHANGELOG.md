@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-bulk-import-common [0.2.0](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.1.0...@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.2.0) (2024-07-25)
 
+## 1.7.2
+
+### Patch Changes
+
+- a79f849: Updated dependency `prettier` to `3.6.2`.
+
 ## 1.7.1
 
 ### Patch Changes
