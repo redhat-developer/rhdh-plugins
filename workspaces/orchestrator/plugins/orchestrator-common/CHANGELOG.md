@@ -1,5 +1,16 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 2.0.0
+
+### Major Changes
+
+- 66b7b7c: removing assessment code
+
+### Patch Changes
+
+- e590195: Updated dependency `@openapitools/openapi-generator-cli` to `2.21.2`.
+- d7d2490: enable custom auth provider for executing workflows
+
 ## 1.28.4
 
 ### Patch Changes
