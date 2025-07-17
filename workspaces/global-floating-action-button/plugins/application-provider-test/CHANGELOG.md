@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-application-provider-test
 
+## 0.2.1
+
+### Patch Changes
+
+- 01f38dc: Updated dependency `@mui/styles` to `5.18.0`.
+  Updated dependency `@mui/icons-material` to `5.18.0`.
+  Updated dependency `@mui/material` to `5.18.0`.
+  Updated dependency `@mui/styled-engine` to `5.18.0`.
+
 ## 0.2.0
 
 ### Minor Changes
