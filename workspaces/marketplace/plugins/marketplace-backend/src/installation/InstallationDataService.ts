@@ -65,7 +65,7 @@ export class InstallationDataService {
           InstallationInitErrorReason.INSTALLATION_DISABLED_IN_PRODUCTION ||
         reason === InstallationInitErrorReason.INSTALLATION_DISABLED
       ) {
-        logger.info(message);
+        logger.warn(message);
       } else {
         logger.error(
           `Installation feature is disabled. Error while loading data: ${message}`,

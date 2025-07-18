@@ -75,7 +75,7 @@ describe('InstallationDataService', () => {
         logger: mockLogger,
       });
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.warn).toHaveBeenCalledWith(
         'Installation feature is disabled in production',
       );
       expect(installationDataService.getInitializationError()).toBeDefined();
@@ -95,7 +95,7 @@ describe('InstallationDataService', () => {
         logger: mockLogger,
       });
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
+      expect(mockLogger.warn).toHaveBeenCalledWith(
         `Installation feature is disabled under 'extensions.installation.enabled'`,
       );
       expect(installationDataService.getInitializationError()).toBeDefined();
