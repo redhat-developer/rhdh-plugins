@@ -73,6 +73,13 @@ export function validatePackageFormat(
     );
   }
 
+  const integrity = item.get('integrity');
+  if (integrity && (typeof integrity !== 'string' || integrity.trim() === '')) {
+    throw new ConfigFormatError(
+      "Invalid installation configuration, optional 'integrity' field in package item must be a non-empty string",
+    );
+  }
+
   if (packageName && packageToValidate !== packageName) {
     throw new ConfigFormatError(
       `Invalid installation configuration, 'package' field value in package item differs from '${packageName}'`,

@@ -17,7 +17,8 @@ metadata:
   tags: []
 spec:
   packageName: '@backstage-community/plugin-quay'
-  dynamicArtifact: ./dynamic-plugins/dist/backstage-community-plugin-quay
+  dynamicArtifact: '@backstage-community/plugin-quay'
+  integrity: sha512-qaZgy2lV28qlwsNnympCUbkewYCqXxLmXQXr3WWpS7gREWj4YBpytU/hQnDnqxAnQ+dQB/9U/rPdGJnLLAOB3w==
   version: 1.18.1
   backstage:
     role: frontend-plugin

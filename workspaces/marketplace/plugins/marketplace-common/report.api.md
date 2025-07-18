@@ -382,6 +382,8 @@ export interface MarketplacePackageSpec extends JsonObject {
     // (undocumented)
     installStatus?: MarketplacePackageInstallStatus;
     // (undocumented)
+    integrity?: string;
+    // (undocumented)
     lifecycle?: string;
     // (undocumented)
     owner?: string;

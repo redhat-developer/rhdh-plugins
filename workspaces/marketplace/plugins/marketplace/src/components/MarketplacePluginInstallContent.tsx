@@ -36,6 +36,7 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   MarketplacePackage,
+  MarketplacePackageSpec,
   MarketplacePackageSpecAppConfigExample,
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
@@ -274,10 +275,16 @@ export const MarketplacePluginInstallContent = ({
       codeEditor.setValue(configYaml);
     } else {
       const dynamicPluginYaml = {
-        plugins: (packages ?? []).map(pkg => ({
-          package: pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....',
-          disabled: false,
-        })),
+        plugins: (packages ?? []).map(pkg => {
+          const pkgEntry: MarketplacePackageSpec = {
+            package: pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....',
+            disabled: false,
+          };
+          if (pkg.spec?.integrity) {
+            pkgEntry.integrity = pkg.spec.integrity;
+          }
+          return pkgEntry;
+        }),
       };
       codeEditor.setValue(yaml.stringify(dynamicPluginYaml));
     }
