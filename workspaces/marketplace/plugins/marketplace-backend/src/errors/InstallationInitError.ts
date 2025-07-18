@@ -16,6 +16,7 @@
 import { CustomErrorBase } from '@backstage/errors';
 
 export const InstallationInitErrorReason = {
+  INSTALLATION_DISABLED_IN_PRODUCTION: 'INSTALLATION_DISABLED_IN_PRODUCTION',
   INSTALLATION_DISABLED: 'INSTALLATION_DISABLED',
   FILE_CONFIG_VALUE_MISSING: 'FILE_CONFIG_VALUE_MISSING',
   FILE_NOT_EXISTS: 'FILE_NOT_EXISTS',
@@ -36,7 +37,11 @@ export class InstallationInitError extends CustomErrorBase {
     public cause?: Error,
   ) {
     super(message, cause);
-    if (this.reason === InstallationInitErrorReason.INSTALLATION_DISABLED) {
+    if (
+      this.reason ===
+        InstallationInitErrorReason.INSTALLATION_DISABLED_IN_PRODUCTION ||
+      this.reason === InstallationInitErrorReason.INSTALLATION_DISABLED
+    ) {
       this.statusCode = 503;
     } else {
       this.statusCode = 500;

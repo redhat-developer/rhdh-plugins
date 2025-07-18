@@ -60,8 +60,12 @@ export class InstallationDataService {
       message: string,
       cause?: Error,
     ): InstallationDataService => {
-      if (reason === InstallationInitErrorReason.INSTALLATION_DISABLED) {
-        logger.info('Installation feature is disabled');
+      if (
+        reason ===
+          InstallationInitErrorReason.INSTALLATION_DISABLED_IN_PRODUCTION ||
+        reason === InstallationInitErrorReason.INSTALLATION_DISABLED
+      ) {
+        logger.warn(message);
       } else {
         logger.error(
           `Installation feature is disabled. Error while loading data: ${message}`,
@@ -75,6 +79,14 @@ export class InstallationDataService {
     };
 
     try {
+      const node_env = process.env.NODE_ENV ?? 'development';
+      if (node_env === 'production') {
+        return serviceWithInitializationError(
+          InstallationInitErrorReason.INSTALLATION_DISABLED_IN_PRODUCTION,
+          'Installation feature is disabled in production',
+        );
+      }
+
       const installationEnabled = config.getOptionalBoolean(
         'extensions.installation.enabled',
       );
