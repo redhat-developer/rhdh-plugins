@@ -377,7 +377,9 @@ export const MarketplacePluginInstallContent = ({
   const showInstallationWarning =
     (pluginConfig.data as any)?.error?.message &&
     (pluginConfig.data as any)?.error?.reason !==
-      ExtensionsStatus.INSTALLATION_DISABLED;
+      ExtensionsStatus.INSTALLATION_DISABLED &&
+    (pluginConfig.data as any)?.error?.reason !==
+      ExtensionsStatus.INSTALLATION_DISABLED_IN_PRODUCTION;
 
   const getInstallButtonDatatestid = () => {
     if (isInstallDisabled) {

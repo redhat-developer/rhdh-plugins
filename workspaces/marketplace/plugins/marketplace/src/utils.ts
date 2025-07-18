@@ -19,6 +19,7 @@ import { JsonObject } from '@backstage/types';
 import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 export enum ExtensionsStatus {
+  INSTALLATION_DISABLED_IN_PRODUCTION = 'INSTALLATION_DISABLED_IN_PRODUCTION',
   INSTALLATION_DISABLED = 'INSTALLATION_DISABLED',
   FILE_CONFIG_VALUE_MISSING = 'FILE_CONFIG_VALUE_MISSING',
   FILE_NOT_EXISTS = 'FILE_NOT_EXISTS',
