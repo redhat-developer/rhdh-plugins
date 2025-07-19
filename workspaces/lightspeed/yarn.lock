@@ -9548,20 +9548,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-core@npm:6.3.0-prerelease.17":
-  version: 6.3.0-prerelease.17
-  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.17"
+"@patternfly/react-core@npm:6.3.0-prerelease.31":
+  version: 6.3.0-prerelease.31
+  resolution: "@patternfly/react-core@npm:6.3.0-prerelease.31"
   dependencies:
-    "@patternfly/react-icons": ^6.3.0-prerelease.3
-    "@patternfly/react-styles": ^6.3.0-prerelease.3
-    "@patternfly/react-tokens": ^6.3.0-prerelease.3
+    "@patternfly/react-icons": ^6.3.0-prerelease.12
+    "@patternfly/react-styles": ^6.3.0-prerelease.11
+    "@patternfly/react-tokens": ^6.3.0-prerelease.11
     focus-trap: 7.6.4
     react-dropzone: ^14.3.5
     tslib: ^2.8.1
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 6d2c4755d1318a52536a48ac310a282ae78617004f702d013bf9db771bc1ee97e3fa50da01a59dc1cc25600e23872ddffa5e302da895fe0620dab74deebea007
+  checksum: b5dd6b8919d0ed73db032a044b014e268dcea3d39708efd1341b9fb70d5ad59d8cacb88fcff4643eff22b1499e541778818bf20c52870790a93b660d1e3ab71d
   languageName: node
   linkType: hard
 
@@ -9592,13 +9592,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-icons@npm:^6.3.0-prerelease.3":
-  version: 6.3.0-prerelease.3
-  resolution: "@patternfly/react-icons@npm:6.3.0-prerelease.3"
+"@patternfly/react-icons@npm:^6.3.0-prerelease.12":
+  version: 6.3.0-prerelease.14
+  resolution: "@patternfly/react-icons@npm:6.3.0-prerelease.14"
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 4d55667f3aa5b64c1e217b9c84697d95fc223083b58b16d02932a40a4a0392ae728bb1d545ade0f69580dce166769f572fb0f24f658132e36d9465b0a98e4887
+  checksum: 700e9b7f896a801f5c5aa85656bf6e82b46d1919abbcf222c962444548e43a71d47f097e7e504d2fccabc4a7fa6a4815ee49cc067fed165570cff8f6f1d318c9
   languageName: node
   linkType: hard
 
@@ -9609,10 +9609,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-styles@npm:^6.3.0-prerelease.3":
-  version: 6.3.0-prerelease.3
-  resolution: "@patternfly/react-styles@npm:6.3.0-prerelease.3"
-  checksum: 8a1b1785a7fd292a16546e4e1dd2b4804006fe18f2c56275b346760f0ad3a347cf7dafd3506045cd022252684f5ac4bb93ca27780d3f841dfd4ba0ba3d72d7af
+"@patternfly/react-styles@npm:^6.3.0-prerelease.11":
+  version: 6.3.0-prerelease.13
+  resolution: "@patternfly/react-styles@npm:6.3.0-prerelease.13"
+  checksum: 43e93091f8f798baa64a1f57d05ab6768fa85f9b26a35f91f3427b79559a25fc0674dae3841c5234846b3be5bcf6aa98cb7df6641e046885feb44b5619ccf62e
   languageName: node
   linkType: hard
 
@@ -9640,10 +9640,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-tokens@npm:^6.3.0-prerelease.3":
-  version: 6.3.0-prerelease.3
-  resolution: "@patternfly/react-tokens@npm:6.3.0-prerelease.3"
-  checksum: 7c004777bcb6bb3ed9eb34294662fe7b8c1bcfc6a2746b28ed5466cdf8a39cb862c31efdc3001912dd1fa64e98661343c6be08931af38cb5a7b2cdd14650d6b5
+"@patternfly/react-tokens@npm:^6.3.0-prerelease.11":
+  version: 6.3.0-prerelease.13
+  resolution: "@patternfly/react-tokens@npm:6.3.0-prerelease.13"
+  checksum: c2dc14c6de55afabb03a6612f2693dc32bfb7db2f02a528455d958b5dcda9ce471e1d70955940a565af98db4d2c039807e7e75c7f5fa831393871451e24cc719
   languageName: node
   linkType: hard
 
@@ -10362,7 +10362,7 @@ __metadata:
     "@types/supertest": 2.0.16
     express: ^4.21.1
     http-proxy-middleware: ^3.0.2
-    msw: 2.10.2
+    msw: 2.10.4
     node-fetch: 2.7.0
     prettier: 3.6.2
     supertest: 6.3.4
@@ -10401,7 +10401,7 @@ __metadata:
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
     "@patternfly/chatbot": 6.3.0-prerelease.25
-    "@patternfly/react-core": 6.3.0-prerelease.17
+    "@patternfly/react-core": 6.3.0-prerelease.31
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@tanstack/react-query": ^5.59.15
@@ -27014,9 +27014,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:2.10.2":
-  version: 2.10.2
-  resolution: "msw@npm:2.10.2"
+"msw@npm:2.10.4":
+  version: 2.10.4
+  resolution: "msw@npm:2.10.4"
   dependencies:
     "@bundled-es-modules/cookie": ^2.0.1
     "@bundled-es-modules/statuses": ^1.0.1
@@ -27043,7 +27043,7 @@ __metadata:
       optional: true
   bin:
     msw: cli/index.js
-  checksum: ca79300c3af2821e9ab7ab426657caaafd791c777139d54c3ad1752a592c4e249dd267b9da97328964f269850b54b1c6b538fa0b27f2f5881430db454ecd9b35
+  checksum: 7a0b30ffd982a4f99493c24efae48a333a007f53ddd53657ac8d850c86bd08cefd5fdff4af859ad3e9624a686fb57ff9061075ffb5abee7145b521401d515155
   languageName: node
   linkType: hard
 
