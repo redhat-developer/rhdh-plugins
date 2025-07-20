@@ -85,6 +85,17 @@ const useStyles = makeStyles()(theme => ({
   errorColor: {
     color: theme.palette.error.dark,
   },
+  menu: {
+    // workaround for theme issue in RHDH
+    '& ul': {
+      display: 'flex',
+      flexDirection: 'column',
+      '& li': {
+        padding: '6px 16px',
+        justifyContent: 'left',
+      },
+    },
+  },
 }));
 
 export type AbortConfirmationDialogActionsProps = {
@@ -154,6 +165,8 @@ export const WorkflowInstancePage = ({
 }: {
   instanceId?: string;
 }) => {
+  const { classes } = useStyles();
+
   const navigate = useNavigate();
   const orchestratorApi = useApi(orchestratorApiRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
@@ -304,8 +317,6 @@ export const WorkflowInstancePage = ({
   openRerunMenu; // eslint-disable-line
   handleClick; // eslint-disable-line
 
-  const { classes } = useStyles();
-
   return (
     <BaseOrchestratorPage
       title={value?.instance.id}
@@ -401,6 +412,7 @@ export const WorkflowInstancePage = ({
                     vertical: 'top',
                     horizontal: 'right',
                   }}
+                  className={classes.menu}
                 >
                   <MenuItem onClick={() => handleOptionClick('rerun')}>
                     <Start />
