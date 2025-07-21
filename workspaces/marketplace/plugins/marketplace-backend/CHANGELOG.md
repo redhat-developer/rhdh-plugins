@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.7.2
+
+### Patch Changes
+
+- 7aa3823: Restrict access to configuration endpoints in production
+
 ## 0.7.1
 
 ### Patch Changes
