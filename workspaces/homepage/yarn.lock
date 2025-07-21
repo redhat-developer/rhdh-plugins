@@ -5894,16 +5894,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/serialize@npm:*, @emotion/serialize@npm:^1.2.0, @emotion/serialize@npm:^1.3.0, @emotion/serialize@npm:^1.3.1":
-  version: 1.3.2
-  resolution: "@emotion/serialize@npm:1.3.2"
+"@emotion/serialize@npm:*, @emotion/serialize@npm:^1.2.0, @emotion/serialize@npm:^1.3.0, @emotion/serialize@npm:^1.3.1, @emotion/serialize@npm:^1.3.3":
+  version: 1.3.3
+  resolution: "@emotion/serialize@npm:1.3.3"
   dependencies:
     "@emotion/hash": ^0.9.2
     "@emotion/memoize": ^0.9.0
     "@emotion/unitless": ^0.10.0
-    "@emotion/utils": ^1.4.1
+    "@emotion/utils": ^1.4.2
     csstype: ^3.0.2
-  checksum: 8051bafe32459e1aecf716cdb66a22b090060806104cca89d4e664893b56878d3e9bb94a4657df9b7b3fd183700a9be72f7144c959ddcbd3cf7b330206919237
+  checksum: 510331233767ae4e09e925287ca2c7269b320fa1d737ea86db5b3c861a734483ea832394c0c1fe5b21468fe335624a75e72818831d303ba38125f54f44ba02e7
   languageName: node
   linkType: hard
 
@@ -5950,7 +5950,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/utils@npm:*, @emotion/utils@npm:^1.4.0, @emotion/utils@npm:^1.4.1, @emotion/utils@npm:^1.4.2":
+"@emotion/utils@npm:*, @emotion/utils@npm:^1.4.0, @emotion/utils@npm:^1.4.2":
   version: 1.4.2
   resolution: "@emotion/utils@npm:1.4.2"
   checksum: 04cf76849c6401205c058b82689fd0ec5bf501aed6974880fe9681a1d61543efb97e848f4c38664ac4a9068c7ad2d1cb84f73bde6cf95f1208aa3c28e0190321
@@ -6954,7 +6954,7 @@ __metadata:
     "@backstage/e2e-test-utils": ^0.1.1
     "@backstage/repo-tools": ^0.13.4
     "@changesets/cli": ^2.27.1
-    "@playwright/test": 1.53.2
+    "@playwright/test": 1.54.1
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -8262,16 +8262,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/core-downloads-tracker@npm:^5.17.1":
-  version: 5.17.1
-  resolution: "@mui/core-downloads-tracker@npm:5.17.1"
-  checksum: 40a697aa031f089dde29812563320221efa1ec18840b0d0b744ba8846b558146d58910b5b4e67b7eb1942c6817ffc389b4b6b28456c762d39d250bc1e54423f7
+"@mui/core-downloads-tracker@npm:^5.18.0":
+  version: 5.18.0
+  resolution: "@mui/core-downloads-tracker@npm:5.18.0"
+  checksum: 065b46739d2bd84b880ad2f6a0a2062d60e3a296ce18ff380cad22ab5b2cb3de396755f322f4bea3a422ffffe1a9244536fc3c9623056ff3873c996e6664b1b9
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.17.1, @mui/icons-material@npm:^5.17.1":
-  version: 5.17.1
-  resolution: "@mui/icons-material@npm:5.17.1"
+"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.17.1":
+  version: 5.18.0
+  resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
     "@babel/runtime": ^7.23.9
   peerDependencies:
@@ -8281,17 +8281,17 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
+  checksum: 1ee4ee2817278c72095860c81e742270ee01fd320e48f865d371abfeacf83e43a7c6edbfd060ee66ef2a4f02c6cf79de0aca1e73a4d5f6320112bbfcac8176c3
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.17.1, @mui/material@npm:^5.12.2":
-  version: 5.17.1
-  resolution: "@mui/material@npm:5.17.1"
+"@mui/material@npm:5.18.0, @mui/material@npm:^5.12.2":
+  version: 5.18.0
+  resolution: "@mui/material@npm:5.18.0"
   dependencies:
     "@babel/runtime": ^7.23.9
-    "@mui/core-downloads-tracker": ^5.17.1
-    "@mui/system": ^5.17.1
+    "@mui/core-downloads-tracker": ^5.18.0
+    "@mui/system": ^5.18.0
     "@mui/types": ~7.2.15
     "@mui/utils": ^5.17.1
     "@popperjs/core": ^2.11.8
@@ -8314,7 +8314,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 26ff24f6d7ec1e429cf1dbe502046c8bcb684852bcfc32250b545c609ed38cef01985bbeec7ff294abe8b48be896cf9774e1198495b588d6c93cc56c9aecfbae
+  checksum: b9d6cf638774e65924adf6f58ad50639c55050b33dc6223aa74686f733e137d173b4594b28be70e8ea3baf413a7fcd3bee40d35e3af12a42b7ba03def71ea217
   languageName: node
   linkType: hard
 
@@ -8335,12 +8335,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/styled-engine@npm:^5.16.14":
-  version: 5.16.14
-  resolution: "@mui/styled-engine@npm:5.16.14"
+"@mui/styled-engine@npm:^5.18.0":
+  version: 5.18.0
+  resolution: "@mui/styled-engine@npm:5.18.0"
   dependencies:
     "@babel/runtime": ^7.23.9
     "@emotion/cache": ^11.13.5
+    "@emotion/serialize": ^1.3.3
     csstype: ^3.1.3
     prop-types: ^15.8.1
   peerDependencies:
@@ -8352,13 +8353,13 @@ __metadata:
       optional: true
     "@emotion/styled":
       optional: true
-  checksum: 5868683e6dd4004b34a0ce9de8842c180f7b7618c0b8cff904771659ef2da3aae574ea10b0c5ad6ffe59db396f699773ebb99f3f9d831d8b5adc398ecc618195
+  checksum: ab2d260ad5eea94993bc7706b164ae4ec11bd37dd7be36b93755d18da5b7859d39ad44173adced0e111e8b1b7ef65c0e369df3f2908144237c5e78f793eebb5a
   languageName: node
   linkType: hard
 
-"@mui/styles@npm:5.17.1":
-  version: 5.17.1
-  resolution: "@mui/styles@npm:5.17.1"
+"@mui/styles@npm:5.18.0":
+  version: 5.18.0
+  resolution: "@mui/styles@npm:5.18.0"
   dependencies:
     "@babel/runtime": ^7.23.9
     "@emotion/hash": ^0.9.1
@@ -8383,17 +8384,17 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 3e9de5bc582cc99be5ea8bf3c6ec81cd1472d96c7c11fef70fa21e1e5ea7f3dc10d1a9be793ea39e37eb1896e44263adc313e42d711fdf9c4e2d9172d00997df
+  checksum: 290cd7b7d738277c7024ac3f0840b2fd9f973008bd18a67294a8e1f401ffbca992311101c9af5cc1b799abd8c3ec469a0096c5d8cccc6b540218c433b0040f28
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^5.17.1":
-  version: 5.17.1
-  resolution: "@mui/system@npm:5.17.1"
+"@mui/system@npm:^5.18.0":
+  version: 5.18.0
+  resolution: "@mui/system@npm:5.18.0"
   dependencies:
     "@babel/runtime": ^7.23.9
     "@mui/private-theming": ^5.17.1
-    "@mui/styled-engine": ^5.16.14
+    "@mui/styled-engine": ^5.18.0
     "@mui/types": ~7.2.15
     "@mui/utils": ^5.17.1
     clsx: ^2.1.0
@@ -8411,7 +8412,7 @@ __metadata:
       optional: true
     "@types/react":
       optional: true
-  checksum: 104f57a82c4b314aa49fb8e1d52885b415e4a65d80431f8eb94c93769ba798feabc7107abbdbc3793a99d4a71f122edf87e1874151c2c7e714677aeb0c734df4
+  checksum: 451f43889c2638da7c52b898e6174eafcdbcbcaaf3a79f954fdd58d9a043786d76fa4fca902cfdd6ab1aa250f5b1f932ef93d789c5a15987d893c0741bf7a1ad
   languageName: node
   linkType: hard
 
@@ -9307,14 +9308,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.53.2":
-  version: 1.53.2
-  resolution: "@playwright/test@npm:1.53.2"
+"@playwright/test@npm:1.54.1":
+  version: 1.54.1
+  resolution: "@playwright/test@npm:1.54.1"
   dependencies:
-    playwright: 1.53.2
+    playwright: 1.54.1
   bin:
     playwright: cli.js
-  checksum: b13cb56e60132ad1b0cfa245a89b203623c43287251e359e164380e6fd3a439435133ece52c6242bc925c96cc7afd15b52e596fd2e20f7c87b95d574a157da15
+  checksum: edd804d691e26b52cc1fdd7215fdc658b59105eb34eb23c89c5614c2fd0ad44b9d47ba3e87067f3b54b55762fd43048d94fe13dccd70b3c44643e2bea2461c4d
   languageName: node
   linkType: hard
 
@@ -10013,9 +10014,9 @@ __metadata:
     "@backstage/plugin-user-settings": ^0.8.22
     "@backstage/test-utils": ^1.7.8
     "@backstage/theme": ^0.6.6
-    "@mui/icons-material": 5.17.1
-    "@mui/material": 5.17.1
-    "@mui/styles": 5.17.1
+    "@mui/icons-material": 5.18.0
+    "@mui/material": 5.18.0
+    "@mui/styles": 5.18.0
     "@openshift/dynamic-plugin-sdk": 5.0.1
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
     "@scalprum/react-core": 0.9.5
@@ -14287,7 +14288,7 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@openshift/dynamic-plugin-sdk": ^5.0.1
-    "@playwright/test": 1.53.2
+    "@playwright/test": 1.54.1
     "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.1
     "@scalprum/react-core": 0.9.5
@@ -27098,27 +27099,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.53.2":
-  version: 1.53.2
-  resolution: "playwright-core@npm:1.53.2"
+"playwright-core@npm:1.54.1":
+  version: 1.54.1
+  resolution: "playwright-core@npm:1.54.1"
   bin:
     playwright-core: cli.js
-  checksum: 01530abe93a094482e5cc171e195001bd351c1b75430fb8820e17a2cfc6d67e34e0e59871dd738e1754cd2720fb0c797acb10295bcdc092a268cd297ae4bb3bd
+  checksum: e51dc8fd490e9fe3148fb5af72fcfdfcd5220416ac3ba8e95a7aadb5b1c58cb444aa714dabbb5f2730fa730843855c2ef97553ca6948eb3f54d8ad73bf917149
   languageName: node
   linkType: hard
 
-"playwright@npm:1.53.2":
-  version: 1.53.2
-  resolution: "playwright@npm:1.53.2"
+"playwright@npm:1.54.1":
+  version: 1.54.1
+  resolution: "playwright@npm:1.54.1"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.53.2
+    playwright-core: 1.54.1
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: f5a1cb319eb8f1c30d4f934bbc0c48a3cb0c796286bbb008c82cb2b0666a318c6f910ed5db6cf44f68bac64e6d42485e834306b8bed08f6385ff348337b23c61
+  checksum: 8d8d8d53119f86e850b03a592f766fe78a6f5eaa65a854ae65c8bfaf5e5fc11a35ed2e5d50c849a15c519626f9276fb42a8813e03ccf1d1f24b95e0e55cb5eca
   languageName: node
   linkType: hard
 
