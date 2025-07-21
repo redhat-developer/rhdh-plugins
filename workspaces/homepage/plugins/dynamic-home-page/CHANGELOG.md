@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.5.1
+
+### Patch Changes
+
+- 3282796: Default homepage cards update to new design
+- 33ab96f: Updated dependency `react-grid-layout` to `1.5.2`.
+
 ## 1.5.0
 
 ### Minor Changes
