@@ -123,8 +123,14 @@ export class SonataFlowService {
     }
 
     if (args.backstageToken) {
-      headers['X-Authorization-Backstage'] = args.backstageToken;
+      const headerKey = 'X-Authorization-Backstage';
+      headers[headerKey] = args.backstageToken;
     }
+
+    const headerKeys = Object.keys(headers);
+    this.logger.info(
+      `Executing workflow ${args.definitionId} with headers: ${headerKeys.join(', ')}`,
+    );
 
     const response = await fetch(urlToFetch, {
       method: 'POST',
