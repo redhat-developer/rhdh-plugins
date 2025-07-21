@@ -59,6 +59,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
       if (!hasVisited) {
         setIsDrawerOpen(true);
         localStorage.setItem('quickstart-visited', 'true');
+        localStorage.setItem('quickstart-open', 'true');
       } else if (wasOpen === 'true') {
         setIsDrawerOpen(true);
       }
