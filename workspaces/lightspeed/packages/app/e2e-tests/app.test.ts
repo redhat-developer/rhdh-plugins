@@ -15,13 +15,22 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { keycloakLogin, loginAsGuest } from './utils/login';
+
+const devMode = !process.env.PLAYWRIGHT_URL;
 
 test('App should render the welcome page', async ({ page }) => {
   await page.goto('/');
 
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
+  if (devMode) {
+    loginAsGuest(page);
+  } else {
+    await keycloakLogin(
+      `${process.env.RHDH_USER}`,
+      `${process.env.RHDH_PASSWORD}`,
+      page,
+    );
+  }
 
   await expect(page.getByText('Catalog')).toBeVisible();
 });

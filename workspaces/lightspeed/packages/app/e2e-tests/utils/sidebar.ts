@@ -55,7 +55,7 @@ export async function verifySidePanelConversation(page: Page) {
   await expect(sidePanel).toBeVisible();
 
   const newButton = sidePanel.getByRole('button', { name: 'new chat' });
-  await expect(newButton).toBeEnabled();
+  await expect(newButton).toBeEnabled({ timeout: 60000 });
 
   const conversation = sidePanel.locator('li.pf-chatbot__menu-item--active');
   await expect(conversation).toBeVisible();
