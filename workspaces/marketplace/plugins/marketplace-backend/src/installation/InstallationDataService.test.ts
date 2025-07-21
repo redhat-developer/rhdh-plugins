@@ -60,12 +60,30 @@ describe('InstallationDataService', () => {
     return Promise.resolve(isMatch ? [mockPackages[0], mockPackages[1]] : []);
   });
 
-  afterEach(async () => {
+  beforeEach(async () => {
+    process.env.NODE_ENV = 'development';
     jest.clearAllMocks();
     mockFileInstallationStorage.initialize.mockReset();
   });
 
   describe('initialize', () => {
+    it("should return service with 'INSTALLATION_DISABLED_IN_PRODUCTION' error when production environment", () => {
+      process.env.NODE_ENV = 'production';
+      installationDataService = InstallationDataService.fromConfig({
+        config: validConfig,
+        marketplaceApi: mockMarketplaceApi,
+        logger: mockLogger,
+      });
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Installation feature is disabled in production',
+      );
+      expect(installationDataService.getInitializationError()).toBeDefined();
+      expect(installationDataService.getInitializationError()?.reason).toBe(
+        InstallationInitErrorReason.INSTALLATION_DISABLED_IN_PRODUCTION,
+      );
+    });
+
     it("should return service with 'INSTALLATION_DISABLED' error when installation is disabled", () => {
       const disabledConfig = new ConfigReader({
         extensions: { installation: { enabled: false } },
@@ -77,8 +95,8 @@ describe('InstallationDataService', () => {
         logger: mockLogger,
       });
 
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        'Installation feature is disabled',
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        `Installation feature is disabled under 'extensions.installation.enabled'`,
       );
       expect(installationDataService.getInitializationError()).toBeDefined();
       expect(installationDataService.getInitializationError()?.reason).toBe(

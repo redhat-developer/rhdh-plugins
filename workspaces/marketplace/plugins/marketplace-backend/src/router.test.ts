@@ -44,6 +44,10 @@ import {
 import { ConfigFormatError } from './errors/ConfigFormatError';
 import { InstallationDataService } from './installation/InstallationDataService';
 import { marketplacePlugin } from './plugin';
+import {
+  InstallationInitError,
+  InstallationInitErrorReason,
+} from './errors/InstallationInitError';
 
 type MockMarketplaceEntity =
   | Partial<MarketplacePlugin>
@@ -85,6 +89,47 @@ const PACKAGE_SETUP = {
   config: FILE_INSTALL_CONFIG,
   relationName: 'plugin1',
 };
+
+const configurationEndpointsTestCases = [
+  {
+    description: 'GET /package/:namespace/:name/configuration',
+    reqBuilder: (req: request.SuperTest<request.Test>) =>
+      req.get('/api/extensions/package/default/package11/configuration'),
+    body: undefined,
+  },
+  {
+    description: 'POST /package/:namespace/:name/configuration',
+    reqBuilder: (req: request.SuperTest<request.Test>) =>
+      req.post('/api/extensions/package/default/package11/configuration'),
+    body: { configYaml: stringify(mockDynamicPackage11) },
+  },
+  {
+    description: 'POST /package/:namespace/:name/configuration/disable',
+    reqBuilder: (req: request.SuperTest<request.Test>) =>
+      req.post(
+        '/api/extensions/package/default/package11/configuration/disable',
+      ),
+    body: { disabled: true },
+  },
+  {
+    description: 'GET /plugin/:namespace/:name/configuration',
+    reqBuilder: (req: request.SuperTest<request.Test>) =>
+      req.get('/api/extensions/plugin/default/plugin1/configuration'),
+    body: undefined,
+  },
+  {
+    description: 'POST /plugin/:namespace/:name/configuration',
+    reqBuilder: (req: request.SuperTest<request.Test>) =>
+      req.post('/api/extensions/package/default/plugin1/configuration'),
+    body: { configYaml: stringify(mockDynamicPlugin1) },
+  },
+  {
+    description: 'PATCH /plugin/:namespace/:name/configuration/disable',
+    reqBuilder: (req: request.SuperTest<request.Test>) =>
+      req.patch('/api/extensions/plugin/default/plugin1/configuration/disable'),
+    body: { disabled: true },
+  },
+];
 
 async function startBackendServer(
   config?: JsonObject,
@@ -733,49 +778,6 @@ describe('createRouter', () => {
   });
 
   describe('Denial when missing permissions', () => {
-    const permissionTestCases = [
-      {
-        description: 'GET /package/:namespace/:name/configuration',
-        reqBuilder: (req: request.SuperTest<request.Test>) =>
-          req.get('/api/extensions/package/default/package11/configuration'),
-        body: undefined,
-      },
-      {
-        description: 'POST /package/:namespace/:name/configuration',
-        reqBuilder: (req: request.SuperTest<request.Test>) =>
-          req.post('/api/extensions/package/default/package11/configuration'),
-        body: { configYaml: stringify(mockDynamicPackage11) },
-      },
-      {
-        description: 'POST /package/:namespace/:name/configuration/disable',
-        reqBuilder: (req: request.SuperTest<request.Test>) =>
-          req.post(
-            '/api/extensions/package/default/package11/configuration/disable',
-          ),
-        body: { disabled: true },
-      },
-      {
-        description: 'GET /plugin/:namespace/:name/configuration',
-        reqBuilder: (req: request.SuperTest<request.Test>) =>
-          req.get('/api/extensions/plugin/default/plugin1/configuration'),
-        body: undefined,
-      },
-      {
-        description: 'POST /plugin/:namespace/:name/configuration',
-        reqBuilder: (req: request.SuperTest<request.Test>) =>
-          req.post('/api/extensions/package/default/plugin1/configuration'),
-        body: { configYaml: stringify(mockDynamicPlugin1) },
-      },
-      {
-        description: 'PATCH /plugin/:namespace/:name/configuration/disable',
-        reqBuilder: (req: request.SuperTest<request.Test>) =>
-          req.patch(
-            '/api/extensions/plugin/default/plugin1/configuration/disable',
-          ),
-        body: { disabled: true },
-      },
-    ];
-
     const policyDecisions: {
       policyDecision: PolicyDecision;
       denyAction: string;
@@ -807,7 +809,7 @@ describe('createRouter', () => {
 
     const allTestCases = policyDecisions.flatMap(
       ({ policyDecision, denyAction }) =>
-        permissionTestCases.map(testCase => ({
+        configurationEndpointsTestCases.map(testCase => ({
           ...testCase,
           denyAction,
           policyDecision,
@@ -835,6 +837,47 @@ describe('createRouter', () => {
         expect(response.status).toEqual(403);
         const action = description.includes('GET') ? 'read' : 'create';
         expectPermissionError(response, action, 'default', name);
+      },
+    );
+  });
+
+  describe('Returns 5xx when InstallationDataService not initialized', () => {
+    const originalFromConfig = InstallationDataService.fromConfig;
+
+    beforeEach(() => {
+      InstallationDataService.fromConfig = jest.fn().mockReturnValue({
+        getInitializationError: () =>
+          new InstallationInitError(
+            InstallationInitErrorReason.INSTALLATION_DISABLED,
+            "Installation feature is disabled under 'extensions.installation.enabled'",
+          ),
+      });
+    });
+
+    afterAll(() => {
+      InstallationDataService.fromConfig = originalFromConfig;
+    });
+
+    it.each(configurationEndpointsTestCases)(
+      '$description: returns 5xx InstallationDataService not initialized',
+      async ({ reqBuilder, body }) => {
+        const { backendServer } = await setupTestWithMockCatalog({
+          mockData: [],
+        });
+
+        const requestBuilder = reqBuilder(request(backendServer));
+        const response = body
+          ? await requestBuilder.send(body)
+          : await requestBuilder;
+
+        expect(response.status).toEqual(503);
+        expect(response.body.error).toEqual({
+          message:
+            "Installation feature is disabled under 'extensions.installation.enabled'",
+          name: 'InstallationInitError',
+          reason: 'INSTALLATION_DISABLED',
+          statusCode: 503,
+        });
       },
     );
   });
