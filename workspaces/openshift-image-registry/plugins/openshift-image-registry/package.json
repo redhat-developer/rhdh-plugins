@@ -41,11 +41,11 @@
     "@backstage/theme": "^0.6.6",
     "@emotion/styled": "^11.13.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
-    "@janus-idp/shared-react": "2.18.0",
     "@material-ui/core": "^4.9.13",
     "@material-ui/icons": "^4.11.3",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "filesize": "^10.1.6",
+    "luxon": "^3.6.1",
     "react-use": "^17.4.0"
   },
   "peerDependencies": {
