@@ -57,7 +57,7 @@
     "@backstage/types": "^1.2.1",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "^5.17.1",
-    "@mui/styles": "5.17.1",
+    "@mui/styles": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
     "@rjsf/material-ui": "^5.21.2",
     "@rjsf/utils": "^5.21.2",
