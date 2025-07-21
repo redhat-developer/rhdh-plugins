@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 0.5.7
+
+### Patch Changes
+
+- d703c31: introduce systemPrompt config for user to change and override default system prompt
+
 ## 0.5.6
 
 ### Patch Changes
