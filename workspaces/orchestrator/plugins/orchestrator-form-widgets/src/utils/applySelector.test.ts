@@ -257,3 +257,32 @@ describe('applySelectorArray', () => {
     ).resolves.toStrictEqual(['deep1', 'deep2', 'deep3']);
   });
 });
+
+describe('applySelectorArray - complex queries', () => {
+  it('handles complex queries', async () => {
+    const data = [
+      {
+        metadata: {
+          kind: 'user',
+          name: 'foo',
+          namespace: 'default',
+        },
+      },
+      {
+        metadata: {
+          kind: 'GROUP',
+          name: 'mygroup',
+          namespace: 'anothernamespace',
+        },
+      },
+    ];
+
+    const selector =
+      "$map($,function($v) {$lowercase($v.metadata.kind) & ':' & $v.metadata.namespace & '/' & $v.metadata.name})";
+
+    await expect(applySelectorArray(data, selector)).resolves.toStrictEqual([
+      'user:default/foo',
+      'group:anothernamespace/mygroup',
+    ]);
+  });
+});
