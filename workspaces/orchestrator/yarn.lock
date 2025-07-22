@@ -10703,9 +10703,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/common@npm:11.1.3":
-  version: 11.1.3
-  resolution: "@nestjs/common@npm:11.1.3"
+"@nestjs/common@npm:11.1.5":
+  version: 11.1.5
+  resolution: "@nestjs/common@npm:11.1.5"
   dependencies:
     file-type: 21.0.0
     iterare: 1.2.1
@@ -10722,13 +10722,13 @@ __metadata:
       optional: true
     class-validator:
       optional: true
-  checksum: a6d739a40d2f0fbcc9b77f05a1a7d995a0a4ae8498a2f3f1b4e84a31fcd018fd5e263c19d7549d0573a0065f20e0f792d9992eb5ac0e105adfeeb4ce37f85170
+  checksum: 20dbf3a5b1b01f71645c1a5c15ef0584b99cf45eb90ce4abdee780a2f1f480a119b3e0b08bc4623b9439328b112b5c5684d063550003bf2b6c3d0853f853aa1e
   languageName: node
   linkType: hard
 
-"@nestjs/core@npm:11.1.3":
-  version: 11.1.3
-  resolution: "@nestjs/core@npm:11.1.3"
+"@nestjs/core@npm:11.1.5":
+  version: 11.1.5
+  resolution: "@nestjs/core@npm:11.1.5"
   dependencies:
     "@nuxt/opencollective": 0.4.1
     fast-safe-stringify: 2.1.1
@@ -10750,7 +10750,7 @@ __metadata:
       optional: true
     "@nestjs/websockets":
       optional: true
-  checksum: a0d948c4780d5d3d8138b87d5be2c269ea600cc2bd4c7b56371ff81385cafb92e7b2e5de9b80598b1cb75dcce3efe21a5fd930ff79edd729e37e75c3cf186b5d
+  checksum: be23c7cd27b1d1e30def92ebb8e0e4279bba207c8f6910500828a9c6ec20f4b32ca7051007de2b8f30814619fb06175379ae0e1f1ee89ab6d92a4caf13bb36f2
   languageName: node
   linkType: hard
 
@@ -11536,13 +11536,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openapitools/openapi-generator-cli@npm:2.21.2, @openapitools/openapi-generator-cli@npm:^2.7.0":
-  version: 2.21.2
-  resolution: "@openapitools/openapi-generator-cli@npm:2.21.2"
+"@openapitools/openapi-generator-cli@npm:2.21.3, @openapitools/openapi-generator-cli@npm:^2.7.0":
+  version: 2.21.3
+  resolution: "@openapitools/openapi-generator-cli@npm:2.21.3"
   dependencies:
     "@nestjs/axios": 4.0.1
-    "@nestjs/common": 11.1.3
-    "@nestjs/core": 11.1.3
+    "@nestjs/common": 11.1.5
+    "@nestjs/core": 11.1.5
     "@nuxtjs/opencollective": 0.3.2
     axios: 1.10.0
     chalk: 4.1.2
@@ -11560,7 +11560,7 @@ __metadata:
     tslib: 2.8.1
   bin:
     openapi-generator-cli: main.js
-  checksum: 6d43bbad767bdd5f61b15c30fef00d02776f38995562507b45d92cacf3779fbf9a0f95e661be9c5291c0fa942068c558a482261dcde76b91ed617417ddaaa363
+  checksum: 201063da5faadbae2b369e15799d04227bf5c2910627ad3835fceaa1423d26f8701646a6f3be1e3fabfdffef5f3358c2dab586881d7f331c22b1eba251c1e52b
   languageName: node
   linkType: hard
 
@@ -12369,7 +12369,7 @@ __metadata:
     "@backstage/cli": ^0.31.1
     "@backstage/plugin-permission-common": ^0.8.4
     "@backstage/types": ^1.2.1
-    "@openapitools/openapi-generator-cli": 2.21.2
+    "@openapitools/openapi-generator-cli": 2.21.3
     "@severlessworkflow/sdk-typescript": ^3.0.3
     "@types/json-schema": 7.0.15
     axios: ^1.7.9
