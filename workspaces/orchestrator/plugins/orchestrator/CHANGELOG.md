@@ -1,5 +1,14 @@
 ### Dependencies
 
+## 4.0.1
+
+### Patch Changes
+
+- Updated dependencies [223d35c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@2.0.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.6.6
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@1.6.6
+
 ## 4.0.0
 
 ### Major Changes

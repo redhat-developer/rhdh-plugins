@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 7.0.1
+
+### Patch Changes
+
+- Updated dependencies [223d35c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@2.0.1
+
 ## 7.0.0
 
 ### Major Changes
