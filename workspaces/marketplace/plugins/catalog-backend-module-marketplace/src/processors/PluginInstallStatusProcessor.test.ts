@@ -149,12 +149,12 @@ describe('PluginInstallStatusProcessor', () => {
       expect(cache.set).toHaveBeenCalledWith(
         marketplacePackageRef,
         MarketplacePackageInstallStatus.Installed,
-        { ttl: { minutes: 30 } },
+        { ttl: { seconds: 30 } },
       );
       expect(cache.set).toHaveBeenCalledWith(
         marketplaceBackendPackageRef,
         MarketplacePackageInstallStatus.UpdateAvailable,
-        { ttl: { minutes: 30 } },
+        { ttl: { seconds: 30 } },
       );
       expect(logger.info).toHaveBeenCalledWith(
         'Refreshing package install statuses for PluginInstallStatusProcessor',
@@ -390,7 +390,7 @@ describe('PluginInstallStatusProcessor', () => {
       expect(cache.set).toHaveBeenCalledWith(
         marketplaceBackendPackageRef,
         MarketplacePackageInstallStatus.UpdateAvailable,
-        { ttl: { minutes: 30 } },
+        { ttl: { seconds: 30 } },
       );
 
       expect(result.spec?.installStatus).toBe(

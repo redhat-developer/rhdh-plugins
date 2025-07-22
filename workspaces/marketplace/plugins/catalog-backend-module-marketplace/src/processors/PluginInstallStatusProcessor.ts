@@ -61,6 +61,7 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
   private readonly catalog: CatalogApi;
   private readonly logger: LoggerService;
   private readonly cache: CacheService;
+  private readonly cacheTTLSeconds = 30;
 
   public constructor(deps: {
     auth: AuthService;
@@ -126,7 +127,7 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
     for (const pkg of packages) {
       const cacheKey = stringifyEntityRef(pkg);
       await this.cache.set(cacheKey, pkg.spec.installStatus, {
-        ttl: { minutes: 30 },
+        ttl: { seconds: this.cacheTTLSeconds },
       });
     }
 
