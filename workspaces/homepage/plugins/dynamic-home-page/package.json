@@ -48,7 +48,7 @@
     "@scalprum/react-core": "0.9.5",
     "react-grid-layout": "1.5.2",
     "react-use": "17.6.0",
-    "tss-react": "4.9.18"
+    "tss-react": "4.9.19"
   },
   "peerDependencies": {
     "react": "16.13.1 || ^17.0.0 || ^18.2.0",
