@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 import jsonata from 'jsonata';
-import { JsonObject, JsonValue } from '@backstage/types';
+import { JsonArray, JsonObject, JsonValue } from '@backstage/types';
 
 export function isJsonObject(value?: JsonValue): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 export const applySelectorArray = async (
-  data: JsonObject,
+  data: JsonObject | JsonArray,
   selector: string,
   createArrayIfNeeded: boolean = false,
   emptyArrayIfNeeded: boolean = false,
