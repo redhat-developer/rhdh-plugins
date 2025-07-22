@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.5.2
+
+### Patch Changes
+
+- 041b242: Updated dependency `@mui/icons-material` to `5.18.0`.
+  Updated dependency `@mui/material` to `5.18.0`.
+  Updated dependency `@mui/styles` to `5.18.0`.
+- 9dc8c46: Updated dependency `tss-react` to `4.9.19`.
+
 ## 1.5.1
 
 ### Patch Changes
