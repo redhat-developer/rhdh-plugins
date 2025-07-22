@@ -248,7 +248,10 @@ export class CatalogHttpClient {
       // The `result.exists` field is only filled in dryRun mode
       return result.exists as boolean;
     } catch (error: any) {
-      if (error.message?.includes('NotFoundError')) {
+      if (
+        error.message?.includes('NotFoundError') ||
+        error.cause?.message?.includes('NotFoundError')
+      ) {
         return false;
       }
       throw error;
