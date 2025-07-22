@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 0.2.9
+
+### Patch Changes
+
+- 7ce3fe0: Updated dependency `@mui/styles` to `5.18.0`.
+- Updated dependencies [a79f849]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.6.5
+
 ## 0.2.8
 
 ### Patch Changes
