@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 6.1.5
+
+### Patch Changes
+
+- 0fb7550: Fixes `/imports` endpoint unable to create `catalog-info.yaml` PR
+
 ## 6.1.4
 
 ### Patch Changes
