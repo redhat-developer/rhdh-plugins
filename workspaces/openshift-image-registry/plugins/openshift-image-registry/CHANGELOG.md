@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 1.13.2
+
+### Patch Changes
+
+- a79f849: Updated dependency `prettier` to `3.6.2`.
+- b3427dd: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.9.0`.
+- 25866e2: Aligned `formatDate` utility with `ADR012 using Luxon`.
+
 ## 1.13.1
 
 ### Patch Changes
