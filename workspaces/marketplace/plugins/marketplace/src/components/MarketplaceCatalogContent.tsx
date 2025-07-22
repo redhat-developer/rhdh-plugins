@@ -163,32 +163,36 @@ export const MarketplaceCatalogContent = () => {
 
   return (
     <>
-      {isProductionEnvironment && (
-        <Alert severity="info" sx={{ mb: '1rem' }}>
-          <AlertTitle>
-            Plugin installation is disabled in the production environment.
-          </AlertTitle>
-        </Alert>
-      )}
-      {showExtensionsConfigurationAlert && (
+      {!filteredPlugins.isLoading && (
         <>
-          <WarningPanel
-            title="Plugin installation is disabled."
-            defaultExpanded
-            severity="info"
-            message={
-              <>
-                Example how to enable extensions plugin installation
-                <CodeSnippet
-                  language="yaml"
-                  showLineNumbers
-                  highlightedNumbers={generateExtensionsEnableLineNumbers()}
-                  text={EXTENSIONS_CONFIG_YAML}
-                />
-              </>
-            }
-          />
-          <br />
+          {isProductionEnvironment && (
+            <Alert severity="info" sx={{ mb: '1rem' }}>
+              <AlertTitle>
+                Plugin installation is disabled in the production environment.
+              </AlertTitle>
+            </Alert>
+          )}
+          {showExtensionsConfigurationAlert && (
+            <>
+              <WarningPanel
+                title="Plugin installation is disabled."
+                defaultExpanded
+                severity="info"
+                message={
+                  <>
+                    Example how to enable extensions plugin installation
+                    <CodeSnippet
+                      language="yaml"
+                      showLineNumbers
+                      highlightedNumbers={generateExtensionsEnableLineNumbers()}
+                      text={EXTENSIONS_CONFIG_YAML}
+                    />
+                  </>
+                }
+              />
+              <br />
+            </>
+          )}
         </>
       )}
       {installedPluginsCount > 0 && (
