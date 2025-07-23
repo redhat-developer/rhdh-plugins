@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.4.2
+
+### Patch Changes
+
+- 25eef25: Fix plugin `spec.installStatus` updating slowly
+
 ## 0.4.1
 
 ### Patch Changes
