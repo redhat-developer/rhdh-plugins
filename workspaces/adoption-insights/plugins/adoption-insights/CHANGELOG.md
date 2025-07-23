@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.2.2
+
+### Patch Changes
+
+- c2501eb: Updated dependency `@mui/icons-material` to `5.18.0`.
+  Updated dependency `@mui/material` to `5.18.0`.
+
 ## 0.2.1
 
 ### Patch Changes
