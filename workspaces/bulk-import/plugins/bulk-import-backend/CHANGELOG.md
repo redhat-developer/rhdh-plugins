@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 6.1.6
+
+### Patch Changes
+
+- 5f50921: Fixes `/imports` endpoint unable to create `catalog-info.yaml` PR in rhdh-local
+
 ## 6.1.5
 
 ### Patch Changes
