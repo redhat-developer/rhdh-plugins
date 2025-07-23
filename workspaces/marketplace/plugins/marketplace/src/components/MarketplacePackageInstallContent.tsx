@@ -31,7 +31,7 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   MarketplacePackage,
-  MarketplacePackageSpecAppConfigExample,
+  MarketplacePackageAppConfigExamples,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { JsonObject } from '@backstage/types';
 
@@ -63,13 +63,13 @@ import { usePackage } from '../hooks/usePackage';
 
 interface TabItem {
   label: string;
-  content: string | MarketplacePackageSpecAppConfigExample[];
+  content: string | MarketplacePackageAppConfigExamples[];
   key: string;
   others?: { [key: string]: any };
 }
 
 interface TabPanelProps {
-  markdownContent: string | MarketplacePackageSpecAppConfigExample[];
+  markdownContent: string | MarketplacePackageAppConfigExamples[];
   index: number;
   value: number;
   others?: { [key: string]: any };
@@ -80,11 +80,12 @@ const TabPanel = ({ markdownContent, index, value, others }: TabPanelProps) => {
   const codeEditor = useCodeEditor();
   if (value !== index) return null;
 
-  const handleApplyContent = (content: string | JsonObject) => {
+  const handleApplyContent = (content: string | JsonObject, pkg: string) => {
     try {
       const codeEditorContent = codeEditor.getValue();
       const newContent = applyContent(
         codeEditorContent || '',
+        pkg,
         others?.packageName,
         content,
       );
@@ -117,18 +118,27 @@ const TabPanel = ({ markdownContent, index, value, others }: TabPanelProps) => {
         {Array.isArray(markdownContent) ? (
           markdownContent.map((item, idx) => (
             <Box key={idx} sx={{ mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {item.title}
-                {item.content !== 'string' && (
-                  <Button
-                    sx={{ float: 'right' }}
-                    onClick={() => handleApplyContent(item.content)}
-                  >
-                    Apply
-                  </Button>
-                )}
+              <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                {Object.keys(item)[0]}
               </Typography>
-              <Markdown content={getExampleAsMarkdown(item.content)} />
+              {item[Object.keys(item)[0]]?.map?.(ex => (
+                <>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    {ex.title}
+                    {ex.content !== 'string' && (
+                      <Button
+                        sx={{ float: 'right' }}
+                        onClick={() =>
+                          handleApplyContent(ex.content, Object.keys(item)[0])
+                        }
+                      >
+                        Apply
+                      </Button>
+                    )}
+                  </Typography>
+                  <Markdown content={getExampleAsMarkdown(ex.content)} />
+                </>
+              ))}
             </Box>
           ))
         ) : (
@@ -176,13 +186,20 @@ export const MarketplacePackageInstallContent = ({
   }, [codeEditor, pkg]);
 
   const navigate = useNavigate();
-  const examples = pkg?.spec?.appConfigExamples;
+  const examples = [
+    {
+      [`${pkg.metadata.name}`]: pkg?.spec?.appConfigExamples,
+    },
+  ];
+  const packageDynamicArtifacts = {
+    [`${pkg.metadata.name}`]: pkg.spec?.dynamicArtifact,
+  };
   const availableTabs = [
     examples && {
       label: 'Examples',
       content: examples,
       key: 'examples',
-      others: { packageName: pkg.spec?.dynamicArtifact },
+      others: { packageNames: packageDynamicArtifacts },
     },
   ].filter(tab => tab) as TabItem[];
 

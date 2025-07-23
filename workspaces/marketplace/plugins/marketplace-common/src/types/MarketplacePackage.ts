@@ -69,6 +69,12 @@ export interface MarketplacePackageSpecAppConfigExample extends JsonObject {
   title: string;
   content: string | JsonObject;
 }
+/**
+ * @public
+ */
+export interface MarketplacePackageAppConfigExamples {
+  [key: string]: MarketplacePackageSpecAppConfigExample[];
+}
 
 /**
  * @public

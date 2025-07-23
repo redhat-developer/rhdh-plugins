@@ -37,7 +37,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   MarketplacePackage,
   MarketplacePackageSpec,
-  MarketplacePackageSpecAppConfigExample,
+  MarketplacePackageAppConfigExamples,
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
@@ -137,13 +137,13 @@ const CheckboxList = ({ packages }: { packages: MarketplacePackage[] }) => {
 
 interface TabItem {
   label: string;
-  content: string | MarketplacePackageSpecAppConfigExample[];
+  content: string | MarketplacePackageAppConfigExamples[];
   key: string;
   others?: { [key: string]: any };
 }
 
 interface TabPanelProps {
-  markdownContent: string | MarketplacePackageSpecAppConfigExample[];
+  markdownContent: string | MarketplacePackageAppConfigExamples[];
   index: number;
   value: number;
   others?: { [key: string]: any };
@@ -154,12 +154,13 @@ const TabPanel = ({ markdownContent, index, value, others }: TabPanelProps) => {
   const codeEditor = useCodeEditor();
   if (value !== index) return null;
 
-  const handleApplyContent = (content: string | JsonObject) => {
+  const handleApplyContent = (content: string | JsonObject, pkg: string) => {
     try {
       const codeEditorContent = codeEditor.getValue();
       const newContent = applyContent(
         codeEditorContent || '',
-        others?.packageName,
+        pkg,
+        others?.packageNames,
         content,
       );
       const selection = codeEditor.getSelection();
@@ -191,18 +192,27 @@ const TabPanel = ({ markdownContent, index, value, others }: TabPanelProps) => {
         {Array.isArray(markdownContent) ? (
           markdownContent.map((item, idx) => (
             <Box key={idx} sx={{ mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {item.title}
-                {item.content !== 'string' && (
-                  <Button
-                    sx={{ float: 'right' }}
-                    onClick={() => handleApplyContent(item.content)}
-                  >
-                    Apply
-                  </Button>
-                )}
+              <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
+                {Object.keys(item)[0]}
               </Typography>
-              <Markdown content={getExampleAsMarkdown(item.content)} />
+              {item[Object.keys(item)[0]].map(ex => (
+                <>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    {ex.title}
+                    {ex.content !== 'string' && (
+                      <Button
+                        sx={{ float: 'right' }}
+                        onClick={() =>
+                          handleApplyContent(ex.content, Object.keys(item)[0])
+                        }
+                      >
+                        Apply
+                      </Button>
+                    )}
+                  </Typography>
+                  <Markdown content={getExampleAsMarkdown(ex.content)} />
+                </>
+              ))}
             </Box>
           ))
         ) : (
@@ -299,7 +309,16 @@ export const MarketplacePluginInstallContent = ({
     onLoaded();
   }, [onLoaded, pluginConfig.data?.configYaml]);
 
-  const examples = packages[0]?.spec?.appConfigExamples;
+  const examples = packages.map(pkg => ({
+    [`${pkg.metadata.name}`]: pkg?.spec?.appConfigExamples,
+  }));
+  const packageDynamicArtifacts = packages.reduce((acc, pkg) => {
+    const temp = {
+      ...acc,
+      [`${pkg.metadata.name}`]: pkg.spec?.dynamicArtifact,
+    };
+    return temp;
+  }, {});
   const installationInstructions = plugin.spec?.installation;
   const aboutMarkdown = plugin.spec?.description;
   const availableTabs = [
@@ -307,7 +326,7 @@ export const MarketplacePluginInstallContent = ({
       label: 'Examples',
       content: examples,
       key: 'examples',
-      others: { packageName: packages[0].spec?.dynamicArtifact },
+      others: { packageNames: packageDynamicArtifacts },
     },
     installationInstructions && {
       label: 'Setting up the plugin',
