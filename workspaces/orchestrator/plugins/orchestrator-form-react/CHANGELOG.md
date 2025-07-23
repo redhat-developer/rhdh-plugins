@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 1.6.6
+
+### Patch Changes
+
+- Updated dependencies [223d35c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@2.0.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@1.6.6
+
 ## 1.6.5
 
 ### Patch Changes
