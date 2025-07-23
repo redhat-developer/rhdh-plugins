@@ -350,6 +350,12 @@ export interface MarketplacePackage extends Entity {
 }
 
 // @public (undocumented)
+export interface MarketplacePackageAppConfigExamples {
+    // (undocumented)
+    [key: string]: MarketplacePackageSpecAppConfigExample[];
+}
+
+// @public (undocumented)
 export interface MarketplacePackageBackstage extends JsonObject {
     // (undocumented)
     role?: string;

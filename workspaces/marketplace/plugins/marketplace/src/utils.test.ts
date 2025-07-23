@@ -16,6 +16,12 @@
 import { applyContent, getExampleAsMarkdown } from './utils';
 
 describe('marketplace utils', () => {
+  const packages = {
+    'backstage-community-plugin-quay':
+      './dynamic-plugins/dist/backstage-community-plugin-quay',
+    'backstage-community-plugin-sonarcloud':
+      './dynamic-plugins/dist/backstage-community-plugin-sonarcloud',
+  };
   describe('applyContent', () => {
     const newContent = {
       catalog: {
@@ -36,7 +42,8 @@ describe('marketplace utils', () => {
           - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
             disabled: false
   `,
-        './dynamic-plugins/dist/backstage-community-plugin-quay',
+        'backstage-community-plugin-quay',
+        packages,
         newContent,
       );
       expect(content).toEqual(
@@ -62,7 +69,8 @@ describe('marketplace utils', () => {
           # some more comment
           disabled: false
 `,
-        './dynamic-plugins/dist/backstage-community-plugin-quay',
+        'backstage-community-plugin-quay',
+        packages,
         newContent,
       );
       expect(content).toEqual(
@@ -90,7 +98,8 @@ plugins:
           - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
             disabled: false
   `,
-        './dynamic-plugins/dist/backstage-community-plugin-quay',
+        'backstage-community-plugin-quay',
+        packages,
         newContent,
       );
       expect(content).toEqual(
