@@ -309,9 +309,14 @@ export const MarketplacePluginInstallContent = ({
     onLoaded();
   }, [onLoaded, pluginConfig.data?.configYaml]);
 
-  const examples = packages.map(pkg => ({
-    [`${pkg.metadata.name}`]: pkg?.spec?.appConfigExamples,
-  }));
+  const examples = packages
+    .map(pkg =>
+      Array.isArray(pkg?.spec?.appConfigExamples) &&
+      pkg.spec.appConfigExamples.length > 0
+        ? { [`${pkg.metadata.name}`]: pkg.spec.appConfigExamples }
+        : null,
+    )
+    .filter(Boolean);
   const packageDynamicArtifacts = packages.reduce((acc, pkg) => {
     const temp = {
       ...acc,
@@ -322,7 +327,7 @@ export const MarketplacePluginInstallContent = ({
   const installationInstructions = plugin.spec?.installation;
   const aboutMarkdown = plugin.spec?.description;
   const availableTabs = [
-    examples && {
+    examples.length > 0 && {
       label: 'Examples',
       content: examples,
       key: 'examples',
