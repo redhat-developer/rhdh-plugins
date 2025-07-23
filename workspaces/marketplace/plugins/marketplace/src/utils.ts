@@ -164,3 +164,7 @@ export const isPluginInstalled = (
     pluginInstallStatus === MarketplacePluginInstallStatus.Disabled
   );
 };
+
+export const saveScrollPosition = (key = window.location.pathname) => {
+  sessionStorage.setItem(`scroll-pos:${key}`, String(window.scrollY));
+};

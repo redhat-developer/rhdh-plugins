@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   CodeSnippet,
   Content,
@@ -37,6 +38,7 @@ import { SearchTextField } from '../shared-components/SearchTextField';
 import { useCollections } from '../hooks/useCollections';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
+import { useRestoreScrollPosition } from '../hooks/useRestoreScrollPosition';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
 import { MarketplacePluginFilter } from './MarketplacePluginFilter';
@@ -102,6 +104,7 @@ const EmptyState = ({ isError }: { isError?: boolean }) => (
 );
 
 export const MarketplaceCatalogContent = () => {
+  const key = `scroll-position:/extensions/plugins`;
   const [openInstalledPluginsDialog, setOpenInstalledPluginsDialog] =
     useState(false);
   const extensionsConfig = useExtensionsConfiguration();
@@ -113,6 +116,25 @@ export const MarketplaceCatalogContent = () => {
     },
   });
   const filteredPlugins = useFilteredPlugins();
+  const location = useLocation();
+  useRestoreScrollPosition();
+
+  // Restore scroll on route change
+  useEffect(() => {
+    const mainEl = document.querySelector('main');
+    const savedScroll = sessionStorage.getItem(key);
+    if (savedScroll && mainEl) {
+      mainEl.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'auto' });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  // Clear scroll position on hard reload
+  useEffect(() => {
+    window.addEventListener('load', () => {
+      sessionStorage.removeItem(key);
+    });
+  });
 
   let title = 'Plugins';
   if (filteredPlugins.data && filteredPlugins.data.totalItems > 0) {
