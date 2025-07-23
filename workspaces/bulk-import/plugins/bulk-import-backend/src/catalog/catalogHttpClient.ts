@@ -250,7 +250,7 @@ export class CatalogHttpClient {
     } catch (error: any) {
       if (
         error.message?.includes('NotFoundError') ||
-        error.cause?.message?.includes('NotFoundError')
+        error.body?.error?.message?.includes('NotFoundError')
       ) {
         return false;
       }
