@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.7.1
+
+### Patch Changes
+
+- fb23720: Introduce `spec.integrity` field for Marketplace package
+
 ## 0.7.0
 
 ### Minor Changes
