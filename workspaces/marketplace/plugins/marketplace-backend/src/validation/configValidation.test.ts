@@ -32,6 +32,7 @@ describe('validateConfigurationFormat', () => {
         - package: package1
         - package: package2
           disabled: false
+          integrity: dummyabcd
           pluginConfig:
             key: value
     `);
@@ -103,6 +104,15 @@ describe('validatePackageFormat', () => {
         disabled: "not a boolean"
       `,
       error: "optional 'disabled' field in package item must be a boolean",
+    },
+    {
+      testCase: "'integrity' is not a string",
+      yaml: `
+        package: package1
+        integrity: []
+      `,
+      error:
+        "optional 'integrity' field in package item must be a non-empty string",
     },
     {
       testCase: "'pluginConfig' is not a map",

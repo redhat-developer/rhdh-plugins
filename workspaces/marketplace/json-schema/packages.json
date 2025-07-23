@@ -93,6 +93,9 @@
         "dynamicArtifact": {
           "type": "string"
         },
+        "integrity": {
+          "type": "string"
+        },
         "version": {
           "type": "string"
         },

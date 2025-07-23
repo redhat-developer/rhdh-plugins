@@ -58,6 +58,7 @@ export interface MarketplacePackageSpec extends JsonObject {
   appConfigExamples?: MarketplacePackageSpecAppConfigExample[];
   owner?: string;
   partOf?: string[];
+  integrity?: string;
   installStatus?: MarketplacePackageInstallStatus;
 }
 
