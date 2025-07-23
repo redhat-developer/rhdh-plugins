@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.1.1
+
+### Patch Changes
+
+- 0c449b8: Fix to set quickstart-open local-storage key to true on first user visit.
+
 ## 1.1.0
 
 ### Minor Changes
