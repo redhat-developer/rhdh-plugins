@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.8.5
+
+### Patch Changes
+
+- 78b2f53: hide extensions alerts while the plugins are still loading
+
 ## 0.8.4
 
 ### Patch Changes

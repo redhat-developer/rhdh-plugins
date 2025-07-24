@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.4.4
+
+### Patch Changes
+
+- df4240b: Clear processors log messages
+
 ## 0.4.3
 
 ### Patch Changes
