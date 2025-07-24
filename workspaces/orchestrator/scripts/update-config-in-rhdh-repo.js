@@ -10,37 +10,16 @@ const RHDH_DIR = process.env.RHDH_DIR
 
 const LOCAL_CONFIG = path.join(RHDH_DIR, 'app-config.local.yaml');
 const INITIAL_CONFIG = path.join(__dirname, 'config-for-rhdh-repo.yaml');
+const ORCHESTRATOR_FRONTEND_CONFIG = path.join(
+  __dirname,
+  '../plugins/orchestrator/app-config.yaml',
+);
 
 const pluginKey = 'red-hat-developer-hub.backstage-plugin-orchestrator';
 const widgetsPluginKey =
   'red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets';
 
-const orchestratorDynamicPlugins = {
-  rootDirectory: 'dynamic-plugins-root',
-  frontend: {
-    [widgetsPluginKey]: {},
-    [pluginKey]: {
-      appIcons: [
-        {
-          name: 'orchestratorIcon',
-          importName: 'OrchestratorIcon',
-        },
-      ],
-      dynamicRoutes: [
-        {
-          path: '/orchestrator',
-          importName: 'OrchestratorPage',
-          menuItem: {
-            icon: 'orchestratorIcon',
-            text: 'Orchestrator',
-          },
-        },
-      ],
-    },
-  },
-};
-
-const orchestratorConfig = {
+const orchestratorBEConfig = {
   sonataFlowService: {
     baseUrl: 'http://localhost',
     port: 8899,
@@ -59,6 +38,33 @@ const orchestratorConfig = {
   },
 };
 
+function loadOrchestratorFEPluginConfig() {
+  try {
+    const configContent = fs.readFileSync(ORCHESTRATOR_FRONTEND_CONFIG, 'utf8');
+    const config = yaml.load(configContent);
+
+    if (!config?.dynamicPlugins?.frontend?.[pluginKey]) {
+      console.error(
+        `❌ Could not find ${pluginKey} config in ${ORCHESTRATOR_FRONTEND_CONFIG}`,
+      );
+      process.exit(1);
+    }
+
+    return {
+      rootDirectory: 'dynamic-plugins-root',
+      frontend: {
+        [widgetsPluginKey]: {},
+        [pluginKey]: config.dynamicPlugins.frontend[pluginKey],
+      },
+    };
+  } catch (error) {
+    console.error(
+      `❌ Failed to load orchestrator plugin config: ${error.message}`,
+    );
+    process.exit(1);
+  }
+}
+
 function createLocalConfigIfMissing() {
   if (!fs.existsSync(LOCAL_CONFIG)) {
     if (!fs.existsSync(INITIAL_CONFIG)) {
@@ -73,6 +79,9 @@ function createLocalConfigIfMissing() {
 function updateConfig() {
   const raw = fs.readFileSync(LOCAL_CONFIG, 'utf8');
   const config = yaml.load(raw) || {};
+
+  // Load orchestrator plugin config from file
+  const orchestratorDynamicPlugins = loadOrchestratorFEPluginConfig();
 
   // Merge dynamicPlugins
   if (!config.dynamicPlugins) {
@@ -95,11 +104,9 @@ function updateConfig() {
     }
   }
 
-  // Merge orchestrator config
-  config.orchestrator = {
-    ...(config.orchestrator || {}),
-    ...orchestratorConfig,
-  };
+  if (!config.orchestrator) {
+    config.orchestrator = orchestratorBEConfig;
+  }
 
   const updated = yaml.dump(config, { lineWidth: -1 });
   fs.writeFileSync(LOCAL_CONFIG, updated, 'utf8');
