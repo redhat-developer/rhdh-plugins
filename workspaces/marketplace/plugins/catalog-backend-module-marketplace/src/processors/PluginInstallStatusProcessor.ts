@@ -196,7 +196,7 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
     );
 
     if (!pluginPackageRefs || pluginPackageRefs.length === 0) {
-      this.logger.warn(
+      this.logger.debug(
         `Entity ${stringifyEntityRef(marketplacePlugin)} is missing 'spec.packages', unable to determine 'spec.installStatus'`,
       );
       return undefined;
@@ -205,8 +205,8 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
     const pluginPackageStatuses =
       await this.getPluginPackageInstallStatuses(pluginPackageRefs);
     if (pluginPackageRefs.length !== pluginPackageStatuses.length) {
-      this.logger.warn(
-        `Missing all definitions for ${stringifyEntityRef(marketplacePlugin)} packages installStatus, unable to determine 'spec.installStatus'`,
+      this.logger.debug(
+        `Entity ${stringifyEntityRef(marketplacePlugin)} is missing all definitions of 'spec.installStatus' in its packages, unable to determine 'spec.installStatus'`,
       );
       return undefined;
     }
@@ -261,7 +261,7 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
   ): Promise<Entity> {
     if (isMarketplacePlugin(entity)) {
       if (!entity.spec?.packages || entity.spec.packages.length === 0) {
-        this.logger.warn(
+        this.logger.debug(
           `Entity ${stringifyEntityRef(entity)} is missing packages, unable to determine 'spec.installStatus'`,
         );
         return entity;

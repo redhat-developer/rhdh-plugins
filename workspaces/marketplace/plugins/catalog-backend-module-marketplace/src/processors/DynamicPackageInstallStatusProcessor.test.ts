@@ -114,8 +114,8 @@ describe('DynamicPackageInstallStatusProcessor', () => {
       );
 
       expect(entity.spec?.installStatus).toBe(undefined);
-      expect(logger.warn).toHaveBeenCalledWith(
-        "Entity package:default/testpackage is missing spec.packageName, unable to determine 'spec.installStatus'",
+      expect(logger.debug).toHaveBeenCalledWith(
+        "Entity package:default/testpackage is missing 'spec.packageName', unable to determine 'spec.installStatus'",
       );
     });
 
@@ -199,8 +199,8 @@ describe('DynamicPackageInstallStatusProcessor', () => {
         cache,
       );
       expect(result.spec?.installStatus).toBe(undefined);
-      expect(logger.warn).toHaveBeenCalledWith(
-        "Missing 'entity.spec.dynamicArtifact', unable to determine 'spec.installStatus'",
+      expect(logger.debug).toHaveBeenCalledWith(
+        "Entity package:default/testpackage is missing 'spec.dynamicArtifact', unable to determine 'spec.installStatus'",
       );
     });
 
