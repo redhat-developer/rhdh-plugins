@@ -105,7 +105,7 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
   ): MarketplacePackageInstallStatus | undefined {
     if (!marketplacePackage.spec?.packageName) {
       this.logger.warn(
-        "Missing 'entity.spec.packageName', unable to determine 'spec.installStatus'",
+        `Entity ${stringifyEntityRef(marketplacePackage)} is missing 'spec.packageName', unable to determine 'spec.installStatus'`,
       );
       return undefined;
     }
@@ -134,7 +134,7 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
 
     if (!marketplacePackage.spec?.dynamicArtifact) {
       this.logger.warn(
-        "Missing 'entity.spec.dynamicArtifact', unable to determine 'spec.installStatus'",
+        `Entity ${stringifyEntityRef(marketplacePackage)} is missing 'spec.dynamicArtifact', unable to determine 'spec.installStatus'`,
       );
       return undefined;
     }
@@ -156,7 +156,7 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     if (isMarketplacePackage(entity)) {
       if (!entity.spec?.packageName) {
         this.logger.warn(
-          `Entity ${stringifyEntityRef(entity)} is missing spec.packageName, unable to determine 'spec.installStatus'`,
+          `Entity ${stringifyEntityRef(entity)} is missing 'spec.packageName', unable to determine 'spec.installStatus'`,
         );
         return entity;
       }

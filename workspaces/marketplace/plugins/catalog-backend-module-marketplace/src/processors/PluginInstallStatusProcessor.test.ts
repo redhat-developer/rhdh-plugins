@@ -291,7 +291,7 @@ describe('PluginInstallStatusProcessor', () => {
 
       expect(entity.spec?.installStatus).toBe(undefined);
       expect(logger.warn).toHaveBeenCalledWith(
-        "Missing all definitions for plugin:marketplace-plugin-demo/marketplace packages installStatus, unable to determine 'spec.installStatus'",
+        "Entity plugin:marketplace-plugin-demo/marketplace is missing all definitions of 'spec.installStatus' in its packages, unable to determine 'spec.installStatus'",
       );
     });
 
@@ -315,7 +315,7 @@ describe('PluginInstallStatusProcessor', () => {
 
       expect(entity.spec?.installStatus).toBe(undefined);
       expect(logger.warn).toHaveBeenCalledWith(
-        "Missing all definitions for plugin:marketplace-plugin-demo/marketplace packages installStatus, unable to determine 'spec.installStatus'",
+        "Entity plugin:marketplace-plugin-demo/marketplace is missing all definitions of 'spec.installStatus' in its packages, unable to determine 'spec.installStatus'",
       );
     });
 

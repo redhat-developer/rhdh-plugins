@@ -206,7 +206,7 @@ export class PluginInstallStatusProcessor implements CatalogProcessor {
       await this.getPluginPackageInstallStatuses(pluginPackageRefs);
     if (pluginPackageRefs.length !== pluginPackageStatuses.length) {
       this.logger.warn(
-        `Missing all definitions for ${stringifyEntityRef(marketplacePlugin)} packages installStatus, unable to determine 'spec.installStatus'`,
+        `Entity ${stringifyEntityRef(marketplacePlugin)} is missing all definitions of 'spec.installStatus' in its packages, unable to determine 'spec.installStatus'`,
       );
       return undefined;
     }

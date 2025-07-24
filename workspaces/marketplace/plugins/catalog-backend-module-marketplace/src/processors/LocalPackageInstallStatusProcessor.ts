@@ -120,7 +120,10 @@ export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
 
       return null;
     } catch (error) {
-      console.warn('xxx', error);
+      console.warn(
+        `Error occurred while processing local install status of ${packageName}`,
+        error,
+      );
       return null;
     }
   }
