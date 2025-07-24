@@ -72,7 +72,7 @@ export interface MarketplacePackageSpecAppConfigExample extends JsonObject {
 /**
  * @public
  */
-export interface MarketplacePackageAppConfigExamples {
+export interface ExtensionsPackageAppConfigExamples {
   [key: string]: MarketplacePackageSpecAppConfigExample[];
 }
 

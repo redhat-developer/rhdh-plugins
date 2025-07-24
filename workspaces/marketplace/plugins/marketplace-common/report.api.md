@@ -84,6 +84,12 @@ export const encodeGetEntityFacetsRequest: (request: GetEntityFacetsRequest) => 
 export const EXTENSIONS_API_VERSION = "extensions.backstage.io/v1alpha1";
 
 // @public (undocumented)
+export interface ExtensionsPackageAppConfigExamples {
+    // (undocumented)
+    [key: string]: MarketplacePackageSpecAppConfigExample[];
+}
+
+// @public (undocumented)
 export const extensionsPermissions: ResourcePermission<"extensions-plugin">[];
 
 // @public
@@ -347,12 +353,6 @@ export enum MarketplaceKind {
 export interface MarketplacePackage extends Entity {
     // (undocumented)
     spec?: MarketplacePackageSpec;
-}
-
-// @public (undocumented)
-export interface MarketplacePackageAppConfigExamples {
-    // (undocumented)
-    [key: string]: MarketplacePackageSpecAppConfigExample[];
 }
 
 // @public (undocumented)
