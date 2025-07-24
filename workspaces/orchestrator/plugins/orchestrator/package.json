@@ -68,7 +68,7 @@
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "workspace:^",
-    "axios": "^1.7.7",
+    "axios": "^1.11.0",
     "json-schema": "^0.4.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",

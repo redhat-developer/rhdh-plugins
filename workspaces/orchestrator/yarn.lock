@@ -12372,7 +12372,7 @@ __metadata:
     "@openapitools/openapi-generator-cli": 2.21.3
     "@severlessworkflow/sdk-typescript": ^3.0.3
     "@types/json-schema": 7.0.15
-    axios: ^1.7.9
+    axios: ^1.11.0
     js-yaml: ^4.1.0
     js-yaml-cli: 0.6.0
   languageName: unknown
@@ -12497,7 +12497,7 @@ __metadata:
     "@types/react": ^18.2.58
     "@types/react-dom": ^18.2.19
     "@types/uuid": ^9.0.0
-    axios: ^1.7.7
+    axios: ^1.11.0
     json-schema: ^0.4.0
     lodash: ^4.17.21
     moment: ^2.29.4
@@ -12531,7 +12531,7 @@ __metadata:
     "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
-    axios: ^1.7.9
+    axios: ^1.11.0
     js-yaml: ^4.1.0
   languageName: unknown
   linkType: soft
@@ -17573,7 +17573,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.10.0, axios@npm:^1.0.0, axios@npm:^1.6.0, axios@npm:^1.6.8, axios@npm:^1.7.4, axios@npm:^1.7.7, axios@npm:^1.7.9":
+"axios@npm:1.10.0":
   version: 1.10.0
   resolution: "axios@npm:1.10.0"
   dependencies:
@@ -17581,6 +17581,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: b5fd840d499469bf968e44b8ac96f4b363c6aa4c791a50834c086a7cffbc2d77fe24f27af1aba46c3e1f4840aaf991461fc27537990596b93dea0f4df3245a86
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.0.0, axios@npm:^1.11.0, axios@npm:^1.6.0, axios@npm:^1.6.8, axios@npm:^1.7.4":
+  version: 1.11.0
+  resolution: "axios@npm:1.11.0"
+  dependencies:
+    follow-redirects: ^1.15.6
+    form-data: ^4.0.4
+    proxy-from-env: ^1.1.0
+  checksum: 0a33dc600b588bfd3111b198d5985527ed89f722817455d7cdb66c1d055e5f8859cc2bebb7320888957fc8458ebe77d5f83af02af9cd260217c91c4e92b6dfb6
   languageName: node
   linkType: hard
 
@@ -23368,15 +23379,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.0, form-data@npm:^4.0.1":
-  version: 4.0.2
-  resolution: "form-data@npm:4.0.2"
+"form-data@npm:^4.0.0, form-data@npm:^4.0.1, form-data@npm:^4.0.4":
+  version: 4.0.4
+  resolution: "form-data@npm:4.0.4"
   dependencies:
     asynckit: ^0.4.0
     combined-stream: ^1.0.8
     es-set-tostringtag: ^2.1.0
+    hasown: ^2.0.2
     mime-types: ^2.1.12
-  checksum: e887298b22c13c7c9c5a8ba3716f295a479a13ca78bfd855ef11cbce1bcf22bc0ae2062e94808e21d46e5c667664a1a1a8a7f57d7040193c1fefbfb11af58aab
+  checksum: 9b7788836df9fa5a6999e0c02515b001946b2a868cfe53f026c69e2c537a2ff9fbfb8e9d2b678744628f3dc7a2d6e14e4e45dfaf68aa6239727f0bdb8ce0abf2
   languageName: node
   linkType: hard
 

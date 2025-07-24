@@ -63,7 +63,7 @@
     "@backstage/plugin-scaffolder-node": "^0.8.0",
     "@backstage/types": "^1.2.1",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
-    "axios": "^1.7.9",
+    "axios": "^1.11.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
