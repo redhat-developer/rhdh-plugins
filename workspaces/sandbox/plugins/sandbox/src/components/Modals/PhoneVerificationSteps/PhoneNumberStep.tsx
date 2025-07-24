@@ -15,11 +15,7 @@
  */
 import React, { ForwardedRef, forwardRef } from 'react';
 import { E164Number } from 'libphonenumber-js/types.cjs';
-import {
-  default as RPNInput,
-  Country,
-  getCountryCallingCode,
-} from 'react-phone-number-input';
+import { default as RPNInput, Country } from 'react-phone-number-input';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -34,7 +30,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import InputAdornment from '@mui/material/InputAdornment';
+
 import CircularProgress from '@mui/material/CircularProgress';
 
 const FLAG_FETCH_URL =
@@ -81,15 +77,6 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         {...props}
         // eslint-disable-next-line jsx-a11y/no-autofocus
         autoFocus
-        InputProps={{
-          startAdornment: country ? (
-            <InputAdornment position="start">
-              <Typography color="textPrimary" style={{ fontSize: '16px' }}>
-                +{getCountryCallingCode(country)}
-              </Typography>
-            </InputAdornment>
-          ) : undefined,
-        }}
       />
     );
   });
