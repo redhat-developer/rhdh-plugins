@@ -30,10 +30,11 @@ export function validateConfigurationFormat(
 
   const plugins = doc.get('plugins');
 
-  if (!isSeq(plugins))
+  if (!isSeq(plugins)) {
     throw new ConfigFormatError(
       "Invalid installation configuration, 'plugins' field must be a list",
     );
+  }
   for (const item of plugins.items) {
     validatePackageFormat(item);
   }
@@ -93,10 +94,11 @@ export function validatePluginFormat(
 ): asserts doc is Document & {
   contents: YAMLSeq<YAMLMap<string, JsonValue>>;
 } {
-  if (!isSeq(doc.contents))
+  if (!isSeq(doc.contents)) {
     throw new ConfigFormatError(
       'Invalid installation configuration, plugin packages must be a list',
     );
+  }
   for (const item of doc.contents.items) {
     validatePackageFormat(item);
     const packageToValidate = item.get('package') as string;
