@@ -58,6 +58,8 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
 
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
@@ -73,24 +75,24 @@ import {
   isPluginInstalled,
 } from '../utils';
 
-import {
-  CodeEditorContextProvider,
-  CodeEditor,
-  useCodeEditor,
-} from './CodeEditor';
-import { Markdown } from './Markdown';
-import {
-  InstallationType,
-  useInstallationContext,
-} from './InstallationContext';
-
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 import { usePluginConfig } from '../hooks/usePluginConfig';
 import { useInstallPlugin } from '../hooks/useInstallPlugin';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { mapMarketplacePluginInstallStatusToInstallPageButton } from '../labels';
-import { useTheme } from '@mui/material/styles';
+
+import {
+  CodeEditorContextProvider,
+  CodeEditor,
+  useCodeEditor,
+} from './CodeEditor';
+import {
+  InstallationType,
+  useInstallationContext,
+} from './InstallationContext';
+import { Markdown } from './Markdown';
+import { Scrollable } from './Scrollable';
 
 const generateCheckboxList = (packages: MarketplacePackage[]) => {
   const hasFrontend = packages.some(
@@ -413,59 +415,45 @@ export const MarketplacePluginInstallContent = ({
       (pluginConfig.data as any)?.error?.reason,
       (pluginConfig.data as any)?.error?.message,
     );
-
     return (
-      <>
-        <WarningPanel
-          title={errorMessage.title}
-          severity="info"
-          message={
-            <>
-              {errorMessage.message}
-              <CodeSnippet
-                language="yaml"
-                showLineNumbers
-                highlightedNumbers={errorMessage?.highlightedLineNumbers}
-                text={`${
-                  (pluginConfig.data as any)?.error?.reason ===
-                  ExtensionsStatus.INVALID_CONFIG
-                    ? DYNAMIC_PLUGIN_CONFIG_YAML
-                    : EXTENSIONS_CONFIG_YAML
-                }`}
-              />
-            </>
-          }
-        />
-        <br />
-      </>
+      <WarningPanel
+        title={errorMessage.title}
+        severity="info"
+        message={
+          <>
+            {errorMessage.message}
+            <CodeSnippet
+              language="yaml"
+              showLineNumbers
+              highlightedNumbers={errorMessage?.highlightedLineNumbers}
+              text={`${
+                (pluginConfig.data as any)?.error?.reason ===
+                ExtensionsStatus.INVALID_CONFIG
+                  ? DYNAMIC_PLUGIN_CONFIG_YAML
+                  : EXTENSIONS_CONFIG_YAML
+              }`}
+            />
+          </>
+        }
+      />
     );
   };
 
   return (
-    <>
+    <Stack spacing={3} sx={{ height: '100%' }}>
       {showInstallationWarning && installationWarning()}
       {installationError && (
         <Alert severity="error" sx={{ mb: '1rem' }}>
           {installationError}
         </Alert>
       )}
-      <Box
-        sx={{
-          height: dynamicHeight,
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <Grid
-          container
-          spacing={3}
-          sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
-        >
+
+      <Box sx={{ display: 'flex', flexGrow: 1 }}>
+        <Grid container spacing={3}>
           {packages.length > 0 && (
             <Grid
               item
-              xs={12}
+              sx={{ display: 'flex', flexDirection: 'column' }}
               md={6.5}
               sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
             >
@@ -476,15 +464,7 @@ export const MarketplacePluginInstallContent = ({
                   flexDirection: 'column',
                   overflow: 'hidden',
                   borderRadius: 0,
-                }}
-              >
-                <CardContent
-                  sx={{
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'auto',
-                    scrollbarWidth: 'thin',
+                <CardContent sx={{ display: 'flex' }}>
                   }}
                 >
                   <CodeEditor defaultLanguage="yaml" onLoaded={onLoaded} />
@@ -496,7 +476,7 @@ export const MarketplacePluginInstallContent = ({
           {showRightCard && (
             <Grid
               item
-              xs={12}
+              sx={{ display: 'flex', flexDirection: 'column' }}
               md={5.5}
               sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
             >
@@ -565,20 +545,70 @@ export const MarketplacePluginInstallContent = ({
                       overflow: 'hidden',
                       display: 'flex',
                       flexDirection: 'column',
-                    }}
-                  >
                     {availableTabs.map(
                       (tab, index) =>
                         tabIndex === index && (
                           <TabPanel
+                <Scrollable>
+                  <CardHeader
+                    title={
+                      <Typography variant="h3">
+                        Installation instructions
+                      </Typography>
+                    }
+                    action={
+                      <Typography
+                        component="a"
+                        href="/path-to-file.zip" // update this
+                        download
+                        sx={{
+                          fontSize: 16,
+                          display: 'none', // change to 'flex' when ready
+                          alignItems: 'center',
+                          gap: 0.5,
+                          color: 'primary.main',
+                          textDecoration: 'none',
+                          m: 1,
+                        }}
+                      >
+                        <FileDownloadOutlinedIcon fontSize="small" />
+                        Download
+                      </Typography>
+                    }
+                    sx={{ pb: 0 }}
+                  />
+                  <CardContent>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                      <Tabs
+                        value={tabIndex}
+                        onChange={handleTabChange}
+                        aria-label="Plugin tabs"
+                      >
+                        {availableTabs.map((tab, index) => (
+                          <Tab
                             key={tab.key}
-                            value={tabIndex}
-                            index={index}
-                            markdownContent={tab.content ?? ''}
-                            others={tab.others}
+                            value={index}
+                            label={tab.label ?? ''}
                           />
-                        ),
-                    )}
+                        ))}
+                      </Tabs>
+                    </Box>
+                    <Box>
+                      {availableTabs.map(
+                        (tab, index) =>
+                          tabIndex === index && (
+                            <TabPanel
+                              key={tab.key}
+                              value={tabIndex}
+                              index={index}
+                              markdownContent={tab.content ?? ''}
+                              others={tab.others}
+                            />
+                          ),
+                      )}
+                    </Box>
+                  </CardContent>
+                </Scrollable>
                   </Box>
                 </CardContent>
               </Card>
@@ -598,8 +628,20 @@ export const MarketplacePluginInstallContent = ({
             flexShrink: 0,
             backgroundColor: 'inherit',
           }}
+      </Box>
+
+      <Box
+        sx={{
+          mt: 4,
+          flexShrink: 0,
+          backgroundColor: 'inherit',
+        }}
+      >
+        <Stack direction="row" spacing={2}>
+          {/* <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
+
         >
-          <Box sx={{ mt: 1, mb: 2, display: 'none' }}>
+          </Box> */}
             <CheckboxList packages={packages} />
           </Box>
           <Tooltip
@@ -642,7 +684,6 @@ export const MarketplacePluginInstallContent = ({
             </Typography>
           </Tooltip>
           <Button
-            variant="outlined"
             color="primary"
             sx={{ ml: 2 }}
             onClick={() => navigate(pluginLink)}
@@ -654,16 +695,13 @@ export const MarketplacePluginInstallContent = ({
             pluginConfigPermissions.data?.read === 'ALLOW') && (
             <Button
               variant="text"
-              color="primary"
               onClick={onReset}
               sx={{ ml: 3 }}
             >
               Reset
-            </Button>
+        </Stack>
           )}
-        </Box>
-      </Box>
-    </>
+    </Stack>
   );
 };
 

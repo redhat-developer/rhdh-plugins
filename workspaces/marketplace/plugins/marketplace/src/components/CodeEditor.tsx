@@ -41,6 +41,7 @@ import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution';
 // @ts-ignore
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 import type MonacoEditor from 'monaco-editor';
+import { Scrollable } from './Scrollable';
 
 loader.config({ monaco: monacoEditor });
 
@@ -154,40 +155,42 @@ export const CodeEditor = ({
   };
 
   return (
-    <Box position="relative" sx={{ width: '100%', height: '100%' }}>
-      <Button
-        variant="text"
-        onClick={handleCopy}
-        sx={{
-          position: 'absolute',
-          top: 0,
-          right: 10,
-          zIndex: 1,
-          minWidth: '32px',
-          minHeight: '32px',
-          p: 0,
-          '&:hover': { bgcolor: 'transparent' },
-        }}
-      >
-        {copied ? (
-          <Typography color={theme.palette.text.secondary}>✔</Typography>
-        ) : (
-          <ContentCopyRoundedIcon
-            fontSize="small"
-            sx={{ mx: 1, color: theme.palette.text.secondary }}
-          />
-        )}
-      </Button>
+    <Scrollable>
+      <Box position="relative" sx={{ width: '100%', height: '100%' }}>
+        <Button
+          variant="text"
+          onClick={handleCopy}
+          sx={{
+            position: 'absolute',
+            top: 0,
+            right: 10,
+            zIndex: 1,
+            minWidth: '32px',
+            minHeight: '32px',
+            p: 0,
+            '&:hover': { bgcolor: 'transparent' },
+          }}
+        >
+          {copied ? (
+            <Typography color={theme.palette.text.secondary}>✔</Typography>
+          ) : (
+            <ContentCopyRoundedIcon
+              fontSize="small"
+              sx={{ mx: 1, color: theme.palette.text.secondary }}
+            />
+          )}
+        </Button>
 
-      <Editor
-        theme={paletteMode}
-        defaultLanguage={defaultLanguage}
-        onChange={onChange}
-        onMount={onMount}
-        loading={<Progress />}
-        options={defaultOptions}
-        {...otherProps}
-      />
-    </Box>
+        <Editor
+          theme={paletteMode}
+          defaultLanguage={defaultLanguage}
+          onChange={onChange}
+          onMount={onMount}
+          loading={<Progress />}
+          options={defaultOptions}
+          {...otherProps}
+        />
+      </Box>
+    </Scrollable>
   );
 };

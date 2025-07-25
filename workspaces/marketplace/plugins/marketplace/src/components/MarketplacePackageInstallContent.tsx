@@ -144,17 +144,6 @@ export const MarketplacePackageInstallContent = ({
 }: {
   pkg: MarketplacePackage;
 }) => {
-  const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
-
-  useEffect(() => {
-    const header = document.querySelector('nav#global-header');
-    setHasGlobalHeader(Boolean(header));
-  }, []);
-
-  const dynamicHeight = hasGlobalHeader
-    ? 'calc(100vh - 220px)'
-    : 'calc(100vh - 160px)';
-
   const codeEditor = useCodeEditor();
   const params = useRouteRefParams(pluginInstallRouteRef);
 
@@ -196,7 +185,6 @@ export const MarketplacePackageInstallContent = ({
   return (
     <Box
       sx={{
-        height: dynamicHeight,
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -205,13 +193,13 @@ export const MarketplacePackageInstallContent = ({
       <Grid
         container
         spacing={3}
-        sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
+        sx={{ flex: 1, pb: 1 }}
       >
         <Grid
           item
           xs={12}
           md={6.5}
-          sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+          sx={{ display: 'flex', flexDirection: 'column' }}
         >
           <Card
             sx={{
