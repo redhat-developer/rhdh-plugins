@@ -401,8 +401,15 @@ export async function createRouter(
         req,
         extensionsPluginReadPermission,
       );
-      const result = await installationDataService.getPluginConfig(plugin);
-      res.status(200).json({ configYaml: result });
+      try {
+        const result = await installationDataService.getPluginConfig(plugin);
+        res.status(200).json({ configYaml: result });
+      } catch (e) {
+        if (e instanceof ConfigFormatError) {
+          throw new InputError(e.message);
+        }
+        throw e;
+      }
     },
   );
 
