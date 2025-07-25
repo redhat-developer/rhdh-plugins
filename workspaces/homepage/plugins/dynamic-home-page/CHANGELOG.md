@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.5.3
+
+### Patch Changes
+
+- 36c64da: Fixed homepage title which was not respecting the title received through configuration.
+
 ## 1.5.2
 
 ### Patch Changes
