@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 6.1.7
+
+### Patch Changes
+
+- 760b519: Fixes `/imports` endpoint unable to edit `catalog-info.yaml` PR
+
 ## 6.1.6
 
 ### Patch Changes
