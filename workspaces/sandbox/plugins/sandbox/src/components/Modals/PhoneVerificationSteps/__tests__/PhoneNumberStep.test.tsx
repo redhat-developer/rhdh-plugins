@@ -145,4 +145,23 @@ describe('PhoneNumberStep', () => {
       phoneInput.querySelector('[data-testid="tel-input"] input'),
     ).toHaveValue('');
   });
+
+  test('should not display duplicate country code in phone input field', () => {
+    const usPhoneNumber = parsePhoneNumber('+17373072270', 'US');
+    render(
+      <PhoneNumberStep
+        phoneNumber={usPhoneNumber.number}
+        setPhoneNumber={mockSetPhoneNumber}
+        handleClose={mockHandleClose}
+        handlePhoneNumberSubmit={mockHandlePhoneNumberSubmit}
+        setCountry={mockSetCountry}
+        country="US"
+      />,
+    );
+
+    const phoneInput = screen.getByTestId('tel-input');
+    const inputElement = phoneInput.querySelector('input');
+    const inputValue = inputElement?.value || '';
+    expect(inputValue).toBe('+1 737 307 2270');
+  });
 });
