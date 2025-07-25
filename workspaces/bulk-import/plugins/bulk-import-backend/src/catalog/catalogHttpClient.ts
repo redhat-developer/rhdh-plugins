@@ -286,7 +286,12 @@ export class CatalogHttpClient {
         },
       );
     } catch (error: any) {
-      if (!error.message?.includes('ConflictError')) {
+      if (
+        !(
+          error.message?.includes('ConflictError') ||
+          error.body?.error?.name?.includes('ConflictError')
+        )
+      ) {
         throw error;
       }
       // Location already exists, which is fine
