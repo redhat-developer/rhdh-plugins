@@ -74,6 +74,7 @@ export const getExampleAsMarkdown = (content: string | JsonObject) => {
 export const applyContent = (
   editorContent: string,
   packageName: string,
+  otherPackageNames: { [key: string]: string },
   newContent: string | JsonObject,
 ) => {
   if (!editorContent) {
@@ -85,10 +86,12 @@ export const applyContent = (
   if (plugins instanceof YAMLSeq && Array.isArray(plugins?.items)) {
     (plugins?.items || []).forEach((plugin: any) => {
       if (plugin instanceof Object) {
-        const pluginPackage = plugin.items?.find(
-          (i: Pair<Scalar, Scalar>) =>
-            i.key.value === 'package' && i.value?.value === packageName,
-        );
+        const pluginPackage = plugin.items?.find((i: Pair<Scalar, Scalar>) => {
+          return (
+            i.key.value === 'package' &&
+            i.value?.value === otherPackageNames[`${packageName}`]
+          );
+        });
         if (pluginPackage) {
           if (typeof newContent === 'string') {
             plugin.set('pluginConfig', parseDocument(newContent));
