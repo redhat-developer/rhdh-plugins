@@ -19,6 +19,7 @@ import { JsonObject, JsonPrimitive, JsonValue } from '@backstage/types';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 import { UiProps } from '../uiPropTypes';
 import { isJsonObject } from './applySelector';
+import { UNDEFINED_VALUE } from './constants';
 
 export type evaluateTemplateProps = {
   template?: JsonValue;
@@ -82,7 +83,7 @@ export const evaluateTemplateString = async (
       uiProps,
     );
     if (evaluatedUnit === undefined) {
-      evaluatedUnit = '___undefined___';
+      evaluatedUnit = UNDEFINED_VALUE;
     }
 
     if (

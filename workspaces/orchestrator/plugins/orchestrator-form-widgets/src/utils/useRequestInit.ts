@@ -22,6 +22,7 @@ import {
   evaluateTemplateString,
 } from './evaluateTemplate';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
+import { UNDEFINED_VALUE } from './constants';
 
 const ALLOWED_METHODS = ['GET', 'POST'];
 
@@ -62,7 +63,10 @@ export const getRequestInit = async (
           ),
         );
         keys.forEach((key, idx) => {
-          evaluated[key] = values[idx];
+          if (values[idx] && values[idx] !== UNDEFINED_VALUE) {
+            // skip empty or undefined values
+            evaluated[key] = values[idx];
+          }
         });
 
         const bodyInit: BodyInit = JSON.stringify(evaluated);
@@ -105,8 +109,11 @@ export const getRequestInit = async (
       keys.forEach((key, idx) => {
         // Header must be a string
         const value = values[idx];
-        headersInit[key] =
-          typeof value === 'string' ? value : JSON.stringify(value);
+        if (value && value !== UNDEFINED_VALUE) {
+          // skip empty or undefined values
+          headersInit[key] =
+            typeof value === 'string' ? value : JSON.stringify(value);
+        }
       });
     } else {
       throw new Error('fetch:body must be object for POST requests');

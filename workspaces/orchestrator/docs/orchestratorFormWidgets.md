@@ -446,6 +446,10 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |         ui:variant          |                                                                                                                                                                                   So far specific for StaticText widget only. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                                   |                                                                                                 |
 |           ui:text           |                                                                                                                                                                    So far specific for StaticText widget only. Check the description there. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                     |                                                                                                 |
 
+#### Specifics for templates in fetch:body, validate:body, fetch:headers or validate:headers
+
+If a template for a field of one of those properties evaluates to just an empty or undefined value, the **field is skipped** from the HTTP request (body, headers).
+
 ### Authentication
 
 To make the `identityApi` working, the [Backstage authentication](https://backstage.io/docs/auth/#sign-in-configuration) needs to be configured.

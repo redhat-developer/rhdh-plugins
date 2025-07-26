@@ -77,6 +77,7 @@ describe('evaluate template', () => {
 
   it('can parse template template to units', async () => {
     const cases = [
+      { template: '', expected: '' },
       { template: 'zz', expected: 'zz' },
       { template: '}}', expected: '}}' },
       { template: '${{foo}}', expected: '${{foo}}' },
