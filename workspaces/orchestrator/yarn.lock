@@ -11536,15 +11536,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openapitools/openapi-generator-cli@npm:2.21.3, @openapitools/openapi-generator-cli@npm:^2.7.0":
-  version: 2.21.3
-  resolution: "@openapitools/openapi-generator-cli@npm:2.21.3"
+"@openapitools/openapi-generator-cli@npm:2.21.4, @openapitools/openapi-generator-cli@npm:^2.7.0":
+  version: 2.21.4
+  resolution: "@openapitools/openapi-generator-cli@npm:2.21.4"
   dependencies:
     "@nestjs/axios": 4.0.1
     "@nestjs/common": 11.1.5
     "@nestjs/core": 11.1.5
     "@nuxtjs/opencollective": 0.3.2
-    axios: 1.10.0
+    axios: 1.11.0
     chalk: 4.1.2
     commander: 8.3.0
     compare-versions: 4.1.4
@@ -11560,7 +11560,7 @@ __metadata:
     tslib: 2.8.1
   bin:
     openapi-generator-cli: main.js
-  checksum: 201063da5faadbae2b369e15799d04227bf5c2910627ad3835fceaa1423d26f8701646a6f3be1e3fabfdffef5f3358c2dab586881d7f331c22b1eba251c1e52b
+  checksum: 5936bbf06424751296f285127d3bf3e16fe1b7b0c9b8cc2a77078ca4b8cde3069d48c1dd93d42856efc03498c2096ebfe250af847bc3b24224b380e7a64d6b70
   languageName: node
   linkType: hard
 
@@ -12369,7 +12369,7 @@ __metadata:
     "@backstage/cli": ^0.31.1
     "@backstage/plugin-permission-common": ^0.8.4
     "@backstage/types": ^1.2.1
-    "@openapitools/openapi-generator-cli": 2.21.3
+    "@openapitools/openapi-generator-cli": 2.21.4
     "@severlessworkflow/sdk-typescript": ^3.0.3
     "@types/json-schema": 7.0.15
     axios: ^1.11.0
@@ -17573,18 +17573,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.10.0":
-  version: 1.10.0
-  resolution: "axios@npm:1.10.0"
-  dependencies:
-    follow-redirects: ^1.15.6
-    form-data: ^4.0.0
-    proxy-from-env: ^1.1.0
-  checksum: b5fd840d499469bf968e44b8ac96f4b363c6aa4c791a50834c086a7cffbc2d77fe24f27af1aba46c3e1f4840aaf991461fc27537990596b93dea0f4df3245a86
-  languageName: node
-  linkType: hard
-
-"axios@npm:^1.0.0, axios@npm:^1.11.0, axios@npm:^1.6.0, axios@npm:^1.6.8, axios@npm:^1.7.4":
+"axios@npm:1.11.0, axios@npm:^1.0.0, axios@npm:^1.11.0, axios@npm:^1.6.0, axios@npm:^1.6.8, axios@npm:^1.7.4":
   version: 1.11.0
   resolution: "axios@npm:1.11.0"
   dependencies:
