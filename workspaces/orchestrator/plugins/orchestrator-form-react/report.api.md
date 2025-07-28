@@ -26,9 +26,9 @@ export type OrchestratorFormProps = {
 // @public
 export const SubmitButton: ({ submitting, handleClick, children, focusOnMount, }: {
     submitting: boolean;
-    handleClick?: (() => void) | undefined;
+    handleClick?: () => void;
     children: React_2.ReactNode;
-    focusOnMount?: boolean | undefined;
+    focusOnMount?: boolean;
 }) => React_2.JSX.Element;
 
 ```

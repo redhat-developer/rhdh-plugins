@@ -46,7 +46,7 @@ export type AuthTokenDescriptor = {
 // Warning: (ae-missing-release-tag) "capitalize" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export const capitalize: <S extends string>(text: S) => Capitalize<Lowercase<S>>;
+export const capitalize: <S extends string>(text: S) => Capitalized<S>;
 
 // Warning: (ae-missing-release-tag) "Capitalized" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //

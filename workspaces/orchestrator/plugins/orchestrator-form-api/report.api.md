@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="react" />
-
 import { ApiRef } from '@backstage/core-plugin-api';
 import { AuthTokenDescriptor } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { ErrorSchema } from '@rjsf/utils';
@@ -58,7 +56,7 @@ export const useOrchestratorFormApiOrDefault: () => OrchestratorFormApi;
 
 // Warnings were encountered during analysis:
 //
-// src/api.d.ts:97:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
+// src/api.d.ts:96:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
 
 // (No @packageDocumentation comment for this package)
 
