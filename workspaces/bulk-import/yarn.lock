@@ -6060,6 +6060,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gitbeaker/core@npm:^43.3.0":
+  version: 43.3.0
+  resolution: "@gitbeaker/core@npm:43.3.0"
+  dependencies:
+    "@gitbeaker/requester-utils": ^43.3.0
+    qs: ^6.14.0
+    xcase: ^2.0.1
+  checksum: 5e0878a2aaa9b8609fe637e016d0b8043134db1a04c52468fac0585c2c12dca00bc964cfb38c2640ea5ae431b76bbd09743d20a6441420735fef5515c83c9df3
+  languageName: node
+  linkType: hard
+
 "@gitbeaker/requester-utils@npm:^41.3.0":
   version: 41.3.0
   resolution: "@gitbeaker/requester-utils@npm:41.3.0"
@@ -6072,6 +6083,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gitbeaker/requester-utils@npm:^43.3.0":
+  version: 43.3.0
+  resolution: "@gitbeaker/requester-utils@npm:43.3.0"
+  dependencies:
+    picomatch-browser: ^2.2.6
+    qs: ^6.14.0
+    rate-limiter-flexible: ^4.0.1
+    xcase: ^2.0.1
+  checksum: c5756f4c4b09b9d38f61ae73210b395594d471a3babcd764637e91489b6bbde5952599b3aa33f880a8bfd1b67779b3b1f8d864bd1b49de5824c8e62528f45fde
+  languageName: node
+  linkType: hard
+
 "@gitbeaker/rest@npm:^41.2.0":
   version: 41.3.0
   resolution: "@gitbeaker/rest@npm:41.3.0"
@@ -6079,6 +6102,16 @@ __metadata:
     "@gitbeaker/core": ^41.3.0
     "@gitbeaker/requester-utils": ^41.3.0
   checksum: 96aa8d5e7ff3ca0e27f874df8b435fb12d20e6975d2291de26c90b7c2e201c286ffd241884b609b2200ddc4e28a331563b1b2d6767a1dd0160fc341f88761016
+  languageName: node
+  linkType: hard
+
+"@gitbeaker/rest@npm:^43.3.0":
+  version: 43.3.0
+  resolution: "@gitbeaker/rest@npm:43.3.0"
+  dependencies:
+    "@gitbeaker/core": ^43.3.0
+    "@gitbeaker/requester-utils": ^43.3.0
+  checksum: 224efcd0abcfa745b46dafdb89eba9eb4d70f8b2fe35a261da650cf30cec95f95118871348b16ca2d7705999fb606a54f8c8261054a140dc695b59c720e6c566
   languageName: node
   linkType: hard
 
@@ -10090,6 +10123,7 @@ __metadata:
     "@backstage/plugin-permission-common": ^0.9.1
     "@backstage/plugin-permission-node": ^0.10.2
     "@backstage/types": ^1.2.1
+    "@gitbeaker/rest": ^43.3.0
     "@octokit/auth-app": ^6.0.3
     "@octokit/rest": ^20.0.2
     "@openapitools/openapi-generator-cli": 2.20.2
@@ -29772,7 +29806,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.10.1, qs@npm:^6.10.3, qs@npm:^6.11.0, qs@npm:^6.12.2, qs@npm:^6.12.3, qs@npm:^6.5.2, qs@npm:^6.9.3, qs@npm:^6.9.4":
+"qs@npm:^6.10.1, qs@npm:^6.10.3, qs@npm:^6.11.0, qs@npm:^6.12.2, qs@npm:^6.12.3, qs@npm:^6.14.0, qs@npm:^6.5.2, qs@npm:^6.9.3, qs@npm:^6.9.4":
   version: 6.14.0
   resolution: "qs@npm:6.14.0"
   dependencies:
