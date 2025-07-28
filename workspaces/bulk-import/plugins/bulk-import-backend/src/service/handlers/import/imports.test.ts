@@ -119,7 +119,9 @@ describe('imports', () => {
             },
           );
 
-        let req = request(backendServer).get('/api/bulk-import/imports');
+        let req = request(backendServer)
+          .get('/api/bulk-import/imports')
+          .query({ approvalTool: 'GIT' });
         if (apiVersion) {
           req = req.set('api-version', apiVersion);
         }
@@ -526,6 +528,7 @@ spec:
           status: 'PR_ERROR',
         },
         {
+          approvalTool: 'GIT',
           github: {
             pullRequest: {
               number: 1347,

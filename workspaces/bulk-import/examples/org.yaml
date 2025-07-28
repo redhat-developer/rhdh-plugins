@@ -20,11 +20,11 @@ apiVersion: backstage.io/v1alpha1
 kind: User
 metadata:
   # replace this with <your_github_id>
-  name: ciiay
+  name: lholmquist
 spec:
   profile:
     # replace this with <your_github_email>
-    email: yicai@redhat.com
+    email: lholmqui@redhat.com
   memberOf: [rhdh-ui-test]
 ---
 apiVersion: backstage.io/v1alpha1
@@ -38,4 +38,4 @@ spec:
     displayName: RHDH UI test
   children: []
   # replace member with <your_github_id> on L23
-  members: [ciiay]
+  members: [lholmquist]

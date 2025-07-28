@@ -286,8 +286,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -405,8 +406,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -432,8 +434,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -460,8 +463,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -531,8 +535,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -557,8 +562,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -612,8 +618,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -640,8 +647,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -669,8 +677,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -705,8 +714,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -743,8 +753,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -782,8 +793,9 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -847,7 +859,7 @@ describe('bulkimports.ts unit tests', () => {
         {
           logger,
           config,
-          githubApiService: mockGithubApiService,
+          gitApiService: mockGithubApiService,
           catalogHttpClient: mockCatalogHttpClient,
         },
         repoUrl,
@@ -870,7 +882,7 @@ describe('bulkimports.ts unit tests', () => {
       ).toHaveBeenNthCalledWith(1, 'location-id-11');
     });
 
-    it('should try to delete both PR and branch is there is an open import PR', async () => {
+    it('should try to delete both PR and branch if there is an open import PR', async () => {
       const prNum = 123456789;
       jest.spyOn(mockGithubApiService, 'findImportOpenPr').mockResolvedValue({
         prNum,
@@ -881,7 +893,7 @@ describe('bulkimports.ts unit tests', () => {
         {
           logger,
           config,
-          githubApiService: mockGithubApiService,
+          gitApiService: mockGithubApiService,
           catalogHttpClient: mockCatalogHttpClient,
         },
         repoUrl,
