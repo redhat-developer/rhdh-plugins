@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.7.4
+
+### Patch Changes
+
+- Updated dependencies [171b7fd]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.7.2
+
 ## 0.7.3
 
 ### Patch Changes

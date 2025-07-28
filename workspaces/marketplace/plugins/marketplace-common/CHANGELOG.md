@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.7.2
+
+### Patch Changes
+
+- 171b7fd: load all the package configurations
+
 ## 0.7.1
 
 ### Patch Changes
