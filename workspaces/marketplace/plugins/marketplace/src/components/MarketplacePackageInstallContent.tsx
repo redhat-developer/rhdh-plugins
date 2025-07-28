@@ -19,21 +19,15 @@ import type { SetStateAction } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { ErrorPage, Progress } from '@backstage/core-components';
-import {
-  alertApiRef,
-  useApi,
-  useRouteRef,
-  useRouteRefParams,
-} from '@backstage/core-plugin-api';
+import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 
 import yaml from 'yaml';
 import { useNavigate } from 'react-router-dom';
 
 import {
   MarketplacePackage,
-  MarketplacePackageSpecAppConfigExample,
+  ExtensionsPackageAppConfigExamples,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-import { JsonObject } from '@backstage/types';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -51,93 +45,18 @@ import {
   pluginInstallRouteRef,
   pluginRouteRef,
 } from '../routes';
-import { applyContent, getExampleAsMarkdown } from '../utils';
 
-import {
-  CodeEditorContextProvider,
-  CodeEditor,
-  useCodeEditor,
-} from './CodeEditor';
-import { Markdown } from './Markdown';
+import { CodeEditorContextProvider, useCodeEditor } from './CodeEditor';
 import { usePackage } from '../hooks/usePackage';
+import { CodeEditorCard } from './CodeEditorCard';
+import { TabPanel } from './TabPanel';
 
 interface TabItem {
   label: string;
-  content: string | MarketplacePackageSpecAppConfigExample[];
+  content: string | ExtensionsPackageAppConfigExamples[];
   key: string;
   others?: { [key: string]: any };
 }
-
-interface TabPanelProps {
-  markdownContent: string | MarketplacePackageSpecAppConfigExample[];
-  index: number;
-  value: number;
-  others?: { [key: string]: any };
-}
-
-const TabPanel = ({ markdownContent, index, value, others }: TabPanelProps) => {
-  const alertApi = useApi(alertApiRef);
-  const codeEditor = useCodeEditor();
-  if (value !== index) return null;
-
-  const handleApplyContent = (content: string | JsonObject) => {
-    try {
-      const codeEditorContent = codeEditor.getValue();
-      const newContent = applyContent(
-        codeEditorContent || '',
-        others?.packageName,
-        content,
-      );
-      const selection = codeEditor.getSelection();
-      const position = codeEditor.getPosition();
-      if (newContent) {
-        codeEditor.setValue(newContent);
-        if (selection) {
-          codeEditor.setSelection(selection);
-        }
-        if (position) {
-          codeEditor.setPosition(position);
-        }
-      }
-    } catch (error) {
-      alertApi.post({
-        display: 'transient',
-        severity: 'warning',
-        message: `Could not apply YAML: ${error}`,
-      });
-    }
-  };
-
-  return (
-    <Box
-      role="tabpanel"
-      sx={{ flex: 1, overflow: 'auto', p: 2, scrollbarWidth: 'thin' }}
-    >
-      <Typography component="div">
-        {Array.isArray(markdownContent) ? (
-          markdownContent.map((item, idx) => (
-            <Box key={idx} sx={{ mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {item.title}
-                {item.content !== 'string' && (
-                  <Button
-                    sx={{ float: 'right' }}
-                    onClick={() => handleApplyContent(item.content)}
-                  >
-                    Apply
-                  </Button>
-                )}
-              </Typography>
-              <Markdown content={getExampleAsMarkdown(item.content)} />
-            </Box>
-          ))
-        ) : (
-          <Markdown content={markdownContent} />
-        )}
-      </Typography>
-    </Box>
-  );
-};
 
 export const MarketplacePackageInstallContent = ({
   pkg,
@@ -176,13 +95,20 @@ export const MarketplacePackageInstallContent = ({
   }, [codeEditor, pkg]);
 
   const navigate = useNavigate();
-  const examples = pkg?.spec?.appConfigExamples;
+  const examples = [
+    {
+      [`${pkg.metadata.name}`]: pkg.spec?.appConfigExamples,
+    },
+  ];
+  const packageDynamicArtifacts = {
+    [`${pkg.metadata.name}`]: pkg.spec?.dynamicArtifact,
+  };
   const availableTabs = [
-    examples && {
+    !!Object.values(examples[0])[0] && {
       label: 'Examples',
       content: examples,
       key: 'examples',
-      others: { packageName: pkg.spec?.dynamicArtifact },
+      others: { packageNames: packageDynamicArtifacts },
     },
   ].filter(tab => tab) as TabItem[];
 
@@ -207,34 +133,7 @@ export const MarketplacePackageInstallContent = ({
         spacing={3}
         sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
       >
-        <Grid
-          item
-          xs={12}
-          md={6.5}
-          sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-        >
-          <Card
-            sx={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              borderRadius: 0,
-            }}
-          >
-            <CardContent
-              sx={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'auto',
-                scrollbarWidth: 'thin',
-              }}
-            >
-              <CodeEditor defaultLanguage="yaml" onLoaded={onLoaded} />
-            </CardContent>
-          </Card>
-        </Grid>
+        <CodeEditorCard onLoad={onLoaded} />
 
         {showRightCard && (
           <Grid

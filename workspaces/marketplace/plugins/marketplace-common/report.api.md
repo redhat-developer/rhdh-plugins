@@ -84,6 +84,12 @@ export const encodeGetEntityFacetsRequest: (request: GetEntityFacetsRequest) => 
 export const EXTENSIONS_API_VERSION = "extensions.backstage.io/v1alpha1";
 
 // @public (undocumented)
+export interface ExtensionsPackageAppConfigExamples {
+    // (undocumented)
+    [key: string]: MarketplacePackageSpecAppConfigExample[];
+}
+
+// @public (undocumented)
 export const extensionsPermissions: ResourcePermission<"extensions-plugin">[];
 
 // @public
