@@ -83,7 +83,10 @@ export function verifyAndGetIntegrations(
 
   integrations: ScmIntegrations,
 ) {
+  console.log('INTERGRATIONS');
   const ghConfigs = integrations.github.list().map(ghInt => ghInt.config);
+
+  console.log('github configs', ghConfigs);
   if (ghConfigs.length === 0) {
     deps.logger.debug(
       'No GitHub Integration in config => returning an empty list of repositories.',

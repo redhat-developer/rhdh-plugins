@@ -25,6 +25,7 @@ import type {
   GithubApiService,
   GithubRepositoryResponse,
 } from '../../../github';
+import { GitlabApiService } from '../../../gitlab';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -37,6 +38,7 @@ export async function findAllRepositories(
     logger: LoggerService;
     config: Config;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   reqParams?: {
@@ -55,6 +57,15 @@ export async function findAllRepositories(
       search ?? ''
     }',${pageNumber},${pageSize})..`,
   );
+  const gitlabrepos =
+    await deps.gitlabApiService.getRepositoriesFromIntegrations(
+      search,
+      pageNumber,
+      pageSize,
+    );
+
+  console.log(gitlabrepos);
+
   return deps.githubApiService
     .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
     .then(response => formatResponse(deps, response, checkStatus));

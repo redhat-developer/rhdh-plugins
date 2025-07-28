@@ -44,6 +44,7 @@ import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
 import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
+import { GitlabApiService } from '../gitlab';
 import { permissionCheck } from '../helpers';
 import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
@@ -105,8 +106,11 @@ export async function createRouter(
     catalogApi,
     auditor: auditor,
   } = options;
-
+  // TODO: probably need to change this so it can also use gitlab
   const githubApiService = new GithubApiService(logger, config, cache);
+  console.log('githubApiService', githubApiService);
+  const gitlabApiService = new GitlabApiService(logger, config, cache);
+  console.log('gitlabApiService', gitlabApiService);
   const catalogHttpClient = new CatalogHttpClient({
     logger,
     config,
@@ -190,6 +194,7 @@ export async function createRouter(
           logger,
           config,
           githubApiService,
+          gitlabApiService,
           catalogHttpClient,
         },
         {
