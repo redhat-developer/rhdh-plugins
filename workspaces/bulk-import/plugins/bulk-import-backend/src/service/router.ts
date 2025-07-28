@@ -44,6 +44,7 @@ import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
 import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
+import { GitlabApiService } from '../gitlab';
 import { permissionCheck } from '../helpers';
 import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
@@ -105,8 +106,9 @@ export async function createRouter(
     catalogApi,
     auditor: auditor,
   } = options;
-
+  // This should probably be sometype of object that holds all the scm API service objects
   const githubApiService = new GithubApiService(logger, config, cache);
+  const gitlabApiService = new GitlabApiService(logger, config, cache);
   const catalogHttpClient = new CatalogHttpClient({
     logger,
     config,
@@ -160,7 +162,7 @@ export async function createRouter(
       q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
       const response = await findAllOrganizations(
         logger,
-        githubApiService,
+        q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
         q.search,
         q.pagePerIntegration,
         q.sizePerIntegration,
@@ -189,7 +191,8 @@ export async function createRouter(
         {
           logger,
           config,
-          githubApiService,
+          gitApiService:
+            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
           catalogHttpClient,
         },
         {
@@ -197,6 +200,7 @@ export async function createRouter(
           checkStatus: q.checkImportStatus,
           pageNumber: q.pagePerIntegration,
           pageSize: q.sizePerIntegration,
+          approvalTool: q.approvalTool,
         },
       );
       const repos = response.responseBody?.repositories;
@@ -206,6 +210,7 @@ export async function createRouter(
         totalCount: response.responseBody?.totalCount,
         pagePerIntegration: q.pagePerIntegration,
         sizePerIntegration: q.sizePerIntegration,
+        approvalTool: q.approvalTool,
       } as Components.Schemas.RepositoryList);
     },
   );
@@ -224,7 +229,8 @@ export async function createRouter(
         {
           logger,
           config,
-          githubApiService,
+          gitApiService:
+            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
           catalogHttpClient,
         },
         c.request.params.organizationName?.toString(),
@@ -270,8 +276,10 @@ export async function createRouter(
         {
           logger,
           config,
-          githubApiService,
+          gitApiService:
+            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
           catalogHttpClient,
+          approvalTool: q.approvalTool,
         },
         {
           apiVersion,
@@ -305,6 +313,7 @@ export async function createRouter(
           config,
           auth,
           catalogApi,
+          gitlabApiService,
           githubApiService,
           catalogInfoGenerator,
           catalogHttpClient,
@@ -331,8 +340,10 @@ export async function createRouter(
         {
           logger,
           config,
-          githubApiService,
+          gitApiService:
+            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
           catalogHttpClient,
+          approvalTool: q.approvalTool,
         },
         q.repo,
         q.defaultBranch,
@@ -355,7 +366,8 @@ export async function createRouter(
         {
           logger,
           config,
-          githubApiService,
+          gitApiService:
+            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
           catalogHttpClient,
         },
         q.repo,
