@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.0.0
+
+### Major Changes
+
+- 3fce49c: Update dependencies to macth Backstage 1.39.1
+
+### Patch Changes
+
+- f897fea: If a fetch/validate body/headers field resolves to empty or undefined value, it is skipped from the HTTP request.
+- Updated dependencies [3fce49c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.0
+
 ## 0.2.10
 
 ### Patch Changes
