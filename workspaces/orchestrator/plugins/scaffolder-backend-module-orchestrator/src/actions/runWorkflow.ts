@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { AuthService } from '@backstage/backend-plugin-api';
-import { DiscoveryApi } from '@backstage/plugin-permission-common/index';
+import { DiscoveryApi } from '@backstage/plugin-permission-common';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { JsonObject } from '@backstage/types';
 

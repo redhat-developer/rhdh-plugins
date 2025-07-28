@@ -12,7 +12,7 @@
   },
   "backstage": {
     "role": "common-library",
-    "supported-versions": "1.36.1",
+    "supported-versions": "1.39.1",
     "pluginId": "orchestrator",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator",
@@ -57,13 +57,13 @@
     "openapi:check": "./scripts/openapi.sh check"
   },
   "dependencies": {
-    "@backstage/plugin-permission-common": "^0.8.4",
+    "@backstage/plugin-permission-common": "^0.9.0",
     "@severlessworkflow/sdk-typescript": "^3.0.3",
     "axios": "^1.11.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.31.1",
+    "@backstage/cli": "^0.32.1",
     "@backstage/types": "^1.2.1",
     "@openapitools/openapi-generator-cli": "2.21.4",
     "@types/json-schema": "7.0.15",

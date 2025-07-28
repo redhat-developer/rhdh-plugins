@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { AuthService } from '@backstage/backend-plugin-api';
-import { DiscoveryApi } from '@backstage/plugin-permission-common/index';
+import { DiscoveryApi } from '@backstage/plugin-permission-common';
 
 import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
 

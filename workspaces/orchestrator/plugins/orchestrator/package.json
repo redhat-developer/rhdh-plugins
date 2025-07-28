@@ -11,7 +11,7 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.36.1",
+    "supported-versions": "1.39.1",
     "pluginId": "orchestrator",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator",
@@ -55,12 +55,12 @@
     "export-dynamic": "janus-cli package export-dynamic-plugin --in-place"
   },
   "dependencies": {
-    "@backstage/core-components": "^0.16.4",
-    "@backstage/core-plugin-api": "^1.10.4",
+    "@backstage/core-components": "^0.17.2",
+    "@backstage/core-plugin-api": "^1.10.7",
     "@backstage/errors": "^1.2.7",
-    "@backstage/plugin-catalog": "^1.28.0",
-    "@backstage/plugin-permission-common": "^0.8.4",
-    "@backstage/plugin-permission-react": "^0.4.32",
+    "@backstage/plugin-catalog": "^1.30.0",
+    "@backstage/plugin-permission-common": "^0.9.0",
+    "@backstage/plugin-permission-react": "^0.4.34",
     "@backstage/types": "^1.2.1",
     "@kie-tools-core/editor": "^10.0.0",
     "@kie-tools/serverless-workflow-standalone-editor": "^10.0.0",
@@ -81,9 +81,9 @@
     "vscode-languageserver-types": "3.17.5"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.31.1",
-    "@backstage/dev-utils": "^1.1.8",
-    "@backstage/test-utils": "^1.7.6",
+    "@backstage/cli": "^0.32.1",
+    "@backstage/dev-utils": "^1.1.10",
+    "@backstage/test-utils": "^1.7.8",
     "@janus-idp/cli": "3.6.1",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "^5.17.1",
