@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 8.0.0
+
+### Major Changes
+
+- 3fce49c: Update dependencies to macth Backstage 1.39.1
+
+### Patch Changes
+
+- Updated dependencies [784d858]
+- Updated dependencies [3fce49c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.0
+
 ## 7.0.1
 
 ### Patch Changes

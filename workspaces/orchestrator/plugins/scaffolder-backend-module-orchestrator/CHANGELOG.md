@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 1.0.0
+
+### Major Changes
+
+- 3fce49c: Update dependencies to macth Backstage 1.39.1
+
+### Patch Changes
+
+- Updated dependencies [784d858]
+- Updated dependencies [3fce49c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.0
+
 ## 0.3.10
 
 ### Patch Changes
