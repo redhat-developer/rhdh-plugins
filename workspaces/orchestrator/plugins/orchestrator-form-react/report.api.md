@@ -10,7 +10,7 @@ import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-p
 import { default as React_2 } from 'react';
 
 // @public
-export const OrchestratorForm: ({ schema, updateSchema, handleExecute, isExecuting, initialFormData, isDataReadonly, setAuthTokenDescriptors, }: OrchestratorFormProps) => React_2.JSX.Element;
+export const OrchestratorForm: ({ schema: rawSchema, updateSchema, handleExecute, isExecuting, initialFormData, isDataReadonly, setAuthTokenDescriptors, }: OrchestratorFormProps) => React_2.JSX.Element;
 
 // @public
 export type OrchestratorFormProps = {

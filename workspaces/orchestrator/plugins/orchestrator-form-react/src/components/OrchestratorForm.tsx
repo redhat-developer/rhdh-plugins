@@ -19,7 +19,9 @@ import React, { Fragment } from 'react';
 import { JsonObject } from '@backstage/types';
 
 import { UiSchema } from '@rjsf/utils';
-import type { JSONSchema7 } from 'json-schema';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import cloneDeep from 'lodash/cloneDeep';
+import get from 'lodash/get';
 
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
@@ -52,11 +54,53 @@ export type OrchestratorFormProps = {
 };
 
 /**
+ * Remove hidden steps from the schema.
+ *
+ * A wizard step is removed when
+ *   "type": "object"
+ *   "ui:widget": "hidden"
+ *   and properties are empty ("properties": {})
+ *
+ * @param schema - The schema to remove hidden steps from.
+ * @returns The schema with hidden steps removed.
+ */
+const removeHiddenSteps = (schema: JSONSchema7): JSONSchema7 => {
+  if (typeof schema.properties === 'object') {
+    const hiddenSteps = Object.entries(schema.properties)
+      .map(([key, value]: [string, JSONSchema7Definition]) => {
+        const uiWidget = get(value, 'ui:widget');
+        if (
+          typeof value !== 'boolean' &&
+          value.type === 'object' &&
+          uiWidget === 'hidden' &&
+          value.properties &&
+          Object.keys(value.properties).length === 0
+        ) {
+          return key;
+        }
+        return undefined;
+      })
+      .filter(Boolean) as string[];
+
+    if (hiddenSteps.length > 0) {
+      const newSchema = cloneDeep(schema);
+      hiddenSteps.forEach(step => {
+        delete newSchema.properties?.[step];
+      });
+
+      return newSchema;
+    }
+  }
+
+  return schema;
+};
+
+/**
  * @public
  * The component contains the react-json-schema-form and serves as an extensible form. It allows loading a custom plugin decorator to override the default react-json-schema-form properties.
  */
 const OrchestratorForm = ({
-  schema,
+  schema: rawSchema,
   updateSchema,
   handleExecute,
   isExecuting,
@@ -68,6 +112,8 @@ const OrchestratorForm = ({
   const [formData, setFormData] = React.useState<JsonObject>(
     initialFormData ? () => structuredClone(initialFormData) : {},
   );
+
+  const schema = React.useMemo(() => removeHiddenSteps(rawSchema), [rawSchema]);
 
   const numStepsInMultiStepSchema = React.useMemo(
     () => getNumSteps(schema),
