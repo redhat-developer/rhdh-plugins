@@ -33,6 +33,7 @@ import { Gitlab } from '@gitbeaker/rest';
 // import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
 import type { CustomGitlabCredentialsProvider } from '../GitlabAppManager';
 import { ExtendedGitlabCredentials, GitlabFetchError } from '../types';
+import { buildGitlab } from './glUtils';
 
 // import {
 //   isGithubAppCredential,
@@ -153,21 +154,21 @@ export async function getCredentialsForConfig(
 //   return { ghConfig, credentials, gitUrl };
 // }
 
-// export function handleError(
-//   deps: {
-//     logger: LoggerService;
-//   },
-//   desc: string,
-//   credential: ExtendedGithubCredentials,
-//   errors: Map<number, GithubFetchError>,
-//   err: any,
-// ) {
-//   logErrorIfNeeded(deps.logger, `${desc} failed`, err);
-//   const credentialError = createCredentialError(credential, err as Error);
-//   if (credentialError) {
-//     errors.set(-1, credentialError);
-//   }
-// }
+export function handleError(
+  deps: {
+    logger: LoggerService;
+  },
+  desc: string,
+  credential: ExtendedGitlabCredentials,
+  errors: Map<number, GitlabFetchError>,
+  err: any,
+) {
+  // logErrorIfNeeded(deps.logger, `${desc} failed`, err);
+  // const credentialError = createCredentialError(credential, err as Error);
+  // if (credentialError) {
+  //   errors.set(-1, credentialError);
+  // }
+}
 
 // export async function computeTotalCountFromGitHubToken(
 //   deps: {
@@ -292,6 +293,11 @@ export async function fetchFromAllIntegrations<T>(
       `Got ${credentials.length} credential(s) for ${glConfig.host}`,
     );
     for (const credential of credentials) {
+      const glKit = buildGitlab(
+        deps,
+        { credential, errors },
+        glConfig.apiBaseUrl,
+      );
       // const octokit = buildOcto(
       //   deps,
       //   { credential, errors },
@@ -300,7 +306,7 @@ export async function fetchFromAllIntegrations<T>(
       // if (!octokit) {
       //   continue;
       // }
-      const res = await params.dataFetcher(octokit, credential, glConfig);
+      const res = await params.dataFetcher(glKit, credential, glConfig);
       res.errors?.forEach(err => dataErrs.push(err));
 
       if (res.result) {

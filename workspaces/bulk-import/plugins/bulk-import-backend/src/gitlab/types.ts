@@ -104,10 +104,7 @@ export type GitlabRepositoryResponse = {
 // };
 // export type AppCredentialError = { appId: number; error: Error };
 
-export type ExtendedGitlabCredentials =
-  | GitlabCredentials
-  | GitlabCredentials
-  | GitlabAppError;
+export type ExtendedGitlabCredentials = GitlabCredentials | GitlabAppError;
 
 // export type GithubAppCredentials = GithubCredentials & {
 //   type: 'app';

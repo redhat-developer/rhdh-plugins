@@ -89,7 +89,7 @@ export class GitlabApiService {
       this.integrations,
       {
         dataFetcher: async (
-          octokit: Octokit,
+          glApi: any,
           credential: ExtendedGitlabCredentials,
           glConfig: GitLabIntegrationConfig,
         ) => {
@@ -98,7 +98,7 @@ export class GitlabApiService {
             {
               logger: this.logger,
             },
-            octokit,
+            glApi,
             credential,
             repositories,
             dataFetchErrors,

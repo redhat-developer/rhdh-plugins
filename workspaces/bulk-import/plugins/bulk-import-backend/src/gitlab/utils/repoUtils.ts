@@ -16,35 +16,37 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
+import type {
+  // GithubCredentials,
+  // GithubIntegrationConfig,
+  GitlabCredentials,
+  ScmIntegrations,
+} from '@backstage/integration';
 
-// import type {
-//   GithubCredentials,
-//   GithubIntegrationConfig,
-//   ScmIntegrations,
-// } from '@backstage/integration';
+import { Gitlab } from '@gitbeaker/rest';
 
 // import { Octokit } from '@octokit/rest';
 // import gitUrlParse from 'git-url-parse';
 
 // import { getBranchName } from '../../catalog/catalogUtils';
 // import { logErrorIfNeeded } from '../../helpers';
-// import {
-//   DefaultPageNumber,
-//   DefaultPageSize,
-// } from '../../service/handlers/handlers';
+import {
+  DefaultPageNumber,
+  DefaultPageSize,
+} from '../../service/handlers/handlers';
 // import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
-// import type {
-//   ExtendedGithubCredentials,
-//   GithubAppCredentials,
-//   GithubFetchError,
-//   GithubRepository,
-// } from '../types';
+import type {
+  ExtendedGitlabCredentials,
+  // GitlabAppCredentials,
+  GitlabFetchError,
+  GitlabRepository,
+} from '../types';
 // import { getAllAppOrgs } from './orgUtils';
-// import {
-//   computeTotalCountFromGitHubToken,
-//   createCredentialError,
-//   handleError,
-// } from './utils';
+import {
+  // computeTotalCountFromGitHubToken,
+  // createCredentialError,
+  handleError,
+} from './utils';
 
 // export type ValidatedRepo = {
 //   ghConfig: GithubIntegrationConfig;
@@ -196,10 +198,11 @@ export async function addGitlabTokenRepositories(
   deps: {
     logger: LoggerService;
   },
-  octokit: Octokit,
-  credential: GithubCredentials,
-  repositories: Map<string, GithubRepository>,
-  errors: Map<number, GithubFetchError>,
+  gitlab: any,
+  // octokit: Octokit,
+  credential: any,
+  repositories: Map<string, GitlabRepository>,
+  errors: Map<number, GitlabFetchError>,
   reqParams?: {
     search?: string;
     pageNumber?: number;
@@ -213,69 +216,82 @@ export async function addGitlabTokenRepositories(
   try {
     if (search) {
       // Get currently authenticated user
-      const username = (await octokit.rest.users.getAuthenticated())?.data
-        ?.login;
-      let query = `${search} in:name user:${username}`;
-
-      const allOrgsResp = await octokit.paginate(
-        octokit.rest.orgs.listForAuthenticatedUser,
-        {
-          sort: 'full_name',
-          direction: 'asc',
-        },
-      );
-      const orgSearch: string[] = [];
-      allOrgsResp?.forEach(org => orgSearch.push(`org:${org.login}`));
-      if (orgSearch.length > 0) {
-        query += ` ${orgSearch.join(' ')}`;
-      }
-
-      const searchResp = await searchRepos(
-        octokit,
-        query,
-        pageNumber,
-        pageSize,
-      );
-      totalCount = searchResp.totalCount;
-      searchResp.repositories.forEach(repo =>
-        repositories.set(repo.full_name, repo),
-      );
+      // const username = (await octokit.rest.users.getAuthenticated())?.data
+      //   ?.login;
+      // let query = `${search} in:name user:${username}`;
+      // const allOrgsResp = await octokit.paginate(
+      //   octokit.rest.orgs.listForAuthenticatedUser,
+      //   {
+      //     sort: 'full_name',
+      //     direction: 'asc',
+      //   },
+      // );
+      // const orgSearch: string[] = [];
+      // allOrgsResp?.forEach(org => orgSearch.push(`org:${org.login}`));
+      // if (orgSearch.length > 0) {
+      //   query += ` ${orgSearch.join(' ')}`;
+      // }
+      // const searchResp = await searchRepos(
+      //   octokit,
+      //   query,
+      //   pageNumber,
+      //   pageSize,
+      // );
+      // totalCount = searchResp.totalCount;
+      // searchResp.repositories.forEach(repo =>
+      //   repositories.set(repo.full_name, repo),
+      // );
     } else {
       /**
        * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
        * These would include repositories they own, repositories where they are a collaborator,
        * and repositories that they can access through an organization membership.
        */
-      const resp = await octokit.rest.repos.listForAuthenticatedUser({
-        page: pageNumber,
-        per_page: pageSize,
-        sort: 'full_name',
-        direction: 'asc',
+      const resp = await gitlab.Projects.all({
+        membership: true,
+        maxPages: 2,
+        perPage: 40,
       });
-      resp?.data?.forEach(repo => {
-        repositories.set(repo.full_name, {
-          name: repo.name,
-          full_name: repo.full_name,
-          url: repo.url,
-          html_url: repo.html_url,
-          default_branch: repo.default_branch,
-          updated_at: repo.updated_at,
-        });
-      });
-
-      totalCount = await computeTotalCountFromGitHubToken(
-        deps,
-        async (lastPageNumber: number) =>
-          octokit.repos
-            .listForAuthenticatedUser({
-              page: lastPageNumber,
-              per_page: 100,
-            })
-            .then(lastPageResp => lastPageResp.data.length),
-        'repos.listForAuthenticatedUser',
-        resp?.data?.length,
-        resp?.headers?.link,
+      // const resp = await octokit.rest.repos.listForAuthenticatedUser({
+      //   page: pageNumber,
+      //   per_page: pageSize,
+      //   sort: 'full_name',
+      //   direction: 'asc',
+      // });
+      resp?.data?.forEach(
+        (repo: {
+          full_name: string;
+          name: any;
+          url: any;
+          html_url: any;
+          default_branch: any;
+          updated_at: any;
+        }) => {
+          repositories.set(repo.full_name, {
+            name: repo.name,
+            full_name: repo.full_name,
+            url: repo.url,
+            html_url: repo.html_url,
+            default_branch: repo.default_branch,
+            updated_at: repo.updated_at,
+          });
+        },
       );
+
+      // totalCount = await computeTotalCountFromGitHubToken(
+      //   deps,
+      //   async (lastPageNumber: number) =>
+      //     octokit.repos
+      //       .listForAuthenticatedUser({
+      //         page: lastPageNumber,
+      //         per_page: 100,
+      //       })
+      //       .then(lastPageResp => lastPageResp.data.length),
+      //   'repos.listForAuthenticatedUser',
+      //   resp?.data?.length,
+      //   resp?.headers?.link,
+      // );
+      totalCount = 2;
     }
   } catch (err) {
     handleError(
