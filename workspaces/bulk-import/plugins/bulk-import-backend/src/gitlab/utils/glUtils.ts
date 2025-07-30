@@ -51,29 +51,6 @@ export function buildGitlab(
   },
   apiBaseUrl: string = GITLAB_DEFAULT_API_ENDPOINT,
 ): any | undefined {
-  if ('error' in input.credential) {
-    if (input.credential.error?.name !== 'NotFoundError') {
-      deps.logger.error(
-        `Obtaining the Access Token Github App with appId: ${input.credential.appId} failed with ${input.credential.error}`,
-      );
-      // const credentialError = createCredentialError(input.credential);
-      // if (credentialError) {
-      //   deps.logger.debug(`${input.credential.appId}: ${credentialError}`);
-      //   if (input.errors) {
-      //     input.errors.set(input.credential.appId, credentialError);
-      //   }
-      // }
-    }
-    return undefined;
-  }
-  // if (
-  //   isGithubAppCredential(input.credential) &&
-  //   input.owner &&
-  //   input.credential.accountLogin !== input.owner
-  // ) {
-  //   return undefined;
-  // }
-
   const apiThing = new Gitlab({
     // host: apiBaseUrl,
     token: input.credential.token,

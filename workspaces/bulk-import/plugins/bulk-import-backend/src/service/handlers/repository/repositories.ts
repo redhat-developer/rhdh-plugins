@@ -25,7 +25,7 @@ import type {
   GithubApiService,
   GithubRepositoryResponse,
 } from '../../../github';
-import { GitlabApiService } from '../../../gitlab';
+import { GitlabApiService, GitlabRepositoryResponse } from '../../../gitlab';
 import {
   DefaultPageNumber,
   DefaultPageSize,

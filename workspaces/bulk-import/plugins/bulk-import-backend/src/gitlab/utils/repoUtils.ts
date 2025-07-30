@@ -112,84 +112,6 @@ import {
 //   };
 // }
 
-// /**
-//  * Adds the repositories accessible by the provided github app to the provided repositories Map<string, GithubRepository>
-//  * If any errors occurs, adds them to the provided errors Map<number, GithubFetchError>
-//  */
-// export async function addGithubAppRepositories(
-//   deps: {
-//     logger: LoggerService;
-//     githubCredentialsProvider: CustomGithubCredentialsProvider;
-//   },
-//   octokit: Octokit,
-//   credential: GithubAppCredentials,
-//   ghConfig: GithubIntegrationConfig,
-//   repositories: Map<string, GithubRepository>,
-//   errors: Map<number, GithubFetchError>,
-//   reqParams?: {
-//     search?: string;
-//     pageNumber?: number;
-//     pageSize?: number;
-//   },
-// ): Promise<{ totalCount?: number }> {
-//   const search = reqParams?.search;
-//   const pageNumber = reqParams?.pageNumber ?? DefaultPageNumber;
-//   const pageSize = reqParams?.pageSize ?? DefaultPageSize;
-//   let totalCount: number | undefined;
-//   try {
-//     if (search) {
-//       const allOrgsMap = await getAllAppOrgs(
-//         deps.githubCredentialsProvider,
-//         ghConfig,
-//         credential.accountLogin,
-//       );
-//       const orgSearch: string[] = [];
-//       for (const [_orgUrl, ghOrg] of allOrgsMap) {
-//         orgSearch.push(`org:${ghOrg.name}`);
-//       }
-//       const query = `${search} in:name ${orgSearch.join(' ')}`;
-//       const searchResp = await searchRepos(
-//         octokit,
-//         query,
-//         pageNumber,
-//         pageSize,
-//       );
-//       totalCount = searchResp.totalCount;
-//       searchResp.repositories.forEach(repo =>
-//         repositories.set(repo.full_name, repo),
-//       );
-//     } else {
-//       const resp = await octokit.apps.listReposAccessibleToInstallation({
-//         page: pageNumber,
-//         per_page: pageSize,
-//       });
-//       const repos = resp?.data?.repositories ?? resp?.data;
-//       repos?.forEach(repo => {
-//         repositories.set(repo.full_name, {
-//           name: repo.name,
-//           full_name: repo.full_name,
-//           url: repo.url,
-//           html_url: repo.html_url,
-//           default_branch: repo.default_branch,
-//           updated_at: repo.updated_at,
-//         });
-//       });
-//       totalCount = resp?.data?.total_count;
-//     }
-//   } catch (err: any) {
-//     logErrorIfNeeded(
-//       deps.logger,
-//       `Fetching repositories with access token for github app ${credential.appId}`,
-//       err,
-//     );
-//     const credentialError = createCredentialError(credential, err as Error);
-//     if (credentialError) {
-//       errors.set(credential.appId, credentialError);
-//     }
-//   }
-//   return { totalCount };
-// }
-
 /**
  * Adds the user or organization repositories accessible by the github token to the provided repositories Map<string, GithubRepository> if they're owned by the specified owner
  * If any errors occurs, adds them to the provided errors Map<number, GithubFetchError>
@@ -247,36 +169,38 @@ export async function addGitlabTokenRepositories(
        * These would include repositories they own, repositories where they are a collaborator,
        * and repositories that they can access through an organization membership.
        */
-      const resp = await gitlab.Projects.all({
+      const { data, paginationInfo } = await gitlab.Projects.all({
         membership: true,
-        maxPages: 2,
-        perPage: 40,
+        perPage: pageSize,
+        page: pageNumber,
+        showExpanded: true,
       });
-      // const resp = await octokit.rest.repos.listForAuthenticatedUser({
-      //   page: pageNumber,
-      //   per_page: pageSize,
-      //   sort: 'full_name',
-      //   direction: 'asc',
-      // });
-      resp?.data?.forEach(
+
+      data?.forEach(
         (repo: {
+          id: string;
+          path_with_namespace: string;
           full_name: string;
           name: any;
           url: any;
           html_url: any;
+          web_url: any;
           default_branch: any;
           updated_at: any;
         }) => {
-          repositories.set(repo.full_name, {
+          repositories.set(repo.path_with_namespace, {
             name: repo.name,
-            full_name: repo.full_name,
-            url: repo.url,
-            html_url: repo.html_url,
+            path_with_namespace: repo.path_with_namespace,
+            full_name: repo.path_with_namespace,
+            url: `${gitlab.url}/projects/${repo.id}`,
+            html_url: repo.web_url,
             default_branch: repo.default_branch,
             updated_at: repo.updated_at,
           });
         },
       );
+
+      totalCount = paginationInfo.totalPages;
 
       // totalCount = await computeTotalCountFromGitHubToken(
       //   deps,
@@ -291,7 +215,6 @@ export async function addGitlabTokenRepositories(
       //   resp?.data?.length,
       //   resp?.headers?.link,
       // );
-      totalCount = 2;
     }
   } catch (err) {
     handleError(

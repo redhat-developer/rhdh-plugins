@@ -43,11 +43,14 @@ import type {
 // };
 
 export type GitlabRepository = {
+  // id?: string;
   name: string;
   /**
    * The full name of the repository in the form of owner/repo
    */
   full_name: string;
+
+  path_with_namespace: string;
   /**
    * The API url to the repository
    */
@@ -55,7 +58,9 @@ export type GitlabRepository = {
   /**
    * The HTML URL to the repository
    */
-  html_url: string;
+  html_url?: string;
+
+  web_url?: string;
   /**
    * The default "main" branch of the repository to place the `catalog-info.yaml` file into
    */
@@ -72,16 +77,10 @@ export type GitlabRepository = {
  * @public
  */
 
-export type GitlabFetchError =
-  | {
-      type: 'app';
-      appId: number;
-      error: SerializedError;
-    }
-  | {
-      type: 'token';
-      error: SerializedError;
-    };
+export type GitlabFetchError = {
+  type: 'token';
+  error: SerializedError;
+};
 
 // export type GithubOrganizationResponse = {
 //   organizations: GithubOrganization[];
@@ -95,34 +94,7 @@ export type GitlabRepositoryResponse = {
   totalCount?: number;
 };
 
-// export type AppCredentialFetchResult = AppCredential | AppCredentialError;
-
-// export type AppCredential = {
-//   appId: number;
-//   accessToken: string | undefined;
-//   installationAccountLogin?: string;
-// };
-// export type AppCredentialError = { appId: number; error: Error };
-
-export type ExtendedGitlabCredentials = GitlabCredentials | GitlabAppError;
-
-// export type GithubAppCredentials = GithubCredentials & {
-//   type: 'app';
-//   appId: number;
-//   accountLogin?: string;
-// };
-
-export type GitlabAppError = {
-  type: 'app';
-  appId: number;
-  error: Error;
-};
-
-// export function isGithubAppCredential(
-//   credential: ExtendedGithubCredentials,
-// ): credential is GithubAppCredentials {
-//   return 'appId' in credential && credential.type === 'app';
-// }
+export type ExtendedGitlabCredentials = GitlabCredentials;
 
 export interface ExtendedGitlabCredentialsProvider
   extends GitlabCredentialsProvider {
