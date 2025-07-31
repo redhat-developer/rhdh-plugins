@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 5.0.1
+
+### Patch Changes
+
+- 32e0a44: https://issues.redhat.com/browse/FLPATH-2493
+- Updated dependencies [32e0a44]
+- Updated dependencies [651de2c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.0.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.1
+
 ## 5.0.0
 
 ### Major Changes
