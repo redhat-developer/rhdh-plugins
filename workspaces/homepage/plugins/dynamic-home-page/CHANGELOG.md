@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.5.4
+
+### Patch Changes
+
+- 1e01b31: Updated dependency `@testing-library/jest-dom` to `6.6.4`.
+
 ## 1.5.3
 
 ### Patch Changes
