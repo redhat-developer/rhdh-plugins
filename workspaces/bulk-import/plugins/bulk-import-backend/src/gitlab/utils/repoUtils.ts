@@ -85,33 +85,35 @@ import {
 //   return { ghConfig, owner, repo, credentials, branchName };
 // }
 
-// export async function searchRepos(
-//   octokit: Octokit,
-//   ghSearchQuery: string,
-//   pageNumber: number = DefaultPageNumber,
-//   pageSize: number = DefaultPageSize,
-// ): Promise<{ totalCount?: number; repositories: GithubRepository[] }> {
-//   const repoSearchResp = await octokit.rest.search.repos({
-//     q: ghSearchQuery,
-//     order: 'asc',
-//     page: pageNumber,
-//     per_page: pageSize,
-//   });
-//   return {
-//     totalCount: repoSearchResp?.data?.total_count,
-//     repositories:
-//       repoSearchResp?.data?.items?.map(repo => {
-//         return {
-//           name: repo.name,
-//           full_name: repo.full_name,
-//           url: repo.url,
-//           html_url: repo.html_url,
-//           default_branch: repo.default_branch,
-//           updated_at: repo.updated_at,
-//         };
-//       }) ?? [],
-//   };
-// }
+export async function searchRepos(
+  gitlab: any,
+  glSearchQuery: string,
+  pageNumber: number = DefaultPageNumber,
+  pageSize: number = DefaultPageSize,
+): Promise<{ totalCount?: number; repositories: GitlabRepository[] }> {
+  const repoSearchResp = await gitlab.Projects.all({
+    search: glSearchQuery,
+    membership: true,
+    perPage: pageSize,
+    page: pageNumber,
+    showExpanded: true,
+  });
+
+  return {
+    totalCount: repoSearchResp?.paginationInfo?.total,
+    repositories:
+      repoSearchResp?.data?.map(repo => {
+        return {
+          name: repo.name,
+          full_name: repo.path_with_namespace,
+          url: `${gitlab.url}/projects/${repo.id}`,
+          html_url: repo.web_url,
+          default_branch: repo.default_branch,
+          updated_at: repo.updated_at,
+        };
+      }) ?? [],
+  };
+}
 
 /**
  * Adds the user or organization repositories accessible by the github token to the provided repositories Map<string, GithubRepository> if they're owned by the specified owner
@@ -138,32 +140,19 @@ export async function addGitlabTokenRepositories(
   let totalCount: number | undefined;
   try {
     if (search) {
-      // Get currently authenticated user
-      // const username = (await octokit.rest.users.getAuthenticated())?.data
-      //   ?.login;
-      // let query = `${search} in:name user:${username}`;
-      // const allOrgsResp = await octokit.paginate(
-      //   octokit.rest.orgs.listForAuthenticatedUser,
-      //   {
-      //     sort: 'full_name',
-      //     direction: 'asc',
-      //   },
-      // );
-      // const orgSearch: string[] = [];
-      // allOrgsResp?.forEach(org => orgSearch.push(`org:${org.login}`));
-      // if (orgSearch.length > 0) {
-      //   query += ` ${orgSearch.join(' ')}`;
-      // }
-      // const searchResp = await searchRepos(
-      //   octokit,
-      //   query,
-      //   pageNumber,
-      //   pageSize,
-      // );
-      // totalCount = searchResp.totalCount;
-      // searchResp.repositories.forEach(repo =>
-      //   repositories.set(repo.full_name, repo),
-      // );
+      // Use the projects api with the search param
+      // that api gives us all the things the token has access to including the different projects in various groups
+
+      const searchResp = await searchRepos(
+        gitlab,
+        search,
+        pageNumber,
+        pageSize,
+      );
+      totalCount = searchResp.totalCount;
+      searchResp.repositories.forEach(repo =>
+        repositories.set(repo.full_name, repo),
+      );
     } else {
       /**
        * The Projects.all method with the membership: true option will grab all the repositories/projects the gitlab token has explicit access to.
