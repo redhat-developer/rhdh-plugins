@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.0.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.1
+
 ## 1.0.0
 
 ### Major Changes

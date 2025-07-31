@@ -1,5 +1,14 @@
 ### Dependencies
 
+## 2.0.1
+
+### Patch Changes
+
+- 651de2c: A wizard step is not rendered if it's properites are both empty and "ui:widget" is set to "hidden".
+- Updated dependencies [32e0a44]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.1
+
 ## 2.0.0
 
 ### Major Changes
