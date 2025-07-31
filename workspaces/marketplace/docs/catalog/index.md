@@ -1,4 +1,6 @@
-# Relationships
+# Catalog entities
+
+## Relationships
 
 In alignment to [Backstage BEP-0009: Plugin Metadata](https://github.com/backstage/backstage/blob/master/beps/0009-plugin-metadata/README.md):
 

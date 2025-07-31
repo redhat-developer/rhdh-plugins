@@ -1,9 +1,9 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: red-hat-developer-hub-marketplace
-  title: RHDH Marketplace plugin
-  description: Marketplace plugin that will live in Backstage Community Plugin as soon as possible.
+  name: red-hat-developer-hub-extensions
+  title: RHDH Extensions plugin
+  description: Extensions plugin that will live in Backstage Community Plugin.
   annotations:
     backstage.io/techdocs-ref: dir:.
     github.com/project-slug: redhat-developer/rhdh-plugins
@@ -12,9 +12,11 @@ metadata:
   tags:
     - backstage
     - catalog
-    - rhdh
-    - marketplace
     - plugin
+    - rhdh
+    - extensions
+    - plugins
+    - packages
 spec:
   type: backstage-plugin
   lifecycle: production

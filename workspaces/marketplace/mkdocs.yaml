@@ -1,4 +1,4 @@
-site_name: Marketplace Plugin
+site_name: Extensions Plugin
 
 plugins:
   - techdocs-core
@@ -6,7 +6,7 @@ plugins:
 nav:
   - About: index.md
   - Catalog:
-      - Relationships: catalog/relationships.md
+      - Entites: catalog/index.md
       - Plugins: catalog/plugins.md
       - Packages: catalog/packages.md
       - Collections: catalog/collections.md
