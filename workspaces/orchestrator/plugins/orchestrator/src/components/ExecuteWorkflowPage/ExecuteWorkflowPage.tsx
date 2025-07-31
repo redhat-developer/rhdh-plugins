@@ -38,6 +38,7 @@ import {
   AuthTokenDescriptor,
   InputSchemaResponseDTO,
   QUERY_PARAM_INSTANCE_ID,
+  QUERY_PARAM_PREVIOUS_INSTANCE_ID,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { OrchestratorForm } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
 
@@ -59,6 +60,9 @@ export const ExecuteWorkflowPage = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [updateError, setUpdateError] = React.useState<Error>();
   const [instanceId] = useQueryParamState<string>(QUERY_PARAM_INSTANCE_ID);
+  const [previousInstanceId] = useQueryParamState<string>(
+    QUERY_PARAM_PREVIOUS_INSTANCE_ID,
+  );
   const navigate = useNavigate();
   const instanceLink = useRouteRef(workflowInstanceRouteRef);
   const {
@@ -68,7 +72,7 @@ export const ExecuteWorkflowPage = () => {
   } = useAsync(async (): Promise<InputSchemaResponseDTO> => {
     const res = await orchestratorApi.getWorkflowDataInputSchema(
       workflowId,
-      instanceId,
+      previousInstanceId || instanceId,
     );
     return res.data;
   }, [orchestratorApi, workflowId]);
@@ -152,7 +156,7 @@ export const ExecuteWorkflowPage = () => {
                 updateSchema={updateSchema}
                 handleExecute={handleExecute}
                 isExecuting={isExecuting}
-                isDataReadonly={!!instanceId}
+                isDataReadonly={!!previousInstanceId}
                 initialFormData={initialFormData}
                 setAuthTokenDescriptors={setAuthTokenDescriptors}
               />

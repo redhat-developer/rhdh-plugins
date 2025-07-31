@@ -1085,6 +1085,11 @@ export type ProcessInstanceVariables = Record<string, unknown>;
 // @public (undocumented)
 export const QUERY_PARAM_INSTANCE_ID: "instanceId";
 
+// Warning: (ae-missing-release-tag) "QUERY_PARAM_PREVIOUS_INSTANCE_ID" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export const QUERY_PARAM_PREVIOUS_INSTANCE_ID: "previousInstanceId";
+
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
 // Warning: (ae-missing-release-tag) "SearchRequest" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -1567,6 +1572,7 @@ export interface WorkflowRunStatusDTO {
 // Warnings were encountered during analysis:
 //
 // src/QueryParams.d.ts:1:22 - (ae-undocumented) Missing documentation for "QUERY_PARAM_INSTANCE_ID".
+// src/QueryParams.d.ts:2:22 - (ae-undocumented) Missing documentation for "QUERY_PARAM_PREVIOUS_INSTANCE_ID".
 // src/constants.d.ts:9:22 - (ae-undocumented) Missing documentation for "DEFAULT_SONATAFLOW_PERSISTENCE_PATH".
 // src/constants.d.ts:10:22 - (ae-undocumented) Missing documentation for "DEFAULT_SONATAFLOW_BASE_URL".
 // src/constants.d.ts:11:22 - (ae-undocumented) Missing documentation for "DEFAULT_WORKFLOWS_PATH".

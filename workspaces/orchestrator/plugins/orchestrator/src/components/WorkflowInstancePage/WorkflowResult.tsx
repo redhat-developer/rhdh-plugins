@@ -37,7 +37,7 @@ import {
   ProcessInstanceDTO,
   ProcessInstanceErrorDTO,
   ProcessInstanceStatusDTO,
-  QUERY_PARAM_INSTANCE_ID,
+  QUERY_PARAM_PREVIOUS_INSTANCE_ID,
   WorkflowOverviewDTO,
   WorkflowResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -226,7 +226,7 @@ const NextWorkflows = ({
           workflowId: currentOpenedWorkflowDescriptionModalID,
         }),
         {
-          [QUERY_PARAM_INSTANCE_ID]: instanceId,
+          [QUERY_PARAM_PREVIOUS_INSTANCE_ID]: instanceId,
         },
       ),
     [currentOpenedWorkflowDescriptionModalID, executeWorkflowLink, instanceId],
