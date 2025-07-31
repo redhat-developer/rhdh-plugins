@@ -26,61 +26,37 @@ import {
 
 import { Gitlab } from '@gitbeaker/rest';
 
-// import { Octokit } from '@octokit/rest';
 // import gitUrlParse from 'git-url-parse';
 
-// import { logErrorIfNeeded } from '../../helpers';
+import { logErrorIfNeeded } from '../../helpers';
 // import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
 import type { CustomGitlabCredentialsProvider } from '../GitlabAppManager';
-import { ExtendedGitlabCredentials, GitlabFetchError } from '../types';
+import {
+  type ExtendedGitlabCredentials,
+  type GitlabFetchError,
+} from '../types';
 import { buildGitlab } from './glUtils';
 
-// import {
-//   isGithubAppCredential,
-//   type ExtendedGithubCredentials,
-//   type GithubFetchError,
-// } from '../types';
 // import { buildOcto } from './ghUtils';
 // import { validateAndBuildRepoData, ValidatedRepo } from './repoUtils';
 
 // /**
 //  * Creates the GithubFetchError to be stored in the returned errors array of the returned GithubRepositoryResponse object
 //  */
-// export function createCredentialError(
-//   credential: ExtendedGithubCredentials,
-//   err?: Error,
-// ): GithubFetchError | undefined {
-//   if (err) {
-//     if (isGithubAppCredential(credential)) {
-//       return {
-//         appId: credential.appId,
-//         type: 'app',
-//         error: {
-//           name: err.name,
-//           message: err.message,
-//         },
-//       };
-//     }
-//     return {
-//       type: 'token',
-//       error: {
-//         name: err.name,
-//         message: err.message,
-//       },
-//     };
-//   }
-//   if ('error' in credential) {
-//     return {
-//       appId: credential.appId,
-//       type: 'app',
-//       error: {
-//         name: credential.error.name,
-//         message: credential.error.message,
-//       },
-//     };
-//   }
-//   return undefined;
-// }
+export function createCredentialError(
+  err?: Error,
+): GitlabFetchError | undefined {
+  if (err) {
+    return {
+      type: 'token',
+      error: {
+        name: err.name,
+        message: err.message,
+      },
+    };
+  }
+  return undefined;
+}
 
 export function verifyAndGetIntegrations(
   deps: {
@@ -159,59 +135,42 @@ export function handleError(
     logger: LoggerService;
   },
   desc: string,
-  credential: ExtendedGitlabCredentials,
   errors: Map<number, GitlabFetchError>,
   err: any,
 ) {
-  // logErrorIfNeeded(deps.logger, `${desc} failed`, err);
-  // const credentialError = createCredentialError(credential, err as Error);
-  // if (credentialError) {
-  //   errors.set(-1, credentialError);
-  // }
+  logErrorIfNeeded(deps.logger, `${desc} failed`, err);
+  const credentialError = createCredentialError(err as Error);
+  if (credentialError) {
+    errors.set(-1, credentialError);
+  }
 }
 
-// export async function computeTotalCountFromGitHubToken(
-//   deps: {
-//     logger: LoggerService;
-//   },
-//   lastPageDataLengthProviderFn: (lastPageNumber: number) => Promise<number>,
-//   ghApiName: string,
-//   pageSize?: number,
-//   linkHeader?: string,
-// ): Promise<number | undefined> {
-//   // There is no direct way to get the total count of repositories other than using octokit.paginate,
-//   // but will make us retrieve all pages, thus increasing our response time.
-//   // Workaround here is to analyze the headers, and get the link to the last page.
-//   if (!linkHeader) {
-//     deps.logger.debug(
-//       `No link header found in response from ${ghApiName} GH endpoint => returning current page size`,
-//     );
-//     return pageSize;
-//   }
-//   const lastPageLink = linkHeader
-//     .split(',')
-//     .find(s => s.includes('rel="last"'));
-//   if (!lastPageLink) {
-//     deps.logger.debug(
-//       `No rel='last' link found in response headers from ${ghApiName} GH endpoint => returning current page size`,
-//     );
-//     return pageSize;
-//   }
-//   const match = lastPageLink.match(/page=(\d+)/);
-//   if (!match || match.length < 2) {
-//     deps.logger.debug(
-//       `Unable to extract page number from rel='last' link found in response headers from ${ghApiName} GH endpoint => returning current page size`,
-//     );
-//     return pageSize;
-//   }
+export async function computeTotalCountFromPaginationInfo(
+  deps: {
+    logger: LoggerService;
+  },
+  paginationInfo: any,
+  pageSize?: number,
+): Promise<number | undefined> {
+  /*
+    paginationInfo: {
+      total: , This is the total amount of repos, but will be NaN if the value is above 10k, see: https://github.com/jdalrymple/gitbeaker/issues/839#issuecomment-636482319
+      next: ,
+      current: ,
+      previous: ,
+      perPage: ,
+      totalPages:
+    }
+  */
 
-//   const lastPageNumber = parseInt(match[1], 10);
-//   // Fetch the last page to count its items, as it might contain fewer than the requested size
-//   const lastPageDataLength = await lastPageDataLengthProviderFn(lastPageNumber);
-//   return pageSize
-//     ? (lastPageNumber - 1) * pageSize + lastPageDataLength
-//     : undefined;
-// }
+  if (isNaN(paginationInfo.total)) {
+    deps.logger.debug(
+      `Too many result, total count is NaN, returning current page size`,
+    );
+    return pageSize;
+  }
+  return paginationInfo.total;
+}
 
 // export async function executeFunctionOnFirstSuccessfulIntegration<T>(
 //   deps: {

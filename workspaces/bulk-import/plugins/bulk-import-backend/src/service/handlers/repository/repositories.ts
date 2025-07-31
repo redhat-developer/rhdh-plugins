@@ -57,18 +57,19 @@ export async function findAllRepositories(
       search ?? ''
     }',${pageNumber},${pageSize})..`,
   );
-  const gitlabrepos =
-    await deps.gitlabApiService.getRepositoriesFromIntegrations(
-      search,
-      pageNumber,
-      pageSize,
-    );
+  const gitlabrepos = await deps.gitlabApiService
+    .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
+    .then(response => formatResponse(deps, response, checkStatus));
 
   console.log(gitlabrepos);
 
-  return deps.githubApiService
-    .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
-    .then(response => formatResponse(deps, response, checkStatus));
+  return gitlabrepos;
+
+  // const githubRepos = await deps.githubApiService
+  //   .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
+  //   .then(response => formatResponse(deps, response, checkStatus));
+
+  // return githubRepos;
 }
 
 export async function findRepositoriesByOrganization(
@@ -120,7 +121,7 @@ async function formatResponse(
     githubApiService: GithubApiService;
     catalogHttpClient: CatalogHttpClient;
   },
-  allReposAccessible: GithubRepositoryResponse,
+  allReposAccessible: GithubRepositoryResponse | GitlabRepositoryResponse,
   checkStatus: boolean,
 ) {
   const errorList =

@@ -43,6 +43,7 @@ import type {
 } from '../types';
 // import { getAllAppOrgs } from './orgUtils';
 import {
+  computeTotalCountFromPaginationInfo,
   // computeTotalCountFromGitHubToken,
   // createCredentialError,
   handleError,
@@ -165,9 +166,9 @@ export async function addGitlabTokenRepositories(
       // );
     } else {
       /**
-       * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
+       * The Projects.all method with the membership: true option will grab all the repositories/projects the gitlab token has explicit access to.
        * These would include repositories they own, repositories where they are a collaborator,
-       * and repositories that they can access through an organization membership.
+       * and repositories that they can access through an organization membership(TODO: see if that is true in gitlab).
        */
       const { data, paginationInfo } = await gitlab.Projects.all({
         membership: true,
@@ -200,27 +201,27 @@ export async function addGitlabTokenRepositories(
         },
       );
 
-      totalCount = paginationInfo.totalPages;
+      /*
+      paginationInfo: {
+        total: , This is the total amount of repos, but will be NaN if the value is above 10k, see: https://github.com/jdalrymple/gitbeaker/issues/839#issuecomment-636482319
+        next: ,
+        current: ,
+        previous: ,
+        perPage: ,
+        totalPages:
+      }
+      */
 
-      // totalCount = await computeTotalCountFromGitHubToken(
-      //   deps,
-      //   async (lastPageNumber: number) =>
-      //     octokit.repos
-      //       .listForAuthenticatedUser({
-      //         page: lastPageNumber,
-      //         per_page: 100,
-      //       })
-      //       .then(lastPageResp => lastPageResp.data.length),
-      //   'repos.listForAuthenticatedUser',
-      //   resp?.data?.length,
-      //   resp?.headers?.link,
-      // );
+      totalCount = await computeTotalCountFromPaginationInfo(
+        deps,
+        paginationInfo,
+        pageSize, // Not thrilled with this for some reason
+      );
     }
   } catch (err) {
     handleError(
       deps,
       'Fetching repositories with token from token',
-      credential,
       errors,
       err,
     );
