@@ -62,7 +62,7 @@ const Techdocs = () => {
 
   if (error) {
     return (
-      <CardWrapper title="Top techdocs">
+      <CardWrapper title="Top TechDocs">
         <ResponseErrorPanel error={error} />
       </CardWrapper>
     );
@@ -70,7 +70,7 @@ const Techdocs = () => {
 
   if (!visibleTechdocs || visibleTechdocs?.length === 0) {
     return (
-      <CardWrapper title="Top techdocs">
+      <CardWrapper title="Top TechDocs">
         <Box
           display="flex"
           justifyContent="center"
@@ -84,7 +84,7 @@ const Techdocs = () => {
   }
 
   return (
-    <CardWrapper title={`Top ${rowsPerPage} techdocs`}>
+    <CardWrapper title={`Top ${rowsPerPage} TechDocs`}>
       <Table aria-labelledby="Catalog entities" sx={{ width: '100%' }}>
         <TableHead>
           <TableRow>

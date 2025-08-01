@@ -140,7 +140,7 @@ createDevApp()
         <Techdocs />
       </AdoptionInsightsWrapper>
     ),
-    title: 'Top Techdocs',
+    title: 'Top TechDocs',
   })
   .addPage({
     path: '/searches',
