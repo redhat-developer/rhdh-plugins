@@ -101,7 +101,7 @@ describe('Techdocs', () => {
   });
 
   it('should render the component with initial data', () => {
-    expect(screen.getByText('Top 3 techdocs')).toBeInTheDocument();
+    expect(screen.getByText('Top 3 TechDocs')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(5);
   });
 
@@ -122,7 +122,7 @@ describe('Techdocs', () => {
     await user.click(select);
     await user.click(screen.getByText('Top 5'));
 
-    expect(screen.getByText('Top 5 techdocs')).toBeInTheDocument();
+    expect(screen.getByText('Top 5 TechDocs')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(6);
   });
 
