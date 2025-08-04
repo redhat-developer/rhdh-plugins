@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
 import Box from '@mui/material/Box';

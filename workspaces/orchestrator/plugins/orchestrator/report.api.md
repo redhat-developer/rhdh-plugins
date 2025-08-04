@@ -5,13 +5,12 @@
 ```ts
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { JSX as JSX_2 } from 'react';
-import { default as React_2 } from 'react';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 
 // @public
-export const OrchestratorIcon: (props: SvgIconProps) => React_2.JSX.Element;
+export const OrchestratorIcon: (props: SvgIconProps) => JSX_2.Element;
 
 // @public
 export const OrchestratorPage: () => JSX_2.Element;

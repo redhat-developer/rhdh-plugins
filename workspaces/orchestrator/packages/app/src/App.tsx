@@ -53,7 +53,6 @@ import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
 import { RbacPage } from '@backstage-community/plugin-rbac';
-import React from 'react';
 import { Navigate, Route } from 'react-router-dom';
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';

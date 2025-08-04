@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 
 /**

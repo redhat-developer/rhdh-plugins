@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Widget } from '@rjsf/utils';
 import { JSONSchema7 } from 'json-schema';
 import { JsonObject } from '@backstage/types';

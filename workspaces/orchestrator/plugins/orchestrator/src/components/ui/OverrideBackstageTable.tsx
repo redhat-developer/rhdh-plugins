@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import {
   Table as BackstageTable,
   TableProps,

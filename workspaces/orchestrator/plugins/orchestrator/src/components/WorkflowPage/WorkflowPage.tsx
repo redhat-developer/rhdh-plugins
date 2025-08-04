@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { useAsync } from 'react-use';
 
 import { TabbedLayout } from '@backstage/core-components';
