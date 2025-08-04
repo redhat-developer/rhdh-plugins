@@ -17,15 +17,13 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import type {
-  // GithubCredentials,
-  // GithubIntegrationConfig,
   GitlabCredentials,
+  GitLabIntegrationConfig,
   ScmIntegrations,
 } from '@backstage/integration';
 
 import { Gitlab } from '@gitbeaker/rest';
 
-// import { Octokit } from '@octokit/rest';
 // import gitUrlParse from 'git-url-parse';
 
 // import { getBranchName } from '../../catalog/catalogUtils';
@@ -211,6 +209,7 @@ export async function addGitlabTokenRepositories(
     handleError(
       deps,
       'Fetching repositories with token from token',
+      credential,
       errors,
       err,
     );

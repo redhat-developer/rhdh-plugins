@@ -165,6 +165,7 @@ export async function createRouter(
       const response = await findAllOrganizations(
         logger,
         githubApiService,
+        gitlabApiService,
         q.search,
         q.pagePerIntegration,
         q.sizePerIntegration,

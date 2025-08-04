@@ -21,6 +21,7 @@ import type {
   GithubApiService,
   GithubOrganizationResponse,
 } from '../../../github';
+import { GitlabApiService } from '../../../gitlab';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -30,6 +31,7 @@ import {
 export async function findAllOrganizations(
   logger: LoggerService,
   githubApiService: GithubApiService,
+  gitlabApiService: GitlabApiService,
   search?: string,
   pageNumber: number = DefaultPageNumber,
   pageSize: number = DefaultPageSize,
@@ -39,6 +41,15 @@ export async function findAllOrganizations(
       search ?? ''
     }',${pageNumber},${pageSize})..`,
   );
+
+  const allGLGroupsAccessible = await gitlabApiService.getGroupFromIntegrations(
+    search,
+    pageNumber,
+    pageSize,
+  );
+
+  console.log(allGLGroupsAccessible);
+
   const allOrgsAccessible =
     await githubApiService.getOrganizationsFromIntegrations(
       search,

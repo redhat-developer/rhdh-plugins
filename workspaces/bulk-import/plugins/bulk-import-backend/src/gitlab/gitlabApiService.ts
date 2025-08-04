@@ -36,15 +36,17 @@ import { CustomGitlabCredentialsProvider } from './GitlabAppManager';
 import {
   ExtendedGitlabCredentials,
   GitlabFetchError,
+  GitlabGroup,
+  GitlabGroupResponse,
   GitlabRepository,
   GitlabRepositoryResponse,
 } from './types';
 // import { buildOcto } from './utils/ghUtils';
-// import {
-//   addGithubAppOrgs,
-//   addGithubTokenOrgs,
-//   getAllAppOrgs,
-// } from './utils/orgUtils';
+import {
+  // addGithubAppOrgs,
+  addGitlabTokenGroups,
+  // getAllAppOrgs,
+} from './utils/groupUtils';
 // import { closePRWithComment, findOpenPRForBranch } from './utils/prUtils';
 import {
   // addGithubAppRepositories,
@@ -138,58 +140,42 @@ export class GitlabApiService {
     };
   }
 
-  async getOrganizationsFromIntegrations(
+  async getGroupFromIntegrations(
     search?: string,
     pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,
-  ): Promise<GithubOrganizationResponse> {
-    const orgs = new Map<string, GithubOrganization>();
+  ): Promise<GitlabGroupResponse> {
+    const groups = new Map<string, GitlabGroup>();
     const result = await fetchFromAllIntegrations(
       {
         logger: this.logger,
         cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
+        gitlabCredentialsProvider: this.gitlabCredentialsProvider,
       },
       this.integrations,
       {
         dataFetcher: async (
-          octokit: Octokit,
-          credential: ExtendedGithubCredentials,
-          ghConfig: GithubIntegrationConfig,
+          glApi: any,
+          credential: ExtendedGitlabCredentials,
+          glConfig: GitLabIntegrationConfig,
         ) => {
-          const dataFetchErrors = new Map<number, GithubFetchError>();
-          const resp = isGithubAppCredential(credential)
-            ? await addGithubAppOrgs(
-                {
-                  logger: this.logger,
-                  githubCredentialsProvider: this.githubCredentialsProvider,
-                },
-                octokit,
-                ghConfig,
-                {
-                  credentialAccountLogin: credential.accountLogin,
-                  search,
-                  orgs,
-                  errors: dataFetchErrors,
-                },
-              )
-            : await addGithubTokenOrgs(
-                {
-                  logger: this.logger,
-                },
-                octokit,
-                credential,
-                {
-                  search,
-                  orgs,
-                  pageNumber,
-                  pageSize,
-                  errors: dataFetchErrors,
-                },
-              );
-
+          const dataFetchErrors = new Map<number, GitlabFetchError>();
+          const resp = await addGitlabTokenGroups(
+            {
+              logger: this.logger,
+            },
+            glApi,
+            credential,
+            {
+              search,
+              groups,
+              pageNumber,
+              pageSize,
+              errors: dataFetchErrors,
+            },
+          );
           this.logger.debug(
-            `Got ${resp.totalCount} org(s) for ${ghConfig.host}`,
+            `Got ${resp.totalCount} groups(s) for ${glConfig.host}`,
           );
           return {
             result: resp.totalCount ?? 0,
@@ -199,10 +185,10 @@ export class GitlabApiService {
       },
     );
 
-    const orgList = Array.from(orgs.values());
-    const totalCount = computeTotalCount(orgList, result.data, pageSize);
+    const groupList = Array.from(groups.values());
+    const totalCount = computeTotalCount(groupList, result.data, pageSize);
     return {
-      organizations: orgList,
+      organizations: groupList,
       errors: Array.from(result.errors?.values() ?? []),
       totalCount,
     };

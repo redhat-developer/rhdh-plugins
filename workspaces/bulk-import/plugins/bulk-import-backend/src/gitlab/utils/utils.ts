@@ -135,6 +135,7 @@ export function handleError(
     logger: LoggerService;
   },
   desc: string,
+  credential: ExtendedGitlabCredentials,
   errors: Map<number, GitlabFetchError>,
   err: any,
 ) {

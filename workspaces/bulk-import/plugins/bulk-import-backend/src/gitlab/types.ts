@@ -21,26 +21,26 @@ import type {
 } from '@backstage/integration';
 
 // From https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
-// export type GitlabOrganization = {
-//   name: string;
-//   id: number;
-//   description?: string;
-//   url?: string;
-//   html_url?: string;
-//   repos_url?: string;
-//   events_url?: string;
-//   hooks_url?: string;
-//   issues_url?: string;
-//   members_url?: string;
-//   public_members_url?: string;
-//   avatar_url?: string;
-//   public_repos?: number;
-//   total_private_repos?: number;
-//   /**
-//    * Number of internal repositories, accessible to all members in a GH enterprise
-//    */
-//   owned_private_repos?: number;
-// };
+export type GitlabGroup = {
+  name: string;
+  id: number;
+  description?: string;
+  url?: string;
+  html_url?: string;
+  repos_url?: string;
+  events_url?: string;
+  hooks_url?: string;
+  issues_url?: string;
+  members_url?: string;
+  public_members_url?: string;
+  avatar_url?: string;
+  public_repos?: number;
+  total_private_repos?: number;
+  /**
+   * Number of internal repositories, accessible to all members in a GH enterprise
+   */
+  owned_private_repos?: number;
+};
 
 export type GitlabRepository = {
   // id?: string;
@@ -82,11 +82,11 @@ export type GitlabFetchError = {
   error: SerializedError;
 };
 
-// export type GithubOrganizationResponse = {
-//   organizations: GithubOrganization[];
-//   errors: GithubFetchError[];
-//   totalCount?: number;
-// };
+export type GitlabGroupResponse = {
+  organizations: GitlabGroup[];
+  errors: GitlabFetchError[];
+  totalCount?: number;
+};
 
 export type GitlabRepositoryResponse = {
   repositories: GitlabRepository[];
