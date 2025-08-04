@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { PropsWithChildren } from 'react';
+import { PropsWithChildren } from 'react';
 
 import { TypographyVariant } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';

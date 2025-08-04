@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { JsonObject } from '@backstage/types';
 
 import ObjectField from '@rjsf/core/lib/components/fields/ObjectField';

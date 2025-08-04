@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { JsonObject } from '@backstage/types';
 import { Widget } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';

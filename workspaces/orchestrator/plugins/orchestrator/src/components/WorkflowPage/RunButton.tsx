@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';

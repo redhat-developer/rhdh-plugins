@@ -6,11 +6,12 @@
 
 import { JsonObject } from '@backstage/types';
 import type { JSONSchema7 } from 'json-schema';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { default as React_2 } from 'react';
 
 // @public
-export const OrchestratorForm: ({ schema: rawSchema, updateSchema, handleExecute, isExecuting, initialFormData, isDataReadonly, setAuthTokenDescriptors, }: OrchestratorFormProps) => React_2.JSX.Element;
+export const OrchestratorForm: ({ schema: rawSchema, updateSchema, handleExecute, isExecuting, initialFormData, isDataReadonly, setAuthTokenDescriptors, }: OrchestratorFormProps) => JSX_2.Element;
 
 // @public
 export type OrchestratorFormProps = {
@@ -29,6 +30,6 @@ export const SubmitButton: ({ submitting, handleClick, children, focusOnMount, }
     handleClick?: () => void;
     children: React_2.ReactNode;
     focusOnMount?: boolean;
-}) => React_2.JSX.Element;
+}) => JSX_2.Element;
 
 ```
