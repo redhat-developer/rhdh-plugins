@@ -18,6 +18,11 @@ import type { Config } from '@backstage/config';
 
 import type { ModelCatalogConfig } from './types';
 
+/**
+ * readModelCatalogApiEntityConfigs reads the configuration for the ModelCatalog provider
+ *
+ * @public
+ */
 export function readModelCatalogApiEntityConfigs(
   config: Config,
 ): ModelCatalogConfig[] {
