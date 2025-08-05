@@ -51,6 +51,7 @@ import {
 import {
   // addGithubAppRepositories,
   // addGithubTokenOrgRepositories,
+  addGitlabTokenOrgRepositories,
   addGitlabTokenRepositories,
   // createOrUpdateFileInBranch,
   // fileExistsInDefaultBranch,
@@ -199,62 +200,39 @@ export class GitlabApiService {
     search?: string,
     pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,
-  ): Promise<GithubRepositoryResponse> {
-    const repositories = new Map<string, GithubRepository>();
+  ): Promise<GitlabRepositoryResponse> {
+    const repositories = new Map<string, GitlabRepository>();
     const result = await fetchFromAllIntegrations(
       {
         logger: this.logger,
         cache: this.cache,
-        githubCredentialsProvider: this.githubCredentialsProvider,
+        gitlabCredentialsProvider: this.gitlabCredentialsProvider,
       },
       this.integrations,
       {
         dataFetcher: async (
-          octokit: Octokit,
-          credential: ExtendedGithubCredentials,
-          ghConfig: GithubIntegrationConfig,
+          glApi: any,
+          credential: ExtendedGitlabCredentials,
+          glConfig: GitLabIntegrationConfig,
         ) => {
-          const dataFetchErrors = new Map<number, GithubFetchError>();
-          let resp: { totalCount?: number };
-          if (isGithubAppCredential(credential)) {
-            if (credential.accountLogin !== orgName) {
-              return {};
-            }
-            resp = await addGithubAppRepositories(
-              {
-                logger: this.logger,
-                githubCredentialsProvider: this.githubCredentialsProvider,
-              },
-              octokit,
-              credential,
-              ghConfig,
-              repositories,
-              dataFetchErrors,
-              {
-                search,
-                pageNumber,
-                pageSize,
-              },
-            );
-          } else {
-            resp = await addGithubTokenOrgRepositories(
-              {
-                logger: this.logger,
-              },
-              octokit,
-              credential,
-              orgName,
-              repositories,
-              dataFetchErrors,
-              {
-                search,
-                pageNumber,
-                pageSize,
-              },
-            );
-          }
+          const dataFetchErrors = new Map<number, GitlabFetchError>();
+          const resp = await addGitlabTokenOrgRepositories(
+            {
+              logger: this.logger,
+            },
+            glApi,
+            credential,
+            orgName,
+            repositories,
+            dataFetchErrors,
+            {
+              search,
+              pageNumber,
+              pageSize,
+            },
+          );
           this.logger.debug(
-            `Got ${resp.totalCount} org repo(s) for ${ghConfig.host}`,
+            `Got ${resp.totalCount} org repo(s) for ${glConfig.host}`,
           );
           return {
             stopFetchingData: true,

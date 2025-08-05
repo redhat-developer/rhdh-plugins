@@ -75,6 +75,7 @@ export async function findRepositoriesByOrganization(
     logger: LoggerService;
     config: Config;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   orgName: string,
@@ -86,10 +87,18 @@ export async function findRepositoriesByOrganization(
   deps.logger.debug(
     `Getting all repositories for org "${orgName}" - (search,page,size)=(${search},${pageNumber},${pageSize})..`,
   );
-  console.log(orgName);
-  return deps.githubApiService
+
+  const glReposByOrg = await deps.gitlabApiService
     .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
     .then(response => formatResponse(deps, response, checkStatus));
+
+  console.log(glReposByOrg);
+
+  return glReposByOrg;
+
+  // return deps.githubApiService
+  //   .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
+  //   .then(response => formatResponse(deps, response, checkStatus));
 }
 
 function sortRepos(repoList: Components.Schemas.Repository[]) {

@@ -231,6 +231,7 @@ export async function createRouter(
           logger,
           config,
           githubApiService,
+          gitlabApiService,
           catalogHttpClient,
         },
         c.request.params.organizationName?.toString(),
