@@ -32,6 +32,8 @@ import {
   UrlReaderServiceReadTreeResponseFile,
   UrlReaderServiceReadTreeResponseDirOptions,
   LoggerService,
+  SchedulerServiceTaskScheduleDefinition,
+  readSchedulerServiceTaskScheduleDefinitionFromConfig,
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import { assertError, NotFoundError } from '@backstage/errors';
@@ -39,10 +41,49 @@ import { Readable } from 'stream';
 import fs from 'fs';
 import platformPath from 'path';
 import os from 'os';
-import {
-  ModelCatalogConfig,
-  readModelCatalogApiEntityConfigs,
-} from '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog';
+
+// TODO: Remove this once the catalog-backend-module-model-catalog plugin is published
+export type ModelCatalogConfig = {
+  id: string;
+  baseUrl: string;
+  schedule?: SchedulerServiceTaskScheduleDefinition;
+};
+export function readModelCatalogApiEntityConfigs(
+  config: Config,
+): ModelCatalogConfig[] {
+  const providerConfigs = config.getOptionalConfig(
+    'catalog.providers.modelCatalog',
+  );
+  if (!providerConfigs) {
+    return [];
+  }
+  return providerConfigs
+    .keys()
+    .map(id =>
+      readModelCatalogApiEntityConfig(id, providerConfigs.getConfig(id)),
+    );
+}
+
+function readModelCatalogApiEntityConfig(
+  id: string,
+  config: Config,
+): ModelCatalogConfig {
+  const baseUrl = config.getString('baseUrl');
+
+  const schedule = config.has('schedule')
+    ? readSchedulerServiceTaskScheduleDefinitionFromConfig(
+        config.getConfig('schedule'),
+      )
+    : undefined;
+
+  return {
+    id,
+    baseUrl,
+    schedule,
+  };
+}
+
+// TODO: end of temporary definitions
 
 export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
   implements UrlReaderServiceReadTreeResponse

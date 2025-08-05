@@ -19,12 +19,12 @@ import { mockServices } from '@backstage/backend-test-utils';
 import {
   ModeCatalogBridgeTechdocUrlReader,
   ModelCatalogBridgeUrlReaderServiceReadTreeResponse,
+  readModelCatalogApiEntityConfigs,
 } from './plugin';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { Readable } from 'stream';
-import { readModelCatalogApiEntityConfigs } from '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog';
 
 const fetch = jest.fn();
 jest.mock('node-fetch', () => ({
