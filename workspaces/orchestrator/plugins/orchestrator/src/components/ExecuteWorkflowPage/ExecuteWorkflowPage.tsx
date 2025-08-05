@@ -15,7 +15,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
 import {
@@ -45,6 +45,7 @@ import { OrchestratorForm } from '@red-hat-developer-hub/backstage-plugin-orches
 import { orchestratorApiRef } from '../../api';
 import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
 import {
+  entityInstanceRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
 } from '../../routes';
@@ -54,6 +55,8 @@ import MissingSchemaNotice from './MissingSchemaNotice';
 import { getSchemaUpdater } from './schemaUpdater';
 
 export const ExecuteWorkflowPage = () => {
+  const [searchParams] = useSearchParams();
+  const targetEntity = searchParams.get('targetEntity');
   const orchestratorApi = useApi(orchestratorApiRef);
   const { authenticate } = useOrchestratorAuth();
   const { workflowId } = useRouteRefParams(executeWorkflowRouteRef);
@@ -65,6 +68,7 @@ export const ExecuteWorkflowPage = () => {
   );
   const navigate = useNavigate();
   const instanceLink = useRouteRef(workflowInstanceRouteRef);
+  const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
   const {
     value,
     loading,
@@ -101,6 +105,8 @@ export const ExecuteWorkflowPage = () => {
     return res.data.name || '';
   }, [orchestratorApi, workflowId]);
 
+  const [kind, namespace, name] = targetEntity?.split(/[:\/]/) || [];
+
   const handleExecute = useCallback(
     async (parameters: JsonObject) => {
       setUpdateError(undefined);
@@ -111,8 +117,18 @@ export const ExecuteWorkflowPage = () => {
           workflowId,
           parameters,
           authTokens,
+          targetEntity: targetEntity ?? undefined,
         });
-        navigate(instanceLink({ instanceId: response.data.id }));
+        const url = targetEntity
+          ? entityInstanceLink({
+              namespace,
+              kind,
+              name,
+              workflowId: workflowId,
+              instanceId: response.data.id,
+            })
+          : instanceLink({ instanceId: response.data.id });
+        navigate(url);
       } catch (err) {
         setUpdateError(getErrorObject(err));
       } finally {
@@ -126,6 +142,11 @@ export const ExecuteWorkflowPage = () => {
       instanceLink,
       authTokenDescriptors,
       authenticate,
+      targetEntity,
+      entityInstanceLink,
+      kind,
+      namespace,
+      name,
     ],
   );
 
@@ -177,7 +198,11 @@ export const ExecuteWorkflowPage = () => {
       noPadding={workflowNameLoading}
       title={workflowName}
       type="Workflows"
-      typeLink="/orchestrator"
+      typeLink={
+        targetEntity
+          ? `/catalog/${namespace}/${kind}/${name}/workflows`
+          : '/orchestrator'
+      }
     >
       {pageContent}
     </BaseOrchestratorPage>

@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: example-component
+  description: This is a Backstage component
+  annotations:
+    orchestrator.io/workflows: '[]'
+  tags:
+    - example
+spec:
+  type: service
+  lifecycle: experimental
+  owner: team-example

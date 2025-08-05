@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,4 +54,18 @@ export const executeWorkflowRouteRef = createSubRouteRef({
   id: 'orchestrator/workflows/execute',
   parent: orchestratorRootRouteRef,
   path: '/workflows/:workflowId/execute',
+});
+
+// entity workflow page
+export const entityWorkflowRouteRef = createSubRouteRef({
+  id: 'orchestrator.workflow',
+  parent: orchestratorRootRouteRef,
+  path: '/entity/:namespace/:kind/:name/:workflowId',
+});
+
+// entity instance page
+export const entityInstanceRouteRef = createSubRouteRef({
+  id: 'orchestrator.workflowInstance',
+  parent: orchestratorRootRouteRef,
+  path: '/entity/:namespace/:kind/:name/:workflowId/:instanceId',
 });

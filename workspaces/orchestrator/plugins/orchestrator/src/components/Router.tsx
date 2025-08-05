@@ -17,14 +17,17 @@
 import { Route, Routes } from 'react-router-dom';
 
 import {
+  entityInstanceRouteRef,
+  entityWorkflowRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
   workflowRouteRef,
 } from '../routes';
+import { CatalogWorkflowPage } from './catalogComponents/CatalogWorkflowPage';
 import { ExecuteWorkflowPage } from './ExecuteWorkflowPage/ExecuteWorkflowPage';
 import { OrchestratorPage } from './OrchestratorPage/OrchestratorPage';
 import { WorkflowInstancePage } from './WorkflowInstancePage/WorkflowInstancePage';
-import { WorkflowPage } from './WorkflowPage';
+import { WorkflowPage } from './WorkflowPage/WorkflowPage';
 
 export const Router = () => {
   return (
@@ -38,6 +41,14 @@ export const Router = () => {
       />
       <Route
         path={workflowInstanceRouteRef.path}
+        element={<WorkflowInstancePage />}
+      />
+      <Route
+        path={entityWorkflowRouteRef.path}
+        element={<CatalogWorkflowPage />}
+      />
+      <Route
+        path={entityInstanceRouteRef.path}
         element={<WorkflowInstancePage />}
       />
     </Routes>

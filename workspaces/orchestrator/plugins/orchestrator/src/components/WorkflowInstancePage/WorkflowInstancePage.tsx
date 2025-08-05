@@ -60,6 +60,8 @@ import { SHORT_REFRESH_INTERVAL } from '../../constants';
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import usePolling from '../../hooks/usePolling';
 import {
+  entityInstanceRouteRef,
+  entityWorkflowRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
 } from '../../routes';
@@ -159,19 +161,19 @@ const AbortConfirmationDialogActions = (
   );
 };
 
-export const WorkflowInstancePage = ({
-  instanceId,
-}: {
-  instanceId?: string;
-}) => {
+export const WorkflowInstancePage = () => {
   const { classes } = useStyles();
 
   const navigate = useNavigate();
   const orchestratorApi = useApi(orchestratorApiRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
-  const { instanceId: queryInstanceId } = useRouteRefParams(
-    workflowInstanceRouteRef,
-  );
+  const { instanceId } = useRouteRefParams(workflowInstanceRouteRef);
+  const entityWorkflowLink = useRouteRef(entityWorkflowRouteRef);
+  const { kind, name, namespace } = useRouteRefParams(entityInstanceRouteRef);
+  let entityRef: string | undefined = undefined;
+  if (kind && namespace && name) {
+    entityRef = `${kind}:${namespace}/${name}`;
+  }
   const [isAbortConfirmationDialogOpen, setIsAbortConfirmationDialogOpen] =
     useState(false);
 
@@ -192,14 +194,12 @@ export const WorkflowInstancePage = ({
   };
 
   const fetchInstance = React.useCallback(async () => {
-    if (!instanceId && !queryInstanceId) {
+    if (!instanceId) {
       return undefined;
     }
-    const res = await orchestratorApi.getInstance(
-      instanceId ?? queryInstanceId,
-    );
+    const res = await orchestratorApi.getInstance(instanceId);
     return res.data;
-  }, [instanceId, orchestratorApi, queryInstanceId]);
+  }, [instanceId, orchestratorApi]);
 
   const { loading, error, value, restart } = usePolling<
     ProcessInstanceDTO | undefined
@@ -257,15 +257,17 @@ export const WorkflowInstancePage = ({
     if (!value) {
       return;
     }
-    const routeUrl = executeWorkflowLink({
-      workflowId: value.processId,
-    });
+    const routeUrl = !entityRef
+      ? executeWorkflowLink({
+          workflowId: value.processId,
+        })
+      : `${executeWorkflowLink({ workflowId: value.processId })}?targetEntity=${entityRef}`;
 
     const urlToNavigate = buildUrl(routeUrl, {
       [QUERY_PARAM_INSTANCE_ID]: value.id,
     });
     navigate(urlToNavigate);
-  }, [value, navigate, executeWorkflowLink]);
+  }, [value, navigate, executeWorkflowLink, entityRef]);
 
   const handleRetrigger = async () => {
     if (value) {
@@ -315,7 +317,16 @@ export const WorkflowInstancePage = ({
     <BaseOrchestratorPage
       title={value?.id}
       type={value?.processName}
-      typeLink={`/orchestrator/workflows/${workflowId}`}
+      typeLink={
+        entityRef
+          ? entityWorkflowLink({
+              namespace,
+              kind,
+              name,
+              workflowId: value?.processId ?? '',
+            })
+          : `/orchestrator/workflows/${workflowId}`
+      }
     >
       {loading ? <Progress /> : null}
       {error ? <ResponseErrorPanel error={error} /> : null}
@@ -324,7 +335,7 @@ export const WorkflowInstancePage = ({
           <ContentHeader title="">
             <InfoDialog
               title="Abort workflow run?"
-              titleIcon={<Error className={classes.errorColor} />}
+              titleIcon={<Error />}
               onClose={toggleAbortConfirmationDialog}
               open={isAbortConfirmationDialogOpen}
               dialogActions={

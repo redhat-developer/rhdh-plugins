@@ -7,3 +7,4 @@ spec:
   type: file
   targets:
     - ./yamlgreet.yaml
+    - ./greet-with-new-component/yamlgreet_with_new_component.yaml

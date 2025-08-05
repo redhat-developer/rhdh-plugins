@@ -14,6 +14,7 @@ All URIs are relative to *http://localhost*
 | [**getWorkflowSourceById**](DefaultApi.md#getWorkflowSourceById) | **GET** /v2/workflows/{workflowId}/source |  |
 | [**getWorkflowStatuses**](DefaultApi.md#getWorkflowStatuses) | **GET** /v2/workflows/instances/statuses | Get workflow status list |
 | [**getWorkflowsOverview**](DefaultApi.md#getWorkflowsOverview) | **POST** /v2/workflows/overview |  |
+| [**getWorkflowsOverviewForEntity**](DefaultApi.md#getWorkflowsOverviewForEntity) | **POST** /v2/workflows/overview/entity |  |
 | [**pingWorkflowServiceById**](DefaultApi.md#pingWorkflowServiceById) | **GET** /v2/workflows/{workflowId}/pingWorkflowService |  |
 | [**retriggerInstance**](DefaultApi.md#retriggerInstance) | **POST** /v2/workflows/{workflowId}/{instanceId}/retrigger | Retrigger an instance |
 
@@ -274,6 +275,33 @@ No authorization required
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **SearchRequest** | [**SearchRequest**](../Models/SearchRequest.md)| Pagination and filters | [optional] |
+
+### Return type
+
+[**WorkflowOverviewListResultDTO**](../Models/WorkflowOverviewListResultDTO.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="getWorkflowsOverviewForEntity"></a>
+# **getWorkflowsOverviewForEntity**
+> WorkflowOverviewListResultDTO getWorkflowsOverviewForEntity(getWorkflowsOverviewForEntity\_request)
+
+
+
+    Returns the key fields of the workflow including data on the last run instance
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **getWorkflowsOverviewForEntity\_request** | [**getWorkflowsOverviewForEntity_request**](../Models/getWorkflowsOverviewForEntity_request.md)| Target entity reference and annotation workflow ids | [optional] |
 
 ### Return type
 

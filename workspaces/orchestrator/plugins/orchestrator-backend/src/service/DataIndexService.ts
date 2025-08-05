@@ -22,6 +22,7 @@ import {
   Filter,
   fromWorkflowSource,
   IntrospectionField,
+  NestedFilter,
   parseWorkflowVariables,
   ProcessInstance,
   WorkflowDefinition,
@@ -194,7 +195,7 @@ export class DataIndexService {
       : undefined;
 
     let whereClause: string | undefined;
-    if (definitionIds && filter) {
+    if (definitionIdsCondition && filterCondition) {
       whereClause = `and: [{${definitionIdsCondition}}, {${filterCondition}}]`;
     } else if (definitionIdsCondition || filterCondition) {
       whereClause = definitionIdsCondition ?? filterCondition;
@@ -294,6 +295,67 @@ export class DataIndexService {
       }),
     );
     return processInstances;
+  }
+
+  public async fetchDefinitionIdsFromInstances(args: {
+    targetEntity: string;
+  }): Promise<string[]> {
+    const { targetEntity } = args;
+
+    const processIdNotNullCondition = 'processId: {isNull: false}';
+
+    const type = 'ProcessInstance';
+    const targetEntityFilter: NestedFilter = {
+      field: 'variables',
+      nested: {
+        operator: 'EQ',
+        field: 'targetEntity',
+        value: targetEntity,
+      },
+    };
+
+    const filterCondition = buildFilterCondition(
+      await this.inspectInputArgument(type),
+      type,
+      targetEntityFilter,
+    );
+
+    const whereClause = `and: [{${processIdNotNullCondition}}, {${filterCondition}}]`;
+
+    // Apply a limit to prevent memory exhaustion and network timeouts when entities
+    // have thousands of process instances. Entities with more instances than this limit
+    // may not see all their associated workflows.
+    const pagination = {
+      limit: 1000,
+      offset: 0,
+    };
+
+    const graphQlQuery = buildGraphQlQuery({
+      type: 'ProcessInstances',
+      queryBody: 'processId',
+      whereClause,
+      pagination,
+    });
+
+    this.logger.debug(`GraphQL query: ${graphQlQuery}`);
+
+    const result = await this.client.query<{
+      ProcessInstances: ProcessInstance[];
+    }>(graphQlQuery, {});
+    this.logger.debug(
+      `Fetch definition ids from instances history result: ${JSON.stringify(result)}`,
+    );
+
+    this.handleGraphqlClientError(
+      'Error when fetching definition ids from instances history',
+      result,
+    );
+
+    const processInstancesSrc = result.data ? result.data.ProcessInstances : [];
+    const distinctProcessIds = [
+      ...new Set(processInstancesSrc.map(instance => instance.processId)),
+    ]; // graphql doesn't support distinct so we need to use a set to get the distinct process ids
+    return distinctProcessIds;
   }
 
   private async getWorkflowDefinitionFromInstance(instance: ProcessInstance) {
