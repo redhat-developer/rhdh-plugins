@@ -15,19 +15,12 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import type {
-  GitlabCredentials,
-  GitLabIntegrationConfig,
-} from '@backstage/integration';
+import type { GitlabCredentials } from '@backstage/integration';
 
-import { Octokit } from '@octokit/rest';
-
-import { logErrorIfNeeded, paginateArray } from '../../helpers';
 import {
   DefaultPageNumber,
   DefaultPageSize,
 } from '../../service/handlers/handlers';
-import type { CustomGitlabCredentialsProvider } from '../GitlabAppManager';
 import type { GitlabFetchError, GitlabGroup } from '../types';
 import { computeTotalCountFromPaginationInfo, handleError } from './utils';
 
@@ -55,27 +48,24 @@ export async function addGitlabTokenGroups(
   try {
     let matchingGroups;
     if (search) {
-      // Initial idea was to leverage octokit.rest.search.users({q: `${search} type:org`}),
-      // but this searches across all of GitHub, not only the orgs accessible by the current creds.
-      // That's why we are searching in everything, hoping the list of organizations to not be that big in size
-      // const resp = await octokit.paginate(
-      //   octokit.rest.orgs.listForAuthenticatedUser,
-      //   {
-      //     sort: 'full_name',
-      //     direction: 'asc',
-      //   },
-      // );
-      // const allMatchingOrgs =
-      //   resp?.filter(org =>
-      //     org.login.toLowerCase().includes(search.toLowerCase()),
-      //   ) ?? [];
-      // const matchingOrgsPage = paginateArray(
-      //   allMatchingOrgs,
-      //   pageNumber,
-      //   pageSize,
-      // );
-      // matchingOrgs = matchingOrgsPage.result;
-      // totalCount = matchingOrgsPage.totalCount;
+      // Use the group api with the search param.
+      // I noticed that using this api will only return values when 3 or more characters are used for the search
+      // that api gives us all the things the token has access
+      const { data, paginationInfo } = await gitlab.Groups.all({
+        all_available: false,
+        search: search,
+        perPage: pageSize,
+        page: pageNumber,
+        showExpanded: true,
+      });
+
+      matchingGroups = data ?? [];
+
+      totalCount = await computeTotalCountFromPaginationInfo(
+        deps,
+        paginationInfo,
+        pageSize, // Not thrilled with this for some reason
+      );
     } else {
       /**
        * The Groups all endpoint will grab all the groups the gitlab token has explicit access to.
@@ -105,7 +95,7 @@ export async function addGitlabTokenGroups(
       // const groupData = await octokit.request(group.url);
       const glGroup: GitlabGroup = {
         id: group.id,
-        name: group.name,
+        name: group.path,
         description: group.description ?? undefined,
         url: group.web_url,
         repos_url: group.repos_url,
@@ -118,7 +108,7 @@ export async function addGitlabTokenGroups(
         total_private_repos: group?.data?.total_private_repos,
         owned_private_repos: group?.data?.owned_private_repos,
       };
-      groups.set(group.name, glGroup);
+      groups.set(group.path, glGroup);
     }
   } catch (err) {
     handleError(

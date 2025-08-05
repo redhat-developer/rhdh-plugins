@@ -42,20 +42,18 @@ export async function findAllOrganizations(
     }',${pageNumber},${pageSize})..`,
   );
 
-  const allGLGroupsAccessible = await gitlabApiService.getGroupFromIntegrations(
+  const allOrgsAccessible = await gitlabApiService.getGroupFromIntegrations(
     search,
     pageNumber,
     pageSize,
   );
 
-  console.log(allGLGroupsAccessible);
-
-  const allOrgsAccessible =
-    await githubApiService.getOrganizationsFromIntegrations(
-      search,
-      pageNumber,
-      pageSize,
-    );
+  // const allOrgsAccessible =
+  //   await githubApiService.getOrganizationsFromIntegrations(
+  //     search,
+  //     pageNumber,
+  //     pageSize,
+  //   );
   const errorList: string[] = [];
   for (const err of allOrgsAccessible.errors ?? []) {
     if (err.error?.message) {
