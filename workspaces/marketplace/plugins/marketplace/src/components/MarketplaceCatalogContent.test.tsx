@@ -16,9 +16,12 @@
 import { renderInTestApp } from '@backstage/test-utils';
 import { MarketplaceCatalogContent } from './MarketplaceCatalogContent';
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
+import { useCollections } from '../hooks/useCollections';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
+import { mockPlugins } from '../__fixtures__/mockPlugins';
 
 const useFilteredPluginsMock = useFilteredPlugins as jest.Mock;
+const useCollectionsMock = useCollections as jest.Mock;
 const useExtensionsConfigurationMock = useExtensionsConfiguration as jest.Mock;
 
 jest.mock('../hooks/useCollections', () => ({
@@ -35,6 +38,18 @@ jest.mock('../hooks/useNodeEnvironment', () => ({
 
 jest.mock('../hooks/useFilteredPlugins', () => ({
   useFilteredPlugins: jest.fn(),
+}));
+
+jest.mock('../hooks/usePluginFacet', () => ({
+  usePluginFacet: jest.fn().mockReturnValue({
+    data: [],
+  }),
+}));
+
+jest.mock('../hooks/usePluginFacets', () => ({
+  usePluginFacets: jest.fn().mockReturnValue({
+    data: [],
+  }),
 }));
 
 afterAll(() => {
@@ -56,6 +71,31 @@ describe('MarketplaceCatalogContent', () => {
 
     const { getByText } = await renderInTestApp(<MarketplaceCatalogContent />);
     expect(getByText('No plugins found')).toBeInTheDocument();
+  });
+
+  it('should show empty state when filters return no results', async () => {
+    useExtensionsConfigurationMock.mockReturnValue({
+      data: {
+        enabled: false,
+      },
+    });
+    useCollectionsMock.mockReturnValue({
+      data: {
+        featuredCollections: [],
+      },
+    });
+    useFilteredPluginsMock.mockReturnValue({
+      data: {
+        totalItems: 10,
+        items: mockPlugins,
+        filteredItems: 0,
+      },
+    });
+
+    const { getByText } = await renderInTestApp(<MarketplaceCatalogContent />);
+    expect(
+      getByText('No results found. Adjust your filters and try again.'),
+    ).toBeInTheDocument();
   });
 
   it('should show empty state with no extensions backend found', async () => {
