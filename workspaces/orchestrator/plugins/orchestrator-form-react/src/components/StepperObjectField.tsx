@@ -18,7 +18,8 @@ import { JsonObject } from '@backstage/types';
 
 import ObjectField from '@rjsf/core/lib/components/fields/ObjectField';
 import { ErrorSchema, FieldProps, IdSchema } from '@rjsf/utils';
-import type { JSONSchema7 } from 'json-schema';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import get from 'lodash/get';
 
 import OrchestratorFormStepper, {
   OrchestratorFormStep,
@@ -40,43 +41,62 @@ const StepperObjectField = ({
       "Stepper object field is not supported for schema that doesn't contain properties",
     );
   }
-  const steps = Object.entries(schema.properties).reduce<
-    OrchestratorFormStep[]
-  >((prev, [key, subSchema]) => {
-    if (typeof subSchema === 'boolean') {
-      return prev;
-    }
-    return [
-      ...prev,
-      {
-        content: (
-          <>
-            <ObjectField<JsonObject, JSONSchema7>
-              {...props}
-              schema={{ ...subSchema, title: '' }} // the title is in the step
-              uiSchema={uiSchema?.[key] || {}}
-              formData={(formData?.[key] as JsonObject) || {}}
-              onChange={data => {
-                onChange({ ...formData, [key]: data });
-              }}
-              idSchema={idSchema[key] as IdSchema<JsonObject>}
-              registry={{
-                ...registry,
-                fields: {
-                  ...registry.fields,
-                  ObjectField: ObjectField, // undo override of objectfield
-                },
-              }}
-              errorSchema={errorSchema?.[key] as ErrorSchema<JsonObject>}
-            />
-            <OrchestratorFormToolbar />
-          </>
-        ),
-        title: subSchema.title || key,
-        key,
-      },
-    ];
-  }, []);
+
+  const uiOrder = get(schema, 'ui:order') as string[] | undefined;
+  let sortedStepEntries = Object.entries(schema.properties);
+  if (uiOrder && uiOrder.length > 0) {
+    sortedStepEntries = uiOrder
+      .map(key =>
+        schema.properties?.[key] ? [key, schema.properties[key]] : undefined,
+      )
+      .filter(Boolean) as [string, JSONSchema7Definition][];
+
+    Object.entries(schema.properties).forEach(([key, subSchema]) => {
+      if (!uiOrder.includes(key)) {
+        sortedStepEntries.push([key, subSchema]);
+      }
+    });
+  }
+
+  const steps = sortedStepEntries.reduce<OrchestratorFormStep[]>(
+    (prev, [key, subSchema]) => {
+      if (typeof subSchema === 'boolean') {
+        return prev;
+      }
+
+      return [
+        ...prev,
+        {
+          content: (
+            <>
+              <ObjectField<JsonObject, JSONSchema7>
+                {...props}
+                schema={{ ...subSchema, title: '' }} // the title is in the step
+                uiSchema={uiSchema?.[key] || {}}
+                formData={(formData?.[key] as JsonObject) || {}}
+                onChange={data => {
+                  onChange({ ...formData, [key]: data });
+                }}
+                idSchema={idSchema[key] as IdSchema<JsonObject>}
+                registry={{
+                  ...registry,
+                  fields: {
+                    ...registry.fields,
+                    ObjectField: ObjectField, // undo override of objectfield
+                  },
+                }}
+                errorSchema={errorSchema?.[key] as ErrorSchema<JsonObject>}
+              />
+              <OrchestratorFormToolbar />
+            </>
+          ),
+          title: subSchema.title || key,
+          key,
+        },
+      ];
+    },
+    [],
+  );
   return <OrchestratorFormStepper steps={steps} />;
 };
 
