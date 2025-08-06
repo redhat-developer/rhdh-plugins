@@ -1,5 +1,18 @@
 ### Dependencies
 
+## 5.0.2
+
+### Patch Changes
+
+- 26e602a: add workflows tab to catalog entities
+- 8d89f18: Remove default React imports.
+- Updated dependencies [26e602a]
+- Updated dependencies [8d89f18]
+- Updated dependencies [10b01d4]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.0.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.2
+
 ## 5.0.1
 
 ### Patch Changes

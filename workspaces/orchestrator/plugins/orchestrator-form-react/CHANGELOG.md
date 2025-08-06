@@ -1,5 +1,15 @@
 ### Dependencies
 
+## 2.0.2
+
+### Patch Changes
+
+- 8d89f18: Remove default React imports.
+- 10b01d4: Adding support for top-level 'ui:order' to arrange wizard steps.
+- Updated dependencies [26e602a]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.2
+
 ## 2.0.1
 
 ### Patch Changes
