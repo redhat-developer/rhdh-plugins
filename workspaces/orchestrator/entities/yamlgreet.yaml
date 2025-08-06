@@ -4,6 +4,8 @@ metadata:
   name: greet
   title: Greeting
   description: Greeting workflow
+  annotations:
+    orchestrator.io/workflows: '["yamlgreet"]'
   tags:
     - orchestrator
 spec:
@@ -14,7 +16,7 @@ spec:
   parameters:
     - title: Choose Target Entity
       properties:
-        targetEntity:
+        target_entity:
           title: Target Entity for the workflow run
           description: Select an entity from the catalog
           ui:field: EntityPicker
@@ -44,7 +46,7 @@ spec:
       action: orchestrator:workflow:run
       input:
         workflow_id: yamlgreet
-        targetEntity: ${{ parameters.targetEntity }}
+        target_entity: ${{ parameters.target_entity }}
         parameters: # matches workflow's dataInputSchema
           language: ${{ parameters.language }}
           name: ${{ parameters.name }}

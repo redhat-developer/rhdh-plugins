@@ -248,6 +248,14 @@ const defaultEntityPage = (
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
     </EntityLayout.Route>
+
+    <EntityLayout.Route
+      if={IsOrchestratorCatalogTabAvailable}
+      path="/workflows"
+      title="Workflows"
+    >
+      <OrchestratorCatalogTab />
+    </EntityLayout.Route>
   </EntityLayout>
 );
 

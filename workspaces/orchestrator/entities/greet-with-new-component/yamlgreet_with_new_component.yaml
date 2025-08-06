@@ -4,6 +4,8 @@ metadata:
   name: greet-with-new-component
   title: Greeting with new component
   description: Greeting workflow
+  annotations:
+    orchestrator.io/workflows: '["yamlgreet"]'
   tags:
     - orchestrator
 spec:

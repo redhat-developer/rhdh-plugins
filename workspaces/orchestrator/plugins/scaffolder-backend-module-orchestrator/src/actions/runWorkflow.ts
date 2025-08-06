@@ -24,7 +24,7 @@ import { getOrchestratorApi, getRequestConfigOption } from './utils';
 
 type RunWorkflowTemplateActionInput = {
   workflow_id: string;
-  targetEntity: any;
+  target_entity: any;
   parameters: JsonObject;
 };
 type RunWorkflowTemplateActionOutput = { instanceUrl: string };
@@ -54,7 +54,7 @@ export const createRunWorkflowAction = (
     supportsDryRun: true,
     schema: {
       input: {
-        required: ['workflow_id', 'targetEntity', 'parameters'],
+        required: ['workflow_id', 'parameters'],
         type: 'object',
         properties: {
           workflow_id: {
@@ -63,7 +63,7 @@ export const createRunWorkflowAction = (
             description:
               'The workflow identifier from the workflow definition.',
           },
-          targetEntity: {
+          target_entity: {
             type: 'string',
             title: 'Target Entity',
             description: 'The target entity to run the workflow on.',
@@ -77,14 +77,12 @@ export const createRunWorkflowAction = (
       },
     },
     async handler(ctx) {
-      const templateEntity = ctx.templateInfo?.entityRef;
-      if (!templateEntity) {
+      const template_entity = ctx.templateInfo?.entityRef;
+      if (!template_entity) {
         throw new Error('No template entity');
       }
       const targetEntity =
-        ctx.input.targetEntity?.toString() ?? templateEntity?.toString();
-
-      const inputData = ctx.input.parameters;
+        ctx.input.target_entity?.toString() ?? template_entity?.toString();
 
       const [targetEntityKind, targetEntityNamespace, targetEntityName] =
         targetEntity?.split(/[:\/]/) || [];
@@ -108,7 +106,7 @@ export const createRunWorkflowAction = (
         const { data } = await api.executeWorkflow(
           ctx.input.workflow_id,
           {
-            inputData,
+            inputData: ctx.input.parameters,
             targetEntity,
           },
           reqConfigOption,

@@ -44,11 +44,9 @@ export const OrchestratorCatalogTab = () => {
   const targetEntity = `${kind}:${namespace}/${name}`.toLocaleLowerCase();
 
   return (
-    <>
-      <WorkflowsTabContent
-        workflowsArray={annotatedWorkflowIds}
-        targetEntity={targetEntity}
-      />
-    </>
+    <WorkflowsTabContent
+      workflowsArray={annotatedWorkflowIds}
+      targetEntity={targetEntity}
+    />
   );
 };
