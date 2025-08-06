@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.0.2
+
+### Patch Changes
+
+- 8d89f18: Remove default React imports.
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.2
+
 ## 1.0.1
 
 ### Patch Changes
