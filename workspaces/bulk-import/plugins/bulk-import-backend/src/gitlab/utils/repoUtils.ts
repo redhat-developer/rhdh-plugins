@@ -221,7 +221,6 @@ export async function addGitlabTokenOrgRepositories(
   deps: {
     logger: LoggerService;
   },
-  // octokit: Octokit,
   gitlab: any,
   credential: GitlabCredentials,
   org: string,
@@ -239,30 +238,51 @@ export async function addGitlabTokenOrgRepositories(
   let totalCount: number | undefined;
   try {
     if (search) {
-      // const query = `${search} in:name org:${org}`;
-      // const searchResp = await searchRepos(
-      //   octokit,
-      //   query,
-      //   pageNumber,
-      //   pageSize,
-      // );
-      // totalCount = searchResp.totalCount;
-      // searchResp.repositories.forEach(repo =>
-      //   repositories.set(repo.full_name, repo),
-      // );
+      // Use the group allProjects api with the search param.
+      // I noticed that using this api will only return values when 3 or more characters are used for the search
+      // that api gives us all the things the token has access
+      const { data, paginationInfo } = await gitlab.Groups.allProjects(org, {
+        perPage: pageSize,
+        search: search,
+        page: pageNumber,
+        showExpanded: true,
+      });
+
+      data?.forEach(
+        (repo: {
+          id: string;
+          path_with_namespace: string;
+          full_name: string;
+          name: any;
+          url: any;
+          html_url: any;
+          web_url: any;
+          default_branch: any;
+          updated_at: any;
+        }) => {
+          repositories.set(repo.path_with_namespace, {
+            name: repo.name,
+            path_with_namespace: repo.path_with_namespace,
+            full_name: repo.path_with_namespace,
+            url: `${gitlab.url}/projects/${repo.id}`,
+            html_url: repo.web_url,
+            default_branch: repo.default_branch,
+            updated_at: repo.updated_at,
+          });
+        },
+      );
+
+      totalCount = await computeTotalCountFromPaginationInfo(
+        deps,
+        paginationInfo,
+        pageSize, // Not thrilled with this for some reason
+      );
     } else {
       /**
        * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
        * These would include repositories they own, repositories where they are a collaborator,
        * and repositories that they can access through an organization membership.
        */
-      // const resp = await octokit.rest.repos.listForOrg({
-      //   org,
-      //   page: pageNumber,
-      //   per_page: pageSize,
-      //   sort: 'full_name',
-      //   direction: 'asc',
-      // });
       const { data, paginationInfo } = await gitlab.Groups.allProjects(org, {
         perPage: pageSize,
         page: pageNumber,
@@ -293,38 +313,11 @@ export async function addGitlabTokenOrgRepositories(
         },
       );
 
-      // resp?.data?.forEach(repo => {
-      //   const gitlabRepo: GitlabRepository = {
-      //     name: repo.name,
-      //     full_name: repo.full_name,
-      //     url: repo.url,
-      //     html_url: repo.html_url,
-      //     default_branch: repo.default_branch ?? 'main',
-      //     updated_at: repo.updated_at,
-      //   };
-      //   repositories.set(gitlabRepo.full_name, gitlabRepo);
-      // });
-
       totalCount = await computeTotalCountFromPaginationInfo(
         deps,
         paginationInfo,
         pageSize, // Not thrilled with this for some reason
       );
-
-      // totalCount = await computeTotalCountFromGitHubToken(
-      //   deps,
-      //   async (lastPageNumber: number) =>
-      //     octokit.repos
-      //       .listForOrg({
-      //         org,
-      //         page: lastPageNumber,
-      //         per_page: 100,
-      //       })
-      //       .then(lastPageResp => lastPageResp.data.length),
-      //   'repos.listForOrg',
-      //   resp?.data?.length,
-      //   resp?.headers?.link,
-      // );
     }
   } catch (err) {
     handleError(
