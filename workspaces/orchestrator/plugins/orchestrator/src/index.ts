@@ -16,3 +16,7 @@
 
 export { orchestratorPlugin, OrchestratorPage } from './plugin';
 export { default as OrchestratorIcon } from './components/OrchestratorIcon';
+export {
+  OrchestratorCatalogTab,
+  IsOrchestratorCatalogTabAvailable,
+} from './components/catalogComponents/CatalogTab';

@@ -377,7 +377,10 @@ describe('executeWorkflow', () => {
     };
     // Act
     const actualResultV2: ExecuteWorkflowResponseDTO = await v2.executeWorkflow(
-      workflowData,
+      {
+        inputData: workflowData,
+        targetEntity: 'someEntity',
+      },
       workflowInfo.id,
       'someUserEntity',
       'someToken',

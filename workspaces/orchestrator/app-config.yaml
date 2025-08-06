@@ -120,11 +120,11 @@ catalog:
   rules:
     - allow: [Component, System, Group, Resource, Location, Template, API]
   locations:
-    - type: url
-      target: https://github.com/janus-idp/backstage-showcase/blob/main/catalog-entities/all.yaml
+    # - type: url
+    #   target: https://github.com/janus-idp/backstage-showcase/blob/main/catalog-entities/all.yaml
 
-    - type: url
-      target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
+    # - type: url
+    #   target: https://github.com/redhat-developer/red-hat-developer-hub-software-templates/blob/main/templates.yaml
 
     - type: file
       target: ../../entities/users.yaml
@@ -133,6 +133,13 @@ catalog:
 
     - type: file
       target: ../../entities/templates.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
+      target: ../../entities/my-component.yaml
+      rules:
+        - allow: [Component]
 
     # - type: url
     #   target: https://github.com/mareklibra/generated-workflow-templates/blob/main/templates.yaml

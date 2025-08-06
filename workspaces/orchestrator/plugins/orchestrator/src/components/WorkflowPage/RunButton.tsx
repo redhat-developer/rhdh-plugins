@@ -31,12 +31,22 @@ import {
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
 
-export const RunButton = ({ isAvailable }: { isAvailable?: boolean }) => {
+export const RunButton = ({
+  isAvailable,
+  entityRef,
+}: {
+  isAvailable?: boolean;
+  entityRef?: string;
+}) => {
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const navigate = useNavigate();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const handleExecute = () => {
-    navigate(executeWorkflowLink({ workflowId }));
+    navigate(
+      entityRef
+        ? `${executeWorkflowLink({ workflowId })}?targetEntity=${entityRef}`
+        : executeWorkflowLink({ workflowId }),
+    );
   };
 
   const { loading: loadingPermission, allowed: canRun } =

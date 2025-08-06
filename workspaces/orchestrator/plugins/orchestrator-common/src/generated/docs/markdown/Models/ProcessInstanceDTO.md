@@ -15,6 +15,7 @@
 | **description** | **String** |  | [optional] [default to null] |
 | **workflowdata** | [**WorkflowDataDTO**](WorkflowDataDTO.md) |  | [optional] [default to null] |
 | **initiatorEntity** | **String** |  | [optional] [default to null] |
+| **targetEntity** | **String** |  | [optional] [default to null] |
 | **executionSummary** | **List** |  | [optional] [default to null] |
 | **nodes** | [**List**](NodeInstanceDTO.md) |  | [default to null] |
 | **error** | [**ProcessInstanceErrorDTO**](ProcessInstanceErrorDTO.md) |  | [optional] [default to null] |

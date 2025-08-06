@@ -28,7 +28,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
-import { workflowRouteRef } from '../../routes';
+import { entityWorkflowRouteRef, workflowRouteRef } from '../../routes';
 import ServerlessWorkflowEditor from './ServerlessWorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
 
@@ -53,6 +53,12 @@ export const WorkflowDetailsTabContent = ({
     return orchestratorApi.getWorkflowSource(workflowId);
   }, []);
 
+  const { kind, name, namespace } = useRouteRefParams(entityWorkflowRouteRef);
+  let entityRef: string | undefined = undefined;
+  if (kind && namespace && name) {
+    entityRef = `${kind}:${namespace}/${name}`;
+  }
+
   return (
     <Grid container item direction="column" xs={12} spacing={2}>
       {errorWorkflowOverview && (
@@ -66,7 +72,7 @@ export const WorkflowDetailsTabContent = ({
           loading={loadingWorkflowOverview}
         />
       </Grid>
-      {workflowOverviewDTO && adminView.allowed && value && (
+      {workflowOverviewDTO && adminView.allowed && value && !entityRef && (
         <Grid item>
           <InfoCard title="Workflow definition">
             <ServerlessWorkflowEditor
