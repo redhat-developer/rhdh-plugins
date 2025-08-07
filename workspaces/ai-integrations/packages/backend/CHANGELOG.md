@@ -1,5 +1,12 @@
 # backend
 
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [237c394]
+  - @red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend@0.2.1
+
 ## 0.0.5
 
 ### Patch Changes

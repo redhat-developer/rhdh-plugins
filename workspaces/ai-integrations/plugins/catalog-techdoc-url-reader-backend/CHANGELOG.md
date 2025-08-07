@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend
 
+## 0.2.1
+
+### Patch Changes
+
+- 237c394: removing temporary duplicate code for model catalog bridge config now that 'catalog-backend-module-model-config' exposes the requisite types/methods
+
 ## 0.2.0
 
 ### Minor Changes
