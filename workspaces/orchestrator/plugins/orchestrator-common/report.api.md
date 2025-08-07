@@ -1295,7 +1295,7 @@ export interface WorkflowInfo {
     // (undocumented)
     inputSchema?: JSONSchema7;
     // (undocumented)
-    metadata?: Map<string, string>;
+    metadata?: Record<string, string>;
     // (undocumented)
     name?: string;
     // (undocumented)
