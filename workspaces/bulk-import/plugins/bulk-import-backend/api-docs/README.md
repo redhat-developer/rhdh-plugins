@@ -10,6 +10,7 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 | ----------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | _ImportApi_       | [**createImportJobs**](Apis/ImportApi.md#createimportjobs)                                   | **POST** /imports                                      | Submit Import Jobs                                                                                                               |
 | _ImportApi_       | [**deleteImportByRepo**](Apis/ImportApi.md#deleteimportbyrepo)                               | **DELETE** /import/by-repo                             | Delete Import by repository                                                                                                      |
+| _ImportApi_       | [**executeTemplate**](Apis/ImportApi.md#executetemplate)                                     | **POST** /execute-template                             | Execute a scaffolder template for a list of repositories                                                                         |
 | _ImportApi_       | [**findAllImports**](Apis/ImportApi.md#findallimports)                                       | **GET** /imports                                       | Fetch Import Jobs                                                                                                                |
 | _ImportApi_       | [**findImportStatusByRepo**](Apis/ImportApi.md#findimportstatusbyrepo)                       | **GET** /import/by-repo                                | Get Import Status by repository                                                                                                  |
 | _ManagementApi_   | [**ping**](Apis/ManagementApi.md#ping)                                                       | **GET** /ping                                          | Check the health of the Bulk Import backend router                                                                               |
@@ -22,6 +23,7 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 ## Documentation for Models
 
 - [ApprovalTool](./Models/ApprovalTool.md)
+- [ExecuteTemplateRequest](./Models/ExecuteTemplateRequest.md)
 - [Import](./Models/Import.md)
 - [ImportJobListV2](./Models/ImportJobListV2.md)
 - [ImportRequest](./Models/ImportRequest.md)
@@ -37,6 +39,7 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 - [RepositoryList](./Models/RepositoryList.md)
 - [Source](./Models/Source.md)
 - [SourceImport](./Models/SourceImport.md)
+- [executeTemplate_202_response](./Models/executeTemplate_202_response.md)
 - [findAllImports_200_response](./Models/findAllImports_200_response.md)
 - [findAllImports_500_response](./Models/findAllImports_500_response.md)
 - [ping_200_response](./Models/ping_200_response.md)

@@ -1,0 +1,82 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: add-catalog-info
+  title: Add catalog-info.yaml to repo
+  description: Creates a catalog-info.yaml in the given GitHub repo if it does not exist.
+
+spec:
+  owner: user:default/guest
+  type: service
+
+  parameters:
+    - title: Provide repository details
+      required:
+        - repoUrl
+        - owner
+      properties:
+        repoUrl:
+          type: string
+          title: Repository URL (GitHub)
+          description: 'Format: github.com?repo=REPO_NAME&owner=OWNER_NAME'
+        owner:
+          type: string
+          title: Backstage Owner
+          description: e.g. user:default/andrienkoaleksandr
+
+  steps:
+    - id: fetchRepo
+      name: Fetch repository contents
+      # Download repository content directly to the the root directory of the working space Scaffolder
+      # Notice: fetch:template requires full http/https URL Github address.
+      action: fetch:template
+      input:
+        url: https://github.com/${{ parameters.repoUrl.split('owner=')[1] }}/${{ parameters.repoUrl.split('repo=')[1].split('&')[0] }}
+        revision: main
+        fetchDepth: 1
+        targetPath: .
+
+    - id: checkCatalogInfo
+      name: Read files in workspace root
+      action: fs:readdir
+      input:
+        paths:
+          - .
+
+    - id: checkFileExists
+      name: Check if catalog-info.yaml exists
+      action: roadiehq:utils:jsonata
+      input:
+        data: ${{ steps.checkCatalogInfo.output.files }}
+        expression: '"catalog-info.yaml" in $'
+
+    - id: createCatalogInfo
+      name: Create catalog-info.yaml
+      if: ${{ steps.checkFileExists.output.result }} === false
+      action: roadiehq:utils:fs:write
+      input:
+        path: ./catalog-info.yaml
+        content: |
+          apiVersion: backstage.io/v1alpha1
+          kind: Component
+          metadata:
+            # The component name is taken from the repository name.
+            name: ${{ parameters.repoUrl.split('repo=')[1].split('&')[0] }}
+            annotations:
+              # project-slug has to be in format OWNER_NAME/REPO_NAME
+              github.com/project-slug: ${{ parameters.repoUrl.split('owner=')[1] }}/${{ parameters.repoUrl.split('repo=')[1].split('&')[0] }}
+          spec:
+            type: other
+            lifecycle: unknown
+            owner: ${{ parameters.owner }}
+
+    - id: publish
+      name: Create PR to add catalog-info.yaml
+      # Create pull request to add catalog-info.yaml to the repository.
+      action: publish:github:pull-request
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        branchName: add-catalog-info-${{ parameters.repoUrl.split('repo=')[1].split('&')[0] }}
+        targetBranchName: ${{ steps.fetchRepo.output.targetBranchName }}
+        title: 'Add catalog-info.yaml'
+        description: 'This PR adds a default catalog-info.yaml for Backstage.'

@@ -4,6 +4,7 @@ Apis/ManagementApi.md
 Apis/OrganizationApi.md
 Apis/RepositoryApi.md
 Models/ApprovalTool.md
+Models/ExecuteTemplateRequest.md
 Models/Import.md
 Models/ImportJobListV2.md
 Models/ImportRequest.md
@@ -19,6 +20,7 @@ Models/Repository.md
 Models/RepositoryList.md
 Models/Source.md
 Models/SourceImport.md
+Models/executeTemplate_202_response.md
 Models/findAllImports_200_response.md
 Models/findAllImports_500_response.md
 Models/ping_200_response.md

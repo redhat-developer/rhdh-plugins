@@ -1,0 +1,6 @@
+github.com?repo=shellImages&owner=AndrienkoAleksandr
+user:default/andrienkoaleksandr
+
+export NODE_OPTIONS=--no-node-snapshot
+
+https://github.com/shellImages/AndrienkoAleksandr
