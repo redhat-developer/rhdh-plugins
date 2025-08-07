@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 5.0.3
+
+### Patch Changes
+
+- 843394c: updated frontend dynamic plugin configuration to include entity tab
+
 ## 5.0.2
 
 ### Patch Changes
