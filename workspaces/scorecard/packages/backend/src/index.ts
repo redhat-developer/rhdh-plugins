@@ -68,4 +68,9 @@ backend.add(
     '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github'
   ),
 );
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira'
+  ),
+);
 backend.start();
