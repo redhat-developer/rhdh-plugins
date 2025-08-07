@@ -19,8 +19,8 @@ import { mockServices } from '@backstage/backend-test-utils';
 import {
   ModeCatalogBridgeTechdocUrlReader,
   ModelCatalogBridgeUrlReaderServiceReadTreeResponse,
-  readModelCatalogApiEntityConfigs,
 } from './plugin';
+import { readModelCatalogApiEntityConfigs } from '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
