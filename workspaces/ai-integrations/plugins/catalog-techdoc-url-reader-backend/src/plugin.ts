@@ -36,7 +36,7 @@ import {
   readSchedulerServiceTaskScheduleDefinitionFromConfig,
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
-import { assertError, NotFoundError } from '@backstage/errors';
+import { NotFoundError } from '@backstage/errors';
 import { Readable } from 'stream';
 import fs from 'fs';
 import platformPath from 'path';
@@ -118,20 +118,14 @@ export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
         platformPath.join(this.workDir, 'backstage-'),
       ));
 
-    const filePath1 = platformPath.join(dir, 'index.md');
-    try {
-      const buf = await this.buffer;
-      await fs.promises.writeFile(filePath1, buf);
-    } catch (error) {
-      this.logger.error(`Error writing to file ${filePath1}:`, error);
-    }
     const subDir = platformPath.join(dir, 'docs');
-    const filePath2 = platformPath.join(subDir, 'index.md');
+    const filePath = platformPath.join(subDir, 'index.md');
     try {
       fs.mkdirSync(subDir);
-      fs.copyFileSync(filePath1, filePath2);
+      const buf = await this.buffer;
+      await fs.promises.writeFile(filePath, buf);
     } catch (error) {
-      this.logger.error(`Error writing to file ${filePath2}:`, error);
+      this.logger.error(`Error writing to file ${filePath}:`, error);
     }
 
     return dir;
@@ -214,36 +208,44 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     url: string,
     options?: UrlReaderServiceSearchOptions,
   ): Promise<UrlReaderServiceSearchResponse> {
-    this.logger.info(`ModelCatalogBridgeTechdocUrlReader.search of ${url}`);
-    const { pathname } = new URL(url);
+    this.logger.info(
+      `ModelCatalogBridgeTechdocUrlReader.search of ${url} with options ${JSON.stringify(
+        options,
+      )}`,
+    );
 
-    if (pathname.match(/[*?]/)) {
-      throw new Error('Unsupported search pattern URL');
-    }
+    throw new Error(
+      'ModeCatalogBridgeTechdocUrlReader does not implement search',
+    );
+    // const { pathname } = new URL(url);
 
-    try {
-      const data = await this.readUrl(url, options);
+    // if (pathname.match(/[*?]/)) {
+    //   throw new Error('Unsupported search pattern URL');
+    // }
 
-      return {
-        files: [
-          {
-            url: url,
-            content: data.buffer,
-            lastModifiedAt: data.lastModifiedAt,
-          },
-        ],
-        etag: data.etag ?? '',
-      };
-    } catch (error) {
-      assertError(error);
-      if (error.name === 'NotFoundError') {
-        return {
-          files: [],
-          etag: '',
-        };
-      }
-      throw error;
-    }
+    // try {
+    //   const data = await this.readUrl(url, options);
+
+    //   return {
+    //     files: [
+    //       {
+    //         url: url,
+    //         content: data.buffer,
+    //         lastModifiedAt: data.lastModifiedAt,
+    //       },
+    //     ],
+    //     etag: data.etag ?? '',
+    //   };
+    // } catch (error) {
+    //   assertError(error);
+    //   if (error.name === 'NotFoundError') {
+    //     return {
+    //       files: [],
+    //       etag: '',
+    //     };
+    //   }
+    //   throw error;
+    // }
   }
 
   async readTree(

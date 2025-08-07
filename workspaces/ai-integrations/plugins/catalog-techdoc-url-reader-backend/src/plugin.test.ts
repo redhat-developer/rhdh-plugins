@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { ConfigReader } from '@backstage/config';
-import { NotFoundError } from '@backstage/errors';
+// import { NotFoundError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
 import {
   ModeCatalogBridgeTechdocUrlReader,
@@ -171,116 +171,6 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
     });
   });
 
-  // describe('readUrl', () => {
-  //   it('should read a URL successfully', async () => {
-  //     const reader = newReader({});
-  //     const mockResponse = {
-  //       ok: true,
-  //       buffer: async () => Buffer.from('content'),
-  //       headers: new Map(),
-  //     };
-  //     fetch.mockResolvedValue(mockResponse);
-
-  //     const response = await reader.readUrl('http://localhost:9090/modelcard');
-  //     expect(fetch).toHaveBeenCalledWith('http://localhost:9090/modelcard', {
-  //       signal: undefined,
-  //     });
-  //     const buffer = await response.buffer();
-  //     expect(buffer.toString()).toBe('content');
-  //   });
-
-  //   it('should throw NotFoundError for 404 responses', async () => {
-  //     const reader = newReader({});
-  //     const mockResponse = {
-  //       ok: false,
-  //       status: 404,
-  //       statusText: 'Not Found',
-  //     };
-  //     fetch.mockResolvedValue(mockResponse);
-
-  //     await expect(
-  //       reader.readUrl('http://localhost:9090/modelcard'),
-  //     ).rejects.toThrow(NotFoundError);
-  //   });
-
-  //   it('should throw Error for other non-ok responses', async () => {
-  //     const reader = newReader({});
-  //     const mockResponse = {
-  //       ok: false,
-  //       status: 500,
-  //       statusText: 'Internal Server Error',
-  //     };
-  //     fetch.mockResolvedValue(mockResponse);
-
-  //     await expect(
-  //       reader.readUrl('http://localhost:9090/modelcard'),
-  //     ).rejects.toThrow(
-  //       'could not read http://localhost:9090/modelcard, 500 Internal Server Error',
-  //     );
-  //   });
-
-  //   it('should throw Error on fetch error', async () => {
-  //     const reader = newReader({});
-  //     fetch.mockRejectedValue(new Error('network error'));
-
-  //     await expect(
-  //       reader.readUrl('http://localhost:9090/modelcard'),
-  //     ).rejects.toThrow(
-  //       'Unable to read http://localhost:9090/modelcard, Error: network error',
-  //     );
-  //   });
-  // });
-
-  describe('search', () => {
-    it('should return files for a successful search', async () => {
-      const reader = newReader({});
-      const buffer = Buffer.from('content');
-      const lastModifiedAt = new Date();
-      const etag = 'my-etag';
-
-      jest.spyOn(reader, 'readUrl').mockResolvedValue({
-        buffer: async () => buffer,
-        etag,
-        lastModifiedAt,
-        stream: () => new Readable(),
-      });
-
-      const result = await reader.search('https://localhost:9090/modelcard');
-      expect(result.files).toHaveLength(1);
-      expect(result.files[0].url).toBe('https://localhost:9090/modelcard');
-      expect((await result.files[0].content()).toString()).toBe('content');
-      expect(result.files[0].lastModifiedAt).toBe(lastModifiedAt);
-      expect(result.etag).toBe(etag);
-    });
-
-    it('should return empty files for a NotFoundError', async () => {
-      const reader = newReader({});
-      jest
-        .spyOn(reader, 'readUrl')
-        .mockRejectedValue(new NotFoundError('not found'));
-
-      const result = await reader.search('https://localhost:9090/modelcard');
-      expect(result.files).toHaveLength(0);
-      expect(result.etag).toBe('');
-    });
-
-    it('should re-throw other errors', async () => {
-      const reader = newReader({});
-      jest.spyOn(reader, 'readUrl').mockRejectedValue(new Error('some error'));
-
-      await expect(
-        reader.search('https://localhost:9090/modelcard'),
-      ).rejects.toThrow('some error');
-    });
-
-    it('should throw for unsupported search patterns', async () => {
-      const reader = newReader({});
-      await expect(
-        reader.search('https://localhost:9090/modelcard*'),
-      ).rejects.toThrow('Unsupported search pattern URL');
-    });
-  });
-
   describe('readTree', () => {
     it('should return a ModelCatalogBridgeUrlReaderServiceReadTreeResponse', async () => {
       const reader = newReader({});
@@ -303,6 +193,15 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
       );
       // @ts-ignore
       expect(response.etag).toBe(etag);
+    });
+  });
+
+  describe('search', () => {
+    it('should throw', async () => {
+      const reader = newReader({});
+      await expect(reader.search('some-url')).rejects.toThrow(
+        'ModeCatalogBridgeTechdocUrlReader does not implement search',
+      );
     });
   });
 });
@@ -359,14 +258,10 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
         path.join(workDir, 'backstage-'),
       );
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
-        path.join(tmpobj.name, 'index.md'),
+        path.join(tmpobj.name, 'docs', 'index.md'),
         await buffer,
       );
       expect(fs.mkdirSync).toHaveBeenCalledWith(path.join(tmpobj.name, 'docs'));
-      expect(fs.copyFileSync).toHaveBeenCalledWith(
-        path.join(tmpobj.name, 'index.md'),
-        path.join(tmpobj.name, 'docs', 'index.md'),
-      );
       expect(resultDir).toBe(tmpobj.name);
     });
 
@@ -383,14 +278,10 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
 
       expect(fs.promises.mkdtemp).not.toHaveBeenCalled();
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
-        path.join(targetDir, 'index.md'),
+        path.join(targetDir, 'docs', 'index.md'),
         await buffer,
       );
       expect(fs.mkdirSync).toHaveBeenCalledWith(path.join(targetDir, 'docs'));
-      expect(fs.copyFileSync).toHaveBeenCalledWith(
-        path.join(targetDir, 'index.md'),
-        path.join(targetDir, 'docs', 'index.md'),
-      );
       expect(resultDir).toBe(targetDir);
     });
   });
