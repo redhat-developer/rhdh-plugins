@@ -4,7 +4,7 @@ The orchestrator workspace is structured like a standard Backstage application. 
 
 ## Prerequisites
 
-- Docker up and running
+- Docker or podman up and running
 - Developer tools installed:
   - **Fedora/Red Hat-based Linux**:
     ```bash
