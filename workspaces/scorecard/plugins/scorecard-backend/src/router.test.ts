@@ -23,6 +23,7 @@ import request from 'supertest';
 
 import { createRouter } from './router';
 import { TodoListService } from './services/TodoListService/types';
+import { MetricProvidersRegistry } from './services/MetricProviders/MetricProvidersRegistry';
 
 const mockTodoItem = {
   title: 'Do the thing',
@@ -46,6 +47,7 @@ describe('createRouter', () => {
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
       todoListService,
+      metricProvidersRegistry: new MetricProvidersRegistry(),
     });
     app = express();
     app.use(router);
