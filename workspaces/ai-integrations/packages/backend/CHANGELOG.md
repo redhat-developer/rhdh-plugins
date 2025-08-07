@@ -1,5 +1,13 @@
 # backend
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [7dc735d]
+  - @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog@0.5.0
+  - @red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend@0.2.0
+
 ## 0.0.4
 
 ### Patch Changes
