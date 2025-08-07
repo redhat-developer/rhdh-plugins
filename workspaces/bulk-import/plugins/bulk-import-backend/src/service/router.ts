@@ -58,6 +58,7 @@ import {
   findAllRepositories,
   findRepositoriesByOrganization,
 } from './handlers/repository';
+import { executeTemplate } from './handlers/scaffolder/execute-template';
 
 /**
  * Router Options
@@ -85,6 +86,7 @@ namespace Operations {
   export const CREATE_IMPORT_JOBS = 'createImportJobs';
   export const FIND_IMPORT_STATUS_BY_REPO = 'findImportStatusByRepo';
   export const DELETE_IMPORT_BY_REPO = 'deleteImportByRepo';
+  export const EXECUTE_TEMPLATE = 'executeTemplate';
 }
 
 /**
@@ -105,6 +107,10 @@ export async function createRouter(
     catalogApi,
     auditor: auditor,
   } = options;
+
+  if (!config.has('bulkImport.importTemplate')) {
+    throw new Error('Missing required config value: bulkImport.importTemplate');
+  }
 
   const githubApiService = new GithubApiService(logger, config, cache);
   const catalogHttpClient = new CatalogHttpClient({
@@ -365,6 +371,27 @@ export async function createRouter(
     },
   );
 
+  api.register(
+    Operations.EXECUTE_TEMPLATE,
+    async (
+      c: Context<Paths.ExecuteTemplate.RequestBody>,
+      _req: Request,
+      res: Response,
+    ) => {
+      const { repositories = [], templateParameters = {} } =
+        c.request.requestBody;
+      const response = await executeTemplate(
+        discovery,
+        logger,
+        auth,
+        config,
+        repositories,
+        templateParameters,
+      );
+      return res.status(202).json(response);
+    },
+  );
+
   const router = Router();
   router.use(express.json());
 
@@ -451,6 +478,11 @@ async function createAuditorEventByOperationId(
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'create',
         dryRun: req.query.dryRun,
+      });
+      break;
+    case Operations.EXECUTE_TEMPLATE:
+      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
+        actionType: 'create',
       });
       break;
     case Operations.FIND_IMPORT_STATUS_BY_REPO:
