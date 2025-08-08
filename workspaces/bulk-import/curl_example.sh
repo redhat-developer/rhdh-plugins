@@ -28,3 +28,8 @@ echo "Get all repositories from DB"
 curl -X GET http://localhost:7007/api/bulk-import/repositories/from-db \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer ${token}"
+
+echo "Get repository from DB by name"
+curl -X GET "http://localhost:7007/api/bulk-import/repositories/db?repositoryName=https://github.com/AndrienkoAleksandr/shellImages" \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer ${token}"

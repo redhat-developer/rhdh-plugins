@@ -15,17 +15,25 @@
  */
 
 exports.up = function up(knex) {
-  return knex.schema.createTable('scaffolder_tasks', table => {
-    table.string('taskId').primary();
-    table.string('repoUrl').notNullable();
-    table.timestamp('createdAt').defaultTo(knex.fn.now());
-  });
+  return knex.schema
+    .createTable('repositories', function (table) {
+      table.increments('id').primary();
+      table.string('url').notNullable().unique();
+    })
+    .createTable('scaffolder_tasks', function (table) {
+      table.string('taskId').primary();
+      table.json('scaffolderOptions');
+      table.integer('repositoryId').notNullable();
+      table
+        .foreign('repositoryId')
+        .references('id')
+        .inTable('repositories')
+        .onDelete('CASCADE');
+    });
 };
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 exports.down = function down(knex) {
-  return knex.schema.dropTable('scaffolder_tasks');
+  return knex.schema
+    .dropTableIfExists('scaffolder_tasks')
+    .dropTableIfExists('repositories');
 };

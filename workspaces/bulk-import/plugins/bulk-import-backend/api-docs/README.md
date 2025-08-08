@@ -17,6 +17,8 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 | _OrganizationApi_ | [**findAllOrganizations**](Apis/OrganizationApi.md#findallorganizations)                     | **GET** /organizations                                 | Fetch Organizations accessible by Backstage Github Integrations                                                                  |
 | _OrganizationApi_ | [**findRepositoriesByOrganization**](Apis/OrganizationApi.md#findrepositoriesbyorganization) | **GET** /organizations/{organizationName}/repositories | Fetch Repositories in the specified GitHub organization, provided it is accessible by any of the configured GitHub Integrations. |
 | _RepositoryApi_   | [**findAllRepositories**](Apis/RepositoryApi.md#findallrepositories)                         | **GET** /repositories                                  | Fetch Organization Repositories accessible by Backstage Github Integrations                                                      |
+| _RepositoryApi_   | [**findAllRepositoriesFromDb**](Apis/RepositoryApi.md#findallrepositoriesfromdb)             | **GET** /repositories/from-db                          | Fetch all Repositories from the database                                                                                         |
+| _RepositoryApi_   | [**findRepositoryFromDbByName**](Apis/RepositoryApi.md#findrepositoryfromdbbyname)           | **GET** /repositories/db                               | Fetch a single Repository from the database by its name                                                                          |
 
 <a name="documentation-for-models"></a>
 
@@ -42,6 +44,7 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 - [executeTemplate_202_response](./Models/executeTemplate_202_response.md)
 - [findAllImports_200_response](./Models/findAllImports_200_response.md)
 - [findAllImports_500_response](./Models/findAllImports_500_response.md)
+- [findRepositoryFromDbByName_404_response](./Models/findRepositoryFromDbByName_404_response.md)
 - [ping_200_response](./Models/ping_200_response.md)
 
 <a name="documentation-for-authorization"></a>

@@ -2,9 +2,11 @@
 
 All URIs are relative to _http://localhost:7007/api/bulk-import_
 
-| Method                                                          | HTTP request          | Description                                                                 |
-| --------------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
-| [**findAllRepositories**](RepositoryApi.md#findAllRepositories) | **GET** /repositories | Fetch Organization Repositories accessible by Backstage Github Integrations |
+| Method                                                                        | HTTP request                  | Description                                                                 |
+| ----------------------------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------- |
+| [**findAllRepositories**](RepositoryApi.md#findAllRepositories)               | **GET** /repositories         | Fetch Organization Repositories accessible by Backstage Github Integrations |
+| [**findAllRepositoriesFromDb**](RepositoryApi.md#findAllRepositoriesFromDb)   | **GET** /repositories/from-db | Fetch all Repositories from the database                                    |
+| [**findRepositoryFromDbByName**](RepositoryApi.md#findRepositoryFromDbByName) | **GET** /repositories/db      | Fetch a single Repository from the database by its name                     |
 
 <a name="findAllRepositories"></a>
 
@@ -26,6 +28,58 @@ Fetch Organization Repositories accessible by Backstage Github Integrations
 ### Return type
 
 [**RepositoryList**](../Models/RepositoryList.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="findAllRepositoriesFromDb"></a>
+
+# **findAllRepositoriesFromDb**
+
+> RepositoryList findAllRepositoriesFromDb()
+
+Fetch all Repositories from the database
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**RepositoryList**](../Models/RepositoryList.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="findRepositoryFromDbByName"></a>
+
+# **findRepositoryFromDbByName**
+
+> Repository findRepositoryFromDbByName(repositoryName)
+
+Fetch a single Repository from the database by its name
+
+### Parameters
+
+| Name               | Type       | Description     | Notes             |
+| ------------------ | ---------- | --------------- | ----------------- |
+| **repositoryName** | **String** | Repository name | [default to null] |
+
+### Return type
+
+[**Repository**](../Models/Repository.md)
 
 ### Authorization
 
