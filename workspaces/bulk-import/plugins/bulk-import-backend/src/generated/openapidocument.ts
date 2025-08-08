@@ -277,6 +277,52 @@ const OPENAPI = `
         }
       }
     },
+    "/repositories/from-db": {
+      "get": {
+        "operationId": "findAllRepositoriesFromDb",
+        "summary": "Fetch Organization Repositories accessible by Backstage Github Integrations",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Repository"
+        ],
+        "responses": {
+          "200": {
+            "description": "Repository list was fetched successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryList"
+                },
+                "examples": {
+                  "multipleRepos": {
+                    "$ref": "#/components/examples/multipleRepos"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error when there are errors and no repository is returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryList"
+                },
+                "examples": {
+                  "repositoryListErrors": {
+                    "$ref": "#/components/examples/repositoryListErrors"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/imports": {
       "get": {
         "operationId": "findAllImports",

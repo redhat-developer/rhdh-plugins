@@ -418,6 +418,14 @@ declare namespace Paths {
         /* Repository List */ Components.Schemas.RepositoryList;
     }
   }
+  namespace FindAllRepositoriesFromDb {
+    namespace Responses {
+      export type $200 =
+        /* Repository List */ Components.Schemas.RepositoryList;
+      export type $500 =
+        /* Repository List */ Components.Schemas.RepositoryList;
+    }
+  }
   namespace FindImportStatusByRepo {
     namespace Parameters {
       export type DefaultBranch = string;
@@ -501,6 +509,14 @@ export interface OperationMethods {
     data?: any,
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.FindAllRepositories.Responses.$200>;
+  /**
+   * findAllRepositoriesFromDb - Fetch Organization Repositories accessible by Backstage Github Integrations
+   */
+  'findAllRepositoriesFromDb'(
+    parameters?: Parameters<Paths.FindAllRepositoriesFromDb.QueryParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.FindAllRepositoriesFromDb.Responses.$200>;
   /**
    * findAllImports - Fetch Import Jobs
    */
@@ -589,6 +605,16 @@ export interface PathsDictionary {
       data?: any,
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.FindAllRepositories.Responses.$200>;
+  };
+  ['/repositories/from-db']: {
+    /**
+     * findAllRepositoriesFromDb - Fetch Organization Repositories accessible by Backstage Github Integrations
+     */
+    'get'(
+      parameters?: Parameters<Paths.FindAllRepositoriesFromDb.QueryParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.FindAllRepositoriesFromDb.Responses.$200>;
   };
   ['/imports']: {
     /**

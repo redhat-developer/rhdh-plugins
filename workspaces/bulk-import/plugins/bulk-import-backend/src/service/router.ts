@@ -57,6 +57,7 @@ import { findAllOrganizations } from './handlers/organization';
 import { ping } from './handlers/ping';
 import {
   findAllRepositories,
+  findAllRepositoriesFromDb,
   findRepositoriesByOrganization,
 } from './handlers/repository';
 import { executeTemplate } from './handlers/scaffolder/execute-template';
@@ -82,6 +83,8 @@ namespace Operations {
   export const PING = 'ping';
   export const FIND_ALL_ORGANIZATIONS = 'findAllOrganizations';
   export const FIND_ALL_REPOSITORIES = 'findAllRepositories';
+  // todo: rename it.
+  export const FIND_ALL_REPOSITORIES_FROM_DB = 'findAllRepositoriesFromDb';
   export const FIND_REPOSITORIES_BY_ORGANIZATION =
     'findRepositoriesByOrganization';
   export const FIND_ALL_IMPORTS = 'findAllImports';
@@ -216,6 +219,17 @@ export async function createRouter(
         pagePerIntegration: q.pagePerIntegration,
         sizePerIntegration: q.sizePerIntegration,
       } as Components.Schemas.RepositoryList);
+    },
+  );
+
+  api.register(
+    Operations.FIND_ALL_REPOSITORIES_FROM_DB,
+    async (_c: Context, _req: Request, res: Response) => {
+      const response = await findAllRepositoriesFromDb({
+        logger,
+        database,
+      });
+      return res.status(response.statusCode).json(response.responseBody);
     },
   );
 
@@ -466,6 +480,11 @@ async function createAuditorEventByOperationId(
       auditorEvent = await auditCreateEvent(auditor, 'repo-read', req, {
         queryType: req.query.search ? 'by-query' : 'all',
         search: req.query.search,
+      });
+      break;
+    case Operations.FIND_ALL_REPOSITORIES_FROM_DB:
+      auditorEvent = await auditCreateEvent(auditor, 'repo-read-db', req, {
+        queryType: 'all',
       });
       break;
     case Operations.FIND_REPOSITORIES_BY_ORGANIZATION: {

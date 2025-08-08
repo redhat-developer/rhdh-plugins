@@ -18,7 +18,7 @@ spec:
         repoUrl:
           type: string
           title: Repository URL (GitHub)
-          description: 'Format: github.com?repo=REPO_NAME&owner=OWNER_NAME'
+          description: 'e.g. https://github.com/owner/repo'
         owner:
           type: string
           title: Backstage Owner
@@ -31,8 +31,8 @@ spec:
       # Notice: fetch:template requires full http/https URL Github address.
       action: fetch:template
       input:
-        url: https://github.com/${{ parameters.repoUrl.split('owner=')[1] }}/${{ parameters.repoUrl.split('repo=')[1].split('&')[0] }}
-        revision: main
+        url: ${{ parameters.repoUrl }}
+        revision: ${{ steps.fetchRepo.output.targetBranchName }}
         fetchDepth: 1
         targetPath: .
 
@@ -61,10 +61,10 @@ spec:
           kind: Component
           metadata:
             # The component name is taken from the repository name.
-            name: ${{ parameters.repoUrl.split('repo=')[1].split('&')[0] }}
+            name: ${{ parameters.repoUrl.split('/')[4] }}
             annotations:
               # project-slug has to be in format OWNER_NAME/REPO_NAME
-              github.com/project-slug: ${{ parameters.repoUrl.split('owner=')[1] }}/${{ parameters.repoUrl.split('repo=')[1].split('&')[0] }}
+              github.com/project-slug: ${{ parameters.repoUrl.split('.com/')[1] }}
           spec:
             type: other
             lifecycle: unknown
@@ -75,8 +75,8 @@ spec:
       # Create pull request to add catalog-info.yaml to the repository.
       action: publish:github:pull-request
       input:
-        repoUrl: ${{ parameters.repoUrl }}
-        branchName: add-catalog-info-${{ parameters.repoUrl.split('repo=')[1].split('&')[0] }}
+        repoUrl: github.com?repo=${{ parameters.repoUrl.split('/')[4] }}&owner=${{ parameters.repoUrl.split('/')[3] }}
+        branchName: add-catalog-info-${{ parameters.repoUrl.split('/')[4] }}
         targetBranchName: ${{ steps.fetchRepo.output.targetBranchName }}
         title: 'Add catalog-info.yaml'
         description: 'This PR adds a default catalog-info.yaml for Backstage.'
