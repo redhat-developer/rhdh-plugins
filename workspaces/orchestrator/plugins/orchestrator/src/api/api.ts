@@ -37,6 +37,7 @@ export interface OrchestratorApi {
   retriggerInstance(
     workflowId: string,
     instanceId: string,
+    authTokens?: AuthToken[],
   ): Promise<AxiosResponse<object>>;
 
   executeWorkflow(args: {

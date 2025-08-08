@@ -13,14 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { JsonObject, JsonValue } from '@backstage/types';
 
-export * from './types';
-export * from './generated/api/definition';
-export * from './generated/client';
-export * from './constants';
-export * from './models';
-export * from './workflow';
-export * from './QueryParams';
-export * from './utils';
-export * from './permissions';
-export * from './auth';
+export function isJsonObject(value?: JsonValue): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}

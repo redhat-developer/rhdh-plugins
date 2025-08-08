@@ -509,6 +509,8 @@ function setupInternalRoutes(
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
       const instanceId = c.request.params.instanceId as string;
+      const token = req.headers.authorization?.split(' ')[1];
+      const retriggerInstanceRequestDTO = req.body;
 
       const auditEvent = await auditor.createEvent({
         eventId: 'retrigger-instance',
@@ -533,7 +535,12 @@ function setupInternalRoutes(
       }
 
       await routerApi.v2
-        .retriggerInstance(workflowId, instanceId)
+        .retriggerInstance(
+          workflowId,
+          instanceId,
+          retriggerInstanceRequestDTO,
+          token,
+        )
         .then(result => {
           auditEvent.success();
           return res.status(200).json(result);

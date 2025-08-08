@@ -345,7 +345,7 @@ No authorization required
 
 <a name="retriggerInstance"></a>
 # **retriggerInstance**
-> Object retriggerInstance(workflowId, instanceId)
+> Object retriggerInstance(workflowId, instanceId, RetriggerInstanceRequestDTO)
 
 Retrigger an instance
 
@@ -357,6 +357,7 @@ Retrigger an instance
 |------------- | ------------- | ------------- | -------------|
 | **workflowId** | **String**| ID of the workflow | [default to null] |
 | **instanceId** | **String**| ID of the instance to retrigger | [default to null] |
+| **RetriggerInstanceRequestDTO** | [**RetriggerInstanceRequestDTO**](../Models/RetriggerInstanceRequestDTO.md)|  | |
 
 ### Return type
 
@@ -368,6 +369,6 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 

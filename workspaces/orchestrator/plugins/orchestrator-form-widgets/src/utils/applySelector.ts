@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 import jsonata from 'jsonata';
-import { JsonArray, JsonObject, JsonValue } from '@backstage/types';
-
-export function isJsonObject(value?: JsonValue): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+import { JsonArray, JsonObject } from '@backstage/types';
+import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 export const applySelectorArray = async (
   data: JsonObject | JsonArray,
