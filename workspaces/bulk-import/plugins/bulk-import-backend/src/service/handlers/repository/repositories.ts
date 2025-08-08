@@ -28,6 +28,7 @@ import type {
   GithubApiService,
   GithubRepositoryResponse,
 } from '../../../github';
+import { ScaffolderTaskDao } from '../../dao/scaffolder-task-dao';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -89,13 +90,12 @@ export async function findAllRepositoriesFromDb(deps: {
   logger: LoggerService;
   database: DatabaseService;
 }): Promise<HandlerResponse<Components.Schemas.RepositoryList>> {
-  deps.logger.debug('Getting all repositories from database..');
+  const scaffolderTaskDao = new ScaffolderTaskDao(deps.logger, deps.database);
 
   try {
-    const knex = await deps.database.getClient();
-    const tasks = await knex('scaffolder_tasks').select('repoUrl', 'createdAt');
+    const repoList = await scaffolderTaskDao.findAllRepositories();
 
-    if (!tasks || tasks.length === 0) {
+    if (repoList.length === 0) {
       return {
         statusCode: 200,
         responseBody: {
@@ -104,24 +104,6 @@ export async function findAllRepositoriesFromDb(deps: {
         },
       };
     }
-
-    const repoList: Components.Schemas.Repository[] = tasks
-      .map(task => {
-        try {
-          const gitUrl = gitUrlParse(task.repoUrl);
-          return {
-            id: `${gitUrl.organization}/${gitUrl.name}`,
-            name: gitUrl.name,
-            organization: gitUrl.organization,
-            url: task.repoUrl,
-            lastUpdate: task.createdAt,
-          };
-        } catch (e: any) {
-          deps.logger.warn(`Failed to parse repoUrl: ${task.repoUrl}`, e);
-          return null;
-        }
-      })
-      .filter((r): r is NonNullable<typeof r> => r !== null);
 
     sortRepos(repoList);
 

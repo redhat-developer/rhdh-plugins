@@ -21,6 +21,8 @@ import {
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 
+import { ScaffolderTaskDao } from '../../dao/scaffolder-task-dao';
+
 export const executeTemplate = async (
   discovery: DiscoveryService,
   logger: LoggerService,
@@ -65,14 +67,14 @@ export const executeTemplate = async (
     return data.id;
   };
 
+  const scaffolderTaskDao = new ScaffolderTaskDao(logger, database);
   if (repositories && repositories.length > 0) {
     for (const repo of repositories) {
       const taskId = await execute({
         repoUrl: repo,
         ...templateParameters,
       });
-      const knex = await database.getClient();
-      await knex('scaffolder_tasks').insert({ taskId, repoUrl: repo });
+      await scaffolderTaskDao.insertTask(taskId, repo);
       taskIds.push(taskId);
       logger.info(`Started scaffolder task ${taskId} for ${repo}`);
     }
