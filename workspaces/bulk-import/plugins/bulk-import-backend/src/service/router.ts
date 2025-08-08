@@ -20,6 +20,7 @@ import type {
   AuditorServiceEvent,
   AuthService,
   CacheService,
+  DatabaseService,
   DiscoveryService,
   HttpAuthService,
   LoggerService,
@@ -74,6 +75,7 @@ export interface RouterOptions {
   auth: AuthService;
   catalogApi: CatalogApi;
   auditor: AuditorService;
+  database: DatabaseService;
 }
 
 namespace Operations {
@@ -106,6 +108,7 @@ export async function createRouter(
     discovery,
     catalogApi,
     auditor: auditor,
+    database,
   } = options;
 
   if (!config.has('bulkImport.importTemplate')) {
@@ -388,6 +391,7 @@ export async function createRouter(
         logger,
         auth,
         config,
+        database,
         repositories,
         templateParameters,
         templateName,

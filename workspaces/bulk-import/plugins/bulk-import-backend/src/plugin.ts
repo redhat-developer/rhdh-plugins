@@ -17,8 +17,11 @@
 import {
   coreServices,
   createBackendPlugin,
+  resolvePackagePath,
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
+
+import { resolve as resolvePath } from 'path';
 
 import { createRouter } from './service/router';
 
@@ -41,6 +44,7 @@ export const bulkImportPlugin = createBackendPlugin({
         auth: coreServices.auth,
         catalogApi: catalogServiceRef,
         auditor: coreServices.auditor,
+        database: coreServices.database,
       },
       async init({
         config,
@@ -53,7 +57,17 @@ export const bulkImportPlugin = createBackendPlugin({
         auth,
         catalogApi,
         auditor,
+        database,
       }) {
+        const knex = await database.getClient();
+
+        const migrationsDir = resolvePackagePath(
+          '@red-hat-developer-hub/backstage-plugin-bulk-import-backend',
+          'migrations',
+        );
+        await knex.migrate.latest({
+          directory: migrationsDir,
+        });
         const router = await createRouter({
           config,
           cache,
@@ -64,6 +78,7 @@ export const bulkImportPlugin = createBackendPlugin({
           auth,
           catalogApi,
           auditor,
+          database,
         });
         http.use(router);
         http.addAuthPolicy({
