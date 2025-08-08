@@ -10,7 +10,7 @@ taskId=$(curl -X POST http://localhost:7007/api/bulk-import/execute-template \
 -H "Authorization: Bearer ${token}" \
 -d '{
   "repositories": [
-    "github.com?repo=shellImages&owner=AndrienkoAleksandr"
+    "https://github.com/AndrienkoAleksandr/shellImages"
   ],
   "templateParameters": {
     "owner": "user:default/andrienkoaleksandr"
