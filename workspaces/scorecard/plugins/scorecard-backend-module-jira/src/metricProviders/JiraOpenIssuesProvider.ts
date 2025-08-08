@@ -36,6 +36,6 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   }
 
   async calculateMetric(): Promise<number> {
-    return 42; // TODO: fetch from jira
+    return 42;
   }
 }

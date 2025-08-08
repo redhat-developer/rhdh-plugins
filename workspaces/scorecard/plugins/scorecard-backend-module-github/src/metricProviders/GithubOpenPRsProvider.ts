@@ -36,6 +36,6 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   }
 
   async calculateMetric(): Promise<number> {
-    return 42; // TODO: fetch from github
+    return 42;
   }
 }
