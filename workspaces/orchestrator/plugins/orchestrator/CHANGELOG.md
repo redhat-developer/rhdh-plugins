@@ -1,5 +1,15 @@
 ### Dependencies
 
+## 5.0.4
+
+### Patch Changes
+
+- fac94ef: fix(orchestrator): on retrigger workflow, tokens requested by the AuthRequester are forwarded
+- Updated dependencies [fac94ef]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.0.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.3
+
 ## 5.0.3
 
 ### Patch Changes
