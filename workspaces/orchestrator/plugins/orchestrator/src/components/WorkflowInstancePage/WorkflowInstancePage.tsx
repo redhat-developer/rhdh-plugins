@@ -16,6 +16,7 @@
 
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAsync } from 'react-use';
 
 import {
   ContentHeader,
@@ -27,6 +28,7 @@ import {
   useRouteRef,
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
+import { JsonObject } from '@backstage/types';
 
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 import Close from '@mui/icons-material/Close';
@@ -48,6 +50,8 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import {
+  AuthTokenDescriptor,
+  isJsonObject,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
   ProcessInstanceDTO,
@@ -57,6 +61,7 @@ import {
 
 import { orchestratorApiRef } from '../../api';
 import { SHORT_REFRESH_INTERVAL } from '../../constants';
+import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import usePolling from '../../hooks/usePolling';
 import {
@@ -65,6 +70,7 @@ import {
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
 } from '../../routes';
+import { deepSearchObject } from '../../utils/deepSearchObject';
 import { isNonNullable } from '../../utils/TypeGuards';
 import { buildUrl } from '../../utils/UrlUtils';
 import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
@@ -161,11 +167,43 @@ const AbortConfirmationDialogActions = (
   );
 };
 
+// For re-trigger, the wizard is not rendered, so there is no place where to instantiate the AuthRequester widget.
+// Let's parse the data input schema and try to find & interpret it.
+const getAuthTokenDescriptors = async (
+  dataInputSchema: JsonObject | undefined,
+): Promise<AuthTokenDescriptor[] | undefined> => {
+  if (!dataInputSchema) {
+    return undefined;
+  }
+
+  const authRequester = deepSearchObject(
+    dataInputSchema,
+    (obj: JsonObject): boolean => {
+      const uiWidget = obj['ui:widget'];
+      const uiProps = obj['ui:props'];
+
+      const authTokenDescriptors = isJsonObject(uiProps)
+        ? uiProps.authTokenDescriptors
+        : undefined;
+      return (
+        uiWidget === 'AuthRequester' && Array.isArray(authTokenDescriptors)
+      );
+    },
+  );
+  if (!authRequester) {
+    return undefined;
+  }
+
+  const uiProps = (authRequester as JsonObject)['ui:props'] as JsonObject;
+  return uiProps.authTokenDescriptors as AuthTokenDescriptor[];
+};
+
 export const WorkflowInstancePage = () => {
   const { classes } = useStyles();
 
   const navigate = useNavigate();
   const orchestratorApi = useApi(orchestratorApiRef);
+  const { authenticate } = useOrchestratorAuth();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const { instanceId } = useRouteRefParams(workflowInstanceRouteRef);
   const entityWorkflowLink = useRouteRef(entityWorkflowRouteRef);
@@ -223,6 +261,19 @@ export const WorkflowInstancePage = () => {
       : [orchestratorWorkflowUsePermission],
   );
 
+  const { value: inputSchema, error: inputSchemaError } =
+    useAsync(async (): Promise<JsonObject | undefined> => {
+      if (!workflowId) {
+        return undefined;
+      }
+
+      const res = await orchestratorApi.getWorkflowDataInputSchema(
+        workflowId,
+        instanceId,
+      );
+      return res.data?.inputSchema;
+    }, [orchestratorApi, workflowId]);
+
   const canAbort =
     value?.state === ProcessInstanceStatusDTO.Active ||
     value?.state === ProcessInstanceStatusDTO.Error;
@@ -273,7 +324,16 @@ export const WorkflowInstancePage = () => {
     if (value) {
       setIsRetrigger(true);
       try {
-        await orchestratorApi.retriggerInstance(value.processId, value.id);
+        const authTokenDescriptors = await getAuthTokenDescriptors(inputSchema);
+        let authTokens = undefined;
+        if (authTokenDescriptors && authTokenDescriptors.length > 0) {
+          authTokens = await authenticate(authTokenDescriptors);
+        }
+        await orchestratorApi.retriggerInstance(
+          value.processId,
+          value.id,
+          authTokens,
+        );
         restart();
       } catch (retriggerInstanceError) {
         if (retriggerInstanceError.toString().includes('Failed Node ID')) {
@@ -307,11 +367,7 @@ export const WorkflowInstancePage = () => {
     else if (option === 'retrigger') handleRetrigger();
   };
 
-  // For making the linter happy - FLPATH-2135:
-  // No-op statements to be removed when the feature is re-enabled.
-  handleOptionClick; // eslint-disable-line
-  openRerunMenu; // eslint-disable-line
-  handleClick; // eslint-disable-line
+  const combinedError: Error | undefined = error || inputSchemaError;
 
   return (
     <BaseOrchestratorPage
@@ -329,13 +385,13 @@ export const WorkflowInstancePage = () => {
       }
     >
       {loading ? <Progress /> : null}
-      {error ? <ResponseErrorPanel error={error} /> : null}
+      {combinedError ? <ResponseErrorPanel error={combinedError} /> : null}
       {!loading && isNonNullable(value) ? (
         <>
           <ContentHeader title="">
             <InfoDialog
               title="Abort workflow run?"
-              titleIcon={<Error />}
+              titleIcon={<Error className={classes.errorColor} />}
               onClose={toggleAbortConfirmationDialog}
               open={isAbortConfirmationDialogOpen}
               dialogActions={
@@ -421,7 +477,10 @@ export const WorkflowInstancePage = () => {
                     <Start />
                     Entire workflow
                   </MenuItem>
-                  <MenuItem onClick={() => handleOptionClick('retrigger')}>
+                  <MenuItem
+                    onClick={() => handleOptionClick('retrigger')}
+                    disabled={!inputSchema}
+                  >
                     <SwipeRightAltOutlined />
                     From failure point
                   </MenuItem>

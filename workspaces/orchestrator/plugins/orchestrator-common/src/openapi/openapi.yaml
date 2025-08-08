@@ -316,6 +316,12 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetriggerInstanceRequestDTO'
       responses:
         '200':
           description: Success
@@ -610,6 +616,15 @@ components:
         targetEntity:
           type: string
           description: The entity string identifier to execute the workflow for
+    RetriggerInstanceRequestDTO:
+      type: object
+      properties:
+        authTokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthToken'
+          minItems: 0
+          additionalProperties: true
     AuthToken:
       type: object
       properties:

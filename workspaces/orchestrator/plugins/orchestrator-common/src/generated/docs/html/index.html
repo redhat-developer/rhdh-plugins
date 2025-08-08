@@ -1162,6 +1162,17 @@ ul.nav-tabs {
   "description" : "Status of the workflow run",
   "enum" : [ "ACTIVE", "ERROR", "COMPLETED", "ABORTED", "SUSPENDED", "PENDING" ]
 };
+    defs["RetriggerInstanceRequestDTO"] = {
+  "properties" : {
+    "authTokens" : {
+      "minItems" : 0,
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/components/schemas/AuthToken"
+      }
+    }
+  }
+};
     defs["SearchRequest"] = {
   "properties" : {
     "filters" : {
@@ -6689,7 +6700,17 @@ ID of the workflow to fetch
                           <div class="tab-pane active" id="examples-Default-retriggerInstance-0-curl">
                             <pre class="prettyprint"><code class="language-bsh">curl -X POST \
  -H "Accept: application/json" \
- "http://localhost/v2/workflows/{workflowId}/{instanceId}/retrigger"
+ -H "Content-Type: application/json" \
+ "http://localhost/v2/workflows/{workflowId}/{instanceId}/retrigger" \
+ -d '{
+  &quot;authTokens&quot; : [ {
+    &quot;provider&quot; : &quot;provider&quot;,
+    &quot;token&quot; : &quot;token&quot;
+  }, {
+    &quot;provider&quot; : &quot;provider&quot;,
+    &quot;token&quot; : &quot;token&quot;
+  } ]
+}'
 </code></pre>
                           </div>
                           <div class="tab-pane" id="examples-Default-retriggerInstance-0-java">
@@ -6708,9 +6729,10 @@ public class DefaultApiExample {
         DefaultApi apiInstance = new DefaultApi();
         String workflowId = workflowId_example; // String | ID of the workflow
         String instanceId = instanceId_example; // String | ID of the instance to retrigger
+        RetriggerInstanceRequestDTO retriggerInstanceRequestDTO = ; // RetriggerInstanceRequestDTO | 
 
         try {
-            Object result = apiInstance.retriggerInstance(workflowId, instanceId);
+            Object result = apiInstance.retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#retriggerInstance");
@@ -6728,9 +6750,10 @@ final api_instance = DefaultApi();
 
 final String workflowId = new String(); // String | ID of the workflow
 final String instanceId = new String(); // String | ID of the instance to retrigger
+final RetriggerInstanceRequestDTO retriggerInstanceRequestDTO = new RetriggerInstanceRequestDTO(); // RetriggerInstanceRequestDTO | 
 
 try {
-    final result = await api_instance.retriggerInstance(workflowId, instanceId);
+    final result = await api_instance.retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO);
     print(result);
 } catch (e) {
     print('Exception when calling DefaultApi->retriggerInstance: $e\n');
@@ -6747,9 +6770,10 @@ public class DefaultApiExample {
         DefaultApi apiInstance = new DefaultApi();
         String workflowId = workflowId_example; // String | ID of the workflow
         String instanceId = instanceId_example; // String | ID of the instance to retrigger
+        RetriggerInstanceRequestDTO retriggerInstanceRequestDTO = ; // RetriggerInstanceRequestDTO | 
 
         try {
-            Object result = apiInstance.retriggerInstance(workflowId, instanceId);
+            Object result = apiInstance.retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#retriggerInstance");
@@ -6769,10 +6793,12 @@ public class DefaultApiExample {
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 String *workflowId = workflowId_example; // ID of the workflow (default to null)
 String *instanceId = instanceId_example; // ID of the instance to retrigger (default to null)
+RetriggerInstanceRequestDTO *retriggerInstanceRequestDTO = ; // 
 
 // Retrigger an instance
 [apiInstance retriggerInstanceWith:workflowId
     instanceId:instanceId
+    retriggerInstanceRequestDTO:retriggerInstanceRequestDTO
               completionHandler: ^(Object output, NSError* error) {
     if (output) {
         NSLog(@"%@", output);
@@ -6791,6 +6817,7 @@ String *instanceId = instanceId_example; // ID of the instance to retrigger (def
 var api = new OrchestratorPlugin.DefaultApi()
 var workflowId = workflowId_example; // {String} ID of the workflow
 var instanceId = instanceId_example; // {String} ID of the instance to retrigger
+var retriggerInstanceRequestDTO = ; // {RetriggerInstanceRequestDTO} 
 
 var callback = function(error, data, response) {
   if (error) {
@@ -6799,7 +6826,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.retriggerInstance(workflowId, instanceId, callback);
+api.retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO, callback);
 </code></pre>
                             </div>
 
@@ -6824,10 +6851,11 @@ namespace Example
             var apiInstance = new DefaultApi();
             var workflowId = workflowId_example;  // String | ID of the workflow (default to null)
             var instanceId = instanceId_example;  // String | ID of the instance to retrigger (default to null)
+            var retriggerInstanceRequestDTO = new RetriggerInstanceRequestDTO(); // RetriggerInstanceRequestDTO | 
 
             try {
                 // Retrigger an instance
-                Object result = apiInstance.retriggerInstance(workflowId, instanceId);
+                Object result = apiInstance.retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO);
                 Debug.WriteLine(result);
             } catch (Exception e) {
                 Debug.Print("Exception when calling DefaultApi.retriggerInstance: " + e.Message );
@@ -6846,9 +6874,10 @@ require_once(__DIR__ . '/vendor/autoload.php');
 $api_instance = new OpenAPITools\Client\Api\DefaultApi();
 $workflowId = workflowId_example; // String | ID of the workflow
 $instanceId = instanceId_example; // String | ID of the instance to retrigger
+$retriggerInstanceRequestDTO = ; // RetriggerInstanceRequestDTO | 
 
 try {
-    $result = $api_instance->retriggerInstance($workflowId, $instanceId);
+    $result = $api_instance->retriggerInstance($workflowId, $instanceId, $retriggerInstanceRequestDTO);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DefaultApi->retriggerInstance: ', $e->getMessage(), PHP_EOL;
@@ -6865,9 +6894,10 @@ use WWW::OPenAPIClient::DefaultApi;
 my $api_instance = WWW::OPenAPIClient::DefaultApi->new();
 my $workflowId = workflowId_example; # String | ID of the workflow
 my $instanceId = instanceId_example; # String | ID of the instance to retrigger
+my $retriggerInstanceRequestDTO = WWW::OPenAPIClient::Object::RetriggerInstanceRequestDTO->new(); # RetriggerInstanceRequestDTO | 
 
 eval {
-    my $result = $api_instance->retriggerInstance(workflowId => $workflowId, instanceId => $instanceId);
+    my $result = $api_instance->retriggerInstance(workflowId => $workflowId, instanceId => $instanceId, retriggerInstanceRequestDTO => $retriggerInstanceRequestDTO);
     print Dumper($result);
 };
 if ($@) {
@@ -6886,10 +6916,11 @@ from pprint import pprint
 api_instance = openapi_client.DefaultApi()
 workflowId = workflowId_example # String | ID of the workflow (default to null)
 instanceId = instanceId_example # String | ID of the instance to retrigger (default to null)
+retriggerInstanceRequestDTO =  # RetriggerInstanceRequestDTO | 
 
 try:
     # Retrigger an instance
-    api_response = api_instance.retrigger_instance(workflowId, instanceId)
+    api_response = api_instance.retrigger_instance(workflowId, instanceId, retriggerInstanceRequestDTO)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling DefaultApi->retriggerInstance: %s\n" % e)</code></pre>
@@ -6901,9 +6932,10 @@ except ApiException as e:
 pub fn main() {
     let workflowId = workflowId_example; // String
     let instanceId = instanceId_example; // String
+    let retriggerInstanceRequestDTO = ; // RetriggerInstanceRequestDTO
 
     let mut context = DefaultApi::Context::default();
-    let result = client.retriggerInstance(workflowId, instanceId, &context).wait();
+    let result = client.retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO, &context).wait();
 
     println!("{:?}", result);
 }
@@ -6973,6 +7005,52 @@ ID of the instance to retrigger
                             </table>
 
 
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">retriggerInstanceRequestDTO <span style="color:red;">*</span></td>
+<td>
+<p class="marked"></p>
+<script>
+$(document).ready(function() {
+  var schemaWrapper = {
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/RetriggerInstanceRequestDTO"
+      }
+    }
+  },
+  "required" : true
+};
+
+  var schema = findNode('schema',schemaWrapper).schema;
+  if (!schema) {
+    schema = schemaWrapper.schema;
+  }
+  if (schema.$ref != null) {
+    schema = defsParser.$refs.get(schema.$ref);
+  } else {
+    schemaWrapper.definitions = Object.assign({}, defs);
+    $RefParser.dereference(schemaWrapper).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+  var result = $('#d2e199_retriggerInstance_retriggerInstanceRequestDTO');
+  result.empty();
+  result.append(view.render());
+});
+</script>
+<div id="d2e199_retriggerInstance_retriggerInstanceRequestDTO"></div>
+</td>
+</tr>
+
+                            </table>
 
 
 

@@ -525,6 +525,19 @@ export type ProcessInstanceStatusDTO = typeof ProcessInstanceStatusDTO[keyof typ
 /**
  * 
  * @export
+ * @interface RetriggerInstanceRequestDTO
+ */
+export interface RetriggerInstanceRequestDTO {
+    /**
+     * 
+     * @type {Array<AuthToken>}
+     * @memberof RetriggerInstanceRequestDTO
+     */
+    'authTokens'?: Array<AuthToken>;
+}
+/**
+ * 
+ * @export
  * @interface SearchRequest
  */
 export interface SearchRequest {
@@ -1300,14 +1313,17 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @summary Retrigger an instance
          * @param {string} workflowId ID of the workflow
          * @param {string} instanceId ID of the instance to retrigger
+         * @param {RetriggerInstanceRequestDTO} retriggerInstanceRequestDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        retriggerInstance: async (workflowId: string, instanceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        retriggerInstance: async (workflowId: string, instanceId: string, retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workflowId' is not null or undefined
             assertParamExists('retriggerInstance', 'workflowId', workflowId)
             // verify required parameter 'instanceId' is not null or undefined
             assertParamExists('retriggerInstance', 'instanceId', instanceId)
+            // verify required parameter 'retriggerInstanceRequestDTO' is not null or undefined
+            assertParamExists('retriggerInstance', 'retriggerInstanceRequestDTO', retriggerInstanceRequestDTO)
             const localVarPath = `/v2/workflows/{workflowId}/{instanceId}/retrigger`
                 .replace(`{${"workflowId"}}`, encodeURIComponent(String(workflowId)))
                 .replace(`{${"instanceId"}}`, encodeURIComponent(String(instanceId)));
@@ -1324,9 +1340,12 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(retriggerInstanceRequestDTO, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1500,11 +1519,12 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @summary Retrigger an instance
          * @param {string} workflowId ID of the workflow
          * @param {string} instanceId ID of the instance to retrigger
+         * @param {RetriggerInstanceRequestDTO} retriggerInstanceRequestDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async retriggerInstance(workflowId: string, instanceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.retriggerInstance(workflowId, instanceId, options);
+        async retriggerInstance(workflowId: string, instanceId: string, retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.retriggerInstance']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1640,11 +1660,12 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @summary Retrigger an instance
          * @param {string} workflowId ID of the workflow
          * @param {string} instanceId ID of the instance to retrigger
+         * @param {RetriggerInstanceRequestDTO} retriggerInstanceRequestDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        retriggerInstance(workflowId: string, instanceId: string, options?: any): AxiosPromise<object> {
-            return localVarFp.retriggerInstance(workflowId, instanceId, options).then((request) => request(axios, basePath));
+        retriggerInstance(workflowId: string, instanceId: string, retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO, options?: any): AxiosPromise<object> {
+            return localVarFp.retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1801,12 +1822,13 @@ export class DefaultApi extends BaseAPI {
      * @summary Retrigger an instance
      * @param {string} workflowId ID of the workflow
      * @param {string} instanceId ID of the instance to retrigger
+     * @param {RetriggerInstanceRequestDTO} retriggerInstanceRequestDTO 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public retriggerInstance(workflowId: string, instanceId: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).retriggerInstance(workflowId, instanceId, options).then((request) => request(this.axios, this.basePath));
+    public retriggerInstance(workflowId: string, instanceId: string, retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

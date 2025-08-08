@@ -36,6 +36,7 @@ import {
   PaginationInfoDTO,
   ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
+  RetriggerInstanceRequestDTO,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -141,14 +142,22 @@ export class OrchestratorClient implements OrchestratorApi {
   async retriggerInstance(
     workflowId: string,
     instanceId: string,
+    authTokens?: AuthToken[],
   ): Promise<AxiosResponse<object>> {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
       await this.getDefaultReqConfig();
+
+    const requestBody: RetriggerInstanceRequestDTO = {};
+    if (authTokens) {
+      requestBody.authTokens = authTokens;
+    }
+
     try {
       return await defaultApi.retriggerInstance(
         workflowId,
         instanceId,
+        requestBody,
         reqConfigOption,
       );
     } catch (err) {

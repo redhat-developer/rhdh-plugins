@@ -151,6 +151,8 @@ export class OrchestratorService {
     definitionId: string;
     instanceId: string;
     serviceUrl: string;
+    authTokens?: Array<AuthToken>;
+    backstageToken?: string | undefined;
   }): Promise<boolean | undefined> {
     return this.sonataFlowService.retriggerInstance(args);
   }
