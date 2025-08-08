@@ -52,6 +52,10 @@ declare namespace Components {
       templateParameters?: {
         [name: string]: any;
       };
+      /**
+       * Optional name of the template to use. If not provided, the default from config will be used.
+       */
+      templateName?: string;
     }
     /**
      * Import Job

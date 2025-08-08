@@ -1030,6 +1030,10 @@ const OPENAPI = `
             "type": "object",
             "additionalProperties": true,
             "description": "Optional key/value pairs to pass to the template."
+          },
+          "templateName": {
+            "type": "string",
+            "description": "Optional name of the template to use. If not provided, the default from config will be used."
           }
         }
       }

@@ -27,6 +27,7 @@ export const executeTemplate = async (
   config: Config,
   repositories: string[],
   templateParameters: Record<string, any>,
+  templateName?: string,
 ) => {
   const taskIds = [];
   const scaffolderUrl = await discovery.getBaseUrl('scaffolder');
@@ -34,7 +35,8 @@ export const executeTemplate = async (
     onBehalfOf: await auth.getOwnServiceCredentials(),
     targetPluginId: 'scaffolder',
   });
-  const templateName = config.getString('bulkImport.importTemplate');
+  const finalTemplateName =
+    templateName ?? config.getString('bulkImport.importTemplate');
 
   const execute = async (values: Record<string, any>) => {
     const response = await fetch(`${scaffolderUrl}/v2/tasks`, {
@@ -44,7 +46,7 @@ export const executeTemplate = async (
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        templateRef: `template:default/${templateName}`,
+        templateRef: `template:default/${finalTemplateName}`,
         values: {
           repoUrl: values.repoUrl,
           owner: values.owner,
