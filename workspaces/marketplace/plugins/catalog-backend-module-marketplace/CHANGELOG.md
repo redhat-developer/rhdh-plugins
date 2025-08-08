@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.4.6
+
+### Patch Changes
+
+- a7d65ee: hide tab layout when there's only one tab left
+
 ## 0.4.5
 
 ### Patch Changes
