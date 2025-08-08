@@ -17,12 +17,11 @@
 import {
   coreServices,
   createBackendPlugin,
-  resolvePackagePath,
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 
-import { resolve as resolvePath } from 'path';
-
+import { migrate } from './service/dao/migration';
+import { RepositoryDao } from './service/dao/repository-dao';
 import { createRouter } from './service/router';
 
 /**
@@ -61,13 +60,9 @@ export const bulkImportPlugin = createBackendPlugin({
       }) {
         const knex = await database.getClient();
 
-        const migrationsDir = resolvePackagePath(
-          '@red-hat-developer-hub/backstage-plugin-bulk-import-backend',
-          'migrations',
-        );
-        await knex.migrate.latest({
-          directory: migrationsDir,
-        });
+        migrate(knex);
+        const dao = new RepositoryDao(knex, logger);
+
         const router = await createRouter({
           config,
           cache,
@@ -78,7 +73,7 @@ export const bulkImportPlugin = createBackendPlugin({
           auth,
           catalogApi,
           auditor,
-          database,
+          dao,
         });
         http.use(router);
         http.addAuthPolicy({

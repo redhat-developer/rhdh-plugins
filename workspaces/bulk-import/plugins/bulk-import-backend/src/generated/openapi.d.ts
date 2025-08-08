@@ -422,8 +422,7 @@ declare namespace Paths {
     namespace Responses {
       export type $200 =
         /* Repository List */ Components.Schemas.RepositoryList;
-      export type $500 =
-        /* Repository List */ Components.Schemas.RepositoryList;
+      export interface $500 {}
     }
   }
   namespace FindImportStatusByRepo {
@@ -462,6 +461,21 @@ declare namespace Paths {
         /* Repository List */ Components.Schemas.RepositoryList;
       export type $500 =
         /* Repository List */ Components.Schemas.RepositoryList;
+    }
+  }
+  namespace FindRepositoryFromDbByName {
+    namespace Parameters {
+      export type RepositoryName = string;
+    }
+    export interface QueryParameters {
+      repositoryName: Parameters.RepositoryName;
+    }
+    namespace Responses {
+      export type $200 = /* Repository */ Components.Schemas.Repository;
+      export interface $404 {
+        errors?: string[];
+      }
+      export interface $500 {}
     }
   }
   namespace Ping {
@@ -510,13 +524,21 @@ export interface OperationMethods {
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.FindAllRepositories.Responses.$200>;
   /**
-   * findAllRepositoriesFromDb - Fetch Organization Repositories accessible by Backstage Github Integrations
+   * findAllRepositoriesFromDb - Fetch all Repositories from the database
    */
   'findAllRepositoriesFromDb'(
-    parameters?: Parameters<Paths.FindAllRepositoriesFromDb.QueryParameters> | null,
+    parameters?: Parameters<UnknownParamsObject> | null,
     data?: any,
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.FindAllRepositoriesFromDb.Responses.$200>;
+  /**
+   * findRepositoryFromDbByName - Fetch a single Repository from the database by its name
+   */
+  'findRepositoryFromDbByName'(
+    parameters?: Parameters<Paths.FindRepositoryFromDbByName.QueryParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.FindRepositoryFromDbByName.Responses.$200>;
   /**
    * findAllImports - Fetch Import Jobs
    */
@@ -608,13 +630,23 @@ export interface PathsDictionary {
   };
   ['/repositories/from-db']: {
     /**
-     * findAllRepositoriesFromDb - Fetch Organization Repositories accessible by Backstage Github Integrations
+     * findAllRepositoriesFromDb - Fetch all Repositories from the database
      */
     'get'(
-      parameters?: Parameters<Paths.FindAllRepositoriesFromDb.QueryParameters> | null,
+      parameters?: Parameters<UnknownParamsObject> | null,
       data?: any,
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.FindAllRepositoriesFromDb.Responses.$200>;
+  };
+  ['/repositories/db']: {
+    /**
+     * findRepositoryFromDbByName - Fetch a single Repository from the database by its name
+     */
+    'get'(
+      parameters?: Parameters<Paths.FindRepositoryFromDbByName.QueryParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.FindRepositoryFromDbByName.Responses.$200>;
   };
   ['/imports']: {
     /**

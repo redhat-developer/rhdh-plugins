@@ -280,7 +280,7 @@ const OPENAPI = `
     "/repositories/from-db": {
       "get": {
         "operationId": "findAllRepositoriesFromDb",
-        "summary": "Fetch Organization Repositories accessible by Backstage Github Integrations",
+        "summary": "Fetch all Repositories from the database",
         "security": [
           {
             "BearerAuth": []
@@ -296,29 +296,70 @@ const OPENAPI = `
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RepositoryList"
-                },
-                "examples": {
-                  "multipleRepos": {
-                    "$ref": "#/components/examples/multipleRepos"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      }
+    },
+    "/repositories/db": {
+      "get": {
+        "operationId": "findRepositoryFromDbByName",
+        "summary": "Fetch a single Repository from the database by its name",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Repository"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "repositoryName",
+            "description": "Repository name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Repository was fetched successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Repository"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Repository not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
                   }
                 }
               }
             }
           },
           "500": {
-            "description": "Generic error when there are errors and no repository is returned",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RepositoryList"
-                },
-                "examples": {
-                  "repositoryListErrors": {
-                    "$ref": "#/components/examples/repositoryListErrors"
-                  }
-                }
-              }
-            }
+            "description": "Generic error"
           }
         }
       }

@@ -20,7 +20,6 @@ import type {
   AuditorServiceEvent,
   AuthService,
   CacheService,
-  DatabaseService,
   DiscoveryService,
   HttpAuthService,
   LoggerService,
@@ -47,6 +46,7 @@ import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
 import { permissionCheck } from '../helpers';
 import { auditCreateEvent } from '../helpers/auditorUtils';
+import { RepositoryDao } from './dao/repository-dao';
 import {
   createImportJobs,
   deleteImportByRepo,
@@ -59,6 +59,7 @@ import {
   findAllRepositories,
   findAllRepositoriesFromDb,
   findRepositoriesByOrganization,
+  findRepositoryFromDbByName,
 } from './handlers/repository';
 import { executeTemplate } from './handlers/scaffolder/execute-template';
 
@@ -76,15 +77,15 @@ export interface RouterOptions {
   auth: AuthService;
   catalogApi: CatalogApi;
   auditor: AuditorService;
-  database: DatabaseService;
+  dao: RepositoryDao;
 }
 
 namespace Operations {
   export const PING = 'ping';
   export const FIND_ALL_ORGANIZATIONS = 'findAllOrganizations';
   export const FIND_ALL_REPOSITORIES = 'findAllRepositories';
-  // todo: rename it.
   export const FIND_ALL_REPOSITORIES_FROM_DB = 'findAllRepositoriesFromDb';
+  export const FIND_REPOSITORY_FROM_DB_BY_NAME = 'findRepositoryFromDbByName';
   export const FIND_REPOSITORIES_BY_ORGANIZATION =
     'findRepositoriesByOrganization';
   export const FIND_ALL_IMPORTS = 'findAllImports';
@@ -111,7 +112,7 @@ export async function createRouter(
     discovery,
     catalogApi,
     auditor: auditor,
-    database,
+    dao,
   } = options;
 
   if (!config.has('bulkImport.importTemplate')) {
@@ -227,8 +228,22 @@ export async function createRouter(
     async (_c: Context, _req: Request, res: Response) => {
       const response = await findAllRepositoriesFromDb({
         logger,
-        database,
+        dao,
       });
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
+    Operations.FIND_REPOSITORY_FROM_DB_BY_NAME,
+    async (c: Context, _req: Request, res: Response) => {
+      const response = await findRepositoryFromDbByName(
+        {
+          logger,
+          dao,
+        },
+        c.request.query.repositoryName?.toString(),
+      );
       return res.status(response.statusCode).json(response.responseBody);
     },
   );
@@ -405,7 +420,7 @@ export async function createRouter(
         logger,
         auth,
         config,
-        database,
+        dao,
         repositories,
         templateParameters,
         templateName,

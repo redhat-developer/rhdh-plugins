@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import type {
-  DatabaseService,
-  LoggerService,
-} from '@backstage/backend-plugin-api';
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 
 import gitUrlParse from 'git-url-parse';
@@ -28,7 +25,7 @@ import type {
   GithubApiService,
   GithubRepositoryResponse,
 } from '../../../github';
-import { ScaffolderTaskDao } from '../../dao/scaffolder-task-dao';
+import { RepositoryDao } from '../../dao/repository-dao';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -88,12 +85,10 @@ export async function findRepositoriesByOrganization(
 // todo: implement pagination.
 export async function findAllRepositoriesFromDb(deps: {
   logger: LoggerService;
-  database: DatabaseService;
+  dao: RepositoryDao;
 }): Promise<HandlerResponse<Components.Schemas.RepositoryList>> {
-  const scaffolderTaskDao = new ScaffolderTaskDao(deps.logger, deps.database);
-
   try {
-    const repoList = await scaffolderTaskDao.findAllRepositories();
+    const repoList = await deps.dao.findAllRepositories();
 
     if (repoList.length === 0) {
       return {
@@ -104,14 +99,24 @@ export async function findAllRepositoriesFromDb(deps: {
         },
       };
     }
+    const repositories = repoList.map(r => {
+      const gitUrl = gitUrlParse(r.url);
+      return {
+        id: `${gitUrl.organization}/${gitUrl.name}`,
+        name: gitUrl.name,
+        organization: gitUrl.organization,
+        url: r.url,
+        tasks: r.tasks,
+      };
+    });
 
-    sortRepos(repoList);
+    sortRepos(repositories);
 
     return {
       statusCode: 200,
       responseBody: {
-        repositories: repoList,
-        totalCount: repoList.length,
+        repositories: repositories,
+        totalCount: repositories.length,
       },
     };
   } catch (error: any) {
@@ -191,6 +196,7 @@ async function formatResponse(
         return undefined;
       });
     }
+
     const repoUpdatedAt = repo.updated_at ?? undefined;
     repoList.push({
       id: `${gitUrl.organization}/${repo.name}`,
@@ -214,4 +220,50 @@ async function formatResponse(
       totalCount: allReposAccessible.totalCount,
     },
   };
+}
+
+export async function findRepositoryFromDbByName(
+  deps: {
+    logger: LoggerService;
+    dao: RepositoryDao;
+  },
+  name: string,
+): Promise<HandlerResponse<Components.Schemas.Repository>> {
+  deps.logger.debug(`Getting repository from database by name ${name}...`);
+  try {
+    const repo = await deps.dao.findRepositoryByUrl(name);
+
+    if (!repo) {
+      return {
+        statusCode: 404,
+        responseBody: {
+          errors: [`Repository with name ${name} not found`],
+        },
+      };
+    }
+    const gitUrl = gitUrlParse(repo.url);
+    const repository = {
+      id: `${gitUrl.organization}/${gitUrl.name}`,
+      name: gitUrl.name,
+      organization: gitUrl.organization,
+      url: repo.url,
+      tasks: repo.tasks,
+    };
+
+    return {
+      statusCode: 200,
+      responseBody: repository,
+    };
+  } catch (error: any) {
+    deps.logger.error(
+      `Failed to get repository from database by name ${name}`,
+      error,
+    );
+    return {
+      statusCode: 500,
+      responseBody: {
+        errors: [error.message],
+      },
+    };
+  }
 }
