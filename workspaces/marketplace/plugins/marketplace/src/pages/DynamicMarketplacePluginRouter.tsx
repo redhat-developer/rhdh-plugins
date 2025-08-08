@@ -92,6 +92,7 @@ const Tabs = () => {
               key={config.path}
               path={config.path}
               title={config.title}
+              s
             >
               <ErrorBoundary>
                 <Component />
