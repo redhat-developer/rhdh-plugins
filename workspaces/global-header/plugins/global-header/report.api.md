@@ -177,7 +177,7 @@ export interface HeaderIconProps {
 // @public
 export const HelpDropdown: ComponentType<HelpDropdownProps>;
 
-// @public
+// @public (undocumented)
 export interface HelpDropdownProps {
   // (undocumented)
   layout?: CSSProperties;
