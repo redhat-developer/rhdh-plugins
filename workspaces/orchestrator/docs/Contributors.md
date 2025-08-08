@@ -1,27 +1,3 @@
-## How to use the GitHub identity provider
-
-The [app config](../app-config.yaml) and the [App.tsx](../packages/app/src/App.tsx) files contain sufficient configuration to use the GitHub identity provider.
-
-Follow these steps to login to backstage using your GitHub account:
-
-### Create a GitHub OAuth App
-
-Go to your GitHub account -> Setting -> Developer settings -> OAuth Apps -> New OAuth App.
-Enter a name, enter http://localhost:3000 to Homepage URL and http://localhost:7007/api/auth/github/handler/frame to Authorization callback URL and click on Register application.
-
-### Update backstage user entity
-
-Update [users.yaml](../users.yaml) to match you GitHub account. Put your GitHub username in the metadata.name field, and you GitHub email in spec.profile.email field.
-
-### Setup environment variables and run
-
-```
-export AUTH_GITHUB_CLIENT_ID=...fill from OAuth App client ID
-export AUTH_GITHUB_CLIENT_SECRET=...fill from OAuth App client secret
-
-yarn dev
-```
-
 ## API Development instruction
 
 If you need to change the OpenAPI spec, edit the [openapi.yaml](../plugins/orchestrator-common/src/openapi/openapi.yaml) according to your needs.

@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "main": "dist/index.cjs.js",
   "types": "src/index.ts",
   "private": true,
@@ -47,6 +47,7 @@
     "@backstage/plugin-techdocs-backend": "^2.0.0",
     "@red-hat-developer-hub/backstage-plugin-ai-experience-backend": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend": "workspace:^",
     "app": "link:../app",
     "better-sqlite3": "^9.0.0",
     "node-gyp": "^10.0.0",

@@ -29,6 +29,7 @@ interface TabPanelProps {
   markdownContent: string | ExtensionsPackageAppConfigExamples[];
   index: number;
   value: number;
+  title?: string;
   others?: { [key: string]: any };
 }
 
@@ -37,6 +38,7 @@ export const TabPanel = ({
   index,
   value,
   others,
+  title,
 }: TabPanelProps) => {
   const alertApi = useApi(alertApiRef);
   const codeEditor = useCodeEditor();
@@ -77,6 +79,7 @@ export const TabPanel = ({
       sx={{ flex: 1, overflow: 'auto', p: 2, scrollbarWidth: 'thin' }}
     >
       <Typography component="div">
+        {title && <Typography variant="h5">{title}</Typography>}
         {Array.isArray(markdownContent) ? (
           markdownContent.map((item, idx) => (
             <Box key={idx} sx={{ mb: 3 }}>

@@ -15,6 +15,7 @@ import { ModelCatalog } from '@redhat-ai-dev/model-catalog-types';
 import { RootConfigService } from '@backstage/backend-plugin-api';
 import type { SchedulerService } from '@backstage/backend-plugin-api';
 import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
+import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-plugin-api';
 import { UrlReaderService } from '@backstage/backend-plugin-api';
 
 // @public
@@ -38,6 +39,13 @@ export function fetchModelCatalogFromKey(
 
 // @public
 export function fetchModelCatalogKeys(baseUrl: string): Promise<string[]>;
+
+// @public
+export type ModelCatalogConfig = {
+  id: string;
+  baseUrl: string;
+  schedule?: SchedulerServiceTaskScheduleDefinition;
+};
 
 // @public
 export interface ModelCatalogKeys {
@@ -65,6 +73,11 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
   getProviderName(): string;
   run(): Promise<void>;
 }
+
+// @public
+export function readModelCatalogApiEntityConfigs(
+  config: Config,
+): ModelCatalogConfig[];
 
 // @public
 export class RHDHRHOAIReaderProcessor implements CatalogProcessor {
