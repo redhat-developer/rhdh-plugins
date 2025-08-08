@@ -15,6 +15,7 @@
  */
 import {
   AuthService,
+  DatabaseService,
   DiscoveryService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
@@ -25,6 +26,7 @@ export const executeTemplate = async (
   logger: LoggerService,
   auth: AuthService,
   config: Config,
+  database: DatabaseService,
   repositories: string[],
   templateParameters: Record<string, any>,
   templateName?: string,
@@ -69,6 +71,8 @@ export const executeTemplate = async (
         repoUrl,
         ...templateParameters,
       });
+      const knex = await database.getClient();
+      await knex('scaffolder_tasks').insert({ taskId, repoUrl });
       taskIds.push(taskId);
       logger.info(`Started scaffolder task ${taskId} for ${repoUrl}`);
     }

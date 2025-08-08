@@ -59,6 +59,7 @@
     "git-url-parse": "^14.0.0",
     "js-yaml": "^4.1.0",
     "just-kebab-case": "4.2.0",
+    "knex": "^3.0.0",
     "luxon": "^3.4.4",
     "node-fetch": "^2.6.7",
     "openapi-backend": "^5.10.6"
@@ -74,6 +75,7 @@
     "@spotify/prettier-config": "^15.0.0",
     "@types/express": "4.17.23",
     "@types/git-url-parse": "^9.0.0",
+    "@types/knex": "^0.16.1",
     "@types/node-fetch": "^2.5.12",
     "@types/supertest": "2.0.16",
     "js-yaml-cli": "0.6.0",
@@ -87,6 +89,7 @@
   },
   "files": [
     "dist",
+    "migrations",
     "config.d.ts",
     "dist-dynamic/*.*",
     "dist-dynamic/dist/**",
