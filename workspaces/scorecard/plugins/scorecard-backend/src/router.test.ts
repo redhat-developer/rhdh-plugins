@@ -23,6 +23,12 @@ import request from 'supertest';
 
 import { createRouter } from './router';
 import { TodoListService } from './services/TodoListService/types';
+import { MetricProvidersRegistry } from './services/MetricProviders/MetricProvidersRegistry';
+import {
+  MockNumberProvider,
+  MockStringProvider,
+} from '../__fixtures__/mockProviders';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 const mockTodoItem = {
   title: 'Do the thing',
@@ -36,6 +42,7 @@ const mockTodoItem = {
 describe('createRouter', () => {
   let app: express.Express;
   let todoListService: jest.Mocked<TodoListService>;
+  let metricProvidersRegistry: MetricProvidersRegistry;
 
   beforeEach(async () => {
     todoListService = {
@@ -43,9 +50,11 @@ describe('createRouter', () => {
       listTodos: jest.fn(),
       getTodo: jest.fn(),
     };
+    metricProvidersRegistry = new MetricProvidersRegistry();
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
       todoListService,
+      metricProvidersRegistry,
     });
     app = express();
     app.use(router);
@@ -78,5 +87,62 @@ describe('createRouter', () => {
       });
 
     expect(response.status).toBe(401);
+  });
+
+  describe('GET /metrics', () => {
+    beforeEach(() => {
+      const githubProvider1 = new MockNumberProvider(
+        'github.open-prs',
+        'github',
+        'GitHub Open PRs',
+      );
+      const githubProvider2 = new MockNumberProvider(
+        'github.open-issues',
+        'github',
+        'GitHub Open Issues',
+      );
+      const sonarProvider = new MockStringProvider(
+        'sonar.quality',
+        'sonar',
+        'Code Quality',
+      );
+
+      metricProvidersRegistry.register(githubProvider1);
+      metricProvidersRegistry.register(githubProvider2);
+      metricProvidersRegistry.register(sonarProvider);
+    });
+
+    it('should return all metrics', async () => {
+      const response = await request(app).get('/metrics');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('metrics');
+      expect(response.body.metrics).toHaveLength(3);
+
+      const metricIds = response.body.metrics.map((m: Metric) => m.id);
+      expect(metricIds).toContain('github.open-prs');
+      expect(metricIds).toContain('github.open-issues');
+      expect(metricIds).toContain('sonar.quality');
+    });
+
+    it('should return metrics filtered by datasource', async () => {
+      const response = await request(app).get('/metrics?datasource=github');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('metrics');
+      expect(response.body.metrics).toHaveLength(2);
+
+      const metricIds = response.body.metrics.map((m: Metric) => m.id);
+      expect(metricIds).toContain('github.open-prs');
+      expect(metricIds).toContain('github.open-issues');
+    });
+
+    it('should return 400 InputError when invalid datasource parameter - empty string', async () => {
+      const response = await request(app).get('/metrics?datasource=');
+
+      expect(response.status).toEqual(400);
+      expect(response.body.error.name).toEqual('InputError');
+      expect(response.body.error.message).toContain('Invalid query parameters');
+    });
   });
 });

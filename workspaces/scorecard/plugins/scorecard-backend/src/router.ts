@@ -19,13 +19,16 @@ import { z } from 'zod';
 import express from 'express';
 import Router from 'express-promise-router';
 import { TodoListService } from './services/TodoListService/types';
+import { MetricProvidersRegistry } from './services/MetricProviders/MetricProvidersRegistry';
 
 export async function createRouter({
   httpAuth,
   todoListService,
+  metricProvidersRegistry,
 }: {
   httpAuth: HttpAuthService;
   todoListService: TodoListService;
+  metricProvidersRegistry: MetricProvidersRegistry;
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -60,6 +63,28 @@ export async function createRouter({
 
   router.get('/todos/:id', async (req, res) => {
     res.json(await todoListService.getTodo({ id: req.params.id }));
+  });
+
+  router.get('/metrics', async (req, res) => {
+    const metricsSchema = z.object({
+      datasource: z.string().min(1).optional(),
+    });
+
+    const parsed = metricsSchema.safeParse(req.query);
+    if (!parsed.success) {
+      throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
+    }
+
+    const { datasource } = parsed.data;
+
+    let metrics;
+    if (datasource) {
+      metrics = metricProvidersRegistry.listMetricsByDatasource(datasource);
+    } else {
+      metrics = metricProvidersRegistry.listMetrics();
+    }
+
+    res.json({ metrics });
   });
 
   return router;

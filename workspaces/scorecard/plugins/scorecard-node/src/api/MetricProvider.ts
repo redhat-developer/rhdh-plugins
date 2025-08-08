@@ -14,4 +14,22 @@
  * limitations under the License.
  */
 
-export * from './types';
+import { JsonValue } from '@backstage/types/index';
+import {
+  Metric,
+  MetricType,
+  MetricValue,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+/**
+ * @public
+ */
+export interface MetricProvider<
+  T extends MetricType = MetricType,
+  TOptions extends JsonValue = JsonValue,
+> {
+  getProviderDatasourceId(): string;
+  getProviderId(): string;
+  getMetric(): Metric<T>;
+  calculateMetric(options?: TOptions): Promise<MetricValue<T>>;
+}

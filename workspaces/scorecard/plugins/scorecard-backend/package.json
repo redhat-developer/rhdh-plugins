@@ -21,7 +21,8 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-scorecard",
       "@red-hat-developer-hub/backstage-plugin-scorecard-backend",
-      "@red-hat-developer-hub/backstage-plugin-scorecard-common"
+      "@red-hat-developer-hub/backstage-plugin-scorecard-common",
+      "@red-hat-developer-hub/backstage-plugin-scorecard-node"
     ]
   },
   "scripts": {
@@ -39,6 +40,8 @@
     "@backstage/catalog-client": "^1.10.0",
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^1.17.0",
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "zod": "^3.22.4"

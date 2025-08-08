@@ -21,7 +21,8 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-scorecard",
       "@red-hat-developer-hub/backstage-plugin-scorecard-backend",
-      "@red-hat-developer-hub/backstage-plugin-scorecard-common"
+      "@red-hat-developer-hub/backstage-plugin-scorecard-common",
+      "@red-hat-developer-hub/backstage-plugin-scorecard-node"
     ]
   },
   "sideEffects": false,

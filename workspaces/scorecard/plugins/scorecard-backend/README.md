@@ -21,6 +21,10 @@ backend.add(
 );
 ```
 
+## Metric Providers
+
+The Scorecard plugin collects metrics from third-party data sources using metric providers. The Scorecard node plugin provides `scorecardMetricsExtensionPoint` extension point that is used to connect your backend plugin module that exports custom metrics via metric providers to the Scorecard backend plugin. For detailed information on creating metric providers, see [providers.md](./docs/providers.md).
+
 ## Development
 
 This plugin backend can be started in a standalone mode from directly in this

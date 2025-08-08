@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-export * from './types';
+/**
+ * The jira backend module for the scorecard plugin.
+ *
+ * @packageDocumentation
+ */
+
+export { scorecardModuleJira as default } from './module';

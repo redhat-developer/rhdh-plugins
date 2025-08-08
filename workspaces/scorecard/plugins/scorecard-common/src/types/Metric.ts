@@ -14,4 +14,29 @@
  * limitations under the License.
  */
 
-export * from './types';
+/**
+ * @public
+ */
+export type MetricType = 'number' | 'boolean' | 'string';
+
+/**
+ * @public
+ */
+export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
+  ? number
+  : T extends 'boolean'
+  ? boolean
+  : T extends 'string'
+  ? string
+  : never;
+
+/**
+ * @public
+ */
+export type Metric<T extends MetricType = MetricType> = {
+  id: string;
+  title: string;
+  description?: string;
+  type: T;
+  history?: boolean;
+};

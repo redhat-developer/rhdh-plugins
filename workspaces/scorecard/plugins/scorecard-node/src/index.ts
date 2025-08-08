@@ -14,4 +14,11 @@
  * limitations under the License.
  */
 
-export * from './types';
+/**
+ * Node.js library for the scorecard plugin.
+ *
+ * @packageDocumentation
+ */
+
+export * from './extensions';
+export * from './api';

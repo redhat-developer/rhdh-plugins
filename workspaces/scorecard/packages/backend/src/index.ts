@@ -63,4 +63,14 @@ backend.add(import('@backstage/plugin-kubernetes-backend'));
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-scorecard-backend'),
 );
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github'
+  ),
+);
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira'
+  ),
+);
 backend.start();
