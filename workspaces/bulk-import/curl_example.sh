@@ -23,3 +23,8 @@ curl -N \
   -X GET "http://localhost:7007/api/scaffolder/v2/tasks/${taskId}/eventstream" \
   -H "Accept: text/event-stream" \
   -H "Authorization: Bearer ${token}" -v
+
+echo "Get all repositories from DB"
+curl -X GET http://localhost:7007/api/bulk-import/repositories/from-db \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer ${token}"

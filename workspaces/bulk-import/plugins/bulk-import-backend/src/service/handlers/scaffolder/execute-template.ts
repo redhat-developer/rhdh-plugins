@@ -66,15 +66,15 @@ export const executeTemplate = async (
   };
 
   if (repositories && repositories.length > 0) {
-    for (const repoUrl of repositories) {
+    for (const repo of repositories) {
       const taskId = await execute({
-        repoUrl,
+        repoUrl: repo,
         ...templateParameters,
       });
       const knex = await database.getClient();
-      await knex('scaffolder_tasks').insert({ taskId, repoUrl });
+      await knex('scaffolder_tasks').insert({ taskId, repoUrl: repo });
       taskIds.push(taskId);
-      logger.info(`Started scaffolder task ${taskId} for ${repoUrl}`);
+      logger.info(`Started scaffolder task ${taskId} for ${repo}`);
     }
   }
 

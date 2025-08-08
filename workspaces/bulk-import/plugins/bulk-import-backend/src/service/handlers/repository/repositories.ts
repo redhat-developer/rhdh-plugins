@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  DatabaseService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 
 import gitUrlParse from 'git-url-parse';
@@ -79,6 +82,65 @@ export async function findRepositoriesByOrganization(
   return deps.githubApiService
     .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
     .then(response => formatResponse(deps, response, checkStatus));
+}
+
+// todo: implement pagination.
+export async function findAllRepositoriesFromDb(deps: {
+  logger: LoggerService;
+  database: DatabaseService;
+}): Promise<HandlerResponse<Components.Schemas.RepositoryList>> {
+  deps.logger.debug('Getting all repositories from database..');
+
+  try {
+    const knex = await deps.database.getClient();
+    const tasks = await knex('scaffolder_tasks').select('repoUrl', 'createdAt');
+
+    if (!tasks || tasks.length === 0) {
+      return {
+        statusCode: 200,
+        responseBody: {
+          repositories: [],
+          totalCount: 0,
+        },
+      };
+    }
+
+    const repoList: Components.Schemas.Repository[] = tasks
+      .map(task => {
+        try {
+          const gitUrl = gitUrlParse(task.repoUrl);
+          return {
+            id: `${gitUrl.organization}/${gitUrl.name}`,
+            name: gitUrl.name,
+            organization: gitUrl.organization,
+            url: task.repoUrl,
+            lastUpdate: task.createdAt,
+          };
+        } catch (e: any) {
+          deps.logger.warn(`Failed to parse repoUrl: ${task.repoUrl}`, e);
+          return null;
+        }
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null);
+
+    sortRepos(repoList);
+
+    return {
+      statusCode: 200,
+      responseBody: {
+        repositories: repoList,
+        totalCount: repoList.length,
+      },
+    };
+  } catch (error: any) {
+    deps.logger.error('Failed to get repositories from database', error);
+    return {
+      statusCode: 500,
+      responseBody: {
+        errors: [error.message],
+      },
+    };
+  }
 }
 
 function sortRepos(repoList: Components.Schemas.Repository[]) {
