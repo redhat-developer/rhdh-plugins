@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.13.5
+
+### Patch Changes
+
+- cf4dcc9: Updated dependency `@playwright/test` to `1.54.2`.
+
 ## 1.13.4
 
 ### Patch Changes
