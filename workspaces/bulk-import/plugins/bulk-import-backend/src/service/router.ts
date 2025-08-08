@@ -378,8 +378,11 @@ export async function createRouter(
       _req: Request,
       res: Response,
     ) => {
-      const { repositories = [], templateParameters = {} } =
-        c.request.requestBody;
+      const {
+        repositories = [],
+        templateParameters = {},
+        templateName,
+      } = c.request.requestBody;
       const response = await executeTemplate(
         discovery,
         logger,
@@ -387,6 +390,7 @@ export async function createRouter(
         config,
         repositories,
         templateParameters,
+        templateName,
       );
       return res.status(202).json(response);
     },
