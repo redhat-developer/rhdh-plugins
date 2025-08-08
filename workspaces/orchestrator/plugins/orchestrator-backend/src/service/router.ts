@@ -343,6 +343,40 @@ function setupInternalRoutes(
 
     throw error;
   }
+  // v2
+  routerApi.openApiBackend.register(
+    'getWorkflowsOverviewForEntity',
+    async (_c, req, res: express.Response, next) => {
+      const auditEvent = await auditor.createEvent({
+        eventId: 'get-workflow-overview-entity',
+        request: req,
+      });
+      const targetEntity = req.body.targetEntity as string;
+      const annotationWorkflowIds = req.body.annotationWorkflowIds as string[];
+      try {
+        const result = await routerApi.v2.getWorkflowsOverviewForEntity(
+          targetEntity,
+          annotationWorkflowIds,
+        );
+
+        const workflows = await filterAuthorizedWorkflows(
+          req,
+          permissions,
+          httpAuth,
+          result,
+        );
+        auditEvent.success({
+          meta: {
+            workflowsCount: workflows.overviews?.length,
+          },
+        });
+        res.json(workflows);
+      } catch (error) {
+        auditEvent.fail({ error });
+        next(error);
+      }
+    },
+  );
 
   // v2
   routerApi.openApiBackend.register(

@@ -15,6 +15,11 @@
  */
 import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-plugin-api';
 
+/**
+ * ModelCatalogConfig defines the configuration for the ModelCatalog provider
+ *
+ * @public
+ */
 export type ModelCatalogConfig = {
   id: string;
   baseUrl: string;

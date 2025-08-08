@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { TabbedLayout } from '@backstage/core-components';
 
 import { workflowInstancesRouteRef } from '../../routes';

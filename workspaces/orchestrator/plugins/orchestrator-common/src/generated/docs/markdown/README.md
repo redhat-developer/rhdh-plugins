@@ -17,6 +17,7 @@ All URIs are relative to *http://localhost*
 *DefaultApi* | [**getWorkflowSourceById**](Apis/DefaultApi.md#getworkflowsourcebyid) | **GET** /v2/workflows/{workflowId}/source | Get the workflow's definition |
 *DefaultApi* | [**getWorkflowStatuses**](Apis/DefaultApi.md#getworkflowstatuses) | **GET** /v2/workflows/instances/statuses | Get workflow status list |
 *DefaultApi* | [**getWorkflowsOverview**](Apis/DefaultApi.md#getworkflowsoverview) | **POST** /v2/workflows/overview | Returns the key fields of the workflow including data on the last run instance |
+*DefaultApi* | [**getWorkflowsOverviewForEntity**](Apis/DefaultApi.md#getworkflowsoverviewforentity) | **POST** /v2/workflows/overview/entity | Returns the key fields of the workflow including data on the last run instance |
 *DefaultApi* | [**pingWorkflowServiceById**](Apis/DefaultApi.md#pingworkflowservicebyid) | **GET** /v2/workflows/{workflowId}/pingWorkflowService | Returns true if the workflow service is up for the given workflow ID. |
 *DefaultApi* | [**retriggerInstance**](Apis/DefaultApi.md#retriggerinstance) | **POST** /v2/workflows/{workflowId}/{instanceId}/retrigger | Retrigger an instance |
 
@@ -55,6 +56,7 @@ All URIs are relative to *http://localhost*
  - [WorkflowResultDTO_outputs_inner](./Models/WorkflowResultDTO_outputs_inner.md)
  - [WorkflowResultDTO_outputs_inner_value](./Models/WorkflowResultDTO_outputs_inner_value.md)
  - [WorkflowRunStatusDTO](./Models/WorkflowRunStatusDTO.md)
+ - [getWorkflowsOverviewForEntity_request](./Models/getWorkflowsOverviewForEntity_request.md)
 
 
 <a name="documentation-for-authorization"></a>

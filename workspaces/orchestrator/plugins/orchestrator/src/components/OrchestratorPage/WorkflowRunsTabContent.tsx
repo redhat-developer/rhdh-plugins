@@ -35,6 +35,7 @@ import TablePagination from '@mui/material/TablePagination';
 import {
   FieldFilter,
   Filter,
+  NestedFilter,
   PaginationInfoDTO,
   PaginationInfoDTOOrderDirectionEnum,
   ProcessInstanceStatusDTO,
@@ -43,7 +44,12 @@ import {
 import { orchestratorApiRef } from '../../api';
 import { DEFAULT_TABLE_PAGE_SIZE } from '../../constants';
 import usePolling from '../../hooks/usePolling';
-import { workflowInstanceRouteRef, workflowRouteRef } from '../../routes';
+import {
+  entityInstanceRouteRef,
+  entityWorkflowRouteRef,
+  workflowInstanceRouteRef,
+  workflowRouteRef,
+} from '../../routes';
 import { Selector } from '../Selector';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
 import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
@@ -67,7 +73,14 @@ const started = ['Today', 'Yesterday', 'Last 7 days', 'This month'].map(
 );
 
 export const WorkflowRunsTabContent = () => {
-  const { workflowId } = useRouteRefParams(workflowRouteRef);
+  const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
+  const { workflowId, kind, name, namespace } = useRouteRefParams(
+    entityWorkflowRouteRef,
+  );
+  let entityRef: string | undefined = undefined;
+  if (kind && namespace && name) {
+    entityRef = `${kind}:${namespace}/${name}`;
+  }
   const orchestratorApi = useApi(orchestratorApiRef);
   const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
   const workflowPageLink = useRouteRef(workflowRouteRef);
@@ -170,10 +183,23 @@ export const WorkflowRunsTabContent = () => {
           : undefined;
     }
 
-    // removes undefined filters
-    const filters = [statusFilter, workflowIdFilter, startedFilter].filter(
-      Boolean,
-    ) as FieldFilter[];
+    const nestedVariablesFilter: NestedFilter | undefined = entityRef
+      ? {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            value: entityRef,
+            field: 'targetEntity',
+          },
+        }
+      : undefined;
+
+    const filters = [
+      statusFilter,
+      workflowIdFilter,
+      startedFilter,
+      nestedVariablesFilter,
+    ].filter(Boolean) as FieldFilter[]; // removes undefined filters
 
     if (filters.length > 1) {
       return {
@@ -182,7 +208,7 @@ export const WorkflowRunsTabContent = () => {
       };
     }
     return filters[0] || undefined;
-  }, [workflowId, statusSelectorValue, startedSelectorValue]);
+  }, [workflowId, statusSelectorValue, startedSelectorValue, entityRef]);
 
   const fetchInstances = React.useCallback(async () => {
     const paginationInfo: PaginationInfoDTO = {
@@ -237,11 +263,24 @@ export const WorkflowRunsTabContent = () => {
       {
         title: 'ID',
         field: 'id',
-        render: data => (
-          <Link to={workflowInstanceLink({ instanceId: data.id })}>
-            {data.id}
-          </Link>
-        ),
+        render: data =>
+          entityRef ? (
+            <Link
+              to={entityInstanceLink({
+                namespace,
+                kind,
+                name,
+                workflowId,
+                instanceId: data.id,
+              })}
+            >
+              {data.id}
+            </Link>
+          ) : (
+            <Link to={workflowInstanceLink({ instanceId: data.id })}>
+              {data.id}
+            </Link>
+          ),
         sorting: false,
       },
       ...(workflowId
@@ -270,7 +309,17 @@ export const WorkflowRunsTabContent = () => {
       { title: 'Started', field: 'start', customSort: applyBackendSort },
       { title: 'Duration', field: 'duration', sorting: false },
     ],
-    [workflowInstanceLink, workflowId, workflowPageLink, applyBackendSort],
+    [
+      workflowInstanceLink,
+      workflowId,
+      workflowPageLink,
+      applyBackendSort,
+      entityInstanceLink,
+      name,
+      kind,
+      namespace,
+      entityRef,
+    ],
   );
 
   let data = value || [];

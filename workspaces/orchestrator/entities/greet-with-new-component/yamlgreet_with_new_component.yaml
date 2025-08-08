@@ -1,0 +1,86 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: greet-with-new-component
+  title: Greeting with new component
+  description: Greeting workflow
+  annotations:
+    orchestrator.io/workflows: '["yamlgreet"]'
+  tags:
+    - orchestrator
+spec:
+  owner: red-hat-developer-hub-authors
+  system: red-hat-developer-hub
+  type: service
+
+  parameters:
+    - title: Choose GitHub Location
+      required: [repoUrl]
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts: [github.com]
+    - title: Provide workflow inputs
+      required:
+        - language
+      properties:
+        language:
+          title: Language
+          type: string
+          ui:autofocus: true
+          enum:
+            - 'English'
+            - 'Spanish'
+          default: 'English'
+        name:
+          title: Name
+          type: string
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+
+  steps:
+    - id: fetch
+      name: Fetch skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        copyWithoutRender:
+          - .github/workflows/*
+        values: {}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        allowedHosts: [github.com]
+        description: Static Backstage Component
+        repoUrl: ${{ parameters.repoUrl }}
+
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+
+    - id: runWorkflow
+      name: Run workflow
+      action: orchestrator:workflow:run
+      input:
+        workflow_id: yamlgreet
+        targetEntity: component:default/example-component
+        parameters: # matches workflow's dataInputSchema
+          language: ${{ parameters.language }}
+          name: ${{ parameters.name }}
+
+  output:
+    links:
+      - title: View repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: View in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+      - title: Open workflow run
+        url: ${{ steps.runWorkflow.output.instanceUrl }}

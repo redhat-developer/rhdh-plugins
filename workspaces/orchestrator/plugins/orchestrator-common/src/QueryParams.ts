@@ -15,3 +15,4 @@
  */
 
 export const QUERY_PARAM_INSTANCE_ID = 'instanceId' as const;
+export const QUERY_PARAM_PREVIOUS_INSTANCE_ID = 'previousInstanceId' as const;

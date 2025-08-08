@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { Fragment } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 
 import { JsonObject } from '@backstage/types';
 
@@ -109,30 +109,30 @@ const OrchestratorForm = ({
   setAuthTokenDescriptors,
 }: OrchestratorFormProps) => {
   // make the form a controlled component so the state will remain when moving between steps. see https://rjsf-team.github.io/react-jsonschema-form/docs/quickstart#controlled-component
-  const [formData, setFormData] = React.useState<JsonObject>(
+  const [formData, setFormData] = useState<JsonObject>(
     initialFormData ? () => structuredClone(initialFormData) : {},
   );
 
-  const schema = React.useMemo(() => removeHiddenSteps(rawSchema), [rawSchema]);
+  const schema = useMemo(() => removeHiddenSteps(rawSchema), [rawSchema]);
 
-  const numStepsInMultiStepSchema = React.useMemo(
+  const numStepsInMultiStepSchema = useMemo(
     () => getNumSteps(schema),
     [schema],
   );
   const isMultiStep = numStepsInMultiStepSchema !== undefined;
 
-  const _handleExecute = React.useCallback(() => {
+  const _handleExecute = useCallback(() => {
     handleExecute(formData);
   }, [formData, handleExecute]);
 
-  const onSubmit = React.useCallback(
+  const onSubmit = useCallback(
     (_formData: JsonObject) => {
       setFormData(_formData);
     },
     [setFormData],
   );
 
-  const uiSchema = React.useMemo<UiSchema<JsonObject>>(() => {
+  const uiSchema = useMemo<UiSchema<JsonObject>>(() => {
     return generateUiSchema(
       schema,
       isMultiStep,
@@ -140,7 +140,7 @@ const OrchestratorForm = ({
     );
   }, [schema, isMultiStep, isDataReadonly, initialFormData]);
 
-  const reviewStep = React.useMemo(
+  const reviewStep = useMemo(
     () => (
       <ReviewStep
         data={formData}

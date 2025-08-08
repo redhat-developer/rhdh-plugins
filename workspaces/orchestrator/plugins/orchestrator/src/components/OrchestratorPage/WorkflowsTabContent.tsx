@@ -31,15 +31,29 @@ import { orchestratorApiRef } from '../../api';
 import usePolling from '../../hooks/usePolling';
 import { WorkflowsTable } from './WorkflowsTable';
 
-export const WorkflowsTabContent = () => {
+export const WorkflowsTabContent = ({
+  workflowsArray,
+  targetEntity,
+}: {
+  workflowsArray?: string[];
+  targetEntity?: string;
+}) => {
   const orchestratorApi = useApi(orchestratorApiRef);
 
   const fetchWorkflowOverviews = useCallback(async () => {
     // TODO: pass pagination details only if the user is granted the generic orchestratorWorkflowPermission
     // FE pagination will be used otherwise
-    const overviewsResp = await orchestratorApi.listWorkflowOverviews();
+    let overviewsResp;
+    if (workflowsArray && targetEntity) {
+      overviewsResp = await orchestratorApi.getWorkflowsOverviewForEntity(
+        targetEntity,
+        workflowsArray,
+      );
+    } else {
+      overviewsResp = await orchestratorApi.listWorkflowOverviews();
+    }
     return overviewsResp.data.overviews;
-  }, [orchestratorApi]);
+  }, [orchestratorApi, workflowsArray, targetEntity]);
 
   const { loading, error, value } = usePolling<
     WorkflowOverviewDTO[] | undefined

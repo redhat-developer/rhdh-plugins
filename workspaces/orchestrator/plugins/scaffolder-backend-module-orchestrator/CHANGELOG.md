@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 1.0.2
+
+### Patch Changes
+
+- 26e602a: add workflows tab to catalog entities
+- Updated dependencies [26e602a]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.2
+
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [32e0a44]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.1
+
 ## 1.0.0
 
 ### Major Changes

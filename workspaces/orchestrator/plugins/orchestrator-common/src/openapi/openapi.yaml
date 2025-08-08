@@ -33,6 +33,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /v2/workflows/overview/entity:
+    post:
+      operationId: getWorkflowsOverviewForEntity
+      description: Returns the key fields of the workflow including data on the last run instance
+      requestBody:
+        required: false
+        description: Target entity reference and annotation workflow ids
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetEntity:
+                  type: string
+                annotationWorkflowIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowOverviewListResultDTO'
+        '500':
+          description: Error fetching workflow overviews for entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /v2/workflows/{workflowId}/overview:
     get:
       operationId: getWorkflowOverviewById
@@ -479,6 +510,8 @@ components:
           $ref: '#/components/schemas/WorkflowDataDTO'
         initiatorEntity:
           type: string
+        targetEntity:
+          type: string
         executionSummary:
           type: array
           items:
@@ -574,6 +607,9 @@ components:
             $ref: '#/components/schemas/AuthToken'
           minItems: 0
           additionalProperties: true
+        targetEntity:
+          type: string
+          description: The entity string identifier to execute the workflow for
     AuthToken:
       type: object
       properties:

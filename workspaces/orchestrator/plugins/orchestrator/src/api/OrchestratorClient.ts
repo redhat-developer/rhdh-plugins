@@ -103,6 +103,7 @@ export class OrchestratorClient implements OrchestratorApi {
     workflowId: string;
     parameters: JsonObject;
     authTokens: AuthToken[];
+    targetEntity?: string;
   }): Promise<AxiosResponse<ExecuteWorkflowResponseDTO>> {
     const defaultApi = await this.getDefaultAPI();
     const reqConfigOption: AxiosRequestConfig =
@@ -111,6 +112,7 @@ export class OrchestratorClient implements OrchestratorApi {
     const requestBody: ExecuteWorkflowRequestDTO = {
       inputData: args.parameters,
       authTokens: args.authTokens,
+      targetEntity: args.targetEntity,
     };
     try {
       return await defaultApi.executeWorkflow(
@@ -179,6 +181,22 @@ export class OrchestratorClient implements OrchestratorApi {
     try {
       return await defaultApi.getWorkflowsOverview(
         { paginationInfo, filters },
+        reqConfigOption,
+      );
+    } catch (err) {
+      throw getError(err);
+    }
+  }
+  async getWorkflowsOverviewForEntity(
+    targetEntity: string,
+    annotationWorkflowIds: string[],
+  ): Promise<AxiosResponse<WorkflowOverviewListResultDTO>> {
+    const defaultApi = await this.getDefaultAPI();
+    const reqConfigOption: AxiosRequestConfig =
+      await this.getDefaultReqConfig();
+    try {
+      return await defaultApi.getWorkflowsOverviewForEntity(
+        { targetEntity, annotationWorkflowIds },
         reqConfigOption,
       );
     } catch (err) {

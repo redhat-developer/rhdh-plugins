@@ -15,7 +15,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
 import {
@@ -38,12 +38,14 @@ import {
   AuthTokenDescriptor,
   InputSchemaResponseDTO,
   QUERY_PARAM_INSTANCE_ID,
+  QUERY_PARAM_PREVIOUS_INSTANCE_ID,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { OrchestratorForm } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
 
 import { orchestratorApiRef } from '../../api';
 import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
 import {
+  entityInstanceRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
 } from '../../routes';
@@ -53,14 +55,20 @@ import MissingSchemaNotice from './MissingSchemaNotice';
 import { getSchemaUpdater } from './schemaUpdater';
 
 export const ExecuteWorkflowPage = () => {
+  const [searchParams] = useSearchParams();
+  const targetEntity = searchParams.get('targetEntity');
   const orchestratorApi = useApi(orchestratorApiRef);
   const { authenticate } = useOrchestratorAuth();
   const { workflowId } = useRouteRefParams(executeWorkflowRouteRef);
   const [isExecuting, setIsExecuting] = useState(false);
   const [updateError, setUpdateError] = React.useState<Error>();
   const [instanceId] = useQueryParamState<string>(QUERY_PARAM_INSTANCE_ID);
+  const [previousInstanceId] = useQueryParamState<string>(
+    QUERY_PARAM_PREVIOUS_INSTANCE_ID,
+  );
   const navigate = useNavigate();
   const instanceLink = useRouteRef(workflowInstanceRouteRef);
+  const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
   const {
     value,
     loading,
@@ -68,7 +76,7 @@ export const ExecuteWorkflowPage = () => {
   } = useAsync(async (): Promise<InputSchemaResponseDTO> => {
     const res = await orchestratorApi.getWorkflowDataInputSchema(
       workflowId,
-      instanceId,
+      previousInstanceId || instanceId,
     );
     return res.data;
   }, [orchestratorApi, workflowId]);
@@ -97,6 +105,8 @@ export const ExecuteWorkflowPage = () => {
     return res.data.name || '';
   }, [orchestratorApi, workflowId]);
 
+  const [kind, namespace, name] = targetEntity?.split(/[:\/]/) || [];
+
   const handleExecute = useCallback(
     async (parameters: JsonObject) => {
       setUpdateError(undefined);
@@ -107,8 +117,18 @@ export const ExecuteWorkflowPage = () => {
           workflowId,
           parameters,
           authTokens,
+          targetEntity: targetEntity ?? undefined,
         });
-        navigate(instanceLink({ instanceId: response.data.id }));
+        const url = targetEntity
+          ? entityInstanceLink({
+              namespace,
+              kind,
+              name,
+              workflowId: workflowId,
+              instanceId: response.data.id,
+            })
+          : instanceLink({ instanceId: response.data.id });
+        navigate(url);
       } catch (err) {
         setUpdateError(getErrorObject(err));
       } finally {
@@ -122,6 +142,11 @@ export const ExecuteWorkflowPage = () => {
       instanceLink,
       authTokenDescriptors,
       authenticate,
+      targetEntity,
+      entityInstanceLink,
+      kind,
+      namespace,
+      name,
     ],
   );
 
@@ -152,7 +177,7 @@ export const ExecuteWorkflowPage = () => {
                 updateSchema={updateSchema}
                 handleExecute={handleExecute}
                 isExecuting={isExecuting}
-                isDataReadonly={!!instanceId}
+                isDataReadonly={!!previousInstanceId}
                 initialFormData={initialFormData}
                 setAuthTokenDescriptors={setAuthTokenDescriptors}
               />
@@ -173,7 +198,11 @@ export const ExecuteWorkflowPage = () => {
       noPadding={workflowNameLoading}
       title={workflowName}
       type="Workflows"
-      typeLink="/orchestrator"
+      typeLink={
+        targetEntity
+          ? `/catalog/${namespace}/${kind}/${name}/workflows`
+          : '/orchestrator'
+      }
     >
       {pageContent}
     </BaseOrchestratorPage>
