@@ -523,6 +523,57 @@ const OPENAPI = `
           }
         }
       }
+    },
+    "/execute-template": {
+      "post": {
+        "operationId": "executeTemplate",
+        "summary": "Execute a scaffolder template for a list of repositories",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Import"
+        ],
+        "requestBody": {
+          "description": "The template to execute and the repositories to run it against.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteTemplateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Template execution request was submitted successfully to the API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "taskIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -961,6 +1012,28 @@ const OPENAPI = `
                 }
               }
             }
+          }
+        }
+      },
+      "ExecuteTemplateRequest": {
+        "title": "Execute Template Request",
+        "type": "object",
+        "properties": {
+          "repositories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of GitHub repository URLs to execute the template against."
+          },
+          "templateParameters": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional key/value pairs to pass to the template."
+          },
+          "templateName": {
+            "type": "string",
+            "description": "Optional name of the template to use. If not provided, the default from config will be used."
           }
         }
       }

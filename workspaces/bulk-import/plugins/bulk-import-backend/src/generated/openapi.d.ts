@@ -1,18 +1,4 @@
-/*
- * Copyright Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// GENERATED FILE. DO NOT EDIT.
 
 // eslint-disable
 // prettier-ignore
@@ -52,6 +38,25 @@ declare namespace Components {
   }
   namespace Schemas {
     export type ApprovalTool = 'GIT' | 'SERVICENOW';
+    /**
+     * Execute Template Request
+     */
+    export interface ExecuteTemplateRequest {
+      /**
+       * A list of GitHub repository URLs to execute the template against.
+       */
+      repositories?: string[];
+      /**
+       * Optional key/value pairs to pass to the template.
+       */
+      templateParameters?: {
+        [name: string]: any;
+      };
+      /**
+       * Optional name of the template to use. If not provided, the default from config will be used.
+       */
+      templateName?: string;
+    }
     /**
      * Import Job
      */
@@ -326,6 +331,17 @@ declare namespace Paths {
       export interface $500 {}
     }
   }
+  namespace ExecuteTemplate {
+    export type RequestBody =
+      /* Execute Template Request */ Components.Schemas.ExecuteTemplateRequest;
+    namespace Responses {
+      export interface $202 {
+        message?: string;
+        taskIds?: string[];
+      }
+      export interface $500 {}
+    }
+  }
   namespace FindAllImports {
     export interface HeaderParameters {
       'api-version'?: Parameters.ApiVersion;
@@ -520,6 +536,14 @@ export interface OperationMethods {
     data?: any,
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.DeleteImportByRepo.Responses.$204>;
+  /**
+   * executeTemplate - Execute a scaffolder template for a list of repositories
+   */
+  'executeTemplate'(
+    parameters?: Parameters<UnknownParamsObject> | null,
+    data?: Paths.ExecuteTemplate.RequestBody,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.ExecuteTemplate.Responses.$202>;
 }
 
 export interface PathsDictionary {
@@ -605,11 +629,22 @@ export interface PathsDictionary {
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.DeleteImportByRepo.Responses.$204>;
   };
+  ['/execute-template']: {
+    /**
+     * executeTemplate - Execute a scaffolder template for a list of repositories
+     */
+    'post'(
+      parameters?: Parameters<UnknownParamsObject> | null,
+      data?: Paths.ExecuteTemplate.RequestBody,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.ExecuteTemplate.Responses.$202>;
+  };
 }
 
 export type Client = OpenAPIClient<OperationMethods, PathsDictionary>;
 
 export type ApprovalTool = Components.Schemas.ApprovalTool;
+export type ExecuteTemplateRequest = Components.Schemas.ExecuteTemplateRequest;
 export type Import = Components.Schemas.Import;
 export type ImportJobListV2 = Components.Schemas.ImportJobListV2;
 export type ImportRequest = Components.Schemas.ImportRequest;
