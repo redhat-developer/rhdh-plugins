@@ -21,6 +21,7 @@ export interface QuickstartItemCtaData {
 
 export interface QuickstartItemData {
   title: string;
+  roles?: string[];
   icon?: string;
   description: string;
   cta?: QuickstartItemCtaData;

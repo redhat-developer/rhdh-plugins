@@ -30,6 +30,16 @@ export const QuickstartDrawer = () => {
   const quickstartItems: QuickstartItemData[] = config?.has('app.quickstart')
     ? config.get('app.quickstart')
     : [];
+
+  // This will be dynamically determined based on the logged-in user
+  const userRole = 'developer'; // switch to 'admin', 'developer', or other roles for testing purposes
+
+  const filteredItems = quickstartItems.filter(item => {
+    // If roles is undefined or empty, default to 'admin'
+    const roles = item.roles?.length ? item.roles : ['admin'];
+    return roles.includes(userRole);
+  });
+
   return (
     <Drawer
       sx={{
@@ -56,7 +66,7 @@ export const QuickstartDrawer = () => {
       open={isDrawerOpen}
     >
       <Quickstart
-        quickstartItems={quickstartItems}
+        quickstartItems={filteredItems}
         handleDrawerClose={closeDrawer}
       />
     </Drawer>
