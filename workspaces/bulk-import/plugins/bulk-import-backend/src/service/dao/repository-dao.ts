@@ -77,10 +77,10 @@ export class RepositoryDao {
     if (repository) {
       repositoryId = repository.id;
     } else {
-      const [newRepositoryId] = await this.knex('repositories')
+      const [newRepository] = await this.knex('repositories')
         .insert({ url: repoUrl })
         .returning('id');
-      repositoryId = newRepositoryId;
+      repositoryId = newRepository.id;
     }
 
     await this.knex('scaffolder_tasks').insert({
