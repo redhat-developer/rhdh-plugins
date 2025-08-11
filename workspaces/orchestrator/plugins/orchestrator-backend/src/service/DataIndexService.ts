@@ -547,15 +547,32 @@ export class DataIndexService {
     if (!result?.error) {
       return;
     }
-    this.logger.error(`${scenario} ${result}`);
+
+    this.logger.error(scenario, result);
+
     const networkError = result.error.networkError?.cause?.message;
     if (networkError) {
       const toThrow = new Error(`${result.error.message}. ${networkError}`);
       toThrow.name = 'Network Error';
       throw toThrow;
-    } else {
-      throw result.error;
     }
+
+    const graphQLErrors = result.error.graphQLErrors;
+    if (
+      result.data &&
+      Array.isArray(graphQLErrors) &&
+      graphQLErrors.length > 0
+    ) {
+      const graphQLError = graphQLErrors[0];
+      if (
+        graphQLError?.extensions?.classification === 'DataFetchingException'
+      ) {
+        // we have data (perhaps partial) and it is a data fetch error ==> log and ignore
+        return;
+      }
+    }
+
+    throw result.error;
   }
 
   private removeNodes(instance: ProcessInstance): ProcessInstance {
