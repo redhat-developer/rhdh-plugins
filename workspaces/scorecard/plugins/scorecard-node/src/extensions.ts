@@ -21,9 +21,7 @@ import { MetricProvider } from './api';
  * @public
  */
 export interface ScorecardMetricsExtensionPoint {
-  addMetricProvider(
-    ...metricProviders: Array<MetricProvider | Array<MetricProvider>>
-  ): void;
+  addMetricProvider(...metricProviders: Array<MetricProvider>): void;
 }
 
 /**

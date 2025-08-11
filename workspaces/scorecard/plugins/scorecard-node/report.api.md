@@ -27,9 +27,7 @@ export interface MetricProvider<
 // @public (undocumented)
 export interface ScorecardMetricsExtensionPoint {
   // (undocumented)
-  addMetricProvider(
-    ...metricProviders: Array<MetricProvider | Array<MetricProvider>>
-  ): void;
+  addMetricProvider(...metricProviders: Array<MetricProvider>): void;
 }
 
 // @public (undocumented)
