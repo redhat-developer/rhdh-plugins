@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { JsonValue } from '@backstage/types/index';
 import {
   Metric,
   MetricType,
@@ -24,12 +23,9 @@ import {
 /**
  * @public
  */
-export interface MetricProvider<
-  T extends MetricType = MetricType,
-  TOptions extends JsonValue = JsonValue,
-> {
+export interface MetricProvider<T extends MetricType = MetricType> {
   getProviderDatasourceId(): string;
   getProviderId(): string;
   getMetric(): Metric<T>;
-  calculateMetric(options?: TOptions): Promise<MetricValue<T>>;
+  calculateMetric(): Promise<MetricValue<T>>;
 }

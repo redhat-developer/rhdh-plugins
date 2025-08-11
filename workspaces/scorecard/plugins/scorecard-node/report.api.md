@@ -4,18 +4,14 @@
 
 ```ts
 import { ExtensionPoint } from '@backstage/backend-plugin-api';
-import { JsonValue } from '@backstage/types/index';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 // @public (undocumented)
-export interface MetricProvider<
-  T extends MetricType = MetricType,
-  TOptions extends JsonValue = JsonValue,
-> {
+export interface MetricProvider<T extends MetricType = MetricType> {
   // (undocumented)
-  calculateMetric(options?: TOptions): Promise<MetricValue<T>>;
+  calculateMetric(): Promise<MetricValue<T>>;
   // (undocumented)
   getMetric(): Metric<T>;
   // (undocumented)

@@ -36,14 +36,7 @@ Create the metric provider in the newly created plugin module `/plugins/scorecar
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
-// Options used to provide additional information for metric calculation, optional and can be omitted from MyMetricProvider definition
-export type MyMetricOptions = {
-  additionalFilter: JsonValue;
-};
-
-export class MyMetricProvider
-  implements MetricProvider<'number', MyMetricOptions>
-{
+export class MyMetricProvider implements MetricProvider<'number'> {
   // The datasource identifier for this provider
   getProviderDatasourceId(): string {
     return 'my-datasource';
@@ -65,7 +58,7 @@ export class MyMetricProvider
   }
 
   // Calculates and returns the metric value
-  async calculateMetric(options: MyMetricOptions): Promise<number> {
+  async calculateMetric(): Promise<number> {
     // TODO: Implement your metric calculation logic here
     // This could involve API calls to your data source
     return 42;
