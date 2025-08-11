@@ -16,6 +16,7 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 | _ManagementApi_   | [**ping**](Apis/ManagementApi.md#ping)                                                       | **GET** /ping                                          | Check the health of the Bulk Import backend router                                                                               |
 | _OrganizationApi_ | [**findAllOrganizations**](Apis/OrganizationApi.md#findallorganizations)                     | **GET** /organizations                                 | Fetch Organizations accessible by Backstage Github Integrations                                                                  |
 | _OrganizationApi_ | [**findRepositoriesByOrganization**](Apis/OrganizationApi.md#findrepositoriesbyorganization) | **GET** /organizations/{organizationName}/repositories | Fetch Repositories in the specified GitHub organization, provided it is accessible by any of the configured GitHub Integrations. |
+| _RepositoryApi_   | [**deleteRepository**](Apis/RepositoryApi.md#deleterepository)                               | **DELETE** /repositories/db/{repositoryName}           | Delete a single Repository from the database by its name                                                                         |
 | _RepositoryApi_   | [**findAllRepositories**](Apis/RepositoryApi.md#findallrepositories)                         | **GET** /repositories                                  | Fetch Organization Repositories accessible by Backstage Github Integrations                                                      |
 | _RepositoryApi_   | [**findAllRepositoriesFromDb**](Apis/RepositoryApi.md#findallrepositoriesfromdb)             | **GET** /repositories/from-db                          | Fetch all Repositories from the database                                                                                         |
 | _RepositoryApi_   | [**findRepositoryFromDbByName**](Apis/RepositoryApi.md#findrepositoryfromdbbyname)           | **GET** /repositories/db                               | Fetch a single Repository from the database by its name                                                                          |
@@ -39,6 +40,7 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 - [OrganizationList](./Models/OrganizationList.md)
 - [Repository](./Models/Repository.md)
 - [RepositoryList](./Models/RepositoryList.md)
+- [ScaffolderTask](./Models/ScaffolderTask.md)
 - [Source](./Models/Source.md)
 - [SourceImport](./Models/SourceImport.md)
 - [executeTemplate_202_response](./Models/executeTemplate_202_response.md)

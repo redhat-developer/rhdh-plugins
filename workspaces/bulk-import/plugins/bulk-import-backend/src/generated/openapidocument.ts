@@ -364,6 +364,39 @@ const OPENAPI = `
         }
       }
     },
+    "/repositories/db/{repositoryName}": {
+      "delete": {
+        "operationId": "deleteRepository",
+        "summary": "Delete a single Repository from the database by its name",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Repository"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repositoryName",
+            "description": "Repository name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Repository was deleted successfully with no errors"
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      }
+    },
     "/imports": {
       "get": {
         "operationId": "findAllImports",
@@ -876,6 +909,12 @@ const OPENAPI = `
             "type": "string",
             "description": "repository URL"
           },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScaffolderTask"
+            }
+          },
           "organization": {
             "type": "string",
             "description": "organization which the repository is part of"
@@ -1121,6 +1160,21 @@ const OPENAPI = `
           "templateName": {
             "type": "string",
             "description": "Optional name of the template to use. If not provided, the default from config will be used."
+          }
+        }
+      },
+      "ScaffolderTask": {
+        "title": "Scaffolder Task",
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string"
+          },
+          "scaffolderOptions": {
+            "type": "object"
+          },
+          "repositoryId": {
+            "type": "number"
           }
         }
       }

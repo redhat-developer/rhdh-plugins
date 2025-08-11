@@ -99,8 +99,8 @@ export async function findAllRepositoriesFromDb(deps: {
         },
       };
     }
-    const repositories = repoList.map(r => {
-      const gitUrl = gitUrlParse(r.url);
+    const repositories = repoList.map((r: Components.Schemas.Repository) => {
+      const gitUrl = gitUrlParse(r.url!);
       return {
         id: `${gitUrl.organization}/${gitUrl.name}`,
         name: gitUrl.name,
@@ -264,6 +264,32 @@ export async function findRepositoryFromDbByName(
       responseBody: {
         errors: [error.message],
       },
+    };
+  }
+}
+
+export async function deleteRepository(
+  deps: {
+    logger: LoggerService;
+    dao: RepositoryDao;
+  },
+  name: string,
+): Promise<HandlerResponse<void>> {
+  deps.logger.debug(`Deleting repository from database by name ${name}...`);
+  try {
+    await deps.dao.deleteRepository(name);
+
+    return {
+      statusCode: 204,
+      responseBody: undefined,
+    };
+  } catch (error: any) {
+    deps.logger.error(
+      `Failed to delete repository from database by name ${name}`,
+      error,
+    );
+    return {
+      statusCode: 500,
     };
   }
 }

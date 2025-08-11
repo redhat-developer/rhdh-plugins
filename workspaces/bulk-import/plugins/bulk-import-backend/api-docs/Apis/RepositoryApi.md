@@ -2,11 +2,39 @@
 
 All URIs are relative to _http://localhost:7007/api/bulk-import_
 
-| Method                                                                        | HTTP request                  | Description                                                                 |
-| ----------------------------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------- |
-| [**findAllRepositories**](RepositoryApi.md#findAllRepositories)               | **GET** /repositories         | Fetch Organization Repositories accessible by Backstage Github Integrations |
-| [**findAllRepositoriesFromDb**](RepositoryApi.md#findAllRepositoriesFromDb)   | **GET** /repositories/from-db | Fetch all Repositories from the database                                    |
-| [**findRepositoryFromDbByName**](RepositoryApi.md#findRepositoryFromDbByName) | **GET** /repositories/db      | Fetch a single Repository from the database by its name                     |
+| Method                                                                        | HTTP request                                 | Description                                                                 |
+| ----------------------------------------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------- |
+| [**deleteRepository**](RepositoryApi.md#deleteRepository)                     | **DELETE** /repositories/db/{repositoryName} | Delete a single Repository from the database by its name                    |
+| [**findAllRepositories**](RepositoryApi.md#findAllRepositories)               | **GET** /repositories                        | Fetch Organization Repositories accessible by Backstage Github Integrations |
+| [**findAllRepositoriesFromDb**](RepositoryApi.md#findAllRepositoriesFromDb)   | **GET** /repositories/from-db                | Fetch all Repositories from the database                                    |
+| [**findRepositoryFromDbByName**](RepositoryApi.md#findRepositoryFromDbByName) | **GET** /repositories/db                     | Fetch a single Repository from the database by its name                     |
+
+<a name="deleteRepository"></a>
+
+# **deleteRepository**
+
+> deleteRepository(repositoryName)
+
+Delete a single Repository from the database by its name
+
+### Parameters
+
+| Name               | Type       | Description     | Notes             |
+| ------------------ | ---------- | --------------- | ----------------- |
+| **repositoryName** | **String** | Repository name | [default to null] |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
 
 <a name="findAllRepositories"></a>
 

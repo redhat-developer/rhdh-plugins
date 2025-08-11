@@ -116,4 +116,15 @@ export class RepositoryDao {
       tasks: repoTasks,
     };
   }
+
+  async deleteRepository(url: string): Promise<void> {
+    this.logger.debug(`Deleting repository from database by url ${url}...`);
+    const repository = await this.knex('repositories')
+      .where({ url: url })
+      .first();
+
+    if (repository) {
+      await this.knex('repositories').where({ id: repository.id }).del();
+    }
+  }
 }

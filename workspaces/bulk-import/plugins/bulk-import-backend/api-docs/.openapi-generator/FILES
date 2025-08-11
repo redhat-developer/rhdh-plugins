@@ -18,6 +18,7 @@ Models/Organization.md
 Models/OrganizationList.md
 Models/Repository.md
 Models/RepositoryList.md
+Models/ScaffolderTask.md
 Models/Source.md
 Models/SourceImport.md
 Models/executeTemplate_202_response.md
