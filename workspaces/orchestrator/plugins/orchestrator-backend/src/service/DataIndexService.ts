@@ -173,6 +173,35 @@ export class DataIndexService {
       .reduce((acc, curr) => ({ ...acc, ...curr }), {});
   }
 
+  private filterDeletedWorkflows(workflows: WorkflowInfo[]): WorkflowInfo[] {
+    // filter deleted workflows, that were deleted via deleting SonataFlow CR, operator marks them as unavailable
+    // Note this is different then the isAvailable status in WorkflowOverviewDTO, that is used to mark workflows that are not available on the service for unexpected reasons
+
+    const availableWorkflows: WorkflowInfo[] = [];
+    const unavailableWorkflows: WorkflowInfo[] = [];
+
+    workflows.forEach(workflow => {
+      const isUnavailable = workflow.metadata?.status === 'unavailable';
+      if (isUnavailable) {
+        unavailableWorkflows.push(workflow);
+      } else {
+        availableWorkflows.push(workflow);
+      }
+    });
+
+    this.logger.debug(
+      `filtered deleted workflows when fetching workflow infos: ${JSON.stringify(
+        unavailableWorkflows.map(w => ({
+          id: w.id,
+          name: w.name,
+          status: w.metadata?.status,
+        })),
+      )}`,
+    );
+
+    return availableWorkflows;
+  }
+
   public async fetchWorkflowInfos(args: {
     definitionIds?: string[];
     pagination?: Pagination;
@@ -205,7 +234,8 @@ export class DataIndexService {
 
     const graphQlQuery = buildGraphQlQuery({
       type: 'ProcessDefinitions',
-      queryBody: 'id, name, version, type, endpoint, serviceUrl, source',
+      queryBody:
+        'id, name, version, type, endpoint, serviceUrl, source, metadata',
       whereClause,
       pagination,
     });
@@ -220,7 +250,7 @@ export class DataIndexService {
       result,
     );
 
-    return result.data.ProcessDefinitions;
+    return this.filterDeletedWorkflows(result.data.ProcessDefinitions);
   }
 
   public async fetchInstances(args: {
