@@ -23,10 +23,12 @@ import { Link } from '@backstage/core-components';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { AnsibleStatus } from '../../utils/aap-utils';
 import { Product } from './productData';
+import { getEddlDataAttributes } from '../../utils/eddl-utils';
 
 type SandboxCatalogCardButtonProps = {
   link: string;
   id: Product;
+  title: string;
   handleTryButtonClick: (id: Product) => void;
   theme: Theme;
   refetchingUserData?: boolean;
@@ -34,7 +36,7 @@ type SandboxCatalogCardButtonProps = {
 
 export const SandboxCatalogCardButton: React.FC<
   SandboxCatalogCardButtonProps
-> = ({ link, id, handleTryButtonClick, theme, refetchingUserData }) => {
+> = ({ link, id, title, handleTryButtonClick, theme, refetchingUserData }) => {
   const { loading, userFound, verificationRequired, userReady, ansibleStatus } =
     useSandboxContext();
   const [clicked, setClicked] = React.useState(false);
@@ -89,6 +91,8 @@ export const SandboxCatalogCardButton: React.FC<
     },
   };
 
+  const eddlAttributes = getEddlDataAttributes(title, 'Catalog');
+
   const buttonContent = (
     <Button
       size="medium"
@@ -101,6 +105,7 @@ export const SandboxCatalogCardButton: React.FC<
       }}
       endIcon={endIcon}
       sx={buttonSx}
+      {...eddlAttributes}
     >
       {label}
     </Button>

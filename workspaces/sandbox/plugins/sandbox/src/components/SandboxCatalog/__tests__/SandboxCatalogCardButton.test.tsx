@@ -32,6 +32,7 @@ describe('SandboxCatalogCardButton', () => {
   const defaultProps = {
     link: 'https://example.com',
     id: Product.OPENSHIFT_CONSOLE,
+    title: 'OpenShift',
     handleTryButtonClick: mockHandleTryButtonClick,
     theme: theme,
   };
@@ -206,5 +207,55 @@ describe('SandboxCatalogCardButton', () => {
     renderButton();
 
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  describe('EDDL data attributes', () => {
+    it('should use the correct product title in data-analytics-text for different products', () => {
+      const testCases = [
+        {
+          id: Product.OPENSHIFT_CONSOLE,
+          title: 'OpenShift',
+          expectedText: 'OpenShift',
+        },
+        {
+          id: Product.OPENSHIFT_AI,
+          title: 'OpenShift AI',
+          expectedText: 'OpenShift AI',
+        },
+        {
+          id: Product.DEVSPACES,
+          title: 'Dev Spaces',
+          expectedText: 'Dev Spaces',
+        },
+        {
+          id: Product.AAP,
+          title: 'Ansible Automation Platform',
+          expectedText: 'Ansible Automation Platform',
+        },
+        {
+          id: Product.OPENSHIFT_VIRT,
+          title: 'OpenShift Virtualization',
+          expectedText: 'OpenShift Virtualization',
+        },
+      ];
+
+      testCases.forEach(({ id, title, expectedText }) => {
+        const { unmount } = renderButton({ id, title });
+
+        const button = screen.getByRole('button');
+
+        expect(button).toHaveAttribute(
+          'data-analytics-category',
+          'Developer Sandbox|Catalog',
+        );
+        expect(button).toHaveAttribute('data-analytics-text', expectedText);
+        expect(button).toHaveAttribute(
+          'data-analytics-region',
+          'sandbox-catalog',
+        );
+
+        unmount();
+      });
+    });
   });
 });
