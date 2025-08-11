@@ -219,6 +219,7 @@ declare namespace Components {
        * repository URL
        */
       url?: string;
+      tasks?: /* Scaffolder Task */ ScaffolderTask[];
       /**
        * organization which the repository is part of
        */
@@ -240,6 +241,16 @@ declare namespace Components {
       totalCount?: number;
       pagePerIntegration?: number;
       sizePerIntegration?: number;
+    }
+    /**
+     * Scaffolder Task
+     */
+    export interface ScaffolderTask {
+      taskId?: string;
+      scaffolderOptions?: {
+        [key: string]: any;
+      };
+      repositoryId?: number;
     }
     /**
      * Import Source:
@@ -325,6 +336,18 @@ declare namespace Paths {
     export interface QueryParameters {
       repo?: Parameters.Repo;
       defaultBranch?: Parameters.DefaultBranch;
+    }
+    namespace Responses {
+      export interface $204 {}
+      export interface $500 {}
+    }
+  }
+  namespace DeleteRepository {
+    namespace Parameters {
+      export type RepositoryName = string;
+    }
+    export interface PathParameters {
+      repositoryName: Parameters.RepositoryName;
     }
     namespace Responses {
       export interface $204 {}
@@ -540,6 +563,14 @@ export interface OperationMethods {
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.FindRepositoryFromDbByName.Responses.$200>;
   /**
+   * deleteRepository - Delete a single Repository from the database by its name
+   */
+  'deleteRepository'(
+    parameters?: Parameters<Paths.DeleteRepository.PathParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.DeleteRepository.Responses.$204>;
+  /**
    * findAllImports - Fetch Import Jobs
    */
   'findAllImports'(
@@ -648,6 +679,16 @@ export interface PathsDictionary {
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.FindRepositoryFromDbByName.Responses.$200>;
   };
+  ['/repositories/db/{repositoryName}']: {
+    /**
+     * deleteRepository - Delete a single Repository from the database by its name
+     */
+    'delete'(
+      parameters?: Parameters<Paths.DeleteRepository.PathParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.DeleteRepository.Responses.$204>;
+  };
   ['/imports']: {
     /**
      * findAllImports - Fetch Import Jobs
@@ -711,5 +752,6 @@ export type Organization = Components.Schemas.Organization;
 export type OrganizationList = Components.Schemas.OrganizationList;
 export type Repository = Components.Schemas.Repository;
 export type RepositoryList = Components.Schemas.RepositoryList;
+export type ScaffolderTask = Components.Schemas.ScaffolderTask;
 export type Source = Components.Schemas.Source;
 export type SourceImport = Components.Schemas.SourceImport;

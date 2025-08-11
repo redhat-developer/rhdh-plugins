@@ -56,6 +56,7 @@ import {
 import { findAllOrganizations } from './handlers/organization';
 import { ping } from './handlers/ping';
 import {
+  deleteRepository,
   findAllRepositories,
   findAllRepositoriesFromDb,
   findRepositoriesByOrganization,
@@ -86,6 +87,7 @@ namespace Operations {
   export const FIND_ALL_REPOSITORIES = 'findAllRepositories';
   export const FIND_ALL_REPOSITORIES_FROM_DB = 'findAllRepositoriesFromDb';
   export const FIND_REPOSITORY_FROM_DB_BY_NAME = 'findRepositoryFromDbByName';
+  export const DELETE_REPOSITORY = 'deleteRepository';
   export const FIND_REPOSITORIES_BY_ORGANIZATION =
     'findRepositoriesByOrganization';
   export const FIND_ALL_IMPORTS = 'findAllImports';
@@ -243,6 +245,20 @@ export async function createRouter(
           dao,
         },
         c.request.query.repositoryName?.toString(),
+      );
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
+    Operations.DELETE_REPOSITORY,
+    async (c: Context, _req: Request, res: Response) => {
+      const response = await deleteRepository(
+        {
+          logger,
+          dao,
+        },
+        c.request.params.repositoryName?.toString(),
       );
       return res.status(response.statusCode).json(response.responseBody);
     },
