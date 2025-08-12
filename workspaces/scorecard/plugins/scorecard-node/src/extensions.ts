@@ -14,4 +14,20 @@
  * limitations under the License.
  */
 
-export * from './types';
+import { createExtensionPoint } from '@backstage/backend-plugin-api';
+import { MetricProvider } from './api';
+
+/**
+ * @public
+ */
+export interface ScorecardMetricsExtensionPoint {
+  addMetricProvider(...metricProviders: Array<MetricProvider>): void;
+}
+
+/**
+ * @public
+ */
+export const scorecardMetricsExtensionPoint =
+  createExtensionPoint<ScorecardMetricsExtensionPoint>({
+    id: 'scorecard.metrics',
+  });

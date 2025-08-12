@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-export * from './types';
+/**
+ * The github backend module for the scorecard plugin.
+ *
+ * @packageDocumentation
+ */
+
+export { scorecardModuleGithub as default } from './module';

@@ -14,4 +14,18 @@
  * limitations under the License.
  */
 
-export * from './types';
+import {
+  Metric,
+  MetricType,
+  MetricValue,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+/**
+ * @public
+ */
+export interface MetricProvider<T extends MetricType = MetricType> {
+  getProviderDatasourceId(): string;
+  getProviderId(): string;
+  getMetric(): Metric<T>;
+  calculateMetric(): Promise<MetricValue<T>>;
+}
