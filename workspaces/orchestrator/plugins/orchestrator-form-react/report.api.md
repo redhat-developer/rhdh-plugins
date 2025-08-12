@@ -11,7 +11,7 @@ import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-p
 import { default as React_2 } from 'react';
 
 // @public
-export const OrchestratorForm: ({ schema: rawSchema, updateSchema, handleExecute, isExecuting, initialFormData, isDataReadonly, setAuthTokenDescriptors, }: OrchestratorFormProps) => JSX_2.Element;
+export const OrchestratorForm: ({ schema: rawSchema, updateSchema, handleExecute, isExecuting, initialFormData, setAuthTokenDescriptors, }: OrchestratorFormProps) => JSX_2.Element;
 
 // @public
 export type OrchestratorFormProps = {
@@ -21,7 +21,6 @@ export type OrchestratorFormProps = {
     isExecuting: boolean;
     handleExecute: (parameters: JsonObject) => Promise<void>;
     initialFormData: JsonObject;
-    isDataReadonly?: boolean;
 };
 
 // @public
