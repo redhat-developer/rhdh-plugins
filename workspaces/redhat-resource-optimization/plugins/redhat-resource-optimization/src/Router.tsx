@@ -20,9 +20,13 @@ import { Routes, Route } from 'react-router-dom';
 import { optimizationsBreakdownRouteRef } from './routes';
 import { OptimizationsPage } from './pages/optimizations/OptimizationsPage';
 import { OptimizationsBreakdownPage } from './pages/optimizations-breakdown/OptimizationsBreakdownPage';
+import { usePatternFlyTheme } from './hooks/usePatternFlyTheme';
 
 /** @public */
 export function Router() {
+  // Apply PatternFly dark theme globally for the entire plugin
+  usePatternFlyTheme();
+
   return (
     <Routes>
       <Route path="/" element={<OptimizationsPage />} />
