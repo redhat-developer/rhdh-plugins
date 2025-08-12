@@ -12123,6 +12123,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github@workspace:plugins/scorecard-backend-module-github":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github@workspace:plugins/scorecard-backend-module-github"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.3.1"
+    "@backstage/backend-test-utils": "npm:^1.5.0"
+    "@backstage/cli": "npm:^0.32.1"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira@workspace:plugins/scorecard-backend-module-jira":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira@workspace:plugins/scorecard-backend-module-jira"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.3.1"
+    "@backstage/backend-test-utils": "npm:^1.5.0"
+    "@backstage/cli": "npm:^0.32.1"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:plugins/scorecard-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:plugins/scorecard-backend"
@@ -12134,6 +12158,8 @@ __metadata:
     "@backstage/cli": "npm:^0.32.1"
     "@backstage/errors": "npm:^1.2.7"
     "@backstage/plugin-catalog-node": "npm:^1.17.0"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^2.0.12"
     express: "npm:^4.17.1"
@@ -12143,11 +12169,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-scorecard-common@workspace:plugins/scorecard-common":
+"@red-hat-developer-hub/backstage-plugin-scorecard-common@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-common@workspace:plugins/scorecard-common":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-common@workspace:plugins/scorecard-common"
   dependencies:
     "@backstage/cli": "npm:^0.32.1"
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-scorecard-node@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-node@workspace:plugins/scorecard-node":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-node@workspace:plugins/scorecard-node"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.3.1"
+    "@backstage/cli": "npm:^0.32.1"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
   languageName: unknown
   linkType: soft
 
@@ -17442,6 +17478,8 @@ __metadata:
     "@backstage/plugin-search-backend-node": "npm:^1.3.11"
     "@backstage/plugin-techdocs-backend": "npm:^2.0.2"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira": "workspace:^"
     app: "link:../app"
     better-sqlite3: "npm:^9.0.0"
     node-gyp: "npm:^10.0.0"
