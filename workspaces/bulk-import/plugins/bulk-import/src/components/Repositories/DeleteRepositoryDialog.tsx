@@ -123,8 +123,8 @@ const DeleteRepositoryDialog = ({
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1">
-          {`Removing ${gitlabFeatureFlag ? 'it will' : 'a repository'} erases all associated information from the
-          Catalog page.`}
+          Removing a repository will also remove all associated scaffolder task
+          info.
         </Typography>
       </DialogContent>
       {(isUrlMissing || mutationDelete.isError) && (

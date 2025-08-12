@@ -22,7 +22,12 @@ import Typography from '@mui/material/Typography';
 import { AddRepositoryData } from '../../types';
 import { useDeleteDialog } from '../DeleteDialogContext';
 
-const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
+const DeleteRepository = ({
+  data,
+}: {
+  data: AddRepositoryData;
+  onDelete: (repo: AddRepositoryData) => void;
+}) => {
   const { setDeleteComponent, setOpenDialog } = useDeleteDialog();
 
   const openDialog = (dialogData: AddRepositoryData) => {
@@ -31,9 +36,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
   };
 
   const tooltipMessage =
-    data.source === 'location'
-      ? 'Remove'
-      : 'This repository added to the app-config file. To remove it modify the file directly';
+    'Delete repository and associated scaffolder task info';
 
   return (
     <Tooltip title={tooltipMessage}>
@@ -43,7 +46,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
           onClick={() => openDialog(data)}
           aria-label="Delete"
           size="large"
-          disabled={data.source !== 'location'}
+          disabled={false}
         >
           <Delete />
         </IconButton>

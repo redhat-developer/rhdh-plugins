@@ -1,0 +1,9 @@
+we can try to support also:
+github.com?repo=shellImages&owner=AndrienkoAleksandr
+
+export NODE_OPTIONS=--no-node-snapshot
+
+repository
+https://github.com/shellImages/AndrienkoAleksandr
+
+{"owner": "user:default/andrienkoaleksandr"}

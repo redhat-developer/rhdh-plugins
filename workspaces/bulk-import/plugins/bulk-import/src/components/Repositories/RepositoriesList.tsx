@@ -19,10 +19,12 @@ import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Table } from '@backstage/core-components';
+import { useApi } from '@backstage/core-plugin-api';
 
 import Box from '@mui/material/Box';
 import TablePagination from '@mui/material/TablePagination';
 
+import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useAddedRepositories } from '../../hooks/useAddedRepositories';
 import {
   AddedRepositoryColumnNameEnum,
@@ -45,7 +47,9 @@ export const RepositoriesList = () => {
   const queryParams = new URLSearchParams(location.search);
   const [order, setOrder] = useState<SortingOrderEnum>(SortingOrderEnum.Asc);
   const [orderBy, setOrderBy] = useState<string>('repoName');
-  const { openDialog, setOpenDialog, deleteComponent } = useDeleteDialog();
+  const { openDialog, setOpenDialog, deleteComponent, setDeleteComponent } =
+    useDeleteDialog();
+  const bulkImportApi = useApi(bulkImportApiRef);
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const [pageNumber, setPageNumber] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -69,7 +73,10 @@ export const RepositoriesList = () => {
     order,
   );
 
-  const closeDialog = () => {
+  const closeDialog = async () => {
+    if (deleteComponent) {
+      await bulkImportApi.deleteRepository(deleteComponent.repoUrl as string);
+    }
     setOpenDialog(false);
     refetch();
   };
@@ -128,6 +135,12 @@ export const RepositoriesList = () => {
               loading={loading}
               rows={importJobs.addedRepositories || []}
               emptyRows={emptyRows}
+              onDelete={repo => {
+                if (repo.source === 'integration') {
+                  setOpenDialog(true);
+                  setDeleteComponent(repo);
+                }
+              }}
             />
           ),
 
