@@ -29,8 +29,7 @@
     "test": "backstage-cli package test",
     "clean": "backstage-cli package clean && rm -rf dist-scalprum",
     "prepack": "backstage-cli package prepack && yarn export-dynamic",
-    "postpack": "backstage-cli package postpack",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --in-place"
+    "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
     "@backstage/core-components": "^0.17.2",
@@ -45,7 +44,6 @@
     "@backstage/core-app-api": "^1.17.0",
     "@backstage/dev-utils": "^1.1.10",
     "@backstage/test-utils": "^1.7.8",
-    "@janus-idp/cli": "^2.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
@@ -54,7 +52,6 @@
   },
   "files": [
     "app-config.dynamic.yaml",
-    "dist",
-    "dist-scalprum"
+    "dist"
   ]
 }
