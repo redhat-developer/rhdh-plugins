@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend
 
+## 0.2.2
+
+### Patch Changes
+
+- 551bffa: remove backend catalog dependency
+
 ## 0.2.1
 
 ### Patch Changes
