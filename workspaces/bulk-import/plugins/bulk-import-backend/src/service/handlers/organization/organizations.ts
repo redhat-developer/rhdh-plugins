@@ -32,6 +32,7 @@ export async function findAllOrganizations(
   logger: LoggerService,
   githubApiService: GithubApiService,
   gitlabApiService: GitlabApiService,
+  approvalTool: string | undefined,
   search?: string,
   pageNumber: number = DefaultPageNumber,
   pageSize: number = DefaultPageSize,
@@ -42,18 +43,23 @@ export async function findAllOrganizations(
     }',${pageNumber},${pageSize})..`,
   );
 
-  const allOrgsAccessible = await gitlabApiService.getGroupFromIntegrations(
+  let allOrgsAccessible;
+
+  if (approvalTool === 'gitlab') {
+    allOrgsAccessible = await gitlabApiService.getGroupFromIntegrations(
     search,
     pageNumber,
     pageSize,
   );
+  } else {
+    allOrgsAccessible = await githubApiService.getOrganizationsFromIntegrations(
+      search,
+      pageNumber,
+      pageSize,
+    );
+  }
 
-  // const allOrgsAccessible =
-  //   await githubApiService.getOrganizationsFromIntegrations(
-  //     search,
-  //     pageNumber,
-  //     pageSize,
-  //   );
+
   const errorList: string[] = [];
   for (const err of allOrgsAccessible.errors ?? []) {
     if (err.error?.message) {

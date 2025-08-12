@@ -166,6 +166,7 @@ export async function createRouter(
         logger,
         githubApiService,
         gitlabApiService,
+        q.approvalTool,
         q.search,
         q.pagePerIntegration,
         q.sizePerIntegration,
@@ -203,6 +204,7 @@ export async function createRouter(
           checkStatus: q.checkImportStatus,
           pageNumber: q.pagePerIntegration,
           pageSize: q.sizePerIntegration,
+          approvalTool: q.approvalTool,
         },
       );
       const repos = response.responseBody?.repositories;
@@ -339,7 +341,9 @@ export async function createRouter(
           logger,
           config,
           githubApiService,
+          gitlabApiService,
           catalogHttpClient,
+          approvalTool: q.approvalTool,
         },
         q.repo,
         q.defaultBranch,

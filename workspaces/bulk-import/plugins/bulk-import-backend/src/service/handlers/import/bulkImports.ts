@@ -40,6 +40,7 @@ import {
   DefaultSortOrder,
   type HandlerResponse,
 } from '../handlers';
+import { GitlabApiService } from '../../../gitlab';
 
 type CreateImportDryRunStatus =
   | 'CATALOG_ENTITY_CONFLICT'
@@ -676,7 +677,9 @@ export async function findImportStatusByRepo(
     logger: LoggerService;
     config: Config;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
+    approvalTool?: string;
   },
   repoUrl: string,
   defaultBranch?: string,
@@ -700,14 +703,26 @@ export async function findImportStatusByRepo(
     status: null,
   } as Components.Schemas.Import;
   try {
+    let openImportPr;
     // Check to see if there are any PR
-    const openImportPr = await deps.githubApiService.findImportOpenPr(
-      deps.logger,
-      {
-        repoUrl: repoUrl,
-        includeCatalogInfoContent,
-      },
-    );
+    if (deps.approvalTool === 'gitlab') {
+      openImportPr = await deps.gitlabApiService.findImportOpenPr(
+        deps.logger,
+        {
+          repoUrl: repoUrl,
+          includeCatalogInfoContent,
+        },
+      );
+    } else {
+      openImportPr = await deps.githubApiService.findImportOpenPr(
+        deps.logger,
+        {
+          repoUrl: repoUrl,
+          includeCatalogInfoContent,
+        },
+      );
+    }
+
     if (!openImportPr.prUrl) {
       const catalogLocations = (
         await deps.catalogHttpClient.listCatalogUrlLocations()

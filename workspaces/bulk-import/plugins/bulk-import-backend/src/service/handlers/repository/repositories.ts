@@ -42,6 +42,7 @@ export async function findAllRepositories(
     catalogHttpClient: CatalogHttpClient;
   },
   reqParams?: {
+    approvalTool?: string;
     search?: string;
     checkStatus?: boolean;
     pageNumber?: number;
@@ -52,22 +53,24 @@ export async function findAllRepositories(
   const checkStatus = reqParams?.checkStatus ?? false;
   const pageNumber = reqParams?.pageNumber ?? DefaultPageNumber;
   const pageSize = reqParams?.pageSize ?? DefaultPageSize;
+  const approvalTool = reqParams?.approvalTool;
   deps.logger.debug(
     `Getting all repositories - (search,page,size)=('${
       search ?? ''
     }',${pageNumber},${pageSize})..`,
   );
-  // const gitlabrepos = await deps.gitlabApiService
-  //   .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
-  //   .then(response => formatResponse(deps, response, checkStatus));
 
-  // return gitlabrepos;
-
-  const githubRepos = await deps.githubApiService
+  let repos;
+  if (approvalTool === 'gitlab') {
+    repos = await deps.gitlabApiService
     .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
     .then(response => formatResponse(deps, response, checkStatus));
-
-  return githubRepos;
+  } else {
+    repos = await deps.githubApiService
+    .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
+    .then(response => formatResponse(deps, response, checkStatus));
+  }
+  return repos;
 }
 
 export async function findRepositoriesByOrganization(

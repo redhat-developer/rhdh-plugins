@@ -47,7 +47,7 @@ import {
   addGitlabTokenGroups,
   // getAllAppOrgs,
 } from './utils/groupUtils';
-// import { closePRWithComment, findOpenPRForBranch } from './utils/prUtils';
+import { closePRWithComment, findOpenPRForBranch } from './utils/prUtils';
 import {
   // addGithubAppRepositories,
   // addGithubTokenOrgRepositories,
@@ -64,6 +64,7 @@ import {
   fetchFromAllIntegrations,
   //   getCredentialsForConfig,
 } from './utils/utils';
+import { buildGitlab } from './utils/glUtils';
 
 export class GitlabApiService {
   private readonly logger: LoggerService;
@@ -86,8 +87,8 @@ export class GitlabApiService {
   }
 
   async getRepositoryFromIntegrations(repoUrl: string): Promise<{
-    repository?: GithubRepository;
-    errors?: GithubFetchError[];
+    repository?: GitlabRepository;
+    errors?: GitlabFetchError[];
   }> {
     const gitUrl = gitUrlParse(repoUrl);
 
@@ -372,65 +373,62 @@ export class GitlabApiService {
   //     });
   //   }
 
-  //   async findImportOpenPr(
-  //     logger: LoggerService,
-  //     input: {
-  //       repoUrl: string;
-  //       includeCatalogInfoContent?: boolean;
-  //     },
-  //   ): Promise<{
-  //     prNum?: number;
-  //     prUrl?: string;
-  //     prTitle?: string;
-  //     prBody?: string;
-  //     prCatalogInfoContent?: string;
-  //     lastUpdate?: string;
-  //   }> {
-  //     const ghConfig = this.integrations.github.byUrl(input.repoUrl)?.config;
-  //     if (!ghConfig) {
-  //       throw new Error(`Could not find GH integration from ${input.repoUrl}`);
-  //     }
+    async findImportOpenPr(
+      logger: LoggerService,
+      input: {
+        repoUrl: string;
+        includeCatalogInfoContent?: boolean;
+      },
+    ): Promise<{
+      prNum?: number;
+      prUrl?: string;
+      prTitle?: string;
+      prBody?: string;
+      prCatalogInfoContent?: string;
+      lastUpdate?: string;
+    }> {
+      const glConfig = this.integrations.gitlab.byUrl(input.repoUrl)?.config;
+      if (!glConfig) {
+        throw new Error(`Could not find GL integration from ${input.repoUrl}`);
+      }
 
-  //     const gitUrl = gitUrlParse(input.repoUrl);
-  //     const owner = gitUrl.organization;
-  //     const repo = gitUrl.name;
+      const gitUrl = gitUrlParse(input.repoUrl);
+      const owner = gitUrl.organization;
+      const repo = gitUrl.name;
 
-  //     const credentials = await this.githubCredentialsProvider.getAllCredentials({
-  //       host: ghConfig.host,
-  //     });
-  //     if (credentials.length === 0) {
-  //       throw new Error(`No credentials for GH integration`);
-  //     }
+      const credentials = await this.gitlabCredentialsProvider.getAllCredentials({
+        host: glConfig.host,
+      });
+      if (credentials.length === 0) {
+        throw new Error(`No credentials for GL integration`);
+      }
 
-  //     const branchName = getBranchName(this.config);
-  //     for (const credential of credentials) {
-  //       const octo = buildOcto(
-  //         {
-  //           logger: this.logger,
-  //           cache: this.cache,
-  //         },
-  //         { credential, owner },
-  //         ghConfig.apiBaseUrl,
-  //       );
-  //       if (!octo) {
-  //         continue;
-  //       }
-  //       try {
-  //         return await findOpenPRForBranch(
-  //           logger,
-  //           this.config,
-  //           octo,
-  //           owner,
-  //           repo,
-  //           branchName,
-  //           input.includeCatalogInfoContent,
-  //         );
-  //       } catch (error: any) {
-  //         logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
-  //       }
-  //     }
-  //     return {};
-  //   }
+      const branchName = getBranchName(this.config);
+      for (const credential of credentials) {
+        const glKit = buildGitlab(
+          {
+            logger: this.logger,
+            cache: this.cache,
+          },
+          { credential, owner },
+          glConfig.apiBaseUrl,
+        );
+        try {
+          return await findOpenPRForBranch(
+            logger,
+            this.config,
+            glKit,
+            owner,
+            repo,
+            branchName,
+            input.includeCatalogInfoContent,
+          );
+        } catch (error: any) {
+          logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
+        }
+      }
+      return {};
+    }
 
   //   async submitPrToRepo(
   //     logger: LoggerService,

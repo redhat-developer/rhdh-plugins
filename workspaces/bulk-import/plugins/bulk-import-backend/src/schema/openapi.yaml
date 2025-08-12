@@ -60,6 +60,7 @@ paths:
         - $ref: '#/components/parameters/pagePerIntegrationQueryParam'
         - $ref: '#/components/parameters/sizePerIntegrationQueryParam'
         - $ref: '#/components/parameters/searchQueryParam'
+        - $ref: '#/components/parameters/approvalToolParam'
       responses:
         200:
           description: Organization list was fetched successfully with no errors
@@ -103,6 +104,7 @@ paths:
         - $ref: '#/components/parameters/pagePerIntegrationQueryParam'
         - $ref: '#/components/parameters/sizePerIntegrationQueryParam'
         - $ref: '#/components/parameters/searchQueryParam'
+        - $ref: '#/components/parameters/approvalToolParam'
       responses:
         200:
           description: Org Repository list was fetched successfully with no errors
@@ -140,6 +142,7 @@ paths:
         - $ref: '#/components/parameters/pagePerIntegrationQueryParam'
         - $ref: '#/components/parameters/sizePerIntegrationQueryParam'
         - $ref: '#/components/parameters/searchQueryParam'
+        - $ref: '#/components/parameters/approvalToolParam'
       responses:
         200:
           description: Repository list was fetched successfully with no errors
@@ -179,6 +182,7 @@ paths:
         - $ref: '#/components/parameters/sortOrderQueryParam'
         - $ref: '#/components/parameters/sortColumnQueryParam'
         - $ref: '#/components/parameters/searchQueryParam'
+        - $ref: '#/components/parameters/approvalToolParam'
 
       responses:
         200:
@@ -268,6 +272,7 @@ paths:
           schema:
             type: string
             default: 'main'
+        - $ref: '#/components/parameters/approvalToolParam'
       responses:
         200:
           description: Import Job status was determined successfully with no errors
@@ -423,6 +428,12 @@ components:
       schema:
         type: integer
         default: 20
+    approvalToolParam:
+      in: query
+      name: approvalTool
+      description: the approvalTool to use
+      schema:
+        type: string
 
   schemas:
     OrganizationList:
