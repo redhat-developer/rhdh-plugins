@@ -11369,14 +11369,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-tokens@npm:^6.1.0":
-  version: 6.2.2
-  resolution: "@patternfly/react-tokens@npm:6.2.2"
-  checksum: 27183f771e400c8fcf611545dd46ade39c6459506bcb9aa020346de69dda9717e75665c8aad92609dab93de4c2f0472e7958d1c127b0f722beb552dda3a1fbca
-  languageName: node
-  linkType: hard
-
-"@patternfly/react-tokens@npm:^6.3.1":
+"@patternfly/react-tokens@npm:^6.1.0, @patternfly/react-tokens@npm:^6.3.1":
   version: 6.3.1
   resolution: "@patternfly/react-tokens@npm:6.3.1"
   checksum: 7eacc01ae31713ee797ceff5fd1ace80647147fd1065fbe8730fb9523da5743f6cb7acf22dfc3c94bc0b05fa443969482cdb51ffe9a70081b3ef6829812b1992
