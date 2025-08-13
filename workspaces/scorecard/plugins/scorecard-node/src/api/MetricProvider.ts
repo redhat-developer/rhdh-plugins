@@ -18,6 +18,7 @@ import {
   Metric,
   MetricType,
   MetricValue,
+  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 /**
@@ -27,5 +28,6 @@ export interface MetricProvider<T extends MetricType = MetricType> {
   getProviderDatasourceId(): string;
   getProviderId(): string;
   getMetric(): Metric<T>;
+  getMetricThresholds(): ThresholdConfig;
   calculateMetric(): Promise<MetricValue<T>>;
 }

@@ -13,5 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { scorecardPlugin as default } from './plugin';
-export { MetricService } from './services/metrics/MetricService';
+
+export interface Config {
+  /** Configuration for scorecard plugin */
+  scorecard?: {
+    /** Configuration for scorecard plugins/datasources */
+    plugins?: {
+      /** Github datasource configuration */
+      github?: {
+        open_prs?: {
+          thresholds?: {
+            rules?: {
+              /** Custom threshold names with their conditions */
+              [name: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
+}

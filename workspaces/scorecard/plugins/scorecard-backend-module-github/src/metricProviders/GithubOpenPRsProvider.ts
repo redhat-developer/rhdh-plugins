@@ -14,10 +14,26 @@
  * limitations under the License.
  */
 
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { Config } from '@backstage/config';
+import {
+  Metric,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
+  private thresholds: ThresholdConfig;
+
+  private constructor(thresholds?: ThresholdConfig) {
+    this.thresholds = thresholds ?? {
+      rules: {
+        error: '>10',
+        warning: '>5',
+        success: '<=5',
+      },
+    };
+  }
+
   getProviderDatasourceId(): string {
     return 'github';
   }
@@ -33,6 +49,19 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
       type: 'number',
       history: true,
     };
+  }
+
+  getMetricThresholds(): ThresholdConfig {
+    return this.thresholds;
+  }
+
+  static fromConfig(config: Config): GithubOpenPRsProvider {
+    const configPath = 'scorecard.plugins.github.open_prs.thresholds';
+    const configuredThresholds = config.getOptional(configPath) as
+      | ThresholdConfig
+      | undefined;
+
+    return new GithubOpenPRsProvider(configuredThresholds);
   }
 
   async calculateMetric(): Promise<number> {
