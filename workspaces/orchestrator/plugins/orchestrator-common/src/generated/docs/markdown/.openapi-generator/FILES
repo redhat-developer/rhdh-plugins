@@ -18,6 +18,7 @@ Models/ProcessInstanceDTO.md
 Models/ProcessInstanceErrorDTO.md
 Models/ProcessInstanceListResultDTO.md
 Models/ProcessInstanceStatusDTO.md
+Models/RetriggerInstanceRequestDTO.md
 Models/SearchRequest.md
 Models/WorkflowDTO.md
 Models/WorkflowDataDTO.md
@@ -31,4 +32,5 @@ Models/WorkflowResultDTO_nextWorkflows_inner.md
 Models/WorkflowResultDTO_outputs_inner.md
 Models/WorkflowResultDTO_outputs_inner_value.md
 Models/WorkflowRunStatusDTO.md
+Models/getWorkflowsOverviewForEntity_request.md
 README.md

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import type { JsonObject } from '@backstage/types';
 
 import Alert from '@mui/material/Alert';

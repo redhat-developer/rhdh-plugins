@@ -79,6 +79,12 @@ export interface ExecuteWorkflowRequestDTO {
      * @memberof ExecuteWorkflowRequestDTO
      */
     'authTokens'?: Array<AuthToken>;
+    /**
+     * The entity string identifier to execute the workflow for
+     * @type {string}
+     * @memberof ExecuteWorkflowRequestDTO
+     */
+    'targetEntity'?: string;
 }
 /**
  * 
@@ -163,6 +169,25 @@ export interface GetOverviewsRequestParams {
      * @memberof GetOverviewsRequestParams
      */
     'filters'?: SearchRequest;
+}
+/**
+ * 
+ * @export
+ * @interface GetWorkflowsOverviewForEntityRequest
+ */
+export interface GetWorkflowsOverviewForEntityRequest {
+    /**
+     * 
+     * @type {string}
+     * @memberof GetWorkflowsOverviewForEntityRequest
+     */
+    'targetEntity'?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof GetWorkflowsOverviewForEntityRequest
+     */
+    'annotationWorkflowIds'?: Array<string>;
 }
 /**
  * 
@@ -410,6 +435,12 @@ export interface ProcessInstanceDTO {
     'initiatorEntity'?: string;
     /**
      * 
+     * @type {string}
+     * @memberof ProcessInstanceDTO
+     */
+    'targetEntity'?: string;
+    /**
+     * 
      * @type {Array<string>}
      * @memberof ProcessInstanceDTO
      */
@@ -491,6 +522,19 @@ export const ProcessInstanceStatusDTO = {
 export type ProcessInstanceStatusDTO = typeof ProcessInstanceStatusDTO[keyof typeof ProcessInstanceStatusDTO];
 
 
+/**
+ * 
+ * @export
+ * @interface RetriggerInstanceRequestDTO
+ */
+export interface RetriggerInstanceRequestDTO {
+    /**
+     * 
+     * @type {Array<AuthToken>}
+     * @memberof RetriggerInstanceRequestDTO
+     */
+    'authTokens'?: Array<AuthToken>;
+}
 /**
  * 
  * @export
@@ -813,7 +857,8 @@ export interface WorkflowResultDTOOutputsInner {
 export const WorkflowResultDTOOutputsInnerFormatEnum = {
     Text: 'text',
     Number: 'number',
-    Link: 'link'
+    Link: 'link',
+    Markdown: 'markdown'
 } as const;
 
 export type WorkflowResultDTOOutputsInnerFormatEnum = typeof WorkflowResultDTOOutputsInnerFormatEnum[keyof typeof WorkflowResultDTOOutputsInnerFormatEnum];
@@ -1199,6 +1244,39 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * Returns the key fields of the workflow including data on the last run instance
+         * @param {GetWorkflowsOverviewForEntityRequest} [getWorkflowsOverviewForEntityRequest] Target entity reference and annotation workflow ids
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getWorkflowsOverviewForEntity: async (getWorkflowsOverviewForEntityRequest?: GetWorkflowsOverviewForEntityRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/v2/workflows/overview/entity`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(getWorkflowsOverviewForEntityRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Returns true if the workflow service is up for the given workflow ID.
          * @param {string} workflowId ID of the workflow to fetch
          * @param {*} [options] Override http request option.
@@ -1236,14 +1314,17 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
          * @summary Retrigger an instance
          * @param {string} workflowId ID of the workflow
          * @param {string} instanceId ID of the instance to retrigger
+         * @param {RetriggerInstanceRequestDTO} retriggerInstanceRequestDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        retriggerInstance: async (workflowId: string, instanceId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        retriggerInstance: async (workflowId: string, instanceId: string, retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'workflowId' is not null or undefined
             assertParamExists('retriggerInstance', 'workflowId', workflowId)
             // verify required parameter 'instanceId' is not null or undefined
             assertParamExists('retriggerInstance', 'instanceId', instanceId)
+            // verify required parameter 'retriggerInstanceRequestDTO' is not null or undefined
+            assertParamExists('retriggerInstance', 'retriggerInstanceRequestDTO', retriggerInstanceRequestDTO)
             const localVarPath = `/v2/workflows/{workflowId}/{instanceId}/retrigger`
                 .replace(`{${"workflowId"}}`, encodeURIComponent(String(workflowId)))
                 .replace(`{${"instanceId"}}`, encodeURIComponent(String(instanceId)));
@@ -1260,9 +1341,12 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(retriggerInstanceRequestDTO, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1408,6 +1492,18 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Returns the key fields of the workflow including data on the last run instance
+         * @param {GetWorkflowsOverviewForEntityRequest} [getWorkflowsOverviewForEntityRequest] Target entity reference and annotation workflow ids
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getWorkflowsOverviewForEntity(getWorkflowsOverviewForEntityRequest?: GetWorkflowsOverviewForEntityRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowOverviewListResultDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getWorkflowsOverviewForEntity(getWorkflowsOverviewForEntityRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getWorkflowsOverviewForEntity']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Returns true if the workflow service is up for the given workflow ID.
          * @param {string} workflowId ID of the workflow to fetch
          * @param {*} [options] Override http request option.
@@ -1424,11 +1520,12 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @summary Retrigger an instance
          * @param {string} workflowId ID of the workflow
          * @param {string} instanceId ID of the instance to retrigger
+         * @param {RetriggerInstanceRequestDTO} retriggerInstanceRequestDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async retriggerInstance(workflowId: string, instanceId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.retriggerInstance(workflowId, instanceId, options);
+        async retriggerInstance(workflowId: string, instanceId: string, retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.retriggerInstance']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1542,6 +1639,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getWorkflowsOverview(searchRequest, options).then((request) => request(axios, basePath));
         },
         /**
+         * Returns the key fields of the workflow including data on the last run instance
+         * @param {GetWorkflowsOverviewForEntityRequest} [getWorkflowsOverviewForEntityRequest] Target entity reference and annotation workflow ids
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getWorkflowsOverviewForEntity(getWorkflowsOverviewForEntityRequest?: GetWorkflowsOverviewForEntityRequest, options?: any): AxiosPromise<WorkflowOverviewListResultDTO> {
+            return localVarFp.getWorkflowsOverviewForEntity(getWorkflowsOverviewForEntityRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Returns true if the workflow service is up for the given workflow ID.
          * @param {string} workflowId ID of the workflow to fetch
          * @param {*} [options] Override http request option.
@@ -1555,11 +1661,12 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @summary Retrigger an instance
          * @param {string} workflowId ID of the workflow
          * @param {string} instanceId ID of the instance to retrigger
+         * @param {RetriggerInstanceRequestDTO} retriggerInstanceRequestDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        retriggerInstance(workflowId: string, instanceId: string, options?: any): AxiosPromise<object> {
-            return localVarFp.retriggerInstance(workflowId, instanceId, options).then((request) => request(axios, basePath));
+        retriggerInstance(workflowId: string, instanceId: string, retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO, options?: any): AxiosPromise<object> {
+            return localVarFp.retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1690,6 +1797,17 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
+     * Returns the key fields of the workflow including data on the last run instance
+     * @param {GetWorkflowsOverviewForEntityRequest} [getWorkflowsOverviewForEntityRequest] Target entity reference and annotation workflow ids
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getWorkflowsOverviewForEntity(getWorkflowsOverviewForEntityRequest?: GetWorkflowsOverviewForEntityRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getWorkflowsOverviewForEntity(getWorkflowsOverviewForEntityRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Returns true if the workflow service is up for the given workflow ID.
      * @param {string} workflowId ID of the workflow to fetch
      * @param {*} [options] Override http request option.
@@ -1705,12 +1823,13 @@ export class DefaultApi extends BaseAPI {
      * @summary Retrigger an instance
      * @param {string} workflowId ID of the workflow
      * @param {string} instanceId ID of the instance to retrigger
+     * @param {RetriggerInstanceRequestDTO} retriggerInstanceRequestDTO 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public retriggerInstance(workflowId: string, instanceId: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).retriggerInstance(workflowId, instanceId, options).then((request) => request(this.axios, this.basePath));
+    public retriggerInstance(workflowId: string, instanceId: string, retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).retriggerInstance(workflowId, instanceId, retriggerInstanceRequestDTO, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

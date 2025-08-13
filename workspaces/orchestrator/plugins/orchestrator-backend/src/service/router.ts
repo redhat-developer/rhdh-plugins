@@ -343,6 +343,40 @@ function setupInternalRoutes(
 
     throw error;
   }
+  // v2
+  routerApi.openApiBackend.register(
+    'getWorkflowsOverviewForEntity',
+    async (_c, req, res: express.Response, next) => {
+      const auditEvent = await auditor.createEvent({
+        eventId: 'get-workflow-overview-entity',
+        request: req,
+      });
+      const targetEntity = req.body.targetEntity as string;
+      const annotationWorkflowIds = req.body.annotationWorkflowIds as string[];
+      try {
+        const result = await routerApi.v2.getWorkflowsOverviewForEntity(
+          targetEntity,
+          annotationWorkflowIds,
+        );
+
+        const workflows = await filterAuthorizedWorkflows(
+          req,
+          permissions,
+          httpAuth,
+          result,
+        );
+        auditEvent.success({
+          meta: {
+            workflowsCount: workflows.overviews?.length,
+          },
+        });
+        res.json(workflows);
+      } catch (error) {
+        auditEvent.fail({ error });
+        next(error);
+      }
+    },
+  );
 
   // v2
   routerApi.openApiBackend.register(
@@ -475,6 +509,8 @@ function setupInternalRoutes(
     async (c, req: express.Request, res: express.Response, next) => {
       const workflowId = c.request.params.workflowId as string;
       const instanceId = c.request.params.instanceId as string;
+      const token = req.headers.authorization?.split(' ')[1];
+      const retriggerInstanceRequestDTO = req.body;
 
       const auditEvent = await auditor.createEvent({
         eventId: 'retrigger-instance',
@@ -499,7 +535,12 @@ function setupInternalRoutes(
       }
 
       await routerApi.v2
-        .retriggerInstance(workflowId, instanceId)
+        .retriggerInstance(
+          workflowId,
+          instanceId,
+          retriggerInstanceRequestDTO,
+          token,
+        )
         .then(result => {
           auditEvent.success();
           return res.status(200).json(result);

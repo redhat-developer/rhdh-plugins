@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import React, { Fragment } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 
 import { JsonObject } from '@backstage/types';
 
 import { UiSchema } from '@rjsf/utils';
-import type { JSONSchema7 } from 'json-schema';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import cloneDeep from 'lodash/cloneDeep';
+import get from 'lodash/get';
 
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
@@ -48,7 +50,48 @@ export type OrchestratorFormProps = {
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
   initialFormData: JsonObject;
-  isDataReadonly?: boolean;
+};
+
+/**
+ * Remove hidden steps from the schema.
+ *
+ * A wizard step is removed when
+ *   "type": "object"
+ *   "ui:widget": "hidden"
+ *   and properties are empty ("properties": {})
+ *
+ * @param schema - The schema to remove hidden steps from.
+ * @returns The schema with hidden steps removed.
+ */
+const removeHiddenSteps = (schema: JSONSchema7): JSONSchema7 => {
+  if (typeof schema.properties === 'object') {
+    const hiddenSteps = Object.entries(schema.properties)
+      .map(([key, value]: [string, JSONSchema7Definition]) => {
+        const uiWidget = get(value, 'ui:widget');
+        if (
+          typeof value !== 'boolean' &&
+          value.type === 'object' &&
+          uiWidget === 'hidden' &&
+          value.properties &&
+          Object.keys(value.properties).length === 0
+        ) {
+          return key;
+        }
+        return undefined;
+      })
+      .filter(Boolean) as string[];
+
+    if (hiddenSteps.length > 0) {
+      const newSchema = cloneDeep(schema);
+      hiddenSteps.forEach(step => {
+        delete newSchema.properties?.[step];
+      });
+
+      return newSchema;
+    }
+  }
+
+  return schema;
 };
 
 /**
@@ -56,45 +99,42 @@ export type OrchestratorFormProps = {
  * The component contains the react-json-schema-form and serves as an extensible form. It allows loading a custom plugin decorator to override the default react-json-schema-form properties.
  */
 const OrchestratorForm = ({
-  schema,
+  schema: rawSchema,
   updateSchema,
   handleExecute,
   isExecuting,
   initialFormData,
-  isDataReadonly,
   setAuthTokenDescriptors,
 }: OrchestratorFormProps) => {
   // make the form a controlled component so the state will remain when moving between steps. see https://rjsf-team.github.io/react-jsonschema-form/docs/quickstart#controlled-component
-  const [formData, setFormData] = React.useState<JsonObject>(
+  const [formData, setFormData] = useState<JsonObject>(
     initialFormData ? () => structuredClone(initialFormData) : {},
   );
 
-  const numStepsInMultiStepSchema = React.useMemo(
+  const schema = useMemo(() => removeHiddenSteps(rawSchema), [rawSchema]);
+
+  const numStepsInMultiStepSchema = useMemo(
     () => getNumSteps(schema),
     [schema],
   );
   const isMultiStep = numStepsInMultiStepSchema !== undefined;
 
-  const _handleExecute = React.useCallback(() => {
+  const _handleExecute = useCallback(() => {
     handleExecute(formData);
   }, [formData, handleExecute]);
 
-  const onSubmit = React.useCallback(
+  const onSubmit = useCallback(
     (_formData: JsonObject) => {
       setFormData(_formData);
     },
     [setFormData],
   );
 
-  const uiSchema = React.useMemo<UiSchema<JsonObject>>(() => {
-    return generateUiSchema(
-      schema,
-      isMultiStep,
-      isDataReadonly ? initialFormData : undefined,
-    );
-  }, [schema, isMultiStep, isDataReadonly, initialFormData]);
+  const uiSchema = useMemo<UiSchema<JsonObject>>(() => {
+    return generateUiSchema(schema, isMultiStep);
+  }, [schema, isMultiStep]);
 
-  const reviewStep = React.useMemo(
+  const reviewStep = useMemo(
     () => (
       <ReviewStep
         data={formData}

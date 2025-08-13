@@ -446,22 +446,24 @@ export const MarketplacePluginInstallContent = ({
                     px: 0,
                   }}
                 >
-                  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    <Tabs
-                      value={tabIndex}
-                      onChange={handleTabChange}
-                      aria-label="Plugin tabs"
-                      sx={{ px: 0 }}
-                    >
-                      {availableTabs.map((tab, index) => (
-                        <Tab
-                          key={tab.key}
-                          value={index}
-                          label={tab.label ?? ''}
-                        />
-                      ))}
-                    </Tabs>
-                  </Box>
+                  {availableTabs.length > 1 && (
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                      <Tabs
+                        value={tabIndex}
+                        onChange={handleTabChange}
+                        aria-label="Plugin tabs"
+                        sx={{ px: 0 }}
+                      >
+                        {availableTabs.map((tab, index) => (
+                          <Tab
+                            key={tab.key}
+                            value={index}
+                            label={tab.label ?? ''}
+                          />
+                        ))}
+                      </Tabs>
+                    </Box>
+                  )}
                   <Box
                     sx={{
                       flex: 1,
@@ -479,6 +481,11 @@ export const MarketplacePluginInstallContent = ({
                             index={index}
                             markdownContent={tab.content ?? ''}
                             others={tab.others}
+                            title={
+                              availableTabs.length === 1
+                                ? availableTabs[0].label
+                                : ''
+                            }
                           />
                         ),
                     )}

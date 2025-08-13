@@ -19,6 +19,7 @@ import React, { ReactNode } from 'react';
 import {
   InfoCard,
   Link,
+  MarkdownContent,
   StructuredMetadataTable,
 } from '@backstage/core-components';
 import { RouteFunc, useApi, useRouteRef } from '@backstage/core-plugin-api';
@@ -165,12 +166,18 @@ const ResultMessage = ({
       severity: 'info',
     };
   } else if (status && finalStates.includes(status)) {
+    let message = 'The workflow provided no additional info about the status.';
+    if (resultMessage) {
+      // Workaround, an Element is still accepted by the Alert component
+      message = (
+        <MarkdownContent content={resultMessage} />
+      ) as unknown as string;
+    }
+
     // run completed
     alertProps = {
       title: `Run completed ${getTimeFromExecutionSummary('completed')}`,
-      message:
-        resultMessage ??
-        'The workflow provided no additional info about the status.',
+      message,
       severity: 'success',
     };
   } else {
@@ -305,8 +312,11 @@ const WorkflowOutputs = ({
   }
 
   const links = outputs?.filter(item => item.format === 'link');
-  const nonLinks = outputs?.filter(item => item.format !== 'link');
-  const nonLinksAsObject = nonLinks.reduce<{
+  const markdowns = outputs?.filter(item => item.format === 'markdown');
+  const values = outputs?.filter(
+    item => item.format !== 'link' && item.format !== 'markdown',
+  );
+  const valuesAsObject = values.reduce<{
     [key: string]: any;
   }>((data, item) => {
     let value = item.value || '';
@@ -345,10 +355,19 @@ const WorkflowOutputs = ({
         </Grid>
       )}
 
-      {Object.keys(nonLinksAsObject).length > 0 && (
+      {(Object.keys(valuesAsObject).length > 0 || markdowns?.length > 0) && (
         <Grid item md={12} key="non__links" className={classes.values}>
           <AboutField label="Values">
-            <StructuredMetadataTable dense metadata={nonLinksAsObject} />
+            {markdowns?.length > 0 &&
+              markdowns.map(item => (
+                <MarkdownContent
+                  key={item.key}
+                  content={item.value as string}
+                />
+              ))}
+            {Object.keys(valuesAsObject).length > 0 && (
+              <StructuredMetadataTable dense metadata={valuesAsObject} />
+            )}
           </AboutField>
         </Grid>
       )}

@@ -78,4 +78,9 @@ backend.add(
 
 backend.add(import('@backstage/plugin-auth-backend-module-github-provider'));
 
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend'
+  ),
+);
 backend.start();

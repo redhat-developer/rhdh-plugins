@@ -17,11 +17,47 @@ Key Differentiators:
 
 Implementation of the HTTP endpoints is out of the scope of this library, they are expected to be custom developed to match rules and data sources of target environment.
 
-## Content
+## Table of Content
 
-The frontend plugin provides implementation of `OrchestratorFormApi` (for `orchestratorFormApiRef`) to extend the Workflow execution form for custom provided `ui:widgets`.
+- [The orchestrator-form-widgets library](#the-orchestrator-form-widgets-library)
+  - [Development of a workflow using orchestrator-form-widgets](#development-of-a-workflow-using-orchestrator-form-widgets)
+  - [Table of Content](#table-of-content)
+  - [Context](#context)
+  - [Deployment considerations](#deployment-considerations)
+  - [SchemaUpdater widget](#schemaupdater-widget)
+    - [Example of the SchemaUpdater use in workflow's input data schema](#example-of-the-schemaupdater-use-in-workflows-input-data-schema)
+    - [Expected response for the SchemaUpdater](#expected-response-for-the-schemaupdater)
+    - [Using selector to narrow complex response in SchemaUpdater](#using-selector-to-narrow-complex-response-in-schemaupdater)
+    - [Default mandatory data](#default-mandatory-data)
+    - [SchemaUpdater widget ui:props](#schemaupdater-widget-uiprops)
+  - [ActiveTextInput widget](#activetextinput-widget)
+    - [ActiveTextInput Data fetching](#activetextinput-data-fetching)
+    - [ActiveTextInput Data validation](#activetextinput-data-validation)
+    - [Autocomplete](#autocomplete)
+    - [ActiveTextInput widget ui:props](#activetextinput-widget-uiprops)
+  - [ActiveDropdown widget](#activedropdown-widget)
+    - [ActiveDropdown Data Fetching and validation](#activedropdown-data-fetching-and-validation)
+    - [ActiveDropdown widget ui:props](#activedropdown-widget-uiprops)
+  - [ActiveMultiSelect widget](#activemultiselect-widget)
+    - [ActiveMultiSelect Data Fetching and validation](#activemultiselect-data-fetching-and-validation)
+    - [ActiveMultiSelect widget ui:props](#activemultiselect-widget-uiprops)
+  - [ActiveText widget](#activetext-widget)
+    - [ActiveText Data Fetching](#activetext-data-fetching)
+    - [Dynamic Text Templating](#dynamic-text-templating)
+    - [ActiveText widget ui:props](#activetext-widget-uiprops)
+  - [Content of `ui:props`](#content-of-uiprops)
+    - [List of widget properties](#list-of-widget-properties)
+      - [Specifics for templates in fetch:body, validate:body, fetch:headers or validate:headers](#specifics-for-templates-in-fetchbody-validatebody-fetchheaders-or-validateheaders)
+    - [Authentication](#authentication)
+    - [Backend Proxy](#backend-proxy)
+  - [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)
+    - [Example](#example)
+  - [Retrieving Data from Backstage Catalog](#retrieving-data-from-backstage-catalog)
+  - [Customization](#customization)
 
 ## Context
+
+The frontend plugin provides implementation of `OrchestratorFormApi` (for `orchestratorFormApiRef`) to extend the Workflow execution form for custom provided `ui:widgets`.
 
 The provided widgets enable forms to incorporate dynamically retrieved data.
 

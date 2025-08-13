@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 0.5.0
+
+### Minor Changes
+
+- 7dc735d: a new backstage plugin, a sevice factory, is delivered to provide a URLReader that interacts with the model catalog bridges techdoc/model card endpoint; the catalog backend module is also updated so that the bridge configration information is exported and reusable by the techdoc plugin
+
 ## 0.4.0
 
 ### Minor Changes

@@ -72,6 +72,12 @@ export class OrchestratorService {
     });
   }
 
+  public async fetchDefinitionIdsFromInstances(args: {
+    targetEntity: string;
+  }): Promise<string[]> {
+    return await this.dataIndexService.fetchDefinitionIdsFromInstances(args);
+  }
+
   public async fetchWorkflowSource(args: {
     definitionId: string;
   }): Promise<string | undefined> {
@@ -145,6 +151,8 @@ export class OrchestratorService {
     definitionId: string;
     instanceId: string;
     serviceUrl: string;
+    authTokens?: Array<AuthToken>;
+    backstageToken?: string | undefined;
   }): Promise<boolean | undefined> {
     return this.sonataFlowService.retriggerInstance(args);
   }

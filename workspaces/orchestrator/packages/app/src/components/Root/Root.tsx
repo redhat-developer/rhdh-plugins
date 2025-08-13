@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import { PropsWithChildren } from 'react';
 import {
   Link,
   Sidebar,
@@ -43,7 +43,6 @@ import { makeStyles } from '@mui/styles';
 import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 import { Administration } from '@backstage-community/plugin-rbac';
-import React, { PropsWithChildren } from 'react';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 
@@ -86,7 +85,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
         <SidebarDivider />
         <SidebarGroup label="Menu" icon={<MenuIcon />}>
           {/* Global nav, not org-specific */}
-          <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
+          <SidebarItem icon={HomeIcon} to="catalog" text="Catalog" />
           <MyGroupsSidebarItem
             singularTitle="My Group"
             pluralTitle="My Groups"

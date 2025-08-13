@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { forwardRef, ForwardRefRenderFunction } from 'react';
+import { forwardRef, ForwardRefRenderFunction } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Close } from '@mui/icons-material';

@@ -10,3 +10,16 @@ dynamicPlugins:
           menuItem:
             icon: orchestratorIcon
             text: Orchestrator
+      entityTabs:
+        - path: /workflows
+          title: Workflows
+          mountPoint: entity.page.workflows
+      mountPoints:
+        - mountPoint: entity.page.workflows/cards
+          importName: OrchestratorCatalogTab
+          config:
+            layout:
+              gridColumn: '1 / -1'
+            if:
+              anyOf:
+                - IsOrchestratorCatalogTabAvailable

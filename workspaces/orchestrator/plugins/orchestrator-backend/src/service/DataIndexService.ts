@@ -22,6 +22,7 @@ import {
   Filter,
   fromWorkflowSource,
   IntrospectionField,
+  NestedFilter,
   parseWorkflowVariables,
   ProcessInstance,
   WorkflowDefinition,
@@ -172,6 +173,35 @@ export class DataIndexService {
       .reduce((acc, curr) => ({ ...acc, ...curr }), {});
   }
 
+  private filterDeletedWorkflows(workflows: WorkflowInfo[]): WorkflowInfo[] {
+    // filter deleted workflows, that were deleted via deleting SonataFlow CR, operator marks them as unavailable
+    // Note this is different then the isAvailable status in WorkflowOverviewDTO, that is used to mark workflows that are not available on the service for unexpected reasons
+
+    const availableWorkflows: WorkflowInfo[] = [];
+    const unavailableWorkflows: WorkflowInfo[] = [];
+
+    workflows.forEach(workflow => {
+      const isUnavailable = workflow.metadata?.status === 'unavailable';
+      if (isUnavailable) {
+        unavailableWorkflows.push(workflow);
+      } else {
+        availableWorkflows.push(workflow);
+      }
+    });
+
+    this.logger.debug(
+      `filtered deleted workflows when fetching workflow infos: ${JSON.stringify(
+        unavailableWorkflows.map(w => ({
+          id: w.id,
+          name: w.name,
+          status: w.metadata?.status,
+        })),
+      )}`,
+    );
+
+    return availableWorkflows;
+  }
+
   public async fetchWorkflowInfos(args: {
     definitionIds?: string[];
     pagination?: Pagination;
@@ -194,7 +224,7 @@ export class DataIndexService {
       : undefined;
 
     let whereClause: string | undefined;
-    if (definitionIds && filter) {
+    if (definitionIdsCondition && filterCondition) {
       whereClause = `and: [{${definitionIdsCondition}}, {${filterCondition}}]`;
     } else if (definitionIdsCondition || filterCondition) {
       whereClause = definitionIdsCondition ?? filterCondition;
@@ -204,7 +234,8 @@ export class DataIndexService {
 
     const graphQlQuery = buildGraphQlQuery({
       type: 'ProcessDefinitions',
-      queryBody: 'id, name, version, type, endpoint, serviceUrl, source',
+      queryBody:
+        'id, name, version, type, endpoint, serviceUrl, source, metadata',
       whereClause,
       pagination,
     });
@@ -219,7 +250,7 @@ export class DataIndexService {
       result,
     );
 
-    return result.data.ProcessDefinitions;
+    return this.filterDeletedWorkflows(result.data.ProcessDefinitions);
   }
 
   public async fetchInstances(args: {
@@ -294,6 +325,67 @@ export class DataIndexService {
       }),
     );
     return processInstances;
+  }
+
+  public async fetchDefinitionIdsFromInstances(args: {
+    targetEntity: string;
+  }): Promise<string[]> {
+    const { targetEntity } = args;
+
+    const processIdNotNullCondition = 'processId: {isNull: false}';
+
+    const type = 'ProcessInstance';
+    const targetEntityFilter: NestedFilter = {
+      field: 'variables',
+      nested: {
+        operator: 'EQ',
+        field: 'targetEntity',
+        value: targetEntity,
+      },
+    };
+
+    const filterCondition = buildFilterCondition(
+      await this.inspectInputArgument(type),
+      type,
+      targetEntityFilter,
+    );
+
+    const whereClause = `and: [{${processIdNotNullCondition}}, {${filterCondition}}]`;
+
+    // Apply a limit to prevent memory exhaustion and network timeouts when entities
+    // have thousands of process instances. Entities with more instances than this limit
+    // may not see all their associated workflows.
+    const pagination = {
+      limit: 1000,
+      offset: 0,
+    };
+
+    const graphQlQuery = buildGraphQlQuery({
+      type: 'ProcessInstances',
+      queryBody: 'processId',
+      whereClause,
+      pagination,
+    });
+
+    this.logger.debug(`GraphQL query: ${graphQlQuery}`);
+
+    const result = await this.client.query<{
+      ProcessInstances: ProcessInstance[];
+    }>(graphQlQuery, {});
+    this.logger.debug(
+      `Fetch definition ids from instances history result: ${JSON.stringify(result)}`,
+    );
+
+    this.handleGraphqlClientError(
+      'Error when fetching definition ids from instances history',
+      result,
+    );
+
+    const processInstancesSrc = result.data ? result.data.ProcessInstances : [];
+    const distinctProcessIds = [
+      ...new Set(processInstancesSrc.map(instance => instance.processId)),
+    ]; // graphql doesn't support distinct so we need to use a set to get the distinct process ids
+    return distinctProcessIds;
   }
 
   private async getWorkflowDefinitionFromInstance(instance: ProcessInstance) {
@@ -485,15 +577,32 @@ export class DataIndexService {
     if (!result?.error) {
       return;
     }
-    this.logger.error(`${scenario} ${result}`);
+
+    this.logger.error(scenario, result);
+
     const networkError = result.error.networkError?.cause?.message;
     if (networkError) {
       const toThrow = new Error(`${result.error.message}. ${networkError}`);
       toThrow.name = 'Network Error';
       throw toThrow;
-    } else {
-      throw result.error;
     }
+
+    const graphQLErrors = result.error.graphQLErrors;
+    if (
+      result.data &&
+      Array.isArray(graphQLErrors) &&
+      graphQLErrors.length > 0
+    ) {
+      const graphQLError = graphQLErrors[0];
+      if (
+        graphQLError?.extensions?.classification === 'DataFetchingException'
+      ) {
+        // we have data (perhaps partial) and it is a data fetch error ==> log and ignore
+        return;
+      }
+    }
+
+    throw result.error;
   }
 
   private removeNodes(instance: ProcessInstance): ProcessInstance {

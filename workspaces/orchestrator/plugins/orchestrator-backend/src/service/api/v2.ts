@@ -24,6 +24,7 @@ import {
   ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
   ProcessInstanceState,
+  RetriggerInstanceRequestDTO,
   WorkflowDTO,
   WorkflowInfo,
   WorkflowOverviewDTO,
@@ -48,8 +49,43 @@ const FETCH_INSTANCE_RETRY_DELAY_MS = 1000;
 export class V2 {
   constructor(private readonly orchestratorService: OrchestratorService) {}
 
+  public async getWorkflowsOverviewForEntity(
+    targetEntity: string,
+    annotationWorkflowIds: string[],
+  ): Promise<WorkflowOverviewListResultDTO> {
+    let combinedWorkflowIds: string[] = annotationWorkflowIds;
+
+    if (targetEntity) {
+      const definitionIdsFromInstances =
+        await this.orchestratorService.fetchDefinitionIdsFromInstances({
+          targetEntity,
+        });
+
+      if (definitionIdsFromInstances.length > 0) {
+        combinedWorkflowIds = Array.from(
+          new Set([...combinedWorkflowIds, ...definitionIdsFromInstances]),
+        );
+      }
+    }
+
+    // If no workflow IDs are provided, return empty result
+    if (combinedWorkflowIds.length === 0) {
+      return {
+        overviews: [],
+      };
+    }
+
+    const workflowIdsFilter: Filter = {
+      field: 'id',
+      operator: 'IN',
+      value: combinedWorkflowIds,
+    };
+
+    return this.getWorkflowsOverview(undefined, workflowIdsFilter);
+  }
+
   public async getWorkflowsOverview(
-    pagination: Pagination,
+    pagination?: Pagination,
     filter?: Filter,
   ): Promise<WorkflowOverviewListResultDTO> {
     const overviews = await this.orchestratorService.fetchWorkflowOverviews({
@@ -62,8 +98,8 @@ export class V2 {
     const result: WorkflowOverviewListResultDTO = {
       overviews: overviews.map(item => mapToWorkflowOverviewDTO(item)),
       paginationInfo: {
-        pageSize: pagination.limit,
-        offset: pagination.offset,
+        pageSize: pagination?.limit,
+        offset: pagination?.offset,
       },
     };
     return result;
@@ -158,6 +194,7 @@ export class V2 {
       inputData: {
         workflowdata: executeWorkflowRequestDTO.inputData,
         initiatorEntity: initiatorEntity,
+        targetEntity: executeWorkflowRequestDTO.targetEntity,
       },
       authTokens: executeWorkflowRequestDTO.authTokens as Array<AuthToken>,
       serviceUrl: definition.serviceUrl,
@@ -188,6 +225,8 @@ export class V2 {
   public async retriggerInstance(
     workflowId: string,
     instanceId: string,
+    retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO,
+    backstageToken: string | undefined,
   ): Promise<void> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
@@ -202,6 +241,8 @@ export class V2 {
       definitionId: workflowId,
       instanceId: instanceId,
       serviceUrl: definition.serviceUrl,
+      authTokens: retriggerInstanceRequestDTO.authTokens as Array<AuthToken>,
+      backstageToken,
     });
 
     if (!response) {

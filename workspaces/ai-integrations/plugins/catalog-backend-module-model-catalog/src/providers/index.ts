@@ -14,3 +14,5 @@
  * limitations under the License.
  */
 export { ModelCatalogResourceEntityProvider } from './ModelCatalogResourceEntityProvider';
+export * from './types';
+export * from './config';

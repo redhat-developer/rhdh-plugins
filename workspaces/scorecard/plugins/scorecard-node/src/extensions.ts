@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-import {
-  ChartThemeColor,
-  getCustomTheme,
-} from '@patternfly/react-charts/victory';
+import { createExtensionPoint } from '@backstage/backend-plugin-api';
+import { MetricProvider } from './api';
 
-import { default as ChartTheme } from './theme-koku-mfe';
+/**
+ * @public
+ */
+export interface ScorecardMetricsExtensionPoint {
+  addMetricProvider(...metricProviders: Array<MetricProvider>): void;
+}
 
-// Applies theme color and variant to base theme
-const getTheme = () => getCustomTheme(ChartThemeColor.default, ChartTheme);
-
-export default getTheme;
+/**
+ * @public
+ */
+export const scorecardMetricsExtensionPoint =
+  createExtensionPoint<ScorecardMetricsExtensionPoint>({
+    id: 'scorecard.metrics',
+  });

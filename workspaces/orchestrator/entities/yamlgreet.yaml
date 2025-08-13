@@ -4,6 +4,8 @@ metadata:
   name: greet
   title: Greeting
   description: Greeting workflow
+  annotations:
+    orchestrator.io/workflows: '["yamlgreet"]'
   tags:
     - orchestrator
 spec:
@@ -11,9 +13,17 @@ spec:
   system: red-hat-developer-hub
   type: service
 
-  # matches workflow's dataInputSchema
   parameters:
-    - title: Provide inputs
+    - title: Choose Target Entity
+      properties:
+        target_entity:
+          title: Target Entity for the workflow run
+          description: Select an entity from the catalog
+          ui:field: EntityPicker
+          ui:options:
+            catalogFilter:
+              kind: Component
+    - title: Provide workflow inputs
       required:
         - language
       properties:
@@ -36,7 +46,10 @@ spec:
       action: orchestrator:workflow:run
       input:
         workflow_id: yamlgreet
-        parameters: ${{ parameters }}
+        target_entity: ${{ parameters.target_entity }}
+        parameters: # matches workflow's dataInputSchema
+          language: ${{ parameters.language }}
+          name: ${{ parameters.name }}
 
   output:
     links:

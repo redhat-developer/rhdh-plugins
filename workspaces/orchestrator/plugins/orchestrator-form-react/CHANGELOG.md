@@ -1,5 +1,35 @@
 ### Dependencies
 
+## 2.0.3
+
+### Patch Changes
+
+- fac94ef: fix(orchestrator): on retrigger workflow, tokens requested by the AuthRequester are forwarded
+- Updated dependencies [fac94ef]
+- Updated dependencies [16439ad]
+- Updated dependencies [4fd43f1]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.3
+
+## 2.0.2
+
+### Patch Changes
+
+- 8d89f18: Remove default React imports.
+- 10b01d4: Adding support for top-level 'ui:order' to arrange wizard steps.
+- Updated dependencies [26e602a]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.2
+
+## 2.0.1
+
+### Patch Changes
+
+- 651de2c: A wizard step is not rendered if it's properites are both empty and "ui:widget" is set to "hidden".
+- Updated dependencies [32e0a44]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

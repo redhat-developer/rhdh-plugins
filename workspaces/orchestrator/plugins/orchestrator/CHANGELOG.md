@@ -1,5 +1,48 @@
 ### Dependencies
 
+## 5.0.4
+
+### Patch Changes
+
+- fac94ef: fix(orchestrator): on retrigger workflow, tokens requested by the AuthRequester are forwarded
+- 16439ad: A workflow can newly produce result values in the "markdown" format.
+- Updated dependencies [fac94ef]
+- Updated dependencies [16439ad]
+- Updated dependencies [4fd43f1]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.0.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.3
+
+## 5.0.3
+
+### Patch Changes
+
+- 843394c: updated frontend dynamic plugin configuration to include entity tab
+
+## 5.0.2
+
+### Patch Changes
+
+- 26e602a: add workflows tab to catalog entities
+- 8d89f18: Remove default React imports.
+- Updated dependencies [26e602a]
+- Updated dependencies [8d89f18]
+- Updated dependencies [10b01d4]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.0.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.2
+
+## 5.0.1
+
+### Patch Changes
+
+- 32e0a44: https://issues.redhat.com/browse/FLPATH-2493
+- Updated dependencies [32e0a44]
+- Updated dependencies [651de2c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.0.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.1
+
 ## 5.0.0
 
 ### Major Changes
