@@ -19,12 +19,12 @@
  * These attributes will be automatically captured by dpal.js for Adobe Analytics
  *
  * @param itemName - The text content to track (e.g., product name, article title)
- * @param section - The section type ('Catalog', 'Activities', or 'Support')
+ * @param section - The section type ('Catalog', 'Activities', 'Support', or 'Verification')
  * @returns Object with Red Hat EDDL data attributes
  */
 export const getEddlDataAttributes = (
   itemName: string,
-  section: 'Catalog' | 'Activities' | 'Support' = 'Catalog',
+  section: 'Catalog' | 'Activities' | 'Support' | 'Verification' = 'Catalog',
 ) => ({
   'data-analytics-category': `Developer Sandbox|${section}`,
   'data-analytics-text': itemName,

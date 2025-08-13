@@ -260,4 +260,30 @@ describe('AnsibleLaunchInfoModal', () => {
       ),
     ).toBeInTheDocument();
   });
+
+  describe('EDDL data attributes', () => {
+    it('should have correct EDDL data attributes on Get started link', () => {
+      renderModal();
+
+      const getStartedButton = screen.getByRole('button', {
+        name: /Get started/i,
+      });
+
+      // The button should be wrapped in a Link component with EDDL attributes
+      const linkElement = getStartedButton.closest('a');
+
+      expect(linkElement).toHaveAttribute(
+        'data-analytics-category',
+        'Developer Sandbox|Catalog',
+      );
+      expect(linkElement).toHaveAttribute(
+        'data-analytics-text',
+        'Get Started - Ansible',
+      );
+      expect(linkElement).toHaveAttribute(
+        'data-analytics-region',
+        'sandbox-catalog',
+      );
+    });
+  });
 });

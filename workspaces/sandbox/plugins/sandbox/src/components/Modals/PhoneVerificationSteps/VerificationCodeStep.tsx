@@ -39,6 +39,7 @@ import { useSandboxContext } from '../../../hooks/useSandboxContext';
 import { Country, getCountryCallingCode } from 'react-phone-number-input';
 import { useApi } from '@backstage/core-plugin-api';
 import { registerApiRef } from '../../../api';
+import { getEddlDataAttributes } from '../../../utils/eddl-utils';
 
 type VerificationCodeProps = {
   id: Product;
@@ -68,6 +69,18 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
   setLoading,
 }) => {
   const theme = useTheme();
+  const startTrialEddlAttributes = getEddlDataAttributes(
+    'Start Trial',
+    'Verification',
+  );
+  const resendCodeEddlAttributes = getEddlDataAttributes(
+    'Resend Code',
+    'Verification',
+  );
+  const cancelVerificationEddlAttributes = getEddlDataAttributes(
+    'Cancel Verification',
+    'Verification',
+  );
 
   const inputRefs = useRef<any>([]);
   const { refetchUserData, handleAAPInstance } = useSandboxContext();
@@ -287,6 +300,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
             handleResendCode();
             inputRefs.current[0]?.focus();
           }}
+          {...resendCodeEddlAttributes}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             {codeResent ? (
@@ -322,6 +336,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
           endIcon={
             loading && <CircularProgress size={20} sx={{ color: '#AFAFAF' }} />
           }
+          {...startTrialEddlAttributes}
         >
           Start trial
         </Button>
@@ -336,6 +351,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
               borderColor: '#1976d2',
             },
           }}
+          {...cancelVerificationEddlAttributes}
         >
           Cancel
         </Button>
