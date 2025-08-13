@@ -172,34 +172,6 @@ function extractUiSchema(mixedSchema: JSONSchema7): UiSchema<JsonObject> {
   return replaceSparseArrayElementsdWithEmptyObject(result);
 }
 
-const addReadonly = (
-  data: JsonObject,
-  uiSchema: UiSchema<JsonObject>,
-  isMultiStep: boolean,
-) => {
-  // make inputs that came from existing instance variables readonly
-  if (!isMultiStep) {
-    for (const key of Object.keys(data)) {
-      uiSchema[key] = {
-        ...uiSchema[key],
-        'ui:readonly': true,
-      };
-    }
-    return;
-  }
-  for (const [stepKey, stepValue] of Object.entries(data)) {
-    uiSchema[stepKey] = {
-      ...uiSchema[stepKey],
-    };
-    for (const key of Object.keys(stepValue as JsonObject)) {
-      uiSchema[stepKey][key] = {
-        ...uiSchema[stepKey][key],
-        'ui:readonly': true,
-      };
-    }
-  }
-};
-
 const addFocusOnFirstElement = (
   schema: JSONSchema7,
   uiSchema: UiSchema<JsonObject>,
@@ -239,12 +211,8 @@ const addFocusOnFirstElement = (
 const generateUiSchema = (
   schema: JSONSchema7,
   isMultiStep: boolean,
-  readonlyData?: JsonObject,
 ): UiSchema<JsonObject> => {
   const uiSchema = extractUiSchema(schema);
-  if (readonlyData) {
-    addReadonly(readonlyData, uiSchema, isMultiStep);
-  }
   addFocusOnFirstElement(schema, uiSchema, isMultiStep);
   return uiSchema;
 };

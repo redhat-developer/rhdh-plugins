@@ -857,7 +857,8 @@ export interface WorkflowResultDTOOutputsInner {
 export const WorkflowResultDTOOutputsInnerFormatEnum = {
     Text: 'text',
     Number: 'number',
-    Link: 'link'
+    Link: 'link',
+    Markdown: 'markdown'
 } as const;
 
 export type WorkflowResultDTOOutputsInnerFormatEnum = typeof WorkflowResultDTOOutputsInnerFormatEnum[keyof typeof WorkflowResultDTOOutputsInnerFormatEnum];

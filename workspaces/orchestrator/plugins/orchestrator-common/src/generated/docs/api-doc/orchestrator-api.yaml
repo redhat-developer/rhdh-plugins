@@ -593,6 +593,7 @@ spec:
                       - text
                       - number
                       - link
+                      - markdown
                 required:
                   - key
                   - value

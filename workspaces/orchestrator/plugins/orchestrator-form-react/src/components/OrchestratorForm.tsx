@@ -50,7 +50,6 @@ export type OrchestratorFormProps = {
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
   initialFormData: JsonObject;
-  isDataReadonly?: boolean;
 };
 
 /**
@@ -105,7 +104,6 @@ const OrchestratorForm = ({
   handleExecute,
   isExecuting,
   initialFormData,
-  isDataReadonly,
   setAuthTokenDescriptors,
 }: OrchestratorFormProps) => {
   // make the form a controlled component so the state will remain when moving between steps. see https://rjsf-team.github.io/react-jsonschema-form/docs/quickstart#controlled-component
@@ -133,12 +131,8 @@ const OrchestratorForm = ({
   );
 
   const uiSchema = useMemo<UiSchema<JsonObject>>(() => {
-    return generateUiSchema(
-      schema,
-      isMultiStep,
-      isDataReadonly ? initialFormData : undefined,
-    );
-  }, [schema, isMultiStep, isDataReadonly, initialFormData]);
+    return generateUiSchema(schema, isMultiStep);
+  }, [schema, isMultiStep]);
 
   const reviewStep = useMemo(
     () => (

@@ -20,6 +20,11 @@ import {
 import { createRouter } from './router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { createTodoListService } from './services/TodoListService';
+import {
+  MetricProvider,
+  scorecardMetricsExtensionPoint,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { MetricProvidersRegistry } from './services/MetricProviders/MetricProvidersRegistry';
 
 /**
  * scorecardPlugin backend plugin
@@ -29,6 +34,16 @@ import { createTodoListService } from './services/TodoListService';
 export const scorecardPlugin = createBackendPlugin({
   pluginId: 'scorecard',
   register(env) {
+    const metricProvidersRegistry = new MetricProvidersRegistry();
+
+    env.registerExtensionPoint(scorecardMetricsExtensionPoint, {
+      addMetricProvider(...newMetricProviders: MetricProvider[]) {
+        newMetricProviders.forEach(metricProvider => {
+          metricProvidersRegistry.register(metricProvider);
+        });
+      },
+    });
+
     env.registerInit({
       deps: {
         logger: coreServices.logger,
@@ -46,6 +61,7 @@ export const scorecardPlugin = createBackendPlugin({
           await createRouter({
             httpAuth,
             todoListService,
+            metricProvidersRegistry,
           }),
         );
       },
