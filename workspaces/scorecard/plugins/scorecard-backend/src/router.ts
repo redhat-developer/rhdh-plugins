@@ -19,16 +19,16 @@ import { z } from 'zod';
 import express from 'express';
 import Router from 'express-promise-router';
 import { TodoListService } from './services/TodoListService/types';
-import { MetricProvidersRegistry } from './services/MetricProviders/MetricProvidersRegistry';
+import { MetricService } from './services/metrics/MetricService';
 
 export async function createRouter({
   httpAuth,
   todoListService,
-  metricProvidersRegistry,
+  metricService,
 }: {
   httpAuth: HttpAuthService;
   todoListService: TodoListService;
-  metricProvidersRegistry: MetricProvidersRegistry;
+  metricService: MetricService;
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -79,12 +79,36 @@ export async function createRouter({
 
     let metrics;
     if (datasource) {
-      metrics = metricProvidersRegistry.listMetricsByDatasource(datasource);
+      metrics = metricService.listMetricsByDatasource(datasource);
     } else {
-      metrics = metricProvidersRegistry.listMetrics();
+      metrics = metricService.listMetrics();
     }
 
     res.json({ metrics });
+  });
+
+  router.get('/catalog/:kind/:namespace/:name/metrics', async (req, res) => {
+    const { metricIds } = req.query;
+
+    const catalogMetricsSchema = z.object({
+      metricIds: z.string().optional(),
+    });
+
+    const parsed = catalogMetricsSchema.safeParse(req.query);
+    if (!parsed.success) {
+      throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
+    }
+
+    if (metricIds) {
+      const metricIdArray = (metricIds as string)
+        .split(',')
+        .map(id => id.trim());
+      const results = await metricService.calculateMetricResult(metricIdArray);
+      res.json(results);
+    } else {
+      const results = await metricService.calculateMetricResult();
+      res.json(results);
+    }
   });
 
   return router;

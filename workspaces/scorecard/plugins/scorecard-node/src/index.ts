@@ -22,3 +22,5 @@
 
 export * from './extensions';
 export * from './api';
+export * from './utils';
+export * from './errors';
