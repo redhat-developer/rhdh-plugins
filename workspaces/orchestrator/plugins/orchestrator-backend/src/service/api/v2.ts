@@ -81,16 +81,22 @@ export class V2 {
       value: combinedWorkflowIds,
     };
 
-    return this.getWorkflowsOverview(undefined, workflowIdsFilter);
+    return this.getWorkflowsOverview(
+      undefined,
+      workflowIdsFilter,
+      targetEntity,
+    );
   }
 
   public async getWorkflowsOverview(
     pagination?: Pagination,
     filter?: Filter,
+    targetEntity?: string,
   ): Promise<WorkflowOverviewListResultDTO> {
     const overviews = await this.orchestratorService.fetchWorkflowOverviews({
       pagination,
       filter,
+      targetEntity,
     });
     if (!overviews) {
       throw new Error("Couldn't fetch workflow overviews");
