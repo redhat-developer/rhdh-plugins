@@ -56,6 +56,8 @@ import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orches
 import { useRhdhTheme } from './hooks/useRhdhTheme';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { RbacPage } from '@backstage-community/plugin-rbac';
+import '@patternfly/patternfly/patternfly.css';
+import '@patternfly/patternfly/patternfly-charts.css';
 
 const options: Parameters<typeof createApp>[0] = {
   apis,
