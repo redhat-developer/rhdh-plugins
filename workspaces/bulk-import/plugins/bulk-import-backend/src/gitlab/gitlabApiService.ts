@@ -530,21 +530,30 @@ export class GitlabApiService {
                 fileName,
                 input.catalogInfoContent,
               );
-              const pullRequestResponse = await octo.rest.pulls.update({
-                owner,
-                repo,
-                pull_number: existingPrForBranch.prNum,
-                title: input.prTitle,
-                body: input.prBody,
-                head: branchName,
-                base: repoData.data.default_branch,
-              });
+              const pullRequestResponse = await gitlab.MergeRequests.edit(
+                `${owner}/${repo}`,
+                existingPrForBranch.prNum,
+                {
+                  description: input.prBody,
+                  title: input.prTitle,
+                  targetBranch: repoData.default_branch,
+                },
+              );
+              // const pullRequestResponse = await octo.rest.pulls.update({
+              //   owner,
+              //   repo,
+              //   pull_number: existingPrForBranch.prNum,
+              //   title: input.prTitle,
+              //   body: input.prBody,
+              //   head: branchName,
+              //   base: repoData.data.default_branch,
+              // });
               return {
                 successful: true,
                 result: {
                   prNumber: existingPrForBranch.prNum,
-                  prUrl: pullRequestResponse.data.html_url,
-                  lastUpdate: pullRequestResponse.data.updated_at,
+                  prUrl: pullRequestResponse.web_url,
+                  lastUpdate: pullRequestResponse.updated_at,
                 },
               };
             }
@@ -576,26 +585,28 @@ export class GitlabApiService {
               }
             }
 
-            if (branchExists) {
-              // update it in case it is outdated compared to the base branch
-              try {
-                await octo.repos.merge({
-                  owner: owner,
-                  repo: repo,
-                  base: branchName,
-                  head: repoData.data.default_branch,
-                });
-              } catch (error: any) {
-                logErrorIfNeeded(
-                  this.logger,
-                  `Could not merge default branch ${repoData.data.default_branch} into import branch ${branchName}`,
-                  error,
-                );
-              }
-            }
+            // Might not be able to do this in the gitlab api
+            // This is if the branch exists, but there wasn't a PR yet
+            // if (branchExists) {
+            //   // update it in case it is outdated compared to the base branch
+            //   try {
+            //     await octo.repos.merge({
+            //       owner: owner,
+            //       repo: repo,
+            //       base: branchName,
+            //       head: repoData.data.default_branch,
+            //     });
+            //   } catch (error: any) {
+            //     logErrorIfNeeded(
+            //       this.logger,
+            //       `Could not merge default branch ${repoData.data.default_branch} into import branch ${branchName}`,
+            //       error,
+            //     );
+            //   }
+            // }
 
             await createOrUpdateFileInBranch(
-              octo,
+              gitlab,
               owner,
               repo,
               branchName,
@@ -603,20 +614,29 @@ export class GitlabApiService {
               input.catalogInfoContent,
             );
 
-            const pullRequestResponse = await octo.rest.pulls.create({
-              owner,
-              repo,
-              title: input.prTitle,
-              body: input.prBody,
-              head: branchName,
-              base: repoData.data.default_branch,
-            });
+            // const pullRequestResponse = await octo.rest.pulls.create({
+            //   owner,
+            //   repo,
+            //   title: input.prTitle,
+            //   body: input.prBody,
+            //   head: branchName,
+            //   base: repoData.data.default_branch,
+            // });
+            const pullRequestResponse = await gitlab.MergeRequests.create(
+              `${owner}/${repo}`,
+              branchName,
+              repoData.default_branch,
+              input.prTitle,
+              {
+                description: input.prBody,
+              },
+            );
             return {
               successful: true,
               result: {
-                prNumber: pullRequestResponse.data.number,
-                prUrl: pullRequestResponse.data.html_url,
-                lastUpdate: pullRequestResponse.data.updated_at,
+                prNumber: pullRequestResponse.iid,
+                prUrl: pullRequestResponse.web_url,
+                lastUpdate: pullRequestResponse.updated_at,
                 hasChanges: true,
               },
             };
