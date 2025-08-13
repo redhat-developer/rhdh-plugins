@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.4.1",
+    "@backstage/errors": "^1.2.7",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
   },
   "devDependencies": {

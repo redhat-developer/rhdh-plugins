@@ -40,3 +40,49 @@ export type Metric<T extends MetricType = MetricType> = {
   type: T;
   history?: boolean;
 };
+
+/**
+ * @public
+ */
+export type ThresholdEvaluation = 'error' | 'warning' | 'success' | string;
+
+/**
+ * Threshold rules definition
+ * @public
+ */
+export type ThresholdRules = Record<string, string>;
+
+/**
+ * Threshold configuration
+ * @public
+ */
+export type ThresholdConfig = {
+  rules: ThresholdRules;
+};
+
+/**
+ * @public
+ */
+export type ThresholdResult = {
+  definition: ThresholdConfig;
+  evaluation: ThresholdEvaluation | undefined;
+};
+
+/**
+ * @public
+ */
+export type MetricResult = {
+  id: string;
+  status: 'success' | 'error';
+  metadata: {
+    title: string;
+    type: MetricType;
+    history?: boolean;
+  };
+  result?: {
+    value: MetricValue;
+    timestamp: string;
+    thresholdResult: ThresholdResult;
+  };
+  error?: Error;
+};

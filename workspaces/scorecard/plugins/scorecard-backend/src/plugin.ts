@@ -24,7 +24,8 @@ import {
   MetricProvider,
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { MetricProvidersRegistry } from './services/MetricProviders/MetricProvidersRegistry';
+import { MetricProvidersRegistry } from './services/metrics/MetricProvidersRegistry';
+import { MetricService } from './services/metrics/MetricService';
 
 /**
  * scorecardPlugin backend plugin
@@ -35,6 +36,7 @@ export const scorecardPlugin = createBackendPlugin({
   pluginId: 'scorecard',
   register(env) {
     const metricProvidersRegistry = new MetricProvidersRegistry();
+    const metricService = new MetricService(metricProvidersRegistry);
 
     env.registerExtensionPoint(scorecardMetricsExtensionPoint, {
       addMetricProvider(...newMetricProviders: MetricProvider[]) {
@@ -61,7 +63,7 @@ export const scorecardPlugin = createBackendPlugin({
           await createRouter({
             httpAuth,
             todoListService,
-            metricProvidersRegistry,
+            metricService,
           }),
         );
       },

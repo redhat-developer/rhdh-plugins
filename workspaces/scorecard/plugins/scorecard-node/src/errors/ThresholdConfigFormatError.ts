@@ -13,5 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { scorecardPlugin as default } from './plugin';
-export { MetricService } from './services/metrics/MetricService';
+import { CustomErrorBase } from '@backstage/errors';
+
+export class ThresholdConfigFormatError extends CustomErrorBase {
+  name = 'ThresholdConfigFormatError' as const;
+}

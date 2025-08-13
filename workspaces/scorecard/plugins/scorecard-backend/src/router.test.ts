@@ -23,7 +23,7 @@ import request from 'supertest';
 
 import { createRouter } from './router';
 import { TodoListService } from './services/TodoListService/types';
-import { MetricProvidersRegistry } from './services/MetricProviders/MetricProvidersRegistry';
+import { MetricProvidersRegistry } from './services/metrics/MetricProvidersRegistry';
 import {
   MockNumberProvider,
   MockStringProvider,

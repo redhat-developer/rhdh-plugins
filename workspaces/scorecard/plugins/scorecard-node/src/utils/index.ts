@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { scorecardPlugin as default } from './plugin';
-export { MetricService } from './services/metrics/MetricService';
+
+export { parseThresholdExpression, validateThresholds } from './thresholdUtils';

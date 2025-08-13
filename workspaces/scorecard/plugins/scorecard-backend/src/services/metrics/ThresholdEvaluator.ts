@@ -1,0 +1,73 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {
+  MetricValue,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { parseThresholdExpression } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+
+/**
+ * Service for evaluating metric values against threshold expressions
+ */
+export class ThresholdEvaluator {
+  private readonly operations = {
+    '>=': (a: MetricValue, b: MetricValue) => a >= b,
+    '>': (a: MetricValue, b: MetricValue) => a > b,
+    '<=': (a: MetricValue, b: MetricValue) => a <= b,
+    '<': (a: MetricValue, b: MetricValue) => a < b,
+    '==': (a: MetricValue, b: MetricValue) => a === b,
+    '!=': (a: MetricValue, b: MetricValue) => a !== b,
+  } as const;
+
+  /**
+   * Evaluate a metric value against a threshold expression
+   * @param metricValue - The value to evaluate
+   * @param expression - The threshold expression (e.g., ">40", "==myValue")
+   * @returns true if the metric value matches the threshold expression
+   */
+  private evaluateThreshold(
+    metricValue: MetricValue,
+    expression: string,
+  ): boolean {
+    const { operator, value } = parseThresholdExpression(
+      expression,
+      metricValue,
+    );
+    const operatorFn =
+      this.operations[operator as keyof typeof this.operations];
+    return operatorFn(metricValue, value);
+  }
+
+  /**
+   * Evaluate thresholds for a metric value and return first matching
+   * @param metricValue - The value to evaluate
+   * @param thresholds - The threshold configuration
+   * @returns threshold that first matches the metric value or undefined
+   */
+  getFirstMatchingThreshold(
+    metricValue: MetricValue,
+    thresholds: ThresholdConfig,
+  ): string | undefined {
+    for (const [name, expression] of Object.entries(thresholds.rules)) {
+      if (this.evaluateThreshold(metricValue, expression)) {
+        return name;
+      }
+    }
+
+    return undefined;
+  }
+}
