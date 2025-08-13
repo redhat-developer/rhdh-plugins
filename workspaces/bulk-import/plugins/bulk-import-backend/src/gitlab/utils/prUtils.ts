@@ -40,8 +40,10 @@ export async function findOpenPRForBranch(
   lastUpdate?: string;
 }> {
   try {
-    console.log(owner, repo, branchName);
-    const response = await gitlab.MergeRequests.all({projectId: `${owner}/${repo}`, state: 'opened'})
+    const response = await gitlab.MergeRequests.all({
+      projectId: `${owner}/${repo}`,
+      state: 'opened',
+    });
     // const response = await octo.rest.pulls.list({
     //   owner: owner,
     //   repo: repo,
@@ -92,18 +94,18 @@ async function getCatalogInfoContentFromPR(
     //   path: filePath,
     //   ref: prHeadSha,
     // });
-    const fileContentResponse = await gitlab
-      .RepositoryFiles
-        .show(`${owner}/${repo}`, filePath, prHeadSha);
+    const fileContentResponse = await gitlab.RepositoryFiles.show(
+      `${owner}/${repo}`,
+      filePath,
+      prHeadSha,
+    );
     // if (!fileContentResponse.data) {
     //   return undefined;
     // }
     if (!('content' in fileContentResponse)) {
       return undefined;
     }
-    return Buffer.from(fileContentResponse.content, 'base64').toString(
-      'utf-8',
-    );
+    return Buffer.from(fileContentResponse.content, 'base64').toString('utf-8');
   } catch (error: any) {
     logErrorIfNeeded(
       logger,

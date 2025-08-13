@@ -315,6 +315,7 @@ export async function createRouter(
           auth,
           catalogApi,
           githubApiService,
+          gitlabApiService,
           catalogInfoGenerator,
           catalogHttpClient,
         },

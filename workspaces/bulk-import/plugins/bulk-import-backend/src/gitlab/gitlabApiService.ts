@@ -41,6 +41,7 @@ import {
   GitlabRepository,
   GitlabRepositoryResponse,
 } from './types';
+import { buildGitlab } from './utils/glUtils';
 // import { buildOcto } from './utils/ghUtils';
 import {
   // addGithubAppOrgs,
@@ -53,18 +54,20 @@ import {
   // addGithubTokenOrgRepositories,
   addGitlabTokenOrgRepositories,
   addGitlabTokenRepositories,
+  createOrUpdateFileInBranch,
+  fileExistsInDefaultBranch,
+  ValidatedRepo,
   // createOrUpdateFileInBranch,
   // fileExistsInDefaultBranch,
   // type ValidatedRepo,
 } from './utils/repoUtils';
 import {
   computeTotalCount,
-  //   executeFunctionOnFirstSuccessfulIntegration,
+  executeFunctionOnFirstSuccessfulIntegration,
   //   extractLocationOwnerMap,
   fetchFromAllIntegrations,
   //   getCredentialsForConfig,
 } from './utils/utils';
-import { buildGitlab } from './utils/glUtils';
 
 export class GitlabApiService {
   private readonly logger: LoggerService;
@@ -373,262 +376,275 @@ export class GitlabApiService {
   //     });
   //   }
 
-    async findImportOpenPr(
-      logger: LoggerService,
-      input: {
-        repoUrl: string;
-        includeCatalogInfoContent?: boolean;
-      },
-    ): Promise<{
-      prNum?: number;
-      prUrl?: string;
-      prTitle?: string;
-      prBody?: string;
-      prCatalogInfoContent?: string;
-      lastUpdate?: string;
-    }> {
-      const glConfig = this.integrations.gitlab.byUrl(input.repoUrl)?.config;
-      if (!glConfig) {
-        throw new Error(`Could not find GL integration from ${input.repoUrl}`);
-      }
-
-      const gitUrl = gitUrlParse(input.repoUrl);
-      const owner = gitUrl.organization;
-      const repo = gitUrl.name;
-
-      const credentials = await this.gitlabCredentialsProvider.getAllCredentials({
-        host: glConfig.host,
-      });
-      if (credentials.length === 0) {
-        throw new Error(`No credentials for GL integration`);
-      }
-
-      const branchName = getBranchName(this.config);
-      for (const credential of credentials) {
-        const glKit = buildGitlab(
-          {
-            logger: this.logger,
-            cache: this.cache,
-          },
-          { credential, owner },
-          glConfig.apiBaseUrl,
-        );
-        try {
-          return await findOpenPRForBranch(
-            logger,
-            this.config,
-            glKit,
-            owner,
-            repo,
-            branchName,
-            input.includeCatalogInfoContent,
-          );
-        } catch (error: any) {
-          logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
-        }
-      }
-      return {};
+  async findImportOpenPr(
+    logger: LoggerService,
+    input: {
+      repoUrl: string;
+      includeCatalogInfoContent?: boolean;
+    },
+  ): Promise<{
+    prNum?: number;
+    prUrl?: string;
+    prTitle?: string;
+    prBody?: string;
+    prCatalogInfoContent?: string;
+    lastUpdate?: string;
+  }> {
+    const glConfig = this.integrations.gitlab.byUrl(input.repoUrl)?.config;
+    if (!glConfig) {
+      throw new Error(`Could not find GL integration from ${input.repoUrl}`);
     }
 
-  //   async submitPrToRepo(
-  //     logger: LoggerService,
-  //     input: {
-  //       repoUrl: string;
-  //       gitUrl: gitUrlParse.GitUrl;
-  //       defaultBranch?: string;
-  //       prTitle: string;
-  //       prBody: string;
-  //       catalogInfoContent: string;
-  //     },
-  //   ): Promise<{
-  //     prUrl?: string;
-  //     prNumber?: number;
-  //     hasChanges?: boolean;
-  //     lastUpdate?: string;
-  //     errors?: string[];
-  //   }> {
-  //     const fileName = getCatalogFilename(this.config);
-  //     const errors: any[] = [];
+    const gitUrl = gitUrlParse(input.repoUrl);
+    const owner = gitUrl.organization;
+    const repo = gitUrl.name;
 
-  //     const result = await executeFunctionOnFirstSuccessfulIntegration(
-  //       {
-  //         logger: this.logger,
-  //         cache: this.cache,
-  //         config: this.config,
-  //         githubCredentialsProvider: this.githubCredentialsProvider,
-  //       },
-  //       this.integrations,
-  //       {
-  //         repoUrl: input.repoUrl,
-  //         fn: async (
-  //           validatedRepo: ValidatedRepo,
-  //           octo: Octokit,
-  //         ): Promise<{
-  //           successful: boolean;
-  //           result?: {
-  //             prUrl?: string;
-  //             prNumber?: number;
-  //             hasChanges?: boolean;
-  //             lastUpdate?: string;
-  //           };
-  //         }> => {
-  //           const { owner, repo, branchName } = validatedRepo;
-  //           try {
-  //             // Check if there is already a catalogInfo in the default branch
-  //             const catalogInfoFileExists = await fileExistsInDefaultBranch(
-  //               logger,
-  //               octo,
-  //               owner,
-  //               repo,
-  //               fileName,
-  //               input.defaultBranch,
-  //             );
-  //             if (catalogInfoFileExists) {
-  //               // No need to create a PR => component will be imported as is
-  //               return {
-  //                 successful: true,
-  //                 result: {
-  //                   hasChanges: false,
-  //                 },
-  //               };
-  //             }
+    const credentials = await this.gitlabCredentialsProvider.getAllCredentials({
+      host: glConfig.host,
+    });
+    if (credentials.length === 0) {
+      throw new Error(`No credentials for GL integration`);
+    }
 
-  //             const existingPrForBranch = await findOpenPRForBranch(
-  //               logger,
-  //               this.config,
-  //               octo,
-  //               owner,
-  //               repo,
-  //               branchName,
-  //             );
+    const branchName = getBranchName(this.config);
+    for (const credential of credentials) {
+      const glKit = buildGitlab(
+        {
+          logger: this.logger,
+          cache: this.cache,
+        },
+        { credential, owner },
+        glConfig.apiBaseUrl,
+      );
+      try {
+        return await findOpenPRForBranch(
+          logger,
+          this.config,
+          glKit,
+          owner,
+          repo,
+          branchName,
+          input.includeCatalogInfoContent,
+        );
+      } catch (error: any) {
+        logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
+      }
+    }
+    return {};
+  }
 
-  //             const repoData = await octo.rest.repos.get({
-  //               owner,
-  //               repo,
-  //             });
-  //             const parentRef = await octo.rest.git.getRef({
-  //               owner,
-  //               repo,
-  //               ref: `heads/${repoData.data.default_branch}`,
-  //             });
-  //             if (existingPrForBranch.prNum) {
-  //               await createOrUpdateFileInBranch(
-  //                 octo,
-  //                 owner,
-  //                 repo,
-  //                 branchName,
-  //                 fileName,
-  //                 input.catalogInfoContent,
-  //               );
-  //               const pullRequestResponse = await octo.rest.pulls.update({
-  //                 owner,
-  //                 repo,
-  //                 pull_number: existingPrForBranch.prNum,
-  //                 title: input.prTitle,
-  //                 body: input.prBody,
-  //                 head: branchName,
-  //                 base: repoData.data.default_branch,
-  //               });
-  //               return {
-  //                 successful: true,
-  //                 result: {
-  //                   prNumber: existingPrForBranch.prNum,
-  //                   prUrl: pullRequestResponse.data.html_url,
-  //                   lastUpdate: pullRequestResponse.data.updated_at,
-  //                 },
-  //               };
-  //             }
+  async submitPrToRepo(
+    logger: LoggerService,
+    input: {
+      repoUrl: string;
+      gitUrl: gitUrlParse.GitUrl;
+      defaultBranch?: string;
+      prTitle: string;
+      prBody: string;
+      catalogInfoContent: string;
+    },
+  ): Promise<{
+    prUrl?: string;
+    prNumber?: number;
+    hasChanges?: boolean;
+    lastUpdate?: string;
+    errors?: string[];
+  }> {
+    const fileName = getCatalogFilename(this.config);
+    const errors: any[] = [];
 
-  //             let branchExists = false;
-  //             try {
-  //               await octo.rest.git.getRef({
-  //                 owner,
-  //                 repo,
-  //                 ref: `heads/${branchName}`,
-  //               });
-  //               branchExists = true;
-  //             } catch (error: any) {
-  //               if (error.status === 404) {
-  //                 await octo.rest.git.createRef({
-  //                   owner,
-  //                   repo,
-  //                   ref: `refs/heads/${branchName}`,
-  //                   sha: parentRef.data.object.sha,
-  //                 });
-  //               } else {
-  //                 throw error;
-  //               }
-  //             }
+    const result = await executeFunctionOnFirstSuccessfulIntegration(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        config: this.config,
+        gitlabCredentialsProvider: this.gitlabCredentialsProvider,
+      },
+      this.integrations,
+      {
+        repoUrl: input.repoUrl,
+        fn: async (
+          validatedRepo: ValidatedRepo,
+          gitlab: any,
+        ): Promise<{
+          successful: boolean;
+          result?: {
+            prUrl?: string;
+            prNumber?: number;
+            hasChanges?: boolean;
+            lastUpdate?: string;
+          };
+        }> => {
+          const { owner, repo, branchName } = validatedRepo;
+          try {
+            // Check if there is already a catalogInfo in the default branch
+            const catalogInfoFileExists = await fileExistsInDefaultBranch(
+              logger,
+              gitlab,
+              owner,
+              repo,
+              fileName,
+              input.defaultBranch,
+            );
+            if (catalogInfoFileExists) {
+              // No need to create a PR => component will be imported as is
+              return {
+                successful: true,
+                result: {
+                  hasChanges: false,
+                },
+              };
+            }
 
-  //             if (branchExists) {
-  //               // update it in case it is outdated compared to the base branch
-  //               try {
-  //                 await octo.repos.merge({
-  //                   owner: owner,
-  //                   repo: repo,
-  //                   base: branchName,
-  //                   head: repoData.data.default_branch,
-  //                 });
-  //               } catch (error: any) {
-  //                 logErrorIfNeeded(
-  //                   this.logger,
-  //                   `Could not merge default branch ${repoData.data.default_branch} into import branch ${branchName}`,
-  //                   error,
-  //                 );
-  //               }
-  //             }
+            const existingPrForBranch = await findOpenPRForBranch(
+              logger,
+              this.config,
+              gitlab,
+              owner,
+              repo,
+              branchName,
+            );
 
-  //             await createOrUpdateFileInBranch(
-  //               octo,
-  //               owner,
-  //               repo,
-  //               branchName,
-  //               fileName,
-  //               input.catalogInfoContent,
-  //             );
+            // const repoData = await octo.rest.repos.get({
+            //   owner,
+            //   repo,
+            // });
+            const repoData = await gitlab.Projects.show(`${owner}/${repo}`);
 
-  //             const pullRequestResponse = await octo.rest.pulls.create({
-  //               owner,
-  //               repo,
-  //               title: input.prTitle,
-  //               body: input.prBody,
-  //               head: branchName,
-  //               base: repoData.data.default_branch,
-  //             });
-  //             return {
-  //               successful: true,
-  //               result: {
-  //                 prNumber: pullRequestResponse.data.number,
-  //                 prUrl: pullRequestResponse.data.html_url,
-  //                 lastUpdate: pullRequestResponse.data.updated_at,
-  //                 hasChanges: true,
-  //               },
-  //             };
-  //           } catch (e: any) {
-  //             logErrorIfNeeded(
-  //               this.logger,
-  //               `Couldn't create PR in ${input.repoUrl}`,
-  //               e,
-  //             );
-  //             errors.push(e.message);
-  //             return { successful: false };
-  //           }
-  //         },
-  //       },
-  //     );
+            // const parentRef = await octo.rest.git.getRef({
+            //   owner,
+            //   repo,
+            //   ref: `heads/${repoData.default_branch}`,
+            // });
+            const parentRef = await gitlab.Branches.show(
+              `${owner}/${repo}`,
+              repoData.default_branch,
+            ); // This might not be neccesarry
 
-  //     if (result) {
-  //       return result;
-  //     }
+            if (existingPrForBranch.prNum) {
+              await createOrUpdateFileInBranch(
+                gitlab,
+                owner,
+                repo,
+                branchName,
+                fileName,
+                input.catalogInfoContent,
+              );
+              const pullRequestResponse = await octo.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: existingPrForBranch.prNum,
+                title: input.prTitle,
+                body: input.prBody,
+                head: branchName,
+                base: repoData.data.default_branch,
+              });
+              return {
+                successful: true,
+                result: {
+                  prNumber: existingPrForBranch.prNum,
+                  prUrl: pullRequestResponse.data.html_url,
+                  lastUpdate: pullRequestResponse.data.updated_at,
+                },
+              };
+            }
 
-  //     logger.warn(
-  //       `Tried all possible GitHub credentials, but could not create PR in ${input.repoUrl}. Please try again later...`,
-  //     );
+            let branchExists = false;
+            try {
+              // await octo.rest.git.getRef({
+              //   owner,
+              //   repo,
+              //   ref: `heads/${branchName}`,
+              // });
+              await gitlab.Branches.show(`${owner}/${repo}`, branchName);
+              branchExists = true;
+            } catch (error: any) {
+              if (error.message.includes('404')) {
+                // await octo.rest.git.createRef({
+                //   owner,
+                //   repo,
+                //   ref: `refs/heads/${branchName}`,
+                //   sha: parentRef.data.object.sha,
+                // });
+                await gitlab.Branches.create(
+                  `${owner}/${repo}`,
+                  branchName,
+                  parentRef.name,
+                );
+              } else {
+                throw error;
+              }
+            }
 
-  //     return {
-  //       errors: errors,
-  //     };
-  //   }
+            if (branchExists) {
+              // update it in case it is outdated compared to the base branch
+              try {
+                await octo.repos.merge({
+                  owner: owner,
+                  repo: repo,
+                  base: branchName,
+                  head: repoData.data.default_branch,
+                });
+              } catch (error: any) {
+                logErrorIfNeeded(
+                  this.logger,
+                  `Could not merge default branch ${repoData.data.default_branch} into import branch ${branchName}`,
+                  error,
+                );
+              }
+            }
+
+            await createOrUpdateFileInBranch(
+              octo,
+              owner,
+              repo,
+              branchName,
+              fileName,
+              input.catalogInfoContent,
+            );
+
+            const pullRequestResponse = await octo.rest.pulls.create({
+              owner,
+              repo,
+              title: input.prTitle,
+              body: input.prBody,
+              head: branchName,
+              base: repoData.data.default_branch,
+            });
+            return {
+              successful: true,
+              result: {
+                prNumber: pullRequestResponse.data.number,
+                prUrl: pullRequestResponse.data.html_url,
+                lastUpdate: pullRequestResponse.data.updated_at,
+                hasChanges: true,
+              },
+            };
+          } catch (e: any) {
+            logErrorIfNeeded(
+              this.logger,
+              `Couldn't create PR in ${input.repoUrl}`,
+              e,
+            );
+            errors.push(e.message);
+            return { successful: false };
+          }
+        },
+      },
+    );
+
+    if (result) {
+      return result;
+    }
+
+    logger.warn(
+      `Tried all possible GitHub credentials, but could not create PR in ${input.repoUrl}. Please try again later...`,
+    );
+
+    return {
+      errors: errors,
+    };
+  }
 
   //   async hasFileInRepo(input: {
   //     repoUrl: string;

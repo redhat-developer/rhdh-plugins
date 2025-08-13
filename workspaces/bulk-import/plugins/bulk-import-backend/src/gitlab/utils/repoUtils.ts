@@ -23,19 +23,17 @@ import type {
 } from '@backstage/integration';
 
 import { Gitlab } from '@gitbeaker/rest';
+import gitUrlParse from 'git-url-parse';
 
-// import gitUrlParse from 'git-url-parse';
-
-// import { getBranchName } from '../../catalog/catalogUtils';
+import { getBranchName } from '../../catalog/catalogUtils';
 // import { logErrorIfNeeded } from '../../helpers';
 import {
   DefaultPageNumber,
   DefaultPageSize,
 } from '../../service/handlers/handlers';
-// import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
+import { CustomGitlabCredentialsProvider } from '../GitlabAppManager';
 import type {
   ExtendedGitlabCredentials,
-  // GitlabAppCredentials,
   GitlabFetchError,
   GitlabRepository,
 } from '../types';
@@ -47,41 +45,41 @@ import {
   handleError,
 } from './utils';
 
-// export type ValidatedRepo = {
-//   ghConfig: GithubIntegrationConfig;
-//   credentials: ExtendedGithubCredentials[];
-//   owner: string;
-//   repo: string;
-//   branchName: string;
-// };
+export type ValidatedRepo = {
+  glConfig: GitLabIntegrationConfig;
+  credentials: ExtendedGitlabCredentials[];
+  owner: string;
+  repo: string;
+  branchName: string;
+};
 
-// export async function validateAndBuildRepoData(
-//   githubCredentialsProvider: CustomGithubCredentialsProvider,
-//   integrations: ScmIntegrations,
-//   config: Config,
-//   input: {
-//     repoUrl: string;
-//   },
-// ): Promise<ValidatedRepo> {
-//   const ghConfig = integrations.github.byUrl(input.repoUrl)?.config;
-//   if (!ghConfig) {
-//     throw new Error(`Could not find GH integration from ${input.repoUrl}`);
-//   }
+export async function validateAndBuildRepoData(
+  gitlabCredentialsProvider: CustomGitlabCredentialsProvider,
+  integrations: ScmIntegrations,
+  config: Config,
+  input: {
+    repoUrl: string;
+  },
+): Promise<ValidatedRepo> {
+  const glConfig = integrations.gitlab.byUrl(input.repoUrl)?.config;
+  if (!glConfig) {
+    throw new Error(`Could not find GL integration from ${input.repoUrl}`);
+  }
 
-//   const gitUrl = gitUrlParse(input.repoUrl);
-//   const owner = gitUrl.organization;
-//   const repo = gitUrl.name;
+  const gitUrl = gitUrlParse(input.repoUrl);
+  const owner = gitUrl.organization;
+  const repo = gitUrl.name;
 
-//   const credentials = await githubCredentialsProvider.getAllCredentials({
-//     host: ghConfig.host,
-//   });
-//   if (credentials.length === 0) {
-//     throw new Error(`No credentials for GH integration`);
-//   }
+  const credentials = await gitlabCredentialsProvider.getAllCredentials({
+    host: glConfig.host,
+  });
+  if (credentials.length === 0) {
+    throw new Error(`No credentials for GH integration`);
+  }
 
-//   const branchName = getBranchName(config);
-//   return { ghConfig, owner, repo, credentials, branchName };
-// }
+  const branchName = getBranchName(config);
+  return { glConfig, owner, repo, credentials, branchName };
+}
 
 export async function searchRepos(
   gitlab: any,
@@ -331,77 +329,101 @@ export async function addGitlabTokenOrgRepositories(
   return { totalCount };
 }
 
-// export async function fileExistsInDefaultBranch(
-//   logger: LoggerService,
-//   octo: Octokit,
-//   owner: string,
-//   repo: string,
-//   fileName: string,
-//   defaultBranch: string = 'main',
-// ) {
-//   try {
-//     await octo.rest.repos.getContent({
-//       owner,
-//       repo,
-//       path: fileName,
-//       ref: defaultBranch,
-//     });
-//     return true;
-//   } catch (error: any) {
-//     if (error.status === 404) {
-//       return false;
-//     }
-//     logger.debug(
-//       `Unable to determine if a file named ${fileName} already exists in repo ${repo}: ${error}`,
-//     );
-//     return undefined;
-//   }
-// }
+export async function fileExistsInDefaultBranch(
+  logger: LoggerService,
+  gitlab: any,
+  owner: string,
+  repo: string,
+  fileName: string,
+  defaultBranch: string = 'main',
+) {
+  try {
+    await gitlab.RepositoryFiles.show(
+      `${owner}/${repo}`,
+      fileName,
+      defaultBranch,
+    );
+    // await octo.rest.repos.getContent({
+    //   owner,
+    //   repo,
+    //   path: fileName,
+    //   ref: defaultBranch,
+    // });
+    return true;
+  } catch (error: any) {
+    if (error.message.includes('404')) {
+      return false;
+    }
+    logger.debug(
+      `Unable to determine if a file named ${fileName} already exists in repo ${repo}: ${error}`,
+    );
+    return undefined;
+  }
+}
 
-// export async function createOrUpdateFileInBranch(
-//   octo: Octokit,
-//   owner: string,
-//   repo: string,
-//   branchName: string,
-//   fileName: string,
-//   fileContent: string,
-// ): Promise<void> {
-//   try {
-//     const { data: existingFile } = await octo.rest.repos.getContent({
-//       owner: owner,
-//       repo: repo,
-//       path: fileName,
-//       ref: branchName,
-//     });
-//     // Response can either be a directory (array of files) or a single file element. In this case, we ensure it has the sha property to update it.
-//     if (Array.isArray(existingFile) || !('sha' in existingFile)) {
-//       throw new Error(
-//         `The content at path ${fileName} is not a file or the response from GitHub does not contain the 'sha' property.`,
-//       );
-//     }
-//     // If the file already exists, update it
-//     await octo.rest.repos.createOrUpdateFileContents({
-//       owner,
-//       repo,
-//       path: fileName,
-//       message: `Add ${fileName} config file`,
-//       content: btoa(fileContent),
-//       sha: existingFile.sha,
-//       branch: branchName,
-//     });
-//   } catch (error: any) {
-//     if (error.status === 404) {
-//       // If the file does not exist, create it
-//       await octo.rest.repos.createOrUpdateFileContents({
-//         owner,
-//         repo,
-//         path: fileName,
-//         message: `Add ${fileName} config file`,
-//         content: btoa(fileContent),
-//         branch: branchName,
-//       });
-//     } else {
-//       throw error;
-//     }
-//   }
-// }
+export async function createOrUpdateFileInBranch(
+  gitlab: any,
+  owner: string,
+  repo: string,
+  branchName: string,
+  fileName: string,
+  fileContent: string,
+): Promise<void> {
+  try {
+    // const { data: existingFile } = await octo.rest.repos.getContent({
+    //   owner: owner,
+    //   repo: repo,
+    //   path: fileName,
+    //   ref: branchName,
+    // });
+    const existingFile = await gitlab.RepositoryFiles.show(
+      `${owner}/${repo}`,
+      fileName,
+      branchName,
+    );
+    // Response can either be a directory (array of files) or a single file element. In this case, we ensure it has the sha property to update it.
+    if (Array.isArray(existingFile) || !('content_sha256' in existingFile)) {
+      throw new Error(
+        `The content at path ${fileName} is not a file or the response from gitlab does not contain the 'content_sha256' property.`,
+      );
+    }
+    // If the file already exists, update it
+    // await octo.rest.repos.createOrUpdateFileContents({
+    //   owner,
+    //   repo,
+    //   path: fileName,
+    //   message: `Add ${fileName} config file`,
+    //   content: btoa(fileContent),
+    //   sha: existingFile.sha,
+    //   branch: branchName,
+    // });
+    await gitlab.RepositoryFiles.edit(
+      `${owner}/${repo}`,
+      fileName,
+      branchName,
+      fileContent,
+      `Add ${fileName} config file`,
+    );
+  } catch (error: any) {
+    if (error.message.includes('404')) {
+      // If the file does not exist, create it
+      // await octo.rest.repos.createOrUpdateFileContents({
+      //   owner,
+      //   repo,
+      //   path: fileName,
+      //   message: `Add ${fileName} config file`,
+      //   content: btoa(fileContent),
+      //   branch: branchName,
+      // });
+      await gitlab.RepositoryFiles.create(
+        `${owner}/${repo}`,
+        fileName,
+        branchName,
+        fileContent,
+        `Add ${fileName} config file`,
+      );
+    } else {
+      throw error;
+    }
+  }
+}

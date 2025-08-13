@@ -36,9 +36,8 @@ import {
   type GitlabFetchError,
 } from '../types';
 import { buildGitlab } from './glUtils';
-
 // import { buildOcto } from './ghUtils';
-// import { validateAndBuildRepoData, ValidatedRepo } from './repoUtils';
+import { validateAndBuildRepoData, ValidatedRepo } from './repoUtils';
 
 // /**
 //  * Creates the GithubFetchError to be stored in the returned errors array of the returned GithubRepositoryResponse object
@@ -173,48 +172,49 @@ export async function computeTotalCountFromPaginationInfo(
   return paginationInfo.total;
 }
 
-// export async function executeFunctionOnFirstSuccessfulIntegration<T>(
-//   deps: {
-//     logger: LoggerService;
-//     cache: CacheService;
-//     config: Config;
-//     githubCredentialsProvider: CustomGithubCredentialsProvider;
-//   },
-//   integrations: ScmIntegrations,
-//   params: {
-//     repoUrl: string;
-//     fn: (
-//       validatedRepo: ValidatedRepo,
-//       octo: Octokit,
-//     ) => Promise<{ successful: boolean; result?: T }>;
-//   },
-// ) {
-//   const validatedRepo = await validateAndBuildRepoData(
-//     deps.githubCredentialsProvider,
-//     integrations,
-//     deps.config,
-//     params,
-//   );
-//   for (const credential of validatedRepo.credentials) {
-//     const octo = buildOcto(
-//       {
-//         logger: deps.logger,
-//         cache: deps.cache,
-//       },
-//       { credential, owner: validatedRepo.owner },
-//       validatedRepo.ghConfig.apiBaseUrl,
-//     );
-//     if (!octo) {
-//       continue;
-//     }
-//     const res = await params.fn(validatedRepo, octo);
-//     if (!res.successful) {
-//       continue;
-//     }
-//     return res.result;
-//   }
-//   return undefined;
-// }
+export async function executeFunctionOnFirstSuccessfulIntegration<T>(
+  deps: {
+    logger: LoggerService;
+    cache: CacheService;
+    config: Config;
+    gitlabCredentialsProvider: CustomGitlabCredentialsProvider;
+  },
+  integrations: ScmIntegrations,
+  params: {
+    repoUrl: string;
+    fn: (
+      validatedRepo: ValidatedRepo,
+      // octo: Octokit,
+      gitlab: any,
+    ) => Promise<{ successful: boolean; result?: T }>;
+  },
+) {
+  const validatedRepo = await validateAndBuildRepoData(
+    deps.gitlabCredentialsProvider,
+    integrations,
+    deps.config,
+    params,
+  );
+  for (const credential of validatedRepo.credentials) {
+    const octo = buildOcto(
+      {
+        logger: deps.logger,
+        cache: deps.cache,
+      },
+      { credential, owner: validatedRepo.owner },
+      validatedRepo.ghConfig.apiBaseUrl,
+    );
+    if (!octo) {
+      continue;
+    }
+    const res = await params.fn(validatedRepo, octo);
+    if (!res.successful) {
+      continue;
+    }
+    return res.result;
+  }
+  return undefined;
+}
 
 export async function fetchFromAllIntegrations<T>(
   deps: {

@@ -28,6 +28,7 @@ import {
 } from '../../../catalog/catalogUtils';
 import type { Components, Paths } from '../../../generated/openapi';
 import type { GithubApiService } from '../../../github';
+import { GitlabApiService } from '../../../gitlab';
 import {
   getNestedValue,
   logErrorIfNeeded,
@@ -40,7 +41,6 @@ import {
   DefaultSortOrder,
   type HandlerResponse,
 } from '../handlers';
-import { GitlabApiService } from '../../../gitlab';
 
 type CreateImportDryRunStatus =
   | 'CATALOG_ENTITY_CONFLICT'
@@ -287,6 +287,7 @@ function findImportCandidates(
 
 async function createPR(
   githubApiService: GithubApiService,
+  gitlabApiService: GitlabApiService,
   logger: LoggerService,
   req: Components.Schemas.ImportRequest,
   gitUrl: gitUrlParse.GitUrl,
@@ -297,7 +298,7 @@ async function createPR(
     config.getOptionalString('app.title') ?? 'Red Hat Developer Hub';
   const appBaseUrl = config.getString('app.baseUrl');
   const catalogFileName = getCatalogFilename(config);
-  return await githubApiService.submitPrToRepo(logger, {
+  return await gitlabApiService.submitPrToRepo(logger, {
     repoUrl: req.repository.url,
     gitUrl: gitUrl,
     defaultBranch: req.repository.defaultBranch,
@@ -326,6 +327,7 @@ async function handleAddedReposFromCreateImportJobs(
     auth: AuthService;
     catalogApi: CatalogApi;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
   },
@@ -464,6 +466,7 @@ export async function createImportJobs(
     auth: AuthService;
     catalogApi: CatalogApi;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
   },
@@ -706,21 +709,15 @@ export async function findImportStatusByRepo(
     let openImportPr;
     // Check to see if there are any PR
     if (deps.approvalTool === 'gitlab') {
-      openImportPr = await deps.gitlabApiService.findImportOpenPr(
-        deps.logger,
-        {
-          repoUrl: repoUrl,
-          includeCatalogInfoContent,
-        },
-      );
+      openImportPr = await deps.gitlabApiService.findImportOpenPr(deps.logger, {
+        repoUrl: repoUrl,
+        includeCatalogInfoContent,
+      });
     } else {
-      openImportPr = await deps.githubApiService.findImportOpenPr(
-        deps.logger,
-        {
-          repoUrl: repoUrl,
-          includeCatalogInfoContent,
-        },
-      );
+      openImportPr = await deps.githubApiService.findImportOpenPr(deps.logger, {
+        repoUrl: repoUrl,
+        includeCatalogInfoContent,
+      });
     }
 
     if (!openImportPr.prUrl) {
