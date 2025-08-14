@@ -19,8 +19,8 @@ import { mockServices } from '@backstage/backend-test-utils';
 import {
   ModeCatalogBridgeTechdocUrlReader,
   ModelCatalogBridgeUrlReaderServiceReadTreeResponse,
+  readBridgeConfigs,
 } from './plugin';
-import { readModelCatalogApiEntityConfigs } from '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -45,7 +45,7 @@ jest.mock('fs', () => ({
 describe('readModelCatalogApiEntityConfigs', () => {
   it('should return empty array if no provider config', () => {
     const config = new ConfigReader({});
-    const result = readModelCatalogApiEntityConfigs(config);
+    const result = readBridgeConfigs(config);
     expect(result).toEqual([]);
   });
 
@@ -64,17 +64,15 @@ describe('readModelCatalogApiEntityConfigs', () => {
         },
       },
     });
-    const result = readModelCatalogApiEntityConfigs(config);
+    const result = readBridgeConfigs(config);
     expect(result).toEqual([
       {
         id: 'provider1',
         baseUrl: 'https://provider1.com:8080',
-        schedule: undefined,
       },
       {
         id: 'provider2',
         baseUrl: 'https://provider2.com:9000',
-        schedule: undefined,
       },
     ]);
   });

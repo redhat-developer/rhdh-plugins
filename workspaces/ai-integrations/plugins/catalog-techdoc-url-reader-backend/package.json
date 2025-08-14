@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "license": "Apache-2.0",
   "private": true,
   "main": "src/index.ts",
@@ -38,7 +38,6 @@
     "@backstage/config": "^1.2.0",
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^1.16.1",
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "zod": "^3.22.4"

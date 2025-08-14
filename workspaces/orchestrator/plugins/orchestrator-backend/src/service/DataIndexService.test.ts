@@ -176,7 +176,8 @@ describe('fetchWorkflowInfos', () => {
   let mockClient: jest.Mocked<Client>;
 
   const definitionIds = ['id1', 'id2'];
-  const queryBody = 'id, name, version, type, endpoint, serviceUrl, source';
+  const queryBody =
+    'id, name, version, type, endpoint, serviceUrl, source, metadata';
   const pagination = { limit: 10, offset: 0, order: 'ASC', sortField: 'name' };
 
   const filterString =
@@ -241,7 +242,7 @@ describe('fetchWorkflowInfos', () => {
     const result = await dataIndexService.fetchWorkflowInfos({});
     // Then
     expect(result).toBeDefined();
-    expect(result).toBe(mockQueryResult.ProcessDefinitions);
+    expect(result).toStrictEqual(mockQueryResult.ProcessDefinitions);
     expect(buildFilterConditionSpy).not.toHaveBeenCalled();
     expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
     expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
@@ -277,7 +278,7 @@ describe('fetchWorkflowInfos', () => {
 
     // Then
     expect(result).toBeDefined();
-    expect(result).toBe(mockQueryResult.ProcessDefinitions);
+    expect(result).toStrictEqual(mockQueryResult.ProcessDefinitions);
     expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
     expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
       type: 'ProcessDefinitions',
@@ -315,7 +316,7 @@ describe('fetchWorkflowInfos', () => {
 
     // Then
     expect(result).toBeDefined();
-    expect(result).toBe(mockQueryResult.ProcessDefinitions);
+    expect(result).toStrictEqual(mockQueryResult.ProcessDefinitions);
     expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
     expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
       type: 'ProcessDefinitions',
@@ -355,7 +356,7 @@ describe('fetchWorkflowInfos', () => {
 
     // Then
     expect(result).toBeDefined();
-    expect(result).toBe(mockQueryResult.ProcessDefinitions);
+    expect(result).toStrictEqual(mockQueryResult.ProcessDefinitions);
 
     expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
     expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
@@ -408,7 +409,8 @@ describe('fetchWorkflowInfos', () => {
     expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
     expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
       type: 'ProcessDefinitions',
-      queryBody: 'id, name, version, type, endpoint, serviceUrl, source',
+      queryBody:
+        'id, name, version, type, endpoint, serviceUrl, source, metadata',
       whereClause,
     });
     expect(buildFilterConditionSpy).toHaveBeenCalledTimes(1);
@@ -423,7 +425,7 @@ describe('fetchWorkflowInfos', () => {
       {},
     );
     expect(result).toBeDefined();
-    expect(result).toBe(mockQueryResult.ProcessDefinitions);
+    expect(result).toStrictEqual(mockQueryResult.ProcessDefinitions);
   });
 
   it('should fetch workflow infos with definitionIds, pagination, and filter', async () => {
@@ -475,7 +477,7 @@ describe('fetchWorkflowInfos', () => {
       logicalFilter,
     );
     expect(result).toBeDefined();
-    expect(result).toBe(mockQueryResult.ProcessDefinitions);
+    expect(result).toStrictEqual(mockQueryResult.ProcessDefinitions);
   });
 });
 describe('fetchInstances', () => {

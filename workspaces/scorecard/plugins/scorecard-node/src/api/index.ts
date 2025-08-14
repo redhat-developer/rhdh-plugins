@@ -14,8 +14,4 @@
  * limitations under the License.
  */
 
-import getTheme from './theme-utils';
-
-const ChartTheme = getTheme();
-
-export default ChartTheme;
+export type { MetricProvider } from './MetricProvider';

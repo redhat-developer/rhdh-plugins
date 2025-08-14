@@ -290,7 +290,47 @@ describe('SonataFlowService', () => {
       });
 
       // Then
-      expect(fetch).toHaveBeenCalledWith(urlToFetch, { method: 'POST' });
+      expect(fetch).toHaveBeenCalledWith(urlToFetch, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      expect(result).toBe(true);
+    });
+
+    it('should retrigger a workflow instance successfully with auth token', async () => {
+      // Given
+      setupTest({ ok: true, json: {} });
+
+      // When
+      const result = await sonataFlowService.retriggerInstance({
+        definitionId,
+        instanceId,
+        serviceUrl,
+        authTokens: [
+          {
+            provider: 'test-provider-one',
+            token: 'provider-one-token',
+          },
+          {
+            provider: 'test-provider-two',
+            token: 'provider-two-token',
+          },
+        ],
+        backstageToken: 'test-user-token',
+      });
+
+      // Then
+      expect(fetch).toHaveBeenCalledWith(urlToFetch, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Authorization-Backstage': 'test-user-token',
+          'X-Authorization-Test-provider-one': 'provider-one-token',
+          'X-Authorization-Test-provider-two': 'provider-two-token',
+        },
+      });
       expect(result).toBe(true);
     });
 

@@ -24,6 +24,7 @@ import {
   ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
   ProcessInstanceState,
+  RetriggerInstanceRequestDTO,
   WorkflowDTO,
   WorkflowInfo,
   WorkflowOverviewDTO,
@@ -224,6 +225,8 @@ export class V2 {
   public async retriggerInstance(
     workflowId: string,
     instanceId: string,
+    retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO,
+    backstageToken: string | undefined,
   ): Promise<void> {
     const definition = await this.orchestratorService.fetchWorkflowInfo({
       definitionId: workflowId,
@@ -238,6 +241,8 @@ export class V2 {
       definitionId: workflowId,
       instanceId: instanceId,
       serviceUrl: definition.serviceUrl,
+      authTokens: retriggerInstanceRequestDTO.authTokens as Array<AuthToken>,
+      backstageToken,
     });
 
     if (!response) {

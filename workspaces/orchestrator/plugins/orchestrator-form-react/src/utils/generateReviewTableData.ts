@@ -19,9 +19,7 @@ import { JsonObject, JsonValue } from '@backstage/types';
 import type { JSONSchema7 } from 'json-schema';
 import { JsonSchema, Draft07 as JSONSchema } from 'json-schema-library';
 
-export function isJsonObject(value?: JsonValue): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 export function processSchema(
   key: string,

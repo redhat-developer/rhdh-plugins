@@ -118,7 +118,7 @@ export interface WorkflowInfo {
   serviceUrl?: string;
   roles?: string[];
   source?: string;
-  metadata?: Map<string, string>;
+  metadata?: Record<string, string>;
   nodes?: Node[];
 }
 

@@ -112,25 +112,7 @@ export class SonataFlowService {
       'Content-Type': 'application/json',
     };
 
-    // Add X-Authentication headers from authTokens
-    if (args.authTokens && Array.isArray(args.authTokens)) {
-      args.authTokens.forEach(tokenObj => {
-        if (tokenObj.provider && tokenObj.token) {
-          const headerKey = `X-Authorization-${capitalize(tokenObj.provider)}`;
-          headers[headerKey] = String(tokenObj.token); // Ensure token is a string
-        }
-      });
-    } else {
-      this.logger.debug(
-        'No authTokens provided or authTokens is not an array.',
-      );
-    }
-
-    if (args.backstageToken) {
-      const headerKey = 'X-Authorization-Backstage';
-      headers[headerKey] = args.backstageToken;
-    }
-
+    this.addAuthHeaders(headers, args.authTokens, args.backstageToken);
     const headerKeys = Object.keys(headers);
     this.logger.info(
       `Executing workflow ${args.definitionId} with headers: ${headerKeys.join(', ')}`,
@@ -170,17 +152,55 @@ export class SonataFlowService {
     throw new Error('Execute workflow did not return a workflow instance ID');
   }
 
+  private addAuthHeaders(
+    headers: Record<string, string>,
+    authTokens?: Array<AuthToken>,
+    backstageToken?: string | undefined,
+  ) {
+    // Add X-Authentication headers from authTokens
+    if (authTokens && Array.isArray(authTokens)) {
+      authTokens.forEach(tokenObj => {
+        if (tokenObj.provider && tokenObj.token) {
+          const headerKey = `X-Authorization-${capitalize(tokenObj.provider)}`;
+          headers[headerKey] = String(tokenObj.token); // Ensure token is a string
+        }
+      });
+    } else {
+      this.logger.debug(
+        'No authTokens provided or authTokens is not an array.',
+      );
+    }
+
+    if (backstageToken) {
+      const headerKey = 'X-Authorization-Backstage';
+      headers[headerKey] = backstageToken;
+    }
+  }
+
   public async retriggerInstance(args: {
     definitionId: string;
     instanceId: string;
     serviceUrl: string;
+    authTokens?: Array<AuthToken>;
+    backstageToken?: string | undefined;
   }): Promise<boolean> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    this.addAuthHeaders(headers, args.authTokens, args.backstageToken);
+    const headerKeys = Object.keys(headers);
+    this.logger.info(
+      `Retriggering workflow ${args.definitionId} with headers: ${headerKeys.join(', ')}`,
+    );
+
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}/instances/${args.instanceId}/retrigger`;
 
     let response: Response | undefined;
     try {
       response = await fetch(urlToFetch, {
         method: 'POST',
+        headers,
       });
     } catch (error) {
       this.logger.error(

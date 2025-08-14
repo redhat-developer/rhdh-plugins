@@ -11242,19 +11242,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-charts@npm:^8.1.0":
-  version: 8.2.2
-  resolution: "@patternfly/react-charts@npm:8.2.2"
+"@patternfly/patternfly@npm:^6.3.0":
+  version: 6.3.1
+  resolution: "@patternfly/patternfly@npm:6.3.1"
+  checksum: ad3a7e94f7880d16210ff02dc09954895f81f9bdc4dee77f3e974b12cf7f398fe62321d26bbce8e876f8c13d4d7910cffd2b37855c90e8990d430903edf86767
+  languageName: node
+  linkType: hard
+
+"@patternfly/react-charts@npm:^8.3.0":
+  version: 8.3.1
+  resolution: "@patternfly/react-charts@npm:8.3.1"
   dependencies:
-    "@patternfly/react-styles": ^6.2.2
-    "@patternfly/react-tokens": ^6.2.2
+    "@patternfly/react-styles": ^6.3.1
+    "@patternfly/react-tokens": ^6.3.1
     hoist-non-react-statics: ^3.3.2
     lodash: ^4.17.21
     tslib: ^2.8.1
   peerDependencies:
     echarts: ^5.6.0
-    react: ^17 || ^18
-    react-dom: ^17 || ^18
+    react: ^17 || ^18 || ^19
+    react-dom: ^17 || ^18 || ^19
     victory-area: ^37.3.6
     victory-axis: ^37.3.6
     victory-bar: ^37.3.6
@@ -11309,7 +11316,7 @@ __metadata:
       optional: true
     victory-zoom-container:
       optional: true
-  checksum: 52896f1171ffdd4295e026087f752174394050a64e41758c3e3bad126c63300968e2b6422000922db1fdc543886e6fbbe7f9a3ce1d51adbd90a9478406e3b9d3
+  checksum: 33894a4f66826e53867c8ccfb1ee87a74aec26b20d53b4d8f65824b3a7cb3ede2034a4cd78b7cef04a1d593b302040a9da991c2b4f8375ff7290da34e4592bb9
   languageName: node
   linkType: hard
 
@@ -11348,10 +11355,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-styles@npm:^6.2.2":
-  version: 6.2.2
-  resolution: "@patternfly/react-styles@npm:6.2.2"
-  checksum: 77a8ebcf550fba86ef6e3b73fc60e2eba1210d9fa0fd53a415311bf82615fdc5052d2bf79a57c24a2868ccc543a3155b03cb369fb5703452e1d2f4b96f57f4d1
+"@patternfly/react-styles@npm:^6.3.1":
+  version: 6.3.1
+  resolution: "@patternfly/react-styles@npm:6.3.1"
+  checksum: f8b8e8af84af6a68234685557d063be0bdfae41ce3db515ce86191f6a1749cdf295ea610d63c69797c859e31fa94763844a890fb5105d5149134fcb0ab165258
   languageName: node
   linkType: hard
 
@@ -11362,10 +11369,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-tokens@npm:^6.1.0, @patternfly/react-tokens@npm:^6.2.2":
-  version: 6.2.2
-  resolution: "@patternfly/react-tokens@npm:6.2.2"
-  checksum: 27183f771e400c8fcf611545dd46ade39c6459506bcb9aa020346de69dda9717e75665c8aad92609dab93de4c2f0472e7958d1c127b0f722beb552dda3a1fbca
+"@patternfly/react-tokens@npm:^6.1.0, @patternfly/react-tokens@npm:^6.3.1":
+  version: 6.3.1
+  resolution: "@patternfly/react-tokens@npm:6.3.1"
+  checksum: 7eacc01ae31713ee797ceff5fd1ace80647147fd1065fbe8730fb9523da5743f6cb7acf22dfc3c94bc0b05fa443969482cdb51ffe9a70081b3ef6829812b1992
   languageName: node
   linkType: hard
 
@@ -12255,7 +12262,7 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@material-ui/lab": 4.0.0-alpha.61
-    "@patternfly/react-charts": ^8.1.0
+    "@patternfly/react-charts": ^8.3.0
     "@patternfly/react-tokens": ^6.1.0
     "@red-hat-developer-hub/plugin-redhat-resource-optimization-common": "workspace:^"
     "@testing-library/dom": 7.31.2
@@ -17341,6 +17348,7 @@ __metadata:
     "@material-ui/icons": ^4.9.1
     "@mui/icons-material": ^5.16.1
     "@mui/material": ^5.16.1
+    "@patternfly/patternfly": ^6.3.0
     "@playwright/test": ^1.32.3
     "@red-hat-developer-hub/backstage-plugin-orchestrator": ^2.5.1
     "@red-hat-developer-hub/plugin-redhat-resource-optimization": "workspace:^"
