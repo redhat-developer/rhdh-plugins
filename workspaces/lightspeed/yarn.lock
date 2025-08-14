@@ -7097,7 +7097,7 @@ __metadata:
     "@backstage/repo-tools": ^0.13.4
     "@changesets/cli": ^2.27.1
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
-    "@playwright/test": 1.53.0
+    "@playwright/test": 1.54.2
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -7786,17 +7786,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:^0.5.0":
-  version: 0.5.5
-  resolution: "@langchain/openai@npm:0.5.5"
+"@langchain/openai@npm:^0.6.0":
+  version: 0.6.7
+  resolution: "@langchain/openai@npm:0.6.7"
   dependencies:
     js-tiktoken: ^1.0.12
-    openai: ^4.87.3
-    zod: ^3.22.4
-    zod-to-json-schema: ^3.22.3
+    openai: ^5.12.1
+    zod: ^3.25.32
   peerDependencies:
-    "@langchain/core": ">=0.3.39 <0.4.0"
-  checksum: 45268375ee66f847a4b5ce64dbca86ad8ad07f0c6c6c9e23c50851f7abd501f841806aac7fb08c2213e6f2ef9f7ca3373243ff59e695626be22752114bfee142
+    "@langchain/core": ">=0.3.68 <0.4.0"
+  checksum: 090a22c3fd359aed10ccdd98ba6b61a0ed50e872b568c179a0278a9e37178ea38432a6de611694fd5f661fc516d7f17818bd375decb2ed21f261e5fa697c3ca3
   languageName: node
   linkType: hard
 
@@ -9654,14 +9653,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.53.0":
-  version: 1.53.0
-  resolution: "@playwright/test@npm:1.53.0"
+"@playwright/test@npm:1.54.2":
+  version: 1.54.2
+  resolution: "@playwright/test@npm:1.54.2"
   dependencies:
-    playwright: 1.53.0
+    playwright: 1.54.2
   bin:
     playwright: cli.js
-  checksum: 63c8264134b9ceb1a9e40af9a2e262f11f74c791c739ade6d39177de42a28016d3a9c807ce893048b2c3247a633b5e8c7805e013c6f87c85b1360a83363d74ba
+  checksum: deb52981bc97ccb0444bac22e0f5d0712bc8bf74b872d2563b4c8ebcb4782ee3dfe0c7b33b3b20f8cfd15f189a9236500eb3305307bf5638a112edbf1cbc4675
   languageName: node
   linkType: hard
 
@@ -10355,7 +10354,7 @@ __metadata:
     "@backstage/plugin-permission-node": ^0.10.0
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
     "@langchain/core": ^0.3.0
-    "@langchain/openai": ^0.5.0
+    "@langchain/openai": ^0.6.0
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@types/express": 4.17.23
@@ -14907,7 +14906,7 @@ __metadata:
     "@backstage/theme": ^0.6.6
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
-    "@playwright/test": 1.53.0
+    "@playwright/test": 1.54.2
     "@red-hat-developer-hub/backstage-plugin-lightspeed": "*"
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
@@ -27885,7 +27884,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^4.52.6, openai@npm:^4.87.3":
+"openai@npm:^4.52.6":
   version: 4.93.0
   resolution: "openai@npm:4.93.0"
   dependencies:
@@ -27907,6 +27906,23 @@ __metadata:
   bin:
     openai: bin/cli
   checksum: 39fa6635475590c05c5fcb1fd07708c8f23d430dad36037c49fe25020ada0a4a36801e5c443669acd8f947d52005e3b7cf0215ca4b76262007f9b1ea3c916a68
+  languageName: node
+  linkType: hard
+
+"openai@npm:^5.12.1":
+  version: 5.12.2
+  resolution: "openai@npm:5.12.2"
+  peerDependencies:
+    ws: ^8.18.0
+    zod: ^3.23.8
+  peerDependenciesMeta:
+    ws:
+      optional: true
+    zod:
+      optional: true
+  bin:
+    openai: bin/cli
+  checksum: b48116979c0666b1438d68a71df2c57833bca8c20c5d43e0c17e4d8594ca72294a1b62f40c7e3b8e5d5be644c2de5ba27fe97b8136f1de36e0490fd49c552a70
   languageName: node
   linkType: hard
 
@@ -28793,27 +28809,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.53.0":
-  version: 1.53.0
-  resolution: "playwright-core@npm:1.53.0"
+"playwright-core@npm:1.54.2":
+  version: 1.54.2
+  resolution: "playwright-core@npm:1.54.2"
   bin:
     playwright-core: cli.js
-  checksum: 00d6c8f566608681e1ab529ecb86a4e8c818f77605438e38e1b7ebf04b41b4df115217fe89cfe535d0a0a9f08807ab0b66d4f9da61c5609060cc68859c7c4354
+  checksum: ba233b6ac9a88af8625a519252472b3235bc12dd58b47cbcabb4ab8bdecdb25054acecd98eba9e818d222e87e9bdcc9a28c88df7793bcdf5ddbfd169a5b7b5c8
   languageName: node
   linkType: hard
 
-"playwright@npm:1.53.0":
-  version: 1.53.0
-  resolution: "playwright@npm:1.53.0"
+"playwright@npm:1.54.2":
+  version: 1.54.2
+  resolution: "playwright@npm:1.54.2"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.53.0
+    playwright-core: 1.54.2
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: a8e69cecac82515e018f68aeccdae0bd8d4e18e3741330e79129c1705780fef6591294c0fe0f71f1ab4242a00032c3896eae9ceb40c5e03d53265f993de8cd42
+  checksum: 0c2ea318d703ab98e9b57b098cd97f5c27fedc56ac8cd3630d786bcc73be2a876cbb54230775c6d6c578b79399b828ed60070e7545a1bb445811f41184fc6ddc
   languageName: node
   linkType: hard
 
@@ -35700,10 +35716,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.22.4":
-  version: 3.23.8
-  resolution: "zod@npm:3.23.8"
-  checksum: 15949ff82118f59c893dacd9d3c766d02b6fa2e71cf474d5aa888570c469dbf5446ac5ad562bb035bf7ac9650da94f290655c194f4a6de3e766f43febd432c5c
+"zod@npm:^3.22.4, zod@npm:^3.25.32":
+  version: 3.25.76
+  resolution: "zod@npm:3.25.76"
+  checksum: c9a403a62b329188a5f6bd24d5d935d2bba345f7ab8151d1baa1505b5da9f227fb139354b043711490c798e91f3df75991395e40142e6510a4b16409f302b849
   languageName: node
   linkType: hard
 
