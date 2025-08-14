@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Link, TableColumn, TableProps } from '@backstage/core-components';
@@ -44,6 +44,7 @@ import {
   entityInstanceRouteRef,
   entityWorkflowRouteRef,
   executeWorkflowRouteRef,
+  workflowInstanceRouteRef,
   workflowRouteRef,
   workflowRunsRouteRef,
 } from '../../routes';
@@ -116,6 +117,9 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
   const definitionRunsLink = useRouteRef(workflowRunsRouteRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const entityWorkflowLink = useRouteRef(entityWorkflowRouteRef);
+  const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
+  const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
+
   const { kind, name, namespace } = useRouteRefParams(entityInstanceRouteRef);
   let entityRef: string | undefined = undefined;
   if (kind && namespace && name) {
@@ -132,7 +136,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     FormattedWorkflowOverview | undefined
   >(undefined);
 
-  const toggleInputSchemaDialog = React.useCallback(() => {
+  const toggleInputSchemaDialog = useCallback(() => {
     setIsInputSchemaDialogOpen(prev => !prev);
   }, []);
 
@@ -257,6 +261,32 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     [entityRef, entityWorkflowLink, definitionLink, kind, name, namespace],
   );
 
+  const instanceLink = useCallback(
+    (rowData: FormattedWorkflowOverview) => {
+      if (canViewInstance(rowData.id)) {
+        return entityRef
+          ? entityInstanceLink({
+              namespace,
+              kind,
+              name,
+              workflowId: rowData.id,
+              instanceId: rowData.lastRunId,
+            })
+          : workflowInstanceLink({ instanceId: rowData.lastRunId });
+      }
+      return undefined;
+    },
+    [
+      canViewInstance,
+      entityInstanceLink,
+      workflowInstanceLink,
+      entityRef,
+      namespace,
+      kind,
+      name,
+    ],
+  );
+
   const columns = useMemo<TableColumn<FormattedWorkflowOverview>[]>(
     () => [
       {
@@ -289,16 +319,14 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
               status={
                 originalRawData?.lastRunStatus as ProcessInstanceStatusDTO
               }
-              lastRunId={
-                canViewInstance(rowData.id) ? rowData.lastRunId : undefined
-              }
+              instanceLink={instanceLink(rowData)}
             />
           );
         },
       },
       { title: 'Description', field: 'description', minWidth: '25vw' },
     ],
-    [canViewInstance, canViewWorkflow, entityLink, items],
+    [canViewWorkflow, entityLink, items, instanceLink],
   );
 
   const options = useMemo<TableProps['options']>(

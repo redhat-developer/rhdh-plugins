@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: example-component
+  name: ${{ values.entityName }}
   description: This is a Backstage component
   annotations:
     orchestrator.io/workflows: '[]'

@@ -82,8 +82,9 @@ export class SonataFlowService {
     definitionIds?: string[];
     pagination?: Pagination;
     filter?: Filter;
+    targetEntity?: string;
   }): Promise<WorkflowOverview[] | undefined> {
-    const { definitionIds, pagination, filter } = args;
+    const { definitionIds, pagination, filter, targetEntity } = args;
     const workflowInfos = await this.dataIndexService.fetchWorkflowInfos({
       definitionIds,
       pagination,
@@ -95,7 +96,9 @@ export class SonataFlowService {
     const items = await Promise.all(
       workflowInfos
         .filter(info => info.source)
-        .map(info => this.fetchWorkflowOverviewBySource(info.source!)),
+        .map(info =>
+          this.fetchWorkflowOverviewBySource(info.source!, targetEntity),
+        ),
     );
     return items.filter((item): item is WorkflowOverview => !!item);
   }
@@ -260,6 +263,7 @@ export class SonataFlowService {
 
   private async fetchWorkflowOverviewBySource(
     source: string,
+    targetEntity?: string,
   ): Promise<WorkflowOverview | undefined> {
     let lastTriggered: Date = new Date(0);
     let lastRunStatus: ProcessInstanceStateValues | undefined;
@@ -271,6 +275,7 @@ export class SonataFlowService {
         definitionId: definition.id,
         limit: 1,
         offset: 0,
+        targetEntity: targetEntity,
       });
 
     const pInstance = processInstances[0];
