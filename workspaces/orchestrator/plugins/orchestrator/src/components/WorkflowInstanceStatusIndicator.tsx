@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
 
 import { Link } from '@backstage/core-components';
-import { useRouteRef } from '@backstage/core-plugin-api';
 
 import { Box } from '@material-ui/core';
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
@@ -31,17 +29,15 @@ import {
 
 import { VALUE_UNAVAILABLE } from '../constants';
 import { useWorkflowInstanceStateColors } from '../hooks/useWorkflowInstanceStatusColors';
-import { workflowInstanceRouteRef } from '../routes';
 
 export const WorkflowInstanceStatusIndicator = ({
   status,
-  lastRunId,
+  instanceLink,
 }: {
   status?: ProcessInstanceStatusDTO;
-  lastRunId?: string;
+  instanceLink?: string;
 }) => {
   const iconColor = useWorkflowInstanceStateColors(status);
-  const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
 
   if (!status) {
     return VALUE_UNAVAILABLE;
@@ -83,10 +79,8 @@ export const WorkflowInstanceStatusIndicator = ({
     <Box display="flex" alignItems="center">
       {icon}
       &nbsp;{' '}
-      {lastRunId ? (
-        <Link to={workflowInstanceLink({ instanceId: lastRunId })}>
-          {capitalize(title)}
-        </Link>
+      {instanceLink ? (
+        <Link to={instanceLink}>{capitalize(title)}</Link>
       ) : (
         <>{capitalize(title)}</>
       )}
