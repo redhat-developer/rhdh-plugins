@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.13.4
+
+### Patch Changes
+
+- 04856e6: remove janus-idp/cli devDependency and export-dynamic script
+
 ## 1.13.3
 
 ### Patch Changes
