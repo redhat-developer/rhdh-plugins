@@ -64,8 +64,9 @@ import {
 import {
   computeTotalCount,
   executeFunctionOnFirstSuccessfulIntegration,
-  //   extractLocationOwnerMap,
+  extractLocationOwnerMap,
   fetchFromAllIntegrations,
+  getCredentialsForConfig,
   //   getCredentialsForConfig,
 } from './utils/utils';
 
@@ -95,44 +96,60 @@ export class GitlabApiService {
   }> {
     const gitUrl = gitUrlParse(repoUrl);
 
-    const ghConfig = this.integrations.github.byUrl(repoUrl)?.config;
-    if (!ghConfig) {
+    const glConfig = this.integrations.gitlab.byUrl(repoUrl)?.config;
+    if (!glConfig) {
       throw new Error(
-        `No GitHub integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.github`,
+        `No Gitlab integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.gitlab`,
       );
     }
 
     const credentials = await getCredentialsForConfig(
-      this.githubCredentialsProvider,
-      ghConfig,
+      this.gitlabCredentialsProvider,
+      glConfig,
     );
-    const errors = new Map<number, GithubFetchError>();
-    let repository: GithubRepository | undefined = undefined;
+    const errors = new Map<number, GitlabFetchError>();
+    let repository: GitlabRepository | undefined = undefined;
     for (const credential of credentials) {
-      const octokit = buildOcto(
+      // const octokit = buildOcto(
+      //   {
+      //     logger: this.logger,
+      //     cache: this.cache,
+      //   },
+      //   { credential, errors, owner: gitUrl.owner },
+      //   glConfig.apiBaseUrl,
+      // );
+      // if (!octokit) {
+      //   continue;
+      // }
+      const glKit = buildGitlab(
         {
           logger: this.logger,
           cache: this.cache,
         },
-        { credential, errors, owner: gitUrl.owner },
-        ghConfig.apiBaseUrl,
+        { credential, owner: gitUrl.owner },
+        glConfig.apiBaseUrl,
       );
-      if (!octokit) {
-        continue;
-      }
-      const resp = await octokit.rest.repos.get({
-        owner: gitUrl.owner,
-        repo: gitUrl.name,
-      });
-      const repo = resp?.data;
+      const resp = glKit.Projects.show(`${gitUrl.owner}/${gitUrl.name}`);
+      // const resp = await octokit.rest.repos.get({
+      //   owner: gitUrl.owner,
+      //   repo: gitUrl.name,
+      // });
+      const repo = resp;
       if (!repo) {
         continue;
       }
+
+      // name: repo.name,
+      // full_name: repo.path_with_namespace,
+      // url: `${gitlab.url}/projects/${repo.id}`,
+      // html_url: repo.web_url,
+      // default_branch: repo.default_branch,
+      // updated_at: repo.updated_at,
       repository = {
         name: repo.name,
-        full_name: repo.full_name,
-        url: repo.url,
-        html_url: repo.html_url,
+        full_name: repo.path_with_namespace,
+        url: `${glKit.url}/projects/${repo.id}`,
+        html_url: repo.web_url,
         default_branch: repo.default_branch,
         updated_at: repo.updated_at,
       };
@@ -316,65 +333,66 @@ export class GitlabApiService {
     };
   }
 
-  //   async filterLocationsAccessibleFromIntegrations(
-  //     locationUrls: string[],
-  //   ): Promise<string[]> {
-  //     const locationGitOwnerMap = extractLocationOwnerMap(locationUrls);
+  async filterLocationsAccessibleFromIntegrations(
+    locationUrls: string[],
+  ): Promise<string[]> {
+    const locationGitOwnerMap = extractLocationOwnerMap(locationUrls);
 
-  //     const allAccessibleAppOrgs = new Set<string>();
-  //     const allAccessibleTokenOrgs = new Set<string>();
-  //     const allAccessibleUsernames = new Set<string>();
-  //     await fetchFromAllIntegrations(
-  //       {
-  //         logger: this.logger,
-  //         cache: this.cache,
-  //         githubCredentialsProvider: this.githubCredentialsProvider,
-  //       },
-  //       this.integrations,
-  //       {
-  //         dataFetcher: async (
-  //           octokit: Octokit,
-  //           credential: ExtendedGithubCredentials,
-  //           ghConfig: GithubIntegrationConfig,
-  //         ) => {
-  //           if (isGithubAppCredential(credential)) {
-  //             const appOrgMap = await getAllAppOrgs(
-  //               this.githubCredentialsProvider,
-  //               ghConfig,
-  //               credential.accountLogin,
-  //             );
-  //             for (const [_, ghOrg] of appOrgMap) {
-  //               allAccessibleAppOrgs.add(ghOrg.name);
-  //             }
-  //           } else {
-  //             // find authenticated GitHub owner...
-  //             const username = (await octokit.rest.users.getAuthenticated())?.data
-  //               ?.login;
-  //             if (username) {
-  //               allAccessibleUsernames.add(username);
-  //             }
-  //             // ... along with orgs accessible from the token auth
-  //             (await octokit.paginate(octokit.rest.orgs.listForAuthenticatedUser))
-  //               ?.map(org => org.login)
-  //               ?.forEach(orgName => allAccessibleTokenOrgs.add(orgName));
-  //           }
-  //           return {};
-  //         },
-  //       },
-  //     );
+    const allAccessibleAppOrgs = new Set<string>();
+    const allAccessibleTokenOrgs = new Set<string>();
+    const allAccessibleUsernames = new Set<string>();
+    await fetchFromAllIntegrations(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        gitlabCredentialsProvider: this.gitlabCredentialsProvider,
+      },
+      this.integrations,
+      {
+        dataFetcher: async (
+          // octokit: Octokit,
+          gitlab: any,
+          credential: ExtendedGitlabCredentials,
+          ghConfig: GitLabIntegrationConfig,
+        ) => {
+          if (isGithubAppCredential(credential)) {
+            const appOrgMap = await getAllAppOrgs(
+              this.githubCredentialsProvider,
+              ghConfig,
+              credential.accountLogin,
+            );
+            for (const [_, ghOrg] of appOrgMap) {
+              allAccessibleAppOrgs.add(ghOrg.name);
+            }
+          } else {
+            // find authenticated GitHub owner...
+            const username = (await octokit.rest.users.getAuthenticated())?.data
+              ?.login;
+            if (username) {
+              allAccessibleUsernames.add(username);
+            }
+            // ... along with orgs accessible from the token auth
+            (await octokit.paginate(octokit.rest.orgs.listForAuthenticatedUser))
+              ?.map(org => org.login)
+              ?.forEach(orgName => allAccessibleTokenOrgs.add(orgName));
+          }
+          return {};
+        },
+      },
+    );
 
-  //     return locationUrls.filter(loc => {
-  //       if (!locationGitOwnerMap.has(loc)) {
-  //         return false;
-  //       }
-  //       const owner = locationGitOwnerMap.get(loc)!;
-  //       return (
-  //         allAccessibleAppOrgs.has(owner) ||
-  //         allAccessibleTokenOrgs.has(owner) ||
-  //         allAccessibleUsernames.has(owner)
-  //       );
-  //     });
-  //   }
+    return locationUrls.filter(loc => {
+      if (!locationGitOwnerMap.has(loc)) {
+        return false;
+      }
+      const owner = locationGitOwnerMap.get(loc)!;
+      return (
+        allAccessibleAppOrgs.has(owner) ||
+        allAccessibleTokenOrgs.has(owner) ||
+        allAccessibleUsernames.has(owner)
+      );
+    });
+  }
 
   async findImportOpenPr(
     logger: LoggerService,
@@ -708,93 +726,94 @@ export class GitlabApiService {
   //     return fileExists;
   //   }
 
-  //   async closeImportPR(
-  //     logger: LoggerService,
-  //     input: {
-  //       repoUrl: string;
-  //       gitUrl: gitUrlParse.GitUrl;
-  //       comment: string;
-  //     },
-  //   ) {
-  //     await executeFunctionOnFirstSuccessfulIntegration(
-  //       {
-  //         logger: this.logger,
-  //         cache: this.cache,
-  //         config: this.config,
-  //         githubCredentialsProvider: this.githubCredentialsProvider,
-  //       },
-  //       this.integrations,
-  //       {
-  //         repoUrl: input.repoUrl,
-  //         fn: async (validatedRepo: ValidatedRepo, octo: Octokit) => {
-  //           const { owner, repo, branchName } = validatedRepo;
-  //           try {
-  //             const existingPrForBranch = await findOpenPRForBranch(
-  //               logger,
-  //               this.config,
-  //               octo,
-  //               owner,
-  //               repo,
-  //               branchName,
-  //             );
-  //             if (existingPrForBranch.prNum) {
-  //               await closePRWithComment(
-  //                 octo,
-  //                 owner,
-  //                 repo,
-  //                 existingPrForBranch.prNum,
-  //                 input.comment,
-  //               );
-  //             }
-  //             return { successful: true };
-  //           } catch (e: any) {
-  //             logErrorIfNeeded(
-  //               this.logger,
-  //               `Couldn't close PR in ${input.repoUrl}`,
-  //               e,
-  //             );
-  //             return { successful: false };
-  //           }
-  //         },
-  //       },
-  //     );
-  //   }
+  async closeImportPR(
+    logger: LoggerService,
+    input: {
+      repoUrl: string;
+      gitUrl: gitUrlParse.GitUrl;
+      comment: string;
+    },
+  ) {
+    await executeFunctionOnFirstSuccessfulIntegration(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        config: this.config,
+        gitlabCredentialsProvider: this.gitlabCredentialsProvider,
+      },
+      this.integrations,
+      {
+        repoUrl: input.repoUrl,
+        fn: async (validatedRepo: ValidatedRepo, gitlab: any) => {
+          const { owner, repo, branchName } = validatedRepo;
+          try {
+            const existingPrForBranch = await findOpenPRForBranch(
+              logger,
+              this.config,
+              gitlab,
+              owner,
+              repo,
+              branchName,
+            );
+            if (existingPrForBranch.prNum) {
+              await closePRWithComment(
+                gitlab,
+                owner,
+                repo,
+                existingPrForBranch.prNum,
+                input.comment,
+              );
+            }
+            return { successful: true };
+          } catch (e: any) {
+            logErrorIfNeeded(
+              this.logger,
+              `Couldn't close PR in ${input.repoUrl}`,
+              e,
+            );
+            return { successful: false };
+          }
+        },
+      },
+    );
+  }
 
-  //   async deleteImportBranch(input: {
-  //     repoUrl: string;
-  //     gitUrl: gitUrlParse.GitUrl;
-  //   }) {
-  //     await executeFunctionOnFirstSuccessfulIntegration(
-  //       {
-  //         logger: this.logger,
-  //         cache: this.cache,
-  //         config: this.config,
-  //         githubCredentialsProvider: this.githubCredentialsProvider,
-  //       },
-  //       this.integrations,
-  //       {
-  //         repoUrl: input.repoUrl,
-  //         fn: async (validatedRepo: ValidatedRepo, octo: Octokit) => {
-  //           const { owner, repo, branchName } = validatedRepo;
-  //           try {
-  //             await octo.git.deleteRef({
-  //               owner: owner,
-  //               repo: repo,
-  //               ref: `heads/${branchName}`,
-  //             });
-  //             return { successful: true };
-  //           } catch (e: any) {
-  //             logErrorIfNeeded(
-  //               this.logger,
-  //               `Couldn't close import PR and/or delete import branch in ${input.repoUrl}`,
-  //               e,
-  //             );
-  //             return { successful: false };
-  //           }
-  //         },
-  //       },
-  //     );
-  //   }
+  async deleteImportBranch(input: {
+    repoUrl: string;
+    gitUrl: gitUrlParse.GitUrl;
+  }) {
+    await executeFunctionOnFirstSuccessfulIntegration(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        config: this.config,
+        gitlabCredentialsProvider: this.gitlabCredentialsProvider,
+      },
+      this.integrations,
+      {
+        repoUrl: input.repoUrl,
+        fn: async (validatedRepo: ValidatedRepo, gitlab: any) => {
+          const { owner, repo, branchName } = validatedRepo;
+          try {
+            await gitlab.Branches.something(`${owner}/${repo}`, branchName);
+            // await octo.git.deleteRef({
+            //   owner: owner,
+            //   repo: repo,
+            //   ref: `heads/${branchName}`,
+            // });
+            return { successful: true };
+          } catch (e: any) {
+            logErrorIfNeeded(
+              this.logger,
+              `Couldn't close import PR and/or delete import branch in ${input.repoUrl}`,
+              e,
+            );
+            return { successful: false };
+          }
+        },
+      },
+    );
+  }
 
   //   async isRepoEmpty(input: { repoUrl: string }) {
   //     return await executeFunctionOnFirstSuccessfulIntegration(

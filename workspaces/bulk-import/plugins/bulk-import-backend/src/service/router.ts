@@ -280,6 +280,7 @@ export async function createRouter(
           logger,
           config,
           githubApiService,
+          gitlabApiService,
           catalogHttpClient,
         },
         {
@@ -368,6 +369,7 @@ export async function createRouter(
           logger,
           config,
           githubApiService,
+          gitlabApiService,
           catalogHttpClient,
         },
         q.repo,

@@ -117,22 +117,27 @@ async function getCatalogInfoContentFromPR(
 }
 
 export async function closePRWithComment(
-  octo: Octokit,
+  // octo: Octokit,
+  gitlab: any,
   owner: string,
   repo: string,
   prNum: number,
   comment: string,
 ) {
-  await octo.rest.issues.createComment({
-    owner,
-    repo,
-    issue_number: prNum,
-    body: comment,
-  });
-  await octo.rest.pulls.update({
-    owner,
-    repo,
-    pull_number: prNum,
-    state: 'closed',
+  // await octo.rest.issues.createComment({
+  //   owner,
+  //   repo,
+  //   issue_number: prNum,
+  //   body: comment,
+  // });
+  await gitlab.MergeRequestNotes.create(`${owner}/${repo}`, prNum, comment);
+  // await octo.rest.pulls.update({
+  //   owner,
+  //   repo,
+  //   pull_number: prNum,
+  //   state: 'closed',
+  // });
+  await gitlab.MergeRequests.edit(`${owner}/${repo}`, prNum, {
+    stateEvent: 'close',
   });
 }

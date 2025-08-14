@@ -85,6 +85,7 @@ export async function findAllImports(
     logger: LoggerService;
     config: Config;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   requestHeaders?: {
@@ -121,6 +122,7 @@ export async function findAllImports(
   const defaultBranchByRepoUrl = await resolveReposDefaultBranches(
     deps.logger,
     deps.githubApiService,
+    deps.gitlabApiService,
     allLocations.keys(),
     catalogFilename,
   );
@@ -134,8 +136,12 @@ export async function findAllImports(
   );
 
   // Keep only repos that are accessible from the configured GH integrations
+  // const importsReachableFromGHIntegrations =
+  //   await deps.githubApiService.filterLocationsAccessibleFromIntegrations(
+  //     importCandidates,
+  //   );
   const importsReachableFromGHIntegrations =
-    await deps.githubApiService.filterLocationsAccessibleFromIntegrations(
+    await deps.gitlabApiService.filterLocationsAccessibleFromIntegrations(
       importCandidates,
     );
 
@@ -199,6 +205,7 @@ export async function findAllImports(
 async function resolveReposDefaultBranches(
   logger: LoggerService,
   githubApiService: GithubApiService,
+  gitlabApiService: GitlabApiService,
   allLocations: Iterable<string>,
   catalogFilename: string,
 ) {
@@ -221,7 +228,8 @@ async function resolveReposDefaultBranches(
       continue;
     }
     defaultBranchByRepoUrlPromises.push(
-      githubApiService
+      // githubApiService
+      gitlabApiService
         .getRepositoryFromIntegrations(repoUrl)
         .then(resp => {
           return { repoUrl, defaultBranch: resp?.repository?.default_branch };
@@ -387,6 +395,7 @@ async function handlePrCreationRequest(
     auth: AuthService;
     catalogApi: CatalogApi;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
   },
@@ -400,6 +409,7 @@ async function handlePrCreationRequest(
   );
   const prToRepo = await createPR(
     deps.githubApiService,
+    deps.gitlabApiService,
     deps.logger,
     req,
     gitUrl,
@@ -791,6 +801,7 @@ export async function deleteImportByRepo(
     logger: LoggerService;
     config: Config;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   repoUrl: string,
@@ -799,26 +810,45 @@ export async function deleteImportByRepo(
   deps.logger.debug(`Deleting bulk import job status for ${repoUrl}..`);
 
   // Check to see if there are any PR
-  const openImportPr = await deps.githubApiService.findImportOpenPr(
+  // const openImportPr = await deps.githubApiService.findImportOpenPr(
+  //   deps.logger,
+  //   {
+  //     repoUrl: repoUrl,
+  //   },
+  // );
+
+  const openImportPr = await deps.gitlabApiService.findImportOpenPr(
     deps.logger,
     {
       repoUrl: repoUrl,
     },
   );
+
   const gitUrl = gitUrlParse(repoUrl);
   if (openImportPr.prUrl) {
     // Close PR
     const appTitle =
       deps.config.getOptionalString('app.title') ?? 'Red Hat Developer Hub';
     const appBaseUrl = deps.config.getString('app.baseUrl');
-    await deps.githubApiService.closeImportPR(deps.logger, {
+
+    await deps.gitlabApiService.closeImportPR(deps.logger, {
       repoUrl,
       gitUrl,
       comment: `Closing PR upon request for bulk import deletion. This request was created from [${appTitle}](${appBaseUrl}).`,
     });
+
+    // await deps.githubApiService.closeImportPR(deps.logger, {
+    //   repoUrl,
+    //   gitUrl,
+    //   comment: `Closing PR upon request for bulk import deletion. This request was created from [${appTitle}](${appBaseUrl}).`,
+    // });
   }
   // Also delete the import branch, so that it is not outdated if we try later to import the repo again
-  await deps.githubApiService.deleteImportBranch({
+  // await deps.githubApiService.deleteImportBranch({
+  //   repoUrl,
+  //   gitUrl,
+  // });
+  await deps.gitlabApiService.deleteImportBranch({
     repoUrl,
     gitUrl,
   });

@@ -25,8 +25,7 @@ import {
 } from '@backstage/integration';
 
 import { Gitlab } from '@gitbeaker/rest';
-
-// import gitUrlParse from 'git-url-parse';
+import gitUrlParse from 'git-url-parse';
 
 import { logErrorIfNeeded } from '../../helpers';
 // import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
@@ -196,18 +195,23 @@ export async function executeFunctionOnFirstSuccessfulIntegration<T>(
     params,
   );
   for (const credential of validatedRepo.credentials) {
-    const octo = buildOcto(
-      {
-        logger: deps.logger,
-        cache: deps.cache,
-      },
+    // const octo = buildOcto(
+    //   {
+    //     logger: deps.logger,
+    //     cache: deps.cache,
+    //   },
+    //   { credential, owner: validatedRepo.owner },
+    //   validatedRepo.ghConfig.apiBaseUrl,
+    // );
+    // if (!octo) {
+    //   continue;
+    // }
+    const glKit = buildGitlab(
+      deps,
       { credential, owner: validatedRepo.owner },
-      validatedRepo.ghConfig.apiBaseUrl,
+      validatedRepo.glConfig.apiBaseUrl,
     );
-    if (!octo) {
-      continue;
-    }
-    const res = await params.fn(validatedRepo, octo);
+    const res = await params.fn(validatedRepo, glKit);
     if (!res.successful) {
       continue;
     }
@@ -299,14 +303,14 @@ export function computeTotalCount<T>(
   return totalCount;
 }
 
-// export function extractLocationOwnerMap(locationUrls: string[]) {
-//   const locationGitOwnerMap = new Map<string, string>();
-//   for (const locationUrl of locationUrls) {
-//     const split = locationUrl.split('/blob/');
-//     if (split.length < 2) {
-//       continue;
-//     }
-//     locationGitOwnerMap.set(locationUrl, gitUrlParse(split[0]).owner);
-//   }
-//   return locationGitOwnerMap;
-// }
+export function extractLocationOwnerMap(locationUrls: string[]) {
+  const locationGitOwnerMap = new Map<string, string>();
+  for (const locationUrl of locationUrls) {
+    const split = locationUrl.split('/blob/');
+    if (split.length < 2) {
+      continue;
+    }
+    locationGitOwnerMap.set(locationUrl, gitUrlParse(split[0]).owner);
+  }
+  return locationGitOwnerMap;
+}
