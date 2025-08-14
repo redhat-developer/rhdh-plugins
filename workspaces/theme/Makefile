@@ -44,9 +44,9 @@ add-tests-to-showcase:
 	@echo
 	@echo Will build and install test plugins into ${showcase}
 	@echo
-	cd plugins/bc-test && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
-	cd plugins/mui4-test && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
-	cd plugins/mui5-test && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
+	cd plugins/bc-test && npx --yes @red-hat-developer-hub/cli@latest plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
+	cd plugins/mui4-test && npx --yes @red-hat-developer-hub/cli@latest plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
+	cd plugins/mui5-test && npx --yes @red-hat-developer-hub/cli@latest plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
 
 remove-from-showcase:
 	@echo
