@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import Typography from '@mui/material/Typography';
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
 
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
@@ -21,16 +22,27 @@ import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
 export const MarketplaceCatalogGrid = () => {
   const filteredPlugins = useFilteredPlugins();
 
+  if (filteredPlugins.isLoading) {
+    return (
+      <PluginCardGrid>
+        <PluginCardSkeleton />
+        <PluginCardSkeleton />
+        <PluginCardSkeleton />
+        <PluginCardSkeleton />
+      </PluginCardGrid>
+    );
+  }
+
+  if (filteredPlugins.data?.filteredItems === 0) {
+    return (
+      <Typography sx={{ textAlign: 'center', pb: '16px' }} component="span">
+        No results found. Adjust your filters and try again.
+      </Typography>
+    );
+  }
+
   return (
     <PluginCardGrid>
-      {filteredPlugins.isLoading ? (
-        <>
-          <PluginCardSkeleton />
-          <PluginCardSkeleton />
-          <PluginCardSkeleton />
-          <PluginCardSkeleton />
-        </>
-      ) : null}
       {filteredPlugins.data?.items.map(plugin => (
         <PluginCard
           key={`${plugin.metadata.namespace}/${plugin.metadata.name}`}

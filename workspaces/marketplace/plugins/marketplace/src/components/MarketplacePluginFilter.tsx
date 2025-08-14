@@ -118,7 +118,7 @@ const SupportTypeFilter = () => {
     const allSupportTypeItems: SelectItem[] = [];
 
     const certified = facets[facetsKeys[0]];
-    certified.forEach(certifiedBy => {
+    certified?.forEach(certifiedBy => {
       allSupportTypeItems.push({
         label: `Certified by ${certifiedBy.value} (${certifiedBy.count})`,
         value: `${facetsKeys[0]}=${certifiedBy.value}`,
@@ -126,7 +126,7 @@ const SupportTypeFilter = () => {
     });
 
     const verified = facets[facetsKeys[1]];
-    verified.forEach(verifiedBy => {
+    verified?.forEach(verifiedBy => {
       allSupportTypeItems.push({
         label: `Verified by ${verifiedBy.value} (${verifiedBy.count})`,
         value: `${facetsKeys[1]}=${verifiedBy.value}`,
@@ -134,7 +134,7 @@ const SupportTypeFilter = () => {
     });
 
     const preInstalled = facets[facetsKeys[2]];
-    preInstalled.forEach(preInstall => {
+    preInstalled?.forEach(preInstall => {
       if (preInstall.value === 'false') {
         allSupportTypeItems.push({
           label: `Custom plugins (${preInstall.count})`,
@@ -144,7 +144,7 @@ const SupportTypeFilter = () => {
     });
 
     const supportTypes = facets[facetsKeys[3]];
-    supportTypes.forEach(supportType => {
+    supportTypes?.forEach(supportType => {
       allSupportTypeItems.push({
         label: `${supportType.value} (${supportType.count})`,
         value: `${facetsKeys[3]}=${supportType.value}`,
