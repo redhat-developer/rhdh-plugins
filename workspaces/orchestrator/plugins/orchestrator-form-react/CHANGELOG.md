@@ -1,5 +1,15 @@
 ### Dependencies
 
+## 2.0.4
+
+### Patch Changes
+
+- 2fbdb53: remove setting inputs as readonly when execute from nextWorkflows as this was part of deprecated assessment workflow type
+- 8c95d55: Align with RHDH @backstage/core-components version and add table translation
+- Updated dependencies [2fbdb53]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.4
+
 ## 2.0.3
 
 ### Patch Changes
