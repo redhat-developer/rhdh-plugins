@@ -28,6 +28,14 @@ enum AppURL {
   RHODS = 'rhods-dashboard-redhat-ods-applications',
 }
 
+export enum Intcmp {
+  OPENSHIFT_CONSOLE = '701Pe00000dnCEYIA2',
+  DEVSPACES = '701Pe00000doTQCIA2',
+  RHODS = '701Pe00000do2uiIAA',
+  OPENSHIFT_VIRT = '701Pe00000dov6IIAQ',
+  AAP = '701Pe00000dowQXIAY',
+}
+
 const getAppsURL = (
   appRouteName: AppURL,
   consoleURL: string | undefined,
@@ -49,18 +57,19 @@ export const productsURLMapping = (userData: SignupData | undefined) => {
   return [
     {
       id: Product.OPENSHIFT_CONSOLE,
-      url: isProvisioned
-        ? `${userData?.consoleURL}/k8s/cluster/projects/${userData?.defaultUserNamespace}`
-        : '',
+      url:
+        isProvisioned && userData?.defaultUserNamespace
+          ? `${userData?.consoleURL}/k8s/cluster/projects/${userData?.defaultUserNamespace}`
+          : '',
     },
     {
       id: Product.OPENSHIFT_AI,
-      url: isProvisioned ? userData?.rhodsMemberURL || '' : '',
+      url: isProvisioned ? `${userData?.rhodsMemberURL}` : '',
     },
     {
       id: Product.DEVSPACES,
       url: isProvisioned
-        ? userData?.cheDashboardURL ||
+        ? `${userData?.cheDashboardURL}` ||
           getAppsURL(AppURL.DEVSPACES, userData?.consoleURL)
         : '',
     },
