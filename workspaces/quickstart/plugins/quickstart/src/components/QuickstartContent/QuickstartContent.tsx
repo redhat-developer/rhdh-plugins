@@ -62,7 +62,10 @@ export const QuickstartContent = ({
           ))}
         </List>
       ) : (
-        <EmptyState title="Quickstart content not available." missing="data" />
+        <EmptyState
+          title="Quickstart content not available for your role."
+          missing="data"
+        />
       )}
     </Box>
   );
