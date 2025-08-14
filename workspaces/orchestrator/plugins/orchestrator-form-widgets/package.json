@@ -51,7 +51,7 @@
     "export-dynamic": "janus-cli package export-dynamic-plugin --in-place"
   },
   "dependencies": {
-    "@backstage/core-components": "^0.17.2",
+    "@backstage/core-components": "0.17.2",
     "@backstage/core-plugin-api": "^1.10.7",
     "@backstage/theme": "^0.6.6",
     "@backstage/types": "^1.2.1",
