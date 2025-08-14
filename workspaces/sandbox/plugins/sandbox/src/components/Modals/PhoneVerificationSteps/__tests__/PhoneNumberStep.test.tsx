@@ -164,4 +164,44 @@ describe('PhoneNumberStep', () => {
     const inputValue = inputElement?.value || '';
     expect(inputValue).toBe('+1 737 307 2270');
   });
+
+  describe('EDDL data attributes', () => {
+    test('should have correct EDDL data attributes on Send Code button', () => {
+      renderComponent(phoneNumber);
+
+      const sendCodeButton = screen.getByRole('button', { name: /Send code/i });
+
+      expect(sendCodeButton).toHaveAttribute(
+        'data-analytics-category',
+        'Developer Sandbox|Verification',
+      );
+      expect(sendCodeButton).toHaveAttribute(
+        'data-analytics-text',
+        'Send Code',
+      );
+      expect(sendCodeButton).toHaveAttribute(
+        'data-analytics-region',
+        'sandbox-verification',
+      );
+    });
+
+    test('should have correct EDDL data attributes on Cancel button', () => {
+      renderComponent(phoneNumber);
+
+      const cancelButton = screen.getByRole('button', { name: /Cancel/i });
+
+      expect(cancelButton).toHaveAttribute(
+        'data-analytics-category',
+        'Developer Sandbox|Verification',
+      );
+      expect(cancelButton).toHaveAttribute(
+        'data-analytics-text',
+        'Cancel Verification',
+      );
+      expect(cancelButton).toHaveAttribute(
+        'data-analytics-region',
+        'sandbox-verification',
+      );
+    });
+  });
 });

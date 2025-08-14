@@ -21,6 +21,7 @@ import { useTheme } from '@mui/material/styles';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import { Header, Link } from '@backstage/core-components';
+import { getEddlDataAttributes } from '../utils/eddl-utils';
 
 interface SandboxHeaderProps {
   pageTitle: string;
@@ -45,6 +46,11 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
   }, []);
 
   const theme = useTheme();
+  const contactSalesEddlAttributes = getEddlDataAttributes(
+    'Contact Red Hat Sales',
+    'Support',
+  );
+
   return (
     <Header
       pageTitleOverride={pageTitle}
@@ -90,6 +96,7 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
           to="https://www.redhat.com/en/contact"
           underline="none"
           target="_blank"
+          {...contactSalesEddlAttributes}
         >
           <Button
             variant="outlined"

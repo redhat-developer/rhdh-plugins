@@ -158,7 +158,7 @@ describe('VerificationCodeStep', () => {
 
     expect(mockRefetchUserData).toHaveBeenCalled();
     expect(mockOpen).toHaveBeenCalledWith(
-      'https://sandboxcluster.test//k8s/cluster/projects/bob-2-dev',
+      `https://sandboxcluster.test//k8s/cluster/projects/bob-2-dev`,
       '_blank',
     ); // check it opens the url after signup
     mockOpen.mockRestore();
@@ -359,5 +359,79 @@ describe('VerificationCodeStep', () => {
 
     expect(mockRefetchUserData).toHaveBeenCalled();
     expect(mockHandleAAPInstance).not.toHaveBeenCalled(); // verify handleAAP is not called
+  });
+
+  describe('EDDL data attributes', () => {
+    beforeEach(() => {
+      const mockRefetchUserData = jest.fn();
+      const mockHandleAAPInstance = jest.fn();
+      const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
+        typeof useSandboxContext
+      >;
+      mockUseSandboxContext.mockReturnValue({
+        refetchUserData: mockRefetchUserData,
+        refetchAAP: mockRefetchAAP,
+        handleAAPInstance: mockHandleAAPInstance,
+      } as any);
+    });
+
+    test('should have correct EDDL data attributes on Start trial button', () => {
+      renderComponent();
+
+      const startTrialButton = screen.getByRole('button', {
+        name: /Start trial/i,
+      });
+
+      expect(startTrialButton).toHaveAttribute(
+        'data-analytics-category',
+        'Developer Sandbox|Verification',
+      );
+      expect(startTrialButton).toHaveAttribute(
+        'data-analytics-text',
+        'Start Trial',
+      );
+      expect(startTrialButton).toHaveAttribute(
+        'data-analytics-region',
+        'sandbox-verification',
+      );
+    });
+
+    test('should have correct EDDL data attributes on Cancel button', () => {
+      renderComponent();
+
+      const cancelButton = screen.getByRole('button', { name: /Cancel/i });
+
+      expect(cancelButton).toHaveAttribute(
+        'data-analytics-category',
+        'Developer Sandbox|Verification',
+      );
+      expect(cancelButton).toHaveAttribute(
+        'data-analytics-text',
+        'Cancel Verification',
+      );
+      expect(cancelButton).toHaveAttribute(
+        'data-analytics-region',
+        'sandbox-verification',
+      );
+    });
+
+    test('should have correct EDDL data attributes on Resend code link', () => {
+      renderComponent();
+
+      const resendCodeLink = screen.getByTestId('resend-code-link');
+
+      expect(resendCodeLink).toHaveAttribute(
+        'data-analytics-category',
+        'Developer Sandbox|Verification',
+      );
+      expect(resendCodeLink).toHaveAttribute(
+        'data-analytics-text',
+        'Resend Code',
+      );
+      expect(resendCodeLink).toHaveAttribute(
+        'data-analytics-region',
+        'sandbox-verification',
+      );
+    });
   });
 });

@@ -75,4 +75,20 @@ describe('SandboxHeader', () => {
     const subtitle = screen.getByText(/powered by/i).parentElement;
     expect(subtitle?.querySelector('svg')).toBeInTheDocument();
   });
+
+  test('has correct EDDL data attributes on Contact Red Hat Sales link', () => {
+    renderComponent();
+    const button = screen.getByText('Contact Red Hat Sales');
+    const link = button.closest('a');
+
+    expect(link).toHaveAttribute(
+      'data-analytics-category',
+      'Developer Sandbox|Support',
+    );
+    expect(link).toHaveAttribute(
+      'data-analytics-text',
+      'Contact Red Hat Sales',
+    );
+    expect(link).toHaveAttribute('data-analytics-region', 'sandbox-support');
+  });
 });
