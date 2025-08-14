@@ -3592,6 +3592,60 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/core-components@npm:0.17.2":
+  version: 0.17.2
+  resolution: "@backstage/core-components@npm:0.17.2"
+  dependencies:
+    "@backstage/config": ^1.3.2
+    "@backstage/core-plugin-api": ^1.10.7
+    "@backstage/errors": ^1.2.7
+    "@backstage/theme": ^0.6.6
+    "@backstage/version-bridge": ^1.0.11
+    "@dagrejs/dagre": ^1.1.4
+    "@date-io/core": ^1.3.13
+    "@material-table/core": ^3.1.0
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
+    "@material-ui/lab": 4.0.0-alpha.61
+    "@react-hookz/web": ^24.0.0
+    "@testing-library/react": ^16.0.0
+    "@types/react-sparklines": ^1.7.0
+    ansi-regex: ^6.0.1
+    classnames: ^2.2.6
+    d3-selection: ^3.0.0
+    d3-shape: ^3.0.0
+    d3-zoom: ^3.0.0
+    js-yaml: ^4.1.0
+    linkify-react: 4.1.3
+    linkifyjs: 4.1.3
+    lodash: ^4.17.21
+    pluralize: ^8.0.0
+    qs: ^6.9.4
+    rc-progress: 3.5.1
+    react-helmet: 6.1.0
+    react-hook-form: ^7.12.2
+    react-idle-timer: 5.7.2
+    react-markdown: ^8.0.0
+    react-sparklines: ^1.7.0
+    react-syntax-highlighter: ^15.4.5
+    react-use: ^17.3.2
+    react-virtualized-auto-sizer: ^1.0.11
+    react-window: ^1.8.6
+    remark-gfm: ^3.0.1
+    zen-observable: ^0.10.0
+    zod: ^3.22.4
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 26134ab7dba93895c16b52a9bdaac4a68044731ef8f1cfd2943208f356df0f0457889b7c65e2f9f4b79200963f50b747cc858872903e0d1ef264b559c9dd34a2
+  languageName: node
+  linkType: hard
+
 "@backstage/core-components@npm:^0.15.1":
   version: 0.15.1
   resolution: "@backstage/core-components@npm:0.15.1"
@@ -11438,7 +11492,7 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react@workspace:plugins/orchestrator-form-react"
   dependencies:
     "@backstage/cli": ^0.32.1
-    "@backstage/core-components": ^0.17.2
+    "@backstage/core-components": 0.17.2
     "@backstage/core-plugin-api": ^1.10.7
     "@backstage/types": ^1.2.1
     "@mui/material": ^5.17.1
@@ -11469,7 +11523,7 @@ __metadata:
   dependencies:
     "@backstage/cli": ^0.32.1
     "@backstage/core-app-api": ^1.17.0
-    "@backstage/core-components": ^0.17.2
+    "@backstage/core-components": 0.17.2
     "@backstage/core-plugin-api": ^1.10.7
     "@backstage/dev-utils": ^1.1.10
     "@backstage/test-utils": ^1.7.8
@@ -11505,7 +11559,7 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator@workspace:plugins/orchestrator"
   dependencies:
     "@backstage/cli": ^0.32.1
-    "@backstage/core-components": ^0.17.2
+    "@backstage/core-components": 0.17.2
     "@backstage/core-plugin-api": ^1.10.7
     "@backstage/dev-utils": ^1.1.10
     "@backstage/errors": ^1.2.7
@@ -15968,7 +16022,7 @@ __metadata:
     "@backstage/catalog-model": ^1.7.4
     "@backstage/cli": ^0.32.1
     "@backstage/core-app-api": ^1.17.0
-    "@backstage/core-components": ^0.17.2
+    "@backstage/core-components": 0.17.2
     "@backstage/core-plugin-api": ^1.10.7
     "@backstage/integration-react": ^1.2.7
     "@backstage/plugin-api-docs": ^0.12.7
@@ -19156,7 +19210,7 @@ __metadata:
   dependencies:
     "@backstage/cli": ^0.32.1
     "@backstage/core-app-api": ^1.17.0
-    "@backstage/core-components": ^0.17.2
+    "@backstage/core-components": 0.17.2
     "@backstage/core-plugin-api": ^1.10.7
     "@backstage/integration-react": ^1.2.7
     "@janus-idp/cli": 3.6.1
