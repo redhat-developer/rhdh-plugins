@@ -19,18 +19,19 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
+import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 
 import noScorecardSvg from '../../images/no-scorecard.svg';
 
 const ScorecardEmptyState: React.FC = () => {
   return (
-    <Box sx={{ minHeight: '500px', p: 4 }}>
+    <Box sx={{ p: 4 }}>
       <Grid container spacing={4} alignItems="center" justifyContent="center">
         <Grid item xs={12} md={6}>
           <Typography
             sx={theme => ({
-              fontSize: '2rem',
-              fontWeight: 600,
+              fontSize: '2.5rem',
+              fontWeight: 300,
               color: theme.palette.text.primary,
               mb: 2,
             })}
@@ -40,7 +41,7 @@ const ScorecardEmptyState: React.FC = () => {
 
           <Typography
             sx={theme => ({
-              fontSize: '1.125rem',
+              fontSize: '1rem',
               color: theme.palette.text.secondary,
               mb: 3,
               lineHeight: 1.5,
@@ -58,15 +59,16 @@ const ScorecardEmptyState: React.FC = () => {
                 px: 3,
                 py: 1.5,
                 fontSize: '1rem',
-                fontWeight: 500,
+                fontWeight: 400,
                 textTransform: 'none',
-                borderRadius: '4px',
+                borderRadius: '28px',
                 '&:hover': {
                   backgroundColor: '#1565c0',
                 },
               }}
             >
-              View documentation
+              View documentation{' '}
+              <OpenInNewOutlinedIcon sx={{ width: 16, height: 16, ml: 1 }} />
             </Button>
           </Link>
         </Grid>
