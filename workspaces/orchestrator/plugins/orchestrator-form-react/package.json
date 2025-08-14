@@ -33,7 +33,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage/core-components": "^0.17.2",
+    "@backstage/core-components": "0.17.2",
     "@backstage/core-plugin-api": "^1.10.7",
     "@backstage/types": "^1.2.1",
     "@mui/material": "^5.17.1",
