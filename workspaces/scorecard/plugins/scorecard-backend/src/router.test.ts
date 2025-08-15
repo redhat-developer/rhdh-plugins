@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  mockCredentials,
-  mockErrorHandler,
-  mockServices,
-} from '@backstage/backend-test-utils';
+import { mockErrorHandler, mockServices } from '@backstage/backend-test-utils';
 import express from 'express';
 import request from 'supertest';
 
 import { createRouter } from './router';
-import { TodoListService } from './services/TodoListService/types';
 import { MetricProvidersRegistry } from './services/metrics/MetricProvidersRegistry';
 import {
   MockNumberProvider,
@@ -33,31 +28,16 @@ import { CatalogMetricService } from './services/metrics/CatalogMetricService';
 import { CatalogClient } from '@backstage/catalog-client';
 import { ThresholdEvaluator } from './services/metrics/ThresholdEvaluator';
 
-const mockTodoItem = {
-  title: 'Do the thing',
-  id: '123',
-  createdBy: mockCredentials.user().principal.userEntityRef,
-  createdAt: new Date().toISOString(),
-};
-
 const mockCatalogClient = {
   getEntityByRef: jest.fn(),
 } as unknown as CatalogClient;
 
-// TEMPLATE NOTE:
-// Testing the router directly allows you to write a unit test that mocks the provided options.
 describe('createRouter', () => {
   let app: express.Express;
-  let todoListService: jest.Mocked<TodoListService>;
   let metricProvidersRegistry: MetricProvidersRegistry;
   let catalogMetricService: CatalogMetricService;
 
   beforeEach(async () => {
-    todoListService = {
-      createTodo: jest.fn(),
-      listTodos: jest.fn(),
-      getTodo: jest.fn(),
-    };
     metricProvidersRegistry = new MetricProvidersRegistry();
     catalogMetricService = new CatalogMetricService({
       catalogApi: mockCatalogClient,
@@ -66,42 +46,12 @@ describe('createRouter', () => {
       auth: mockServices.auth(),
     });
     const router = await createRouter({
-      httpAuth: mockServices.httpAuth(),
-      todoListService,
       metricProvidersRegistry,
       catalogMetricService,
     });
     app = express();
     app.use(router);
     app.use(mockErrorHandler());
-  });
-
-  it('should create a TODO', async () => {
-    todoListService.createTodo.mockResolvedValue(mockTodoItem);
-
-    const response = await request(app).post('/todos').send({
-      title: 'Do the thing',
-    });
-
-    expect(response.status).toBe(201);
-    expect(response.body).toEqual(mockTodoItem);
-  });
-
-  it('should not allow unauthenticated requests to create a TODO', async () => {
-    todoListService.createTodo.mockResolvedValue(mockTodoItem);
-
-    // TEMPLATE NOTE:
-    // The HttpAuth mock service considers all requests to be authenticated as a
-    // mock user by default. In order to test other cases we need to explicitly
-    // pass an authorization header with mock credentials.
-    const response = await request(app)
-      .post('/todos')
-      .set('Authorization', mockCredentials.none.header())
-      .send({
-        title: 'Do the thing',
-      });
-
-    expect(response.status).toBe(401);
   });
 
   describe('GET /metrics', () => {
