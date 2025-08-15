@@ -19,7 +19,6 @@ import {
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
-import { createTodoListService } from './services/TodoListService';
 import {
   MetricProvider,
   scorecardMetricsExtensionPoint,
@@ -50,17 +49,11 @@ export const scorecardPlugin = createBackendPlugin({
     env.registerInit({
       deps: {
         discovery: coreServices.discovery,
-        logger: coreServices.logger,
-        httpAuth: coreServices.httpAuth,
         auth: coreServices.auth,
         httpRouter: coreServices.httpRouter,
         catalog: catalogServiceRef,
       },
-      async init({ discovery, logger, httpAuth, auth, httpRouter, catalog }) {
-        const todoListService = await createTodoListService({
-          logger,
-          catalog,
-        });
+      async init({ discovery, auth, httpRouter }) {
         const catalogClient = new CatalogClient({ discoveryApi: discovery });
         const catalogMetricService = new CatalogMetricService({
           catalogApi: catalogClient,
@@ -71,8 +64,6 @@ export const scorecardPlugin = createBackendPlugin({
 
         httpRouter.use(
           await createRouter({
-            httpAuth,
-            todoListService,
             metricProvidersRegistry,
             catalogMetricService,
           }),
