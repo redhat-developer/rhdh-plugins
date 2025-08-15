@@ -20,6 +20,8 @@ import {
   IdentityApi,
 } from '@backstage/core-plugin-api';
 
+import { EventSourcePolyfill } from 'event-source-polyfill';
+
 import {
   AddedRepositoryColumnNameEnum,
   APITypes,
@@ -28,6 +30,7 @@ import {
   ImportJobs,
   ImportJobStatus,
   OrgAndRepoResponse,
+  Repository,
   SortingOrderEnum,
 } from '../types';
 import { getApi } from '../utils/repository-utils';
@@ -59,6 +62,14 @@ export type BulkImportAPI = {
     repo: string,
     defaultBranch: string,
   ) => Promise<ImportJobStatus | Response>;
+  executeTemplate: (
+    repositories: string[],
+    templateParameters: Record<string, any>,
+  ) => Promise<any>;
+  findAllRepositoriesFromDb: () => Promise<Repository[]>;
+  deleteRepository: (url: string) => Promise<any>;
+  findRepositoryFromDbByName: (name: string) => Promise<Repository>;
+  getScaffolderTaskEvents: (taskId: string) => Promise<EventSource>;
 };
 
 export type Options = {
@@ -192,5 +203,101 @@ export class BulkImportBackendClient implements BulkImportAPI {
       return jsonResponse;
     }
     return jsonResponse.json();
+  }
+  async executeTemplate(
+    repositories: string[],
+    templateParameters: Record<string, any>,
+  ) {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}/api/bulk-import/execute-template`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+        body: JSON.stringify({ repositories, templateParameters }),
+      },
+    );
+    if (!jsonResponse.ok) {
+      const errorResponse = await jsonResponse.json();
+      throw errorResponse;
+    }
+    return jsonResponse.status === 204 ? null : await jsonResponse.json();
+  }
+
+  async findAllRepositoriesFromDb() {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}/api/bulk-import/repositories/from-db`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+      },
+    );
+    if (!jsonResponse.ok) {
+      const errorResponse = await jsonResponse.json();
+      throw errorResponse;
+    }
+    return jsonResponse.status === 204 ? null : await jsonResponse.json();
+  }
+
+  async deleteRepository(url: string) {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}/api/bulk-import/repositories/db/${encodeURIComponent(
+        url,
+      )}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+      },
+    );
+    if (!jsonResponse.ok) {
+      const errorResponse = await jsonResponse.json();
+      throw errorResponse;
+    }
+    return jsonResponse.status === 204 ? null : await jsonResponse.json();
+  }
+
+  async findRepositoryFromDbByName(name: string): Promise<Repository> {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}/api/bulk-import/repositories/db?repositoryName=${name}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+      },
+    );
+    if (!jsonResponse.ok) {
+      const errorResponse = await jsonResponse.json();
+      throw errorResponse;
+    }
+    return jsonResponse.json();
+  }
+
+  async getScaffolderTaskEvents(taskId: string) {
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const { token } = await this.identityApi.getCredentials();
+    return new EventSourcePolyfill(
+      `${backendUrl}/api/scaffolder/v2/tasks/${taskId}/eventstream`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
   }
 }

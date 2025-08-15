@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
+// To create new migration file use: "yarn knex migrate:make migrations",
+// open generated new migration file and edit it to complete code.
+// To run new migration use: "yarn knex migrate:make some_file_name"
 
-export const rootRouteRef = createRouteRef({
-  id: 'bulk-import',
-});
-
-export const addRepositoriesRouteRef = createSubRouteRef({
-  id: 'bulk-import-repositories-add',
-  parent: rootRouteRef,
-  path: '/add',
-});
-
-export const tasksRouteRef = createSubRouteRef({
-  id: 'bulk-import-tasks',
-  parent: rootRouteRef,
-  path: '/tasks/:repoUrl',
-});
+module.exports = {
+  client: 'better-sqlite3',
+  connection: ':memory:',
+  useNullAsDefault: true,
+  migrations: {
+    directory: './migrations',
+  },
+};

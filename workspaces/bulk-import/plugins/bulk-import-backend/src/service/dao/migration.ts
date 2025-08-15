@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
+import { resolvePackagePath } from '@backstage/backend-plugin-api';
 
-export const rootRouteRef = createRouteRef({
-  id: 'bulk-import',
-});
+import { Knex } from 'knex';
 
-export const addRepositoriesRouteRef = createSubRouteRef({
-  id: 'bulk-import-repositories-add',
-  parent: rootRouteRef,
-  path: '/add',
-});
-
-export const tasksRouteRef = createSubRouteRef({
-  id: 'bulk-import-tasks',
-  parent: rootRouteRef,
-  path: '/tasks/:repoUrl',
-});
+export async function migrate(knex: Knex) {
+  const migrationsDir = resolvePackagePath(
+    '@red-hat-developer-hub/backstage-plugin-bulk-import-backend',
+    'migrations',
+  );
+  await knex.migrate.latest({
+    directory: migrationsDir,
+  });
+}

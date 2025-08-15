@@ -20,6 +20,8 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 
+import { migrate } from './service/dao/migration';
+import { RepositoryDao } from './service/dao/repository-dao';
 import { createRouter } from './service/router';
 
 /**
@@ -41,6 +43,7 @@ export const bulkImportPlugin = createBackendPlugin({
         auth: coreServices.auth,
         catalogApi: catalogServiceRef,
         auditor: coreServices.auditor,
+        database: coreServices.database,
       },
       async init({
         config,
@@ -53,7 +56,13 @@ export const bulkImportPlugin = createBackendPlugin({
         auth,
         catalogApi,
         auditor,
+        database,
       }) {
+        const knex = await database.getClient();
+
+        migrate(knex);
+        const dao = new RepositoryDao(knex, logger);
+
         const router = await createRouter({
           config,
           cache,
@@ -64,6 +73,7 @@ export const bulkImportPlugin = createBackendPlugin({
           auth,
           catalogApi,
           auditor,
+          dao,
         });
         http.use(router);
         http.addAuthPolicy({
