@@ -86,8 +86,6 @@ export async function findRepositoriesByOrganization(
     .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
     .then(response => formatResponse(deps, response, checkStatus));
 
-  console.log(glReposByOrg);
-
   return glReposByOrg;
 }
 

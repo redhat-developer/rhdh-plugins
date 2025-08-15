@@ -16,4 +16,4 @@
 
 export * from './types';
 export * from './GithubAppManager';
-export * from './gitApiService';
+export * from './githubApiService';

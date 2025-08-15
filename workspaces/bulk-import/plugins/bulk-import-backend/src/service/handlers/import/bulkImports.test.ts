@@ -870,7 +870,7 @@ describe('bulkimports.ts unit tests', () => {
       ).toHaveBeenNthCalledWith(1, 'location-id-11');
     });
 
-    it('should try to delete both PR and branch is there is an open import PR', async () => {
+    it('should try to delete both PR and branch if there is an open import PR', async () => {
       const prNum = 123456789;
       jest.spyOn(mockGithubApiService, 'findImportOpenPr').mockResolvedValue({
         prNum,
