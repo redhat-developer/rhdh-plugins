@@ -17,8 +17,8 @@ import { InputError } from '@backstage/errors';
 import { z } from 'zod';
 import express from 'express';
 import Router from 'express-promise-router';
-import type { CatalogMetricService } from './services/metrics/CatalogMetricService';
-import type { MetricProvidersRegistry } from './services/metrics/MetricProvidersRegistry';
+import type { CatalogMetricService } from './CatalogMetricService';
+import type { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 
 export async function createRouter({
   metricProvidersRegistry,
