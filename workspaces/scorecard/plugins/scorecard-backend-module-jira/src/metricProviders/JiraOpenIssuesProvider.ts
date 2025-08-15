@@ -14,10 +14,27 @@
  * limitations under the License.
  */
 
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { Config } from '@backstage/config';
+import type { Entity } from '@backstage/catalog-model';
+import {
+  Metric,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
+  private thresholds: ThresholdConfig;
+
+  private constructor(thresholds?: ThresholdConfig) {
+    this.thresholds = thresholds ?? {
+      rules: {
+        error: '>40',
+        warning: '>20',
+        success: '<=20',
+      },
+    };
+  }
+
   getProviderDatasourceId(): string {
     return 'jira';
   }
@@ -35,7 +52,21 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     };
   }
 
-  async calculateMetric(): Promise<number> {
-    return 42;
+  getMetricThresholds(): ThresholdConfig {
+    return this.thresholds;
+  }
+
+  static fromConfig(config: Config): JiraOpenIssuesProvider {
+    const configPath = 'scorecard.plugins.jira.open_issues.thresholds';
+    const configuredThresholds = config.getOptional(configPath) as
+      | ThresholdConfig
+      | undefined;
+
+    return new JiraOpenIssuesProvider(configuredThresholds);
+  }
+
+  async calculateMetric(entity: Entity): Promise<number> {
+    const entityName = entity.metadata.name;
+    return entityName.length * 2;
   }
 }

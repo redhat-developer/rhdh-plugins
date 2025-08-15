@@ -13,22 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { CustomErrorBase } from '@backstage/errors';
 
-import type { Entity } from '@backstage/catalog-model';
-import {
-  Metric,
-  MetricType,
-  MetricValue,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-/**
- * @public
- */
-export interface MetricProvider<T extends MetricType = MetricType> {
-  getProviderDatasourceId(): string;
-  getProviderId(): string;
-  getMetric(): Metric<T>;
-  getMetricThresholds(): ThresholdConfig;
-  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
+export class ThresholdConfigFormatError extends CustomErrorBase {
+  name = 'ThresholdConfigFormatError' as const;
 }

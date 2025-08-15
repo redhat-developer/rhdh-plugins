@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@backstage/catalog-model';
-import {
-  Metric,
-  MetricType,
-  MetricValue,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-/**
- * @public
- */
-export interface MetricProvider<T extends MetricType = MetricType> {
-  getProviderDatasourceId(): string;
-  getProviderId(): string;
-  getMetric(): Metric<T>;
-  getMetricThresholds(): ThresholdConfig;
-  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
+export interface Config {
+  /** Configuration for scorecard plugin */
+  scorecard?: {
+    /** Configuration for scorecard plugins/datasources */
+    plugins?: {
+      /** Github datasource configuration */
+      github?: {
+        open_prs?: {
+          thresholds?: {
+            rules?: {
+              /** Custom threshold names with their conditions */
+              [name: string]: string;
+            };
+          };
+        };
+      };
+    };
+  };
 }

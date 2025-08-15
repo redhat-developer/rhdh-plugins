@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@backstage/catalog-model';
 import {
   Metric,
   MetricType,
   MetricValue,
+  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
@@ -31,6 +33,8 @@ abstract class MockMetricProvider<T extends MetricType>
     protected title: string,
     protected value: MetricValue<T>,
   ) {}
+
+  abstract getMetricThresholds(): ThresholdConfig;
 
   getProviderDatasourceId(): string {
     return this.datasourceId;
@@ -49,7 +53,7 @@ abstract class MockMetricProvider<T extends MetricType>
     return metric;
   }
 
-  async calculateMetric(): Promise<MetricValue<T>> {
+  async calculateMetric(_entity: Entity): Promise<MetricValue<T>> {
     return this.value;
   }
 }
@@ -63,6 +67,15 @@ export class MockNumberProvider extends MockMetricProvider<'number'> {
   ) {
     super('number', providerId, datasourceId, title, value);
   }
+  getMetricThresholds(): ThresholdConfig {
+    return {
+      rules: {
+        error: '>40',
+        warning: '>20',
+        success: '<=20',
+      },
+    };
+  }
 }
 
 export class MockStringProvider extends MockMetricProvider<'string'> {
@@ -74,4 +87,23 @@ export class MockStringProvider extends MockMetricProvider<'string'> {
   ) {
     super('string', providerId, datasourceId, title, value);
   }
+  getMetricThresholds(): ThresholdConfig {
+    return {
+      rules: {
+        ok: '==content',
+        nok: '!=content',
+      },
+    };
+  }
 }
+
+export const githubNumberProvider = new MockNumberProvider(
+  'github.number-metric',
+  'github',
+  'Github Number Metric',
+);
+
+export const jiraStringProvider = new MockStringProvider(
+  'jira.string-metric',
+  'jira',
+);
