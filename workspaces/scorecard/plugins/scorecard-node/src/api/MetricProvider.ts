@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@backstage/catalog-model';
 import {
   Metric,
   MetricType,
@@ -29,5 +30,5 @@ export interface MetricProvider<T extends MetricType = MetricType> {
   getProviderId(): string;
   getMetric(): Metric<T>;
   getMetricThresholds(): ThresholdConfig;
-  calculateMetric(): Promise<MetricValue<T>>;
+  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
 }

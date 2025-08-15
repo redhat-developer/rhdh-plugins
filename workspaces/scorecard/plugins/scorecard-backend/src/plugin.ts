@@ -25,7 +25,9 @@ import {
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { MetricProvidersRegistry } from './services/metrics/MetricProvidersRegistry';
-import { MetricService } from './services/metrics/MetricService';
+import { CatalogMetricService } from './services/metrics/CatalogMetricService';
+import { CatalogClient } from '@backstage/catalog-client';
+import { ThresholdEvaluator } from './services/metrics/ThresholdEvaluator';
 
 /**
  * scorecardPlugin backend plugin
@@ -36,7 +38,6 @@ export const scorecardPlugin = createBackendPlugin({
   pluginId: 'scorecard',
   register(env) {
     const metricProvidersRegistry = new MetricProvidersRegistry();
-    const metricService = new MetricService(metricProvidersRegistry);
 
     env.registerExtensionPoint(scorecardMetricsExtensionPoint, {
       addMetricProvider(...newMetricProviders: MetricProvider[]) {
@@ -48,22 +49,32 @@ export const scorecardPlugin = createBackendPlugin({
 
     env.registerInit({
       deps: {
+        discovery: coreServices.discovery,
         logger: coreServices.logger,
         httpAuth: coreServices.httpAuth,
+        auth: coreServices.auth,
         httpRouter: coreServices.httpRouter,
         catalog: catalogServiceRef,
       },
-      async init({ logger, httpAuth, httpRouter, catalog }) {
+      async init({ discovery, logger, httpAuth, auth, httpRouter, catalog }) {
         const todoListService = await createTodoListService({
           logger,
           catalog,
+        });
+        const catalogClient = new CatalogClient({ discoveryApi: discovery });
+        const catalogMetricService = new CatalogMetricService({
+          catalogApi: catalogClient,
+          registry: metricProvidersRegistry,
+          thresholdEvaluator: new ThresholdEvaluator(),
+          auth,
         });
 
         httpRouter.use(
           await createRouter({
             httpAuth,
             todoListService,
-            metricService,
+            metricProvidersRegistry,
+            catalogMetricService,
           }),
         );
       },
