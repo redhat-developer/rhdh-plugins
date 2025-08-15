@@ -7928,6 +7928,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@inquirer/external-editor@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "@inquirer/external-editor@npm:1.0.1"
+  dependencies:
+    chardet: ^2.1.0
+    iconv-lite: ^0.6.3
+  peerDependencies:
+    "@types/node": ">=18"
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: 6f1753d31db52c7088bad5209c7fccb23c3803d248be0e9f3f49ec5972628782c690086defc19fe8d740b2c45f67a746884ef41df9299a526f297813babd8281
+  languageName: node
+  linkType: hard
+
 "@internal/orchestrator@workspace:.":
   version: 0.0.0-use.local
   resolution: "@internal/orchestrator@workspace:."
@@ -9824,9 +9839,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/common@npm:11.1.5":
-  version: 11.1.5
-  resolution: "@nestjs/common@npm:11.1.5"
+"@nestjs/common@npm:11.1.6":
+  version: 11.1.6
+  resolution: "@nestjs/common@npm:11.1.6"
   dependencies:
     file-type: 21.0.0
     iterare: 1.2.1
@@ -9843,13 +9858,13 @@ __metadata:
       optional: true
     class-validator:
       optional: true
-  checksum: 20dbf3a5b1b01f71645c1a5c15ef0584b99cf45eb90ce4abdee780a2f1f480a119b3e0b08bc4623b9439328b112b5c5684d063550003bf2b6c3d0853f853aa1e
+  checksum: b615786df5ab33728757cb3ff5a932a5168d1a0ebd5c91fd13cf98db66d516cb10591a8d6a72e5cf7b7d8d2eeb04553522acbcb4fca10e441c7665cde949d004
   languageName: node
   linkType: hard
 
-"@nestjs/core@npm:11.1.5":
-  version: 11.1.5
-  resolution: "@nestjs/core@npm:11.1.5"
+"@nestjs/core@npm:11.1.6":
+  version: 11.1.6
+  resolution: "@nestjs/core@npm:11.1.6"
   dependencies:
     "@nuxt/opencollective": 0.4.1
     fast-safe-stringify: 2.1.1
@@ -9871,7 +9886,7 @@ __metadata:
       optional: true
     "@nestjs/websockets":
       optional: true
-  checksum: be23c7cd27b1d1e30def92ebb8e0e4279bba207c8f6910500828a9c6ec20f4b32ca7051007de2b8f30814619fb06175379ae0e1f1ee89ab6d92a4caf13bb36f2
+  checksum: cff49f030634103e0d63037fe5c28496584f41a96fa84ad42ef88b091705f37db8054caf862f1bce6163d029eb4a7c591971e2f50ca2664501bd26141a8e6b39
   languageName: node
   linkType: hard
 
@@ -10623,13 +10638,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openapitools/openapi-generator-cli@npm:2.21.4, @openapitools/openapi-generator-cli@npm:^2.7.0":
-  version: 2.21.4
-  resolution: "@openapitools/openapi-generator-cli@npm:2.21.4"
+"@openapitools/openapi-generator-cli@npm:2.22.0, @openapitools/openapi-generator-cli@npm:^2.7.0":
+  version: 2.22.0
+  resolution: "@openapitools/openapi-generator-cli@npm:2.22.0"
   dependencies:
     "@nestjs/axios": 4.0.1
-    "@nestjs/common": 11.1.5
-    "@nestjs/core": 11.1.5
+    "@nestjs/common": 11.1.6
+    "@nestjs/core": 11.1.6
     "@nuxtjs/opencollective": 0.3.2
     axios: 1.11.0
     chalk: 4.1.2
@@ -10637,17 +10652,16 @@ __metadata:
     compare-versions: 4.1.4
     concurrently: 9.2.0
     console.table: 0.10.0
-    fs-extra: 11.3.0
+    fs-extra: 11.3.1
     glob: 11.0.3
-    inquirer: 8.2.6
-    lodash: 4.17.21
+    inquirer: 8.2.7
     proxy-agent: 6.5.0
     reflect-metadata: 0.2.2
     rxjs: 7.8.2
     tslib: 2.8.1
   bin:
     openapi-generator-cli: main.js
-  checksum: 5936bbf06424751296f285127d3bf3e16fe1b7b0c9b8cc2a77078ca4b8cde3069d48c1dd93d42856efc03498c2096ebfe250af847bc3b24224b380e7a64d6b70
+  checksum: ef963ebe7cc91b890f703d25e250da331387f9a3d3fa242f20d3099ca3dceeaf74e5142851491cc819c706fa9ee5f0ea08c433a100e2cd0a9d0abf5d1335a7d8
   languageName: node
   linkType: hard
 
@@ -11456,7 +11470,7 @@ __metadata:
     "@backstage/cli": ^0.32.1
     "@backstage/plugin-permission-common": ^0.9.0
     "@backstage/types": ^1.2.1
-    "@openapitools/openapi-generator-cli": 2.21.4
+    "@openapitools/openapi-generator-cli": 2.22.0
     "@severlessworkflow/sdk-typescript": ^3.0.3
     "@types/json-schema": 7.0.15
     axios: ^1.11.0
@@ -17737,6 +17751,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chardet@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "chardet@npm:2.1.0"
+  checksum: 491f8ea54ed3693598c98cb8785531b94b71e59b04ef8dd2b6fea4947f785297fb5c2ae1109adca6fdd453a8a7181cfc4a85c07dbbe96a156d0908f4188a6b9a
+  languageName: node
+  linkType: hard
+
 "check-types@npm:^11.2.3":
   version: 11.2.3
   resolution: "check-types@npm:11.2.3"
@@ -21669,7 +21690,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"external-editor@npm:^3.0.3, external-editor@npm:^3.1.0":
+"external-editor@npm:^3.1.0":
   version: 3.1.0
   resolution: "external-editor@npm:3.1.0"
   dependencies:
@@ -22440,14 +22461,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:11.3.0, fs-extra@npm:^11.0.0, fs-extra@npm:^11.2.0":
-  version: 11.3.0
-  resolution: "fs-extra@npm:11.3.0"
+"fs-extra@npm:11.3.1, fs-extra@npm:^11.0.0, fs-extra@npm:^11.2.0":
+  version: 11.3.1
+  resolution: "fs-extra@npm:11.3.1"
   dependencies:
     graceful-fs: ^4.2.0
     jsonfile: ^6.0.1
     universalify: ^2.0.0
-  checksum: f983c706e0c22b0c0747a8e9c76aed6f391ba2d76734cf2757cd84da13417b402ed68fe25bace65228856c61d36d3b41da198f1ffbf33d0b34283a2f7a62c6e9
+  checksum: 12968b8b426f298c9ddfa9c2163e828a3bdf295b222895073faaec9798286102d771f54374498b934520cab6ef900ee3d643ea53b98a82703d5c546e16975538
   languageName: node
   linkType: hard
 
@@ -24037,15 +24058,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inquirer@npm:8.2.6, inquirer@npm:^8.2.0":
-  version: 8.2.6
-  resolution: "inquirer@npm:8.2.6"
+"inquirer@npm:8.2.7, inquirer@npm:^8.2.0":
+  version: 8.2.7
+  resolution: "inquirer@npm:8.2.7"
   dependencies:
+    "@inquirer/external-editor": ^1.0.0
     ansi-escapes: ^4.2.1
     chalk: ^4.1.1
     cli-cursor: ^3.1.0
     cli-width: ^3.0.0
-    external-editor: ^3.0.3
     figures: ^3.0.0
     lodash: ^4.17.21
     mute-stream: 0.0.8
@@ -24056,7 +24077,7 @@ __metadata:
     strip-ansi: ^6.0.0
     through: ^2.3.6
     wrap-ansi: ^6.0.1
-  checksum: 387ffb0a513559cc7414eb42c57556a60e302f820d6960e89d376d092e257a919961cd485a1b4de693dbb5c0de8bc58320bfd6247dfd827a873aa82a4215a240
+  checksum: b7e39a04da31207826f675e2ff491bd35bb28efbe336e8fb49641d8353d4a312943514452fb0a23702e64f70c7e44188586880c902d67541aae579cd6564c3fb
   languageName: node
   linkType: hard
 
@@ -26787,7 +26808,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.21, lodash@npm:^4.15.0, lodash@npm:^4.16.4, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:~4.17.15, lodash@npm:~4.17.21":
+"lodash@npm:^4.15.0, lodash@npm:^4.16.4, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4, lodash@npm:~4.17.15, lodash@npm:~4.17.21":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
