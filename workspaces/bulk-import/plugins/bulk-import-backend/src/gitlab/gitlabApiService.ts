@@ -129,7 +129,7 @@ export class GitlabApiService {
         { credential, owner: gitUrl.owner },
         glConfig.apiBaseUrl,
       );
-      const resp = glKit.Projects.show(`${gitUrl.owner}/${gitUrl.name}`);
+      const resp = await glKit.Projects.show(`${gitUrl.owner}/${gitUrl.name}`);
       // const resp = await octokit.rest.repos.get({
       //   owner: gitUrl.owner,
       //   repo: gitUrl.name,
@@ -355,27 +355,24 @@ export class GitlabApiService {
           credential: ExtendedGitlabCredentials,
           ghConfig: GitLabIntegrationConfig,
         ) => {
-          if (isGithubAppCredential(credential)) {
-            const appOrgMap = await getAllAppOrgs(
-              this.githubCredentialsProvider,
-              ghConfig,
-              credential.accountLogin,
-            );
-            for (const [_, ghOrg] of appOrgMap) {
-              allAccessibleAppOrgs.add(ghOrg.name);
-            }
-          } else {
-            // find authenticated GitHub owner...
-            const username = (await octokit.rest.users.getAuthenticated())?.data
-              ?.login;
-            if (username) {
-              allAccessibleUsernames.add(username);
-            }
-            // ... along with orgs accessible from the token auth
-            (await octokit.paginate(octokit.rest.orgs.listForAuthenticatedUser))
-              ?.map(org => org.login)
-              ?.forEach(orgName => allAccessibleTokenOrgs.add(orgName));
+          // find authenticated gitlab owner...
+          // const username = (await octokit.rest.users.getAuthenticated())?.data
+          //   ?.login;
+          const username = (await gitlab.Users.showCurrentUser()).username;
+          if (username) {
+            allAccessibleUsernames.add(username);
           }
+          // ... along with orgs accessible from the token auth
+          (
+            await gitlab.Groups.all({
+              all_available: false,
+            })
+          )
+            ?.map(org => org.path)
+            ?.forEach(orgName => allAccessibleTokenOrgs.add(orgName));
+          // (await octokit.paginate(octokit.rest.orgs.listForAuthenticatedUser))
+          //   ?.map(org => org.login)
+          //   ?.forEach(orgName => allAccessibleTokenOrgs.add(orgName));
           return {};
         },
       },
@@ -684,47 +681,47 @@ export class GitlabApiService {
     };
   }
 
-  //   async hasFileInRepo(input: {
-  //     repoUrl: string;
-  //     defaultBranch?: string;
-  //     fileName: string;
-  //   }) {
-  //     const fileExists = await executeFunctionOnFirstSuccessfulIntegration(
-  //       {
-  //         logger: this.logger,
-  //         cache: this.cache,
-  //         config: this.config,
-  //         githubCredentialsProvider: this.githubCredentialsProvider,
-  //       },
-  //       this.integrations,
-  //       {
-  //         repoUrl: input.repoUrl,
-  //         fn: async (validatedRepo: ValidatedRepo, octo: Octokit) => {
-  //           const { owner, repo } = validatedRepo;
-  //           const exists = await fileExistsInDefaultBranch(
-  //             this.logger,
-  //             octo,
-  //             owner,
-  //             repo,
-  //             input.fileName,
-  //             input.defaultBranch,
-  //           );
-  //           if (exists === undefined) {
-  //             return { successful: false };
-  //           }
-  //           return { successful: true, result: exists };
-  //         },
-  //       },
-  //     );
+  async hasFileInRepo(input: {
+    repoUrl: string;
+    defaultBranch?: string;
+    fileName: string;
+  }) {
+    const fileExists = await executeFunctionOnFirstSuccessfulIntegration(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        config: this.config,
+        gitlabCredentialsProvider: this.gitlabCredentialsProvider,
+      },
+      this.integrations,
+      {
+        repoUrl: input.repoUrl,
+        fn: async (validatedRepo: ValidatedRepo, gitlab: any) => {
+          const { owner, repo } = validatedRepo;
+          const exists = await fileExistsInDefaultBranch(
+            this.logger,
+            gitlab,
+            owner,
+            repo,
+            input.fileName,
+            input.defaultBranch,
+          );
+          if (exists === undefined) {
+            return { successful: false };
+          }
+          return { successful: true, result: exists };
+        },
+      },
+    );
 
-  //     if (fileExists === undefined) {
-  //       throw new Error(
-  //         `Could not determine if repo at ${input.repoUrl} already has a file named ${input.fileName} in its default branch (${input.defaultBranch})`,
-  //       );
-  //     }
+    if (fileExists === undefined) {
+      throw new Error(
+        `Could not determine if repo at ${input.repoUrl} already has a file named ${input.fileName} in its default branch (${input.defaultBranch})`,
+      );
+    }
 
-  //     return fileExists;
-  //   }
+    return fileExists;
+  }
 
   async closeImportPR(
     logger: LoggerService,
@@ -815,29 +812,36 @@ export class GitlabApiService {
     );
   }
 
-  //   async isRepoEmpty(input: { repoUrl: string }) {
-  //     return await executeFunctionOnFirstSuccessfulIntegration(
-  //       {
-  //         logger: this.logger,
-  //         cache: this.cache,
-  //         config: this.config,
-  //         githubCredentialsProvider: this.githubCredentialsProvider,
-  //       },
-  //       this.integrations,
-  //       {
-  //         repoUrl: input.repoUrl,
-  //         fn: async (validatedRepo: ValidatedRepo, octo: Octokit) => {
-  //           const { owner, repo } = validatedRepo;
-  //           const resp = await octo.rest.repos.listContributors({
-  //             owner: owner,
-  //             repo: repo,
-  //             page: 1,
-  //             per_page: 1,
-  //           });
-  //           const status = resp.status as 200 | 204;
-  //           return { successful: true, result: status === 204 };
-  //         },
-  //       },
-  //     );
-  //   }
+  async isRepoEmpty(input: { repoUrl: string }) {
+    return await executeFunctionOnFirstSuccessfulIntegration(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        config: this.config,
+        gitlabCredentialsProvider: this.gitlabCredentialsProvider,
+      },
+      this.integrations,
+      {
+        repoUrl: input.repoUrl,
+        fn: async (validatedRepo: ValidatedRepo, gitlab: any) => {
+          const { owner, repo } = validatedRepo;
+          // const resp = await octo.rest.repos.listContributors({
+          //   owner: owner,
+          //   repo: repo,
+          //   page: 1,
+          //   per_page: 1,
+          // });
+          const resp = await gitlab.Repositories.allContributors(
+            `${owner}/${repo}`,
+            {
+              showExpanded: true,
+              perPage: 1,
+              page: 1,
+            },
+          );
+          return { successful: true, result: resp?.data.length < 1 };
+        },
+      },
+    );
+  }
 }

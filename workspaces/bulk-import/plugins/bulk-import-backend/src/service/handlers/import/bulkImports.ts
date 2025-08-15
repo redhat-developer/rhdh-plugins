@@ -87,6 +87,7 @@ export async function findAllImports(
     githubApiService: GithubApiService;
     gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
+    approvalTool: String;
   },
   requestHeaders?: {
     apiVersion?: Paths.FindAllImports.Parameters.ApiVersion;
@@ -556,6 +557,7 @@ async function dryRunCreateImportJobs(
     auth: AuthService;
     catalogApi: CatalogApi;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
   },
@@ -591,6 +593,7 @@ async function performDryRunChecks(
     catalogApi: CatalogApi;
     config: Config;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   req: Components.Schemas.ImportRequest,
@@ -613,7 +616,10 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    const empty = await deps.githubApiService.isRepoEmpty({
+    // const empty = await deps.githubApiService.isRepoEmpty({
+    //   repoUrl: req.repository.url,
+    // });
+    const empty = await deps.gitlabApiService.isRepoEmpty({
       repoUrl: req.repository.url,
     });
     if (empty) {
@@ -628,7 +634,12 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    const exists = await deps.githubApiService.hasFileInRepo({
+    // const exists = await deps.githubApiService.hasFileInRepo({
+    //   repoUrl: req.repository.url,
+    //   defaultBranch: req.repository.defaultBranch,
+    //   fileName: getCatalogFilename(deps.config),
+    // });
+    const exists = await deps.gitlabApiService.hasFileInRepo({
       repoUrl: req.repository.url,
       defaultBranch: req.repository.defaultBranch,
       fileName: getCatalogFilename(deps.config),
@@ -645,7 +656,12 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    const exists = await deps.githubApiService.hasFileInRepo({
+    // const exists = await deps.githubApiService.hasFileInRepo({
+    //   repoUrl: req.repository.url,
+    //   defaultBranch: req.repository.defaultBranch,
+    //   fileName: '.github/CODEOWNERS',
+    // });
+    const exists = await deps.gitlabApiService.hasFileInRepo({
       repoUrl: req.repository.url,
       defaultBranch: req.repository.defaultBranch,
       fileName: '.github/CODEOWNERS',

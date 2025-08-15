@@ -282,6 +282,7 @@ export async function createRouter(
           githubApiService,
           gitlabApiService,
           catalogHttpClient,
+          approvalTool: 'gitlab',
         },
         {
           apiVersion,
