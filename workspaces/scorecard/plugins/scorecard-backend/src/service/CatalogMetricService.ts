@@ -38,7 +38,6 @@ export type CatalogMetricServiceOptions = {
 };
 
 /**
- * Service for catalog-aware metric operations.
  * @public
  */
 export class CatalogMetricService {
@@ -67,7 +66,7 @@ export class CatalogMetricService {
   /**
    * Parse threshold overrides from entity annotations.
    * Looks for annotations in the format:
-   * scorecard.io/{providerId}.thresholds.rules.{thresholdName}: "{expression}"
+   *   scorecard.io/{providerId}.thresholds.rules.{thresholdName}: "{expression}"
    *
    * @param entity - The catalog entity
    * @param providerId - The metric provider ID (e.g., 'jira.open-issues')
