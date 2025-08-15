@@ -110,7 +110,7 @@ test('Rest of the panels have no data', async () => {
   const titles = [
     'Top templates',
     'Top catalog entities',
-    'Top techdocs',
+    'Top TechDocs',
     'Searches',
   ];
   for (const title of titles) {
@@ -172,9 +172,9 @@ test.describe(() => {
     await expect(entries).toContainText('example-website');
   });
 
-  test('Visited techdoc shows up in top techdocs', async () => {
+  test('Visited techdoc shows up in top TechDocs', async () => {
     const panel = page.locator('.v5-MuiPaper-root', {
-      hasText: 'Top 3 techdocs',
+      hasText: 'Top 3 TechDocs',
     });
     const entries = panel.locator('tbody').locator('tr');
     await expect(entries).toHaveCount(1);
