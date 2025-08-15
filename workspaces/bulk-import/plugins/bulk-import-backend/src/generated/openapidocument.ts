@@ -513,6 +513,9 @@ const OPENAPI = `
               "type": "string",
               "default": "main"
             }
+          },
+          {
+            "$ref": "#/components/parameters/approvalToolParam"
           }
         ],
         "responses": {
@@ -640,7 +643,8 @@ const OPENAPI = `
         "name": "approvalTool",
         "description": "the approvalTool to use",
         "schema": {
-          "type": "string"
+          "type": "string",
+          "default": "GIT"
         }
       }
     },

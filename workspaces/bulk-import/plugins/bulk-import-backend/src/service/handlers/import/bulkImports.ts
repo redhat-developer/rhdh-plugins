@@ -84,10 +84,9 @@ export async function findAllImports(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
-    gitlabApiService: GitlabApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
-    approvalTool: String;
+    approvalTool?: string;
   },
   requestHeaders?: {
     apiVersion?: Paths.FindAllImports.Parameters.ApiVersion;
@@ -122,8 +121,7 @@ export async function findAllImports(
   // It can be 'main' or something more convoluted like 'our/awesome/main'.
   const defaultBranchByRepoUrl = await resolveReposDefaultBranches(
     deps.logger,
-    deps.githubApiService,
-    deps.gitlabApiService,
+    deps.gitApiService,
     allLocations.keys(),
     catalogFilename,
   );
@@ -137,12 +135,8 @@ export async function findAllImports(
   );
 
   // Keep only repos that are accessible from the configured GH integrations
-  // const importsReachableFromGHIntegrations =
-  //   await deps.githubApiService.filterLocationsAccessibleFromIntegrations(
-  //     importCandidates,
-  //   );
   const importsReachableFromGHIntegrations =
-    await deps.gitlabApiService.filterLocationsAccessibleFromIntegrations(
+    await deps.gitApiService.filterLocationsAccessibleFromIntegrations(
       importCandidates,
     );
 
@@ -205,8 +199,7 @@ export async function findAllImports(
 
 async function resolveReposDefaultBranches(
   logger: LoggerService,
-  githubApiService: GithubApiService,
-  gitlabApiService: GitlabApiService,
+  gitApiService: GithubApiService | GitlabApiService,
   allLocations: Iterable<string>,
   catalogFilename: string,
 ) {
@@ -229,8 +222,7 @@ async function resolveReposDefaultBranches(
       continue;
     }
     defaultBranchByRepoUrlPromises.push(
-      // githubApiService
-      gitlabApiService
+      gitApiService
         .getRepositoryFromIntegrations(repoUrl)
         .then(resp => {
           return { repoUrl, defaultBranch: resp?.repository?.default_branch };
@@ -295,8 +287,7 @@ function findImportCandidates(
 }
 
 async function createPR(
-  githubApiService: GithubApiService,
-  gitlabApiService: GitlabApiService,
+  gitApiService: GithubApiService | GitlabApiService,
   logger: LoggerService,
   req: Components.Schemas.ImportRequest,
   gitUrl: gitUrlParse.GitUrl,
@@ -307,7 +298,7 @@ async function createPR(
     config.getOptionalString('app.title') ?? 'Red Hat Developer Hub';
   const appBaseUrl = config.getString('app.baseUrl');
   const catalogFileName = getCatalogFilename(config);
-  return await gitlabApiService.submitPrToRepo(logger, {
+  return await gitApiService.submitPrToRepo(logger, {
     repoUrl: req.repository.url,
     gitUrl: gitUrl,
     defaultBranch: req.repository.defaultBranch,
@@ -335,8 +326,7 @@ async function handleAddedReposFromCreateImportJobs(
     config: Config;
     auth: AuthService;
     catalogApi: CatalogApi;
-    githubApiService: GithubApiService;
-    gitlabApiService: GitlabApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
   },
@@ -356,7 +346,7 @@ async function handleAddedReposFromCreateImportJobs(
     if (!hasLocation) {
       continue;
     }
-    const hasCatalogInfoFileInRepo = await deps.githubApiService.hasFileInRepo({
+    const hasCatalogInfoFileInRepo = await deps.gitApiService.hasFileInRepo({
       repoUrl: req.repository.url,
       defaultBranch: req.repository.defaultBranch,
       fileName: getCatalogFilename(deps.config),
@@ -365,7 +355,7 @@ async function handleAddedReposFromCreateImportJobs(
       continue;
     }
 
-    const ghRepo = await deps.githubApiService.getRepositoryFromIntegrations(
+    const ghRepo = await deps.gitApiService.getRepositoryFromIntegrations(
       req.repository.url,
     );
 
@@ -395,8 +385,7 @@ async function handlePrCreationRequest(
     config: Config;
     auth: AuthService;
     catalogApi: CatalogApi;
-    githubApiService: GithubApiService;
-    gitlabApiService: GitlabApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
   },
@@ -409,8 +398,7 @@ async function handlePrCreationRequest(
     req.repository.defaultBranch,
   );
   const prToRepo = await createPR(
-    deps.githubApiService,
-    deps.gitlabApiService,
+    deps.gitApiService,
     deps.logger,
     req,
     gitUrl,
@@ -476,8 +464,7 @@ export async function createImportJobs(
     config: Config;
     auth: AuthService;
     catalogApi: CatalogApi;
-    githubApiService: GithubApiService;
-    gitlabApiService: GitlabApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
   },
@@ -556,8 +543,7 @@ async function dryRunCreateImportJobs(
     config: Config;
     auth: AuthService;
     catalogApi: CatalogApi;
-    githubApiService: GithubApiService;
-    gitlabApiService: GitlabApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
   },
@@ -592,8 +578,7 @@ async function performDryRunChecks(
     auth: AuthService;
     catalogApi: CatalogApi;
     config: Config;
-    githubApiService: GithubApiService;
-    gitlabApiService: GitlabApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   req: Components.Schemas.ImportRequest,
@@ -616,10 +601,7 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    // const empty = await deps.githubApiService.isRepoEmpty({
-    //   repoUrl: req.repository.url,
-    // });
-    const empty = await deps.gitlabApiService.isRepoEmpty({
+    const empty = await deps.gitApiService.isRepoEmpty({
       repoUrl: req.repository.url,
     });
     if (empty) {
@@ -634,12 +616,7 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    // const exists = await deps.githubApiService.hasFileInRepo({
-    //   repoUrl: req.repository.url,
-    //   defaultBranch: req.repository.defaultBranch,
-    //   fileName: getCatalogFilename(deps.config),
-    // });
-    const exists = await deps.gitlabApiService.hasFileInRepo({
+    const exists = await deps.gitApiService.hasFileInRepo({
       repoUrl: req.repository.url,
       defaultBranch: req.repository.defaultBranch,
       fileName: getCatalogFilename(deps.config),
@@ -656,12 +633,7 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    // const exists = await deps.githubApiService.hasFileInRepo({
-    //   repoUrl: req.repository.url,
-    //   defaultBranch: req.repository.defaultBranch,
-    //   fileName: '.github/CODEOWNERS',
-    // });
-    const exists = await deps.gitlabApiService.hasFileInRepo({
+    const exists = await deps.gitApiService.hasFileInRepo({
       repoUrl: req.repository.url,
       defaultBranch: req.repository.defaultBranch,
       fileName: '.github/CODEOWNERS',
@@ -705,8 +677,7 @@ export async function findImportStatusByRepo(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
-    gitlabApiService: GitlabApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
     approvalTool?: string;
   },
@@ -735,12 +706,12 @@ export async function findImportStatusByRepo(
     let openImportPr;
     // Check to see if there are any PR
     if (deps.approvalTool === 'gitlab') {
-      openImportPr = await deps.gitlabApiService.findImportOpenPr(deps.logger, {
+      openImportPr = await deps.gitApiService.findImportOpenPr(deps.logger, {
         repoUrl: repoUrl,
         includeCatalogInfoContent,
       });
     } else {
-      openImportPr = await deps.githubApiService.findImportOpenPr(deps.logger, {
+      openImportPr = await deps.gitApiService.findImportOpenPr(deps.logger, {
         repoUrl: repoUrl,
         includeCatalogInfoContent,
       });
@@ -761,7 +732,7 @@ export async function findImportStatusByRepo(
       }
       if (
         exists &&
-        (await deps.githubApiService.hasFileInRepo({
+        (await deps.gitApiService.hasFileInRepo({
           repoUrl,
           defaultBranch,
           fileName: getCatalogFilename(deps.config),
@@ -776,7 +747,7 @@ export async function findImportStatusByRepo(
       }
       // No import PR => let's determine last update from the repository
       const ghRepo =
-        await deps.githubApiService.getRepositoryFromIntegrations(repoUrl);
+        await deps.gitApiService.getRepositoryFromIntegrations(repoUrl);
       result.lastUpdate = ghRepo.repository?.updated_at ?? undefined;
       return {
         statusCode: 200,
@@ -816,8 +787,7 @@ export async function deleteImportByRepo(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
-    gitlabApiService: GitlabApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   repoUrl: string,
@@ -826,14 +796,7 @@ export async function deleteImportByRepo(
   deps.logger.debug(`Deleting bulk import job status for ${repoUrl}..`);
 
   // Check to see if there are any PR
-  // const openImportPr = await deps.githubApiService.findImportOpenPr(
-  //   deps.logger,
-  //   {
-  //     repoUrl: repoUrl,
-  //   },
-  // );
-
-  const openImportPr = await deps.gitlabApiService.findImportOpenPr(
+  const openImportPr = await deps.gitApiService.findImportOpenPr(
     deps.logger,
     {
       repoUrl: repoUrl,
@@ -847,24 +810,14 @@ export async function deleteImportByRepo(
       deps.config.getOptionalString('app.title') ?? 'Red Hat Developer Hub';
     const appBaseUrl = deps.config.getString('app.baseUrl');
 
-    await deps.gitlabApiService.closeImportPR(deps.logger, {
+    await deps.gitApiService.closeImportPR(deps.logger, {
       repoUrl,
       gitUrl,
       comment: `Closing PR upon request for bulk import deletion. This request was created from [${appTitle}](${appBaseUrl}).`,
     });
-
-    // await deps.githubApiService.closeImportPR(deps.logger, {
-    //   repoUrl,
-    //   gitUrl,
-    //   comment: `Closing PR upon request for bulk import deletion. This request was created from [${appTitle}](${appBaseUrl}).`,
-    // });
   }
   // Also delete the import branch, so that it is not outdated if we try later to import the repo again
-  // await deps.githubApiService.deleteImportBranch({
-  //   repoUrl,
-  //   gitUrl,
-  // });
-  await deps.gitlabApiService.deleteImportBranch({
+  await deps.gitApiService.deleteImportBranch({
     repoUrl,
     gitUrl,
   });

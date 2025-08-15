@@ -21,7 +21,7 @@ import type {
 } from '@backstage/integration';
 
 // From https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
-export type GitlabGroup = {
+export type GitlabOrganization = {
   name: string;
   id: number;
   description?: string;
@@ -82,8 +82,8 @@ export type GitlabFetchError = {
   error: SerializedError;
 };
 
-export type GitlabGroupResponse = {
-  organizations: GitlabGroup[];
+export type GitlabOrganizationResponse = {
+  organizations: GitlabOrganization[];
   errors: GitlabFetchError[];
   totalCount?: number;
 };

@@ -37,8 +37,7 @@ export async function findAllRepositories(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
-    gitlabApiService: GitlabApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   reqParams?: {
@@ -53,23 +52,16 @@ export async function findAllRepositories(
   const checkStatus = reqParams?.checkStatus ?? false;
   const pageNumber = reqParams?.pageNumber ?? DefaultPageNumber;
   const pageSize = reqParams?.pageSize ?? DefaultPageSize;
-  const approvalTool = reqParams?.approvalTool;
   deps.logger.debug(
     `Getting all repositories - (search,page,size)=('${
       search ?? ''
     }',${pageNumber},${pageSize})..`,
   );
 
-  let repos;
-  if (approvalTool === 'gitlab') {
-    repos = await deps.gitlabApiService
+  const repos = await deps.gitApiService
     .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
     .then(response => formatResponse(deps, response, checkStatus));
-  } else {
-    repos = await deps.githubApiService
-    .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
-    .then(response => formatResponse(deps, response, checkStatus));
-  }
+
   return repos;
 }
 
@@ -77,8 +69,7 @@ export async function findRepositoriesByOrganization(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
-    gitlabApiService: GitlabApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   orgName: string,
@@ -91,17 +82,13 @@ export async function findRepositoriesByOrganization(
     `Getting all repositories for org "${orgName}" - (search,page,size)=(${search},${pageNumber},${pageSize})..`,
   );
 
-  const glReposByOrg = await deps.gitlabApiService
+  const glReposByOrg = await deps.gitApiService
     .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
     .then(response => formatResponse(deps, response, checkStatus));
 
   console.log(glReposByOrg);
 
   return glReposByOrg;
-
-  // return deps.githubApiService
-  //   .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
-  //   .then(response => formatResponse(deps, response, checkStatus));
 }
 
 function sortRepos(repoList: Components.Schemas.Repository[]) {
@@ -129,7 +116,7 @@ async function formatResponse(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   allReposAccessible: GithubRepositoryResponse | GitlabRepositoryResponse,

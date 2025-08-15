@@ -21,7 +21,7 @@ Fetch Organizations accessible by Backstage Github Integrations
 | **pagePerIntegration** | **Integer**| the page number for each Integration | [optional] [default to 1] |
 | **sizePerIntegration** | **Integer**| the number of items per Integration to return per page | [optional] [default to 20] |
 | **search** | **String**| returns only the items that match the search string | [optional] [default to null] |
-| **approvalTool** | **String**| the approvalTool to use | [optional] [default to null] |
+| **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
 
 ### Return type
 
@@ -51,7 +51,7 @@ Fetch Repositories in the specified GitHub organization, provided it is accessib
 | **pagePerIntegration** | **Integer**| the page number for each Integration | [optional] [default to 1] |
 | **sizePerIntegration** | **Integer**| the number of items per Integration to return per page | [optional] [default to 20] |
 | **search** | **String**| returns only the items that match the search string | [optional] [default to null] |
-| **approvalTool** | **String**| the approvalTool to use | [optional] [default to null] |
+| **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
 
 ### Return type
 

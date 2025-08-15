@@ -47,7 +47,7 @@ import {
   // addGithubAppOrgs,
   addGitlabTokenGroups,
   // getAllAppOrgs,
-} from './utils/groupUtils';
+} from './utils/orgUtils';
 import { closePRWithComment, findOpenPRForBranch } from './utils/prUtils';
 import {
   // addGithubAppRepositories,
@@ -162,7 +162,7 @@ export class GitlabApiService {
     };
   }
 
-  async getGroupFromIntegrations(
+  async getOrganizationsFromIntegrations(
     search?: string,
     pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,

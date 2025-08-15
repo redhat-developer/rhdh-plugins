@@ -304,6 +304,7 @@ paths:
           schema:
             type: string
             default: 'main'
+        - $ref: '#/components/parameters/approvalToolParam'
       responses:
         204:
           description: Import Job was successfully delete with no errors
@@ -434,6 +435,7 @@ components:
       description: the approvalTool to use
       schema:
         type: string
+        default: GIT
 
   schemas:
     OrganizationList:

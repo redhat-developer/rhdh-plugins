@@ -302,12 +302,14 @@ declare namespace Paths {
     }
     namespace DeleteImportByRepo {
         namespace Parameters {
+            export type ApprovalTool = string;
             export type DefaultBranch = string;
             export type Repo = string;
         }
         export interface QueryParameters {
             repo?: Parameters.Repo;
             defaultBranch?: Parameters.DefaultBranch;
+            approvalTool?: Parameters.ApprovalTool;
         }
         namespace Responses {
             export interface $204 {

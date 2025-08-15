@@ -286,7 +286,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -405,7 +405,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -432,7 +432,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -460,7 +460,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -531,7 +531,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -557,7 +557,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -612,7 +612,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -640,7 +640,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -669,7 +669,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -705,7 +705,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -743,7 +743,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -782,7 +782,7 @@ describe('bulkimports.ts unit tests', () => {
           {
             logger,
             config,
-            githubApiService: mockGithubApiService,
+            gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
           },
           {
@@ -847,7 +847,7 @@ describe('bulkimports.ts unit tests', () => {
         {
           logger,
           config,
-          githubApiService: mockGithubApiService,
+          gitApiService: mockGithubApiService,
           catalogHttpClient: mockCatalogHttpClient,
         },
         repoUrl,
@@ -881,7 +881,7 @@ describe('bulkimports.ts unit tests', () => {
         {
           logger,
           config,
-          githubApiService: mockGithubApiService,
+          gitApiService: mockGithubApiService,
           catalogHttpClient: mockCatalogHttpClient,
         },
         repoUrl,
