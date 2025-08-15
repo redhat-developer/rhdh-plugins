@@ -19,6 +19,7 @@ import {
   Metric,
   MetricValue,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { Entity } from '@backstage/catalog-model';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 /**
@@ -62,15 +63,19 @@ export class MetricProvidersRegistry {
     return this.getProvider(providerId).getMetric();
   }
 
-  async calculateMetric(providerId: string): Promise<MetricValue> {
-    return this.getProvider(providerId).calculateMetric();
+  async calculateMetric(
+    providerId: string,
+    entity: Entity,
+  ): Promise<MetricValue> {
+    return this.getProvider(providerId).calculateMetric(entity);
   }
 
   async calculateMetrics(
     providerIds: string[],
+    entity: Entity,
   ): Promise<{ providerId: string; value?: MetricValue; error?: Error }[]> {
     const results = await Promise.allSettled(
-      providerIds.map(providerId => this.calculateMetric(providerId)),
+      providerIds.map(providerId => this.calculateMetric(providerId, entity)),
     );
 
     return results.map((result, index) => {
