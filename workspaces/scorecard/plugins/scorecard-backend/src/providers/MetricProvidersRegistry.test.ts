@@ -19,7 +19,7 @@ import { MetricProvidersRegistry } from './MetricProvidersRegistry';
 import {
   MockNumberProvider,
   MockStringProvider,
-} from '../../../__fixtures__/mockProviders';
+} from '../../__fixtures__/mockProviders';
 
 describe('MetricProvidersRegistry', () => {
   let registry: MetricProvidersRegistry;

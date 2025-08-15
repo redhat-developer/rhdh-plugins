@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 export { scorecardPlugin as default } from './plugin';
-export { CatalogMetricService } from './services/metrics/CatalogMetricService';
+export { CatalogMetricService } from './service/CatalogMetricService';

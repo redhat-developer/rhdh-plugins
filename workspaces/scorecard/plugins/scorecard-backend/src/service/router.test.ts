@@ -18,15 +18,15 @@ import express from 'express';
 import request from 'supertest';
 
 import { createRouter } from './router';
-import { MetricProvidersRegistry } from './services/metrics/MetricProvidersRegistry';
+import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
   MockStringProvider,
-} from '../__fixtures__/mockProviders';
+} from '../../__fixtures__/mockProviders';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { CatalogMetricService } from './services/metrics/CatalogMetricService';
+import { CatalogMetricService } from './CatalogMetricService';
 import { CatalogClient } from '@backstage/catalog-client';
-import { ThresholdEvaluator } from './services/metrics/ThresholdEvaluator';
+import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 
 const mockCatalogClient = {
   getEntityByRef: jest.fn(),

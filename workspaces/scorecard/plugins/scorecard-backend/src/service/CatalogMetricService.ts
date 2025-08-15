@@ -21,8 +21,8 @@ import {
   ThresholdConfig,
   ThresholdRules,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { MetricProvidersRegistry } from './MetricProvidersRegistry';
-import { ThresholdEvaluator } from './ThresholdEvaluator';
+import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
+import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 import { NotFoundError } from '@backstage/errors';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { AuthService } from '@backstage/backend-plugin-api';
