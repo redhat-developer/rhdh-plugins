@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@backstage/catalog-model';
 import {
   Metric,
   MetricType,
@@ -52,7 +53,7 @@ abstract class MockMetricProvider<T extends MetricType>
     return metric;
   }
 
-  async calculateMetric(): Promise<MetricValue<T>> {
+  async calculateMetric(_entity: Entity): Promise<MetricValue<T>> {
     return this.value;
   }
 }
@@ -95,3 +96,14 @@ export class MockStringProvider extends MockMetricProvider<'string'> {
     };
   }
 }
+
+export const githubNumberProvider = new MockNumberProvider(
+  'github.number-metric',
+  'github',
+  'Github Number Metric',
+);
+
+export const jiraStringProvider = new MockStringProvider(
+  'jira.string-metric',
+  'jira',
+);

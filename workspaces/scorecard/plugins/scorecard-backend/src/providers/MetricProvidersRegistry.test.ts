@@ -17,21 +17,15 @@
 import { ConflictError, NotFoundError } from '@backstage/errors';
 import { MetricProvidersRegistry } from './MetricProvidersRegistry';
 import {
+  githubNumberProvider,
+  jiraStringProvider,
   MockNumberProvider,
   MockStringProvider,
 } from '../../__fixtures__/mockProviders';
+import { mockEntity } from '../../__fixtures__/mockEntities';
 
 describe('MetricProvidersRegistry', () => {
   let registry: MetricProvidersRegistry;
-  const githubNumberProvider = new MockNumberProvider(
-    'github.number-metric',
-    'github',
-    'Github Number Metric',
-  );
-  const jiraStringProvider = new MockStringProvider(
-    'jira.string-metric',
-    'jira',
-  );
 
   beforeEach(() => {
     registry = new MetricProvidersRegistry();
@@ -94,13 +88,18 @@ describe('MetricProvidersRegistry', () => {
     it('should calculate metric for registered provider', async () => {
       registry.register(githubNumberProvider);
 
-      const result = await registry.calculateMetric('github.number-metric');
+      const result = await registry.calculateMetric(
+        'github.number-metric',
+        mockEntity,
+      );
 
       expect(result).toBe(42);
     });
 
     it('should throw NotFoundError for unregistered provider', async () => {
-      await expect(registry.calculateMetric('non-existent')).rejects.toThrow(
+      await expect(
+        registry.calculateMetric('non-existent', mockEntity),
+      ).rejects.toThrow(
         new NotFoundError(
           "Metric provider with ID 'non-existent' is not registered.",
         ),
