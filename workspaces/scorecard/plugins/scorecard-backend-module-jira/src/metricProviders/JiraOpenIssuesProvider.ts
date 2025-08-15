@@ -15,6 +15,7 @@
  */
 
 import type { Config } from '@backstage/config';
+import type { Entity } from '@backstage/catalog-model';
 import {
   Metric,
   ThresholdConfig,
@@ -64,7 +65,8 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     return new JiraOpenIssuesProvider(configuredThresholds);
   }
 
-  async calculateMetric(): Promise<number> {
-    return 10;
+  async calculateMetric(entity: Entity): Promise<number> {
+    const entityName = entity.metadata.name;
+    return entityName.length * 2;
   }
 }

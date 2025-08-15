@@ -15,6 +15,7 @@
  */
 
 import type { Config } from '@backstage/config';
+import type { Entity } from '@backstage/catalog-model';
 import {
   Metric,
   ThresholdConfig,
@@ -64,7 +65,7 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
     return new GithubOpenPRsProvider(configuredThresholds);
   }
 
-  async calculateMetric(): Promise<number> {
-    return 42;
+  async calculateMetric(entity: Entity): Promise<number> {
+    return entity.metadata.name.length;
   }
 }

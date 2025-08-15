@@ -29,6 +29,9 @@ import {
   MockStringProvider,
 } from '../__fixtures__/mockProviders';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { CatalogMetricService } from './services/metrics/CatalogMetricService';
+import { CatalogClient } from '@backstage/catalog-client';
+import { ThresholdEvaluator } from './services/metrics/ThresholdEvaluator';
 
 const mockTodoItem = {
   title: 'Do the thing',
@@ -37,12 +40,17 @@ const mockTodoItem = {
   createdAt: new Date().toISOString(),
 };
 
+const mockCatalogClient = {
+  getEntityByRef: jest.fn(),
+} as unknown as CatalogClient;
+
 // TEMPLATE NOTE:
 // Testing the router directly allows you to write a unit test that mocks the provided options.
 describe('createRouter', () => {
   let app: express.Express;
   let todoListService: jest.Mocked<TodoListService>;
   let metricProvidersRegistry: MetricProvidersRegistry;
+  let catalogMetricService: CatalogMetricService;
 
   beforeEach(async () => {
     todoListService = {
@@ -51,10 +59,17 @@ describe('createRouter', () => {
       getTodo: jest.fn(),
     };
     metricProvidersRegistry = new MetricProvidersRegistry();
+    catalogMetricService = new CatalogMetricService({
+      catalogApi: mockCatalogClient,
+      registry: metricProvidersRegistry,
+      thresholdEvaluator: new ThresholdEvaluator(),
+      auth: mockServices.auth(),
+    });
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
       todoListService,
       metricProvidersRegistry,
+      catalogMetricService,
     });
     app = express();
     app.use(router);

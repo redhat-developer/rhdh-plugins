@@ -19,16 +19,19 @@ import { z } from 'zod';
 import express from 'express';
 import Router from 'express-promise-router';
 import { TodoListService } from './services/TodoListService/types';
-import { MetricService } from './services/metrics/MetricService';
+import type { CatalogMetricService } from './services/metrics/CatalogMetricService';
+import type { MetricProvidersRegistry } from './services/metrics/MetricProvidersRegistry';
 
 export async function createRouter({
   httpAuth,
   todoListService,
-  metricService,
+  metricProvidersRegistry,
+  catalogMetricService,
 }: {
   httpAuth: HttpAuthService;
   todoListService: TodoListService;
-  metricService: MetricService;
+  metricProvidersRegistry: MetricProvidersRegistry;
+  catalogMetricService: CatalogMetricService;
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -79,15 +82,16 @@ export async function createRouter({
 
     let metrics;
     if (datasource) {
-      metrics = metricService.listMetricsByDatasource(datasource);
+      metrics = metricProvidersRegistry.listMetricsByDatasource(datasource);
     } else {
-      metrics = metricService.listMetrics();
+      metrics = metricProvidersRegistry.listMetrics();
     }
 
     res.json({ metrics });
   });
 
   router.get('/catalog/:kind/:namespace/:name/metrics', async (req, res) => {
+    const { kind, namespace, name } = req.params;
     const { metricIds } = req.query;
 
     const catalogMetricsSchema = z.object({
@@ -99,16 +103,16 @@ export async function createRouter({
       throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
     }
 
-    if (metricIds) {
-      const metricIdArray = (metricIds as string)
-        .split(',')
-        .map(id => id.trim());
-      const results = await metricService.calculateMetricResult(metricIdArray);
-      res.json(results);
-    } else {
-      const results = await metricService.calculateMetricResult();
-      res.json(results);
-    }
+    const entityRef = `${kind}:${namespace}/${name}`;
+    const metricIdArray = metricIds
+      ? (metricIds as string).split(',').map(id => id.trim())
+      : undefined;
+
+    const results = await catalogMetricService.calculateEntityMetrics(
+      entityRef,
+      metricIdArray,
+    );
+    res.json(results);
   });
 
   return router;
