@@ -17,16 +17,16 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { createRouter } from './router';
+import { createRouter } from './service/router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import {
   MetricProvider,
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { MetricProvidersRegistry } from './services/metrics/MetricProvidersRegistry';
-import { CatalogMetricService } from './services/metrics/CatalogMetricService';
+import { MetricProvidersRegistry } from './providers/MetricProvidersRegistry';
+import { CatalogMetricService } from './service/CatalogMetricService';
 import { CatalogClient } from '@backstage/catalog-client';
-import { ThresholdEvaluator } from './services/metrics/ThresholdEvaluator';
+import { ThresholdEvaluator } from './threshold/ThresholdEvaluator';
 
 /**
  * scorecardPlugin backend plugin
