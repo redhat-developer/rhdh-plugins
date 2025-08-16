@@ -32,6 +32,7 @@ import {
   useOrchestratorFormApiOrDefault,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
+import { getActiveStepKey } from '../utils/getSortedStepEntries';
 import { useStepperContext } from '../utils/StepperContext';
 import useValidator from '../utils/useValidator';
 import { AuthRequester } from './AuthRequester';
@@ -75,7 +76,8 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     if (!isMultiStep) {
       return undefined;
     }
-    return Object.keys(schema.properties || {})[activeStep];
+
+    return getActiveStepKey(schema, activeStep);
   };
 
   const onSubmit = async (_formData: JsonObject) => {
