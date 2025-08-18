@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+
 export const LEARNING_SECTION_ITEMS = [
   {
     title: 'Get started',
@@ -22,6 +25,7 @@ export const LEARNING_SECTION_ITEMS = [
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/',
     target: '_blank',
     ariaLabel: 'Read documentation (opens in a new tab)',
+    icon: OpenInNewIcon,
   },
   {
     title: 'Explore',

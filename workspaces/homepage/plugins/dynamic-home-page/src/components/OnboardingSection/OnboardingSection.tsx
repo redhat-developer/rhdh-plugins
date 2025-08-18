@@ -117,6 +117,7 @@ export const OnboardingSection = () => {
               buttonLink={item.buttonLink}
               target={item.target}
               ariaLabel={item.ariaLabel}
+              icon={item?.icon ? <item.icon /> : null}
             />
           </Grid>
         ))}
@@ -143,7 +144,7 @@ export const OnboardingSection = () => {
             fontSize: '1.5rem',
           }}
         >
-          {`${greeting} ${profileDisplayName() || 'Guest'}!`}
+          {`${greeting}, ${profileDisplayName() || 'Guest'}!`}
         </Typography>
       )}
       {content}

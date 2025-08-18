@@ -29,6 +29,7 @@ interface OnboardingCardProps {
   buttonLink: string;
   target?: string;
   ariaLabel?: string;
+  icon?: React.ReactNode;
 }
 
 const OnboardingCard: FC<OnboardingCardProps> = ({
@@ -38,6 +39,7 @@ const OnboardingCard: FC<OnboardingCardProps> = ({
   buttonLink,
   target,
   ariaLabel,
+  icon,
 }) => {
   return (
     <Box>
@@ -79,8 +81,10 @@ const OnboardingCard: FC<OnboardingCardProps> = ({
             padding: theme => theme.spacing(1, 1.5),
             fontSize: '16px',
           }}
+          endIcon={icon ? icon : null}
         >
-          {buttonText} <ArrowForwardIcon style={{ paddingLeft: '0.5rem' }} />
+          {buttonText}{' '}
+          {icon ? null : <ArrowForwardIcon style={{ paddingLeft: '0.5rem' }} />}
         </Button>
       </CardContent>
     </Box>
