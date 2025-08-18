@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.0.4
+
+### Patch Changes
+
+- 2fbdb53: remove setting inputs as readonly when execute from nextWorkflows as this was part of deprecated assessment workflow type
+
 ## 3.0.3
 
 ### Patch Changes

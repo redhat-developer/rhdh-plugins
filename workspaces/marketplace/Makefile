@@ -36,19 +36,19 @@ add-frontend-to-rhdh:
 	@echo
 	@echo Will build and install ${workspace} frontend into ${rhdh}
 	@echo
-	cd plugins/marketplace && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
+	cd plugins/marketplace && npx --yes @red-hat-developer-hub/cli plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
 
 add-backend-to-rhdh:
 	@echo
 	@echo Will build and install ${workspace} backend into ${rhdh}
 	@echo
-	cd plugins/marketplace-backend && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
+	cd plugins/marketplace-backend && npx --yes @red-hat-developer-hub/cli plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
 
 add-catalog-modules-to-rhdh:
 	@echo
 	@echo Will build and install catalog modules into ${rhdh}
 	@echo
-	cd plugins/catalog-backend-module-marketplace && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}" --embed-package "@red-hat-developer-hub/backstage-plugin-marketplace-common"
+	cd plugins/catalog-backend-module-marketplace && npx --yes @red-hat-developer-hub/cli plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}" --embed-package "@red-hat-developer-hub/backstage-plugin-marketplace-common"
 
 copy-config-to-rhdh:
 	@echo
