@@ -32,6 +32,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
 import CircularProgress from '@mui/material/CircularProgress';
+import { getEddlDataAttributes } from '../../../utils/eddl-utils';
 
 const FLAG_FETCH_URL =
   'https://catamphetamine.github.io/country-flag-icons/3x2';
@@ -64,6 +65,14 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
   error,
 }) => {
   const theme = useTheme();
+  const sendCodeEddlAttributes = getEddlDataAttributes(
+    'Send Code',
+    'Verification',
+  );
+  const cancelEddlAttributes = getEddlDataAttributes(
+    'Cancel Verification',
+    'Verification',
+  );
 
   const PhoneInputField = forwardRef(function PhoneInputField(
     props: TextFieldProps,
@@ -210,6 +219,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
           endIcon={
             loading && <CircularProgress size={20} sx={{ color: '#AFAFAF' }} />
           }
+          {...sendCodeEddlAttributes}
         >
           Send code
         </Button>
@@ -224,6 +234,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
               borderColor: '#1976d2',
             },
           }}
+          {...cancelEddlAttributes}
         >
           Cancel
         </Button>

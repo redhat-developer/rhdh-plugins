@@ -33,7 +33,7 @@ describe('SandboxActivitiesCard', () => {
     return render(
       wrapInTestApp(
         <ThemeProvider theme={lightTheme}>
-          <SandboxActivitiesCard key="test-key" article={mockArticle} />
+          <SandboxActivitiesCard article={mockArticle} />
         </ThemeProvider>,
       ),
     );
@@ -101,5 +101,26 @@ describe('SandboxActivitiesCard', () => {
 
     // Check description has italic style
     expect(descriptionElement).toHaveStyle('font-style: italic');
+  });
+
+  describe('EDDL data attributes', () => {
+    it('should have correct Red Hat EDDL data attributes for activities', () => {
+      renderCard();
+
+      const linkElement = screen.getByRole('link');
+
+      expect(linkElement).toHaveAttribute(
+        'data-analytics-category',
+        'Developer Sandbox|Activities',
+      );
+      expect(linkElement).toHaveAttribute(
+        'data-analytics-text',
+        'Test Article',
+      );
+      expect(linkElement).toHaveAttribute(
+        'data-analytics-region',
+        'sandbox-activities',
+      );
+    });
   });
 });
