@@ -88,15 +88,12 @@ export function validateThresholds(
     );
   }
 
-  for (const [name, expression] of Object.entries(thresholds.rules)) {
-    if (typeof name !== 'string') {
-      throw new ThresholdConfigFormatError(
-        `Invalid type for threshold name '${name}': ${typeof name}, should be string`,
-      );
-    }
+  for (const [, expression] of Object.entries(thresholds.rules)) {
     if (typeof expression !== 'string') {
       throw new ThresholdConfigFormatError(
-        `Invalid type for threshold expression '${expression}': ${typeof expression}, should be string`,
+        `Invalid type for threshold expression '${JSON.stringify(
+          expression,
+        )}': ${typeof expression}, should be string`,
       );
     }
     parseThresholdExpression(expression, expectedMetricType);
