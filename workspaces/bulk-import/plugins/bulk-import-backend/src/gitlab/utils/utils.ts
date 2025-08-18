@@ -65,7 +65,6 @@ export function verifyAndGetIntegrations(
 ) {
   const glConfigs = integrations.gitlab.list().map(glInit => glInit.config);
 
-  console.log('github configs', glConfigs);
   if (glConfigs.length === 0) {
     deps.logger.debug(
       'No GitLab Integration in config => returning an empty list of repositories.',

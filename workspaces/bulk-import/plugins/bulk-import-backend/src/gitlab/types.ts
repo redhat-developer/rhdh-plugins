@@ -46,21 +46,17 @@ export type GitlabRepository = {
   // id?: string;
   name: string;
   /**
-   * The full name of the repository in the form of owner/repo
+   * The full name of the repository in the form of owner/repo, should be the path_with_namespace property in gitlab
    */
   full_name: string;
-
-  path_with_namespace: string;
   /**
    * The API url to the repository
    */
   url: string;
   /**
-   * The HTML URL to the repository
+   * The HTML URL to the repository, web_url in gitlab
    */
   html_url?: string;
-
-  web_url?: string;
   /**
    * The default "main" branch of the repository to place the `catalog-info.yaml` file into
    */

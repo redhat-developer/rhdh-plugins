@@ -102,7 +102,7 @@ export async function searchRepos(
         return {
           name: repo.name,
           full_name: repo.path_with_namespace,
-          url: `${gitlab.url}/projects/${repo.id}`,
+          url: repo._links.self,
           html_url: repo.web_url,
           default_branch: repo.default_branch,
           updated_at: repo.updated_at,
@@ -166,22 +166,21 @@ export async function addGitlabTokenRepositories(
         (repo: {
           id: string;
           path_with_namespace: string;
-          full_name: string;
           name: any;
           url: any;
           html_url: any;
           web_url: any;
           default_branch: any;
+          _links: any;
           updated_at: any;
         }) => {
           repositories.set(repo.path_with_namespace, {
             name: repo.name,
-            path_with_namespace: repo.path_with_namespace,
             full_name: repo.path_with_namespace,
-            url: `${gitlab.url}/projects/${repo.id}`,
+            url: repo._links.self,
             html_url: repo.web_url,
             default_branch: repo.default_branch,
-            updated_at: repo.updated_at,
+            updated_at: repo?.updated_at,
           });
         },
       );
@@ -255,14 +254,14 @@ export async function addGitlabTokenOrgRepositories(
           url: any;
           html_url: any;
           web_url: any;
+          _links: any;
           default_branch: any;
           updated_at: any;
         }) => {
           repositories.set(repo.path_with_namespace, {
             name: repo.name,
-            path_with_namespace: repo.path_with_namespace,
             full_name: repo.path_with_namespace,
-            url: `${gitlab.url}/projects/${repo.id}`,
+            url: repo._links.self,
             html_url: repo.web_url,
             default_branch: repo.default_branch,
             updated_at: repo.updated_at,
@@ -296,14 +295,14 @@ export async function addGitlabTokenOrgRepositories(
           url: any;
           html_url: any;
           web_url: any;
+          _links: any;
           default_branch: any;
           updated_at: any;
         }) => {
           repositories.set(repo.path_with_namespace, {
             name: repo.name,
-            path_with_namespace: repo.path_with_namespace,
             full_name: repo.path_with_namespace,
-            url: `${gitlab.url}/projects/${repo.id}`,
+            url: repo._links.self,
             html_url: repo.web_url,
             default_branch: repo.default_branch,
             updated_at: repo.updated_at,

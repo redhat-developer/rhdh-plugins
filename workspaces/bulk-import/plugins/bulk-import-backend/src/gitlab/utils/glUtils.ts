@@ -59,7 +59,7 @@ export function buildGitlab(
   //   baseUrl: apiBaseUrl,
   //   auth: input.credential.token,
   // });
-  // registerHooks(deps, octokit);
+  // registerHooks(deps, octokit); TODO?
   return apiThing;
 }
 

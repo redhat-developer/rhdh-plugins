@@ -21,7 +21,7 @@ import {
   DefaultPageNumber,
   DefaultPageSize,
 } from '../../service/handlers/handlers';
-import type { GitlabFetchError, GitlabGroup } from '../types';
+import type { GitlabFetchError, GitlabOrganization } from '../types';
 import { computeTotalCountFromPaginationInfo, handleError } from './utils';
 
 export async function addGitlabTokenGroups(
@@ -32,7 +32,7 @@ export async function addGitlabTokenGroups(
   credential: GitlabCredentials,
   params: {
     search: string | undefined;
-    groups: Map<string, GitlabGroup>;
+    groups: Map<string, GitlabOrganization>;
     errors: Map<number, GitlabFetchError>;
     pageNumber: number;
     pageSize: number;
@@ -93,7 +93,7 @@ export async function addGitlabTokenGroups(
     for (const group of matchingGroups) {
       console.log(group);
       // const groupData = await octokit.request(group.url);
-      const glGroup: GitlabGroup = {
+      const glGroup: GitlabOrganization = {
         id: group.id,
         name: group.path,
         description: group.description ?? undefined,

@@ -36,8 +36,8 @@ import { CustomGitlabCredentialsProvider } from './GitlabAppManager';
 import {
   ExtendedGitlabCredentials,
   GitlabFetchError,
-  GitlabGroup,
-  GitlabGroupResponse,
+  GitlabOrganization,
+  GitlabOrganizationResponse,
   GitlabRepository,
   GitlabRepositoryResponse,
 } from './types';
@@ -166,8 +166,8 @@ export class GitlabApiService {
     search?: string,
     pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,
-  ): Promise<GitlabGroupResponse> {
-    const groups = new Map<string, GitlabGroup>();
+  ): Promise<GitlabOrganizationResponse> {
+    const groups = new Map<string, GitlabOrganization>();
     const result = await fetchFromAllIntegrations(
       {
         logger: this.logger,
@@ -315,7 +315,6 @@ export class GitlabApiService {
           this.logger.debug(
             `Got ${resp.totalCount} repo(s) for ${glConfig.host}`,
           );
-          console.log('gitlab total count', resp);
           return {
             result: resp.totalCount ?? 0,
             errors: Array.from(dataFetchErrors.values()),
