@@ -15,22 +15,27 @@
  */
 
 import { CatalogApi } from '@backstage/catalog-client';
-import type { Entity } from '@backstage/catalog-model';
+import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import {
   MetricResult,
+  MetricType,
   ThresholdConfig,
   ThresholdRules,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 import { NotFoundError } from '@backstage/errors';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { AuthService } from '@backstage/backend-plugin-api';
+import {
+  MetricProvider,
+  validateThresholds,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { AuthService, LoggerService } from '@backstage/backend-plugin-api';
 
 export type CatalogMetricServiceOptions = {
   catalogApi: CatalogApi;
   registry: MetricProvidersRegistry;
   thresholdEvaluator: ThresholdEvaluator;
+  logger: LoggerService;
   auth?: AuthService;
 };
 
@@ -38,12 +43,14 @@ export class CatalogMetricService {
   private readonly catalogApi: CatalogApi;
   private readonly registry: MetricProvidersRegistry;
   private readonly thresholdEvaluator: ThresholdEvaluator;
+  private readonly logger: LoggerService;
   private readonly auth?: AuthService;
 
   constructor(options: CatalogMetricServiceOptions) {
     this.thresholdEvaluator = options.thresholdEvaluator;
     this.registry = options.registry;
     this.catalogApi = options.catalogApi;
+    this.logger = options.logger;
     this.auth = options.auth;
   }
 
@@ -64,20 +71,36 @@ export class CatalogMetricService {
    *
    * @param entity - The catalog entity
    * @param providerId - The metric provider ID (e.g., 'jira.open-issues')
-   * @returns Threshold rules from entity annotations, or empty object if none found
+   * @param metricType - The metric type
+   * @returns Threshold rules from entity annotations, or empty rules if none found or invalid
    */
   private parseEntityOverrideThresholds(
     entity: Entity,
     providerId: string,
+    metricType: MetricType,
   ): ThresholdRules {
     const annotations = entity.metadata?.annotations || {};
     const prefix = `scorecard.io/${providerId}.thresholds.rules.`;
     const overrides: ThresholdRules = {};
 
-    for (const [key, value] of Object.entries(annotations)) {
-      if (key.startsWith(prefix) && value) {
+    for (const [key, expression] of Object.entries(annotations)) {
+      if (key.startsWith(prefix) && expression) {
         const thresholdName = key.substring(prefix.length);
-        overrides[thresholdName] = value;
+        overrides[thresholdName] = expression;
+      }
+    }
+
+    if (overrides) {
+      try {
+        validateThresholds({ rules: overrides }, metricType);
+      } catch (e) {
+        this.logger.error(
+          `Invalid threshold annotations in entity '${stringifyEntityRef(
+            entity,
+          )}': ${overrides}. Using default thresholds.`,
+          e,
+        );
+        return {};
       }
     }
 
@@ -87,11 +110,13 @@ export class CatalogMetricService {
   private getEntityThresholds(
     entity: Entity,
     provider: MetricProvider,
+    metricType: MetricType,
   ): ThresholdConfig {
     const providerThresholds = provider.getMetricThresholds();
     const entityOverrideThresholds = this.parseEntityOverrideThresholds(
       entity,
       provider.getProviderId(),
+      metricType,
     );
 
     return {
@@ -144,7 +169,11 @@ export class CatalogMetricService {
         };
       }
 
-      const thresholds = this.getEntityThresholds(entity, provider);
+      const thresholds = this.getEntityThresholds(
+        entity,
+        provider,
+        metric.type,
+      );
       return {
         id: metric.id,
         status: 'success' as const,

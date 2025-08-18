@@ -52,13 +52,15 @@ export const scorecardPlugin = createBackendPlugin({
         auth: coreServices.auth,
         httpRouter: coreServices.httpRouter,
         catalog: catalogServiceRef,
+        logger: coreServices.logger,
       },
-      async init({ discovery, auth, httpRouter }) {
+      async init({ discovery, auth, httpRouter, logger }) {
         const catalogClient = new CatalogClient({ discoveryApi: discovery });
         const catalogMetricService = new CatalogMetricService({
           catalogApi: catalogClient,
           registry: metricProvidersRegistry,
           thresholdEvaluator: new ThresholdEvaluator(),
+          logger,
           auth,
         });
 
