@@ -24,7 +24,6 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 
 /**
  * Registry of all registered metric providers.
- * @public
  */
 export class MetricProvidersRegistry {
   private readonly metricProviders = new Map<string, MetricProvider>();

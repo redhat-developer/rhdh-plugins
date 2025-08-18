@@ -13,6 +13,23 @@ export type Metric<T extends MetricType = MetricType> = {
 };
 
 // @public (undocumented)
+export type MetricResult = {
+  id: string;
+  status: 'success' | 'error';
+  metadata: {
+    title: string;
+    type: MetricType;
+    history?: boolean;
+  };
+  result?: {
+    value: MetricValue;
+    timestamp: string;
+    thresholdResult: ThresholdResult;
+  };
+  error?: Error;
+};
+
+// @public (undocumented)
 export type MetricType = 'number' | 'boolean' | 'string';
 
 // @public (undocumented)
@@ -23,6 +40,20 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
   : T extends 'string'
   ? string
   : never;
+
+// @public
+export type ThresholdConfig = {
+  rules: ThresholdRules;
+};
+
+// @public (undocumented)
+export type ThresholdResult = {
+  definition: ThresholdConfig;
+  evaluation: string | undefined;
+};
+
+// @public
+export type ThresholdRules = Record<string, string>;
 
 // (No @packageDocumentation comment for this package)
 ```

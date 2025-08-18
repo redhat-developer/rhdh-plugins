@@ -27,9 +27,6 @@ import { NotFoundError } from '@backstage/errors';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { AuthService } from '@backstage/backend-plugin-api';
 
-/**
- * @public
- */
 export type CatalogMetricServiceOptions = {
   catalogApi: CatalogApi;
   registry: MetricProvidersRegistry;
@@ -37,9 +34,6 @@ export type CatalogMetricServiceOptions = {
   auth?: AuthService;
 };
 
-/**
- * @public
- */
 export class CatalogMetricService {
   private readonly catalogApi: CatalogApi;
   private readonly registry: MetricProvidersRegistry;
