@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header-test
 
+## 0.4.1
+
+### Patch Changes
+
+- f363366: remove janus-idp/cli devDependency and export-dynamic script
+
 ## 0.4.0
 
 ### Minor Changes
