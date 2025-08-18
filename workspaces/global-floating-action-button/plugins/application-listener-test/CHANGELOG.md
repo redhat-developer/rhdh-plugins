@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-application-listener-test
 
+## 0.2.1
+
+### Patch Changes
+
+- 431402d: remove janus-idp/cli devDependency and export-dynamic script
+
 ## 0.2.0
 
 ### Minor Changes

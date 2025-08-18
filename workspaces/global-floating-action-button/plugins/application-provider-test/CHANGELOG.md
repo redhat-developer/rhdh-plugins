@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-application-provider-test
 
+## 0.2.2
+
+### Patch Changes
+
+- 431402d: remove janus-idp/cli devDependency and export-dynamic script
+
 ## 0.2.1
 
 ### Patch Changes

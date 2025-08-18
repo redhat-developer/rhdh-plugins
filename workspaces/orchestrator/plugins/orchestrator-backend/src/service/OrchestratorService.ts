@@ -119,6 +119,7 @@ export class OrchestratorService {
   public async fetchWorkflowOverviews(args: {
     pagination?: Pagination;
     filter?: Filter;
+    targetEntity?: string;
   }): Promise<WorkflowOverview[] | undefined> {
     const overviews = await this.sonataFlowService.fetchWorkflowOverviews({
       definitionIds: this.workflowCacheService.definitionIds?.concat(
@@ -126,6 +127,7 @@ export class OrchestratorService {
       ),
       pagination: args.pagination,
       filter: args.filter,
+      targetEntity: args.targetEntity,
     });
 
     return overviews?.map(overview => {

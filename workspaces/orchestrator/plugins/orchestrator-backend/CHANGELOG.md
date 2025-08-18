@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 8.0.4
+
+### Patch Changes
+
+- f868d17: filter last run in wotkflows tab by entity
+- Updated dependencies [2fbdb53]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.4
+
 ## 8.0.3
 
 ### Patch Changes
