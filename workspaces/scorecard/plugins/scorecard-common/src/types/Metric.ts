@@ -42,11 +42,6 @@ export type Metric<T extends MetricType = MetricType> = {
 };
 
 /**
- * @public
- */
-export type ThresholdEvaluation = string; // threshold name the expression evaluated to
-
-/**
  * Threshold rules definition
  * @public
  */
@@ -65,7 +60,7 @@ export type ThresholdConfig = {
  */
 export type ThresholdResult = {
   definition: ThresholdConfig;
-  evaluation: ThresholdEvaluation | undefined;
+  evaluation: string | undefined; // threshold name the expression evaluated to
 };
 
 /**
