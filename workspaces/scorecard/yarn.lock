@@ -12219,6 +12219,7 @@ __metadata:
     "@backstage/backend-plugin-api": "npm:^1.4.1"
     "@backstage/cli": "npm:^0.33.1"
     "@backstage/errors": "npm:^1.2.7"
+    "@backstage/types": "npm:^1.2.1"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
   languageName: unknown
   linkType: soft

@@ -44,7 +44,7 @@ export type Metric<T extends MetricType = MetricType> = {
 /**
  * @public
  */
-export type ThresholdEvaluation = 'error' | 'warning' | 'success' | string;
+export type ThresholdEvaluation = string; // threshold name the expression evaluated to
 
 /**
  * Threshold rules definition

@@ -20,6 +20,7 @@ import {
   MetricValue,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdConfigFormatError } from '../errors';
+import type { JsonValue } from '@backstage/types';
 
 /**
  * Parse a threshold expression and extract operator and value
@@ -32,7 +33,7 @@ export function parseThresholdExpression(
   operator: string;
   value: MetricValue;
 } {
-  const match = expression.trim().match(/^(>=|<=|>|<|==|!=)(.+)$/);
+  const match = /^(>=|<=|>|<|==|!=)(.+)$/.exec(expression.trim());
   if (!match) {
     throw new ThresholdConfigFormatError(
       `Invalid threshold expression: "${expression}"`,
@@ -68,21 +69,34 @@ export function parseThresholdExpression(
 }
 
 /**
- * Validate that threshold expressions match the expected metric type
+ * Validate thresholds conform to the expected schema and expressions match the expected metric type
  * @public
  */
 export function validateThresholds(
-  thresholds: ThresholdConfig | undefined,
+  thresholds: JsonValue,
   expectedMetricType: MetricType,
-): void {
-  if (!thresholds) {
-    return;
+): asserts thresholds is ThresholdConfig {
+  if (
+    typeof thresholds !== 'object' ||
+    thresholds === null ||
+    !('rules' in thresholds) ||
+    typeof thresholds.rules !== 'object' ||
+    thresholds.rules === null
+  ) {
+    throw new ThresholdConfigFormatError(
+      'Invalid type for ThresholdConfig, must have a rules property that is an object',
+    );
   }
 
   for (const [name, expression] of Object.entries(thresholds.rules)) {
     if (typeof name !== 'string') {
       throw new ThresholdConfigFormatError(
-        `Invalid type for threshold name: ${typeof name}, should be string`,
+        `Invalid type for threshold name '${name}': ${typeof name}, should be string`,
+      );
+    }
+    if (typeof expression !== 'string') {
+      throw new ThresholdConfigFormatError(
+        `Invalid type for threshold expression '${expression}': ${typeof expression}, should be string`,
       );
     }
     parseThresholdExpression(expression, expectedMetricType);

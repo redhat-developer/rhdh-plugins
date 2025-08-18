@@ -20,10 +20,13 @@ import {
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  MetricProvider,
+  validateThresholds,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
-  private thresholds: ThresholdConfig;
+  private readonly thresholds: ThresholdConfig;
 
   private constructor(thresholds?: ThresholdConfig) {
     this.thresholds = thresholds ?? {
@@ -58,9 +61,10 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
 
   static fromConfig(config: Config): JiraOpenIssuesProvider {
     const configPath = 'scorecard.plugins.jira.open_issues.thresholds';
-    const configuredThresholds = config.getOptional(configPath) as
-      | ThresholdConfig
-      | undefined;
+    const configuredThresholds = config.getOptional(configPath);
+    if (configuredThresholds !== undefined) {
+      validateThresholds(configuredThresholds, 'number');
+    }
 
     return new JiraOpenIssuesProvider(configuredThresholds);
   }
