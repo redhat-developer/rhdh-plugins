@@ -18,9 +18,7 @@ import { mockServices } from '@backstage/backend-test-utils';
 
 import { GitlabApiService } from './gitlabApiService';
 import { CustomGitlabCredentialsProvider } from './GitlabAppManager';
-import { computeTotalCount } from './utils/utils';
 
-// TODO: this should be the beaker
 const gitlabkit = {
   Projects: {
     all: jest.fn(),
@@ -28,33 +26,6 @@ const gitlabkit = {
   Groups: {
     all: jest.fn(),
     allProjects: jest.fn(),
-  },
-};
-
-const octokit = {
-  paginate: async (fn: any) => {
-    const res = await fn();
-    if (res) {
-      return res.data;
-    }
-    return [];
-  },
-  apps: {
-    listReposAccessibleToInstallation: jest.fn().mockReturnValue({ data: [] }),
-  },
-  rest: {
-    repos: {
-      listForAuthenticatedUser: jest.fn(),
-      listForOrg: jest.fn(),
-    },
-    users: {
-      getByUsername: jest.fn(),
-    },
-  },
-  hook: {
-    before: jest.fn(),
-    after: jest.fn(),
-    error: jest.fn(),
   },
 };
 
@@ -70,23 +41,6 @@ const mockGetAllCredentials = jest.fn();
 // We want to just mock the credentials provider's getAllCredentials method and nothing else
 CustomGitlabCredentialsProvider.prototype.getAllCredentials =
   mockGetAllCredentials;
-
-const ghRepos = [
-  {
-    name: 'A',
-    path_with_namespace: 'backstage/A',
-    url: 'https://api.github.com/repos/backstage/A',
-    web_url: 'https://gitlab.com/backstage/A',
-    default_branch: 'master',
-  },
-  {
-    name: 'B',
-    path_with_namespace: 'backstage/B',
-    url: 'https://api.github.com/repos/backstage/B',
-    web_url: 'https://gitlab.com/backstage/B',
-    default_branch: 'main',
-  },
-];
 
 describe('GitlabApiService tests', () => {
   let gitlabApiService: GitlabApiService;

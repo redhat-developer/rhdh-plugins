@@ -17,8 +17,6 @@
 import { mockServices } from '@backstage/backend-test-utils';
 import { ScmIntegrations } from '@backstage/integration';
 
-import type { RestEndpointMethodTypes } from '@octokit/rest';
-
 import {
   CustomGitlabCredentialsProvider,
   CustomSingleInstanceGitlabCredentialsProvider,

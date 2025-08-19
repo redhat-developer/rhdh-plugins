@@ -338,7 +338,6 @@ export class GitlabApiService {
       this.integrations,
       {
         dataFetcher: async (
-          // octokit: Octokit,
           gitlab: any,
           credential: ExtendedGitlabCredentials,
           ghConfig: GitLabIntegrationConfig,
