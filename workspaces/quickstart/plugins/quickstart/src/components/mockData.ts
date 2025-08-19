@@ -16,67 +16,54 @@
 
 import { QuickstartItemData } from '../types';
 
-export const mockQuickstartItems: QuickstartItemData[] = [
-  // Steps for Admin
-  {
-    title: 'Step 1 for Admin',
-    description: 'Description for Step 1',
-    icon: 'bolt',
-    roles: ['admin'],
-    cta: {
-      text: 'Start Now',
-      link: '#',
-    },
-  },
-  {
-    title: 'Step 2 for Admin',
-    description: 'Description for Step 2',
-    icon: 'code',
-    roles: ['admin'],
-    cta: {
-      text: 'Continue',
-      link: '#',
-    },
-  },
+// Reusable CTA objects
+const CTAS = {
+  start: { text: 'Start Now', link: '#' },
+  continue: { text: 'Continue', link: '#' },
+} as const;
 
-  // Steps for Developer
+// Common icons
+const ICONS = {
+  step1: 'bolt',
+  step2: 'code',
+} as const;
+
+// Helper function to create role-based steps
+const createRoleSteps = (role: string): QuickstartItemData[] => [
   {
-    title: 'Step 1 for Developer',
+    title: `Step 1 for ${role}`,
     description: 'Description for Step 1',
-    icon: 'bolt',
-    roles: ['developer'],
-    cta: {
-      text: 'Start Now',
-      link: '#',
-    },
+    icon: ICONS.step1,
+    roles: [role.toLowerCase()],
+    cta: CTAS.start,
   },
   {
-    title: 'Step 2 for Developer',
+    title: `Step 2 for ${role}`,
     description: 'Description for Step 2',
-    icon: 'code',
-    roles: ['developer'],
-    cta: {
-      text: 'Continue',
-      link: '#',
-    },
+    icon: ICONS.step2,
+    roles: [role.toLowerCase()],
+    cta: CTAS.continue,
   },
-  // Step without any roles (Default to admin role if no roles are assigned)
+];
+
+// Helper function to create no-role steps
+const createNoRoleSteps = (): QuickstartItemData[] => [
   {
     title: 'Step 1 - No Roles Assigned',
     description: 'Description for Step 1 (No roles assigned)',
-    icon: 'bolt',
-    cta: {
-      text: 'Start Now',
-      link: '#',
-    },
+    icon: ICONS.step1,
+    cta: CTAS.start,
   },
   {
     title: 'Step 2 - No Roles Assigned',
     description: 'Description for Step 2 (No roles assigned)',
-    icon: 'code',
-    cta: {
-      text: 'Continue',
-      link: '#',
-    },
+    icon: ICONS.step2,
+    cta: CTAS.continue,
   },
+];
+
+export const mockQuickstartItems: QuickstartItemData[] = [
+  ...createRoleSteps('Admin'),
+  ...createRoleSteps('Developer'),
+  ...createNoRoleSteps(),
 ];
