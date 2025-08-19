@@ -32,19 +32,23 @@ describe('Quickstart', () => {
     mockHandleDrawerClose.mockClear();
   });
 
+  const renderWithRole = async (role: string) => {
+    const items = filterQuickstartItemsByRole(mockQuickstartItems, role);
+    await renderInTestApp(
+      <Quickstart
+        quickstartItems={items}
+        handleDrawerClose={mockHandleDrawerClose}
+      />,
+    );
+  };
+
+  const expectHideButton = () => {
+    expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+  };
+
   describe('Role-based item rendering', () => {
     it('renders admin-specific items and items with no roles', async () => {
-      const adminItems = filterQuickstartItemsByRole(
-        mockQuickstartItems,
-        'admin',
-      );
-
-      await renderInTestApp(
-        <Quickstart
-          quickstartItems={adminItems}
-          handleDrawerClose={mockHandleDrawerClose}
-        />,
-      );
+      await renderWithRole('admin');
 
       // Admin-specific items should be visible
       expect(screen.getByText('Step 1 for Admin')).toBeInTheDocument();
@@ -66,21 +70,11 @@ describe('Quickstart', () => {
         screen.queryByText('Step 2 for Developer'),
       ).not.toBeInTheDocument();
 
-      expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+      expectHideButton();
     });
 
     it('renders developer-specific items only', async () => {
-      const developerItems = filterQuickstartItemsByRole(
-        mockQuickstartItems,
-        'developer',
-      );
-
-      await renderInTestApp(
-        <Quickstart
-          quickstartItems={developerItems}
-          handleDrawerClose={mockHandleDrawerClose}
-        />,
-      );
+      await renderWithRole('developer');
 
       // Developer-specific items should be visible
       expect(screen.getByText('Step 1 for Developer')).toBeInTheDocument();
@@ -96,43 +90,23 @@ describe('Quickstart', () => {
         screen.queryByText('Step 2 - No Roles Assigned'),
       ).not.toBeInTheDocument();
 
-      expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+      expectHideButton();
     });
 
     it('shows empty state when no items match user role', async () => {
-      const managerItems = filterQuickstartItemsByRole(
-        mockQuickstartItems,
-        'manager',
-      );
-
-      await renderInTestApp(
-        <Quickstart
-          quickstartItems={managerItems}
-          handleDrawerClose={mockHandleDrawerClose}
-        />,
-      );
+      await renderWithRole('manager');
 
       // Should show empty state
       expect(
         screen.getByText('Quickstart content not available for your role.'),
       ).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+      expectHideButton();
     });
   });
 
   describe('Progress calculation with role-based items', () => {
     it('calculates progress correctly for admin items', async () => {
-      const adminItems = filterQuickstartItemsByRole(
-        mockQuickstartItems,
-        'admin',
-      );
-
-      await renderInTestApp(
-        <Quickstart
-          quickstartItems={adminItems}
-          handleDrawerClose={mockHandleDrawerClose}
-        />,
-      );
+      await renderWithRole('admin');
 
       expect(screen.getByText('Not started')).toBeInTheDocument();
 
@@ -160,17 +134,7 @@ describe('Quickstart', () => {
     });
 
     it('calculates progress correctly for developer items', async () => {
-      const developerItems = filterQuickstartItemsByRole(
-        mockQuickstartItems,
-        'developer',
-      );
-
-      await renderInTestApp(
-        <Quickstart
-          quickstartItems={developerItems}
-          handleDrawerClose={mockHandleDrawerClose}
-        />,
-      );
+      await renderWithRole('developer');
 
       expect(screen.getByText('Not started')).toBeInTheDocument();
 
@@ -198,19 +162,10 @@ describe('Quickstart', () => {
     });
 
     it('reads existing progress from localStorage for role-specific items', async () => {
-      const adminItems = filterQuickstartItemsByRole(
-        mockQuickstartItems,
-        'admin',
-      );
       // Mark first admin item as complete
       localStorage.setItem('Step 1 for Admin-0', 'true');
 
-      await renderInTestApp(
-        <Quickstart
-          quickstartItems={adminItems}
-          handleDrawerClose={mockHandleDrawerClose}
-        />,
-      );
+      await renderWithRole('admin');
 
       expect(screen.getByText('25% progress')).toBeInTheDocument();
     });
@@ -218,17 +173,7 @@ describe('Quickstart', () => {
 
   describe('Component interaction', () => {
     it('calls handleDrawerClose when Hide button is clicked', async () => {
-      const adminItems = filterQuickstartItemsByRole(
-        mockQuickstartItems,
-        'admin',
-      );
-
-      await renderInTestApp(
-        <Quickstart
-          quickstartItems={adminItems}
-          handleDrawerClose={mockHandleDrawerClose}
-        />,
-      );
+      await renderWithRole('admin');
 
       const hideBtn = screen.getByRole('button', { name: 'Hide' });
       fireEvent.click(hideBtn);
@@ -247,7 +192,7 @@ describe('Quickstart', () => {
       expect(
         screen.getByText('Quickstart content not available for your role.'),
       ).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+      expectHideButton();
     });
   });
 });
