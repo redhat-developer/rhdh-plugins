@@ -17,9 +17,53 @@
 import { QuickstartItemData } from '../types';
 
 export const mockQuickstartItems: QuickstartItemData[] = [
+  // Steps for Admin
   {
-    title: 'Step 1',
+    title: 'Step 1 for Admin',
     description: 'Description for Step 1',
+    icon: 'bolt',
+    roles: ['admin'],
+    cta: {
+      text: 'Start Now',
+      link: '#',
+    },
+  },
+  {
+    title: 'Step 2 for Admin',
+    description: 'Description for Step 2',
+    icon: 'code',
+    roles: ['admin'],
+    cta: {
+      text: 'Continue',
+      link: '#',
+    },
+  },
+
+  // Steps for Developer
+  {
+    title: 'Step 1 for Developer',
+    description: 'Description for Step 1',
+    icon: 'bolt',
+    roles: ['developer'],
+    cta: {
+      text: 'Start Now',
+      link: '#',
+    },
+  },
+  {
+    title: 'Step 2 for Developer',
+    description: 'Description for Step 2',
+    icon: 'code',
+    roles: ['developer'],
+    cta: {
+      text: 'Continue',
+      link: '#',
+    },
+  },
+  // Step without any roles (Default to admin role if no roles are assigned)
+  {
+    title: 'Step 1 - No Roles Assigned',
+    description: 'Description for Step 1 (No roles assigned)',
     icon: 'bolt',
     cta: {
       text: 'Start Now',
@@ -27,8 +71,8 @@ export const mockQuickstartItems: QuickstartItemData[] = [
     },
   },
   {
-    title: 'Step 2',
-    description: 'Description for Step 2',
+    title: 'Step 2 - No Roles Assigned',
+    description: 'Description for Step 2 (No roles assigned)',
     icon: 'code',
     cta: {
       text: 'Continue',

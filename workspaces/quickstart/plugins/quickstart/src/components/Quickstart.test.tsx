@@ -18,6 +18,7 @@ import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { renderInTestApp } from '@backstage/test-utils';
 import { Quickstart } from './Quickstart';
 import { mockQuickstartItems } from './mockData';
+import { filterQuickstartItemsByRole } from '../utils';
 
 beforeEach(() => {
   localStorage.clear();
@@ -27,84 +28,226 @@ beforeEach(() => {
 describe('Quickstart', () => {
   const mockHandleDrawerClose = jest.fn();
 
-  it('renders header, content and footer', async () => {
-    await renderInTestApp(
-      <Quickstart
-        quickstartItems={mockQuickstartItems}
-        handleDrawerClose={mockHandleDrawerClose}
-      />,
-    );
-
-    expect(screen.getByText('Step 1')).toBeInTheDocument();
-    expect(screen.getByText('Step 2')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+  beforeEach(() => {
+    mockHandleDrawerClose.mockClear();
   });
 
-  it('shows "Not started" in footer initially', async () => {
-    await renderInTestApp(
-      <Quickstart
-        quickstartItems={mockQuickstartItems}
-        handleDrawerClose={mockHandleDrawerClose}
-      />,
-    );
+  describe('Role-based item rendering', () => {
+    it('renders admin-specific items and items with no roles', async () => {
+      const adminItems = filterQuickstartItemsByRole(
+        mockQuickstartItems,
+        'admin',
+      );
 
-    expect(screen.getByText('Not started')).toBeInTheDocument();
-  });
+      await renderInTestApp(
+        <Quickstart
+          quickstartItems={adminItems}
+          handleDrawerClose={mockHandleDrawerClose}
+        />,
+      );
 
-  it('updates progress when CTA is clicked', async () => {
-    await renderInTestApp(
-      <Quickstart
-        quickstartItems={mockQuickstartItems}
-        handleDrawerClose={mockHandleDrawerClose}
-      />,
-    );
+      // Admin-specific items should be visible
+      expect(screen.getByText('Step 1 for Admin')).toBeInTheDocument();
+      expect(screen.getByText('Step 2 for Admin')).toBeInTheDocument();
 
-    // Expand and click CTA for Step One
-    const expandButtons = screen.getAllByRole('button', {
-      name: /expand item/i,
-    });
-    fireEvent.click(expandButtons[0]);
+      // Items with no roles should also be visible (defaults to admin)
+      expect(
+        screen.getByText('Step 1 - No Roles Assigned'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Step 2 - No Roles Assigned'),
+      ).toBeInTheDocument();
 
-    const cta = await screen.findByRole('button', { name: 'Start Now' });
-    fireEvent.click(cta);
+      // Developer items should not be visible
+      expect(
+        screen.queryByText('Step 1 for Developer'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Step 2 for Developer'),
+      ).not.toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.getByText('50% progress')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
     });
 
-    // Expand and click CTA for Step Two
-    fireEvent.click(expandButtons[1]);
-    const cta2 = await screen.findByRole('button', { name: 'Continue' });
-    fireEvent.click(cta2);
+    it('renders developer-specific items only', async () => {
+      const developerItems = filterQuickstartItemsByRole(
+        mockQuickstartItems,
+        'developer',
+      );
 
-    await waitFor(() => {
-      expect(screen.getByText('100% progress')).toBeInTheDocument();
+      await renderInTestApp(
+        <Quickstart
+          quickstartItems={developerItems}
+          handleDrawerClose={mockHandleDrawerClose}
+        />,
+      );
+
+      // Developer-specific items should be visible
+      expect(screen.getByText('Step 1 for Developer')).toBeInTheDocument();
+      expect(screen.getByText('Step 2 for Developer')).toBeInTheDocument();
+
+      // Admin items and no-role items should not be visible
+      expect(screen.queryByText('Step 1 for Admin')).not.toBeInTheDocument();
+      expect(screen.queryByText('Step 2 for Admin')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Step 1 - No Roles Assigned'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Step 2 - No Roles Assigned'),
+      ).not.toBeInTheDocument();
+
+      expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+    });
+
+    it('shows empty state when no items match user role', async () => {
+      const managerItems = filterQuickstartItemsByRole(
+        mockQuickstartItems,
+        'manager',
+      );
+
+      await renderInTestApp(
+        <Quickstart
+          quickstartItems={managerItems}
+          handleDrawerClose={mockHandleDrawerClose}
+        />,
+      );
+
+      // Should show empty state
+      expect(
+        screen.getByText('Quickstart content not available for your role.'),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
     });
   });
 
-  it('stores and reads progress from localStorage', async () => {
-    localStorage.setItem('Step 1-0', 'true');
-    await renderInTestApp(
-      <Quickstart
-        quickstartItems={mockQuickstartItems}
-        handleDrawerClose={mockHandleDrawerClose}
-      />,
-    );
+  describe('Progress calculation with role-based items', () => {
+    it('calculates progress correctly for admin items', async () => {
+      const adminItems = filterQuickstartItemsByRole(
+        mockQuickstartItems,
+        'admin',
+      );
 
-    expect(screen.getByText('50% progress')).toBeInTheDocument();
+      await renderInTestApp(
+        <Quickstart
+          quickstartItems={adminItems}
+          handleDrawerClose={mockHandleDrawerClose}
+        />,
+      );
+
+      expect(screen.getByText('Not started')).toBeInTheDocument();
+
+      // Complete first admin item
+      const expandButtons = screen.getAllByRole('button', {
+        name: /expand item/i,
+      });
+      fireEvent.click(expandButtons[0]);
+
+      const cta = await screen.findByRole('button', { name: 'Start Now' });
+      fireEvent.click(cta);
+
+      await waitFor(() => {
+        expect(screen.getByText('25% progress')).toBeInTheDocument();
+      });
+
+      // Complete second admin item
+      fireEvent.click(expandButtons[1]);
+      const cta2 = await screen.findByRole('button', { name: 'Continue' });
+      fireEvent.click(cta2);
+
+      await waitFor(() => {
+        expect(screen.getByText('50% progress')).toBeInTheDocument();
+      });
+    });
+
+    it('calculates progress correctly for developer items', async () => {
+      const developerItems = filterQuickstartItemsByRole(
+        mockQuickstartItems,
+        'developer',
+      );
+
+      await renderInTestApp(
+        <Quickstart
+          quickstartItems={developerItems}
+          handleDrawerClose={mockHandleDrawerClose}
+        />,
+      );
+
+      expect(screen.getByText('Not started')).toBeInTheDocument();
+
+      // Complete first developer item
+      const expandButtons = screen.getAllByRole('button', {
+        name: /expand item/i,
+      });
+      fireEvent.click(expandButtons[0]);
+
+      const cta = await screen.findByRole('button', { name: 'Start Now' });
+      fireEvent.click(cta);
+
+      await waitFor(() => {
+        expect(screen.getByText('50% progress')).toBeInTheDocument();
+      });
+
+      // Complete second developer item
+      fireEvent.click(expandButtons[1]);
+      const cta2 = await screen.findByRole('button', { name: 'Continue' });
+      fireEvent.click(cta2);
+
+      await waitFor(() => {
+        expect(screen.getByText('100% progress')).toBeInTheDocument();
+      });
+    });
+
+    it('reads existing progress from localStorage for role-specific items', async () => {
+      const adminItems = filterQuickstartItemsByRole(
+        mockQuickstartItems,
+        'admin',
+      );
+      // Mark first admin item as complete
+      localStorage.setItem('Step 1 for Admin-0', 'true');
+
+      await renderInTestApp(
+        <Quickstart
+          quickstartItems={adminItems}
+          handleDrawerClose={mockHandleDrawerClose}
+        />,
+      );
+
+      expect(screen.getByText('25% progress')).toBeInTheDocument();
+    });
   });
 
-  it('calls handleDrawerClose when Hide button is clicked', async () => {
-    await renderInTestApp(
-      <Quickstart
-        quickstartItems={mockQuickstartItems}
-        handleDrawerClose={mockHandleDrawerClose}
-      />,
-    );
+  describe('Component interaction', () => {
+    it('calls handleDrawerClose when Hide button is clicked', async () => {
+      const adminItems = filterQuickstartItemsByRole(
+        mockQuickstartItems,
+        'admin',
+      );
 
-    const hideBtn = screen.getByRole('button', { name: 'Hide' });
-    fireEvent.click(hideBtn);
+      await renderInTestApp(
+        <Quickstart
+          quickstartItems={adminItems}
+          handleDrawerClose={mockHandleDrawerClose}
+        />,
+      );
 
-    expect(mockHandleDrawerClose).toHaveBeenCalledTimes(1);
+      const hideBtn = screen.getByRole('button', { name: 'Hide' });
+      fireEvent.click(hideBtn);
+
+      expect(mockHandleDrawerClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('handles empty items array gracefully', async () => {
+      await renderInTestApp(
+        <Quickstart
+          quickstartItems={[]}
+          handleDrawerClose={mockHandleDrawerClose}
+        />,
+      );
+
+      expect(
+        screen.getByText('Quickstart content not available for your role.'),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+    });
   });
 });

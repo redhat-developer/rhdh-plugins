@@ -20,6 +20,7 @@ import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
 import { Quickstart } from './Quickstart';
 import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
+import { filterQuickstartItemsByRole } from '../utils';
 
 export const QuickstartDrawer = () => {
   const { isDrawerOpen, closeDrawer, drawerWidth } =
@@ -34,11 +35,7 @@ export const QuickstartDrawer = () => {
   // This will be dynamically determined based on the logged-in user
   const userRole = 'developer'; // switch to 'admin', 'developer', or other roles for testing purposes
 
-  const filteredItems = quickstartItems.filter(item => {
-    // If roles is undefined or empty, default to 'admin'
-    const roles = item.roles?.length ? item.roles : ['admin'];
-    return roles.includes(userRole);
-  });
+  const filteredItems = filterQuickstartItemsByRole(quickstartItems, userRole);
 
   return (
     <Drawer
