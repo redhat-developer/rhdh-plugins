@@ -18,7 +18,6 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import CardContent from '@mui/material/CardContent';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
@@ -29,7 +28,7 @@ interface OnboardingCardProps {
   buttonLink: string;
   target?: string;
   ariaLabel?: string;
-  icon?: React.ReactNode;
+  endIcon: React.ReactNode;
 }
 
 const OnboardingCard: FC<OnboardingCardProps> = ({
@@ -39,7 +38,7 @@ const OnboardingCard: FC<OnboardingCardProps> = ({
   buttonLink,
   target,
   ariaLabel,
-  icon,
+  endIcon,
 }) => {
   return (
     <Box>
@@ -80,11 +79,13 @@ const OnboardingCard: FC<OnboardingCardProps> = ({
           sx={{
             padding: theme => theme.spacing(1, 1.5),
             fontSize: '16px',
+            '& .v5-MuiButton-endIcon': {
+              marginRight: 0,
+            },
           }}
-          endIcon={icon ? icon : null}
+          endIcon={endIcon}
         >
           {buttonText}{' '}
-          {icon ? null : <ArrowForwardIcon style={{ paddingLeft: '0.5rem' }} />}
         </Button>
       </CardContent>
     </Box>
