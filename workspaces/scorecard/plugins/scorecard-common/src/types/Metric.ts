@@ -36,7 +36,7 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
 export type Metric<T extends MetricType = MetricType> = {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   type: T;
   history?: boolean;
 };
@@ -71,6 +71,7 @@ export type MetricResult = {
   status: 'success' | 'error';
   metadata: {
     title: string;
+    description: string;
     type: MetricType;
     history?: boolean;
   };

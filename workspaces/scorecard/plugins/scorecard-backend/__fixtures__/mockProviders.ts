@@ -31,6 +31,7 @@ abstract class MockMetricProvider<T extends MetricType>
     protected providerId: string,
     protected datasourceId: string,
     protected title: string,
+    protected description: string,
     protected value: MetricValue<T>,
   ) {}
 
@@ -48,6 +49,7 @@ abstract class MockMetricProvider<T extends MetricType>
     const metric: Metric<T> = {
       id: this.providerId,
       title: this.title,
+      description: this.description,
       type: this.metricType,
     };
     return metric;
@@ -63,9 +65,10 @@ export class MockNumberProvider extends MockMetricProvider<'number'> {
     providerId: string,
     datasourceId: string,
     title: string = 'Mock Number Metric',
+    description: string = 'Mock number description.',
     value: number = 42,
   ) {
-    super('number', providerId, datasourceId, title, value);
+    super('number', providerId, datasourceId, title, description, value);
   }
   getMetricThresholds(): ThresholdConfig {
     return {
@@ -83,9 +86,10 @@ export class MockStringProvider extends MockMetricProvider<'string'> {
     providerId: string,
     datasourceId: string,
     title: string = 'Mock String Metric',
+    description: string = 'Mock string description.',
     value: string = 'test-value',
   ) {
-    super('string', providerId, datasourceId, title, value);
+    super('string', providerId, datasourceId, title, description, value);
   }
   getMetricThresholds(): ThresholdConfig {
     return {
@@ -103,7 +107,21 @@ export const githubNumberProvider = new MockNumberProvider(
   'Github Number Metric',
 );
 
+export const githubNumberMetricMetadata = {
+  history: undefined,
+  title: 'Github Number Metric',
+  description: 'Mock number description.',
+  type: 'number',
+};
+
 export const jiraStringProvider = new MockStringProvider(
   'jira.string-metric',
   'jira',
 );
+
+export const jiraStringMetricMetadata = {
+  history: undefined,
+  title: 'Mock String Metric',
+  description: 'Mock string description.',
+  type: 'string',
+};

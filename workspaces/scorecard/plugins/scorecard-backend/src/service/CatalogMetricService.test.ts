@@ -22,7 +22,9 @@ import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 import { mockServices } from '@backstage/backend-test-utils';
 import {
+  githubNumberMetricMetadata,
   githubNumberProvider,
+  jiraStringMetricMetadata,
   jiraStringProvider,
 } from '../../__fixtures__/mockProviders';
 import { mockEntity } from '../../__fixtures__/mockEntities';
@@ -41,9 +43,7 @@ describe('CatalogMetricService', () => {
   const githubMetricResult = {
     id: 'github.number-metric',
     metadata: {
-      history: undefined,
-      title: 'Github Number Metric',
-      type: 'number' as const,
+      ...githubNumberMetricMetadata,
     },
     status: 'success' as const,
     result: {
@@ -61,9 +61,7 @@ describe('CatalogMetricService', () => {
   const jiraMetricResult = {
     id: 'jira.string-metric',
     metadata: {
-      history: undefined,
-      title: 'Mock String Metric',
-      type: 'string' as const,
+      ...jiraStringMetricMetadata,
     },
     status: 'success' as const,
     result: {

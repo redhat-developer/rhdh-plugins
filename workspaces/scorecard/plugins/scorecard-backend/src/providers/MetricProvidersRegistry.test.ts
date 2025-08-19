@@ -17,7 +17,9 @@
 import { ConflictError, NotFoundError } from '@backstage/errors';
 import { MetricProvidersRegistry } from './MetricProvidersRegistry';
 import {
+  githubNumberMetricMetadata,
   githubNumberProvider,
+  jiraStringMetricMetadata,
   jiraStringProvider,
   MockNumberProvider,
   MockStringProvider,
@@ -38,13 +40,11 @@ describe('MetricProvidersRegistry', () => {
       expect(registry.listMetrics()).toEqual([
         {
           id: 'github.number-metric',
-          title: 'Github Number Metric',
-          type: 'number',
+          ...githubNumberMetricMetadata,
         },
         {
           id: 'jira.string-metric',
-          title: 'Mock String Metric',
-          type: 'string',
+          ...jiraStringMetricMetadata,
         },
       ]);
     });
@@ -70,8 +70,7 @@ describe('MetricProvidersRegistry', () => {
 
       expect(metric).toEqual({
         id: 'github.number-metric',
-        title: 'Github Number Metric',
-        type: 'number',
+        ...githubNumberMetricMetadata,
       });
     });
 

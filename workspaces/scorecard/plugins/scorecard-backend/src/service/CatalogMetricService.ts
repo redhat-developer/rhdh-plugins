@@ -162,6 +162,7 @@ export class CatalogMetricService {
           status: 'error' as const,
           metadata: {
             title: metric.title,
+            description: metric.description,
             type: metric.type,
             history: metric.history,
           },
@@ -179,6 +180,7 @@ export class CatalogMetricService {
         status: 'success' as const,
         metadata: {
           title: metric.title,
+          description: metric.description,
           type: metric.type,
           history: metric.history,
         },
