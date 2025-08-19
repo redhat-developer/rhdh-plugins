@@ -121,7 +121,7 @@ describe('imports', () => {
 
         let req = request(backendServer)
           .get('/api/bulk-import/imports')
-          .query({ approvalTool: 'GIT' });
+          .query({ approvalTool: 'GITLAB' });
         if (apiVersion) {
           req = req.set('api-version', apiVersion);
         }

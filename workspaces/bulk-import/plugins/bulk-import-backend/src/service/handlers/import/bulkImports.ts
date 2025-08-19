@@ -86,7 +86,7 @@ export async function findAllImports(
     config: Config;
     gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
-    approvalTool?: string;
+    approvalTool: string | undefined;
   },
   requestHeaders?: {
     apiVersion?: Paths.FindAllImports.Parameters.ApiVersion;
@@ -679,7 +679,7 @@ export async function findImportStatusByRepo(
     config: Config;
     gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
-    approvalTool?: string;
+    approvalTool: string | undefined;
   },
   repoUrl: string,
   defaultBranch?: string,

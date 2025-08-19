@@ -23,7 +23,7 @@ import gitUrlParse from 'git-url-parse';
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
 import { CatalogLocation } from '../../../catalog/types';
 import { Paths } from '../../../generated/openapi';
-import { GithubApiService } from '../../../github';
+import { GitlabApiService } from '../../../gitlab';
 import { deleteImportByRepo, findAllImports } from './bulkImports';
 
 const config = mockServices.rootConfig({
@@ -32,18 +32,9 @@ const config = mockServices.rootConfig({
       baseUrl: 'https://my-backstage-app.example.com',
     },
     integrations: {
-      github: [
+      gitlab: [
         {
-          host: 'github.com',
-          apps: [
-            {
-              appId: 1,
-              privateKey: 'privateKey',
-              webhookSecret: '123',
-              clientId: 'CLIENT_ID',
-              clientSecret: 'CLIENT_SECRET',
-            },
-          ],
+          host: 'gitlab.com',
           token: 'hardcoded_token', // notsecret
         },
       ],
@@ -54,7 +45,7 @@ const config = mockServices.rootConfig({
 describe('bulkimports.ts unit tests using gitlab', () => {
   let logger: LoggerService;
   let mockCatalogHttpClient: CatalogHttpClient;
-  let mockGithubApiService: GithubApiService;
+  let mockGitlabApiService: GitlabApiService;
 
   beforeEach(() => {
     logger = mockServices.logger.mock();
@@ -83,26 +74,26 @@ describe('bulkimports.ts unit tests using gitlab', () => {
       auth: mockAuth,
       catalogApi: mockCatalogClient,
     });
-    mockGithubApiService = new GithubApiService(logger, config, mockCache);
-    initializeGithubApiServiceMock();
+    mockGitlabApiService = new GitlabApiService(logger, config, mockCache);
+    initializeGitlabApiServiceMock();
   });
 
   afterEach(() => {
     jest.resetAllMocks();
   });
 
-  function initializeGithubApiServiceMock() {
+  function initializeGitlabApiServiceMock() {
     jest
-      .spyOn(mockGithubApiService, 'getRepositoryFromIntegrations')
+      .spyOn(mockGitlabApiService, 'getRepositoryFromIntegrations')
       .mockImplementation(async (repoUrl: string) => {
         let defaultBranch = 'main';
         switch (repoUrl) {
-          case 'https://github.com/my-org-2/my-repo-21':
-          case 'https://github.com/my-org-2/my-repo-22':
+          case 'https://gitlab.com/my-org-2/my-repo-21':
+          case 'https://gitlab.com/my-org-2/my-repo-22':
             defaultBranch = 'master';
             break;
-          case 'https://github.com/my-org-3/my-repo-32':
-          case 'https://github.com/my-org-3/my-repo-33':
+          case 'https://gitlab.com/my-org-3/my-repo-32':
+          case 'https://gitlab.com/my-org-3/my-repo-33':
             defaultBranch = 'dev';
             break;
           default:
@@ -122,26 +113,26 @@ describe('bulkimports.ts unit tests using gitlab', () => {
       });
 
     jest
-      .spyOn(mockGithubApiService, 'findImportOpenPr')
+      .spyOn(mockGitlabApiService, 'findImportOpenPr')
       .mockImplementation((_logger, input) => {
         const resp: {
           prNum?: number;
           prUrl?: string;
         } = {};
         switch (input.repoUrl) {
-          case 'https://github.com/my-user/my-repo-123':
+          case 'https://gitlab.com/my-user/my-repo-123':
             return Promise.reject(
               new Error(
                 'could not find out if there is an import PR open on this repo',
               ),
             );
-          case 'https://github.com/my-org-1/my-repo-11':
+          case 'https://gitlab.com/my-org-1/my-repo-11':
             resp.prNum = 987;
-            resp.prUrl = `https://github.com/my-org-1/my-repo-11/pull/${resp.prNum}`;
+            resp.prUrl = `https://gitlab.com/my-org-1/my-repo-11/pull/${resp.prNum}`;
             break;
-          case 'https://github.com/my-org-3/my-repo-32':
+          case 'https://gitlab.com/my-org-3/my-repo-32':
             resp.prNum = 100;
-            resp.prUrl = `https://github.com/my-org-2/my-repo-21/pull/${resp.prNum}`;
+            resp.prUrl = `https://gitlab.com/my-org-2/my-repo-21/pull/${resp.prNum}`;
             break;
           default:
             break;
@@ -150,12 +141,12 @@ describe('bulkimports.ts unit tests using gitlab', () => {
       });
 
     jest
-      .spyOn(mockGithubApiService, 'hasFileInRepo')
+      .spyOn(mockGitlabApiService, 'hasFileInRepo')
       .mockImplementation(async input => {
         if (input.fileName === 'catalog-info.yaml') {
           return [
-            'https://github.com/my-org-2/my-repo-21',
-            'https://github.com/my-org-3/my-repo-31',
+            'https://gitlab.com/my-org-2/my-repo-21',
+            'https://gitlab.com/my-org-3/my-repo-31',
           ].includes(input.repoUrl);
         }
         throw new Error(
@@ -172,27 +163,27 @@ describe('bulkimports.ts unit tests using gitlab', () => {
     const locationUrls = [
       // from app-config
       {
-        id: 'app-config--location-https://github.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml',
+        id: 'app-config--location-https://gitlab.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml',
         target:
-          'https://github.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml',
+          'https://gitlab.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml',
         source: 'config',
       },
       {
-        id: 'app-config--location-https://github.com/my-org-1/my-repo-12/blob/main/some/path/to/catalog-info.yaml',
+        id: 'app-config--location-https://gitlab.com/my-org-1/my-repo-12/blob/main/some/path/to/catalog-info.yaml',
         target:
-          'https://github.com/my-org-1/my-repo-12/blob/main/some/path/to/catalog-info.yaml',
+          'https://gitlab.com/my-org-1/my-repo-12/blob/main/some/path/to/catalog-info.yaml',
         source: 'config',
       },
       {
-        id: 'app-config--location-https://github.com/my-user/my-repo-123/blob/main/catalog-info.yaml',
+        id: 'app-config--location-https://gitlab.com/my-user/my-repo-123/blob/main/catalog-info.yaml',
         target:
-          'https://github.com/my-user/my-repo-123/blob/main/catalog-info.yaml',
+          'https://gitlab.com/my-user/my-repo-123/blob/main/catalog-info.yaml',
         source: 'config',
       },
       {
-        id: 'app-config--location-https://github.com/some-public-org/some-public-repo/blob/main/catalog-info.yaml',
+        id: 'app-config--location-https://gitlab.com/some-public-org/some-public-repo/blob/main/catalog-info.yaml',
         target:
-          'https://github.com/some-public-org/some-public-repo/blob/main/catalog-info.yaml',
+          'https://gitlab.com/some-public-org/some-public-repo/blob/main/catalog-info.yaml',
         source: 'config',
       },
 
@@ -200,19 +191,19 @@ describe('bulkimports.ts unit tests using gitlab', () => {
       {
         id: 'l-21',
         target:
-          'https://github.com/my-org-2/my-repo-21/blob/master/catalog-info.yaml',
+          'https://gitlab.com/my-org-2/my-repo-21/blob/master/catalog-info.yaml',
         source: 'location',
       },
       {
         id: 'l-22',
         target:
-          'https://github.com/my-org-2/my-repo-22/blob/master/catalog-info.yaml',
+          'https://gitlab.com/my-org-2/my-repo-22/blob/master/catalog-info.yaml',
         source: 'location',
       },
       {
         id: 'l-211',
         target:
-          'https://github.com/my-org-21/my-repo-211/blob/another-branch/catalog-info.yaml',
+          'https://gitlab.com/my-org-21/my-repo-211/blob/another-branch/catalog-info.yaml',
         source: 'location',
       },
 
@@ -220,24 +211,24 @@ describe('bulkimports.ts unit tests using gitlab', () => {
       {
         id: 'o-31',
         target:
-          'https://github.com/my-org-3/my-repo-31/blob/main/catalog-info.yaml',
+          'https://gitlab.com/my-org-3/my-repo-31/blob/main/catalog-info.yaml',
         source: 'integration',
       },
       {
         id: 'o-32',
         target:
-          'https://github.com/my-org-3/my-repo-32/blob/dev/catalog-info.yaml',
+          'https://gitlab.com/my-org-3/my-repo-32/blob/dev/catalog-info.yaml',
         source: 'integration',
       },
       {
         id: 'o-33',
-        target: 'https://github.com/my-org-3/my-repo-33/blob/dev/all.yaml',
+        target: 'https://gitlab.com/my-org-3/my-repo-33/blob/dev/all.yaml',
         source: 'integration',
       },
       {
         id: 'o-34',
         target:
-          'https://github.com/my-org-3/my-repo-34/blob/dev/path/to/catalog-info.yaml',
+          'https://gitlab.com/my-org-3/my-repo-34/blob/dev/path/to/catalog-info.yaml',
         source: 'integration',
       },
     ] as CatalogLocation[];
@@ -252,7 +243,7 @@ describe('bulkimports.ts unit tests using gitlab', () => {
     }
 
     it.each([undefined, 'v1', 'v2'])(
-      'should return only imports from repos that are accessible from the configured GH integrations (API Version: %s)',
+      'should return only imports from repos that are accessible from the configured GL integrations (API Version: %s)',
       async apiVersionStr => {
         jest
           .spyOn(mockCatalogHttpClient, 'listCatalogUrlLocationsById')
@@ -262,18 +253,18 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           });
         jest
           .spyOn(
-            mockGithubApiService,
+            mockGitlabApiService,
             'filterLocationsAccessibleFromIntegrations',
           )
           .mockResolvedValue([
             // only repos that are accessible from the configured GH integrations
             // are considered as valid Imports
-            'https://github.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml', // PR
-            'https://github.com/my-user/my-repo-123/blob/main/catalog-info.yaml', // PR Error
-            'https://github.com/my-org-2/my-repo-21/blob/master/catalog-info.yaml', // ADDED
-            'https://github.com/my-org-2/my-repo-22/blob/master/catalog-info.yaml', // no PR => null status
-            'https://github.com/my-org-3/my-repo-31/blob/main/catalog-info.yaml', // ADDED
-            'https://github.com/my-org-3/my-repo-32/blob/dev/catalog-info.yaml', // PR
+            'https://gitlab.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml', // PR
+            'https://gitlab.com/my-user/my-repo-123/blob/main/catalog-info.yaml', // PR Error
+            'https://gitlab.com/my-org-2/my-repo-21/blob/master/catalog-info.yaml', // ADDED
+            'https://gitlab.com/my-org-2/my-repo-22/blob/master/catalog-info.yaml', // no PR => null status
+            'https://gitlab.com/my-org-3/my-repo-31/blob/main/catalog-info.yaml', // ADDED
+            'https://gitlab.com/my-org-3/my-repo-32/blob/dev/catalog-info.yaml', // PR
           ]);
         jest
           .spyOn(mockCatalogHttpClient, 'findLocationEntitiesByTargetUrl')
@@ -286,8 +277,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -296,34 +288,34 @@ describe('bulkimports.ts unit tests using gitlab', () => {
         expect(resp.statusCode).toEqual(200);
         const allImportsExpected = [
           {
-            id: 'https://github.com/my-org-1/my-repo-11',
+            id: 'https://gitlab.com/my-org-1/my-repo-11',
             repository: {
-              url: 'https://github.com/my-org-1/my-repo-11',
+              url: 'https://gitlab.com/my-org-1/my-repo-11',
               name: 'my-repo-11',
               organization: 'my-org-1',
               id: 'my-org-1/my-repo-11',
               defaultBranch: 'main',
             },
-            approvalTool: 'GIT',
+            approvalTool: 'GITLAB',
             status: 'WAIT_PR_APPROVAL',
             github: {
               pullRequest: {
                 number: 987,
-                url: 'https://github.com/my-org-1/my-repo-11/pull/987',
+                url: 'https://gitlab.com/my-org-1/my-repo-11/pull/987',
               },
             },
             source: 'config',
           },
           {
-            id: 'https://github.com/my-user/my-repo-123',
+            id: 'https://gitlab.com/my-user/my-repo-123',
             repository: {
-              url: 'https://github.com/my-user/my-repo-123',
+              url: 'https://gitlab.com/my-user/my-repo-123',
               name: 'my-repo-123',
               organization: 'my-user',
               id: 'my-user/my-repo-123',
               defaultBranch: 'main',
             },
-            approvalTool: 'GIT',
+            approvalTool: 'GITLAB',
             status: 'PR_ERROR',
             source: 'config',
             errors: [
@@ -331,60 +323,60 @@ describe('bulkimports.ts unit tests using gitlab', () => {
             ],
           },
           {
-            id: 'https://github.com/my-org-2/my-repo-21',
+            id: 'https://gitlab.com/my-org-2/my-repo-21',
             repository: {
-              url: 'https://github.com/my-org-2/my-repo-21',
+              url: 'https://gitlab.com/my-org-2/my-repo-21',
               name: 'my-repo-21',
               organization: 'my-org-2',
               id: 'my-org-2/my-repo-21',
               defaultBranch: 'master',
             },
-            approvalTool: 'GIT',
+            approvalTool: 'GITLAB',
             status: 'ADDED',
             source: 'location',
           },
           {
-            id: 'https://github.com/my-org-2/my-repo-22',
+            id: 'https://gitlab.com/my-org-2/my-repo-22',
             repository: {
-              url: 'https://github.com/my-org-2/my-repo-22',
+              url: 'https://gitlab.com/my-org-2/my-repo-22',
               name: 'my-repo-22',
               organization: 'my-org-2',
               id: 'my-org-2/my-repo-22',
               defaultBranch: 'master',
             },
-            approvalTool: 'GIT',
+            approvalTool: 'GITLAB',
             status: null,
             source: 'location',
           },
           {
-            id: 'https://github.com/my-org-3/my-repo-31',
+            id: 'https://gitlab.com/my-org-3/my-repo-31',
             repository: {
-              url: 'https://github.com/my-org-3/my-repo-31',
+              url: 'https://gitlab.com/my-org-3/my-repo-31',
               name: 'my-repo-31',
               organization: 'my-org-3',
               id: 'my-org-3/my-repo-31',
               defaultBranch: 'main',
             },
-            approvalTool: 'GIT',
+            approvalTool: 'GITLAB',
             status: 'ADDED',
             source: 'integration',
           },
           {
-            id: 'https://github.com/my-org-3/my-repo-32',
+            id: 'https://gitlab.com/my-org-3/my-repo-32',
             repository: {
-              url: 'https://github.com/my-org-3/my-repo-32',
+              url: 'https://gitlab.com/my-org-3/my-repo-32',
               name: 'my-repo-32',
               organization: 'my-org-3',
               id: 'my-org-3/my-repo-32',
               defaultBranch: 'dev',
             },
-            approvalTool: 'GIT',
+            approvalTool: 'GITLAB',
             status: 'WAIT_PR_APPROVAL',
             source: 'integration',
             github: {
               pullRequest: {
                 number: 100,
-                url: 'https://github.com/my-org-2/my-repo-21/pull/100',
+                url: 'https://gitlab.com/my-org-2/my-repo-21/pull/100',
               },
             },
           },
@@ -405,8 +397,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -432,8 +425,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -460,8 +454,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -504,19 +499,19 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           .mockImplementation(listCatalogUrlLocationsMockFn);
         jest
           .spyOn(
-            mockGithubApiService,
+            mockGitlabApiService,
             'filterLocationsAccessibleFromIntegrations',
           )
           .mockImplementation(async (locs: string[]) => {
             const accessible = [
               // only repos that are accessible from the configured GH integrations
               // are considered as valid Imports
-              'https://github.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml', // PR
-              'https://github.com/my-user/my-repo-123/blob/main/catalog-info.yaml', // PR Error
-              'https://github.com/my-org-2/my-repo-21/blob/master/catalog-info.yaml', // ADDED
-              'https://github.com/my-org-2/my-repo-22/blob/master/catalog-info.yaml', // no PR => null status
-              'https://github.com/my-org-3/my-repo-31/blob/main/catalog-info.yaml', // ADDED
-              'https://github.com/my-org-3/my-repo-32/blob/dev/catalog-info.yaml', // PR
+              'https://gitlab.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml', // PR
+              'https://gitlab.com/my-user/my-repo-123/blob/main/catalog-info.yaml', // PR Error
+              'https://gitlab.com/my-org-2/my-repo-21/blob/master/catalog-info.yaml', // ADDED
+              'https://gitlab.com/my-org-2/my-repo-22/blob/master/catalog-info.yaml', // no PR => null status
+              'https://gitlab.com/my-org-3/my-repo-31/blob/main/catalog-info.yaml', // ADDED
+              'https://gitlab.com/my-org-3/my-repo-32/blob/dev/catalog-info.yaml', // PR
             ];
             return intersect(accessible, locs);
           });
@@ -531,8 +526,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -557,8 +553,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -570,28 +567,28 @@ describe('bulkimports.ts unit tests using gitlab', () => {
         expect(resp.statusCode).toEqual(200);
         const allImportsExpected = [
           {
-            id: 'https://github.com/my-org-2/my-repo-21',
+            id: 'https://gitlab.com/my-org-2/my-repo-21',
             repository: {
-              url: 'https://github.com/my-org-2/my-repo-21',
+              url: 'https://gitlab.com/my-org-2/my-repo-21',
               name: 'my-repo-21',
               organization: 'my-org-2',
               id: 'my-org-2/my-repo-21',
               defaultBranch: 'master',
             },
-            approvalTool: 'GIT',
+            approvalTool: 'GITLAB',
             status: 'ADDED',
             source: 'location',
           },
           {
-            id: 'https://github.com/my-org-2/my-repo-22',
+            id: 'https://gitlab.com/my-org-2/my-repo-22',
             repository: {
-              url: 'https://github.com/my-org-2/my-repo-22',
+              url: 'https://gitlab.com/my-org-2/my-repo-22',
               name: 'my-repo-22',
               organization: 'my-org-2',
               id: 'my-org-2/my-repo-22',
               defaultBranch: 'master',
             },
-            approvalTool: 'GIT',
+            approvalTool: 'GITLAB',
             status: null,
             source: 'location',
           },
@@ -612,8 +609,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -640,8 +638,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -669,8 +668,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -705,8 +705,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -743,8 +744,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -782,8 +784,9 @@ describe('bulkimports.ts unit tests using gitlab', () => {
           {
             logger,
             config,
-            gitApiService: mockGithubApiService,
+            gitApiService: mockGitlabApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GITLAB',
           },
           {
             apiVersion,
@@ -810,13 +813,13 @@ describe('bulkimports.ts unit tests using gitlab', () => {
   });
 
   describe('deleteImportByRepo', () => {
-    const repoUrl = 'https://github.com/my-org-1/my-repo-11';
+    const repoUrl = 'https://gitlab.com/my-org-1/my-repo-11';
     const defaultBranch = 'main';
 
     beforeEach(() => {
-      jest.spyOn(mockGithubApiService, 'closeImportPR').mockResolvedValue();
+      jest.spyOn(mockGitlabApiService, 'closeImportPR').mockResolvedValue();
       jest
-        .spyOn(mockGithubApiService, 'deleteImportBranch')
+        .spyOn(mockGitlabApiService, 'deleteImportBranch')
         .mockResolvedValue();
       jest
         .spyOn(
@@ -840,23 +843,23 @@ describe('bulkimports.ts unit tests using gitlab', () => {
 
     it('should not try to delete PR is there is no open import PR, but still try to delete import branch if any', async () => {
       jest
-        .spyOn(mockGithubApiService, 'findImportOpenPr')
+        .spyOn(mockGitlabApiService, 'findImportOpenPr')
         .mockResolvedValue({});
 
       await deleteImportByRepo(
         {
           logger,
           config,
-          gitApiService: mockGithubApiService,
+          gitApiService: mockGitlabApiService,
           catalogHttpClient: mockCatalogHttpClient,
         },
         repoUrl,
         defaultBranch,
       );
 
-      expect(mockGithubApiService.closeImportPR).not.toHaveBeenCalled();
-      expect(mockGithubApiService.deleteImportBranch).toHaveBeenCalledTimes(1);
-      expect(mockGithubApiService.deleteImportBranch).toHaveBeenNthCalledWith(
+      expect(mockGitlabApiService.closeImportPR).not.toHaveBeenCalled();
+      expect(mockGitlabApiService.deleteImportBranch).toHaveBeenCalledTimes(1);
+      expect(mockGitlabApiService.deleteImportBranch).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({
           repoUrl,
@@ -872,7 +875,7 @@ describe('bulkimports.ts unit tests using gitlab', () => {
 
     it('should try to delete both PR and branch if there is an open import PR', async () => {
       const prNum = 123456789;
-      jest.spyOn(mockGithubApiService, 'findImportOpenPr').mockResolvedValue({
+      jest.spyOn(mockGitlabApiService, 'findImportOpenPr').mockResolvedValue({
         prNum,
         prUrl: `${repoUrl}/pull/${prNum}`,
       });
@@ -881,15 +884,15 @@ describe('bulkimports.ts unit tests using gitlab', () => {
         {
           logger,
           config,
-          gitApiService: mockGithubApiService,
+          gitApiService: mockGitlabApiService,
           catalogHttpClient: mockCatalogHttpClient,
         },
         repoUrl,
         defaultBranch,
       );
 
-      expect(mockGithubApiService.closeImportPR).toHaveBeenCalledTimes(1);
-      expect(mockGithubApiService.closeImportPR).toHaveBeenCalledWith(
+      expect(mockGitlabApiService.closeImportPR).toHaveBeenCalledTimes(1);
+      expect(mockGitlabApiService.closeImportPR).toHaveBeenCalledWith(
         logger,
         expect.objectContaining({
           repoUrl,
@@ -897,8 +900,8 @@ describe('bulkimports.ts unit tests using gitlab', () => {
             'Closing PR upon request for bulk import deletion. This request was created from [Red Hat Developer Hub](https://my-backstage-app.example.com).',
         }),
       );
-      expect(mockGithubApiService.deleteImportBranch).toHaveBeenCalledTimes(1);
-      expect(mockGithubApiService.deleteImportBranch).toHaveBeenCalledWith(
+      expect(mockGitlabApiService.deleteImportBranch).toHaveBeenCalledTimes(1);
+      expect(mockGitlabApiService.deleteImportBranch).toHaveBeenCalledWith(
         expect.objectContaining({
           repoUrl,
         }),

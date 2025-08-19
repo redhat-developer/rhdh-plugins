@@ -288,6 +288,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -407,6 +408,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -434,6 +436,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -462,6 +465,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -533,6 +537,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -559,6 +564,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -614,6 +620,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -642,6 +649,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -671,6 +679,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -707,6 +716,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -745,6 +755,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
@@ -784,6 +795,7 @@ describe('bulkimports.ts unit tests', () => {
             config,
             gitApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            approvalTool: 'GIT',
           },
           {
             apiVersion,
