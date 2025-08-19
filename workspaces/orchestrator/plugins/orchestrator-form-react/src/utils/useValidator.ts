@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { JsonObject } from '@backstage/types';
 
 import {
@@ -29,6 +30,7 @@ import validatorAjv from '@rjsf/validator-ajv8';
 import _validator from '@rjsf/validator-ajv8';
 import type { JSONSchema7 } from 'json-schema';
 
+import { getActiveStepKey } from './getSortedStepEntries';
 import { useStepperContext } from './StepperContext';
 
 // add the activeStep to the validator to force rjsf form to rerender when activeStep changes. This doesn't happen because it assumes function are equal.
@@ -51,7 +53,6 @@ const useValidator = (isMultiStepSchema: boolean) => {
       customValidate: CustomValidator<JsonObject, JSONSchema7, any>,
     ): ValidationData<JsonObject> => {
       let validationData = validatorAjv.validateFormData(formData, _schema);
-
       if (customValidate) {
         const errorHandler = customValidate(
           formData,
@@ -68,7 +69,7 @@ const useValidator = (isMultiStepSchema: boolean) => {
         return validationData;
       }
 
-      const activeKey = Object.keys(_schema.properties || {})[activeStep];
+      const activeKey = getActiveStepKey(_schema, activeStep);
       return {
         errors: validationData.errors.filter(err =>
           err.property?.startsWith(`.${activeKey}.`),
