@@ -40,9 +40,9 @@
     "directory": "workspaces/redhat-resource-optimization"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.29.4",
+    "@backstage/cli": "^0.33.1",
     "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.13.3",
+    "@backstage/repo-tools": "^0.15.0",
     "@changesets/cli": "^2.27.1",
     "@microsoft/api-extractor-model": "^7.29.2",
     "@microsoft/tsdoc": "^0.15.0",
