@@ -42,24 +42,14 @@ import {
   GitlabRepositoryResponse,
 } from './types';
 import { buildGitlab } from './utils/glUtils';
-// import { buildOcto } from './utils/ghUtils';
-import {
-  // addGithubAppOrgs,
-  addGitlabTokenGroups,
-  // getAllAppOrgs,
-} from './utils/orgUtils';
+import { addGitlabTokenGroups } from './utils/orgUtils';
 import { closePRWithComment, findOpenPRForBranch } from './utils/prUtils';
 import {
-  // addGithubAppRepositories,
-  // addGithubTokenOrgRepositories,
   addGitlabTokenOrgRepositories,
   addGitlabTokenRepositories,
   createOrUpdateFileInBranch,
   fileExistsInDefaultBranch,
   ValidatedRepo,
-  // createOrUpdateFileInBranch,
-  // fileExistsInDefaultBranch,
-  // type ValidatedRepo,
 } from './utils/repoUtils';
 import {
   computeTotalCount,
@@ -67,7 +57,6 @@ import {
   extractLocationOwnerMap,
   fetchFromAllIntegrations,
   getCredentialsForConfig,
-  //   getCredentialsForConfig,
 } from './utils/utils';
 
 export class GitlabApiService {

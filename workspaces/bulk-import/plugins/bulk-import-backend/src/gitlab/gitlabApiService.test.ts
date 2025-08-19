@@ -18,6 +18,7 @@ import { mockServices } from '@backstage/backend-test-utils';
 
 import { GitlabApiService } from './gitlabApiService';
 import { CustomGitlabCredentialsProvider } from './GitlabAppManager';
+import { computeTotalCount } from './utils/utils';
 
 // TODO: this should be the beaker
 const gitlabkit = {
@@ -26,6 +27,7 @@ const gitlabkit = {
   },
   Groups: {
     all: jest.fn(),
+    allProjects: jest.fn(),
   },
 };
 
@@ -56,12 +58,10 @@ const octokit = {
   },
 };
 
-// TODO: change
 function createGitlabkit() {
   return gitlabkit;
 }
 
-// TODO: change
 jest.mock('@gitbeaker/rest', () => {
   return { Gitlab: createGitlabkit };
 });
@@ -119,6 +119,14 @@ describe('GitlabApiService tests', () => {
       },
     });
     gitlabkit.Projects.all.mockReturnValue({
+      data: [],
+      paginationInfo: { total: 0 },
+    });
+    gitlabkit.Groups.all.mockReturnValue({
+      data: [],
+      paginationInfo: { total: 0 },
+    });
+    gitlabkit.Groups.allProjects.mockReturnValue({
       data: [],
       paginationInfo: { total: 0 },
     });
@@ -215,86 +223,286 @@ describe('GitlabApiService tests', () => {
     expect(result).toEqual(expected_response);
   });
 
-  // it('returns list of errors if they occur during the repository fetch phase', async () => {
-  //   octokit.rest.users.getByUsername.mockImplementationOnce(async () => {
-  //     const githubDownError = new Error(
-  //       "The Unicorns have taken over. We're doing our best to get them under control and get Github back up and running",
-  //     );
-  //     githubDownError.name = '503 Service Unavailable';
-  //     throw githubDownError;
-  //   });
-  //   octokit.rest.repos.listForAuthenticatedUser.mockImplementationOnce(
-  //     async () => {
-  //       const customError = new Error('This is taking quite a while');
-  //       customError.name = '504 Gateway Timeout';
-  //       throw customError;
-  //     },
-  //   );
-  //   octokit.apps.listReposAccessibleToInstallation
-  //     .mockImplementationOnce(async () => {
-  //       const unauthorizedError = new Error('Bad credentials');
-  //       unauthorizedError.name = '401 Unauthorized';
-  //       throw unauthorizedError;
-  //     })
-  //     .mockReturnValue({
-  //       data: ghRepos,
-  //     });
+  it('returns list of repositories using search', async () => {
+    gitlabkit.Projects.all.mockReturnValue({
+      data: [
+        {
+          id: '1',
+          name: 'A',
+          path_with_namespace: 'backstage/A',
+          _links: {
+            self: 'https://gitlab.com/api/v4/projects/1',
+          },
+          web_url: 'https://github.com/backstage/A',
+          default_branch: 'master',
+        },
+      ],
+      paginationInfo: { total: 1 },
+    });
+    const result = await gitlabApiService.getRepositoriesFromIntegrations('A');
 
-  //   const result = await githubApiService.getRepositoriesFromIntegrations();
+    const expected_response = {
+      repositories: [
+        {
+          name: 'A',
+          full_name: 'backstage/A',
+          url: 'https://gitlab.com/api/v4/projects/1',
+          html_url: 'https://github.com/backstage/A',
+          default_branch: 'master',
+        },
+      ],
+      errors: [],
+      totalCount: 1,
+    };
+    expect(errorLog).not.toHaveBeenCalled();
+    expect(result).toEqual(expected_response);
+  });
 
-  //   const expected_response = {
-  //     repositories: ghRepos,
-  //     errors: [
-  //       {
-  //         error: {
-  //           message: 'This is taking quite a while',
-  //           name: '504 Gateway Timeout',
-  //         },
-  //         type: 'token',
-  //       },
-  //       {
-  //         error: {
-  //           name: '401 Unauthorized',
-  //           message: 'Bad credentials',
-  //         },
-  //         type: 'app',
-  //         appId: 1,
-  //       },
-  //     ],
-  //     totalCount: 2,
-  //   };
-  //   expect(result).toEqual(expected_response);
-  // });
+  it('returns list of errors if they occur during the repository fetch phase', async () => {
+    // octokit.rest.users.getByUsername.mockImplementationOnce(async () => {
+    //   const githubDownError = new Error(
+    //     "The Unicorns have taken over. We're doing our best to get them under control and get Github back up and running",
+    //   );
+    //   githubDownError.name = '503 Service Unavailable';
+    //   throw githubDownError;
+    // });
+    // octokit.rest.repos.listForAuthenticatedUser.mockImplementationOnce(
+    //   async () => {
+    //     const customError = new Error('This is taking quite a while');
+    //     customError.name = '504 Gateway Timeout';
+    //     throw customError;
+    //   },
+    // );
+    // octokit.apps.listReposAccessibleToInstallation
+    //   .mockImplementationOnce(async () => {
+    //     const unauthorizedError = new Error('Bad credentials');
+    //     unauthorizedError.name = '401 Unauthorized';
+    //     throw unauthorizedError;
+    //   })
+    //   .mockReturnValue({
+    //     data: ghRepos,
+    //   });
 
-  // it('returns list of groups if we have a user token with access to orgs', async () => {
-  //   octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({
-  //     data: ghRepos,
-  //   });
-  //   octokit.apps.listReposAccessibleToInstallation.mockReturnValue({
-  //     data: [],
-  //   });
+    gitlabkit.Projects.all.mockImplementationOnce(async () => {
+      const unauthorizedError = new Error('401 Unauthorized');
+      unauthorizedError.name = '401 Unauthorized';
+      throw unauthorizedError;
+    });
 
-  //   const result = await githubApiService.getRepositoriesFromIntegrations();
+    const result = await gitlabApiService.getRepositoriesFromIntegrations();
 
-  //   const expected_response = {
-  //     repositories: ghRepos,
-  //     errors: [],
-  //     totalCount: 2,
-  //   };
-  //   expect(errorLog).not.toHaveBeenCalled();
-  //   expect(result).toEqual(expected_response);
-  // });
+    const expected_response = {
+      repositories: [],
+      errors: [
+        {
+          error: {
+            name: '401 Unauthorized',
+            message: '401 Unauthorized',
+          },
+          type: 'token',
+        },
+      ],
+      totalCount: 0,
+    };
+    expect(result).toEqual(expected_response);
+  });
 
-  // it('does not throw an error if no integration in config because there is one added automatically', async () => {
-  //   const repos = await new GithubApiService(
-  //     mockServices.logger.mock(),
-  //     mockServices.rootConfig(),
-  //     mockServices.cache.mock(),
-  //   ).getRepositoriesFromIntegrations();
-  //   expect(repos).toEqual({
-  //     errors: [],
-  //     repositories: [],
-  //     totalCount: 0,
-  //   });
-  // });
+  it('returns list of groups if we have a user token with access to orgs', async () => {
+    gitlabkit.Groups.all.mockReturnValue({
+      data: [
+        {
+          id: '1',
+          path: 'A',
+          web_url: 'https://gitlab.com/groups/A',
+        },
+        {
+          id: '2',
+          path: 'B',
+          web_url: 'https://gitlab.com/groups/B',
+        },
+      ],
+      paginationInfo: { total: 2 },
+    });
+
+    const result = await gitlabApiService.getOrganizationsFromIntegrations();
+
+    const expected_response = {
+      organizations: [
+        {
+          id: '1',
+          name: 'A',
+          url: 'https://gitlab.com/groups/A',
+        },
+        {
+          id: '2',
+          name: 'B',
+          url: 'https://gitlab.com/groups/B',
+        },
+      ],
+      errors: [],
+      totalCount: 2,
+    };
+
+    expect(errorLog).not.toHaveBeenCalled();
+    expect(result).toEqual(expected_response);
+  });
+
+  it('returns list of groups using search', async () => {
+    gitlabkit.Groups.all.mockReturnValue({
+      data: [
+        {
+          id: '1',
+          path: 'A',
+          web_url: 'https://gitlab.com/groups/A',
+        },
+      ],
+      paginationInfo: { total: 1 },
+    });
+
+    const result = await gitlabApiService.getOrganizationsFromIntegrations('A');
+
+    const expected_response = {
+      organizations: [
+        {
+          id: '1',
+          name: 'A',
+          url: 'https://gitlab.com/groups/A',
+        },
+      ],
+      errors: [],
+      totalCount: 1,
+    };
+
+    expect(errorLog).not.toHaveBeenCalled();
+    expect(result).toEqual(expected_response);
+  });
+
+  it('return a list of repos for an org', async () => {
+    gitlabkit.Groups.allProjects.mockReturnValue({
+      data: [
+        {
+          id: '1',
+          name: 'A',
+          path_with_namespace: 'backstage/A',
+          _links: {
+            self: 'https://gitlab.com/api/v4/projects/1',
+          },
+          web_url: 'https://github.com/backstage/A',
+          default_branch: 'master',
+        },
+        {
+          id: '2',
+          name: 'B',
+          path_with_namespace: 'backstage/B',
+          _links: {
+            self: 'https://gitlab.com/api/v4/projects/2',
+          },
+          web_url: 'https://github.com/backstage/B',
+          default_branch: 'main',
+        },
+      ],
+      paginationInfo: { total: 2 },
+    });
+
+    const result =
+      await gitlabApiService.getOrgRepositoriesFromIntegrations('orgA');
+
+    const expected_response = {
+      repositories: [
+        {
+          name: 'A',
+          full_name: 'backstage/A',
+          url: 'https://gitlab.com/api/v4/projects/1',
+          html_url: 'https://github.com/backstage/A',
+          default_branch: 'master',
+        },
+        {
+          name: 'B',
+          full_name: 'backstage/B',
+          url: 'https://gitlab.com/api/v4/projects/2',
+          html_url: 'https://github.com/backstage/B',
+          default_branch: 'main',
+        },
+      ],
+      errors: [],
+      totalCount: 2,
+    };
+
+    expect(errorLog).not.toHaveBeenCalled();
+    expect(result).toEqual(expected_response);
+  });
+
+  it('return a list of repos for an org using search', async () => {
+    gitlabkit.Groups.allProjects.mockReturnValue({
+      data: [
+        {
+          id: '1',
+          name: 'A',
+          path_with_namespace: 'backstage/A',
+          _links: {
+            self: 'https://gitlab.com/api/v4/projects/1',
+          },
+          web_url: 'https://github.com/backstage/A',
+          default_branch: 'master',
+        },
+      ],
+      paginationInfo: { total: 1 },
+    });
+
+    const result = await gitlabApiService.getOrgRepositoriesFromIntegrations(
+      'orgA',
+      'A',
+    );
+
+    const expected_response = {
+      repositories: [
+        {
+          name: 'A',
+          full_name: 'backstage/A',
+          url: 'https://gitlab.com/api/v4/projects/1',
+          html_url: 'https://github.com/backstage/A',
+          default_branch: 'master',
+        },
+      ],
+      errors: [],
+      totalCount: 1,
+    };
+
+    expect(errorLog).not.toHaveBeenCalled();
+    expect(result).toEqual(expected_response);
+  });
+
+  it('return an empty list of repos for an org using search', async () => {
+    gitlabkit.Groups.allProjects.mockReturnValue({
+      data: [],
+      paginationInfo: { total: 0 },
+    });
+
+    const result = await gitlabApiService.getOrgRepositoriesFromIntegrations(
+      'orgA',
+      'A',
+    );
+
+    const expected_response = {
+      repositories: [],
+      errors: [],
+      totalCount: 0,
+    };
+
+    expect(errorLog).not.toHaveBeenCalled();
+    expect(result).toEqual(expected_response);
+  });
+
+  it('does not throw an error if no integration in config because there is one added automatically', async () => {
+    const repos = await new GitlabApiService(
+      mockServices.logger.mock(),
+      mockServices.rootConfig(),
+      mockServices.cache.mock(),
+    ).getRepositoriesFromIntegrations();
+    expect(repos).toEqual({
+      errors: [],
+      repositories: [],
+      totalCount: 0,
+    });
+  });
 });

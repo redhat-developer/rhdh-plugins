@@ -91,7 +91,6 @@ export async function addGitlabTokenGroups(
     // All the info we need is already part of that first request, so no need to go out again
     // Just in case we need it in the future, the gitlab.Groups.show('GROUP_ID') can be used to get a few more pieced of info
     for (const group of matchingGroups) {
-      console.log(group);
       // const groupData = await octokit.request(group.url);
       const glGroup: GitlabOrganization = {
         id: group.id,

@@ -120,7 +120,6 @@ export async function addGitlabTokenRepositories(
     logger: LoggerService;
   },
   gitlab: any,
-  // octokit: Octokit,
   credential: any,
   repositories: Map<string, GitlabRepository>,
   errors: Map<number, GitlabFetchError>,

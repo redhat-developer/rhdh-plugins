@@ -19,14 +19,10 @@ import type {
   ScmIntegrationRegistry,
 } from '@backstage/integration';
 
-import { DateTime } from 'luxon';
-
 import {
   ExtendedGitlabCredentials,
   ExtendedGitlabCredentialsProvider,
 } from './types';
-
-// import gitUrlParse from 'git-url-parse';
 
 // For reference
 // https://github.com/backstage/backstage/blob/master/packages/integration/src/gitlab/SingleInstanceGitlabCredentialsProvider.ts
