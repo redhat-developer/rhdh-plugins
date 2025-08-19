@@ -63,7 +63,7 @@ const ActiveUsers = () => {
           display="flex"
           justifyContent="center"
           alignItems="center"
-          height={200}
+          minHeight={80}
         >
           <EmptyChartState />
         </Box>
