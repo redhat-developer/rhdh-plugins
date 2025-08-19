@@ -699,23 +699,18 @@ export async function findImportStatusByRepo(
       id: `${gitUrl.organization}/${gitUrl.name}`,
       defaultBranch,
     },
-    approvalTool: 'GIT',
+    approvalTool: deps.approvalTool,
     status: null,
   } as Components.Schemas.Import;
   try {
-    let openImportPr;
     // Check to see if there are any PR
-    if (deps.approvalTool === 'gitlab') {
-      openImportPr = await deps.gitApiService.findImportOpenPr(deps.logger, {
+    const openImportPr = await deps.gitApiService.findImportOpenPr(
+      deps.logger,
+      {
         repoUrl: repoUrl,
         includeCatalogInfoContent,
-      });
-    } else {
-      openImportPr = await deps.gitApiService.findImportOpenPr(deps.logger, {
-        repoUrl: repoUrl,
-        includeCatalogInfoContent,
-      });
-    }
+      },
+    );
 
     if (!openImportPr.prUrl) {
       const catalogLocations = (
@@ -796,12 +791,9 @@ export async function deleteImportByRepo(
   deps.logger.debug(`Deleting bulk import job status for ${repoUrl}..`);
 
   // Check to see if there are any PR
-  const openImportPr = await deps.gitApiService.findImportOpenPr(
-    deps.logger,
-    {
-      repoUrl: repoUrl,
-    },
-  );
+  const openImportPr = await deps.gitApiService.findImportOpenPr(deps.logger, {
+    repoUrl: repoUrl,
+  });
 
   const gitUrl = gitUrlParse(repoUrl);
   if (openImportPr.prUrl) {

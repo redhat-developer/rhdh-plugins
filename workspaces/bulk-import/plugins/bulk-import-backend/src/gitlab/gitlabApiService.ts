@@ -99,17 +99,6 @@ export class GitlabApiService {
     const errors = new Map<number, GitlabFetchError>();
     let repository: GitlabRepository | undefined = undefined;
     for (const credential of credentials) {
-      // const octokit = buildOcto(
-      //   {
-      //     logger: this.logger,
-      //     cache: this.cache,
-      //   },
-      //   { credential, errors, owner: gitUrl.owner },
-      //   glConfig.apiBaseUrl,
-      // );
-      // if (!octokit) {
-      //   continue;
-      // }
       const glKit = buildGitlab(
         {
           logger: this.logger,
@@ -119,10 +108,6 @@ export class GitlabApiService {
         glConfig.apiBaseUrl,
       );
       const resp = await glKit.Projects.show(`${gitUrl.owner}/${gitUrl.name}`);
-      // const resp = await octokit.rest.repos.get({
-      //   owner: gitUrl.owner,
-      //   repo: gitUrl.name,
-      // });
       const repo = resp;
       if (!repo) {
         continue;
@@ -130,14 +115,14 @@ export class GitlabApiService {
 
       // name: repo.name,
       // full_name: repo.path_with_namespace,
-      // url: `${gitlab.url}/projects/${repo.id}`,
+      // url: repo._links.self,
       // html_url: repo.web_url,
       // default_branch: repo.default_branch,
       // updated_at: repo.updated_at,
       repository = {
         name: repo.name,
         full_name: repo.path_with_namespace,
-        url: `${glKit.url}/projects/${repo.id}`,
+        url: repo._links.self,
         html_url: repo.web_url,
         default_branch: repo.default_branch,
         updated_at: repo.updated_at,
@@ -343,8 +328,6 @@ export class GitlabApiService {
           ghConfig: GitLabIntegrationConfig,
         ) => {
           // find authenticated gitlab owner...
-          // const username = (await octokit.rest.users.getAuthenticated())?.data
-          //   ?.login;
           const username = (await gitlab.Users.showCurrentUser()).username;
           if (username) {
             allAccessibleUsernames.add(username);
@@ -357,9 +340,6 @@ export class GitlabApiService {
           )
             ?.map(org => org.path)
             ?.forEach(orgName => allAccessibleTokenOrgs.add(orgName));
-          // (await octokit.paginate(octokit.rest.orgs.listForAuthenticatedUser))
-          //   ?.map(org => org.login)
-          //   ?.forEach(orgName => allAccessibleTokenOrgs.add(orgName));
           return {};
         },
       },
@@ -507,17 +487,8 @@ export class GitlabApiService {
               branchName,
             );
 
-            // const repoData = await octo.rest.repos.get({
-            //   owner,
-            //   repo,
-            // });
             const repoData = await gitlab.Projects.show(`${owner}/${repo}`);
 
-            // const parentRef = await octo.rest.git.getRef({
-            //   owner,
-            //   repo,
-            //   ref: `heads/${repoData.default_branch}`,
-            // });
             const parentRef = await gitlab.Branches.show(
               `${owner}/${repo}`,
               repoData.default_branch,
@@ -541,15 +512,6 @@ export class GitlabApiService {
                   targetBranch: repoData.default_branch,
                 },
               );
-              // const pullRequestResponse = await octo.rest.pulls.update({
-              //   owner,
-              //   repo,
-              //   pull_number: existingPrForBranch.prNum,
-              //   title: input.prTitle,
-              //   body: input.prBody,
-              //   head: branchName,
-              //   base: repoData.data.default_branch,
-              // });
               return {
                 successful: true,
                 result: {
@@ -562,21 +524,10 @@ export class GitlabApiService {
 
             let branchExists = false;
             try {
-              // await octo.rest.git.getRef({
-              //   owner,
-              //   repo,
-              //   ref: `heads/${branchName}`,
-              // });
               await gitlab.Branches.show(`${owner}/${repo}`, branchName);
               branchExists = true;
             } catch (error: any) {
               if (error.message.includes('404')) {
-                // await octo.rest.git.createRef({
-                //   owner,
-                //   repo,
-                //   ref: `refs/heads/${branchName}`,
-                //   sha: parentRef.data.object.sha,
-                // });
                 await gitlab.Branches.create(
                   `${owner}/${repo}`,
                   branchName,
@@ -616,14 +567,6 @@ export class GitlabApiService {
               input.catalogInfoContent,
             );
 
-            // const pullRequestResponse = await octo.rest.pulls.create({
-            //   owner,
-            //   repo,
-            //   title: input.prTitle,
-            //   body: input.prBody,
-            //   head: branchName,
-            //   base: repoData.data.default_branch,
-            // });
             const pullRequestResponse = await gitlab.MergeRequests.create(
               `${owner}/${repo}`,
               branchName,
@@ -660,7 +603,7 @@ export class GitlabApiService {
     }
 
     logger.warn(
-      `Tried all possible GitHub credentials, but could not create PR in ${input.repoUrl}. Please try again later...`,
+      `Tried all possible Gitlab credentials, but could not create PR in ${input.repoUrl}. Please try again later...`,
     );
 
     return {
@@ -779,12 +722,7 @@ export class GitlabApiService {
         fn: async (validatedRepo: ValidatedRepo, gitlab: any) => {
           const { owner, repo, branchName } = validatedRepo;
           try {
-            await gitlab.Branches.something(`${owner}/${repo}`, branchName);
-            // await octo.git.deleteRef({
-            //   owner: owner,
-            //   repo: repo,
-            //   ref: `heads/${branchName}`,
-            // });
+            await gitlab.Branches.remove(`${owner}/${repo}`, branchName);
             return { successful: true };
           } catch (e: any) {
             logErrorIfNeeded(
@@ -812,12 +750,6 @@ export class GitlabApiService {
         repoUrl: input.repoUrl,
         fn: async (validatedRepo: ValidatedRepo, gitlab: any) => {
           const { owner, repo } = validatedRepo;
-          // const resp = await octo.rest.repos.listContributors({
-          //   owner: owner,
-          //   repo: repo,
-          //   page: 1,
-          //   per_page: 1,
-          // });
           const resp = await gitlab.Repositories.allContributors(
             `${owner}/${repo}`,
             {

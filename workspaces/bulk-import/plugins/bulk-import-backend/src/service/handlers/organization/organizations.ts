@@ -31,7 +31,6 @@ import {
 export async function findAllOrganizations(
   logger: LoggerService,
   gitApiService: GithubApiService | GitlabApiService,
-  approvalTool: string | undefined,
   search?: string,
   pageNumber: number = DefaultPageNumber,
   pageSize: number = DefaultPageSize,
@@ -42,11 +41,12 @@ export async function findAllOrganizations(
     }',${pageNumber},${pageSize})..`,
   );
 
-  const allOrgsAccessible = await gitApiService.getOrganizationsFromIntegrations(
-    search,
-    pageNumber,
-    pageSize,
-  );
+  const allOrgsAccessible =
+    await gitApiService.getOrganizationsFromIntegrations(
+      search,
+      pageNumber,
+      pageSize,
+    );
 
   const errorList: string[] = [];
   for (const err of allOrgsAccessible.errors ?? []) {
@@ -80,7 +80,9 @@ export async function findAllOrganizations(
   };
 }
 
-function extractOrgMap(allOrgsAccessible: GithubOrganizationResponse | GitlabOrganizationResponse) {
+function extractOrgMap(
+  allOrgsAccessible: GithubOrganizationResponse | GitlabOrganizationResponse,
+) {
   const orgMap = new Map<string, Components.Schemas.Organization>();
   for (const org of allOrgsAccessible.organizations ?? []) {
     let totalRepoCount: number | undefined;

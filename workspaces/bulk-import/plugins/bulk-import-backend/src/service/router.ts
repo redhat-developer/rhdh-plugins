@@ -163,7 +163,6 @@ export async function createRouter(
       const response = await findAllOrganizations(
         logger,
         q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
-        q.approvalTool,
         q.search,
         q.pagePerIntegration,
         q.sizePerIntegration,
@@ -192,7 +191,8 @@ export async function createRouter(
         {
           logger,
           config,
-          gitApiService: q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
+          gitApiService:
+            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
           catalogHttpClient,
         },
         {
@@ -210,7 +210,7 @@ export async function createRouter(
         totalCount: response.responseBody?.totalCount,
         pagePerIntegration: q.pagePerIntegration,
         sizePerIntegration: q.sizePerIntegration,
-        approvalTool: q.approvalTool
+        approvalTool: q.approvalTool,
       } as Components.Schemas.RepositoryList);
     },
   );
@@ -229,7 +229,8 @@ export async function createRouter(
         {
           logger,
           config,
-          gitApiService: q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
+          gitApiService:
+            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
           catalogHttpClient,
         },
         c.request.params.organizationName?.toString(),
@@ -275,9 +276,10 @@ export async function createRouter(
         {
           logger,
           config,
-          gitApiService: q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
+          gitApiService:
+            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
           catalogHttpClient,
-          approvalTool: q.approvalTool
+          approvalTool: q.approvalTool,
         },
         {
           apiVersion,
@@ -311,7 +313,10 @@ export async function createRouter(
           config,
           auth,
           catalogApi,
-          gitApiService: c.request.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
+          gitApiService:
+            c.request.approvalTool === 'GITLAB'
+              ? gitlabApiService
+              : githubApiService,
           catalogInfoGenerator,
           catalogHttpClient,
         },
@@ -337,7 +342,8 @@ export async function createRouter(
         {
           logger,
           config,
-          gitApiService: q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
+          gitApiService:
+            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
           catalogHttpClient,
           approvalTool: q.approvalTool,
         },
@@ -362,7 +368,8 @@ export async function createRouter(
         {
           logger,
           config,
-          gitApiService: q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
+          gitApiService:
+            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
           catalogHttpClient,
         },
         q.repo,

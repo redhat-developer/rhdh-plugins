@@ -19,17 +19,12 @@ import type {
   LoggerService,
 } from '@backstage/backend-plugin-api';
 
-// import { Octokit } from '@octokit/rest';
-
 import { Gitlab } from '@gitbeaker/rest';
 
 import {
-  // isGithubAppCredential,
   type ExtendedGitlabCredentials,
   type GitlabFetchError,
 } from '../types';
-
-// import { createCredentialError } from './utils';
 
 const GITLAB_DEFAULT_API_ENDPOINT = 'https://gitlab.com';
 
@@ -55,10 +50,6 @@ export function buildGitlab(
     // host: apiBaseUrl,
     token: input.credential.token,
   });
-  // const octokit = new Octokit({
-  //   baseUrl: apiBaseUrl,
-  //   auth: input.credential.token,
-  // });
   // registerHooks(deps, octokit); TODO?
   return apiThing;
 }

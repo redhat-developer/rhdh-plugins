@@ -22,7 +22,6 @@ import type {
   ScmIntegrations,
 } from '@backstage/integration';
 
-import { Gitlab } from '@gitbeaker/rest';
 import gitUrlParse from 'git-url-parse';
 
 import { getBranchName } from '../../catalog/catalogUtils';
@@ -37,13 +36,7 @@ import type {
   GitlabFetchError,
   GitlabRepository,
 } from '../types';
-// import { getAllAppOrgs } from './orgUtils';
-import {
-  computeTotalCountFromPaginationInfo,
-  // computeTotalCountFromGitHubToken,
-  // createCredentialError,
-  handleError,
-} from './utils';
+import { computeTotalCountFromPaginationInfo, handleError } from './utils';
 
 export type ValidatedRepo = {
   glConfig: GitLabIntegrationConfig;
@@ -74,7 +67,7 @@ export async function validateAndBuildRepoData(
     host: glConfig.host,
   });
   if (credentials.length === 0) {
-    throw new Error(`No credentials for GH integration`);
+    throw new Error(`No credentials for GL integration`);
   }
 
   const branchName = getBranchName(config);
@@ -341,12 +334,6 @@ export async function fileExistsInDefaultBranch(
       fileName,
       defaultBranch,
     );
-    // await octo.rest.repos.getContent({
-    //   owner,
-    //   repo,
-    //   path: fileName,
-    //   ref: defaultBranch,
-    // });
     return true;
   } catch (error: any) {
     if (error.message.includes('404')) {
@@ -368,12 +355,6 @@ export async function createOrUpdateFileInBranch(
   fileContent: string,
 ): Promise<void> {
   try {
-    // const { data: existingFile } = await octo.rest.repos.getContent({
-    //   owner: owner,
-    //   repo: repo,
-    //   path: fileName,
-    //   ref: branchName,
-    // });
     const existingFile = await gitlab.RepositoryFiles.show(
       `${owner}/${repo}`,
       fileName,
@@ -386,15 +367,6 @@ export async function createOrUpdateFileInBranch(
       );
     }
     // If the file already exists, update it
-    // await octo.rest.repos.createOrUpdateFileContents({
-    //   owner,
-    //   repo,
-    //   path: fileName,
-    //   message: `Add ${fileName} config file`,
-    //   content: btoa(fileContent),
-    //   sha: existingFile.sha,
-    //   branch: branchName,
-    // });
     await gitlab.RepositoryFiles.edit(
       `${owner}/${repo}`,
       fileName,
@@ -405,14 +377,6 @@ export async function createOrUpdateFileInBranch(
   } catch (error: any) {
     if (error.message.includes('404')) {
       // If the file does not exist, create it
-      // await octo.rest.repos.createOrUpdateFileContents({
-      //   owner,
-      //   repo,
-      //   path: fileName,
-      //   message: `Add ${fileName} config file`,
-      //   content: btoa(fileContent),
-      //   branch: branchName,
-      // });
       await gitlab.RepositoryFiles.create(
         `${owner}/${repo}`,
         fileName,

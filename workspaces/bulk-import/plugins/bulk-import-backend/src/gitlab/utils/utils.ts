@@ -28,18 +28,16 @@ import { Gitlab } from '@gitbeaker/rest';
 import gitUrlParse from 'git-url-parse';
 
 import { logErrorIfNeeded } from '../../helpers';
-// import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
 import type { CustomGitlabCredentialsProvider } from '../GitlabAppManager';
 import {
   type ExtendedGitlabCredentials,
   type GitlabFetchError,
 } from '../types';
 import { buildGitlab } from './glUtils';
-// import { buildOcto } from './ghUtils';
 import { validateAndBuildRepoData, ValidatedRepo } from './repoUtils';
 
 // /**
-//  * Creates the GithubFetchError to be stored in the returned errors array of the returned GithubRepositoryResponse object
+//  * Creates the GitlabFetchError to be stored in the returned errors array of the returned GitlabRepositoryResponse object
 //  */
 export function createCredentialError(
   err?: Error,
@@ -194,17 +192,6 @@ export async function executeFunctionOnFirstSuccessfulIntegration<T>(
     params,
   );
   for (const credential of validatedRepo.credentials) {
-    // const octo = buildOcto(
-    //   {
-    //     logger: deps.logger,
-    //     cache: deps.cache,
-    //   },
-    //   { credential, owner: validatedRepo.owner },
-    //   validatedRepo.ghConfig.apiBaseUrl,
-    // );
-    // if (!octo) {
-    //   continue;
-    // }
     const glKit = buildGitlab(
       deps,
       { credential, owner: validatedRepo.owner },
@@ -261,14 +248,6 @@ export async function fetchFromAllIntegrations<T>(
         { credential, errors },
         glConfig.apiBaseUrl,
       );
-      // const octokit = buildOcto(
-      //   deps,
-      //   { credential, errors },
-      //   glConfig.apiBaseUrl,
-      // );
-      // if (!octokit) {
-      //   continue;
-      // }
       const res = await params.dataFetcher(glKit, credential, glConfig);
       res.errors?.forEach(err => dataErrs.push(err));
 
