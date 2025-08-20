@@ -35,14 +35,12 @@ import { usePlugins } from '../../hooks/usePlugins';
 import TableFooterPagination from '../CardFooter';
 import { Line, LineChart, ResponsiveContainer } from 'recharts';
 import EmptyChartState from '../Common/EmptyChartState';
-import { useDateRange } from '../Header/DateRangeContext';
 
 const Plugins = () => {
   const [page, setPage] = useState(0);
   const [limit] = useState(20);
   const [rowsPerPage, setRowsPerPage] = useState(3);
 
-  const { isDefaultDateRange } = useDateRange();
   const { plugins, loading, error } = usePlugins({ limit });
 
   const handleChangePage = useCallback((_event: unknown, newPage: number) => {
@@ -79,7 +77,7 @@ const Plugins = () => {
           display="flex"
           justifyContent="center"
           alignItems="center"
-          height={200}
+          minHeight={80}
         >
           <EmptyChartState />
         </Box>
@@ -93,7 +91,6 @@ const Plugins = () => {
         <TableHead>
           <TableRow>
             {PLUGINS_TABLE_HEADERS.map(header => {
-              if (isDefaultDateRange && header.id === 'percent') return null;
               return (
                 <TableCell
                   key={header.id}
@@ -125,11 +122,11 @@ const Plugins = () => {
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                <TableCell sx={isDefaultDateRange ? {} : { width: '20%' }}>
+                <TableCell sx={{ width: '20%' }}>
                   {plugin.plugin_id ?? '--'}
                 </TableCell>
                 <TableCell sx={{ width: '40%' }}>
-                  {plugin.trend?.length > 0 ? (
+                  {plugin.trend?.length > 1 ? (
                     <ResponsiveContainer width={250} height={50}>
                       <LineChart data={plugin.trend}>
                         <Line
@@ -145,21 +142,19 @@ const Plugins = () => {
                     '--'
                   )}
                 </TableCell>
-                {!isDefaultDateRange && (
-                  <TableCell sx={isDefaultDateRange ? {} : { width: '20%' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {Math.round(Number(plugin.trend_percentage)) < 0 ? (
-                        <TrendingDownIcon sx={{ color: 'red' }} />
-                      ) : (
-                        <TrendingUpIcon sx={{ color: 'green' }} />
-                      )}
-                      <Typography variant="body2">
-                        {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                )}
-                <TableCell sx={isDefaultDateRange ? {} : { width: '20%' }}>
+                <TableCell sx={{ width: '20%' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {Math.round(Number(plugin.trend_percentage)) < 0 ? (
+                      <TrendingDownIcon sx={{ color: 'red' }} />
+                    ) : (
+                      <TrendingUpIcon sx={{ color: 'green' }} />
+                    )}
+                    <Typography variant="body2">
+                      {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
+                    </Typography>
+                  </Box>
+                </TableCell>
+                <TableCell sx={{ width: '20%' }}>
                   {Number(plugin.visit_count).toLocaleString('en-US') ?? '--'}
                 </TableCell>
               </TableRow>

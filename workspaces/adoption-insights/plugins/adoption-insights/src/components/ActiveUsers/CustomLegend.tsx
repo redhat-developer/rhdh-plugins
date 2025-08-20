@@ -39,7 +39,7 @@ const CustomLegend = (props: any) => {
             <div
               style={{
                 width: 20,
-                height: 3,
+                height: 4,
                 backgroundColor: entry.color,
               }}
             />
