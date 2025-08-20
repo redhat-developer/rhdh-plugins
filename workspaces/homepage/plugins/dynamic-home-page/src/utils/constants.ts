@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const LEARNING_SECTION_ITEMS = [
+
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+
+import { LearningSectionItem } from '../types';
+
+export const LEARNING_SECTION_ITEMS: LearningSectionItem[] = [
   {
     title: 'Get started',
     description: 'Learn about Red Hat Developer Hub.',
@@ -22,6 +28,7 @@ export const LEARNING_SECTION_ITEMS = [
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/',
     target: '_blank',
     ariaLabel: 'Read documentation (opens in a new tab)',
+    endIcon: OpenInNewIcon,
   },
   {
     title: 'Explore',
@@ -30,6 +37,7 @@ export const LEARNING_SECTION_ITEMS = [
     buttonLink: '/catalog',
     target: undefined,
     ariaLabel: 'Go to Catalog',
+    endIcon: ArrowForwardIcon,
   },
   {
     title: 'Learn',
@@ -38,6 +46,7 @@ export const LEARNING_SECTION_ITEMS = [
     buttonLink: '/learning-paths',
     target: undefined,
     ariaLabel: 'Go to Learning Paths',
+    endIcon: ArrowForwardIcon,
   },
 ];
 

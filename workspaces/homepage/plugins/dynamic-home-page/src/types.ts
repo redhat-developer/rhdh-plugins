@@ -64,3 +64,13 @@ export type QuickAccessLink = {
   isExpanded?: boolean;
   links: (Tool & { iconUrl: string })[];
 };
+
+export type LearningSectionItem = {
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonLink: string;
+  target?: string;
+  ariaLabel?: string;
+  endIcon: React.ComponentType;
+};

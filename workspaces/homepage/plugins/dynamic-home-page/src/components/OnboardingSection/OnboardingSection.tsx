@@ -31,6 +31,7 @@ import HomePageIllustrationDark from '../../images/homepage-illustration-dark.sv
 import HomePageIllustrationLight from '../../images/homepage-illustration-light.svg';
 import { LEARNING_SECTION_ITEMS } from '../../utils/constants';
 import useGreeting from '../../hooks/useGreeting';
+import { LearningSectionItem } from '../../types';
 
 export const OnboardingSection = () => {
   const [user, setUser] = useState<string | null>();
@@ -99,7 +100,7 @@ export const OnboardingSection = () => {
             }}
           />
         </Grid>
-        {LEARNING_SECTION_ITEMS.map(item => (
+        {LEARNING_SECTION_ITEMS.map((item: LearningSectionItem) => (
           <Grid
             item
             xs={12}
@@ -117,6 +118,7 @@ export const OnboardingSection = () => {
               buttonLink={item.buttonLink}
               target={item.target}
               ariaLabel={item.ariaLabel}
+              endIcon={<item.endIcon />}
             />
           </Grid>
         ))}
@@ -143,7 +145,7 @@ export const OnboardingSection = () => {
             fontSize: '1.5rem',
           }}
         >
-          {`${greeting} ${profileDisplayName() || 'Guest'}!`}
+          {`${greeting}, ${profileDisplayName() || 'Guest'}!`}
         </Typography>
       )}
       {content}
