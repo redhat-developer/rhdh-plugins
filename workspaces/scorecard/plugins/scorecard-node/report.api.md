@@ -13,6 +13,9 @@ import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-c
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 // @public (undocumented)
+export type ComparisonOperator = '>=' | '<=' | '>' | '<' | '==' | '!=';
+
+// @public (undocumented)
 export interface MetricProvider<T extends MetricType = MetricType> {
   // (undocumented)
   calculateMetric(entity: Entity): Promise<MetricValue<T>>;
@@ -32,7 +35,7 @@ export function parseThresholdExpression(
   targetType: MetricType,
 ):
   | {
-      operator: '>=' | '<=' | '>' | '<' | '==' | '!=';
+      operator: ComparisonOperator;
       value: MetricValue;
     }
   | {
