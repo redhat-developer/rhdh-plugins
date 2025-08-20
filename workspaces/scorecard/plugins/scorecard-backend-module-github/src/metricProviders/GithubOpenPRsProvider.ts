@@ -30,11 +30,11 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
 
   private constructor(thresholds?: ThresholdConfig) {
     this.thresholds = thresholds ?? {
-      rules: {
-        error: '>10',
-        warning: '>5',
-        success: '<=5',
-      },
+      rules: [
+        { key: 'error', expression: '>10' },
+        { key: 'warning', expression: '>5' },
+        { key: 'success', expression: '<=5' },
+      ],
     };
   }
 

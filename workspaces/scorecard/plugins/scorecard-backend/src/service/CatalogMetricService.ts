@@ -20,7 +20,7 @@ import {
   MetricResult,
   MetricType,
   ThresholdConfig,
-  ThresholdRules,
+  ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
@@ -78,29 +78,29 @@ export class CatalogMetricService {
     entity: Entity,
     providerId: string,
     metricType: MetricType,
-  ): ThresholdRules {
+  ): ThresholdRule[] {
     const annotations = entity.metadata?.annotations || {};
     const prefix = `scorecard.io/${providerId}.thresholds.rules.`;
-    const overrides: ThresholdRules = {};
+    const overrides: ThresholdRule[] = [];
 
-    for (const [key, expression] of Object.entries(annotations)) {
-      if (key.startsWith(prefix) && expression) {
-        const thresholdName = key.substring(prefix.length);
-        overrides[thresholdName] = expression;
+    for (const [annotationKey, expression] of Object.entries(annotations)) {
+      if (annotationKey.startsWith(prefix) && expression) {
+        const key = annotationKey.substring(prefix.length);
+        overrides.push({ key, expression });
       }
     }
 
-    if (overrides) {
+    if (overrides.length > 0) {
       try {
         validateThresholds({ rules: overrides }, metricType);
       } catch (e) {
         this.logger.error(
           `Invalid threshold annotations in entity '${stringifyEntityRef(
             entity,
-          )}': ${overrides}. Using default thresholds.`,
+          )}': ${JSON.stringify(overrides)}. Using default thresholds.`,
           e,
         );
-        return {};
+        return [];
       }
     }
 
@@ -119,11 +119,26 @@ export class CatalogMetricService {
       metricType,
     );
 
+    const mergedRules = [...providerThresholds.rules];
+    for (const override of entityOverrideThresholds) {
+      const foundKey = mergedRules.findIndex(rule => rule.key === override.key);
+      if (foundKey !== -1) {
+        mergedRules[foundKey] = override;
+      } else {
+        this.logger.error(
+          `Unable to override ${stringifyEntityRef(
+            entity,
+          )} thresholds by ${JSON.stringify(
+            override,
+          )}, metric provider ${provider.getProviderId()} does not support key ${
+            override.key
+          }`,
+        );
+      }
+    }
+
     return {
-      rules: {
-        ...providerThresholds.rules,
-        ...entityOverrideThresholds,
-      },
+      rules: mergedRules,
     };
   }
 

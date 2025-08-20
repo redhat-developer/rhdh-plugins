@@ -42,17 +42,20 @@ export type Metric<T extends MetricType = MetricType> = {
 };
 
 /**
- * Threshold rules definition
+ * Threshold rule definition
  * @public
  */
-export type ThresholdRules = Record<string, string>;
+export type ThresholdRule = {
+  key: string;
+  expression: string;
+};
 
 /**
  * Threshold configuration
  * @public
  */
 export type ThresholdConfig = {
-  rules: ThresholdRules;
+  rules: ThresholdRule[];
 };
 
 /**
@@ -60,7 +63,7 @@ export type ThresholdConfig = {
  */
 export type ThresholdResult = {
   definition: ThresholdConfig;
-  evaluation: string | undefined; // threshold name the expression evaluated to
+  evaluation: string | undefined; // threshold key the expression evaluated to
 };
 
 /**
