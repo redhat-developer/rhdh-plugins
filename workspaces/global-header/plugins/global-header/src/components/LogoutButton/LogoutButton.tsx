@@ -21,6 +21,7 @@ import {
 } from '@backstage/core-plugin-api';
 
 import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
 
 import { MenuItemLinkContent } from '../MenuItemLink/MenuItemLinkContent';
 
@@ -33,11 +34,18 @@ export const LogoutButton = () => {
   };
 
   return (
-    <MenuItem
-      onClick={handleLogout}
-      sx={{ cursor: 'pointer', width: '100%', color: 'inherit' }}
-    >
-      <MenuItemLinkContent icon="logout" label="Sign out" />
-    </MenuItem>
+    <>
+      <Divider />
+      <MenuItem
+        onClick={handleLogout}
+        sx={{
+          cursor: 'pointer',
+          width: '100%',
+          color: 'inherit',
+        }}
+      >
+        <MenuItemLinkContent icon="logout" label="Sign out" />
+      </MenuItem>
+    </>
   );
 };
