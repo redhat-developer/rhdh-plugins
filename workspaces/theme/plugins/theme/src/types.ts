@@ -55,6 +55,8 @@ export interface RHDHThemePalette {
     appBarBackgroundColor: string;
     appBarForegroundColor: string;
     appBarBackgroundImage: string;
+
+    starredItemsColor: string;
   };
 
   primary: {
