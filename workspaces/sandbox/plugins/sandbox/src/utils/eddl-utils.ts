@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import { useCallback } from 'react';
+import { useSandboxContext } from '../hooks/useSandboxContext';
+
 /**
  * Get Red Hat EDDL data attributes for tracking clicks (for non-CTA elements)
  * These attributes work with dpal.js for Adobe Analytics
@@ -70,4 +73,43 @@ export const pushCtaEvent = (
     // Push to the data layer managed by dpal.js
     (window as any).appEventData.push(eventData);
   }
+};
+
+/**
+ * React hook for dual analytics tracking (Adobe EDDL + Segment)
+ * This hook returns a function that tracks events to both Adobe Analytics (via EDDL) and Segment Analytics
+ */
+export const useTrackAnalytics = () => {
+  const { segmentTrackClick } = useSandboxContext();
+
+  return useCallback(
+    async (
+      itemName: string,
+      section: 'Catalog' | 'Activities' | 'Support' | 'Verification',
+      href: string,
+      internalCampaign?: string,
+      linkType: 'cta' | 'default' = 'default',
+    ) => {
+      // Adobe EDDL tracking for CTA events
+      if (linkType === 'cta') {
+        pushCtaEvent(itemName, section, href, internalCampaign);
+      }
+
+      // Segment tracking (if available from context)
+      if (segmentTrackClick) {
+        try {
+          await segmentTrackClick({
+            itemName,
+            section,
+            href,
+            internalCampaign,
+            linkType,
+          });
+        } catch (error) {
+          // Segment tracking failed, continue without blocking user experience
+        }
+      }
+    },
+    [segmentTrackClick],
+  );
 };

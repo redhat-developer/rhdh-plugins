@@ -49,12 +49,17 @@ describe('AnsibleLaunchInfoModal', () => {
   const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
     typeof useSandboxContext
   >;
-  const mockPushCtaEvent = jest.spyOn(eddlUtils, 'pushCtaEvent');
+  const mockUseTrackAnalytics = jest.spyOn(eddlUtils, 'useTrackAnalytics');
+
+  const mockTrackAnalytics = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
     // Setup window.appEventData for tests
     (global as any).window = { appEventData: [] };
+
+    // Mock useTrackAnalytics to return our mock function
+    mockUseTrackAnalytics.mockReturnValue(mockTrackAnalytics);
   });
 
   const renderModal = (contextOverrides = {}) => {
@@ -290,11 +295,12 @@ describe('AnsibleLaunchInfoModal', () => {
       fireEvent.click(linkElement!);
 
       // Should push CTA event with correct parameters
-      expect(mockPushCtaEvent).toHaveBeenCalledWith(
+      expect(mockTrackAnalytics).toHaveBeenCalledWith(
         'Get Started - Ansible',
         'Catalog',
         'https://ansible.example.com',
         Intcmp.AAP,
+        'cta',
       );
     });
 
@@ -320,7 +326,7 @@ describe('AnsibleLaunchInfoModal', () => {
       fireEvent.click(linkElement!);
 
       // Should not push event when link is not available
-      expect(mockPushCtaEvent).not.toHaveBeenCalled();
+      expect(mockTrackAnalytics).not.toHaveBeenCalled();
     });
   });
 });

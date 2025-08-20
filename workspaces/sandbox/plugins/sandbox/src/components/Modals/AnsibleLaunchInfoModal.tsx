@@ -38,7 +38,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Link } from '@backstage/core-components';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { AnsibleStatus } from '../../utils/aap-utils';
-import { pushCtaEvent } from '../../utils/eddl-utils';
+import { useTrackAnalytics } from '../../utils/eddl-utils';
 import { Intcmp } from '../../hooks/useProductURLs';
 
 // Import the logos
@@ -64,14 +64,17 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
     ansibleStatus,
   } = useSandboxContext();
 
+  const trackAnalytics = useTrackAnalytics();
+
   // Handle CTA click for analytics
-  const handleAnsibleCtaClick = () => {
+  const handleAnsibleCtaClick = async () => {
     if (ansibleUILink) {
-      pushCtaEvent(
+      await trackAnalytics(
         'Get Started - Ansible',
         'Catalog',
         ansibleUILink,
         Intcmp.AAP,
+        'cta',
       );
     }
   };
