@@ -44,7 +44,7 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
 
 // @public
 export type ThresholdConfig = {
-  rules: ThresholdRules;
+  rules: ThresholdRule[];
 };
 
 // @public (undocumented)
@@ -54,7 +54,10 @@ export type ThresholdResult = {
 };
 
 // @public
-export type ThresholdRules = Record<string, string>;
+export type ThresholdRule = {
+  key: string;
+  expression: string;
+};
 
 // (No @packageDocumentation comment for this package)
 ```

@@ -56,15 +56,15 @@ export class ThresholdEvaluator {
    * Evaluate thresholds for a metric value and return first matching
    * @param metricValue - The value to evaluate
    * @param thresholds - The threshold configuration
-   * @returns threshold that first matches the metric value or undefined
+   * @returns threshold key that first matches the threshold expression for metricValue or undefined
    */
   getFirstMatchingThreshold(
     metricValue: MetricValue,
     thresholds: ThresholdConfig,
   ): string | undefined {
-    for (const [name, expression] of Object.entries(thresholds.rules)) {
-      if (this.evaluateThreshold(metricValue, expression)) {
-        return name;
+    for (const rule of thresholds.rules) {
+      if (this.evaluateThreshold(metricValue, rule.expression)) {
+        return rule.key;
       }
     }
 

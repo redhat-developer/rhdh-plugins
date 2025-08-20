@@ -80,22 +80,28 @@ export function validateThresholds(
     typeof thresholds !== 'object' ||
     thresholds === null ||
     !('rules' in thresholds) ||
-    typeof thresholds.rules !== 'object' ||
-    thresholds.rules === null
+    !Array.isArray(thresholds.rules)
   ) {
     throw new ThresholdConfigFormatError(
-      'Invalid type for ThresholdConfig, must have a rules property that is an object',
+      'Invalid type for ThresholdConfig, must have a rules property that is an array',
     );
   }
 
-  for (const [, expression] of Object.entries(thresholds.rules)) {
-    if (typeof expression !== 'string') {
+  for (const rule of thresholds.rules) {
+    if (
+      typeof rule !== 'object' ||
+      rule === null ||
+      !('key' in rule) ||
+      !('expression' in rule) ||
+      typeof rule.key !== 'string' ||
+      typeof rule.expression !== 'string'
+    ) {
       throw new ThresholdConfigFormatError(
-        `Invalid type for threshold expression '${JSON.stringify(
-          expression,
-        )}': ${typeof expression}, should be string`,
+        `Invalid threshold rule format '${JSON.stringify(
+          rule,
+        )}': must be an object with 'key' and 'expression' string properties`,
       );
     }
-    parseThresholdExpression(expression, expectedMetricType);
+    parseThresholdExpression(rule.expression, expectedMetricType);
   }
 }

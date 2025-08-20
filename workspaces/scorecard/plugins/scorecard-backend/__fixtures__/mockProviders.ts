@@ -72,11 +72,11 @@ export class MockNumberProvider extends MockMetricProvider<'number'> {
   }
   getMetricThresholds(): ThresholdConfig {
     return {
-      rules: {
-        error: '>40',
-        warning: '>20',
-        success: '<=20',
-      },
+      rules: [
+        { key: 'error', expression: '>40' },
+        { key: 'warning', expression: '>20' },
+        { key: 'success', expression: '<=20' },
+      ],
     };
   }
 }
@@ -93,10 +93,10 @@ export class MockStringProvider extends MockMetricProvider<'string'> {
   }
   getMetricThresholds(): ThresholdConfig {
     return {
-      rules: {
-        ok: '==content',
-        nok: '!=content',
-      },
+      rules: [
+        { key: 'ok', expression: '==content' },
+        { key: 'nok', expression: '!=content' },
+      ],
     };
   }
 }
