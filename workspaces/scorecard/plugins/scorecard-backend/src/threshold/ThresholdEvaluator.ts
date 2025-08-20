@@ -44,7 +44,7 @@ export class ThresholdEvaluator {
    * Evaluate a metric value against a threshold expression
    * @param metricValue - The value to evaluate
    * @param metricType - The type of metric
-   * @param expression - The threshold expression (e.g., ">40", "==myValue")
+   * @param expression - The threshold expression (e.g., ">40", "==true")
    * @returns true if the metric value matches the threshold expression
    */
   private evaluateThreshold(

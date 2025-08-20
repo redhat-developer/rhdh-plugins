@@ -55,6 +55,7 @@ describe('CatalogMetricService', () => {
             { key: 'success', expression: '<=20' },
           ],
         },
+        status: 'success',
         evaluation: 'error',
       },
       timestamp,
@@ -76,6 +77,7 @@ describe('CatalogMetricService', () => {
             { key: 'error', expression: '==false' },
           ],
         },
+        status: 'success',
         evaluation: 'error',
       },
       timestamp,
@@ -143,6 +145,7 @@ describe('CatalogMetricService', () => {
                 { key: 'success', expression: '<=20' }, // default from provider
               ],
             },
+            status: 'success',
             evaluation: 'warning',
           },
         },

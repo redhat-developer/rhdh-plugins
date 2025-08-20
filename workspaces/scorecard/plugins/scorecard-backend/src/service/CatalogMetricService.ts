@@ -173,7 +173,7 @@ export class CatalogMetricService {
       if (error || value === undefined) {
         return {
           id: providerId,
-          status: 'error' as const,
+          status: 'error',
           metadata: {
             title: metric.title,
             description: metric.description,
@@ -189,9 +189,25 @@ export class CatalogMetricService {
         provider,
         metric.type,
       );
+
+      let evaluation: string | undefined;
+      let thresholdError: Error | undefined;
+      try {
+        evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
+          value,
+          metric.type,
+          thresholds,
+        );
+      } catch (e) {
+        thresholdError =
+          e instanceof Error
+            ? e
+            : new Error(`Threshold evaluation failed: ${String(e)}`);
+      }
+
       return {
         id: metric.id,
-        status: 'success' as const,
+        status: 'success',
         metadata: {
           title: metric.title,
           description: metric.description,
@@ -203,11 +219,9 @@ export class CatalogMetricService {
           timestamp: new Date().toISOString(),
           thresholdResult: {
             definition: thresholds,
-            evaluation: this.thresholdEvaluator.getFirstMatchingThreshold(
-              value,
-              metric.type,
-              thresholds,
-            ),
+            status: thresholdError ? 'error' : 'success',
+            evaluation,
+            ...(thresholdError && { error: thresholdError }),
           },
         },
       };
