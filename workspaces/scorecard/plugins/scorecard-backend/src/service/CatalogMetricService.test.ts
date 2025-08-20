@@ -183,7 +183,7 @@ describe('CatalogMetricService', () => {
       expect(result).toEqual([githubMetricResult, jiraMetricErrorResult]);
     });
 
-    it('should handle invalid entity threshold annotations and use default thresholds', async () => {
+    it('should handle invalid entity threshold annotations and skip them', async () => {
       const entityWithInvalidThresholds: Entity = {
         ...mockEntity,
         metadata: {
@@ -207,54 +207,10 @@ describe('CatalogMetricService', () => {
       expect(result).toHaveLength(1);
       expect(result).toEqual([githubMetricResult]);
       expect(mockLogger.error).toHaveBeenCalledWith(
-        `Invalid threshold annotations in entity 'component:default/test-component': [{"key":"error","expression":"invalid_expression"}]. Using default thresholds.`,
+        `Invalid threshold annotation in entity 'component:default/test-component': {"key":"error","expression":"invalid_expression"}. Skipping including this threshold.`,
         new ThresholdConfigFormatError(
-          'Invalid threshold expression: "invalid_expression"',
+          'Invalid threshold expression: "invalid_expression". Use operators: >=, <=, >, <, ==, !=, - (range)',
         ),
-      );
-    });
-
-    it('should handle invalid entity threshold key in annotations and not include it', async () => {
-      const entityWithInvalidThresholds: Entity = {
-        ...mockEntity,
-        metadata: {
-          ...mockEntity.metadata,
-          annotations: {
-            'scorecard.io/github.number-metric.thresholds.rules.problem': '>5',
-            'scorecard.io/github.number-metric.thresholds.rules.error': '>100', // still overridden
-          },
-        },
-      };
-      const expectedGithubResult = {
-        ...githubMetricResult,
-        result: {
-          ...githubMetricResult.result,
-          thresholdResult: {
-            definition: {
-              rules: [
-                { key: 'error', expression: '>100' }, // overridden from entity
-                { key: 'warning', expression: '>20' },
-                { key: 'success', expression: '<=20' },
-              ],
-            },
-            evaluation: 'warning',
-          },
-        },
-      };
-
-      mockCatalogApi.getEntityByRef.mockResolvedValue(
-        entityWithInvalidThresholds,
-      );
-
-      const result = await catalogMetricService.calculateEntityMetrics(
-        'component:default/test-component',
-        ['github.number-metric'],
-      );
-
-      expect(result).toHaveLength(1);
-      expect(result).toEqual([expectedGithubResult]);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        `Unable to override component:default/test-component thresholds by {"key":"problem","expression":">5"}, metric provider github.number-metric does not support key problem`,
       );
     });
 

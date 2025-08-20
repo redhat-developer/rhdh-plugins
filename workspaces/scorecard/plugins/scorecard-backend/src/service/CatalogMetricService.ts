@@ -86,21 +86,20 @@ export class CatalogMetricService {
     for (const [annotationKey, expression] of Object.entries(annotations)) {
       if (annotationKey.startsWith(prefix) && expression) {
         const key = annotationKey.substring(prefix.length);
-        overrides.push({ key, expression });
-      }
-    }
-
-    if (overrides.length > 0) {
-      try {
-        validateThresholds({ rules: overrides }, metricType);
-      } catch (e) {
-        this.logger.error(
-          `Invalid threshold annotations in entity '${stringifyEntityRef(
-            entity,
-          )}': ${JSON.stringify(overrides)}. Using default thresholds.`,
-          e,
-        );
-        return [];
+        const entityRule = { key, expression };
+        try {
+          validateThresholds({ rules: [entityRule] }, metricType);
+          overrides.push(entityRule);
+        } catch (e) {
+          this.logger.error(
+            `Invalid threshold annotation in entity '${stringifyEntityRef(
+              entity,
+            )}': ${JSON.stringify(
+              entityRule,
+            )}. Skipping including this threshold.`,
+            e,
+          );
+        }
       }
     }
 

@@ -140,6 +140,11 @@ export function validateThresholds(
         )}': must be an object with 'key' and 'expression' string properties`,
       );
     }
+    if (!['error', 'warning', 'success'].includes(rule.key)) {
+      throw new ThresholdConfigFormatError(
+        `Invalid threshold rule key '${rule.key}': only supported values are 'error', 'warning', 'success'`,
+      );
+    }
     parseThresholdExpression(rule.expression, expectedMetricType);
   }
 }

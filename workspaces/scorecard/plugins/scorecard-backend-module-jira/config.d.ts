@@ -23,10 +23,11 @@ export interface Config {
       jira?: {
         open_issues?: {
           thresholds?: {
-            rules?: {
-              /** Custom threshold names with their conditions */
-              [name: string]: string;
-            };
+            rules?: Array<{
+              key: 'error' | 'warning' | 'success';
+              /** Threshold expression - supports: >=, <=, >, <, ==, !=, - (range) */
+              expression: string;
+            }>;
           };
         };
       };
