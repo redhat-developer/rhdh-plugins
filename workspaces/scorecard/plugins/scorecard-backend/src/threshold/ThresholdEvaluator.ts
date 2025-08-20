@@ -15,6 +15,7 @@
  */
 
 import {
+  MetricType,
   MetricValue,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -36,16 +37,18 @@ export class ThresholdEvaluator {
   /**
    * Evaluate a metric value against a threshold expression
    * @param metricValue - The value to evaluate
+   * @param metricType - The type of metric
    * @param expression - The threshold expression (e.g., ">40", "==myValue")
    * @returns true if the metric value matches the threshold expression
    */
   private evaluateThreshold(
     metricValue: MetricValue,
+    metricType: MetricType,
     expression: string,
   ): boolean {
     const { operator, value } = parseThresholdExpression(
       expression,
-      metricValue,
+      metricType,
     );
     const operatorFn =
       this.operations[operator as keyof typeof this.operations];
@@ -60,10 +63,11 @@ export class ThresholdEvaluator {
    */
   getFirstMatchingThreshold(
     metricValue: MetricValue,
+    metricType: MetricType,
     thresholds: ThresholdConfig,
   ): string | undefined {
     for (const rule of thresholds.rules) {
-      if (this.evaluateThreshold(metricValue, rule.expression)) {
+      if (this.evaluateThreshold(metricValue, metricType, rule.expression)) {
         return rule.key;
       }
     }

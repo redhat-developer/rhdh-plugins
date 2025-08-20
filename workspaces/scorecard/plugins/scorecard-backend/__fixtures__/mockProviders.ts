@@ -81,21 +81,21 @@ export class MockNumberProvider extends MockMetricProvider<'number'> {
   }
 }
 
-export class MockStringProvider extends MockMetricProvider<'string'> {
+export class MockBooleanProvider extends MockMetricProvider<'boolean'> {
   constructor(
     providerId: string,
     datasourceId: string,
-    title: string = 'Mock String Metric',
-    description: string = 'Mock string description.',
-    value: string = 'test-value',
+    title: string = 'Mock Boolean Metric',
+    description: string = 'Mock boolean description.',
+    value: boolean = false,
   ) {
-    super('string', providerId, datasourceId, title, description, value);
+    super('boolean', providerId, datasourceId, title, description, value);
   }
   getMetricThresholds(): ThresholdConfig {
     return {
       rules: [
-        { key: 'ok', expression: '==content' },
-        { key: 'nok', expression: '!=content' },
+        { key: 'success', expression: '==true' },
+        { key: 'error', expression: '==false' },
       ],
     };
   }
@@ -114,14 +114,14 @@ export const githubNumberMetricMetadata = {
   type: 'number',
 };
 
-export const jiraStringProvider = new MockStringProvider(
-  'jira.string-metric',
+export const jiraBooleanProvider = new MockBooleanProvider(
+  'jira.boolean-metric',
   'jira',
 );
 
-export const jiraStringMetricMetadata = {
+export const jiraBooleanMetricMetadata = {
   history: undefined,
-  title: 'Mock String Metric',
-  description: 'Mock string description.',
-  type: 'string',
+  title: 'Mock Boolean Metric',
+  description: 'Mock boolean description.',
+  type: 'boolean',
 };

@@ -24,8 +24,8 @@ import { mockServices } from '@backstage/backend-test-utils';
 import {
   githubNumberMetricMetadata,
   githubNumberProvider,
-  jiraStringMetricMetadata,
-  jiraStringProvider,
+  jiraBooleanMetricMetadata,
+  jiraBooleanProvider,
 } from '../../__fixtures__/mockProviders';
 import { mockEntity } from '../../__fixtures__/mockEntities';
 import { ThresholdConfigFormatError } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
@@ -63,23 +63,23 @@ describe('CatalogMetricService', () => {
   };
 
   const jiraMetricResult = {
-    id: 'jira.string-metric',
+    id: 'jira.boolean-metric',
     metadata: {
-      ...jiraStringMetricMetadata,
+      ...jiraBooleanMetricMetadata,
     },
     status: 'success' as const,
     result: {
       thresholdResult: {
         definition: {
           rules: [
-            { key: 'ok', expression: '==content' },
-            { key: 'nok', expression: '!=content' },
+            { key: 'success', expression: '==true' },
+            { key: 'error', expression: '==false' },
           ],
         },
-        evaluation: 'nok',
+        evaluation: 'error',
       },
       timestamp,
-      value: 'test-value',
+      value: false,
     },
   };
 
@@ -89,7 +89,7 @@ describe('CatalogMetricService', () => {
 
     registry = new MetricProvidersRegistry();
     registry.register(githubNumberProvider);
-    registry.register(jiraStringProvider);
+    registry.register(jiraBooleanProvider);
 
     catalogMetricService = new CatalogMetricService({
       catalogApi: mockCatalogApi,
@@ -156,7 +156,7 @@ describe('CatalogMetricService', () => {
 
       const result = await catalogMetricService.calculateEntityMetrics(
         'component:default/test-component',
-        ['jira.string-metric'],
+        ['jira.boolean-metric'],
       );
 
       expect(result).toHaveLength(1);
@@ -165,7 +165,7 @@ describe('CatalogMetricService', () => {
 
     it('should handle metric calculation error', async () => {
       jest
-        .spyOn(jiraStringProvider, 'calculateMetric')
+        .spyOn(jiraBooleanProvider, 'calculateMetric')
         .mockRejectedValue(new Error('Jira API failure'));
       const jiraMetricErrorResult = {
         ...jiraMetricResult,

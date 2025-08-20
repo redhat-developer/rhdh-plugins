@@ -206,6 +206,7 @@ export class CatalogMetricService {
             definition: thresholds,
             evaluation: this.thresholdEvaluator.getFirstMatchingThreshold(
               value,
+              metric.type,
               thresholds,
             ),
           },
