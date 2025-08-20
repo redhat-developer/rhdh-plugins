@@ -1,5 +1,13 @@
 # @backstage-community/plugin-redhat-resource-optimization-backend
 
+## 2.0.2
+
+### Patch Changes
+
+- 03c0a11: Fix #1317: updated the outdated repository reference.
+- Updated dependencies [03c0a11]
+  - @red-hat-developer-hub/plugin-redhat-resource-optimization-common@2.0.1
+
 ## 2.0.1
 
 ### Patch Changes

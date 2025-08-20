@@ -1,5 +1,11 @@
 # @backstage-community/plugin-redhat-resource-optimization-common
 
+## 2.0.1
+
+### Patch Changes
+
+- 03c0a11: Fix #1317: updated the outdated repository reference.
+
 ## 2.0.0
 
 ### Major Changes
