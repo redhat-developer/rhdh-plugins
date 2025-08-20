@@ -125,6 +125,7 @@ export function validateThresholds(
     );
   }
 
+  const seenKeys = new Set<string>();
   for (const rule of thresholds.rules) {
     if (
       typeof rule !== 'object' ||
@@ -145,6 +146,12 @@ export function validateThresholds(
         `Invalid threshold rule key '${rule.key}': only supported values are 'error', 'warning', 'success'`,
       );
     }
+    if (seenKeys.has(rule.key)) {
+      throw new ThresholdConfigFormatError(
+        `Duplicate key detected for '${rule.key}' with expression '${rule.expression}'`,
+      );
+    }
+    seenKeys.add(rule.key);
     parseThresholdExpression(rule.expression, expectedMetricType);
   }
 }
