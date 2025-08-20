@@ -17,7 +17,7 @@
 /**
  * @public
  */
-export type MetricType = 'number' | 'boolean' | 'string';
+export type MetricType = 'number' | 'boolean';
 
 /**
  * @public
@@ -26,8 +26,6 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
   ? number
   : T extends 'boolean'
   ? boolean
-  : T extends 'string'
-  ? string
   : never;
 
 /**

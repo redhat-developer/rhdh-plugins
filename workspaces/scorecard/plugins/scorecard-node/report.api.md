@@ -29,7 +29,7 @@ export interface MetricProvider<T extends MetricType = MetricType> {
 // @public
 export function parseThresholdExpression(
   expression: string,
-  targetType: MetricValue,
+  targetType: MetricType,
 ): {
   operator: string;
   value: MetricValue;

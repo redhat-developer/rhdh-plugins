@@ -21,7 +21,7 @@ import { createRouter } from './router';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
-  MockStringProvider,
+  MockBooleanProvider,
 } from '../../__fixtures__/mockProviders';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogMetricService } from './CatalogMetricService';
@@ -67,7 +67,7 @@ describe('createRouter', () => {
         'github',
         'GitHub Open Issues',
       );
-      const sonarProvider = new MockStringProvider(
+      const sonarProvider = new MockBooleanProvider(
         'sonar.quality',
         'sonar',
         'Code Quality',

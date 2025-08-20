@@ -19,10 +19,10 @@ import { MetricProvidersRegistry } from './MetricProvidersRegistry';
 import {
   githubNumberMetricMetadata,
   githubNumberProvider,
-  jiraStringMetricMetadata,
-  jiraStringProvider,
+  jiraBooleanMetricMetadata,
+  jiraBooleanProvider,
   MockNumberProvider,
-  MockStringProvider,
+  MockBooleanProvider,
 } from '../../__fixtures__/mockProviders';
 import { mockEntity } from '../../__fixtures__/mockEntities';
 
@@ -36,22 +36,22 @@ describe('MetricProvidersRegistry', () => {
   describe('register', () => {
     it('should register metric providers with different IDs successfully', () => {
       expect(() => registry.register(githubNumberProvider)).not.toThrow();
-      expect(() => registry.register(jiraStringProvider)).not.toThrow();
+      expect(() => registry.register(jiraBooleanProvider)).not.toThrow();
       expect(registry.listMetrics()).toEqual([
         {
           id: 'github.number-metric',
           ...githubNumberMetricMetadata,
         },
         {
-          id: 'jira.string-metric',
-          ...jiraStringMetricMetadata,
+          id: 'jira.boolean-metric',
+          ...jiraBooleanMetricMetadata,
         },
       ]);
     });
 
     it('should throw ConflictError when registering provider with duplicate ID', () => {
       const provider1 = new MockNumberProvider('jira.duplicate-id', 'jira');
-      const provider2 = new MockStringProvider('jira.duplicate-id', 'jira');
+      const provider2 = new MockBooleanProvider('jira.duplicate-id', 'jira');
       registry.register(provider1);
 
       expect(() => registry.register(provider2)).toThrow(
@@ -114,13 +114,13 @@ describe('MetricProvidersRegistry', () => {
 
     it('should return all registered metrics', () => {
       registry.register(githubNumberProvider);
-      registry.register(jiraStringProvider);
+      registry.register(jiraBooleanProvider);
 
       const metrics = registry.listMetrics();
 
       expect(metrics).toHaveLength(2);
       expect(metrics[0].id).toBe('github.number-metric');
-      expect(metrics[1].id).toBe('jira.string-metric');
+      expect(metrics[1].id).toBe('jira.boolean-metric');
     });
   });
 
@@ -136,7 +136,7 @@ describe('MetricProvidersRegistry', () => {
         'github',
         'GitHub Open Issues',
       );
-      const sonarProvider = new MockStringProvider(
+      const sonarProvider = new MockBooleanProvider(
         'sonar.code-quality',
         'sonar',
         'Code Quality',

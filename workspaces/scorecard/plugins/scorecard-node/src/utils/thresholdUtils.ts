@@ -28,7 +28,7 @@ import type { JsonValue } from '@backstage/types';
  */
 export function parseThresholdExpression(
   expression: string,
-  targetType: MetricValue,
+  targetType: MetricType,
 ): {
   operator: string;
   value: MetricValue;
@@ -65,7 +65,9 @@ export function parseThresholdExpression(
     );
   }
 
-  return { operator, value: valueStr };
+  throw new ThresholdConfigFormatError(
+    `Unsupported metric type: "${targetType}"`,
+  );
 }
 
 /**
