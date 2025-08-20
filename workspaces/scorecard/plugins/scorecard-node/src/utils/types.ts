@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export { parseThresholdExpression, validateThresholds } from './thresholdUtils';
-export { type ComparisonOperator } from './types';
+export type ComparisonOperator = '>=' | '<=' | '>' | '<' | '==' | '!=';

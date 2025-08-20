@@ -21,6 +21,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdConfigFormatError } from '../errors';
 import type { JsonValue } from '@backstage/types';
+import { ComparisonOperator } from './types';
 
 function parseRangeOperator(
   expression: string,
@@ -64,7 +65,7 @@ function parseOperator(
   targetType: MetricType,
 ):
   | {
-      operator: '>=' | '<=' | '>' | '<' | '==' | '!=';
+      operator: ComparisonOperator;
       value: MetricValue;
     }
   | undefined {
@@ -110,7 +111,7 @@ export function parseThresholdExpression(
   targetType: MetricType,
 ):
   | {
-      operator: '>=' | '<=' | '>' | '<' | '==' | '!=';
+      operator: ComparisonOperator;
       value: MetricValue;
     }
   | {
