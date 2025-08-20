@@ -30,10 +30,15 @@ export interface MetricProvider<T extends MetricType = MetricType> {
 export function parseThresholdExpression(
   expression: string,
   targetType: MetricType,
-): {
-  operator: string;
-  value: MetricValue;
-};
+):
+  | {
+      operator: '>=' | '<=' | '>' | '<' | '==' | '!=';
+      value: MetricValue;
+    }
+  | {
+      operator: '-';
+      values: [number, number];
+    };
 
 // @public (undocumented)
 export interface ScorecardMetricsExtensionPoint {

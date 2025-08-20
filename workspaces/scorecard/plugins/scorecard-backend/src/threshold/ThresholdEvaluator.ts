@@ -19,7 +19,10 @@ import {
   MetricValue,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { parseThresholdExpression } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  parseThresholdExpression,
+  ThresholdConfigFormatError,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 /**
  * Service for evaluating metric values against threshold expressions
@@ -32,6 +35,9 @@ export class ThresholdEvaluator {
     '<': (a: MetricValue, b: MetricValue) => a < b,
     '==': (a: MetricValue, b: MetricValue) => a === b,
     '!=': (a: MetricValue, b: MetricValue) => a !== b,
+    '-': (a: number, [min, max]: [number, number]) => {
+      return a >= min && a <= max;
+    },
   } as const;
 
   /**
@@ -46,13 +52,19 @@ export class ThresholdEvaluator {
     metricType: MetricType,
     expression: string,
   ): boolean {
-    const { operator, value } = parseThresholdExpression(
-      expression,
-      metricType,
-    );
-    const operatorFn =
-      this.operations[operator as keyof typeof this.operations];
-    return operatorFn(metricValue, value);
+    const result = parseThresholdExpression(expression, metricType);
+
+    if (result.operator === '-') {
+      if (typeof metricValue !== 'number') {
+        throw new ThresholdConfigFormatError(
+          `Range expressions are only supported for number metrics, got: "${metricValue} for expression ${expression}"`,
+        );
+      }
+      return this.operations['-'](metricValue, result.values);
+    }
+
+    const operatorFn = this.operations[result.operator];
+    return operatorFn(metricValue, result.value);
   }
 
   /**
