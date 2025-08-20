@@ -52,7 +52,7 @@ export async function createRouter({
     res.json({ metrics });
   });
 
-  router.get('/catalog/:kind/:namespace/:name/metrics', async (req, res) => {
+  router.get('/metrics/catalog/:kind/:namespace/:name', async (req, res) => {
     const { kind, namespace, name } = req.params;
     const { metricIds } = req.query;
 
