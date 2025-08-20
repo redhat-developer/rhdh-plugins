@@ -22,11 +22,44 @@ import {
 import { ThresholdConfigFormatError } from '../errors';
 import type { JsonValue } from '@backstage/types';
 
-/**
- * Parse a threshold expression and extract operator and value
- * @public
- */
-export function parseThresholdExpression(
+function parseRangeOperator(
+  expression: string,
+  targetType: MetricType,
+):
+  | {
+      operator: '-';
+      values: [number, number];
+    }
+  | undefined {
+  const rangeMatch = /^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/.exec(expression);
+  if (!rangeMatch) {
+    return undefined;
+  }
+
+  if (targetType !== 'number') {
+    throw new ThresholdConfigFormatError(
+      `Range expressions are only supported for number metrics, got: "${targetType} for expression ${expression}"`,
+    );
+  }
+  const minValue = Number(rangeMatch[1]);
+  const maxValue = Number(rangeMatch[2]);
+
+  if (isNaN(minValue) || isNaN(maxValue)) {
+    throw new ThresholdConfigFormatError(
+      `Cannot parse range values ${minValue} and ${maxValue} from expression: "${expression}"`,
+    );
+  }
+
+  if (minValue >= maxValue) {
+    throw new ThresholdConfigFormatError(
+      `Invalid range: minimum value (${minValue}) must be less than maximum value (${maxValue})`,
+    );
+  }
+
+  return { operator: '-', values: [minValue, maxValue] };
+}
+
+function parseOperator(
   expression: string,
   targetType: MetricType,
 ):
@@ -34,46 +67,10 @@ export function parseThresholdExpression(
       operator: '>=' | '<=' | '>' | '<' | '==' | '!=';
       value: MetricValue;
     }
-  | {
-      operator: '-';
-      values: [number, number];
-    } {
-  const trimmedExpression = expression.trim();
-
-  // check for range operator
-  const rangeMatch = /^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/.exec(
-    trimmedExpression,
-  );
-  if (rangeMatch) {
-    if (targetType !== 'number') {
-      throw new ThresholdConfigFormatError(
-        `Range expressions are only supported for number metrics, got: "${targetType} for expression ${expression}"`,
-      );
-    }
-    const minValue = Number(rangeMatch[1]);
-    const maxValue = Number(rangeMatch[2]);
-
-    if (isNaN(minValue) || isNaN(maxValue)) {
-      throw new ThresholdConfigFormatError(
-        `Cannot parse range values ${minValue} and ${maxValue} from expression: "${expression}"`,
-      );
-    }
-
-    if (minValue >= maxValue) {
-      throw new ThresholdConfigFormatError(
-        `Invalid range: minimum value (${minValue}) must be less than maximum value (${maxValue})`,
-      );
-    }
-
-    return { operator: '-', values: [minValue, maxValue] };
-  }
-
-  // check remaining operators
-  const match = /^(>=|<=|>|<|==|!=)(.+)$/.exec(trimmedExpression);
+  | undefined {
+  const match = /^(>=|<=|>|<|==|!=)(.+)$/.exec(expression);
   if (!match) {
-    throw new ThresholdConfigFormatError(
-      `Invalid threshold expression: "${expression}". Use operators: >=, <=, >, <, ==, !=, - (range)`,
-    );
+    return undefined;
   }
 
   const operator = match[1] as '>=' | '<=' | '>' | '<' | '==' | '!=';
@@ -101,8 +98,39 @@ export function parseThresholdExpression(
     );
   }
 
+  return undefined;
+}
+
+/**
+ * Parse a threshold expression and extract operator and value/values
+ * @public
+ */
+export function parseThresholdExpression(
+  expression: string,
+  targetType: MetricType,
+):
+  | {
+      operator: '>=' | '<=' | '>' | '<' | '==' | '!=';
+      value: MetricValue;
+    }
+  | {
+      operator: '-';
+      values: [number, number];
+    } {
+  const trimmedExpression = expression.trim();
+
+  const rangeParsed = parseRangeOperator(trimmedExpression, targetType);
+  if (rangeParsed !== undefined) {
+    return rangeParsed;
+  }
+  const operatorParsed = parseOperator(trimmedExpression, targetType);
+  if (operatorParsed !== undefined) {
+    return operatorParsed;
+  }
+
+  // unable to parse threshold expression
   throw new ThresholdConfigFormatError(
-    `Unsupported metric type: "${targetType}"`,
+    `Invalid threshold expression: "${expression}". Use operators: >=, <=, >, <, ==, !=, - (range)`,
   );
 }
 
