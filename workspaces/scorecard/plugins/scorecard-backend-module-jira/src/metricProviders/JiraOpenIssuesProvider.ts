@@ -31,9 +31,9 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   private constructor(thresholds?: ThresholdConfig) {
     this.thresholds = thresholds ?? {
       rules: [
-        { key: 'error', expression: '>40' },
-        { key: 'warning', expression: '>20' },
-        { key: 'success', expression: '<=20' },
+        { key: 'error', expression: '>50' },
+        { key: 'warning', expression: '10-50' },
+        { key: 'success', expression: '<10' },
       ],
     };
   }
