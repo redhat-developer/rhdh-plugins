@@ -23,6 +23,10 @@ import { LONG_INTERVAL, SHORT_INTERVAL } from '../const';
 import { signupDataToStatus } from '../utils/register-utils';
 import { AnsibleStatus, decode, getReadyCondition } from '../utils/aap-utils';
 import { errorMessage } from '../utils/common';
+import {
+  useSegmentAnalytics,
+  SegmentTrackingData,
+} from '../utils/segment-analytics';
 
 interface SandboxContextType {
   userStatus: string;
@@ -42,6 +46,8 @@ interface SandboxContextType {
   ansibleUILink: string | undefined;
   ansibleError: string | null;
   ansibleStatus: AnsibleStatus;
+  // Segment Analytics
+  segmentTrackClick?: (data: SegmentTrackingData) => Promise<void>;
 }
 
 const SandboxContext = createContext<SandboxContextType | undefined>(undefined);
@@ -61,6 +67,10 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   const aapApi = useApi(aapApiRef);
   const kubeApi = useApi(kubeApiRef);
   const registerApi = useApi(registerApiRef);
+
+  // Segment Analytics
+  const [segmentWriteKey, setSegmentWriteKey] = useState<string>();
+  const segmentAnalytics = useSegmentAnalytics(segmentWriteKey);
 
   const [statusUnknown, setStatusUnknown] = React.useState(true);
   const [userFound, setUserFound] = useState<boolean>(false);
@@ -199,6 +209,19 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Initialize Segment Analytics
+  useEffect(() => {
+    const fetchSegmentWriteKey = async () => {
+      try {
+        const writeKey = await registerApi.getSegmentWriteKey();
+        setSegmentWriteKey(writeKey);
+      } catch (error) {
+        // Failed to fetch Segment write key, continue without Segment tracking
+      }
+    };
+    fetchSegmentWriteKey();
+  }, [registerApi]);
+
   const pollStatus = userFound && !userReady;
   const pollInterval =
     status === 'provisioning' ? SHORT_INTERVAL : LONG_INTERVAL;
@@ -249,6 +272,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
         ansibleUILink,
         ansibleError,
         ansibleStatus,
+        segmentTrackClick: segmentAnalytics.trackClick,
       }}
     >
       {children}
