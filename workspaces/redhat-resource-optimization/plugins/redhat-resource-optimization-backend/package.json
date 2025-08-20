@@ -52,7 +52,7 @@
   "repository": {
     "directory": "workspaces/redhat-resource-optimization/plugins/redhat-resource-optimization-backend",
     "type": "git",
-    "url": "https://github.com/backstage/community-plugins"
+    "url": "https://github.com/redhat-developer/rhdh-plugins"
   },
   "scripts": {
     "build": "backstage-cli package build",
