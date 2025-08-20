@@ -60,8 +60,10 @@ export type ThresholdConfig = {
  * @public
  */
 export type ThresholdResult = {
+  status: 'success' | 'error';
   definition: ThresholdConfig;
   evaluation: string | undefined; // threshold key the expression evaluated to
+  error?: Error;
 };
 
 /**

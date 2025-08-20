@@ -47,8 +47,10 @@ export type ThresholdConfig = {
 
 // @public (undocumented)
 export type ThresholdResult = {
+  status: 'success' | 'error';
   definition: ThresholdConfig;
   evaluation: string | undefined;
+  error?: Error;
 };
 
 // @public
