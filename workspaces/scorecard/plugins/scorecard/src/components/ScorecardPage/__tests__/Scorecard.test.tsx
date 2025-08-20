@@ -38,17 +38,18 @@ jest.mock('@patternfly/react-charts/victory', () => ({
 
 describe('Scorecard Component', () => {
   const defaultProps = {
+    key: 'github.pull_requests_open',
     cardTitle: 'GitHub open PRs',
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
     loading: false,
-    statusColor: '#3E8635',
+    statusColor: 'green',
     StatusIcon: CheckCircleOutlineIcon,
     value: 8,
     thresholds: [
-      { condition: '< 10', status: '#3E8635', label: 'Ideal' },
-      { condition: '10-50', status: '#F0AB00', label: 'Warning' },
-      { condition: '> 50', status: '#C9190B', label: 'Critical' },
+      { key: 'error', expression: '> 40' },
+      { key: 'warning', expression: '> 20' },
+      { key: 'success', expression: '<= 20' },
     ],
   };
 
@@ -72,9 +73,9 @@ describe('Scorecard Component', () => {
   it('should render all threshold labels', () => {
     render(<Scorecard {...defaultProps} />);
 
-    expect(screen.getByText('Ideal < 10')).toBeInTheDocument();
-    expect(screen.getByText('Warning 10-50')).toBeInTheDocument();
-    expect(screen.getByText('Critical > 50')).toBeInTheDocument();
+    expect(screen.getByText('success <= 20')).toBeInTheDocument();
+    expect(screen.getByText('warning > 20')).toBeInTheDocument();
+    expect(screen.getByText('error > 40')).toBeInTheDocument();
   });
 
   it('should render the status icon with correct color', () => {
@@ -99,7 +100,7 @@ describe('Scorecard Component', () => {
     const chartDonut = screen.getByTestId('chart-donut');
     expect(chartDonut).toBeInTheDocument();
     expect(chartDonut).toHaveAttribute('data-value', '8');
-    expect(chartDonut).toHaveAttribute('data-color', '#3E8635');
+    expect(chartDonut).toHaveAttribute('data-color', 'green');
     expect(chartDonut).toHaveAttribute('data-height', '200');
     expect(chartDonut).toHaveAttribute('data-width', '200');
   });
@@ -142,21 +143,6 @@ describe('Scorecard Component', () => {
     expect(chartDonut).toHaveAttribute('data-color', '#C9190B');
   });
 
-  it('should render thresholds without condition when condition is empty', () => {
-    const propsWithoutCondition = {
-      ...defaultProps,
-      thresholds: [
-        { condition: '', status: '#3E8635', label: 'Ideal' },
-        { condition: '10-50', status: '#F0AB00', label: 'Warning' },
-      ],
-    };
-
-    render(<Scorecard {...propsWithoutCondition} />);
-
-    expect(screen.getByText('Ideal')).toBeInTheDocument();
-    expect(screen.getByText('Warning 10-50')).toBeInTheDocument();
-  });
-
   it('should render with large values', () => {
     const largeValueProps = {
       ...defaultProps,
@@ -180,7 +166,7 @@ describe('Scorecard Component', () => {
 
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
     expect(screen.getByText('8')).toBeInTheDocument();
-    expect(screen.queryByText('Ideal')).not.toBeInTheDocument();
+    expect(screen.queryByText('error')).not.toBeInTheDocument();
   });
 
   it('should render correctly with different card titles', () => {
