@@ -111,7 +111,7 @@ export const githubNumberMetricMetadata = {
   history: undefined,
   title: 'Github Number Metric',
   description: 'Mock number description.',
-  type: 'number',
+  type: 'number' as const,
 };
 
 export const jiraBooleanProvider = new MockBooleanProvider(
@@ -123,5 +123,5 @@ export const jiraBooleanMetricMetadata = {
   history: undefined,
   title: 'Mock Boolean Metric',
   description: 'Mock boolean description.',
-  type: 'boolean',
+  type: 'boolean' as const,
 };

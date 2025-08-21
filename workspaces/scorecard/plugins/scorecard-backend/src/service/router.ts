@@ -57,7 +57,7 @@ export async function createRouter({
     const { metricIds } = req.query;
 
     const catalogMetricsSchema = z.object({
-      metricIds: z.string().optional(),
+      metricIds: z.string().min(1).optional(),
     });
 
     const parsed = catalogMetricsSchema.safeParse(req.query);

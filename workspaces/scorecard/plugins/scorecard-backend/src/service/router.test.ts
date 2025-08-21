@@ -22,11 +22,16 @@ import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
   MockBooleanProvider,
+  githubNumberMetricMetadata,
 } from '../../__fixtures__/mockProviders';
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  Metric,
+  MetricResult,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogMetricService } from './CatalogMetricService';
 import { CatalogClient } from '@backstage/catalog-client';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
+import { NotFoundError } from '@backstage/errors';
 
 const mockCatalogClient = {
   getEntityByRef: jest.fn(),
@@ -108,6 +113,120 @@ describe('createRouter', () => {
 
       expect(response.status).toEqual(400);
       expect(response.body.error.name).toEqual('InputError');
+      expect(response.body.error.message).toContain('Invalid query parameters');
+    });
+  });
+
+  describe('GET /metrics/catalog/:kind/:namespace/:name', () => {
+    const mockMetricResults: MetricResult[] = [
+      {
+        id: 'github.open-prs',
+        status: 'success',
+        metadata: githubNumberMetricMetadata,
+        result: {
+          value: 5,
+          timestamp: '2025-01-01T10:30:00.000Z',
+          thresholdResult: {
+            definition: {
+              rules: [
+                { key: 'error', expression: '>10' },
+                { key: 'warning', expression: '>5' },
+                { key: 'success', expression: '<=5' },
+              ],
+            },
+            status: 'success',
+            evaluation: 'success',
+          },
+        },
+      },
+      {
+        id: 'github.open-issues',
+        status: 'success',
+        metadata: githubNumberMetricMetadata,
+        result: {
+          value: true,
+          timestamp: '2025-01-01T10:30:00.000Z',
+          thresholdResult: {
+            definition: {
+              rules: [
+                { key: 'error', expression: '>5' },
+                { key: 'success', expression: '<=5' },
+              ],
+            },
+            status: 'success',
+            evaluation: 'error',
+          },
+        },
+      },
+    ];
+
+    beforeEach(() => {
+      jest
+        .spyOn(catalogMetricService, 'calculateEntityMetrics')
+        .mockResolvedValue(mockMetricResults);
+    });
+
+    it('should return metrics for a specific entity', async () => {
+      const response = await request(app).get(
+        '/metrics/catalog/component/default/my-service',
+      );
+
+      expect(response.status).toBe(200);
+      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+        'component:default/my-service',
+        undefined,
+      );
+      expect(response.body).toEqual(mockMetricResults);
+    });
+
+    it('should handle multiple metricIds parameter', async () => {
+      const response = await request(app).get(
+        '/metrics/catalog/component/default/my-service?metricIds=github.open-prs,github.open-issues',
+      );
+
+      expect(response.status).toBe(200);
+      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+        'component:default/my-service',
+        ['github.open-prs', 'github.open-issues'],
+      );
+      expect(response.body).toEqual(mockMetricResults);
+    });
+
+    it('should handle single metricIds parameter', async () => {
+      const response = await request(app).get(
+        '/metrics/catalog/component/default/my-service?metricIds=github.open-prs',
+      );
+
+      expect(response.status).toBe(200);
+      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+        'component:default/my-service',
+        ['github.open-prs'],
+      );
+    });
+
+    it('should return 404 NotFoundError when entity is not found', async () => {
+      jest
+        .spyOn(catalogMetricService, 'calculateEntityMetrics')
+        .mockRejectedValue(
+          new NotFoundError('Entity not found: component:default/non-existent'),
+        );
+
+      const response = await request(app).get(
+        '/metrics/catalog/component/default/non-existent',
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.name).toBe('NotFoundError');
+      expect(response.body.error.message).toContain('Entity not found');
+    });
+
+    it('should return 400 InputError when invalid query parameters', async () => {
+      const response = await request(app).get(
+        '/metrics/catalog/component/default/my-service?metricIds=',
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
       expect(response.body.error.message).toContain('Invalid query parameters');
     });
   });
