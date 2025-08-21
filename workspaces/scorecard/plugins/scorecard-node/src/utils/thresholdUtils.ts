@@ -39,7 +39,7 @@ function parseRangeOperator(
 
   if (targetType !== 'number') {
     throw new ThresholdConfigFormatError(
-      `Range expressions are only supported for number metrics, got: "${targetType} for expression ${expression}"`,
+      `Range expressions are only supported for number metrics, got: "${targetType}" metric for expression "${expression}"`,
     );
   }
   const minValue = Number(rangeMatch[1]);
