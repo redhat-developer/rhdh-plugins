@@ -106,6 +106,85 @@ describe('MetricProvidersRegistry', () => {
     });
   });
 
+  describe('calculateMetrics', () => {
+    it('should handle empty provider IDs array', async () => {
+      const results = await registry.calculateMetrics([], mockEntity);
+
+      expect(results).toEqual([]);
+    });
+
+    it('should calculate metrics for multiple registered providers', async () => {
+      registry.register(githubNumberProvider);
+      registry.register(jiraBooleanProvider);
+
+      const results = await registry.calculateMetrics(
+        ['github.number-metric', 'jira.boolean-metric'],
+        mockEntity,
+      );
+
+      expect(results).toHaveLength(2);
+      expect(results[0]).toEqual({
+        providerId: 'github.number-metric',
+        value: 42,
+      });
+      expect(results[1]).toEqual({
+        providerId: 'jira.boolean-metric',
+        value: false,
+      });
+    });
+
+    it('should calculate metrics for only specified providers', async () => {
+      registry.register(githubNumberProvider);
+      registry.register(
+        new MockNumberProvider(
+          'github.open-issues',
+          'github',
+          'GitHub Open Issues',
+          'Github Open Issues description',
+          10,
+        ),
+      );
+      registry.register(jiraBooleanProvider);
+
+      const results = await registry.calculateMetrics(
+        ['github.number-metric', 'github.open-issues'],
+        mockEntity,
+      );
+
+      expect(results).toHaveLength(2);
+      expect(results[0]).toEqual({
+        providerId: 'github.number-metric',
+        value: 42,
+      });
+      expect(results[1]).toEqual({
+        providerId: 'github.open-issues',
+        value: 10,
+      });
+    });
+
+    it('should handle mix of successful and failed metric calculations', async () => {
+      registry.register(githubNumberProvider);
+
+      const results = await registry.calculateMetrics(
+        ['github.number-metric', 'non-existent'],
+        mockEntity,
+      );
+
+      expect(results).toHaveLength(2);
+      expect(results[0]).toEqual({
+        providerId: 'github.number-metric',
+        value: 42,
+      });
+      expect(results[1]).toEqual({
+        providerId: 'non-existent',
+        error: expect.any(NotFoundError),
+      });
+      expect(results[1].error?.message).toBe(
+        "Metric provider with ID 'non-existent' is not registered.",
+      );
+    });
+  });
+
   describe('listMetrics', () => {
     it('should return empty array when no providers registered', () => {
       const metrics = registry.listMetrics();
