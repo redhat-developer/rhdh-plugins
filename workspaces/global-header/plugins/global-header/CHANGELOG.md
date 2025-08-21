@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.15.1
+
+### Patch Changes
+
+- aaaaf2d: Add divider above Sign out option in profile dropdown for better visual separation
+- b991a8a: Show empty state when no help items available
+
 ## 1.15.0
 
 ### Minor Changes
