@@ -313,10 +313,8 @@ export async function createRouter(
           config,
           auth,
           catalogApi,
-          gitApiService:
-            c.request.approvalTool === 'GITLAB'
-              ? gitlabApiService
-              : githubApiService,
+          gitlabApiService,
+          githubApiService,
           catalogInfoGenerator,
           catalogHttpClient,
         },

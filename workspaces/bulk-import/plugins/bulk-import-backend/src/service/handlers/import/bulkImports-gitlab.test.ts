@@ -298,7 +298,7 @@ describe('bulkimports.ts unit tests using gitlab', () => {
             },
             approvalTool: 'GITLAB',
             status: 'WAIT_PR_APPROVAL',
-            github: {
+            gitlab: {
               pullRequest: {
                 number: 987,
                 url: 'https://gitlab.com/my-org-1/my-repo-11/pull/987',
@@ -373,7 +373,7 @@ describe('bulkimports.ts unit tests using gitlab', () => {
             approvalTool: 'GITLAB',
             status: 'WAIT_PR_APPROVAL',
             source: 'integration',
-            github: {
+            gitlab: {
               pullRequest: {
                 number: 100,
                 url: 'https://gitlab.com/my-org-2/my-repo-21/pull/100',

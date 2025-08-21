@@ -778,7 +778,8 @@ const OPENAPI = `
         "type": "string",
         "enum": [
           "GIT",
-          "SERVICENOW"
+          "SERVICENOW",
+          "GITLAB"
         ]
       },
       "ImportStatus": {
@@ -848,6 +849,37 @@ const OPENAPI = `
           },
           "repository": {
             "$ref": "#/components/schemas/Repository"
+          },
+          "gitlab": {
+            "type": "object",
+            "description": "GitLab details. Applicable if approvalTool is gitlab.",
+            "properties": {
+              "pullRequest": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "URL of the Pull Request"
+                  },
+                  "number": {
+                    "type": "number",
+                    "description": "Pull Request number"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "title of the Pull Request"
+                  },
+                  "body": {
+                    "type": "string",
+                    "description": "body of the Pull Request"
+                  },
+                  "catalogInfoContent": {
+                    "type": "string",
+                    "description": "content of the catalog-info.yaml as fetched from the Pull Request"
+                  }
+                }
+              }
+            }
           },
           "github": {
             "type": "object",
@@ -954,6 +986,26 @@ const OPENAPI = `
           "catalogInfoContent": {
             "type": "string",
             "description": "content of the catalog-info.yaml to include in the import Pull Request."
+          },
+          "gitlab": {
+            "type": "object",
+            "description": "GitLab details. Applicable if approvalTool is gitlab.",
+            "properties": {
+              "pullRequest": {
+                "type": "object",
+                "description": "Pull Request details. Applicable if approvalTool is gitlab.",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "title of the Pull Request"
+                  },
+                  "body": {
+                    "type": "string",
+                    "description": "body of the Pull Request"
+                  }
+                }
+              }
+            }
           },
           "github": {
             "type": "object",

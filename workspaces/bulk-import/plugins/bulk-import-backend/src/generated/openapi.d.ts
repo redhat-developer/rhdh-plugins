@@ -40,7 +40,7 @@ declare namespace Components {
         approvalToolParam?: Parameters.ApprovalToolParam;
     }
     namespace Schemas {
-        export type ApprovalTool = "GIT" | "SERVICENOW";
+        export type ApprovalTool = "GIT" | "SERVICENOW" | "GITLAB";
         /**
          * Import Job
          */
@@ -55,6 +55,33 @@ declare namespace Components {
             errors?: string[];
             approvalTool?: ApprovalTool;
             repository?: /* Repository */ Repository;
+            /**
+             * GitLab details. Applicable if approvalTool is gitlab.
+             */
+            gitlab?: {
+                pullRequest?: {
+                    /**
+                     * URL of the Pull Request
+                     */
+                    url?: string;
+                    /**
+                     * Pull Request number
+                     */
+                    number?: number;
+                    /**
+                     * title of the Pull Request
+                     */
+                    title?: string;
+                    /**
+                     * body of the Pull Request
+                     */
+                    body?: string;
+                    /**
+                     * content of the catalog-info.yaml as fetched from the Pull Request
+                     */
+                    catalogInfoContent?: string;
+                };
+            };
             /**
              * GitHub details. Applicable if approvalTool is git.
              */
@@ -128,6 +155,24 @@ declare namespace Components {
              * content of the catalog-info.yaml to include in the import Pull Request.
              */
             catalogInfoContent?: string;
+            /**
+             * GitLab details. Applicable if approvalTool is gitlab.
+             */
+            gitlab?: {
+                /**
+                 * Pull Request details. Applicable if approvalTool is gitlab.
+                 */
+                pullRequest?: {
+                    /**
+                     * title of the Pull Request
+                     */
+                    title?: string;
+                    /**
+                     * body of the Pull Request
+                     */
+                    body?: string;
+                };
+            };
             /**
              * GitHub details. Applicable if approvalTool is git.
              */
@@ -248,6 +293,33 @@ declare namespace Components {
             errors?: string[];
             approvalTool?: ApprovalTool;
             repository?: /* Repository */ Repository;
+            /**
+             * GitLab details. Applicable if approvalTool is gitlab.
+             */
+            gitlab?: {
+                pullRequest?: {
+                    /**
+                     * URL of the Pull Request
+                     */
+                    url?: string;
+                    /**
+                     * Pull Request number
+                     */
+                    number?: number;
+                    /**
+                     * title of the Pull Request
+                     */
+                    title?: string;
+                    /**
+                     * body of the Pull Request
+                     */
+                    body?: string;
+                    /**
+                     * content of the catalog-info.yaml as fetched from the Pull Request
+                     */
+                    catalogInfoContent?: string;
+                };
+            };
             /**
              * GitHub details. Applicable if approvalTool is git.
              */

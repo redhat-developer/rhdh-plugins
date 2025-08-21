@@ -528,6 +528,7 @@ spec:
           status: 'PR_ERROR',
         },
         {
+          approvalTool: 'GIT',
           github: {
             pullRequest: {
               number: 1347,

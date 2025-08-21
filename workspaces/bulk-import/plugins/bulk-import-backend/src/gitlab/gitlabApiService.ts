@@ -527,7 +527,7 @@ export class GitlabApiService {
               await gitlab.Branches.show(`${owner}/${repo}`, branchName);
               branchExists = true;
             } catch (error: any) {
-              if (error.message.includes('404')) {
+              if (error.cause.response.status === 404) {
                 await gitlab.Branches.create(
                   `${owner}/${repo}`,
                   branchName,
@@ -758,7 +758,7 @@ export class GitlabApiService {
               page: 1,
             },
           );
-          return { successful: true, result: resp?.data.length < 1 };
+          return { successful: true, result: resp?.data?.length < 1 };
         },
       },
     );

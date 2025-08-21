@@ -375,7 +375,7 @@ export async function createOrUpdateFileInBranch(
       `Add ${fileName} config file`,
     );
   } catch (error: any) {
-    if (error.message.includes('404')) {
+    if (error.cause.response.status === 404) {
       // If the file does not exist, create it
       await gitlab.RepositoryFiles.create(
         `${owner}/${repo}`,
