@@ -26,7 +26,7 @@ import {
   type GitlabFetchError,
 } from '../types';
 
-const GITLAB_DEFAULT_API_ENDPOINT = 'https://gitlab.com';
+const GITLAB_BASEURL_ENDPOINT = 'https://gitlab.com';
 
 // Cache TTL per entry added, based on the lower values of rate limits imposed by GH,
 // i.e., 5K requests per hour for requests using a personal token.
@@ -44,10 +44,10 @@ export function buildGitlab(
     owner?: string;
     errors?: Map<number, GitlabFetchError>;
   },
-  apiBaseUrl: string = GITLAB_DEFAULT_API_ENDPOINT,
+  baseUrl: string = GITLAB_BASEURL_ENDPOINT,
 ): any | undefined {
   const apiThing = new Gitlab({
-    // host: apiBaseUrl,
+    host: baseUrl,
     token: input.credential.token,
   });
   // registerHooks(deps, octokit); TODO?

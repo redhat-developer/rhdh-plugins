@@ -105,7 +105,7 @@ export class GitlabApiService {
           cache: this.cache,
         },
         { credential, owner: gitUrl.owner },
-        glConfig.apiBaseUrl,
+        glConfig.baseUrl,
       );
       const resp = await glKit.Projects.show(`${gitUrl.owner}/${gitUrl.name}`);
       const repo = resp;
@@ -396,7 +396,7 @@ export class GitlabApiService {
           cache: this.cache,
         },
         { credential, owner },
-        glConfig.apiBaseUrl,
+        glConfig.baseUrl,
       );
       try {
         return await findOpenPRForBranch(

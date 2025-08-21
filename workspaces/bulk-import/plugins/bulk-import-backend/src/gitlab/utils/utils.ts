@@ -195,7 +195,7 @@ export async function executeFunctionOnFirstSuccessfulIntegration<T>(
     const glKit = buildGitlab(
       deps,
       { credential, owner: validatedRepo.owner },
-      validatedRepo.glConfig.apiBaseUrl,
+      validatedRepo.glConfig.baseUrl,
     );
     const res = await params.fn(validatedRepo, glKit);
     if (!res.successful) {
@@ -243,11 +243,7 @@ export async function fetchFromAllIntegrations<T>(
       `Got ${credentials.length} credential(s) for ${glConfig.host}`,
     );
     for (const credential of credentials) {
-      const glKit = buildGitlab(
-        deps,
-        { credential, errors },
-        glConfig.apiBaseUrl,
-      );
+      const glKit = buildGitlab(deps, { credential, errors }, glConfig.baseUrl);
       const res = await params.dataFetcher(glKit, credential, glConfig);
       res.errors?.forEach(err => dataErrs.push(err));
 

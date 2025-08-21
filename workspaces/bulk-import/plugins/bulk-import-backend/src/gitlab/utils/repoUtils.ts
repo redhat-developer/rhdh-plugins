@@ -336,7 +336,7 @@ export async function fileExistsInDefaultBranch(
     );
     return true;
   } catch (error: any) {
-    if (error.message.includes('404')) {
+    if (error.cause.response.status === 404) {
       return false;
     }
     logger.debug(

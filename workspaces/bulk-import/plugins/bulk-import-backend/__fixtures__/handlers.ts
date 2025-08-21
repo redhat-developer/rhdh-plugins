@@ -19,6 +19,8 @@ import { rest } from 'msw';
 const localHostAndPort = 'localhost:8765';
 export const LOCAL_ADDR = `http://${localHostAndPort}`;
 
+export const LOCAL_GITLAB_ADDR = `https://gitlab.com/api/v4`;
+
 export function loadTestFixture(filePathFromFixturesDir: string) {
   return require(`${__dirname}/${filePathFromFixturesDir}`);
 }
@@ -252,6 +254,141 @@ export const DEFAULT_TEST_HANDLERS = [
   ),
   rest.get(
     `${LOCAL_ADDR}/repos/octocat/my-awesome-repo/contents/catalog-info.yaml`,
+    (_, res, ctx) => {
+      return res(ctx.status(404));
+    },
+  ),
+  // Gitlab related apis
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/saltypig1%2Ffuntimes`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(loadTestFixture('gitlab/repos/saltypig1/funtimes/repo.json')),
+      );
+    },
+  ),
+  rest.get(`${LOCAL_ADDR}/api/v4/user`, (_, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json(normalizeUrlsForTest('gitlab/user/user.json')),
+    );
+  }),
+  rest.get(`${LOCAL_ADDR}/api/v4/groups`, (_, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json(normalizeUrlsForTest('gitlab/user/orgs.json')),
+    );
+  }),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/saltypig1%2Ffuntimes/merge_requests`,
+    (_, res, ctx) => {
+      return res(ctx.status(200), ctx.json([]));
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-ent-org-2%2Fswapi-node`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(
+          loadTestFixture('gitlab/repos/my-ent-org-2/swapi-node/repo.json'),
+        ),
+      );
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/saltypig1%2Ffuntimes/repository/files/catalog-info.yaml`,
+    (_, res, ctx) => {
+      return res(ctx.status(404));
+    },
+  ),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-existing-catalog-info-in-default-branch`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(
+          loadTestFixture(
+            'gitlab/repos/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/repo.json',
+          ),
+        ),
+      );
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/repos/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/contributors`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json([loadTestFixture('user/user.json')]),
+      );
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-existing-catalog-info-in-default-branch/merge_requests`,
+    (_, res, ctx) => {
+      return res(ctx.status(200), ctx.json([]));
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-existing-catalog-info-in-default-branch/repository/files/catalog-info.yaml`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(
+          loadTestFixture(
+            'gitlab/repos/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/contents/catalog-info.yaml.json',
+          ),
+        ),
+      );
+    },
+  ),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-no-catalog-info-in-default-branch-and-no-import-pr`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(
+          loadTestFixture(
+            'gitlab/repos/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-no-import-pr/repo.json',
+          ),
+        ),
+      );
+    },
+  ),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-no-catalog-info-in-default-branch-and-import-pr`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(
+          loadTestFixture(
+            'gitlab/repos/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-import-pr/repo.json',
+          ),
+        ),
+      );
+    },
+  ),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-no-catalog-info-in-default-branch-and-import-pr/merge_requests`,
+    (req, res, ctx) => {
+      let prs: any;
+      const stateQueryParam = req.url.searchParams?.get('state');
+      if (stateQueryParam) {
+        prs = loadTestFixture(
+          `gitlab/repos/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-import-pr/pulls/${stateQueryParam}.json`,
+        );
+      }
+      return res(ctx.status(200), ctx.json(prs));
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-no-catalog-info-in-default-branch-and-import-pr/repository/files/catalog-info.yaml`,
     (_, res, ctx) => {
       return res(ctx.status(404));
     },
