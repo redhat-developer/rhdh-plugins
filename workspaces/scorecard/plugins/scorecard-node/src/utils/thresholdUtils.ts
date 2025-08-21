@@ -131,7 +131,7 @@ export function parseThresholdExpression(
 
   // unable to parse threshold expression
   throw new ThresholdConfigFormatError(
-    `Invalid threshold expression: "${expression}". Use operators: >=, <=, >, <, ==, !=, - (range)`,
+    `Invalid threshold expression: "${expression}".`,
   );
 }
 
@@ -165,19 +165,19 @@ export function validateThresholds(
       typeof rule.expression !== 'string'
     ) {
       throw new ThresholdConfigFormatError(
-        `Invalid threshold rule format '${JSON.stringify(
+        `Invalid threshold rule format "${JSON.stringify(
           rule,
-        )}': must be an object with 'key' and 'expression' string properties`,
+        )}": must be an object with "key" and "expression" string properties`,
       );
     }
     if (!['error', 'warning', 'success'].includes(rule.key)) {
       throw new ThresholdConfigFormatError(
-        `Invalid threshold rule key '${rule.key}': only supported values are 'error', 'warning', 'success'`,
+        `Invalid threshold rule key "${rule.key}": only supported values are "error", "warning", "success"`,
       );
     }
     if (seenKeys.has(rule.key)) {
       throw new ThresholdConfigFormatError(
-        `Duplicate key detected for '${rule.key}' with expression '${rule.expression}'`,
+        `Duplicate key detected for "${rule.key}" with expression "${rule.expression}"`,
       );
     }
     seenKeys.add(rule.key);

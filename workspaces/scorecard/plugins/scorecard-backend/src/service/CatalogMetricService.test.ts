@@ -212,7 +212,7 @@ describe('CatalogMetricService', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         `Invalid threshold annotation in entity 'component:default/test-component': {"key":"error","expression":"invalid_expression"}. Skipping including this threshold.`,
         new ThresholdConfigFormatError(
-          'Invalid threshold expression: "invalid_expression". Use operators: >=, <=, >, <, ==, !=, - (range)',
+          'Invalid threshold expression: "invalid_expression".',
         ),
       );
     });
