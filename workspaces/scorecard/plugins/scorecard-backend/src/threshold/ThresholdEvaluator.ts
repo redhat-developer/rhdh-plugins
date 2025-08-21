@@ -57,7 +57,7 @@ export class ThresholdEvaluator {
     if (result.operator === '-') {
       if (typeof metricValue !== 'number') {
         throw new ThresholdConfigFormatError(
-          `Range expressions are only supported for number metrics, got: "${metricValue} for expression ${expression}"`,
+          `Range expressions are only supported for number metrics, got: "${metricValue}" value for expression "${expression}"`,
         );
       }
       return this.operations['-'](metricValue, result.values);
