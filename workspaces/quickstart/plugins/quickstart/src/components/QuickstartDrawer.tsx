@@ -20,6 +20,7 @@ import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
 import { Quickstart } from './Quickstart';
 import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
+import { filterQuickstartItemsByRole } from '../utils';
 
 export const QuickstartDrawer = () => {
   const { isDrawerOpen, closeDrawer, drawerWidth } =
@@ -30,6 +31,12 @@ export const QuickstartDrawer = () => {
   const quickstartItems: QuickstartItemData[] = config?.has('app.quickstart')
     ? config.get('app.quickstart')
     : [];
+
+  // This will be dynamically determined based on the logged-in user
+  const userRole = 'developer'; // switch to 'admin', 'developer', or other roles for testing purposes
+
+  const filteredItems = filterQuickstartItemsByRole(quickstartItems, userRole);
+
   return (
     <Drawer
       sx={{
@@ -56,7 +63,7 @@ export const QuickstartDrawer = () => {
       open={isDrawerOpen}
     >
       <Quickstart
-        quickstartItems={quickstartItems}
+        quickstartItems={filteredItems}
         handleDrawerClose={closeDrawer}
       />
     </Drawer>
