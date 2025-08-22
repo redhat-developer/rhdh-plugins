@@ -97,6 +97,7 @@ export async function addGitlabTokenGroups(
         description: group.description ?? undefined,
         url: group.web_url,
         // From here down gitlab doesn't really have while calling the group api
+        // TODO: figure this part out
         repos_url: group.repos_url,
         hooks_url: group.hooks_url,
         issues_url: group.issues_url,

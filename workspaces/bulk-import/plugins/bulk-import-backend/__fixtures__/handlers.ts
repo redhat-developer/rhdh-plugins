@@ -31,6 +31,7 @@ function normalizeUrlsForTest(filePath: string) {
       .replaceAll('HOSTNAME', localHostAndPort)
       .replaceAll('api.github.com', localHostAndPort)
       .replaceAll('github.com', localHostAndPort)
+      .replaceAll('gitlab.com', localHostAndPort)
       .replaceAll('https://', 'http://'),
   );
 }
@@ -259,6 +260,22 @@ export const DEFAULT_TEST_HANDLERS = [
     },
   ),
   // Gitlab related apis
+  rest.get(`${LOCAL_ADDR}/api/v4/projects`, (_, res, ctx) => {
+    const projectListHeaders = {
+      'x-next-page': '',
+      'x-page': '1',
+      'x-per-page': '20',
+      'x-prev-page': '',
+      'x-total': '3',
+      'x-total-pages': '1',
+    };
+    return res(
+      ctx.status(200),
+      ctx.set(projectListHeaders),
+      ctx.json(normalizeUrlsForTest('gitlab/user/repos.json')),
+    );
+  }),
+
   rest.get(
     `${LOCAL_ADDR}/api/v4/projects/saltypig1%2Ffuntimes`,
     (_, res, ctx) => {
@@ -274,10 +291,32 @@ export const DEFAULT_TEST_HANDLERS = [
       ctx.json(normalizeUrlsForTest('gitlab/user/user.json')),
     );
   }),
-  rest.get(`${LOCAL_ADDR}/api/v4/groups`, (_, res, ctx) => {
+  rest.get(`${LOCAL_ADDR}/api/v4/groups`, (req, res, ctx) => {
+    const url = new URL(req.url);
+    const searchParam = url.searchParams?.get('search');
+    const orgList = normalizeUrlsForTest('gitlab/user/orgs.json');
+    const orgListHeaders = {
+      'x-next-page': '',
+      'x-page': '1',
+      'x-per-page': '20',
+      'x-prev-page': '',
+      'x-total': '3',
+      'x-total-pages': '1',
+    };
+
+    if (searchParam) {
+      orgListHeaders['x-total'] = '1';
+      return res(
+        ctx.status(200),
+        ctx.set(orgListHeaders),
+        ctx.json(orgList.filter(org => org.name === searchParam)),
+      );
+    }
     return res(
       ctx.status(200),
-      ctx.json(normalizeUrlsForTest('gitlab/user/orgs.json')),
+      // Set the pagination headers
+      ctx.set(orgListHeaders),
+      ctx.json(orgList),
     );
   }),
   rest.get(
