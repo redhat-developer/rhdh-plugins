@@ -11776,9 +11776,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-global-header@npm:1.15.0":
-  version: 1.15.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.15.0"
+"@red-hat-developer-hub/backstage-plugin-global-header@npm:1.15.1":
+  version: 1.15.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.15.1"
   dependencies:
     "@backstage/catalog-model": ^1.7.5
     "@backstage/core-components": ^0.17.4
@@ -11804,7 +11804,7 @@ __metadata:
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: ccaaa87590b6c558dd6c3d1ebf0f58cf0a3d8391e42c6d5410e7523fe8c8cc796d0e6280c45f57d365b38680dea39d94535566bc69fea37994a4c5d30f31a8a3
+  checksum: b361ed1d0996ac3ad8efd61b5a33642d728a493a0350a52effd453f6e6260945523ef958f9da3174d3fee76bcd1f32b5a0f3097b8deb6862db0c5e261c6890b2
   languageName: node
   linkType: hard
 
@@ -16253,7 +16253,7 @@ __metadata:
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@playwright/test": ^1.32.3
-    "@red-hat-developer-hub/backstage-plugin-global-header": 1.15.0
+    "@red-hat-developer-hub/backstage-plugin-global-header": 1.15.1
     "@red-hat-developer-hub/backstage-plugin-quickstart": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
     "@testing-library/dom": ^9.0.0
