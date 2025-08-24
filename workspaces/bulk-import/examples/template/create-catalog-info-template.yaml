@@ -33,7 +33,6 @@ spec:
       input:
         url: ${{ parameters.repoUrl }}
         revision: ${{ steps.fetchRepo.output.targetBranchName }}
-        fetchDepth: 1
         targetPath: .
 
     - id: checkCatalogInfo
@@ -70,6 +69,18 @@ spec:
             lifecycle: unknown
             owner: ${{ parameters.owner }}
 
+    - id: get-default-branch
+      name: Get Default Branch
+      action: git:get-default-repository-branch
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+
+    - id: log-branch
+      name: Log Default Branch
+      action: debug:log
+      input:
+        message: 'The default branch is: ${{ steps["get-default-branch"].output.defaultBranch }}'
+
     - id: publish
       name: Create PR to add catalog-info.yaml
       # Create pull request to add catalog-info.yaml to the repository.
@@ -77,6 +88,18 @@ spec:
       input:
         repoUrl: github.com?repo=${{ parameters.repoUrl.split('/')[4] }}&owner=${{ parameters.repoUrl.split('/')[3] }}
         branchName: add-catalog-info-${{ parameters.repoUrl.split('/')[4] }}
-        targetBranchName: ${{ steps.fetchRepo.output.targetBranchName }}
+        targetBranchName: ${{ steps['get-default-branch'].output.defaultBranch }}
         title: 'Add catalog-info.yaml'
         description: 'This PR adds a default catalog-info.yaml for Backstage.'
+    - id: debug
+      name: Debug
+      action: debug:log
+      input:
+        message: 'repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}'
+  
+    - id: register
+      name: Register catalog-info.yaml
+      action: catalog:register-with-event
+      input:
+        # https://github.com/AndrienkoAleksandr/shellImages/tree/master/catalog-info.yaml
+        repoContentsUrl: https://github.com/${{ parameters.repoUrl.split('/')[3] }}/${{ parameters.repoUrl.split('/')[4] }}/blob/${{ steps['get-default-branch'].output.defaultBranch }}/catalog-info.yaml

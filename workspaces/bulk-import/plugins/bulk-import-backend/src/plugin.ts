@@ -19,6 +19,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
+import { eventsServiceRef } from '@backstage/plugin-events-node';
 
 import { migrate } from './service/dao/migration';
 import { RepositoryDao } from './service/dao/repository-dao';
@@ -44,6 +45,7 @@ export const bulkImportPlugin = createBackendPlugin({
         catalogApi: catalogServiceRef,
         auditor: coreServices.auditor,
         database: coreServices.database,
+        events: eventsServiceRef,
       },
       async init({
         config,
@@ -57,11 +59,21 @@ export const bulkImportPlugin = createBackendPlugin({
         catalogApi,
         auditor,
         database,
+        events,
       }) {
         const knex = await database.getClient();
 
         migrate(knex);
         const dao = new RepositoryDao(knex, logger);
+
+        await events.subscribe({
+          id: 'bulk-import-listener',
+          topics: ['catalog-location-added'],
+          onEvent: async ({ topic, eventPayload }) => {
+            console.log('[bulk-import] Got event:', topic, eventPayload);
+            // store data in the db...
+          },
+        });
 
         const router = await createRouter({
           config,

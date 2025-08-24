@@ -431,6 +431,14 @@ export async function createRouter(
         templateParameters = {},
         templateName,
       } = c.request.requestBody;
+
+      // const parsedRepositories = repositories.map(repo => {
+      //   const url = new URL(`https://${repo}`);
+      //   const owner = url.searchParams.get('owner');
+      //   const repoName = url.searchParams.get('repo');
+      //   return `https://${url.hostname}/${owner}/${repoName}`;
+      // });
+
       const response = await executeTemplate(
         discovery,
         logger,

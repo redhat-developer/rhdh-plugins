@@ -69,8 +69,12 @@ export const executeTemplate = async (
 
   if (repositories && repositories.length > 0) {
     for (const repo of repositories) {
+      const url = new URL(repo);
+      const owner = url.pathname.split('/')[1];
+      const repoName = url.pathname.split('/')[2];
+      const normalizedUrl = `${url.hostname}?owner=${owner}&repo=${repoName}`;
       const taskId = await execute({
-        repoUrl: repo,
+        repoUrl: normalizedUrl,
         ...templateParameters,
       });
       await dao.saveRepositoryAndTask(repo, taskId, templateParameters);

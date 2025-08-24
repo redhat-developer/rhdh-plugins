@@ -13,7 +13,8 @@ taskId=$(curl -X POST http://localhost:7007/api/bulk-import/execute-template \
     "https://github.com/AndrienkoAleksandr/shellImages"
   ],
   "templateParameters": {
-    "owner": "user:default/andrienkoaleksandr"
+    "name": "test",
+    "repoUrl": "github.com?repo=shellImages&owner=AndrienkoAleksandr"
   }
 }' | jq -r '.taskIds[0]')
 
