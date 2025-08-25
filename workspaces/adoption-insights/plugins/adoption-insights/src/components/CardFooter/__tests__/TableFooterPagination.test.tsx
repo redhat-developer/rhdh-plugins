@@ -92,4 +92,119 @@ describe('TableFooterPagination', () => {
       borderRadius: '8px',
     });
   });
+
+  describe('Dynamic "Top X" options logic', () => {
+    it('should not render when count is 1 (single option)', () => {
+      const { container } = renderComponent({ ...defaultProps, count: 1 });
+      expect(container.firstChild).toBeNull();
+    });
+
+    it('should not render when count is 2 (single option)', () => {
+      const { container } = renderComponent({ ...defaultProps, count: 2 });
+      expect(container.firstChild).toBeNull();
+    });
+
+    it('should not render when count is 3 (single option)', () => {
+      const { container } = renderComponent({ ...defaultProps, count: 3 });
+      expect(container.firstChild).toBeNull();
+    });
+
+    it('should show "Top 3, Top 4" options for 4 items', async () => {
+      renderComponent({ ...defaultProps, count: 4 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      expect(screen.getByText('Top 3')).toBeInTheDocument();
+      expect(screen.getByText('Top 4')).toBeInTheDocument();
+      expect(screen.queryByText('Top 5')).not.toBeInTheDocument();
+    });
+
+    it('should show "Top 3, Top 5" options for 5 items (exact match)', async () => {
+      renderComponent({ ...defaultProps, count: 5 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      expect(screen.getByText('Top 3')).toBeInTheDocument();
+      expect(screen.getByText('Top 5')).toBeInTheDocument();
+      expect(screen.queryByText('Top 4')).not.toBeInTheDocument();
+    });
+
+    it('should show "Top 3, Top 6" options for 6 items (replace 5 with 6)', async () => {
+      renderComponent({ ...defaultProps, count: 6 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      expect(screen.getByText('Top 3')).toBeInTheDocument();
+      expect(screen.getByText('Top 6')).toBeInTheDocument();
+      expect(screen.queryByText('Top 5')).not.toBeInTheDocument();
+    });
+
+    it('should show "Top 3, Top 5, Top 7" options for 7 items (add 7)', async () => {
+      renderComponent({ ...defaultProps, count: 7 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      expect(screen.getByText('Top 3')).toBeInTheDocument();
+      expect(screen.getByText('Top 5')).toBeInTheDocument();
+      expect(screen.getByText('Top 7')).toBeInTheDocument();
+    });
+
+    it('should show "Top 3, Top 5, Top 10" options for 10 items (exact match)', async () => {
+      renderComponent({ ...defaultProps, count: 10, rowsPerPage: 5 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(3);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('Top 5');
+      expect(options[2]).toHaveTextContent('Top 10');
+    });
+
+    it('should show "Top 3, Top 5, Top 11" options for 11 items (add 11, skip 10)', async () => {
+      renderComponent({ ...defaultProps, count: 11 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      expect(screen.getByText('Top 3')).toBeInTheDocument();
+      expect(screen.getByText('Top 5')).toBeInTheDocument();
+      expect(screen.getByText('Top 11')).toBeInTheDocument();
+      expect(screen.queryByText('Top 10')).not.toBeInTheDocument();
+    });
+
+    it('should show "Top 3, Top 5, Top 10, Top 20" options for 20 items (exact match)', async () => {
+      renderComponent({ ...defaultProps, count: 20, rowsPerPage: 5 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(4);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('Top 5');
+      expect(options[2]).toHaveTextContent('Top 10');
+      expect(options[3]).toHaveTextContent('Top 20');
+    });
+
+    it('should cap at "Top 20" for items > 20 (25 items)', async () => {
+      renderComponent({ ...defaultProps, count: 25, rowsPerPage: 5 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(4);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('Top 5');
+      expect(options[2]).toHaveTextContent('Top 10');
+      expect(options[3]).toHaveTextContent('Top 20');
+      expect(screen.queryByText('Top 25')).not.toBeInTheDocument();
+    });
+  });
 });

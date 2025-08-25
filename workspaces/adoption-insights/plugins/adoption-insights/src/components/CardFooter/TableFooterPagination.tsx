@@ -31,6 +31,42 @@ interface TableFooterPaginationProps {
   ) => void;
 }
 
+const generateRowsPerPageOptions = (totalCount: number) => {
+  const defaultOptions = [3, 5, 10, 20];
+  const maxDefaultOption = Math.max(...defaultOptions);
+  if (
+    totalCount > 0 &&
+    totalCount <= maxDefaultOption &&
+    !defaultOptions.includes(totalCount)
+  ) {
+    const validDefaults = defaultOptions.filter(option => option < totalCount);
+    const lastValidDefault = Math.max(...validDefaults);
+
+    if (totalCount === lastValidDefault + 1) {
+      const validOptions =
+        validDefaults.length > 1
+          ? validDefaults.slice(0, -1).concat([totalCount])
+          : validDefaults.concat([totalCount]);
+      return validOptions.map(value => ({
+        label: `Top ${value}`,
+        value,
+      }));
+    } else if (totalCount > lastValidDefault + 1) {
+      const validOptions = validDefaults.concat([totalCount]);
+      return validOptions.map(value => ({
+        label: `Top ${value}`,
+        value,
+      }));
+    }
+  }
+
+  const validOptions = defaultOptions.filter(option => option <= totalCount);
+  return validOptions.map(value => ({
+    label: `Top ${value}`,
+    value,
+  }));
+};
+
 const TableFooterPagination: FC<TableFooterPaginationProps> = ({
   count,
   rowsPerPage,
@@ -38,6 +74,12 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
   handleChangePage,
   handleChangeRowsPerPage,
 }) => {
+  const rowsPerPageOptions = generateRowsPerPageOptions(count);
+
+  if (rowsPerPageOptions.length <= 1) {
+    return null;
+  }
+
   return (
     <Box
       component={Paper}
@@ -53,12 +95,7 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
             backgroundColor: 'transparent',
           },
         }}
-        rowsPerPageOptions={[
-          { label: 'Top 3', value: 3 },
-          { label: 'Top 5', value: 5 },
-          { label: 'Top 10', value: 10 },
-          { label: 'Top 20', value: 20 },
-        ]}
+        rowsPerPageOptions={rowsPerPageOptions}
         component="div"
         count={count}
         rowsPerPage={rowsPerPage}
