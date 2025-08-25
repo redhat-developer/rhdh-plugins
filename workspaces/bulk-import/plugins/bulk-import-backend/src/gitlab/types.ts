@@ -27,12 +27,6 @@ export type GitlabOrganization = {
   description?: string;
   url?: string;
   html_url?: string;
-  repos_url?: string;
-  events_url?: string;
-  hooks_url?: string;
-  issues_url?: string;
-  members_url?: string;
-  public_members_url?: string;
   avatar_url?: string;
   public_repos?: number;
   total_private_repos?: number;
