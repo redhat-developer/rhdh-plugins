@@ -46,6 +46,8 @@ export const adoptionInsightsMessages = {
     averageSuffix: 'were active during this period.',
     hour: 'hour',
     day: 'day',
+    week: 'week',
+    month: 'month',
     legend: {
       newUsers: 'New users',
       returningUsers: 'Returning users',
@@ -74,6 +76,8 @@ export const adoptionInsightsMessages = {
     averageSuffix: 'were conducted during this period.',
     hour: 'hour',
     day: 'day',
+    week: 'week',
+    month: 'month',
   },
   users: {
     title: 'Total number of users',
