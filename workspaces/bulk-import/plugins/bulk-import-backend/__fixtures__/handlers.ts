@@ -319,6 +319,65 @@ export const DEFAULT_TEST_HANDLERS = [
       ctx.json(orgList),
     );
   }),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/groups/my-ent-org-1/projects`,
+    (_, res, ctx) => {
+      const repoListHeaders = {
+        'x-next-page': '',
+        'x-page': '1',
+        'x-per-page': '20',
+        'x-prev-page': '',
+        'x-total': '1',
+        'x-total-pages': '1',
+      };
+      return res(
+        ctx.status(200),
+        // Set the pagination headers
+        ctx.set(repoListHeaders),
+        ctx.json(normalizeUrlsForTest('gitlab/orgs/repos/my-ent-org-1.json')),
+      );
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/groups/my-ent-org-2/projects`,
+    (_, res, ctx) => {
+      const repoListHeaders = {
+        'x-next-page': '',
+        'x-page': '1',
+        'x-per-page': '20',
+        'x-prev-page': '',
+        'x-total': '2',
+        'x-total-pages': '1',
+      };
+      return res(
+        ctx.status(200),
+        ctx.set(repoListHeaders),
+        ctx.json(normalizeUrlsForTest('gitlab/orgs/repos/my-ent-org-2.json')),
+      );
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/groups/my-ent-org--no-repos/projects`,
+    (_, res, ctx) => {
+      const repoListHeaders = {
+        'x-next-page': '',
+        'x-page': '1',
+        'x-per-page': '20',
+        'x-prev-page': '',
+        'x-total': '0',
+        'x-total-pages': '1',
+      };
+      return res(
+        ctx.status(200),
+        ctx.set(repoListHeaders),
+        ctx.json(
+          normalizeUrlsForTest('gitlab/orgs/repos/my-ent-org--no-repos.json'),
+        ),
+      );
+    },
+  ),
+
   rest.get(
     `${LOCAL_ADDR}/api/v4/projects/saltypig1%2Ffuntimes/merge_requests`,
     (_, res, ctx) => {
