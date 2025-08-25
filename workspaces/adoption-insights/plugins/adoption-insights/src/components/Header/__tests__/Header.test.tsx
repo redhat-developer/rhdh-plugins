@@ -39,6 +39,7 @@ jest.mock('../../../utils/constants', () => ({
   DATE_RANGE_OPTIONS: [
     { value: 'today', label: 'Today' },
     { value: 'last-week', label: 'Last week' },
+    { value: 'last-28-days', label: 'Last 28 days' },
     { value: 'last-month', label: 'Last month' },
     { value: 'last-year', label: 'Last year' },
   ],
@@ -101,11 +102,15 @@ describe('InsightsHeader', () => {
     const select = screen.getByRole('combobox');
     await user.click(select);
 
-    expect(screen.getByText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Last week')).toBeInTheDocument();
-    expect(screen.getByText('Last month')).toBeInTheDocument();
-    expect(screen.getByText('Last 28 days')).toBeInTheDocument();
-    expect(screen.getByText('Last year')).toBeInTheDocument();
+    const options = screen.getAllByRole('option');
+    const optionTexts = options.map(option => option.textContent);
+
+    expect(optionTexts).toContain('Today');
+    expect(optionTexts).toContain('Last week');
+    expect(optionTexts).toContain('Last 28 days');
+    expect(optionTexts).toContain('Last month');
+    expect(optionTexts).toContain('Last year');
+    expect(optionTexts).toContain('Date range...');
   });
 
   it('should open date range picker when "Date range..." is clicked', async () => {
