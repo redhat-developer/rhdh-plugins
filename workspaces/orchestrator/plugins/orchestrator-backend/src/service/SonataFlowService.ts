@@ -240,6 +240,12 @@ export class SonataFlowService {
       );
     }
 
+    if (response?.status === 404 && response?.statusText === 'Not Found') {
+      throw new Error(
+        'It is not possible to abort the run as it has already been completed.',
+      );
+    }
+
     await this.handleWorkflowServiceResponse(
       'Abort',
       args.definitionId,
