@@ -34,6 +34,8 @@ const ExportCSVButton = () => {
 
   const handleCSVDownload = async () => {
     try {
+      const timestamp = format(new Date(), 'yyyy-MM-dd_HH-mm-ss-SSS');
+      const filename = `active_users_${timestamp}.csv`;
       await api.downloadBlob({
         type: 'active_users',
         start_date: startDateRange
@@ -42,6 +44,7 @@ const ExportCSVButton = () => {
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
         timezone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
         format: 'csv',
+        blobName: filename,
       });
     } catch (error) {
       // eslint-disable-next-line no-console
