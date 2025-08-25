@@ -53,7 +53,7 @@ export const VariablesDialog = ({
     >
       {hasVariables ? (
         Object.entries(instanceVariables).map(([key, value]) => (
-          <Box key={key} m={2}>
+          <Box key={key} mt={2} mb={2}>
             <Typography variant="h6" mb={1}>
               {capitalize(key)}
             </Typography>

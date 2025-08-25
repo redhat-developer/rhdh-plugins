@@ -58,6 +58,7 @@ const InputSchemaDialogContent = ({
       ) : (
         <JsonCodeBlock
           isDarkMode={isDarkMode}
+          maxHeight={400}
           value={inputSchema?.inputSchema}
         />
       )}

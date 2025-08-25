@@ -80,6 +80,11 @@ const useStyles = makeStyles()(() => ({
   cardClassName: {
     overflow: 'auto',
   },
+  titleContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
 }));
 
 export const WorkflowInstancePageContent: React.FC<{
@@ -156,11 +161,15 @@ export const WorkflowInstancePageContent: React.FC<{
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <InfoCard
-            title="Details"
+            title={
+              <div className={classes.titleContainer}>
+                <span>Details</span>
+                {viewVariables}
+              </div>
+            }
             divider={false}
             className={classes.topRowCard}
             cardClassName={classes.cardClassName}
-            icon={viewVariables}
           >
             <WorkflowRunDetails details={details} />
           </InfoCard>
