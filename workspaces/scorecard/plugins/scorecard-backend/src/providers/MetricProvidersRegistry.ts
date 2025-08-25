@@ -15,12 +15,15 @@
  */
 
 import { ConflictError, NotFoundError } from '@backstage/errors';
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  Metric,
+  MetricValue,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { Entity } from '@backstage/catalog-model';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 /**
  * Registry of all registered metric providers.
- * @public
  */
 export class MetricProvidersRegistry {
   private readonly metricProviders = new Map<string, MetricProvider>();
@@ -45,7 +48,7 @@ export class MetricProvidersRegistry {
     datasourceProviders.add(providerId);
   }
 
-  private getProvider(providerId: string): MetricProvider {
+  getProvider(providerId: string): MetricProvider {
     const metricProvider = this.metricProviders.get(providerId);
     if (!metricProvider) {
       throw new NotFoundError(
@@ -61,8 +64,26 @@ export class MetricProvidersRegistry {
 
   async calculateMetric(
     providerId: string,
-  ): Promise<number | boolean | string> {
-    return this.getProvider(providerId).calculateMetric();
+    entity: Entity,
+  ): Promise<MetricValue> {
+    return this.getProvider(providerId).calculateMetric(entity);
+  }
+
+  async calculateMetrics(
+    providerIds: string[],
+    entity: Entity,
+  ): Promise<{ providerId: string; value?: MetricValue; error?: Error }[]> {
+    const results = await Promise.allSettled(
+      providerIds.map(providerId => this.calculateMetric(providerId, entity)),
+    );
+
+    return results.map((result, index) => {
+      const providerId = providerIds[index];
+      if (result.status === 'fulfilled') {
+        return { providerId, value: result.value };
+      }
+      return { providerId, error: result.reason as Error };
+    });
   }
 
   listMetrics(): Metric[] {

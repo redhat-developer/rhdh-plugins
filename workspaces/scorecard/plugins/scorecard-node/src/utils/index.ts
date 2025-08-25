@@ -13,4 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { createTodoListService } from './createTodoListService';
+
+export { parseThresholdExpression, validateThresholds } from './thresholdUtils';
+export { type ComparisonOperator } from './types';

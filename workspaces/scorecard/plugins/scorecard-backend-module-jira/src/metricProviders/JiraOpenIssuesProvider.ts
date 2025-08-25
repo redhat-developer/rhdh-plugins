@@ -14,10 +14,30 @@
  * limitations under the License.
  */
 
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import type { Config } from '@backstage/config';
+import type { Entity } from '@backstage/catalog-model';
+import {
+  Metric,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  MetricProvider,
+  validateThresholds,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
+  private readonly thresholds: ThresholdConfig;
+
+  private constructor(thresholds?: ThresholdConfig) {
+    this.thresholds = thresholds ?? {
+      rules: [
+        { key: 'error', expression: '>50' },
+        { key: 'warning', expression: '10-50' },
+        { key: 'success', expression: '<10' },
+      ],
+    };
+  }
+
   getProviderDatasourceId(): string {
     return 'jira';
   }
@@ -29,13 +49,30 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   getMetric(): Metric<'number'> {
     return {
       id: this.getProviderId(),
-      title: 'Jira open issues',
+      title: 'Jira open blocking tickets',
+      description:
+        'Highlights the number of critical, blocking issues that are currently open in Jira.',
       type: 'number',
       history: true,
     };
   }
 
-  async calculateMetric(): Promise<number> {
-    return 42;
+  getMetricThresholds(): ThresholdConfig {
+    return this.thresholds;
+  }
+
+  static fromConfig(config: Config): JiraOpenIssuesProvider {
+    const configPath = 'scorecard.plugins.jira.open_issues.thresholds';
+    const configuredThresholds = config.getOptional(configPath);
+    if (configuredThresholds !== undefined) {
+      validateThresholds(configuredThresholds, 'number');
+    }
+
+    return new JiraOpenIssuesProvider(configuredThresholds);
+  }
+
+  async calculateMetric(entity: Entity): Promise<number> {
+    const entityName = entity.metadata.name;
+    return entityName.length * 2;
   }
 }
