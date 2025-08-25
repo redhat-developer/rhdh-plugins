@@ -61,6 +61,7 @@ describe('Searches Component', () => {
 
     render(<Searches />);
     expect(screen.getByText(/300 searches/i)).toBeInTheDocument();
-    expect(screen.getByText(/150 searches per day/i)).toBeInTheDocument();
+    expect(screen.getByText(/Average search count was/i)).toBeInTheDocument();
+    expect(screen.getByText(/150 per day/i)).toBeInTheDocument();
   });
 });
