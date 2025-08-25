@@ -48,9 +48,7 @@ export const AddRepositoriesFormFooter = () => {
         'The Catalog-info.yaml files need to be generated for import.',
     },
     [ApprovalTool.Git]: {
-      submitTitle: gitlabFeatureFlag
-        ? 'Import'
-        : `Create pull request${sPad(values.repositories)}`,
+      submitTitle: 'Import',
       toolTipTitle: gitlabFeatureFlag
         ? 'The Catalog-info.yaml files need to be generated for import.'
         : `Catalog-info.yaml files must be generated before creating a pull request`,

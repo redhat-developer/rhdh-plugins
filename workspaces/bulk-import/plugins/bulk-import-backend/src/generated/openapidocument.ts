@@ -277,6 +277,126 @@ const OPENAPI = `
         }
       }
     },
+    "/repositories/from-db": {
+      "get": {
+        "operationId": "findAllRepositoriesFromDb",
+        "summary": "Fetch all Repositories from the database",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Repository"
+        ],
+        "responses": {
+          "200": {
+            "description": "Repository list was fetched successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryList"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      }
+    },
+    "/repositories/db": {
+      "get": {
+        "operationId": "findRepositoryFromDbByName",
+        "summary": "Fetch a single Repository from the database by its name",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Repository"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "repositoryName",
+            "description": "Repository name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Repository was fetched successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Repository"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Repository not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      }
+    },
+    "/repositories/db/{repositoryName}": {
+      "delete": {
+        "operationId": "deleteRepository",
+        "summary": "Delete a single Repository from the database by its name",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Repository"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "repositoryName",
+            "description": "Repository name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Repository was deleted successfully with no errors"
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      }
+    },
     "/imports": {
       "get": {
         "operationId": "findAllImports",
@@ -523,6 +643,57 @@ const OPENAPI = `
           }
         }
       }
+    },
+    "/execute-template": {
+      "post": {
+        "operationId": "executeTemplate",
+        "summary": "Execute a scaffolder template for a list of repositories",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Import"
+        ],
+        "requestBody": {
+          "description": "The template to execute and the repositories to run it against.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteTemplateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Template execution request was submitted successfully to the API.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "taskIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -737,6 +908,12 @@ const OPENAPI = `
           "url": {
             "type": "string",
             "description": "repository URL"
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScaffolderTask"
+            }
           },
           "organization": {
             "type": "string",
@@ -961,6 +1138,43 @@ const OPENAPI = `
                 }
               }
             }
+          }
+        }
+      },
+      "ExecuteTemplateRequest": {
+        "title": "Execute Template Request",
+        "type": "object",
+        "properties": {
+          "repositories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of GitHub repository URLs to execute the template against."
+          },
+          "templateParameters": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Optional key/value pairs to pass to the template."
+          },
+          "templateName": {
+            "type": "string",
+            "description": "Optional name of the template to use. If not provided, the default from config will be used."
+          }
+        }
+      },
+      "ScaffolderTask": {
+        "title": "Scaffolder Task",
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string"
+          },
+          "scaffolderOptions": {
+            "type": "object"
+          },
+          "repositoryId": {
+            "type": "number"
           }
         }
       }
