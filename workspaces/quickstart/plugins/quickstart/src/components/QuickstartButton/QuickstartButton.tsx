@@ -20,7 +20,6 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import WavingHandIcon from '@mui/icons-material/WavingHandOutlined';
-import { useQuickstartPermission } from '../../hooks/useQuickstartPermission';
 import { useQuickstartDrawerContext } from '../../hooks/useQuickstartDrawerContext';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -53,7 +52,6 @@ export const QuickstartButton = ({
   onClick = () => {},
 }: QuickstartButtonProps) => {
   const { t } = useTranslation();
-  const isAllowed = useQuickstartPermission();
   const { toggleDrawer } = useQuickstartDrawerContext();
   const theme = useTheme();
 
@@ -64,7 +62,7 @@ export const QuickstartButton = ({
     onClick();
   }, [toggleDrawer, onClick]);
 
-  return isAllowed ? (
+  return (
     <MenuItem
       sx={{
         width: '100%',
@@ -112,5 +110,5 @@ export const QuickstartButton = ({
         </Box>
       </Box>
     </MenuItem>
-  ) : null;
+  );
 };

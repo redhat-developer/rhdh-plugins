@@ -21,6 +21,8 @@ import {
   TestApiProvider,
 } from '@backstage/test-utils';
 import { configApiRef } from '@backstage/core-plugin-api';
+import { permissionApiRef } from '@backstage/plugin-permission-react';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { QuickstartDrawer } from './QuickstartDrawer';
 import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
 import { mockQuickstartItems } from './mockData';
@@ -43,7 +45,14 @@ describe('QuickstartDrawer', () => {
       app: {
         quickstart: mockQuickstartItems as any,
       },
+      permission: {
+        enabled: false, // Disable RBAC by default, returns developer role
+      },
     },
+  });
+
+  const mockPermissionApi = mockApis.permission({
+    authorize: AuthorizeResult.ALLOW,
   });
 
   beforeEach(() => {
@@ -51,9 +60,14 @@ describe('QuickstartDrawer', () => {
     (useQuickstartDrawerContext as jest.Mock).mockReturnValue(mockContext);
   });
 
-  const renderWithApi = async () => {
+  const renderWithApi = async (configApi = mockConfigApi) => {
     return renderInTestApp(
-      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
+      <TestApiProvider
+        apis={[
+          [configApiRef, configApi],
+          [permissionApiRef, mockPermissionApi],
+        ]}
+      >
         <QuickstartDrawer />
       </TestApiProvider>,
     );
@@ -62,7 +76,7 @@ describe('QuickstartDrawer', () => {
   it('renders the drawer and Quickstart with developer items', async () => {
     await renderWithApi();
 
-    // Since userRole is hardcoded to 'developer', only developer items should be shown
+    // Since RBAC is disabled, user should have developer role, only developer items should be shown
     expect(screen.getByText('Step 1 for Developer')).toBeInTheDocument();
     expect(screen.getByText('Step 2 for Developer')).toBeInTheDocument();
 
@@ -105,18 +119,17 @@ describe('QuickstartDrawer', () => {
     const adminOnlyConfigApi = mockApis.config({
       data: {
         app: {
-          quickstart: mockQuickstartItems.filter(
-            item => item.roles?.includes('admin') || !item.roles,
+          quickstart: mockQuickstartItems.filter(item =>
+            item.roles?.includes('admin'),
           ) as any,
+        },
+        permission: {
+          enabled: false, // Developer role
         },
       },
     });
 
-    await renderInTestApp(
-      <TestApiProvider apis={[[configApiRef, adminOnlyConfigApi]]}>
-        <QuickstartDrawer />
-      </TestApiProvider>,
-    );
+    await renderWithApi(adminOnlyConfigApi);
 
     // Since component uses developer role, it should show empty state for admin-only items
     expect(
@@ -126,20 +139,47 @@ describe('QuickstartDrawer', () => {
     expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
   });
 
+  it('renders admin items when user has admin role', async () => {
+    // Create config that enables RBAC and should result in admin role
+    const adminConfigApi = mockApis.config({
+      data: {
+        app: {
+          quickstart: mockQuickstartItems as any,
+        },
+        permission: {
+          enabled: true, // Enable RBAC - with ALLOW permission should result in admin
+        },
+      },
+    });
+
+    await renderWithApi(adminConfigApi);
+
+    // Admin should see admin items
+    expect(screen.getByText('Step 1 for Admin')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 for Admin')).toBeInTheDocument();
+
+    // Admin should also see items without roles (defaults to admin)
+    expect(screen.getByText('Step 1 - No Roles Assigned')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 - No Roles Assigned')).toBeInTheDocument();
+
+    // Developer items should not be visible
+    expect(screen.queryByText('Step 1 for Developer')).not.toBeInTheDocument();
+    expect(screen.queryByText('Step 2 for Developer')).not.toBeInTheDocument();
+  });
+
   it('handles empty config gracefully', async () => {
     const emptyConfigApi = mockApis.config({
       data: {
         app: {
           quickstart: [] as any,
         },
+        permission: {
+          enabled: false,
+        },
       },
     });
 
-    await renderInTestApp(
-      <TestApiProvider apis={[[configApiRef, emptyConfigApi]]}>
-        <QuickstartDrawer />
-      </TestApiProvider>,
-    );
+    await renderWithApi(emptyConfigApi);
 
     expect(
       screen.getByText('Quickstart content not available for your role.'),
@@ -152,14 +192,13 @@ describe('QuickstartDrawer', () => {
     const noQuickstartConfigApi = mockApis.config({
       data: {
         app: {},
+        permission: {
+          enabled: false,
+        },
       },
     });
 
-    await renderInTestApp(
-      <TestApiProvider apis={[[configApiRef, noQuickstartConfigApi]]}>
-        <QuickstartDrawer />
-      </TestApiProvider>,
-    );
+    await renderWithApi(noQuickstartConfigApi);
 
     expect(
       screen.getByText('Quickstart content not available for your role.'),

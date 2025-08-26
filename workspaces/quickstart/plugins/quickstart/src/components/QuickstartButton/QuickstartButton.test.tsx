@@ -16,14 +16,9 @@
 
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QuickstartButton } from './QuickstartButton';
-import { useQuickstartPermission } from '../../hooks/useQuickstartPermission';
 import { useQuickstartDrawerContext } from '../../hooks/useQuickstartDrawerContext';
 
-// Mock the hooks
-jest.mock('../../hooks/useQuickstartPermission', () => ({
-  useQuickstartPermission: jest.fn(),
-}));
-
+// Mock the hook
 jest.mock('../../hooks/useQuickstartDrawerContext', () => ({
   useQuickstartDrawerContext: jest.fn(),
 }));
@@ -34,26 +29,17 @@ describe('QuickstartButton', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useQuickstartPermission as jest.Mock).mockReturnValue(true);
     (useQuickstartDrawerContext as jest.Mock).mockReturnValue({
       toggleDrawer: mockToggleDrawer,
     });
   });
 
-  it('renders the button when permission is allowed', () => {
+  it('renders the button', () => {
     render(<QuickstartButton />);
 
     const button = screen.getByTestId('quickstart-button');
     expect(button).toBeInTheDocument();
     expect(screen.getByText('Quick start')).toBeInTheDocument();
-  });
-
-  it('does not render when permission is denied', () => {
-    (useQuickstartPermission as jest.Mock).mockReturnValue(false);
-
-    render(<QuickstartButton />);
-
-    expect(screen.queryByTestId('quickstart-button')).not.toBeInTheDocument();
   });
 
   it('calls toggleDrawer when clicked', () => {
