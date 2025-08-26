@@ -11828,6 +11828,7 @@ __metadata:
     "@backstage/core-components": ^0.17.4
     "@backstage/core-plugin-api": ^1.10.9
     "@backstage/dev-utils": ^1.1.12
+    "@backstage/plugin-permission-common": ^0.9.1
     "@backstage/plugin-permission-react": ^0.4.36
     "@backstage/test-utils": ^1.7.10
     "@backstage/theme": ^0.6.7
