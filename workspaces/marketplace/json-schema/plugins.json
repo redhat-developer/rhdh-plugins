@@ -115,7 +115,25 @@
           }
         },
         "support": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "string",
+                  "enum": ["production", "tech-preview", "dev-preview"]
+                }
+              },
+              "required": ["name", "level"],
+              "additionalProperties": false
+            }
+          ]
         },
         "lifecycle": {
           "type": "string"
