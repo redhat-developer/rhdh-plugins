@@ -42,7 +42,7 @@
     "@backstage/backend-plugin-api": "^1.4.1",
     "@backstage/catalog-model": "^1.7.5",
     "@backstage/integration": "^1.16.0",
-    "@octokit/rest": "^21.0.0",
+    "@octokit/graphql": "^9.0.1",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
   },

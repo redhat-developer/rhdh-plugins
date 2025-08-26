@@ -19,8 +19,8 @@ import {
   DefaultGithubCredentialsProvider,
   ScmIntegrations,
 } from '@backstage/integration';
-import { Octokit } from '@octokit/rest';
 import { GithubRepository } from './types';
+import { graphql } from '@octokit/graphql';
 
 export class GithubClient {
   private readonly integrations: ScmIntegrations;
@@ -31,7 +31,7 @@ export class GithubClient {
 
   private async getOctokitClient(
     hostname: string = 'github.com',
-  ): Promise<Octokit> {
+  ): Promise<typeof graphql> {
     const githubIntegration = this.integrations.github.byHost(hostname);
     if (!githubIntegration) {
       throw new Error(`Missing GitHub integration for '${hostname}'`);
@@ -44,7 +44,7 @@ export class GithubClient {
       url: `https://${hostname}`,
     });
 
-    return new Octokit({
+    return graphql.defaults({
       auth: token,
       baseUrl: githubIntegration.config.apiBaseUrl,
     });
@@ -66,7 +66,7 @@ export class GithubClient {
       }
     `;
 
-    const response = await octokit.graphql<{
+    const response = await octokit<{
       repository: {
         pullRequests: {
           totalCount: number;
