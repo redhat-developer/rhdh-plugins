@@ -18,6 +18,8 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import TablePagination from '@mui/material/TablePagination';
 
+import { useTranslation } from '../../hooks/useTranslation';
+
 interface TableFooterPaginationProps {
   count: number;
   rowsPerPage: number;
@@ -38,6 +40,8 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
   handleChangePage,
   handleChangeRowsPerPage,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Box
       component={Paper}
@@ -54,10 +58,22 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
           },
         }}
         rowsPerPageOptions={[
-          { label: 'Top 3', value: 3 },
-          { label: 'Top 5', value: 5 },
-          { label: 'Top 10', value: 10 },
-          { label: 'Top 20', value: 20 },
+          {
+            label: t('table.pagination.topN' as any, { count: '3' }),
+            value: 3,
+          },
+          {
+            label: t('table.pagination.topN' as any, { count: '5' }),
+            value: 5,
+          },
+          {
+            label: t('table.pagination.topN' as any, { count: '10' }),
+            value: 10,
+          },
+          {
+            label: t('table.pagination.topN' as any, { count: '20' }),
+            value: 20,
+          },
         ]}
         component="div"
         count={count}

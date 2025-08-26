@@ -16,7 +16,21 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useApi } from '@backstage/core-plugin-api';
 import { useDateRange } from '../../Header/DateRangeContext';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
+
 import ExportCSVButton from '../ExportCSVButton';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 
 jest.mock('@backstage/core-plugin-api', () => ({
   useApi: jest.fn(),

@@ -33,11 +33,13 @@ import { TEMPLATE_TABLE_HEADERS } from '../../utils/constants';
 import TableFooterPagination from '../CardFooter';
 import { useTemplates } from '../../hooks/useTemplates';
 import EmptyChartState from '../Common/EmptyChartState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Templates = () => {
   const [page, setPage] = useState(0);
   const [limit] = useState(20);
   const [rowsPerPage, setRowsPerPage] = useState(3);
+  const { t } = useTranslation();
 
   const { templates, loading, error } = useTemplates({ limit });
 
@@ -62,7 +64,7 @@ const Templates = () => {
 
   if (error) {
     return (
-      <CardWrapper title="Top templates">
+      <CardWrapper title={t('templates.title')}>
         <ResponseErrorPanel error={error} />
       </CardWrapper>
     );
@@ -70,7 +72,7 @@ const Templates = () => {
 
   if (!visibleTemplates || visibleTemplates?.length === 0) {
     return (
-      <CardWrapper title="Top templates">
+      <CardWrapper title={t('templates.title')}>
         <Box
           display="flex"
           justifyContent="center"
@@ -84,8 +86,10 @@ const Templates = () => {
   }
 
   return (
-    <CardWrapper title={`Top ${rowsPerPage} templates`}>
-      <Table aria-labelledby="Catalog entities" sx={{ width: '100%' }}>
+    <CardWrapper
+      title={t('templates.topNTitle' as any, { count: rowsPerPage.toString() })}
+    >
+      <Table aria-labelledby="Templates" sx={{ width: '100%' }}>
         <TableHead>
           <TableRow>
             {TEMPLATE_TABLE_HEADERS.map(header => (
@@ -96,7 +100,7 @@ const Templates = () => {
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                {header.title}
+                {t(header.titleKey as any, {})}
               </TableCell>
             ))}
           </TableRow>
