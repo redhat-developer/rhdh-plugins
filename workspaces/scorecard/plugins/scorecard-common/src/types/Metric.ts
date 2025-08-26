@@ -63,7 +63,7 @@ export type ThresholdResult = {
   status: 'success' | 'error';
   definition: ThresholdConfig;
   evaluation: string | undefined; // threshold key the expression evaluated to
-  error?: Error;
+  error?: string;
 };
 
 /**
@@ -83,5 +83,5 @@ export type MetricResult = {
     timestamp: string;
     thresholdResult: ThresholdResult;
   };
-  error?: Error;
+  error?: string;
 };

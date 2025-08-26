@@ -24,7 +24,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
-import { NotFoundError } from '@backstage/errors';
+import { NotFoundError, stringifyError } from '@backstage/errors';
 import {
   MetricProvider,
   validateThresholds,
@@ -180,7 +180,9 @@ export class CatalogMetricService {
             type: metric.type,
             history: metric.history,
           },
-          error: error ?? new Error(`Metric value is 'undefined'`),
+          error: error
+            ? stringifyError(error)
+            : stringifyError(new Error(`Metric value is 'undefined'`)),
         };
       }
 
@@ -191,7 +193,7 @@ export class CatalogMetricService {
       );
 
       let evaluation: string | undefined;
-      let thresholdError: Error | undefined;
+      let thresholdError: string | undefined;
       try {
         evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
           value,
@@ -199,10 +201,7 @@ export class CatalogMetricService {
           thresholds,
         );
       } catch (e) {
-        thresholdError =
-          e instanceof Error
-            ? e
-            : new Error(`Threshold evaluation failed: ${String(e)}`);
+        thresholdError = stringifyError(e);
       }
 
       return {

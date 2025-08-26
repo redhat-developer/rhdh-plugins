@@ -27,7 +27,7 @@ export type MetricResult = {
     timestamp: string;
     thresholdResult: ThresholdResult;
   };
-  error?: Error;
+  error?: string;
 };
 
 // @public (undocumented)
@@ -50,7 +50,7 @@ export type ThresholdResult = {
   status: 'success' | 'error';
   definition: ThresholdConfig;
   evaluation: string | undefined;
-  error?: Error;
+  error?: string;
 };
 
 // @public

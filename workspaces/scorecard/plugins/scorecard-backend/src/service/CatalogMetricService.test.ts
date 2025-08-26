@@ -173,7 +173,7 @@ describe('CatalogMetricService', () => {
       const jiraMetricErrorResult = {
         ...jiraMetricResult,
         status: 'error' as const,
-        error: new Error('Jira API failure'),
+        error: 'Error: Jira API failure',
         result: undefined,
       };
       mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
