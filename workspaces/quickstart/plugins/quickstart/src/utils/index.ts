@@ -14,15 +14,4 @@
  * limitations under the License.
  */
 
-export interface QuickstartItemCtaData {
-  text: string;
-  link: string;
-}
-
-export interface QuickstartItemData {
-  title: string;
-  roles?: string[];
-  icon?: string;
-  description: string;
-  cta?: QuickstartItemCtaData;
-}
+export { filterQuickstartItemsByRole } from './filterQuickstartItems';

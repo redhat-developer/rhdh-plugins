@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.6.0
+
+### Minor Changes
+
+- 02ab635: Backstage version bump to v1.41.2
+
+## 1.5.5
+
+### Patch Changes
+
+- 518a20a: Added external link icon to Read documentaion and updated homepage greetings
+- 4fc279c: Updated dependency `@testing-library/jest-dom` to `6.7.0`.
+
 ## 1.5.4
 
 ### Patch Changes

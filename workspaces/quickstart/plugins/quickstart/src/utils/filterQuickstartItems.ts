@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-export interface QuickstartItemCtaData {
-  text: string;
-  link: string;
-}
+import { QuickstartItemData } from '../types';
 
-export interface QuickstartItemData {
-  title: string;
-  roles?: string[];
-  icon?: string;
-  description: string;
-  cta?: QuickstartItemCtaData;
-}
+export const filterQuickstartItemsByRole = (
+  items: QuickstartItemData[],
+  userRole: string,
+): QuickstartItemData[] => {
+  return items.filter(item => {
+    // If roles is undefined or empty, default to 'admin'
+    const roles = item.roles?.length ? item.roles : ['admin'];
+    return roles.includes(userRole);
+  });
+};

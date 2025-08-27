@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.9.1
+
+### Patch Changes
+
+- 76e39f6: display a message when search returns no results
+
 ## 0.9.0
 
 ### Minor Changes

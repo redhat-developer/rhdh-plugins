@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-application-provider-test
 
+## 0.3.0
+
+### Minor Changes
+
+- 251b379: Backstage version bump to v1.41.2
+
 ## 0.2.2
 
 ### Patch Changes
