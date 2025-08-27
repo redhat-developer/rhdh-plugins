@@ -32,10 +32,10 @@ const GITLAB_BASEURL_ENDPOINT = 'https://gitlab.com';
 // i.e., 5K requests per hour for requests using a personal token.
 // GitHub Apps owned by enterprises have a higher limit of 15K per hour.
 // See https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2022-11-28
-const RESPONSE_CACHE_TTL_MILLIS = 60 * 60 * 1000;
+// const RESPONSE_CACHE_TTL_MILLIS = 60 * 60 * 1000;
 
 export function buildGitlab(
-  deps: {
+  _deps: {
     logger: LoggerService;
     cache: CacheService;
   },

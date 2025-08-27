@@ -37,7 +37,7 @@ export class CustomSingleInstanceGitlabCredentialsProvider
   };
 
   private constructor(private readonly token?: string) {}
-  async getAllCredentials(opts: {
+  async getAllCredentials(_opts: {
     host: string;
   }): Promise<ExtendedGitlabCredentials[]> {
     const credentials: ExtendedGitlabCredentials[] = [];
@@ -49,7 +49,7 @@ export class CustomSingleInstanceGitlabCredentialsProvider
     }
     return credentials;
   }
-  getCredentials(opts: { url: string }): Promise<GitlabCredentials> {
+  getCredentials(_opts: { url: string }): Promise<GitlabCredentials> {
     throw new Error('Method not implemented.');
   }
 }
@@ -87,7 +87,7 @@ export class CustomGitlabCredentialsProvider
     }
     return provider.getAllCredentials(opts);
   }
-  getCredentials(opts: { url: string }): Promise<GitlabCredentials> {
+  getCredentials(_opts: { url: string }): Promise<GitlabCredentials> {
     throw new Error('Method not implemented.');
   }
 }

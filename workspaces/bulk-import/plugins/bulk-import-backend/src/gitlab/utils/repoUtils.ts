@@ -91,16 +91,25 @@ export async function searchRepos(
   return {
     totalCount: repoSearchResp?.paginationInfo?.total,
     repositories:
-      repoSearchResp?.data?.map(repo => {
-        return {
-          name: repo.name,
-          full_name: repo.path_with_namespace,
-          url: repo._links.self,
-          html_url: repo.web_url,
-          default_branch: repo.default_branch,
-          updated_at: repo.updated_at,
-        };
-      }) ?? [],
+      repoSearchResp?.data?.map(
+        (repo: {
+          name: any;
+          path_with_namespace: any;
+          _links: { self: any };
+          web_url: any;
+          default_branch: any;
+          updated_at: any;
+        }) => {
+          return {
+            name: repo.name,
+            full_name: repo.path_with_namespace,
+            url: repo._links.self,
+            html_url: repo.web_url,
+            default_branch: repo.default_branch,
+            updated_at: repo.updated_at,
+          };
+        },
+      ) ?? [],
   };
 }
 
