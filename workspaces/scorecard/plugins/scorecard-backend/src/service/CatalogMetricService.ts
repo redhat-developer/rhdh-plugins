@@ -99,7 +99,7 @@ export class CatalogMetricService {
         };
       }
 
-      const thresholds = this.getEntityThresholds(
+      const thresholds = this.mergeEntityAndProviderThresholds(
         entity,
         provider,
         metric.type,
@@ -192,7 +192,7 @@ export class CatalogMetricService {
     return overrides;
   }
 
-  private getEntityThresholds(
+  private mergeEntityAndProviderThresholds(
     entity: Entity,
     provider: MetricProvider,
     metricType: MetricType,
