@@ -196,7 +196,7 @@ rules:
   - key: error
     expression: '>100'
   - key: warning
-    expression: '100-80' # between 100 and 8- (inclusive)
+    expression: '100-80' # between 100 and 80 (inclusive)
   - key: success
     expression: '<80'
 ```
