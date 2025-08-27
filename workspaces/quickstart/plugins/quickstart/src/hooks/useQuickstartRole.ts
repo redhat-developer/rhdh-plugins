@@ -18,6 +18,15 @@ import { usePermission } from '@backstage/plugin-permission-react';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
 
+/**
+ * Determines the user's role for quickstart functionality based on RBAC permissions.
+ *
+ * Business Logic:
+ * - If RBAC is not configured, assume platform engineers (admins) are setting up RHDH
+ * - If RBAC is enabled, check permissions to determine admin vs developer role
+ *
+ * @returns 'admin' if RBAC is disabled or user has required permissions, 'developer' otherwise
+ */
 export const useQuickstartRole = (): 'admin' | 'developer' => {
   const config = useApi(configApiRef);
   const isRBACEnabled =
@@ -26,7 +35,7 @@ export const useQuickstartRole = (): 'admin' | 'developer' => {
     permission: policyEntityCreatePermission,
   });
 
-  if (!isRBACEnabled) return 'developer';
+  if (!isRBACEnabled) return 'admin';
   if (!loading && allowed) return 'admin';
   return 'developer';
 };
