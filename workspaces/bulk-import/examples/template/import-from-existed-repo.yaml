@@ -1,7 +1,7 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: import-root-and-all-yamls
+  name: import-from-existing-repo
   title: Import root catalog-info.yaml and subfolder all.yaml
   description: Registers catalog-info.yaml from root and all.yaml from subfolders
 spec:

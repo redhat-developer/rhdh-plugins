@@ -51,7 +51,7 @@ spec:
           apiVersion: backstage.io/v1alpha1
           kind: Component
           metadata:
-            name: ${{ steps['parse-query'].output.repo }}
+            name: ${{ steps['parse-query'].output.result.repo }}
             annotations:
               github.com/project-slug: ${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}
           spec:
@@ -64,7 +64,7 @@ spec:
       action: publish:github:pull-request
       input:
         repoUrl: ${{ parameters.repoUrl }}
-        branchName: add-catalog-info-${{ steps['parse-query'].output.repo }}
+        branchName: add-catalog-info-${{ steps['parse-query'].output.result.repo }}
         targetBranchName: ${{ steps['get-default-branch'].output.defaultBranch }}
         title: 'Add catalog-info.yaml'
         description: 'This PR adds a default catalog-info.yaml for Backstage.'
@@ -73,4 +73,5 @@ spec:
       name: Register catalog-info.yaml
       action: catalog:register-with-event
       input:
+        optional: true
         repoContentsUrl: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}/blob/${{ steps['get-default-branch'].output.defaultBranch }}/catalog-info.yaml
