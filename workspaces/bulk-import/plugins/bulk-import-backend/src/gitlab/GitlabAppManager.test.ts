@@ -21,7 +21,6 @@ import {
   CustomGitlabCredentialsProvider,
   CustomSingleInstanceGitlabCredentialsProvider,
 } from './GitlabAppManager';
-import type { ExtendedGitlabCredentialsProvider } from './types';
 
 const octokit = {
   paginate: async (fn: any) => (await fn()).data,
@@ -41,16 +40,16 @@ jest.mock('@octokit/rest', () => {
 });
 
 describe('CustomSingleInstanceGithubCredentialsProvider tests', () => {
-  let gitlab: ExtendedGitlabCredentialsProvider;
+  // let gitlab: ExtendedGitlabCredentialsProvider;
 
   beforeEach(() => {
     jest.resetAllMocks();
-    gitlab = CustomSingleInstanceGitlabCredentialsProvider.create({
-      host: 'gitlab.com',
-      token: 'hardcoded_token',
-      apiBaseUrl: '',
-      baseUrl: 'http://gitlab.com',
-    });
+    // gitlab = CustomSingleInstanceGitlabCredentialsProvider.create({
+    //   host: 'gitlab.com',
+    //   token: 'hardcoded_token',
+    //   apiBaseUrl: '',
+    //   baseUrl: 'http://gitlab.com',
+    // });
   });
 
   describe('CustomSingleInstanceGithubCredentialsProvider #GetAllCredentials Tests', () => {

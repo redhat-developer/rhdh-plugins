@@ -50,7 +50,7 @@ export type GitlabRepository = {
   /**
    * The HTML URL to the repository, web_url in gitlab
    */
-  html_url?: string;
+  html_url: string;
   /**
    * The default "main" branch of the repository to place the `catalog-info.yaml` file into
    */
