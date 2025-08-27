@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { ThresholdResult } from './threshold';
+
 /**
  * @public
  */
@@ -37,33 +39,6 @@ export type Metric<T extends MetricType = MetricType> = {
   description: string;
   type: T;
   history?: boolean;
-};
-
-/**
- * Threshold rule definition
- * @public
- */
-export type ThresholdRule = {
-  key: string;
-  expression: string;
-};
-
-/**
- * Threshold configuration
- * @public
- */
-export type ThresholdConfig = {
-  rules: ThresholdRule[];
-};
-
-/**
- * @public
- */
-export type ThresholdResult = {
-  status: 'success' | 'error';
-  definition: ThresholdConfig;
-  evaluation: string | undefined; // threshold key the expression evaluated to
-  error?: string;
 };
 
 /**
