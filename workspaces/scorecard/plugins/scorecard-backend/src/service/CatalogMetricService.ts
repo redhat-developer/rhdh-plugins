@@ -54,6 +54,92 @@ export class CatalogMetricService {
     this.auth = options.auth;
   }
 
+  /**
+   * Calculate metric results for a specific catalog entity.
+   *
+   * @param entityRef - Entity reference in format "kind:namespace/name"
+   * @param providerIds - Optional array of provider IDs to calculate.
+   *                      If not provided, calculates all available metrics.
+   * @returns Metric results with entity-specific thresholds applied
+   */
+  async calculateEntityMetrics(
+    entityRef: string,
+    providerIds?: string[],
+  ): Promise<MetricResult[]> {
+    const token = await this.getServiceToken();
+    const entity = await this.catalogApi.getEntityByRef(entityRef, token);
+    if (!entity) {
+      throw new NotFoundError(`Entity not found: ${entityRef}`);
+    }
+
+    const providerIdsToCalculate =
+      providerIds ?? this.registry.listMetrics().map(m => m.id);
+    const rawResults = await this.registry.calculateMetrics(
+      providerIdsToCalculate,
+      entity,
+    );
+
+    return rawResults.map(({ providerId, value, error }) => {
+      const provider = this.registry.getProvider(providerId);
+      const metric = provider.getMetric();
+
+      if (error || value === undefined) {
+        return {
+          id: providerId,
+          status: 'error',
+          metadata: {
+            title: metric.title,
+            description: metric.description,
+            type: metric.type,
+            history: metric.history,
+          },
+          error: error
+            ? stringifyError(error)
+            : stringifyError(new Error(`Metric value is 'undefined'`)),
+        };
+      }
+
+      const thresholds = this.getEntityThresholds(
+        entity,
+        provider,
+        metric.type,
+      );
+
+      let evaluation: string | undefined;
+      let thresholdError: string | undefined;
+      try {
+        evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
+          value,
+          metric.type,
+          thresholds,
+        );
+      } catch (e) {
+        thresholdError = stringifyError(e);
+      }
+
+      return {
+        id: metric.id,
+        status: 'success',
+        metadata: {
+          title: metric.title,
+          description: metric.description,
+          type: metric.type,
+          history: metric.history,
+        },
+        result: {
+          value,
+          timestamp: new Date().toISOString(),
+          thresholdResult: {
+            definition: thresholds,
+            status: thresholdError ? 'error' : 'success',
+            evaluation,
+            ...(thresholdError && { error: thresholdError }),
+          },
+        },
+      };
+    });
+  }
+
   private async getServiceToken(): Promise<{ token: string } | undefined> {
     if (!this.auth) {
       return undefined;
@@ -139,91 +225,5 @@ export class CatalogMetricService {
     return {
       rules: mergedRules,
     };
-  }
-
-  /**
-   * Calculate metric results for a specific catalog entity.
-   *
-   * @param entityRef - Entity reference in format "kind:namespace/name"
-   * @param providerIds - Optional array of provider IDs to calculate.
-   *                      If not provided, calculates all available metrics.
-   * @returns Metric results with entity-specific thresholds applied
-   */
-  async calculateEntityMetrics(
-    entityRef: string,
-    providerIds?: string[],
-  ): Promise<MetricResult[]> {
-    const token = await this.getServiceToken();
-    const entity = await this.catalogApi.getEntityByRef(entityRef, token);
-    if (!entity) {
-      throw new NotFoundError(`Entity not found: ${entityRef}`);
-    }
-
-    const providerIdsToCalculate =
-      providerIds ?? this.registry.listMetrics().map(m => m.id);
-    const rawResults = await this.registry.calculateMetrics(
-      providerIdsToCalculate,
-      entity,
-    );
-
-    return rawResults.map(({ providerId, value, error }) => {
-      const provider = this.registry.getProvider(providerId);
-      const metric = provider.getMetric();
-
-      if (error || value === undefined) {
-        return {
-          id: providerId,
-          status: 'error',
-          metadata: {
-            title: metric.title,
-            description: metric.description,
-            type: metric.type,
-            history: metric.history,
-          },
-          error: error
-            ? stringifyError(error)
-            : stringifyError(new Error(`Metric value is 'undefined'`)),
-        };
-      }
-
-      const thresholds = this.getEntityThresholds(
-        entity,
-        provider,
-        metric.type,
-      );
-
-      let evaluation: string | undefined;
-      let thresholdError: string | undefined;
-      try {
-        evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
-          value,
-          metric.type,
-          thresholds,
-        );
-      } catch (e) {
-        thresholdError = stringifyError(e);
-      }
-
-      return {
-        id: metric.id,
-        status: 'success',
-        metadata: {
-          title: metric.title,
-          description: metric.description,
-          type: metric.type,
-          history: metric.history,
-        },
-        result: {
-          value,
-          timestamp: new Date().toISOString(),
-          thresholdResult: {
-            definition: thresholds,
-            status: thresholdError ? 'error' : 'success',
-            evaluation,
-            ...(thresholdError && { error: thresholdError }),
-          },
-        },
-      };
-    });
   }
 }
