@@ -195,9 +195,9 @@ export class RegistrationBackendClient implements RegistrationService {
   };
 
   getSegmentWriteKey = async (): Promise<string> => {
-    const baseURL = await this.signupAPI();
+    const signupAPI = this.configApi.getString('sandbox.signupAPI');
     const response = await this.secureFetchApi.fetch(
-      `${baseURL}/analytics/segment-write-key`,
+      `${signupAPI}/analytics/segment-write-key`,
       {
         method: 'GET',
       },
@@ -207,6 +207,8 @@ export class RegistrationBackendClient implements RegistrationService {
       throw new Error(`Failed to fetch Segment write key: ${response.status}`);
     }
 
-    return await response.json();
+    // API returns plain text, not JSON
+    const writeKey = await response.text();
+    return writeKey.trim(); // Remove any whitespace
   };
 }

@@ -17,6 +17,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 
+// SHA1 hash function
+const sha1 = async (message: string): Promise<string> => {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await window.crypto.subtle.digest('SHA-1', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+};
+
 export interface SegmentTrackingData {
   itemName: string;
   section: 'Catalog' | 'Activities' | 'Support' | 'Verification';
@@ -28,9 +37,13 @@ export interface SegmentTrackingData {
 /**
  * Hook for managing Segment Analytics integration
  * @param writeKey - Segment write key for initialization
+ * @param compliantUsername - User's compliant username (will be SHA1 hashed for userId)
  * @returns Object containing tracking function and initialization status
  */
-export const useSegmentAnalytics = (writeKey?: string) => {
+export const useSegmentAnalytics = (
+  writeKey?: string,
+  compliantUsername?: string,
+) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [initializationError, setInitializationError] = useState<string | null>(
     null,
@@ -66,8 +79,7 @@ export const useSegmentAnalytics = (writeKey?: string) => {
       }
 
       try {
-        // Track with properties using same structure as Adobe EDDL
-        analyticsRef.current.track(data.itemName, {
+        const trackingPayload = {
           category: `Developer Sandbox|${data.section}`,
           regions: `sandbox-${data.section.toLocaleLowerCase('en-US')}`,
           text: data.itemName,
@@ -76,12 +88,27 @@ export const useSegmentAnalytics = (writeKey?: string) => {
           ...(data.internalCampaign && {
             internalCampaign: data.internalCampaign,
           }),
-        });
+        };
+
+        // Create userId from hashed compliantUsername if available
+        let userId: string | undefined;
+        if (compliantUsername) {
+          userId = await sha1(compliantUsername);
+        }
+
+        // Track with properties and userId using same structure as Adobe EDDL
+        if (userId) {
+          analyticsRef.current.track(data.itemName, trackingPayload, {
+            userId,
+          });
+        } else {
+          analyticsRef.current.track(data.itemName, trackingPayload);
+        }
       } catch (error) {
         // Don't throw - allow Adobe tracking to continue
       }
     },
-    [isInitialized],
+    [isInitialized, compliantUsername],
   );
 
   return {

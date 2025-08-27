@@ -18,6 +18,25 @@ import { useSegmentAnalytics } from '../segment-analytics';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import { renderHook, act } from '@testing-library/react';
 
+// Mock crypto.subtle for SHA1 hashing
+const mockCryptoDigest = jest.fn();
+Object.defineProperty(global, 'crypto', {
+  value: {
+    subtle: {
+      digest: mockCryptoDigest,
+    },
+  },
+});
+
+// Mock TextEncoder for SHA1 hashing
+Object.defineProperty(global, 'TextEncoder', {
+  value: class TextEncoder {
+    encode(input: string) {
+      return new Uint8Array(Buffer.from(input, 'utf8'));
+    }
+  },
+});
+
 // Mock the Segment library
 jest.mock('@segment/analytics-next');
 
@@ -31,7 +50,15 @@ describe('useSegmentAnalytics Hook', () => {
     };
     (AnalyticsBrowser.load as jest.Mock).mockReturnValue(mockAnalytics);
 
+    // Mock crypto.subtle.digest to return a consistent hash
+    const mockHashBuffer = new Uint8Array([
+      0xa1, 0xb2, 0xc3, 0xd4, 0xe5, 0xf6, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c,
+      0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14,
+    ]);
+    mockCryptoDigest.mockResolvedValue(mockHashBuffer.buffer);
+
     // Mock console methods
+    jest.spyOn(console, 'log').mockImplementation(() => {});
     jest.spyOn(console, 'error').mockImplementation(() => {});
     jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
@@ -82,7 +109,7 @@ describe('useSegmentAnalytics Hook', () => {
     expect(result.current.initializationError).toBe('Initialization failed');
   });
 
-  it('should track events with correct data structure', async () => {
+  it('should track events with correct data structure (no userId)', async () => {
     const { result } = renderHook(() => useSegmentAnalytics('test-write-key'));
 
     await act(async () => {
@@ -106,5 +133,176 @@ describe('useSegmentAnalytics Hook', () => {
       href: 'https://example.com',
       linkType: 'cta',
     });
+  });
+
+  it('should track events with userId when compliantUsername is provided', async () => {
+    const { result } = renderHook(() =>
+      useSegmentAnalytics('test-write-key', 'testuser123'),
+    );
+
+    await act(async () => {
+      // Wait for initialization
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    await act(async () => {
+      await result.current.trackClick({
+        itemName: 'OpenShift',
+        section: 'Catalog',
+        href: 'https://console.example.com',
+        linkType: 'cta',
+        internalCampaign: '701Pe00000dnCEYIA2',
+      });
+      // Wait for async SHA1 hashing to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    // Verify SHA1 hashing was called
+    expect(mockCryptoDigest).toHaveBeenCalledWith(
+      'SHA-1',
+      expect.any(Uint8Array),
+    );
+
+    // Verify track was called with correct event name, payload, and userId
+    expect(mockAnalytics.track).toHaveBeenCalledWith(
+      'OpenShift',
+      {
+        category: 'Developer Sandbox|Catalog',
+        regions: 'sandbox-catalog',
+        text: 'OpenShift',
+        href: 'https://console.example.com',
+        linkType: 'cta',
+        internalCampaign: '701Pe00000dnCEYIA2',
+      },
+      {
+        userId: 'a1b2c3d4e5f60708090a0b0c0d0e0f1011121314',
+      },
+    );
+  });
+
+  it('should handle events without optional properties', async () => {
+    const { result } = renderHook(() =>
+      useSegmentAnalytics('test-write-key', 'user789'),
+    );
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    await act(async () => {
+      await result.current.trackClick({
+        itemName: 'Simple Click',
+        section: 'Support',
+      });
+      // Wait for async SHA1 hashing to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    expect(mockAnalytics.track).toHaveBeenCalledWith(
+      'Simple Click',
+      {
+        category: 'Developer Sandbox|Support',
+        regions: 'sandbox-support',
+        text: 'Simple Click',
+        href: undefined,
+        linkType: 'default',
+      },
+      {
+        userId: 'a1b2c3d4e5f60708090a0b0c0d0e0f1011121314',
+      },
+    );
+  });
+
+  it('should not track when analytics is not initialized', async () => {
+    // Mock AnalyticsBrowser.load to return null (initialization fails)
+    (AnalyticsBrowser.load as jest.Mock).mockReturnValue(null);
+
+    const { result } = renderHook(() =>
+      useSegmentAnalytics('test-write-key', 'user123'),
+    );
+
+    await act(async () => {
+      // Wait for failed initialization
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    await act(async () => {
+      await result.current.trackClick({
+        itemName: 'Test Event',
+        section: 'Catalog',
+      });
+    });
+
+    expect(mockAnalytics.track).not.toHaveBeenCalled();
+
+    // Reset the mock for other tests
+    (AnalyticsBrowser.load as jest.Mock).mockReturnValue(mockAnalytics);
+  });
+
+  it('should handle SHA1 hashing errors gracefully', async () => {
+    // Mock crypto.subtle.digest to throw an error
+    mockCryptoDigest.mockRejectedValue(new Error('Hashing failed'));
+
+    const { result } = renderHook(() =>
+      useSegmentAnalytics('test-write-key', 'user123'),
+    );
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    await act(async () => {
+      await result.current.trackClick({
+        itemName: 'Test Event',
+        section: 'Catalog',
+      });
+      // Wait for async hashing error to be handled
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    // Should not track due to hashing error
+    expect(mockAnalytics.track).not.toHaveBeenCalled();
+  });
+
+  it('should generate consistent SHA1 hash for same input', async () => {
+    const { result } = renderHook(() =>
+      useSegmentAnalytics('test-write-key', 'consistent-user'),
+    );
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    // Track multiple events with same user
+    await act(async () => {
+      await result.current.trackClick({
+        itemName: 'Event 1',
+        section: 'Catalog',
+      });
+      // Wait for async SHA1 hashing to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    await act(async () => {
+      await result.current.trackClick({
+        itemName: 'Event 2',
+        section: 'Activities',
+      });
+      // Wait for async SHA1 hashing to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    // Both calls should have same userId
+    expect(mockAnalytics.track).toHaveBeenCalledTimes(2);
+
+    const firstCall = mockAnalytics.track.mock.calls[0];
+    const secondCall = mockAnalytics.track.mock.calls[1];
+
+    expect(firstCall[2]?.userId).toBe(
+      'a1b2c3d4e5f60708090a0b0c0d0e0f1011121314',
+    );
+    expect(secondCall[2]?.userId).toBe(
+      'a1b2c3d4e5f60708090a0b0c0d0e0f1011121314',
+    );
   });
 });
