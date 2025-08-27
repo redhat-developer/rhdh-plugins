@@ -322,11 +322,7 @@ export class GitlabApiService {
       },
       this.integrations,
       {
-        dataFetcher: async (
-          gitlab: any,
-          credential: ExtendedGitlabCredentials,
-          ghConfig: GitLabIntegrationConfig,
-        ) => {
+        dataFetcher: async (gitlab: any) => {
           // find authenticated gitlab owner...
           const username = (await gitlab.Users.showCurrentUser()).username;
           if (username) {
@@ -338,8 +334,8 @@ export class GitlabApiService {
               all_available: false,
             })
           )
-            ?.map(org => org.path)
-            ?.forEach(orgName => allAccessibleTokenOrgs.add(orgName));
+            ?.map((org: { path: any }) => org.path)
+            ?.forEach((orgName: string) => allAccessibleTokenOrgs.add(orgName));
           return {};
         },
       },
@@ -522,10 +518,8 @@ export class GitlabApiService {
               };
             }
 
-            let branchExists = false;
             try {
               await gitlab.Branches.show(`${owner}/${repo}`, branchName);
-              branchExists = true;
             } catch (error: any) {
               if (error.cause.response.status === 404) {
                 await gitlab.Branches.create(

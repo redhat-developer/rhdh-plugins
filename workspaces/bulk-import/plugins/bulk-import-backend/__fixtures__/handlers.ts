@@ -309,7 +309,9 @@ export const DEFAULT_TEST_HANDLERS = [
       return res(
         ctx.status(200),
         ctx.set(orgListHeaders),
-        ctx.json(orgList.filter(org => org.name === searchParam)),
+        ctx.json(
+          orgList.filter((org: { name: string }) => org.name === searchParam),
+        ),
       );
     }
     return res(
