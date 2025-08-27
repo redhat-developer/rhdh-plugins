@@ -13,7 +13,13 @@ import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-c
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 // @public (undocumented)
-export type ComparisonOperator = '>=' | '<=' | '>' | '<' | '==' | '!=';
+export type ComparisonOperator = {
+  operator: ComparisonSign;
+  value: MetricValue;
+};
+
+// @public (undocumented)
+export type ComparisonSign = '>=' | '<=' | '>' | '<' | '==' | '!=';
 
 // @public (undocumented)
 export interface MetricProvider<T extends MetricType = MetricType> {
@@ -33,15 +39,13 @@ export interface MetricProvider<T extends MetricType = MetricType> {
 export function parseThresholdExpression(
   expression: string,
   targetType: MetricType,
-):
-  | {
-      operator: ComparisonOperator;
-      value: MetricValue;
-    }
-  | {
-      operator: '-';
-      values: [number, number];
-    };
+): ComparisonOperator | RangeOperator;
+
+// @public (undocumented)
+export type RangeOperator = {
+  operator: '-';
+  values: [number, number];
+};
 
 // @public (undocumented)
 export interface ScorecardMetricsExtensionPoint {

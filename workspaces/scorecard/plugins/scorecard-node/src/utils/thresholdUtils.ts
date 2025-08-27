@@ -17,21 +17,15 @@
 import {
   ThresholdConfig,
   MetricType,
-  MetricValue,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdConfigFormatError } from '../errors';
 import type { JsonValue } from '@backstage/types';
-import { ComparisonOperator } from './types';
+import { ComparisonOperator, RangeOperator } from './types';
 
 function parseRangeOperator(
   expression: string,
   targetType: MetricType,
-):
-  | {
-      operator: '-';
-      values: [number, number];
-    }
-  | undefined {
+): RangeOperator | undefined {
   const rangeMatch = /^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)$/.exec(expression);
   if (!rangeMatch) {
     return undefined;
@@ -60,15 +54,10 @@ function parseRangeOperator(
   return { operator: '-', values: [minValue, maxValue] };
 }
 
-function parseOperator(
+function parseComparisonOperator(
   expression: string,
   targetType: MetricType,
-):
-  | {
-      operator: ComparisonOperator;
-      value: MetricValue;
-    }
-  | undefined {
+): ComparisonOperator | undefined {
   const match = /^(>=|<=|>|<|==|!=)(.+)$/.exec(expression);
   if (!match) {
     return undefined;
@@ -109,22 +98,14 @@ function parseOperator(
 export function parseThresholdExpression(
   expression: string,
   targetType: MetricType,
-):
-  | {
-      operator: ComparisonOperator;
-      value: MetricValue;
-    }
-  | {
-      operator: '-';
-      values: [number, number];
-    } {
+): ComparisonOperator | RangeOperator {
   const trimmedExpression = expression.trim();
 
   const rangeParsed = parseRangeOperator(trimmedExpression, targetType);
   if (rangeParsed !== undefined) {
     return rangeParsed;
   }
-  const operatorParsed = parseOperator(trimmedExpression, targetType);
+  const operatorParsed = parseComparisonOperator(trimmedExpression, targetType);
   if (operatorParsed !== undefined) {
     return operatorParsed;
   }

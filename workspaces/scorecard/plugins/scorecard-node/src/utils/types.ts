@@ -14,4 +14,16 @@
  * limitations under the License.
  */
 
-export type ComparisonOperator = '>=' | '<=' | '>' | '<' | '==' | '!=';
+import { type MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+export type ComparisonSign = '>=' | '<=' | '>' | '<' | '==' | '!=';
+
+export type ComparisonOperator = {
+  operator: ComparisonSign;
+  value: MetricValue;
+};
+
+export type RangeOperator = {
+  operator: '-';
+  values: [number, number];
+};

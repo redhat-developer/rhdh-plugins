@@ -15,4 +15,8 @@
  */
 
 export { parseThresholdExpression, validateThresholds } from './thresholdUtils';
-export { type ComparisonOperator } from './types';
+export type {
+  ComparisonSign,
+  ComparisonOperator,
+  RangeOperator,
+} from './types';
