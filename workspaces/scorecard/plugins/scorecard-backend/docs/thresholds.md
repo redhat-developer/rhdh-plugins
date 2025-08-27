@@ -183,7 +183,7 @@ finalRules: [
 
 #### Range Operator
 
-- `-`: Value within range (inclusive)
+- `-`: Value within range (min-max, inclusive)
 
 ### Number Metric
 
@@ -196,7 +196,7 @@ rules:
   - key: error
     expression: '>100'
   - key: warning
-    expression: '100-80' # between 100 and 80 (inclusive)
+    expression: '80-100' # between 80 and 100 (inclusive)
   - key: success
     expression: '<80'
 ```
