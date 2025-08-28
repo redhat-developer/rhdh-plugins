@@ -63,7 +63,8 @@ spec:
       each: ${{ steps['pick-all-yamls'].output.result }}
       action: catalog:register
       input:
-        catalogInfoUrl: https://raw.githubusercontent.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}/${{ steps['get-default-branch'].output.defaultBranch }}/${{ each.value }}
+        repoContentsUrl: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}/tree/${{ steps['get-default-branch'].output.defaultBranch }}/
+        catalogInfoPath: ${{ each.value }}
 
     - id: register-root
       name: Register root catalog-info.yaml
