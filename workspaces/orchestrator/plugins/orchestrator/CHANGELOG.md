@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 5.0.6
+
+### Patch Changes
+
+- df7e964: fix wrong color for selected tab
+- 7d15bdf: UI fixes
+- Updated dependencies [c79ffa7]
+- Updated dependencies [a4ae23c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.5
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.0.5
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.5
+
 ## 5.0.5
 
 ### Patch Changes
