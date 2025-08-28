@@ -238,29 +238,29 @@ export async function fetchFromAllIntegrations<T>(
   return { data, errors: aggregatedErrors };
 }
 
-export function computeTotalCount<T>(
-  data: T[],
-  countList: number[],
-  pageSize: number,
-) {
-  let totalCount = countList.reduce(
-    (accumulator, currentValue) => accumulator + currentValue,
-    0,
-  );
-  if (totalCount < pageSize) {
-    totalCount = data.length;
-  }
-  return totalCount;
-}
+// export function computeTotalCount<T>(
+//   data: T[],
+//   countList: number[],
+//   pageSize: number,
+// ) {
+//   let totalCount = countList.reduce(
+//     (accumulator, currentValue) => accumulator + currentValue,
+//     0,
+//   );
+//   if (totalCount < pageSize) {
+//     totalCount = data.length;
+//   }
+//   return totalCount;
+// }
 
-export function extractLocationOwnerMap(locationUrls: string[]) {
-  const locationGitOwnerMap = new Map<string, string>();
-  for (const locationUrl of locationUrls) {
-    const split = locationUrl.split('/blob/');
-    if (split.length < 2) {
-      continue;
-    }
-    locationGitOwnerMap.set(locationUrl, gitUrlParse(split[0]).owner);
-  }
-  return locationGitOwnerMap;
-}
+// export function extractLocationOwnerMap(locationUrls: string[]) {
+//   const locationGitOwnerMap = new Map<string, string>();
+//   for (const locationUrl of locationUrls) {
+//     const split = locationUrl.split('/blob/');
+//     if (split.length < 2) {
+//       continue;
+//     }
+//     locationGitOwnerMap.set(locationUrl, gitUrlParse(split[0]).owner);
+//   }
+//   return locationGitOwnerMap;
+// }
