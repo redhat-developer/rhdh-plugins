@@ -4,32 +4,11 @@
 
 ```ts
 import { BackendFeature } from '@backstage/backend-plugin-api';
-import { CatalogProcessor } from '@backstage/plugin-catalog-node';
-import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
-import type { Config } from '@backstage/config';
-import { EntityProvider } from '@backstage/plugin-catalog-node';
-import { EntityProviderConnection } from '@backstage/plugin-catalog-node';
-import { LocationSpec } from '@backstage/plugin-catalog-common';
-import { LoggerService } from '@backstage/backend-plugin-api';
 import { ModelCatalog } from '@redhat-ai-dev/model-catalog-types';
-import { RootConfigService } from '@backstage/backend-plugin-api';
-import type { SchedulerService } from '@backstage/backend-plugin-api';
-import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
-import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-plugin-api';
-import { UrlReaderService } from '@backstage/backend-plugin-api';
 
 // @public
 const catalogModuleModelCatalogResourceEntityProvider: BackendFeature;
 export default catalogModuleModelCatalogResourceEntityProvider;
-
-// @public
-export const catalogModuleRHDHRHOAIEntityProvider: BackendFeature;
-
-// @public
-export const catalogModuleRHDHRHOAILocationsExtensionPoint: BackendFeature;
-
-// @public
-export const catalogModuleRHDHRHOAIReaderProcessor: BackendFeature;
 
 // @public
 export function fetchModelCatalogFromKey(
@@ -41,56 +20,8 @@ export function fetchModelCatalogFromKey(
 export function fetchModelCatalogKeys(baseUrl: string): Promise<string[]>;
 
 // @public
-export type ModelCatalogConfig = {
-  id: string;
-  baseUrl: string;
-  schedule?: SchedulerServiceTaskScheduleDefinition;
-};
-
-// @public
 export interface ModelCatalogKeys {
   // (undocumented)
   uris: string[];
-}
-
-// @public
-export class ModelCatalogResourceEntityProvider implements EntityProvider {
-  connect(connection: EntityProviderConnection): Promise<void>;
-  createScheduleFn(taskRunner: SchedulerServiceTaskRunner): () => Promise<void>;
-  static fromConfig(
-    deps: {
-      config: Config;
-      logger: LoggerService;
-    },
-    options:
-      | {
-          schedule: SchedulerServiceTaskRunner;
-        }
-      | {
-          scheduler: SchedulerService;
-        },
-  ): ModelCatalogResourceEntityProvider[];
-  getProviderName(): string;
-  run(): Promise<void>;
-}
-
-// @public
-export function readModelCatalogApiEntityConfigs(
-  config: Config,
-): ModelCatalogConfig[];
-
-// @public
-export class RHDHRHOAIReaderProcessor implements CatalogProcessor {
-  constructor(
-    reader: UrlReaderService,
-    config: RootConfigService,
-    logger: LoggerService,
-  );
-  getProcessorName(): string;
-  readLocation(
-    location: LocationSpec,
-    _optional: boolean,
-    emit: CatalogProcessorEmit,
-  ): Promise<boolean>;
 }
 ```
