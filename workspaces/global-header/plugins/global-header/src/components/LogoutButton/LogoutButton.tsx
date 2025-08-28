@@ -24,10 +24,12 @@ import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
 
 import { MenuItemLinkContent } from '../MenuItemLink/MenuItemLinkContent';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const LogoutButton = () => {
   const errorApi = useApi(errorApiRef);
   const identityApi = useApi(identityApiRef);
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     identityApi.signOut().catch(error => errorApi.post(error));
@@ -44,7 +46,7 @@ export const LogoutButton = () => {
           color: 'inherit',
         }}
       >
-        <MenuItemLinkContent icon="logout" label="Sign out" />
+        <MenuItemLinkContent icon="logout" label={t('profile.signOut')} />
       </MenuItem>
     </>
   );

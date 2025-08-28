@@ -14,6 +14,4 @@
  * limitations under the License.
  */
 
-export { useDropdownManager } from './useDropdownManager';
-export { useTranslation } from './useTranslation';
-export { useLanguage } from './useLanguage';
+export * from './translations';
