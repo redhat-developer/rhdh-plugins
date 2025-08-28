@@ -126,6 +126,7 @@ const columns: TableColumn<MarketplacePackage>[] = [
     title: 'Package name',
     field: 'spec.packageName',
     type: 'string',
+    width: '40%',
   },
   {
     title: 'Version',
@@ -175,7 +176,11 @@ const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
 
   return (
     <div>
-      <Typography variant="h5" sx={{ pt: 2 }}>
+      <Typography
+        variant="h6"
+        component="h3"
+        sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5, pt: 2 }}
+      >
         Versions
       </Typography>
       <Table
@@ -466,12 +471,18 @@ export const MarketplacePluginContent = ({
           <Grid item md={3}>
             {highlights.length > 0 ? (
               <>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                <Typography
+                  variant="h6"
+                  component="h3"
+                  sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
+                >
                   Highlights
                 </Typography>
-                <ul>
+                <ul style={{ paddingLeft: '20px', marginBottom: '24px' }}>
                   {highlights.map(highlight => (
-                    <li key={highlight}>{highlight}</li>
+                    <li key={highlight} style={{ marginBottom: '8px' }}>
+                      {highlight}
+                    </li>
                   ))}
                 </ul>
               </>
