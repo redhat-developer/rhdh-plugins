@@ -45,7 +45,7 @@ export function buildGitlab(
     errors?: Map<number, GitlabFetchError>;
   },
   baseUrl: string = GITLAB_BASEURL_ENDPOINT,
-): any | undefined {
+): any {
   const apiThing = new Gitlab({
     host: baseUrl,
     token: input.credential.token,
