@@ -9,6 +9,7 @@ The Quickstart plugin provides a guided onboarding experience for new users of R
 - **Configurable Content**: Define custom quickstart items through app configuration
 - **Visual Progress Indicator**: Shows overall completion progress with a progress bar
 - **Call-to-Action Support**: Each step can include clickable action buttons
+- **Role-Based Access Control**: Show different quickstart items based on user roles (admin/developer)
 
 ## Installation
 
@@ -44,18 +45,28 @@ app:
     - title: 'Welcome to Developer Hub'
       description: 'Learn the basics of navigating the Developer Hub interface'
       icon: 'home'
+      roles: ['admin', 'developer'] # Show to both roles
       cta:
         text: 'Get Started'
         link: '/catalog'
+    - title: 'Configure RBAC Policies'
+      description: 'Set up role-based access control for your organization'
+      icon: 'security'
+      roles: ['admin'] # Admin-only quickstart item
+      cta:
+        text: 'Configure RBAC'
+        link: '/rbac'
     - title: 'Create Your First Component'
       description: 'Follow our guide to register your first software component'
       icon: 'code'
+      # No roles specified - defaults to 'admin'
       cta:
         text: 'Create Component'
         link: '/catalog-import'
     - title: 'Explore Templates'
       description: 'Discover available software templates to bootstrap new projects'
       icon: 'template'
+      roles: ['developer'] # Developer-only quickstart item
       cta:
         text: 'Browse Templates'
         link: '/create'
@@ -68,9 +79,55 @@ Each quickstart item supports the following properties:
 - `title` (required): The display title for the quickstart step
 - `description` (required): A brief description of what the step covers
 - `icon` (optional): Icon identifier (supports Material UI icons)
+- `roles` (optional): Array of user roles that should see this quickstart item. Supported values: `['admin', 'developer']`. If not specified, defaults to `['admin']`
 - `cta` (optional): Call-to-action object with:
   - `text`: Button text
   - `link`: Target URL or route
+
+## Role-Based Access Control (RBAC)
+
+The quickstart plugin integrates with Backstage's RBAC system to show different quickstart items based on user roles.
+
+### User Role Determination
+
+The plugin determines user roles using the following logic:
+
+- **When RBAC is disabled** (`permission.enabled: false` or not configured): Users are assumed to be platform engineers setting up RHDH and are assigned the `admin` role
+- **When RBAC is enabled** (`permission.enabled: true`): User roles are determined based on permissions:
+  - Users with `policy.entity.create` permission are assigned the `admin` role
+  - Users without this permission are assigned the `developer` role
+
+### Supported Roles
+
+- **`admin`**: Platform engineers, administrators, and users with elevated permissions
+- **`developer`**: Regular developers and users with standard permissions
+
+### Role Assignment Behavior
+
+- Quickstart items without a `roles` property default to `['admin']`
+- Items can specify multiple roles: `roles: ['admin', 'developer']`
+- Users only see quickstart items that match their assigned role
+
+### Configuration Example
+
+Enable RBAC in your `app-config.yaml`:
+
+```yaml
+permission:
+  enabled: true
+
+app:
+  quickstart:
+    - title: 'Platform Configuration'
+      roles: ['admin']
+      # Only admins see this
+    - title: 'Getting Started as Developer'
+      roles: ['developer']
+      # Only developers see this
+    - title: 'Universal Welcome Guide'
+      roles: ['admin', 'developer']
+      # Both roles see this
+```
 
 ## Usage
 
