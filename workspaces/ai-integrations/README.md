@@ -23,7 +23,7 @@ The ai-experience plugins are packaged as part of an OCI archive.
 To build the plugin archive, ensure you have `docker` or `podman` installed on your system, and run:
 
 ```
-npx --yes @janus-idp/cli@$latest package package-dynamic-plugins --tag "${PLUGIN_CONTAINER_TAG}"
+npx --yes @red-hat-developer-hub/cli@latest plugin package --tag "${PLUGIN_CONTAINER_TAG}"
 ```
 
 Where `PLUGIN_CONTAINER_TAG` is the image tag you would like to use (e.g. `quay.io/<your-user>/ai-experience:latest`)
@@ -31,5 +31,5 @@ Where `PLUGIN_CONTAINER_TAG` is the image tag you would like to use (e.g. `quay.
 If you would like to build with `docker`, add the `--user-docker` tag like so:
 
 ```
-npx --yes @janus-idp/cli@$latest package package-dynamic-plugins --tag "${PLUGIN_CONTAINER_TAG}" --use-docker
+npx --yes @red-hat-developer-hub/cli@latest plugin package --tag --tag "${PLUGIN_CONTAINER_TAG}" --use-docker
 ```
