@@ -25,7 +25,6 @@ import {
 } from '@backstage/integration';
 
 import { Gitlab } from '@gitbeaker/rest';
-import gitUrlParse from 'git-url-parse';
 
 import { logErrorIfNeeded } from '../../helpers';
 import type { CustomGitlabCredentialsProvider } from '../GitlabAppManager';
