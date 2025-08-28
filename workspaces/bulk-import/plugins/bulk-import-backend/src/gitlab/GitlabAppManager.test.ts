@@ -22,34 +22,9 @@ import {
   CustomSingleInstanceGitlabCredentialsProvider,
 } from './GitlabAppManager';
 
-const octokit = {
-  paginate: async (fn: any) => (await fn()).data,
-  apps: {
-    listInstallations: jest.fn(),
-    listReposAccessibleToInstallation: jest.fn(),
-    createInstallationAccessToken: jest.fn(),
-  },
-};
-
-function createOctokit() {
-  return octokit;
-}
-
-jest.mock('@octokit/rest', () => {
-  return { Octokit: createOctokit };
-});
-
 describe('CustomSingleInstanceGithubCredentialsProvider tests', () => {
-  // let gitlab: ExtendedGitlabCredentialsProvider;
-
   beforeEach(() => {
     jest.resetAllMocks();
-    // gitlab = CustomSingleInstanceGitlabCredentialsProvider.create({
-    //   host: 'gitlab.com',
-    //   token: 'hardcoded_token',
-    //   apiBaseUrl: '',
-    //   baseUrl: 'http://gitlab.com',
-    // });
   });
 
   describe('CustomSingleInstanceGithubCredentialsProvider #GetAllCredentials Tests', () => {

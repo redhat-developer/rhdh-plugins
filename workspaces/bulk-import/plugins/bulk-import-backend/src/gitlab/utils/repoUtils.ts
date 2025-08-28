@@ -25,7 +25,6 @@ import type {
 import gitUrlParse from 'git-url-parse';
 
 import { getBranchName } from '../../catalog/catalogUtils';
-// import { logErrorIfNeeded } from '../../helpers';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -154,7 +153,7 @@ export async function addGitlabTokenRepositories(
       /**
        * The Projects.all method with the membership: true option will grab all the repositories/projects the gitlab token has explicit access to.
        * These would include repositories they own, repositories where they are a collaborator,
-       * and repositories that they can access through an organization membership(TODO: see if that is true in gitlab).
+       * and repositories that they can access through an organization membership.
        */
       const { data, paginationInfo } = await gitlab.Projects.all({
         membership: true,

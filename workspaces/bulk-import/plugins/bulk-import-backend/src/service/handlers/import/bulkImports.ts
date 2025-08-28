@@ -307,9 +307,12 @@ async function createPR(
       (await catalogInfoGenerator.generateDefaultCatalogInfoContent(
         req.repository.url,
       )),
-    prTitle: req[req.approvalTool === 'GITLAB' ? 'gitlab' : 'github']?.pullRequest?.title ?? `Add ${catalogFileName}`,
+    prTitle:
+      req[req.approvalTool === 'GITLAB' ? 'gitlab' : 'github']?.pullRequest
+        ?.title ?? `Add ${catalogFileName}`,
     prBody:
-      req[req.approvalTool === 'GITLAB' ? 'gitlab' : 'github']?.pullRequest?.body ??
+      req[req.approvalTool === 'GITLAB' ? 'gitlab' : 'github']?.pullRequest
+        ?.body ??
       `
 This pull request adds a **Backstage entity metadata file** to this repository so that the component can be added to a Backstage application.
 
@@ -347,7 +350,10 @@ async function handleAddedReposFromCreateImportJobs(
     if (!hasLocation) {
       continue;
     }
-    const gitApiService = req.approvalTool === 'GITLAB' ? deps.gitlabApiService : deps.githubApiService;
+    const gitApiService =
+      req.approvalTool === 'GITLAB'
+        ? deps.gitlabApiService
+        : deps.githubApiService;
     const hasCatalogInfoFileInRepo = await gitApiService.hasFileInRepo({
       repoUrl: req.repository.url,
       defaultBranch: req.repository.defaultBranch,
@@ -400,7 +406,10 @@ async function handlePrCreationRequest(
     req.repository.url,
     req.repository.defaultBranch,
   );
-  const gitApiService = req.approvalTool === 'GITLAB' ? deps.gitlabApiService : deps.githubApiService;
+  const gitApiService =
+    req.approvalTool === 'GITLAB'
+      ? deps.gitlabApiService
+      : deps.githubApiService;
   const prToRepo = await createPR(
     gitApiService,
     deps.logger,
@@ -411,7 +420,6 @@ async function handlePrCreationRequest(
   );
   if (prToRepo.errors && prToRepo.errors.length > 0) {
     return {
-      // TODO: should approvalTool be a param
       errors: prToRepo.errors,
       status: 'PR_ERROR',
       repository: req.repository,
@@ -435,7 +443,6 @@ async function handlePrCreationRequest(
       req.repository.defaultBranch,
     );
     return {
-      // TODO: should approvalTool be a param
       status: 'ADDED',
       lastUpdate: prToRepo.lastUpdate,
       repository: {
@@ -447,7 +454,6 @@ async function handlePrCreationRequest(
   }
 
   return {
-    // TODO: should approvalTool be a param
     approvalTool: req.approvalTool ?? 'GIT',
     errors: prToRepo.errors,
     status: 'WAIT_PR_APPROVAL',
@@ -457,7 +463,6 @@ async function handlePrCreationRequest(
       name: gitUrl.name,
       organization: gitUrl.organization,
     },
-    //TODO: also add gitlab based on ApprovalTool?
     [req.approvalTool === 'GITLAB' ? 'gitlab' : 'github']: {
       pullRequest: {
         url: prToRepo.prUrl,
@@ -528,7 +533,6 @@ export async function createImportJobs(
       result.push(await handlePrCreationRequest(deps, req, gitUrl));
     } catch (error: any) {
       result.push({
-        // TODO: should approvalTool be a param
         errors: [error.message],
         status: 'PR_ERROR',
         repository: {
@@ -572,7 +576,6 @@ async function dryRunCreateImportJobs(
       );
     }
     result.push({
-      // TODO: should approvalTool be a param
       errors: dryRunChecks.dryRunStatuses,
       catalogEntityName: req.catalogEntityName,
       repository: {
@@ -611,7 +614,10 @@ async function performDryRunChecks(
     return {};
   };
 
-  const gitApiService = req.approvalTool === 'GITLAB' ? deps.gitlabApiService : deps.githubApiService;
+  const gitApiService =
+    req.approvalTool === 'GITLAB'
+      ? deps.gitlabApiService
+      : deps.githubApiService;
   const checkEmptyRepo = async (): Promise<{
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
@@ -648,7 +654,8 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    const gitDirLocation = req.approvalTool === 'GITLAB' ? '.gitlab' : '.github';
+    const gitDirLocation =
+      req.approvalTool === 'GITLAB' ? '.gitlab' : '.github';
     const exists = await gitApiService.hasFileInRepo({
       repoUrl: req.repository.url,
       defaultBranch: req.repository.defaultBranch,
@@ -774,7 +781,7 @@ export async function findImportStatusByRepo(
         body: openImportPr.prBody,
         catalogInfoContent: openImportPr.prCatalogInfoContent,
       },
-    }
+    };
 
     result.lastUpdate = openImportPr.lastUpdate;
   } catch (error: any) {
