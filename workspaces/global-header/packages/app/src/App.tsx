@@ -58,6 +58,7 @@ import { NotificationsPage } from '@backstage/plugin-notifications';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { globalHeaderTranslations } from '@red-hat-developer-hub/backstage-plugin-global-header';
 import ManageAccounts from '@mui/icons-material/ManageAccountsOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import Logout from '@mui/icons-material/LogoutOutlined';
@@ -69,6 +70,10 @@ const app = createApp({
     logout: Logout,
   },
   apis,
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it'],
+    resources: [globalHeaderTranslations],
+  },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,

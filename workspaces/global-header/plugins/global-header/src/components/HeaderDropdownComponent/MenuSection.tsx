@@ -22,6 +22,7 @@ import MenuItem, { MenuItemProps } from '@mui/material/MenuItem';
 import { Link } from '@backstage/core-components';
 import { MenuItemLinkProps } from '../MenuItemLink/MenuItemLink';
 import ListSubheader from '@mui/material/ListSubheader';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * Menu item configuration
@@ -53,8 +54,15 @@ export const MenuSection: FC<MenuSectionConfig> = ({
   hideDivider = false,
   handleClose,
 }) => {
+  const { t } = useTranslation();
   const hasClickableSubheader =
     optionalLink && optionalLinkLabel && items.length > 0;
+
+  // Check if sectionLabel looks like a translation key (contains dots)
+  const translatedSectionLabel =
+    sectionLabel && sectionLabel.includes('.')
+      ? t(sectionLabel as any, {}) || sectionLabel // Fallback to original if translation fails
+      : sectionLabel;
 
   return (
     <>
@@ -79,7 +87,7 @@ export const MenuSection: FC<MenuSectionConfig> = ({
               fontWeight: 400,
             }}
           >
-            {sectionLabel}
+            {translatedSectionLabel}
           </ListSubheader>
 
           {optionalLinkLabel && (

@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-export { useDropdownManager } from './useDropdownManager';
-export { useTranslation } from './useTranslation';
-export { useLanguage } from './useLanguage';
+import {
+  useTranslationRef,
+  TranslationFunction,
+} from '@backstage/core-plugin-api/alpha';
+
+import { globalHeaderTranslationRef } from '../translations';
+
+export const useTranslation = (): {
+  t: TranslationFunction<typeof globalHeaderTranslationRef.T>;
+} => useTranslationRef(globalHeaderTranslationRef);
