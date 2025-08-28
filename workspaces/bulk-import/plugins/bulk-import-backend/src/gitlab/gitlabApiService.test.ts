@@ -213,30 +213,6 @@ describe('GitlabApiService tests', () => {
   });
 
   it('returns list of errors if they occur during the repository fetch phase', async () => {
-    // octokit.rest.users.getByUsername.mockImplementationOnce(async () => {
-    //   const githubDownError = new Error(
-    //     "The Unicorns have taken over. We're doing our best to get them under control and get Github back up and running",
-    //   );
-    //   githubDownError.name = '503 Service Unavailable';
-    //   throw githubDownError;
-    // });
-    // octokit.rest.repos.listForAuthenticatedUser.mockImplementationOnce(
-    //   async () => {
-    //     const customError = new Error('This is taking quite a while');
-    //     customError.name = '504 Gateway Timeout';
-    //     throw customError;
-    //   },
-    // );
-    // octokit.apps.listReposAccessibleToInstallation
-    //   .mockImplementationOnce(async () => {
-    //     const unauthorizedError = new Error('Bad credentials');
-    //     unauthorizedError.name = '401 Unauthorized';
-    //     throw unauthorizedError;
-    //   })
-    //   .mockReturnValue({
-    //     data: ghRepos,
-    //   });
-
     gitlabkit.Projects.all.mockImplementationOnce(async () => {
       const unauthorizedError = new Error('401 Unauthorized');
       unauthorizedError.name = '401 Unauthorized';

@@ -101,30 +101,6 @@ export async function getCredentialsForConfig(
   });
 }
 
-// export async function extractConfigAndCreds(
-//   githubCredentialsProvider: CustomGithubCredentialsProvider,
-//   integrations: ScmIntegrations,
-//   input: {
-//     repoUrl: string;
-//     defaultBranch?: string;
-//   },
-// ) {
-//   const ghConfig = integrations.github.byUrl(input.repoUrl)?.config;
-//   if (!ghConfig) {
-//     throw new Error(`Could not find GH integration from ${input.repoUrl}`);
-//   }
-
-//   const credentials = await githubCredentialsProvider.getAllCredentials({
-//     host: ghConfig.host,
-//   });
-//   if (credentials.length === 0) {
-//     throw new Error(`No credentials for GH integration`);
-//   }
-
-//   const gitUrl = gitUrlParse(input.repoUrl);
-//   return { ghConfig, credentials, gitUrl };
-// }
-
 export function handleError(
   deps: {
     logger: LoggerService;

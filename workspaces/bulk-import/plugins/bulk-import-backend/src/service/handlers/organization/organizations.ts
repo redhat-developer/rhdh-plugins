@@ -68,7 +68,6 @@ export async function findAllOrganizations(
   // sorting the output to make it deterministic and easy to navigate in the UI
   const organizations = sortOrgs(orgMap);
 
-  // TODO: Add the approvalTool?
   return {
     statusCode: 200,
     responseBody: {
