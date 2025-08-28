@@ -44,6 +44,7 @@ export const BulkImportPage = () => {
     repositories: {},
     excludedRepositories: {},
     approvalTool: ApprovalTool.Git,
+    templateOptions: '',
   };
 
   const bulkImportViewPermissionResult = usePermission({

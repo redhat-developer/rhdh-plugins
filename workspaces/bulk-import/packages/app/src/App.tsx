@@ -47,6 +47,7 @@ import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 import { Navigate, Route } from 'react-router-dom';
 import { apis } from './apis';
@@ -93,6 +94,8 @@ const app = createApp({
   themes: getThemes(),
 });
 
+const queryClient = new QueryClient();
+
 const routes = (
   <FlatRoutes>
     <Route path="/" element={<Navigate to="catalog" />} />
@@ -128,7 +131,14 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/bulk-import" element={<Navigate to="repositories" />} />
-    <Route path="/bulk-import/repositories" element={<BulkImportPage />} />
+    <Route
+      path="/bulk-import/repositories"
+      element={
+        <QueryClientProvider client={queryClient}>
+          <BulkImportPage />
+        </QueryClientProvider>
+      }
+    />
   </FlatRoutes>
 );
 
