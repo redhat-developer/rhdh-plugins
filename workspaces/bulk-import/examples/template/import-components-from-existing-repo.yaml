@@ -61,7 +61,7 @@ spec:
     - id: register-all-yamls
       name: Register each all.yaml file
       each: ${{ steps['pick-all-yamls'].output.result }}
-      action: catalog:register
+      action: catalog:register-with-event
       input:
         repoContentsUrl: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}/tree/${{ steps['get-default-branch'].output.defaultBranch }}/
         catalogInfoPath: ${{ each.value }}

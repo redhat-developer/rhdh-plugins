@@ -71,7 +71,23 @@ export const bulkImportPlugin = createBackendPlugin({
           topics: ['catalog-location-added'],
           onEvent: async ({ topic, eventPayload }) => {
             console.log('[bulk-import] Got event:', topic, eventPayload);
-            // store data in the db...
+            if (
+              typeof eventPayload === 'object' &&
+              eventPayload !== null &&
+              'location' in eventPayload &&
+              'taskId' in eventPayload
+            ) {
+              const { location, taskId } = eventPayload as {
+                location: string;
+                taskId: string;
+              };
+              await dao.updateTaskLocation(taskId, location);
+            } else {
+              logger.warn(
+                `[bulk-import] Received event with missing location or taskId`,
+                { eventPayload: JSON.stringify(eventPayload) },
+              );
+            }
           },
         });
 

@@ -29,6 +29,7 @@ export interface Repository {
   tasks: ScaffolderTask[];
 }
 
+// todo move this code to the database folder
 export class RepositoryDao {
   constructor(
     private readonly knex: Knex<any, any[]>,
@@ -126,5 +127,12 @@ export class RepositoryDao {
     if (repository) {
       await this.knex('repositories').where({ id: repository.id }).del();
     }
+  }
+
+  async updateTaskLocation(taskId: string, location: string): Promise<void> {
+    this.logger.debug(
+      `Updating task ${taskId} with location ${location} in database..`,
+    );
+    await this.knex('scaffolder_tasks').where({ taskId }).update({ location });
   }
 }

@@ -75,6 +75,7 @@ export function createCatalogRegisterWithEventAction(options: {
     },
     async handler(ctx) {
       const { input } = ctx;
+      console.log(`Optional ? ${input.optional}`);
 
       let catalogInfoUrl;
       if ('catalogInfoUrl' in input) {
@@ -100,6 +101,7 @@ export function createCatalogRegisterWithEventAction(options: {
       try {
         // 1st try to register the location, this will throw an error if the location already exists (see catch)
         const credentials = (await ctx.getInitiatorCredentials()) as any;
+        console.log('==== before add location!');
         await catalog.addLocation(
           {
             type: 'url',
@@ -107,6 +109,7 @@ export function createCatalogRegisterWithEventAction(options: {
           },
           { token: credentials.token },
         );
+        console.log(`==== location added!!!`);
         await events.publish({
           topic: 'catalog-location-added',
           eventPayload: {
@@ -115,7 +118,9 @@ export function createCatalogRegisterWithEventAction(options: {
             taskId: ctx.task.id,
           },
         });
+        console.log('==== Event sended!!!');
       } catch (e) {
+        console.log('sadsvit');
         if (!input.optional) {
           // if optional is false or unset, it is not allowed to register the same location twice, we rethrow the error
           throw e;
