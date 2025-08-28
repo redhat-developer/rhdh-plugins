@@ -446,7 +446,6 @@ export const WorkflowInstancePage = () => {
                         <ArrowDropDown />
                       ) : null
                     }
-                    style={{ color: 'white' }}
                   >
                     {value.state === ProcessInstanceStatusDTO.Active ? (
                       <>
