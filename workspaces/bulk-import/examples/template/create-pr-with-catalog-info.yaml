@@ -1,8 +1,8 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: add-catalog-info
-  title: Add catalog-info.yaml to repo
+  name: create-pr-with-catalog-info
+  title: Propose catalog-info.yaml in the pull request
   description: Creates a catalog-info.yaml in the given GitHub repo.
 
 spec:

@@ -1,9 +1,9 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: import-from-existing-repo
+  name: import-components-from-existing-repo
   title: Import root catalog-info.yaml and subfolder all.yaml
-  description: Registers catalog-info.yaml from root and all.yaml from subfolders
+  description: Registers the catalog-info.yaml file in the root repository, and registers catalog components listed in all.yaml located in the repository’s root sub‑folders.
 spec:
   owner: user:default/guest
   type: service
