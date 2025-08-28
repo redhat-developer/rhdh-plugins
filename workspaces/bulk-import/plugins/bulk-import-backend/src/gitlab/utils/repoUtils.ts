@@ -234,88 +234,50 @@ export async function addGitlabTokenOrgRepositories(
   const pageSize = reqParams?.pageSize ?? DefaultPageSize;
   let totalCount: number | undefined;
   try {
-    if (search) {
-      // Use the group allProjects api with the search param.
-      // I noticed that using this api will only return values when 3 or more characters are used for the search
-      // that api gives us all the things the token has access
-      const { data, paginationInfo } = await gitlab.Groups.allProjects(org, {
-        perPage: pageSize,
-        search: search,
-        page: pageNumber,
-        showExpanded: true,
-      });
+    // For Search: Use the group allProjects api with the search param.
+    // I noticed that using this api will only return values when 3 or more characters are used for the search
+    // that api gives us all the things the token has access
+    const params = {
+      perPage: pageSize,
+      search: search ?? undefined,
+      page: pageNumber,
+      showExpanded: true,
+    };
 
-      data?.forEach(
-        (repo: {
-          id: string;
-          path_with_namespace: string;
-          full_name: string;
-          name: any;
-          url: any;
-          html_url: any;
-          web_url: any;
-          _links: any;
-          default_branch: any;
-          updated_at: any;
-        }) => {
-          repositories.set(repo.path_with_namespace, {
-            name: repo.name,
-            full_name: repo.path_with_namespace,
-            url: repo._links.self,
-            html_url: repo.web_url,
-            default_branch: repo.default_branch,
-            updated_at: repo.updated_at,
-          });
-        },
-      );
+    const { data, paginationInfo } = await gitlab.Groups.allProjects(
+      org,
+      params,
+    );
 
-      totalCount = await computeTotalCountFromPaginationInfo(
-        deps,
-        paginationInfo,
-        pageSize, // Not thrilled with this for some reason
-      );
-    } else {
-      /**
-       * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
-       * These would include repositories they own, repositories where they are a collaborator,
-       * and repositories that they can access through an organization membership.
-       */
-      const { data, paginationInfo } = await gitlab.Groups.allProjects(org, {
-        perPage: pageSize,
-        page: pageNumber,
-        showExpanded: true,
-      });
+    data?.forEach(
+      (repo: {
+        id: string;
+        path_with_namespace: string;
+        full_name: string;
+        name: any;
+        url: any;
+        html_url: any;
+        web_url: any;
+        _links: any;
+        default_branch: any;
+        updated_at: any;
+      }) => {
+        repositories.set(repo.path_with_namespace, {
+          name: repo.name,
+          full_name: repo.path_with_namespace,
+          url: repo._links.self,
+          html_url: repo.web_url,
+          default_branch: repo.default_branch,
+          updated_at: repo.updated_at,
+        });
+      },
+    );
 
-      data?.forEach(
-        (repo: {
-          id: string;
-          path_with_namespace: string;
-          full_name: string;
-          name: any;
-          url: any;
-          html_url: any;
-          web_url: any;
-          _links: any;
-          default_branch: any;
-          updated_at: any;
-        }) => {
-          repositories.set(repo.path_with_namespace, {
-            name: repo.name,
-            full_name: repo.path_with_namespace,
-            url: repo._links.self,
-            html_url: repo.web_url,
-            default_branch: repo.default_branch,
-            updated_at: repo.updated_at,
-          });
-        },
-      );
-
-      totalCount = await computeTotalCountFromPaginationInfo(
-        deps,
-        paginationInfo,
-        pageSize, // Not thrilled with this for some reason
-      );
-    }
+    totalCount = await computeTotalCountFromPaginationInfo(
+      deps,
+      paginationInfo,
+      pageSize, // Not thrilled with this for some reason
+    );
   } catch (err) {
     handleError(
       deps,
