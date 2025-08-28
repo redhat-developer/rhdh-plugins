@@ -23,8 +23,8 @@ import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles<{ isDarkMode: boolean }>()(
-  (theme, { isDarkMode }) => ({
+const useStyles = makeStyles<{ isDarkMode: boolean; maxHeight?: number }>()(
+  (theme, { isDarkMode, maxHeight }) => ({
     root: {
       position: 'relative',
       paddingTop: theme.spacing(2),
@@ -36,7 +36,7 @@ const useStyles = makeStyles<{ isDarkMode: boolean }>()(
     iconButton: {
       position: 'absolute',
       top: 8,
-      right: 8,
+      right: maxHeight ? 24 : 8,
     },
     copyIcon: {
       color: isDarkMode ? '#B0B0B0' : '#4D4D4D',
@@ -48,6 +48,9 @@ const useStyles = makeStyles<{ isDarkMode: boolean }>()(
       whiteSpace: 'pre-wrap',
       wordBreak: 'break-word',
       color: isDarkMode ? '#B0B0B0' : '#4D4D4D',
+      maxHeight: maxHeight || 'none',
+      overflowY: maxHeight ? 'auto' : 'visible',
+      overflowX: 'hidden',
     },
   }),
 );
@@ -55,13 +58,15 @@ const useStyles = makeStyles<{ isDarkMode: boolean }>()(
 export const JsonCodeBlock = ({
   value,
   isDarkMode,
+  maxHeight,
 }: {
   value: object;
   isDarkMode: boolean;
+  maxHeight?: number;
 }) => {
   const jsonString = JSON.stringify(value, null, 2);
   const [copied, setCopied] = React.useState(false);
-  const { classes } = useStyles({ isDarkMode });
+  const { classes } = useStyles({ isDarkMode, maxHeight });
 
   const handleCopy = async () => {
     await window.navigator.clipboard.writeText(jsonString);
