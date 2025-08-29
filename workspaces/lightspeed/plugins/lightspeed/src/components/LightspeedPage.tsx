@@ -25,6 +25,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
 import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
+import { useTranslation } from '../hooks/useTranslation';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
@@ -43,6 +44,7 @@ const THEME_DARK_CLASS = 'pf-v6-theme-dark';
 
 const LightspeedPageInner = () => {
   const classes = useStyles();
+  const { t } = useTranslation();
   const {
     palette: { type },
   } = useTheme();
@@ -84,9 +86,9 @@ const LightspeedPageInner = () => {
   return (
     <Page themeId="tool">
       <Header
-        title="Lightspeed"
+        title={t('page.title')}
         style={{ display: 'none' }}
-        pageTitleOverride="Developer Lightspeed"
+        pageTitleOverride={t('page.title')}
       />
       <Content className={classes.container}>
         {!hasViewAccess ? (

@@ -22,7 +22,9 @@ import { Button, Typography } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/core/styles';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
+import { useTranslation } from '../hooks/useTranslation';
 import { PermissionRequiredIcon } from './PermissionRequiredIcon';
+import { Trans } from './Trans';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -37,16 +39,21 @@ const useStyles = makeStyles(() =>
 
 const PermissionRequiredState = () => {
   const classes = useStyles();
+  const { t } = useTranslation();
 
   return (
     <div className={classes.permissionError}>
       <EmptyState
-        title="Missing permissions"
+        title={t('permission.required.title')}
         description={
           <Typography variant="subtitle1">
-            To view lightspeed plugin, contact your administrator to give the{' '}
-            <b>lightspeed.chat.read</b> and <b>lightspeed.chat.create</b>{' '}
-            permissions.
+            <Trans
+              message="permission.required.description"
+              components={{
+                '<b>lightspeed.chat.read</b>': <b>lightspeed.chat.read</b>,
+                '<b>lightspeed.chat.create</b>': <b>lightspeed.chat.create</b>,
+              }}
+            />
           </Typography>
         }
         missing={{ customImage: <PermissionRequiredIcon /> }}

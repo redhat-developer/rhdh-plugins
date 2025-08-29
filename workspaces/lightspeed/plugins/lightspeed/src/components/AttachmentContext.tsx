@@ -15,6 +15,7 @@
  */
 import React from 'react';
 
+import { useTranslation } from '../hooks/useTranslation';
 import { FileContent } from '../types';
 import { isSupportedFileType, readFileAsText } from '../utils/attachment-utils';
 
@@ -48,6 +49,7 @@ export const FileAttachmentContext =
 const FileAttachmentContextProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
+  const { t } = useTranslation();
   const [currentFileContent, setCurrentFileContent] = React.useState<
     FileContent | undefined
   >();
@@ -69,7 +71,10 @@ const FileAttachmentContextProvider: React.FC<{
     );
     if (existingFile) {
       setShowAlert(true);
-      setUploadError({ type: 'info', message: 'File already exists.' });
+      setUploadError({
+        type: 'info',
+        message: t('file.upload.error.alreadyExists'),
+      });
       return;
     }
 
@@ -78,15 +83,14 @@ const FileAttachmentContextProvider: React.FC<{
     if (fileArr.length > 1) {
       setShowAlert(true);
       setUploadError({
-        message: 'Uploaded more than one file.',
+        message: t('file.upload.error.multipleFiles'),
       });
       return;
     }
     if (!isSupportedFileType(fileArr[0])) {
       setShowAlert(true);
       setUploadError({
-        message:
-          'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+        message: t('file.upload.error.unsupportedType'),
       });
       return;
     }
@@ -95,8 +99,7 @@ const FileAttachmentContextProvider: React.FC<{
     if (fileArr[0].size > 25000000) {
       setShowAlert(true);
       setUploadError({
-        message:
-          'Your file size is too large. Please ensure that your file is less than 25 MB.',
+        message: t('file.upload.error.fileTooLarge'),
       });
       return;
     }
@@ -117,7 +120,9 @@ const FileAttachmentContextProvider: React.FC<{
       })
       .catch((error: DOMException) => {
         setUploadError({
-          message: `Failed to read file: ${error.message}`,
+          message: t('file.upload.error.readFailed' as any, {
+            errorMessage: error.message,
+          }),
         });
       });
   };
@@ -154,14 +159,14 @@ const FileAttachmentContextProvider: React.FC<{
 export default FileAttachmentContextProvider;
 
 export const useFileAttachmentContext = (): FileAttachmentContextType => {
+  const { t } = useTranslation();
   const context = React.useContext<FileAttachmentContextType | null>(
     FileAttachmentContext,
   );
 
   if (context === null) {
-    throw new Error(
-      'useFileAttachmentContext must be within a FileAttachmentContextProvider',
-    );
+    // The error message is developer-facing and typically not translated
+    throw new Error(t('error.context.fileAttachment'));
   }
 
   return context;

@@ -29,13 +29,10 @@ import {
 } from '@patternfly/chatbot';
 import { Alert } from '@patternfly/react-core';
 
-import {
-  FUNCTION_DISCLAIMER,
-  FUNCTION_DISCLAIMER_WITHOUT_QUESTION_VALIDATION,
-} from '../const';
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { useBufferedMessages } from '../hooks/useBufferedMessages';
 import { useFeedbackActions } from '../hooks/useFeedbackActions';
+import { useTranslation } from '../hooks/useTranslation';
 
 const useStyles = makeStyles(theme => ({
   prompt: {
@@ -88,6 +85,7 @@ export const LightspeedChatBox = React.forwardRef(
     const classes = useStyles();
     const scrollQueued = React.useRef(false);
     const containerRef = React.useRef<MessageBoxHandle>(null);
+    const { t } = useTranslation();
 
     const configApi = useApi(configApiRef);
     const questionValidationEnabled =
@@ -156,21 +154,25 @@ export const LightspeedChatBox = React.forwardRef(
       >
         <div>
           <Alert
-            title="Important"
+            title={t('aria.important')}
             variant="info"
             isInline
             className={classes.alert}
           >
             {questionValidationEnabled
-              ? FUNCTION_DISCLAIMER
-              : FUNCTION_DISCLAIMER_WITHOUT_QUESTION_VALIDATION}
+              ? t('disclaimer.withValidation')
+              : t('disclaimer.withoutValidation')}
           </Alert>
           <br />
         </div>
         {welcomePrompts.length ? (
           <ChatbotWelcomePrompt
-            title={`Hello, ${profileLoading ? '...' : (userName ?? 'Guest')}`}
-            description="How can I help you today?"
+            title={t('chatbox.welcome.greeting' as any, {
+              userName: profileLoading
+                ? t('user.loading')
+                : (userName ?? t('user.guest')),
+            })}
+            description={t('chatbox.welcome.description')}
             prompts={welcomePrompts}
           />
         ) : (

@@ -22,6 +22,7 @@ import {
   PreviewAttachment,
 } from '@patternfly/chatbot';
 
+import { useTranslation } from '../hooks/useTranslation';
 import { useFileAttachmentContext } from './AttachmentContext';
 
 const useStyles = makeStyles(() => ({
@@ -39,6 +40,7 @@ const Attachment = () => {
     setCurrentFileContent,
   } = useFileAttachmentContext();
   const classes = useStyles();
+  const { t } = useTranslation();
 
   if (!currentFileContent) {
     return null;
@@ -59,7 +61,9 @@ const Attachment = () => {
         code={currentFileContent?.content}
         fileName={currentFileContent?.name}
         isModalOpen={isPreviewModalOpen}
-        secondaryActionButtonText="Close"
+        secondaryActionButtonText={t('modal.close')}
+        primaryActionButtonText={t('modal.edit')}
+        title={t('modal.title.preview')}
         modalFooterClassName={classes.modalFooter}
         onEdit={() => {
           setIsPreviewModalOpen(false);
@@ -77,6 +81,9 @@ const Attachment = () => {
         code={currentFileContent?.content}
         fileName={currentFileContent?.name}
         isModalOpen={isEditModalOpen}
+        title={t('modal.title.edit')}
+        secondaryActionButtonText={t('modal.close')}
+        primaryActionButtonText={t('modal.save')}
         modalFooterClassName={classes.modalFooter}
         onSave={(_, content) => {
           setCurrentFileContent({

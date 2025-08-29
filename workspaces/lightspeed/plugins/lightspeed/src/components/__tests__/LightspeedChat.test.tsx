@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-
 import {
   configApiRef,
   IdentityApi,
@@ -34,6 +32,7 @@ import {
 import userEvent from '@testing-library/user-event';
 
 import { useConversations } from '../../hooks';
+import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
 
@@ -91,6 +90,10 @@ jest.mock('@patternfly/chatbot', () => {
     MessageBox: () => <>MessageBox</>,
   };
 });
+
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
 
 const mockUseConversations = useConversations as jest.Mock;
 const mockUsePermission = usePermission as jest.MockedFunction<

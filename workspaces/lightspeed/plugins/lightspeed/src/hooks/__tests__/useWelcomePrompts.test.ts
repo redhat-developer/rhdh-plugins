@@ -17,10 +17,16 @@ import { ConfigApi, useApi } from '@backstage/core-plugin-api';
 
 import { renderHook, waitFor } from '@testing-library/react';
 
+import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { useWelcomePrompts } from '../useWelcomePrompts';
+
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: jest.fn(() => mockUseTranslation()),
+}));
 
 jest.mock('@backstage/core-plugin-api', () => ({
   useApi: jest.fn(),
+  createApiRef: jest.fn(() => ({})),
 }));
 
 describe('useWelcomePrompts', () => {
@@ -57,7 +63,10 @@ describe('useWelcomePrompts', () => {
       expect(result.current).toBeDefined();
       expect(result.current.length).toBe(3);
       const userPromptsTitles = userPrompts.map(p => p.title);
-      const [prompt1, prompt2, prompt3] = result.current;
+      const [prompt1, prompt2, prompt3] = result.current as Array<{
+        title: string;
+        message: string;
+      }>;
 
       expect(userPromptsTitles).toContain(prompt1.title);
       expect(userPromptsTitles).toContain(prompt2.title);

@@ -26,6 +26,8 @@ import {
   MenuToggleElement,
 } from '@patternfly/react-core';
 
+import { useTranslation } from '../hooks/useTranslation';
+
 type LightspeedChatBoxHeaderProps = {
   selectedModel: string;
   handleSelectedModel: (item: string) => void;
@@ -49,13 +51,14 @@ export const LightspeedChatBoxHeader = ({
   models,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = React.useState(false);
+  const { t } = useTranslation();
 
   const styles = useStyles();
 
   const toggle = (toggleRef: React.Ref<MenuToggleElement>) => (
     <MenuToggle
       variant="secondary"
-      aria-label="Chatbot selector"
+      aria-label={t('aria.chatbotSelector')}
       ref={toggleRef}
       isExpanded={isOptionsMenuOpen}
       onClick={() => setIsOptionsMenuOpen(!isOptionsMenuOpen)}

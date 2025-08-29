@@ -49,6 +49,7 @@ import {
   useLastOpenedConversation,
   useLightspeedDeletePermission,
 } from '../hooks';
+import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
 import { ConversationSummary } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
@@ -119,6 +120,7 @@ export const LightspeedChat = ({
 }: LightspeedChatProps) => {
   const isMobile = useIsMobile();
   const classes = useStyles();
+  const { t } = useTranslation();
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = React.useState<string>('');
   const [announcement, setAnnouncement] = React.useState<string>('');
@@ -222,7 +224,9 @@ export const LightspeedChat = ({
       setNewChatCreated(false);
     }
     setAnnouncement(
-      `Message from User: ${prompt}. Message from Bot is loading.`,
+      t('conversation.announcement.userMessage' as any, {
+        prompt: message.toString(),
+      }),
     );
     handleInputPrompt(message.toString(), getAttachments(fileContents));
     setIsSendButtonDisabled(true);
@@ -285,15 +289,16 @@ export const LightspeedChat = ({
           isDisabled={!hasDeleteAccess}
           onClick={() => openDeleteModal(conversationSummary.conversation_id)}
         >
-          Delete
+          {t('conversation.delete')}
         </DropdownItem>
       ),
     }),
-    [hasDeleteAccess],
+    [hasDeleteAccess, t],
   );
   const categorizedMessages = getCategorizeMessages(
     conversations,
     additionalMessageProps,
+    t,
   );
 
   const filterConversations = React.useCallback(
@@ -347,13 +352,16 @@ export const LightspeedChat = ({
   const welcomePrompts =
     (newChatCreated && conversationMessages.length === 0) ||
     (!conversationFound && conversationMessages.length === 0)
-      ? samplePrompts?.map(prompt => ({
-          title: prompt.title,
-          message: prompt.message,
-          onClick: () => {
-            sendMessage(prompt.message);
-          },
-        }))
+      ? samplePrompts?.map(prompt => {
+          const p = prompt as { title: string; message: string };
+          return {
+            title: p.title,
+            message: p.message,
+            onClick: () => {
+              sendMessage(p.message);
+            },
+          };
+        })
       : [];
 
   const handleFilter = React.useCallback((value: string) => {
@@ -374,8 +382,7 @@ export const LightspeedChat = ({
       if (!!attachment.errors.find(e => e.code === 'file-invalid-type')) {
         setShowAlert(true);
         setUploadError({
-          message:
-            'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+          message: t('file.upload.error.unsupportedType'),
         });
       }
     });
@@ -411,7 +418,7 @@ export const LightspeedChat = ({
             />
             <ChatbotHeaderTitle className={classes.headerTitle}>
               <Title headingLevel="h1" size="3xl">
-                Developer Lightspeed
+                {t('chatbox.header.title')}
               </Title>
             </ChatbotHeaderTitle>
           </ChatbotHeaderMain>
@@ -433,13 +440,14 @@ export const LightspeedChat = ({
           onSelectActiveItem={onSelectActiveItem}
           conversations={filterConversations(filterValue)}
           onNewChat={newChatCreated ? undefined : onNewChat}
+          newChatButtonText={t('button.newChat')}
           handleTextInputChange={handleFilter}
-          searchInputPlaceholder="Search previous chats..."
+          searchInputPlaceholder={t('chatbox.search.placeholder')}
           drawerContent={
             <FileDropZone
               onFileDrop={(e, data) => handleAttach(data, e)}
               displayMode={ChatbotDisplayMode.embedded}
-              infoText="Supported file types are: .txt, .yaml, .json and .xml. The maximum file size is 25 MB."
+              infoText={t('chatbox.fileUpload.infoText')}
               allowedFileTypes={supportedFileTypes}
               onAttachRejected={onAttachRejected}
             >
@@ -447,7 +455,7 @@ export const LightspeedChat = ({
                 <div className={classes.errorContainer}>
                   <ChatbotAlert
                     component="h4"
-                    title="File upload failed"
+                    title={t('chatbox.fileUpload.failed')}
                     variant={uploadError.type ?? 'danger'}
                     isInline
                     onClose={() => setUploadError({ message: null })}
@@ -480,13 +488,25 @@ export const LightspeedChat = ({
                   buttonProps={{
                     attach: {
                       inputTestId: 'attachment-input',
+                      tooltipContent: t('tooltip.attach'),
+                    },
+                    microphone: {
+                      tooltipContent: {
+                        active: t('tooltip.microphone.active'),
+                        inactive: t('tooltip.microphone.inactive'),
+                      },
+                    },
+                    send: {
+                      tooltipContent: t('tooltip.send'),
                     },
                   }}
                   allowedFileTypes={supportedFileTypes}
                   onAttachRejected={onAttachRejected}
-                  placeholder="Send a message and optionally upload a JSON, YAML, TXT, or XML file..."
+                  placeholder={t('chatbox.message.placeholder')}
                 />
-                <ChatbotFootnote {...getFootnoteProps(classes.footerPopover)} />
+                <ChatbotFootnote
+                  {...getFootnoteProps(classes.footerPopover, t)}
+                />
               </ChatbotFooter>
             </FileDropZone>
           }

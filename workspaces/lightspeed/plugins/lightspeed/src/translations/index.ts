@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 
-import { useTranslation } from '../hooks/useTranslation';
-import permissionRequired from '../images/permission-required.svg';
+import { lightspeedTranslationRef } from './translationRef';
 
-export const PermissionRequiredIcon = () => {
-  const { t } = useTranslation();
-
-  return (
-    <img
-      src={permissionRequired as any}
-      alt={t('icon.permissionRequired.alt')}
-    />
-  );
-};
+/** @alpha */
+export const lightspeedTranslationResource = createTranslationResource({
+  ref: lightspeedTranslationRef,
+  translations: {
+    en: () => import('./en'),
+    es: () => import('./es'),
+    fr: () => import('./fr'),
+    de: () => import('./de'),
+  },
+});
