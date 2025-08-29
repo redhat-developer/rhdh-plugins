@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
 
 import { Content, Header, Page } from '@backstage/core-components';
@@ -58,14 +58,14 @@ const LightspeedPageInner = () => {
     async () => await identityApi.getProfileInfo(),
   );
 
-  const [selectedModel, setSelectedModel] = React.useState('');
+  const [selectedModel, setSelectedModel] = useState('');
 
-  const modelsItems = React.useMemo(
+  const modelsItems = useMemo(
     () => (models ? models.map(m => ({ label: m.id, value: m.id })) : []),
     [models],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const htmlTagElement = document.documentElement;
     if (type === THEME_DARK) {
       htmlTagElement.classList.add(THEME_DARK_CLASS);
@@ -75,7 +75,7 @@ const LightspeedPageInner = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (modelsItems.length > 0) setSelectedModel(modelsItems[0].value);
   }, [modelsItems]);
 

@@ -154,13 +154,15 @@ export const useFeedbackActions = <T extends MessageProps>(
 
       return {
         id: `feebback-completion-${sentiment}-${messageId}`,
+        title: t('feedback.completion.title'),
+        body: t('feedback.completion.body'),
         onClose: () => {
           dispatch.hideCompletionForm(messageId, sentiment);
           dispatch.resetButtonState(messageId);
         },
       };
     },
-    [state, dispatch],
+    [state, dispatch, t],
   );
 
   const scrollToFeedbackForm = useCallback(

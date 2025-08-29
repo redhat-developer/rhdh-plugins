@@ -180,6 +180,9 @@ const lightspeedTranslationEs = createTranslationMessages({
     'feedback.quickResponses.negative.didntAnswer': 'No respondió mi pregunta',
     'feedback.quickResponses.negative.hardToUnderstand': 'Difícil de entender',
     'feedback.quickResponses.negative.notHelpful': 'No fue útil',
+    'feedback.completion.title': 'Feedback enviado',
+    'feedback.completion.body':
+      'Hemos recibido tu respuesta. ¡Gracias por compartir tu feedback!',
 
     // Conversation categorization
     'conversation.category.today': 'Hoy',

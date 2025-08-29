@@ -13,7 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+
+import {
+  createContext,
+  Dispatch,
+  FC,
+  ReactNode,
+  SetStateAction,
+  useContext,
+  useState,
+} from 'react';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { FileContent } from '../types';
@@ -26,45 +35,42 @@ interface FileAttachmentContextType {
   fileContents: FileContent[];
   isLoadingFile: Record<string, boolean>;
   handleFileUpload: (files: File[]) => void;
-  setFileContents: React.Dispatch<React.SetStateAction<FileContent[]>>;
-  setUploadError: React.Dispatch<React.SetStateAction<UploadError>>;
-  setShowAlert: React.Dispatch<React.SetStateAction<boolean>>;
+  setFileContents: Dispatch<SetStateAction<FileContent[]>>;
+  setUploadError: Dispatch<SetStateAction<UploadError>>;
+  setShowAlert: Dispatch<SetStateAction<boolean>>;
   currentFileContent?: FileContent;
-  setCurrentFileContent: React.Dispatch<
-    React.SetStateAction<FileContent | undefined>
-  >;
+  setCurrentFileContent: Dispatch<SetStateAction<FileContent | undefined>>;
   modalState: {
     previewModalKey: number;
-    setPreviewModalKey: React.Dispatch<React.SetStateAction<number>>;
+    setPreviewModalKey: Dispatch<SetStateAction<number>>;
     isPreviewModalOpen: boolean;
-    setIsPreviewModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsPreviewModalOpen: Dispatch<SetStateAction<boolean>>;
     isEditModalOpen: boolean;
-    setIsEditModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsEditModalOpen: Dispatch<SetStateAction<boolean>>;
   };
 }
 
 export const FileAttachmentContext =
-  React.createContext<FileAttachmentContextType | null>(null);
+  createContext<FileAttachmentContextType | null>(null);
 
-const FileAttachmentContextProvider: React.FC<{
-  children: React.ReactNode;
+const FileAttachmentContextProvider: FC<{
+  children: ReactNode;
 }> = ({ children }) => {
   const { t } = useTranslation();
-  const [currentFileContent, setCurrentFileContent] = React.useState<
+  const [currentFileContent, setCurrentFileContent] = useState<
     FileContent | undefined
   >();
-  const [isLoadingFile, setIsLoadingFile] = React.useState<
-    Record<string, boolean>
-  >({});
-  const [previewModalKey, setPreviewModalKey] = React.useState<number>(0);
-  const [showAlert, setShowAlert] = React.useState<boolean>(false);
-  const [uploadError, setUploadError] = React.useState<UploadError>({
+  const [isLoadingFile, setIsLoadingFile] = useState<Record<string, boolean>>(
+    {},
+  );
+  const [previewModalKey, setPreviewModalKey] = useState<number>(0);
+  const [showAlert, setShowAlert] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<UploadError>({
     message: null,
   });
-  const [fileContents, setFileContents] = React.useState<FileContent[]>([]);
-  const [isPreviewModalOpen, setIsPreviewModalOpen] =
-    React.useState<boolean>(false);
-  const [isEditModalOpen, setIsEditModalOpen] = React.useState<boolean>(false);
+  const [fileContents, setFileContents] = useState<FileContent[]>([]);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const handleFileUpload = (fileArr: File[]) => {
     const existingFile = fileContents.find(
       file => file.name === fileArr[0].name,
@@ -160,7 +166,7 @@ export default FileAttachmentContextProvider;
 
 export const useFileAttachmentContext = (): FileAttachmentContextType => {
   const { t } = useTranslation();
-  const context = React.useContext<FileAttachmentContextType | null>(
+  const context = useContext<FileAttachmentContextType | null>(
     FileAttachmentContext,
   );
 

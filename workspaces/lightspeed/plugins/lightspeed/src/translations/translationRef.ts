@@ -170,6 +170,9 @@ export const lightspeedMessages = {
   'feedback.quickResponses.negative.didntAnswer': "Didn't answer my question",
   'feedback.quickResponses.negative.hardToUnderstand': 'Hard to understand',
   'feedback.quickResponses.negative.notHelpful': 'Not Helpful',
+  'feedback.completion.title': 'Feedback submitted',
+  'feedback.completion.body':
+    "We've received your response. Thank you for sharing your feedback!",
 
   // Conversation categorization
   'conversation.category.today': 'Today',

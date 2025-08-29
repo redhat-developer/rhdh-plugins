@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { MouseEvent, useCallback, useEffect, useState } from 'react';
 import { FileRejection } from 'react-dropzone/.';
 
 import { ErrorPanel } from '@backstage/core-components';
@@ -122,18 +122,16 @@ export const LightspeedChat = ({
   const classes = useStyles();
   const { t } = useTranslation();
   const user = useBackstageUserIdentity();
-  const [filterValue, setFilterValue] = React.useState<string>('');
-  const [announcement, setAnnouncement] = React.useState<string>('');
-  const [conversationId, setConversationId] = React.useState<string>('');
-  const [isDrawerOpen, setIsDrawerOpen] = React.useState<boolean>(!isMobile);
-  const [newChatCreated, setNewChatCreated] = React.useState<boolean>(false);
+  const [filterValue, setFilterValue] = useState<string>('');
+  const [announcement, setAnnouncement] = useState<string>('');
+  const [conversationId, setConversationId] = useState<string>('');
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(!isMobile);
+  const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
-    React.useState<boolean>(false);
-  const [error, setError] = React.useState<Error | null>(null);
-  const [targetConversationId, setTargetConversationId] =
-    React.useState<string>('');
-  const [isDeleteModalOpen, setIsDeleteModalOpen] =
-    React.useState<boolean>(false);
+    useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [targetConversationId, setTargetConversationId] = useState<string>('');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
 
@@ -148,7 +146,7 @@ export const LightspeedChat = ({
   } = useFileAttachmentContext();
 
   // Sync conversationId with lastOpenedId whenever lastOpenedId changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (isReady && lastOpenedId !== null) {
       setConversationId(lastOpenedId);
     }
@@ -164,14 +162,14 @@ export const LightspeedChat = ({
   const { mutateAsync: deleteConversation } = useDeleteConversation();
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
   const samplePrompts = useWelcomePrompts();
-  React.useEffect(() => {
+  useEffect(() => {
     if (user && lastOpenedId === null && isReady) {
       setConversationId(TEMP_CONVERSATION_ID);
       setNewChatCreated(true);
     }
   }, [user, isReady, lastOpenedId, setConversationId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Clear last opened conversationId when there are no conversations.
     if (
       !isLoading &&
@@ -183,7 +181,7 @@ export const LightspeedChat = ({
     }
   }, [isLoading, isRefetching, conversations, lastOpenedId, clearLastOpenedId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Update last opened conversation whenever `conversationId` changes
     if (conversationId) {
       setLastOpenedId(conversationId);
@@ -217,7 +215,7 @@ export const LightspeedChat = ({
     );
 
   const [messages, setMessages] =
-    React.useState<MessageProps[]>(conversationMessages);
+    useState<MessageProps[]>(conversationMessages);
 
   const sendMessage = (message: string | number) => {
     if (conversationId !== TEMP_CONVERSATION_ID) {
@@ -233,7 +231,7 @@ export const LightspeedChat = ({
     setFileContents([]);
   };
 
-  const onNewChat = React.useCallback(() => {
+  const onNewChat = useCallback(() => {
     (async () => {
       if (conversationId !== TEMP_CONVERSATION_ID) {
         setMessages([]);
@@ -256,7 +254,7 @@ export const LightspeedChat = ({
     setIsDeleteModalOpen(true);
   };
 
-  const handleDeleteConversation = React.useCallback(() => {
+  const handleDeleteConversation = useCallback(() => {
     (async () => {
       try {
         await deleteConversation({
@@ -282,7 +280,7 @@ export const LightspeedChat = ({
     targetConversationId,
   ]);
 
-  const additionalMessageProps = React.useCallback(
+  const additionalMessageProps = useCallback(
     (conversationSummary: ConversationSummary) => ({
       menuItems: (
         <DropdownItem
@@ -301,7 +299,7 @@ export const LightspeedChat = ({
     t,
   );
 
-  const filterConversations = React.useCallback(
+  const filterConversations = useCallback(
     (targetValue: string) => {
       const filteredConversations = Object.entries(categorizedMessages).reduce(
         (acc, [key, items]) => {
@@ -322,15 +320,12 @@ export const LightspeedChat = ({
     [categorizedMessages],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMessages(conversationMessages);
   }, [conversationMessages]);
 
-  const onSelectActiveItem = React.useCallback(
-    (
-      _: React.MouseEvent | undefined,
-      selectedItem: string | number | undefined,
-    ) => {
+  const onSelectActiveItem = useCallback(
+    (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
       setNewChatCreated(false);
       setConversationId((c_id: string) => {
         if (c_id !== selectedItem) {
@@ -364,11 +359,11 @@ export const LightspeedChat = ({
         })
       : [];
 
-  const handleFilter = React.useCallback((value: string) => {
+  const handleFilter = useCallback((value: string) => {
     setFilterValue(value);
   }, []);
 
-  const onDrawerToggle = React.useCallback(() => {
+  const onDrawerToggle = useCallback(() => {
     setIsDrawerOpen(isOpen => !isOpen);
   }, []);
 

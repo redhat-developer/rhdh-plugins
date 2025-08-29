@@ -177,6 +177,9 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Hat meine Frage nicht beantwortet',
     'feedback.quickResponses.negative.hardToUnderstand': 'Schwer zu verstehen',
     'feedback.quickResponses.negative.notHelpful': 'Nicht hilfreich',
+    'feedback.completion.title': 'Feedback übermittelt',
+    'feedback.completion.body':
+      'Wir haben Ihre Antwort erhalten. Vielen Dank für Ihr Feedback!',
 
     // Conversation categorization
     'conversation.category.today': 'Heute',

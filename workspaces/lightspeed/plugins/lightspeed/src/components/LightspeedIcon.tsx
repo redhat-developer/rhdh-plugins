@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-
 import { useTranslation } from '../hooks/useTranslation';
 import logo from '../images/logo-white.svg';
 

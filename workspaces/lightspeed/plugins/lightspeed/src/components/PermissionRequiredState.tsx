@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { EmptyState } from '@backstage/core-components';
 
 import { Button, Typography } from '@material-ui/core';

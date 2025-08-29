@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { cloneElement } from 'react';
 
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -55,7 +55,7 @@ export const Trans = ({ message, params, components }: TransProps) => {
     <>
       {parts.map((part: string, index: number) => {
         if (markers[part]) {
-          return React.cloneElement(markers[part], { key: index });
+          return cloneElement(markers[part], { key: index });
         }
         return part;
       })}
