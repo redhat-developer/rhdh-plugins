@@ -63,8 +63,6 @@
     "@backstage/plugin-permission-common": "^0.9.0",
     "@backstage/plugin-permission-react": "^0.4.34",
     "@backstage/types": "^1.2.1",
-    "@kie-tools-core/editor": "^10.0.0",
-    "@kie-tools/serverless-workflow-standalone-editor": "^10.0.0",
     "@material-ui/core": "^4.12.4",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
