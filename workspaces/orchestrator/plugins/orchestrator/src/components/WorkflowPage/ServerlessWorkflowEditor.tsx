@@ -17,10 +17,13 @@ import { useEffect, useRef } from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
 
-import { EditorApi } from '@kie-tools-core/editor/dist/api/Editor.ts';
-import * as SwfEditor from '@kie-tools/serverless-workflow-standalone-editor/dist/swf';
+// import * as SwfEditor from '@kie-tools/serverless-workflow-standalone-editor/dist/swf';
+import { open as openSwfEditor } from '@domhanak/serverless-workflow-standalone-editor/dist/swf';
 
 import { WorkflowFormatDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
+// eslint-disable-next-line no-console
+console.log('Using dev-only build to test CSP fix');
 
 type WorkflowEditorProps = {
   format: WorkflowFormatDTO;
@@ -36,11 +39,14 @@ const ServerlessWorkflowEditor = ({
   errorWorkflowSource,
 }: WorkflowEditorProps) => {
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
-  const editorRef = useRef<EditorApi | null>(null);
+  const editorRef = useRef<
+    | unknown /* should be @kie-tools-core EditorApi, but useless to keep the dependency */
+    | null
+  >(null);
 
   useEffect(() => {
     if (editorContainerRef.current && !editorRef.current) {
-      editorRef.current = SwfEditor.open({
+      editorRef.current = openSwfEditor({
         container: editorContainerRef.current,
         initialContent: Promise.resolve(workflowSource),
         readOnly: true,
