@@ -55,6 +55,8 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'activeUsers.legend.newUsers': string;
     readonly 'activeUsers.legend.returningUsers': string;
     readonly 'activeUsers.title': string;
+    readonly 'activeUsers.month': string;
+    readonly 'activeUsers.week': string;
     readonly 'activeUsers.hour': string;
     readonly 'activeUsers.day': string;
     readonly 'activeUsers.averagePrefix': string;
@@ -66,6 +68,8 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'techDocs.title': string;
     readonly 'techDocs.topNTitle': string;
     readonly 'searches.title': string;
+    readonly 'searches.month': string;
+    readonly 'searches.week': string;
     readonly 'searches.hour': string;
     readonly 'searches.day': string;
     readonly 'searches.averagePrefix': string;

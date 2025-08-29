@@ -103,7 +103,7 @@ const ActiveUsers = () => {
                   period: getGroupingLabel(grouping, t, 'activeUsers'),
                 }}
               />
-            </b>{' '}
+            </b>
             {t('activeUsers.averageSuffix')}
           </Typography>
           <Box sx={{ height: 310, mt: 4, mb: 4, ml: 0, mr: 0 }}>

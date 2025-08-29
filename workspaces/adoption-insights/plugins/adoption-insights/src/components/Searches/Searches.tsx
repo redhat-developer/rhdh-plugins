@@ -106,7 +106,7 @@ const Searches = () => {
                   period: getGroupingLabel(grouping, t, 'searches'),
                 }}
               />
-            </b>{' '}
+            </b>
             {t('searches.averageSuffix')}
           </Typography>
           <Box sx={{ height: 310, mt: 4, mb: 4, ml: 0, mr: 0 }}>
