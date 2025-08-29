@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.3.0
+
+### Minor Changes
+
+- 2470f72: Add internationalization (i18n) support with German and French translations.
+
+### Patch Changes
+
+- 192c262: Update label from techdocs to TechDocs in UI
+- 67e9f96: Fixed CSV export filename to include timestamp for better file identification and to avoid naming conflicts. Active Users CSV exports now use format "active_users_YYYY-MM-DD_HH-mm-ss-SSS.csv" instead of generic "active_users"
+- 0dd7b78: Align legends in Active users card, display trends on initial load, and remove empty space in no results card
+- c2501eb: Updated dependency `@mui/icons-material` to `5.18.0`.
+  Updated dependency `@mui/material` to `5.18.0`.
+
 ## 0.2.1
 
 ### Patch Changes
