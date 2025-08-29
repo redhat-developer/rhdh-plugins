@@ -34,31 +34,38 @@ export const DropdownEmptyState: FC<DropdownEmptyStateProps> = ({
   icon,
 }) => {
   return (
-    <InfoCard>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          py: 4,
-          px: 2, // Added padding to control width
-          maxWidth: 300, // Set max width to constrain text expansion
-          mx: 'auto',
-        }}
-      >
-        {icon}
-        <Typography variant="h6" sx={{ mt: 2, color: 'text.primary' }}>
-          {title}
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ mt: 1, color: 'text.secondary', maxWidth: 250 }}
+    <Box
+      sx={{
+        borderRadius: theme => theme.spacing(2.5),
+        overflow: 'hidden',
+      }}
+    >
+      <InfoCard>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            py: 4,
+            px: 2, // Added padding to control width
+            maxWidth: 300, // Set max width to constrain text expansion
+            mx: 'auto',
+          }}
         >
-          {subTitle}
-        </Typography>
-      </Box>
-    </InfoCard>
+          {icon}
+          <Typography variant="h6" sx={{ mt: 2, color: 'text.primary' }}>
+            {title}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ mt: 1, color: 'text.secondary', maxWidth: 250 }}
+          >
+            {subTitle}
+          </Typography>
+        </Box>
+      </InfoCard>
+    </Box>
   );
 };
