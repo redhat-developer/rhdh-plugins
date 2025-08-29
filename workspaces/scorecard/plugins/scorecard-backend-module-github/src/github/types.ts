@@ -13,22 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import type { Entity } from '@backstage/catalog-model';
-import {
-  Metric,
-  MetricType,
-  MetricValue,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-/**
- * @public
- */
-export interface MetricProvider<T extends MetricType = MetricType> {
-  getProviderDatasourceId(): string;
-  getProviderId(): string;
-  getMetric(): Metric<T>;
-  getMetricThresholds(): ThresholdConfig;
-  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
-}
+export type GithubRepository = {
+  owner: string;
+  repo: string;
+};

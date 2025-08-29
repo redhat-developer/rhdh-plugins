@@ -17,7 +17,7 @@
 /**
  * @public
  */
-export type MetricType = 'number' | 'boolean' | 'string';
+export type MetricType = 'number' | 'boolean';
 
 /**
  * @public
@@ -26,8 +26,6 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
   ? number
   : T extends 'boolean'
   ? boolean
-  : T extends 'string'
-  ? string
   : never;
 
 /**
@@ -36,7 +34,54 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
 export type Metric<T extends MetricType = MetricType> = {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   type: T;
   history?: boolean;
+};
+
+/**
+ * Threshold rule definition
+ * @public
+ */
+export type ThresholdRule = {
+  key: string;
+  expression: string;
+};
+
+/**
+ * Threshold configuration
+ * @public
+ */
+export type ThresholdConfig = {
+  rules: ThresholdRule[];
+};
+
+/**
+ * @public
+ */
+export type ThresholdResult = {
+  status: 'success' | 'error';
+  definition: ThresholdConfig;
+  evaluation: string | undefined; // threshold key the expression evaluated to
+  error?: string;
+};
+
+/**
+ * @public
+ */
+export type MetricResult = {
+  id: string;
+  status: 'success' | 'error';
+  metadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+    history?: boolean;
+  };
+  result?: {
+    value: MetricValue;
+    timestamp: string;
+    thresholdResult: ThresholdResult;
+  };
+  error?: string;
 };

@@ -17,14 +17,16 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { createRouter } from './router';
+import { createRouter } from './service/router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
-import { createTodoListService } from './services/TodoListService';
 import {
   MetricProvider,
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { MetricProvidersRegistry } from './services/MetricProviders/MetricProvidersRegistry';
+import { MetricProvidersRegistry } from './providers/MetricProvidersRegistry';
+import { CatalogMetricService } from './service/CatalogMetricService';
+import { CatalogClient } from '@backstage/catalog-client';
+import { ThresholdEvaluator } from './threshold/ThresholdEvaluator';
 
 /**
  * scorecardPlugin backend plugin
@@ -46,22 +48,26 @@ export const scorecardPlugin = createBackendPlugin({
 
     env.registerInit({
       deps: {
-        logger: coreServices.logger,
-        httpAuth: coreServices.httpAuth,
+        discovery: coreServices.discovery,
+        auth: coreServices.auth,
         httpRouter: coreServices.httpRouter,
         catalog: catalogServiceRef,
+        logger: coreServices.logger,
       },
-      async init({ logger, httpAuth, httpRouter, catalog }) {
-        const todoListService = await createTodoListService({
+      async init({ discovery, auth, httpRouter, logger }) {
+        const catalogClient = new CatalogClient({ discoveryApi: discovery });
+        const catalogMetricService = new CatalogMetricService({
+          catalogApi: catalogClient,
+          registry: metricProvidersRegistry,
+          thresholdEvaluator: new ThresholdEvaluator(),
           logger,
-          catalog,
+          auth,
         });
 
         httpRouter.use(
           await createRouter({
-            httpAuth,
-            todoListService,
             metricProvidersRegistry,
+            catalogMetricService,
           }),
         );
       },

@@ -13,30 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  BackstageCredentials,
-  BackstageUserPrincipal,
-} from '@backstage/backend-plugin-api';
 
-export interface TodoItem {
-  title: string;
-  id: string;
-  createdBy: string;
-  createdAt: string;
-}
-
-export interface TodoListService {
-  createTodo(
-    input: {
-      title: string;
-      entityRef?: string;
-    },
-    options: {
-      credentials: BackstageCredentials<BackstageUserPrincipal>;
-    },
-  ): Promise<TodoItem>;
-
-  listTodos(): Promise<{ items: TodoItem[] }>;
-
-  getTodo(request: { id: string }): Promise<TodoItem>;
+export interface Config {
+  /** Configuration for scorecard plugin */
+  scorecard?: {
+    /** Configuration for scorecard plugins/datasources */
+    plugins?: {
+      /** Github datasource configuration */
+      github?: {
+        open_prs?: {
+          thresholds?: {
+            rules?: Array<{
+              key: 'error' | 'warning' | 'success';
+              /** Threshold expression - supports: >=, <=, >, <, ==, !=, - (range) */
+              expression: string;
+            }>;
+          };
+        };
+      };
+    };
+  };
 }
