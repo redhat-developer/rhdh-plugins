@@ -22,11 +22,13 @@ export interface ScaffolderTask {
   taskId: string;
   scaffolderOptions: any;
   repositoryId: number;
+  location?: string;
 }
 
 export interface Repository {
   url: string;
   tasks: ScaffolderTask[];
+  locations: string[];
 }
 
 export class RepositoryDao {
@@ -42,6 +44,7 @@ export class RepositoryDao {
       'taskId',
       'repositoryId',
       'scaffolderOptions',
+      'location',
     );
 
     return repositories.map((repo: { id: number; url: string }) => {
@@ -49,14 +52,25 @@ export class RepositoryDao {
         .filter(
           (task: { repositoryId: number }) => task.repositoryId === repo.id,
         )
-        .map((task: { taskId: string; scaffolderOptions: string }) => ({
-          taskId: task.taskId,
-          scaffolderOptions: task.scaffolderOptions,
-          repositoryId: repo.id,
-        }));
+        .map(
+          (task: {
+            taskId: string;
+            scaffolderOptions: string;
+            location: string;
+          }) => ({
+            taskId: task.taskId,
+            scaffolderOptions: task.scaffolderOptions,
+            repositoryId: repo.id,
+            location: task.location,
+          }),
+        );
+      const locations = repoTasks
+        .map(task => task.location)
+        .filter((location): location is string => !!location);
       return {
         url: repo.url,
         tasks: repoTasks,
+        locations,
       };
     });
   }
@@ -101,19 +115,29 @@ export class RepositoryDao {
 
     const tasks = await this.knex('scaffolder_tasks')
       .where({ repositoryId: repository.id })
-      .select('taskId', 'repositoryId', 'scaffolderOptions');
+      .select('taskId', 'repositoryId', 'scaffolderOptions', 'location');
 
     const repoTasks = tasks.map(
-      (task: { taskId: string; scaffolderOptions: string }) => ({
+      (task: {
+        taskId: string;
+        scaffolderOptions: string;
+        location: string;
+      }) => ({
         taskId: task.taskId,
         scaffolderOptions: task.scaffolderOptions,
         repositoryId: repository.id,
+        location: task.location,
       }),
     );
+
+    const locations = repoTasks
+      .map(task => task.location)
+      .filter((location): location is string => !!location);
 
     return {
       url: repository.url,
       tasks: repoTasks,
+      locations,
     };
   }
 

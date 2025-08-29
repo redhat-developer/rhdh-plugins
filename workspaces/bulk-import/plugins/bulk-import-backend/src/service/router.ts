@@ -41,7 +41,7 @@ import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bu
 
 import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
-import { RepositoryDao } from '../database/repository-dao';
+import { Repository, RepositoryDao } from '../database/repository-dao';
 import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
@@ -232,7 +232,17 @@ export async function createRouter(
         logger,
         dao,
       });
-      return res.status(response.statusCode).json(response.responseBody);
+      const responseBody = response.responseBody as unknown as {
+        repositories: Repository[];
+      };
+      const repositories = responseBody?.repositories?.map(repo => ({
+        ...repo,
+        locations: repo.locations,
+      }));
+      return res.status(response.statusCode).json({
+        ...responseBody,
+        repositories,
+      });
     },
   );
 
@@ -246,7 +256,14 @@ export async function createRouter(
         },
         c.request.query.repositoryName?.toString(),
       );
-      return res.status(response.statusCode).json(response.responseBody);
+      const repo = response.responseBody as unknown as Repository;
+      if (repo) {
+        return res.status(response.statusCode).json({
+          ...repo,
+          locations: repo.locations,
+        });
+      }
+      return res.status(response.statusCode).json(repo);
     },
   );
 

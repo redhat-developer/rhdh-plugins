@@ -16,7 +16,7 @@ spec:
         repoUrl:
           title: GitHub repository query
           type: string
-          description: "Example: github.com?owner=org&repo=repo"
+          description: 'Example: github.com?owner=org&repo=repo'
 
   steps:
     - id: parse-query
