@@ -15,12 +15,19 @@
  */
 
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { PhoneNumberStep } from '../PhoneNumberStep';
 import { E164Number } from 'libphonenumber-js/types';
 import { Country } from 'react-phone-number-input';
 import { parsePhoneNumber } from 'libphonenumber-js/min';
 import { PhoneNumber } from 'libphonenumber-js';
+import * as eddlUtils from '../../../../utils/eddl-utils';
+
+// Mock the useTrackAnalytics hook
+jest.mock('../../../../utils/eddl-utils', () => ({
+  ...jest.requireActual('../../../../utils/eddl-utils'),
+  useTrackAnalytics: jest.fn(),
+}));
 
 // Mock the props interface if it's not exported from the component file
 declare module '../PhoneNumberStep' {
@@ -43,10 +50,16 @@ describe('PhoneNumberStep', () => {
   const mockHandleClose = jest.fn();
   const mockHandlePhoneNumberSubmit = jest.fn();
   const mockSetCountry = jest.fn();
+  const mockTrackAnalytics = jest.fn();
   const phoneNumber = parsePhoneNumber(' 8 (800) 555-35-35 ', 'RU');
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock the useTrackAnalytics hook to return a mock function
+    mockTrackAnalytics.mockResolvedValue(undefined); // Make it async
+    (eddlUtils.useTrackAnalytics as jest.Mock).mockReturnValue(
+      mockTrackAnalytics,
+    );
   });
 
   function renderComponent(inputPhoneNumber: PhoneNumber, error?: string) {
@@ -86,17 +99,21 @@ describe('PhoneNumberStep', () => {
     expect(closeButton).toHaveLength(1);
   });
 
-  test('should submit phone number when clicking send code button', () => {
+  test('should submit phone number when clicking send code button', async () => {
     renderComponent(phoneNumber);
     // Find and click send code button
     const submitPhoneNumberButton = screen.getByRole('button', {
       name: /Send code/i,
     });
     fireEvent.click(submitPhoneNumberButton);
-    expect(mockHandlePhoneNumberSubmit).toHaveBeenCalled();
+
+    // Wait for the async tracking call to complete
+    await waitFor(() => {
+      expect(mockHandlePhoneNumberSubmit).toHaveBeenCalled();
+    });
   });
 
-  test('should show an error when phone number is invalid', () => {
+  test('should show an error when phone number is invalid', async () => {
     const invalidPhoneNumber = parsePhoneNumber(' 8 (800) xxxx ', 'RU');
     renderComponent(invalidPhoneNumber, 'invalid phone number error');
     // Find and click send code
@@ -104,19 +121,27 @@ describe('PhoneNumberStep', () => {
       name: /Send code/i,
     });
     fireEvent.click(submitPhoneNumberButton);
-    // submit the phone number to backend
-    expect(mockHandlePhoneNumberSubmit).toHaveBeenCalled();
+
+    // Wait for the async tracking call to complete
+    await waitFor(() => {
+      expect(mockHandlePhoneNumberSubmit).toHaveBeenCalled();
+    });
+
     // expect mock error from backend to be displayed
     expect(screen.getByText('invalid phone number error')).toBeInTheDocument();
     // submit button should be enabled so user can retry with new number
     expect(screen.getByText(/Send code/i).closest('button')).toBeEnabled();
   });
 
-  test('closes the modal when the close button is clicked', () => {
+  test('closes the modal when the close button is clicked', async () => {
     renderComponent(phoneNumber);
     const closeButton = screen.getByRole('button', { name: /Cancel/i });
     fireEvent.click(closeButton);
-    expect(mockHandleClose).toHaveBeenCalled();
+
+    // Wait for the async tracking call to complete
+    await waitFor(() => {
+      expect(mockHandleClose).toHaveBeenCalled();
+    });
   });
 
   test('should not have a default country when no country is provided', () => {
