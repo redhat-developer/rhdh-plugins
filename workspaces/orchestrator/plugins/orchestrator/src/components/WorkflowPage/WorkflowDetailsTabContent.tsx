@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-import { useAsync } from 'react-use';
-
-import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
-import { useApi, useRouteRefParams } from '@backstage/core-plugin-api';
-import { usePermission } from '@backstage/plugin-permission-react';
+import { ResponseErrorPanel } from '@backstage/core-components';
 
 import Grid from '@mui/material/Grid';
 
-import {
-  orchestratorAdminViewPermission,
-  WorkflowOverviewDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { orchestratorApiRef } from '../../api';
-import { entityWorkflowRouteRef, workflowRouteRef } from '../../routes';
-import ServerlessWorkflowEditor from './ServerlessWorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
 
 interface Props {
@@ -43,22 +33,6 @@ export const WorkflowDetailsTabContent = ({
   workflowOverviewDTO,
   errorWorkflowOverview,
 }: Props) => {
-  const adminView = usePermission({
-    permission: orchestratorAdminViewPermission,
-  });
-  const { workflowId } = useRouteRefParams(workflowRouteRef);
-  const orchestratorApi = useApi(orchestratorApiRef);
-
-  const { loading, value, error } = useAsync(() => {
-    return orchestratorApi.getWorkflowSource(workflowId);
-  }, []);
-
-  const { kind, name, namespace } = useRouteRefParams(entityWorkflowRouteRef);
-  let entityRef: string | undefined = undefined;
-  if (kind && namespace && name) {
-    entityRef = `${kind}:${namespace}/${name}`;
-  }
-
   return (
     <Grid container item direction="column" xs={12} spacing={2}>
       {errorWorkflowOverview && (
@@ -72,18 +46,11 @@ export const WorkflowDetailsTabContent = ({
           loading={loadingWorkflowOverview}
         />
       </Grid>
-      {workflowOverviewDTO && adminView.allowed && value && !entityRef && (
-        <Grid item>
-          <InfoCard title="Workflow definition">
-            <ServerlessWorkflowEditor
-              format={workflowOverviewDTO.format}
-              loadingWorkflowSource={loading}
-              workflowSource={value.data}
-              errorWorkflowSource={error}
-            />
-          </InfoCard>
-        </Grid>
-      )}
+
+      {/* 
+          TODO: Add the workflow editor here when https://github.com/apache/incubator-kie-tools/issues/3197 is fixed.
+          Mind reverting the changes in the PR https://github.com/redhat-developer/rhdh-plugins/pull/1381 when the issue is fixed.
+       */}
     </Grid>
   );
 };
