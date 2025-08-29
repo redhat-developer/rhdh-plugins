@@ -35,11 +35,13 @@ import { usePlugins } from '../../hooks/usePlugins';
 import TableFooterPagination from '../CardFooter';
 import { Line, LineChart, ResponsiveContainer } from 'recharts';
 import EmptyChartState from '../Common/EmptyChartState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Plugins = () => {
   const [page, setPage] = useState(0);
   const [limit] = useState(20);
   const [rowsPerPage, setRowsPerPage] = useState(3);
+  const { t } = useTranslation();
 
   const { plugins, loading, error } = usePlugins({ limit });
 
@@ -64,7 +66,7 @@ const Plugins = () => {
 
   if (error) {
     return (
-      <CardWrapper title="Top plugins">
+      <CardWrapper title={t('plugins.title')}>
         <ResponseErrorPanel error={error} />
       </CardWrapper>
     );
@@ -72,7 +74,7 @@ const Plugins = () => {
 
   if (!visiblePlugins || visiblePlugins?.length === 0) {
     return (
-      <CardWrapper title="Top plugins">
+      <CardWrapper title={t('plugins.title')}>
         <Box
           display="flex"
           justifyContent="center"
@@ -86,8 +88,10 @@ const Plugins = () => {
   }
 
   return (
-    <CardWrapper title={`Top ${rowsPerPage} plugins`}>
-      <Table aria-labelledby="Catalog entities" sx={{ width: '100%' }}>
+    <CardWrapper
+      title={t('plugins.topNTitle' as any, { count: rowsPerPage.toString() })}
+    >
+      <Table aria-labelledby="Plugins" sx={{ width: '100%' }}>
         <TableHead>
           <TableRow>
             {PLUGINS_TABLE_HEADERS.map(header => {
@@ -100,7 +104,7 @@ const Plugins = () => {
                       `1px solid ${theme.palette.grey[300]}`,
                   }}
                 >
-                  {header.title}
+                  {t(header.titleKey as any, {})}
                 </TableCell>
               );
             })}

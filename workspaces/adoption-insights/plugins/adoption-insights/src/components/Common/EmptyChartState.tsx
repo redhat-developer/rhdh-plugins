@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 import Typography from '@mui/material/Typography';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const EmptyChartState = () => {
-  return <Typography>No results for this date range.</Typography>;
+  const { t } = useTranslation();
+  return <Typography>{t('common.noResults')}</Typography>;
 };
 
 export default EmptyChartState;

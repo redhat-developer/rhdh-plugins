@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
+import { adoptionInsightsTranslationRef } from './ref';
+
+/**
+ * The translation resource for the Adoption Insights plugin.
+ * @public
+ */
+export const adoptionInsightsTranslations = createTranslationResource({
+  ref: adoptionInsightsTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    fr: () => import('./fr'),
+    it: () => import('./it'),
+    es: () => import('./es'),
+  },
 });
 
-export * from './plugin';
-
-export * from './alpha';
+export { adoptionInsightsTranslationRef };

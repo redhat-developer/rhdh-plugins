@@ -44,16 +44,10 @@ describe('Tooltip Component', () => {
   it('should display value and percentage when active and payload are provided', () => {
     const mockPayload = [{ value: 50, name: 'Active' }];
     const licensed_users = 100;
-    const logged_in_users = 25;
 
     render(
       <ThemeProvider theme={theme}>
-        <Tooltip
-          active
-          payload={mockPayload}
-          licensed_users={licensed_users}
-          logged_in_users={logged_in_users}
-        />
+        <Tooltip active payload={mockPayload} licensed_users={licensed_users} />
       </ThemeProvider>,
     );
 
@@ -88,23 +82,17 @@ describe('Tooltip Component', () => {
     expect(screen.getByText('20%')).toBeInTheDocument();
   });
 
-  it('should correctly calculate percentage when name is "Licensed"', () => {
-    const mockPayload = [{ value: 500, name: 'Licensed' }];
+  it('should correctly calculate percentage based on segment value', () => {
+    const mockPayload = [{ value: 300, name: 'Licensed (not logged in)' }];
     const licensed_users = 1000;
-    const logged_in_users = 200;
 
     render(
       <ThemeProvider theme={theme}>
-        <Tooltip
-          active
-          payload={mockPayload}
-          licensed_users={licensed_users}
-          logged_in_users={logged_in_users}
-        />
+        <Tooltip active payload={mockPayload} licensed_users={licensed_users} />
       </ThemeProvider>,
     );
 
-    expect(screen.getByText('300')).toBeInTheDocument(); // 500 - 200
+    expect(screen.getByText('300')).toBeInTheDocument(); // Direct value from segment
     expect(screen.getByText('30%')).toBeInTheDocument(); // (300/1000) * 100
   });
 
@@ -130,5 +118,44 @@ describe('Tooltip Component', () => {
 
     expect(screen.getByText('0')).toBeInTheDocument();
     expect(screen.getByText('0%')).toBeInTheDocument();
+  });
+
+  it('should ensure percentages sum to 100% for edge cases', () => {
+    // Test the reported case: 1 logged-in user out of 100 licensed users
+    const licensed_users = 100;
+    const logged_in_users = 1;
+    const non_logged_in_users = licensed_users - logged_in_users; // 99
+
+    // Test logged-in users segment
+    const loggedInPayload = [
+      { value: logged_in_users, name: 'Logged-in users' },
+    ];
+    render(
+      <ThemeProvider theme={theme}>
+        <Tooltip
+          active
+          payload={loggedInPayload}
+          licensed_users={licensed_users}
+        />
+      </ThemeProvider>,
+    );
+
+    expect(screen.getByText('1%')).toBeInTheDocument(); // 1/100 = 1%
+
+    // Test licensed (non-logged-in) users segment
+    const { container: container1 } = render(
+      <ThemeProvider theme={theme}>
+        <Tooltip
+          active
+          payload={[
+            { value: non_logged_in_users, name: 'Licensed (not logged in)' },
+          ]}
+          licensed_users={licensed_users}
+        />
+      </ThemeProvider>,
+    );
+
+    expect(container1).toHaveTextContent('99%'); // 99/100 = 99%
+    // Together: 1% + 99% = 100% ✓
   });
 });

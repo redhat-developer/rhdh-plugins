@@ -69,7 +69,7 @@ test('Active users panel shows 1 visitor', async () => {
   await expect(panel).toMatchAriaSnapshot(`
     - heading "Active users" [level=5]
     - button "Export CSV"
-    - paragraph: 1 active users per hour were conducted during this period.
+    - paragraph: An average of 1 active users per hour were active during this period.
     `);
 });
 
@@ -84,7 +84,7 @@ test('Total number of users panel shows 1 visitor of 100', async () => {
       - text: 1 of 100
     - list:
       - listitem: Logged-in users
-      - listitem: Licensed
+      - listitem: Licensed (not logged in)
     - heading "1%" [level=1]
     - paragraph: have logged in
     `);
@@ -111,7 +111,7 @@ test('Rest of the panels have no data', async () => {
     'Top templates',
     'Top catalog entities',
     'Top TechDocs',
-    'Searches',
+    'Top searches',
   ];
   for (const title of titles) {
     const panel = page.locator('.v5-MuiPaper-root', { hasText: title });
@@ -172,7 +172,7 @@ test.describe(() => {
     await expect(entries).toContainText('example-website');
   });
 
-  test('Visited techdoc shows up in top TechDocs', async () => {
+  test('Visited TechDoc shows up in top TechDocs', async () => {
     const panel = page.locator('.v5-MuiPaper-root', {
       hasText: 'Top 3 TechDocs',
     });

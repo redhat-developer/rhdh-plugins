@@ -18,6 +18,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const FilterDropdown = ({
   selectedOption,
@@ -28,18 +29,19 @@ const FilterDropdown = ({
   handleChange: (event: SelectChangeEvent<string>) => void;
   uniqueCatalogEntityKinds: string[];
 }) => {
+  const { t } = useTranslation();
   return (
     <Box sx={{ m: 2, minWidth: 160 }}>
       <FormControl fullWidth>
-        <InputLabel id="kind-select">Select kind</InputLabel>
+        <InputLabel id="kind-select">{t('filter.selectKind')}</InputLabel>
         <Select
           labelId="kind-select"
           renderValue={(selected: string) =>
-            selected.length === 0 ? 'Select kind' : selected
+            selected.length === 0 ? t('filter.selectKind') : selected
           }
           value={selectedOption}
           onChange={handleChange}
-          label="Select kind"
+          label={t('filter.selectKind')}
           MenuProps={{
             MenuListProps: {
               autoFocusItem: false,
@@ -47,7 +49,7 @@ const FilterDropdown = ({
           }}
         >
           <MenuItem key="All" value="All">
-            All
+            {t('filter.all')}
           </MenuItem>
           {uniqueCatalogEntityKinds?.map(kind => (
             <MenuItem key={kind} value={kind}>
