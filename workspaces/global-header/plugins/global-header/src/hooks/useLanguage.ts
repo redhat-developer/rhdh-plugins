@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-export { useDropdownManager } from './useDropdownManager';
-export { useTranslation } from './useTranslation';
-export { useLanguage } from './useLanguage';
+import { useApi } from '@backstage/core-plugin-api';
+import { appLanguageApiRef } from '@backstage/core-plugin-api/alpha';
+
+/**
+ * Hook to get the current language setting
+ * @returns The current language code (e.g., 'en', 'de', 'fr')
+ */
+export const useLanguage = (): string =>
+  useApi(appLanguageApiRef).getLanguage().language;
