@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
 
 import { Content, Header, Page } from '@backstage/core-components';
@@ -25,6 +25,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
 import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
+import { useTranslation } from '../hooks/useTranslation';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
@@ -43,6 +44,7 @@ const THEME_DARK_CLASS = 'pf-v6-theme-dark';
 
 const LightspeedPageInner = () => {
   const classes = useStyles();
+  const { t } = useTranslation();
   const {
     palette: { type },
   } = useTheme();
@@ -56,14 +58,14 @@ const LightspeedPageInner = () => {
     async () => await identityApi.getProfileInfo(),
   );
 
-  const [selectedModel, setSelectedModel] = React.useState('');
+  const [selectedModel, setSelectedModel] = useState('');
 
-  const modelsItems = React.useMemo(
+  const modelsItems = useMemo(
     () => (models ? models.map(m => ({ label: m.id, value: m.id })) : []),
     [models],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const htmlTagElement = document.documentElement;
     if (type === THEME_DARK) {
       htmlTagElement.classList.add(THEME_DARK_CLASS);
@@ -73,7 +75,7 @@ const LightspeedPageInner = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (modelsItems.length > 0) setSelectedModel(modelsItems[0].value);
   }, [modelsItems]);
 
@@ -84,9 +86,9 @@ const LightspeedPageInner = () => {
   return (
     <Page themeId="tool">
       <Header
-        title="Lightspeed"
+        title={t('page.title')}
         style={{ display: 'none' }}
-        pageTitleOverride="Developer Lightspeed"
+        pageTitleOverride={t('page.title')}
       />
       <Content className={classes.container}>
         {!hasViewAccess ? (

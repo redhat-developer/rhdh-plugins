@@ -23,3 +23,4 @@ export * from './useIsMobile';
 export * from './useLastOpenedConversation';
 export * from './useLightspeedDeletePermission';
 export * from './useLightspeedViewPermission';
+export * from './useTranslation';

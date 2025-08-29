@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-import { useTranslation } from '../hooks/useTranslation';
-import logo from '../images/logo-white.svg';
+import {
+  TranslationFunction,
+  useTranslationRef,
+} from '@backstage/core-plugin-api/alpha';
 
-/**
- * @public
- * Lightspeed Icon
- */
-export const LightspeedIcon = () => {
-  const { t } = useTranslation();
+import { lightspeedTranslationRef } from '../translations/translationRef';
 
-  return (
-    <img
-      src={logo as any}
-      alt={t('icon.lightspeed.alt')}
-      style={{ height: '25px' }}
-    />
-  );
-};
+export const useTranslation = (): {
+  t: TranslationFunction<typeof lightspeedTranslationRef.T>;
+} => useTranslationRef(lightspeedTranslationRef);

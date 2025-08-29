@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-
+import { useTranslation } from '../hooks/useTranslation';
 import permissionRequired from '../images/permission-required.svg';
 
 export const PermissionRequiredIcon = () => {
-  return <img src={permissionRequired as any} alt="permission required icon" />;
+  const { t } = useTranslation();
+
+  return (
+    <img
+      src={permissionRequired as any}
+      alt={t('icon.permissionRequired.alt')}
+    />
+  );
 };
