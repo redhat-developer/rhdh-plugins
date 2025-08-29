@@ -18,17 +18,16 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 
 import { Knex } from 'knex';
 
+export interface Repository {
+  id: number;
+  url: string;
+}
+
 export interface ScaffolderTask {
   taskId: string;
   scaffolderOptions: any;
   repositoryId: number;
   location?: string;
-}
-
-export interface Repository {
-  url: string;
-  tasks: ScaffolderTask[];
-  locations: string[];
 }
 
 export class RepositoryDao {
@@ -39,47 +38,10 @@ export class RepositoryDao {
 
   async findAllRepositories(): Promise<Repository[]> {
     this.logger.debug('Fetching all repositories with their tasks...');
-    const repositories = await this.knex('repositories').select('id', 'url');
-    const tasks = await this.knex('scaffolder_tasks').select(
-      'taskId',
-      'repositoryId',
-      'scaffolderOptions',
-      'location',
-    );
-
-    return repositories.map((repo: { id: number; url: string }) => {
-      const repoTasks = tasks
-        .filter(
-          (task: { repositoryId: number }) => task.repositoryId === repo.id,
-        )
-        .map(
-          (task: {
-            taskId: string;
-            scaffolderOptions: string;
-            location: string;
-          }) => ({
-            taskId: task.taskId,
-            scaffolderOptions: task.scaffolderOptions,
-            repositoryId: repo.id,
-            location: task.location,
-          }),
-        );
-      const locations = repoTasks
-        .map(task => task.location)
-        .filter((location): location is string => !!location);
-      return {
-        url: repo.url,
-        tasks: repoTasks,
-        locations,
-      };
-    });
+    return await this.knex('repositories').select<Repository[]>('id', 'url');
   }
 
-  async saveRepositoryAndTask(
-    repoUrl: string,
-    taskId: string,
-    templateParams: any,
-  ): Promise<void> {
+  async saveRepositoryAndTask(repoUrl: string, taskId: string): Promise<void> {
     this.logger.debug(
       `Saving task ${taskId} for repo ${repoUrl} to database..`,
     );
@@ -96,49 +58,11 @@ export class RepositoryDao {
         .returning('id');
       repositoryId = newRepository.id;
     }
-
-    await this.knex('scaffolder_tasks').insert({
-      taskId,
-      repositoryId,
-      scaffolderOptions: JSON.stringify(templateParams),
-    });
   }
+
   async findRepositoryByUrl(url: string): Promise<Repository | undefined> {
     this.logger.debug(`Fetching repository from database by url ${url}...`);
-    const repository = await this.knex('repositories')
-      .where({ url: url })
-      .first();
-
-    if (!repository) {
-      return undefined;
-    }
-
-    const tasks = await this.knex('scaffolder_tasks')
-      .where({ repositoryId: repository.id })
-      .select('taskId', 'repositoryId', 'scaffolderOptions', 'location');
-
-    const repoTasks = tasks.map(
-      (task: {
-        taskId: string;
-        scaffolderOptions: string;
-        location: string;
-      }) => ({
-        taskId: task.taskId,
-        scaffolderOptions: task.scaffolderOptions,
-        repositoryId: repository.id,
-        location: task.location,
-      }),
-    );
-
-    const locations = repoTasks
-      .map(task => task.location)
-      .filter((location): location is string => !!location);
-
-    return {
-      url: repository.url,
-      tasks: repoTasks,
-      locations,
-    };
+    return await this.knex('repositories').where({ url: url }).first();
   }
 
   async deleteRepository(url: string): Promise<void> {
@@ -151,11 +75,49 @@ export class RepositoryDao {
       await this.knex('repositories').where({ id: repository.id }).del();
     }
   }
+}
+
+export class ScaffolderTaskDao {
+  constructor(
+    private readonly knex: Knex<any, any[]>,
+    private readonly logger: LoggerService,
+  ) {}
+
+  async findAllTasks(): Promise<ScaffolderTask[]> {
+    return await this.knex('scaffolder_tasks').select<ScaffolderTask[]>(
+      'taskId',
+      'repositoryId',
+      'scaffolderOptions',
+      'location',
+    );
+  }
+
+  async insertTask(task: ScaffolderTask): Promise<string> {
+    const result = await this.knex('scaffolder_tasks')
+      .insert<ScaffolderTask>({
+        taskId: task.taskId,
+        repositoryId: task.repositoryId,
+        scaffolderOptions: JSON.stringify(task.scaffolderOptions),
+      })
+      .returning<{ taskId: string }[]>('taskId');
+
+    return result[0].taskId;
+  }
 
   async updateTaskLocation(taskId: string, location: string): Promise<void> {
     this.logger.debug(
       `Updating task ${taskId} with location ${location} in database..`,
     );
     await this.knex('scaffolder_tasks').where({ taskId }).update({ location });
+  }
+
+  async findTasksByRepositoryId(
+    repositoryId: number,
+  ): Promise<ScaffolderTask[]> {
+    return await this.knex('scaffolder_tasks')
+      .where({ repositoryId })
+      .select<
+        ScaffolderTask[]
+      >('taskId', 'repositoryId', 'scaffolderOptions', 'location');
   }
 }

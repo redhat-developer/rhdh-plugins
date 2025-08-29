@@ -21,8 +21,8 @@ import {
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 import { eventsServiceRef } from '@backstage/plugin-events-node';
 
-import { RepositoryDao } from './database/repository-dao';
-import { migrate } from './service/dao/migration';
+import { migrate } from './database/migration';
+import { RepositoryDao, ScaffolderTaskDao } from './database/repositoryDao';
 import { createRouter } from './service/router';
 
 /**
@@ -64,7 +64,8 @@ export const bulkImportPlugin = createBackendPlugin({
         const knex = await database.getClient();
 
         migrate(knex);
-        const dao = new RepositoryDao(knex, logger);
+        const repositoryDao = new RepositoryDao(knex, logger);
+        const taskDao = new ScaffolderTaskDao(knex, logger);
 
         await events.subscribe({
           id: 'bulk-import-listener',
@@ -81,7 +82,7 @@ export const bulkImportPlugin = createBackendPlugin({
                 location: string;
                 taskId: string;
               };
-              await dao.updateTaskLocation(taskId, location);
+              await taskDao.updateTaskLocation(taskId, location);
             } else {
               logger.warn(
                 `[bulk-import] Received event with missing location or taskId`,
@@ -101,7 +102,8 @@ export const bulkImportPlugin = createBackendPlugin({
           auth,
           catalogApi,
           auditor,
-          dao,
+          repositoryDao,
+          taskDao,
         });
         http.use(router);
         http.addAuthPolicy({

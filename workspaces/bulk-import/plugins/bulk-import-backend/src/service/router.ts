@@ -41,7 +41,7 @@ import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bu
 
 import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
-import { Repository, RepositoryDao } from '../database/repository-dao';
+import { RepositoryDao, ScaffolderTaskDao } from '../database/repositoryDao';
 import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
@@ -78,7 +78,8 @@ export interface RouterOptions {
   auth: AuthService;
   catalogApi: CatalogApi;
   auditor: AuditorService;
-  dao: RepositoryDao;
+  repositoryDao: RepositoryDao;
+  taskDao: ScaffolderTaskDao;
 }
 
 namespace Operations {
@@ -114,7 +115,8 @@ export async function createRouter(
     discovery,
     catalogApi,
     auditor: auditor,
-    dao,
+    repositoryDao: repositoryDao,
+    taskDao: taskDao,
   } = options;
 
   if (!config.has('bulkImport.importTemplate')) {
@@ -230,40 +232,27 @@ export async function createRouter(
     async (_c: Context, _req: Request, res: Response) => {
       const response = await findAllRepositoriesFromDb({
         logger,
-        dao,
+        repositoryDao: repositoryDao,
+        taskDao: taskDao,
       });
-      const responseBody = response.responseBody as unknown as {
-        repositories: Repository[];
-      };
-      const repositories = responseBody?.repositories?.map(repo => ({
-        ...repo,
-        locations: repo.locations,
-      }));
-      return res.status(response.statusCode).json({
-        ...responseBody,
-        repositories,
-      });
+      return res.status(200).json(response.responseBody);
     },
   );
 
   api.register(
     Operations.FIND_REPOSITORY_FROM_DB_BY_NAME,
     async (c: Context, _req: Request, res: Response) => {
-      const response = await findRepositoryFromDbByName(
-        {
-          logger,
-          dao,
-        },
-        c.request.query.repositoryName?.toString(),
-      );
-      const repo = response.responseBody as unknown as Repository;
-      if (repo) {
-        return res.status(response.statusCode).json({
-          ...repo,
-          locations: repo.locations,
-        });
+      const repoUrl = c.request.query.repositoryName?.toString();
+      if (!repoUrl) {
+        return res.status(400).json({ error: 'Missing repositoryName' });
       }
-      return res.status(response.statusCode).json(repo);
+      const response = await findRepositoryFromDbByName(
+        { logger, repositoryDao, taskDao },
+        repoUrl,
+      );
+      return res.status(response.statusCode).json({
+        ...response.responseBody,
+      });
     },
   );
 
@@ -273,7 +262,7 @@ export async function createRouter(
       const response = await deleteRepository(
         {
           logger,
-          dao,
+          dao: repositoryDao,
         },
         c.request.params.repositoryName?.toString(),
       );
@@ -461,7 +450,7 @@ export async function createRouter(
         logger,
         auth,
         config,
-        dao,
+        repositoryDao,
         repositories,
         templateParameters,
         templateName,

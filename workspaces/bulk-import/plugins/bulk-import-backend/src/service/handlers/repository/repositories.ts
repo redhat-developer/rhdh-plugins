@@ -20,12 +20,16 @@ import type { Config } from '@backstage/config';
 import gitUrlParse from 'git-url-parse';
 
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
+import {
+  RepositoryDao,
+  ScaffolderTaskDao,
+} from '../../../database/repositoryDao';
+import { toRepositoryResponseDto } from '../../../dtos/RepositoryResponseDto';
 import type { Components } from '../../../generated/openapi';
 import type {
   GithubApiService,
   GithubRepositoryResponse,
 } from '../../../github';
-import { RepositoryDao } from '../../dao/repository-dao';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -85,12 +89,15 @@ export async function findRepositoriesByOrganization(
 // todo: implement pagination.
 export async function findAllRepositoriesFromDb(deps: {
   logger: LoggerService;
-  dao: RepositoryDao;
+  repositoryDao: RepositoryDao;
+  taskDao: ScaffolderTaskDao;
 }): Promise<HandlerResponse<Components.Schemas.RepositoryList>> {
   try {
-    const repoList = await deps.dao.findAllRepositories();
+    const repoList = await deps.repositoryDao.findAllRepositories();
+    const tasks = await deps.taskDao.findAllTasks();
+    const dtos = toRepositoryResponseDto(repoList, tasks);
 
-    if (repoList.length === 0) {
+    if (dtos.length === 0) {
       return {
         statusCode: 200,
         responseBody: {
@@ -99,7 +106,7 @@ export async function findAllRepositoriesFromDb(deps: {
         },
       };
     }
-    const repositories = repoList.map((r: Components.Schemas.Repository) => {
+    const repositories = dtos.map((r: Components.Schemas.Repository) => {
       const gitUrl = gitUrlParse(r.url!);
       return {
         id: `${gitUrl.organization}/${gitUrl.name}`,
@@ -225,13 +232,14 @@ async function formatResponse(
 export async function findRepositoryFromDbByName(
   deps: {
     logger: LoggerService;
-    dao: RepositoryDao;
+    repositoryDao: RepositoryDao;
+    taskDao: ScaffolderTaskDao;
   },
   name: string,
 ): Promise<HandlerResponse<Components.Schemas.Repository>> {
   deps.logger.debug(`Getting repository from database by name ${name}...`);
   try {
-    const repo = await deps.dao.findRepositoryByUrl(name);
+    const repo = await deps.repositoryDao.findRepositoryByUrl(name);
 
     if (!repo) {
       return {
@@ -241,13 +249,15 @@ export async function findRepositoryFromDbByName(
         },
       };
     }
-    const gitUrl = gitUrlParse(repo.url);
+    const tasks = await deps.taskDao.findTasksByRepositoryId(repo.id);
+    const repoDto = toRepositoryResponseDto([repo], tasks)[0];
+    const gitUrl = gitUrlParse(repoDto.url);
     const repository = {
       id: `${gitUrl.organization}/${gitUrl.name}`,
       name: gitUrl.name,
       organization: gitUrl.organization,
-      url: repo.url,
-      tasks: repo.tasks,
+      url: repoDto.url,
+      tasks: repoDto.tasks,
     };
 
     return {
