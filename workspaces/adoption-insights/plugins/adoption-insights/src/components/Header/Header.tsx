@@ -19,7 +19,6 @@ import type { FC, HTMLProps, MouseEvent } from 'react';
 import { Header } from '@backstage/core-components';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
@@ -116,19 +115,7 @@ const InsightsHeader: FC<InsightsHeaderProps> = ({ title }) => {
   }, [startDateRange, endDateRange]);
 
   return (
-    <Header
-      pageTitleOverride="Adoption Insights"
-      title={
-        <Typography
-          variant="h3"
-          color="textPrimary"
-          sx={{ fontWeight: 'bold' }}
-        >
-          {title}
-        </Typography>
-      }
-      style={{ background: 'none' }}
-    >
+    <Header title={title}>
       <Select
         displayEmpty
         open={menuOpen}
