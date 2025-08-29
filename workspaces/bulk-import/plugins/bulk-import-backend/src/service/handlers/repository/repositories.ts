@@ -25,6 +25,7 @@ import type {
   GithubApiService,
   GithubRepositoryResponse,
 } from '../../../github';
+import { GitlabApiService, GitlabRepositoryResponse } from '../../../gitlab';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -36,10 +37,11 @@ export async function findAllRepositories(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   reqParams?: {
+    approvalTool?: string;
     search?: string;
     checkStatus?: boolean;
     pageNumber?: number;
@@ -55,16 +57,19 @@ export async function findAllRepositories(
       search ?? ''
     }',${pageNumber},${pageSize})..`,
   );
-  return deps.githubApiService
+
+  const repos = await deps.gitApiService
     .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
     .then(response => formatResponse(deps, response, checkStatus));
+
+  return repos;
 }
 
 export async function findRepositoriesByOrganization(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   orgName: string,
@@ -76,9 +81,12 @@ export async function findRepositoriesByOrganization(
   deps.logger.debug(
     `Getting all repositories for org "${orgName}" - (search,page,size)=(${search},${pageNumber},${pageSize})..`,
   );
-  return deps.githubApiService
+
+  const glReposByOrg = await deps.gitApiService
     .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
     .then(response => formatResponse(deps, response, checkStatus));
+
+  return glReposByOrg;
 }
 
 function sortRepos(repoList: Components.Schemas.Repository[]) {
@@ -106,10 +114,10 @@ async function formatResponse(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
-  allReposAccessible: GithubRepositoryResponse,
+  allReposAccessible: GithubRepositoryResponse | GitlabRepositoryResponse,
   checkStatus: boolean,
 ) {
   const errorList =
