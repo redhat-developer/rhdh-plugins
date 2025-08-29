@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import { useTranslation } from '../hooks/useTranslation';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
+import { adoptionInsightsTranslationRef } from '../translations';
 
-export * from './plugin';
+type Messages = typeof adoptionInsightsTranslationRef.T;
 
-export * from './alpha';
+interface TransProps<
+  TMessages extends {
+    [key in string]: string;
+  },
+> {
+  message: keyof TMessages;
+  params?: any;
+}
+
+export const Trans = ({ message, params }: TransProps<Messages>) => {
+  const { t } = useTranslation();
+  return t(message, params);
+};

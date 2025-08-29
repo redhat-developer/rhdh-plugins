@@ -138,15 +138,11 @@ describe('getXAxisformat', () => {
   });
 
   it('should format daily dates correctly', () => {
-    expect(getXAxisformat('2025-03-01', 'daily')).toMatch(
-      /\d{1,2} March \d{2}/,
-    );
+    expect(getXAxisformat('2025-03-01', 'daily')).toMatch(/Mar \d{1,2}, \d{2}/);
   });
 
   it('should format weekly dates correctly', () => {
-    expect(getXAxisformat('2025-03-02', 'daily')).toMatch(
-      /\d{1,2} March \d{2}/,
-    );
+    expect(getXAxisformat('2025-03-02', 'daily')).toMatch(/Mar \d{1,2}, \d{2}/);
   });
 
   it('should format monthly dates correctly', () => {
@@ -170,7 +166,9 @@ describe('getLastUsedDay', () => {
   });
 
   it('should return formatted date for older dates', () => {
-    expect(getLastUsedDay('2025-02-15T00:00:00Z')).toMatch(/\d{2} Feb 2025/);
+    expect(getLastUsedDay('2025-02-15T00:00:00Z')).toMatch(
+      /Feb \d{1,2}, \d{2}/,
+    );
   });
 });
 
@@ -317,7 +315,9 @@ describe('formatHourlyBucket', () => {
   it('formats hourly bucket with correct start and end hour in timezone', () => {
     const date = new Date('2025-07-01T10:00:00Z'); // 10am UTC
     const result = formatHourlyBucket(date);
-    expect(result).toMatch(/July 1, 2025, \d{1,2}:\d{2}–\d{1,2}:\d{2} (AM|PM)/);
+    expect(result).toMatch(
+      /July 1, 2025, \d{1,2}:\d{2} (AM|PM)–\d{1,2}:\d{2} (AM|PM)/,
+    );
   });
 });
 

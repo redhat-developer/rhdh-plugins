@@ -18,8 +18,27 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
+import {
+  MockTrans,
+  mockUseTranslation,
+  mockUseLanguage,
+} from '../../../test-utils/mockTranslations';
+
 import InsightsHeader from '../Header';
 import { DateRangeProvider } from '../DateRangeContext';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../../hooks/useLanguage', () => ({
+  useLanguage: mockUseLanguage,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 
 jest.mock('@backstage/core-components', () => ({
   Header: ({ children, title }: { children: ReactNode; title: ReactNode }) => (
@@ -37,10 +56,10 @@ jest.mock('../DateRangePicker', () => ({
 
 jest.mock('../../../utils/constants', () => ({
   DATE_RANGE_OPTIONS: [
-    { value: 'today', label: 'Today' },
-    { value: 'last-week', label: 'Last week' },
-    { value: 'last-month', label: 'Last month' },
-    { value: 'last-year', label: 'Last year' },
+    { value: 'today', labelKey: 'header.dateRange.today' },
+    { value: 'last-week', labelKey: 'header.dateRange.lastWeek' },
+    { value: 'last-month', labelKey: 'header.dateRange.lastMonth' },
+    { value: 'last-year', labelKey: 'header.dateRange.lastYear' },
   ],
 }));
 

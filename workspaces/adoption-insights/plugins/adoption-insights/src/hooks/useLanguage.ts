@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useApi } from '@backstage/core-plugin-api';
+import { appLanguageApiRef } from '@backstage/core-plugin-api/alpha';
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
-
-export * from './plugin';
-
-export * from './alpha';
+/**
+ * Hook to get the current language setting
+ * @returns The current language code (e.g., 'en', 'de', 'fr')
+ */
+export const useLanguage = (): string =>
+  useApi(appLanguageApiRef).getLanguage().language;

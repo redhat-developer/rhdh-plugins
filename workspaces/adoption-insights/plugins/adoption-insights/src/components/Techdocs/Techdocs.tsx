@@ -33,11 +33,13 @@ import TableFooterPagination from '../CardFooter';
 import { useTechdocs } from '../../hooks/useTechdocs';
 import { getLastUsedDay } from '../../utils/utils';
 import EmptyChartState from '../Common/EmptyChartState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Techdocs = () => {
   const [page, setPage] = useState(0);
   const [limit] = useState(20);
   const [rowsPerPage, setRowsPerPage] = useState(3);
+  const { t } = useTranslation();
 
   const { techdocs, loading, error } = useTechdocs({ limit });
 
@@ -62,7 +64,7 @@ const Techdocs = () => {
 
   if (error) {
     return (
-      <CardWrapper title="Top TechDocs">
+      <CardWrapper title={t('techDocs.title')}>
         <ResponseErrorPanel error={error} />
       </CardWrapper>
     );
@@ -70,7 +72,7 @@ const Techdocs = () => {
 
   if (!visibleTechdocs || visibleTechdocs?.length === 0) {
     return (
-      <CardWrapper title="Top TechDocs">
+      <CardWrapper title={t('techDocs.title')}>
         <Box
           display="flex"
           justifyContent="center"
@@ -84,8 +86,10 @@ const Techdocs = () => {
   }
 
   return (
-    <CardWrapper title={`Top ${rowsPerPage} TechDocs`}>
-      <Table aria-labelledby="Catalog entities" sx={{ width: '100%' }}>
+    <CardWrapper
+      title={t('techDocs.topNTitle' as any, { count: rowsPerPage.toString() })}
+    >
+      <Table aria-labelledby="TechDocs" sx={{ width: '100%' }}>
         <TableHead>
           <TableRow>
             {TECHDOCS_TABLE_HEADERS.map(header => (
@@ -96,7 +100,7 @@ const Techdocs = () => {
                   borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
                 }}
               >
-                {header.title}
+                {t(header.titleKey as any, {})}
               </TableCell>
             ))}
           </TableRow>
@@ -166,7 +170,7 @@ const Techdocs = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    {getLastUsedDay(techdoc.last_used) ?? '--'}
+                    {getLastUsedDay(techdoc.last_used, t) ?? '--'}
                   </TableCell>
                   <TableCell>
                     {Number(techdoc.count).toLocaleString('en-US') ?? '--'}
