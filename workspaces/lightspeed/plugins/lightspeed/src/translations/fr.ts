@@ -18,6 +18,10 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
 import { lightspeedTranslationRef } from './translationRef';
 
+/**
+ * French translation for Developer Lightspeed.
+ * @public
+ */
 const lightspeedTranslationFr = createTranslationMessages({
   ref: lightspeedTranslationRef,
   messages: {
@@ -120,6 +124,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'modal.edit': 'Modifier',
     'modal.save': 'Enregistrer',
     'modal.close': 'Fermer',
+    'modal.cancel': 'Annuler',
 
     // Conversation actions
     'conversation.delete': 'Supprimer',

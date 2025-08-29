@@ -16,6 +16,11 @@
 
 import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 
+/**
+ * Messages object containing all English translations.
+ * This is our single source of truth for translations.
+ * @public
+ */
 export const lightspeedMessages = {
   // Page titles and headers
   'page.title': 'Lightspeed',
@@ -113,6 +118,7 @@ export const lightspeedMessages = {
   'modal.edit': 'Edit',
   'modal.save': 'Save',
   'modal.close': 'Close',
+  'modal.cancel': 'Cancel',
 
   // Conversation actions
   'conversation.delete': 'Delete',
@@ -181,8 +187,11 @@ export const lightspeedMessages = {
   'conversation.category.previous30Days': 'Previous 30 Days',
 };
 
-/** @alpha */
+/**
+ * Translation Reference for Developer Lightspeed
+ * @public
+ **/
 export const lightspeedTranslationRef = createTranslationRef({
-  id: 'lightspeed',
+  id: 'plugin.lightspeed',
   messages: lightspeedMessages,
 });

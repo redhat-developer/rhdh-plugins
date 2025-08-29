@@ -83,6 +83,10 @@ jest.mock('../../hooks/useConversationMessages', () => ({
   }),
 }));
 
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: jest.fn(() => mockUseTranslation()),
+}));
+
 jest.mock('@patternfly/chatbot', () => {
   const actual = jest.requireActual('@patternfly/chatbot');
   return {
@@ -90,10 +94,6 @@ jest.mock('@patternfly/chatbot', () => {
     MessageBox: () => <>MessageBox</>,
   };
 });
-
-jest.mock('../../hooks/useTranslation', () => ({
-  useTranslation: mockUseTranslation,
-}));
 
 const mockUseConversations = useConversations as jest.Mock;
 const mockUsePermission = usePermission as jest.MockedFunction<

@@ -17,5 +17,4 @@
 export { lightspeedPlugin, LightspeedPage } from './plugin';
 export { LightspeedIcon } from './components/LightspeedIcon';
 
-export { lightspeedTranslationRef } from './translations/translationRef';
-export { lightspeedTranslationResource } from './translations';
+export * from './alpha';

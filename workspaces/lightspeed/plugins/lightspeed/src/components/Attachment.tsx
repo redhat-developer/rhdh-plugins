@@ -81,7 +81,7 @@ const Attachment = () => {
         fileName={currentFileContent?.name}
         isModalOpen={isEditModalOpen}
         title={t('modal.title.edit')}
-        secondaryActionButtonText={t('modal.close')}
+        secondaryActionButtonText={t('modal.cancel')}
         primaryActionButtonText={t('modal.save')}
         modalFooterClassName={classes.modalFooter}
         onSave={(_, content) => {
