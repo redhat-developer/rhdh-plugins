@@ -20,10 +20,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 import { QuickstartDrawerContext } from './QuickstartDrawerContext';
 import { QuickstartDrawer } from './QuickstartDrawer';
-import { useQuickstartPermission } from '../hooks/useQuickstartPermission';
 
 export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
-  const isAllowed = useQuickstartPermission();
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [showNotification, setShowNotification] = useState(false);
   const [hasShownNotification, setHasShownNotification] = useState(false);
@@ -55,18 +53,16 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
       'quickstart-notification-shown',
     );
 
-    if (isAllowed) {
-      if (!hasVisited) {
-        setIsDrawerOpen(true);
-        localStorage.setItem('quickstart-visited', 'true');
-        localStorage.setItem('quickstart-open', 'true');
-      } else if (wasOpen === 'true') {
-        setIsDrawerOpen(true);
-      }
+    if (!hasVisited) {
+      setIsDrawerOpen(true);
+      localStorage.setItem('quickstart-visited', 'true');
+      localStorage.setItem('quickstart-open', 'true');
+    } else if (wasOpen === 'true') {
+      setIsDrawerOpen(true);
     }
 
     setHasShownNotification(notificationShown === 'true');
-  }, [isAllowed]);
+  }, []);
 
   const openDrawer = () => {
     setIsDrawerOpen(true);
