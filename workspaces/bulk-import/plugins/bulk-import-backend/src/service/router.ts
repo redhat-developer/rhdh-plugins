@@ -41,12 +41,12 @@ import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bu
 
 import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
+import { RepositoryDao } from '../database/repository-dao';
 import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
 import { permissionCheck } from '../helpers';
 import { auditCreateEvent } from '../helpers/auditorUtils';
-import { RepositoryDao } from './dao/repository-dao';
 import {
   createImportJobs,
   deleteImportByRepo,

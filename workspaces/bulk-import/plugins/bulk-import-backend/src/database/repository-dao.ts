@@ -29,7 +29,6 @@ export interface Repository {
   tasks: ScaffolderTask[];
 }
 
-// todo move this code to the database folder
 export class RepositoryDao {
   constructor(
     private readonly knex: Knex<any, any[]>,

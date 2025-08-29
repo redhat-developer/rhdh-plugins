@@ -21,8 +21,8 @@ import {
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 import { eventsServiceRef } from '@backstage/plugin-events-node';
 
+import { RepositoryDao } from './database/repository-dao';
 import { migrate } from './service/dao/migration';
-import { RepositoryDao } from './service/dao/repository-dao';
 import { createRouter } from './service/router';
 
 /**
