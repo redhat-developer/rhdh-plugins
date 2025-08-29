@@ -35,6 +35,7 @@ import {
   getTotal,
   getXAxisformat,
   getXAxisTickValues,
+  getGroupingLabel,
 } from '../../utils/utils';
 import CustomCursor from '../Common/CustomCursor';
 import EmptyChartState from '../Common/EmptyChartState';
@@ -86,13 +87,13 @@ const Searches = () => {
       ) : (
         <>
           <Typography style={{ margin: '20px 36px' }}>
-            An average of{' '}
+            Average search count was{' '}
             <b>
               {`${Math.round(getAverage(data, 'count')).toLocaleString(
                 'en-US',
-              )} searches per ${grouping === 'hourly' ? 'hour' : 'day'}`}
+              )} per ${getGroupingLabel(grouping)}`}
             </b>{' '}
-            were conducted during this period.
+            for this period.
           </Typography>
           <Box sx={{ height: 310, mt: 4, mb: 4, ml: 0, mr: 0 }}>
             <ResponsiveContainer width="100%" height="100%">

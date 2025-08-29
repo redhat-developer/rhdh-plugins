@@ -285,3 +285,18 @@ export const formatTooltipHeaderLabel = (key: string) => {
     )
     .join(' ');
 };
+
+export const getGroupingLabel = (grouping: string): string => {
+  switch (grouping) {
+    case 'hourly':
+      return 'hour';
+    case 'daily':
+      return 'day';
+    case 'weekly':
+      return 'week';
+    case 'monthly':
+      return 'month';
+    default:
+      return 'day';
+  }
+};

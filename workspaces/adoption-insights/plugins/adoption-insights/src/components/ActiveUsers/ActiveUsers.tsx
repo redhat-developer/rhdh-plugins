@@ -35,6 +35,7 @@ import {
   getAverage,
   getXAxisformat,
   getXAxisTickValues,
+  getGroupingLabel,
 } from '../../utils/utils';
 import { useActiveUsers } from '../../hooks/useActiveUsers';
 import { Typography } from '@material-ui/core';
@@ -85,12 +86,13 @@ const ActiveUsers = () => {
       ) : (
         <>
           <Typography style={{ margin: '20px 36px' }}>
+            Average peak active user count was{' '}
             <b>
               {`${Math.round(getAverage(data, 'total_users')).toLocaleString(
                 'en-Us',
-              )} active users per ${grouping === 'hourly' ? 'hour' : 'day'}`}
+              )} per ${getGroupingLabel(grouping)}`}
             </b>{' '}
-            were conducted during this period.
+            for this period.
           </Typography>
           <Box sx={{ height: 310, mt: 4, mb: 4, ml: 0, mr: 0 }}>
             <ResponsiveContainer width="100%" height="100%">

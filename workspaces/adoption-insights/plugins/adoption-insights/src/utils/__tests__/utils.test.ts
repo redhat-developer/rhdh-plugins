@@ -29,6 +29,7 @@ import {
   formatDateWithRange,
   formatWeeklyBucket,
   formatTooltipHeaderLabel,
+  getGroupingLabel,
 } from '../utils';
 import { format, subDays } from 'date-fns';
 
@@ -361,5 +362,19 @@ describe('formatTooltipHeaderLabel', () => {
 
   it('handles single word key', () => {
     expect(formatTooltipHeaderLabel('count')).toBe('Count');
+  });
+});
+
+describe('getGroupingLabel', () => {
+  it('should return correct labels for all grouping types', () => {
+    expect(getGroupingLabel('hourly')).toBe('hour');
+    expect(getGroupingLabel('daily')).toBe('day');
+    expect(getGroupingLabel('weekly')).toBe('week');
+    expect(getGroupingLabel('monthly')).toBe('month');
+  });
+
+  it('should return default "day" for unknown grouping types', () => {
+    expect(getGroupingLabel('unknown')).toBe('day');
+    expect(getGroupingLabel('')).toBe('day');
   });
 });
