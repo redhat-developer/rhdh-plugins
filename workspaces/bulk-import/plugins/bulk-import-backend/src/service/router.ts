@@ -451,6 +451,7 @@ export async function createRouter(
         auth,
         config,
         repositoryDao,
+        taskDao,
         repositories,
         templateParameters,
         templateName,

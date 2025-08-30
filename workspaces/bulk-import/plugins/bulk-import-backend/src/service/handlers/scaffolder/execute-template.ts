@@ -20,16 +20,20 @@ import {
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 
-import { RepositoryDao } from '../../dao/repository-dao';
+import {
+  RepositoryDao,
+  ScaffolderTaskDao,
+} from '../../../database/repositoryDao';
 
 export const executeTemplate = async (
   discovery: DiscoveryService,
   logger: LoggerService,
   auth: AuthService,
   config: Config,
-  dao: RepositoryDao,
+  repositoryDao: RepositoryDao,
+  taskDao: ScaffolderTaskDao,
   repositories: string[],
-  templateParameters: Record<string, any>,
+  scaffolderOptions: Record<string, any>,
   templateName?: string,
 ) => {
   const taskIds = [];
@@ -75,9 +79,10 @@ export const executeTemplate = async (
       const normalizedUrl = `${url.hostname}?owner=${owner}&repo=${repoName}`;
       const taskId = await execute({
         repoUrl: normalizedUrl,
-        ...templateParameters,
+        ...scaffolderOptions,
       });
-      await dao.saveRepositoryAndTask(repo, taskId, templateParameters);
+      const repositoryId = await repositoryDao.insertRepository(repo, taskId);
+      await taskDao.insertTask({ repositoryId, scaffolderOptions, taskId });
       taskIds.push(taskId);
       logger.info(`Started scaffolder task ${taskId} for ${repo}`);
     }

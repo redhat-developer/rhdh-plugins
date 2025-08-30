@@ -41,7 +41,7 @@ export class RepositoryDao {
     return await this.knex('repositories').select<Repository[]>('id', 'url');
   }
 
-  async saveRepositoryAndTask(repoUrl: string, taskId: string): Promise<void> {
+  async insertRepository(repoUrl: string, taskId: string): Promise<number> {
     this.logger.debug(
       `Saving task ${taskId} for repo ${repoUrl} to database..`,
     );
@@ -58,6 +58,7 @@ export class RepositoryDao {
         .returning('id');
       repositoryId = newRepository.id;
     }
+    return repositoryId;
   }
 
   async findRepositoryByUrl(url: string): Promise<Repository | undefined> {

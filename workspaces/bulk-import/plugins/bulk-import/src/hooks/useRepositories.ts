@@ -142,6 +142,7 @@ export const useRepositories = (
           catalogInfoYaml: {
             status: RepositoryStatus.ADDED,
           },
+          tasks: repo.tasks,
         };
         return acc;
       },

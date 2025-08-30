@@ -45,6 +45,11 @@ export const RepositoriesListColumns: TableColumn<AddRepositoryData>[] = [
     type: 'string',
   },
   {
+    id: 'locations',
+    title: 'Locations',
+    field: 'tasks',
+  },
+  {
     id: 'last-updated',
     title: 'Last updated',
     field: 'catalogInfoYaml.lastUpdated',

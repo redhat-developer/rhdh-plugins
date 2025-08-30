@@ -34,6 +34,7 @@ export interface ScaffolderTask {
     [key: string]: any;
   };
   repositoryId: number;
+  location?: string;
 }
 
 export type ImportJobResponse = {

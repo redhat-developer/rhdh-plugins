@@ -106,7 +106,20 @@ export const AddedRepositoryTableRow = ({
       <TableCell align="left" className={classes.tableCellStyle}>
         <ImportStatus data={data} />
       </TableCell>
-
+      <TableCell align="left" className={classes.tableCellStyle}>
+        {data.tasks
+          ?.map(task => task.location)
+          .filter(Boolean)
+          .map((location, index) => (
+            <span key={index}>
+              <Link to={location!}>{location}</Link>
+              {index <
+                (data.tasks?.map(task => task.location).filter(Boolean)
+                  .length || 0) -
+                  1 && ', '}
+            </span>
+          ))}
+      </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
         <LastUpdated data={data} />
       </TableCell>

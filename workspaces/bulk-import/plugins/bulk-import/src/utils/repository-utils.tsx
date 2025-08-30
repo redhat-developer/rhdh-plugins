@@ -602,6 +602,7 @@ export const prepareDataForRepositories = (
               val.defaultBranch || 'main',
             ),
           },
+          tasks: val.tasks,
         },
       };
     }, {}) || {};
