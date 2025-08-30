@@ -15,6 +15,9 @@
  */
 import { useState } from 'react';
 
+import { Link } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
+
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -31,6 +34,8 @@ import { TaskEvents } from '../Repositories/TaskEvents';
 export const TasksTable = ({ tasks }: { tasks: ScaffolderTask[] }) => {
   const [selectedTask, setSelectedTask] = useState('');
   const [open, setOpen] = useState(false);
+  const configApi = useApi(configApiRef);
+  const appBaseUrl = configApi.getString('app.baseUrl');
 
   const handleGetEvents = (taskId: string) => {
     setSelectedTask(taskId);
@@ -50,6 +55,7 @@ export const TasksTable = ({ tasks }: { tasks: ScaffolderTask[] }) => {
             <TableCell>Task ID</TableCell>
             <TableCell>Scaffolder Options</TableCell>
             <TableCell>Events</TableCell>
+            <TableCell>Task Link</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -64,6 +70,11 @@ export const TasksTable = ({ tasks }: { tasks: ScaffolderTask[] }) => {
                 >
                   Events
                 </Button>
+              </TableCell>
+              <TableCell>
+                <Link to={`${appBaseUrl}/create/tasks/${task.taskId}`}>
+                  View Task
+                </Link>
               </TableCell>
             </TableRow>
           ))}

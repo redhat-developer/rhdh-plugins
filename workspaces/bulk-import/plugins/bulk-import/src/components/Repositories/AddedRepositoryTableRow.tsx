@@ -15,6 +15,7 @@
  */
 
 import { Link } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TableCell from '@mui/material/TableCell';
@@ -68,6 +69,8 @@ export const AddedRepositoryTableRow = ({
   onDelete: (repo: AddRepositoryData) => void;
 }) => {
   const classes = useStyles();
+  const configApi = useApi(configApiRef);
+  const appBaseUrl = configApi.getString('app.baseUrl');
   return (
     <TableRow hover>
       <TableCell component="th" scope="row" className={classes.tableCellStyle}>
