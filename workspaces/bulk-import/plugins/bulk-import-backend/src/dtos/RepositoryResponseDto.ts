@@ -14,34 +14,45 @@
  * limitations under the License.
  */
 
-import { Repository, ScaffolderTask } from '../database/repositoryDao';
+import {
+  Repository,
+  ScaffolderTask,
+  TaskLocation,
+} from '../database/repositoryDao';
 
 export interface RespositoryDto {
   url: string;
   tasks: ScaffolderTaskDto[];
-  locations: string[];
 }
 
 export interface ScaffolderTaskDto {
   taskId: string;
   scaffolderOptions: Record<string, any>;
-  repositoryId: number; // ? do we need it
-  location?: string;
+  repositoryId: number;
+  locations: string[];
 }
 
 export function toRepositoryResponseDto(
   repositories: Repository[],
   tasks: ScaffolderTask[],
+  locations: TaskLocation[],
 ): RespositoryDto[] {
   const repositoriesDto = repositories.map(repo => {
-    const repoTasks = tasks.filter(task => task.repositoryId === repo.id);
-    const locations = repoTasks
-      .map(task => task.location)
-      .filter((location): location is string => !!location);
+    const repoTasks = tasks
+      .filter(task => task.repositoryId === repo.id)
+      .map(task => {
+        const taskLocations = locations
+          .filter(location => location.taskId === task.taskId)
+          .map(location => location.location);
+        return {
+          ...task,
+          locations: taskLocations,
+        };
+      });
+
     return {
       url: repo.url,
-      tasks: tasks,
-      locations,
+      tasks: repoTasks,
     };
   });
 

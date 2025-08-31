@@ -23,6 +23,7 @@ import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
 import {
   RepositoryDao,
   ScaffolderTaskDao,
+  TaskLocationsDao,
 } from '../../../database/repositoryDao';
 import { toRepositoryResponseDto } from '../../../dtos/RepositoryResponseDto';
 import type { Components } from '../../../generated/openapi';
@@ -91,11 +92,13 @@ export async function findAllRepositoriesFromDb(deps: {
   logger: LoggerService;
   repositoryDao: RepositoryDao;
   taskDao: ScaffolderTaskDao;
+  taskLocationsDao: TaskLocationsDao;
 }): Promise<HandlerResponse<Components.Schemas.RepositoryList>> {
   try {
     const repoList = await deps.repositoryDao.findAllRepositories();
     const tasks = await deps.taskDao.findAllTasks();
-    const dtos = toRepositoryResponseDto(repoList, tasks);
+    const locations = await deps.taskLocationsDao.findAllLocations();
+    const dtos = toRepositoryResponseDto(repoList, tasks, locations);
 
     if (dtos.length === 0) {
       return {
@@ -106,7 +109,7 @@ export async function findAllRepositoriesFromDb(deps: {
         },
       };
     }
-    const repositories = dtos.map((r: Components.Schemas.Repository) => {
+    const repositories = dtos.map(r => {
       const gitUrl = gitUrlParse(r.url!);
       return {
         id: `${gitUrl.organization}/${gitUrl.name}`,
@@ -234,6 +237,7 @@ export async function findRepositoryFromDbByName(
     logger: LoggerService;
     repositoryDao: RepositoryDao;
     taskDao: ScaffolderTaskDao;
+    taskLocationsDao: TaskLocationsDao;
   },
   name: string,
 ): Promise<HandlerResponse<Components.Schemas.Repository>> {
@@ -250,7 +254,10 @@ export async function findRepositoryFromDbByName(
       };
     }
     const tasks = await deps.taskDao.findTasksByRepositoryId(repo.id);
-    const repoDto = toRepositoryResponseDto([repo], tasks)[0];
+    const locations = await deps.taskLocationsDao.findLocationsByTaskId(
+      tasks[0].taskId,
+    );
+    const repoDto = toRepositoryResponseDto([repo], tasks, locations)[0];
     const gitUrl = gitUrlParse(repoDto.url);
     const repository = {
       id: `${gitUrl.organization}/${gitUrl.name}`,

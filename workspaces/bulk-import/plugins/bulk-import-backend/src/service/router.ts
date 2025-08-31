@@ -41,7 +41,11 @@ import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bu
 
 import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
-import { RepositoryDao, ScaffolderTaskDao } from '../database/repositoryDao';
+import {
+  RepositoryDao,
+  ScaffolderTaskDao,
+  TaskLocationsDao,
+} from '../database/repositoryDao';
 import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
@@ -80,6 +84,7 @@ export interface RouterOptions {
   auditor: AuditorService;
   repositoryDao: RepositoryDao;
   taskDao: ScaffolderTaskDao;
+  taskLocationsDao: TaskLocationsDao;
 }
 
 namespace Operations {
@@ -117,6 +122,7 @@ export async function createRouter(
     auditor: auditor,
     repositoryDao: repositoryDao,
     taskDao: taskDao,
+    taskLocationsDao: taskLocationsDao,
   } = options;
 
   if (!config.has('bulkImport.importTemplate')) {
@@ -234,6 +240,7 @@ export async function createRouter(
         logger,
         repositoryDao: repositoryDao,
         taskDao: taskDao,
+        taskLocationsDao: taskLocationsDao,
       });
       return res.status(200).json(response.responseBody);
     },
@@ -247,7 +254,7 @@ export async function createRouter(
         return res.status(400).json({ error: 'Missing repositoryName' });
       }
       const response = await findRepositoryFromDbByName(
-        { logger, repositoryDao, taskDao },
+        { logger, repositoryDao, taskDao, taskLocationsDao },
         repoUrl,
       );
       return res.status(response.statusCode).json({

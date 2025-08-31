@@ -68,7 +68,7 @@ export type AddRepositoryData = {
     lastUpdated?: string;
   };
   lastUpdated?: string;
-  tasks?: { taskId?: string; location?: string }[];
+  tasks?: { taskId?: string; locations?: string[] }[];
 };
 
 export type Order = 'asc' | 'desc';

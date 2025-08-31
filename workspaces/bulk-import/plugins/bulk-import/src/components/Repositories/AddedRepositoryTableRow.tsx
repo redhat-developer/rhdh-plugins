@@ -110,18 +110,14 @@ export const AddedRepositoryTableRow = ({
         <ImportStatus data={data} />
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
-        {data.tasks
-          ?.map(task => task.location)
-          .filter(Boolean)
-          .map((location, index) => (
+        {data.tasks?.flatMap(task =>
+          task.locations?.map((location, index) => (
             <span key={index}>
-              <Link to={location!}>{location}</Link>
-              {index <
-                (data.tasks?.map(task => task.location).filter(Boolean)
-                  .length || 0) -
-                  1 && ', '}
+              <Link to={location}>{location}</Link>
+              {index < (task.locations?.length || 0) - 1 && ', '}
             </span>
-          ))}
+          )),
+        )}
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
         <LastUpdated data={data} />

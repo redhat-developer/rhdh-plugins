@@ -30,11 +30,23 @@ exports.up = function up(knex) {
         .references('id')
         .inTable('repositories')
         .onDelete('CASCADE');
+    })
+    .createTable('task_locations', table => {
+      table.increments('id').primary();
+      table.string('taskId').notNullable();
+      table
+        .foreign('taskId')
+        .references('taskId')
+        .inTable('scaffolder_tasks')
+        .onDelete('CASCADE');
+      table.string('location').notNullable();
+      table.string('type').notNullable().defaultTo('component');
     });
 };
 
 exports.down = function down(knex) {
   return knex.schema
     .dropTableIfExists('scaffolder_tasks')
-    .dropTableIfExists('repositories');
+    .dropTableIfExists('repositories')
+    .dropTableIfExists('task_locations');
 };

@@ -27,7 +27,6 @@ export interface ScaffolderTask {
   taskId: string;
   scaffolderOptions: any;
   repositoryId: number;
-  location?: string;
 }
 
 export class RepositoryDao {
@@ -89,7 +88,6 @@ export class ScaffolderTaskDao {
       'taskId',
       'repositoryId',
       'scaffolderOptions',
-      'location',
     );
   }
 
@@ -105,20 +103,51 @@ export class ScaffolderTaskDao {
     return result[0].taskId;
   }
 
-  async updateTaskLocation(taskId: string, location: string): Promise<void> {
-    this.logger.debug(
-      `Updating task ${taskId} with location ${location} in database..`,
-    );
-    await this.knex('scaffolder_tasks').where({ taskId }).update({ location });
-  }
-
   async findTasksByRepositoryId(
     repositoryId: number,
   ): Promise<ScaffolderTask[]> {
     return await this.knex('scaffolder_tasks')
       .where({ repositoryId })
-      .select<
-        ScaffolderTask[]
-      >('taskId', 'repositoryId', 'scaffolderOptions', 'location');
+      .select<ScaffolderTask[]>('taskId', 'repositoryId', 'scaffolderOptions');
+  }
+}
+
+export interface TaskLocation {
+  id: number;
+  taskId: string;
+  location: string;
+  type: string;
+}
+
+export class TaskLocationsDao {
+  constructor(
+    private readonly knex: Knex<any, any[]>,
+    private readonly logger: LoggerService,
+  ) {}
+
+  async addTaskLocation(
+    taskId: string,
+    location: string,
+    type: string = 'component',
+  ): Promise<void> {
+    this.logger.debug(
+      `Adding location ${location} for task ${taskId} to database..`,
+    );
+    await this.knex('task_locations').insert({ taskId, location, type });
+  }
+
+  async findLocationsByTaskId(taskId: string): Promise<TaskLocation[]> {
+    return await this.knex('task_locations')
+      .where({ taskId })
+      .select<TaskLocation[]>('id', 'taskId', 'location', 'type');
+  }
+
+  async findAllLocations(): Promise<TaskLocation[]> {
+    return await this.knex('task_locations').select<TaskLocation[]>(
+      'id',
+      'taskId',
+      'location',
+      'type',
+    );
   }
 }
