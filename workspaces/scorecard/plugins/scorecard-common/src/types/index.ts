@@ -15,3 +15,4 @@
  */
 
 export * from './Metric';
+export * from './threshold';

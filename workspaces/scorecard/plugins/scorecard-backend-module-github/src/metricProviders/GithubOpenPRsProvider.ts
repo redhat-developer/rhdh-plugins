@@ -14,10 +14,25 @@
  * limitations under the License.
  */
 
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import type { Config } from '@backstage/config';
+import type { Entity } from '@backstage/catalog-model';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  Metric,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  MetricProvider,
+  validateThresholds,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
+  private readonly thresholds: ThresholdConfig;
+
+  private constructor(thresholds?: ThresholdConfig) {
+    this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
+  }
+
   getProviderDatasourceId(): string {
     return 'github';
   }
@@ -30,12 +45,28 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
     return {
       id: this.getProviderId(),
       title: 'Github open PRs',
+      description:
+        'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',
       history: true,
     };
   }
 
-  async calculateMetric(): Promise<number> {
-    return 42;
+  getMetricThresholds(): ThresholdConfig {
+    return this.thresholds;
+  }
+
+  static fromConfig(config: Config): GithubOpenPRsProvider {
+    const configPath = 'scorecard.plugins.github.open_prs.thresholds';
+    const configuredThresholds = config.getOptional(configPath);
+    if (configuredThresholds !== undefined) {
+      validateThresholds(configuredThresholds, 'number');
+    }
+
+    return new GithubOpenPRsProvider(configuredThresholds);
+  }
+
+  async calculateMetric(entity: Entity): Promise<number> {
+    return entity.metadata.name.length;
   }
 }

@@ -17,21 +17,17 @@
 import { ConflictError, NotFoundError } from '@backstage/errors';
 import { MetricProvidersRegistry } from './MetricProvidersRegistry';
 import {
+  githubNumberMetricMetadata,
+  githubNumberProvider,
+  jiraBooleanMetricMetadata,
+  jiraBooleanProvider,
   MockNumberProvider,
-  MockStringProvider,
-} from '../../../__fixtures__/mockProviders';
+  MockBooleanProvider,
+} from '../../__fixtures__/mockProviders';
+import { mockEntity } from '../../__fixtures__/mockEntities';
 
 describe('MetricProvidersRegistry', () => {
   let registry: MetricProvidersRegistry;
-  const githubNumberProvider = new MockNumberProvider(
-    'github.number-metric',
-    'github',
-    'Github Number Metric',
-  );
-  const jiraStringProvider = new MockStringProvider(
-    'jira.string-metric',
-    'jira',
-  );
 
   beforeEach(() => {
     registry = new MetricProvidersRegistry();
@@ -40,24 +36,22 @@ describe('MetricProvidersRegistry', () => {
   describe('register', () => {
     it('should register metric providers with different IDs successfully', () => {
       expect(() => registry.register(githubNumberProvider)).not.toThrow();
-      expect(() => registry.register(jiraStringProvider)).not.toThrow();
+      expect(() => registry.register(jiraBooleanProvider)).not.toThrow();
       expect(registry.listMetrics()).toEqual([
         {
           id: 'github.number-metric',
-          title: 'Github Number Metric',
-          type: 'number',
+          ...githubNumberMetricMetadata,
         },
         {
-          id: 'jira.string-metric',
-          title: 'Mock String Metric',
-          type: 'string',
+          id: 'jira.boolean-metric',
+          ...jiraBooleanMetricMetadata,
         },
       ]);
     });
 
     it('should throw ConflictError when registering provider with duplicate ID', () => {
       const provider1 = new MockNumberProvider('jira.duplicate-id', 'jira');
-      const provider2 = new MockStringProvider('jira.duplicate-id', 'jira');
+      const provider2 = new MockBooleanProvider('jira.duplicate-id', 'jira');
       registry.register(provider1);
 
       expect(() => registry.register(provider2)).toThrow(
@@ -76,8 +70,7 @@ describe('MetricProvidersRegistry', () => {
 
       expect(metric).toEqual({
         id: 'github.number-metric',
-        title: 'Github Number Metric',
-        type: 'number',
+        ...githubNumberMetricMetadata,
       });
     });
 
@@ -94,16 +87,100 @@ describe('MetricProvidersRegistry', () => {
     it('should calculate metric for registered provider', async () => {
       registry.register(githubNumberProvider);
 
-      const result = await registry.calculateMetric('github.number-metric');
+      const result = await registry.calculateMetric(
+        'github.number-metric',
+        mockEntity,
+      );
 
       expect(result).toBe(42);
     });
 
     it('should throw NotFoundError for unregistered provider', async () => {
-      await expect(registry.calculateMetric('non-existent')).rejects.toThrow(
+      await expect(
+        registry.calculateMetric('non-existent', mockEntity),
+      ).rejects.toThrow(
         new NotFoundError(
           "Metric provider with ID 'non-existent' is not registered.",
         ),
+      );
+    });
+  });
+
+  describe('calculateMetrics', () => {
+    it('should handle empty provider IDs array', async () => {
+      const results = await registry.calculateMetrics([], mockEntity);
+
+      expect(results).toEqual([]);
+    });
+
+    it('should calculate metrics for multiple registered providers', async () => {
+      registry.register(githubNumberProvider);
+      registry.register(jiraBooleanProvider);
+
+      const results = await registry.calculateMetrics(
+        ['github.number-metric', 'jira.boolean-metric'],
+        mockEntity,
+      );
+
+      expect(results).toHaveLength(2);
+      expect(results[0]).toEqual({
+        providerId: 'github.number-metric',
+        value: 42,
+      });
+      expect(results[1]).toEqual({
+        providerId: 'jira.boolean-metric',
+        value: false,
+      });
+    });
+
+    it('should calculate metrics for only specified providers', async () => {
+      registry.register(githubNumberProvider);
+      registry.register(
+        new MockNumberProvider(
+          'github.open-issues',
+          'github',
+          'GitHub Open Issues',
+          'Github Open Issues description',
+          10,
+        ),
+      );
+      registry.register(jiraBooleanProvider);
+
+      const results = await registry.calculateMetrics(
+        ['github.number-metric', 'github.open-issues'],
+        mockEntity,
+      );
+
+      expect(results).toHaveLength(2);
+      expect(results[0]).toEqual({
+        providerId: 'github.number-metric',
+        value: 42,
+      });
+      expect(results[1]).toEqual({
+        providerId: 'github.open-issues',
+        value: 10,
+      });
+    });
+
+    it('should handle mix of successful and failed metric calculations', async () => {
+      registry.register(githubNumberProvider);
+
+      const results = await registry.calculateMetrics(
+        ['github.number-metric', 'non-existent'],
+        mockEntity,
+      );
+
+      expect(results).toHaveLength(2);
+      expect(results[0]).toEqual({
+        providerId: 'github.number-metric',
+        value: 42,
+      });
+      expect(results[1]).toEqual({
+        providerId: 'non-existent',
+        error: expect.any(NotFoundError),
+      });
+      expect(results[1].error?.message).toBe(
+        "Metric provider with ID 'non-existent' is not registered.",
       );
     });
   });
@@ -116,13 +193,13 @@ describe('MetricProvidersRegistry', () => {
 
     it('should return all registered metrics', () => {
       registry.register(githubNumberProvider);
-      registry.register(jiraStringProvider);
+      registry.register(jiraBooleanProvider);
 
       const metrics = registry.listMetrics();
 
       expect(metrics).toHaveLength(2);
       expect(metrics[0].id).toBe('github.number-metric');
-      expect(metrics[1].id).toBe('jira.string-metric');
+      expect(metrics[1].id).toBe('jira.boolean-metric');
     });
   });
 
@@ -138,7 +215,7 @@ describe('MetricProvidersRegistry', () => {
         'github',
         'GitHub Open Issues',
       );
-      const sonarProvider = new MockStringProvider(
+      const sonarProvider = new MockBooleanProvider(
         'sonar.code-quality',
         'sonar',
         'Code Quality',

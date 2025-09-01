@@ -38,6 +38,7 @@
     "@backstage/backend-defaults": "^0.11.1",
     "@backstage/backend-plugin-api": "^1.4.1",
     "@backstage/catalog-client": "^1.10.2",
+    "@backstage/catalog-model": "^1.7.5",
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^1.17.2",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
