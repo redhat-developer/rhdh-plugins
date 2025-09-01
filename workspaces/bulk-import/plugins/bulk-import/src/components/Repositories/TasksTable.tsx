@@ -13,15 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from 'react';
-
 import { Link } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -29,63 +23,33 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 
 import { ScaffolderTask } from '../../types';
-import { TaskEvents } from '../Repositories/TaskEvents';
 
 export const TasksTable = ({ tasks }: { tasks: ScaffolderTask[] }) => {
-  const [selectedTask, setSelectedTask] = useState('');
-  const [open, setOpen] = useState(false);
   const configApi = useApi(configApiRef);
   const appBaseUrl = configApi.getString('app.baseUrl');
 
-  const handleGetEvents = (taskId: string) => {
-    setSelectedTask(taskId);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedTask('');
-  };
-
   return (
-    <>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Task ID</TableCell>
-            <TableCell>Scaffolder Options</TableCell>
-            <TableCell>Events</TableCell>
-            <TableCell>Task Link</TableCell>
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableCell>Task ID</TableCell>
+          <TableCell>Scaffolder Options</TableCell>
+          <TableCell>Task Link</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {tasks.map(task => (
+          <TableRow key={task.taskId}>
+            <TableCell>{task.taskId}</TableCell>
+            <TableCell>{JSON.stringify(task.scaffolderOptions)}</TableCell>
+            <TableCell>
+              <Link to={`${appBaseUrl}/create/tasks/${task.taskId}`}>
+                View Task
+              </Link>
+            </TableCell>
           </TableRow>
-        </TableHead>
-        <TableBody>
-          {tasks.map(task => (
-            <TableRow key={task.taskId}>
-              <TableCell>{task.taskId}</TableCell>
-              <TableCell>{JSON.stringify(task.scaffolderOptions)}</TableCell>
-              <TableCell>
-                <Button
-                  variant="contained"
-                  onClick={() => handleGetEvents(task.taskId)}
-                >
-                  Events
-                </Button>
-              </TableCell>
-              <TableCell>
-                <Link to={`${appBaseUrl}/create/tasks/${task.taskId}`}>
-                  View Task
-                </Link>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>Task Events</DialogTitle>
-        <DialogContent>
-          {selectedTask && <TaskEvents taskId={selectedTask} />}
-        </DialogContent>
-      </Dialog>
-    </>
+        ))}
+      </TableBody>
+    </Table>
   );
 };
