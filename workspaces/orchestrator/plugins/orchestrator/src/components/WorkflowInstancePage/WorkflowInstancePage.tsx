@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -215,14 +215,13 @@ export const WorkflowInstancePage = () => {
   const [isAbortConfirmationDialogOpen, setIsAbortConfirmationDialogOpen] =
     useState(false);
 
-  const [isAborting, setIsAborting] = React.useState(false);
-  const [isAbortSnackbarOpen, setIsAbortSnackbarOpen] = React.useState(false);
-  const [abortError, setAbortError] = React.useState('');
+  const [isAborting, setIsAborting] = useState(false);
+  const [isAbortSnackbarOpen, setIsAbortSnackbarOpen] = useState(false);
+  const [abortError, setAbortError] = useState('');
 
-  const [isRetrigger, setIsRetrigger] = React.useState(false);
-  const [isRetriggerSnackbarOpen, setIsRetriggerSnackbarOpen] =
-    React.useState(false);
-  const [retriggerError, setRetriggerError] = React.useState('');
+  const [isRetrigger, setIsRetrigger] = useState(false);
+  const [isRetriggerSnackbarOpen, setIsRetriggerSnackbarOpen] = useState(false);
+  const [retriggerError, setRetriggerError] = useState('');
 
   const handleAbortBarClose = () => {
     setIsAbortSnackbarOpen(false);
@@ -231,7 +230,7 @@ export const WorkflowInstancePage = () => {
     setIsRetriggerSnackbarOpen(false);
   };
 
-  const fetchInstance = React.useCallback(async () => {
+  const fetchInstance = useCallback(async () => {
     if (!instanceId) {
       return undefined;
     }
@@ -283,11 +282,11 @@ export const WorkflowInstancePage = () => {
     value?.state === ProcessInstanceStatusDTO.Aborted ||
     value?.state === ProcessInstanceStatusDTO.Error;
 
-  const toggleAbortConfirmationDialog = React.useCallback(() => {
+  const toggleAbortConfirmationDialog = useCallback(() => {
     setIsAbortConfirmationDialogOpen(prev => !prev);
   }, []);
 
-  const handleAbort = React.useCallback(async () => {
+  const handleAbort = useCallback(async () => {
     if (value) {
       setIsAborting(true);
 
@@ -295,16 +294,28 @@ export const WorkflowInstancePage = () => {
         await orchestratorApi.abortWorkflowInstance(value.id);
         restart();
       } catch (e) {
-        setAbortError(`Abort failed: ${(e as Error).message}`);
+        const res = await fetchInstance();
+        if (res?.state === ProcessInstanceStatusDTO.Completed) {
+          setAbortError('Abort failed: Run has already been completed.');
+          restart();
+        } else {
+          setAbortError(`Abort failed: ${(e as Error).message}`);
+        }
         setIsAbortSnackbarOpen(true);
       } finally {
         setIsAborting(false);
         toggleAbortConfirmationDialog();
       }
     }
-  }, [orchestratorApi, restart, value, toggleAbortConfirmationDialog]);
+  }, [
+    orchestratorApi,
+    restart,
+    value,
+    toggleAbortConfirmationDialog,
+    fetchInstance,
+  ]);
 
-  const handleRerun = React.useCallback(() => {
+  const handleRerun = useCallback(() => {
     if (!value) {
       return;
     }
