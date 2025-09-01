@@ -78,10 +78,7 @@ export class RepositoryDao {
 }
 
 export class ScaffolderTaskDao {
-  constructor(
-    private readonly knex: Knex<any, any[]>,
-    private readonly logger: LoggerService,
-  ) {}
+  constructor(private readonly knex: Knex<any, any[]>) {}
 
   async findAllTasks(): Promise<ScaffolderTask[]> {
     return await this.knex('scaffolder_tasks').select<ScaffolderTask[]>(
@@ -120,19 +117,13 @@ export interface TaskLocation {
 }
 
 export class TaskLocationsDao {
-  constructor(
-    private readonly knex: Knex<any, any[]>,
-    private readonly logger: LoggerService,
-  ) {}
+  constructor(private readonly knex: Knex<any, any[]>) {}
 
   async addTaskLocation(
     taskId: string,
     location: string,
     type: string = 'component',
   ): Promise<void> {
-    this.logger.debug(
-      `Adding location ${location} for task ${taskId} to database..`,
-    );
     await this.knex('task_locations').insert({ taskId, location, type });
   }
 

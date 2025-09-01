@@ -19,7 +19,8 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
-import { eventsServiceRef } from '@backstage/plugin-events-node';
+
+// import { eventsServiceRef } from '@backstage/plugin-events-node';
 
 import { migrate } from './database/migration';
 import {
@@ -49,7 +50,7 @@ export const bulkImportPlugin = createBackendPlugin({
         catalogApi: catalogServiceRef,
         auditor: coreServices.auditor,
         database: coreServices.database,
-        events: eventsServiceRef,
+        // events: eventsServiceRef,
       },
       async init({
         config,
@@ -63,39 +64,39 @@ export const bulkImportPlugin = createBackendPlugin({
         catalogApi,
         auditor,
         database,
-        events,
+        // events,
       }) {
         const knex = await database.getClient();
 
         migrate(knex);
         const repositoryDao = new RepositoryDao(knex, logger);
-        const taskDao = new ScaffolderTaskDao(knex, logger);
-        const taskLocationsDao = new TaskLocationsDao(knex, logger);
+        const taskDao = new ScaffolderTaskDao(knex);
+        const taskLocationsDao = new TaskLocationsDao(knex);
 
-        await events.subscribe({
-          id: 'bulk-import-listener',
-          topics: ['catalog-location-added'],
-          onEvent: async ({ topic, eventPayload }) => {
-            console.log('[bulk-import] Got event:', topic, eventPayload);
-            if (
-              typeof eventPayload === 'object' &&
-              eventPayload !== null &&
-              'location' in eventPayload &&
-              'taskId' in eventPayload
-            ) {
-              const { location, taskId } = eventPayload as {
-                location: string;
-                taskId: string;
-              };
-              await taskLocationsDao.addTaskLocation(taskId, location);
-            } else {
-              logger.warn(
-                `[bulk-import] Received event with missing location or taskId`,
-                { eventPayload: JSON.stringify(eventPayload) },
-              );
-            }
-          },
-        });
+        // await events.subscribe({
+        //   id: 'bulk-import-listener',
+        //   topics: ['catalog-location-added'],
+        //   onEvent: async ({ topic, eventPayload }) => {
+        //     console.log('[bulk-import] Got event:', topic, eventPayload);
+        //     if (
+        //       typeof eventPayload === 'object' &&
+        //       eventPayload !== null &&
+        //       'location' in eventPayload &&
+        //       'taskId' in eventPayload
+        //     ) {
+        //       const { location, taskId } = eventPayload as {
+        //         location: string;
+        //         taskId: string;
+        //       };
+        //       await taskLocationsDao.addTaskLocation(taskId, location);
+        //     } else {
+        //       logger.warn(
+        //         `[bulk-import] Received event with missing location or taskId`,
+        //         { eventPayload: JSON.stringify(eventPayload) },
+        //       );
+        //     }
+        //   },
+        // });
 
         const router = await createRouter({
           config,

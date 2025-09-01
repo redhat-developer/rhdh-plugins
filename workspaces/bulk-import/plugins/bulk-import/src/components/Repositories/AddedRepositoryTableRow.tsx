@@ -20,6 +20,7 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
@@ -69,8 +70,7 @@ export const AddedRepositoryTableRow = ({
   onDelete: (repo: AddRepositoryData) => void;
 }) => {
   const classes = useStyles();
-  const configApi = useApi(configApiRef);
-  const appBaseUrl = configApi.getString('app.baseUrl');
+  useApi(configApiRef);
   return (
     <TableRow hover>
       <TableCell component="th" scope="row" className={classes.tableCellStyle}>
@@ -112,10 +112,10 @@ export const AddedRepositoryTableRow = ({
       <TableCell align="left" className={classes.tableCellStyle}>
         {data.tasks?.flatMap(task =>
           task.locations?.map((location, index) => (
-            <span key={index}>
+            <Typography key={index} component="span">
               <Link to={location}>{location}</Link>
               {index < (task.locations?.length || 0) - 1 && ', '}
-            </span>
+            </Typography>
           )),
         )}
       </TableCell>

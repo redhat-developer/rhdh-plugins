@@ -12,6 +12,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-zen/node-fetch-event-source@npm:2.1.4":
+  version: 2.1.4
+  resolution: "@ai-zen/node-fetch-event-source@npm:2.1.4"
+  dependencies:
+    cross-fetch: ^4.0.0
+  checksum: fbfae828dd89a7ab63e5960e22c0c991e766b4a79189758f5dd9e5b6384c57c04785a41fef20c78ab060bfc3f924e234cc2e99403d956c55d37f52ee01c02601
+  languageName: node
+  linkType: hard
+
 "@ampproject/remapping@npm:^2.2.0":
   version: 2.3.0
   resolution: "@ampproject/remapping@npm:2.3.0"
@@ -10532,6 +10541,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@workspace:plugins/bulk-import-backend"
   dependencies:
+    "@ai-zen/node-fetch-event-source": 2.1.4
     "@backstage/backend-defaults": ^0.11.1
     "@backstage/backend-plugin-api": ^1.4.1
     "@backstage/backend-test-utils": ^1.7.0
