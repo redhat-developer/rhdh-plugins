@@ -8620,128 +8620,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kie-tools-core/backend@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools-core/backend@npm:10.0.0"
-  dependencies:
-    "@kie-tools-core/i18n": 10.0.0
-    "@kie-tools-core/notifications": 10.0.0
-    "@kie-tools-core/workspace": 10.0.0
-    axios: ^1.6.8
-    fast-xml-parser: ^4.3.1
-    portfinder: ^1.0.32
-    semver: ^7.5.4
-    sinon: ^11.1.1
-  checksum: d31f55ca080a3305c1dcbc2f6cd06eb10046593b10d391854e0b57b1131205ba8103c6a202ced81262e29b8d69da49709559898969e99ffc9a5beb3062be7c9d
-  languageName: node
-  linkType: hard
-
-"@kie-tools-core/editor@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools-core/editor@npm:10.0.0"
-  dependencies:
-    "@kie-tools-core/backend": 10.0.0
-    "@kie-tools-core/envelope": 10.0.0
-    "@kie-tools-core/envelope-bus": 10.0.0
-    "@kie-tools-core/i18n": 10.0.0
-    "@kie-tools-core/keyboard-shortcuts": 10.0.0
-    "@kie-tools-core/notifications": 10.0.0
-    "@kie-tools-core/operating-system": 10.0.0
-    "@kie-tools-core/patternfly-base": 10.0.0
-    "@kie-tools-core/workspace": 10.0.0
-    "@patternfly/react-core": ^4.276.6
-    "@patternfly/react-icons": ^4.93.6
-    csstype: ^3.0.11
-    minimatch: ^3.0.5
-    react: ^17.0.2
-    react-dom: ^17.0.2
-  checksum: f3544595e055e5f87d99f8a5ff65f58a814b8da933af5d225c0c2737589370aa5717dc4488172b29ceeae521860522d27ecbfd0cb985b95faaca1f8a1e0fc9ed
-  languageName: node
-  linkType: hard
-
-"@kie-tools-core/envelope-bus@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools-core/envelope-bus@npm:10.0.0"
-  dependencies:
-    react: ^17.0.2
-    react-dom: ^17.0.2
-  checksum: 27374138418b7e3735fe29de4f7be9bd9cb0707d6af8e09dea88825ca8346bf910c683d64da706cc8ecac2868cb56cbbe97742b95b8d9c3420745394ac7ee07c
-  languageName: node
-  linkType: hard
-
-"@kie-tools-core/envelope@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools-core/envelope@npm:10.0.0"
-  dependencies:
-    "@kie-tools-core/envelope-bus": 10.0.0
-    csstype: ^3.0.11
-    react: ^17.0.2
-    react-dom: ^17.0.2
-  checksum: c02ae1f7518f612389e7abc22ec245ce04d8aebd5113f04442347479d1ff363ab5ca0977557d9a4be7508588012998c1b7b98f8b469b5573609d360f1c74f7a2
-  languageName: node
-  linkType: hard
-
-"@kie-tools-core/i18n@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools-core/i18n@npm:10.0.0"
-  dependencies:
-    react: ^17.0.2
-    react-dom: ^17.0.2
-  checksum: bacdceace4113f572d91fa37872a2549b42989cdcdb1bae95da4e22d8c6c7cbe509c8ad39bb0e658577055086c11f172835fbdd098f53f436eab8327079bf4c1
-  languageName: node
-  linkType: hard
-
-"@kie-tools-core/keyboard-shortcuts@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools-core/keyboard-shortcuts@npm:10.0.0"
-  dependencies:
-    "@kie-tools-core/envelope-bus": 10.0.0
-    "@kie-tools-core/operating-system": 10.0.0
-    react: ^17.0.2
-  checksum: 05148d2837c5af552d18838fd25a4d65373e1c4d7dcf4f1b813d7cfd232729ee8423f1e316f9d1b6f5cf1b79d68d6013e55fa5181be84d753ed2a77f95773f30
-  languageName: node
-  linkType: hard
-
-"@kie-tools-core/notifications@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools-core/notifications@npm:10.0.0"
-  dependencies:
-    "@kie-tools-core/i18n": 10.0.0
-    "@kie-tools-core/workspace": 10.0.0
-  checksum: ca9d197e7d6081d9f37c208047934451231085be8bfec0689ebe1d02920b2e379dcd5c8a0e9a5b025647abe869598e16e883582bdfff9427f1dfd649aec156e9
-  languageName: node
-  linkType: hard
-
-"@kie-tools-core/operating-system@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools-core/operating-system@npm:10.0.0"
-  checksum: 2527ce4f76eb76f6fe1be3584bd8483203c60a49a2b449009071eac00f00ffc6eb60db1af115704fca826b2cc84ee8c9f1c0fe7264f3d267d057a1384188f4c9
-  languageName: node
-  linkType: hard
-
-"@kie-tools-core/patternfly-base@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools-core/patternfly-base@npm:10.0.0"
-  checksum: fb6db01db54cc62670684375d999c7cf6059425a17f2a79ce655b21b9fb55f98881e2b9860806df866587230d564a9012888a54b6074e4309b4aee7920550f00
-  languageName: node
-  linkType: hard
-
-"@kie-tools-core/workspace@npm:10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools-core/workspace@npm:10.0.0"
-  dependencies:
-    "@kie-tools-core/operating-system": 10.0.0
-  checksum: 1e194e5107e26e753ca34f38f7e247b63d45657a00dc12ba09cdbbf9c2a15de18f198bc2cec818eb6efc423036346482521256139a5c08018149dd254033f41c
-  languageName: node
-  linkType: hard
-
-"@kie-tools/serverless-workflow-standalone-editor@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "@kie-tools/serverless-workflow-standalone-editor@npm:10.0.0"
-  checksum: ac90e1ce5c81e506a549f95f225a3add8cd54aa70c52094fee7a176363d5b997ff15f6882772d1c9385196490acf5755488778812beaea754d862f44e8b224b1
-  languageName: node
-  linkType: hard
-
 "@kubernetes-models/apimachinery@npm:^2.0.0, @kubernetes-models/apimachinery@npm:^2.0.1":
   version: 2.0.1
   resolution: "@kubernetes-models/apimachinery@npm:2.0.1"
@@ -10684,48 +10562,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-core@npm:^4.276.6":
-  version: 4.278.1
-  resolution: "@patternfly/react-core@npm:4.278.1"
-  dependencies:
-    "@patternfly/react-icons": ^4.93.7
-    "@patternfly/react-styles": ^4.92.8
-    "@patternfly/react-tokens": ^4.94.7
-    focus-trap: 6.9.2
-    react-dropzone: 9.0.0
-    tippy.js: 5.1.2
-    tslib: ^2.0.0
-  peerDependencies:
-    react: ^16.8 || ^17 || ^18
-    react-dom: ^16.8 || ^17 || ^18
-  checksum: d7db9918a2f42d923063949a1539ddb4c4eb5f050d2da59893ba467e87d85f5b5b964126b83cc677d9500aaaaac7e2e95b23eb9ba1abdf2b3a58c8dea1983c75
-  languageName: node
-  linkType: hard
-
-"@patternfly/react-icons@npm:^4.93.6, @patternfly/react-icons@npm:^4.93.7":
-  version: 4.93.7
-  resolution: "@patternfly/react-icons@npm:4.93.7"
-  peerDependencies:
-    react: ^16.8 || ^17 || ^18
-    react-dom: ^16.8 || ^17 || ^18
-  checksum: 8fa4c730ce9f7f5c7c6ed923dacf5e894a88ba6f98d4502b7d4fc2664396c548f001215aba6c5e17f5e26b27176c10a2cc7ac4b3e4fc38d03a3e97ffb6caf4fc
-  languageName: node
-  linkType: hard
-
-"@patternfly/react-styles@npm:^4.92.8":
-  version: 4.92.8
-  resolution: "@patternfly/react-styles@npm:4.92.8"
-  checksum: ab4cd3d57c96bb1988a3d635388108aeac1fb310be2678f06ea9c3ce47517c005ae47cbc93b7f90fa6208356282104dfbaa4a04980b7024b4c8129cd8c838687
-  languageName: node
-  linkType: hard
-
-"@patternfly/react-tokens@npm:^4.94.7":
-  version: 4.94.7
-  resolution: "@patternfly/react-tokens@npm:4.94.7"
-  checksum: 726fe4d9edd996b228f02c02586e51969af72b846f8b14fa3090f476bb831bd8a12f8530d51baafe9d5aa21fb007553b57e2d96da5f3b03f6f9e174e5d640af9
-  languageName: node
-  linkType: hard
-
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -11584,8 +11420,6 @@ __metadata:
     "@backstage/test-utils": ^1.7.8
     "@backstage/types": ^1.2.1
     "@janus-idp/cli": 3.6.1
-    "@kie-tools-core/editor": ^10.0.0
-    "@kie-tools/serverless-workflow-standalone-editor": ^10.0.0
     "@material-ui/core": ^4.12.4
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.17.1
@@ -12138,16 +11972,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sinonjs/commons@npm:^1.6.0, @sinonjs/commons@npm:^1.7.0, @sinonjs/commons@npm:^1.8.3":
-  version: 1.8.6
-  resolution: "@sinonjs/commons@npm:1.8.6"
-  dependencies:
-    type-detect: 4.0.8
-  checksum: 7d3f8c1e85f30cd4e83594fc19b7a657f14d49eb8d95a30095631ce15e906c869e0eff96c5b93dffea7490c00418b07f54582ba49c6560feb2a8c34c0b16832d
-  languageName: node
-  linkType: hard
-
-"@sinonjs/commons@npm:^3.0.0, @sinonjs/commons@npm:^3.0.1":
+"@sinonjs/commons@npm:^3.0.0":
   version: 3.0.1
   resolution: "@sinonjs/commons@npm:3.0.1"
   dependencies:
@@ -12162,42 +11987,6 @@ __metadata:
   dependencies:
     "@sinonjs/commons": ^3.0.0
   checksum: 614d30cb4d5201550c940945d44c9e0b6d64a888ff2cd5b357f95ad6721070d6b8839cd10e15b76bf5e14af0bcc1d8f9ec00d49a46318f1f669a4bec1d7f3148
-  languageName: node
-  linkType: hard
-
-"@sinonjs/fake-timers@npm:^11.2.2":
-  version: 11.3.1
-  resolution: "@sinonjs/fake-timers@npm:11.3.1"
-  dependencies:
-    "@sinonjs/commons": ^3.0.1
-  checksum: 173376bb02e870467705829b003c996bcac958f34238875458961ac6483c6029cd9623950d20c68b648499635a0e6d04c26aac822e4f5c120cc7c217aeba6553
-  languageName: node
-  linkType: hard
-
-"@sinonjs/fake-timers@npm:^7.1.2":
-  version: 7.1.2
-  resolution: "@sinonjs/fake-timers@npm:7.1.2"
-  dependencies:
-    "@sinonjs/commons": ^1.7.0
-  checksum: c84773d7973edad5511a31d2cc75023447b5cf714a84de9bb50eda45dda88a0d3bd2c30bf6e6e936da50a048d5352e2151c694e13e59b97d187ba1f329e9a00c
-  languageName: node
-  linkType: hard
-
-"@sinonjs/samsam@npm:^6.0.2":
-  version: 6.1.3
-  resolution: "@sinonjs/samsam@npm:6.1.3"
-  dependencies:
-    "@sinonjs/commons": ^1.6.0
-    lodash.get: ^4.4.2
-    type-detect: ^4.0.8
-  checksum: d533e8792af00879d78dd181822e8b00bb8a81671f2fbcf1c5257a59649b21d881ba7ddc42aaf09690d7325c8a6dcc7a1a341591a379742b54e4eb25b273417a
-  languageName: node
-  linkType: hard
-
-"@sinonjs/text-encoding@npm:^0.7.2":
-  version: 0.7.3
-  resolution: "@sinonjs/text-encoding@npm:0.7.3"
-  checksum: d53f3a3fc94d872b171f7f0725662f4d863e32bca8b44631be4fe67708f13058925ad7297524f882ea232144d7ab978c7fe62c5f79218fca7544cf91be3d233d
   languageName: node
   linkType: hard
 
@@ -16530,15 +16319,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"attr-accept@npm:^1.1.3":
-  version: 1.1.3
-  resolution: "attr-accept@npm:1.1.3"
-  dependencies:
-    core-js: ^2.5.0
-  checksum: 836c0e863719c0355e8ad4214e4c81f24dd9e724233153200189732da691f73e6f13316b8ac456d75749a89780f0da67e44387e46dfc3fd9a517a84a0e45acbc
-  languageName: node
-  linkType: hard
-
 "autolinker@npm:^3.11.0":
   version: 3.16.2
   resolution: "autolinker@npm:3.16.2"
@@ -16622,7 +16402,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.11.0, axios@npm:^1.0.0, axios@npm:^1.11.0, axios@npm:^1.6.8, axios@npm:^1.7.4":
+"axios@npm:1.11.0, axios@npm:^1.0.0, axios@npm:^1.11.0, axios@npm:^1.7.4":
   version: 1.11.0
   resolution: "axios@npm:1.11.0"
   dependencies:
@@ -19186,7 +18966,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csstype@npm:^3.0.11, csstype@npm:^3.0.2, csstype@npm:^3.1.2, csstype@npm:^3.1.3":
+"csstype@npm:^3.0.2, csstype@npm:^3.1.2, csstype@npm:^3.1.3":
   version: 3.1.3
   resolution: "csstype@npm:3.1.3"
   checksum: 8db785cc92d259102725b3c694ec0c823f5619a84741b5c7991b8ad135dfaa66093038a1cc63e03361a6cd28d122be48f2106ae72334e067dd619a51f49eddf7
@@ -21853,7 +21633,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-xml-parser@npm:^4.3.1, fast-xml-parser@npm:^4.4.1":
+"fast-xml-parser@npm:^4.4.1":
   version: 4.5.0
   resolution: "fast-xml-parser@npm:4.5.0"
   dependencies:
@@ -21986,15 +21766,6 @@ __metadata:
   version: 2.0.5
   resolution: "file-saver@npm:2.0.5"
   checksum: c62d96e5cebc58b4bdf3ae8a60d5cf9607ad82f75f798c33a4ee63435ac2203002584d5256a2a780eda7feb5e19dc3b6351c2212e58b3f529e63d265a7cc79f7
-  languageName: node
-  linkType: hard
-
-"file-selector@npm:^0.1.8":
-  version: 0.1.19
-  resolution: "file-selector@npm:0.1.19"
-  dependencies:
-    tslib: ^2.0.1
-  checksum: 5b105a3ede9139729ada72d6653ae3f4387a7bf2585e8700f9fa53f22457d1f88304fdde9ad7b43b694a5610d67058302257f448a75248fc2225880bca6df5df
   languageName: node
   linkType: hard
 
@@ -22192,15 +21963,6 @@ __metadata:
   version: 1.1.0
   resolution: "fn.name@npm:1.1.0"
   checksum: e357144f48cfc9a7f52a82bbc6c23df7c8de639fce049cac41d41d62cabb740cdb9f14eddc6485e29c933104455bdd7a69bb14a9012cef9cd4fa252a4d0cf293
-  languageName: node
-  linkType: hard
-
-"focus-trap@npm:6.9.2":
-  version: 6.9.2
-  resolution: "focus-trap@npm:6.9.2"
-  dependencies:
-    tabbable: ^5.3.2
-  checksum: 326f210dceb5db6fec414e758bfd388a8ce9c9a013380fbe2fbaf40558436219fbbd6c747e4ed7bf4149086382c0d755490ca5847e37808e0d33b4ccc7c7369e
   languageName: node
   linkType: hard
 
@@ -26138,13 +25900,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"just-extend@npm:^6.2.0":
-  version: 6.2.0
-  resolution: "just-extend@npm:6.2.0"
-  checksum: 022024d6f687c807963b97a24728a378799f7e4af7357d1c1f90dedb402943d5c12be99a5136654bed8362c37a358b1793feaad3366896f239a44e17c5032d86
-  languageName: node
-  linkType: hard
-
 "jwa@npm:^1.4.1":
   version: 1.4.1
   resolution: "jwa@npm:1.4.1"
@@ -28599,19 +28354,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nise@npm:^5.1.0":
-  version: 5.1.9
-  resolution: "nise@npm:5.1.9"
-  dependencies:
-    "@sinonjs/commons": ^3.0.0
-    "@sinonjs/fake-timers": ^11.2.2
-    "@sinonjs/text-encoding": ^0.7.2
-    just-extend: ^6.2.0
-    path-to-regexp: ^6.2.1
-  checksum: ab9fd6eabc98170f18aef6c9567983145c1dc62c7aef46eda0fea754083316c1f0f9b2c32e9b4bfdd25122276d670293596ed672b54dd1ffa8eb58b56a30ea95
-  languageName: node
-  linkType: hard
-
 "no-case@npm:^3.0.4":
   version: 3.0.4
   resolution: "no-case@npm:3.0.4"
@@ -30296,13 +30038,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"popper.js@npm:^1.16.0":
-  version: 1.16.1
-  resolution: "popper.js@npm:1.16.1"
-  checksum: c56ae5001ec50a77ee297a8061a0221d99d25c7348d2e6bcd3e45a0d0f32a1fd81bca29d46cb0d4bdf13efb77685bd6a0ce93f9eb3c608311a461f945fffedbe
-  languageName: node
-  linkType: hard
-
 "portfinder@npm:^1.0.32":
   version: 1.0.32
   resolution: "portfinder@npm:1.0.32"
@@ -30947,18 +30682,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types-extra@npm:^1.1.0":
-  version: 1.1.1
-  resolution: "prop-types-extra@npm:1.1.1"
-  dependencies:
-    react-is: ^16.3.2
-    warning: ^4.0.0
-  peerDependencies:
-    react: ">=0.14.0"
-  checksum: ebf1c048687bb538457f91a3610abb36ca0f50587a6afae80443a9e65b9db96882d18c3511175a8967fad4ca5dcd804913bbc241d7b5160c74cf69aacdd054f0
-  languageName: node
-  linkType: hard
-
 "prop-types@npm:15.x, prop-types@npm:^15.0.0, prop-types@npm:^15.5.10, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
@@ -31532,20 +31255,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dropzone@npm:9.0.0":
-  version: 9.0.0
-  resolution: "react-dropzone@npm:9.0.0"
-  dependencies:
-    attr-accept: ^1.1.3
-    file-selector: ^0.1.8
-    prop-types: ^15.6.2
-    prop-types-extra: ^1.1.0
-  peerDependencies:
-    react: ">=0.14.0"
-  checksum: 03fd7fb78b49045c2c30d3841fbab30ba8513e03c69103527c9c1895c4298ca1ad76a6f9ba82acd5f505d9b713c4a0b2dedf248d891c9da639aa18004c35fee2
-  languageName: node
-  linkType: hard
-
 "react-error-boundary@npm:^4.1.2":
   version: 4.1.2
   resolution: "react-error-boundary@npm:4.1.2"
@@ -31642,7 +31351,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^16.13.1, react-is@npm:^16.3.2, react-is@npm:^16.7.0":
+"react-is@npm:^16.13.1, react-is@npm:^16.7.0":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: f7a19ac3496de32ca9ae12aa030f00f14a3d45374f1ceca0af707c831b2a6098ef0d6bdae51bd437b0a306d7f01d4677fcc8de7c0d331eb47ad0f46130e53c5f
@@ -33543,20 +33252,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sinon@npm:^11.1.1":
-  version: 11.1.2
-  resolution: "sinon@npm:11.1.2"
-  dependencies:
-    "@sinonjs/commons": ^1.8.3
-    "@sinonjs/fake-timers": ^7.1.2
-    "@sinonjs/samsam": ^6.0.2
-    diff: ^5.0.0
-    nise: ^5.1.0
-    supports-color: ^7.2.0
-  checksum: 1d01377e230c9ba976bf33f28b588bae7901b0b5a503d2f6b2a7914b0dbaa9f09823481926c6f2abed820123c7fa865519695af3ae2e9ba18d8b025616163501
-  languageName: node
-  linkType: hard
-
 "sisteransi@npm:^1.0.5":
   version: 1.0.5
   resolution: "sisteransi@npm:1.0.5"
@@ -34473,7 +34168,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"supports-color@npm:^7.1.0, supports-color@npm:^7.2.0":
+"supports-color@npm:^7.1.0":
   version: 7.2.0
   resolution: "supports-color@npm:7.2.0"
   dependencies:
@@ -34628,13 +34323,6 @@ __metadata:
   version: 3.2.4
   resolution: "symbol-tree@npm:3.2.4"
   checksum: 6e8fc7e1486b8b54bea91199d9535bb72f10842e40c79e882fc94fb7b14b89866adf2fd79efa5ebb5b658bc07fb459ccce5ac0e99ef3d72f474e74aaf284029d
-  languageName: node
-  linkType: hard
-
-"tabbable@npm:^5.3.2":
-  version: 5.3.3
-  resolution: "tabbable@npm:5.3.3"
-  checksum: 1aa56e1bb617cc10616c407f4e756f0607f3e2d30f9803664d70b85db037ca27e75918ed1c71443f3dc902e21dc9f991ce4b52d63a538c9b69b3218d3babcd70
   languageName: node
   linkType: hard
 
@@ -34987,15 +34675,6 @@ __metadata:
     fdir: ^6.4.2
     picomatch: ^4.0.2
   checksum: 7e2ffe262ebc149036bdef37c56b32d02d52cf09efa7d43dbdab2ea3c12844a4da881058835ce4c74d1891190e5ad5ec5133560a11ec8314849b68ad0d99d3f4
-  languageName: node
-  linkType: hard
-
-"tippy.js@npm:5.1.2":
-  version: 5.1.2
-  resolution: "tippy.js@npm:5.1.2"
-  dependencies:
-    popper.js: ^1.16.0
-  checksum: bcf51d3263a8ad9410704bdc6ebf7b0fa9e1f05e74e6ca6d9ef7a3c5540a3f0ff4ba08febf738b8e6205d91b10ebe7f26dc4186f7165114a2c4f8d464f608909
   languageName: node
   linkType: hard
 
@@ -35488,13 +35167,6 @@ __metadata:
   version: 4.0.8
   resolution: "type-detect@npm:4.0.8"
   checksum: 62b5628bff67c0eb0b66afa371bd73e230399a8d2ad30d852716efcc4656a7516904570cd8631a49a3ce57c10225adf5d0cbdcb47f6b0255fe6557c453925a15
-  languageName: node
-  linkType: hard
-
-"type-detect@npm:^4.0.8":
-  version: 4.1.0
-  resolution: "type-detect@npm:4.1.0"
-  checksum: 3b32f873cd02bc7001b00a61502b7ddc4b49278aabe68d652f732e1b5d768c072de0bc734b427abf59d0520a5f19a2e07309ab921ef02018fa1cb4af155cdb37
   languageName: node
   linkType: hard
 
@@ -36682,15 +36354,6 @@ __metadata:
   dependencies:
     makeerror: 1.0.12
   checksum: ad7a257ea1e662e57ef2e018f97b3c02a7240ad5093c392186ce0bcf1f1a60bbadd520d073b9beb921ed99f64f065efb63dfc8eec689a80e569f93c1c5d5e16c
-  languageName: node
-  linkType: hard
-
-"warning@npm:^4.0.0":
-  version: 4.0.3
-  resolution: "warning@npm:4.0.3"
-  dependencies:
-    loose-envify: ^1.0.0
-  checksum: 4f2cb6a9575e4faf71ddad9ad1ae7a00d0a75d24521c193fa464f30e6b04027bd97aa5d9546b0e13d3a150ab402eda216d59c1d0f2d6ca60124d96cd40dfa35c
   languageName: node
   linkType: hard
 
