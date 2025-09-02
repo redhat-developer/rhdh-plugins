@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-export * from './Metric';
-export * from './threshold';
-export * from './jiraClient';
+import { JiraClient } from './base';
+
+export class JiraCloudClient extends JiraClient {
+  protected getAuthHeaders(): Record<string, string> {
+    return {
+      Authorization: `Basic ${this.config.token}`,
+    };
+  }
+}

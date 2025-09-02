@@ -14,6 +14,40 @@
  * limitations under the License.
  */
 
-export * from './Metric';
-export * from './threshold';
-export * from './jiraClient';
+/**
+ * Jira supported products
+ * @public
+ */
+export type Product = 'datacenter' | 'cloud';
+
+/**
+ * Jira integration configuration
+ * @public
+ */
+export interface JiraConfig {
+  baseUrl: string;
+  token: string;
+  product: Product;
+  apiVersion?: string;
+}
+
+/**
+ * Jira open issues options
+ * @public
+ */
+export interface JiraOptions {
+  mandatoryFilter?: string;
+  customFilter?: string;
+}
+
+/**
+ * Jira request filters
+ * @public
+ */
+export interface JiraEntityFilters {
+  project: string;
+  component?: string;
+  label?: string;
+  team?: string;
+  customFilter?: string;
+}
