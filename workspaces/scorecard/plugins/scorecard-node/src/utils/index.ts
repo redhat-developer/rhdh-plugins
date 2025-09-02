@@ -20,3 +20,4 @@ export type {
   ComparisonOperator,
   RangeOperator,
 } from './types';
+export { validateJiraConfig, validateJiraOptions } from './jiraIntegration';

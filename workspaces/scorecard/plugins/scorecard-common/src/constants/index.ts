@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-export * from './Metric';
-export * from './threshold';
-export * from './jiraClient';
+export * from './annotations';
+export * from './jiraOpenIssues';
