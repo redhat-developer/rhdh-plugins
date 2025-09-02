@@ -21,6 +21,10 @@ export interface Config {
     plugins?: {
       /** JIRA datasource configuration */
       jira?: {
+        options?: {
+          mandatoryFilter?: string;
+          customFilter?: string;
+        };
         open_issues?: {
           thresholds?: {
             rules?: Array<{
