@@ -30,7 +30,7 @@ export async function getImportStatusFromLocations(
   deps: {
     logger: LoggerService;
     config: Config;
-    gitApiService: GithubApiService | GitlabApiService
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   repoUrl: string,
@@ -70,12 +70,9 @@ async function getImportStatusWithCheckerFn(
   lastUpdate?: string;
 } | null> {
   // Check to see if there are any PR
-  const openImportPr = await deps.gitApiService.findImportOpenPr(
-    deps.logger,
-    {
-      repoUrl,
-    },
-  );
+  const openImportPr = await deps.gitApiService.findImportOpenPr(deps.logger, {
+    repoUrl,
+  });
   if (!openImportPr.prUrl) {
     const existsInCatalog = await catalogExistenceCheckFn(
       getCatalogUrl(deps.config, repoUrl, defaultBranch),

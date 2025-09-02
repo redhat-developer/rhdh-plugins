@@ -287,9 +287,10 @@ describe('imports', () => {
               ctx.status(200),
               ctx.json({
                 name: 'does-not-exist-in-catalog-but-errors-with-pr-creation',
-                path_with_namespace: 'my-org-ent-1/does-not-exist-in-catalog-but-errors-with-pr-creation',
+                path_with_namespace:
+                  'my-org-ent-1/does-not-exist-in-catalog-but-errors-with-pr-creation',
                 _links: {
-                  self: 'https://gitlab.com/my-org-ent-1/does-not-exist-in-catalog-but-errors-with-pr-creation'
+                  self: 'https://gitlab.com/my-org-ent-1/does-not-exist-in-catalog-but-errors-with-pr-creation',
                 },
                 web_url:
                   'https://gitlab.com/my-org-ent-1/does-not-exist-in-catalog-but-errors-with-pr-creation',
@@ -305,11 +306,13 @@ describe('imports', () => {
               ctx.status(200),
               ctx.json({
                 name: 'dev',
-                web_url: 'https://gitlab.com/my-org-ent-1/does-not-exist-in-catalog-but-errors-with-pr-creation/-/tree/dev',
+                web_url:
+                  'https://gitlab.com/my-org-ent-1/does-not-exist-in-catalog-but-errors-with-pr-creation/-/tree/dev',
                 commit: {
                   type: 'commit',
                   id: 'aa218f56b14c9653891f9e74264a383fa43fefbd',
-                  web_url: 'https://gitlab.com/my-org-ent-1/does-not-exist-in-catalog-but-errors-with-pr-creation/-/commit/aa218f56b14c9653891f9e74264a383fa43fefbd',
+                  web_url:
+                    'https://gitlab.com/my-org-ent-1/does-not-exist-in-catalog-but-errors-with-pr-creation/-/commit/aa218f56b14c9653891f9e74264a383fa43fefbd',
                 },
               }),
             ),
@@ -364,7 +367,7 @@ describe('imports', () => {
               ctx.json({
                 name: 'animated-happiness',
                 _links: {
-                  self: 'https://gitlab.com/my-org-ent-2/animated-happiness'
+                  self: 'https://gitlab.com/my-org-ent-2/animated-happiness',
                 },
                 path_with_namespace: 'my-org-ent-2/animated-happiness',
                 web_url: 'https://gitlab.com/my-org-ent-2/animated-happiness',
@@ -380,20 +383,20 @@ describe('imports', () => {
               ctx.status(200),
               ctx.json({
                 name: 'main',
-                web_url: 'https://gitlab.com/my-org-ent-2/animated-happiness/-/tree/main',
+                web_url:
+                  'https://gitlab.com/my-org-ent-2/animated-happiness/-/tree/main',
                 commit: {
                   type: 'commit',
                   id: 'aa218f56b14c9653891f9e74264a383fa43fefbd',
-                  web_url: 'https://gitlab.com/my-org-ent-2/animated-happinessn/-/commit/aa218f56b14c9653891f9e74264a383fa43fefbd',
+                  web_url:
+                    'https://gitlab.com/my-org-ent-2/animated-happinessn/-/commit/aa218f56b14c9653891f9e74264a383fa43fefbd',
                 },
               }),
             ),
         ),
         rest.post(
           `${LOCAL_ADDR}/api/v4/projects/my-org-ent-2%2Fanimated-happiness/repository/files/catalog-info.yaml`,
-          (_req, res, ctx) => res(
-            ctx.status(201)
-          )
+          (_req, res, ctx) => res(ctx.status(201)),
         ),
         rest.get(
           `${LOCAL_ADDR}/api/v4/projects/my-org-ent-1%2Fjava-quarkus-starter/repository/files/catalog-info.yaml`,
@@ -416,10 +419,9 @@ describe('imports', () => {
                 name: 'animated-happiness',
                 path_with_namespace: 'my-org-ent-1/java-quarkus-starter',
                 _links: {
-                  self: 'https://gitlab.com/my-org-ent-1/java-quarkus-starter'
+                  self: 'https://gitlab.com/my-org-ent-1/java-quarkus-starter',
                 },
-                web_url:
-                  'https://gitlab.com/my-org-ent-1/java-quarkus-starter',
+                web_url: 'https://gitlab.com/my-org-ent-1/java-quarkus-starter',
                 default_branch: 'main',
                 updated_at: '2024-07-08T16:18:44-04:00',
               }),
@@ -571,7 +573,7 @@ spec:
           (_req, res, ctx) =>
             res(
               ctx.status(200),
-              ctx.json([]) // gitlab will return an empty array if there are no contributors
+              ctx.json([]), // gitlab will return an empty array if there are no contributors
             ),
         ),
         rest.get(
