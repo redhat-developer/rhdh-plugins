@@ -8,15 +8,15 @@
   },
   "dependencies": {
     "@backstage-community/plugin-rbac-common": "^1.12.2",
-    "@backstage/core-plugin-api": "^1.10.3",
-    "@backstage/plugin-permission-common": "^0.8.4",
+    "@backstage/core-plugin-api": "^1.10.9",
+    "@backstage/plugin-permission-common": "^0.9.1",
     "cross-fetch": "^4.0.0",
     "lodash": "^4.17.21",
     "uri-template": "^2.0.0"
   },
   "description": "Common functionalities for the redhat-resource-optimization plugin",
   "devDependencies": {
-    "@backstage/cli": "^0.29.4",
+    "@backstage/cli": "^0.33.1",
     "@backstage/types": "^1.2.1",
     "@testing-library/jest-dom": "^6.0.0",
     "@types/lodash": "^4.17.5",
