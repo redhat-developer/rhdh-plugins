@@ -14,6 +14,22 @@
  * limitations under the License.
  */
 
-export { useDropdownManager } from './useDropdownManager';
-export { useTranslation } from './useTranslation';
-export { useLanguage } from './useLanguage';
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { globalHeaderTranslationRef } from './ref';
+
+/**
+ * Translation resource for the global header plugin, providing support for multiple languages.
+ *
+ * @public
+ */
+export const globalHeaderTranslations = createTranslationResource({
+  ref: globalHeaderTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    es: () => import('./es'),
+    fr: () => import('./fr'),
+    it: () => import('./it'),
+  },
+});
+
+export { globalHeaderTranslationRef };

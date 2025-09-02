@@ -8,6 +8,8 @@ import type { ComponentType } from 'react';
 import { CSSProperties } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { MenuItemProps } from '@mui/material/MenuItem';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
 export const ApplicationLauncherDropdown: () => JSX_2.Element;
@@ -83,6 +85,48 @@ export interface GlobalHeaderComponentProps {
 
 // @public
 export const globalHeaderPlugin: BackstagePlugin<{}, {}, {}>;
+
+// @public
+export const globalHeaderTranslationRef: TranslationRef<
+  'plugin.global-header',
+  {
+    readonly 'search.placeholder': string;
+    readonly 'search.noResults': string;
+    readonly 'search.errorFetching': string;
+    readonly 'help.tooltip': string;
+    readonly 'help.noSupportLinks': string;
+    readonly 'help.noSupportLinksSubtitle': string;
+    readonly 'help.quickStart': string;
+    readonly 'help.supportTitle': string;
+    readonly 'profile.picture': string;
+    readonly 'profile.settings': string;
+    readonly 'profile.myProfile': string;
+    readonly 'profile.signOut': string;
+    readonly 'applicationLauncher.tooltip': string;
+    readonly 'applicationLauncher.noLinksTitle': string;
+    readonly 'applicationLauncher.noLinksSubtitle': string;
+    readonly 'applicationLauncher.developerHub': string;
+    readonly 'applicationLauncher.rhdhLocal': string;
+    readonly 'applicationLauncher.sections.documentation': string;
+    readonly 'applicationLauncher.sections.developerTools': string;
+    readonly 'starred.title': string;
+    readonly 'starred.removeTooltip': string;
+    readonly 'starred.noItemsTitle': string;
+    readonly 'starred.noItemsSubtitle': string;
+    readonly 'notifications.title': string;
+    readonly 'notifications.unsupportedDismissOption': string;
+    readonly 'create.title': string;
+    readonly 'create.registerComponent.title': string;
+    readonly 'create.registerComponent.subtitle': string;
+    readonly 'create.templates.errorFetching': string;
+    readonly 'create.templates.sectionTitle': string;
+    readonly 'create.templates.allTemplates': string;
+    readonly 'create.templates.noTemplatesAvailable': string;
+  }
+>;
+
+// @public
+export const globalHeaderTranslations: TranslationResource<'plugin.global-header'>;
 
 // @public (undocumented)
 export const HeaderButton: ({
