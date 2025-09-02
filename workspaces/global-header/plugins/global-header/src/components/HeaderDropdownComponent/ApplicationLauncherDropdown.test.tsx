@@ -15,6 +15,10 @@
  */
 import { screen, fireEvent } from '@testing-library/react';
 import { renderInTestApp } from '@backstage/test-utils';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
 import { ApplicationLauncherDropdown } from './ApplicationLauncherDropdown';
 import { useDropdownManager } from '../../hooks';
 import { useApplicationLauncherDropdownMountPoints } from '../../hooks/useApplicationLauncherDropdownMountPoints';
@@ -25,6 +29,15 @@ jest.mock('../../hooks', () => ({
 
 jest.mock('../../hooks/useApplicationLauncherDropdownMountPoints', () => ({
   useApplicationLauncherDropdownMountPoints: jest.fn(),
+}));
+
+// Mock translation hooks
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
 }));
 
 describe('ApplicationLauncherDropdown', () => {

@@ -19,6 +19,10 @@ import {
   useEntityPresentation,
 } from '@backstage/plugin-catalog-react';
 import { renderInTestApp } from '@backstage/test-utils';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
 import { StarredDropdown } from './StarredDropdown';
 import { useDropdownManager } from '../../hooks';
 
@@ -29,6 +33,15 @@ jest.mock('@backstage/plugin-catalog-react', () => ({
 
 jest.mock('../../hooks', () => ({
   useDropdownManager: jest.fn(),
+}));
+
+// Mock translation hooks
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
 }));
 
 describe('StarredDropdown', () => {

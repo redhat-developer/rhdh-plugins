@@ -14,6 +14,22 @@
  * limitations under the License.
  */
 
-export { useDropdownManager } from './useDropdownManager';
-export { useTranslation } from './useTranslation';
-export { useLanguage } from './useLanguage';
+import { useTranslation } from '../hooks/useTranslation';
+
+import { globalHeaderTranslationRef } from '../translations';
+
+type Messages = typeof globalHeaderTranslationRef.T;
+
+interface TransProps<
+  TMessages extends {
+    [key in string]: string;
+  },
+> {
+  message: keyof TMessages;
+  params?: any;
+}
+
+export const Trans = ({ message, params }: TransProps<Messages>) => {
+  const { t } = useTranslation();
+  return t(message, params);
+};
