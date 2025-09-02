@@ -13,22 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { useTranslation } from '../hooks/useTranslation';
-import logo from '../images/logo-white.svg';
-
-/**
- * @public
- * Lightspeed Icon
- */
-export const LightspeedIcon = () => {
-  const { t } = useTranslation();
-
-  return (
-    <img
-      src={logo as any}
-      alt={t('icon.lightspeed.alt')}
-      style={{ height: '25px' }}
-    />
-  );
-};
+export * from './translations';
