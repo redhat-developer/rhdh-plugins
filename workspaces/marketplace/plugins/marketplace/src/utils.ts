@@ -167,3 +167,25 @@ export const isPluginInstalled = (
     pluginInstallStatus === MarketplacePluginInstallStatus.Disabled
   );
 };
+
+export interface CategoryTagDisplayOptions {
+  maxLength?: number;
+}
+
+export const getCategoryTagDisplayInfo = (
+  categoryName: string,
+  options: CategoryTagDisplayOptions = {},
+) => {
+  const { maxLength = 25 } = options;
+
+  const shouldTruncate = categoryName.length > maxLength;
+  const displayName = shouldTruncate
+    ? `${categoryName.substring(0, maxLength)}...`
+    : categoryName;
+
+  return {
+    displayName,
+    tooltipTitle: shouldTruncate ? categoryName : '',
+    shouldShowTooltip: shouldTruncate,
+  };
+};
