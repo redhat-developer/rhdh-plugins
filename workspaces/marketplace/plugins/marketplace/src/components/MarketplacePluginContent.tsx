@@ -30,6 +30,7 @@ import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -73,6 +74,48 @@ import {
   InstallationType,
   useInstallationContext,
 } from './InstallationContext';
+
+const PluginMetadataSection = ({
+  value,
+  title,
+}: {
+  value: any;
+  title: string;
+}) => {
+  if (!value) return null;
+
+  if (Array.isArray(value)) {
+    if (value.length === 0 || typeof value[0] !== 'string') return null;
+    return (
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+          {title}
+        </Typography>
+        {value.length === 1 ? (
+          <Typography variant="body2">{value[0]}</Typography>
+        ) : (
+          <ul style={{ margin: 0, paddingLeft: '1rem' }}>
+            {value.map((item, index) => (
+              <li key={item || index}>{item}</li>
+            ))}
+          </ul>
+        )}
+      </Box>
+    );
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    return (
+      <Box sx={{ mt: 3, mb: 3 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+          {title}
+        </Typography>
+        <Typography variant="body2">{String(value)}</Typography>
+      </Box>
+    );
+  }
+
+  return null;
+};
 
 export const MarketplacePluginContentSkeleton = () => {
   return (
@@ -464,18 +507,29 @@ export const MarketplacePluginContent = ({
 
         <Grid container spacing={2}>
           <Grid item md={3}>
-            {highlights.length > 0 ? (
-              <>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                  Highlights
-                </Typography>
-                <ul>
-                  {highlights.map(highlight => (
-                    <li key={highlight}>{highlight}</li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
+            <PluginMetadataSection value={highlights} title="Highlights" />
+
+            <PluginMetadataSection
+              value={plugin.spec?.authors?.map(author => author.name)}
+              title={`Author${plugin.spec?.authors && plugin.spec.authors.length > 1 ? 's' : ''}`}
+            />
+
+            <PluginMetadataSection value={plugin.metadata?.tags} title="Tags" />
+
+            <PluginMetadataSection
+              value={plugin.spec?.categories}
+              title="Category"
+            />
+
+            <PluginMetadataSection
+              value={plugin.spec?.publisher}
+              title="Publisher"
+            />
+
+            <PluginMetadataSection
+              value={plugin.spec?.support?.name}
+              title="Support Level"
+            />
 
             {pluginActionButton()}
           </Grid>
