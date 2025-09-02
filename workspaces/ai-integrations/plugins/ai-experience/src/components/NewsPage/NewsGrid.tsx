@@ -26,10 +26,12 @@ import { extractImageFromHTML, sanitizeXML } from '../../utils/rss-utils';
 import { Article, NewsCard } from './NewsCard';
 import Image from '../../assets/rss-not-found.svg';
 import { rssApiRef } from '../../api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const NewsGrid: React.FC = () => {
   const theme = useTheme();
   const rssApi = useApi(rssApiRef);
+  const { t } = useTranslation();
   const [articleData, setArticleData] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -93,7 +95,7 @@ export const NewsGrid: React.FC = () => {
         }}
       >
         <CircularProgress />
-        <Box sx={{ mt: 2 }}>Fetching RSS Feed</Box>
+        <Box sx={{ mt: 2 }}>{t('news.fetchingRssFeed')}</Box>
       </Box>
     );
   }
@@ -114,7 +116,7 @@ export const NewsGrid: React.FC = () => {
               marginTop: theme.spacing(2),
             }}
           >
-            No content available
+            {t('news.noContentAvailable')}
           </Typography>
           <Typography
             variant="body2"
@@ -126,9 +128,7 @@ export const NewsGrid: React.FC = () => {
               marginBottom: theme.spacing(2),
             }}
           >
-            Looks like we couldn't get content from that RSS feed. You can
-            double-check the URL or switch to a different source by updating the
-            plugin config file.
+            {t('news.noContentDescription')}
           </Typography>
         </Box>
         <Box
@@ -137,7 +137,7 @@ export const NewsGrid: React.FC = () => {
             marginRight: `${theme.spacing(10)}`,
           }}
         >
-          <img src={Image} alt="No RSS Content" />
+          <img src={Image} alt={t('news.noRssContent')} />
         </Box>
       </Stack>
     );

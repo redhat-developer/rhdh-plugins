@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 import React from 'react';
+import { useTranslation } from './useTranslation';
 
-const getGreetingByTimeZone = (timeZone?: string) => {
+const getGreetingByTimeZone = (timeZone?: string, t?: any) => {
   const hours = new Date().toLocaleString('en-US', {
     timeZone,
     hour: 'numeric',
@@ -24,26 +25,27 @@ const getGreetingByTimeZone = (timeZone?: string) => {
   const hour = parseInt(hours, 10);
 
   if (hour < 12) {
-    return 'Good morning';
+    return t ? t('greeting.goodMorning') : 'Good morning';
   }
   if (hour < 18) {
-    return 'Good afternoon';
+    return t ? t('greeting.goodAfternoon') : 'Good afternoon';
   }
-  return 'Good evening';
+  return t ? t('greeting.goodEvening') : 'Good evening';
 };
 
 const useGreeting = (timeZone?: string) => {
+  const { t } = useTranslation();
   const [greeting, setGreeting] = React.useState<string>(
-    getGreetingByTimeZone(timeZone),
+    getGreetingByTimeZone(timeZone, t),
   );
 
   React.useEffect(() => {
     const interval = setInterval(() => {
-      setGreeting(getGreetingByTimeZone(timeZone));
+      setGreeting(getGreetingByTimeZone(timeZone, t));
     }, 60000); // Update every minute
 
     return () => clearInterval(interval);
-  }, [timeZone]);
+  }, [timeZone, t]);
 
   return greeting;
 };
