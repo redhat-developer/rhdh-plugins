@@ -6060,14 +6060,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gitbeaker/core@npm:^43.3.0":
-  version: 43.3.0
-  resolution: "@gitbeaker/core@npm:43.3.0"
+"@gitbeaker/core@npm:^43.4.0":
+  version: 43.4.0
+  resolution: "@gitbeaker/core@npm:43.4.0"
   dependencies:
-    "@gitbeaker/requester-utils": ^43.3.0
+    "@gitbeaker/requester-utils": ^43.4.0
     qs: ^6.14.0
     xcase: ^2.0.1
-  checksum: 5e0878a2aaa9b8609fe637e016d0b8043134db1a04c52468fac0585c2c12dca00bc964cfb38c2640ea5ae431b76bbd09743d20a6441420735fef5515c83c9df3
+  checksum: 15f595a8c75801f0714975f84f4482e93d673f88b24143dd929f673c5038ff481ec43d594f18126bea294f24a326fa633f3e73e17394b9602b7b48568c594bf4
   languageName: node
   linkType: hard
 
@@ -6083,15 +6083,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gitbeaker/requester-utils@npm:^43.3.0":
-  version: 43.3.0
-  resolution: "@gitbeaker/requester-utils@npm:43.3.0"
+"@gitbeaker/requester-utils@npm:^43.4.0":
+  version: 43.4.0
+  resolution: "@gitbeaker/requester-utils@npm:43.4.0"
   dependencies:
     picomatch-browser: ^2.2.6
     qs: ^6.14.0
     rate-limiter-flexible: ^4.0.1
     xcase: ^2.0.1
-  checksum: c5756f4c4b09b9d38f61ae73210b395594d471a3babcd764637e91489b6bbde5952599b3aa33f880a8bfd1b67779b3b1f8d864bd1b49de5824c8e62528f45fde
+  checksum: 3c92f45c996656fa83a009365dc627517fc8235af826d18631c1b7be648f41479ab00f39e49dd75138aaa14949b066d7d8417acdfd9946ef40848684dafce69f
   languageName: node
   linkType: hard
 
@@ -6105,13 +6105,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gitbeaker/rest@npm:^43.3.0":
-  version: 43.3.0
-  resolution: "@gitbeaker/rest@npm:43.3.0"
+"@gitbeaker/rest@npm:^43.4.0":
+  version: 43.4.0
+  resolution: "@gitbeaker/rest@npm:43.4.0"
   dependencies:
-    "@gitbeaker/core": ^43.3.0
-    "@gitbeaker/requester-utils": ^43.3.0
-  checksum: 224efcd0abcfa745b46dafdb89eba9eb4d70f8b2fe35a261da650cf30cec95f95118871348b16ca2d7705999fb606a54f8c8261054a140dc695b59c720e6c566
+    "@gitbeaker/core": ^43.4.0
+    "@gitbeaker/requester-utils": ^43.4.0
+  checksum: 3a8afa20f05651b3ff4be12c24308fc35d0eb91bed57a475c15959c97525f4bc9207b957a0409df07a9d11632aba8cbebf96e41cf83c28b675cd9b20ebb1751f
   languageName: node
   linkType: hard
 
@@ -10123,7 +10123,7 @@ __metadata:
     "@backstage/plugin-permission-common": ^0.9.1
     "@backstage/plugin-permission-node": ^0.10.2
     "@backstage/types": ^1.2.1
-    "@gitbeaker/rest": ^43.3.0
+    "@gitbeaker/rest": ^43.4.0
     "@octokit/auth-app": ^6.0.3
     "@octokit/rest": ^20.0.2
     "@openapitools/openapi-generator-cli": 2.20.2
