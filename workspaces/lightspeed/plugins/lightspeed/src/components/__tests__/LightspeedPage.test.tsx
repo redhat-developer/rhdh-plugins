@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { IdentityApi, identityApiRef } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
-import { screen, waitFor } from '@testing-library/react';
+import { renderHook, screen, waitFor } from '@testing-library/react';
 
+import { useTranslation } from '../../hooks/useTranslation';
+import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { LightspeedPage } from '../LightspeedPage';
 
 jest.mock('../LightSpeedChat', () => ({
@@ -52,6 +52,10 @@ jest.mock('../../hooks/useAllModels', () => ({
   useAllModels: jest.fn().mockResolvedValue({
     data: [],
   }),
+}));
+
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: jest.fn(() => mockUseTranslation()),
 }));
 
 const mockUsePermission = usePermission as jest.MockedFunction<
@@ -99,5 +103,27 @@ describe('LightspeedPage', () => {
     await waitFor(() => {
       expect(screen.getByText('LightspeedChat')).toBeInTheDocument();
     });
+  });
+
+  it('should translate permission messages correctly', () => {
+    const { result } = renderHook(() => useTranslation());
+
+    expect(result.current.t('permission.required.title')).toBe(
+      'Missing permissions',
+    );
+    expect(result.current.t('permission.required.description')).toBe(
+      'To view lightspeed plugin, contact your administrator to give the <b>lightspeed.chat.read</b> and <b>lightspeed.chat.create</b> permissions.',
+    );
+  });
+
+  it('should translate conversation messages correctly', () => {
+    const { result } = renderHook(() => useTranslation());
+
+    expect(result.current.t('conversation.history.confirm.title')).toBe(
+      'Delete chat?',
+    );
+    expect(result.current.t('conversation.history.confirm.message')).toBe(
+      "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback from your Lightspeed Activity.",
+    );
   });
 });
