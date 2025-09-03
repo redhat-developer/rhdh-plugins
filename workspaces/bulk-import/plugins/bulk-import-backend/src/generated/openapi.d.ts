@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 // eslint-disable
 // prettier-ignore
 import type { OpenAPIClient, Parameters, UnknownParamsObject, OperationResponse, AxiosRequestConfig } from 'openapi-client-axios';
@@ -434,7 +433,8 @@ declare namespace Paths {
       approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
-      export type $200 = /* Import Job with source it originates from */
+      export type $200 =
+        /* Import Job with source it originates from */
         | Components.Schemas.SourceImport[]
         | /* Import Job List */ Components.Schemas.ImportJobListV2;
       export type $500 =
