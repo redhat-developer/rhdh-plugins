@@ -58,8 +58,6 @@ describe('bulkimports.ts unit tests using gitlab', () => {
     });
     const mockCache = mockServices.cache.mock();
     const mockDiscovery = mockServices.discovery.mock();
-    // TODO(rm3l): Use 'catalogServiceMock' from '@backstage/plugin-catalog-node/testUtils'
-    //  once '@backstage/plugin-catalog-node' is upgraded
     const mockCatalogClient = {
       getEntitiesByRefs: jest.fn(),
       validateEntity: jest.fn(),
