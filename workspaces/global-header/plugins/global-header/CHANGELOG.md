@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.16.0
+
+### Minor Changes
+
+- 6d86c5c: Add internationalization (i18n) support with German, French, Italian, and Spanish translations.
+
+### Patch Changes
+
+- cf9f6d0: Fixed dropdown empty state corners by removing the border line
+
 ## 1.15.1
 
 ### Patch Changes
