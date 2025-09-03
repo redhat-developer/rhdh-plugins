@@ -12452,6 +12452,7 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@patternfly/react-charts": "npm:^8.1.0"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
@@ -12461,6 +12462,7 @@ __metadata:
     victory: "npm:^37.3.6"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-router-dom: "*"
   languageName: unknown
   linkType: soft
 
