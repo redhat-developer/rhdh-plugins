@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+import {
+  MetricValue,
+  ThresholdResult,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 import { ChartDonut } from '@patternfly/react-charts/victory';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -28,8 +33,8 @@ interface ScorecardProps {
   loading: boolean;
   statusColor: string;
   StatusIcon: React.ElementType;
-  value: number;
-  thresholds: { key: string; expression: string }[];
+  value?: MetricValue;
+  thresholds?: ThresholdResult;
 }
 
 const Scorecard = ({
@@ -114,7 +119,7 @@ const Scorecard = ({
           </Box>
 
           <Box sx={{ p: 0 }}>
-            {thresholds.map(({ key, expression }) => (
+            {thresholds?.definition.rules.map(({ key, expression }) => (
               <div
                 key={key}
                 style={{
