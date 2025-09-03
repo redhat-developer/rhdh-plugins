@@ -63,12 +63,12 @@ describe('CustomGithubCredentialsProvider tests', () => {
             gitlab: [
               {
                 host: 'gitlab.com',
-                apiBaseUrl: 'http://gitlab.com/api',
+                apiBaseUrl: 'https://gitlab.com/api',
                 token: 'hardcoded_token',
               },
               {
                 host: 'gritlab.com',
-                apiBaseUrl: 'http://gitlab.com/api',
+                apiBaseUrl: 'https://gitlab.com/api',
                 token: 'hardcoded_token_2',
               },
             ],
@@ -105,7 +105,7 @@ describe('CustomGithubCredentialsProvider tests', () => {
                 {
                   host: 'gitlab.com',
                   token: 'hardcoded_token',
-                  apiBaseUrl: 'http://gitlab.com/api',
+                  apiBaseUrl: 'https://gitlab.com/api',
                 },
               ],
             },

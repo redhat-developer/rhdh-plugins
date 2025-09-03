@@ -312,7 +312,6 @@ export class GitlabApiService {
   ): Promise<string[]> {
     const locationGitOwnerMap = extractLocationOwnerMap(locationUrls);
 
-    const allAccessibleAppOrgs = new Set<string>();
     const allAccessibleTokenOrgs = new Set<string>();
     const allAccessibleUsernames = new Set<string>();
     await fetchFromAllIntegrations(
