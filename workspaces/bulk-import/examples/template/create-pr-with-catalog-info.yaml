@@ -71,7 +71,7 @@ spec:
 
     - id: register
       name: Register catalog-info.yaml
-      action: catalog:register-with-event
+      action: catalog:register
       input:
         optional: true
         repoContentsUrl: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}/blob/${{ steps['get-default-branch'].output.defaultBranch }}/catalog-info.yaml

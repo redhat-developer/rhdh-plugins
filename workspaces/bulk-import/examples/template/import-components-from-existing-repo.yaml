@@ -61,13 +61,13 @@ spec:
     - id: register-all-yamls
       name: Register each all.yaml file
       each: ${{ steps['pick-all-yamls'].output.result }}
-      action: catalog:register-with-event
+      action: catalog:register
       input:
         repoContentsUrl: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}/tree/${{ steps['get-default-branch'].output.defaultBranch }}/
         catalogInfoPath: ${{ each.value }}
 
     - id: register-root
       name: Register root catalog-info.yaml
-      action: catalog:register-with-event
+      action: catalog:register
       input:
         repoContentsUrl: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}/blob/${{ steps['get-default-branch'].output.defaultBranch }}/catalog-info.yaml

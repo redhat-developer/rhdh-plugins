@@ -57,7 +57,7 @@ spec:
 
     - id: register
       name: Register
-      action: catalog:register-with-event
+      action: catalog:register
       input:
         repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
         catalogInfoPath: '/catalog-info.yaml'
