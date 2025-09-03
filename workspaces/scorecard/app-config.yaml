@@ -116,6 +116,7 @@ permission:
       - catalog
       - permission
       - scaffolder
+      - scorecard
     admin:
       users:
         - name: user:development/guest

@@ -30,6 +30,12 @@ import {
   validateThresholds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { AuthService, LoggerService } from '@backstage/backend-plugin-api';
+import { filterAuthorizedMetrics } from '../permissions/permissionUtils';
+import {
+  PermissionCondition,
+  PermissionCriteria,
+  PermissionRuleParams,
+} from '@backstage/plugin-permission-common';
 
 export type CatalogMetricServiceOptions = {
   catalogApi: CatalogApi;
@@ -65,6 +71,9 @@ export class CatalogMetricService {
   async calculateEntityMetrics(
     entityRef: string,
     providerIds?: string[],
+    filter?: PermissionCriteria<
+      PermissionCondition<string, PermissionRuleParams>
+    >,
   ): Promise<MetricResult[]> {
     const token = await this.getServiceToken();
     const entity = await this.catalogApi.getEntityByRef(entityRef, token);
@@ -72,16 +81,22 @@ export class CatalogMetricService {
       throw new NotFoundError(`Entity not found: ${entityRef}`);
     }
 
-    const providerIdsToCalculate =
-      providerIds ?? this.registry.listMetrics().map(m => m.id);
+    const metricsToCalculate = providerIds
+      ? this.registry.listMetrics().filter(m => providerIds.includes(m.id))
+      : this.registry.listMetrics();
+
+    const authorizedMetricsToCalculate = filterAuthorizedMetrics(
+      metricsToCalculate,
+      filter,
+    );
     const rawResults = await this.registry.calculateMetrics(
-      providerIdsToCalculate,
+      authorizedMetricsToCalculate.map(m => m.id),
       entity,
     );
 
-    return rawResults.map(({ providerId, value, error }) => {
+    return rawResults.map(({ providerId, value, error }, index) => {
       const provider = this.registry.getProvider(providerId);
-      const metric = provider.getMetric();
+      const metric = authorizedMetricsToCalculate[index];
 
       if (error || value === undefined) {
         return {

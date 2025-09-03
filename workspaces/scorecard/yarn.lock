@@ -12346,6 +12346,8 @@ __metadata:
     "@backstage/cli": "npm:^0.33.1"
     "@backstage/errors": "npm:^1.2.7"
     "@backstage/plugin-catalog-node": "npm:^1.17.2"
+    "@backstage/plugin-permission-common": "npm:^0.9.1"
+    "@backstage/plugin-permission-node": "npm:^0.10.2"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
     "@types/express": "npm:^4.17.6"
@@ -12362,6 +12364,7 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-common@workspace:plugins/scorecard-common"
   dependencies:
     "@backstage/cli": "npm:^0.33.1"
+    "@backstage/plugin-permission-common": "npm:^0.9.1"
   languageName: unknown
   linkType: soft
 

@@ -32,6 +32,7 @@ import { CatalogMetricService } from './CatalogMetricService';
 import { CatalogClient } from '@backstage/catalog-client';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 import { NotFoundError } from '@backstage/errors';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 const mockCatalogClient = {
   getEntityByRef: jest.fn(),
@@ -54,6 +55,10 @@ describe('createRouter', () => {
     const router = await createRouter({
       metricProvidersRegistry,
       catalogMetricService,
+      httpAuth: mockServices.httpAuth.mock(),
+      permissions: mockServices.permissions.mock({
+        authorizeConditional: async () => [{ result: AuthorizeResult.ALLOW }],
+      }),
     });
     app = express();
     app.use(router);
@@ -175,6 +180,7 @@ describe('createRouter', () => {
       expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         undefined,
+        undefined,
       );
       expect(response.body).toEqual(mockMetricResults);
     });
@@ -188,6 +194,7 @@ describe('createRouter', () => {
       expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         ['github.open-prs', 'github.open-issues'],
+        undefined,
       );
       expect(response.body).toEqual(mockMetricResults);
     });
@@ -201,6 +208,7 @@ describe('createRouter', () => {
       expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         ['github.open-prs'],
+        undefined,
       );
     });
 
