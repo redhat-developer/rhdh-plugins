@@ -98,7 +98,6 @@ export class GitlabApiService {
       this.gitlabCredentialsProvider,
       glConfig,
     );
-    const errors = new Map<number, GitlabFetchError>();
     let repository: GitlabRepository | undefined = undefined;
     for (const credential of credentials) {
       const glKit = buildGitlab(
@@ -134,7 +133,7 @@ export class GitlabApiService {
 
     return {
       repository,
-      errors: Array.from(errors.values()),
+      errors: [],
     };
   }
 
@@ -349,9 +348,7 @@ export class GitlabApiService {
       }
       const owner = locationGitOwnerMap.get(loc)!;
       return (
-        allAccessibleAppOrgs.has(owner) ||
-        allAccessibleTokenOrgs.has(owner) ||
-        allAccessibleUsernames.has(owner)
+        allAccessibleTokenOrgs.has(owner) || allAccessibleUsernames.has(owner)
       );
     });
   }
