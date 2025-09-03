@@ -111,3 +111,11 @@ kubernetes:
 permission:
   # setting this to `false` will disable permissions
   enabled: true
+  rbac:
+    pluginsWithPermission:
+      - catalog
+      - permission
+      - scaffolder
+    admin:
+      users:
+        - name: user:development/guest
