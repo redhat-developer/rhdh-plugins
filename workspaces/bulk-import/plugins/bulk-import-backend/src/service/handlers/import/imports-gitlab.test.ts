@@ -24,6 +24,8 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { rest } from 'msw';
 import request from 'supertest';
 
+import { randomInt } from 'node:crypto';
+
 import { loadTestFixture, LOCAL_ADDR } from '../../../../__fixtures__/handlers';
 import {
   setupTest,
@@ -106,9 +108,7 @@ describe('imports', () => {
                     apiVersion: 'backstage.io/v1alpha1',
                     kind: 'Location',
                     metadata: {
-                      name: `generated-from-tests-${Math.floor(
-                        Math.random() * 100 + 1,
-                      )}`,
+                      name: `generated-from-tests-${randomInt(1, 100)}`,
                       namespace: 'default',
                     },
                   },
@@ -247,9 +247,7 @@ describe('imports', () => {
                   apiVersion: 'backstage.io/v1alpha1',
                   kind: 'Location',
                   metadata: {
-                    name: `generated-from-tests-${Math.floor(
-                      Math.random() * 100 + 1,
-                    )}`,
+                    name: `generated-from-tests-${randomInt(1, 100)}`,
                     namespace: 'default',
                   },
                 },
