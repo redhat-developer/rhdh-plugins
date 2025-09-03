@@ -51,7 +51,6 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { ScorecardPage } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
 const app = createApp({
@@ -127,7 +126,6 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/scorecard" element={<ScorecardPage />} />
   </FlatRoutes>
 );
 

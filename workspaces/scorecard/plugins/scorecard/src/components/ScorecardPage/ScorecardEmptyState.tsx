@@ -21,7 +21,7 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 
-import noScorecardSvg from '../../images/no-scorecard.svg';
+import noScorecardsSvg from '../../images/no-scorecards.svg';
 
 const ScorecardEmptyState: React.FC = () => {
   return (
@@ -76,7 +76,7 @@ const ScorecardEmptyState: React.FC = () => {
         <Grid item xs={12} md={6} style={{ textAlign: 'center' }}>
           <Box
             component="img"
-            src={noScorecardSvg}
+            src={noScorecardsSvg}
             alt="No scorecards"
             sx={{
               width: '100%',

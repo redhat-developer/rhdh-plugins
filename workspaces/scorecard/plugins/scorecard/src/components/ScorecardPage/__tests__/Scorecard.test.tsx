@@ -38,7 +38,6 @@ jest.mock('@patternfly/react-charts/victory', () => ({
 
 describe('Scorecard Component', () => {
   const defaultProps = {
-    key: 'github.pull_requests_open',
     cardTitle: 'GitHub open PRs',
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
@@ -46,11 +45,17 @@ describe('Scorecard Component', () => {
     statusColor: 'green',
     StatusIcon: CheckCircleOutlineIcon,
     value: 8,
-    thresholds: [
-      { key: 'error', expression: '> 40' },
-      { key: 'warning', expression: '> 20' },
-      { key: 'success', expression: '<= 20' },
-    ],
+    thresholds: {
+      status: 'success' as const,
+      definition: {
+        rules: [
+          { key: 'success', expression: '<= 20' },
+          { key: 'warning', expression: '> 20' },
+          { key: 'error', expression: '> 40' },
+        ],
+      },
+      evaluation: 'success',
+    },
   };
 
   it('should render the card title and description', () => {
@@ -156,10 +161,29 @@ describe('Scorecard Component', () => {
     expect(chartDonut).toHaveAttribute('data-value', '9999');
   });
 
-  it('should handle empty thresholds array', () => {
+  it('should handle undefined thresholds', () => {
+    const noThresholdsProps = {
+      ...defaultProps,
+      thresholds: undefined,
+    };
+
+    render(<Scorecard {...noThresholdsProps} />);
+
+    expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
+    expect(screen.getByText('8')).toBeInTheDocument();
+    expect(screen.queryByText('error')).not.toBeInTheDocument();
+  });
+
+  it('should handle empty thresholds rules array', () => {
     const emptyThresholdsProps = {
       ...defaultProps,
-      thresholds: [],
+      thresholds: {
+        status: 'success' as const,
+        definition: {
+          rules: [],
+        },
+        evaluation: 'success',
+      },
     };
 
     render(<Scorecard {...emptyThresholdsProps} />);
@@ -185,5 +209,18 @@ describe('Scorecard Component', () => {
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('should render threshold rules with correct colors', () => {
+    render(<Scorecard {...defaultProps} />);
+
+    // Check that threshold rules are rendered with appropriate styling
+    const errorRule = screen.getByText('error > 40');
+    const warningRule = screen.getByText('warning > 20');
+    const successRule = screen.getByText('success <= 20');
+
+    expect(errorRule).toBeInTheDocument();
+    expect(warningRule).toBeInTheDocument();
+    expect(successRule).toBeInTheDocument();
   });
 });

@@ -16,9 +16,13 @@
 import {
   createPlugin,
   createRoutableExtension,
+  configApiRef,
+  createApiFactory,
+  fetchApiRef,
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
+import { scorecardApiRef, ScorecardApiClient } from './api';
 
 /**
  * Plugin for the Scorecard Frontend.
@@ -29,6 +33,17 @@ export const scorecardPlugin = createPlugin({
   routes: {
     root: rootRouteRef,
   },
+  apis: [
+    createApiFactory({
+      api: scorecardApiRef,
+      deps: {
+        configApi: configApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory: ({ configApi, fetchApi }) =>
+        new ScorecardApiClient({ configApi, fetchApi }),
+    }),
+  ],
 });
 
 /**
