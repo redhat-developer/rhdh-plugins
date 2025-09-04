@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.3.0
+
+### Minor Changes
+
+- 2470f72: Add internationalization (i18n) support with German and French translations.
+
+### Patch Changes
+
+- 192c262: Update label from techdocs to TechDocs in UI
+- 67e9f96: Fixed CSV export filename to include timestamp for better file identification and to avoid naming conflicts. Active Users CSV exports now use format "active_users_YYYY-MM-DD_HH-mm-ss-SSS.csv" instead of generic "active_users"
+- e7f6aba: Fixed Adoption Insights header background color by removing custom background style override that was causing wrong theming
+- 0dd7b78: Align legends in Active users card, display trends on initial load, and remove empty space in no results card
+- 5eeb69a: Updated dependency `@mui/lab` to `5.0.0-alpha.177`.
+  Updated dependency `date-fns-tz` to `1.3.8`.
+- c2501eb: Updated dependency `@mui/icons-material` to `5.18.0`.
+  Updated dependency `@mui/material` to `5.18.0`.
+
 ## 0.2.1
 
 ### Patch Changes
