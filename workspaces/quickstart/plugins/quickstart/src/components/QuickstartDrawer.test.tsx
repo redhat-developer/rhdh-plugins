@@ -58,14 +58,56 @@ describe('QuickstartDrawer', () => {
     },
   });
 
+  // Helper functions to reduce duplication
+  const expectAdminItems = () => {
+    expect(screen.getByText('Step 1 for Admin')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 for Admin')).toBeInTheDocument();
+    expect(screen.getByText('Step 1 - No Roles Assigned')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 - No Roles Assigned')).toBeInTheDocument();
+  };
+
+  const expectNoDeveloperItems = () => {
+    expect(screen.queryByText('Step 1 for Developer')).not.toBeInTheDocument();
+    expect(screen.queryByText('Step 2 for Developer')).not.toBeInTheDocument();
+  };
+
+  const expectDeveloperItems = () => {
+    expect(screen.getByText('Step 1 for Developer')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 for Developer')).toBeInTheDocument();
+  };
+
+  const expectNoAdminItems = () => {
+    expect(screen.queryByText('Step 1 for Admin')).not.toBeInTheDocument();
+    expect(screen.queryByText('Step 2 for Admin')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Step 1 - No Roles Assigned'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Step 2 - No Roles Assigned'),
+    ).not.toBeInTheDocument();
+  };
+
+  const expectCommonFooterElements = () => {
+    expect(screen.getByText('Not started')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+  };
+
+  const expectEmptyState = () => {
+    expect(
+      screen.getByText('Quickstart content not available for your role.'),
+    ).toBeInTheDocument();
+    expectCommonFooterElements();
+  };
+
+  const mockUserRole = (userRole: 'admin' | 'developer', isLoading = false) => {
+    mockUseQuickstartRole.mockReturnValue({ isLoading, userRole });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     (useQuickstartDrawerContext as jest.Mock).mockReturnValue(mockContext);
     // Default: Return admin role (not loading)
-    mockUseQuickstartRole.mockReturnValue({
-      isLoading: false,
-      userRole: 'admin',
-    });
+    mockUserRole('admin');
   });
 
   const renderWithApi = async (configApi = mockConfigApi) => {
@@ -77,22 +119,13 @@ describe('QuickstartDrawer', () => {
   };
 
   it('renders the drawer and Quickstart with admin items', async () => {
+    expect.hasAssertions();
     await renderWithApi();
 
     // Since RBAC is disabled, user should have admin role (platform engineers setting up RHDH)
-    expect(screen.getByText('Step 1 for Admin')).toBeInTheDocument();
-    expect(screen.getByText('Step 2 for Admin')).toBeInTheDocument();
-
-    // Admin should also see items without roles (defaults to admin)
-    expect(screen.getByText('Step 1 - No Roles Assigned')).toBeInTheDocument();
-    expect(screen.getByText('Step 2 - No Roles Assigned')).toBeInTheDocument();
-
-    // Developer items should not be visible
-    expect(screen.queryByText('Step 1 for Developer')).not.toBeInTheDocument();
-    expect(screen.queryByText('Step 2 for Developer')).not.toBeInTheDocument();
-
-    expect(screen.getByText('Not started')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+    expectAdminItems();
+    expectNoDeveloperItems();
+    expectCommonFooterElements();
   });
 
   it('calls closeDrawer when Hide button is clicked', async () => {
@@ -122,35 +155,19 @@ describe('QuickstartDrawer', () => {
   });
 
   it('renders developer items when user has developer role', async () => {
-    // Mock the hook to return developer role
-    mockUseQuickstartRole.mockReturnValue({
-      isLoading: false,
-      userRole: 'developer',
-    });
+    expect.hasAssertions();
+    mockUserRole('developer');
 
     await renderWithApi();
 
     // Since user has developer role (RBAC enabled + not allowed), only developer items should show
-    expect(screen.getByText('Step 1 for Developer')).toBeInTheDocument();
-    expect(screen.getByText('Step 2 for Developer')).toBeInTheDocument();
-
-    // Admin items should not be visible
-    expect(screen.queryByText('Step 1 for Admin')).not.toBeInTheDocument();
-    expect(screen.queryByText('Step 2 for Admin')).not.toBeInTheDocument();
-
-    // No-role items should not be visible (they default to admin)
-    expect(
-      screen.queryByText('Step 1 - No Roles Assigned'),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByText('Step 2 - No Roles Assigned'),
-    ).not.toBeInTheDocument();
-
-    expect(screen.getByText('Not started')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+    expectDeveloperItems();
+    expectNoAdminItems();
+    expectCommonFooterElements();
   });
 
   it('renders empty state when no items match user role', async () => {
+    expect.hasAssertions();
     // Create config with only admin items, but user has developer role
     const adminOnlyConfigApi = mockApis.config({
       data: {
@@ -162,45 +179,28 @@ describe('QuickstartDrawer', () => {
       },
     });
 
-    // Mock the hook to return developer role
-    mockUseQuickstartRole.mockReturnValue({
-      isLoading: false,
-      userRole: 'developer',
-    });
+    mockUserRole('developer');
 
     await renderWithApi(adminOnlyConfigApi);
 
     // Since user has developer role but only admin items exist, should show empty state
-    expect(
-      screen.getByText('Quickstart content not available for your role.'),
-    ).toBeInTheDocument();
-    expect(screen.getByText('Not started')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+    expectEmptyState();
   });
 
   it('renders admin items when user has admin role', async () => {
+    expect.hasAssertions();
     // Mock the hook to return admin role (default already, but explicit for clarity)
-    mockUseQuickstartRole.mockReturnValue({
-      isLoading: false,
-      userRole: 'admin',
-    });
+    mockUserRole('admin');
 
     await renderWithApi();
 
-    // Admin should see admin items
-    expect(screen.getByText('Step 1 for Admin')).toBeInTheDocument();
-    expect(screen.getByText('Step 2 for Admin')).toBeInTheDocument();
-
-    // Admin should also see items without roles (defaults to admin)
-    expect(screen.getByText('Step 1 - No Roles Assigned')).toBeInTheDocument();
-    expect(screen.getByText('Step 2 - No Roles Assigned')).toBeInTheDocument();
-
-    // Developer items should not be visible
-    expect(screen.queryByText('Step 1 for Developer')).not.toBeInTheDocument();
-    expect(screen.queryByText('Step 2 for Developer')).not.toBeInTheDocument();
+    // Admin should see admin items and no developer items
+    expectAdminItems();
+    expectNoDeveloperItems();
   });
 
   it('handles empty config gracefully', async () => {
+    expect.hasAssertions();
     const emptyConfigApi = mockApis.config({
       data: {
         app: {
@@ -214,14 +214,11 @@ describe('QuickstartDrawer', () => {
 
     await renderWithApi(emptyConfigApi);
 
-    expect(
-      screen.getByText('Quickstart content not available for your role.'),
-    ).toBeInTheDocument();
-    expect(screen.getByText('Not started')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+    expectEmptyState();
   });
 
   it('handles missing quickstart config gracefully', async () => {
+    expect.hasAssertions();
     const noQuickstartConfigApi = mockApis.config({
       data: {
         app: {},
@@ -233,10 +230,6 @@ describe('QuickstartDrawer', () => {
 
     await renderWithApi(noQuickstartConfigApi);
 
-    expect(
-      screen.getByText('Quickstart content not available for your role.'),
-    ).toBeInTheDocument();
-    expect(screen.getByText('Not started')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+    expectEmptyState();
   });
 });
