@@ -20,6 +20,7 @@ import { JsonObject } from '@backstage/types';
 import { EXTENSIONS_API_VERSION } from '../consts';
 
 import { MarketplaceKind } from './MarketplaceKind';
+import { MarketplaceSupport } from './MarketplaceSupport';
 
 /**
  * @public
@@ -47,7 +48,7 @@ export interface MarketplacePackageSpec extends JsonObject {
 
   dynamicArtifact?: string;
   author?: string;
-  support?: string;
+  support?: MarketplaceSupport;
   lifecycle?: string;
   role?: string;
   supportedVersions?: string;

@@ -20,10 +20,16 @@ import { SelectItem } from '@backstage/core-components';
 import { useSearchParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
-import { MarketplaceAnnotation } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  MarketplaceAnnotation,
+  SupportLevel,
+  SupportProvider,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { usePluginFacet } from '../hooks/usePluginFacet';
 import { usePluginFacets } from '../hooks/usePluginFacets';
+import { useQuery } from '@tanstack/react-query';
+import { useMarketplaceApi } from '../hooks/useMarketplaceApi';
 import { CustomSelectFilter } from '../shared-components/CustomSelectFilter';
 import { useQueryArrayFilter } from '../hooks/useQueryArrayFilter';
 
@@ -91,9 +97,9 @@ const AuthorFilter = () => {
 
 const facetsKeys = [
   `metadata.annotations.${MarketplaceAnnotation.CERTIFIED_BY}`,
-  `metadata.annotations.${MarketplaceAnnotation.VERIFIED_BY}`,
   `metadata.annotations.${MarketplaceAnnotation.PRE_INSTALLED}`,
-  `metadata.annotations.${MarketplaceAnnotation.SUPPORT_TYPE}`,
+  'spec.support.level',
+  'spec.support.name',
 ];
 
 const evaluateParams = (
@@ -111,58 +117,115 @@ const SupportTypeFilter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const pluginFacets = usePluginFacets({ facets: facetsKeys });
 
+  // Get all plugins data for exact count calculation
+  const marketplaceApi = useMarketplaceApi();
+  const allPluginsQuery = useQuery({
+    queryKey: ['marketplaceApi', 'getAllPlugins'],
+    queryFn: () => marketplaceApi.getPlugins({}),
+  });
+
   const facets = pluginFacets.data;
+  const allPlugins = useMemo(
+    () => allPluginsQuery.data?.items || [],
+    [allPluginsQuery.data],
+  );
+
+  // Single-pass exact count calculation
+  const exactCounts = useMemo(() => {
+    if (allPlugins.length === 0) {
+      return { ga: 0, community: 0, techPreview: 0, devPreview: 0 };
+    }
+
+    let ga = 0;
+    let community = 0;
+    let techPreview = 0;
+    let devPreview = 0;
+
+    allPlugins.forEach(plugin => {
+      const level = plugin.spec?.support?.level;
+      const name = plugin.spec?.support?.name;
+
+      if (level === SupportLevel.PRODUCTION && name === SupportProvider.RED_HAT)
+        ga++;
+      if (name === SupportProvider.BACKSTAGE_COMMUNITY) community++;
+      if (level === SupportLevel.TECH_PREVIEW) techPreview++;
+      if (level === SupportLevel.DEV_PREVIEW) devPreview++;
+    });
+
+    return { ga, community, techPreview, devPreview };
+  }, [allPlugins]);
 
   const items = useMemo(() => {
     if (!facets) return [];
     const allSupportTypeItems: SelectItem[] = [];
 
+    // Certified plugins
     const certified = facets[facetsKeys[0]];
     certified?.forEach(certifiedBy => {
       allSupportTypeItems.push({
-        label: `Certified by ${certifiedBy.value} (${certifiedBy.count})`,
+        label: `Certified (${certifiedBy.count})`,
         value: `${facetsKeys[0]}=${certifiedBy.value}`,
       });
     });
 
-    const verified = facets[facetsKeys[1]];
-    verified?.forEach(verifiedBy => {
-      allSupportTypeItems.push({
-        label: `Verified by ${verifiedBy.value} (${verifiedBy.count})`,
-        value: `${facetsKeys[1]}=${verifiedBy.value}`,
-      });
-    });
-
-    const preInstalled = facets[facetsKeys[2]];
+    // Custom plugins (pre-installed = false)
+    const preInstalled = facets[facetsKeys[1]];
     preInstalled?.forEach(preInstall => {
       if (preInstall.value === 'false') {
         allSupportTypeItems.push({
-          label: `Custom plugins (${preInstall.count})`,
-          value: `${facetsKeys[2]}=${preInstall.value}`,
+          label: `Custom plugin (${preInstall.count})`,
+          value: `${facetsKeys[1]}=${preInstall.value}`,
         });
       }
     });
 
-    const supportTypes = facets[facetsKeys[3]];
-    supportTypes?.forEach(supportType => {
+    // Generally available (GA) with exact count
+    if (exactCounts.ga > 0) {
       allSupportTypeItems.push({
-        label: `${supportType.value} (${supportType.count})`,
-        value: `${facetsKeys[3]}=${supportType.value}`,
+        label: `Generally available (GA) (${exactCounts.ga})`,
+        value: `spec.support.level=production,spec.support.name=Red Hat`,
       });
-    });
+    }
+
+    // Community plugins with exact count
+    if (exactCounts.community > 0) {
+      allSupportTypeItems.push({
+        label: `Community plugin (${exactCounts.community})`,
+        value: `spec.support.name=Backstage Community`,
+      });
+    }
+
+    // Tech preview with exact count
+    if (exactCounts.techPreview > 0) {
+      allSupportTypeItems.push({
+        label: `Tech preview (TP) (${exactCounts.techPreview})`,
+        value: `spec.support.level=tech-preview`,
+      });
+    }
+
+    // Dev preview with exact count
+    if (exactCounts.devPreview > 0) {
+      allSupportTypeItems.push({
+        label: `Dev preview (DP) (${exactCounts.devPreview})`,
+        value: `spec.support.level=dev-preview`,
+      });
+    }
 
     return allSupportTypeItems;
-  }, [facets]);
+  }, [facets, exactCounts]);
 
   const selected = useMemo(() => {
     const selectedFilters = searchParams
       .getAll('filter')
-      .filter(filter =>
-        filter.startsWith('metadata.annotations.extensions.backstage.io/'),
+      .filter(
+        filter =>
+          filter.startsWith('metadata.annotations.extensions.backstage.io/') ||
+          filter.startsWith('spec.support.'),
       );
-    return items?.filter(item =>
-      selectedFilters.includes(item.value.toString()),
-    );
+    return items?.filter(item => {
+      const itemValue = item.value.toString();
+      return selectedFilters.includes(itemValue);
+    });
   }, [searchParams, items]);
 
   const onChange = useCallback(
@@ -184,7 +247,10 @@ const SupportTypeFilter = () => {
           params.forEach((value, key) => {
             if (
               key === 'filter' &&
-              value.startsWith(`metadata.annotations.extensions.backstage.io/`)
+              (value.startsWith(
+                `metadata.annotations.extensions.backstage.io/`,
+              ) ||
+                value.startsWith('spec.support.'))
             ) {
               add();
             } else {

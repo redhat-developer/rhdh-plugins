@@ -190,7 +190,7 @@ const columns: TableColumn<MarketplacePackage>[] = [
     },
   },
   {
-    title: 'Supported version',
+    title: 'Backstage compatibility version',
     field: 'spec.backstage.supportedVersions',
     type: 'string',
   },

@@ -86,6 +86,43 @@ export const useFilteredPlugins = () => {
             }),
           );
         }
+
+        // Handle spec.support.* filters (including combined filters)
+        const supportFilters = filters.filter(filter =>
+          filter.startsWith('spec.support.'),
+        );
+
+        if (supportFilters.length > 0) {
+          plugins = plugins.filter(plugin => {
+            return supportFilters.some(filter => {
+              // Handle combined filters like "spec.support.level=production,spec.support.name=Red Hat"
+              if (filter.includes(',')) {
+                const conditions = filter.split(',');
+                return conditions.every(condition => {
+                  const [fullKey, value] = condition.split('=');
+                  const key = fullKey.replace('spec.support.', '');
+
+                  if (key === 'level') {
+                    return plugin.spec?.support?.level === value;
+                  } else if (key === 'name') {
+                    return plugin.spec?.support?.name === value;
+                  }
+                  return false;
+                });
+              }
+              // Handle single filters like "spec.support.level=tech-preview"
+              const [fullKey, value] = filter.split('=');
+              const key = fullKey.replace('spec.support.', '');
+
+              if (key === 'level') {
+                return plugin.spec?.support?.level === value;
+              } else if (key === 'name') {
+                return plugin.spec?.support?.name === value;
+              }
+              return false;
+            });
+          });
+        }
       }
 
       if (fullTextSearch) {

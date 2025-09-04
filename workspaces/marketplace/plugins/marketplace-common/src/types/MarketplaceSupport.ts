@@ -17,7 +17,25 @@
 /**
  * @public
  */
+export enum SupportLevel {
+  PRODUCTION = 'production',
+  TECH_PREVIEW = 'tech-preview',
+  DEV_PREVIEW = 'dev-preview',
+}
+
+/**
+ * @public
+ */
+export enum SupportProvider {
+  RED_HAT = 'Red Hat',
+  BACKSTAGE_COMMUNITY = 'Backstage Community',
+  VENDOR = 'Vendor',
+}
+
+/**
+ * @public
+ */
 export type MarketplaceSupport = {
-  name?: string;
-  level?: string;
+  name?: string | SupportProvider;
+  level?: string | SupportLevel;
 };
