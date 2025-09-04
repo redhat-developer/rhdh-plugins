@@ -15,27 +15,81 @@
  */
 
 import { usePermission } from '@backstage/plugin-permission-react';
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import {
+  configApiRef,
+  identityApiRef,
+  useApi,
+} from '@backstage/core-plugin-api';
 import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
+import { useAsync } from 'react-use';
+import { UserRole } from '../types';
 
 /**
- * Determines the user's role for quickstart functionality based on RBAC permissions.
+ * Determines the user's role for quickstart functionality based on RBAC permissions and user authorization.
  *
  * Business Logic:
- * - If RBAC is not configured, assume platform engineers (admins) are setting up RHDH
- * - If RBAC is enabled, check permissions to determine admin vs developer role
+ * - Guest user(unauthorized): show admin items
+ * - Authorized user + NO RBAC enabled: show admin items
+ * - Authorized user + RBAC enabled:
+ *   - if user has admin permission => show configured admin items
+ *   - if user doesn't have admin permission => show configured developer items
  *
- * @returns 'admin' if RBAC is disabled or user has required permissions, 'developer' otherwise
+ * @returns Object with isLoading boolean and userRole ('admin' | 'developer' | null)
  */
-export const useQuickstartRole = (): 'admin' | 'developer' => {
+export const useQuickstartRole = (): {
+  isLoading: boolean;
+  userRole: UserRole | null;
+} => {
   const config = useApi(configApiRef);
+  const identityApi = useApi(identityApiRef);
   const isRBACEnabled =
     config.getOptionalBoolean('permission.enabled') ?? false;
   const { loading, allowed } = usePermission({
     permission: policyEntityCreatePermission,
   });
 
-  if (!isRBACEnabled) return 'admin';
-  if (!loading && allowed) return 'admin';
-  return 'developer';
+  // Check user authorization status by examining identity and credentials
+  const { value: authResult, loading: authLoading } = useAsync(async () => {
+    try {
+      const credentials = await identityApi.getCredentials();
+      const identity = await identityApi.getBackstageIdentity();
+
+      // Check multiple indicators to determine if user is authenticated (not a guest)
+      const hasValidToken = credentials?.token && credentials.token.length > 10; // Real tokens are longer
+      const userEntityRef = identity?.userEntityRef || '';
+      const ownershipRefs = identity?.ownershipEntityRefs || [];
+
+      const isGuest =
+        userEntityRef.toLowerCase().includes('guest') ||
+        userEntityRef === 'user:default/guest' ||
+        (!hasValidToken && ownershipRefs.length === 0);
+
+      const isAuthenticated = !isGuest;
+
+      return { isAuthenticated, identity, credentials };
+    } catch (error) {
+      return { isAuthenticated: false, identity: null, credentials: null };
+    }
+  }, [identityApi]);
+
+  // If still loading authorization or permissions, return loading state
+  if (authLoading || loading) return { isLoading: true, userRole: null };
+
+  // Check if user is authorized (authenticated, not a guest)
+  const isUserAuthorized = authResult?.isAuthenticated ?? false;
+
+  // Unauthorized user: show admin items
+  if (!isUserAuthorized) {
+    return { isLoading: false, userRole: 'admin' };
+  }
+
+  // Authorized user + NO RBAC enabled: show admin items
+  if (!isRBACEnabled) return { isLoading: false, userRole: 'admin' };
+
+  // Authorized user + RBAC enabled: check permissions
+  // If user has admin permission => show configured admin items
+  if (allowed) return { isLoading: false, userRole: 'admin' };
+
+  // If user doesn't have admin permission => show configured developer items
+  return { isLoading: false, userRole: 'developer' };
 };

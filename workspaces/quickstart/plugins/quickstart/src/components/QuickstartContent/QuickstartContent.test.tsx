@@ -39,6 +39,7 @@ describe('QuickstartContent', () => {
         quickstartItems={[]}
         setProgress={mockSetProgress}
         itemCount={0}
+        isLoading={false}
       />,
     );
 
@@ -58,6 +59,7 @@ describe('QuickstartContent', () => {
         quickstartItems={adminItems}
         setProgress={mockSetProgress}
         itemCount={adminItems.length}
+        isLoading={false}
       />,
     );
 
@@ -81,6 +83,7 @@ describe('QuickstartContent', () => {
         quickstartItems={adminAndNoRoleItems}
         setProgress={mockSetProgress}
         itemCount={adminAndNoRoleItems.length}
+        isLoading={false}
       />,
     );
 
@@ -106,6 +109,7 @@ describe('QuickstartContent', () => {
         quickstartItems={developerItems}
         setProgress={mockSetProgress}
         itemCount={developerItems.length}
+        isLoading={false}
       />,
     );
 
@@ -128,6 +132,7 @@ describe('QuickstartContent', () => {
         quickstartItems={managerItems}
         setProgress={mockSetProgress}
         itemCount={managerItems.length}
+        isLoading={false}
       />,
     );
 
@@ -149,6 +154,7 @@ describe('QuickstartContent', () => {
         quickstartItems={filteredItems}
         setProgress={mockSetProgress}
         itemCount={filteredItems.length}
+        isLoading={false}
       />,
     );
 
@@ -164,6 +170,7 @@ describe('QuickstartContent', () => {
         quickstartItems={mockQuickstartItems}
         setProgress={mockSetProgress}
         itemCount={2}
+        isLoading={false}
       />,
     );
 

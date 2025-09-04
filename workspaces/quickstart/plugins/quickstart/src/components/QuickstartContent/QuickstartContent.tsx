@@ -16,9 +16,10 @@
 
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
+import CircularProgress from '@mui/material/CircularProgress';
 import { QuickstartItem } from './QuickstartItem';
 import { EmptyState } from '@backstage/core-components';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QuickstartItemData } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -26,17 +27,41 @@ type QuickstartContentProps = {
   quickstartItems: QuickstartItemData[];
   setProgress: (index: number) => void;
   itemCount: number;
+  isLoading: boolean;
 };
 
 export const QuickstartContent = ({
   quickstartItems,
   setProgress,
   itemCount,
+  isLoading,
 }: QuickstartContentProps) => {
   const { t } = useTranslation();
   const [openItems, setOpenItems] = useState<boolean[]>(
     new Array(itemCount).fill(false),
   );
+
+  // Re-initialize openItems when itemCount changes (e.g., after loading)
+  useEffect(() => {
+    setOpenItems(new Array(itemCount).fill(false));
+  }, [itemCount]);
+
+  // Show loading spinner when user role is still being determined
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '50vh',
+          width: '100%',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box
