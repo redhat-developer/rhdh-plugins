@@ -24,7 +24,7 @@ import {
   ScmIntegrations,
 } from '@backstage/integration';
 
-import { Gitlab, GroupSchema } from '@gitbeaker/rest';
+import { Gitlab } from '@gitbeaker/rest';
 import gitUrlParse from 'git-url-parse';
 
 import { getBranchName, getCatalogFilename } from '../catalog/catalogUtils';
