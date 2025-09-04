@@ -38,6 +38,7 @@ describe('Quickstart', () => {
       <Quickstart
         quickstartItems={items}
         handleDrawerClose={mockHandleDrawerClose}
+        isLoading={false}
       />,
     );
   };
@@ -186,6 +187,7 @@ describe('Quickstart', () => {
         <Quickstart
           quickstartItems={[]}
           handleDrawerClose={mockHandleDrawerClose}
+          isLoading={false}
         />,
       );
 

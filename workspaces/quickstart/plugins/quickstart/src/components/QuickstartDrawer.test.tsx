@@ -21,21 +21,21 @@ import {
   TestApiProvider,
 } from '@backstage/test-utils';
 import { configApiRef } from '@backstage/core-plugin-api';
-import { usePermission } from '@backstage/plugin-permission-react';
 import { QuickstartDrawer } from './QuickstartDrawer';
 import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
+import { useQuickstartRole } from '../hooks/useQuickstartRole';
 import { mockQuickstartItems } from './mockData';
 
 jest.mock('../hooks/useQuickstartDrawerContext', () => ({
   useQuickstartDrawerContext: jest.fn(),
 }));
 
-jest.mock('@backstage/plugin-permission-react', () => ({
-  usePermission: jest.fn(),
+jest.mock('../hooks/useQuickstartRole', () => ({
+  useQuickstartRole: jest.fn(),
 }));
 
-const mockUsePermission = usePermission as jest.MockedFunction<
-  typeof usePermission
+const mockUseQuickstartRole = useQuickstartRole as jest.MockedFunction<
+  typeof useQuickstartRole
 >;
 
 describe('QuickstartDrawer', () => {
@@ -61,8 +61,11 @@ describe('QuickstartDrawer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useQuickstartDrawerContext as jest.Mock).mockReturnValue(mockContext);
-    // Default: RBAC disabled scenario (doesn't matter what permission returns)
-    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+    // Default: Return admin role (not loading)
+    mockUseQuickstartRole.mockReturnValue({
+      isLoading: false,
+      userRole: 'admin',
+    });
   });
 
   const renderWithApi = async (configApi = mockConfigApi) => {
@@ -119,22 +122,13 @@ describe('QuickstartDrawer', () => {
   });
 
   it('renders developer items when user has developer role', async () => {
-    // Create config with RBAC enabled
-    const configApi = mockApis.config({
-      data: {
-        app: {
-          quickstart: mockQuickstartItems as any,
-        },
-        permission: {
-          enabled: true, // RBAC enabled
-        },
-      },
+    // Mock the hook to return developer role
+    mockUseQuickstartRole.mockReturnValue({
+      isLoading: false,
+      userRole: 'developer',
     });
 
-    // Mock permission as DENY to force developer role
-    mockUsePermission.mockReturnValue({ loading: false, allowed: false });
-
-    await renderWithApi(configApi);
+    await renderWithApi();
 
     // Since user has developer role (RBAC enabled + not allowed), only developer items should show
     expect(screen.getByText('Step 1 for Developer')).toBeInTheDocument();
@@ -165,14 +159,14 @@ describe('QuickstartDrawer', () => {
             item.roles?.includes('admin'),
           ) as any,
         },
-        permission: {
-          enabled: true, // RBAC enabled
-        },
       },
     });
 
-    // Mock permission as DENY to force developer role
-    mockUsePermission.mockReturnValue({ loading: false, allowed: false });
+    // Mock the hook to return developer role
+    mockUseQuickstartRole.mockReturnValue({
+      isLoading: false,
+      userRole: 'developer',
+    });
 
     await renderWithApi(adminOnlyConfigApi);
 
@@ -185,22 +179,13 @@ describe('QuickstartDrawer', () => {
   });
 
   it('renders admin items when user has admin role', async () => {
-    // Create config that enables RBAC and should result in admin role
-    const adminConfigApi = mockApis.config({
-      data: {
-        app: {
-          quickstart: mockQuickstartItems as any,
-        },
-        permission: {
-          enabled: true, // Enable RBAC - with ALLOW permission should result in admin
-        },
-      },
+    // Mock the hook to return admin role (default already, but explicit for clarity)
+    mockUseQuickstartRole.mockReturnValue({
+      isLoading: false,
+      userRole: 'admin',
     });
 
-    // Mock permission as ALLOW to force admin role
-    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
-
-    await renderWithApi(adminConfigApi);
+    await renderWithApi();
 
     // Admin should see admin items
     expect(screen.getByText('Step 1 for Admin')).toBeInTheDocument();

@@ -26,3 +26,5 @@ export interface QuickstartItemData {
   description: string;
   cta?: QuickstartItemCtaData;
 }
+
+export type UserRole = 'admin' | 'developer';

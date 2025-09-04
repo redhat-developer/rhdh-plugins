@@ -33,8 +33,11 @@ export const QuickstartDrawer = () => {
     ? config.get('app.quickstart')
     : [];
 
-  const userRole = useQuickstartRole();
-  const filteredItems = filterQuickstartItemsByRole(quickstartItems, userRole);
+  const { isLoading, userRole } = useQuickstartRole();
+  const filteredItems =
+    !isLoading && userRole
+      ? filterQuickstartItemsByRole(quickstartItems, userRole)
+      : [];
 
   return (
     <Drawer
@@ -64,6 +67,7 @@ export const QuickstartDrawer = () => {
       <Quickstart
         quickstartItems={filteredItems}
         handleDrawerClose={closeDrawer}
+        isLoading={isLoading}
       />
     </Drawer>
   );
