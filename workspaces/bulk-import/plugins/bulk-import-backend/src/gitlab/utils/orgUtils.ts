@@ -17,6 +17,8 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { GitlabCredentials } from '@backstage/integration';
 
+import { Gitlab } from '@gitbeaker/rest';
+
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -28,7 +30,7 @@ export async function addGitlabTokenGroups(
   deps: {
     logger: LoggerService;
   },
-  gitlab: any,
+  gitlab: InstanceType<typeof Gitlab<false>>,
   credential: GitlabCredentials,
   params: {
     search: string | undefined;
@@ -51,8 +53,8 @@ export async function addGitlabTokenGroups(
       // Use the group api with the search param.
       // I noticed that using this api will only return values when 3 or more characters are used for the search
       // that api gives us all the things the token has access
-      const { data, paginationInfo } = await gitlab.Groups.all({
-        all_available: false,
+      const { data, paginationInfo } = await gitlab.Groups.all<true, 'offset'>({
+        allAvailable: false,
         search: search,
         perPage: pageSize,
         page: pageNumber,
@@ -71,8 +73,8 @@ export async function addGitlabTokenGroups(
        * The Groups all endpoint will grab all the groups the gitlab token has explicit access to.
        */
 
-      const { data, paginationInfo } = await gitlab.Groups.all({
-        all_available: false,
+      const { data, paginationInfo } = await gitlab.Groups.all<true, 'offset'>({
+        allAvailable: false,
         perPage: pageSize,
         page: pageNumber,
         showExpanded: true,
@@ -98,9 +100,9 @@ export async function addGitlabTokenGroups(
         url: group.web_url,
         avatar_url: group.avatar_url,
         // From here down gitlab doesn't really have while calling the group api
-        public_repos: group?.data?.public_repos,
-        total_private_repos: group?.data?.total_private_repos,
-        owned_private_repos: group?.data?.owned_private_repos,
+        // public_repos: group?.data?.public_repos,
+        // total_private_repos: group?.data?.total_private_repos,
+        // owned_private_repos: group?.data?.owned_private_repos,
       };
       groups.set(group.path, glGroup);
     }

@@ -22,6 +22,15 @@ import type {
   ScmIntegrations,
 } from '@backstage/integration';
 
+import {
+  AllGroupProjectsOptions,
+  BasePaginationRequestOptions,
+  Gitlab,
+  OffsetPaginationRequestOptions,
+  ProjectSchema,
+  ShowExpanded,
+  Sudo,
+} from '@gitbeaker/rest';
 import gitUrlParse from 'git-url-parse';
 
 import { getBranchName } from '../../catalog/catalogUtils';
@@ -74,41 +83,31 @@ export async function validateAndBuildRepoData(
 }
 
 export async function searchRepos(
-  gitlab: any,
+  gitlab: InstanceType<typeof Gitlab<false>>,
   glSearchQuery: string,
   pageNumber: number = DefaultPageNumber,
   pageSize: number = DefaultPageSize,
 ): Promise<{ totalCount?: number; repositories: GitlabRepository[] }> {
-  const repoSearchResp = await gitlab.Projects.all({
+  const repoSearchResp = await gitlab.Projects.all<true, 'offset'>({
     search: glSearchQuery,
     membership: true,
     perPage: pageSize,
     page: pageNumber,
-    showExpanded: true,
   });
 
   return {
     totalCount: repoSearchResp?.paginationInfo?.total,
     repositories:
-      repoSearchResp?.data?.map(
-        (repo: {
-          name: any;
-          path_with_namespace: any;
-          _links: { self: any };
-          web_url: any;
-          default_branch: any;
-          updated_at: any;
-        }) => {
-          return {
-            name: repo.name,
-            full_name: repo.path_with_namespace,
-            url: repo._links.self,
-            html_url: repo.web_url,
-            default_branch: repo.default_branch,
-            updated_at: repo.updated_at,
-          };
-        },
-      ) ?? [],
+      repoSearchResp?.data?.map((repo: ProjectSchema) => {
+        return {
+          name: repo.name,
+          full_name: repo.path_with_namespace,
+          url: repo._links.self,
+          html_url: repo.web_url,
+          default_branch: repo.default_branch,
+          updated_at: repo.updated_at,
+        };
+      }) ?? [],
   };
 }
 
@@ -120,8 +119,8 @@ export async function addGitlabTokenRepositories(
   deps: {
     logger: LoggerService;
   },
-  gitlab: any,
-  credential: any,
+  gitlab: InstanceType<typeof Gitlab<false>>,
+  credential: GitlabCredentials,
   repositories: Map<string, GitlabRepository>,
   errors: Map<number, GitlabFetchError>,
   reqParams?: {
@@ -155,35 +154,26 @@ export async function addGitlabTokenRepositories(
        * These would include repositories they own, repositories where they are a collaborator,
        * and repositories that they can access through an organization membership.
        */
-      const { data, paginationInfo } = await gitlab.Projects.all({
+      const { data, paginationInfo } = await gitlab.Projects.all<
+        true,
+        'offset'
+      >({
         membership: true,
         perPage: pageSize,
         page: pageNumber,
         showExpanded: true,
       });
 
-      data?.forEach(
-        (repo: {
-          id: string;
-          path_with_namespace: string;
-          name: any;
-          url: any;
-          html_url: any;
-          web_url: any;
-          default_branch: any;
-          _links: any;
-          updated_at: any;
-        }) => {
-          repositories.set(repo.path_with_namespace, {
-            name: repo.name,
-            full_name: repo.path_with_namespace,
-            url: repo._links.self,
-            html_url: repo.web_url,
-            default_branch: repo.default_branch,
-            updated_at: repo?.updated_at,
-          });
-        },
-      );
+      data?.forEach((repo: ProjectSchema) => {
+        repositories.set(repo.path_with_namespace, {
+          name: repo.name,
+          full_name: repo.path_with_namespace,
+          url: repo._links.self,
+          html_url: repo.web_url,
+          default_branch: repo.default_branch,
+          updated_at: repo?.updated_at,
+        });
+      });
 
       /*
       paginationInfo: {
@@ -218,7 +208,7 @@ export async function addGitlabTokenOrgRepositories(
   deps: {
     logger: LoggerService;
   },
-  gitlab: any,
+  gitlab: InstanceType<typeof Gitlab<false>>,
   credential: GitlabCredentials,
   org: string,
   repositories: Map<string, GitlabRepository>,
@@ -237,41 +227,34 @@ export async function addGitlabTokenOrgRepositories(
     // For Search: Use the group allProjects api with the search param.
     // I noticed that using this api will only return values when 3 or more characters are used for the search
     // that api gives us all the things the token has access
-    const params = {
+    const params:
+      | (AllGroupProjectsOptions &
+          BasePaginationRequestOptions<'offset'> &
+          OffsetPaginationRequestOptions &
+          Sudo &
+          ShowExpanded<true>)
+      | undefined = {
       perPage: pageSize,
       search: search ?? undefined,
       page: pageNumber,
       showExpanded: true,
     };
 
-    const { data, paginationInfo } = await gitlab.Groups.allProjects(
-      org,
-      params,
-    );
+    const { data, paginationInfo } = await gitlab.Groups.allProjects<
+      true,
+      'offset'
+    >(org, params);
 
-    data?.forEach(
-      (repo: {
-        id: string;
-        path_with_namespace: string;
-        full_name: string;
-        name: any;
-        url: any;
-        html_url: any;
-        web_url: any;
-        _links: any;
-        default_branch: any;
-        updated_at: any;
-      }) => {
-        repositories.set(repo.path_with_namespace, {
-          name: repo.name,
-          full_name: repo.path_with_namespace,
-          url: repo._links.self,
-          html_url: repo.web_url,
-          default_branch: repo.default_branch,
-          updated_at: repo.updated_at,
-        });
-      },
-    );
+    data?.forEach((repo: ProjectSchema) => {
+      repositories.set(repo.path_with_namespace, {
+        name: repo.name,
+        full_name: repo.path_with_namespace,
+        url: repo._links.self,
+        html_url: repo.web_url,
+        default_branch: repo.default_branch,
+        updated_at: repo.updated_at,
+      });
+    });
 
     totalCount = await computeTotalCountFromPaginationInfo(
       deps,
@@ -292,7 +275,7 @@ export async function addGitlabTokenOrgRepositories(
 
 export async function fileExistsInDefaultBranch(
   logger: LoggerService,
-  gitlab: any,
+  gitlab: InstanceType<typeof Gitlab<false>>,
   owner: string,
   repo: string,
   fileName: string,
@@ -317,7 +300,7 @@ export async function fileExistsInDefaultBranch(
 }
 
 export async function createOrUpdateFileInBranch(
-  gitlab: any,
+  gitlab: InstanceType<typeof Gitlab<false>>,
   owner: string,
   repo: string,
   branchName: string,

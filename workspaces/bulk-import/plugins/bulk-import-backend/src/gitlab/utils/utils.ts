@@ -24,7 +24,7 @@ import {
   type GitLabIntegrationConfig,
 } from '@backstage/integration';
 
-import { Gitlab } from '@gitbeaker/rest';
+import { Gitlab, OffsetPagination } from '@gitbeaker/rest';
 
 import { logErrorIfNeeded } from '../../helpers';
 import type { CustomGitlabCredentialsProvider } from '../GitlabAppManager';
@@ -120,7 +120,7 @@ export async function computeTotalCountFromPaginationInfo(
   deps: {
     logger: LoggerService;
   },
-  paginationInfo: any,
+  paginationInfo: OffsetPagination,
   pageSize?: number,
 ): Promise<number | undefined> {
   /*
@@ -155,8 +155,7 @@ export async function executeFunctionOnFirstSuccessfulIntegration<T>(
     repoUrl: string;
     fn: (
       validatedRepo: ValidatedRepo,
-      // octo: Octokit,
-      gitlab: any,
+      gitlab: InstanceType<typeof Gitlab<false>>,
     ) => Promise<{ successful: boolean; result?: T }>;
   },
 ) {
@@ -190,7 +189,7 @@ export async function fetchFromAllIntegrations<T>(
   integrations: ScmIntegrations,
   params: {
     dataFetcher: (
-      gitlab: typeof Gitlab,
+      gitlab: InstanceType<typeof Gitlab<false>>,
       credential: ExtendedGitlabCredentials,
       glConfig: GitLabIntegrationConfig,
     ) => Promise<{
