@@ -5436,16 +5436,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bundled-es-modules/tough-cookie@npm:^0.1.6":
-  version: 0.1.6
-  resolution: "@bundled-es-modules/tough-cookie@npm:0.1.6"
-  dependencies:
-    "@types/tough-cookie": ^4.0.5
-    tough-cookie: ^4.1.4
-  checksum: e31c1262cbc044373e757117b1b152acc86ba5d088124153b3d1ae83e0de0a2b4d2362758cec3e1a49cf15c39a4447587cc2672e4f5a961754c91ef9ca3221e1
-  languageName: node
-  linkType: hard
-
 "@cfworker/json-schema@npm:^4.0.2":
   version: 4.1.0
   resolution: "@cfworker/json-schema@npm:4.1.0"
@@ -7097,7 +7087,7 @@ __metadata:
     "@backstage/repo-tools": ^0.13.4
     "@changesets/cli": ^2.27.1
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
-    "@playwright/test": 1.53.0
+    "@playwright/test": 1.55.0
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -7786,17 +7776,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:^0.5.0":
-  version: 0.5.5
-  resolution: "@langchain/openai@npm:0.5.5"
+"@langchain/openai@npm:^0.6.0":
+  version: 0.6.11
+  resolution: "@langchain/openai@npm:0.6.11"
   dependencies:
     js-tiktoken: ^1.0.12
-    openai: ^4.87.3
-    zod: ^3.22.4
-    zod-to-json-schema: ^3.22.3
+    openai: 5.12.2
+    zod: ^3.25.32
   peerDependencies:
-    "@langchain/core": ">=0.3.39 <0.4.0"
-  checksum: 45268375ee66f847a4b5ce64dbca86ad8ad07f0c6c6c9e23c50851f7abd501f841806aac7fb08c2213e6f2ef9f7ca3373243ff59e695626be22752114bfee142
+    "@langchain/core": ">=0.3.68 <0.4.0"
+  checksum: 69d7eb2b7aedc135c1aa0892f437cdd0710997456ea46f824f9a91a349c0882bee38978b192d767e7ffa40d2b773262b25dba83a0b565e17ea3db708cc2a852f
   languageName: node
   linkType: hard
 
@@ -9654,14 +9643,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.53.0":
-  version: 1.53.0
-  resolution: "@playwright/test@npm:1.53.0"
+"@playwright/test@npm:1.55.0":
+  version: 1.55.0
+  resolution: "@playwright/test@npm:1.55.0"
   dependencies:
-    playwright: 1.53.0
+    playwright: 1.55.0
   bin:
     playwright: cli.js
-  checksum: 63c8264134b9ceb1a9e40af9a2e262f11f74c791c739ade6d39177de42a28016d3a9c807ce893048b2c3247a633b5e8c7805e013c6f87c85b1360a83363d74ba
+  checksum: efa2e6febf1fea8dd9ba1aff45b58bc6e8604a831c21c5e5c49718f07065670ddeec5487d288cc1b044c834b40ab586035ea23c89e78991a19d2daf93fab993e
   languageName: node
   linkType: hard
 
@@ -10355,14 +10344,14 @@ __metadata:
     "@backstage/plugin-permission-node": ^0.10.0
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
     "@langchain/core": ^0.3.0
-    "@langchain/openai": ^0.5.0
+    "@langchain/openai": ^0.6.0
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@types/express": 4.17.23
     "@types/supertest": 2.0.16
     express: ^4.21.1
     http-proxy-middleware: ^3.0.2
-    msw: 2.10.2
+    msw: 2.11.1
     node-fetch: 2.7.0
     prettier: 3.6.2
     supertest: 6.3.4
@@ -13873,7 +13862,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/tough-cookie@npm:*, @types/tough-cookie@npm:^4.0.5":
+"@types/tough-cookie@npm:*":
   version: 4.0.5
   resolution: "@types/tough-cookie@npm:4.0.5"
   checksum: f19409d0190b179331586365912920d192733112a195e870c7f18d20ac8adb7ad0b0ff69dad430dba8bc2be09593453a719cfea92dc3bda19748fd158fe1498d
@@ -14907,7 +14896,7 @@ __metadata:
     "@backstage/theme": ^0.6.6
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
-    "@playwright/test": 1.53.0
+    "@playwright/test": 1.55.0
     "@red-hat-developer-hub/backstage-plugin-lightspeed": "*"
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
@@ -27014,13 +27003,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:2.10.2":
-  version: 2.10.2
-  resolution: "msw@npm:2.10.2"
+"msw@npm:2.11.1":
+  version: 2.11.1
+  resolution: "msw@npm:2.11.1"
   dependencies:
     "@bundled-es-modules/cookie": ^2.0.1
     "@bundled-es-modules/statuses": ^1.0.1
-    "@bundled-es-modules/tough-cookie": ^0.1.6
     "@inquirer/confirm": ^5.0.0
     "@mswjs/interceptors": ^0.39.1
     "@open-draft/deferred-promise": ^2.2.0
@@ -27034,6 +27022,7 @@ __metadata:
     path-to-regexp: ^6.3.0
     picocolors: ^1.1.1
     strict-event-emitter: ^0.5.1
+    tough-cookie: ^6.0.0
     type-fest: ^4.26.1
     yargs: ^17.7.2
   peerDependencies:
@@ -27043,7 +27032,7 @@ __metadata:
       optional: true
   bin:
     msw: cli/index.js
-  checksum: ca79300c3af2821e9ab7ab426657caaafd791c777139d54c3ad1752a592c4e249dd267b9da97328964f269850b54b1c6b538fa0b27f2f5881430db454ecd9b35
+  checksum: df5326ddc6c1845d39e374018f56629c0f012ec44aa7eae5807c33f86ddb7207dd811b171abeab37cb850431ac41523f843f5696d1fbc3a26c449bb249b523f4
   languageName: node
   linkType: hard
 
@@ -27885,7 +27874,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^4.52.6, openai@npm:^4.87.3":
+"openai@npm:5.12.2":
+  version: 5.12.2
+  resolution: "openai@npm:5.12.2"
+  peerDependencies:
+    ws: ^8.18.0
+    zod: ^3.23.8
+  peerDependenciesMeta:
+    ws:
+      optional: true
+    zod:
+      optional: true
+  bin:
+    openai: bin/cli
+  checksum: b48116979c0666b1438d68a71df2c57833bca8c20c5d43e0c17e4d8594ca72294a1b62f40c7e3b8e5d5be644c2de5ba27fe97b8136f1de36e0490fd49c552a70
+  languageName: node
+  linkType: hard
+
+"openai@npm:^4.52.6":
   version: 4.93.0
   resolution: "openai@npm:4.93.0"
   dependencies:
@@ -28793,27 +28799,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.53.0":
-  version: 1.53.0
-  resolution: "playwright-core@npm:1.53.0"
+"playwright-core@npm:1.55.0":
+  version: 1.55.0
+  resolution: "playwright-core@npm:1.55.0"
   bin:
     playwright-core: cli.js
-  checksum: 00d6c8f566608681e1ab529ecb86a4e8c818f77605438e38e1b7ebf04b41b4df115217fe89cfe535d0a0a9f08807ab0b66d4f9da61c5609060cc68859c7c4354
+  checksum: 689955388fa1d46cdbc93d4957688d48c0033ccdcb852f97f9f5e8aa6482a928c885cf06b02eb5acde9426aa1222720456127a8f7793792fef3f7bdb159bd8b2
   languageName: node
   linkType: hard
 
-"playwright@npm:1.53.0":
-  version: 1.53.0
-  resolution: "playwright@npm:1.53.0"
+"playwright@npm:1.55.0":
+  version: 1.55.0
+  resolution: "playwright@npm:1.55.0"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.53.0
+    playwright-core: 1.55.0
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: a8e69cecac82515e018f68aeccdae0bd8d4e18e3741330e79129c1705780fef6591294c0fe0f71f1ab4242a00032c3896eae9ceb40c5e03d53265f993de8cd42
+  checksum: 6165c649a4923651305957d54203ee9f6c80fb5b7d237848c13a98c168c599041eefb6af493f1dbe5e793aa2e24956a1a7205cb1864a64a97f01c7c7189885b7
   languageName: node
   linkType: hard
 
@@ -33472,6 +33478,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tldts-core@npm:^7.0.12":
+  version: 7.0.12
+  resolution: "tldts-core@npm:7.0.12"
+  checksum: 90bd23f36658e1cc05d12d7807116cb728b0e959bfc4968bfbf170fc126d764ecc3a5cbce5ad3ba805432d8cd2072fcfcfb3aae7bb82a7973388a79b0aad23eb
+  languageName: node
+  linkType: hard
+
 "tldts@npm:^6.1.32":
   version: 6.1.61
   resolution: "tldts@npm:6.1.61"
@@ -33480,6 +33493,17 @@ __metadata:
   bin:
     tldts: bin/cli.js
   checksum: 1d2feafe6160147a2f5ea520ebc84c77153edacd0d69510726ee0c13b2fce8b84d1bad79f2c5337ac361d297d0d16815fe5d3c51c88a7822d2320a75f6d2dea3
+  languageName: node
+  linkType: hard
+
+"tldts@npm:^7.0.5":
+  version: 7.0.12
+  resolution: "tldts@npm:7.0.12"
+  dependencies:
+    tldts-core: ^7.0.12
+  bin:
+    tldts: bin/cli.js
+  checksum: 45b640e5991d0fdc13a491fa0ac81b50d7ed48767617046f69873f02878002e4b24aebc2444a65ff6af6c0e56e6728416fd0adb7679cfc70cfacff84b7074f85
   languageName: node
   linkType: hard
 
@@ -33555,7 +33579,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tough-cookie@npm:^4.1.2, tough-cookie@npm:^4.1.4":
+"tough-cookie@npm:^4.1.2":
   version: 4.1.4
   resolution: "tough-cookie@npm:4.1.4"
   dependencies:
@@ -33573,6 +33597,15 @@ __metadata:
   dependencies:
     tldts: ^6.1.32
   checksum: 774f6c939c96f74b5847361f7e11e0d69383681d21a35a2d37a20956638e614ec521782d2d20bcb32b58638ff337bba87cc72fb72c987bd02ea0fdfc93994cdb
+  languageName: node
+  linkType: hard
+
+"tough-cookie@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "tough-cookie@npm:6.0.0"
+  dependencies:
+    tldts: ^7.0.5
+  checksum: 66d32ee40e1c6c61be5388e1c124674871dae0a684c30853f1628a4da2c5ad4199a825d1b0a7ba424dadfba7b5a9b37e8c761eafbf48f1b9f75a4629e73b14bc
   languageName: node
   linkType: hard
 
@@ -35700,10 +35733,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.22.4":
-  version: 3.23.8
-  resolution: "zod@npm:3.23.8"
-  checksum: 15949ff82118f59c893dacd9d3c766d02b6fa2e71cf474d5aa888570c469dbf5446ac5ad562bb035bf7ac9650da94f290655c194f4a6de3e766f43febd432c5c
+"zod@npm:^3.22.4, zod@npm:^3.25.32":
+  version: 3.25.76
+  resolution: "zod@npm:3.25.76"
+  checksum: c9a403a62b329188a5f6bd24d5d935d2bba345f7ab8151d1baa1505b5da9f227fb139354b043711490c798e91f3df75991395e40142e6510a4b16409f302b849
   languageName: node
   linkType: hard
 
