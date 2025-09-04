@@ -40,12 +40,12 @@ export class GithubClient {
     const credentialsProvider =
       DefaultGithubCredentialsProvider.fromIntegrations(this.integrations);
 
-    const { token } = await credentialsProvider.getCredentials({
+    const { headers } = await credentialsProvider.getCredentials({
       url: `https://${hostname}`,
     });
 
     return graphql.defaults({
-      auth: token,
+      headers,
       baseUrl: githubIntegration.config.apiBaseUrl,
     });
   }
