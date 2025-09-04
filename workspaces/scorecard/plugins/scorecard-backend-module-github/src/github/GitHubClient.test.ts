@@ -18,6 +18,7 @@ import { ConfigReader } from '@backstage/config';
 import { DefaultGithubCredentialsProvider } from '@backstage/integration';
 import { GithubClient } from './GithubClient';
 import { GithubRepository } from './types';
+import { DEFAULT_GITHUB_HOSTNAME } from './constants';
 
 const mockedGraphqlClient = jest.fn();
 jest.mock('@octokit/graphql', () => ({
@@ -48,7 +49,7 @@ describe('GithubClient', () => {
       integrations: {
         github: [
           {
-            host: 'github.com',
+            host: DEFAULT_GITHUB_HOSTNAME,
             token: 'dummy-token',
           },
         ],
@@ -70,7 +71,7 @@ describe('GithubClient', () => {
 
       const result = await githubClient.getOpenPullRequestsCount(
         repository,
-        'github.com',
+        DEFAULT_GITHUB_HOSTNAME,
       );
 
       expect(result).toBe(42);

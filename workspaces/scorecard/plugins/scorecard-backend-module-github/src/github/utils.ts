@@ -19,6 +19,7 @@ import {
   stringifyEntityRef,
 } from '@backstage/catalog-model';
 import { GithubRepository } from './types';
+import { GITHUB_PROJECT_ANNOTATION } from './constants';
 
 export const getHostnameFromEntity = (entity: Entity): string => {
   const { target } = getEntitySourceLocation(entity);
@@ -28,10 +29,10 @@ export const getHostnameFromEntity = (entity: Entity): string => {
 export const getRepositoryInformationFromEntity = (
   entity: Entity,
 ): GithubRepository => {
-  const projectSlug = entity.metadata.annotations?.['github.com/project-slug'];
+  const projectSlug = entity.metadata.annotations?.[GITHUB_PROJECT_ANNOTATION];
   if (!projectSlug) {
     throw new Error(
-      `Missing annotation 'github.com/project-slug' for entity ${stringifyEntityRef(
+      `Missing annotation '${GITHUB_PROJECT_ANNOTATION}' for entity ${stringifyEntityRef(
         entity,
       )}`,
     );
@@ -40,7 +41,7 @@ export const getRepositoryInformationFromEntity = (
   const [owner, repo] = projectSlug.split('/');
   if (!owner || !repo) {
     throw new Error(
-      `Invalid format of 'github.com/project-slug' ${projectSlug} for entity ${stringifyEntityRef(
+      `Invalid format of '${GITHUB_PROJECT_ANNOTATION}' ${projectSlug} for entity ${stringifyEntityRef(
         entity,
       )}`,
     );

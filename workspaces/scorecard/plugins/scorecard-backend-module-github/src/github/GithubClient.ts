@@ -21,6 +21,7 @@ import {
 } from '@backstage/integration';
 import { GithubRepository } from './types';
 import { graphql } from '@octokit/graphql';
+import { DEFAULT_GITHUB_HOSTNAME } from './constants';
 
 export class GithubClient {
   private readonly integrations: ScmIntegrations;
@@ -30,7 +31,7 @@ export class GithubClient {
   }
 
   private async getOctokitClient(
-    hostname: string = 'github.com',
+    hostname: string = DEFAULT_GITHUB_HOSTNAME,
   ): Promise<typeof graphql> {
     const githubIntegration = this.integrations.github.byHost(hostname);
     if (!githubIntegration) {
