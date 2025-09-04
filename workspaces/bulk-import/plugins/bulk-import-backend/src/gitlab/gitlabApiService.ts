@@ -24,6 +24,7 @@ import {
   ScmIntegrations,
 } from '@backstage/integration';
 
+import { Gitlab, GroupSchema } from '@gitbeaker/rest';
 import gitUrlParse from 'git-url-parse';
 
 import { getBranchName, getCatalogFilename } from '../catalog/catalogUtils';
@@ -108,18 +109,10 @@ export class GitlabApiService {
         { credential, owner: gitUrl.owner },
         glConfig.baseUrl,
       );
-      const resp = await glKit.Projects.show(`${gitUrl.owner}/${gitUrl.name}`);
-      const repo = resp;
+      const repo = await glKit.Projects.show(`${gitUrl.owner}/${gitUrl.name}`);
       if (!repo) {
         continue;
       }
-
-      // name: repo.name,
-      // full_name: repo.path_with_namespace,
-      // url: repo._links.self,
-      // html_url: repo.web_url,
-      // default_branch: repo.default_branch,
-      // updated_at: repo.updated_at,
       repository = {
         name: repo.name,
         full_name: repo.path_with_namespace,
@@ -152,7 +145,7 @@ export class GitlabApiService {
       this.integrations,
       {
         dataFetcher: async (
-          glApi: any,
+          glApi: InstanceType<typeof Gitlab<false>>,
           credential: ExtendedGitlabCredentials,
           glConfig: GitLabIntegrationConfig,
         ) => {
@@ -207,7 +200,7 @@ export class GitlabApiService {
       this.integrations,
       {
         dataFetcher: async (
-          glApi: any,
+          glApi: InstanceType<typeof Gitlab<false>>,
           credential: ExtendedGitlabCredentials,
           glConfig: GitLabIntegrationConfig,
         ) => {
@@ -268,7 +261,7 @@ export class GitlabApiService {
       this.integrations,
       {
         dataFetcher: async (
-          glApi: any,
+          glApi: InstanceType<typeof Gitlab<false>>,
           credential: ExtendedGitlabCredentials,
           glConfig: GitLabIntegrationConfig,
         ) => {
@@ -322,19 +315,19 @@ export class GitlabApiService {
       },
       this.integrations,
       {
-        dataFetcher: async (gitlab: any) => {
+        dataFetcher: async (gitlab: InstanceType<typeof Gitlab<false>>) => {
           // find authenticated gitlab owner...
           const username = (await gitlab.Users.showCurrentUser()).username;
           if (username) {
             allAccessibleUsernames.add(username);
           }
           // ... along with orgs accessible from the token auth
-          (
-            await gitlab.Groups.all({
-              all_available: false,
-            })
-          )
-            ?.map((org: { path: any }) => org.path)
+
+          const allGroups = await gitlab.Groups.all<false, 'offset'>({
+            allAvailable: false,
+          });
+          allGroups
+            .map(org => org.path)
             ?.forEach((orgName: string) => allAccessibleTokenOrgs.add(orgName));
           return {};
         },
@@ -441,7 +434,7 @@ export class GitlabApiService {
         repoUrl: input.repoUrl,
         fn: async (
           validatedRepo: ValidatedRepo,
-          gitlab: any,
+          gitlab: InstanceType<typeof Gitlab<false>>,
         ): Promise<{
           successful: boolean;
           result?: {
@@ -618,7 +611,10 @@ export class GitlabApiService {
       this.integrations,
       {
         repoUrl: input.repoUrl,
-        fn: async (validatedRepo: ValidatedRepo, gitlab: any) => {
+        fn: async (
+          validatedRepo: ValidatedRepo,
+          gitlab: InstanceType<typeof Gitlab<false>>,
+        ) => {
           const { owner, repo } = validatedRepo;
           const exists = await fileExistsInDefaultBranch(
             this.logger,
@@ -663,7 +659,10 @@ export class GitlabApiService {
       this.integrations,
       {
         repoUrl: input.repoUrl,
-        fn: async (validatedRepo: ValidatedRepo, gitlab: any) => {
+        fn: async (
+          validatedRepo: ValidatedRepo,
+          gitlab: InstanceType<typeof Gitlab<false>>,
+        ) => {
           const { owner, repo, branchName } = validatedRepo;
           try {
             const existingPrForBranch = await findOpenPRForBranch(
@@ -711,7 +710,10 @@ export class GitlabApiService {
       this.integrations,
       {
         repoUrl: input.repoUrl,
-        fn: async (validatedRepo: ValidatedRepo, gitlab: any) => {
+        fn: async (
+          validatedRepo: ValidatedRepo,
+          gitlab: InstanceType<typeof Gitlab<false>>,
+        ) => {
           const { owner, repo, branchName } = validatedRepo;
           try {
             await gitlab.Branches.remove(`${owner}/${repo}`, branchName);
@@ -740,14 +742,15 @@ export class GitlabApiService {
       this.integrations,
       {
         repoUrl: input.repoUrl,
-        fn: async (validatedRepo: ValidatedRepo, gitlab: any) => {
+        fn: async (
+          validatedRepo: ValidatedRepo,
+          gitlab: InstanceType<typeof Gitlab<false>>,
+        ) => {
           const { owner, repo } = validatedRepo;
           const resp = await gitlab.Repositories.allContributors(
             `${owner}/${repo}`,
             {
               showExpanded: true,
-              perPage: 1,
-              page: 1,
             },
           );
           return { successful: true, result: resp?.data?.length < 1 };
