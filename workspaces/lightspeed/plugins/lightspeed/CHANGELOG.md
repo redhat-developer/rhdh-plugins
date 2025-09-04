@@ -1,5 +1,16 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.6.0
+
+### Minor Changes
+
+- 693c3df: Add internationalization (i18n) support with German, French and Spanish translations in lightspeed.
+
+### Patch Changes
+
+- cfa3434: Updated dependency `@patternfly/chatbot` to `6.3.2`.
+  Updated dependency `@patternfly/react-core` to `6.3.1`.
+
 ## 0.5.7
 
 ### Patch Changes
