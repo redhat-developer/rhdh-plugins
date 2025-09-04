@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 0.5.8
+
+### Patch Changes
+
+- 1bbd3c2: Updated dependency `@langchain/openai` to `^0.6.0`.
+  Updated dependency `msw` to `2.11.1`.
+
 ## 0.5.7
 
 ### Patch Changes
