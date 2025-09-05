@@ -25,11 +25,13 @@ import { QuickstartItemData } from '../types';
 type QuickstartProps = {
   quickstartItems: QuickstartItemData[];
   handleDrawerClose: () => void;
+  isLoading: boolean;
 };
 
 export const Quickstart = ({
   quickstartItems,
   handleDrawerClose,
+  isLoading,
 }: QuickstartProps) => {
   const itemCount = quickstartItems.length;
   const [progress, setProgress] = useState<number>(0);
@@ -75,6 +77,7 @@ export const Quickstart = ({
             const newProgress = calculateProgress();
             setProgress(newProgress);
           }}
+          isLoading={isLoading}
         />
       </Box>
       <QuickstartFooter

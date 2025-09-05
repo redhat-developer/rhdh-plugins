@@ -21,6 +21,7 @@ import { Quickstart } from './Quickstart';
 import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
+import { useQuickstartRole } from '../hooks/useQuickstartRole';
 
 export const QuickstartDrawer = () => {
   const { isDrawerOpen, closeDrawer, drawerWidth } =
@@ -32,10 +33,11 @@ export const QuickstartDrawer = () => {
     ? config.get('app.quickstart')
     : [];
 
-  // This will be dynamically determined based on the logged-in user
-  const userRole = 'developer'; // switch to 'admin', 'developer', or other roles for testing purposes
-
-  const filteredItems = filterQuickstartItemsByRole(quickstartItems, userRole);
+  const { isLoading, userRole } = useQuickstartRole();
+  const filteredItems =
+    !isLoading && userRole
+      ? filterQuickstartItemsByRole(quickstartItems, userRole)
+      : [];
 
   return (
     <Drawer
@@ -65,6 +67,7 @@ export const QuickstartDrawer = () => {
       <Quickstart
         quickstartItems={filteredItems}
         handleDrawerClose={closeDrawer}
+        isLoading={isLoading}
       />
     </Drawer>
   );
