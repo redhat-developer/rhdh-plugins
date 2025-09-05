@@ -21,6 +21,11 @@ import {
   validateJiraOptions,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
+  JiraConfig,
+  JiraEntityFilters,
+  JiraOptions,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
   ANNOTATION_JIRA_PROJECT_KEY,
   ANNOTATION_JIRA_COMPONENT,
   ANNOTATION_JIRA_LABEL,
@@ -30,10 +35,7 @@ import {
   JIRA_CONFIG_PATH,
   JIRA_OPTIONS_PATH,
   JIRA_MANDATORY_FILTER,
-  JiraConfig,
-  JiraOptions,
-  JiraEntityFilters,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+} from '../constants';
 
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 type Header = Record<string, string> | {};

@@ -16,11 +16,11 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
+import { THRESHOLDS_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   ThresholdConfig,
-  THRESHOLDS_CONFIG_PATH,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   MetricProvider,
