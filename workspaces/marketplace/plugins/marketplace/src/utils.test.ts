@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { applyContent, getExampleAsMarkdown } from './utils';
+import {
+  applyContent,
+  getExampleAsMarkdown,
+  getCategoryTagDisplayInfo,
+} from './utils';
 
 describe('marketplace utils', () => {
   const packages = {
@@ -136,6 +140,75 @@ key2: value2
     it('should return empty string when JSON object is empty', () => {
       const content = getExampleAsMarkdown({});
       expect(content).toEqual('');
+    });
+  });
+
+  describe('getCategoryTagDisplayInfo', () => {
+    it('should return original name when within default max length', () => {
+      const categoryName = 'short-category';
+      const result = getCategoryTagDisplayInfo(categoryName);
+
+      expect(result).toEqual({
+        displayName: 'short-category',
+        tooltipTitle: '',
+        shouldShowTooltip: false,
+      });
+    });
+
+    it('should truncate name when exceeding default max length (25 chars)', () => {
+      const categoryName =
+        'this-is-a-very-long-category-name-that-exceeds-limit';
+      const result = getCategoryTagDisplayInfo(categoryName);
+
+      expect(result).toEqual({
+        displayName: 'this-is-a-very-long-categ...',
+        tooltipTitle: 'this-is-a-very-long-category-name-that-exceeds-limit',
+        shouldShowTooltip: true,
+      });
+    });
+
+    it('should respect custom max length option', () => {
+      const categoryName = 'medium-length-category';
+      const result = getCategoryTagDisplayInfo(categoryName, { maxLength: 10 });
+
+      expect(result).toEqual({
+        displayName: 'medium-len...',
+        tooltipTitle: 'medium-length-category',
+        shouldShowTooltip: true,
+      });
+    });
+
+    it('should handle exactly max length strings', () => {
+      const categoryName = 'exactly-twenty-five-chars';
+      const result = getCategoryTagDisplayInfo(categoryName);
+
+      expect(result).toEqual({
+        displayName: 'exactly-twenty-five-chars',
+        tooltipTitle: '',
+        shouldShowTooltip: false,
+      });
+    });
+
+    it('should handle empty string', () => {
+      const categoryName = '';
+      const result = getCategoryTagDisplayInfo(categoryName);
+
+      expect(result).toEqual({
+        displayName: '',
+        tooltipTitle: '',
+        shouldShowTooltip: false,
+      });
+    });
+
+    it('should handle single character strings', () => {
+      const categoryName = 'a';
+      const result = getCategoryTagDisplayInfo(categoryName);
+
+      expect(result).toEqual({
+        displayName: 'a',
+        tooltipTitle: '',
+        shouldShowTooltip: false,
+      });
     });
   });
 });
