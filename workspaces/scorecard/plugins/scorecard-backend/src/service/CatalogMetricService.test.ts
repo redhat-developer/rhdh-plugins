@@ -29,6 +29,11 @@ import {
 } from '../../__fixtures__/mockProviders';
 import { mockEntity } from '../../__fixtures__/mockEntities';
 import { ThresholdConfigFormatError } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  PermissionCondition,
+  PermissionCriteria,
+  PermissionRuleParams,
+} from '@backstage/plugin-permission-common';
 
 const mockCatalogApi = {
   getEntityByRef: jest.fn(),
@@ -227,6 +232,32 @@ describe('CatalogMetricService', () => {
       ).rejects.toThrow(
         new NotFoundError('Entity not found: component:default/non-existent'),
       );
+    });
+
+    it('should filter authorized metrics based upon permission filter', async () => {
+      mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
+
+      const filter: PermissionCriteria<
+        PermissionCondition<string, PermissionRuleParams>
+      > = {
+        anyOf: [
+          {
+            rule: 'HAS_METRIC_ID',
+            resourceType: 'scorecard-metric',
+            params: { metricIds: ['github.number-metric'] },
+          },
+        ],
+      };
+
+      const result = await catalogMetricService.calculateEntityMetrics(
+        'component:default/test-component',
+        undefined,
+        filter,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('github.number-metric');
+      expect(result).toEqual([githubMetricResult]);
     });
   });
 });

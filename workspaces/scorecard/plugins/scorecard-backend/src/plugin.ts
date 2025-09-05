@@ -27,6 +27,11 @@ import { MetricProvidersRegistry } from './providers/MetricProvidersRegistry';
 import { CatalogMetricService } from './service/CatalogMetricService';
 import { CatalogClient } from '@backstage/catalog-client';
 import { ThresholdEvaluator } from './threshold/ThresholdEvaluator';
+import { scorecardPermissions } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  scorecardMetricPermissionResourceRef,
+  rules as scorecardRules,
+} from './permissions/rules';
 
 /**
  * scorecardPlugin backend plugin
@@ -53,8 +58,25 @@ export const scorecardPlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         catalog: catalogServiceRef,
         logger: coreServices.logger,
+        httpAuth: coreServices.httpAuth,
+        permissions: coreServices.permissions,
+        permissionsRegistry: coreServices.permissionsRegistry,
       },
-      async init({ discovery, auth, httpRouter, logger }) {
+      async init({
+        discovery,
+        auth,
+        httpRouter,
+        logger,
+        httpAuth,
+        permissions,
+        permissionsRegistry,
+      }) {
+        permissionsRegistry.addResourceType({
+          resourceRef: scorecardMetricPermissionResourceRef,
+          permissions: scorecardPermissions,
+          rules: Object.values(scorecardRules),
+        });
+
         const catalogClient = new CatalogClient({ discoveryApi: discovery });
         const catalogMetricService = new CatalogMetricService({
           catalogApi: catalogClient,
@@ -68,6 +90,8 @@ export const scorecardPlugin = createBackendPlugin({
           await createRouter({
             metricProvidersRegistry,
             catalogMetricService,
+            httpAuth,
+            permissions,
           }),
         );
       },

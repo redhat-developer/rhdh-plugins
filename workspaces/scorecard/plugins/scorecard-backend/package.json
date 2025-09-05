@@ -41,6 +41,8 @@
     "@backstage/catalog-model": "^1.7.5",
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^1.17.2",
+    "@backstage/plugin-permission-common": "^0.9.1",
+    "@backstage/plugin-permission-node": "^0.10.2",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^",
     "express": "^4.17.1",

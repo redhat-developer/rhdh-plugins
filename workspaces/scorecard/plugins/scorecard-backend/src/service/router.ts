@@ -13,24 +13,81 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { InputError } from '@backstage/errors';
+import { InputError, NotAllowedError } from '@backstage/errors';
 import { z } from 'zod';
-import express from 'express';
+import express, { Request } from 'express';
 import Router from 'express-promise-router';
 import type { CatalogMetricService } from './CatalogMetricService';
 import type { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
+import {
+  type HttpAuthService,
+  type PermissionsService,
+} from '@backstage/backend-plugin-api';
+import {
+  AuthorizeResult,
+  BasicPermission,
+  PolicyDecision,
+  ResourcePermission,
+} from '@backstage/plugin-permission-common';
+import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { filterAuthorizedMetrics } from '../permissions/permissionUtils';
+
+export type ScorecardRouterOptions = {
+  metricProvidersRegistry: MetricProvidersRegistry;
+  catalogMetricService: CatalogMetricService;
+  httpAuth: HttpAuthService;
+  permissions: PermissionsService;
+};
 
 export async function createRouter({
   metricProvidersRegistry,
   catalogMetricService,
-}: {
-  metricProvidersRegistry: MetricProvidersRegistry;
-  catalogMetricService: CatalogMetricService;
-}): Promise<express.Router> {
+  httpAuth,
+  permissions,
+}: ScorecardRouterOptions): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
 
+  const authorizeConditional = async (
+    request: Request,
+    permission: ResourcePermission<'scorecard-metric'> | BasicPermission,
+  ) => {
+    const credentials = await httpAuth.credentials(request);
+    let decision: PolicyDecision;
+
+    if (permission.type === 'resource') {
+      decision = (
+        await permissions.authorizeConditional([{ permission }], {
+          credentials,
+        })
+      )[0];
+    } else {
+      decision = (
+        await permissions.authorize([{ permission }], {
+          credentials,
+        })
+      )[0];
+    }
+
+    if (decision.result === AuthorizeResult.DENY) {
+      throw new NotAllowedError(); // 403
+    }
+
+    return {
+      decision,
+      conditions:
+        decision.result === AuthorizeResult.CONDITIONAL
+          ? decision.conditions
+          : undefined,
+    };
+  };
+
   router.get('/metrics', async (req, res) => {
+    const { conditions } = await authorizeConditional(
+      req,
+      scorecardMetricReadPermission,
+    );
+
     const metricsSchema = z.object({
       datasource: z.string().min(1).optional(),
     });
@@ -49,10 +106,17 @@ export async function createRouter({
       metrics = metricProvidersRegistry.listMetrics();
     }
 
-    res.json({ metrics });
+    res.json({
+      metrics: filterAuthorizedMetrics(metrics, conditions),
+    });
   });
 
   router.get('/metrics/catalog/:kind/:namespace/:name', async (req, res) => {
+    const { conditions } = await authorizeConditional(
+      req,
+      scorecardMetricReadPermission,
+    );
+
     const { kind, namespace, name } = req.params;
     const { metricIds } = req.query;
 
@@ -73,6 +137,7 @@ export async function createRouter({
     const results = await catalogMetricService.calculateEntityMetrics(
       entityRef,
       metricIdArray,
+      conditions,
     );
     res.json(results);
   });

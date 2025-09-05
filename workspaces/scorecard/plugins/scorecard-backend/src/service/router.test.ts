@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { mockErrorHandler, mockServices } from '@backstage/backend-test-utils';
+import {
+  mockErrorHandler,
+  mockServices,
+  ServiceMock,
+} from '@backstage/backend-test-utils';
 import express from 'express';
 import request from 'supertest';
 
@@ -32,15 +36,41 @@ import { CatalogMetricService } from './CatalogMetricService';
 import { CatalogClient } from '@backstage/catalog-client';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 import { NotFoundError } from '@backstage/errors';
+import {
+  AuthorizeResult,
+  PolicyDecision,
+} from '@backstage/plugin-permission-common';
+import { PermissionsService } from '@backstage/backend-plugin-api';
 
 const mockCatalogClient = {
   getEntityByRef: jest.fn(),
 } as unknown as CatalogClient;
 
+const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
+  result: AuthorizeResult.CONDITIONAL,
+  pluginId: 'scorecard',
+  resourceType: 'scorecard-metric',
+  conditions: {
+    anyOf: [
+      {
+        rule: 'HAS_METRIC_ID',
+        resourceType: 'scorecard-metric',
+        params: {
+          metricIds: ['github.open-prs', 'github.open-issues'],
+        },
+      },
+    ],
+  },
+};
+
 describe('createRouter', () => {
   let app: express.Express;
   let metricProvidersRegistry: MetricProvidersRegistry;
   let catalogMetricService: CatalogMetricService;
+  const permissionsMock: ServiceMock<PermissionsService> =
+    mockServices.permissions.mock({
+      authorizeConditional: jest.fn(),
+    });
 
   beforeEach(async () => {
     metricProvidersRegistry = new MetricProvidersRegistry();
@@ -51,9 +81,16 @@ describe('createRouter', () => {
       logger: mockServices.logger.mock(),
       auth: mockServices.auth(),
     });
+
+    permissionsMock.authorizeConditional.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
+
     const router = await createRouter({
       metricProvidersRegistry,
       catalogMetricService,
+      httpAuth: mockServices.httpAuth.mock(),
+      permissions: permissionsMock,
     });
     app = express();
     app.use(router);
@@ -83,6 +120,16 @@ describe('createRouter', () => {
       metricProvidersRegistry.register(sonarProvider);
     });
 
+    it('should return 403 Unauthorized when DENY permissions', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+      ]);
+      const response = await request(app).get('/metrics');
+
+      expect(response.statusCode).toBe(403);
+      expect(response.body.error.name).toEqual('NotAllowedError');
+    });
+
     it('should return all metrics', async () => {
       const response = await request(app).get('/metrics');
 
@@ -103,6 +150,18 @@ describe('createRouter', () => {
       expect(response.body).toHaveProperty('metrics');
       expect(response.body.metrics).toHaveLength(2);
 
+      const metricIds = response.body.metrics.map((m: Metric) => m.id);
+      expect(metricIds).toContain('github.open-prs');
+      expect(metricIds).toContain('github.open-issues');
+    });
+
+    it('should filter authorized metrics when CONDITIONAL permission', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        CONDITIONAL_POLICY_DECISION,
+      ]);
+      const response = await request(app).get('/metrics');
+
+      expect(response.statusCode).toBe(200);
       const metricIds = response.body.metrics.map((m: Metric) => m.id);
       expect(metricIds).toContain('github.open-prs');
       expect(metricIds).toContain('github.open-issues');
@@ -166,6 +225,18 @@ describe('createRouter', () => {
         .mockResolvedValue(mockMetricResults);
     });
 
+    it('should return 403 Unauthorized when DENY permissions', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+      ]);
+      const result = await request(app).get(
+        '/metrics/catalog/component/default/my-service',
+      );
+
+      expect(result.statusCode).toBe(403);
+      expect(result.body.error.name).toEqual('NotAllowedError');
+    });
+
     it('should return metrics for a specific entity', async () => {
       const response = await request(app).get(
         '/metrics/catalog/component/default/my-service',
@@ -174,6 +245,7 @@ describe('createRouter', () => {
       expect(response.status).toBe(200);
       expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
+        undefined,
         undefined,
       );
       expect(response.body).toEqual(mockMetricResults);
@@ -188,6 +260,7 @@ describe('createRouter', () => {
       expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         ['github.open-prs', 'github.open-issues'],
+        undefined,
       );
       expect(response.body).toEqual(mockMetricResults);
     });
@@ -201,6 +274,31 @@ describe('createRouter', () => {
       expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         ['github.open-prs'],
+        undefined,
+      );
+    });
+
+    it('should filter authorized metrics when CONDITIONAL permission', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        CONDITIONAL_POLICY_DECISION,
+      ]);
+      const response = await request(app).get(
+        '/metrics/catalog/component/default/my-service',
+      );
+
+      expect(response.status).toBe(200);
+      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+        'component:default/my-service',
+        undefined,
+        {
+          anyOf: [
+            {
+              rule: 'HAS_METRIC_ID',
+              resourceType: 'scorecard-metric',
+              params: { metricIds: ['github.open-prs', 'github.open-issues'] },
+            },
+          ],
+        },
       );
     });
 

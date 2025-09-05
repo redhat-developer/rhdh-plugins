@@ -14,5 +14,21 @@
  * limitations under the License.
  */
 
-export * from './types';
-export * from './permissions';
+import { createPermissionResourceRef } from '@backstage/plugin-permission-node';
+import { ScorecardFilter } from './rules';
+import {
+  Metric,
+  RESOURCE_TYPE_SCORECARD_METRIC,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+/**
+ * Reference to the Scorecard metric resource.
+ * This is used to create RBAC permissions and conditions.
+ */
+export const scorecardMetricPermissionResourceRef = createPermissionResourceRef<
+  Metric,
+  ScorecardFilter
+>().with({
+  pluginId: 'scorecard',
+  resourceType: RESOURCE_TYPE_SCORECARD_METRIC,
+});
