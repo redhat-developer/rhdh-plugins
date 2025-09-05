@@ -23,7 +23,7 @@ import {
   ANNOTATION_JIRA_LABEL,
   ANNOTATION_JIRA_TEAM,
   ANNOTATION_JIRA_CUSTOM_FILTER,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+} from '../constants';
 
 // Create a test implementation of the abstract JiraClient
 class TestJiraClient extends JiraClient {

@@ -16,7 +16,7 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { ANNOTATION_JIRA_PROJECT_KEY } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { ANNOTATION_JIRA_PROJECT_KEY } from '../constants';
 import { JiraDataCenterClient } from './JiraDataCenterClient';
 
 global.fetch = jest.fn();

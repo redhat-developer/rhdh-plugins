@@ -15,7 +15,7 @@
  */
 
 import type { Config } from '@backstage/config';
-import { JIRA_CONFIG_PATH } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { JIRA_CONFIG_PATH } from '../constants';
 import { JiraClient } from '../clients/base';
 import { JiraDataCenterClient } from '../clients/JiraDataCenterClient';
 import { JiraCloudClient } from '../clients/JiraCloudClient';
@@ -24,7 +24,7 @@ export class JiraClientFactory {
   static create(config: Config): JiraClient {
     const jiraConfig = config.getOptional(JIRA_CONFIG_PATH);
     if (!jiraConfig || typeof jiraConfig !== 'object') {
-      throw new Error('Missing Jira integration config');
+      throw new Error('Jira integration config is invalid');
     }
 
     if ('product' in jiraConfig) {

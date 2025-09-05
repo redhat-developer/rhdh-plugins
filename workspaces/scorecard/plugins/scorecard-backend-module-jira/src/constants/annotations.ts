@@ -18,28 +18,28 @@
  * Annotation key for the Jira project key.
  * @public
  */
-export const ANNOTATION_JIRA_PROJECT_KEY = 'jira/project-key';
+export const ANNOTATION_JIRA_PROJECT_KEY = 'jira/project-key' as const;
 
 /**
  * Annotation key for the Jira component.
  * @public
  */
-export const ANNOTATION_JIRA_COMPONENT = 'jira/component';
+export const ANNOTATION_JIRA_COMPONENT = 'jira/component' as const;
 
 /**
  * Annotation key for the Jira label.
  * @public
  */
-export const ANNOTATION_JIRA_LABEL = 'jira/label';
+export const ANNOTATION_JIRA_LABEL = 'jira/label' as const;
 
 /**
  * Annotation key for the Jira team.
  * @public
  */
-export const ANNOTATION_JIRA_TEAM = 'jira/team';
+export const ANNOTATION_JIRA_TEAM = 'jira/team' as const;
 
 /**
  * Annotation key for the Jira custom filter.
  * @public
  */
-export const ANNOTATION_JIRA_CUSTOM_FILTER = 'jira/custom-filter';
+export const ANNOTATION_JIRA_CUSTOM_FILTER = 'jira/custom-filter' as const;
