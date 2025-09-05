@@ -14,110 +14,100 @@
  * limitations under the License.
  */
 
-import type { ComponentType } from 'react';
 import { Routes, Route } from 'react-router-dom';
-
 import {
   Page,
   Header,
-  TabbedLayout,
   ErrorBoundary,
+  TabbedLayout,
 } from '@backstage/core-components';
-
-import { useScalprum } from '@scalprum/react-core';
+import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+import Typography from '@mui/material/Typography';
 
 import { themeId } from '../consts';
-
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
-
 import { MarketplaceCatalogContent } from '../components/MarketplaceCatalogContent';
-
-// import { MarketplaceCollectionsGrid } from '../components/MarketplaceCollectionsGrid';
+import { InstalledPluginsTable } from '../components/InstalledPlugins/InstalledPluginsTable';
+import { useInstalledPluginsCount } from '../hooks/useInstalledPluginsCount';
 import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
-
-// import { MarketplacePluginsTable } from '../components/MarketplacePluginsTable';
 import { MarketplacePluginDrawer } from '../components/MarketplacePluginDrawer';
 import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
-
-// import { MarketplacePackagesTable } from '../components/MarketplacePackagesTable';
 import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer';
 import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
 
-export interface PluginTab {
-  Component: ComponentType;
-  config: {
-    path: string;
-    title: string;
-  };
-}
+// Constants for consistent styling
+const TAB_ICON_STYLE = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '4px',
+  fontSize: '14px',
+} as const;
 
-export interface ScalprumState {
-  api?: {
-    dynamicRootConfig?: {
-      mountPoints?: {
-        'internal.plugins/tab': PluginTab[];
-      };
-    };
-  };
-}
+const ICON_PROPS = {
+  fontSize: 'small' as const,
+  sx: { pr: '2px' },
+};
 
-const Tabs = () => {
-  const scalprum = useScalprum<ScalprumState>();
+// Helper component for tab labels with icons
+const TabLabel = ({
+  icon,
+  children,
+}: {
+  icon: React.ReactElement;
+  children: React.ReactNode;
+}) => (
+  <Typography component="span" style={TAB_ICON_STYLE}>
+    {icon} {children}
+  </Typography>
+);
 
-  const tabs = scalprum.api?.dynamicRootConfig?.mountPoints?.[
-    'internal.plugins/tab'
-  ] ?? [
-    {
-      Component: MarketplaceCatalogContent,
-      config: {
-        path: '',
-        title: 'Catalog',
-      },
-    },
-  ];
+const MarketplacePage = () => {
+  const { count: installedPluginsCount, loading } = useInstalledPluginsCount();
+
+  const installedPluginsTitle = loading
+    ? 'Installed Plugins'
+    : `Installed Plugins (${installedPluginsCount})`;
 
   return (
     <>
       <Page themeId={themeId}>
         <Header title="Extensions" />
         <TabbedLayout>
-          {/* <TabbedLayout.Route path="/catalog" title="Marketplace">
+          <TabbedLayout.Route
+            path="/catalog"
+            title=""
+            tabProps={{
+              icon: (
+                <TabLabel icon={<CategoryOutlinedIcon {...ICON_PROPS} />}>
+                  Catalog
+                </TabLabel>
+              ),
+            }}
+          >
             <ErrorBoundary>
               <MarketplaceCatalogContent />
             </ErrorBoundary>
-          </TabbedLayout.Route> */}
+          </TabbedLayout.Route>
 
-          {tabs.map(({ Component, config }) => (
-            <TabbedLayout.Route
-              key={config.path}
-              path={config.path}
-              title={config.title}
-            >
-              <ErrorBoundary>
-                <Component />
-              </ErrorBoundary>
-            </TabbedLayout.Route>
-          ))}
-
-          {/*       
-          <TabbedLayout.Route path="/collections" title="Collections">
+          <TabbedLayout.Route
+            path="/installed-plugins"
+            title=""
+            tabProps={{
+              icon: (
+                <TabLabel icon={<FactCheckOutlinedIcon {...ICON_PROPS} />}>
+                  {installedPluginsTitle}
+                </TabLabel>
+              ),
+            }}
+          >
             <ErrorBoundary>
-              <MarketplaceCollectionsGrid />
+              <InstalledPluginsTable />
             </ErrorBoundary>
           </TabbedLayout.Route>
-          <TabbedLayout.Route path="/plugins" title="Plugins">
-            <ErrorBoundary>
-              <MarketplacePluginsTable />
-            </ErrorBoundary>
-          </TabbedLayout.Route>
-          <TabbedLayout.Route path="/packages" title="Packages">
-            <ErrorBoundary>
-              <MarketplacePackagesTable />
-            </ErrorBoundary>
-          </TabbedLayout.Route>
-          */}
         </TabbedLayout>
       </Page>
+
       <Routes>
         <Route
           path="/plugins/:namespace/:name"
@@ -147,7 +137,7 @@ export const DynamicMarketplacePluginRouter = () => (
         path="/packages/:namespace/:name/install"
         Component={MarketplacePackageInstallPage}
       />
-      <Route path="/*" Component={Tabs} />
+      <Route path="/*" Component={MarketplacePage} />
     </Routes>
   </ReactQueryProvider>
 );
