@@ -25,11 +25,18 @@ import {
   MetricProvider,
   validateThresholds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { GithubClient } from '../github/GithubClient';
+import {
+  getHostnameFromEntity,
+  getRepositoryInformationFromEntity,
+} from '../github/utils';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
+  private readonly githubClient: GithubClient;
 
-  private constructor(thresholds?: ThresholdConfig) {
+  private constructor(config: Config, thresholds?: ThresholdConfig) {
+    this.githubClient = new GithubClient(config);
     this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
   }
 
@@ -63,10 +70,18 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
       validateThresholds(configuredThresholds, 'number');
     }
 
-    return new GithubOpenPRsProvider(configuredThresholds);
+    return new GithubOpenPRsProvider(config, configuredThresholds);
   }
 
   async calculateMetric(entity: Entity): Promise<number> {
-    return entity.metadata.name.length;
+    const repository = getRepositoryInformationFromEntity(entity);
+    const hostname = getHostnameFromEntity(entity);
+
+    const result = await this.githubClient.getOpenPullRequestsCount(
+      repository,
+      hostname,
+    );
+
+    return result;
   }
 }
