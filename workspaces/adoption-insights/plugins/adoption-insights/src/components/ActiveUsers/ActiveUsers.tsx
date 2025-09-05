@@ -36,6 +36,7 @@ import {
   getXAxisformat,
   getXAxisTickValues,
   formatNumber,
+  getGroupingLabel,
 } from '../../utils/utils';
 import { useActiveUsers } from '../../hooks/useActiveUsers';
 import { Typography } from '@material-ui/core';
@@ -99,13 +100,10 @@ const ActiveUsers = () => {
                   count: Math.round(
                     getAverage(data, 'total_users'),
                   ).toLocaleString('en-US'),
-                  period:
-                    grouping === 'hourly'
-                      ? t('activeUsers.hour')
-                      : t('activeUsers.day'),
+                  period: getGroupingLabel(grouping, t, 'activeUsers'),
                 }}
               />
-            </b>{' '}
+            </b>
             {t('activeUsers.averageSuffix')}
           </Typography>
           <Box sx={{ height: 310, mt: 4, mb: 4, ml: 0, mr: 0 }}>
