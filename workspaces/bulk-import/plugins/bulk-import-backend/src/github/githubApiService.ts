@@ -28,7 +28,11 @@ import { Octokit } from '@octokit/rest';
 import gitUrlParse from 'git-url-parse';
 
 import { getBranchName, getCatalogFilename } from '../catalog/catalogUtils';
-import { logErrorIfNeeded } from '../helpers';
+import {
+  computeTotalCount,
+  extractLocationOwnerMap,
+  logErrorIfNeeded,
+} from '../helpers';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -59,9 +63,7 @@ import {
   type ValidatedRepo,
 } from './utils/repoUtils';
 import {
-  computeTotalCount,
   executeFunctionOnFirstSuccessfulIntegration,
-  extractLocationOwnerMap,
   fetchFromAllIntegrations,
   getCredentialsForConfig,
 } from './utils/utils';

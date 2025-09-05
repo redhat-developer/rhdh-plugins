@@ -24,6 +24,7 @@ declare namespace Components {
   }
   namespace Parameters {
     export type ApiVersionHeaderParam = 'v1' | 'v2';
+    export type ApprovalToolParam = string;
     export type PagePerIntegrationQueryParam = number;
     export type PagePerIntegrationQueryParamDeprecated = number;
     export type PageQueryParam = number;
@@ -49,9 +50,10 @@ declare namespace Components {
     searchQueryParam?: Parameters.SearchQueryParam;
     pageQueryParam?: Parameters.PageQueryParam;
     sizeQueryParam?: Parameters.SizeQueryParam;
+    approvalToolParam?: Parameters.ApprovalToolParam;
   }
   namespace Schemas {
-    export type ApprovalTool = 'GIT' | 'SERVICENOW';
+    export type ApprovalTool = 'GIT' | 'SERVICENOW' | 'GITLAB';
     /**
      * Import Job
      */
@@ -66,6 +68,33 @@ declare namespace Components {
       errors?: string[];
       approvalTool?: ApprovalTool;
       repository?: /* Repository */ Repository;
+      /**
+       * GitLab details. Applicable if approvalTool is gitlab.
+       */
+      gitlab?: {
+        pullRequest?: {
+          /**
+           * URL of the Pull Request
+           */
+          url?: string;
+          /**
+           * Pull Request number
+           */
+          number?: number;
+          /**
+           * title of the Pull Request
+           */
+          title?: string;
+          /**
+           * body of the Pull Request
+           */
+          body?: string;
+          /**
+           * content of the catalog-info.yaml as fetched from the Pull Request
+           */
+          catalogInfoContent?: string;
+        };
+      };
       /**
        * GitHub details. Applicable if approvalTool is git.
        */
@@ -139,6 +168,24 @@ declare namespace Components {
        * content of the catalog-info.yaml to include in the import Pull Request.
        */
       catalogInfoContent?: string;
+      /**
+       * GitLab details. Applicable if approvalTool is gitlab.
+       */
+      gitlab?: {
+        /**
+         * Pull Request details. Applicable if approvalTool is gitlab.
+         */
+        pullRequest?: {
+          /**
+           * title of the Pull Request
+           */
+          title?: string;
+          /**
+           * body of the Pull Request
+           */
+          body?: string;
+        };
+      };
       /**
        * GitHub details. Applicable if approvalTool is git.
        */
@@ -260,6 +307,33 @@ declare namespace Components {
       approvalTool?: ApprovalTool;
       repository?: /* Repository */ Repository;
       /**
+       * GitLab details. Applicable if approvalTool is gitlab.
+       */
+      gitlab?: {
+        pullRequest?: {
+          /**
+           * URL of the Pull Request
+           */
+          url?: string;
+          /**
+           * Pull Request number
+           */
+          number?: number;
+          /**
+           * title of the Pull Request
+           */
+          title?: string;
+          /**
+           * body of the Pull Request
+           */
+          body?: string;
+          /**
+           * content of the catalog-info.yaml as fetched from the Pull Request
+           */
+          catalogInfoContent?: string;
+        };
+      };
+      /**
        * GitHub details. Applicable if approvalTool is git.
        */
       github?: {
@@ -314,12 +388,14 @@ declare namespace Paths {
   }
   namespace DeleteImportByRepo {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type DefaultBranch = string;
       export type Repo = string;
     }
     export interface QueryParameters {
       repo?: Parameters.Repo;
       defaultBranch?: Parameters.DefaultBranch;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export interface $204 {}
@@ -332,6 +408,7 @@ declare namespace Paths {
     }
     namespace Parameters {
       export type ApiVersion = 'v1' | 'v2';
+      export type ApprovalTool = string;
       export type Page = number;
       export type PagePerIntegration = number;
       export type Search = string;
@@ -353,6 +430,7 @@ declare namespace Paths {
       sortOrder?: Parameters.SortOrder;
       sortColumn?: Parameters.SortColumn;
       search?: Parameters.Search;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export type $200 =
@@ -366,6 +444,7 @@ declare namespace Paths {
   }
   namespace FindAllOrganizations {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type PagePerIntegration = number;
       export type Search = string;
       export type SizePerIntegration = number;
@@ -374,6 +453,7 @@ declare namespace Paths {
       pagePerIntegration?: Parameters.PagePerIntegration;
       sizePerIntegration?: Parameters.SizePerIntegration;
       search?: Parameters.Search;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export type $200 =
@@ -384,6 +464,7 @@ declare namespace Paths {
   }
   namespace FindAllRepositories {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type CheckImportStatus = boolean;
       export type PagePerIntegration = number;
       export type Search = string;
@@ -394,6 +475,7 @@ declare namespace Paths {
       pagePerIntegration?: Parameters.PagePerIntegration;
       sizePerIntegration?: Parameters.SizePerIntegration;
       search?: Parameters.Search;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export type $200 =
@@ -404,12 +486,14 @@ declare namespace Paths {
   }
   namespace FindImportStatusByRepo {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type DefaultBranch = string;
       export type Repo = string;
     }
     export interface QueryParameters {
       repo?: Parameters.Repo;
       defaultBranch?: Parameters.DefaultBranch;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export type $200 = /* Import Job */ Components.Schemas.Import;
@@ -418,6 +502,7 @@ declare namespace Paths {
   }
   namespace FindRepositoriesByOrganization {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type CheckImportStatus = boolean;
       export type OrganizationName = string;
       export type PagePerIntegration = number;
@@ -432,6 +517,7 @@ declare namespace Paths {
       pagePerIntegration?: Parameters.PagePerIntegration;
       sizePerIntegration?: Parameters.SizePerIntegration;
       search?: Parameters.Search;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export type $200 =
