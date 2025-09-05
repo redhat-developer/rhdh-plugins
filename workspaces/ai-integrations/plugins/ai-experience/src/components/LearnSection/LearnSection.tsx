@@ -21,8 +21,10 @@ import Box from '@mui/material/Box';
 import CardWrapper from './CardWrapper';
 import HomePageAiIllustration from '../../images/homepage-ai-illustration.svg';
 import { LEARNING_SECTION_ITEMS } from '../../utils/constants';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const LearnSection = () => {
+  const { t } = useTranslation();
   return (
     <Grid container spacing={3}>
       <Grid
@@ -37,7 +39,7 @@ export const LearnSection = () => {
         <Box
           component="img"
           src={HomePageAiIllustration}
-          alt="AI illustration"
+          alt={t('accessibility.aiIllustration')}
         />
       </Grid>
       {LEARNING_SECTION_ITEMS.map(item => (
@@ -46,15 +48,15 @@ export const LearnSection = () => {
           xs={12}
           md={6}
           lg={3}
-          key={item.title}
+          key={String(item.titleKey)}
           display="flex"
           justifyContent="left"
           alignItems="center"
         >
           <CardWrapper
-            title={item.title}
-            description={item.description}
-            buttonText={item.buttonText}
+            title={t(item.titleKey as any, {})}
+            description={t(item.descriptionKey as any, {})}
+            buttonText={t(item.buttonTextKey as any, {})}
             buttonLink={item.buttonLink}
             target={item.target}
           />

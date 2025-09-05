@@ -22,10 +22,14 @@ import {
   AiExperiencePage,
   AiNewsPage,
 } from '../src/plugin';
+import { aiExperienceTranslationsResource } from '../src/translations';
 
 createDevApp()
   .registerPlugin(aiExperiencePlugin)
   .addThemes(getAllThemes())
+  .addTranslationResource(aiExperienceTranslationsResource)
+  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setDefaultLanguage('en')
   .addPage({
     element: <AiExperiencePage />,
     title: 'Root Page',

@@ -18,12 +18,14 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface TagListProps {
   tags: string[];
 }
 
 const TagList: React.FC<TagListProps> = ({ tags }) => {
+  const { t } = useTranslation();
   const hiddenCount = tags.length - 3;
   return (
     <Box
@@ -60,7 +62,7 @@ const TagList: React.FC<TagListProps> = ({ tags }) => {
                   `${theme.palette.mode === 'light' ? '#0066CC' : '#1FA7F8'}`,
               }}
             >
-              {`${hiddenCount} more`}
+              {`${hiddenCount} ${t('common.more')}`}
             </Typography>
           }
           variant="outlined"

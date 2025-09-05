@@ -9,6 +9,8 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
 export const AiExperiencePage: () => JSX_2.Element;
@@ -21,6 +23,54 @@ export const aiExperiencePlugin: BackstagePlugin<
   {},
   {}
 >;
+
+// @public
+export const aiExperienceTranslationRef: TranslationRef<
+  'plugin.ai-experience',
+  {
+    readonly 'page.title': string;
+    readonly 'page.subtitle': string;
+    readonly 'news.pageTitle': string;
+    readonly 'news.fetchingRssFeed': string;
+    readonly 'news.noContentAvailable': string;
+    readonly 'news.noContentDescription': string;
+    readonly 'news.noRssContent': string;
+    readonly 'learn.learn.title': string;
+    readonly 'learn.learn.description': string;
+    readonly 'learn.learn.cta': string;
+    readonly 'learn.getStarted.title': string;
+    readonly 'learn.getStarted.description': string;
+    readonly 'learn.getStarted.cta': string;
+    readonly 'learn.explore.title': string;
+    readonly 'learn.explore.description': string;
+    readonly 'learn.explore.cta': string;
+    readonly 'modal.title.preview': string;
+    readonly 'modal.title.edit': string;
+    readonly 'modal.close': string;
+    readonly 'modal.edit': string;
+    readonly 'modal.save': string;
+    readonly 'modal.cancel': string;
+    readonly 'common.template': string;
+    readonly 'common.latest': string;
+    readonly 'common.more': string;
+    readonly 'common.viewMore': string;
+    readonly 'common.guest': string;
+    readonly 'greeting.goodMorning': string;
+    readonly 'greeting.goodAfternoon': string;
+    readonly 'greeting.goodEvening': string;
+    readonly 'sections.exploreAiModels': string;
+    readonly 'sections.exploreAiTemplates': string;
+    readonly 'sections.discoverModels': string;
+    readonly 'sections.viewAllModels': string;
+    readonly 'sections.viewAllTemplates': string;
+    readonly 'accessibility.close': string;
+    readonly 'accessibility.aiIllustration': string;
+    readonly 'accessibility.aiModelsIllustration': string;
+  }
+>;
+
+// @public
+export const aiExperienceTranslationsResource: TranslationResource<'plugin.ai-experience'>;
 
 // @public (undocumented)
 export const AiNewsIcon: IconComponent;
