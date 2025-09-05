@@ -30,11 +30,13 @@ export const AddedRepositoriesTableBody = ({
   rows,
   emptyRows,
   error,
+  onDelete,
 }: {
   error: { [key: string]: string };
   loading: boolean;
   emptyRows: number;
   rows: AddRepositoryData[];
+  onDelete: (repo: AddRepositoryData) => void;
 }) => {
   if (loading) {
     return (
@@ -74,7 +76,13 @@ export const AddedRepositoriesTableBody = ({
     return (
       <TableBody data-testid="import-jobs">
         {rows.map(row => {
-          return <AddedRepositoryTableRow key={row.id} data={row} />;
+          return (
+            <AddedRepositoryTableRow
+              key={row.id}
+              data={row}
+              onDelete={onDelete}
+            />
+          );
         })}
         {emptyRows > 0 && (
           <TableRow

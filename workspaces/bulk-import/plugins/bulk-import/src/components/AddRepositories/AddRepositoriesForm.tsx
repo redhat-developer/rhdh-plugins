@@ -25,14 +25,8 @@ import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import {
   AddRepositoriesFormValues,
   ApprovalTool,
-  CreateImportJobRepository,
-  ImportJobResponse,
   RepositorySelection,
 } from '../../types';
-import {
-  getJobErrors,
-  prepareDataForSubmission,
-} from '../../utils/repository-utils';
 import { DrawerContextProvider } from '../DrawerContext';
 import { AddRepositories } from './AddRepositories';
 
@@ -44,53 +38,39 @@ export const AddRepositoriesForm = () => {
     repositories: {},
     excludedRepositories: {},
     approvalTool: ApprovalTool.Git,
+    templateOptions: '',
   };
 
-  const createImportJobs = (importOptions: {
-    importJobs: CreateImportJobRepository[];
-    dryRun?: boolean;
+  const executeTemplate = (importOptions: {
+    repositories: string[];
+    templateParameters: Record<string, any>;
   }) =>
-    bulkImportApi.createImportJobs(
-      importOptions.importJobs,
-      importOptions.dryRun,
+    bulkImportApi.executeTemplate(
+      importOptions.repositories,
+      importOptions.templateParameters,
     );
 
-  const mutationCreate = useMutation(createImportJobs);
+  const mutationCreate = useMutation(executeTemplate);
 
   const handleSubmit = async (
     values: AddRepositoriesFormValues,
     formikHelpers: FormikHelpers<AddRepositoriesFormValues>,
   ) => {
     formikHelpers.setStatus(null);
-    const importRepositories = prepareDataForSubmission(
-      values.repositories,
-      values.approvalTool,
-    );
-    mutationCreate.mutate({
-      importJobs: importRepositories,
-      dryRun: true,
-    });
-    if (!mutationCreate.isError) {
-      const dryRunErrors = getJobErrors(
-        mutationCreate.data as ImportJobResponse[],
-      );
-      if (Object.keys(dryRunErrors?.errors || {}).length > 0) {
-        formikHelpers.setStatus(dryRunErrors);
-      } else {
-        formikHelpers.setStatus(dryRunErrors); // to show info messages
-        const submitResult = await mutationCreate.mutateAsync({
-          importJobs: importRepositories,
-        });
-        const createJobErrors = getJobErrors(
-          submitResult as ImportJobResponse[],
-        );
-        if (Object.keys(createJobErrors?.errors || {}).length > 0) {
-          formikHelpers.setStatus(createJobErrors);
-        } else {
+    const repositories = Object.values(values.repositories)
+      .map(repo => repo.repoUrl)
+      .filter((repoUrl): repoUrl is string => !!repoUrl);
+    mutationCreate.mutate(
+      {
+        repositories,
+        templateParameters: JSON.parse(values.templateOptions as any),
+      },
+      {
+        onSuccess: () => {
           navigate(`..`);
-        }
-      }
-    }
+        },
+      },
+    );
   };
 
   return (

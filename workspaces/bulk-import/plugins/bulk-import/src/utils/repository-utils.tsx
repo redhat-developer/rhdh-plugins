@@ -32,7 +32,6 @@ import {
   CreateImportJobRepository,
   ErrorType,
   ImportJobResponse,
-  ImportJobs,
   ImportJobStatus,
   ImportStatus,
   JobErrors,
@@ -388,13 +387,13 @@ export const prepareDataForSubmission = (
           repo.catalogInfoYaml?.prTemplate?.componentName ||
           repo?.repoName ||
           'my-component',
-        repository: {
-          id: repo.id,
-          url: repo.repoUrl || '',
-          name: repo.repoName || '',
-          organization: repo.orgName || '',
-          defaultBranch: repo.defaultBranch || '',
-        },
+        // repository: {
+        //   id: repo.id,
+        //   url: repo.repoUrl || '',
+        //   name: repo.repoName || '',
+        //   organization: repo.orgName || '',
+        //   defaultBranch: repo.defaultBranch || '',
+        // },
         catalogInfoContent: yaml.stringify(
           repo.catalogInfoYaml?.prTemplate?.yaml,
           null,
@@ -603,6 +602,7 @@ export const prepareDataForRepositories = (
               val.defaultBranch || 'main',
             ),
           },
+          tasks: val.tasks,
         },
       };
     }, {}) || {};
@@ -610,51 +610,48 @@ export const prepareDataForRepositories = (
 };
 
 export const prepareDataForAddedRepositories = (
-  addedRepositories: ImportJobs | Response | undefined,
+  addedRepositories:
+    | { repositories: Repository[]; totalCount: number }
+    | undefined,
   user: string,
   baseUrl: string,
 ): { repoData: AddedRepositories; totalJobs: number } => {
-  if (!Array.isArray((addedRepositories as ImportJobs)?.imports)) {
+  if (!Array.isArray(addedRepositories?.repositories)) {
     return { repoData: {}, totalJobs: 0 };
   }
-  const importJobs = addedRepositories as ImportJobs;
   const repoData: { [id: string]: AddRepositoryData } =
-    importJobs.imports?.reduce((acc, val: ImportJobStatus) => {
-      const id = `${val.repository.organization}/${val.repository.name}`;
+    addedRepositories.repositories.reduce((acc, val: Repository) => {
+      const id = val.id;
       return {
         ...acc,
         [id]: {
           id,
-          source: val.source,
-          repoName: val.repository.name,
-          defaultBranch: val.repository.defaultBranch,
-          orgName: val.repository.organization,
-          repoUrl: val.repository.url,
-          organizationUrl: val?.repository?.url?.substring(
+          repoName: val.name,
+          defaultBranch: val.defaultBranch,
+          orgName: val.organization,
+          repoUrl: val.url,
+          organizationUrl: val.url?.substring(
             0,
-            val.repository.url.indexOf(val?.repository?.name || '') - 1,
+            val.url.indexOf(val?.name || '') - 1,
           ),
           catalogInfoYaml: {
-            status: val.status
-              ? RepositoryStatus[val.status as RepositoryStatus]
-              : RepositoryStatus.NotGenerated,
+            status: RepositoryStatus.ADDED,
             prTemplate: getPRTemplate(
-              val.repository.name || '',
-              val.repository.organization || '',
+              val.name || '',
+              val.organization || '',
               user,
               baseUrl,
-              val.repository.url || '',
-              val.repository.defaultBranch || 'main',
+              val.url || '',
+              val.defaultBranch || 'main',
             ),
-            pullRequest: val?.github?.pullRequest?.url || '',
-            lastUpdated: val.lastUpdate,
           },
+          tasks: val.tasks,
         },
       };
     }, {});
   return {
     repoData,
-    totalJobs: (addedRepositories as ImportJobs)?.totalCount || 0,
+    totalJobs: addedRepositories.totalCount || 0,
   };
 };
 

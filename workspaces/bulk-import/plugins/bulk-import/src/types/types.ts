@@ -16,8 +16,6 @@
 
 import { Entity } from '@backstage/catalog-model';
 
-import { Repository as RepositoryResponse } from './response-types';
-
 export type RepositoriesData = {
   id: number;
   name: string;
@@ -70,6 +68,7 @@ export type AddRepositoryData = {
     lastUpdated?: string;
   };
   lastUpdated?: string;
+  tasks?: { taskId?: string; locations?: string[] }[];
 };
 
 export type Order = 'asc' | 'desc';
@@ -85,6 +84,7 @@ export type AddRepositoriesFormValues = {
     [repoId: string]: { repoId: string; orgName: string; status: string };
   };
   approvalTool: ApprovalTool;
+  templateOptions: string;
 };
 
 export enum RepositoryStatus {
@@ -133,7 +133,6 @@ export type CreateImportJobRepository = {
       body: string;
     };
   };
-  repository: RepositoryResponse;
 };
 
 export type APITypes = {
@@ -150,6 +149,7 @@ export type ErrorType = {
     catalogEntityName: string;
     error: {
       message: RepositoryStatus[];
+      fromDb?: boolean;
     };
   };
 };
@@ -169,4 +169,5 @@ export type DataFetcherQueryParams = {
   showOrganizations?: boolean;
   orgName?: string;
   searchString?: string;
+  fromDb?: boolean;
 };

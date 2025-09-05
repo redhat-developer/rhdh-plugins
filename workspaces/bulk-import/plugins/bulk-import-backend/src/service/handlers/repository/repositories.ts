@@ -20,6 +20,12 @@ import type { Config } from '@backstage/config';
 import gitUrlParse from 'git-url-parse';
 
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
+import {
+  RepositoryDao,
+  ScaffolderTaskDao,
+  TaskLocationsDao,
+} from '../../../database/repositoryDao';
+import { toRepositoryResponseDto } from '../../../dtos/RepositoryResponseDto';
 import type { Components } from '../../../generated/openapi';
 import type {
   GithubApiService,
@@ -79,6 +85,59 @@ export async function findRepositoriesByOrganization(
   return deps.githubApiService
     .getOrgRepositoriesFromIntegrations(orgName, search, pageNumber, pageSize)
     .then(response => formatResponse(deps, response, checkStatus));
+}
+
+// todo: implement pagination.
+export async function findAllRepositoriesFromDb(deps: {
+  logger: LoggerService;
+  repositoryDao: RepositoryDao;
+  taskDao: ScaffolderTaskDao;
+  taskLocationsDao: TaskLocationsDao;
+}): Promise<HandlerResponse<Components.Schemas.RepositoryList>> {
+  try {
+    const repoList = await deps.repositoryDao.findAllRepositories();
+    const tasks = await deps.taskDao.findAllTasks();
+    const locations = await deps.taskLocationsDao.findAllLocations();
+    const dtos = toRepositoryResponseDto(repoList, tasks, locations);
+
+    if (dtos.length === 0) {
+      return {
+        statusCode: 200,
+        responseBody: {
+          repositories: [],
+          totalCount: 0,
+        },
+      };
+    }
+    const repositories = dtos.map(r => {
+      const gitUrl = gitUrlParse(r.url!);
+      return {
+        id: `${gitUrl.organization}/${gitUrl.name}`,
+        name: gitUrl.name,
+        organization: gitUrl.organization,
+        url: r.url,
+        tasks: r.tasks,
+      };
+    });
+
+    sortRepos(repositories);
+
+    return {
+      statusCode: 200,
+      responseBody: {
+        repositories: repositories,
+        totalCount: repositories.length,
+      },
+    };
+  } catch (error: any) {
+    deps.logger.error('Failed to get repositories from database', error);
+    return {
+      statusCode: 500,
+      responseBody: {
+        errors: [error.message],
+      },
+    };
+  }
 }
 
 function sortRepos(repoList: Components.Schemas.Repository[]) {
@@ -147,6 +206,7 @@ async function formatResponse(
         return undefined;
       });
     }
+
     const repoUpdatedAt = repo.updated_at ?? undefined;
     repoList.push({
       id: `${gitUrl.organization}/${repo.name}`,
@@ -170,4 +230,83 @@ async function formatResponse(
       totalCount: allReposAccessible.totalCount,
     },
   };
+}
+
+export async function findRepositoryFromDbByName(
+  deps: {
+    logger: LoggerService;
+    repositoryDao: RepositoryDao;
+    taskDao: ScaffolderTaskDao;
+    taskLocationsDao: TaskLocationsDao;
+  },
+  name: string,
+): Promise<HandlerResponse<Components.Schemas.Repository>> {
+  deps.logger.debug(`Getting repository from database by name ${name}...`);
+  try {
+    const repo = await deps.repositoryDao.findRepositoryByUrl(name);
+
+    if (!repo) {
+      return {
+        statusCode: 404,
+        responseBody: {
+          errors: [`Repository with name ${name} not found`],
+        },
+      };
+    }
+    const tasks = await deps.taskDao.findTasksByRepositoryId(repo.id);
+    const locations = await deps.taskLocationsDao.findLocationsByTaskId(
+      tasks[0].taskId,
+    );
+    const repoDto = toRepositoryResponseDto([repo], tasks, locations)[0];
+    const gitUrl = gitUrlParse(repoDto.url);
+    const repository = {
+      id: `${gitUrl.organization}/${gitUrl.name}`,
+      name: gitUrl.name,
+      organization: gitUrl.organization,
+      url: repoDto.url,
+      tasks: repoDto.tasks,
+    };
+
+    return {
+      statusCode: 200,
+      responseBody: repository,
+    };
+  } catch (error: any) {
+    deps.logger.error(
+      `Failed to get repository from database by name ${name}`,
+      error,
+    );
+    return {
+      statusCode: 500,
+      responseBody: {
+        errors: [error.message],
+      },
+    };
+  }
+}
+
+export async function deleteRepository(
+  deps: {
+    logger: LoggerService;
+    dao: RepositoryDao;
+  },
+  name: string,
+): Promise<HandlerResponse<void>> {
+  deps.logger.debug(`Deleting repository from database by name ${name}...`);
+  try {
+    await deps.dao.deleteRepository(name);
+
+    return {
+      statusCode: 204,
+      responseBody: undefined,
+    };
+  } catch (error: any) {
+    deps.logger.error(
+      `Failed to delete repository from database by name ${name}`,
+      error,
+    );
+    return {
+      statusCode: 500,
+    };
+  }
 }

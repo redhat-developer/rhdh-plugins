@@ -19,6 +19,7 @@ import { RepositoryStatus } from './types';
 export type Repository = {
   id: string;
   url?: string;
+  tasks?: ScaffolderTask[];
   name?: string;
   organization?: string;
   defaultBranch?: string;
@@ -26,6 +27,15 @@ export type Repository = {
   errors?: string[];
   totalRepoCount?: number;
 };
+
+export interface ScaffolderTask {
+  taskId: string;
+  scaffolderOptions: {
+    [key: string]: any;
+  };
+  repositoryId: number;
+  locations?: string[];
+}
 
 export type ImportJobResponse = {
   errors: RepositoryStatus[];

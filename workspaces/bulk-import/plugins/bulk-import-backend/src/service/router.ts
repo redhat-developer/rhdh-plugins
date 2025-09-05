@@ -41,6 +41,11 @@ import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bu
 
 import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
+import {
+  RepositoryDao,
+  ScaffolderTaskDao,
+  TaskLocationsDao,
+} from '../database/repositoryDao';
 import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
@@ -55,9 +60,13 @@ import {
 import { findAllOrganizations } from './handlers/organization';
 import { ping } from './handlers/ping';
 import {
+  deleteRepository,
   findAllRepositories,
+  findAllRepositoriesFromDb,
   findRepositoriesByOrganization,
+  findRepositoryFromDbByName,
 } from './handlers/repository';
+import { executeTemplate } from './handlers/scaffolder/execute-template';
 
 /**
  * Router Options
@@ -73,18 +82,25 @@ export interface RouterOptions {
   auth: AuthService;
   catalogApi: CatalogApi;
   auditor: AuditorService;
+  repositoryDao: RepositoryDao;
+  taskDao: ScaffolderTaskDao;
+  taskLocationsDao: TaskLocationsDao;
 }
 
 namespace Operations {
   export const PING = 'ping';
   export const FIND_ALL_ORGANIZATIONS = 'findAllOrganizations';
   export const FIND_ALL_REPOSITORIES = 'findAllRepositories';
+  export const FIND_ALL_REPOSITORIES_FROM_DB = 'findAllRepositoriesFromDb';
+  export const FIND_REPOSITORY_FROM_DB_BY_NAME = 'findRepositoryFromDbByName';
+  export const DELETE_REPOSITORY = 'deleteRepository';
   export const FIND_REPOSITORIES_BY_ORGANIZATION =
     'findRepositoriesByOrganization';
   export const FIND_ALL_IMPORTS = 'findAllImports';
   export const CREATE_IMPORT_JOBS = 'createImportJobs';
   export const FIND_IMPORT_STATUS_BY_REPO = 'findImportStatusByRepo';
   export const DELETE_IMPORT_BY_REPO = 'deleteImportByRepo';
+  export const EXECUTE_TEMPLATE = 'executeTemplate';
 }
 
 /**
@@ -104,7 +120,14 @@ export async function createRouter(
     discovery,
     catalogApi,
     auditor: auditor,
+    repositoryDao: repositoryDao,
+    taskDao: taskDao,
+    taskLocationsDao: taskLocationsDao,
   } = options;
+
+  if (!config.has('bulkImport.importTemplate')) {
+    throw new Error('Missing required config value: bulkImport.importTemplate');
+  }
 
   const githubApiService = new GithubApiService(logger, config, cache);
   const catalogHttpClient = new CatalogHttpClient({
@@ -207,6 +230,50 @@ export async function createRouter(
         pagePerIntegration: q.pagePerIntegration,
         sizePerIntegration: q.sizePerIntegration,
       } as Components.Schemas.RepositoryList);
+    },
+  );
+
+  api.register(
+    Operations.FIND_ALL_REPOSITORIES_FROM_DB,
+    async (_c: Context, _req: Request, res: Response) => {
+      const response = await findAllRepositoriesFromDb({
+        logger,
+        repositoryDao: repositoryDao,
+        taskDao: taskDao,
+        taskLocationsDao: taskLocationsDao,
+      });
+      return res.status(200).json(response.responseBody);
+    },
+  );
+
+  api.register(
+    Operations.FIND_REPOSITORY_FROM_DB_BY_NAME,
+    async (c: Context, _req: Request, res: Response) => {
+      const repoUrl = c.request.query.repositoryName?.toString();
+      if (!repoUrl) {
+        return res.status(400).json({ error: 'Missing repositoryName' });
+      }
+      const response = await findRepositoryFromDbByName(
+        { logger, repositoryDao, taskDao, taskLocationsDao },
+        repoUrl,
+      );
+      return res.status(response.statusCode).json({
+        ...response.responseBody,
+      });
+    },
+  );
+
+  api.register(
+    Operations.DELETE_REPOSITORY,
+    async (c: Context, _req: Request, res: Response) => {
+      const response = await deleteRepository(
+        {
+          logger,
+          dao: repositoryDao,
+        },
+        c.request.params.repositoryName?.toString(),
+      );
+      return res.status(response.statusCode).json(response.responseBody);
     },
   );
 
@@ -365,6 +432,42 @@ export async function createRouter(
     },
   );
 
+  api.register(
+    Operations.EXECUTE_TEMPLATE,
+    async (
+      c: Context<Paths.ExecuteTemplate.RequestBody>,
+      _req: Request,
+      res: Response,
+    ) => {
+      const {
+        repositories = [],
+        templateParameters = {},
+        templateName,
+      } = c.request.requestBody;
+
+      // const parsedRepositories = repositories.map(repo => {
+      //   const url = new URL(`https://${repo}`);
+      //   const owner = url.searchParams.get('owner');
+      //   const repoName = url.searchParams.get('repo');
+      //   return `https://${url.hostname}/${owner}/${repoName}`;
+      // });
+
+      const response = await executeTemplate(
+        discovery,
+        logger,
+        auth,
+        config,
+        repositoryDao,
+        taskDao,
+        taskLocationsDao,
+        repositories,
+        templateParameters,
+        templateName,
+      );
+      return res.status(202).json(response);
+    },
+  );
+
   const router = Router();
   router.use(express.json());
 
@@ -433,6 +536,11 @@ async function createAuditorEventByOperationId(
         search: req.query.search,
       });
       break;
+    case Operations.FIND_ALL_REPOSITORIES_FROM_DB:
+      auditorEvent = await auditCreateEvent(auditor, 'repo-read-db', req, {
+        queryType: 'all',
+      });
+      break;
     case Operations.FIND_REPOSITORIES_BY_ORGANIZATION: {
       const organizationName = req.params.organizationName?.toString();
       auditorEvent = await auditCreateEvent(auditor, 'repo-read', req, {
@@ -451,6 +559,11 @@ async function createAuditorEventByOperationId(
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'create',
         dryRun: req.query.dryRun,
+      });
+      break;
+    case Operations.EXECUTE_TEMPLATE:
+      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
+        actionType: 'create',
       });
       break;
     case Operations.FIND_IMPORT_STATUS_BY_REPO:

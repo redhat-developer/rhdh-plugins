@@ -44,6 +44,7 @@ import {
   ImportJobs,
   ImportJobStatus,
   OrgAndRepoResponse,
+  Repository,
   RepositoryStatus,
 } from '../src/types';
 
@@ -138,6 +139,35 @@ class MockBulkImportApi implements BulkImportAPI {
     return mockGetImportJobs.imports.find(
       i => i.repository.url === repo,
     ) as ImportJobStatus;
+  }
+  async executeTemplate(
+    _repositories: string[],
+    _templateParameters: Record<string, any>,
+  ): Promise<any> {
+    return Promise.resolve();
+  }
+  async findAllRepositoriesFromDb(): Promise<Repository[]> {
+    return Promise.resolve([]);
+  }
+  async deleteRepository(_url: string): Promise<any> {
+    return Promise.resolve();
+  }
+  async findRepositoryFromDbByName(_name: string): Promise<any> {
+    return Promise.resolve({
+      repositories: [
+        {
+          id: '1',
+          name: 'repo1',
+          url: 'http://repo1.com',
+          organization: 'org1',
+          tasks: [],
+        },
+      ],
+      totalCount: 1,
+    });
+  }
+  async getScaffolderTaskEvents(_taskId: string): Promise<EventSource> {
+    return new EventSource('');
   }
 }
 

@@ -318,7 +318,7 @@ For more information, read an [overview of the Backstage software catalog](https
   });
 }
 
-async function handleAddedReposFromCreateImportJobs(
+async function handleAddedReposFromCreateImportJobs( //
   deps: {
     logger: LoggerService;
     config: Config;
@@ -497,6 +497,7 @@ export async function createImportJobs(
   const result: Components.Schemas.Import[] = [];
 
   const addedRepos = await handleAddedReposFromCreateImportJobs(
+    //
     deps,
     importRequests,
   );
@@ -671,7 +672,7 @@ async function performDryRunChecks(
   };
 }
 
-export async function findImportStatusByRepo(
+export async function findImportStatusByRepo( //
   deps: {
     logger: LoggerService;
     config: Config;
@@ -724,6 +725,7 @@ export async function findImportStatusByRepo(
       if (
         exists &&
         (await deps.githubApiService.hasFileInRepo({
+          //
           repoUrl,
           defaultBranch,
           fileName: getCatalogFilename(deps.config),
