@@ -18,7 +18,7 @@ import { SubRouteRef } from '@backstage/core-plugin-api';
 // @public (undocumented)
 export const DynamicMarketplacePluginContent: () => JSX_2.Element;
 
-// @public (undocumented)
+// @public
 export const DynamicMarketplacePluginRouter: () => JSX_2.Element;
 
 // @public (undocumented)
@@ -43,10 +43,15 @@ packageRouteRef: SubRouteRef<PathParams<"/packages/:namespace/:name">>;
 packageInstallRouteRef: SubRouteRef<PathParams<"/packages/:namespace/:name/install">>;
 collectionsRouteRef: SubRouteRef<undefined>;
 collectionRouteRef: SubRouteRef<PathParams<"/collections/:namespace/:name">>;
+catalogTabRouteRef: SubRouteRef<undefined>;
+installedTabRouteRef: SubRouteRef<undefined>;
 }, {}, {}>;
 
 // @public
 export const MarketplaceTabbedPageRouter: () => JSX_2.Element;
+
+// @public (undocumented)
+export const PluginsIcon: IconComponent;
 
 // (No @packageDocumentation comment for this package)
 
