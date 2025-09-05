@@ -20,7 +20,6 @@ import {
   ScmIntegrations,
 } from '@backstage/integration';
 import { GithubRepository } from './types';
-import { graphql } from '@octokit/graphql';
 import { DEFAULT_GITHUB_HOSTNAME } from './constants';
 
 export class GithubClient {
@@ -45,6 +44,7 @@ export class GithubClient {
       url: `https://${hostname}`,
     });
 
+    const { graphql } = await import('@octokit/graphql');
     return graphql.defaults({
       headers,
       baseUrl: githubIntegration.config.apiBaseUrl,
