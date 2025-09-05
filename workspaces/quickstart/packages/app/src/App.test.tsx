@@ -16,6 +16,63 @@
 import { render, waitFor } from '@testing-library/react';
 import App from './App';
 
+// Mock HTMLCanvasElement.getContext to avoid canvas-related errors in tests
+Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+  value: jest.fn(() => ({
+    fillRect: jest.fn(),
+    clearRect: jest.fn(),
+    getImageData: jest.fn(() => ({
+      data: new Array(4),
+    })),
+    putImageData: jest.fn(),
+    createImageData: jest.fn(() => []),
+    setTransform: jest.fn(),
+    drawImage: jest.fn(),
+    save: jest.fn(),
+    fillText: jest.fn(),
+    restore: jest.fn(),
+    beginPath: jest.fn(),
+    moveTo: jest.fn(),
+    lineTo: jest.fn(),
+    closePath: jest.fn(),
+    stroke: jest.fn(),
+    translate: jest.fn(),
+    scale: jest.fn(),
+    rotate: jest.fn(),
+    arc: jest.fn(),
+    fill: jest.fn(),
+    measureText: jest.fn(() => ({ width: 0 })),
+    transform: jest.fn(),
+    rect: jest.fn(),
+    clip: jest.fn(),
+    createLinearGradient: jest.fn(() => ({
+      addColorStop: jest.fn(),
+    })),
+  })),
+});
+
+// eslint-disable-next-line no-console
+const originalError = console.error;
+beforeAll(() => {
+  // eslint-disable-next-line no-console
+  console.error = (...args: any[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      (args[0].includes('MUI: The') ||
+        args[0].includes('Warning: findDOMNode') ||
+        args[0].includes('Not implemented: HTMLCanvasElement'))
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
+
+afterAll(() => {
+  // eslint-disable-next-line no-console
+  console.error = originalError;
+});
+
 describe('App', () => {
   it('should render', async () => {
     process.env = {

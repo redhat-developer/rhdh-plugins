@@ -20,6 +20,7 @@ import { QuickstartItem } from './QuickstartItem';
 import { EmptyState } from '@backstage/core-components';
 import { useState } from 'react';
 import { QuickstartItemData } from '../../types';
+import { useTranslation } from '../../hooks/useTranslation';
 
 type QuickstartContentProps = {
   quickstartItems: QuickstartItemData[];
@@ -32,6 +33,7 @@ export const QuickstartContent = ({
   setProgress,
   itemCount,
 }: QuickstartContentProps) => {
+  const { t } = useTranslation();
   const [openItems, setOpenItems] = useState<boolean[]>(
     new Array(itemCount).fill(false),
   );
@@ -62,10 +64,7 @@ export const QuickstartContent = ({
           ))}
         </List>
       ) : (
-        <EmptyState
-          title="Quickstart content not available for your role."
-          missing="data"
-        />
+        <EmptyState title={t('content.emptyState.title')} missing="data" />
       )}
     </Box>
   );

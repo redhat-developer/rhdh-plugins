@@ -20,6 +20,7 @@ import {
 } from '@backstage/core-plugin-api';
 import { PropsWithChildren } from 'react';
 import { QuickstartButtonProps } from './components/QuickstartButton/QuickstartButton';
+import { quickstartTranslationRef } from './translations';
 
 export type { QuickstartButtonProps } from './components/QuickstartButton/QuickstartButton';
 
@@ -30,7 +31,11 @@ export type { QuickstartButtonProps } from './components/QuickstartButton/Quicks
  */
 export const quickstartPlugin = createPlugin({
   id: 'quickstart',
-});
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [quickstartTranslationRef],
+  },
+} as any);
 
 /**
  * Quick start drawer provider

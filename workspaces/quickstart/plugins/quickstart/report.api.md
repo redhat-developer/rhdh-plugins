@@ -8,6 +8,7 @@
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { CSSProperties } from 'react';
 import { PropsWithChildren } from 'react';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
 export const QuickstartButton: React.ComponentType<QuickstartButtonProps>;
@@ -34,6 +35,9 @@ export const QuickstartDrawerProvider: React.ComponentType<PropsWithChildren>;
 
 // @public
 export const quickstartPlugin: BackstagePlugin<{}, {}, {}>;
+
+// @public
+export const quickstartTranslations: TranslationResource<'plugin.quickstart'>;
 
 // @public
 export const useQuickstartDrawerContext: () => QuickstartDrawerContextType;
