@@ -124,7 +124,13 @@ const CatalogEntities = () => {
 
   return (
     <CardWrapper
-      title={t('catalogEntities.title')}
+      title={
+        rowsPerPage >= (catalogEntities.data?.length ?? 0)
+          ? t('catalogEntities.allTitle' as any, {})
+          : t('catalogEntities.topNTitle' as any, {
+              count: rowsPerPage.toString(),
+            })
+      }
       filter={
         <FilterDropdown
           selectedOption={selectedOption}

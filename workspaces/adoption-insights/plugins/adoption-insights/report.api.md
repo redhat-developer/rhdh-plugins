@@ -51,6 +51,7 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'filter.selectKind': string;
     readonly 'plugins.title': string;
     readonly 'plugins.topNTitle': string;
+    readonly 'plugins.allTitle': string;
     readonly 'page.title': string;
     readonly 'activeUsers.legend.newUsers': string;
     readonly 'activeUsers.legend.returningUsers': string;
@@ -62,9 +63,13 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'activeUsers.averageSuffix': string;
     readonly 'templates.title': string;
     readonly 'templates.topNTitle': string;
+    readonly 'templates.allTitle': string;
     readonly 'catalogEntities.title': string;
+    readonly 'catalogEntities.topNTitle': string;
+    readonly 'catalogEntities.allTitle': string;
     readonly 'techDocs.title': string;
     readonly 'techDocs.topNTitle': string;
+    readonly 'techDocs.allTitle': string;
     readonly 'searches.title': string;
     readonly 'searches.hour': string;
     readonly 'searches.day': string;

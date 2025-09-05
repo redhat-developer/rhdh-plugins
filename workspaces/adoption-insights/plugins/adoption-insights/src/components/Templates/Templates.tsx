@@ -30,6 +30,7 @@ import Link from '@mui/material/Link';
 
 import CardWrapper from '../CardWrapper';
 import { TEMPLATE_TABLE_HEADERS } from '../../utils/constants';
+
 import TableFooterPagination from '../CardFooter';
 import { useTemplates } from '../../hooks/useTemplates';
 import EmptyChartState from '../Common/EmptyChartState';
@@ -87,7 +88,11 @@ const Templates = () => {
 
   return (
     <CardWrapper
-      title={t('templates.topNTitle' as any, { count: rowsPerPage.toString() })}
+      title={
+        rowsPerPage >= (templates.data?.length ?? 0)
+          ? t('templates.allTitle' as any, {})
+          : t('templates.topNTitle' as any, { count: rowsPerPage.toString() })
+      }
     >
       <Table aria-labelledby="Templates" sx={{ width: '100%' }}>
         <TableHead>

@@ -133,9 +133,9 @@ describe('Techdocs', () => {
     const select = screen.getByRole('combobox');
 
     await user.click(select);
-    await user.click(screen.getByText('Top 5'));
+    await user.click(screen.getByText('All'));
 
-    expect(screen.getByText('Top 5 TechDocs')).toBeInTheDocument();
+    expect(screen.getByText('All TechDocs')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(6);
   });
 

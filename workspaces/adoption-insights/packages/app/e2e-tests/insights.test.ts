@@ -91,9 +91,10 @@ test('Total number of users panel shows 1 visitor of 100', async () => {
 });
 
 test('Top plugins shows catalog', async () => {
-  const panel = page.locator('.v5-MuiPaper-root', { hasText: 'Top 3 plugins' });
+  await navigate('Adoption Insights');
+  const panel = page.locator('.v5-MuiPaper-root', { hasText: 'All plugins' });
   await expect(panel).toMatchAriaSnapshot(`
-    - heading "Top 3 plugins" [level=5]
+    - heading "All plugins" [level=5]
     - table:
       - rowgroup:
         - row :
@@ -165,7 +166,7 @@ test.describe(() => {
 
   test('Visited component shows up in top catalog entities', async () => {
     const panel = page.locator('.v5-MuiPaper-root', {
-      hasText: 'Top catalog entities',
+      hasText: 'All catalog entities',
     });
     const entries = panel.locator('tbody').locator('tr');
     await expect(entries).toHaveCount(1);
@@ -174,7 +175,7 @@ test.describe(() => {
 
   test('Visited TechDoc shows up in top TechDocs', async () => {
     const panel = page.locator('.v5-MuiPaper-root', {
-      hasText: 'Top 3 TechDocs',
+      hasText: 'All TechDocs',
     });
     const entries = panel.locator('tbody').locator('tr');
     await expect(entries).toHaveCount(1);
@@ -191,7 +192,7 @@ test.describe(() => {
 
   test('New data shows in top templates', async () => {
     const panel = page.locator('.v5-MuiPaper-root', {
-      hasText: 'Top 3 templates',
+      hasText: 'All templates',
     });
     await panel.scrollIntoViewIfNeeded();
     const entries = panel.locator('tbody').locator('tr');

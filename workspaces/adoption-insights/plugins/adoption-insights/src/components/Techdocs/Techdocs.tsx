@@ -87,7 +87,11 @@ const Techdocs = () => {
 
   return (
     <CardWrapper
-      title={t('techDocs.topNTitle' as any, { count: rowsPerPage.toString() })}
+      title={
+        rowsPerPage >= (techdocs.data?.length ?? 0)
+          ? t('techDocs.allTitle' as any, {})
+          : t('techDocs.topNTitle' as any, { count: rowsPerPage.toString() })
+      }
     >
       <Table aria-labelledby="TechDocs" sx={{ width: '100%' }}>
         <TableHead>
