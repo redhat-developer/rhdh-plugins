@@ -64,6 +64,7 @@ const StarredItem: FC<SectionComponentProps> = ({
   const { name, kind, namespace } = parseEntityRef(entityRef as string);
   const theme = useTheme();
   const { t } = useTranslation();
+  const rhdhPalette = (theme.palette as any).rhdh;
 
   return (
     <MenuItem
@@ -72,6 +73,11 @@ const StarredItem: FC<SectionComponentProps> = ({
       onClick={handleClose}
       disableRipple
       disableTouchRipple
+      sx={{
+        '&:hover .star-icon, &:focus-visible .star-icon': {
+          visibility: 'visible',
+        },
+      }}
     >
       {Icon && (
         <ListItemIcon sx={{ minWidth: 36 }}>
@@ -90,13 +96,18 @@ const StarredItem: FC<SectionComponentProps> = ({
       />
       <Tooltip title={t('starred.removeTooltip')}>
         <IconButton
+          className="star-icon"
           onClick={e => {
             e.preventDefault();
             e.stopPropagation();
             toggleStarredEntity(entityRef);
           }}
+          sx={{
+            visibility: 'hidden',
+            color: rhdhPalette?.general?.starredItemsColor ?? '#F3BA37',
+          }}
         >
-          <Star color="warning" />
+          <Star />
         </IconButton>
       </Tooltip>
     </MenuItem>
