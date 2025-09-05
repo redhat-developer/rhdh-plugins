@@ -116,32 +116,26 @@ export const InstalledPluginsTable = () => {
       const processedPlugins = processPluginsForDisplay(installedPlugins);
 
       data = [...processedPlugins]
-        .sort(
-          (
-            a: Record<string, string | boolean>,
-            b: Record<string, string | boolean>,
-          ) => {
-            const field = orderBy.field!;
-            const orderMultiplier = orderDirection === 'desc' ? -1 : 1;
+        .sort((a: Record<string, any>, b: Record<string, any>) => {
+          const field = Array.isArray(orderBy.field)
+            ? orderBy.field[0]
+            : orderBy.field;
+          const orderMultiplier = orderDirection === 'desc' ? -1 : 1;
 
-            if (a[field] === null || b[field] === null) {
-              return 0;
-            }
+          if (!field || a[field] === null || b[field] === null) {
+            return 0;
+          }
 
-            // Handle boolean values separately
-            if (
-              typeof a[field] === 'boolean' &&
-              typeof b[field] === 'boolean'
-            ) {
-              return (a[field] ? 1 : -1) * orderMultiplier;
-            }
+          // Handle boolean values separately
+          if (typeof a[field] === 'boolean' && typeof b[field] === 'boolean') {
+            return (a[field] ? 1 : -1) * orderMultiplier;
+          }
 
-            return (
-              (a[field] as string).localeCompare(b[field] as string) *
-              orderMultiplier
-            );
-          },
-        )
+          return (
+            (a[field] as string).localeCompare(b[field] as string) *
+            orderMultiplier
+          );
+        })
         .filter(plugin =>
           plugin.name
             .toLowerCase()
@@ -184,7 +178,7 @@ export const InstalledPluginsTable = () => {
         debounceInterval: 500,
       }}
       columns={columns}
-      data={fetchData}
+      data={fetchData as any}
       localization={{
         body: {
           emptyDataSourceMessage: emptyMessage,
