@@ -30,6 +30,9 @@ jest.mock('../Scorecard', () => {
     description,
     value,
     loading,
+    statusColor,
+    StatusIcon,
+    thresholds,
   }: any) {
     if (loading) {
       return <div data-testid="scorecard-loading">Loading...</div>;
@@ -39,113 +42,124 @@ jest.mock('../Scorecard', () => {
         data-testid="scorecard-card"
         data-title={cardTitle}
         data-value={value}
+        data-status-color={statusColor}
       >
         <h3>{cardTitle}</h3>
         <p>{description}</p>
         <span>Value: {value}</span>
+        <span>Status: {statusColor}</span>
+        {StatusIcon && <span data-testid="status-icon">Status Icon</span>}
+        {thresholds && <span data-testid="thresholds">Thresholds</span>}
       </div>
     );
   };
 });
 
-// Mock the fetchMockData function
-jest.mock('../mockData', () => ({
-  fetchMockData: jest.fn(),
+jest.mock('../../../hooks/useScorecards', () => ({
+  useScorecards: jest.fn(),
 }));
 
-const mockDataWithMetrics = {
-  title: 'Scorecard for component:default/my_service',
-  metrics: [
-    {
-      id: 'github.pull_requests_open_1',
-      status: 'success',
-      metadata: {
-        title: 'GitHub open PRs',
-        description:
-          'Current count of open Pull Requests for a given GitHub repository.',
-        type: 'number',
-        history: true,
-      },
-      result: {
-        value: 8,
-        timestamp: '2025-08-08T10:00:00Z',
-        thresholdResult: {
-          definition: {
-            type: 'DecisionTable',
-            inputs: ['value'],
-            rules: [
-              { condition: '< 10', status: 'green', label: 'Ideal' },
-              { condition: '10-50', status: 'orange', label: 'Warning' },
-              { condition: '> 50', status: 'red', label: 'Critical' },
-            ],
-          },
-          evaluation: {
-            status: 'green',
-            matchedRule: '< 10',
-            label: 'Ideal',
-          },
+jest.mock('../../../utils/utils', () => ({
+  getStatusConfig: jest.fn(),
+}));
+
+const mockDataWithMetrics = [
+  {
+    id: 'github.pull_requests_open_1',
+    status: 'success',
+    metadata: {
+      title: 'GitHub open PRs',
+      description:
+        'Current count of open Pull Requests for a given GitHub repository.',
+      type: 'number',
+      history: true,
+    },
+    result: {
+      value: 8,
+      timestamp: '2025-08-08T10:00:00Z',
+      thresholdResult: {
+        definition: {
+          type: 'DecisionTable',
+          inputs: ['value'],
+          rules: [
+            { condition: '< 10', status: 'green', label: 'Ideal' },
+            { condition: '10-50', status: 'orange', label: 'Warning' },
+            { condition: '> 50', status: 'red', label: 'Critical' },
+          ],
+        },
+        evaluation: {
+          status: 'green',
+          matchedRule: '< 10',
+          label: 'Ideal',
         },
       },
     },
-    {
-      id: 'jira.issues_open_1',
-      status: 'success',
-      metadata: {
-        title: 'Jira open blocking tickets',
-        description:
-          'Highlights the number of critical, blocking issues that are currently open in Jira.',
-        type: 'number',
-        history: true,
-      },
-      result: {
-        value: 22,
-        timestamp: '2025-08-08T10:00:00Z',
-        thresholdResult: {
-          definition: {
-            type: 'DecisionTable',
-            inputs: ['value'],
-            rules: [
-              { condition: '< 10', status: 'green', label: 'Ideal' },
-              { condition: '10-50', status: 'orange', label: 'Warning' },
-              { condition: '> 50', status: 'red', label: 'Critical' },
-            ],
-          },
-          evaluation: {
-            status: 'orange',
-            matchedRule: '10-50',
-            label: 'Warning',
-          },
+  },
+  {
+    id: 'jira.issues_open_1',
+    status: 'success',
+    metadata: {
+      title: 'Jira open blocking tickets',
+      description:
+        'Highlights the number of critical, blocking issues that are currently open in Jira.',
+      type: 'number',
+      history: true,
+    },
+    result: {
+      value: 22,
+      timestamp: '2025-08-08T10:00:00Z',
+      thresholdResult: {
+        definition: {
+          type: 'DecisionTable',
+          inputs: ['value'],
+          rules: [
+            { condition: '< 10', status: 'green', label: 'Ideal' },
+            { condition: '10-50', status: 'orange', label: 'Warning' },
+            { condition: '> 50', status: 'red', label: 'Critical' },
+          ],
+        },
+        evaluation: {
+          status: 'orange',
+          matchedRule: '10-50',
+          label: 'Warning',
         },
       },
     },
-  ],
-};
+  },
+];
 
-const mockDataEmpty = {
-  title: 'Scorecard for component:default/my_service',
-  metrics: [],
-};
-
-// Get the mocked function
-const { fetchMockData } = require('../mockData');
+// Get the mocked functions
+const { useScorecards } = require('../../../hooks/useScorecards');
+const { getStatusConfig } = require('../../../utils/utils');
 
 describe('ScorecardPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-  });
 
-  it('should render empty state when data has no metrics', async () => {
-    fetchMockData.mockResolvedValue(mockDataEmpty);
-
-    render(<ScorecardPage />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId('scorecard-empty-state')).toBeInTheDocument();
+    getStatusConfig.mockReturnValue({
+      color: 'green',
+      icon: 'CheckCircleIcon',
     });
   });
 
-  it('should render empty state when there is an error', async () => {
-    fetchMockData.mockRejectedValue(new Error('Failed to fetch'));
+  it('should render loading state when data is loading', () => {
+    useScorecards.mockReturnValue({
+      scorecards: undefined,
+      loadingData: true,
+      error: undefined,
+    });
+
+    render(<ScorecardPage />);
+
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+
+  it('should render empty state when data has no metrics', async () => {
+    useScorecards.mockReturnValue({
+      scorecards: [],
+      loadingData: false,
+      error: undefined,
+    });
 
     render(<ScorecardPage />);
 
@@ -155,7 +169,11 @@ describe('ScorecardPage', () => {
   });
 
   it('should render scorecards when data is loaded successfully', async () => {
-    fetchMockData.mockResolvedValue(mockDataWithMetrics);
+    useScorecards.mockReturnValue({
+      scorecards: mockDataWithMetrics,
+      loadingData: false,
+      error: undefined,
+    });
 
     render(<ScorecardPage />);
 
@@ -173,64 +191,83 @@ describe('ScorecardPage', () => {
     expect(screen.getByText('Value: 22')).toBeInTheDocument();
   });
 
-  it('should render multiple scorecards with different statuses', async () => {
-    const mockDataWithDifferentStatuses = {
-      ...mockDataWithMetrics,
-      metrics: [
-        {
-          ...mockDataWithMetrics.metrics[0],
-          id: 'test_ideal',
-          result: {
-            ...mockDataWithMetrics.metrics[0].result,
-            thresholdResult: {
-              ...mockDataWithMetrics.metrics[0].result.thresholdResult,
-              evaluation: {
-                status: 'green',
-                matchedRule: '< 10',
-                label: 'Ideal',
-              },
-            },
-          },
-        },
-        {
-          ...mockDataWithMetrics.metrics[1],
-          id: 'test_warning',
-          result: {
-            ...mockDataWithMetrics.metrics[1].result,
-            thresholdResult: {
-              ...mockDataWithMetrics.metrics[1].result.thresholdResult,
-              evaluation: {
-                status: 'orange',
-                matchedRule: '10-50',
-                label: 'Warning',
-              },
-            },
-          },
-        },
-        {
-          ...mockDataWithMetrics.metrics[0],
-          id: 'test_critical',
-          metadata: {
-            ...mockDataWithMetrics.metrics[0].metadata,
-            title: 'Critical Test',
-          },
-          result: {
-            ...mockDataWithMetrics.metrics[0].result,
-            value: 75,
-            thresholdResult: {
-              ...mockDataWithMetrics.metrics[0].result.thresholdResult,
-              evaluation: {
-                status: 'red',
-                matchedRule: '> 50',
-                label: 'Critical',
-              },
-            },
-          },
-        },
-      ],
-    };
+  it('should call getStatusConfig for each metric', () => {
+    useScorecards.mockReturnValue({
+      scorecards: mockDataWithMetrics,
+      loadingData: false,
+      error: undefined,
+    });
 
-    fetchMockData.mockResolvedValue(mockDataWithDifferentStatuses);
+    render(<ScorecardPage />);
+
+    expect(getStatusConfig).toHaveBeenCalledTimes(2);
+    expect(getStatusConfig).toHaveBeenCalledWith(
+      mockDataWithMetrics[0].result.thresholdResult.evaluation,
+    );
+    expect(getStatusConfig).toHaveBeenCalledWith(
+      mockDataWithMetrics[1].result.thresholdResult.evaluation,
+    );
+  });
+
+  it('should render multiple scorecards with different statuses', async () => {
+    const mockDataWithDifferentStatuses = [
+      {
+        ...mockDataWithMetrics[0],
+        id: 'test_ideal',
+        result: {
+          ...mockDataWithMetrics[0].result,
+          thresholdResult: {
+            ...mockDataWithMetrics[0].result.thresholdResult,
+            evaluation: {
+              status: 'green',
+              matchedRule: '< 10',
+              label: 'Ideal',
+            },
+          },
+        },
+      },
+      {
+        ...mockDataWithMetrics[1],
+        id: 'test_warning',
+        result: {
+          ...mockDataWithMetrics[1].result,
+          thresholdResult: {
+            ...mockDataWithMetrics[1].result.thresholdResult,
+            evaluation: {
+              status: 'orange',
+              matchedRule: '10-50',
+              label: 'Warning',
+            },
+          },
+        },
+      },
+      {
+        ...mockDataWithMetrics[0],
+        id: 'test_critical',
+        metadata: {
+          ...mockDataWithMetrics[0].metadata,
+          title: 'Critical Test',
+        },
+        result: {
+          ...mockDataWithMetrics[0].result,
+          value: 75,
+          thresholdResult: {
+            ...mockDataWithMetrics[0].result.thresholdResult,
+            evaluation: {
+              status: 'red',
+              matchedRule: '> 50',
+              label: 'Critical',
+            },
+          },
+        },
+      },
+    ];
+
+    useScorecards.mockReturnValue({
+      scorecards: mockDataWithDifferentStatuses,
+      loadingData: false,
+      error: undefined,
+    });
 
     render(<ScorecardPage />);
 
@@ -238,5 +275,27 @@ describe('ScorecardPage', () => {
       const scorecards = screen.getAllByTestId('scorecard-card');
       expect(scorecards).toHaveLength(3);
     });
+  });
+
+  it('should pass correct props to Scorecard component', () => {
+    useScorecards.mockReturnValue({
+      scorecards: [mockDataWithMetrics[0]],
+      loadingData: false,
+      error: undefined,
+    });
+
+    getStatusConfig.mockReturnValue({
+      color: 'red',
+      icon: 'ErrorIcon',
+    });
+
+    render(<ScorecardPage />);
+
+    const scorecard = screen.getByTestId('scorecard-card');
+    expect(scorecard).toHaveAttribute('data-title', 'GitHub open PRs');
+    expect(scorecard).toHaveAttribute('data-value', '8');
+    expect(scorecard).toHaveAttribute('data-status-color', 'red');
+    expect(screen.getByTestId('status-icon')).toBeInTheDocument();
+    expect(screen.getByTestId('thresholds')).toBeInTheDocument();
   });
 });

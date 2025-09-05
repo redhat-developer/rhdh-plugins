@@ -14,35 +14,42 @@
  * limitations under the License.
  */
 
-import { useState, useEffect } from 'react';
+import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { ResponseErrorPanel } from '@backstage/core-components';
 
 import Box from '@mui/material/Box';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import ScorecardEmptyState from './ScorecardEmptyState';
-import { fetchMockData } from './mockData';
 import Scorecard from './Scorecard';
+import { useScorecards } from '../../hooks/useScorecards';
+import { getStatusConfig } from '../../utils/utils';
 
 export const ScorecardPage = () => {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { scorecards, loadingData, error } = useScorecards();
 
-  useEffect(() => {
-    fetchMockData()
-      .then(metrics => {
-        setData(metrics);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  if (loadingData) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  if ((!loading && data?.metrics?.length === 0) || error) {
+  if (error) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <ResponseErrorPanel error={error} />
+      </Box>
+    );
+  }
+
+  if (!loadingData && scorecards?.length === 0) {
     return <ScorecardEmptyState />;
   }
 
@@ -53,28 +60,24 @@ export const ScorecardPage = () => {
       gap={2}
       sx={{ alignItems: 'flex-start' }}
     >
-      {data?.metrics?.map((metric: any) => (
-        <Scorecard
-          key={metric.id}
-          cardTitle={metric.metadata.title}
-          description={metric.metadata.description}
-          loading={false}
-          statusColor={(() => {
-            const label = metric.result.thresholdResult.evaluation;
-            if (label === 'error') return 'red';
-            if (label === 'warning') return 'orange';
-            return 'green';
-          })()}
-          StatusIcon={(() => {
-            const label = metric.result.thresholdResult.evaluation;
-            if (label === 'error') return DangerousOutlinedIcon;
-            if (label === 'warning') return WarningAmberIcon;
-            return CheckCircleOutlineIcon;
-          })()}
-          value={metric.result.value}
-          thresholds={metric.result.thresholdResult.definition.rules}
-        />
-      ))}
+      {scorecards?.map((metric: MetricResult) => {
+        const statusConfig = getStatusConfig(
+          metric.result?.thresholdResult?.evaluation,
+        );
+
+        return (
+          <Scorecard
+            key={metric.id}
+            cardTitle={metric.metadata.title}
+            description={metric.metadata.description}
+            loading={false}
+            statusColor={statusConfig.color}
+            StatusIcon={statusConfig.icon}
+            value={metric.result?.value}
+            thresholds={metric.result?.thresholdResult}
+          />
+        );
+      })}
     </Box>
   );
 };

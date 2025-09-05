@@ -20,7 +20,10 @@ import { BrowserRouter } from 'react-router-dom';
 
 import ScorecardEmptyState from '../ScorecardEmptyState';
 
-jest.mock('../../../images/no-scorecard.svg', () => 'mocked-no-scorecard.svg');
+jest.mock(
+  '../../../images/no-scorecards.svg',
+  () => 'mocked-no-scorecards.svg',
+);
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const theme = createTheme();
@@ -76,6 +79,6 @@ describe('ScorecardEmptyState', () => {
 
     const image = screen.getByAltText('No scorecards');
     expect(image).toBeInTheDocument();
-    expect(image).toHaveAttribute('src', 'mocked-no-scorecard.svg');
+    expect(image).toHaveAttribute('src', 'mocked-no-scorecards.svg');
   });
 });

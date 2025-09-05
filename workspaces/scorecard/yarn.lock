@@ -12233,6 +12233,7 @@ __metadata:
     "@backstage/core-components": "npm:^0.17.4"
     "@backstage/core-plugin-api": "npm:^1.10.9"
     "@backstage/dev-utils": "npm:^1.1.12"
+    "@backstage/plugin-catalog-react": "npm:^1.19.1"
     "@backstage/test-utils": "npm:^1.7.10"
     "@backstage/theme": "npm:^0.6.7"
     "@material-ui/core": "npm:^4.12.2"
@@ -12241,6 +12242,7 @@ __metadata:
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@patternfly/react-charts": "npm:^8.1.0"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
@@ -12250,6 +12252,7 @@ __metadata:
     victory: "npm:^37.3.6"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-router-dom: "*"
   languageName: unknown
   linkType: soft
 
