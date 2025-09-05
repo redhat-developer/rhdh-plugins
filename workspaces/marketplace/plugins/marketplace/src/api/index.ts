@@ -21,3 +21,17 @@ import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketpl
 export const marketplaceApiRef = createApiRef<MarketplaceApi>({
   id: 'plugin.extensions.api-ref',
 });
+
+export type DynamicPluginInfo = {
+  name: string;
+  version: string;
+  role: string;
+  platform: string;
+};
+export interface DynamicPluginsInfoApi {
+  listLoadedPlugins(): Promise<DynamicPluginInfo[]>;
+}
+
+export const dynamicPluginsInfoApiRef = createApiRef<DynamicPluginsInfoApi>({
+  id: 'plugin.extensions.dynamic-plugins-info',
+});
