@@ -151,7 +151,7 @@ export const executeTemplate = async (
   taskDao: ScaffolderTaskDao,
   taskLocationsDao: TaskLocationsDao,
   repositories: string[],
-  scaffolderOptions: Record<string, any>,
+  scaffolderOptions: Record<string, any> = {},
   templateName?: string,
 ) => {
   const taskIds: string[] = [];
@@ -201,6 +201,8 @@ export const executeTemplate = async (
       const taskId = await execute({
         repoUrl: normalizedUrl,
         ...scaffolderOptions,
+        owner,
+        repo: repoName,
       });
 
       const repositoryId = await repositoryDao.insertRepository(repo, taskId);

@@ -84,7 +84,6 @@ export type AddRepositoriesFormValues = {
     [repoId: string]: { repoId: string; orgName: string; status: string };
   };
   approvalTool: ApprovalTool;
-  templateOptions: string;
 };
 
 export enum RepositoryStatus {

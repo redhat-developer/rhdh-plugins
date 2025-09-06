@@ -17,7 +17,6 @@
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
-import TextField from '@mui/material/TextField';
 import { useFormikContext } from 'formik';
 
 import { AddRepositoriesFormValues, PullRequestPreviewData } from '../../types';
@@ -71,18 +70,6 @@ export const AddRepositories = ({ error }: { error: any }) => {
               </Alert>
             </div>
           )}
-          <TextField
-            label="Template options (JSON)"
-            multiline
-            rows={4}
-            fullWidth
-            value={
-              typeof values.templateOptions === 'string'
-                ? values.templateOptions
-                : JSON.stringify(values.templateOptions, null, 2)
-            }
-            onChange={e => setFieldValue('templateOptions', e.target.value)}
-          />
           <AddRepositoriesTable />
         </div>
         <br />

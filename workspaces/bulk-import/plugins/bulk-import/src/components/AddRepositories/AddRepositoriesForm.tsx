@@ -38,7 +38,6 @@ export const AddRepositoriesForm = () => {
     repositories: {},
     excludedRepositories: {},
     approvalTool: ApprovalTool.Git,
-    templateOptions: '',
   };
 
   const executeTemplate = (importOptions: {
@@ -63,7 +62,7 @@ export const AddRepositoriesForm = () => {
     mutationCreate.mutate(
       {
         repositories,
-        templateParameters: JSON.parse(values.templateOptions as any),
+        templateParameters: {},
       },
       {
         onSuccess: () => {
