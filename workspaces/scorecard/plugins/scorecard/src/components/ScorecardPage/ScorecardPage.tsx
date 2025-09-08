@@ -61,6 +61,10 @@ export const ScorecardPage = () => {
       sx={{ alignItems: 'flex-start' }}
     >
       {scorecards?.map((metric: MetricResult) => {
+        if (metric.status === 'error') {
+          return null;
+        }
+
         const statusConfig = getStatusConfig(
           metric.result?.thresholdResult?.evaluation,
         );
