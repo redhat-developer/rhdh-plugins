@@ -17,14 +17,12 @@
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import {
-  validateJiraConfig,
-  validateJiraOptions,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import {
   JiraConfig,
   JiraEntityFilters,
   JiraOptions,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+  Product,
+  RequestOptions,
+} from '../types';
 import {
   ANNOTATION_JIRA_PROJECT_KEY,
   ANNOTATION_JIRA_COMPONENT,
@@ -35,37 +33,42 @@ import {
   JIRA_CONFIG_PATH,
   JIRA_OPTIONS_PATH,
   JIRA_MANDATORY_FILTER,
+  CONFIG_TOKEN,
+  CONFIG_PRODUCT,
+  CONFIG_API_VERSION,
+  CONFIG_BASE_URL,
+  CONFIG_MANDATORY_FILTER,
+  CONFIG_CUSTOM_FILTER,
 } from '../constants';
-
-type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
-type Header = Record<string, string> | {};
 
 export abstract class JiraClient {
   protected readonly config: JiraConfig;
-  protected readonly options: JiraOptions | null;
+  protected readonly options?: JiraOptions;
 
   constructor(config: Config) {
-    const jiraConfig = config.getOptional(JIRA_CONFIG_PATH);
+    const jiraConfig = config.getConfig(JIRA_CONFIG_PATH);
+    this.config = {
+      baseUrl: jiraConfig.getString(CONFIG_BASE_URL),
+      token: jiraConfig.getString(CONFIG_TOKEN),
+      product: jiraConfig.getString(CONFIG_PRODUCT) as Product,
+      apiVersion: jiraConfig.getOptionalString(CONFIG_API_VERSION),
+    };
 
-    if (jiraConfig) {
-      validateJiraConfig(jiraConfig);
-      this.config = jiraConfig;
-    } else {
-      throw new Error('Missing Jira integration config');
+    const jiraOptions = config.getOptionalConfig(JIRA_OPTIONS_PATH);
+    if (jiraOptions) {
+      this.options = {
+        mandatoryFilter: jiraOptions.getOptionalString(CONFIG_MANDATORY_FILTER),
+        customFilter: jiraOptions.getOptionalString(CONFIG_CUSTOM_FILTER),
+      };
     }
-
-    const jiraOptions = config.getOptional(JIRA_OPTIONS_PATH);
-
-    validateJiraOptions(jiraOptions);
-    this.options = jiraOptions;
   }
 
-  protected async sendRequest(
-    url: string,
-    method: Method,
-    headers: Header = {},
-    body: string = '',
-  ): Promise<unknown> {
+  protected async sendRequest({
+    url,
+    method,
+    headers = {},
+    body = '',
+  }: RequestOptions): Promise<unknown> {
     try {
       const response = await fetch(url, {
         method,
@@ -98,8 +101,9 @@ export abstract class JiraClient {
     const projectKey = annotations[ANNOTATION_JIRA_PROJECT_KEY];
     if (!projectKey) {
       throw new Error(
-        `Missing required Jira project key annotation '${ANNOTATION_JIRA_PROJECT_KEY}' ` +
-          `for entity '${entity.metadata?.name || 'unknown'}'`,
+        `Missing required 'jira/project-key' annotation for entity '${
+          entity.metadata?.name || 'unknown'
+        }'`,
       );
     }
 
@@ -121,17 +125,23 @@ export abstract class JiraClient {
   }
 
   protected buildJqlFilters(filters: JiraEntityFilters): string {
-    const { mandatoryFilter, customFilter } = this.options || {};
-    const filtersCopy = { ...filters };
+    const { customFilter: annotationCustomFilter } = filters;
+    const { mandatoryFilter, customFilter: optionsCustomFilter } =
+      this.options || {};
 
     const defaultFilterQuery = mandatoryFilter ?? JIRA_MANDATORY_FILTER;
 
-    if (!filtersCopy.customFilter && customFilter)
-      filtersCopy.customFilter = customFilter;
+    const customFilterQuery =
+      !annotationCustomFilter && optionsCustomFilter
+        ? optionsCustomFilter
+        : null;
 
-    return Object.entries({ ...filtersCopy, defaultFilterQuery })
-      .map(([, value]) => String(value))
-      .filter(value => value && value !== 'undefined')
+    return Object.values({
+      defaultFilterQuery,
+      customFilterQuery,
+      ...filters,
+    })
+      .filter(value => !!value)
       .join(' AND ');
   }
 
@@ -146,7 +156,7 @@ export abstract class JiraClient {
 
     const method = 'POST';
 
-    const authHeaders = this.getAuthHeaders();
+    const headers = this.getAuthHeaders();
 
     const body = JSON.stringify({
       jql,
@@ -154,7 +164,7 @@ export abstract class JiraClient {
       maxResults: 0,
     });
 
-    const data = await this.sendRequest(url, method, authHeaders, body);
+    const data = await this.sendRequest({ url, method, headers, body });
 
     if (
       data &&

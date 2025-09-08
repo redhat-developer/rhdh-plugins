@@ -34,15 +34,19 @@ export const JIRA_CONFIG_PATH = 'jira' as const;
 export const JIRA_OPTIONS_PATH =
   'scorecard.plugins.jira.open_issues.options' as const;
 
-/**
- * Jira open issues default api version
- * @public
- */
 export const API_VERSION_DEFAULT = 'latest' as const;
 
-/**
- * Jira open issues default mandatory filter
- * @public
- */
 export const JIRA_MANDATORY_FILTER =
   'type = Bug AND resolution = Unresolved' as const;
+
+export const CONFIG_BASE_URL = 'baseUrl' as const;
+
+export const CONFIG_TOKEN = 'token' as const;
+
+export const CONFIG_PRODUCT = 'product' as const;
+
+export const CONFIG_API_VERSION = 'apiVersion' as const;
+
+export const CONFIG_MANDATORY_FILTER = 'mandatoryFilter' as const;
+
+export const CONFIG_CUSTOM_FILTER = 'customFilter' as const;

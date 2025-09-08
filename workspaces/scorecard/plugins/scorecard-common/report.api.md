@@ -6,68 +6,7 @@
 import { ResourcePermission } from '@backstage/plugin-permission-common';
 
 // @public
-export const ANNOTATION_JIRA_COMPONENT = 'jira/component';
-
-// @public
-export const ANNOTATION_JIRA_CUSTOM_FILTER = 'jira/custom-filter';
-
-// @public
-export const ANNOTATION_JIRA_LABEL = 'jira/label';
-
-// @public
-export const ANNOTATION_JIRA_PROJECT_KEY = 'jira/project-key';
-
-// @public
-export const ANNOTATION_JIRA_TEAM = 'jira/team';
-
-// @public
-export const API_VERSION_DEFAULT: 'latest';
-
-// @public
 export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;
-
-// @public
-export const JIRA_CONFIG_PATH: 'jira';
-
-// @public
-export const JIRA_MANDATORY_FILTER: 'type = Bug AND resolution = Unresolved';
-
-// @public
-export const JIRA_OPTIONS_PATH: 'scorecard.plugins.jira.open_issues.options';
-
-// @public
-export interface JiraConfig {
-  // (undocumented)
-  apiVersion?: string;
-  // (undocumented)
-  baseUrl: string;
-  // (undocumented)
-  product: Product;
-  // (undocumented)
-  token: string;
-}
-
-// @public
-export interface JiraEntityFilters {
-  // (undocumented)
-  component?: string;
-  // (undocumented)
-  customFilter?: string;
-  // (undocumented)
-  label?: string;
-  // (undocumented)
-  project: string;
-  // (undocumented)
-  team?: string;
-}
-
-// @public
-export interface JiraOptions {
-  // (undocumented)
-  customFilter?: string;
-  // (undocumented)
-  mandatoryFilter?: string;
-}
 
 // @public (undocumented)
 export type Metric<T extends MetricType = MetricType> = {
@@ -121,9 +60,6 @@ export const scorecardMetricReadPermission: ResourcePermission<'scorecard-metric
 export const scorecardPermissions: ResourcePermission<'scorecard-metric'>[];
 
 // @public
-export type Product = 'datacenter' | 'cloud';
-
-// @public
 export type ThresholdConfig = {
   rules: ThresholdRule[];
 };
@@ -141,9 +77,6 @@ export type ThresholdRule = {
   key: string;
   expression: string;
 };
-
-// @public
-export const THRESHOLDS_CONFIG_PATH: 'scorecard.plugins.jira.open_issues.thresholds';
 
 // (No @packageDocumentation comment for this package)
 ```

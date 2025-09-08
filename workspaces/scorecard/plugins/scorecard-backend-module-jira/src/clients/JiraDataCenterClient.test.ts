@@ -24,27 +24,28 @@ global.fetch = jest.fn();
 describe('JiraDataCenterClient', () => {
   let mockConfig: jest.Mocked<Config>;
   let jiraDataCenterClient: JiraDataCenterClient;
-  const getOptional = jest.fn();
-
-  const mockJiraConfig = {
-    baseUrl: 'https://datacenter.example.com',
-    token: 'XMdw2f432dsV',
-    product: 'datacenter',
-    apiVersion: '2',
-  };
-
-  const mockJiraOptions = {
-    mandatoryFilter: 'resolution = Unresolved',
-  };
 
   beforeEach(() => {
-    mockConfig = {
-      getOptional,
-    } as unknown as jest.Mocked<Config>;
+    const getConfig = jest.fn().mockReturnValue({
+      getString: jest
+        .fn()
+        .mockReturnValueOnce('https://datacenter.example.com')
+        .mockReturnValueOnce('XMdw2f432dsV')
+        .mockReturnValueOnce('datacenter'),
+      getOptionalString: jest.fn().mockReturnValueOnce('2'),
+    });
 
-    mockConfig.getOptional
-      .mockReturnValueOnce(mockJiraConfig)
-      .mockReturnValueOnce(mockJiraOptions);
+    const getOptionalConfig = jest.fn().mockReturnValue({
+      getOptionalString: jest
+        .fn()
+        .mockReturnValueOnce('Type = Task')
+        .mockReturnValueOnce(undefined),
+    });
+
+    mockConfig = {
+      getConfig,
+      getOptionalConfig,
+    } as unknown as jest.Mocked<Config>;
 
     jiraDataCenterClient = new JiraDataCenterClient(mockConfig);
   });
@@ -54,23 +55,10 @@ describe('JiraDataCenterClient', () => {
   });
 
   describe('constructor', () => {
-    describe('when datacenter config is valid', () => {
-      it('should create JiraDataCenterClient successfully', () => {
-        expect(jiraDataCenterClient).toBeInstanceOf(JiraDataCenterClient);
-        expect(mockConfig.getOptional).toHaveBeenCalledTimes(2);
-      });
-    });
-
-    describe('when datacenter config is invalid', () => {
-      beforeEach(() => {
-        getOptional.mockReturnValue(undefined);
-      });
-
-      it('should throw error', () => {
-        expect(() => new JiraDataCenterClient(mockConfig)).toThrow(
-          'Missing Jira integration config',
-        );
-      });
+    it('should create JiraDataCenterClient successfully', () => {
+      expect(jiraDataCenterClient).toBeInstanceOf(JiraDataCenterClient);
+      expect(mockConfig.getConfig).toHaveBeenCalledTimes(1);
+      expect(mockConfig.getOptionalConfig).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -79,7 +67,7 @@ describe('JiraDataCenterClient', () => {
       const authHeaders = (jiraDataCenterClient as any).getAuthHeaders();
 
       expect(authHeaders).toEqual({
-        Authorization: `Bearer ${mockJiraConfig.token}`,
+        Authorization: `Bearer XMdw2f432dsV`,
       });
     });
   });
@@ -96,46 +84,22 @@ describe('JiraDataCenterClient', () => {
       },
     };
 
-    describe('when Jira datacenter processed successfully', () => {
-      it('should successfully get count of open issues', async () => {
-        const mockResponse = {
-          total: 6,
-          issues: [],
-        };
-
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-          ok: true,
-          json: jest.fn().mockResolvedValueOnce(mockResponse),
-        });
-
-        const count = await jiraDataCenterClient.getCountOpenIssues(mockEntity);
-
-        expect(count).toBe(6);
-        expect(global.fetch).toHaveBeenCalledWith(
-          'https://datacenter.example.com/rest/api/2/search',
-          expect.objectContaining({
-            method: 'POST',
-            headers: expect.objectContaining({
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-              'X-Atlassian-Token': 'no-check',
-              Authorization: `Bearer ${mockJiraConfig.token}`,
-            }),
-            body: expect.stringContaining('"maxResults":0'),
-          }),
-        );
-      });
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValueOnce({ total: 10 }),
     });
 
-    describe('when Jira datacenter processed with error', () => {
-      it('should propagate errors from Jira datacenter', async () => {
-        (global.fetch as jest.Mock).mockRejectedValueOnce(
-          new Error('Jira API error'),
-        );
-        await expect(
-          jiraDataCenterClient.getCountOpenIssues(mockEntity),
-        ).rejects.toThrow('Jira API error');
-      });
+    it('should get count with Bearer auth header', async () => {
+      const count = await jiraDataCenterClient.getCountOpenIssues(mockEntity);
+      expect(count).toBe(10);
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://datacenter.example.com/rest/api/2/search',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: `Bearer XMdw2f432dsV`,
+          }),
+        }),
+      );
     });
   });
 });

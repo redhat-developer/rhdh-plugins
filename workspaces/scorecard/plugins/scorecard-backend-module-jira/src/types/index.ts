@@ -14,9 +14,4 @@
  * limitations under the License.
  */
 
-export { parseThresholdExpression, validateThresholds } from './thresholdUtils';
-export type {
-  ComparisonSign,
-  ComparisonOperator,
-  RangeOperator,
-} from './types';
+export * from './jiraClient';

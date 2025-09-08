@@ -6,8 +6,6 @@
 import { CustomErrorBase } from '@backstage/errors';
 import type { Entity } from '@backstage/catalog-model';
 import { ExtensionPoint } from '@backstage/backend-plugin-api';
-import { JiraConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { JiraOptions } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { JsonValue } from '@backstage/types';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -65,16 +63,6 @@ export class ThresholdConfigFormatError extends CustomErrorBase {
   // (undocumented)
   name: 'ThresholdConfigFormatError';
 }
-
-// @public
-export function validateJiraConfig(
-  jiraIntegration: unknown,
-): asserts jiraIntegration is JiraConfig;
-
-// @public
-export function validateJiraOptions(
-  jiraOptions: unknown,
-): asserts jiraOptions is JiraOptions | null;
 
 // @public
 export function validateThresholds(
