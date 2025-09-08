@@ -24,27 +24,24 @@ global.fetch = jest.fn();
 describe('JiraCloudClient', () => {
   let mockConfig: jest.Mocked<Config>;
   let jiraCloudClient: JiraCloudClient;
-  const getOptional = jest.fn();
-
-  const mockJiraConfig = {
-    baseUrl: 'https://test.atlassian.net',
-    token: 'dGVzdDp0ZXN0',
-    product: 'cloud',
-    apiVersion: '3',
-  };
-
-  const mockJiraOptions = {
-    mandatoryFilter: 'resolution = Unresolved',
-  };
 
   beforeEach(() => {
     mockConfig = {
-      getOptional,
+      getConfig: jest.fn().mockReturnValue({
+        getString: jest
+          .fn()
+          .mockReturnValueOnce('https://jira.example.com')
+          .mockReturnValueOnce('Fds31dsF32')
+          .mockReturnValueOnce('cloud'),
+        getOptionalString: jest.fn().mockReturnValueOnce('3'),
+      }),
+      getOptionalConfig: jest.fn().mockReturnValue({
+        getOptionalString: jest
+          .fn()
+          .mockReturnValueOnce('Type = Bug')
+          .mockReturnValueOnce(undefined),
+      }),
     } as unknown as jest.Mocked<Config>;
-
-    mockConfig.getOptional
-      .mockReturnValueOnce(mockJiraConfig)
-      .mockReturnValueOnce(mockJiraOptions);
 
     jiraCloudClient = new JiraCloudClient(mockConfig);
   });
@@ -54,32 +51,18 @@ describe('JiraCloudClient', () => {
   });
 
   describe('constructor', () => {
-    describe('when cloud config is valid', () => {
-      it('should create JiraCloudClient successfully', () => {
-        expect(jiraCloudClient).toBeInstanceOf(JiraCloudClient);
-        expect(mockConfig.getOptional).toHaveBeenCalledTimes(2);
-      });
-    });
-
-    describe('when cloud config is invalid', () => {
-      beforeEach(() => {
-        getOptional.mockReturnValue(undefined);
-      });
-
-      it('should throw error', () => {
-        expect(() => new JiraCloudClient(mockConfig)).toThrow(
-          'Missing Jira integration config',
-        );
-      });
+    it('should create JiraCloudClient successfully', () => {
+      expect(jiraCloudClient).toBeInstanceOf(JiraCloudClient);
+      expect(mockConfig.getConfig).toHaveBeenCalledTimes(1);
+      expect(mockConfig.getOptionalConfig).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('getAuthHeaders', () => {
     it('should return correct Basic authentication headers', () => {
       const authHeaders = (jiraCloudClient as any).getAuthHeaders();
-
       expect(authHeaders).toEqual({
-        Authorization: `Basic ${mockJiraConfig.token}`,
+        Authorization: `Basic Fds31dsF32`,
       });
     });
   });
@@ -96,46 +79,22 @@ describe('JiraCloudClient', () => {
       },
     };
 
-    describe('when Jira client processed successfully', () => {
-      it('should successfully get count of open issues', async () => {
-        const mockResponse = {
-          total: 5,
-          issues: [],
-        };
-
-        (global.fetch as jest.Mock).mockResolvedValueOnce({
-          ok: true,
-          json: jest.fn().mockResolvedValueOnce(mockResponse),
-        });
-
-        const count = await jiraCloudClient.getCountOpenIssues(mockEntity);
-
-        expect(count).toBe(5);
-        expect(global.fetch).toHaveBeenCalledWith(
-          'https://test.atlassian.net/rest/api/3/search',
-          expect.objectContaining({
-            method: 'POST',
-            headers: expect.objectContaining({
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-              'X-Atlassian-Token': 'no-check',
-              Authorization: `Basic ${mockJiraConfig.token}`,
-            }),
-            body: expect.stringContaining('"maxResults":0'),
-          }),
-        );
-      });
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValueOnce({ total: 5 }),
     });
 
-    describe('when Jira client processed with error', () => {
-      it('should propagate errors from Jira client', async () => {
-        (global.fetch as jest.Mock).mockRejectedValueOnce(
-          new Error('Jira API error'),
-        );
-        await expect(
-          jiraCloudClient.getCountOpenIssues(mockEntity),
-        ).rejects.toThrow('Jira API error');
-      });
+    it('should get count with Basic auth header', async () => {
+      const count = await jiraCloudClient.getCountOpenIssues(mockEntity);
+      expect(count).toBe(5);
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://jira.example.com/rest/api/3/search',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: `Basic Fds31dsF32`,
+          }),
+        }),
+      );
     });
   });
 });

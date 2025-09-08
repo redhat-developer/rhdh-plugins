@@ -22,87 +22,57 @@ import { JiraCloudClient } from '../clients/JiraCloudClient';
 jest.mock('../clients/JiraDataCenterClient');
 jest.mock('../clients/JiraCloudClient');
 
-const getOptional = jest.fn().mockReturnValue({ product: 'datacenter' });
-const mockConfig = { getOptional } as unknown as jest.Mocked<Config>;
-
 describe('JiraClientFactory', () => {
+  let config: Config;
+
   afterEach(() => {
     jest.clearAllMocks();
   });
-
-  describe('when jira config is not exist', () => {
+  describe('when product is datacenter', () => {
     beforeEach(() => {
-      getOptional.mockReturnValue(undefined);
+      config = {
+        getConfig: jest.fn().mockReturnValue({
+          getString: jest.fn().mockReturnValue('datacenter'),
+        }),
+      } as unknown as Config;
     });
 
-    it('should throw an error', () => {
-      expect(() => JiraClientFactory.create(mockConfig)).toThrow(
-        'Missing Jira integration config',
-      );
+    it('should create a JiraDataCenterClient', () => {
+      const client = JiraClientFactory.create(config);
+      expect(JiraDataCenterClient).toHaveBeenCalledWith(config);
+      expect(client).toBeInstanceOf(JiraDataCenterClient);
     });
   });
 
-  describe('when jira config is not an object', () => {
+  describe('when product is cloud', () => {
     beforeEach(() => {
-      getOptional.mockReturnValue('not-an-object');
+      config = {
+        getConfig: jest.fn().mockReturnValue({
+          getString: jest.fn().mockReturnValue('cloud'),
+        }),
+      } as unknown as Config;
     });
 
-    it('should throw an error', () => {
-      expect(() => JiraClientFactory.create(mockConfig)).toThrow(
-        'Missing Jira integration config',
-      );
+    it('should create a JiraCloudClient', () => {
+      const client = JiraClientFactory.create(config);
+      expect(JiraCloudClient).toHaveBeenCalledWith(config);
+      expect(client).toBeInstanceOf(JiraCloudClient);
     });
   });
 
-  describe('when product is not exist in jira config', () => {
+  describe('when product is invalid', () => {
     beforeEach(() => {
-      getOptional.mockReturnValue({});
+      config = {
+        getConfig: jest.fn().mockReturnValue({
+          getString: jest.fn().mockReturnValue('foo'),
+        }),
+      } as unknown as Config;
     });
 
     it('should throw an error', () => {
-      expect(() => JiraClientFactory.create(mockConfig)).toThrow(
-        'Jira product not found in config',
+      expect(() => JiraClientFactory.create(config)).toThrow(
+        "Invalid Jira product: foo. Valid products for 'jira.product' are: datacenter, cloud",
       );
-    });
-  });
-
-  describe('when jira config is valid', () => {
-    describe('when product is datacenter', () => {
-      beforeEach(() => {
-        getOptional.mockReturnValue({ product: 'datacenter' });
-      });
-
-      it('should create a JiraDataCenterClient', () => {
-        const client = JiraClientFactory.create(mockConfig);
-
-        expect(JiraDataCenterClient).toHaveBeenCalledWith(mockConfig);
-        expect(client).toBeInstanceOf(JiraDataCenterClient);
-      });
-    });
-
-    describe('when product is cloud', () => {
-      beforeEach(() => {
-        getOptional.mockReturnValue({ product: 'cloud' });
-      });
-
-      it('should create a JiraCloudClient', () => {
-        const client = JiraClientFactory.create(mockConfig);
-
-        expect(JiraCloudClient).toHaveBeenCalledWith(mockConfig);
-        expect(client).toBeInstanceOf(JiraCloudClient);
-      });
-    });
-
-    describe('when product is invalid', () => {
-      beforeEach(() => {
-        getOptional.mockReturnValue({ product: 'foo' });
-      });
-
-      it('should throw an error', () => {
-        expect(() => JiraClientFactory.create(mockConfig)).toThrow(
-          'Invalid Jira product: foo. Valid products are: datacenter, cloud',
-        );
-      });
     });
   });
 });

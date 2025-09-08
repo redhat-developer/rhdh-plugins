@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-/**
- * Jira supported products
- * @public
- */
 export type Product = 'datacenter' | 'cloud';
 
-/**
- * Jira integration configuration
- * @public
- */
 export interface JiraConfig {
   baseUrl: string;
   token: string;
@@ -31,23 +23,26 @@ export interface JiraConfig {
   apiVersion?: string;
 }
 
-/**
- * Jira open issues options
- * @public
- */
 export interface JiraOptions {
   mandatoryFilter?: string;
   customFilter?: string;
 }
 
-/**
- * Jira request filters
- * @public
- */
 export interface JiraEntityFilters {
   project: string;
   component?: string;
   label?: string;
   team?: string;
   customFilter?: string;
+}
+
+export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+export type Header = Record<string, string> | {};
+
+export interface RequestOptions {
+  url: string;
+  method: Method;
+  headers?: Header;
+  body?: string;
 }

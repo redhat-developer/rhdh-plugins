@@ -25,7 +25,6 @@ import {
   ANNOTATION_JIRA_CUSTOM_FILTER,
 } from '../constants';
 
-// Create a test implementation of the abstract JiraClient
 class TestJiraClient extends JiraClient {
   getAuthHeaders(): Record<string, string> {
     return { Authorization: 'Bearer test-token' };
@@ -36,29 +35,41 @@ global.fetch = jest.fn();
 
 describe('JiraClient', () => {
   let mockConfig: jest.Mocked<Config>;
+  let getConfig: jest.Mock;
+  let getString: jest.Mock;
+  let getOptionalConfig: jest.Mock;
+  let getOptionalString: jest.Mock;
   let testJiraClient: TestJiraClient;
-  const getOptional = jest.fn();
 
-  const mockJiraConfig = {
-    baseUrl: 'https://example.com',
-    token: 'test-token',
-    product: 'cloud',
-    apiVersion: '3',
-  };
-
-  const mockJiraOptions = {
-    mandatoryFilter: 'type = Task AND resolution = Resolved',
-    customFilter: 'assignee = testerUser',
-  };
+  const mockMethod = 'GET';
+  const mockURL = 'https://example.com/api';
+  const mockResponse = { data: { total: 10 } };
 
   beforeEach(() => {
-    mockConfig = {
-      getOptional,
-    } as unknown as jest.Mocked<Config>;
+    getString = jest
+      .fn()
+      .mockReturnValueOnce(mockURL)
+      .mockReturnValueOnce('token')
+      .mockReturnValueOnce('cloud');
+    getOptionalString = jest
+      .fn()
+      .mockReturnValueOnce('3')
+      .mockReturnValueOnce('type = Task AND resolution = Resolved')
+      .mockReturnValueOnce('assignee = testerUser');
 
-    mockConfig.getOptional
-      .mockReturnValueOnce(mockJiraConfig)
-      .mockReturnValueOnce(mockJiraOptions);
+    getConfig = jest.fn().mockReturnValue({
+      getString,
+      getOptionalString,
+    });
+
+    getOptionalConfig = jest.fn().mockReturnValue({
+      getOptionalString,
+    });
+
+    mockConfig = {
+      getConfig,
+      getOptionalConfig,
+    } as unknown as jest.Mocked<Config>;
 
     testJiraClient = new TestJiraClient(mockConfig);
   });
@@ -68,100 +79,95 @@ describe('JiraClient', () => {
   });
 
   describe('constructor', () => {
-    describe('when Jira config is valid', () => {
-      it('should create JiraClient successfully', () => {
-        expect(testJiraClient).toBeInstanceOf(JiraClient);
-        expect(mockConfig.getOptional).toHaveBeenCalledTimes(2);
-        expect(mockConfig.getOptional).toHaveBeenNthCalledWith(1, 'jira');
-        expect(mockConfig.getOptional).toHaveBeenNthCalledWith(
-          2,
-          'scorecard.plugins.jira.open_issues.options',
-        );
-      });
-
-      it('should store config and options correctly', () => {
-        expect((testJiraClient as any).config).toEqual(mockJiraConfig);
-        expect((testJiraClient as any).options).toEqual(mockJiraOptions);
-      });
+    it('should get jira config', () => {
+      expect(getConfig).toHaveBeenNthCalledWith(1, 'jira');
     });
 
-    describe('when Jira config is missing', () => {
-      beforeEach(() => {
-        getOptional.mockReturnValue(undefined);
-      });
-
-      it('should throw error for missing config', () => {
-        expect(() => new TestJiraClient(mockConfig)).toThrow(
-          'Missing Jira integration config',
-        );
-      });
+    it('should get "baseUrl" from jira config', () => {
+      expect(getString).toHaveBeenNthCalledWith(1, 'baseUrl');
     });
 
-    describe('when only options are missing', () => {
-      beforeEach(() => {
-        getOptional
-          .mockReturnValueOnce(mockJiraConfig)
-          .mockReturnValueOnce(undefined);
-      });
+    it('should get "token" from jira config', () => {
+      expect(getString).toHaveBeenNthCalledWith(2, 'token');
+    });
 
-      it('should create client successfully with null options', () => {
-        const client = new TestJiraClient(mockConfig);
-        expect(client).toBeInstanceOf(JiraClient);
-        expect((client as any).options).toBeUndefined();
-      });
+    it('should get "product" from jira config', () => {
+      expect(getString).toHaveBeenNthCalledWith(3, 'product');
+    });
+
+    it('should get "apiVersion" from jira config', () => {
+      expect(getOptionalString).toHaveBeenNthCalledWith(1, 'apiVersion');
+    });
+
+    it('should get jira options', () => {
+      expect(getOptionalConfig).toHaveBeenNthCalledWith(
+        1,
+        'scorecard.plugins.jira.open_issues.options',
+      );
+    });
+
+    it('should get "mandatoryFilter" from jira options', () => {
+      expect(getOptionalString).toHaveBeenNthCalledWith(2, 'mandatoryFilter');
+    });
+
+    it('should get "customFilter" from jira options', () => {
+      expect(getOptionalString).toHaveBeenNthCalledWith(3, 'customFilter');
     });
   });
 
   describe('sendRequest', () => {
     describe('when request is successful', () => {
-      let mockResponse: any;
       beforeEach(() => {
-        mockResponse = { data: 'test' };
         (global.fetch as jest.Mock).mockResolvedValueOnce({
           ok: true,
           json: jest.fn().mockResolvedValueOnce(mockResponse),
         });
       });
 
-      it('should return parsed JSON response', async () => {
-        const result = await (testJiraClient as any).sendRequest(
-          'https://example.com/api',
-          'GET',
-        );
-
-        expect(result).toEqual(mockResponse);
-        expect(global.fetch).toHaveBeenCalledWith('https://example.com/api', {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'X-Atlassian-Token': 'no-check',
-          },
-          body: '',
+      it('should use applied URL method and default headers', () => {
+        (testJiraClient as any).sendRequest({
+          url: mockURL,
+          method: mockMethod,
         });
-      });
-
-      it('should include custom headers when provided', async () => {
-        const customHeaders = { Authorization: 'Bearer token' };
-
-        await (testJiraClient as any).sendRequest(
-          'https://test.com/api',
-          'POST',
-          customHeaders,
-          '{"test": "data"}',
-        );
-
         expect(global.fetch).toHaveBeenCalledWith(
-          'https://test.com/api',
+          mockURL,
           expect.objectContaining({
-            method: 'POST',
-            headers: {
+            method: mockMethod,
+            headers: expect.objectContaining({
               Accept: 'application/json',
               'Content-Type': 'application/json',
               'X-Atlassian-Token': 'no-check',
-              Authorization: 'Bearer token',
-            },
-            body: '{"test": "data"}',
+            }),
+          }),
+        );
+      });
+
+      it('should add additional header when provided', () => {
+        (testJiraClient as any).sendRequest({
+          url: mockURL,
+          method: mockMethod,
+          headers: { Authorization: `Bearer test-token` },
+        });
+        expect(global.fetch).toHaveBeenCalledWith(
+          mockURL,
+          expect.objectContaining({
+            headers: expect.objectContaining({
+              Authorization: `Bearer test-token`,
+            }),
+          }),
+        );
+      });
+
+      it('should add body when provided', () => {
+        (testJiraClient as any).sendRequest({
+          url: mockURL,
+          method: mockMethod,
+          body: 'maxResults: 0',
+        });
+        expect(global.fetch).toHaveBeenCalledWith(
+          mockURL,
+          expect.objectContaining({
+            body: 'maxResults: 0',
           }),
         );
       });
@@ -175,7 +181,10 @@ describe('JiraClient', () => {
         });
 
         await expect(
-          (testJiraClient as any).sendRequest('https://test.com/api', 'GET'),
+          (testJiraClient as any).sendRequest({
+            url: mockURL,
+            method: mockMethod,
+          }),
         ).rejects.toThrow('Jira request failed with status 404');
       });
 
@@ -185,7 +194,10 @@ describe('JiraClient', () => {
         );
 
         await expect(
-          (testJiraClient as any).sendRequest('https://test.com/api', 'GET'),
+          (testJiraClient as any).sendRequest({
+            url: mockURL,
+            method: mockMethod,
+          }),
         ).rejects.toThrow('Jira error message: Network error');
       });
     });
@@ -202,25 +214,17 @@ describe('JiraClient', () => {
           name: 'test-component',
           annotations: {
             [ANNOTATION_JIRA_PROJECT_KEY]: 'TEST',
-            [ANNOTATION_JIRA_COMPONENT]: 'backend',
-            [ANNOTATION_JIRA_LABEL]: 'critical',
-            [ANNOTATION_JIRA_TEAM]: 'team-alpha',
-            [ANNOTATION_JIRA_CUSTOM_FILTER]: 'priority = High',
           },
         },
       };
     });
 
-    describe('when entity has required project key', () => {
+    describe('when entity has only project key', () => {
       it('should extract project filter correctly', () => {
         const filters = (testJiraClient as any).getFiltersFromEntity(entity);
 
         expect(filters).toEqual({
           project: 'project = "TEST"',
-          component: 'component = "backend"',
-          label: 'labels = "critical"',
-          team: 'team = team-alpha',
-          customFilter: 'priority = High',
         });
       });
     });
@@ -232,113 +236,127 @@ describe('JiraClient', () => {
         expect(() =>
           (testJiraClient as any).getFiltersFromEntity(entity),
         ).toThrow(
-          "Missing required Jira project key annotation 'jira/project-key' for entity 'test-component'",
+          "Missing required 'jira/project-key' annotation for entity 'test-component'",
         );
+      });
+    });
+
+    describe('when entity has project key, component, label, team, and custom filter', () => {
+      beforeEach(() => {
+        entity.metadata.annotations = {
+          [ANNOTATION_JIRA_PROJECT_KEY]: 'TEST',
+          [ANNOTATION_JIRA_COMPONENT]: 'backend',
+          [ANNOTATION_JIRA_LABEL]: 'critical',
+          [ANNOTATION_JIRA_TEAM]: 'team-alpha',
+          [ANNOTATION_JIRA_CUSTOM_FILTER]: 'priority = High',
+        };
+      });
+
+      it('should extract all filters correctly', () => {
+        const filters = (testJiraClient as any).getFiltersFromEntity(entity);
+
+        expect(filters).toEqual({
+          project: 'project = "TEST"',
+          component: 'component = "backend"',
+          label: 'labels = "critical"',
+          team: 'team = team-alpha',
+          customFilter: 'priority = High',
+        });
       });
     });
   });
 
   describe('buildJqlFilters', () => {
-    const filters = { project: 'project = "TEST"' };
-
-    describe('when mandatory filter is not provided', () => {
-      beforeEach(() => {
-        mockConfig.getOptional
-          .mockReturnValueOnce(mockJiraConfig)
-          .mockReturnValueOnce({
-            ...mockJiraOptions,
-            mandatoryFilter: undefined,
-          });
-
-        testJiraClient = new TestJiraClient(mockConfig);
-      });
-
-      it('should use default filter', () => {
+    describe('when mandatory filter is provided in options', () => {
+      it('should use provided mandatory filter', () => {
+        const filters = { project: 'project = "MOON"' };
         const jql = (testJiraClient as any).buildJqlFilters(filters);
         const jqlFilters = jql.split(' AND ');
 
+        expect(jqlFilters).toHaveLength(4);
+        expect(jqlFilters).toContain('project = "MOON"');
+      });
+    });
+
+    describe('when mandatory filter is not provided in options', () => {
+      beforeEach(() => {
+        getOptionalString.mockReset();
+        getOptionalString
+          .mockReturnValueOnce('2')
+          .mockReturnValueOnce(undefined);
+        testJiraClient = new TestJiraClient(mockConfig);
+      });
+
+      it('should use default mandatory filter', () => {
+        const jql = (testJiraClient as any).buildJqlFilters({});
+        const jqlFilters = jql.split(' AND ');
+
+        expect(jqlFilters).toHaveLength(2);
         expect(jqlFilters).toContain('type = Bug');
         expect(jqlFilters).toContain('resolution = Unresolved');
       });
     });
 
-    describe('when mandatory filter is provided', () => {
-      it('should use mandatory filter', () => {
-        const jql = (testJiraClient as any).buildJqlFilters(filters);
-        const jqlFilters = jql.split(' AND ');
+    describe('when custom filter is provided in annotation', () => {
+      const customFilter = 'assignee = Robot';
 
-        expect(jqlFilters).toContain('type = Task');
-        expect(jqlFilters).toContain('resolution = Resolved');
-      });
-    });
+      describe('when custom filter is provided in options', () => {
+        it('should use provided annotation custom filter', () => {
+          const jql = (testJiraClient as any).buildJqlFilters({ customFilter });
+          const jqlFilters = jql.split(' AND ');
 
-    describe('when custom filter is not provided in config', () => {
-      beforeEach(() => {
-        mockConfig.getOptional
-          .mockReturnValueOnce(mockJiraConfig)
-          .mockReturnValueOnce({ ...mockJiraOptions, customFilter: undefined });
-      });
-
-      it('should use default filter', () => {
-        const jql = (testJiraClient as any).buildJqlFilters({
-          ...filters,
-          customFilter: 'priority = Critical',
+          expect(jqlFilters).toHaveLength(3);
+          expect(jqlFilters).toContain('assignee = Robot');
         });
-        const jqlFilters = jql.split(' AND ');
-
-        expect(jqlFilters).toContain('type = Task');
-        expect(jqlFilters).toContain('priority = Critical');
-        expect(jqlFilters).not.toContain('assignee = testerUser');
-      });
-    });
-
-    describe('when custom filter is not provided in options and in config', () => {
-      beforeEach(() => {
-        mockConfig.getOptional
-          .mockReturnValueOnce(mockJiraConfig)
-          .mockReturnValueOnce({
-            ...mockJiraOptions,
-            mandatoryFilter: undefined,
-            customFilter: undefined,
-          });
       });
 
-      it('should not use any custom filters', () => {
-        const jql = (testJiraClient as any).buildJqlFilters(filters);
-        const jqlFilters = jql.split(' AND ');
+      describe('when custom filter is not provided in options', () => {
+        beforeEach(() => {
+          getOptionalString.mockReset();
+          getOptionalString.mockReturnValue(undefined).mockReturnValueOnce('3');
 
-        expect(jqlFilters).toHaveLength(3);
-        expect(jqlFilters).toContain('project = "TEST"');
-        expect(jqlFilters).toContain('type = Task');
-        expect(jqlFilters).toContain('resolution = Resolved');
-      });
-    });
-
-    describe('when custom filter is provided in config', () => {
-      it('should use custom filter', () => {
-        const jql = (testJiraClient as any).buildJqlFilters({
-          ...filters,
-          customFilter: 'priority = Critical',
+          testJiraClient = new TestJiraClient(mockConfig);
         });
-        const jqlFilters = jql.split(' AND ');
 
-        expect(jqlFilters).toHaveLength(4);
-        expect(jqlFilters).toContain('project = "TEST"');
-        expect(jqlFilters).toContain('type = Task');
-        expect(jqlFilters).toContain('priority = Critical');
-        expect(jqlFilters).toContain('resolution = Resolved');
+        it('should use provided annotation custom filter', () => {
+          const jql = (testJiraClient as any).buildJqlFilters({ customFilter });
+          const jqlFilters = jql.split(' AND ');
+
+          expect(jqlFilters).toHaveLength(3);
+          expect(jqlFilters).toContain('assignee = Robot');
+        });
       });
     });
 
-    it('should join multiple filters with AND', () => {
-      const jql = (testJiraClient as any).buildJqlFilters({
-        ...filters,
-        customFilter: 'priority = Critical',
+    describe('when custom filter is not provided in annotation', () => {
+      describe('when custom filter is provided in options', () => {
+        it('should use provided options custom filter', () => {
+          const jql = (testJiraClient as any).buildJqlFilters({});
+          const jqlFilters = jql.split(' AND ');
+
+          expect(jqlFilters).toHaveLength(3);
+          expect(jqlFilters).toContain('assignee = testerUser');
+        });
       });
 
-      expect(jql).toEqual(
-        'project = "TEST" AND priority = Critical AND type = Bug AND resolution = Unresolved',
-      );
+      describe('when custom filter is not provided in options', () => {
+        beforeEach(() => {
+          getOptionalString.mockReset();
+          getOptionalString
+            .mockReturnValueOnce('3')
+            .mockReturnValueOnce('resolution = Unresolved')
+            .mockReturnValueOnce(undefined);
+          testJiraClient = new TestJiraClient(mockConfig);
+        });
+
+        it('should not use any custom filters', () => {
+          const jql = (testJiraClient as any).buildJqlFilters({});
+          const jqlFilters = jql.split(' AND ');
+
+          expect(jqlFilters).toHaveLength(1);
+          expect(jqlFilters).toContain('resolution = Unresolved');
+        });
+      });
     });
   });
 });

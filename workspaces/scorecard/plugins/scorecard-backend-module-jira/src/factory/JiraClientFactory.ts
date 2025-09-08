@@ -22,24 +22,18 @@ import { JiraCloudClient } from '../clients/JiraCloudClient';
 
 export class JiraClientFactory {
   static create(config: Config): JiraClient {
-    const jiraConfig = config.getOptional(JIRA_CONFIG_PATH);
-    if (!jiraConfig || typeof jiraConfig !== 'object') {
-      throw new Error('Jira integration config is invalid');
-    }
+    const jiraConfig = config.getConfig(JIRA_CONFIG_PATH);
+    const product = jiraConfig.getString('product');
 
-    if ('product' in jiraConfig) {
-      switch (jiraConfig.product) {
-        case 'datacenter':
-          return new JiraDataCenterClient(config);
-        case 'cloud':
-          return new JiraCloudClient(config);
-        default:
-          throw new Error(
-            `Invalid Jira product: ${jiraConfig.product}. Valid products are: datacenter, cloud`,
-          );
-      }
+    switch (product) {
+      case 'datacenter':
+        return new JiraDataCenterClient(config);
+      case 'cloud':
+        return new JiraCloudClient(config);
+      default:
+        throw new Error(
+          `Invalid Jira product: ${product}. Valid products for 'jira.product' are: datacenter, cloud`,
+        );
     }
-
-    throw new Error('Jira product not found in config');
   }
 }
