@@ -73,8 +73,8 @@ import {
 import { deepSearchObject } from '../../utils/deepSearchObject';
 import { isNonNullable } from '../../utils/TypeGuards';
 import { buildUrl } from '../../utils/UrlUtils';
-import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
-import { InfoDialog } from '../InfoDialog';
+import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
+import { InfoDialog } from '../ui/InfoDialog';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 
 const useStyles = makeStyles()(theme => ({

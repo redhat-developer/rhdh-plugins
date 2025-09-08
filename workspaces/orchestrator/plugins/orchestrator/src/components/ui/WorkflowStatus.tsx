@@ -20,7 +20,7 @@ import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from 'tss-react/mui';
 
-import { AVAILABLE, UNAVAILABLE } from '../constants';
+import { AVAILABLE, UNAVAILABLE } from '../../constants';
 
 const useStyles = makeStyles()(theme => ({
   warning: {

@@ -27,8 +27,8 @@ import {
   ProcessInstanceStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { VALUE_UNAVAILABLE } from '../constants';
-import { useWorkflowInstanceStateColors } from '../hooks/useWorkflowInstanceStatusColors';
+import { VALUE_UNAVAILABLE } from '../../constants';
+import { useWorkflowInstanceStateColors } from '../../hooks/useWorkflowInstanceStatusColors';
 
 export const WorkflowInstanceStatusIndicator = ({
   status,

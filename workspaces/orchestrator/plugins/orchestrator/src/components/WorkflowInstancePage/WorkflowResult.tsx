@@ -49,7 +49,7 @@ import { buildUrl } from '../../utils/UrlUtils';
 import {
   WorkflowDescriptionModal,
   WorkflowDescriptionModalProps,
-} from '../WorkflowDescriptionModal';
+} from './WorkflowDescriptionModal';
 
 const useStyles = makeStyles()(theme => ({
   outputGrid: {
