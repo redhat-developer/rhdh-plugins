@@ -15,7 +15,21 @@
  */
 import { render, screen, fireEvent } from '@testing-library/react';
 
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
+
 import FilterDropdown from '../FilterDropdown';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 
 describe('FilterDropdown Component', () => {
   const mockHandleChange = jest.fn();

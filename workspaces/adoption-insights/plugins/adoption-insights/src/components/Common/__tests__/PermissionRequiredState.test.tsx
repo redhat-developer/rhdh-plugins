@@ -15,7 +15,21 @@
  */
 import { render, screen } from '@testing-library/react';
 
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
+
 import PermissionRequiredState from '../PermissionRequiredState';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 
 jest.mock('@mui/icons-material/OpenInNew', () => () => (
   <svg data-testid="mock-open-in-new-icon" />
@@ -38,7 +52,7 @@ describe('PermissionRequiredState', () => {
     // Description
     expect(
       screen.getByText(
-        /To view Adoption Insights plugin, contact your administrator/i,
+        /To view "Adoption Insights" plugin, contact your administrator/i,
       ),
     ).toBeInTheDocument();
 

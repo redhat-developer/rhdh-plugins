@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { useApi } from '@backstage/core-plugin-api';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

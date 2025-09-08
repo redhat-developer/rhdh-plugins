@@ -19,7 +19,21 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
+
 import Templates from '../Templates';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 
 jest.mock('../../../hooks/useTemplates', () => ({
   useTemplates: () => ({
@@ -52,8 +66,8 @@ jest.mock('@backstage/core-plugin-api', () => ({
 
 jest.mock('../../../utils/constants', () => ({
   TEMPLATE_TABLE_HEADERS: [
-    { id: 'name', title: 'Name' },
-    { id: 'executions', title: 'Executions' },
+    { id: 'name', titleKey: 'table.headers.name' },
+    { id: 'executions', titleKey: 'table.headers.executions' },
   ],
 }));
 

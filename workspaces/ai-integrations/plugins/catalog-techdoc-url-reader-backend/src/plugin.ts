@@ -34,7 +34,7 @@ import {
   LoggerService,
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
-import { NotFoundError } from '@backstage/errors';
+import { NotFoundError, NotModifiedError } from '@backstage/errors';
 import { Readable } from 'stream';
 import fs from 'fs';
 import platformPath from 'path';
@@ -173,6 +173,9 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     const message = `could not read ${url}, ${response.status} ${response.statusText}`;
     if (response.status === 404) {
       throw new NotFoundError(message);
+    }
+    if (response.status === 304) {
+      throw new NotModifiedError();
     }
     throw new Error(message);
   }

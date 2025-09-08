@@ -1,5 +1,19 @@
 ### Dependencies
 
+## 1.14.0
+
+### Minor Changes
+
+- 391dbd5: Backstage version bump to v1.41.1
+
+### Patch Changes
+
+- 219c891: Updated dependency `@playwright/test` to `1.54.2`.
+- cf4dcc9: Updated dependency `@playwright/test` to `1.54.2`.
+- 8256072: Updated dependency `@playwright/test` to `1.55.0`.
+- Updated dependencies [391dbd5]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.8.0
+
 ## 1.13.4
 
 ### Patch Changes

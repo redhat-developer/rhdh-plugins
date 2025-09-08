@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.2.0
+
+### Minor Changes
+
+- 0e0f2f5: Backstage version bump to v1.41.2
+
+### Patch Changes
+
+- f89f72f: Updated dependency `@mui/icons-material` to `5.18.0`.
+  Updated dependency `@mui/material` to `5.18.0`.
+
 ## 1.1.1
 
 ### Patch Changes

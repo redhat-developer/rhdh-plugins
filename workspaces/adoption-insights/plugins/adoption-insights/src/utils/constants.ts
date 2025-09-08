@@ -14,37 +14,35 @@
  * limitations under the License.
  */
 export const DATE_RANGE_OPTIONS = [
-  { value: 'today', label: 'Today' },
-  { value: 'last-week', label: 'Last week' },
-  { value: 'last-month', label: 'Last month' },
-  { value: 'last-28-days', label: 'Last 28 days' },
-  { value: 'last-year', label: 'Last year' },
+  { value: 'today', labelKey: 'header.dateRange.today' },
+  { value: 'last-week', labelKey: 'header.dateRange.lastWeek' },
+  { value: 'last-month', labelKey: 'header.dateRange.lastMonth' },
+  { value: 'last-28-days', labelKey: 'header.dateRange.last28Days' },
+  { value: 'last-year', labelKey: 'header.dateRange.lastYear' },
 ];
 
-export const CATALOG_ENTITIES_TITLE = 'Top catalog entities';
-
 export const CATALOG_ENTITIES_TABLE_HEADERS = [
-  { id: 'name', title: 'Name' },
-  { id: 'kind', title: 'Kind' },
-  { id: 'last-used', title: 'Last used' },
-  { id: 'views', title: 'Views' },
+  { id: 'name', titleKey: 'table.headers.name' },
+  { id: 'kind', titleKey: 'table.headers.kind' },
+  { id: 'last-used', titleKey: 'table.headers.lastUsed' },
+  { id: 'views', titleKey: 'table.headers.views' },
 ];
 
 export const PLUGINS_TABLE_HEADERS = [
-  { id: 'name', title: 'Name' },
-  { id: 'trend', title: 'Trend' },
-  { id: 'percent', title: '' },
-  { id: 'views', title: 'Views' },
+  { id: 'name', titleKey: 'table.headers.name' },
+  { id: 'trend', titleKey: 'table.headers.trend' },
+  { id: 'percent', titleKey: '' },
+  { id: 'views', titleKey: 'table.headers.views' },
 ];
 
 export const TECHDOCS_TABLE_HEADERS = [
-  { id: 'name', title: 'Name' },
-  { id: 'entity', title: 'Entity' },
-  { id: 'last-used', title: 'Last used' },
-  { id: 'views', title: 'Views' },
+  { id: 'name', titleKey: 'table.headers.name' },
+  { id: 'entity', titleKey: 'table.headers.entity' },
+  { id: 'last-used', titleKey: 'table.headers.lastUsed' },
+  { id: 'views', titleKey: 'table.headers.views' },
 ];
 
 export const TEMPLATE_TABLE_HEADERS = [
-  { id: 'name', title: 'Name' },
-  { id: 'executions', title: 'Executions' },
+  { id: 'name', titleKey: 'table.headers.name' },
+  { id: 'executions', titleKey: 'table.headers.executions' },
 ];

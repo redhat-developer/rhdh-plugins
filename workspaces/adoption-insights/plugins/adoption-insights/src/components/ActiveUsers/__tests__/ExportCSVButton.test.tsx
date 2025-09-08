@@ -16,7 +16,21 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useApi } from '@backstage/core-plugin-api';
 import { useDateRange } from '../../Header/DateRangeContext';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
+
 import ExportCSVButton from '../ExportCSVButton';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 
 jest.mock('@backstage/core-plugin-api', () => ({
   useApi: jest.fn(),
@@ -58,6 +72,9 @@ describe('ExportCSVButton', () => {
         end_date: '2025-01-31',
         format: 'csv',
         timezone: 'UTC',
+        blobName: expect.stringMatching(
+          /^active_users_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}\.csv$/,
+        ),
       });
     });
   });
@@ -83,5 +100,31 @@ describe('ExportCSVButton', () => {
     await waitFor(() =>
       expect(screen.getByText('Export CSV')).toBeInTheDocument(),
     );
+  });
+
+  it('should generate unique timestamped filenames for multiple downloads', async () => {
+    render(<ExportCSVButton />);
+
+    const button = screen.getByRole('button');
+
+    fireEvent.click(button);
+    await waitFor(() => expect(mockDownloadBlob).toHaveBeenCalledTimes(1));
+
+    const firstCall = mockDownloadBlob.mock.calls[0][0];
+    expect(firstCall.blobName).toMatch(
+      /^active_users_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}\.csv$/,
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 1100));
+
+    fireEvent.click(button);
+    await waitFor(() => expect(mockDownloadBlob).toHaveBeenCalledTimes(2));
+
+    const secondCall = mockDownloadBlob.mock.calls[1][0];
+    expect(secondCall.blobName).toMatch(
+      /^active_users_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}\.csv$/,
+    );
+
+    expect(firstCall.blobName).not.toBe(secondCall.blobName);
   });
 });

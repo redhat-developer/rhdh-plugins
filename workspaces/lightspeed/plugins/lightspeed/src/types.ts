@@ -79,10 +79,17 @@ export type Attachment = {
 
 export type ConversationList = ConversationSummary[];
 
-export type SamplePrompts = {
-  title: string;
-  message: string;
-}[];
+export type SamplePrompt =
+  | {
+      title: string;
+      message: string;
+    }
+  | {
+      titleKey: string;
+      messageKey: string;
+    };
+
+export type SamplePrompts = SamplePrompt[];
 
 export type CaptureFeedback = {
   conversation_id: string;

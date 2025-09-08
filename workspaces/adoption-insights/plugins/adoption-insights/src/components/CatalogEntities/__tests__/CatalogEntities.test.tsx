@@ -19,7 +19,21 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
+
 import CatalogEntities from '../CatalogEntities';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 
 const ids = ['1', '2', '3', '4', '5', '6'];
 const names = [
@@ -83,10 +97,10 @@ jest.mock('@backstage/core-plugin-api', () => ({
 
 jest.mock('../../../utils/constants', () => ({
   CATALOG_ENTITIES_TABLE_HEADERS: [
-    { id: 'name', title: 'Name' },
-    { id: 'kind', title: 'Kind' },
-    { id: 'last-used', title: 'Last used' },
-    { id: 'views', title: 'Views' },
+    { id: 'name', titleKey: 'table.headers.name' },
+    { id: 'kind', titleKey: 'table.headers.kind' },
+    { id: 'last-used', titleKey: 'table.headers.lastUsed' },
+    { id: 'views', titleKey: 'table.headers.views' },
   ],
   CATALOG_ENTITIES_TITLE: 'Top catalog entities',
 }));
@@ -120,7 +134,7 @@ describe('CatalogEntities', () => {
 
   it('should render the component with initial data', () => {
     renderComponent();
-    expect(screen.getByText('Top catalog entities')).toBeInTheDocument();
+    expect(screen.getByText('Top 3 catalog entities')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(5);
   });
 
@@ -159,7 +173,7 @@ describe('CatalogEntities', () => {
     await user.click(select);
     await user.click(screen.getByText('Top 5'));
 
-    expect(screen.getByText('Top catalog entities')).toBeInTheDocument();
+    expect(screen.getByText('Top 5 catalog entities')).toBeInTheDocument();
   });
 
   it('should create correct entity links', () => {

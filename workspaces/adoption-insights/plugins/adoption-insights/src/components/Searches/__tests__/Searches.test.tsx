@@ -15,7 +15,26 @@
  */
 import { render, screen, cleanup } from '@testing-library/react';
 
+import {
+  MockTrans,
+  mockUseTranslation,
+  mockUseLanguage,
+} from '../../../test-utils/mockTranslations';
+
 import Searches from '../Searches';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../../hooks/useLanguage', () => ({
+  useLanguage: mockUseLanguage,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 import { useSearches } from '../../../hooks/useSearches';
 
 jest.mock('../../../hooks/useSearches', () => ({

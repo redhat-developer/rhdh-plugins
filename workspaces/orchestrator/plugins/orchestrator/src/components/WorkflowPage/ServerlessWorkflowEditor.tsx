@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useEffect, useRef } from 'react';
+import { CodeSnippet, ErrorPanel } from '@backstage/core-components';
 
-import { ErrorPanel } from '@backstage/core-components';
-
-import { EditorApi } from '@kie-tools-core/editor/dist/api/Editor.ts';
-import * as SwfEditor from '@kie-tools/serverless-workflow-standalone-editor/dist/swf';
+import { makeStyles } from 'tss-react/mui';
 
 import { WorkflowFormatDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -29,37 +26,34 @@ type WorkflowEditorProps = {
   errorWorkflowSource: Error | undefined;
 };
 
+const useStyles = makeStyles()(_ => ({
+  codeSnippetCOntainer: {
+    '& pre': {
+      backgroundColor: 'transparent !important',
+    },
+  },
+}));
+
 const ServerlessWorkflowEditor = ({
   format,
   loadingWorkflowSource,
   workflowSource,
   errorWorkflowSource,
 }: WorkflowEditorProps) => {
-  const editorContainerRef = useRef<HTMLDivElement | null>(null);
-  const editorRef = useRef<EditorApi | null>(null);
-
-  useEffect(() => {
-    if (editorContainerRef.current && !editorRef.current) {
-      editorRef.current = SwfEditor.open({
-        container: editorContainerRef.current,
-        initialContent: Promise.resolve(workflowSource),
-        readOnly: true,
-        languageType: format,
-        swfPreviewOptions: { editorMode: 'full', defaultWidth: '50%' },
-      });
-    }
-
-    return () => {
-      editorRef.current = null;
-      editorContainerRef.current = null;
-    };
-  }, [format, workflowSource]);
+  const { classes } = useStyles();
 
   return (
     <>
       {errorWorkflowSource && <ErrorPanel error={errorWorkflowSource} />}
       {!loadingWorkflowSource && !errorWorkflowSource && (
-        <div ref={editorContainerRef} style={{ height: '600px' }} />
+        <div className={classes.codeSnippetCOntainer}>
+          <CodeSnippet
+            text={workflowSource}
+            language={format}
+            showLineNumbers
+            showCopyCodeButton
+          />
+        </div>
       )}
     </>
   );

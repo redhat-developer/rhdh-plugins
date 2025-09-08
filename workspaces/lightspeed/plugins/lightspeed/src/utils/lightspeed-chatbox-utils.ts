@@ -24,24 +24,33 @@ import {
   ReferencedDocuments,
 } from '../types';
 
-export const getFootnoteProps = (additionalClassName: string) => ({
-  label: 'Always check AI/LLM generated responses for accuracy prior to use.',
+export const getFootnoteProps = (
+  additionalClassName: string,
+  t?: (key: string, params?: any) => string,
+) => ({
+  label:
+    t?.('footer.accuracy.label') ||
+    'Always check AI/LLM generated responses for accuracy prior to use.',
   popover: {
     popoverProps: {
       className: additionalClassName ?? '',
     } as PopoverProps,
-    title: 'Verify accuracy',
-    description: `While Developer Lightspeed strives for accuracy, there's always a possibility of errors. It's a good practice to verify critical information from reliable sources, especially if it's crucial for decision-making or actions.`,
+    title: t?.('footer.accuracy.popover.title') || 'Verify accuracy',
+    description:
+      t?.('footer.accuracy.popover.description') ||
+      `While Developer Lightspeed strives for accuracy, there's always a possibility of errors. It's a good practice to verify critical information from reliable sources, especially if it's crucial for decision-making or actions.`,
     bannerImage: {
       src: 'https://cdn.dribbble.com/userupload/10651749/file/original-8a07b8e39d9e8bf002358c66fce1223e.gif',
-      alt: 'Example image for footnote popover',
+      alt:
+        t?.('footer.accuracy.popover.image.alt') ||
+        'Example image for footnote popover',
     },
     cta: {
-      label: 'Got it',
+      label: t?.('footer.accuracy.popover.cta.label') || 'Got it',
       onClick: () => {},
     },
     link: {
-      label: 'Learn more',
+      label: t?.('footer.accuracy.popover.link.label') || 'Learn more',
       url: 'https://www.redhat.com/',
     },
   },
@@ -103,16 +112,17 @@ type MessageProps = {
 
 export const createMessage = ({
   role,
-  name = 'Guest',
+  name,
   avatar,
   isLoading = false,
   content,
   timestamp,
   error,
   sources,
-}: MessageProps & { role: 'user' | 'bot' }) => ({
+  defaultUserName = 'Guest',
+}: MessageProps & { role: 'user' | 'bot'; defaultUserName?: string }) => ({
   role,
-  name,
+  name: name || defaultUserName,
   avatar,
   isLoading,
   content,
@@ -121,11 +131,13 @@ export const createMessage = ({
   sources,
 });
 
-export const createUserMessage = (props: MessageProps) =>
+export const createUserMessage = (
+  props: MessageProps & { defaultUserName?: string },
+) =>
   createMessage({
     ...props,
     role: 'user',
-    name: props.name ?? 'Guest',
+    defaultUserName: props.defaultUserName,
   });
 
 export const createBotMessage = (props: MessageProps) =>
@@ -174,15 +186,16 @@ export const getDayDifference = (sourceTime: number, targetTime: number) => {
 export const getCategorizeMessages = (
   messages: ConversationList,
   addProps: (c: ConversationSummary) => { [k: string]: any },
+  t?: (key: string, params?: any) => string,
 ): { [k: string]: Conversation[] } => {
   const now: any = new Date();
   const today = now.toDateString();
 
   const categorizedMessages: { [k: string]: Conversation[] } = {
-    Today: [],
-    Yesterday: [],
-    'Previous 7 Days': [],
-    'Previous 30 Days': [],
+    [t?.('conversation.category.today') || 'Today']: [],
+    [t?.('conversation.category.yesterday') || 'Yesterday']: [],
+    [t?.('conversation.category.previous7Days') || 'Previous 7 Days']: [],
+    [t?.('conversation.category.previous30Days') || 'Previous 30 Days']: [],
   };
   messages
     .sort((a, b) => b.last_message_timestamp - a.last_message_timestamp)
@@ -196,18 +209,26 @@ export const getCategorizeMessages = (
       const message: Conversation = {
         id: c.conversation_id,
         text: c.topic_summary,
-        label: 'Options',
+        label: t?.('message.options.label') || 'Options',
         ...addProps(c),
       };
 
       if (messageDayString === today) {
-        categorizedMessages.Today.push(message);
+        categorizedMessages[t?.('conversation.category.today') || 'Today'].push(
+          message,
+        );
       } else if (dayDifference === 1) {
-        categorizedMessages.Yesterday.push(message);
+        categorizedMessages[
+          t?.('conversation.category.yesterday') || 'Yesterday'
+        ].push(message);
       } else if (dayDifference <= 7) {
-        categorizedMessages['Previous 7 Days'].push(message);
+        categorizedMessages[
+          t?.('conversation.category.previous7Days') || 'Previous 7 Days'
+        ].push(message);
       } else if (dayDifference <= 30) {
-        categorizedMessages['Previous 30 Days'].push(message);
+        categorizedMessages[
+          t?.('conversation.category.previous30Days') || 'Previous 30 Days'
+        ].push(message);
       } else {
         // handle month-wise grouping
         const monthYear = messageDate.toLocaleString('default', {

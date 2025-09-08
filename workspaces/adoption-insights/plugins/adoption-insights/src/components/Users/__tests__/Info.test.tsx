@@ -21,7 +21,13 @@ import {
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
+import { mockUseTranslation } from '../../../test-utils/mockTranslations';
 import InfoComponent from '../Info';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
 
 describe('InfoComponent', () => {
   it('should render the InfoOutlinedIcon inside an IconButton', () => {
@@ -47,7 +53,7 @@ describe('InfoComponent', () => {
 
     expect(
       screen.queryByText(
-        /Set the number of licensed users in the app-config.yaml/i,
+        'Set the number of licensed users in the app-config.yaml',
       ),
     ).not.toBeInTheDocument();
 
@@ -55,14 +61,14 @@ describe('InfoComponent', () => {
 
     expect(
       await screen.findByText(
-        /Set the number of licensed users in the app-config.yaml/i,
+        'Set the number of licensed users in the app-config.yaml',
       ),
     ).toBeInTheDocument();
 
     await user.unhover(button);
     await waitForElementToBeRemoved(() =>
       screen.queryByText(
-        /Set the number of licensed users in the app-config.yaml/i,
+        'Set the number of licensed users in the app-config.yaml',
       ),
     );
   });

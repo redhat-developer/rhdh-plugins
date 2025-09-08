@@ -82,6 +82,7 @@ export const BadgeChip = ({ plugin }: { plugin: MarketplacePlugin }) => {
       avatar={<TaskAltIcon style={{ color: options.color }} />}
       label={options.label}
       variant="outlined"
+      size="small"
     />
   );
 };

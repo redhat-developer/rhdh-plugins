@@ -39,27 +39,33 @@ export type InfoDialogProps = {
 export type ParentComponentRef = HTMLDivElement;
 
 const useStyles = makeStyles()(theme => ({
+  dialogTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  titleContent: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+  },
+  titleText: {
+    lineHeight: 1,
+    margin: 0,
+  },
   closeBtn: {
     flexShrink: 0,
   },
   dialogActions: {
     justifyContent: 'flex-start',
     paddingLeft: theme.spacing(3),
-    paddingBottom: theme.spacing(2),
+    paddingTop: 0,
+    paddingBottom: theme.spacing(4),
   },
   dialogContent: {
     '& > div': {
       backgroundColor: 'transparent',
     },
-  },
-  titleContainer: {
-    display: 'flex',
-  },
-  title: {
-    width: '100%',
-  },
-  titleIcon: {
-    marginRight: theme.spacing(1),
   },
 }));
 
@@ -89,12 +95,13 @@ export const RefForwardingInfoDialog: ForwardRefRenderFunction<
       }}
     >
       <DialogTitle>
-        <Box className={classes.titleContainer}>
-          {titleIcon && <Box className={classes.titleIcon}>{titleIcon}</Box>}
-
-          <Typography variant="h4" className={classes.title}>
-            <b>{title}</b>
-          </Typography>
+        <Box className={classes.dialogTitle}>
+          <Box className={classes.titleContent}>
+            {titleIcon}
+            <Typography variant="h4" className={classes.titleText}>
+              <b>{title}</b>
+            </Typography>
+          </Box>
 
           <IconButton
             className={classes.closeBtn}

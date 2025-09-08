@@ -15,6 +15,7 @@
  */
 
 import Tooltip from '@mui/material/Tooltip';
+import { useTranslation } from '../../hooks/useTranslation';
 import { MenuItemLinkContent } from './MenuItemLinkContent';
 
 /**
@@ -36,12 +37,20 @@ export const MenuItemLink = ({
   icon,
   tooltip,
 }: MenuItemLinkProps) => {
-  const isExternalLink = to.startsWith('http://') || to.startsWith('https://');
+  const { t } = useTranslation();
+  const isExternalLink =
+    to?.startsWith('http://') || to?.startsWith('https://');
+
+  // Check if title looks like a translation key (contains dots)
+  const translatedTitle =
+    title && title.includes('.')
+      ? t(title as any, {}) || title // Fallback to original title if translation fails
+      : title;
 
   const headerLinkContent = () => (
     <MenuItemLinkContent
       icon={icon}
-      label={title}
+      label={translatedTitle}
       subLabel={subTitle}
       isExternalLink={isExternalLink}
     />

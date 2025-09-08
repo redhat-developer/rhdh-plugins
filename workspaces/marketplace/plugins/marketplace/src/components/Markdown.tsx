@@ -18,6 +18,7 @@ import { useEffect } from 'react';
 
 import { MarkdownContent } from '@backstage/core-components';
 import { useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
 
 export interface MarkdownProps {
   title?: string;
@@ -50,7 +51,7 @@ export const Markdown = (props: MarkdownProps) => {
   const theme = useTheme();
   let content = props.content ?? '**no description provided**';
   if (props.title && !content.startsWith('# ')) {
-    content = `# ${props.title}\n\n${content}`;
+    content = `## ${props.title}\n\n${content}`;
   }
 
   // TODO load images from marketplace assets endpoint ???
@@ -100,11 +101,22 @@ export const Markdown = (props: MarkdownProps) => {
   }, [content, theme.palette.text.secondary]);
 
   return (
-    <MarkdownContent
-      content={content}
-      dialect="gfm"
-      linkTarget="_blank"
-      transformImageUri={transformImageUri}
-    />
+    <Box
+      sx={{
+        '& h2': {
+          fontWeight: 500,
+          fontSize: '1rem',
+          marginTop: 0,
+          marginBottom: '8px',
+        },
+      }}
+    >
+      <MarkdownContent
+        content={content}
+        dialect="gfm"
+        linkTarget="_blank"
+        transformImageUri={transformImageUri}
+      />
+    </Box>
   );
 };

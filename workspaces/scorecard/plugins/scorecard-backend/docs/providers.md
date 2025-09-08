@@ -57,6 +57,16 @@ export class MyMetricProvider implements MetricProvider<'number'> {
     };
   }
 
+  getMetricThresholds(): ThresholdConfig {
+    return {
+      rules: [
+        { key: 'error', expression: '>50' },
+        { key: 'warning', expression: '10-50' },
+        { key: 'success', expression: '<10' },
+      ],
+    };
+  }
+
   // Calculates and returns the metric value
   async calculateMetric(): Promise<number> {
     // TODO: Implement your metric calculation logic here

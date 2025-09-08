@@ -24,16 +24,19 @@ import { format } from 'date-fns';
 
 import { adoptionInsightsApiRef } from '../../api';
 import { useDateRange } from '../Header/DateRangeContext';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const ExportCSVButton = () => {
   const [loading, setLoading] = useState(false);
   const api = useApi(adoptionInsightsApiRef);
   const { startDateRange, endDateRange } = useDateRange();
   const theme = useTheme();
+  const { t } = useTranslation();
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleCSVDownload = async () => {
     try {
+      const timestamp = format(new Date(), 'yyyy-MM-dd_HH-mm-ss-SSS');
       await api.downloadBlob({
         type: 'active_users',
         start_date: startDateRange
@@ -42,6 +45,7 @@ const ExportCSVButton = () => {
         end_date: endDateRange ? format(endDateRange, 'yyyy-MM-dd') : undefined,
         timezone: new Intl.DateTimeFormat().resolvedOptions().timeZone,
         format: 'csv',
+        blobName: `${t('common.csvFilename')}_${timestamp}.csv`,
       });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -69,6 +73,7 @@ const ExportCSVButton = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        padding: '8px 16px', // Add padding for better spacing from card border
       }}
     >
       <Button
@@ -87,7 +92,7 @@ const ExportCSVButton = () => {
           },
         }}
       >
-        {loading ? 'Downloading...' : 'Export CSV'}
+        {loading ? t('common.downloading') : t('common.exportCSV')}
       </Button>
     </Box>
   );

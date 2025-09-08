@@ -16,6 +16,7 @@
 import type { ComponentType } from 'react';
 import { MenuSection } from './MenuSection';
 import { MenuItemLink } from '../MenuItemLink/MenuItemLink';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * Register A Component Section properties
@@ -31,13 +32,15 @@ export const RegisterAComponentSection = ({
   hideDivider,
   handleClose,
 }: RegisterAComponentSectionProps) => {
+  const { t } = useTranslation();
+
   return (
     <MenuSection
       hideDivider={hideDivider}
       items={[
         {
-          label: 'Register a component',
-          subLabel: 'Import it to the catalog page',
+          label: t('create.registerComponent.title'),
+          subLabel: t('create.registerComponent.subtitle'),
           link: '/catalog-import',
           icon: 'category',
           Component: MenuItemLink as ComponentType,

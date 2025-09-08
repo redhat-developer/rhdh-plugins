@@ -29,12 +29,14 @@ import Users from '../Users';
 import { DateRangeProvider } from '../Header/DateRangeContext';
 import { useAdoptionInsightsEventsReadPermission } from '../../hooks/useAdoptionInsightsEventsReadPermission';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const AdoptionInsightsPage = () => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const { allowed: hasEventsReadPermission, loading } =
     useAdoptionInsightsEventsReadPermission();
+  const { t } = useTranslation();
 
   if (loading) {
     return null;
@@ -48,7 +50,7 @@ export const AdoptionInsightsPage = () => {
         </Content>
       ) : (
         <DateRangeProvider>
-          <InsightsHeader title="Adoption Insights" />
+          <InsightsHeader title={t('page.title')} />
           <Content>
             <Masonry columns={isSmallScreen ? 1 : 2} spacing={2}>
               <ActiveUsers />

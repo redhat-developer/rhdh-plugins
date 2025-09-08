@@ -16,7 +16,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { MessageProps } from '@patternfly/chatbot';
-import QuickResponse from '@patternfly/chatbot/dist/cjs/Message/QuickResponse/QuickResponse';
 import { UserFeedbackProps } from '@patternfly/chatbot/dist/cjs/Message/UserFeedback/UserFeedback';
 import { UserFeedbackCompleteProps } from '@patternfly/chatbot/dist/cjs/Message/UserFeedback/UserFeedbackComplete';
 
@@ -24,19 +23,7 @@ import { useCaptureFeedback } from '../hooks/useCaptureFeedback';
 import { CaptureFeedback } from '../types';
 import { Sentiment, useFeedbackState } from './useFeedbackState';
 import { useFeedbackStatus } from './useFeedbackStatus';
-
-const quickResponses: { [key in Sentiment]: QuickResponse[] } = {
-  positive: [
-    { id: '1', content: 'Helpful information' },
-    { id: '2', content: 'Easy to understand' },
-    { id: '3', content: 'Resolved my issue' },
-  ],
-  negative: [
-    { id: '1', content: `Didn’t answer my question` },
-    { id: '2', content: 'Hard to understand' },
-    { id: '3', content: 'Not Helpful' },
-  ],
-};
+import { useTranslation } from './useTranslation';
 
 export const useFeedbackActions = <T extends MessageProps>(
   messages: T[],
@@ -50,13 +37,42 @@ export const useFeedbackActions = <T extends MessageProps>(
   const { data: feedbackEnabled } = useFeedbackStatus();
   const { state, ...dispatch } = useFeedbackState();
   const { mutateAsync: captureFeedback } = useCaptureFeedback();
+  const { t } = useTranslation();
+
+  const createQuickResponses = useMemo(
+    () => ({
+      positive: [
+        { id: '1', content: t('feedback.quickResponses.positive.helpful') },
+        {
+          id: '2',
+          content: t('feedback.quickResponses.positive.easyToUnderstand'),
+        },
+        {
+          id: '3',
+          content: t('feedback.quickResponses.positive.resolvedIssue'),
+        },
+      ],
+      negative: [
+        { id: '1', content: t('feedback.quickResponses.negative.didntAnswer') },
+        {
+          id: '2',
+          content: t('feedback.quickResponses.negative.hardToUnderstand'),
+        },
+        { id: '3', content: t('feedback.quickResponses.negative.notHelpful') },
+      ],
+    }),
+    [t],
+  );
 
   const getFeedbackForm = useCallback(
     (messageId: string, sentiment: 'positive' | 'negative') => ({
       key: `feedback-${sentiment}`,
       id: `feedback-${sentiment}-${messageId}`,
       hasTextArea: true,
-      quickResponses: quickResponses[sentiment],
+      title: t('feedback.form.title'),
+      textAreaPlaceholder: t('feedback.form.textAreaPlaceholder'),
+      submitWord: t('feedback.form.submitWord'),
+      quickResponses: createQuickResponses[sentiment],
       onSubmit: (
         quickResponse: string | undefined = '0',
         additionalFeedback: string | undefined,
@@ -64,7 +80,7 @@ export const useFeedbackActions = <T extends MessageProps>(
         const quickIndex = Number(quickResponse) - 1;
         const quickText =
           quickResponse !== '0'
-            ? quickResponses[sentiment]?.[quickIndex]?.content
+            ? createQuickResponses[sentiment]?.[quickIndex]?.content
             : undefined;
 
         let user_feedback = '';
@@ -110,7 +126,14 @@ export const useFeedbackActions = <T extends MessageProps>(
       },
       focusOnLoad: true,
     }),
-    [captureFeedback, conversationId, dispatch, messages],
+    [
+      captureFeedback,
+      conversationId,
+      dispatch,
+      messages,
+      createQuickResponses,
+      t,
+    ],
   );
 
   const feedbackForms = useCallback(
@@ -131,13 +154,15 @@ export const useFeedbackActions = <T extends MessageProps>(
 
       return {
         id: `feebback-completion-${sentiment}-${messageId}`,
+        title: t('feedback.completion.title'),
+        body: t('feedback.completion.body'),
         onClose: () => {
           dispatch.hideCompletionForm(messageId, sentiment);
           dispatch.resetButtonState(messageId);
         },
       };
     },
-    [state, dispatch],
+    [state, dispatch, t],
   );
 
   const scrollToFeedbackForm = useCallback(
@@ -259,6 +284,10 @@ export const useFeedbackActions = <T extends MessageProps>(
                 scrollToFeedbackForm(messageId, sentiment);
               }
             },
+            tooltipContent:
+              selected === 'positive'
+                ? t('feedback.tooltips.goodResponse')
+                : t('feedback.tooltips.badResponse'),
             'aria-expanded': sentiment === selected,
             'aria-controls': showFeedbackForm
               ? `feedback-${sentiment}-${messageId}`
@@ -268,7 +297,9 @@ export const useFeedbackActions = <T extends MessageProps>(
           const copyAction = {
             isClicked: copied,
             ref: copyButtonRef,
-            tooltipContent: copied ? 'Copied' : null,
+            tooltipContent: copied
+              ? t('feedback.tooltips.copied')
+              : t('feedback.tooltips.copy'),
             onClick: async () => {
               await window.navigator.clipboard.writeText(
                 message.content as string,
@@ -288,6 +319,9 @@ export const useFeedbackActions = <T extends MessageProps>(
             isClicked: isSpeaking,
             ref: speakingButtonRef,
             id: `listen-${messageId}`,
+            tooltipContent: isSpeaking
+              ? t('feedback.tooltips.listening')
+              : t('feedback.tooltips.listen'),
             onClick: () => {
               const isCurrentlySpeaking =
                 state[messageId]?.buttonState?.isSpeaking;
@@ -316,6 +350,7 @@ export const useFeedbackActions = <T extends MessageProps>(
         })
       : messages;
   }, [
+    t,
     conversationId,
     messages,
     state,
