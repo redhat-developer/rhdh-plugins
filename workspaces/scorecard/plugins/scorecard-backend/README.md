@@ -71,6 +71,20 @@ This policy would allow users to read only the GitHub Open PRs metric, while res
 
 The Scorecard plugin collects metrics from third-party data sources using metric providers. The Scorecard node plugin provides `scorecardMetricsExtensionPoint` extension point that is used to connect your backend plugin module that exports custom metrics via metric providers to the Scorecard backend plugin. For detailed information on creating metric providers, see [providers.md](./docs/providers.md).
 
+### Available Metric Providers
+
+The following metric providers are available:
+
+| Provider   | Metric ID          | Title            | Description                           | Type   |
+| ---------- | ------------------ | ---------------- | ------------------------------------- | ------ |
+| **GitHub** | `github.open-prs`  | GitHub open PRs  | Count of open Pull Requests in GitHub | number |
+| **Jira**   | `jira.open-issues` | Jira open issues | The number of opened issues in Jira   | number |
+
+To use these providers, install the corresponding backend modules:
+
+- GitHub: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github`](../scorecard-backend-module-github/README.md)
+- Jira: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira`](../scorecard-backend-module-jira/README.md)
+
 ## Thresholds
 
 Thresholds define conditions that determine which category a metric value belongs to (`error`, `warning`, or `success`). The Scorecard plugin provides multiple ways to configure thresholds:
