@@ -15,7 +15,26 @@
  */
 import { render, screen } from '@testing-library/react';
 import { format } from 'date-fns';
+import {
+  MockTrans,
+  mockUseTranslation,
+  mockUseLanguage,
+} from '../../../test-utils/mockTranslations';
+
 import ChartTooltip from '../ChartTooltip';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../../hooks/useLanguage', () => ({
+  useLanguage: mockUseLanguage,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 import { DateRangeProvider } from '../../Header/DateRangeContext';
 
 const mockPayload = [

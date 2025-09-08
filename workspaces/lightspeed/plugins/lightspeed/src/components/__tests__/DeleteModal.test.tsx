@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { fireEvent, render, screen } from '@testing-library/react';
 
+import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { DeleteModal } from '../DeleteModal';
+
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: jest.fn(() => mockUseTranslation()),
+}));
 
 describe('DeleteModal', () => {
   const onClose = jest.fn();

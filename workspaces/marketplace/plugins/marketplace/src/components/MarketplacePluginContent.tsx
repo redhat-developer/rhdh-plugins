@@ -83,20 +83,25 @@ const PluginMetadataSection = ({
   title: string;
 }) => {
   if (!value) return null;
-
   if (Array.isArray(value)) {
     if (value.length === 0 || typeof value[0] !== 'string') return null;
     return (
       <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+        <Typography
+          variant="h6"
+          component="h3"
+          sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
+        >
           {title}
         </Typography>
         {value.length === 1 ? (
           <Typography variant="body2">{value[0]}</Typography>
         ) : (
-          <ul style={{ margin: 0, paddingLeft: '1rem' }}>
+          <ul style={{ paddingLeft: '20px', marginBottom: '24px' }}>
             {value.map((item, index) => (
-              <li key={item || index}>{item}</li>
+              <li key={item || index} style={{ marginBottom: '8px' }}>
+                {item}
+              </li>
             ))}
           </ul>
         )}
@@ -169,6 +174,7 @@ const columns: TableColumn<MarketplacePackage>[] = [
     title: 'Package name',
     field: 'spec.packageName',
     type: 'string',
+    width: '40%',
   },
   {
     title: 'Version',
@@ -218,7 +224,11 @@ const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
 
   return (
     <div>
-      <Typography variant="h5" sx={{ pt: 2 }}>
+      <Typography
+        variant="h6"
+        component="h3"
+        sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5, pt: 2 }}
+      >
         Versions
       </Typography>
       <Table

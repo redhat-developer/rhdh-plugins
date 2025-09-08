@@ -114,6 +114,7 @@ export const BadgeChip = ({ plugin }: { plugin: MarketplacePlugin }) => {
         }
         label={options.label}
         variant="outlined"
+        size="small"
         title={options.tooltip}
         sx={{
           cursor: 'pointer',

@@ -24,6 +24,7 @@ import { MenuSection } from './MenuSection';
 import { DropdownEmptyState } from './DropdownEmptyState';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import { useValidComponentTracker } from '../../hooks/useValidComponentTracker';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * @public
@@ -85,6 +86,7 @@ const ValidityTracker = ({
 export const HelpDropdown = ({ layout }: HelpDropdownProps) => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
   const helpDropdownMountPoints = useHelpDropdownMountPoints();
+  const { t } = useTranslation();
 
   const { shouldShowEmpty, updateComponentValidity } = useValidComponentTracker(
     helpDropdownMountPoints?.length ?? 0,
@@ -124,7 +126,7 @@ export const HelpDropdown = ({ layout }: HelpDropdownProps) => {
   return (
     <HeaderDropdownComponent
       isIconButton
-      tooltip="Help"
+      tooltip={t('help.tooltip')}
       buttonContent={<HelpOutlineIcon />}
       buttonProps={{
         color: 'inherit',
@@ -138,8 +140,8 @@ export const HelpDropdown = ({ layout }: HelpDropdownProps) => {
         <MenuSection hideDivider items={menuItems} handleClose={handleClose} />
       ) : (
         <DropdownEmptyState
-          title="No support links"
-          subTitle="Your administrator needs to set up support links."
+          title={t('help.noSupportLinks')}
+          subTitle={t('help.noSupportLinksSubtitle')}
           icon={
             <SupportAgentIcon sx={{ fontSize: 64, color: 'text.disabled' }} />
           }

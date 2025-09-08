@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-
+import { useTranslation } from '../hooks/useTranslation';
 import logo from '../images/logo-white.svg';
 
 /**
@@ -23,7 +22,13 @@ import logo from '../images/logo-white.svg';
  * Lightspeed Icon
  */
 export const LightspeedIcon = () => {
+  const { t } = useTranslation();
+
   return (
-    <img src={logo as any} alt="lightspeed icon" style={{ height: '25px' }} />
+    <img
+      src={logo as any}
+      alt={t('icon.lightspeed.alt')}
+      style={{ height: '25px' }}
+    />
   );
 };

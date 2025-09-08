@@ -19,10 +19,23 @@ import { useUserProfile } from '@backstage/plugin-user-settings';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
 import { ProfileDropdown } from './ProfileDropdown';
 
 jest.mock('@backstage/plugin-user-settings', () => ({
   useUserProfile: jest.fn(),
+}));
+
+// Mock translation hooks
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
 }));
 
 jest.mock('../../hooks/useProfileDropdownMountPoints', () => {
@@ -33,11 +46,11 @@ jest.mock('../../hooks/useProfileDropdownMountPoints', () => {
         Component: MockComponent,
         config: {
           props: {
-            icon: 'someicon',
-            title: 'sometitle',
-            link: 'somelink',
+            icon: 'manageAccounts',
+            title: 'profile.settings',
+            link: '/settings',
           },
-          priority: '100',
+          priority: 200,
         },
       },
       {
@@ -45,9 +58,9 @@ jest.mock('../../hooks/useProfileDropdownMountPoints', () => {
         config: {
           props: {
             icon: 'account',
-            title: 'My profile',
+            title: 'profile.myProfile',
           },
-          priority: '90',
+          priority: 150,
         },
       },
     ],

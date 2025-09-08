@@ -18,6 +18,8 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import TablePagination from '@mui/material/TablePagination';
 
+import { useTranslation } from '../../hooks/useTranslation';
+
 interface TableFooterPaginationProps {
   count: number;
   rowsPerPage: number;
@@ -31,6 +33,44 @@ interface TableFooterPaginationProps {
   ) => void;
 }
 
+const generateRowsPerPageOptions = (totalCount: number, t: any) => {
+  const defaultOptions = [3, 5, 10, 20];
+  const maxDefaultOption = Math.max(...defaultOptions);
+
+  if (defaultOptions.includes(totalCount)) {
+    const validOptions = defaultOptions.filter(option => option <= totalCount);
+    return validOptions.map(value => ({
+      label: t('table.pagination.topN' as any, { count: value.toString() }),
+      value,
+    }));
+  }
+
+  const validDefaults = defaultOptions.filter(option => option < totalCount);
+
+  if (validDefaults.length > 0 && totalCount <= maxDefaultOption) {
+    const options = validDefaults.map(value => ({
+      label: t('table.pagination.topN' as any, { count: value.toString() }),
+      value,
+    }));
+
+    options.push({
+      label: t('filter.all' as any, {}),
+      value: totalCount,
+    });
+
+    return options;
+  }
+
+  if (validDefaults.length > 0) {
+    return validDefaults.map(value => ({
+      label: t('table.pagination.topN' as any, { count: value.toString() }),
+      value,
+    }));
+  }
+
+  return [];
+};
+
 const TableFooterPagination: FC<TableFooterPaginationProps> = ({
   count,
   rowsPerPage,
@@ -38,6 +78,13 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
   handleChangePage,
   handleChangeRowsPerPage,
 }) => {
+  const { t } = useTranslation();
+  const rowsPerPageOptions = generateRowsPerPageOptions(count, t);
+
+  if (rowsPerPageOptions.length <= 1) {
+    return null;
+  }
+
   return (
     <Box
       component={Paper}
@@ -53,12 +100,7 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
             backgroundColor: 'transparent',
           },
         }}
-        rowsPerPageOptions={[
-          { label: 'Top 3', value: 3 },
-          { label: 'Top 5', value: 5 },
-          { label: 'Top 10', value: 10 },
-          { label: 'Top 20', value: 20 },
-        ]}
+        rowsPerPageOptions={rowsPerPageOptions}
         component="div"
         count={count}
         rowsPerPage={rowsPerPage}

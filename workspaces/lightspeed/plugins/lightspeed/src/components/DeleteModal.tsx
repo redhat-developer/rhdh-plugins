@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import {
   Button,
   Modal,
@@ -25,6 +23,8 @@ import {
   ModalVariant,
 } from '@patternfly/react-core';
 
+import { useTranslation } from '../hooks/useTranslation';
+
 export const DeleteModal = ({
   isOpen,
   onClose,
@@ -33,28 +33,30 @@ export const DeleteModal = ({
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-}) => (
-  <Modal
-    variant={ModalVariant.small}
-    isOpen={isOpen}
-    onClose={onClose}
-    ouiaId="DeleteModal"
-    aria-labelledby="delete-modal"
-    aria-describedby="delete-modal-confiramtion"
-  >
-    <ModalHeader title="Delete chat?" />
-    <ModalBody id="delete-modal-body-confirmation">
-      You'll no longer see this chat here. This will also delete related
-      activity like prompts, responses, and feedback from your Lightspeed
-      Activity.
-    </ModalBody>
-    <ModalFooter>
-      <Button key="confirm" variant="danger" onClick={onConfirm}>
-        Delete
-      </Button>
-      <Button key="cancel" variant="link" onClick={onClose}>
-        Cancel
-      </Button>
-    </ModalFooter>
-  </Modal>
-);
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <Modal
+      variant={ModalVariant.small}
+      isOpen={isOpen}
+      onClose={onClose}
+      ouiaId="DeleteModal"
+      aria-labelledby="delete-modal"
+      aria-describedby="delete-modal-confiramtion"
+    >
+      <ModalHeader title={t('conversation.history.confirm.title')} />
+      <ModalBody id="delete-modal-body-confirmation">
+        {t('conversation.history.confirm.message')}
+      </ModalBody>
+      <ModalFooter>
+        <Button key="confirm" variant="danger" onClick={onConfirm}>
+          {t('conversation.history.confirm.delete')}
+        </Button>
+        <Button key="cancel" variant="link" onClick={onClose}>
+          {t('common.cancel')}
+        </Button>
+      </ModalFooter>
+    </Modal>
+  );
+};
