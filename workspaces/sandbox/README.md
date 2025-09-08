@@ -1,6 +1,6 @@
 # Developer Sandbox Plugin for Red Hat Developer Hub
 
-This plugin provides the new developer sandbox experience for the Red Hat Developer Hub.
+This plugin provides the new Developer Sandbox experience for the Red Hat Developer Hub.
 
 ## Configuration
 
