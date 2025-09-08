@@ -202,6 +202,7 @@ const SupportTypeFilter = () => {
       allSupportTypeItems.push({
         label: `Community plugin (${exactCounts.community})`,
         value: `spec.support.name=Backstage Community`,
+        helperText: 'Open-source plugins, no official support',
       });
     }
 
@@ -210,6 +211,7 @@ const SupportTypeFilter = () => {
       allSupportTypeItems.push({
         label: `Tech preview (TP) (${exactCounts.techPreview})`,
         value: `spec.support.level=tech-preview`,
+        helperText: 'Plugin still in development',
       });
     }
 
@@ -218,6 +220,7 @@ const SupportTypeFilter = () => {
       allSupportTypeItems.push({
         label: `Dev preview (DP) (${exactCounts.devPreview})`,
         value: `spec.support.level=dev-preview`,
+        helperText: 'An early-stage, experimental plugin',
       });
     }
 

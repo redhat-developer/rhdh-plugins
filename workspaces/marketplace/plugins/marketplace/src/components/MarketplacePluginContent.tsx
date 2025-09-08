@@ -528,7 +528,7 @@ export const MarketplacePluginContent = ({
 
             <PluginMetadataSection
               value={plugin.spec?.support?.name}
-              title="Support Level"
+              title="Support Provider"
             />
 
             {pluginActionButton()}
