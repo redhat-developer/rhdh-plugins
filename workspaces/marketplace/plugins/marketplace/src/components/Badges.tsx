@@ -24,12 +24,7 @@ import {
   SupportLevel,
   SupportProvider,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-
-const colors = {
-  certified: '#A18FFF',
-  verified: '#6EC664',
-  custom: '#EC7A08',
-} as const;
+import { colors } from '../consts';
 
 interface BadgeOptions {
   isBadge?: boolean;

@@ -16,7 +16,7 @@
 
 import { useMemo, useCallback } from 'react';
 
-import { SelectItem } from '@backstage/core-components';
+import { ExtendedSelectItem } from '../types';
 import { useSearchParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
@@ -32,6 +32,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMarketplaceApi } from '../hooks/useMarketplaceApi';
 import { CustomSelectFilter } from '../shared-components/CustomSelectFilter';
 import { useQueryArrayFilter } from '../hooks/useQueryArrayFilter';
+import { colors } from '../consts';
 
 const CategoryFilter = () => {
   const categoriesFacet = usePluginFacet('spec.categories');
@@ -47,7 +48,7 @@ const CategoryFilter = () => {
   }, [categories]);
 
   const handleChange = useCallback(
-    (_e: any, value: SelectItem[]) => {
+    (_e: any, value: ExtendedSelectItem[]) => {
       const newSelection = value.map(v => v.value);
       filter.set(newSelection);
     },
@@ -78,7 +79,7 @@ const AuthorFilter = () => {
   }, [authors]);
 
   const handleChange = useCallback(
-    (_e: any, value: SelectItem[]) => {
+    (_e: any, value: ExtendedSelectItem[]) => {
       const newSelection = value.map(v => v.label);
       filter.set(newSelection);
     },
@@ -157,7 +158,7 @@ const SupportTypeFilter = () => {
 
   const items = useMemo(() => {
     if (!facets) return [];
-    const allSupportTypeItems: SelectItem[] = [];
+    const allSupportTypeItems: ExtendedSelectItem[] = [];
 
     // Certified plugins
     const certified = facets[facetsKeys[0]];
@@ -165,6 +166,9 @@ const SupportTypeFilter = () => {
       allSupportTypeItems.push({
         label: `Certified (${certifiedBy.count})`,
         value: `${facetsKeys[0]}=${certifiedBy.value}`,
+        isBadge: true,
+        badgeColor: colors.certified,
+        helperText: 'Stable and secured by Red Hat',
       });
     });
 
@@ -175,6 +179,9 @@ const SupportTypeFilter = () => {
         allSupportTypeItems.push({
           label: `Custom plugin (${preInstall.count})`,
           value: `${facetsKeys[1]}=${preInstall.value}`,
+          isBadge: true,
+          badgeColor: colors.custom,
+          helperText: 'Added by the administrator',
         });
       }
     });
@@ -184,6 +191,9 @@ const SupportTypeFilter = () => {
       allSupportTypeItems.push({
         label: `Generally available (GA) (${exactCounts.ga})`,
         value: `spec.support.level=production,spec.support.name=Red Hat`,
+        isBadge: true,
+        badgeColor: colors.verified,
+        helperText: 'Production-ready and supported',
       });
     }
 
@@ -229,7 +239,7 @@ const SupportTypeFilter = () => {
   }, [searchParams, items]);
 
   const onChange = useCallback(
-    (newValues: SelectItem[]) => {
+    (newValues: ExtendedSelectItem[]) => {
       const newSelection = newValues.map(v => v.value);
       setSearchParams(
         params => {
@@ -272,7 +282,7 @@ const SupportTypeFilter = () => {
 
   return (
     <CustomSelectFilter
-      label="Support type"
+      label="Support status"
       items={items}
       onChange={(_e, value) => onChange(value)}
       selectedItems={selected}

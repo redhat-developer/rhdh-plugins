@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-export const themeId = 'extensions';
+import { SelectItem } from '@backstage/core-components';
 
-export const colors = {
-  certified: '#A18FFF',
-  verified: '#6EC664',
-  custom: '#EC7A08',
-} as const;
+export interface ExtendedSelectItem extends SelectItem {
+  helperText?: string;
+  isBadge?: boolean;
+  badgeColor?: string;
+}
