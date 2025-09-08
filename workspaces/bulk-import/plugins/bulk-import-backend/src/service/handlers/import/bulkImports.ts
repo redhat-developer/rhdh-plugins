@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { AuthService, LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  AuthService,
+  DiscoveryService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 
@@ -26,6 +30,10 @@ import {
   getCatalogFilename,
   getCatalogUrl,
 } from '../../../catalog/catalogUtils';
+import {
+  RepositoryDao,
+  ScaffolderTaskDao,
+} from '../../../database/repositoryDao';
 import type { Components, Paths } from '../../../generated/openapi';
 import type { GithubApiService } from '../../../github';
 import {
@@ -85,6 +93,10 @@ export async function findAllImports(
     config: Config;
     githubApiService: GithubApiService;
     catalogHttpClient: CatalogHttpClient;
+    repositoryDao: RepositoryDao;
+    taskDao: ScaffolderTaskDao;
+    discovery: DiscoveryService;
+    auth: AuthService;
   },
   requestHeaders?: {
     apiVersion?: Paths.FindAllImports.Parameters.ApiVersion;
@@ -153,7 +165,7 @@ export async function findAllImports(
 
     importStatusPromises.push(
       findImportStatusByRepo(
-        deps,
+        { ...deps },
         repoUrl,
         defaultBranchByRepoUrl.get(repoUrl),
         false,
@@ -672,12 +684,16 @@ async function performDryRunChecks(
   };
 }
 
-export async function findImportStatusByRepo( //
+export async function findImportStatusByRepo(
   deps: {
     logger: LoggerService;
     config: Config;
     githubApiService: GithubApiService;
     catalogHttpClient: CatalogHttpClient;
+    repositoryDao: RepositoryDao;
+    taskDao: ScaffolderTaskDao;
+    discovery: DiscoveryService;
+    auth: AuthService;
   },
   repoUrl: string,
   defaultBranch?: string,
@@ -701,63 +717,55 @@ export async function findImportStatusByRepo( //
     status: null,
   } as Components.Schemas.Import;
   try {
-    // Check to see if there are any PR
-    const openImportPr = await deps.githubApiService.findImportOpenPr(
-      deps.logger,
-      {
-        repoUrl: repoUrl,
-        includeCatalogInfoContent,
-      },
-    );
-    if (!openImportPr.prUrl) {
-      const catalogLocations = (
-        await deps.catalogHttpClient.listCatalogUrlLocations()
-      ).uniqueCatalogUrlLocations.keys();
+    const repository = await deps.repositoryDao.findRepositoryByUrl(repoUrl);
+    if (repository?.id) {
+      const task = (
+        await deps.taskDao.findTasksByRepositoryId(repository?.id)
+      )[0];
 
-      const catalogUrl = getCatalogUrl(deps.config, repoUrl, defaultBranch);
-      let exists = false;
-      for (const loc of catalogLocations) {
-        if (loc === catalogUrl) {
-          exists = true;
-          break;
+      const scaffolderUrl = await deps.discovery.getBaseUrl('scaffolder');
+      const { token } = await deps.auth.getPluginRequestToken({
+        onBehalfOf: await deps.auth.getOwnServiceCredentials(),
+        targetPluginId: 'scaffolder',
+      });
+
+      const response = await fetch(`${scaffolderUrl}/v2/tasks/${task.taskId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        result.status = data.status;
+        console.log(` data is ${JSON.stringify(data)}`);
+        if (data.state?.checkpoints) {
+          for (const key in data.state.checkpoints) {
+            if (key.startsWith('v1.task.checkpoint.publish.create.pr')) {
+              const url = data.state.checkpoints[key].value.html_url;
+              if (url) {
+                const prNumber = parseInt(url.split('/').pop()!, 10);
+                const prDetails = await deps.githubApiService.getPullRequest(
+                  repoUrl,
+                  prNumber,
+                );
+                result.github = {
+                  pullRequest: {
+                    url,
+                    title: prDetails.title,
+                    body: prDetails.body,
+                  },
+                };
+                if (prDetails.merged) {
+                  result.status = 'ADDED';
+                } else {
+                  result.status = 'WAIT_PR_APPROVAL';
+                }
+              }
+            }
+          }
         }
       }
-      if (
-        exists &&
-        (await deps.githubApiService.hasFileInRepo({
-          //
-          repoUrl,
-          defaultBranch,
-          fileName: getCatalogFilename(deps.config),
-        }))
-      ) {
-        result.status = 'ADDED';
-        // Force a refresh of the Location, so that the entities from the catalog-info.yaml can show up quickly (not guaranteed however).
-        await deps.catalogHttpClient.refreshLocationByRepoUrl(
-          repoUrl,
-          defaultBranch,
-        );
-      }
-      // No import PR => let's determine last update from the repository
-      const ghRepo =
-        await deps.githubApiService.getRepositoryFromIntegrations(repoUrl);
-      result.lastUpdate = ghRepo.repository?.updated_at ?? undefined;
-      return {
-        statusCode: 200,
-        responseBody: result,
-      };
     }
-    result.status = 'WAIT_PR_APPROVAL';
-    result.github = {
-      pullRequest: {
-        number: openImportPr.prNum,
-        url: openImportPr.prUrl,
-        title: openImportPr.prTitle,
-        body: openImportPr.prBody,
-        catalogInfoContent: openImportPr.prCatalogInfoContent,
-      },
-    };
-    result.lastUpdate = openImportPr.lastUpdate;
   } catch (error: any) {
     errors.push(error.message);
     result.errors = errors;

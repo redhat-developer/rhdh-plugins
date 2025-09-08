@@ -844,4 +844,54 @@ export class GithubApiService {
       },
     );
   }
+  async getPullRequest(
+    repoUrl: string,
+    pullRequestNumber: number,
+  ): Promise<{
+    title?: string;
+    body?: string;
+    merged?: boolean;
+  }> {
+    const gitUrl = gitUrlParse(repoUrl);
+
+    const ghConfig = this.integrations.github.byUrl(repoUrl)?.config;
+    if (!ghConfig) {
+      throw new Error(
+        `No GitHub integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.github`,
+      );
+    }
+
+    const credentials = await getCredentialsForConfig(
+      this.githubCredentialsProvider,
+      ghConfig,
+    );
+    for (const credential of credentials) {
+      const octokit = buildOcto(
+        {
+          logger: this.logger,
+          cache: this.cache,
+        },
+        { credential, owner: gitUrl.owner },
+        ghConfig.apiBaseUrl,
+      );
+      if (!octokit) {
+        continue;
+      }
+      const resp = await octokit.rest.pulls.get({
+        owner: gitUrl.owner,
+        repo: gitUrl.name,
+        pull_number: pullRequestNumber,
+      });
+      const pr = resp?.data;
+      if (!pr) {
+        continue;
+      }
+      return {
+        title: pr.title,
+        body: pr.body ?? undefined,
+        merged: pr.merged,
+      };
+    }
+    return {};
+  }
 }

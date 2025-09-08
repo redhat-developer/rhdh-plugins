@@ -16,7 +16,7 @@
 
 import { useEffect } from 'react';
 
-import { StatusRunning } from '@backstage/core-components';
+import { Link, StatusRunning } from '@backstage/core-components';
 
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
@@ -45,17 +45,17 @@ export const CatalogInfoStatus = ({
   alreadyAdded?: number;
   isItemSelected?: boolean;
   isDrawer?: boolean;
-  importStatus?: string;
+  importStatus?: { status: string; pullRequest?: { url: string } };
 }) => {
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
 
   useEffect(() => {
-    if (importStatus === RepositoryStatus.ADDED) {
+    if (importStatus?.status === RepositoryStatus.ADDED) {
       setFieldValue(`excludedRepositories.${data.id}`, {
         repoId: data.id,
         orgName: data.orgName,
-        status: importStatus,
+        status: importStatus.status,
       });
     }
   }, [data.id, importStatus, setFieldValue, data.repoName, data.orgName]);
@@ -94,7 +94,17 @@ export const CatalogInfoStatus = ({
   if (importStatus) {
     return (
       <Typography component="span" style={{ color: '#6A6E73' }}>
-        {getImportStatus(importStatus)}
+        {getImportStatus(importStatus.status)}
+        {importStatus.pullRequest?.url && (
+          <Link
+            to={importStatus.pullRequest.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ marginLeft: '8px' }}
+          >
+            PR
+          </Link>
+        )}
       </Typography>
     );
   }
