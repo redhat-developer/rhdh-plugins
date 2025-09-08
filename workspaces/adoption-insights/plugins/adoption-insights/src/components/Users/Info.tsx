@@ -18,16 +18,18 @@ import Box from '@mui/material/Box';
 import MuiTooltip from '@mui/material/Tooltip';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import IconButton from '@mui/material/IconButton';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const InfoComponent = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', mr: 2 }}>
       <MuiTooltip
         title={
           <Box sx={{ textAlign: 'center', width: '238px' }}>
-            Set the number of licensed users in the app-config.yaml
+            {t('users.tooltip')}
           </Box>
         }
         placement="left"

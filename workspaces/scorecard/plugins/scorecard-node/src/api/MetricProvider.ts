@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@backstage/catalog-model';
 import {
   Metric,
   MetricType,
   MetricValue,
+  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 /**
@@ -27,5 +29,6 @@ export interface MetricProvider<T extends MetricType = MetricType> {
   getProviderDatasourceId(): string;
   getProviderId(): string;
   getMetric(): Metric<T>;
-  calculateMetric(): Promise<MetricValue<T>>;
+  getMetricThresholds(): ThresholdConfig;
+  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
 }

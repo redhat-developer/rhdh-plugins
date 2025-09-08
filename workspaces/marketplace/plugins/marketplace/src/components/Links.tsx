@@ -17,6 +17,7 @@
 import { Link } from '@backstage/core-components';
 
 import Typography from '@mui/material/Typography';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import {
   MarketplaceCollection,
@@ -37,14 +38,21 @@ export const Links = ({
 
   return (
     <div>
-      <Typography variant="h5" sx={{ pt: 2 }}>
+      <Typography
+        variant="h6"
+        component="h3"
+        sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
+      >
         Links
       </Typography>
-      <ul>
+      <ul style={{ paddingLeft: '20px' }}>
         {links.map(link => (
-          <li key={link.url}>
-            <Link to={link.url} externalLinkIcon>
-              {link.title ?? link.url}
+          <li key={link.url} style={{ marginBottom: '8px' }}>
+            <Link to={link.url}>
+              {link.title ?? link.url}{' '}
+              <OpenInNewIcon
+                sx={{ fontSize: '1rem', verticalAlign: 'middle' }}
+              />
             </Link>
           </li>
         ))}

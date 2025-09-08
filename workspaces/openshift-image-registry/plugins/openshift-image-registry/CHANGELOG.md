@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 1.14.0
+
+### Minor Changes
+
+- 868fff2: Backstage version bump to v1.41.2
+
+### Patch Changes
+
+- 670728c: Updated dependency `@testing-library/jest-dom` to `6.8.0`.
+- 4fc279c: Updated dependency `@testing-library/jest-dom` to `6.7.0`.
+
 ## 1.13.4
 
 ### Patch Changes

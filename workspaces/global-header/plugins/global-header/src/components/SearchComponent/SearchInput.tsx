@@ -17,6 +17,7 @@
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface SearchInputProps {
   params: any;
@@ -28,26 +29,30 @@ export const SearchInput = ({
   params,
   error,
   helperText,
-}: SearchInputProps) => (
-  <TextField
-    {...params}
-    placeholder="Search..."
-    variant="standard"
-    error={error}
-    helperText={helperText}
-    InputProps={{
-      ...params.InputProps,
-      disableUnderline: true,
-      startAdornment: (
-        <InputAdornment position="start">
-          <SearchIcon style={{ color: 'inherit' }} />
-        </InputAdornment>
-      ),
-    }}
-    sx={{
-      input: { color: 'inherit' },
-      button: { color: 'inherit' },
-      '& fieldset': { border: 'none' },
-    }}
-  />
-);
+}: SearchInputProps) => {
+  const { t } = useTranslation();
+
+  return (
+    <TextField
+      {...params}
+      placeholder={t('search.placeholder')}
+      variant="standard"
+      error={error}
+      helperText={helperText}
+      InputProps={{
+        ...params.InputProps,
+        disableUnderline: true,
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon style={{ color: 'inherit' }} />
+          </InputAdornment>
+        ),
+      }}
+      sx={{
+        input: { color: 'inherit' },
+        button: { color: 'inherit' },
+        '& fieldset': { border: 'none' },
+      }}
+    />
+  );
+};

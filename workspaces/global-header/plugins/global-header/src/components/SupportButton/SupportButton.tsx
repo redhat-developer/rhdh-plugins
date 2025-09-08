@@ -19,6 +19,7 @@ import { Link } from '@backstage/core-components';
 import MenuItem from '@mui/material/MenuItem';
 import { MenuItemLink } from '../MenuItemLink/MenuItemLink';
 import { CSSProperties } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * @public
@@ -35,7 +36,7 @@ export interface SupportButtonProps {
  * @public
  */
 export const SupportButton = ({
-  title = 'Support',
+  title,
   to,
   icon = 'support',
   tooltip,
@@ -44,6 +45,9 @@ export const SupportButton = ({
 }: SupportButtonProps) => {
   const apiHolder = useApiHolder();
   const config = apiHolder.get(configApiRef);
+  const { t } = useTranslation();
+
+  const displayTitle = title || t('help.supportTitle');
   const supportUrl = to ?? config?.getOptionalString('app.support.url');
 
   if (!supportUrl) {
@@ -60,7 +64,7 @@ export const SupportButton = ({
     >
       <MenuItemLink
         to={supportUrl}
-        title={title}
+        title={displayTitle}
         icon={icon}
         tooltip={tooltip}
       />

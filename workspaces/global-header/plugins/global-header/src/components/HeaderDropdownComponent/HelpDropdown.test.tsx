@@ -15,6 +15,10 @@
  */
 import { screen, fireEvent } from '@testing-library/react';
 import { renderInTestApp } from '@backstage/test-utils';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
 import { HelpDropdown } from './HelpDropdown';
 import { useDropdownManager } from '../../hooks';
 import { useHelpDropdownMountPoints } from '../../hooks/useHelpDropdownMountPoints';
@@ -26,6 +30,15 @@ jest.mock('../../hooks', () => ({
 
 jest.mock('../../hooks/useHelpDropdownMountPoints', () => ({
   useHelpDropdownMountPoints: jest.fn(),
+}));
+
+// Mock translation hooks
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
 }));
 
 const MockComponent = ({ title, icon }: any) => (

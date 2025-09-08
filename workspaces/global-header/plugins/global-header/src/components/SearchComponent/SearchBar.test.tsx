@@ -17,7 +17,6 @@
 import type { ReactElement } from 'react';
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { SearchBar } from './SearchBar';
 import {
   searchApiRef,
   SearchContextProvider,
@@ -25,9 +24,22 @@ import {
 import { mockApis, TestApiProvider } from '@backstage/test-utils';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 import { configApiRef } from '@backstage/core-plugin-api';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
+import { SearchBar } from './SearchBar';
 
 jest.mock('../../hooks/useDebouncedCallback', () => ({
   useDebouncedCallback: (fn: (...args: any[]) => void) => fn,
+}));
+
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
 }));
 
 const createInitialState = ({

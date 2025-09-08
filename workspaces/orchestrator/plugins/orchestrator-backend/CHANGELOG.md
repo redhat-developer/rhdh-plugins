@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 8.0.5
+
+### Patch Changes
+
+- 121e764: improve abort instance error handling
+- Updated dependencies [c79ffa7]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.5
+
 ## 8.0.4
 
 ### Patch Changes
