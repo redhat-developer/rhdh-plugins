@@ -90,6 +90,38 @@ All plugins inherit from Backstage's standard Entity interface and include:
       encodedData: 'base64encodeddata...'
   ```
 
+##### Support Information
+
+- **`support`** (object, optional): Support and maintenance information
+  ```yaml
+  support:
+    name: 'Red Hat' # Required: Support provider name
+    level: 'production' # Required: Support level
+  ```
+
+###### Support Name Values
+
+The `support.name` field indicates who provides support for the plugin:
+
+- **`Red Hat`**: Red Hat developed/maintained plugins with full enterprise support.
+- **`Backstage Community`**: Community-maintained Backstage plugins with community support.
+- **`Partner/Vendor Name`**: Third-party vendor plugins (e.g., `IBM`, `PagerDuty`, `Roadie`).
+
+###### Support Level Values
+
+The `support.level` field indicates the maturity and support level:
+
+- **`production`**: Stable, fully supported plugins ready for production use.
+- **`tech-preview`**: Plugin still in development.
+- **`dev-preview`**: An early-stage, experimental plugin.
+
+##### Publisher Information
+
+- **`publisher`** (string, optional): Indicates who distributes/packages the plugin for RHDH
+  ```yaml
+  publisher: 'Red Hat'
+  ```
+
 ##### Installation Status
 
 - **`installStatus`** (enum, optional): Current installation status (automatically populated)
@@ -136,6 +168,10 @@ spec:
   authors:
     - name: 'Tekton Team'
       email: 'tekton@example.com'
+  publisher: 'Red Hat'
+  support:
+    name: 'Red Hat'
+    level: 'production'
   categories:
     - 'CI/CD'
     - 'Kubernetes'
@@ -196,6 +232,8 @@ spec:
 | `metadata.description` | `string`                           | Short description that is shown on the cards (text)                                       |
 | `spec.author`          | `string`                           | A single author name, this attribute is automatically converted to `authors` if specified |
 | `spec.authors`         | `{ name: string, url?: string }[]` | Authors array if a plugin is developed by multiple authors                                |
+| `spec.publisher`       | `string`                           | Who distributes/packages the plugin for RHDH                                              |
+| `spec.support`         | `{ name: string, level: string }`  | Support provider and level information                                                    |
 | `spec.categories`      | `string[]`                         | Categories are displayed directly as filter and labels                                    |
 | `spec.highlights`      | `string[]`                         | Highlights for the details page                                                           |
 | `spec.description`     | `string`                           | Full description that is shown on the details page (markdown)                             |
