@@ -19,7 +19,6 @@ import type { FC, HTMLProps, MouseEvent } from 'react';
 import { Header } from '@backstage/core-components';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
@@ -38,7 +37,7 @@ interface InsightsHeaderProps extends HTMLProps<HTMLDivElement> {
   title: string;
 }
 
-const InsightsHeader: FC<InsightsHeaderProps> = ({ title }) => {
+const InsightsHeader: FC<InsightsHeaderProps> = () => {
   const [selectedOption, setSelectedOption] = useState<string>('last-28-days');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -131,19 +130,7 @@ const InsightsHeader: FC<InsightsHeaderProps> = ({ title }) => {
   }, [startDateRange, endDateRange, t, locale]);
 
   return (
-    <Header
-      pageTitleOverride={t('header.title')}
-      title={
-        <Typography
-          variant="h3"
-          color="textPrimary"
-          sx={{ fontWeight: 'bold' }}
-        >
-          {title}
-        </Typography>
-      }
-      style={{ background: 'none' }}
-    >
+    <Header title={t('header.title')}>
       <Select
         displayEmpty
         open={menuOpen}

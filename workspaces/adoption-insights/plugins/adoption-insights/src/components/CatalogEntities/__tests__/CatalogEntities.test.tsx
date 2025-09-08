@@ -134,7 +134,7 @@ describe('CatalogEntities', () => {
 
   it('should render the component with initial data', () => {
     renderComponent();
-    expect(screen.getByText('Top catalog entities')).toBeInTheDocument();
+    expect(screen.getByText('Top 3 catalog entities')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(5);
   });
 
@@ -173,7 +173,7 @@ describe('CatalogEntities', () => {
     await user.click(select);
     await user.click(screen.getByText('Top 5'));
 
-    expect(screen.getByText('Top catalog entities')).toBeInTheDocument();
+    expect(screen.getByText('Top 5 catalog entities')).toBeInTheDocument();
   });
 
   it('should create correct entity links', () => {

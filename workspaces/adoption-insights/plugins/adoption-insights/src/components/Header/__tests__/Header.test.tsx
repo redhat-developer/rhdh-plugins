@@ -58,6 +58,7 @@ jest.mock('../../../utils/constants', () => ({
   DATE_RANGE_OPTIONS: [
     { value: 'today', labelKey: 'header.dateRange.today' },
     { value: 'last-week', labelKey: 'header.dateRange.lastWeek' },
+    { value: 'last-28-days', labelKey: 'header.dateRange.last28Days' },
     { value: 'last-month', labelKey: 'header.dateRange.lastMonth' },
     { value: 'last-year', labelKey: 'header.dateRange.lastYear' },
   ],
@@ -106,7 +107,7 @@ describe('InsightsHeader', () => {
 
   it('should render the header with correct title', () => {
     renderComponent();
-    expect(screen.getByText('Test Insights')).toBeInTheDocument();
+    expect(screen.getByText('Adoption Insights')).toBeInTheDocument();
   });
 
   it('should initialize with default date range', () => {
@@ -120,11 +121,15 @@ describe('InsightsHeader', () => {
     const select = screen.getByRole('combobox');
     await user.click(select);
 
-    expect(screen.getByText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Last week')).toBeInTheDocument();
-    expect(screen.getByText('Last month')).toBeInTheDocument();
-    expect(screen.getByText('Last 28 days')).toBeInTheDocument();
-    expect(screen.getByText('Last year')).toBeInTheDocument();
+    const options = screen.getAllByRole('option');
+    const optionTexts = options.map(option => option.textContent);
+
+    expect(optionTexts).toContain('Today');
+    expect(optionTexts).toContain('Last week');
+    expect(optionTexts).toContain('Last 28 days');
+    expect(optionTexts).toContain('Last month');
+    expect(optionTexts).toContain('Last year');
+    expect(optionTexts).toContain('Date range...');
   });
 
   it('should open date range picker when "Date range..." is clicked', async () => {

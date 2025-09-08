@@ -24,6 +24,7 @@ import Tooltip from '@mui/material/Tooltip';
 import NotificationIcon from '@mui/icons-material/NotificationsOutlined';
 
 import { useNotificationCount } from '../../hooks/useNotificationCount';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * @public
@@ -62,7 +63,7 @@ const Link = (props: any) => (
  * @public
  */
 export const NotificationButton = ({
-  title = 'Notifications',
+  title,
   tooltip,
   color = 'inherit',
   size = 'small',
@@ -70,7 +71,10 @@ export const NotificationButton = ({
   to = '/notifications',
   layout,
 }: NotificationButtonProps) => {
+  const { t } = useTranslation();
   const { available, unreadCount } = useNotificationCount();
+
+  const displayTitle = title || t('notifications.title');
 
   if (!available) {
     return null;
@@ -78,14 +82,14 @@ export const NotificationButton = ({
 
   return (
     <Box sx={layout}>
-      <Tooltip title={tooltip ?? title}>
+      <Tooltip title={tooltip ?? displayTitle}>
         <div>
           <IconButton
             component={Link}
             color={color}
             size={size}
             to={to}
-            aria-label={title}
+            aria-label={displayTitle}
           >
             {unreadCount > 0 ? (
               <Badge badgeContent={unreadCount} color={badgeColor} max={999}>

@@ -22,6 +22,7 @@ import { MarkdownContent } from '@backstage/core-components';
 import Alert from '@mui/material/Alert';
 
 import { HeaderIcon } from './HeaderIcon/HeaderIcon';
+import { useTranslation } from '../hooks/useTranslation';
 
 /**
  * @public
@@ -46,6 +47,7 @@ export interface NotificationBannerProps {
 }
 
 export const NotificationBanner = (props: NotificationBannerProps) => {
+  const { t } = useTranslation();
   const [dismissed, setDismissed] = useState<boolean>(() => {
     if (props.dismiss === 'localstorage') {
       try {
@@ -86,10 +88,12 @@ export const NotificationBanner = (props: NotificationBannerProps) => {
     }
     // eslint-disable-next-line no-console
     console.warn(
-      `Unsupported dismiss option "${props.dismiss}", currently supported "none", "session" or "localstorage"!`,
+      t('notifications.unsupportedDismissOption' as any, {
+        option: props.dismiss,
+      }),
     );
     return undefined;
-  }, [props.id, props.title, props.dismiss]);
+  }, [props.id, props.title, props.dismiss, t]);
 
   if (dismissed || !props.title) {
     return null;

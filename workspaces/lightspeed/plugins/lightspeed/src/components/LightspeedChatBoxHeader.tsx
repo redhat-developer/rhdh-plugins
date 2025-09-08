@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { Ref, useState } from 'react';
 
 import { createStyles, makeStyles } from '@material-ui/core';
 import { ChatbotHeaderActions } from '@patternfly/chatbot';
@@ -25,6 +25,8 @@ import {
   MenuToggle,
   MenuToggleElement,
 } from '@patternfly/react-core';
+
+import { useTranslation } from '../hooks/useTranslation';
 
 type LightspeedChatBoxHeaderProps = {
   selectedModel: string;
@@ -48,14 +50,15 @@ export const LightspeedChatBoxHeader = ({
   handleSelectedModel,
   models,
 }: LightspeedChatBoxHeaderProps) => {
-  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = React.useState(false);
+  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const styles = useStyles();
 
-  const toggle = (toggleRef: React.Ref<MenuToggleElement>) => (
+  const toggle = (toggleRef: Ref<MenuToggleElement>) => (
     <MenuToggle
       variant="secondary"
-      aria-label="Chatbot selector"
+      aria-label={t('aria.chatbotSelector')}
       ref={toggleRef}
       isExpanded={isOptionsMenuOpen}
       onClick={() => setIsOptionsMenuOpen(!isOptionsMenuOpen)}
