@@ -1,6 +1,6 @@
-# scorecard
+# Scorecard backend plugin
 
-This plugin backend was templated using the Backstage CLI. You should replace this text with a description of your plugin backend.
+Provides customizable metrics and scoring capabilities from various data sources for software components in the Backstage catalog.
 
 ## Installation
 
