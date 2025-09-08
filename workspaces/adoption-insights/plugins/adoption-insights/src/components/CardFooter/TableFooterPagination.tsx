@@ -33,6 +33,44 @@ interface TableFooterPaginationProps {
   ) => void;
 }
 
+const generateRowsPerPageOptions = (totalCount: number, t: any) => {
+  const defaultOptions = [3, 5, 10, 20];
+  const maxDefaultOption = Math.max(...defaultOptions);
+
+  if (defaultOptions.includes(totalCount)) {
+    const validOptions = defaultOptions.filter(option => option <= totalCount);
+    return validOptions.map(value => ({
+      label: t('table.pagination.topN' as any, { count: value.toString() }),
+      value,
+    }));
+  }
+
+  const validDefaults = defaultOptions.filter(option => option < totalCount);
+
+  if (validDefaults.length > 0 && totalCount <= maxDefaultOption) {
+    const options = validDefaults.map(value => ({
+      label: t('table.pagination.topN' as any, { count: value.toString() }),
+      value,
+    }));
+
+    options.push({
+      label: t('filter.all' as any, {}),
+      value: totalCount,
+    });
+
+    return options;
+  }
+
+  if (validDefaults.length > 0) {
+    return validDefaults.map(value => ({
+      label: t('table.pagination.topN' as any, { count: value.toString() }),
+      value,
+    }));
+  }
+
+  return [];
+};
+
 const TableFooterPagination: FC<TableFooterPaginationProps> = ({
   count,
   rowsPerPage,
@@ -41,6 +79,11 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
   handleChangeRowsPerPage,
 }) => {
   const { t } = useTranslation();
+  const rowsPerPageOptions = generateRowsPerPageOptions(count, t);
+
+  if (rowsPerPageOptions.length <= 1) {
+    return null;
+  }
 
   return (
     <Box
@@ -57,24 +100,7 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
             backgroundColor: 'transparent',
           },
         }}
-        rowsPerPageOptions={[
-          {
-            label: t('table.pagination.topN' as any, { count: '3' }),
-            value: 3,
-          },
-          {
-            label: t('table.pagination.topN' as any, { count: '5' }),
-            value: 5,
-          },
-          {
-            label: t('table.pagination.topN' as any, { count: '10' }),
-            value: 10,
-          },
-          {
-            label: t('table.pagination.topN' as any, { count: '20' }),
-            value: 20,
-          },
-        ]}
+        rowsPerPageOptions={rowsPerPageOptions}
         component="div"
         count={count}
         rowsPerPage={rowsPerPage}

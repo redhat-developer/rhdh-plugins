@@ -31,6 +31,7 @@ import Box from '@mui/material/Box';
 
 import CardWrapper from '../CardWrapper';
 import { PLUGINS_TABLE_HEADERS } from '../../utils/constants';
+
 import { usePlugins } from '../../hooks/usePlugins';
 import TableFooterPagination from '../CardFooter';
 import { Line, LineChart, ResponsiveContainer } from 'recharts';
@@ -89,7 +90,11 @@ const Plugins = () => {
 
   return (
     <CardWrapper
-      title={t('plugins.topNTitle' as any, { count: rowsPerPage.toString() })}
+      title={
+        rowsPerPage >= (plugins.data?.length ?? 0)
+          ? t('plugins.allTitle' as any, {})
+          : t('plugins.topNTitle' as any, { count: rowsPerPage.toString() })
+      }
     >
       <Table aria-labelledby="Plugins" sx={{ width: '100%' }}>
         <TableHead>

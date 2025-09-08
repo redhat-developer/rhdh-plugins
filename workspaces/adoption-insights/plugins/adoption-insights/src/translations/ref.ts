@@ -54,17 +54,22 @@ export const adoptionInsightsMessages = {
   templates: {
     title: 'Top templates',
     topNTitle: 'Top {{count}} templates',
+    allTitle: 'All templates',
   },
   catalogEntities: {
     title: 'Top catalog entities',
+    topNTitle: 'Top {{count}} catalog entities',
+    allTitle: 'All catalog entities',
   },
   plugins: {
     title: 'Top plugins',
     topNTitle: 'Top {{count}} plugins',
+    allTitle: 'All plugins',
   },
   techDocs: {
     title: 'Top TechDocs',
     topNTitle: 'Top {{count}} TechDocs',
+    allTitle: 'All TechDocs',
   },
   searches: {
     title: 'Top searches',
