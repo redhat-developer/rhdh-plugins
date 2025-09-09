@@ -46,19 +46,42 @@ export const InstalledPluginsTable = () => {
     {
       title: 'Name',
       field: 'name',
+      align: 'left',
+      width: '30ch',
       defaultSort: 'asc',
+      headerStyle: {
+        textAlign: 'left',
+      },
+      cellStyle: {
+        textAlign: 'left',
+      },
     },
     {
       title: 'Version',
       field: 'version',
-      width: '15%',
+      width: '54ch',
+      align: 'left',
+      headerStyle: {
+        textAlign: 'left',
+      },
+      cellStyle: {
+        textAlign: 'left',
+      },
     },
     {
       title: 'Actions',
+      align: 'right',
+      width: '78px',
+      headerStyle: {
+        textAlign: 'left',
+      },
+      cellStyle: {
+        textAlign: 'left',
+      },
       render: (_rowData: DynamicPluginInfo) => {
         return (
           <Box display="flex" gap={1}>
-            <Tooltip title="Edit plugin">
+            <Tooltip title="Edit">
               <IconButton
                 size="small"
                 onClick={() => {
@@ -68,7 +91,7 @@ export const InstalledPluginsTable = () => {
                 <EditIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Delete plugin">
+            <Tooltip title="Uninstall">
               <IconButton
                 size="small"
                 onClick={() => {
@@ -78,7 +101,7 @@ export const InstalledPluginsTable = () => {
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Download plugin">
+            <Tooltip title="Export configurations (YAML)">
               <IconButton
                 size="small"
                 onClick={() => {
@@ -176,6 +199,7 @@ export const InstalledPluginsTable = () => {
         paging: true,
         thirdSortClick: false,
         debounceInterval: 500,
+        emptyRowsWhenPaging: false,
       }}
       columns={columns}
       data={fetchData as any}

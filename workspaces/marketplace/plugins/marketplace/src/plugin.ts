@@ -139,21 +139,6 @@ export const DynamicMarketplacePluginContent = marketplacePlugin.provide(
 /**
  * @public
  */
-export const InstallationContextProvider = marketplacePlugin.provide(
-  createComponentExtension({
-    name: 'InstallationContextProvider',
-    component: {
-      lazy: () =>
-        import('./components/InstallationContext').then(
-          m => m.InstallationContextProvider,
-        ),
-    },
-  }),
-);
-
-/**
- * @public
- */
 export const MarketplaceIcon: IconComponent = MUIMarketplaceIcon;
 
 /**

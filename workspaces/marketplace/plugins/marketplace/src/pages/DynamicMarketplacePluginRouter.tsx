@@ -35,6 +35,7 @@ import { MarketplacePluginDrawer } from '../components/MarketplacePluginDrawer';
 import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
 import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer';
 import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
+import { InstallationContextProvider } from '../components/InstallationContext';
 
 // Constants for consistent styling
 const TAB_ICON_STYLE = {
@@ -123,23 +124,25 @@ const MarketplacePage = () => {
 };
 
 export const DynamicMarketplacePluginRouter = () => (
-  <ReactQueryProvider>
-    <Routes>
-      <Route
-        path="/collections/:namespace/:name"
-        Component={MarketplaceCollectionPage}
-      />
-      <Route
-        path="/plugins/:namespace/:name/install"
-        Component={MarketplacePluginInstallPage}
-      />
-      <Route
-        path="/packages/:namespace/:name/install"
-        Component={MarketplacePackageInstallPage}
-      />
-      <Route path="/*" Component={MarketplacePage} />
-    </Routes>
-  </ReactQueryProvider>
+  <InstallationContextProvider>
+    <ReactQueryProvider>
+      <Routes>
+        <Route
+          path="/collections/:namespace/:name"
+          Component={MarketplaceCollectionPage}
+        />
+        <Route
+          path="/plugins/:namespace/:name/install"
+          Component={MarketplacePluginInstallPage}
+        />
+        <Route
+          path="/packages/:namespace/:name/install"
+          Component={MarketplacePackageInstallPage}
+        />
+        <Route path="/*" Component={MarketplacePage} />
+      </Routes>
+    </ReactQueryProvider>
+  </InstallationContextProvider>
 );
 
 export const DynamicMarketplacePluginContent = () => (
