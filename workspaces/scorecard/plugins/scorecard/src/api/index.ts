@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { ConfigApi, createApiRef, FetchApi } from '@backstage/core-plugin-api';
+import {
+  createApiRef,
+  FetchApi,
+  DiscoveryApi,
+} from '@backstage/core-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
 import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
@@ -33,8 +37,8 @@ export const scorecardApiRef = createApiRef<ScorecardApi>({
 });
 
 export type ScorecardApiClientOptions = {
-  configApi: ConfigApi;
   fetchApi: FetchApi;
+  discoveryApi: DiscoveryApi;
 };
 
 /**
@@ -42,12 +46,12 @@ export type ScorecardApiClientOptions = {
  * @public
  */
 export class ScorecardApiClient implements ScorecardApi {
-  private readonly configApi: ConfigApi;
   private readonly fetchApi: FetchApi;
+  private readonly discoveryApi: DiscoveryApi;
 
   constructor(options: ScorecardApiClientOptions) {
-    this.configApi = options.configApi;
     this.fetchApi = options.fetchApi;
+    this.discoveryApi = options.discoveryApi;
   }
 
   /**
@@ -55,7 +59,7 @@ export class ScorecardApiClient implements ScorecardApi {
    * @returns Promise resolving to the base URL
    */
   async getBaseUrl(): Promise<string> {
-    return `${this.configApi.getString('backend.baseUrl')}/api/scorecard`;
+    return await this.discoveryApi.getBaseUrl('scorecard');
   }
 
   /**

@@ -19,13 +19,14 @@ import {
   ThresholdResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-import { ChartDonut } from '@patternfly/react-charts/victory';
 import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import { styled, useTheme } from '@mui/material/styles';
 
 interface ScorecardProps {
   cardTitle: string;
@@ -37,6 +38,12 @@ interface ScorecardProps {
   thresholds?: ThresholdResult;
 }
 
+const StyledCircle = styled('circle')(
+  ({ theme, statusColor }: { theme: any; statusColor: string }) => ({
+    stroke: theme.palette[statusColor.split('.')[0]].main,
+  }),
+);
+
 const Scorecard = ({
   cardTitle,
   description,
@@ -46,6 +53,8 @@ const Scorecard = ({
   value,
   thresholds,
 }: ScorecardProps) => {
+  const theme = useTheme();
+
   return (
     <Card
       style={{
@@ -56,11 +65,11 @@ const Scorecard = ({
       }}
     >
       <CardContent style={{ padding: 0 }}>
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h6" style={{ fontWeight: 500 }}>
-            {cardTitle}
-          </Typography>
-        </Box>
+        <CardHeader
+          title={cardTitle}
+          titleTypographyProps={{ variant: 'h6', fontWeight: 500 }}
+          sx={{ pb: 2 }}
+        />
         <Divider />
         <Box sx={{ p: 2 }}>
           <Typography variant="body2" color="textSecondary">
@@ -88,13 +97,17 @@ const Scorecard = ({
               </Box>
             ) : (
               <>
-                <ChartDonut
-                  constrainToVisibleArea
-                  data={[{ x: cardTitle, y: value === 0 ? 1 : value }]}
-                  height={200}
-                  width={200}
-                  colorScale={[statusColor]}
-                />
+                <svg width="200" height="200">
+                  <StyledCircle
+                    cx="100"
+                    cy="100"
+                    r="75"
+                    strokeWidth="10"
+                    fill="none"
+                    statusColor={statusColor}
+                    theme={theme}
+                  />
+                </svg>
                 <Box
                   position="absolute"
                   top="50%"
@@ -106,10 +119,20 @@ const Scorecard = ({
                     alignItems: 'center',
                   }}
                 >
-                  <StatusIcon sx={{ color: statusColor, fontSize: 24 }} />
+                  <StatusIcon
+                    sx={{
+                      color: (muiTheme: any) =>
+                        muiTheme.palette[statusColor.split('.')[0]].main,
+                      fontSize: 24,
+                    }}
+                  />
                   <Typography
                     variant="h6"
-                    style={{ color: statusColor, fontWeight: 600 }}
+                    sx={{
+                      color: (muiTheme: any) =>
+                        muiTheme.palette[statusColor.split('.')[0]].main,
+                      fontWeight: 600,
+                    }}
                   >
                     {value}
                   </Typography>
@@ -134,15 +157,16 @@ const Scorecard = ({
                     height: 10,
                     backgroundColor:
                       {
-                        error: 'red',
-                        warning: 'orange',
-                        success: 'green',
-                      }[key] || 'green',
+                        error: theme.palette.error.main,
+                        warning: theme.palette.warning.main,
+                        success: theme.palette.success.main,
+                      }[key] || theme.palette.success.main,
                     marginRight: 8,
                   }}
                 />
                 <Typography variant="body2">
-                  {key} {expression && `${expression}`}
+                  {key.charAt(0).toUpperCase() + key.slice(1)}{' '}
+                  {expression && `${expression}`}
                 </Typography>
               </div>
             ))}

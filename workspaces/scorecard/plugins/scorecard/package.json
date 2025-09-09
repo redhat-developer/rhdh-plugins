@@ -45,7 +45,6 @@
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
-    "@patternfly/react-charts": "^8.1.0",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
     "react-use": "^17.2.4",
     "victory": "^37.3.6"

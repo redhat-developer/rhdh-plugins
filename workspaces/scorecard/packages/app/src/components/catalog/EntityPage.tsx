@@ -74,6 +74,12 @@ import {
 } from '@backstage/plugin-kubernetes';
 import { ScorecardPage } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
+const scorecardRoute = (
+  <EntityLayout.Route path="/scorecard" title="Scorecard">
+    <ScorecardPage />
+  </EntityLayout.Route>
+);
+
 const techdocsContent = (
   <EntityTechdocsContent>
     <TechDocsAddons>
@@ -202,9 +208,8 @@ const serviceEntityPage = (
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
     </EntityLayout.Route>
-    <EntityLayout.Route path="/scorecard" title="Scorecard">
-      <ScorecardPage />
-    </EntityLayout.Route>
+
+    {scorecardRoute}
   </EntityLayout>
 );
 
@@ -240,6 +245,8 @@ const websiteEntityPage = (
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
     </EntityLayout.Route>
+
+    {scorecardRoute}
   </EntityLayout>
 );
 
@@ -259,6 +266,8 @@ const defaultEntityPage = (
     <EntityLayout.Route path="/docs" title="Docs">
       {techdocsContent}
     </EntityLayout.Route>
+
+    {scorecardRoute}
   </EntityLayout>
 );
 

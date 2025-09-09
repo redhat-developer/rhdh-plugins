@@ -23,15 +23,20 @@ export type StatusConfig = {
   icon: React.ElementType;
 };
 
+/**
+ * @param evaluation - The evaluation status of the metric.
+ * colors are mapped to MUI palette strings (e.g., 'error.main', 'warning.main', 'success.main').
+ * @returns StatusConfig
+ */
 export const getStatusConfig = (
   evaluation: string | undefined,
 ): StatusConfig => {
   switch (evaluation) {
     case 'error':
-      return { color: 'red', icon: DangerousOutlinedIcon };
+      return { color: 'error.main', icon: DangerousOutlinedIcon };
     case 'warning':
-      return { color: 'orange', icon: WarningAmberIcon };
+      return { color: 'warning.main', icon: WarningAmberIcon };
     default:
-      return { color: 'green', icon: CheckCircleOutlineIcon };
+      return { color: 'success.main', icon: CheckCircleOutlineIcon };
   }
 };

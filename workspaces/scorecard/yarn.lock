@@ -9889,91 +9889,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-charts@npm:^8.1.0":
-  version: 8.3.0
-  resolution: "@patternfly/react-charts@npm:8.3.0"
-  dependencies:
-    "@patternfly/react-styles": "npm:^6.3.0"
-    "@patternfly/react-tokens": "npm:^6.3.0"
-    hoist-non-react-statics: "npm:^3.3.2"
-    lodash: "npm:^4.17.21"
-    tslib: "npm:^2.8.1"
-  peerDependencies:
-    echarts: ^5.6.0
-    react: ^17 || ^18 || ^19
-    react-dom: ^17 || ^18 || ^19
-    victory-area: ^37.3.6
-    victory-axis: ^37.3.6
-    victory-bar: ^37.3.6
-    victory-box-plot: ^37.3.6
-    victory-chart: ^37.3.6
-    victory-core: ^37.3.6
-    victory-create-container: ^37.3.6
-    victory-cursor-container: ^37.3.6
-    victory-group: ^37.3.6
-    victory-legend: ^37.3.6
-    victory-line: ^37.3.6
-    victory-pie: ^37.3.6
-    victory-scatter: ^37.3.6
-    victory-stack: ^37.3.6
-    victory-tooltip: ^37.3.6
-    victory-voronoi-container: ^37.3.6
-    victory-zoom-container: ^37.3.6
-  peerDependenciesMeta:
-    echarts:
-      optional: true
-    victory-area:
-      optional: true
-    victory-axis:
-      optional: true
-    victory-bar:
-      optional: true
-    victory-box-plot:
-      optional: true
-    victory-chart:
-      optional: true
-    victory-core:
-      optional: true
-    victory-create-container:
-      optional: true
-    victory-cursor-container:
-      optional: true
-    victory-group:
-      optional: true
-    victory-legend:
-      optional: true
-    victory-line:
-      optional: true
-    victory-pie:
-      optional: true
-    victory-scatter:
-      optional: true
-    victory-stack:
-      optional: true
-    victory-tooltip:
-      optional: true
-    victory-voronoi-container:
-      optional: true
-    victory-zoom-container:
-      optional: true
-  checksum: 10/9b953e082bc17904232ccc3a261ab9988f2eefc5dfce8c42ecf9b93ee8028896b12797d28b98b4a24c4299e97e5b38bd7397be972f6d4853049213735c60b527
-  languageName: node
-  linkType: hard
-
-"@patternfly/react-styles@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "@patternfly/react-styles@npm:6.3.0"
-  checksum: 10/94e1e601baf03b4fefc6b4859277befde4a90a3d5b7abf6a2d36a5e953455d937ba3e8455e7c7a4f2a3bfcc6f0d0828c94427885d8c60c34d9948173058d6609
-  languageName: node
-  linkType: hard
-
-"@patternfly/react-tokens@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "@patternfly/react-tokens@npm:6.3.0"
-  checksum: 10/f8c11f47f56ef537c679cc873d60ad626c8f5a9809ee970db7eb5ecf1a030c7dc6a824242a7da7a5218335d64fde41de9c07237aa7aaff88a100ebe38f99406e
-  languageName: node
-  linkType: hard
-
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -12451,7 +12366,6 @@ __metadata:
     "@material-ui/lab": "npm:^4.0.0-alpha.61"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
-    "@patternfly/react-charts": "npm:^8.1.0"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
