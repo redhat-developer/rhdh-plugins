@@ -50,11 +50,11 @@ import {
   workflowInstanceRouteRef,
   workflowRouteRef,
 } from '../../routes';
-import { Selector } from '../Selector';
+import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
+import { Selector } from '../ui/Selector';
+import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusIndicator';
 import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
-import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
-import { WorkflowRunDetail } from '../WorkflowRunDetail';
 
 const makeSelectItemsFromProcessInstanceValues = (): SelectItem[] => [
   { label: 'Running', value: ProcessInstanceStatusDTO.Active },

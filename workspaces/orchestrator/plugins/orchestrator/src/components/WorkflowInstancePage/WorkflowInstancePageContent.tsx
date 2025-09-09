@@ -35,12 +35,12 @@ import {
 
 import { orchestratorApiRef } from '../../api/api';
 import { VALUE_UNAVAILABLE } from '../../constants';
-import { WorkflowRunDetail } from '../WorkflowRunDetail';
-import { WorkflowRunDetails } from '../WorkflowRunDetails';
+import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { VariablesDialog } from './VariablesDialog';
 import { WorkflowInputs } from './WorkflowInputs';
 import { WorkflowProgress } from './WorkflowProgress';
 import { WorkflowResult } from './WorkflowResult';
+import { WorkflowRunDetails } from './WorkflowRunDetails';
 
 export const mapProcessInstanceToDetails = (
   instance: ProcessInstanceDTO,
