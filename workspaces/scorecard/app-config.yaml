@@ -76,12 +76,12 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Component, System, API, Resource, Location]
+    - allow: [Component, System, Group, Resource, Location, Template, API]
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
       target: ../../examples/entities.yaml
-    
+
     # Local example scorecards
     - type: file
       target: ../../examples/github-scorecard-only.yaml
