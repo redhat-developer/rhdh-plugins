@@ -26,8 +26,8 @@ import { makeStyles } from 'tss-react/mui';
 import { orchestratorApiRef } from '../../api';
 import { workflowRouteRef, workflowRunsRoutePath } from '../../routes';
 import { useIsDarkMode } from '../../utils/isDarkMode';
-import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
 import { WorkflowRunsTabContent } from '../OrchestratorPage/WorkflowRunsTabContent';
+import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { RunButton } from './RunButton';
 import { WorkflowDetailsTabContent } from './WorkflowDetailsTabContent';
 

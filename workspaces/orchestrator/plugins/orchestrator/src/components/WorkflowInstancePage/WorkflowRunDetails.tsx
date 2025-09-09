@@ -30,12 +30,12 @@ import {
   WorkflowOverviewDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { orchestratorApiRef } from '../api';
-import { VALUE_UNAVAILABLE } from '../constants';
-import { workflowRouteRef } from '../routes';
-import { WorkflowInstanceStatusIndicator } from './WorkflowInstanceStatusIndicator';
-import { WorkflowRunDetail } from './WorkflowRunDetail';
-import { WorkflowStatus } from './WorkflowStatus';
+import { orchestratorApiRef } from '../../api';
+import { VALUE_UNAVAILABLE } from '../../constants';
+import { workflowRouteRef } from '../../routes';
+import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
+import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusIndicator';
+import { WorkflowStatus } from '../ui/WorkflowStatus';
 
 type WorkflowDetailsCardProps = {
   details: WorkflowRunDetail;

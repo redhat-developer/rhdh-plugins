@@ -49,8 +49,8 @@ import {
   workflowRunsRouteRef,
 } from '../../routes';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
-import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
-import { WorkflowStatus } from '../WorkflowStatus';
+import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusIndicator';
+import { WorkflowStatus } from '../ui/WorkflowStatus';
 import { InputSchemaDialog } from './InputSchemaDialog';
 
 export interface WorkflowsTableProps {

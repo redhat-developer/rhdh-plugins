@@ -21,7 +21,7 @@ import { makeStyles } from 'tss-react/mui';
 
 import { workflowInstancesRouteRef } from '../../routes';
 import { useIsDarkMode } from '../../utils/isDarkMode';
-import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
+import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { WorkflowRunsTabContent } from './WorkflowRunsTabContent';
 import { WorkflowsTabContent } from './WorkflowsTabContent';
 
