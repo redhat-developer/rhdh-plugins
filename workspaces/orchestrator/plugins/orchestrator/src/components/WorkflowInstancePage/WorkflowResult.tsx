@@ -128,7 +128,7 @@ const ResultMessage = ({
     if (startedTime !== '') {
       return (
         <>
-          <CircularProgress size="0.75rem" /> Workflow is running. Started
+          <CircularProgress size="0.75rem" /> Workflow is running. Started{' '}
           {startedTime}
         </>
       );
