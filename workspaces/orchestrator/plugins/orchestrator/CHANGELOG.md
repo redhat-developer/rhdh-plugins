@@ -1,5 +1,25 @@
 ### Dependencies
 
+## 5.0.7
+
+### Patch Changes
+
+- cdf9bc0: fix typo in results card
+- d87ba9e: ### Move components to `ui` folder:
+  - BaseOrchestratorPage
+  - InfoDialog
+  - Selector
+  - WorkflowInstanceStatusIndicator
+  - WorkflowStatus
+
+  ### Move components to `WorkflowInstancePage` folder:
+  - Paragraph
+  - WorkflowDescriptionModal
+  - WorkflowRunDetails
+
+  ### Move types to `types` folder:
+  - WorkflowRunDetail
+
 ## 5.0.6
 
 ### Patch Changes
