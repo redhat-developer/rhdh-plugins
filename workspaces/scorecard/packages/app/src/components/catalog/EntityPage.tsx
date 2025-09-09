@@ -72,11 +72,11 @@ import {
   EntityKubernetesContent,
   isKubernetesAvailable,
 } from '@backstage/plugin-kubernetes';
-import { ScorecardPage } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
 const scorecardRoute = (
   <EntityLayout.Route path="/scorecard" title="Scorecard">
-    <ScorecardPage />
+    <EntityScorecardContent />
   </EntityLayout.Route>
 );
 

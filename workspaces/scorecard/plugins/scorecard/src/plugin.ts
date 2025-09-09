@@ -50,11 +50,11 @@ export const scorecardPlugin = createPlugin({
  * Frontend page for the Scorecard.
  * @public
  */
-export const ScorecardPage = scorecardPlugin.provide(
+export const EntityScorecardContent = scorecardPlugin.provide(
   createRoutableExtension({
-    name: 'ScorecardPage',
+    name: 'EntityScorecardContent',
     component: () =>
-      import('./components/ScorecardPage').then(m => m.ScorecardPage),
+      import('./components/Scorecard').then(m => m.EntityScorecardContent),
     mountPoint: rootRouteRef,
   }),
 );

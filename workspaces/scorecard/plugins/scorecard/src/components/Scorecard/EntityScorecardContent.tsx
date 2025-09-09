@@ -20,12 +20,12 @@ import { ResponseErrorPanel } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import ScorecardEmptyState from './ScorecardEmptyState';
+import NoScorecardsState from './NoScorecardsState';
 import Scorecard from './Scorecard';
 import { useScorecards } from '../../hooks/useScorecards';
 import { getStatusConfig } from '../../utils/utils';
 
-export const ScorecardPage = () => {
+export const EntityScorecardContent = () => {
   const { scorecards, loadingData, error } = useScorecards();
 
   if (loadingData) {
@@ -50,7 +50,7 @@ export const ScorecardPage = () => {
   }
 
   if (!loadingData && scorecards?.length === 0) {
-    return <ScorecardEmptyState />;
+    return <NoScorecardsState />;
   }
 
   return (

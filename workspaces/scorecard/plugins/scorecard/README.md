@@ -72,11 +72,6 @@ yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
    );
    ```
 
-### Prerequisites
-
-- A running Backstage application.
-- The Scorecard plugin is installed and configured. See [Installation](#installation) for setup instructions.
-
 ### Accessing the Plugin
 
 1. Open your Backstage application.

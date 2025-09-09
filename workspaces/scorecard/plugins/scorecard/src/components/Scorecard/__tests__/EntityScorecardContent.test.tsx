@@ -15,12 +15,12 @@
  */
 
 import { render, screen, waitFor } from '@testing-library/react';
-import { ScorecardPage } from '../ScorecardPage';
+import { EntityScorecardContent } from '../EntityScorecardContent';
 
 // Mock the child components
-jest.mock('../ScorecardEmptyState', () => {
-  return function MockScorecardEmptyState() {
-    return <div data-testid="scorecard-empty-state">Empty State</div>;
+jest.mock('../NoScorecardsState', () => {
+  return function MockNoScorecardsState() {
+    return <div data-testid="no-scorecards-state">Empty State</div>;
   };
 });
 
@@ -132,7 +132,7 @@ const mockDataWithMetrics = [
 const { useScorecards } = require('../../../hooks/useScorecards');
 const { getStatusConfig } = require('../../../utils/utils');
 
-describe('ScorecardPage', () => {
+describe('EntityScorecardContent Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -149,7 +149,7 @@ describe('ScorecardPage', () => {
       error: undefined,
     });
 
-    render(<ScorecardPage />);
+    render(<EntityScorecardContent />);
 
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
@@ -161,10 +161,10 @@ describe('ScorecardPage', () => {
       error: undefined,
     });
 
-    render(<ScorecardPage />);
+    render(<EntityScorecardContent />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('scorecard-empty-state')).toBeInTheDocument();
+      expect(screen.getByTestId('no-scorecards-state')).toBeInTheDocument();
     });
   });
 
@@ -175,7 +175,7 @@ describe('ScorecardPage', () => {
       error: undefined,
     });
 
-    render(<ScorecardPage />);
+    render(<EntityScorecardContent />);
 
     await waitFor(() => {
       expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
@@ -198,7 +198,7 @@ describe('ScorecardPage', () => {
       error: undefined,
     });
 
-    render(<ScorecardPage />);
+    render(<EntityScorecardContent />);
 
     expect(getStatusConfig).toHaveBeenCalledTimes(2);
     expect(getStatusConfig).toHaveBeenCalledWith(
@@ -269,7 +269,7 @@ describe('ScorecardPage', () => {
       error: undefined,
     });
 
-    render(<ScorecardPage />);
+    render(<EntityScorecardContent />);
 
     await waitFor(() => {
       const scorecards = screen.getAllByTestId('scorecard-card');
@@ -289,7 +289,7 @@ describe('ScorecardPage', () => {
       icon: 'ErrorIcon',
     });
 
-    render(<ScorecardPage />);
+    render(<EntityScorecardContent />);
 
     const scorecard = screen.getByTestId('scorecard-card');
     expect(scorecard).toHaveAttribute('data-title', 'GitHub open PRs');

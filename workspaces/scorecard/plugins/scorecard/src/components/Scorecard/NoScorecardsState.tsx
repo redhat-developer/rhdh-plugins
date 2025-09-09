@@ -23,7 +23,7 @@ import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 
 import noScorecardsSvg from '../../images/no-scorecards.svg';
 
-const ScorecardEmptyState: React.FC = () => {
+const NoScorecardsState: React.FC = () => {
   return (
     <Box sx={{ p: 4 }}>
       <Grid container spacing={4} alignItems="center" justifyContent="center">
@@ -90,4 +90,4 @@ const ScorecardEmptyState: React.FC = () => {
   );
 };
 
-export default ScorecardEmptyState;
+export default NoScorecardsState;
