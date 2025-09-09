@@ -24,7 +24,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { useIsDarkMode } from '../../utils/isDarkMode';
-import { InfoDialog } from '../InfoDialog';
+import { InfoDialog } from '../ui/InfoDialog';
 import { JsonCodeBlock } from '../ui/JsonCodeBlock';
 
 export const VariablesDialog = ({

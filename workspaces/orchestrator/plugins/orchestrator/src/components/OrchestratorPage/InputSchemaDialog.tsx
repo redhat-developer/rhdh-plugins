@@ -29,7 +29,7 @@ import { InputSchemaResponseDTO } from '@red-hat-developer-hub/backstage-plugin-
 import { orchestratorApiRef } from '../../api/api';
 import { FormattedWorkflowOverview } from '../../dataFormatters/WorkflowOverviewFormatter';
 import { useIsDarkMode } from '../../utils/isDarkMode';
-import { InfoDialog } from '../InfoDialog';
+import { InfoDialog } from '../ui/InfoDialog';
 import { JsonCodeBlock } from '../ui/JsonCodeBlock';
 
 const InputSchemaDialogContent = ({
