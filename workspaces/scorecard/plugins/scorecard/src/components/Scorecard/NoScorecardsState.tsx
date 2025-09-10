@@ -33,7 +33,7 @@ const NoScorecardsState: React.FC = () => {
         justifyContent="center"
         height="100%"
       >
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} sx={{ textAlign: 'left' }}>
           <Typography
             sx={theme => ({
               fontSize: '2.5rem',
@@ -79,7 +79,7 @@ const NoScorecardsState: React.FC = () => {
           </Link>
         </Grid>
 
-        <Grid item xs={12} md={6} style={{ textAlign: 'center' }}>
+        <Grid item xs={12} md={6} sx={{ textAlign: 'right' }}>
           <Box
             component="img"
             src={noScorecardsSvg}
