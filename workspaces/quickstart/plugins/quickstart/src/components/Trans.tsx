@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import { useTranslation } from '../hooks/useTranslation';
+import { quickstartTranslationRef } from '../translations';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
+type Messages = typeof quickstartTranslationRef.T;
 
-export * from './plugin';
+interface TransProps<TMessages extends { [key: string]: string }> {
+  message: keyof TMessages;
+  params?: any;
+}
 
-export { useQuickstartDrawerContext } from './hooks/useQuickstartDrawerContext';
-export type { QuickstartDrawerContextType } from './components/QuickstartDrawerContext';
-
-export { quickstartTranslations } from './translations';
+export const Trans = ({ message, params }: TransProps<Messages>) => {
+  const { t } = useTranslation();
+  return t(message as any, params);
+};
