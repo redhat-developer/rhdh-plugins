@@ -1,12 +1,12 @@
 # Thresholds Configuration
 
-Thresholds define conditions that determine which category a metric value belongs to ( `error`, `warning`, or `success`). When a metric value matches a threshold condition, it gets assigned to that threshold's category. The Scorecard plugin provides multiple ways to configure thresholds with a flexible priority system.
+Thresholds define conditions that determine which category a metric value belongs to (`success`, `warning`, or `error`). When a metric value matches a threshold condition, it gets assigned to that threshold's category. The Scorecard plugin provides multiple ways to configure thresholds with a flexible priority system.
 
 ## Overview
 
 Thresholds are evaluated in order and the **first matching** threshold rule is applied. Each threshold rule consists of:
 
-- **`key`**: The threshold category (only allowed keys are `error`, `warning`, `success`)
+- **`key`**: The threshold category (only allowed keys are `success`, `warning`, `error`)
 - **`expression`**: The condition that determines if a metric value matches this threshold
 
 ## Threshold Configuration Options
@@ -24,9 +24,9 @@ export class MyMetricProvider implements MetricProvider<'number'> {
   getMetricThresholds(): ThresholdConfig {
     return {
       rules: [
-        { key: 'error', expression: '>50' },
-        { key: 'warning', expression: '10-50' },
         { key: 'success', expression: '<10' },
+        { key: 'warning', expression: '10-50' },
+        { key: 'error', expression: '>50' },
       ],
     };
   }
@@ -81,12 +81,12 @@ scorecard:
       myMetric:
         thresholds:
           rules:
+            - key: success
+              expression: '<10'
+            - key: warning
+              expression: '<=20'
             - key: error
               expression: '>20'
-            - key: warning
-              expression: '>10'
-            - key: success
-              expression: '<=10'
     myOtherDatasource:
       myOtherMetric: ...
 ```
@@ -102,9 +102,9 @@ metadata:
   name: my-service
   annotations:
     # Override specific threshold rules for this entity
+    scorecard.io/myDatasource.myMetric.thresholds.rules.warning: '10-15'
     scorecard.io/myDatasource.myMetric.thresholds.rules.error: '>15'
-    scorecard.io/myDatasource.myMetric.thresholds.rules.warning: '>8'
-    # success threshold will use the default/config value
+    # success threshold will use the default config value
 spec:
   type: service
 ```
@@ -120,7 +120,7 @@ scorecard.io/{providerId}.thresholds.rules.{thresholdKey}: '{expression}'
 Where:
 
 - `{providerId}`: The metric provider ID (e.g., `github.open-prs`)
-- `{thresholdKey}`: The threshold category (e.g., `error`, `warning`, `success`)
+- `{thresholdKey}`: The threshold category (e.g., `success`, `warning`, `error`)
 - `{expression}`: The threshold expression (e.g., `>10`, `==true`, `5-15`)
 
 ## Threshold Priority Order
@@ -143,28 +143,29 @@ Thresholds are applied with the following priority (highest to lowest):
 ```typescript
 // 1. Provider defaults
 providerDefaults: [
-  { key: 'error', expression: '>10' },
-  { key: 'warning', expression: '>5' },
-  { key: 'success', expression: '<=5' }
+  { key: 'success', expression: '<10' },
+  { key: 'warning', expression: '10-50' },
+  { key: 'error', expression: '>50' }
 ]
 
 // 2. App configuration (completely replaces defaults)
 appConfig: [
-  { key: 'error', expression: '>20' },
-  { key: 'warning', expression: '>10' },
-  { key: 'success', expression: '<=10' }
+  { key: 'success', expression: '<10' },
+  { key: 'warning', expression: '10-30' },
+  { key: 'error', expression: '>30' },
 ]
 
 // 3. Entity annotation overrides (merged with app-config)
 annotations: {
-  'scorecard.io/myProvider.thresholds.rules.error': '>25',
+  'scorecard.io/myProviderId.thresholds.rules.warning': '10-25',
+  'scorecard.io/myProviderId.thresholds.rules.error': '>25',
 }
 
 // Final result (annotations merged with app-config)
 finalRules: [
+  { key: 'success', expression: '<10' },   // from app-config
+  { key: 'warning', expression: '10-25' }, // from annotation (overrides app-config)
   { key: 'error', expression: '>25' }, // from annotation (overrides app-config)
-  { key: 'warning', expression: '>10' }, // from app-config
-  { key: 'success', expression: '<=10' }   // from app-config
 ]
 ```
 
@@ -225,10 +226,10 @@ The `ThresholdEvaluator` service processes threshold rules and determines which 
 
 ### Key Features
 
-1. **Order-dependent evaluation**: Rules are evaluated in the order they appear
+1. **Order-dependent evaluation**: Rules are evaluated in the order they appear. If provider supports overriding defaults through [app configuration](#App-Configuration-Thresholds), you can change the evaluation order by specifying threshold keys in a different order. Entity annotations cannot alter the evaluation order, which is determined by either the [app configuration](#Provider-Default-Thresholds) or, if not specified, the [default provider configuration](#Provider-Default-Thresholds).
 2. **First-match wins**: Returns the first threshold rule whose condition the value satisfies
 3. **Type-safe**: Validates expressions against metric types
-4. **Error handling**: Graceful handling of invalid expressions. You should validate your expressions loaded from config in your custom providers using `validateThresholds` from `backstage-plugin-scorecard-node`. Invalid annotation expressions are logged and skipped (do not override)
+4. **Error handling**: You should validate your expressions loaded from config in your custom providers using `validateThresholds` from `backstage-plugin-scorecard-node`. Invalid expressions will result in evaluation error.
 
 ### Best Practices
 
@@ -236,16 +237,16 @@ The `ThresholdEvaluator` service processes threshold rules and determines which 
 
 Order rules from most restrictive to least restrictive.
 
-In this example, the `error` rule would never be triggered because any value greater than 20 would already match the `warning` rule (since it is evaluated first). As a result, all values above 50 would be classified as `warning` instead of `error`:
+In this example, the `success` rule would never be triggered because any value smaller than 15 would already match the `warning` rule (since it is evaluated first). As a result, all values under 15 would be classified as `warning` instead of `success`:
 
 ```yaml
 rules:
   - key: warning
-    expression: '>20'
-  - key: error
-    expression: '>50'
+    expression: '<30'
   - key: success
-    expression: '<=20'
+    expression: '<15'
+  - key: error
+    expression: '>30'
 ```
 
 ### 2. Avoid Overlapping Ranges

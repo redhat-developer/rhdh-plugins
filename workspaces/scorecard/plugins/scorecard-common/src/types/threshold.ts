@@ -47,8 +47,8 @@ export type ThresholdResult = {
  */
 export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig = {
   rules: [
-    { key: 'error', expression: '>50' },
-    { key: 'warning', expression: '10-50' },
     { key: 'success', expression: '<10' },
+    { key: 'warning', expression: '10-50' },
+    { key: 'error', expression: '>50' },
   ],
 };
