@@ -27,7 +27,7 @@ import {
   validateThresholds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraClient } from '../clients/base';
-import { JiraClientFactory } from '../factory/JiraClientFactory';
+import { JiraClientFactory } from '../clients/JiraClientFactory';
 
 export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;

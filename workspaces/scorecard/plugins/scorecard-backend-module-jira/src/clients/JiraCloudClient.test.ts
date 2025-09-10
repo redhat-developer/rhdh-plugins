@@ -14,36 +14,42 @@
  * limitations under the License.
  */
 
-import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { JiraCloudClient } from './JiraCloudClient';
-import { ANNOTATION_JIRA_PROJECT_KEY } from '../constants';
+import { ScorecardJiraAnnotations } from '../annotations';
+import { mockServices } from '@backstage/backend-test-utils';
+
+const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
 global.fetch = jest.fn();
 
 describe('JiraCloudClient', () => {
-  let mockConfig: jest.Mocked<Config>;
   let jiraCloudClient: JiraCloudClient;
 
   beforeEach(() => {
-    mockConfig = {
-      getConfig: jest.fn().mockReturnValue({
-        getString: jest
-          .fn()
-          .mockReturnValueOnce('https://jira.example.com')
-          .mockReturnValueOnce('Fds31dsF32')
-          .mockReturnValueOnce('cloud'),
-        getOptionalString: jest.fn().mockReturnValueOnce('3'),
-      }),
-      getOptionalConfig: jest.fn().mockReturnValue({
-        getOptionalString: jest
-          .fn()
-          .mockReturnValueOnce('Type = Bug')
-          .mockReturnValueOnce(undefined),
-      }),
-    } as unknown as jest.Mocked<Config>;
-
-    jiraCloudClient = new JiraCloudClient(mockConfig);
+    const config = mockServices.rootConfig({
+      data: {
+        jira: {
+          baseUrl: 'https://jira.example.com',
+          token: 'Fds31dsF32',
+          product: 'cloud',
+          apiVersion: '3',
+        },
+        scorecard: {
+          plugins: {
+            jira: {
+              open_issues: {
+                options: {
+                  mandatoryFilter: 'Type = Bug',
+                  customFilter: undefined,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    jiraCloudClient = new JiraCloudClient(config);
   });
 
   afterEach(() => {
@@ -53,8 +59,6 @@ describe('JiraCloudClient', () => {
   describe('constructor', () => {
     it('should create JiraCloudClient successfully', () => {
       expect(jiraCloudClient).toBeInstanceOf(JiraCloudClient);
-      expect(mockConfig.getConfig).toHaveBeenCalledTimes(1);
-      expect(mockConfig.getOptionalConfig).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -74,7 +78,7 @@ describe('JiraCloudClient', () => {
       metadata: {
         name: 'cloud-component',
         annotations: {
-          [ANNOTATION_JIRA_PROJECT_KEY]: 'CLOUD',
+          [PROJECT_KEY]: 'CLOUD',
         },
       },
     };

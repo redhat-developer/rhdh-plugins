@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export * from './annotations';
 export * from './jiraOpenIssues';

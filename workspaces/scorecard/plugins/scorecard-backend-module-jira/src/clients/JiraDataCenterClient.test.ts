@@ -14,40 +14,43 @@
  * limitations under the License.
  */
 
-import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { ANNOTATION_JIRA_PROJECT_KEY } from '../constants';
+import { ScorecardJiraAnnotations } from '../annotations';
 import { JiraDataCenterClient } from './JiraDataCenterClient';
+import { mockServices } from '@backstage/backend-test-utils';
 
 global.fetch = jest.fn();
 
+const { PROJECT_KEY } = ScorecardJiraAnnotations;
+
 describe('JiraDataCenterClient', () => {
-  let mockConfig: jest.Mocked<Config>;
   let jiraDataCenterClient: JiraDataCenterClient;
 
   beforeEach(() => {
-    const getConfig = jest.fn().mockReturnValue({
-      getString: jest
-        .fn()
-        .mockReturnValueOnce('https://datacenter.example.com')
-        .mockReturnValueOnce('XMdw2f432dsV')
-        .mockReturnValueOnce('datacenter'),
-      getOptionalString: jest.fn().mockReturnValueOnce('2'),
+    const config = mockServices.rootConfig({
+      data: {
+        jira: {
+          baseUrl: 'https://datacenter.example.com',
+          token: 'XMdw2f432dsV',
+          product: 'datacenter',
+          apiVersion: '2',
+        },
+        scorecard: {
+          plugins: {
+            jira: {
+              open_issues: {
+                options: {
+                  mandatoryFilter: 'Type = Task',
+                  customFilter: 'priority in ("Critical", "Blocker")',
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
-    const getOptionalConfig = jest.fn().mockReturnValue({
-      getOptionalString: jest
-        .fn()
-        .mockReturnValueOnce('Type = Task')
-        .mockReturnValueOnce(undefined),
-    });
-
-    mockConfig = {
-      getConfig,
-      getOptionalConfig,
-    } as unknown as jest.Mocked<Config>;
-
-    jiraDataCenterClient = new JiraDataCenterClient(mockConfig);
+    jiraDataCenterClient = new JiraDataCenterClient(config);
   });
 
   afterEach(() => {
@@ -57,8 +60,6 @@ describe('JiraDataCenterClient', () => {
   describe('constructor', () => {
     it('should create JiraDataCenterClient successfully', () => {
       expect(jiraDataCenterClient).toBeInstanceOf(JiraDataCenterClient);
-      expect(mockConfig.getConfig).toHaveBeenCalledTimes(1);
-      expect(mockConfig.getOptionalConfig).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -79,7 +80,7 @@ describe('JiraDataCenterClient', () => {
       metadata: {
         name: 'datacenter-component',
         annotations: {
-          [ANNOTATION_JIRA_PROJECT_KEY]: 'DATACENTER',
+          [PROJECT_KEY]: 'DATACENTER',
         },
       },
     };

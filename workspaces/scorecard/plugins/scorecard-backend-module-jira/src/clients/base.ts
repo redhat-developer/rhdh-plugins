@@ -22,43 +22,36 @@ import {
   JiraOptions,
   Product,
   RequestOptions,
-} from '../types';
+} from './types';
 import {
-  ANNOTATION_JIRA_PROJECT_KEY,
-  ANNOTATION_JIRA_COMPONENT,
-  ANNOTATION_JIRA_LABEL,
-  ANNOTATION_JIRA_TEAM,
-  ANNOTATION_JIRA_CUSTOM_FILTER,
   API_VERSION_DEFAULT,
   JIRA_CONFIG_PATH,
   JIRA_OPTIONS_PATH,
   JIRA_MANDATORY_FILTER,
-  CONFIG_TOKEN,
-  CONFIG_PRODUCT,
-  CONFIG_API_VERSION,
-  CONFIG_BASE_URL,
-  CONFIG_MANDATORY_FILTER,
-  CONFIG_CUSTOM_FILTER,
 } from '../constants';
+import { ScorecardJiraAnnotations } from '../annotations';
+
+const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
+  ScorecardJiraAnnotations;
 
 export abstract class JiraClient {
   protected readonly config: JiraConfig;
   protected readonly options?: JiraOptions;
 
-  constructor(config: Config) {
-    const jiraConfig = config.getConfig(JIRA_CONFIG_PATH);
+  constructor(rootConfig: Config) {
+    const jiraConfig = rootConfig.getConfig(JIRA_CONFIG_PATH);
     this.config = {
-      baseUrl: jiraConfig.getString(CONFIG_BASE_URL),
-      token: jiraConfig.getString(CONFIG_TOKEN),
-      product: jiraConfig.getString(CONFIG_PRODUCT) as Product,
-      apiVersion: jiraConfig.getOptionalString(CONFIG_API_VERSION),
+      baseUrl: jiraConfig.getString('baseUrl'),
+      token: jiraConfig.getString('token'),
+      product: jiraConfig.getString('product') as Product,
+      apiVersion: jiraConfig.getOptionalString('apiVersion'),
     };
 
-    const jiraOptions = config.getOptionalConfig(JIRA_OPTIONS_PATH);
+    const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
     if (jiraOptions) {
       this.options = {
-        mandatoryFilter: jiraOptions.getOptionalString(CONFIG_MANDATORY_FILTER),
-        customFilter: jiraOptions.getOptionalString(CONFIG_CUSTOM_FILTER),
+        mandatoryFilter: jiraOptions.getOptionalString('mandatoryFilter'),
+        customFilter: jiraOptions.getOptionalString('customFilter'),
       };
     }
   }
@@ -95,10 +88,23 @@ export abstract class JiraClient {
     }
   }
 
+  private sanitizeValue(value: string): string {
+    return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  }
+
+  private validateIdentifier(value: string, fieldName: string): string {
+    if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+      throw new Error(
+        `${fieldName} contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.`,
+      );
+    }
+    return value;
+  }
+
   protected getFiltersFromEntity(entity: Entity): JiraEntityFilters {
     const annotations = entity?.metadata?.annotations || {};
 
-    const projectKey = annotations[ANNOTATION_JIRA_PROJECT_KEY];
+    const projectKey = annotations[PROJECT_KEY];
     if (!projectKey) {
       throw new Error(
         `Missing required 'jira/project-key' annotation for entity '${
@@ -107,19 +113,42 @@ export abstract class JiraClient {
       );
     }
 
-    const filters: JiraEntityFilters = { project: `project = "${projectKey}"` };
+    const sanitizedProjectKey = this.sanitizeValue(projectKey);
+    const filters: JiraEntityFilters = {
+      project: `project = "${this.validateIdentifier(
+        sanitizedProjectKey,
+        PROJECT_KEY,
+      )}"`,
+    };
 
-    const component = annotations[ANNOTATION_JIRA_COMPONENT];
-    if (component) filters.component = `component = "${component}"`;
+    const component = annotations[COMPONENT];
+    if (component) {
+      const sanitizedComponent = this.sanitizeValue(component);
+      filters.component = `component = "${this.validateIdentifier(
+        sanitizedComponent,
+        COMPONENT,
+      )}"`;
+    }
 
-    const label = annotations[ANNOTATION_JIRA_LABEL];
-    if (label) filters.label = `labels = "${label}"`;
+    const label = annotations[LABEL];
+    if (label) {
+      const sanitizedLabel = this.sanitizeValue(label);
+      filters.label = `labels = "${this.validateIdentifier(
+        sanitizedLabel,
+        LABEL,
+      )}"`;
+    }
 
-    const team = annotations[ANNOTATION_JIRA_TEAM];
-    if (team) filters.team = `team = ${team}`;
+    const team = annotations[TEAM];
+    if (team) {
+      const sanitizedTeam = this.sanitizeValue(team);
+      filters.team = `team = "${this.validateIdentifier(sanitizedTeam, TEAM)}"`;
+    }
 
-    const customFilter = annotations[ANNOTATION_JIRA_CUSTOM_FILTER];
-    if (customFilter) filters.customFilter = customFilter;
+    const customFilter = annotations[CUSTOM_FILTER];
+    if (customFilter) {
+      filters.customFilter = customFilter;
+    }
 
     return filters;
   }
@@ -137,11 +166,12 @@ export abstract class JiraClient {
         : null;
 
     return Object.values({
+      ...filters,
       defaultFilterQuery,
       customFilterQuery,
-      ...filters,
     })
-      .filter(value => !!value)
+      .filter(value => value && value !== '')
+      .map(value => `(${value})`)
       .join(' AND ');
   }
 
