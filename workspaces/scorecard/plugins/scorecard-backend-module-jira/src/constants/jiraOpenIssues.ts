@@ -38,15 +38,3 @@ export const API_VERSION_DEFAULT = 'latest' as const;
 
 export const JIRA_MANDATORY_FILTER =
   'type = Bug AND resolution = Unresolved' as const;
-
-export const CONFIG_BASE_URL = 'baseUrl' as const;
-
-export const CONFIG_TOKEN = 'token' as const;
-
-export const CONFIG_PRODUCT = 'product' as const;
-
-export const CONFIG_API_VERSION = 'apiVersion' as const;
-
-export const CONFIG_MANDATORY_FILTER = 'mandatoryFilter' as const;
-
-export const CONFIG_CUSTOM_FILTER = 'customFilter' as const;

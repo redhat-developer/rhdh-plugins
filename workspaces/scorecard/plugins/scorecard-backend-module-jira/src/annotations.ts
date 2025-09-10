@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-export * from './jiraClient';
+export enum ScorecardJiraAnnotations {
+  PROJECT_KEY = 'jira/project-key',
+  COMPONENT = 'jira/component',
+  LABEL = 'jira/label',
+  TEAM = 'jira/team',
+  CUSTOM_FILTER = 'jira/custom-filter',
+}

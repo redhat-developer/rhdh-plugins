@@ -17,13 +17,11 @@
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { JiraClient } from './base';
-import {
-  ANNOTATION_JIRA_PROJECT_KEY,
-  ANNOTATION_JIRA_COMPONENT,
-  ANNOTATION_JIRA_LABEL,
-  ANNOTATION_JIRA_TEAM,
-  ANNOTATION_JIRA_CUSTOM_FILTER,
-} from '../constants';
+import { ScorecardJiraAnnotations } from '../annotations';
+import { mockServices } from '@backstage/backend-test-utils';
+
+const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
+  ScorecardJiraAnnotations;
 
 class TestJiraClient extends JiraClient {
   getAuthHeaders(): Record<string, string> {
@@ -34,44 +32,52 @@ class TestJiraClient extends JiraClient {
 global.fetch = jest.fn();
 
 describe('JiraClient', () => {
-  let mockConfig: jest.Mocked<Config>;
-  let getConfig: jest.Mock;
-  let getString: jest.Mock;
-  let getOptionalConfig: jest.Mock;
-  let getOptionalString: jest.Mock;
   let testJiraClient: TestJiraClient;
+  let mockRootConfig: Config;
 
   const mockMethod = 'GET';
   const mockURL = 'https://example.com/api';
   const mockResponse = { data: { total: 10 } };
 
+  const createConfigWithOptions = ({
+    mandatoryFilter,
+    customFilter,
+  }: {
+    mandatoryFilter?: string;
+    customFilter?: string;
+  }) => {
+    return {
+      data: {
+        jira: {
+          baseUrl: mockURL,
+          token: 'token',
+          product: 'cloud',
+          apiVersion: '3',
+        },
+        scorecard: {
+          plugins: {
+            jira: {
+              open_issues: {
+                options: {
+                  mandatoryFilter,
+                  customFilter,
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+  };
+
   beforeEach(() => {
-    getString = jest
-      .fn()
-      .mockReturnValueOnce(mockURL)
-      .mockReturnValueOnce('token')
-      .mockReturnValueOnce('cloud');
-    getOptionalString = jest
-      .fn()
-      .mockReturnValueOnce('3')
-      .mockReturnValueOnce('type = Task AND resolution = Resolved')
-      .mockReturnValueOnce('assignee = testerUser');
-
-    getConfig = jest.fn().mockReturnValue({
-      getString,
-      getOptionalString,
+    const config = createConfigWithOptions({
+      mandatoryFilter: 'type = Task AND resolution = Resolved',
+      customFilter: 'assignee = testerUser',
     });
+    mockRootConfig = mockServices.rootConfig(config);
 
-    getOptionalConfig = jest.fn().mockReturnValue({
-      getOptionalString,
-    });
-
-    mockConfig = {
-      getConfig,
-      getOptionalConfig,
-    } as unknown as jest.Mocked<Config>;
-
-    testJiraClient = new TestJiraClient(mockConfig);
+    testJiraClient = new TestJiraClient(mockRootConfig);
   });
 
   afterEach(() => {
@@ -79,39 +85,20 @@ describe('JiraClient', () => {
   });
 
   describe('constructor', () => {
-    it('should get jira config', () => {
-      expect(getConfig).toHaveBeenNthCalledWith(1, 'jira');
+    it('should create correct config', () => {
+      expect((testJiraClient as any).config).toEqual({
+        baseUrl: 'https://example.com/api',
+        token: 'token',
+        product: 'cloud',
+        apiVersion: '3',
+      });
     });
 
-    it('should get "baseUrl" from jira config', () => {
-      expect(getString).toHaveBeenNthCalledWith(1, 'baseUrl');
-    });
-
-    it('should get "token" from jira config', () => {
-      expect(getString).toHaveBeenNthCalledWith(2, 'token');
-    });
-
-    it('should get "product" from jira config', () => {
-      expect(getString).toHaveBeenNthCalledWith(3, 'product');
-    });
-
-    it('should get "apiVersion" from jira config', () => {
-      expect(getOptionalString).toHaveBeenNthCalledWith(1, 'apiVersion');
-    });
-
-    it('should get jira options', () => {
-      expect(getOptionalConfig).toHaveBeenNthCalledWith(
-        1,
-        'scorecard.plugins.jira.open_issues.options',
-      );
-    });
-
-    it('should get "mandatoryFilter" from jira options', () => {
-      expect(getOptionalString).toHaveBeenNthCalledWith(2, 'mandatoryFilter');
-    });
-
-    it('should get "customFilter" from jira options', () => {
-      expect(getOptionalString).toHaveBeenNthCalledWith(3, 'customFilter');
+    it('should create correct options', () => {
+      expect((testJiraClient as any).options).toEqual({
+        mandatoryFilter: 'type = Task AND resolution = Resolved',
+        customFilter: 'assignee = testerUser',
+      });
     });
   });
 
@@ -203,6 +190,33 @@ describe('JiraClient', () => {
     });
   });
 
+  describe('sanitizeValue', () => {
+    it('should sanitize value', () => {
+      expect((testJiraClient as any).sanitizeValue('T"EST\\123')).toBe(
+        'T\\"EST\\\\123',
+      );
+    });
+  });
+
+  describe('validateIdentifier', () => {
+    it('should throw error for invalid identifier', () => {
+      expect(() =>
+        (testJiraClient as any).validateIdentifier(
+          'TEST$123',
+          'jira/project-key',
+        ),
+      ).toThrow(
+        'jira/project-key contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.',
+      );
+    });
+
+    it('should return valid identifier', () => {
+      expect(
+        (testJiraClient as any).validateIdentifier('TEST', 'project-key'),
+      ).toBe('TEST');
+    });
+  });
+
   describe('getFiltersFromEntity', () => {
     let entity: Entity;
 
@@ -213,13 +227,13 @@ describe('JiraClient', () => {
         metadata: {
           name: 'test-component',
           annotations: {
-            [ANNOTATION_JIRA_PROJECT_KEY]: 'TEST',
+            [PROJECT_KEY]: 'TEST',
           },
         },
       };
     });
 
-    describe('when entity has only project key', () => {
+    describe('when entity has only "project key"', () => {
       it('should extract project filter correctly', () => {
         const filters = (testJiraClient as any).getFiltersFromEntity(entity);
 
@@ -229,10 +243,12 @@ describe('JiraClient', () => {
       });
     });
 
-    describe('when entity is missing project key', () => {
-      it('should throw error for missing project key', () => {
+    describe('when entity is missing "project key"', () => {
+      beforeEach(() => {
         entity.metadata.annotations = {};
+      });
 
+      it('should throw error for missing project key', () => {
         expect(() =>
           (testJiraClient as any).getFiltersFromEntity(entity),
         ).toThrow(
@@ -241,14 +257,31 @@ describe('JiraClient', () => {
       });
     });
 
-    describe('when entity has project key, component, label, team, and custom filter', () => {
+    describe('when "project key" is invalid', () => {
       beforeEach(() => {
         entity.metadata.annotations = {
-          [ANNOTATION_JIRA_PROJECT_KEY]: 'TEST',
-          [ANNOTATION_JIRA_COMPONENT]: 'backend',
-          [ANNOTATION_JIRA_LABEL]: 'critical',
-          [ANNOTATION_JIRA_TEAM]: 'team-alpha',
-          [ANNOTATION_JIRA_CUSTOM_FILTER]: 'priority = High',
+          ...entity.metadata.annotations,
+          [PROJECT_KEY]: 'TEST$123',
+        };
+      });
+
+      it('should throw error for invalid "project key"', () => {
+        expect(() =>
+          (testJiraClient as any).getFiltersFromEntity(entity),
+        ).toThrow(
+          'jira/project-key contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.',
+        );
+      });
+    });
+
+    describe('when entity has "project key", "component", "label", "team", and "custom filter"', () => {
+      beforeEach(() => {
+        entity.metadata.annotations = {
+          [PROJECT_KEY]: 'TEST',
+          [COMPONENT]: 'backend',
+          [LABEL]: 'critical',
+          [TEAM]: 'team-alpha',
+          [CUSTOM_FILTER]: 'priority = High',
         };
       });
 
@@ -259,9 +292,60 @@ describe('JiraClient', () => {
           project: 'project = "TEST"',
           component: 'component = "backend"',
           label: 'labels = "critical"',
-          team: 'team = team-alpha',
+          team: 'team = "team-alpha"',
           customFilter: 'priority = High',
         });
+      });
+    });
+
+    describe('when "component" is invalid', () => {
+      beforeEach(() => {
+        entity.metadata.annotations = {
+          ...entity.metadata.annotations,
+          [COMPONENT]: 'backend$123',
+        };
+      });
+
+      it('should throw error for invalid "component"', () => {
+        expect(() =>
+          (testJiraClient as any).getFiltersFromEntity(entity),
+        ).toThrow(
+          'jira/component contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.',
+        );
+      });
+    });
+
+    describe('when "label" is invalid', () => {
+      beforeEach(() => {
+        entity.metadata.annotations = {
+          ...entity.metadata.annotations,
+          [LABEL]: 'critical$123',
+        };
+      });
+
+      it('should throw error for invalid "label"', () => {
+        expect(() =>
+          (testJiraClient as any).getFiltersFromEntity(entity),
+        ).toThrow(
+          'jira/label contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.',
+        );
+      });
+    });
+
+    describe('when "team" is invalid', () => {
+      beforeEach(() => {
+        entity.metadata.annotations = {
+          ...entity.metadata.annotations,
+          [TEAM]: 'team-alpha$123',
+        };
+      });
+
+      it('should throw error for invalid "team"', () => {
+        expect(() =>
+          (testJiraClient as any).getFiltersFromEntity(entity),
+        ).toThrow(
+          'jira/team contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.',
+        );
       });
     });
   });
@@ -274,26 +358,25 @@ describe('JiraClient', () => {
         const jqlFilters = jql.split(' AND ');
 
         expect(jqlFilters).toHaveLength(4);
-        expect(jqlFilters).toContain('project = "MOON"');
+        expect(jqlFilters).toContain('(project = "MOON")');
       });
     });
 
     describe('when mandatory filter is not provided in options', () => {
       beforeEach(() => {
-        getOptionalString.mockReset();
-        getOptionalString
-          .mockReturnValueOnce('2')
-          .mockReturnValueOnce(undefined);
-        testJiraClient = new TestJiraClient(mockConfig);
+        const updatedConfig = createConfigWithOptions({
+          customFilter: 'assignee = Robot',
+        });
+        testJiraClient = new TestJiraClient(
+          mockServices.rootConfig(updatedConfig),
+        );
       });
 
       it('should use default mandatory filter', () => {
         const jql = (testJiraClient as any).buildJqlFilters({});
-        const jqlFilters = jql.split(' AND ');
-
-        expect(jqlFilters).toHaveLength(2);
-        expect(jqlFilters).toContain('type = Bug');
-        expect(jqlFilters).toContain('resolution = Unresolved');
+        expect(jql).toBe(
+          '(type = Bug AND resolution = Unresolved) AND (assignee = Robot)',
+        );
       });
     });
 
@@ -306,24 +389,23 @@ describe('JiraClient', () => {
           const jqlFilters = jql.split(' AND ');
 
           expect(jqlFilters).toHaveLength(3);
-          expect(jqlFilters).toContain('assignee = Robot');
+          expect(jqlFilters).toContain('(assignee = Robot)');
         });
       });
 
       describe('when custom filter is not provided in options', () => {
         beforeEach(() => {
-          getOptionalString.mockReset();
-          getOptionalString.mockReturnValue(undefined).mockReturnValueOnce('3');
-
-          testJiraClient = new TestJiraClient(mockConfig);
+          const updatedConfig = createConfigWithOptions({
+            mandatoryFilter: 'resolution = Unresolved',
+          });
+          testJiraClient = new TestJiraClient(
+            mockServices.rootConfig(updatedConfig),
+          );
         });
 
         it('should use provided annotation custom filter', () => {
           const jql = (testJiraClient as any).buildJqlFilters({ customFilter });
-          const jqlFilters = jql.split(' AND ');
-
-          expect(jqlFilters).toHaveLength(3);
-          expect(jqlFilters).toContain('assignee = Robot');
+          expect(jql).toBe('(assignee = Robot) AND (resolution = Unresolved)');
         });
       });
     });
@@ -335,18 +417,18 @@ describe('JiraClient', () => {
           const jqlFilters = jql.split(' AND ');
 
           expect(jqlFilters).toHaveLength(3);
-          expect(jqlFilters).toContain('assignee = testerUser');
+          expect(jqlFilters).toContain('(assignee = testerUser)');
         });
       });
 
       describe('when custom filter is not provided in options', () => {
         beforeEach(() => {
-          getOptionalString.mockReset();
-          getOptionalString
-            .mockReturnValueOnce('3')
-            .mockReturnValueOnce('resolution = Unresolved')
-            .mockReturnValueOnce(undefined);
-          testJiraClient = new TestJiraClient(mockConfig);
+          const updatedConfig = createConfigWithOptions({
+            mandatoryFilter: 'resolution = Unresolved',
+          });
+          testJiraClient = new TestJiraClient(
+            mockServices.rootConfig(updatedConfig),
+          );
         });
 
         it('should not use any custom filters', () => {
@@ -354,7 +436,7 @@ describe('JiraClient', () => {
           const jqlFilters = jql.split(' AND ');
 
           expect(jqlFilters).toHaveLength(1);
-          expect(jqlFilters).toContain('resolution = Unresolved');
+          expect(jqlFilters).toContain('(resolution = Unresolved)');
         });
       });
     });
