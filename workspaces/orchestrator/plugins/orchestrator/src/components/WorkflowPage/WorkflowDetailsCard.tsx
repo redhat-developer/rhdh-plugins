@@ -26,7 +26,7 @@ import { makeStyles } from 'tss-react/mui';
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import WorkflowOverviewFormatter from '../../dataFormatters/WorkflowOverviewFormatter';
-import { WorkflowStatus } from '../WorkflowStatus';
+import { WorkflowStatus } from '../ui/WorkflowStatus';
 
 const useStyles = makeStyles()(() => ({
   details: {

@@ -17,7 +17,7 @@
 import { Fragment } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { ItemCardGrid, Link, LinkButton } from '@backstage/core-components';
+import { ItemCardGrid, Link } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
 import Card from '@mui/material/Card';
@@ -26,12 +26,16 @@ import CardActions from '@mui/material/CardActions';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@material-ui/core'; // Or @mui/styles if using MUI v5 with JSS
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
-import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  MarketplacePlugin,
+  MarketplacePluginInstallStatus,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { rootRouteRef, pluginRouteRef } from '../routes';
 import { BadgeTriange } from './Badges';
+import { CategoryLinkButton } from './CategoryLinkButton';
 import { PluginIcon } from './PluginIcon';
 
 export interface PluginCardSkeletonProps {
@@ -40,15 +44,43 @@ export interface PluginCardSkeletonProps {
 
 export const PluginCardGrid = ItemCardGrid;
 
-const useStyles = makeStyles(() => ({
-  pluginCategoryLinkButton: {
-    fontWeight: 'normal',
-    padding: '2px 6px',
-    '&:focus-visible': {
-      border: `1px solid`,
-    },
-  },
-}));
+const renderInstallStatus = (
+  installStatus?: MarketplacePluginInstallStatus,
+) => {
+  if (
+    !installStatus ||
+    installStatus === MarketplacePluginInstallStatus.NotInstalled
+  ) {
+    return null;
+  }
+
+  switch (installStatus) {
+    case MarketplacePluginInstallStatus.Installed:
+    case MarketplacePluginInstallStatus.UpdateAvailable:
+      return (
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          <CheckCircleOutlineIcon sx={{ fontSize: '16px', color: '#3E8635' }} />
+          <Typography variant="body2">Installed</Typography>
+        </Stack>
+      );
+
+    case MarketplacePluginInstallStatus.Disabled:
+      return (
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Typography
+            variant="body2"
+            sx={{ fontSize: '16px', color: '#6A6E73', fontWeight: 'bold' }}
+          >
+            --
+          </Typography>
+          <Typography variant="body2">Disabled</Typography>
+        </Stack>
+      );
+
+    default:
+      return null;
+  }
+};
 
 export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => (
   <Card variant="outlined">
@@ -89,7 +121,6 @@ export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => (
 
 // TODO: add link around card
 export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const getIndexPath = useRouteRef(rootRouteRef);
@@ -111,6 +142,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
     <Card
       variant="outlined"
       sx={{
+        position: 'relative',
         '&:hover': { backgroundColor: 'background.default', cursor: 'pointer' },
       }}
       onClick={() => navigate(pluginPath)}
@@ -118,9 +150,13 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
       <BadgeTriange plugin={plugin} />
       <CardContent sx={{ backgroundColor: 'transparent' }}>
         <Stack spacing={2}>
-          <Stack direction="row" spacing={2}>
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{ minHeight: '120px', alignItems: 'center' }}
+          >
             <PluginIcon plugin={plugin} size={80} />
-            <Stack spacing={0.5}>
+            <Stack spacing={0.5} sx={{ justifyContent: 'center' }}>
               <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
                 {plugin.metadata.title ?? plugin.metadata.name}
               </Typography>
@@ -151,17 +187,14 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
                   variant="subtitle2"
                   style={{ fontWeight: 'normal' }}
                 >
-                  <LinkButton
+                  <CategoryLinkButton
+                    categoryName={plugin.spec.categories[0]}
                     to={withFilter(
                       'spec.categories',
                       plugin.spec.categories[0],
                     )}
-                    variant="outlined"
-                    className={classes.pluginCategoryLinkButton}
                     onClick={e => e.stopPropagation()}
-                  >
-                    {plugin.spec.categories[0]}
-                  </LinkButton>
+                  />
                 </Typography>
               ) : null}
             </Stack>
@@ -178,10 +211,19 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
           </Typography>
         </Stack>
       </CardContent>
-      <CardActions sx={{ pl: 2, pr: 2, pb: 2, justifyContent: 'flex-start' }}>
+      <CardActions
+        sx={{
+          pl: 2,
+          pr: 2,
+          pb: 2,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <Link to={pluginPath} onClick={e => e.stopPropagation()}>
           Read more
         </Link>
+        {renderInstallStatus(plugin.spec?.installStatus)}
       </CardActions>
     </Card>
   );

@@ -49,7 +49,7 @@ import { buildUrl } from '../../utils/UrlUtils';
 import {
   WorkflowDescriptionModal,
   WorkflowDescriptionModalProps,
-} from '../WorkflowDescriptionModal';
+} from './WorkflowDescriptionModal';
 
 const useStyles = makeStyles()(theme => ({
   outputGrid: {
@@ -129,7 +129,7 @@ const ResultMessage = ({
     if (startedTime !== '') {
       return (
         <>
-          <CircularProgress size="0.75rem" /> Workflow is running. Started
+          <CircularProgress size="0.75rem" /> Workflow is running. Started{' '}
           {startedTime}
         </>
       );

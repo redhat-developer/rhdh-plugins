@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { applyContent, getExampleAsMarkdown } from './utils';
+import {
+  applyContent,
+  getExampleAsMarkdown,
+  getCategoryTagDisplayInfo,
+} from './utils';
 
 describe('marketplace utils', () => {
   const packages = {
@@ -22,20 +26,29 @@ describe('marketplace utils', () => {
     'backstage-community-plugin-sonarcloud':
       './dynamic-plugins/dist/backstage-community-plugin-sonarcloud',
   };
-  describe('applyContent', () => {
-    const newContent = {
-      catalog: {
-        providers: {
-          threeScaleApiEntity: {
-            default: {
-              baseUrl: 'fd',
-              accessToken: 'ffd',
-            },
+
+  const mockNewContent = {
+    catalog: {
+      providers: {
+        threeScaleApiEntity: {
+          default: {
+            baseUrl: 'fd',
+            accessToken: 'ffd',
           },
         },
       },
-    };
+    },
+  };
 
+  const expectedPluginConfig = `pluginConfig:
+      catalog:
+        providers:
+          threeScaleApiEntity:
+            default:
+              baseUrl: fd
+              accessToken: ffd`;
+
+  describe('applyContent', () => {
     it('should apply the app-config example', () => {
       const content = applyContent(
         `plugins:
@@ -44,19 +57,13 @@ describe('marketplace utils', () => {
   `,
         'backstage-community-plugin-quay',
         packages,
-        newContent,
+        mockNewContent,
       );
       expect(content).toEqual(
         `plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
     disabled: false
-    pluginConfig:
-      catalog:
-        providers:
-          threeScaleApiEntity:
-            default:
-              baseUrl: fd
-              accessToken: ffd
+    ${expectedPluginConfig}
 `,
       );
     });
@@ -71,7 +78,7 @@ describe('marketplace utils', () => {
 `,
         'backstage-community-plugin-quay',
         packages,
-        newContent,
+        mockNewContent,
       );
       expect(content).toEqual(
         `# This is my config
@@ -79,13 +86,7 @@ plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
     # some more comment
     disabled: false
-    pluginConfig:
-      catalog:
-        providers:
-          threeScaleApiEntity:
-            default:
-              baseUrl: fd
-              accessToken: ffd
+    ${expectedPluginConfig}
 `,
       );
     });
@@ -100,7 +101,7 @@ plugins:
   `,
         'backstage-community-plugin-quay',
         packages,
-        newContent,
+        mockNewContent,
       );
       expect(content).toEqual(
         `plugins:
@@ -108,13 +109,7 @@ plugins:
     disabled: false
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
     disabled: false
-    pluginConfig:
-      catalog:
-        providers:
-          threeScaleApiEntity:
-            default:
-              baseUrl: fd
-              accessToken: ffd
+    ${expectedPluginConfig}
 `,
       );
     });
@@ -136,6 +131,77 @@ key2: value2
     it('should return empty string when JSON object is empty', () => {
       const content = getExampleAsMarkdown({});
       expect(content).toEqual('');
+    });
+  });
+
+  describe('getCategoryTagDisplayInfo', () => {
+    // Helper function to reduce test duplication
+    const testCategoryDisplay = (
+      categoryName: string,
+      expected: {
+        displayName: string;
+        tooltipTitle: string;
+        shouldShowTooltip: boolean;
+      },
+      options?: { maxLength?: number },
+    ) => {
+      const result = getCategoryTagDisplayInfo(categoryName, options);
+      expect(result).toEqual(expected);
+    };
+
+    it('should return original name when within default max length', () => {
+      testCategoryDisplay('short-category', {
+        displayName: 'short-category',
+        tooltipTitle: '',
+        shouldShowTooltip: false,
+      });
+    });
+
+    it('should truncate name when exceeding default max length (25 chars)', () => {
+      testCategoryDisplay(
+        'this-is-a-very-long-category-name-that-exceeds-limit',
+        {
+          displayName: 'this-is-a-very-long-categ...',
+          tooltipTitle: 'this-is-a-very-long-category-name-that-exceeds-limit',
+          shouldShowTooltip: true,
+        },
+      );
+    });
+
+    it('should respect custom max length option', () => {
+      testCategoryDisplay(
+        'medium-length-category',
+        {
+          displayName: 'medium-len...',
+          tooltipTitle: 'medium-length-category',
+          shouldShowTooltip: true,
+        },
+        { maxLength: 10 },
+      );
+    });
+
+    it('should handle exactly max length strings', () => {
+      testCategoryDisplay('exactly-twenty-five-chars', {
+        displayName: 'exactly-twenty-five-chars',
+        tooltipTitle: '',
+        shouldShowTooltip: false,
+      });
+    });
+
+    it('should handle empty string', () => {
+      testCategoryDisplay('', {
+        displayName: '',
+        tooltipTitle: '',
+        shouldShowTooltip: false,
+      });
+    });
+
+    it('should handle single character strings', () => {
+      testCategoryDisplay('a', {
+        displayName: 'a',
+        tooltipTitle: '',
+        shouldShowTooltip: false,
+      });
     });
   });
 });
