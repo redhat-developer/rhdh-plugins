@@ -26,13 +26,29 @@ import { themeId } from '../consts';
 import { collectionRouteRef, collectionsRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { useCollection } from '../hooks/useCollection';
+import { useTranslation } from '../hooks/useTranslation';
 import { MarketplaceCollectionGridLoader } from '../components/MarketplaceCollectionGrid';
 
 const CollectionHeader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(collectionRouteRef);
   const collection = useCollection(params.namespace, params.name);
 
-  const displayName = collection.data?.metadata.title ?? params.name;
+  const getTranslatedTitle = (title: string | undefined) => {
+    // Check if title is a translation key
+    if (title && title.startsWith('collection.')) {
+      try {
+        return t(title as any, {});
+      } catch (error) {
+        return title;
+      }
+    }
+    return title || '';
+  };
+
+  const displayName = getTranslatedTitle(
+    collection.data?.metadata.title ?? params.name,
+  );
   const collectionsLink = useRouteRef(collectionsRouteRef)();
 
   return (

@@ -17,6 +17,8 @@
 import { Pair, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
 import { JsonObject } from '@backstage/types';
 import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+import { marketplaceTranslationRef } from './translations';
 
 export enum ExtensionsStatus {
   INSTALLATION_DISABLED_IN_PRODUCTION = 'INSTALLATION_DISABLED_IN_PRODUCTION',
@@ -105,30 +107,37 @@ export const applyContent = (
   return content.toString();
 };
 
-export const getErrorMessage = (reason: ExtensionsStatus, message: string) => {
+export const getErrorMessage = (
+  reason: ExtensionsStatus,
+  message: string,
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
+) => {
   if (reason === ExtensionsStatus.FILE_CONFIG_VALUE_MISSING) {
     return {
-      title: 'Missing configuration file',
-      message: `${message}. You need to add it to your app-config.yaml if you want to enable this tool. Edit the app-config.yaml file as shown in the example below:`,
+      title: t('errors.missingConfigFile'),
+      message: t('errors.missingConfigMessage' as any, { message }),
       highlightedLineNumbers: generateFileConfigLineNumbers(),
     };
   }
   if (reason === ExtensionsStatus.INVALID_CONFIG) {
     return {
-      title: 'Invalid configuration file',
-      message: `Failed to load 'extensions.installation.saveToSingleFile.file'. ${message}. Provide valid installation configuration if you want to enable this tool. Edit your dynamic-plugins.yaml file as shown in the example below:`,
+      title: t('errors.invalidConfigFile'),
+      message: t('errors.invalidConfigMessage' as any, { message }),
     };
   }
 
   if (reason === ExtensionsStatus.FILE_NOT_EXISTS) {
     return {
-      title: `Configuration file is incorrect, misspelled or does not exist`,
-      message: `${message}. Please re-check the specified file name in your app-config.yaml if you want to enable this tool as highlighted in the example below:`,
+      title: t('errors.fileNotExists'),
+      message: t('errors.fileNotExistsMessage' as any, { message }),
       highlightedLineNumbers: generateFilePathLineNumbers(),
     };
   }
   if (reason === ExtensionsStatus.UNKNOWN) {
-    return { title: 'Error reading the configuration file. ', message };
+    return {
+      title: t('errors.unknownError'),
+      message,
+    };
   }
   return { title: '', message: '' };
 };
@@ -139,16 +148,17 @@ export const getPluginActionTooltipMessage = (
     read: 'ALLOW' | 'DENY';
     write: 'ALLOW' | 'DENY';
   },
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
   extensionsDisabled?: boolean,
 ) => {
   if (isProductionEnvironment) {
-    return `Plugin installation is disabled in the production environment.`;
+    return t('tooltips.productionDisabled');
   }
   if (extensionsDisabled) {
-    return 'Plugin installation is disabled. To enable it, update your extensions configuration in your app-config.yaml file.';
+    return t('tooltips.extensionsDisabled');
   }
   if (permissions.read !== 'ALLOW' && permissions.write !== 'ALLOW') {
-    return `You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.`;
+    return t('tooltips.noPermissions');
   }
 
   return '';

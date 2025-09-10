@@ -24,12 +24,15 @@ import {
 import { themeId } from '../consts';
 import { MarketplaceCatalogContent } from '../components/MarketplaceCatalogContent';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const MarketplaceHomePage = () => {
+  const { t } = useTranslation();
+
   return (
     <ReactQueryProvider>
       <Page themeId={themeId}>
-        <Header title="Extensions" />
+        <Header title={t('header.title')} />
         <Content>
           <ErrorBoundary>
             <MarketplaceCatalogContent />

@@ -30,6 +30,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { mapPackageInstallStatusToButton } from '../labels';
+import { useTranslation } from '../hooks/useTranslation';
 import { packageInstallRouteRef } from '../routes';
 import { usePackage } from '../hooks/usePackage';
 import { Links } from './Links';
@@ -48,6 +49,8 @@ const KeyValue = ({ label, value }: { label: string; value: ReactNode }) => {
 };
 
 const MarketplacePackageContentSkeleton = () => {
+  const { t } = useTranslation();
+
   return (
     <Content>
       <Stack direction="row" spacing={2}>
@@ -57,13 +60,17 @@ const MarketplacePackageContentSkeleton = () => {
         />
         <Stack spacing={0.5}>
           <Skeleton>
-            <Typography variant="subtitle1">Entry name</Typography>
+            <Typography variant="subtitle1">
+              {t('package.entryName')}
+            </Typography>
           </Skeleton>
           <Skeleton>
-            <Typography variant="subtitle2">by someone</Typography>
+            <Typography variant="subtitle2">
+              {t('package.bySomeone')}
+            </Typography>
           </Skeleton>
           <Skeleton>
-            <Typography variant="subtitle2">Category</Typography>
+            <Typography variant="subtitle2">{t('package.category')}</Typography>
           </Skeleton>
         </Stack>
       </Stack>
@@ -72,7 +79,7 @@ const MarketplacePackageContentSkeleton = () => {
       <Grid container spacing={2}>
         <Grid item md={2}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            Highlights
+            {t('package.highlights')}
           </Typography>
 
           <Skeleton sx={{ width: '60%' }} />
@@ -80,7 +87,7 @@ const MarketplacePackageContentSkeleton = () => {
         </Grid>
         <Grid item md={10}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            About
+            {t('package.about')}
           </Typography>
 
           <Skeleton sx={{ width: '30%' }} />
@@ -95,6 +102,7 @@ const MarketplacePackageContentSkeleton = () => {
 };
 
 const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
+  const { t } = useTranslation();
   const getInstallPath = useRouteRef(packageInstallRouteRef);
 
   return (
@@ -118,33 +126,44 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
               color="primary"
               variant="contained"
             >
-              {
-                mapPackageInstallStatusToButton[
-                  pkg.spec?.installStatus ??
-                    MarketplacePackageInstallStatus.NotInstalled
-                ]
-              }
+              {mapPackageInstallStatusToButton(
+                pkg.spec?.installStatus ??
+                  MarketplacePackageInstallStatus.NotInstalled,
+                t,
+              )}
             </LinkButton>
           </Grid>
           <Grid item md={9}>
             <Stack gap={2}>
-              <KeyValue label="Package name:" value={pkg.spec?.packageName} />
-              <KeyValue label="Version:" value={pkg.spec?.version} />
               <KeyValue
-                label="Dynamic plugin path:"
+                label={t('package.name')}
+                value={pkg.spec?.packageName}
+              />
+              <KeyValue
+                label={t('package.version')}
+                value={pkg.spec?.version}
+              />
+              <KeyValue
+                label={t('package.dynamicPluginPath')}
                 value={pkg.spec?.dynamicArtifact}
               />
               <KeyValue
-                label="Backstage role:"
+                label={t('package.backstageRole')}
                 value={pkg.spec?.backstage?.role}
               />
               <KeyValue
-                label="Supported versions:"
+                label={t('package.supportedVersions')}
                 value={pkg.spec?.backstage?.supportedVersions}
               />
-              <KeyValue label="Author:" value={pkg.spec?.author} />
-              <KeyValue label="Support:" value={pkg.spec?.support} />
-              <KeyValue label="Lifecycle:" value={pkg.spec?.lifecycle} />
+              <KeyValue label={t('package.author')} value={pkg.spec?.author} />
+              <KeyValue
+                label={t('package.support')}
+                value={pkg.spec?.support}
+              />
+              <KeyValue
+                label={t('package.lifecycle')}
+                value={pkg.spec?.lifecycle}
+              />
 
               <Links entity={pkg} />
             </Stack>
@@ -156,6 +175,7 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
 };
 
 export const MarketplacePackageContentLoader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(packageInstallRouteRef);
   const pkg = usePackage(params.namespace, params.name);
 
@@ -168,7 +188,10 @@ export const MarketplacePackageContentLoader = () => {
   }
   return (
     <ErrorPage
-      statusMessage={`Package ${params.namespace}/${params.name} not found!`}
+      statusMessage={t('package.notFound' as any, {
+        namespace: params.namespace,
+        name: params.name,
+      })}
     />
   );
 };

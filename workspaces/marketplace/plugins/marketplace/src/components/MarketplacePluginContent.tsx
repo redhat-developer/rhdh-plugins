@@ -54,6 +54,7 @@ import {
   mapMarketplacePluginInstallStatusToButton,
   mapPackageInstallStatusToLabel,
 } from '../labels';
+import { useTranslation } from '../hooks/useTranslation';
 import { rootRouteRef, pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
@@ -75,6 +76,8 @@ import {
 } from './InstallationContext';
 
 export const MarketplacePluginContentSkeleton = () => {
+  const { t } = useTranslation();
+
   return (
     <Content>
       <Stack direction="row" spacing={2}>
@@ -84,13 +87,13 @@ export const MarketplacePluginContentSkeleton = () => {
         />
         <Stack spacing={0.5}>
           <Skeleton>
-            <Typography variant="subtitle1">Entry name</Typography>
+            <Typography variant="subtitle1">{t('plugin.entryName')}</Typography>
           </Skeleton>
           <Skeleton>
-            <Typography variant="subtitle2">by someone</Typography>
+            <Typography variant="subtitle2">{t('plugin.bySomeone')}</Typography>
           </Skeleton>
           <Skeleton>
-            <Typography variant="subtitle2">Category</Typography>
+            <Typography variant="subtitle2">{t('plugin.category')}</Typography>
           </Skeleton>
         </Stack>
       </Stack>
@@ -99,7 +102,7 @@ export const MarketplacePluginContentSkeleton = () => {
       <Grid container spacing={2}>
         <Grid item md={2}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            Highlights
+            {t('metadata.highlights')}
           </Typography>
 
           <Skeleton sx={{ width: '60%' }} />
@@ -107,7 +110,7 @@ export const MarketplacePluginContentSkeleton = () => {
         </Grid>
         <Grid item md={10}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            About
+            {t('metadata.about')}
           </Typography>
 
           <Skeleton sx={{ width: '30%' }} />
@@ -121,54 +124,55 @@ export const MarketplacePluginContentSkeleton = () => {
   );
 };
 
-const columns: TableColumn<MarketplacePackage>[] = [
-  {
-    title: 'Package name',
-    field: 'spec.packageName',
-    type: 'string',
-    width: '40%',
-  },
-  {
-    title: 'Version',
-    field: 'spec.version',
-    type: 'string',
-  },
-  {
-    title: 'Role',
-    field: 'spec.backstage.role',
-    type: 'string',
-    render(data) {
-      return (
-        (data.spec?.backstage?.role
-          ? mapBackstageRoleToLabel[data.spec.backstage.role]
-          : undefined) ??
-        data.spec?.backstage?.role ??
-        '-'
-      );
-    },
-  },
-  {
-    title: 'Supported version',
-    field: 'spec.backstage.supportedVersions',
-    type: 'string',
-  },
-  {
-    title: 'Status',
-    field: 'spec.installStatus',
-    type: 'string',
-    render(data) {
-      return data.spec?.installStatus
-        ? mapPackageInstallStatusToLabel[data.spec.installStatus]
-        : '-';
-    },
-  },
-];
-
 const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const { t } = useTranslation();
   const packages = usePluginPackages(
     plugin.metadata.namespace!,
     plugin.metadata.name,
   );
+
+  const columns: TableColumn<MarketplacePackage>[] = [
+    {
+      title: t('table.packageName'),
+      field: 'spec.packageName',
+      type: 'string',
+      width: '40%',
+    },
+    {
+      title: t('table.version'),
+      field: 'spec.version',
+      type: 'string',
+    },
+    {
+      title: t('table.role'),
+      field: 'spec.backstage.role',
+      type: 'string',
+      render(data) {
+        return (
+          (data.spec?.backstage?.role
+            ? mapBackstageRoleToLabel(data.spec.backstage.role, t)
+            : undefined) ??
+          data.spec?.backstage?.role ??
+          '-'
+        );
+      },
+    },
+    {
+      title: t('table.supportedVersion'),
+      field: 'spec.backstage.supportedVersions',
+      type: 'string',
+    },
+    {
+      title: t('table.status'),
+      field: 'spec.installStatus',
+      type: 'string',
+      render(data) {
+        return data.spec?.installStatus
+          ? mapPackageInstallStatusToLabel(data.spec.installStatus, t)
+          : '-';
+      },
+    },
+  ];
 
   if (!packages.data?.length) {
     return null;
@@ -181,7 +185,7 @@ const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
         component="h3"
         sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5, pt: 2 }}
       >
-        Versions
+        {t('table.versions')}
       </Typography>
       <Table
         columns={columns}
@@ -203,6 +207,7 @@ export const MarketplacePluginContent = ({
 }: {
   plugin: MarketplacePlugin;
 }) => {
+  const { t } = useTranslation();
   const extensionsConfig = useExtensionsConfiguration();
   const nodeEnvironment = useNodeEnvironment();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -272,7 +277,7 @@ export const MarketplacePluginContent = ({
         const updatedPlugins: InstallationType = {
           ...installedPlugins,
           [plugin.metadata.title ?? plugin.metadata.name]:
-            `Plugin ${isPluginEnabled ? 'disabled' : 'enabled'}`,
+            `Plugin ${isPluginEnabled ? t('actions.disable').toLowerCase() : t('actions.enable').toLowerCase()}d`,
         };
         setInstalledPlugins(updatedPlugins);
         handleClose();
@@ -314,20 +319,26 @@ export const MarketplacePluginContent = ({
       <ToggleOffOutlinedIcon />
     );
 
-    const primaryText = isPluginEnabled ? 'Disable' : 'Enable';
+    const primaryText = isPluginEnabled
+      ? t('actions.disable')
+      : t('actions.enable');
     const secondaryText = isPluginEnabled
-      ? 'Plugin currently enabled'
-      : 'Plugin currently disabled';
+      ? t('actions.pluginCurrentlyEnabled')
+      : t('actions.pluginCurrentlyDisabled');
 
     const testId = isPluginEnabled ? 'disable-plugin' : 'enable-plugin';
 
     if (disablePluginActions) {
       return (
         <Tooltip
-          title={getPluginActionTooltipMessage(isProductionEnvironment, {
-            read: pluginConfigPerm.data?.read ?? 'DENY',
-            write: pluginConfigPerm.data?.write ?? 'DENY',
-          })}
+          title={getPluginActionTooltipMessage(
+            isProductionEnvironment,
+            {
+              read: pluginConfigPerm.data?.read ?? 'DENY',
+              write: pluginConfigPerm.data?.write ?? 'DENY',
+            },
+            t,
+          )}
         >
           <div>
             <Button
@@ -336,7 +347,7 @@ export const MarketplacePluginContent = ({
               disabled={disablePluginActions}
               data-testId="install-disabled"
             >
-              Install
+              {t('actions.install')}
             </Button>
           </div>
         </Tooltip>
@@ -354,7 +365,7 @@ export const MarketplacePluginContent = ({
           variant="contained"
           data-testId="view"
         >
-          View
+          {t('actions.view')}
         </LinkButton>
       );
     }
@@ -375,7 +386,7 @@ export const MarketplacePluginContent = ({
             color="primary"
             data-testId="plugin-actions"
           >
-            Actions
+            {t('actions.actions')}
           </Button>
           <ActionsMenu
             id="actions-button"
@@ -395,7 +406,10 @@ export const MarketplacePluginContent = ({
               <ListItemIcon>
                 <EditIcon />
               </ListItemIcon>
-              <ListItemText primary="Edit" secondary="Plugin configurations" />
+              <ListItemText
+                primary={t('actions.editConfiguration')}
+                secondary={t('actions.pluginConfigurations')}
+              />
             </MenuItem>
             <MenuItem
               data-testId={testId}
@@ -421,12 +435,11 @@ export const MarketplacePluginContent = ({
         variant="contained"
         data-testId="install"
       >
-        {
-          mapMarketplacePluginInstallStatusToButton[
-            plugin.spec?.installStatus ??
-              MarketplacePluginInstallStatus.NotInstalled
-          ]
-        }
+        {mapMarketplacePluginInstallStatusToButton(
+          plugin.spec?.installStatus ??
+            MarketplacePluginInstallStatus.NotInstalled,
+          t,
+        )}
       </LinkButton>
     );
   };
@@ -448,7 +461,7 @@ export const MarketplacePluginContent = ({
                 >
                   {plugin.spec.authors.map((author, index) => (
                     <Fragment key={author.name}>
-                      {index > 0 ? ', ' : ' by '}
+                      {index > 0 ? ', ' : t('metadata.by')}
                       <Link
                         key={author.name}
                         to={withFilter('spec.authors.name', author.name)}
@@ -476,7 +489,7 @@ export const MarketplacePluginContent = ({
                   component="h3"
                   sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
                 >
-                  Highlights
+                  {t('metadata.highlights')}
                 </Typography>
                 <ul style={{ paddingLeft: '20px', marginBottom: '24px' }}>
                   {highlights.map(highlight => (
@@ -491,7 +504,7 @@ export const MarketplacePluginContent = ({
             {pluginActionButton()}
           </Grid>
           <Grid item md={9}>
-            <Markdown title="About" content={about} />
+            <Markdown title={t('metadata.about')} content={about} />
 
             <Links entity={plugin} />
 
@@ -504,6 +517,7 @@ export const MarketplacePluginContent = ({
 };
 
 export const MarketplacePluginContentLoader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(pluginRouteRef);
   const plugin = usePlugin(params.namespace, params.name);
 
@@ -514,5 +528,9 @@ export const MarketplacePluginContentLoader = () => {
   } else if (plugin.error) {
     return <ErrorPage statusMessage={plugin.error.toString()} />;
   }
-  return <ErrorPage statusMessage={`Plugin ${params.name} not found!`} />;
+  return (
+    <ErrorPage
+      statusMessage={t('metadata.pluginNotFound' as any, { name: params.name })}
+    />
+  );
 };

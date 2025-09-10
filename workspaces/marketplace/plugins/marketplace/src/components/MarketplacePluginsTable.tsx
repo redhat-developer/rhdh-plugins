@@ -23,27 +23,30 @@ import { usePlugins } from '../hooks/usePlugins';
 
 import { PluginIcon } from './PluginIcon';
 import { PluginLink } from './PluginLink';
-
-const columns: TableColumn<MarketplacePlugin>[] = [
-  {
-    sorting: false,
-    width: '40px',
-    render: plugin => <PluginIcon plugin={plugin} size={40} />,
-  },
-  {
-    title: 'Name',
-    field: 'metadata.title',
-    type: 'string',
-    render: plugin => <PluginLink plugin={plugin} />,
-  },
-  {
-    title: 'Description',
-    field: 'metadata.description',
-    type: 'string',
-  },
-];
+import { useTranslation } from '../hooks/useTranslation';
 
 export const MarketplacePluginsTable = () => {
+  const { t } = useTranslation();
+
+  const columns: TableColumn<MarketplacePlugin>[] = [
+    {
+      sorting: false,
+      width: '40px',
+      render: plugin => <PluginIcon plugin={plugin} size={40} />,
+    },
+    {
+      title: t('table.name'),
+      field: 'metadata.title',
+      type: 'string',
+      render: plugin => <PluginLink plugin={plugin} />,
+    },
+    {
+      title: t('table.description'),
+      field: 'metadata.description',
+      type: 'string',
+    },
+  ];
+
   const queryTableOptions = useQueryTableOptions<MarketplacePlugin>(columns);
 
   const plugins = usePlugins(queryTableOptions.query);
@@ -56,8 +59,10 @@ export const MarketplacePluginsTable = () => {
 
   const title =
     !plugins.isLoading && plugins.data
-      ? `Plugins (${plugins.data?.totalItems})`
-      : `Plugins`;
+      ? t('table.pluginsCount' as any, {
+          count: plugins.data?.totalItems?.toString(),
+        })
+      : t('table.plugins');
 
   return (
     <Table

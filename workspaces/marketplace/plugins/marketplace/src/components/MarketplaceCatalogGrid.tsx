@@ -18,8 +18,10 @@ import Typography from '@mui/material/Typography';
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
 
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const MarketplaceCatalogGrid = () => {
+  const { t } = useTranslation();
   const filteredPlugins = useFilteredPlugins();
   const skeletonComponents = Array(4).fill(<PluginCardSkeleton />);
 
@@ -30,7 +32,7 @@ export const MarketplaceCatalogGrid = () => {
   if (filteredPlugins.data?.filteredItems === 0) {
     return (
       <Typography sx={{ textAlign: 'center', pb: '16px' }} component="span">
-        No results found. Adjust your filters and try again.
+        {t('search.noResultsFound')}
       </Typography>
     );
   }
