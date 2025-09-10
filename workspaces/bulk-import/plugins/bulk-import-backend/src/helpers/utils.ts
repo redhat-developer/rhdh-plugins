@@ -54,3 +54,12 @@ export function computeTotalCount<T>(
   }
   return totalCount;
 }
+
+export function parseGitURLForApprovalTool(repoUrl: string) {
+  const parsedRepoUrl = new URL(repoUrl);
+  if (parsedRepoUrl.hostname.includes('gitlab')) {
+    return 'GITLAB';
+  }
+
+  return 'GIT';
+}

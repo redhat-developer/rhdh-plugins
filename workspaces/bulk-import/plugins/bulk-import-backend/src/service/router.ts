@@ -45,7 +45,7 @@ import type { Components, Paths } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
 import { GitlabApiService } from '../gitlab';
-import { permissionCheck } from '../helpers';
+import { parseGitURLForApprovalTool, permissionCheck } from '../helpers';
 import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
   createImportJobs,
@@ -276,10 +276,9 @@ export async function createRouter(
         {
           logger,
           config,
-          gitApiService:
-            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
+          githubApiService,
+          gitlabApiService,
           catalogHttpClient,
-          approvalTool: q.approvalTool,
         },
         {
           apiVersion,
@@ -367,7 +366,9 @@ export async function createRouter(
           logger,
           config,
           gitApiService:
-            q.approvalTool === 'GITLAB' ? gitlabApiService : githubApiService,
+            parseGitURLForApprovalTool(q.repo) === 'GITLAB'
+              ? gitlabApiService
+              : githubApiService,
           catalogHttpClient,
         },
         q.repo,

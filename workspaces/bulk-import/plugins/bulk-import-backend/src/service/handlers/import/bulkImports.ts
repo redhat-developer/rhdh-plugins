@@ -33,6 +33,7 @@ import {
   getNestedValue,
   logErrorIfNeeded,
   paginateArray,
+  parseGitURLForApprovalTool,
 } from '../../../helpers';
 import {
   DefaultPageNumber,
@@ -84,9 +85,9 @@ export async function findAllImports(
   deps: {
     logger: LoggerService;
     config: Config;
-    gitApiService: GithubApiService | GitlabApiService;
+    gitlabApiService: GitlabApiService;
+    githubApiService: GithubApiService;
     catalogHttpClient: CatalogHttpClient;
-    approvalTool: string | undefined;
   },
   requestHeaders?: {
     apiVersion?: Paths.FindAllImports.Parameters.ApiVersion;
@@ -121,7 +122,8 @@ export async function findAllImports(
   // It can be 'main' or something more convoluted like 'our/awesome/main'.
   const defaultBranchByRepoUrl = await resolveReposDefaultBranches(
     deps.logger,
-    deps.gitApiService,
+    deps.gitlabApiService,
+    deps.githubApiService,
     allLocations.keys(),
     catalogFilename,
   );
@@ -134,10 +136,36 @@ export async function findAllImports(
     catalogFilename,
   );
 
-  // Keep only repos that are accessible from the configured GH integrations
+  // Keep only repos that are accessible from the configured GH/GL integrations
   const importsReachableFromGHIntegrations =
-    await deps.gitApiService.filterLocationsAccessibleFromIntegrations(
-      importCandidates,
+    await deps.githubApiService.filterLocationsAccessibleFromIntegrations(
+      importCandidates.filter(val => {
+        return parseGitURLForApprovalTool(val) === 'GIT';
+      }),
+    );
+
+  const importsReachableFromGLIntegrations =
+    await deps.gitlabApiService.filterLocationsAccessibleFromIntegrations(
+      importCandidates.filter(val => {
+        return parseGitURLForApprovalTool(val) === 'GITLAB';
+      }),
+    );
+
+  // Merge the two lists together and map the appropriate approvalTool
+  const mergedReachbleFromIntegrations = importsReachableFromGHIntegrations
+    .map(val => {
+      return {
+        loc: val,
+        approvalTool: 'GIT',
+      };
+    })
+    .concat(
+      importsReachableFromGLIntegrations.map(val => {
+        return {
+          loc: val,
+          approvalTool: 'GITLAB',
+        };
+      }),
     );
 
   const repoUrlToLocation = new Map<string, string>();
@@ -146,16 +174,25 @@ export async function findAllImports(
   const importStatusPromises: Promise<
     HandlerResponse<Components.Schemas.Import>
   >[] = [];
-  for (const loc of importsReachableFromGHIntegrations) {
-    const repoUrl = repoUrlFromLocation(loc);
+  for (const imports of mergedReachbleFromIntegrations) {
+    const repoUrl = repoUrlFromLocation(imports.loc);
     if (!repoUrl) {
       continue;
     }
-    repoUrlToLocation.set(repoUrl, loc);
+    repoUrlToLocation.set(repoUrl, imports.loc);
 
     importStatusPromises.push(
       findImportStatusByRepo(
-        deps,
+        {
+          logger: deps.logger,
+          config: deps.config,
+          gitApiService:
+            imports.approvalTool === 'GITLAB'
+              ? deps.gitlabApiService
+              : deps.githubApiService,
+          catalogHttpClient: deps.catalogHttpClient,
+          approvalTool: imports.approvalTool,
+        },
         repoUrl,
         defaultBranchByRepoUrl.get(repoUrl),
         false,
@@ -199,7 +236,8 @@ export async function findAllImports(
 
 async function resolveReposDefaultBranches(
   logger: LoggerService,
-  gitApiService: GithubApiService | GitlabApiService,
+  gitlabApiService: GitlabApiService,
+  githubApiService: GithubApiService,
   allLocations: Iterable<string>,
   catalogFilename: string,
 ) {
@@ -221,8 +259,13 @@ async function resolveReposDefaultBranches(
     if (!repoUrl) {
       continue;
     }
+    // Have to do this for Both the gitlab/github, possibly a better way?
+    // Should probably parse the URL to figure out which to use?
     defaultBranchByRepoUrlPromises.push(
-      gitApiService
+      (parseGitURLForApprovalTool(repoUrl) === 'GITLAB'
+        ? gitlabApiService
+        : githubApiService
+      )
         .getRepositoryFromIntegrations(repoUrl)
         .then(resp => {
           return { repoUrl, defaultBranch: resp?.repository?.default_branch };
@@ -239,6 +282,24 @@ async function resolveReposDefaultBranches(
           };
         }),
     );
+    // defaultBranchByRepoUrlPromises.push(
+    //   githubApiService
+    //     .getRepositoryFromIntegrations(repoUrl)
+    //     .then(resp => {
+    //       return { repoUrl, defaultBranch: resp?.repository?.default_branch };
+    //     })
+    //     .catch((err: any) => {
+    //       logErrorIfNeeded(
+    //         logger,
+    //         `Ignored repo ${repoUrl} due to an error while fetching details from GitHub`,
+    //         err,
+    //       );
+    //       return {
+    //         repoUrl,
+    //         defaultBranch: undefined,
+    //       };
+    //     }),
+    // );
   }
   const defaultBranchesResponses = await Promise.all(
     defaultBranchByRepoUrlPromises,
@@ -700,7 +761,7 @@ export async function findImportStatusByRepo(
   deps: {
     logger: LoggerService;
     config: Config;
-    gitApiService: GithubApiService | GitlabApiService;
+    gitApiService: GitlabApiService | GithubApiService;
     catalogHttpClient: CatalogHttpClient;
     approvalTool: string | undefined;
   },
