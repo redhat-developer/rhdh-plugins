@@ -26,12 +26,14 @@ import FilterIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 
 import { useQueryFullTextSearch } from '../hooks/useQueryFullTextSearch';
+import { useTranslation } from '../hooks/useTranslation';
 
 export interface SearchTextFieldProps {
   variant: 'search' | 'filter';
 }
 
 export const SearchTextField = (props: SearchTextFieldProps) => {
+  const { t } = useTranslation();
   const fullTextSearch = useQueryFullTextSearch();
   const timerRef = useRef<number | undefined>(undefined);
   const [inputValue, setInputValue] = useState<string>(
@@ -55,14 +57,14 @@ export const SearchTextField = (props: SearchTextFieldProps) => {
   const options =
     props.variant === 'search'
       ? {
-          placeholder: 'Search',
+          placeholder: t('search.placeholder'),
           Icon: SearchIcon,
-          clear: 'Clear Search',
+          clear: t('search.clear'),
         }
       : {
-          placeholder: 'Filter',
+          placeholder: t('search.filter'),
           Icon: FilterIcon,
-          clear: 'Clear Filter',
+          clear: t('search.clearFilter'),
         };
 
   return (

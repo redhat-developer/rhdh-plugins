@@ -14,173 +14,239 @@
  * limitations under the License.
  */
 
-import type { ReactNode } from 'react';
+import { useState } from 'react';
+import {
+  CodeSnippet,
+  Content,
+  LinkButton,
+  WarningPanel,
+} from '@backstage/core-components';
+import { CatalogFilterLayout } from '@backstage/plugin-catalog-react';
 
-import { Content, ErrorPage, LinkButton } from '@backstage/core-components';
-import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
-import { useLocation } from 'react-router-dom';
-import { useSearchParams } from 'react-router-dom';
-
-import Skeleton from '@mui/material/Skeleton';
+import Card from '@mui/material/Card';
+import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Launch from '@mui/icons-material/Launch';
+import AlertTitle from '@mui/material/AlertTitle';
+import Link from '@mui/material/Link';
+import Alert from '@mui/material/Alert';
 
+import { SearchTextField } from '../shared-components/SearchTextField';
+
+import { useCollections } from '../hooks/useCollections';
+import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
+import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
+import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
+import { MarketplaceCatalogGrid } from './MarketplaceCatalogGrid';
+import { MarketplacePluginFilter } from './MarketplacePluginFilter';
+import { CollectionHorizontalScrollRow } from './CollectionHorizontalScrollRow';
+import { useInstallationContext } from './InstallationContext';
+import { InstalledPluginsDialog } from './InstalledPluginsDialog';
+import notFoundImag from '../assets/notfound.png';
 import {
-  MarketplacePackage,
-  MarketplacePackageInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+  EXTENSIONS_CONFIG_YAML,
+  generateExtensionsEnableLineNumbers,
+} from '../utils';
 
-import { mapPackageInstallStatusToButton } from '../labels';
-import { packageInstallRouteRef } from '../routes';
-import { usePackage } from '../hooks/usePackage';
-import { Links } from './Links';
-
-const KeyValue = ({ label, value }: { label: string; value: ReactNode }) => {
-  if (!value) {
-    return null;
-  }
-  return (
-    <div>
-      <strong>{label}</strong>
-      <br />
-      {value}
-    </div>
-  );
-};
-
-const MarketplacePackageContentSkeleton = () => {
-  return (
-    <Content>
-      <Stack direction="row" spacing={2}>
-        <Skeleton
-          variant="rectangular"
-          sx={{ width: '80px', height: '80px' }}
-        />
-        <Stack spacing={0.5}>
-          <Skeleton>
-            <Typography variant="subtitle1">Entry name</Typography>
-          </Skeleton>
-          <Skeleton>
-            <Typography variant="subtitle2">by someone</Typography>
-          </Skeleton>
-          <Skeleton>
-            <Typography variant="subtitle2">Category</Typography>
-          </Skeleton>
+const EmptyState = ({ isError }: { isError?: boolean }) => (
+  <Content>
+    <Grid
+      container
+      alignItems="center"
+      style={{ maxWidth: 1000, margin: 'auto' }}
+    >
+      <Grid item xs={6}>
+        <Stack gap={3} justifyContent="center">
+          <Typography variant="h1">
+            {isError
+              ? 'Must enable the Extensions backend plugin'
+              : 'No plugins found'}
+          </Typography>
+          <Typography variant="body1">
+            {isError
+              ? "Configure the '@red-hat-developer-hub/backstage-plugin-marketplace-backend' plugin."
+              : 'There was an error with loading plugins. Check your configuration or review plugin documentation to resolve. You can also explore other available plugins.'}
+          </Typography>
+          <Grid container spacing={2}>
+            {!isError && (
+              <Grid item>
+                <LinkButton
+                  variant="contained"
+                  color="primary"
+                  to="https://developers.redhat.com/products/rhdh/plugins#communitypreinstalled"
+                  endIcon={<Launch />}
+                >
+                  View all plugins
+                </LinkButton>
+              </Grid>
+            )}
+            <Grid item>
+              <LinkButton
+                variant="outlined"
+                color="primary"
+                to="https://docs.redhat.com/en/documentation/red_hat_developer_hub/"
+                endIcon={<Launch />}
+              >
+                View documentation
+              </LinkButton>
+            </Grid>
+          </Grid>
         </Stack>
-      </Stack>
-      <br />
-      <br />
-      <Grid container spacing={2}>
-        <Grid item md={2}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            Highlights
-          </Typography>
-
-          <Skeleton sx={{ width: '60%' }} />
-          <Skeleton sx={{ width: '40%' }} />
-        </Grid>
-        <Grid item md={10}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            About
-          </Typography>
-
-          <Skeleton sx={{ width: '30%' }} />
-          <Skeleton sx={{ width: '80%' }} />
-          <Skeleton sx={{ width: '85%' }} />
-          <Skeleton sx={{ width: '90%' }} />
-          <Skeleton sx={{ width: '50%' }} />
-        </Grid>
       </Grid>
-    </Content>
-  );
-};
+      <Grid item xs={6}>
+        <img src={notFoundImag} alt="" style={{ width: '100%' }} />
+      </Grid>
+    </Grid>
+  </Content>
+);
 
-const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
-  const getInstallPath = useRouteRef(packageInstallRouteRef);
-  const location = useLocation();
-  const installBase = getInstallPath({
-    namespace: pkg.metadata.namespace!,
-    name: pkg.metadata.name,
+export const MarketplaceCatalogContent = () => {
+  const [openInstalledPluginsDialog, setOpenInstalledPluginsDialog] =
+    useState(false);
+  const extensionsConfig = useExtensionsConfiguration();
+  const { installedPlugins } = useInstallationContext();
+  const nodeEnvironment = useNodeEnvironment();
+  const featuredCollections = useCollections({
+    filter: {
+      'metadata.name': 'featured',
+    },
   });
-  const preservedParams = new URLSearchParams(location.search);
-  preservedParams.delete('package');
-  const installTo = preservedParams.size
-    ? `${installBase}?${preservedParams.toString()}`
-    : installBase;
+  const filteredPlugins = useFilteredPlugins();
 
-  return (
-    <Content>
-      <Stack direction="column" gap={4}>
-        <Stack direction="row" spacing={2}>
-          <Stack spacing={0.5}>
-            <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
-              {pkg.metadata.title ?? pkg.metadata.name}
-            </Typography>
-          </Stack>
-        </Stack>
-
-        <Grid container spacing={2}>
-          <Grid item md={3}>
-            <LinkButton to={installTo} color="primary" variant="contained">
-              {
-                mapPackageInstallStatusToButton[
-                  pkg.spec?.installStatus ??
-                    MarketplacePackageInstallStatus.NotInstalled
-                ]
-              }
-            </LinkButton>
-          </Grid>
-          <Grid item md={9}>
-            <Stack gap={2}>
-              <KeyValue label="Package name:" value={pkg.spec?.packageName} />
-              <KeyValue label="Version:" value={pkg.spec?.version} />
-              <KeyValue
-                label="Dynamic plugin path:"
-                value={pkg.spec?.dynamicArtifact}
-              />
-              <KeyValue
-                label="Backstage role:"
-                value={pkg.spec?.backstage?.role}
-              />
-              <KeyValue
-                label="Supported versions:"
-                value={pkg.spec?.backstage?.supportedVersions}
-              />
-              <KeyValue label="Author:" value={pkg.spec?.author} />
-              <KeyValue
-                label="Support Provider"
-                value={pkg.spec?.support?.provider}
-              />
-              <KeyValue label="Lifecycle:" value={pkg.spec?.lifecycle} />
-
-              <Links entity={pkg} />
-            </Stack>
-          </Grid>
-        </Grid>
-      </Stack>
-    </Content>
-  );
-};
-
-export const MarketplacePackageContentLoader = () => {
-  const params = useRouteRefParams(packageInstallRouteRef);
-  const [searchParams] = useSearchParams();
-  const qp = searchParams.get('package');
-  const qpNs = qp?.split('/')[0];
-  const qpName = qp?.split('/')[1];
-  const namespace = qpNs || params.namespace;
-  const name = qpName || params.name;
-  const pkg = usePackage(namespace, name);
-
-  if (pkg.isLoading) {
-    return <MarketplacePackageContentSkeleton />;
-  } else if (pkg.data) {
-    return <MarketplacePackageContent pkg={pkg.data} />;
-  } else if (pkg.error) {
-    return <ErrorPage statusMessage={pkg.error.toString()} />;
+  let title = 'Plugins';
+  if (filteredPlugins.data && filteredPlugins.data.totalItems > 0) {
+    // const { filteredItems, totalItems } = filteredPlugins.data;
+    // if (filteredItems !== totalItems) {
+    //   title += ` (${filteredItems} of ${totalItems})`;
+    // } else {
+    //   title += ` (${totalItems})`;
+    // }
+    title += ` (${filteredPlugins.data.filteredItems})`;
   }
+
+  if (filteredPlugins.error?.message.includes('404')) {
+    return <EmptyState isError />;
+  }
+
+  if (filteredPlugins.data?.totalItems === 0) {
+    return <EmptyState />;
+  }
+
+  const isProductionEnvironment =
+    nodeEnvironment?.data?.nodeEnv === 'production';
+
+  const showExtensionsConfigurationAlert =
+    !isProductionEnvironment && !extensionsConfig.data?.enabled;
+
+  const installedPluginsCount = Object.entries(installedPlugins)?.length ?? 0;
+
+  const getPluginAlertMessage = (count: number, pluginName?: string) => {
+    if (count > 1) {
+      return `You have ${count} plugins that require a restart of your backend system to either finish installing, updating, enabling or disabling.`;
+      // Later: t('alert.multiple', { count })
+    }
+
+    return (
+      <>
+        The <b>{pluginName}</b> plugin requires a restart of the backend system
+        to finish installing, updating, enabling or disabling.
+        {/* Later: t('alert.single', { name: pluginName, bold: (...text) => <b>{text}</b> }) */}
+      </>
+    );
+  };
+
+  const pluginInfo = () => {
+    const pluginName = Object.keys(installedPlugins)[0];
+    return <>{getPluginAlertMessage(installedPluginsCount, pluginName)}</>;
+  };
+
   return (
-    <ErrorPage statusMessage={`Package ${namespace}/${name} not found!`} />
+    <>
+      {!filteredPlugins.isLoading && (
+        <>
+          {isProductionEnvironment && (
+            <Alert severity="info" sx={{ mb: '1rem' }}>
+              <AlertTitle>
+                Plugin installation is disabled in the production environment.
+              </AlertTitle>
+            </Alert>
+          )}
+          {showExtensionsConfigurationAlert && (
+            <>
+              <WarningPanel
+                title="Plugin installation is disabled."
+                severity="info"
+                message={
+                  <>
+                    Example how to enable extensions plugin installation
+                    <CodeSnippet
+                      language="yaml"
+                      showLineNumbers
+                      highlightedNumbers={generateExtensionsEnableLineNumbers()}
+                      text={EXTENSIONS_CONFIG_YAML}
+                    />
+                  </>
+                }
+              />
+              <br />
+            </>
+          )}
+        </>
+      )}
+      {installedPluginsCount > 0 && (
+        <Alert severity="info" sx={{ mb: '1rem' }}>
+          <AlertTitle>Backend restart required</AlertTitle>
+          {pluginInfo()}
+          {installedPluginsCount > 1 && (
+            <Typography component="div" sx={{ pt: '8px' }}>
+              <Link
+                component="button"
+                underline="none"
+                onClick={() => {
+                  setOpenInstalledPluginsDialog(true);
+                }}
+              >
+                View plugins
+              </Link>
+            </Typography>
+          )}
+        </Alert>
+      )}
+      <CatalogFilterLayout>
+        <CatalogFilterLayout.Filters>
+          <MarketplacePluginFilter />
+        </CatalogFilterLayout.Filters>
+        <CatalogFilterLayout.Content>
+          <Stack direction="column" gap={3}>
+            {featuredCollections.data?.items?.map(collection => (
+              <CollectionHorizontalScrollRow
+                key={`${collection.metadata.namespace}/${collection.metadata.name}`}
+                collection={collection}
+              />
+            ))}
+
+            <Card>
+              <Stack gap={3} sx={{ p: 2 }}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Typography variant="h4">{title}</Typography>
+                  <SearchTextField variant="search" />
+                </Stack>
+
+                <MarketplaceCatalogGrid />
+              </Stack>
+            </Card>
+          </Stack>
+        </CatalogFilterLayout.Content>
+      </CatalogFilterLayout>
+      <InstalledPluginsDialog
+        open={openInstalledPluginsDialog}
+        onClose={setOpenInstalledPluginsDialog}
+      />
+    </>
   );
 };

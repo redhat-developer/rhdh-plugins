@@ -25,51 +25,54 @@ import {
   mapBackstageRoleToLabel,
   mapPackageInstallStatusToLabel,
 } from '../labels';
-
-const columns: TableColumn<MarketplacePackage>[] = [
-  {
-    title: 'Package name',
-    field: 'spec.packageName',
-    type: 'string',
-    render: pkg => <PackageLink pkg={pkg} />,
-  },
-  {
-    title: 'Version',
-    field: 'spec.version',
-    type: 'string',
-  },
-  {
-    title: 'Role',
-    field: 'spec.backstage.role',
-    type: 'string',
-    render(data) {
-      return (
-        (data.spec?.backstage?.role
-          ? mapBackstageRoleToLabel[data.spec.backstage.role]
-          : undefined) ??
-        data.spec?.backstage?.role ??
-        '-'
-      );
-    },
-  },
-  {
-    title: 'Supported version',
-    field: 'spec.backstage.supportedVersions',
-    type: 'string',
-  },
-  {
-    title: 'Status',
-    field: 'spec.installStatus',
-    type: 'string',
-    render(data) {
-      return data.spec?.installStatus
-        ? mapPackageInstallStatusToLabel[data.spec.installStatus]
-        : '-';
-    },
-  },
-];
+import { useTranslation } from '../hooks/useTranslation';
 
 export const MarketplacePackagesTable = () => {
+  const { t } = useTranslation();
+
+  const columns: TableColumn<MarketplacePackage>[] = [
+    {
+      title: t('table.packageName'),
+      field: 'spec.packageName',
+      type: 'string',
+      render: pkg => <PackageLink pkg={pkg} />,
+    },
+    {
+      title: t('table.version'),
+      field: 'spec.version',
+      type: 'string',
+    },
+    {
+      title: t('table.role'),
+      field: 'spec.backstage.role',
+      type: 'string',
+      render(data) {
+        return (
+          (data.spec?.backstage?.role
+            ? mapBackstageRoleToLabel(data.spec.backstage.role, t)
+            : undefined) ??
+          data.spec?.backstage?.role ??
+          '-'
+        );
+      },
+    },
+    {
+      title: t('table.supportedVersion'),
+      field: 'spec.backstage.supportedVersions',
+      type: 'string',
+    },
+    {
+      title: t('table.status'),
+      field: 'spec.installStatus',
+      type: 'string',
+      render(data) {
+        return data.spec?.installStatus
+          ? mapPackageInstallStatusToLabel(data.spec.installStatus, t)
+          : '-';
+      },
+    },
+  ];
+
   const queryTableOptions = useQueryTableOptions<MarketplacePackage>(columns);
 
   const packages = usePackages(queryTableOptions.query);
@@ -82,8 +85,10 @@ export const MarketplacePackagesTable = () => {
 
   const title =
     !packages.isLoading && packages.data
-      ? `Packages (${packages.data?.totalItems})`
-      : `Packages`;
+      ? t('table.packagesCount' as any, {
+          count: packages.data?.totalItems?.toString(),
+        })
+      : t('table.packages');
 
   return (
     <Table

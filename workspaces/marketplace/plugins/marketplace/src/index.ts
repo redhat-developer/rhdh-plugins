@@ -23,3 +23,9 @@ ClassNameGenerator.configure(componentName => {
 });
 
 export * from './plugin';
+
+// Translation exports
+export {
+  marketplaceTranslations,
+  marketplaceTranslationRef,
+} from './translations';

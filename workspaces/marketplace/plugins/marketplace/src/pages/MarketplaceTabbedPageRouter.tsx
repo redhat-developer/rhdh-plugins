@@ -18,6 +18,8 @@ import { Routes, Route } from 'react-router-dom';
 
 import { Page, Header, TabbedLayout } from '@backstage/core-components';
 
+import { useTranslation } from '../hooks/useTranslation';
+
 import { themeId } from '../consts';
 
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
@@ -40,25 +42,29 @@ import { useCollections } from '../hooks/useCollections';
 import { MarketplacePackageEditPage } from './MarketplacePackageEditPage';
 
 const Tabs = () => {
+  const { t } = useTranslation();
   const showCollections = !!useCollections({}).data?.items?.length;
 
   return (
     <>
       <Page themeId={themeId}>
-        <Header title="Extensions" />
+        <Header title={t('header.title')} />
         <TabbedLayout>
-          <TabbedLayout.Route path="/catalog" title="Catalog">
+          <TabbedLayout.Route path="/catalog" title={t('header.pluginsPage')}>
             <MarketplaceCatalogContent />
           </TabbedLayout.Route>
           {showCollections && (
-            <TabbedLayout.Route path="/collections" title="Collections">
+            <TabbedLayout.Route
+              path="/collections"
+              title={t('header.collectionsPage')}
+            >
               <MarketplaceCollectionsGrid />
             </TabbedLayout.Route>
           )}
-          <TabbedLayout.Route path="/plugins" title="Plugins">
+          <TabbedLayout.Route path="/plugins" title={t('header.pluginsPage')}>
             <MarketplacePluginsTable />
           </TabbedLayout.Route>
-          <TabbedLayout.Route path="/packages" title="Packages">
+          <TabbedLayout.Route path="/packages" title={t('header.packagesPage')}>
             <MarketplacePackagesTable />
           </TabbedLayout.Route>
         </TabbedLayout>

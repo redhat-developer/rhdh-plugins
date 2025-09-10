@@ -74,6 +74,7 @@ import {
   InstallationType,
   useInstallationContext,
 } from './InstallationContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 const PluginMetadataSection = ({
   value,
@@ -173,7 +174,7 @@ export const MarketplacePluginContentSkeleton = () => {
   );
 };
 
-const columns: TableColumn<MarketplacePackage>[] = [
+const getColumns = (t: any): TableColumn<MarketplacePackage>[] => [
   {
     title: 'Package name',
     field: 'spec.packageName',
@@ -192,7 +193,7 @@ const columns: TableColumn<MarketplacePackage>[] = [
     render(data) {
       return (
         (data.spec?.backstage?.role
-          ? mapBackstageRoleToLabel[data.spec.backstage.role]
+          ? mapBackstageRoleToLabel(data.spec.backstage.role, t)
           : undefined) ??
         data.spec?.backstage?.role ??
         '-'
@@ -210,13 +211,14 @@ const columns: TableColumn<MarketplacePackage>[] = [
     type: 'string',
     render(data) {
       return data.spec?.installStatus
-        ? mapPackageInstallStatusToLabel[data.spec.installStatus]
+        ? mapPackageInstallStatusToLabel(data.spec.installStatus, t)
         : '-';
     },
   },
 ];
 
 const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const { t } = useTranslation();
   const packages = usePluginPackages(
     plugin.metadata.namespace!,
     plugin.metadata.name,
@@ -236,7 +238,7 @@ const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
         Versions
       </Typography>
       <Table
-        columns={columns}
+        columns={getColumns(t)}
         data={packages.data}
         options={{
           toolbar: false,
@@ -255,6 +257,7 @@ export const MarketplacePluginContent = ({
 }: {
   plugin: MarketplacePlugin;
 }) => {
+  const { t } = useTranslation();
   const extensionsConfig = useExtensionsConfiguration();
   const nodeEnvironment = useNodeEnvironment();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -376,10 +379,14 @@ export const MarketplacePluginContent = ({
     if (disablePluginActions) {
       return (
         <Tooltip
-          title={getPluginActionTooltipMessage(isProductionEnvironment, {
-            read: pluginConfigPerm.data?.read ?? 'DENY',
-            write: pluginConfigPerm.data?.write ?? 'DENY',
-          })}
+          title={getPluginActionTooltipMessage(
+            isProductionEnvironment,
+            {
+              read: pluginConfigPerm.data?.read ?? 'DENY',
+              write: pluginConfigPerm.data?.write ?? 'DENY',
+            },
+            t,
+          )}
         >
           <div>
             <Button
@@ -473,12 +480,11 @@ export const MarketplacePluginContent = ({
         variant="contained"
         data-testId="install"
       >
-        {
-          mapMarketplacePluginInstallStatusToButton[
-            plugin.spec?.installStatus ??
-              MarketplacePluginInstallStatus.NotInstalled
-          ]
-        }
+        {mapMarketplacePluginInstallStatusToButton(
+          plugin.spec?.installStatus ??
+            MarketplacePluginInstallStatus.NotInstalled,
+          t,
+        )}
       </LinkButton>
     );
   };

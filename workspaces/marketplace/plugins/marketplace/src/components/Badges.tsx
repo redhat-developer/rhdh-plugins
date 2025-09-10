@@ -25,6 +25,10 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { colors } from '../consts';
 
+import { useTranslation } from '../hooks/useTranslation';
+import { marketplaceTranslationRef } from '../translations/ref';
+import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+
 interface BadgeOptions {
   isBadge?: boolean;
   color?: string;
@@ -35,6 +39,7 @@ interface BadgeOptions {
 
 const getBadgeOptions = (
   entity: MarketplacePlugin | MarketplacePackage,
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
 ): BadgeOptions | null => {
   const supportLevel = entity.spec?.support?.level;
   const supportProvider = entity.spec?.support?.provider;
@@ -43,8 +48,11 @@ const getBadgeOptions = (
     return {
       isBadge: true,
       color: colors.certified,
-      label: 'Certified',
-      tooltip: `Certified by ${entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY]}`,
+      label: t('badges.certified'),
+      tooltip: t('badges.certifiedBy' as any, {
+        provider:
+          entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY],
+      }),
       statusTooltip: `Stable and secured by ${entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY]}`,
     };
   }
@@ -90,8 +98,8 @@ const getBadgeOptions = (
     return {
       isBadge: true,
       color: colors.custom,
-      label: 'Custom plugin',
-      tooltip: 'Custom plugin',
+      label: t('badges.customPlugin'),
+      tooltip: t('badges.customPlugin'),
       statusTooltip: 'Plugins added by the administrator',
     };
   }
@@ -100,10 +108,12 @@ const getBadgeOptions = (
 };
 
 export const BadgeChip = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const { t } = useTranslation();
+
   if (!plugin) {
     return null;
   }
-  const options = getBadgeOptions(plugin);
+  const options = getBadgeOptions(plugin, t);
   if (!options) {
     return null;
   }
@@ -128,10 +138,12 @@ export const BadgeChip = ({ plugin }: { plugin: MarketplacePlugin }) => {
 };
 
 export const BadgeTriange = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const { t } = useTranslation();
+
   if (!plugin) {
     return null;
   }
-  const options = getBadgeOptions(plugin);
+  const options = getBadgeOptions(plugin, t);
   if (!options || !options.isBadge) {
     return null;
   }

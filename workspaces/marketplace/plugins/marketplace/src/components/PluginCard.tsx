@@ -37,6 +37,7 @@ import { rootRouteRef, pluginRouteRef } from '../routes';
 import { BadgeTriange } from './Badges';
 import { CategoryLinkButton } from './CategoryLinkButton';
 import { PluginIcon } from './PluginIcon';
+import { useTranslation } from '../hooks/useTranslation';
 
 export interface PluginCardSkeletonProps {
   animation?: 'pulse' | 'wave' | false;
@@ -82,45 +83,56 @@ const renderInstallStatus = (
   }
 };
 
-export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => (
-  <Card variant="outlined">
-    <CardContent>
-      <Stack spacing={2}>
-        <Stack direction="row" spacing={2}>
-          <Skeleton
-            variant="rectangular"
-            animation={animation}
-            sx={{ width: '80px', height: '80px', mr: 2 }}
-          />
-          <Stack spacing={0.5}>
-            <Skeleton animation={animation}>
-              <Typography variant="subtitle1">Entry name</Typography>
-            </Skeleton>
-            <Skeleton animation={animation}>
-              <Typography variant="subtitle2">by someone</Typography>
-            </Skeleton>
-            <Skeleton animation={animation}>
-              <Typography variant="subtitle2">Category</Typography>
-            </Skeleton>
+export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => {
+  const { t } = useTranslation();
+
+  return (
+    <Card variant="outlined">
+      <CardContent>
+        <Stack spacing={2}>
+          <Stack direction="row" spacing={2}>
+            <Skeleton
+              variant="rectangular"
+              animation={animation}
+              sx={{ width: '80px', height: '80px', mr: 2 }}
+            />
+            <Stack spacing={0.5}>
+              <Skeleton animation={animation}>
+                <Typography variant="subtitle1">
+                  {t('plugin.entryName')}
+                </Typography>
+              </Skeleton>
+              <Skeleton animation={animation}>
+                <Typography variant="subtitle2">
+                  {t('plugin.bySomeone')}
+                </Typography>
+              </Skeleton>
+              <Skeleton animation={animation}>
+                <Typography variant="subtitle2">
+                  {t('plugin.category')}
+                </Typography>
+              </Skeleton>
+            </Stack>
           </Stack>
+          <div>
+            <Skeleton animation={animation} />
+            <Skeleton animation={animation} />
+            <Skeleton animation={animation} />
+          </div>
         </Stack>
-        <div>
-          <Skeleton animation={animation} />
-          <Skeleton animation={animation} />
-          <Skeleton animation={animation} />
-        </div>
-      </Stack>
-    </CardContent>
-    <CardActions sx={{ p: 2, justifyContent: 'flex-start' }}>
-      <Skeleton animation={animation} style={{ width: 50 }} />
-    </CardActions>
-  </Card>
-);
+      </CardContent>
+      <CardActions sx={{ p: 2, justifyContent: 'flex-start' }}>
+        <Skeleton animation={animation} style={{ width: 50 }} />
+      </CardActions>
+    </Card>
+  );
+};
 
 // orange: #EC7A08
 
 // TODO: add link around card
 export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const getIndexPath = useRouteRef(rootRouteRef);
@@ -168,7 +180,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
                 >
                   {plugin.spec.authors.map((author, index) => (
                     <Fragment key={author.name}>
-                      {index > 0 ? ', ' : ' by '}
+                      {index > 0 ? t('common.comma') : t('common.by')}
                       <Link
                         key={author.name}
                         to={withFilter('spec.authors.name', author.name)}
@@ -207,7 +219,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
               fontStyle: plugin.metadata.description ? undefined : 'italic',
             }}
           >
-            {plugin.metadata.description ?? 'no description available'}
+            {plugin.metadata.description ?? t('common.noDescriptionAvailable')}
           </Typography>
         </Stack>
       </CardContent>
@@ -221,7 +233,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
         }}
       >
         <Link to={pluginPath} onClick={e => e.stopPropagation()}>
-          Read more
+          {t('common.readMore')}
         </Link>
         {renderInstallStatus(plugin.spec?.installStatus)}
       </CardActions>

@@ -30,10 +30,12 @@ import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePlugin } from '../hooks/usePlugin';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { MarketplacePluginInstallContentLoader } from '../components/MarketplacePluginInstallContent';
+import { useTranslation } from '../hooks/useTranslation';
 
 import { isPluginInstalled } from '../utils';
 
 const PluginInstallHeader = () => {
+  const { t } = useTranslation();
   const nodeEnvironment = useNodeEnvironment();
   const params = useRouteRefParams(pluginInstallRouteRef);
   const plugin = usePlugin(params.namespace, params.name);
@@ -47,9 +49,9 @@ const PluginInstallHeader = () => {
       return displayName;
     }
     if (isPluginInstalled(plugin.data?.spec?.installStatus)) {
-      return `Edit ${displayName} configurations`;
+      return t('actions.editTitle' as any, { displayName });
     }
-    return `Install ${displayName}`;
+    return t('actions.installTitle' as any, { displayName });
   };
 
   const pluginLink = useRouteRef(pluginRouteRef)({
