@@ -8,6 +8,30 @@ Before installing this module, ensure that the Scorecard backend plugin is integ
 
 This module also requires a Jira integration to be configured in your `app-config.yaml`. The following example of configuration can help:
 
+**Configuration `token`:**
+
+- For the `cloud` product:
+
+  - Obtain your personal token from Jira
+  - Create a Base64-encoded string from the following plain text format: `your-atlassian-email:your-jira-api-token`:
+
+  ```bash
+  // Node
+  new Buffer('your-atlassian-email:your-jira-api-token').toString(
+    'base64',
+  );
+
+  // Browser console
+  btoa('your-atlassian-email:your-jira-api-token');
+
+  // Bash
+  echo -n 'your-atlassian-email:your-jira-api-token' | base64
+  ```
+
+- For the `datacenter` product:
+  - Obtain your personal token from Jira
+  - Use the Jira token without changing
+
 ```yaml
 jira:
   # Required
