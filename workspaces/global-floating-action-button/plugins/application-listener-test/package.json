@@ -32,7 +32,7 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/core-components": "^0.17.4",
+    "@backstage/core-components": "^0.17.5",
     "@backstage/core-plugin-api": "^1.10.9"
   },
   "peerDependencies": {
@@ -40,10 +40,10 @@
     "react-router-dom": "^6.0.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.33.1",
+    "@backstage/cli": "^0.34.1",
     "@backstage/core-app-api": "^1.18.0",
-    "@backstage/dev-utils": "^1.1.12",
-    "@backstage/test-utils": "^1.7.10",
+    "@backstage/dev-utils": "^1.1.13",
+    "@backstage/test-utils": "^1.7.11",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
