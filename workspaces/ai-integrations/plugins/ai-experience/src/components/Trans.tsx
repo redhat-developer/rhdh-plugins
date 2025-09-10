@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import { useTranslation } from '../hooks/useTranslation';
+import { aiExperienceTranslationRef } from '../translations';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
+type Messages = typeof aiExperienceTranslationRef.T;
 
-export * from './plugin';
-export * from './alpha';
+interface TransProps<TMessages extends { [key: string]: string }> {
+  message: keyof TMessages;
+  params?: any;
+}
+
+export const Trans = ({ message, params }: TransProps<Messages>) => {
+  const { t } = useTranslation();
+  return t(message as any, params);
+};
