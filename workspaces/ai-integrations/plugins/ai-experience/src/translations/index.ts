@@ -13,13 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { aiExperienceTranslationRef } from './ref';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
+/**
+ * Translation Resource for AI experience
+ * @public
+ **/
+export const aiExperienceTranslationsResource = createTranslationResource({
+  ref: aiExperienceTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    fr: () => import('./fr'),
+    es: () => import('./es'),
+  },
 });
 
-export * from './plugin';
-export * from './alpha';
+export { aiExperienceTranslationRef };

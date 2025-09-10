@@ -21,11 +21,16 @@ import { parseStringPromise } from 'xml2js';
 import { sanitizeXML, extractImageFromHTML } from '../../utils/rss-utils';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { lightTheme } from '@backstage/theme';
+import { TestApiProvider } from '@backstage/test-utils';
+import { mockUseTranslation } from '../../test-utils/mockTranslations';
 
 // Mock dependencies
 jest.mock('@backstage/core-plugin-api');
 jest.mock('xml2js');
 jest.mock('../../utils/rss-utils');
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: () => mockUseTranslation(),
+}));
 jest.mock('../NewsPage/NewsCard', () => ({
   NewsCard: jest.fn(({ article }) => (
     <div data-testid={`news-card-${article.title}`}>{article.title}</div>
@@ -44,7 +49,11 @@ const mockRssApi = {
 const theme = createTheme(lightTheme);
 
 const renderWithTheme = (component: React.ReactElement) => {
-  return render(<ThemeProvider theme={theme}>{component}</ThemeProvider>);
+  return render(
+    <TestApiProvider apis={[]}>
+      <ThemeProvider theme={theme}>{component}</ThemeProvider>
+    </TestApiProvider>,
+  );
 };
 
 describe('NewsGrid', () => {
