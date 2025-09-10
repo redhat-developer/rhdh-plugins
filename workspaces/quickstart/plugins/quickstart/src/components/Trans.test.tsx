@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import { render } from '@testing-library/react';
+import { Trans } from './Trans';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
+describe('Trans', () => {
+  it('renders translated text', () => {
+    const { getByText } = render(<Trans message="header.title" />);
+    expect(
+      getByText("Let's get you started with Developer Hub"),
+    ).toBeInTheDocument();
+  });
+
+  it('renders translated text with params', () => {
+    const { getByText } = render(
+      <Trans message="footer.progress" params={{ progress: '50' }} />,
+    );
+    expect(getByText('50% progress')).toBeInTheDocument();
+  });
 });
-
-export * from './plugin';
-
-export { useQuickstartDrawerContext } from './hooks/useQuickstartDrawerContext';
-export type { QuickstartDrawerContextType } from './components/QuickstartDrawerContext';
-
-export { quickstartTranslations } from './translations';

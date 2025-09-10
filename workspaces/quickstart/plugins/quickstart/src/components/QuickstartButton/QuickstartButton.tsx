@@ -22,6 +22,7 @@ import { useTheme } from '@mui/material/styles';
 import WavingHandIcon from '@mui/icons-material/WavingHandOutlined';
 import { useQuickstartPermission } from '../../hooks/useQuickstartPermission';
 import { useQuickstartDrawerContext } from '../../hooks/useQuickstartDrawerContext';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * Props for the QuickstartButton component
@@ -47,13 +48,16 @@ export interface QuickstartButtonProps {
  * @public
  */
 export const QuickstartButton = ({
-  title = 'Quick start',
+  title,
   style,
   onClick = () => {},
 }: QuickstartButtonProps) => {
+  const { t } = useTranslation();
   const isAllowed = useQuickstartPermission();
   const { toggleDrawer } = useQuickstartDrawerContext();
   const theme = useTheme();
+
+  const defaultTitle = t('button.quickstart');
 
   const handleClick = useCallback(() => {
     toggleDrawer();
@@ -102,7 +106,7 @@ export const QuickstartButton = ({
             }}
           >
             <Typography variant="body2" color={theme.palette.text.primary}>
-              {title}
+              {title || defaultTitle}
             </Typography>
           </Box>
         </Box>
