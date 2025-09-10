@@ -56,15 +56,8 @@ const Scorecard = ({
   const theme = useTheme();
 
   return (
-    <Card
-      style={{
-        width: '364px',
-        borderRadius: 8,
-        border: '2px solid #0000001f',
-        boxShadow: 'none',
-      }}
-    >
-      <CardContent style={{ padding: 0 }}>
+    <Card sx={{ width: '364px' }}>
+      <CardContent sx={{ p: 0 }}>
         <CardHeader
           title={cardTitle}
           titleTypographyProps={{ variant: 'h6', fontWeight: 500 }}
