@@ -78,7 +78,6 @@ describe('createRouter', () => {
       catalogApi: mockCatalogClient,
       registry: metricProvidersRegistry,
       thresholdEvaluator: new ThresholdEvaluator(),
-      logger: mockServices.logger.mock(),
       auth: mockServices.auth(),
     });
 

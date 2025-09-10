@@ -28,7 +28,6 @@ import {
   jiraBooleanProvider,
 } from '../../__fixtures__/mockProviders';
 import { mockEntity } from '../../__fixtures__/mockEntities';
-import { ThresholdConfigFormatError } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
   PermissionCondition,
   PermissionCriteria,
@@ -43,7 +42,6 @@ describe('CatalogMetricService', () => {
   let catalogMetricService: CatalogMetricService;
   let registry: MetricProvidersRegistry;
   const timestamp = '2024-01-15T10:30:00.000Z';
-  const mockLogger = mockServices.logger.mock();
 
   const githubMetricResult = {
     id: 'github.number-metric',
@@ -102,7 +100,6 @@ describe('CatalogMetricService', () => {
       catalogApi: mockCatalogApi,
       registry,
       thresholdEvaluator: new ThresholdEvaluator(),
-      logger: mockLogger,
       auth: mockServices.auth(),
     });
   });
@@ -191,7 +188,7 @@ describe('CatalogMetricService', () => {
       expect(result).toEqual([githubMetricResult, jiraMetricErrorResult]);
     });
 
-    it('should handle invalid entity threshold annotations and skip them', async () => {
+    it('should handle invalid entity threshold annotations', async () => {
       const entityWithInvalidThresholds: Entity = {
         ...mockEntity,
         metadata: {
@@ -213,13 +210,18 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result).toEqual([githubMetricResult]);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        `Invalid threshold annotation in entity 'component:default/test-component': {"key":"error","expression":"invalid_expression"}. Skipping including this threshold.`,
-        new ThresholdConfigFormatError(
-          'Invalid threshold expression: "invalid_expression".',
-        ),
-      );
+      expect(result[0]).toEqual({
+        ...githubMetricResult,
+        result: {
+          ...githubMetricResult.result,
+          thresholdResult: {
+            definition: undefined,
+            status: 'error',
+            evaluation: undefined,
+            error: expect.stringContaining('Invalid threshold annotation'),
+          },
+        },
+      });
     });
 
     it('should handle entity not found', async () => {
