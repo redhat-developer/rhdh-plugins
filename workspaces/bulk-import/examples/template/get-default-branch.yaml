@@ -13,10 +13,6 @@ spec:
       required:
         - repoUrl
       properties:
-        # repoUrl:
-        #   title: Repository URL
-        #   type: string
-        #   description: The URL of the repository
         repoUrl:
           title: Repository Location
           type: string

@@ -41,7 +41,6 @@
     "@changesets/cli": "^2.27.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
     "@spotify/prettier-config": "^12.0.0",
-    "@types/event-source-polyfill": "^1.0.5",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^3.4.2",
@@ -60,8 +59,5 @@
     "*.{json,md}": [
       "prettier --write"
     ]
-  },
-  "dependencies": {
-    "event-source-polyfill": "^1.0.31"
   }
 }

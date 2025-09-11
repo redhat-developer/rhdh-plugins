@@ -6794,8 +6794,6 @@ __metadata:
     "@changesets/cli": ^2.27.1
     "@ianvs/prettier-plugin-sort-imports": ^4.3.1
     "@spotify/prettier-config": ^12.0.0
-    "@types/event-source-polyfill": ^1.0.5
-    event-source-polyfill: ^1.0.31
     knip: ^5.27.4
     node-gyp: ^9.0.0
     prettier: ^3.4.2
@@ -13631,13 +13629,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/event-source-polyfill@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "@types/event-source-polyfill@npm:1.0.5"
-  checksum: f506b68710162f2ade1bccbc5691b8c67e5a703e565df2bc0b7b5be2637ba838ef81ec6c10b03248fe4d054386d95a6e827c7aace6e924986c2b9985f77b55de
-  languageName: node
-  linkType: hard
-
 "@types/express-serve-static-core@npm:*, @types/express-serve-static-core@npm:^5.0.0":
   version: 5.0.7
   resolution: "@types/express-serve-static-core@npm:5.0.7"
@@ -15329,7 +15320,6 @@ __metadata:
     "@playwright/test": 1.54.2
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
     "@redhat-developer/red-hat-developer-hub-theme": ^0.5.0
-    "@tanstack/react-query": ^4.29.21
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
