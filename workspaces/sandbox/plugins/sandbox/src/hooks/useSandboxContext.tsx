@@ -46,7 +46,6 @@ interface SandboxContextType {
   ansibleUILink: string | undefined;
   ansibleError: string | null;
   ansibleStatus: AnsibleStatus;
-  // Segment Analytics
   segmentTrackClick?: (data: SegmentTrackingData) => Promise<void>;
 }
 
@@ -67,10 +66,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   const aapApi = useApi(aapApiRef);
   const kubeApi = useApi(kubeApiRef);
   const registerApi = useApi(registerApiRef);
-
-  // Segment Analytics
   const [segmentWriteKey, setSegmentWriteKey] = useState<string>();
-
   const [statusUnknown, setStatusUnknown] = React.useState(true);
   const [userFound, setUserFound] = useState<boolean>(false);
   const [userData, setData] = useState<SignupData | undefined>(undefined);
