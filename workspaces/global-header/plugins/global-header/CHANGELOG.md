@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.17.0
+
+### Minor Changes
+
+- d59f08b: Backstage version bump to v1.42.5
+
 ## 1.16.1
 
 ### Patch Changes
