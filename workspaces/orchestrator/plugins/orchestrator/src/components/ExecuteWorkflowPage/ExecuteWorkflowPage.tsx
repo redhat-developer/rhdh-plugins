@@ -49,7 +49,7 @@ import {
   workflowInstanceRouteRef,
 } from '../../routes';
 import { getErrorObject } from '../../utils/ErrorUtils';
-import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
+import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import MissingSchemaNotice from './MissingSchemaNotice';
 import { getSchemaUpdater } from './schemaUpdater';
 

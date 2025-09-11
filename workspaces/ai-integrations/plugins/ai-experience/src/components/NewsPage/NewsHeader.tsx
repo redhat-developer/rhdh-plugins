@@ -17,12 +17,14 @@ import React from 'react';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { Header } from '@backstage/core-components';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const NewsHeader: React.FC = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   return (
     <Header
-      pageTitleOverride="AI News"
+      pageTitleOverride={t('news.pageTitle')}
       title={
         <Typography
           color="textPrimary"
@@ -32,7 +34,7 @@ export const NewsHeader: React.FC = () => {
             fontFamily: theme.typography.body1.fontFamily,
           }}
         >
-          AI News
+          {t('news.pageTitle')}
         </Typography>
       }
     />

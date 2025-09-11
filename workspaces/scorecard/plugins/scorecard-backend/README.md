@@ -21,9 +21,69 @@ backend.add(
 );
 ```
 
+## RBAC permissions
+
+Scorecard plugin provides the following permissions:
+
+| Name                  | Resource Type    | Policy | Description                               | Requirements        |
+| --------------------- | ---------------- | ------ | ----------------------------------------- | ------------------- |
+| scorecard.metric.read | scorecard-metric | read   | Allows the user to read scorecard metrics | catalog.entity.read |
+
+### `scorecard.metric.read`
+
+- **Description**: Allows the user to read scorecard metrics
+- **Resource Type**: `scorecard-metric`
+- **Action**: `read`
+
+This permission controls access to viewing scorecard metrics for entities.
+
+#### Condition `HAS_METRIC_ID`
+
+- Optionally allow access to only specific metrics by their identifiers.
+
+**Example RBAC policies file configuration:**
+
+```csv rbac-policy.csv
+g, user:default/<YOUR_USERNAME>, role:default/scorecard-viewer
+p, role:default/scorecard-viewer, scorecard.metric.read, read, allow
+```
+
+**Example RBAC conditional policies file configuration:**
+
+```YAML rbac-conditions.yaml
+---
+result: CONDITIONAL
+roleEntityRef: "role:default/scorecard-viewer"
+pluginId: scorecard
+resourceType: scorecard-metric
+permissionMapping:
+  - read
+conditions:
+  rule: HAS_METRIC_ID
+  resourceType: scorecard-metric
+  params:
+    metricIds: ['github.open-prs']
+```
+
+This policy would allow users to read only the GitHub Open PRs metric, while restricting access to other available metrics.
+
 ## Metric Providers
 
 The Scorecard plugin collects metrics from third-party data sources using metric providers. The Scorecard node plugin provides `scorecardMetricsExtensionPoint` extension point that is used to connect your backend plugin module that exports custom metrics via metric providers to the Scorecard backend plugin. For detailed information on creating metric providers, see [providers.md](./docs/providers.md).
+
+### Available Metric Providers
+
+The following metric providers are available:
+
+| Provider   | Metric ID          | Title            | Description                           | Type   |
+| ---------- | ------------------ | ---------------- | ------------------------------------- | ------ |
+| **GitHub** | `github.open-prs`  | GitHub open PRs  | Count of open Pull Requests in GitHub | number |
+| **Jira**   | `jira.open-issues` | Jira open issues | The number of opened issues in Jira   | number |
+
+To use these providers, install the corresponding backend modules:
+
+- GitHub: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github`](../scorecard-backend-module-github/README.md)
+- Jira: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira`](../scorecard-backend-module-jira/README.md)
 
 ## Thresholds
 

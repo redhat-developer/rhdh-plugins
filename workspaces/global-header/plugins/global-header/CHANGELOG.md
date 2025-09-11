@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.16.1
+
+### Patch Changes
+
+- 60a37b4: Fixes the global header starred items icon color and visibility:
+
+  - Changed star icon color to use theme.rhdh.general.starredItemsColor for better visibility and customization
+  - Star icon now only appears on hover instead of being always visible
+  - Maintains consistent styling with table view starred items across the application
+
+## 1.16.0
+
+### Minor Changes
+
+- 6d86c5c: Add internationalization (i18n) support with German, French, Italian, and Spanish translations.
+
+### Patch Changes
+
+- cf9f6d0: Fixed dropdown empty state corners by removing the border line
+
 ## 1.15.1
 
 ### Patch Changes
