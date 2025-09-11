@@ -352,7 +352,6 @@ describe('BulkImportBackendClient', () => {
     it('deleteImportAction should send a DELETE request and handle successful response', async () => {
       const response = await bulkImportApi.deleteImportAction(
         'org/dessert/cupcake',
-        'main',
       );
 
       expect(response.status).toBe(200);
@@ -361,10 +360,7 @@ describe('BulkImportBackendClient', () => {
 
   describe('getImportAction', () => {
     it('getImportAction should retrive the status of the repo', async () => {
-      const response = await bulkImportApi.getImportAction(
-        'org/dessert/donut',
-        'master',
-      );
+      const response = await bulkImportApi.getImportAction('org/dessert/donut');
 
       expect(response.status).toBe(RepositoryStatus.WAIT_PR_APPROVAL);
       expect(response).toEqual(

@@ -121,7 +121,7 @@ export const useRepositories = (
     isLoading: isDbLoading,
   } = useQuery(
     ['added-repositories'],
-    () => bulkImportApi.findAllRepositoriesFromDb(),
+    () => bulkImportApi.findAllStoredRepositories(),
     {
       enabled: !!options?.fromDb,
     },

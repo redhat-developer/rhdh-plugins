@@ -39,30 +39,15 @@ declare namespace Components {
   namespace Schemas {
     export type ApprovalTool = 'GIT' | 'SERVICENOW';
     /**
-     * Execute Template Request
-     */
-    export interface ExecuteTemplateRequest {
-      /**
-       * A list of GitHub repository URLs to execute the template against.
-       */
-      repositories?: string[];
-      /**
-       * Optional key/value pairs to pass to the template.
-       */
-      templateParameters?: {
-        [name: string]: any;
-      };
-      /**
-       * Optional name of the template to use. If not provided, the default from config will be used.
-       */
-      templateName?: string;
-    }
-    /**
      * Import Job
      */
     export interface Import {
       id?: string;
-      status?: /* Import Job status */ ImportStatus;
+      status?: /* Import Job status */
+      ImportStatus | /* Import Job status */ TaskImportStatus;
+      task?: {
+        taskId?: string;
+      };
       /**
        * Specified entity name in the catalog. Filled only in response for dry-run import requests.
        */
@@ -96,6 +81,7 @@ declare namespace Components {
            * content of the catalog-info.yaml as fetched from the Pull Request.
            */
           catalogInfoContent?: string;
+          status?: 'WAIT_PR_APPROVAL' | 'PR_MERGED' | 'PR_ERROR';
         };
       };
     }
@@ -219,12 +205,12 @@ declare namespace Components {
        * repository URL
        */
       url?: string;
-      tasks?: /* Scaffolder Task */ ScaffolderTask[];
       /**
        * organization which the repository is part of
        */
       organization?: string;
-      importStatus?: /* Import Job status */ ImportStatus;
+      importStatus?: /* Import Job status */
+      ImportStatus | /* Import Job status */ TaskImportStatus;
       /**
        * default branch
        */
@@ -247,9 +233,6 @@ declare namespace Components {
      */
     export interface ScaffolderTask {
       taskId?: string;
-      scaffolderOptions?: {
-        [key: string]: any;
-      };
       repositoryId?: number;
     }
     /**
@@ -266,7 +249,11 @@ declare namespace Components {
      */
     export interface SourceImport {
       id?: string;
-      status?: /* Import Job status */ ImportStatus;
+      status?: /* Import Job status */
+      ImportStatus | /* Import Job status */ TaskImportStatus;
+      task?: {
+        taskId?: string;
+      };
       /**
        * Specified entity name in the catalog. Filled only in response for dry-run import requests.
        */
@@ -300,6 +287,7 @@ declare namespace Components {
            * content of the catalog-info.yaml as fetched from the Pull Request.
            */
           catalogInfoContent?: string;
+          status?: 'WAIT_PR_APPROVAL' | 'PR_MERGED' | 'PR_ERROR';
         };
       };
       source?: /**
@@ -312,6 +300,33 @@ declare namespace Components {
        */
       Source;
     }
+    /**
+     * Task import Job request
+     */
+    export interface TaskImportRequest {
+      approvalTool?: ApprovalTool;
+      repository: {
+        /**
+         * repository name
+         */
+        name?: string;
+        /**
+         * repository URL
+         */
+        url: string;
+        /**
+         * organization which the repository is part of
+         */
+        organization?: string;
+      };
+    }
+    /**
+     * Import Job status
+     */
+    export type TaskImportStatus =
+      | 'TASK_COMPLETED'
+      | 'TASK_IN_PROGRESS'
+      | 'FAILED_TO_FETCH_TASK';
   }
 }
 declare namespace Paths {
@@ -324,6 +339,13 @@ declare namespace Paths {
     }
     export type RequestBody =
       /* Import Job request */ Components.Schemas.ImportRequest[];
+    namespace Responses {
+      export type $202 = /* Import Job */ Components.Schemas.Import[];
+    }
+  }
+  namespace CreateTaskImportJobs {
+    export type RequestBody =
+      /* Task import Job request */ Components.Schemas.TaskImportRequest[];
     namespace Responses {
       export type $202 = /* Import Job */ Components.Schemas.Import[];
     }
@@ -342,26 +364,15 @@ declare namespace Paths {
       export interface $500 {}
     }
   }
-  namespace DeleteRepository {
+  namespace DeleteTaskImportByRepo {
     namespace Parameters {
-      export type RepositoryName = string;
+      export type Repo = string;
     }
-    export interface PathParameters {
-      repositoryName: Parameters.RepositoryName;
+    export interface QueryParameters {
+      repo?: Parameters.Repo;
     }
     namespace Responses {
       export interface $204 {}
-      export interface $500 {}
-    }
-  }
-  namespace ExecuteTemplate {
-    export type RequestBody =
-      /* Execute Template Request */ Components.Schemas.ExecuteTemplateRequest;
-    namespace Responses {
-      export interface $202 {
-        message?: string;
-        taskIds?: string[];
-      }
       export interface $500 {}
     }
   }
@@ -441,7 +452,7 @@ declare namespace Paths {
         /* Repository List */ Components.Schemas.RepositoryList;
     }
   }
-  namespace FindAllRepositoriesFromDb {
+  namespace FindAllStoredRepositories {
     namespace Responses {
       export type $200 =
         /* Repository List */ Components.Schemas.RepositoryList;
@@ -486,7 +497,7 @@ declare namespace Paths {
         /* Repository List */ Components.Schemas.RepositoryList;
     }
   }
-  namespace FindRepositoryFromDbByName {
+  namespace FindStoredRepositoryByName {
     namespace Parameters {
       export type RepositoryName = string;
     }
@@ -498,6 +509,20 @@ declare namespace Paths {
       export interface $404 {
         errors?: string[];
       }
+      export interface $500 {}
+    }
+  }
+  namespace FindTaskImportStatusByRepo {
+    namespace Parameters {
+      export type DefaultBranch = string;
+      export type Repo = string;
+    }
+    export interface QueryParameters {
+      repo?: Parameters.Repo;
+      defaultBranch?: Parameters.DefaultBranch;
+    }
+    namespace Responses {
+      export type $200 = /* Import Job */ Components.Schemas.Import;
       export interface $500 {}
     }
   }
@@ -547,29 +572,21 @@ export interface OperationMethods {
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.FindAllRepositories.Responses.$200>;
   /**
-   * findAllRepositoriesFromDb - Fetch all Repositories from the database
+   * findAllStoredRepositories - Fetch all Repositories from the database
    */
-  'findAllRepositoriesFromDb'(
+  'findAllStoredRepositories'(
     parameters?: Parameters<UnknownParamsObject> | null,
     data?: any,
     config?: AxiosRequestConfig,
-  ): OperationResponse<Paths.FindAllRepositoriesFromDb.Responses.$200>;
+  ): OperationResponse<Paths.FindAllStoredRepositories.Responses.$200>;
   /**
-   * findRepositoryFromDbByName - Fetch a single Repository from the database by its name
+   * findStoredRepositoryByName - Fetch a single Repository from the database by its name
    */
-  'findRepositoryFromDbByName'(
-    parameters?: Parameters<Paths.FindRepositoryFromDbByName.QueryParameters> | null,
+  'findStoredRepositoryByName'(
+    parameters?: Parameters<Paths.FindStoredRepositoryByName.QueryParameters> | null,
     data?: any,
     config?: AxiosRequestConfig,
-  ): OperationResponse<Paths.FindRepositoryFromDbByName.Responses.$200>;
-  /**
-   * deleteRepository - Delete a single Repository from the database by its name
-   */
-  'deleteRepository'(
-    parameters?: Parameters<Paths.DeleteRepository.PathParameters> | null,
-    data?: any,
-    config?: AxiosRequestConfig,
-  ): OperationResponse<Paths.DeleteRepository.Responses.$204>;
+  ): OperationResponse<Paths.FindStoredRepositoryByName.Responses.$200>;
   /**
    * findAllImports - Fetch Import Jobs
    */
@@ -590,6 +607,30 @@ export interface OperationMethods {
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.CreateImportJobs.Responses.$202>;
   /**
+   * createTaskImportJobs - Execute a scaffolder template for a list of repositories
+   */
+  'createTaskImportJobs'(
+    parameters?: Parameters<UnknownParamsObject> | null,
+    data?: Paths.CreateTaskImportJobs.RequestBody,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.CreateTaskImportJobs.Responses.$202>;
+  /**
+   * findTaskImportStatusByRepo - Get Import Status by repository
+   */
+  'findTaskImportStatusByRepo'(
+    parameters?: Parameters<Paths.FindTaskImportStatusByRepo.QueryParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.FindTaskImportStatusByRepo.Responses.$200>;
+  /**
+   * deleteTaskImportByRepo - Delete task import by repository name
+   */
+  'deleteTaskImportByRepo'(
+    parameters?: Parameters<Paths.DeleteTaskImportByRepo.QueryParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.DeleteTaskImportByRepo.Responses.$204>;
+  /**
    * findImportStatusByRepo - Get Import Status by repository
    */
   'findImportStatusByRepo'(
@@ -605,14 +646,6 @@ export interface OperationMethods {
     data?: any,
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.DeleteImportByRepo.Responses.$204>;
-  /**
-   * executeTemplate - Execute a scaffolder template for a list of repositories
-   */
-  'executeTemplate'(
-    parameters?: Parameters<UnknownParamsObject> | null,
-    data?: Paths.ExecuteTemplate.RequestBody,
-    config?: AxiosRequestConfig,
-  ): OperationResponse<Paths.ExecuteTemplate.Responses.$202>;
 }
 
 export interface PathsDictionary {
@@ -659,35 +692,25 @@ export interface PathsDictionary {
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.FindAllRepositories.Responses.$200>;
   };
-  ['/repositories/from-db']: {
+  ['/stored-repositories']: {
     /**
-     * findAllRepositoriesFromDb - Fetch all Repositories from the database
+     * findAllStoredRepositories - Fetch all Repositories from the database
      */
     'get'(
       parameters?: Parameters<UnknownParamsObject> | null,
       data?: any,
       config?: AxiosRequestConfig,
-    ): OperationResponse<Paths.FindAllRepositoriesFromDb.Responses.$200>;
+    ): OperationResponse<Paths.FindAllStoredRepositories.Responses.$200>;
   };
-  ['/repositories/db']: {
+  ['/stored-repository']: {
     /**
-     * findRepositoryFromDbByName - Fetch a single Repository from the database by its name
+     * findStoredRepositoryByName - Fetch a single Repository from the database by its name
      */
     'get'(
-      parameters?: Parameters<Paths.FindRepositoryFromDbByName.QueryParameters> | null,
+      parameters?: Parameters<Paths.FindStoredRepositoryByName.QueryParameters> | null,
       data?: any,
       config?: AxiosRequestConfig,
-    ): OperationResponse<Paths.FindRepositoryFromDbByName.Responses.$200>;
-  };
-  ['/repositories/db/{repositoryName}']: {
-    /**
-     * deleteRepository - Delete a single Repository from the database by its name
-     */
-    'delete'(
-      parameters?: Parameters<Paths.DeleteRepository.PathParameters> | null,
-      data?: any,
-      config?: AxiosRequestConfig,
-    ): OperationResponse<Paths.DeleteRepository.Responses.$204>;
+    ): OperationResponse<Paths.FindStoredRepositoryByName.Responses.$200>;
   };
   ['/imports']: {
     /**
@@ -710,6 +733,34 @@ export interface PathsDictionary {
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.CreateImportJobs.Responses.$202>;
   };
+  ['/task-imports']: {
+    /**
+     * createTaskImportJobs - Execute a scaffolder template for a list of repositories
+     */
+    'post'(
+      parameters?: Parameters<UnknownParamsObject> | null,
+      data?: Paths.CreateTaskImportJobs.RequestBody,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.CreateTaskImportJobs.Responses.$202>;
+  };
+  ['/task-import/by-repo']: {
+    /**
+     * findTaskImportStatusByRepo - Get Import Status by repository
+     */
+    'get'(
+      parameters?: Parameters<Paths.FindTaskImportStatusByRepo.QueryParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.FindTaskImportStatusByRepo.Responses.$200>;
+    /**
+     * deleteTaskImportByRepo - Delete task import by repository name
+     */
+    'delete'(
+      parameters?: Parameters<Paths.DeleteTaskImportByRepo.QueryParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.DeleteTaskImportByRepo.Responses.$204>;
+  };
   ['/import/by-repo']: {
     /**
      * findImportStatusByRepo - Get Import Status by repository
@@ -728,22 +779,11 @@ export interface PathsDictionary {
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.DeleteImportByRepo.Responses.$204>;
   };
-  ['/execute-template']: {
-    /**
-     * executeTemplate - Execute a scaffolder template for a list of repositories
-     */
-    'post'(
-      parameters?: Parameters<UnknownParamsObject> | null,
-      data?: Paths.ExecuteTemplate.RequestBody,
-      config?: AxiosRequestConfig,
-    ): OperationResponse<Paths.ExecuteTemplate.Responses.$202>;
-  };
 }
 
 export type Client = OpenAPIClient<OperationMethods, PathsDictionary>;
 
 export type ApprovalTool = Components.Schemas.ApprovalTool;
-export type ExecuteTemplateRequest = Components.Schemas.ExecuteTemplateRequest;
 export type Import = Components.Schemas.Import;
 export type ImportJobListV2 = Components.Schemas.ImportJobListV2;
 export type ImportRequest = Components.Schemas.ImportRequest;
@@ -755,3 +795,5 @@ export type RepositoryList = Components.Schemas.RepositoryList;
 export type ScaffolderTask = Components.Schemas.ScaffolderTask;
 export type Source = Components.Schemas.Source;
 export type SourceImport = Components.Schemas.SourceImport;
+export type TaskImportRequest = Components.Schemas.TaskImportRequest;
+export type TaskImportStatus = Components.Schemas.TaskImportStatus;

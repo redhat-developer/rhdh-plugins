@@ -85,10 +85,7 @@ export const PreviewFileSidebar = ({
       return values.repositories[id].catalogInfoYaml
         ?.prTemplate as PullRequestPreview;
     }
-    const result = await bulkImportApi.getImportAction(
-      url || '',
-      branch || 'main',
-    );
+    const result = await bulkImportApi.getImportAction(url || '');
     if ((result as Response)?.statusText) {
       setStatus({
         ...status,

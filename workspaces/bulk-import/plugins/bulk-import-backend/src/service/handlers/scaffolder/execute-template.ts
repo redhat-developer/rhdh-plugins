@@ -28,6 +28,8 @@ import {
   ScaffolderTaskDao,
   TaskLocationsDao,
 } from '../../../database/repositoryDao';
+import { Components } from '../../../generated/openapi';
+import { HandlerResponse } from '../handlers';
 
 interface ScaffolderEvent {
   id: number;
@@ -120,7 +122,7 @@ async function* getEvents(
   }
 }
 
-async function processEvents(
+async function processTaskEvents(
   taskId: string,
   scaffolderUrl: string,
   token: string,
@@ -142,7 +144,7 @@ async function processEvents(
   }
 }
 
-export const executeTemplate = async (
+export const createTaskImportJobs = async (
   discovery: DiscoveryService,
   logger: LoggerService,
   auth: AuthService,
@@ -150,20 +152,20 @@ export const executeTemplate = async (
   repositoryDao: RepositoryDao,
   taskDao: ScaffolderTaskDao,
   taskLocationsDao: TaskLocationsDao,
-  repositories: string[],
-  scaffolderOptions: Record<string, any> = {},
-  templateName?: string,
-) => {
-  const taskIds: string[] = [];
+  importRequests: Components.Schemas.TaskImportRequest[],
+): Promise<
+  HandlerResponse<Components.Schemas.Import[] | { errors: string[] }>
+> => {
+  const result: Components.Schemas.Import[] = [];
+
   const scaffolderUrl = await discovery.getBaseUrl('scaffolder');
   const { token } = await auth.getPluginRequestToken({
     onBehalfOf: await auth.getOwnServiceCredentials(),
     targetPluginId: 'scaffolder',
   });
-  const finalTemplateName =
-    templateName ?? config.getString('bulkImport.importTemplate');
+  const finalTemplateName = config.getString('bulkImport.importTemplate');
 
-  const execute = async (values: Record<string, any>) => {
+  const executeTask = async (values: Record<string, any>) => {
     const response = await fetch(`${scaffolderUrl}/v2/tasks`, {
       method: 'POST',
       headers: {
@@ -192,29 +194,42 @@ export const executeTemplate = async (
     return data.id;
   };
 
-  if (repositories?.length) {
-    for (const repo of repositories) {
-      const url = new URL(repo);
-      const owner = url.pathname.split('/')[1];
-      const repoName = url.pathname.split('/')[2];
-      const normalizedUrl = `${url.hostname}?owner=${owner}&repo=${repoName}`;
+  if (importRequests?.length) {
+    for (const importReq of importRequests) {
+      const url = importReq.repository.url;
+      const owner = importReq.repository.organization;
+      const repoName = importReq.repository.name;
 
-      const taskId = await execute({
+      const normalizedUrl = `${new URL(importReq.repository.url).hostname}?owner=${owner}&repo=${repoName}`;
+
+      const scaffolderOptions = {
         repoUrl: normalizedUrl,
-        ...scaffolderOptions,
-        owner,
-        repo: repoName,
+      };
+      const taskId = await executeTask(scaffolderOptions);
+
+      const repositoryId = await repositoryDao.insertRepository(url, taskId);
+      await taskDao.insertTask({ repositoryId, scaffolderOptions, taskId });
+      result.push({
+        repository: {
+          organization: owner,
+          url,
+          name: repoName,
+          // importStatus: '' // todo:  why do we need this status here... ?
+        },
+        status: 'TASK_IN_PROGRESS',
+        task: { taskId },
+        approvalTool: importReq.approvalTool,
+        // errors // todo
       });
 
-      const repositoryId = await repositoryDao.insertRepository(repo, taskId);
-      await taskDao.insertTask({ repositoryId, scaffolderOptions, taskId });
-      taskIds.push(taskId);
+      logger.info(`Started scaffolder task ${taskId} for ${url}`);
 
-      logger.info(`Started scaffolder task ${taskId} for ${repo}`);
-
-      processEvents(taskId, scaffolderUrl, token, logger, taskLocationsDao);
+      processTaskEvents(taskId, scaffolderUrl, token, logger, taskLocationsDao);
     }
   }
 
-  return { taskIds };
+  return {
+    statusCode: 202,
+    responseBody: result,
+  };
 };

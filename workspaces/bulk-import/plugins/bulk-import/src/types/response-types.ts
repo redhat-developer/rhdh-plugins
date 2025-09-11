@@ -30,9 +30,6 @@ export type Repository = {
 
 export interface ScaffolderTask {
   taskId: string;
-  scaffolderOptions: {
-    [key: string]: any;
-  };
   repositoryId: number;
   locations?: string[];
 }
@@ -46,6 +43,9 @@ export type ImportJobResponse = {
 
 export type ImportJobStatus = {
   approvalTool: string;
+  task: {
+    taskId: string;
+  };
   github: {
     pullRequest: {
       number: number;
@@ -53,6 +53,7 @@ export type ImportJobStatus = {
       title: string;
       body: string;
       catalogInfoContent: string;
+      status: 'WAIT_PR_APPROVAL' | 'PR_MERGED' | 'PR_ERROR';
     };
   };
   status: string;

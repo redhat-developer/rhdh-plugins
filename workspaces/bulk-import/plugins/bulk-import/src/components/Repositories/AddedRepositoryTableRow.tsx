@@ -28,6 +28,7 @@ import {
   AddRepositoriesFormValues,
   AddRepositoryData,
   ApprovalTool,
+  ImportStatus as ImportStatusType,
 } from '../../types';
 import {
   calculateLastUpdated,
@@ -47,8 +48,10 @@ const useStyles = makeStyles(() => ({
 
 const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
   const { values } = useFormikContext<AddRepositoriesFormValues>();
+  const status = values.repositories?.[data.id]?.catalogInfoYaml?.status;
+
   return getImportStatus(
-    values.repositories?.[data.id]?.catalogInfoYaml?.status as string,
+    status as ImportStatusType,
     true,
     values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
     values?.approvalTool === ApprovalTool.Gitlab,
@@ -110,14 +113,11 @@ export const AddedRepositoryTableRow = ({
         <ImportStatus data={data} />
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
-        {data.tasks?.flatMap(task =>
-          task.locations?.map((location, index) => (
-            <Typography key={index} component="span">
-              <Link to={location}>{location}</Link>
-              {index < (task.locations?.length || 0) - 1 && ', '}
-            </Typography>
-          )),
-        )}
+        {data.tasks?.map(task => (
+          <Typography key={task.taskId} component="span">
+            {task.taskId}
+          </Typography>
+        ))}
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
         <LastUpdated data={data} />

@@ -20,8 +20,6 @@ import {
   IdentityApi,
 } from '@backstage/core-plugin-api';
 
-import { EventSourcePolyfill } from 'event-source-polyfill';
-
 import {
   AddedRepositoryColumnNameEnum,
   APITypes,
@@ -54,22 +52,13 @@ export type BulkImportAPI = {
     importRepositories: CreateImportJobRepository[],
     dryRun?: boolean,
   ) => Promise<ImportJobResponse[]>;
-  deleteImportAction: (
-    repo: string,
-    defaultBranch: string,
-  ) => Promise<ImportJobStatus | Response>;
-  getImportAction: (
-    repo: string,
-    defaultBranch: string,
-  ) => Promise<ImportJobStatus | Response>;
-  executeTemplate: (
-    repositories: string[],
-    templateParameters: Record<string, any>,
-  ) => Promise<any>;
-  findAllRepositoriesFromDb: () => Promise<Repository[]>;
-  deleteRepository: (url: string) => Promise<any>;
-  findRepositoryFromDbByName: (name: string) => Promise<Repository>;
-  getScaffolderTaskEvents: (taskId: string) => Promise<EventSource>;
+  deleteImportAction: (repo: string) => Promise<Response>;
+  getImportAction: (repo: string) => Promise<ImportJobStatus | Response>;
+  createTaskImportJobs: (
+    importJobs: CreateImportJobRepository[],
+  ) => Promise<ImportJobResponse[]>;
+  findAllStoredRepositories: () => Promise<Repository[]>;
+  findStoredRepositoryByName: (name: string) => Promise<Repository>;
 };
 
 export type Options = {
@@ -140,6 +129,26 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.status === 204 ? null : jsonResponse.json();
   }
 
+  async deleteImportAction(repo: string) {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}/api/bulk-import/task-import/by-repo?repo=${repo}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+      },
+    );
+    if (!jsonResponse.ok) {
+      const errorResponse = await jsonResponse.json();
+      throw errorResponse;
+    }
+    return jsonResponse.status === 204 ? null : await jsonResponse.json();
+  }
+
   async createImportJobs(
     importRepositories: CreateImportJobRepository[],
     dryRun?: boolean,
@@ -166,31 +175,11 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.status === 204 ? null : await jsonResponse.json();
   }
 
-  async deleteImportAction(repo: string, defaultBranch: string) {
+  async getImportAction(repo: string) {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(idToken && { Authorization: `Bearer ${idToken}` }),
-        },
-      },
-    );
-    if (!jsonResponse.ok) {
-      const errorResponse = await jsonResponse.json();
-      throw errorResponse.err;
-    }
-    return jsonResponse.status === 204 ? null : await jsonResponse.json();
-  }
-
-  async getImportAction(repo: string, defaultBranch: string) {
-    const { token: idToken } = await this.identityApi.getCredentials();
-    const backendUrl = this.configApi.getString('backend.baseUrl');
-    const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}`,
+      `${backendUrl}/api/bulk-import/task-import/by-repo?repo=${repo}`,
       {
         method: 'GET',
         headers: {
@@ -204,21 +193,18 @@ export class BulkImportBackendClient implements BulkImportAPI {
     }
     return jsonResponse.json();
   }
-  async executeTemplate(
-    repositories: string[],
-    templateParameters: Record<string, any>,
-  ) {
+  async createTaskImportJobs(importJobs: CreateImportJobRepository[]) {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/execute-template`,
+      `${backendUrl}/api/bulk-import/task-imports`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(idToken && { Authorization: `Bearer ${idToken}` }),
         },
-        body: JSON.stringify({ repositories, templateParameters }),
+        body: JSON.stringify(importJobs),
       },
     );
     if (!jsonResponse.ok) {
@@ -228,11 +214,11 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.status === 204 ? null : await jsonResponse.json();
   }
 
-  async findAllRepositoriesFromDb() {
+  async findAllStoredRepositories() {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/repositories/from-db`,
+      `${backendUrl}/api/bulk-import/stored-repositories`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -247,33 +233,11 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.status === 204 ? null : await jsonResponse.json();
   }
 
-  async deleteRepository(url: string) {
+  async findStoredRepositoryByName(name: string): Promise<Repository> {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/repositories/db/${encodeURIComponent(
-        url,
-      )}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(idToken && { Authorization: `Bearer ${idToken}` }),
-        },
-      },
-    );
-    if (!jsonResponse.ok) {
-      const errorResponse = await jsonResponse.json();
-      throw errorResponse;
-    }
-    return jsonResponse.status === 204 ? null : await jsonResponse.json();
-  }
-
-  async findRepositoryFromDbByName(name: string): Promise<Repository> {
-    const { token: idToken } = await this.identityApi.getCredentials();
-    const backendUrl = this.configApi.getString('backend.baseUrl');
-    const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/repositories/db?repositoryName=${name}`,
+      `${backendUrl}/api/bulk-import/stored-repository?repositoryName=${name}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -286,18 +250,5 @@ export class BulkImportBackendClient implements BulkImportAPI {
       throw errorResponse;
     }
     return jsonResponse.json();
-  }
-
-  async getScaffolderTaskEvents(taskId: string) {
-    const backendUrl = this.configApi.getString('backend.baseUrl');
-    const { token } = await this.identityApi.getCredentials();
-    return new EventSourcePolyfill(
-      `${backendUrl}/api/scaffolder/v2/tasks/${taskId}/eventstream`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
   }
 }

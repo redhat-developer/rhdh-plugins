@@ -28,7 +28,7 @@ export const TasksPage = () => {
   const bulkImportApi = useApi(bulkImportApiRef);
 
   const { data, isLoading, isError } = useQuery(['repository', repoUrl], () =>
-    bulkImportApi.findRepositoryFromDbByName(decodeURIComponent(repoUrl!)),
+    bulkImportApi.findStoredRepositoryByName(decodeURIComponent(repoUrl!)),
   );
 
   if (isLoading) {

@@ -2,13 +2,14 @@
 
 All URIs are relative to _http://localhost:7007/api/bulk-import_
 
-| Method                                                            | HTTP request               | Description                                              |
-| ----------------------------------------------------------------- | -------------------------- | -------------------------------------------------------- |
-| [**createImportJobs**](ImportApi.md#createImportJobs)             | **POST** /imports          | Submit Import Jobs                                       |
-| [**deleteImportByRepo**](ImportApi.md#deleteImportByRepo)         | **DELETE** /import/by-repo | Delete Import by repository                              |
-| [**executeTemplate**](ImportApi.md#executeTemplate)               | **POST** /execute-template | Execute a scaffolder template for a list of repositories |
-| [**findAllImports**](ImportApi.md#findAllImports)                 | **GET** /imports           | Fetch Import Jobs                                        |
-| [**findImportStatusByRepo**](ImportApi.md#findImportStatusByRepo) | **GET** /import/by-repo    | Get Import Status by repository                          |
+| Method                                                                    | HTTP request                 | Description                                              |
+| ------------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------- |
+| [**createImportJobs**](ImportApi.md#createImportJobs)                     | **POST** /imports            | Submit Import Jobs                                       |
+| [**createTaskImportJobs**](ImportApi.md#createTaskImportJobs)             | **POST** /task-imports       | Execute a scaffolder template for a list of repositories |
+| [**deleteImportByRepo**](ImportApi.md#deleteImportByRepo)                 | **DELETE** /import/by-repo   | Delete Import by repository                              |
+| [**findAllImports**](ImportApi.md#findAllImports)                         | **GET** /imports             | Fetch Import Jobs                                        |
+| [**findImportStatusByRepo**](ImportApi.md#findImportStatusByRepo)         | **GET** /import/by-repo      | Get Import Status by repository                          |
+| [**findTaskImportStatusByRepo**](ImportApi.md#findTaskImportStatusByRepo) | **GET** /task-import/by-repo | Get Import Status by repository                          |
 
 <a name="createImportJobs"></a>
 
@@ -24,6 +25,33 @@ Submit Import Jobs
 | ----------------- | -------------------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------- |
 | **ImportRequest** | [**List**](../Models/ImportRequest.md) | List of Import jobs to create                                                              |                               |
 | **dryRun**        | **Boolean**                            | whether to perform a dry-run to check if entity name collisions would occur in the catalog | [optional] [default to false] |
+
+### Return type
+
+[**List**](../Models/Import.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="createTaskImportJobs"></a>
+
+# **createTaskImportJobs**
+
+> List createTaskImportJobs(TaskImportRequest)
+
+Execute a scaffolder template for a list of repositories
+
+### Parameters
+
+| Name                  | Type                                       | Description                                                     | Notes |
+| --------------------- | ------------------------------------------ | --------------------------------------------------------------- | ----- |
+| **TaskImportRequest** | [**List**](../Models/TaskImportRequest.md) | The template to execute and the repositories to run it against. |       |
 
 ### Return type
 
@@ -66,33 +94,6 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-<a name="executeTemplate"></a>
-
-# **executeTemplate**
-
-> executeTemplate_202_response executeTemplate(ExecuteTemplateRequest)
-
-Execute a scaffolder template for a list of repositories
-
-### Parameters
-
-| Name                       | Type                                                              | Description                                                     | Notes |
-| -------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------- | ----- |
-| **ExecuteTemplateRequest** | [**ExecuteTemplateRequest**](../Models/ExecuteTemplateRequest.md) | The template to execute and the repositories to run it against. |       |
-
-### Return type
-
-[**executeTemplate_202_response**](../Models/executeTemplate_202_response.md)
-
-### Authorization
-
-[BearerAuth](../README.md#BearerAuth)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
 <a name="findAllImports"></a>
 
 # **findAllImports**
@@ -132,6 +133,34 @@ Fetch Import Jobs
 # **findImportStatusByRepo**
 
 > Import findImportStatusByRepo(repo, defaultBranch)
+
+Get Import Status by repository
+
+### Parameters
+
+| Name              | Type       | Description                    | Notes                        |
+| ----------------- | ---------- | ------------------------------ | ---------------------------- |
+| **repo**          | **String** | the full URL to the repo       | [optional] [default to null] |
+| **defaultBranch** | **String** | the name of the default branch | [optional] [default to main] |
+
+### Return type
+
+[**Import**](../Models/Import.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="findTaskImportStatusByRepo"></a>
+
+# **findTaskImportStatusByRepo**
+
+> Import findTaskImportStatusByRepo(repo, defaultBranch)
 
 Get Import Status by repository
 

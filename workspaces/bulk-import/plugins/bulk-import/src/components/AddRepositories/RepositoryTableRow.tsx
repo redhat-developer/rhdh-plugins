@@ -58,10 +58,7 @@ export const RepositoryTableRow = ({
   const bulkImportApi = useApi(bulkImportApiRef);
   const { value, loading } = useAsync(async () => {
     if (data.repoUrl) {
-      const result = await bulkImportApi.getImportAction(
-        data.repoUrl,
-        data?.defaultBranch || 'main',
-      );
+      const result = await bulkImportApi.getImportAction(data.repoUrl);
       return result;
     }
     return null;
@@ -124,7 +121,7 @@ export const RepositoryTableRow = ({
         <CatalogInfoStatus
           data={data}
           importStatus={{
-            status: value?.status as string,
+            taskId: (value as ImportJobStatus)?.task?.taskId,
             pullRequest: (value as ImportJobStatus)?.github?.pullRequest,
           }}
           isLoading={loading}

@@ -64,7 +64,7 @@ export const useAddedRepositories = (
   const bulkImportApi = useApi(bulkImportApiRef);
   useFormikContext<AddRepositoriesFormValues>();
   const fetchAddedRepositories = async () =>
-    await bulkImportApi.findAllRepositoriesFromDb();
+    await bulkImportApi.findAllStoredRepositories();
 
   const {
     data: value,

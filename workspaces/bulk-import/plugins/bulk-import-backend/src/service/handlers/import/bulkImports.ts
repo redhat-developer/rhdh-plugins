@@ -509,7 +509,6 @@ export async function createImportJobs(
   const result: Components.Schemas.Import[] = [];
 
   const addedRepos = await handleAddedReposFromCreateImportJobs(
-    //
     deps,
     importRequests,
   );
@@ -690,10 +689,6 @@ export async function findImportStatusByRepo(
     config: Config;
     githubApiService: GithubApiService;
     catalogHttpClient: CatalogHttpClient;
-    repositoryDao: RepositoryDao;
-    taskDao: ScaffolderTaskDao;
-    discovery: DiscoveryService;
-    auth: AuthService;
   },
   repoUrl: string,
   defaultBranch?: string,
@@ -717,6 +712,109 @@ export async function findImportStatusByRepo(
     status: null,
   } as Components.Schemas.Import;
   try {
+    // Check to see if there are any PR
+    const openImportPr = await deps.githubApiService.findImportOpenPr(
+      deps.logger,
+      {
+        repoUrl: repoUrl,
+        includeCatalogInfoContent,
+      },
+    );
+    if (!openImportPr.prUrl) {
+      const catalogLocations = (
+        await deps.catalogHttpClient.listCatalogUrlLocations()
+      ).uniqueCatalogUrlLocations.keys();
+
+      const catalogUrl = getCatalogUrl(deps.config, repoUrl, defaultBranch);
+      let exists = false;
+      for (const loc of catalogLocations) {
+        if (loc === catalogUrl) {
+          exists = true;
+          break;
+        }
+      }
+      if (
+        exists &&
+        (await deps.githubApiService.hasFileInRepo({
+          repoUrl,
+          defaultBranch,
+          fileName: getCatalogFilename(deps.config),
+        }))
+      ) {
+        result.status = 'ADDED';
+        // Force a refresh of the Location, so that the entities from the catalog-info.yaml can show up quickly (not guaranteed however).
+        await deps.catalogHttpClient.refreshLocationByRepoUrl(
+          repoUrl,
+          defaultBranch,
+        );
+      }
+      // No import PR => let's determine last update from the repository
+      const ghRepo =
+        await deps.githubApiService.getRepositoryFromIntegrations(repoUrl);
+      result.lastUpdate = ghRepo.repository?.updated_at ?? undefined;
+      return {
+        statusCode: 200,
+        responseBody: result,
+      };
+    }
+    result.status = 'WAIT_PR_APPROVAL';
+    result.github = {
+      pullRequest: {
+        number: openImportPr.prNum,
+        url: openImportPr.prUrl,
+        title: openImportPr.prTitle,
+        body: openImportPr.prBody,
+        catalogInfoContent: openImportPr.prCatalogInfoContent,
+      },
+    };
+    result.lastUpdate = openImportPr.lastUpdate;
+  } catch (error: any) {
+    errors.push(error.message);
+    result.errors = errors;
+    if (error.message?.includes('Not Found')) {
+      return {
+        statusCode: 404,
+        responseBody: result,
+      };
+    }
+    result.status = 'PR_ERROR';
+  }
+
+  return {
+    statusCode: 200,
+    responseBody: result,
+  };
+}
+
+export async function findTaskImportStatusByRepo(
+  deps: {
+    logger: LoggerService;
+    config: Config;
+    githubApiService: GithubApiService;
+    catalogHttpClient: CatalogHttpClient;
+    repositoryDao: RepositoryDao;
+    taskDao: ScaffolderTaskDao;
+    discovery: DiscoveryService;
+    auth: AuthService;
+  },
+  repoUrl: string,
+): Promise<HandlerResponse<Components.Schemas.Import>> {
+  deps.logger.debug(`Getting bulk import job status for ${repoUrl}..`);
+
+  const gitUrl = gitUrlParse(repoUrl);
+
+  const errors: string[] = [];
+  const result = {
+    id: repoUrl,
+    repository: {
+      url: repoUrl,
+      name: gitUrl.name,
+      organization: gitUrl.organization,
+      id: `${gitUrl.organization}/${gitUrl.name}`,
+    },
+    approvalTool: 'GIT',
+  } as Components.Schemas.Import;
+  try {
     const repository = await deps.repositoryDao.findRepositoryByUrl(repoUrl);
     if (repository?.id) {
       const task = (
@@ -734,9 +832,9 @@ export async function findImportStatusByRepo(
           Authorization: `Bearer ${token}`,
         },
       });
+      result.task = { taskId: task.taskId };
       if (response.ok) {
         const data = await response.json();
-        result.status = data.status;
         console.log(` data is ${JSON.stringify(data)}`);
         if (data.state?.checkpoints) {
           for (const key in data.state.checkpoints) {
@@ -745,21 +843,22 @@ export async function findImportStatusByRepo(
               if (url) {
                 const prNumber = parseInt(url.split('/').pop()!, 10);
                 const prDetails = await deps.githubApiService.getPullRequest(
+                  // todo try to use findImportOpenPr
                   repoUrl,
                   prNumber,
                 );
                 result.github = {
                   pullRequest: {
+                    // todo handle few pull requests... use try catch for this purpose...
                     url,
+                    number: prNumber,
                     title: prDetails.title,
                     body: prDetails.body,
+                    status: prDetails.merged ? 'PR_MERGED' : 'WAIT_PR_APPROVAL', // todo add more statuses
                   },
                 };
-                if (prDetails.merged) {
-                  result.status = 'ADDED';
-                } else {
-                  result.status = 'WAIT_PR_APPROVAL';
-                }
+                result.status = 'TASK_IN_PROGRESS'; // todo provide correct status...
+                result.lastUpdate = prDetails.lastUpdated;
               }
             }
           }
@@ -775,7 +874,7 @@ export async function findImportStatusByRepo(
         responseBody: result,
       };
     }
-    result.status = 'PR_ERROR';
+    result.status = 'FAILED_TO_FETCH_TASK';
   }
 
   return {
@@ -844,4 +943,30 @@ export async function deleteImportByRepo(
     statusCode: 204,
     responseBody: undefined,
   };
+}
+
+export async function deleteTaskImportByRepo(
+  deps: {
+    logger: LoggerService;
+    dao: RepositoryDao;
+  },
+  repoUrl: string,
+): Promise<HandlerResponse<void>> {
+  deps.logger.debug(`Deleting repository from database by name ${repoUrl}...`);
+  try {
+    await deps.dao.deleteRepository(repoUrl);
+
+    return {
+      statusCode: 204,
+      responseBody: undefined,
+    };
+  } catch (error: any) {
+    deps.logger.error(
+      `Failed to delete repository from database by name ${repoUrl}`,
+      error,
+    );
+    return {
+      statusCode: 500,
+    };
+  }
 }

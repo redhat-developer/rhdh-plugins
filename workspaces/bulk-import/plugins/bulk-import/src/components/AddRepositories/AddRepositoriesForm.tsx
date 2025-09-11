@@ -25,8 +25,10 @@ import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import {
   AddRepositoriesFormValues,
   ApprovalTool,
+  CreateImportJobRepository,
   RepositorySelection,
 } from '../../types';
+import { prepareDataForSubmission } from '../../utils/repository-utils';
 import { DrawerContextProvider } from '../DrawerContext';
 import { AddRepositories } from './AddRepositories';
 
@@ -40,36 +42,25 @@ export const AddRepositoriesForm = () => {
     approvalTool: ApprovalTool.Git,
   };
 
-  const executeTemplate = (importOptions: {
-    repositories: string[];
-    templateParameters: Record<string, any>;
-  }) =>
-    bulkImportApi.executeTemplate(
-      importOptions.repositories,
-      importOptions.templateParameters,
-    );
+  const createImportJobs = (importJobs: CreateImportJobRepository[]) =>
+    bulkImportApi.createTaskImportJobs(importJobs);
 
-  const mutationCreate = useMutation(executeTemplate);
+  const mutationCreate = useMutation(createImportJobs);
 
   const handleSubmit = async (
     values: AddRepositoriesFormValues,
     formikHelpers: FormikHelpers<AddRepositoriesFormValues>,
   ) => {
     formikHelpers.setStatus(null);
-    const repositories = Object.values(values.repositories)
-      .map(repo => repo.repoUrl)
-      .filter((repoUrl): repoUrl is string => !!repoUrl);
-    mutationCreate.mutate(
-      {
-        repositories,
-        templateParameters: {},
-      },
-      {
-        onSuccess: () => {
-          navigate(`..`);
-        },
-      },
+    const importRepositories = prepareDataForSubmission(
+      values.repositories,
+      values.approvalTool,
     );
+    mutationCreate.mutate(importRepositories, {
+      onSuccess: () => {
+        navigate(`..`);
+      },
+    });
   };
 
   return (

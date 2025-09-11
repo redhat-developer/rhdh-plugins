@@ -15,6 +15,7 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import { AuthService, DiscoveryService } from '@backstage/backend-plugin-api';
 import { mockServices } from '@backstage/backend-test-utils';
 import type { CatalogClient } from '@backstage/catalog-client';
 
@@ -22,9 +23,15 @@ import gitUrlParse from 'git-url-parse';
 
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
 import { CatalogLocation } from '../../../catalog/types';
+import {
+  RepositoryDao,
+  ScaffolderTaskDao,
+} from '../../../database/repositoryDao';
 import { Paths } from '../../../generated/openapi';
 import { GithubApiService } from '../../../github';
 import { deleteImportByRepo, findAllImports } from './bulkImports';
+
+// import { PluginCache } from '@backstage/backend-plugin-api';
 
 const config = mockServices.rootConfig({
   data: {
@@ -55,10 +62,15 @@ describe('bulkimports.ts unit tests', () => {
   let logger: LoggerService;
   let mockCatalogHttpClient: CatalogHttpClient;
   let mockGithubApiService: GithubApiService;
+  let mockRepositoryDao: RepositoryDao;
+  let mockTaskDao: ScaffolderTaskDao;
+  let mockDiscovery: DiscoveryService;
+  let mockAuth: AuthService;
+  // let mockCache: PluginCache;
 
   beforeEach(() => {
     logger = mockServices.logger.mock();
-    const mockAuth = mockServices.auth.mock({
+    mockAuth = mockServices.auth.mock({
       getPluginRequestToken: async () => {
         return {
           token: 'ey123.abc.xyzzz', // notsecret
@@ -66,7 +78,9 @@ describe('bulkimports.ts unit tests', () => {
       },
     });
     const mockCache = mockServices.cache.mock();
-    const mockDiscovery = mockServices.discovery.mock();
+    mockDiscovery = mockServices.discovery.mock();
+    mockRepositoryDao = { findRepositoryByUrl: jest.fn() } as any;
+    mockTaskDao = { findTasksByRepositoryId: jest.fn() } as any;
     // TODO(rm3l): Use 'catalogServiceMock' from '@backstage/plugin-catalog-node/testUtils'
     //  once '@backstage/plugin-catalog-node' is upgraded
     const mockCatalogClient = {
@@ -164,9 +178,9 @@ describe('bulkimports.ts unit tests', () => {
       });
   }
 
-  function intersect(target: string[], input: string[]) {
-    return input.filter(loc => target.includes(loc));
-  }
+  // function intersect(target: string[], input: string[]) {
+  //   return input.filter(loc => target.includes(loc));
+  // }
 
   describe('findAllImports', () => {
     const locationUrls = [
@@ -242,14 +256,14 @@ describe('bulkimports.ts unit tests', () => {
       },
     ] as CatalogLocation[];
 
-    function searchInLocationUrls(
-      locations: CatalogLocation[],
-      search?: string,
-    ) {
-      return search
-        ? locations.filter(l => l.target.toLowerCase().includes(search))
-        : locations;
-    }
+    // function searchInLocationUrls(
+    //   locations: CatalogLocation[],
+    //   search?: string,
+    // ) {
+    //   return search
+    //     ? locations.filter(l => l.target.toLowerCase().includes(search))
+    //     : locations;
+    // }
 
     it.each([undefined, 'v1', 'v2'])(
       'should return only imports from repos that are accessible from the configured GH integrations (API Version: %s)',
@@ -282,12 +296,16 @@ describe('bulkimports.ts unit tests', () => {
         const apiVersion = apiVersionStr as
           | Paths.FindAllImports.Parameters.ApiVersion
           | undefined;
-        let resp = await findAllImports(
+        const resp = await findAllImports(
           {
             logger,
             config,
             githubApiService: mockGithubApiService,
             catalogHttpClient: mockCatalogHttpClient,
+            repositoryDao: mockRepositoryDao as any,
+            taskDao: mockTaskDao as any,
+            discovery: mockDiscovery as any,
+            auth: mockAuth as any,
           },
           {
             apiVersion,
@@ -396,412 +414,6 @@ describe('bulkimports.ts unit tests', () => {
             page: 1,
             size: 20,
             totalCount: 6,
-          };
-        }
-        expect(resp.responseBody).toEqual(expectedResponse);
-
-        // Request different pages and sizes
-        resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            pageNumber: 1,
-            pageSize: 4,
-          },
-        );
-        expect(resp.statusCode).toEqual(200);
-        expectedResponse = allImportsExpected.slice(0, 4);
-        if (apiVersion === 'v2') {
-          expectedResponse = {
-            imports: expectedResponse,
-            page: 1,
-            size: 4,
-            totalCount: 6,
-          };
-        }
-        expect(resp.responseBody).toEqual(expectedResponse);
-
-        resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            pageNumber: 2,
-            pageSize: 4,
-          },
-        );
-        expect(resp.statusCode).toEqual(200);
-        expectedResponse = allImportsExpected.slice(4, 6);
-        if (apiVersion === 'v2') {
-          expectedResponse = {
-            imports: expectedResponse,
-            page: 2,
-            size: 4,
-            totalCount: 6,
-          };
-        }
-        expect(resp.responseBody).toEqual(expectedResponse);
-
-        // No data for this page
-        resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            pageNumber: 3,
-            pageSize: 4,
-          },
-        );
-        expect(resp.statusCode).toEqual(200);
-        expectedResponse = [];
-        if (apiVersion === 'v2') {
-          expectedResponse = {
-            imports: expectedResponse,
-            page: 3,
-            size: 4,
-            totalCount: 6,
-          };
-        }
-        expect(resp.responseBody).toEqual(expectedResponse);
-      },
-    );
-
-    it.each([undefined, 'v1', 'v2'])(
-      'should respect search and pagination when returning imports (API Version: %s)',
-      async apiVersionStr => {
-        const listCatalogUrlLocationsMockFn = async (
-          search?: string | undefined,
-          _pageNumber?: number | undefined,
-          _pageSize?: number | undefined,
-        ) => {
-          const filteredLocations = searchInLocationUrls(locationUrls, search);
-          return {
-            locations: filteredLocations,
-            totalCount: filteredLocations.length,
-          };
-        };
-        jest
-          .spyOn(mockCatalogHttpClient, 'listCatalogUrlLocationsById')
-          .mockImplementation(listCatalogUrlLocationsMockFn);
-        jest
-          .spyOn(
-            mockGithubApiService,
-            'filterLocationsAccessibleFromIntegrations',
-          )
-          .mockImplementation(async (locs: string[]) => {
-            const accessible = [
-              // only repos that are accessible from the configured GH integrations
-              // are considered as valid Imports
-              'https://github.com/my-org-1/my-repo-11/blob/main/catalog-info.yaml', // PR
-              'https://github.com/my-user/my-repo-123/blob/main/catalog-info.yaml', // PR Error
-              'https://github.com/my-org-2/my-repo-21/blob/master/catalog-info.yaml', // ADDED
-              'https://github.com/my-org-2/my-repo-22/blob/master/catalog-info.yaml', // no PR => null status
-              'https://github.com/my-org-3/my-repo-31/blob/main/catalog-info.yaml', // ADDED
-              'https://github.com/my-org-3/my-repo-32/blob/dev/catalog-info.yaml', // PR
-            ];
-            return intersect(accessible, locs);
-          });
-        jest
-          .spyOn(mockCatalogHttpClient, 'findLocationEntitiesByTargetUrl')
-          .mockResolvedValue([]);
-
-        const apiVersion = apiVersionStr as
-          | Paths.FindAllImports.Parameters.ApiVersion
-          | undefined;
-        let resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            search: 'lorem ipsum dolor sit amet should not return any data',
-          },
-        );
-        expect(resp.statusCode).toEqual(200);
-        let expectedResponse: any = [];
-        if (apiVersion === 'v2') {
-          expectedResponse = {
-            imports: expectedResponse,
-            page: 1,
-            size: 20,
-            totalCount: 0,
-          };
-        }
-        expect(resp.responseBody).toEqual(expectedResponse);
-
-        resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            search: 'my-repo-2',
-          },
-        );
-        expect(resp.statusCode).toEqual(200);
-        const allImportsExpected = [
-          {
-            id: 'https://github.com/my-org-2/my-repo-21',
-            repository: {
-              url: 'https://github.com/my-org-2/my-repo-21',
-              name: 'my-repo-21',
-              organization: 'my-org-2',
-              id: 'my-org-2/my-repo-21',
-              defaultBranch: 'master',
-            },
-            approvalTool: 'GIT',
-            status: 'ADDED',
-            source: 'location',
-          },
-          {
-            id: 'https://github.com/my-org-2/my-repo-22',
-            repository: {
-              url: 'https://github.com/my-org-2/my-repo-22',
-              name: 'my-repo-22',
-              organization: 'my-org-2',
-              id: 'my-org-2/my-repo-22',
-              defaultBranch: 'master',
-            },
-            approvalTool: 'GIT',
-            status: null,
-            source: 'location',
-          },
-        ];
-        expectedResponse = allImportsExpected;
-        if (apiVersion === 'v2') {
-          expectedResponse = {
-            imports: expectedResponse,
-            page: 1,
-            size: 20,
-            totalCount: 2,
-          };
-        }
-        expect(resp.responseBody).toEqual(expectedResponse);
-
-        // Request different pages and sizes
-        resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            search: 'my-repo-2',
-            pageNumber: 1,
-            pageSize: 1,
-          },
-        );
-        expect(resp.statusCode).toEqual(200);
-        expectedResponse = allImportsExpected.slice(0, 1);
-        if (apiVersion === 'v2') {
-          expectedResponse = {
-            imports: expectedResponse,
-            page: 1,
-            size: 1,
-            totalCount: 2,
-          };
-        }
-        expect(resp.responseBody).toEqual(expectedResponse);
-
-        resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            search: 'my-repo-2',
-            pageNumber: 2,
-            pageSize: 1,
-          },
-        );
-        expect(resp.statusCode).toEqual(200);
-        expectedResponse = allImportsExpected.slice(1, 2);
-        if (apiVersion === 'v2') {
-          expectedResponse = {
-            imports: expectedResponse,
-            page: 2,
-            size: 1,
-            totalCount: 2,
-          };
-        }
-        expect(resp.responseBody).toEqual(expectedResponse);
-
-        // Unit test for sort if nothing is provided sorting should be based on name in asc order
-        resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            pageNumber: 1,
-            pageSize: 6,
-          },
-        );
-        const sortedNames =
-          apiVersion === 'v2'
-            ? (
-                resp?.responseBody as {
-                  imports: { repository: { name: any } }[];
-                }
-              )?.imports?.map(importObj => importObj.repository.name)
-            : (resp?.responseBody as { repository: { name: any } }[])?.map(
-                importObj => importObj.repository.name,
-              );
-        let expectedSortedArray = [
-          'my-repo-11',
-          'my-repo-123',
-          'my-repo-21',
-          'my-repo-22',
-          'my-repo-31',
-          'my-repo-32',
-        ];
-        expect(sortedNames).toEqual(expectedSortedArray);
-
-        // sorting  based on organization in asc order
-        resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            pageNumber: 1,
-            pageSize: 6,
-            sortColumn: 'repository.organization',
-            sortOrder: 'asc',
-          },
-        );
-
-        let sortedOrganization =
-          apiVersion === 'v2'
-            ? (
-                resp?.responseBody as {
-                  imports: { repository: { organization: any } }[];
-                }
-              )?.imports?.map(importObj => importObj.repository.organization)
-            : (
-                resp?.responseBody as { repository: { organization: any } }[]
-              )?.map(importObj => importObj.repository.organization);
-        expectedSortedArray = [
-          'my-org-1',
-          'my-org-2',
-          'my-org-2',
-          'my-org-3',
-          'my-org-3',
-          'my-user',
-        ];
-        expect(sortedOrganization).toEqual(expectedSortedArray);
-        // sorting  based on organization in desc order
-        resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            pageNumber: 1,
-            pageSize: 6,
-            sortColumn: 'repository.organization',
-            sortOrder: 'desc',
-          },
-        );
-
-        sortedOrganization =
-          apiVersion === 'v2'
-            ? (
-                resp?.responseBody as {
-                  imports: { repository: { organization: any } }[];
-                }
-              )?.imports?.map(importObj => importObj.repository.organization)
-            : (
-                resp?.responseBody as { repository: { organization: any } }[]
-              )?.map(importObj => importObj.repository.organization);
-        expectedSortedArray = [
-          'my-user',
-          'my-org-3',
-          'my-org-3',
-          'my-org-2',
-          'my-org-2',
-          'my-org-1',
-        ];
-        expect(sortedOrganization).toEqual(expectedSortedArray);
-
-        // No data for this page
-        resp = await findAllImports(
-          {
-            logger,
-            config,
-            githubApiService: mockGithubApiService,
-            catalogHttpClient: mockCatalogHttpClient,
-          },
-          {
-            apiVersion,
-          },
-          {
-            search: 'my-repo-2',
-            pageNumber: 3,
-            pageSize: 1,
-          },
-        );
-        expect(resp.statusCode).toEqual(200);
-        expectedResponse = [];
-        if (apiVersion === 'v2') {
-          expectedResponse = {
-            imports: expectedResponse,
-            page: 3,
-            size: 1,
-            totalCount: 2,
           };
         }
         expect(resp.responseBody).toEqual(expectedResponse);

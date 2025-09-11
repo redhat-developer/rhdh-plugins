@@ -2,26 +2,26 @@
 
 All URIs are relative to _http://localhost:7007/api/bulk-import_
 
-| Method                                                                        | HTTP request                                 | Description                                                                 |
-| ----------------------------------------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------- |
-| [**deleteRepository**](RepositoryApi.md#deleteRepository)                     | **DELETE** /repositories/db/{repositoryName} | Delete a single Repository from the database by its name                    |
-| [**findAllRepositories**](RepositoryApi.md#findAllRepositories)               | **GET** /repositories                        | Fetch Organization Repositories accessible by Backstage Github Integrations |
-| [**findAllRepositoriesFromDb**](RepositoryApi.md#findAllRepositoriesFromDb)   | **GET** /repositories/from-db                | Fetch all Repositories from the database                                    |
-| [**findRepositoryFromDbByName**](RepositoryApi.md#findRepositoryFromDbByName) | **GET** /repositories/db                     | Fetch a single Repository from the database by its name                     |
+| Method                                                                        | HTTP request                    | Description                                                                 |
+| ----------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------- |
+| [**deleteTaskImportByRepo**](RepositoryApi.md#deleteTaskImportByRepo)         | **DELETE** /task-import/by-repo | Delete task import by repository name                                       |
+| [**findAllRepositories**](RepositoryApi.md#findAllRepositories)               | **GET** /repositories           | Fetch Organization Repositories accessible by Backstage Github Integrations |
+| [**findAllStoredRepositories**](RepositoryApi.md#findAllStoredRepositories)   | **GET** /stored-repositories    | Fetch all Repositories from the database                                    |
+| [**findStoredRepositoryByName**](RepositoryApi.md#findStoredRepositoryByName) | **GET** /stored-repository      | Fetch a single Repository from the database by its name                     |
 
-<a name="deleteRepository"></a>
+<a name="deleteTaskImportByRepo"></a>
 
-# **deleteRepository**
+# **deleteTaskImportByRepo**
 
-> deleteRepository(repositoryName)
+> deleteTaskImportByRepo(repo)
 
-Delete a single Repository from the database by its name
+Delete task import by repository name
 
 ### Parameters
 
-| Name               | Type       | Description     | Notes             |
-| ------------------ | ---------- | --------------- | ----------------- |
-| **repositoryName** | **String** | Repository name | [default to null] |
+| Name     | Type       | Description              | Notes                        |
+| -------- | ---------- | ------------------------ | ---------------------------- |
+| **repo** | **String** | the full URL to the repo | [optional] [default to null] |
 
 ### Return type
 
@@ -66,11 +66,11 @@ Fetch Organization Repositories accessible by Backstage Github Integrations
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="findAllRepositoriesFromDb"></a>
+<a name="findAllStoredRepositories"></a>
 
-# **findAllRepositoriesFromDb**
+# **findAllStoredRepositories**
 
-> RepositoryList findAllRepositoriesFromDb()
+> RepositoryList findAllStoredRepositories()
 
 Fetch all Repositories from the database
 
@@ -91,11 +91,11 @@ This endpoint does not need any parameter.
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="findRepositoryFromDbByName"></a>
+<a name="findStoredRepositoryByName"></a>
 
-# **findRepositoryFromDbByName**
+# **findStoredRepositoryByName**
 
-> Repository findRepositoryFromDbByName(repositoryName)
+> Repository findStoredRepositoryByName(repositoryName)
 
 Fetch a single Repository from the database by its name
 

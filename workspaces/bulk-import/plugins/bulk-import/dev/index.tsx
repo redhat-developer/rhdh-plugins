@@ -40,6 +40,7 @@ import { mockEntities } from '../src/mocks/mockEntities';
 import { BulkImportPage, bulkImportPlugin } from '../src/plugin';
 import {
   APITypes,
+  CreateImportJobRepository,
   ImportJobResponse,
   ImportJobs,
   ImportJobStatus,
@@ -126,33 +127,23 @@ class MockBulkImportApi implements BulkImportAPI {
     ] as ImportJobResponse[];
   }
 
-  async deleteImportAction(
-    _repo: string,
-    _defaultBranch: string,
-  ): Promise<ImportJobStatus | Response> {
+  async deleteImportAction(_repo: string): Promise<Response> {
     return {} as Response;
   }
-  async getImportAction(
-    repo: string,
-    _defaultBranch: string,
-  ): Promise<ImportJobStatus | Response> {
+  async getImportAction(repo: string): Promise<ImportJobStatus | Response> {
     return mockGetImportJobs.imports.find(
       i => i.repository.url === repo,
     ) as ImportJobStatus;
   }
-  async executeTemplate(
-    _repositories: string[],
-    _templateParameters: Record<string, any>,
+  async createTaskImportJobs(
+    _repositories: CreateImportJobRepository[],
   ): Promise<any> {
     return Promise.resolve();
   }
-  async findAllRepositoriesFromDb(): Promise<Repository[]> {
+  async findAllStoredRepositories(): Promise<Repository[]> {
     return Promise.resolve([]);
   }
-  async deleteRepository(_url: string): Promise<any> {
-    return Promise.resolve();
-  }
-  async findRepositoryFromDbByName(_name: string): Promise<any> {
+  async findStoredRepositoryByName(_name: string): Promise<any> {
     return Promise.resolve({
       repositories: [
         {

@@ -38,6 +38,7 @@ import {
 } from '../handlers';
 import { getImportStatusFromLocations } from '../import';
 
+// @deprecated
 export async function findAllRepositories(
   deps: {
     logger: LoggerService;
@@ -88,7 +89,7 @@ export async function findRepositoriesByOrganization(
 }
 
 // todo: implement pagination.
-export async function findAllRepositoriesFromDb(deps: {
+export async function findAllStoredRepositories(deps: {
   logger: LoggerService;
   repositoryDao: RepositoryDao;
   taskDao: ScaffolderTaskDao;
@@ -281,32 +282,6 @@ export async function findRepositoryFromDbByName(
       responseBody: {
         errors: [error.message],
       },
-    };
-  }
-}
-
-export async function deleteRepository(
-  deps: {
-    logger: LoggerService;
-    dao: RepositoryDao;
-  },
-  name: string,
-): Promise<HandlerResponse<void>> {
-  deps.logger.debug(`Deleting repository from database by name ${name}...`);
-  try {
-    await deps.dao.deleteRepository(name);
-
-    return {
-      statusCode: 204,
-      responseBody: undefined,
-    };
-  } catch (error: any) {
-    deps.logger.error(
-      `Failed to delete repository from database by name ${name}`,
-      error,
-    );
-    return {
-      statusCode: 500,
     };
   }
 }

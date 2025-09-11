@@ -54,19 +54,20 @@ import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
   createImportJobs,
   deleteImportByRepo,
+  deleteTaskImportByRepo,
   findAllImports,
   findImportStatusByRepo,
+  findTaskImportStatusByRepo,
 } from './handlers/import';
 import { findAllOrganizations } from './handlers/organization';
 import { ping } from './handlers/ping';
 import {
-  deleteRepository,
   findAllRepositories,
-  findAllRepositoriesFromDb,
+  findAllStoredRepositories,
   findRepositoriesByOrganization,
   findRepositoryFromDbByName,
 } from './handlers/repository';
-import { executeTemplate } from './handlers/scaffolder/execute-template';
+import { createTaskImportJobs } from './handlers/scaffolder/execute-template';
 
 /**
  * Router Options
@@ -90,17 +91,27 @@ export interface RouterOptions {
 namespace Operations {
   export const PING = 'ping';
   export const FIND_ALL_ORGANIZATIONS = 'findAllOrganizations';
-  export const FIND_ALL_REPOSITORIES = 'findAllRepositories';
-  export const FIND_ALL_REPOSITORIES_FROM_DB = 'findAllRepositoriesFromDb';
-  export const FIND_REPOSITORY_FROM_DB_BY_NAME = 'findRepositoryFromDbByName';
-  export const DELETE_REPOSITORY = 'deleteRepository';
+
+  export const FIND_ALL_REPOSITORIES = 'findAllRepositories'; // @deprecated
+  export const FIND_ALL_STORED_REPOSITORIES = 'findAllStoredRepositories';
+
+  // it was created for task table. I think we need to remove this table and this method....
+  export const FIND_STORED_REPOSITORY_BY_NAME = 'findStoredRepositoryByName';
+
   export const FIND_REPOSITORIES_BY_ORGANIZATION =
     'findRepositoriesByOrganization';
+
+  // todo does client side use it? But It should from point of view optimisation...
   export const FIND_ALL_IMPORTS = 'findAllImports';
-  export const CREATE_IMPORT_JOBS = 'createImportJobs';
-  export const FIND_IMPORT_STATUS_BY_REPO = 'findImportStatusByRepo';
-  export const DELETE_IMPORT_BY_REPO = 'deleteImportByRepo';
-  export const EXECUTE_TEMPLATE = 'executeTemplate';
+
+  export const CREATE_IMPORT_JOBS = 'createImportJobs'; // @deprecated
+  export const CREATE_TASK_IMPORT_JOBS = 'createTaskImportJobs';
+
+  export const FIND_IMPORT_STATUS_BY_REPO = 'findImportStatusByRepo'; // @deprecated
+  export const FIND_TASK_IMPORT_STATUS_BY_REPO = 'findTaskImportStatusByRepo';
+
+  export const DELETE_IMPORT_BY_REPO = 'deleteImportByRepo'; // deprecated
+  export const DELETE_TASK_IMPORT_BY_REPO = 'deleteTaskImportByRepo';
 }
 
 /**
@@ -234,9 +245,9 @@ export async function createRouter(
   );
 
   api.register(
-    Operations.FIND_ALL_REPOSITORIES_FROM_DB,
+    Operations.FIND_ALL_STORED_REPOSITORIES,
     async (_c: Context, _req: Request, res: Response) => {
-      const response = await findAllRepositoriesFromDb({
+      const response = await findAllStoredRepositories({
         logger,
         repositoryDao: repositoryDao,
         taskDao: taskDao,
@@ -247,7 +258,7 @@ export async function createRouter(
   );
 
   api.register(
-    Operations.FIND_REPOSITORY_FROM_DB_BY_NAME,
+    Operations.FIND_STORED_REPOSITORY_BY_NAME,
     async (c: Context, _req: Request, res: Response) => {
       const repoUrl = c.request.query.repositoryName?.toString();
       if (!repoUrl) {
@@ -260,20 +271,6 @@ export async function createRouter(
       return res.status(response.statusCode).json({
         ...response.responseBody,
       });
-    },
-  );
-
-  api.register(
-    Operations.DELETE_REPOSITORY,
-    async (c: Context, _req: Request, res: Response) => {
-      const response = await deleteRepository(
-        {
-          logger,
-          dao: repositoryDao,
-        },
-        c.request.params.repositoryName?.toString(),
-      );
-      return res.status(response.statusCode).json(response.responseBody);
     },
   );
 
@@ -359,6 +356,7 @@ export async function createRouter(
     },
   );
 
+  // @deprecated
   api.register(
     Operations.CREATE_IMPORT_JOBS,
     async (
@@ -389,7 +387,54 @@ export async function createRouter(
     },
   );
 
-  // todo:
+  api.register(
+    Operations.CREATE_TASK_IMPORT_JOBS,
+    async (
+      c: Context<Paths.CreateTaskImportJobs.RequestBody>,
+      _req: Request,
+      res: Response,
+    ) => {
+      const response = await createTaskImportJobs(
+        discovery,
+        logger,
+        auth,
+        config,
+        repositoryDao,
+        taskDao,
+        taskLocationsDao,
+        c.request.requestBody,
+      );
+      return res.status(response.statusCode).json(response);
+    },
+  );
+
+  api.register(
+    Operations.FIND_TASK_IMPORT_STATUS_BY_REPO,
+    async (c: Context, _req: Request, res: Response) => {
+      const q: Paths.FindImportStatusByRepo.QueryParameters = {
+        ...c.request.query,
+      };
+      if (!q.repo?.trim()) {
+        throw new Error('missing or blank parameter');
+      }
+      const response = await findTaskImportStatusByRepo(
+        {
+          logger,
+          config,
+          githubApiService,
+          catalogHttpClient,
+          repositoryDao,
+          taskDao,
+          discovery,
+          auth,
+        },
+        q.repo,
+      );
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  // @deprecated
   api.register(
     Operations.FIND_IMPORT_STATUS_BY_REPO,
     async (c: Context, _req: Request, res: Response) => {
@@ -405,10 +450,6 @@ export async function createRouter(
           config,
           githubApiService,
           catalogHttpClient,
-          repositoryDao,
-          taskDao,
-          discovery,
-          auth,
         },
         q.repo,
         q.defaultBranch,
@@ -418,6 +459,27 @@ export async function createRouter(
     },
   );
 
+  api.register(
+    Operations.DELETE_TASK_IMPORT_BY_REPO,
+    async (c: Context, _req: Request, res: Response) => {
+      const q: Paths.DeleteImportByRepo.QueryParameters = {
+        ...c.request.query,
+      };
+      if (!q.repo?.trim()) {
+        throw new Error('missing or blank "repo" parameter');
+      }
+      const response = await deleteTaskImportByRepo(
+        {
+          logger,
+          dao: repositoryDao,
+        },
+        q.repo,
+      );
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  // @deprecated
   api.register(
     Operations.DELETE_IMPORT_BY_REPO,
     async (c: Context, _req: Request, res: Response) => {
@@ -438,42 +500,6 @@ export async function createRouter(
         q.defaultBranch,
       );
       return res.status(response.statusCode).json(response.responseBody);
-    },
-  );
-
-  api.register(
-    Operations.EXECUTE_TEMPLATE,
-    async (
-      c: Context<Paths.ExecuteTemplate.RequestBody>,
-      _req: Request,
-      res: Response,
-    ) => {
-      const {
-        repositories = [],
-        templateParameters = {},
-        templateName,
-      } = c.request.requestBody;
-
-      // const parsedRepositories = repositories.map(repo => {
-      //   const url = new URL(`https://${repo}`);
-      //   const owner = url.searchParams.get('owner');
-      //   const repoName = url.searchParams.get('repo');
-      //   return `https://${url.hostname}/${owner}/${repoName}`;
-      // });
-
-      const response = await executeTemplate(
-        discovery,
-        logger,
-        auth,
-        config,
-        repositoryDao,
-        taskDao,
-        taskLocationsDao,
-        repositories,
-        templateParameters,
-        templateName,
-      );
-      return res.status(202).json(response);
     },
   );
 
@@ -545,7 +571,7 @@ async function createAuditorEventByOperationId(
         search: req.query.search,
       });
       break;
-    case Operations.FIND_ALL_REPOSITORIES_FROM_DB:
+    case Operations.FIND_ALL_STORED_REPOSITORIES:
       auditorEvent = await auditCreateEvent(auditor, 'repo-read-db', req, {
         queryType: 'all',
       });
@@ -570,7 +596,7 @@ async function createAuditorEventByOperationId(
         dryRun: req.query.dryRun,
       });
       break;
-    case Operations.EXECUTE_TEMPLATE:
+    case Operations.CREATE_TASK_IMPORT_JOBS:
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'create',
       });

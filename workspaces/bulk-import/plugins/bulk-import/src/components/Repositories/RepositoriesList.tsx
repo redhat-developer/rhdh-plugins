@@ -19,12 +19,10 @@ import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Table } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
 
 import Box from '@mui/material/Box';
 import TablePagination from '@mui/material/TablePagination';
 
-import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useAddedRepositories } from '../../hooks/useAddedRepositories';
 import {
   AddedRepositoryColumnNameEnum,
@@ -49,7 +47,6 @@ export const RepositoriesList = () => {
   const [orderBy, setOrderBy] = useState<string>('repoName');
   const { openDialog, setOpenDialog, deleteComponent, setDeleteComponent } =
     useDeleteDialog();
-  const bulkImportApi = useApi(bulkImportApiRef);
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const [pageNumber, setPageNumber] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -74,9 +71,6 @@ export const RepositoriesList = () => {
   );
 
   const closeDialog = async () => {
-    if (deleteComponent) {
-      await bulkImportApi.deleteRepository(deleteComponent.repoUrl as string);
-    }
     setOpenDialog(false);
     refetch();
   };

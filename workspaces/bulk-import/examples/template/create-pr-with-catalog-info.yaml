@@ -13,16 +13,11 @@ spec:
     - title: Provide repository details
       required:
         - repoUrl
-        - owner
       properties:
         repoUrl:
           type: string
           title: Repository URL (Backstage format)
           description: 'e.g. github.com?owner=Org&repo=repoName'
-        owner:
-          type: string
-          title: Backstage Owner
-          description: e.g. user:default/test-user
 
   steps:
     - id: parse-query
@@ -57,7 +52,7 @@ spec:
           spec:
             type: other
             lifecycle: unknown
-            owner: ${{ parameters.owner }}
+            owner: user:default/test-user
 
     - id: publish
       name: Create PR to add catalog-info.yaml

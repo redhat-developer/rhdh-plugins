@@ -33,7 +33,6 @@ export const TasksTable = ({ tasks }: { tasks: ScaffolderTask[] }) => {
       <TableHead>
         <TableRow>
           <TableCell>Task ID</TableCell>
-          <TableCell>Scaffolder Options</TableCell>
           <TableCell>Task Link</TableCell>
         </TableRow>
       </TableHead>
@@ -41,7 +40,6 @@ export const TasksTable = ({ tasks }: { tasks: ScaffolderTask[] }) => {
         {tasks.map(task => (
           <TableRow key={task.taskId}>
             <TableCell>{task.taskId}</TableCell>
-            <TableCell>{JSON.stringify(task.scaffolderOptions)}</TableCell>
             <TableCell>
               <Link to={`${appBaseUrl}/create/tasks/${task.taskId}`}>
                 View Task

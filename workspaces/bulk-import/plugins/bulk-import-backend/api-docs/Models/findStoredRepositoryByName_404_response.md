@@ -1,4 +1,4 @@
-# findRepositoryFromDbByName_404_response
+# findStoredRepositoryByName_404_response
 
 ## Properties
 
