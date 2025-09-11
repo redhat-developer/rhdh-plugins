@@ -18,25 +18,6 @@ import { useSegmentAnalytics } from '../segment-analytics';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import { renderHook, act } from '@testing-library/react';
 
-// Mock crypto.subtle for SHA1 hashing
-const mockCryptoDigest = jest.fn();
-Object.defineProperty(global, 'crypto', {
-  value: {
-    subtle: {
-      digest: mockCryptoDigest,
-    },
-  },
-});
-
-// Mock TextEncoder for SHA1 hashing
-Object.defineProperty(global, 'TextEncoder', {
-  value: class TextEncoder {
-    encode(input: string) {
-      return new Uint8Array(Buffer.from(input, 'utf8'));
-    }
-  },
-});
-
 // Mock the Segment library
 jest.mock('@segment/analytics-next');
 
@@ -49,13 +30,6 @@ describe('useSegmentAnalytics Hook', () => {
       track: jest.fn(),
     };
     (AnalyticsBrowser.load as jest.Mock).mockReturnValue(mockAnalytics);
-
-    // Mock crypto.subtle.digest to return a consistent hash
-    const mockHashBuffer = new Uint8Array([
-      0xa1, 0xb2, 0xc3, 0xd4, 0xe5, 0xf6, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c,
-      0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14,
-    ]);
-    mockCryptoDigest.mockResolvedValue(mockHashBuffer.buffer);
 
     // Mock console methods
     jest.spyOn(console, 'log').mockImplementation(() => {});

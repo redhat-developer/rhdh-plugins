@@ -207,8 +207,7 @@ export class RegistrationBackendClient implements RegistrationService {
       throw new Error(`Failed to fetch Segment write key: ${response.status}`);
     }
 
-    // API returns plain text, not JSON
     const writeKey = await response.text();
-    return writeKey.trim(); // Remove any whitespace
+    return writeKey.trim();
   };
 }
