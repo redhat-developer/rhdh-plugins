@@ -175,7 +175,13 @@ export default async (opts: OptionValues) => {
           author: author,
           support: packageJSON.keywords
             ?.find((k: string) => k.startsWith('support:'))
-            ?.split(':')[1],
+            ?.split(':')[1]
+            ? {
+                name: packageJSON.keywords
+                  ?.find((k: string) => k.startsWith('support:'))
+                  ?.split(':')[1],
+              }
+            : undefined,
           lifecycle:
             packageJSON.keywords
               ?.find((k: string) => k.startsWith('lifecycle:'))
