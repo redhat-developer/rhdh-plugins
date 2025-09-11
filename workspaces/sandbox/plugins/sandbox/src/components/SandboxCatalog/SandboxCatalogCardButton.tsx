@@ -23,7 +23,7 @@ import { Link } from '@backstage/core-components';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { AnsibleStatus } from '../../utils/aap-utils';
 import { Product } from './productData';
-import { pushCtaEvent } from '../../utils/eddl-utils';
+import { useTrackAnalytics } from '../../utils/eddl-utils';
 import { Intcmp } from '../../hooks/useProductURLs';
 
 type SandboxCatalogCardButtonProps = {
@@ -41,6 +41,7 @@ export const SandboxCatalogCardButton: React.FC<
   const { loading, userFound, verificationRequired, userReady, ansibleStatus } =
     useSandboxContext();
   const [clicked, setClicked] = React.useState(false);
+  const trackAnalytics = useTrackAnalytics();
 
   const handleClick = () => {
     if (!clicked) setClicked(true);
@@ -113,10 +114,8 @@ export const SandboxCatalogCardButton: React.FC<
   const intcmp = getIntcmpFromProduct(id);
 
   // Handle CTA click for analytics
-  const handleCtaClick = () => {
-    if (link && intcmp) {
-      pushCtaEvent(title, 'Catalog', link, intcmp);
-    }
+  const handleCtaClick = async () => {
+    await trackAnalytics(title, 'Catalog', link, intcmp, 'cta');
   };
 
   const buttonContent = (

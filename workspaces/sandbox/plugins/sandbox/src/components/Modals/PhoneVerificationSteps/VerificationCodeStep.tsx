@@ -39,7 +39,10 @@ import { useSandboxContext } from '../../../hooks/useSandboxContext';
 import { Country, getCountryCallingCode } from 'react-phone-number-input';
 import { useApi } from '@backstage/core-plugin-api';
 import { registerApiRef } from '../../../api';
-import { getEddlDataAttributes } from '../../../utils/eddl-utils';
+import {
+  getEddlDataAttributes,
+  useTrackAnalytics,
+} from '../../../utils/eddl-utils';
 
 type VerificationCodeProps = {
   id: Product;
@@ -69,6 +72,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
   setLoading,
 }) => {
   const theme = useTheme();
+  const trackAnalytics = useTrackAnalytics();
   const startTrialEddlAttributes = getEddlDataAttributes(
     'Start Trial',
     'Verification',
@@ -161,7 +165,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
       setVerificationCodeError(undefined);
       setLoading(true);
       await registerApi.completePhoneVerification(otp.join(''));
-      const maxAttempts = 5;
+      const maxAttempts = 60;
       const retryInterval = 1000; // 1 second
 
       // Poll until user is found or max attempts reached
@@ -214,6 +218,28 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
       setLoading(false);
       setRefetchingUserData(false);
     }
+  };
+
+  // Handle Start Trial click for analytics tracking
+  const handleStartTrialClickWithTracking = async (pdt: Product) => {
+    await trackAnalytics('Start Trial', 'Verification', window.location.href);
+    handleStartTrialClick(pdt);
+  };
+
+  // Handle Resend Code click for analytics tracking
+  const handleResendCodeClickWithTracking = async () => {
+    await trackAnalytics('Resend Code', 'Verification', window.location.href);
+    handleResendCode();
+  };
+
+  // Handle Cancel click for analytics tracking
+  const handleCancelVerificationClick = async () => {
+    await trackAnalytics(
+      'Cancel Verification',
+      'Verification',
+      window.location.href,
+    );
+    handleClose();
   };
 
   return (
@@ -297,7 +323,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
             backgroundColor: 'transparent !important',
           }}
           onClick={() => {
-            handleResendCode();
+            handleResendCodeClickWithTracking();
             inputRefs.current[0]?.focus();
           }}
           {...resendCodeEddlAttributes}
@@ -331,7 +357,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
           data-testid="submit-opt-button"
           variant="contained"
           type="submit"
-          onClick={() => handleStartTrialClick(id)}
+          onClick={() => handleStartTrialClickWithTracking(id)}
           disabled={otp.some(digit => !digit) || loading}
           endIcon={
             loading && <CircularProgress size={20} sx={{ color: '#AFAFAF' }} />
@@ -343,7 +369,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
         <Button
           data-testid="close-opt-button"
           variant="outlined"
-          onClick={handleClose}
+          onClick={handleCancelVerificationClick}
           sx={{
             border: `1px solid ${theme.palette.primary.main}`,
             '&:hover': {
