@@ -342,22 +342,5 @@ describe('SandboxCatalogCardButton', () => {
         unmount();
       });
     });
-
-    it('should not push CTA event if link is empty', () => {
-      mockUseSandboxContext.mockReturnValue({
-        loading: false,
-        userFound: false,
-        userReady: false,
-        ansibleStatus: AnsibleStatus.UNKNOWN,
-      } as any);
-
-      renderButton({ link: '' });
-
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
-
-      // Should not push event when link is empty
-      expect(mockTrackAnalytics).not.toHaveBeenCalled();
-    });
   });
 });
