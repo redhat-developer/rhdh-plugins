@@ -115,9 +115,7 @@ export const SandboxCatalogCardButton: React.FC<
 
   // Handle CTA click for analytics
   const handleCtaClick = async () => {
-    if (link) {
-      await trackAnalytics(title, 'Catalog', link, intcmp, 'cta');
-    }
+    await trackAnalytics(title, 'Catalog', link, intcmp, 'cta');
   };
 
   const buttonContent = (

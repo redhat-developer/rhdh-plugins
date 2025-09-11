@@ -70,7 +70,6 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Segment Analytics
   const [segmentWriteKey, setSegmentWriteKey] = useState<string>();
-  const segmentAnalytics = useSegmentAnalytics(segmentWriteKey);
 
   const [statusUnknown, setStatusUnknown] = React.useState(true);
   const [userFound, setUserFound] = useState<boolean>(false);
@@ -80,6 +79,8 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   const [verificationRequired, setVerificationRequired] =
     useState<boolean>(false);
   const [pendingApproval, setPendingApproval] = useState<boolean>(false);
+
+  const segmentAnalytics = useSegmentAnalytics(segmentWriteKey, userData);
 
   const [ansibleData, setAnsibleData] = React.useState<AAPData | undefined>();
   const [ansibleUILink, setAnsibleUILink] = React.useState<

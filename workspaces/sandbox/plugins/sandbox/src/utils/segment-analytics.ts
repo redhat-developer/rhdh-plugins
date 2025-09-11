@@ -16,15 +16,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnalyticsBrowser } from '@segment/analytics-next';
-
-// SHA1 hash function
-const sha1 = async (message: string): Promise<string> => {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await window.crypto.subtle.digest('SHA-1', msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
-};
+import { SignupData } from '../types';
 
 export interface SegmentTrackingData {
   itemName: string;
@@ -37,18 +29,18 @@ export interface SegmentTrackingData {
 /**
  * Hook for managing Segment Analytics integration
  * @param writeKey - Segment write key for initialization
- * @param compliantUsername - User's compliant username (will be SHA1 hashed for userId)
+ * @param user - Full signup user data for identify/group calls
  * @returns Object containing tracking function and initialization status
  */
-export const useSegmentAnalytics = (
-  writeKey?: string,
-  compliantUsername?: string,
-) => {
+export const useSegmentAnalytics = (writeKey?: string, user?: SignupData) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [initializationError, setInitializationError] = useState<string | null>(
     null,
   );
   const analyticsRef = useRef<AnalyticsBrowser | null>(null);
+  const hasIdentifiedRef = useRef<boolean>(false);
+  const hasGroupedRef = useRef<boolean>(false);
+  const lastIdentifiedUserIdRef = useRef<string | undefined>(undefined);
 
   // Initialize Segment Analytics when writeKey is available
   useEffect(() => {
@@ -72,6 +64,49 @@ export const useSegmentAnalytics = (
     initializeSegment();
   }, [writeKey]);
 
+  // Perform IDENTIFY and GROUP once per session per user
+  useEffect(() => {
+    if (!analyticsRef.current || !isInitialized) {
+      return;
+    }
+
+    const currentUserId = user?.userID;
+
+    // Reset flags if user changes
+    if (currentUserId && lastIdentifiedUserIdRef.current !== currentUserId) {
+      hasIdentifiedRef.current = false;
+      hasGroupedRef.current = false;
+    }
+
+    if (currentUserId && !hasIdentifiedRef.current) {
+      try {
+        const traits: Record<string, any> = {
+          // Only non-sensitive traits are allowed
+          company: user?.company,
+        };
+
+        analyticsRef.current.identify(currentUserId, traits);
+        hasIdentifiedRef.current = true;
+        lastIdentifiedUserIdRef.current = currentUserId;
+      } catch (e) {
+        // ignore identify errors
+      }
+    }
+
+    if (user?.accountID && !hasGroupedRef.current) {
+      try {
+        const groupTraits: Record<string, any> = {};
+        if (user?.accountNumber) {
+          groupTraits.ebs = user.accountNumber;
+        }
+        analyticsRef.current.group(user.accountID, groupTraits);
+        hasGroupedRef.current = true;
+      } catch (e) {
+        // ignore group errors
+      }
+    }
+  }, [isInitialized, user]);
+
   const trackClick = useCallback(
     async (data: SegmentTrackingData): Promise<void> => {
       if (!analyticsRef.current || !isInitialized) {
@@ -79,6 +114,10 @@ export const useSegmentAnalytics = (
       }
 
       try {
+        // Build event name: "What <past-tense-verb>"
+        const verb = data.linkType === 'cta' ? 'launched' : 'clicked';
+        const eventName = `${data.itemName} ${verb}`;
+
         const trackingPayload = {
           category: `Developer Sandbox|${data.section}`,
           regions: `sandbox-${data.section.toLocaleLowerCase('en-US')}`,
@@ -90,25 +129,12 @@ export const useSegmentAnalytics = (
           }),
         };
 
-        // Create userId from hashed compliantUsername if available
-        let userId: string | undefined;
-        if (compliantUsername) {
-          userId = await sha1(compliantUsername);
-        }
-
-        // Track with properties and userId using same structure as Adobe EDDL
-        if (userId) {
-          analyticsRef.current.track(data.itemName, trackingPayload, {
-            userId,
-          });
-        } else {
-          analyticsRef.current.track(data.itemName, trackingPayload);
-        }
+        analyticsRef.current.track(eventName, trackingPayload);
       } catch (error) {
         // Don't throw - allow Adobe tracking to continue
       }
     },
-    [isInitialized, compliantUsername],
+    [isInitialized],
   );
 
   return {

@@ -165,7 +165,7 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
       setVerificationCodeError(undefined);
       setLoading(true);
       await registerApi.completePhoneVerification(otp.join(''));
-      const maxAttempts = 5;
+      const maxAttempts = 60; // increase polling window to ~60s
       const retryInterval = 1000; // 1 second
 
       // Poll until user is found or max attempts reached

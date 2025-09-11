@@ -126,7 +126,7 @@ describe('useSegmentAnalytics Hook', () => {
       });
     });
 
-    expect(mockAnalytics.track).toHaveBeenCalledWith('Test Item', {
+    expect(mockAnalytics.track).toHaveBeenCalledWith('Test Item launched', {
       category: 'Developer Sandbox|Catalog',
       regions: 'sandbox-catalog',
       text: 'Test Item',
@@ -135,13 +135,16 @@ describe('useSegmentAnalytics Hook', () => {
     });
   });
 
-  it('should track events with userId when compliantUsername is provided', async () => {
+  it('should track events with userID when provided via user object', async () => {
+    const track = jest.fn();
+    (AnalyticsBrowser.load as jest.Mock).mockReturnValue({ track });
+
+    const user = { userID: 'uid-123' } as any;
     const { result } = renderHook(() =>
-      useSegmentAnalytics('test-write-key', 'testuser123'),
+      useSegmentAnalytics('test-write-key', user),
     );
 
     await act(async () => {
-      // Wait for initialization
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
@@ -153,37 +156,20 @@ describe('useSegmentAnalytics Hook', () => {
         linkType: 'cta',
         internalCampaign: '701Pe00000dnCEYIA2',
       });
-      // Wait for async SHA1 hashing to complete
-      await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    // Verify SHA1 hashing was called
-    expect(mockCryptoDigest).toHaveBeenCalledWith(
-      'SHA-1',
-      expect.any(Uint8Array),
-    );
-
-    // Verify track was called with correct event name, payload, and userId
-    expect(mockAnalytics.track).toHaveBeenCalledWith(
-      'OpenShift',
-      {
-        category: 'Developer Sandbox|Catalog',
-        regions: 'sandbox-catalog',
-        text: 'OpenShift',
-        href: 'https://console.example.com',
-        linkType: 'cta',
-        internalCampaign: '701Pe00000dnCEYIA2',
-      },
-      {
-        userId: 'a1b2c3d4e5f60708090a0b0c0d0e0f1011121314',
-      },
-    );
+    expect(track).toHaveBeenCalledWith('OpenShift launched', {
+      category: 'Developer Sandbox|Catalog',
+      regions: 'sandbox-catalog',
+      text: 'OpenShift',
+      href: 'https://console.example.com',
+      linkType: 'cta',
+      internalCampaign: '701Pe00000dnCEYIA2',
+    });
   });
 
-  it('should handle events without optional properties', async () => {
-    const { result } = renderHook(() =>
-      useSegmentAnalytics('test-write-key', 'user789'),
-    );
+  it('should handle events without optional properties and without userID', async () => {
+    const { result } = renderHook(() => useSegmentAnalytics('test-write-key'));
 
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0));
@@ -194,32 +180,23 @@ describe('useSegmentAnalytics Hook', () => {
         itemName: 'Simple Click',
         section: 'Support',
       });
-      // Wait for async SHA1 hashing to complete
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    expect(mockAnalytics.track).toHaveBeenCalledWith(
-      'Simple Click',
-      {
-        category: 'Developer Sandbox|Support',
-        regions: 'sandbox-support',
-        text: 'Simple Click',
-        href: undefined,
-        linkType: 'default',
-      },
-      {
-        userId: 'a1b2c3d4e5f60708090a0b0c0d0e0f1011121314',
-      },
-    );
+    expect(mockAnalytics.track).toHaveBeenCalledWith('Simple Click clicked', {
+      category: 'Developer Sandbox|Support',
+      regions: 'sandbox-support',
+      text: 'Simple Click',
+      href: undefined,
+      linkType: 'default',
+    });
   });
 
   it('should not track when analytics is not initialized', async () => {
     // Mock AnalyticsBrowser.load to return null (initialization fails)
     (AnalyticsBrowser.load as jest.Mock).mockReturnValue(null);
 
-    const { result } = renderHook(() =>
-      useSegmentAnalytics('test-write-key', 'user123'),
-    );
+    const { result } = renderHook(() => useSegmentAnalytics('test-write-key'));
 
     await act(async () => {
       // Wait for failed initialization
@@ -239,70 +216,101 @@ describe('useSegmentAnalytics Hook', () => {
     (AnalyticsBrowser.load as jest.Mock).mockReturnValue(mockAnalytics);
   });
 
-  it('should handle SHA1 hashing errors gracefully', async () => {
-    // Mock crypto.subtle.digest to throw an error
-    mockCryptoDigest.mockRejectedValue(new Error('Hashing failed'));
+  it('should call identify once when user data with userID is provided', async () => {
+    const identify = jest.fn();
+    const group = jest.fn();
+    const track = jest.fn();
+    (AnalyticsBrowser.load as jest.Mock).mockReturnValue({
+      identify,
+      group,
+      track,
+    });
 
-    const { result } = renderHook(() =>
-      useSegmentAnalytics('test-write-key', 'user123'),
+    const user = {
+      name: 'Test User',
+      compliantUsername: 'testuser',
+      username: 'testuser',
+      givenName: 'Test',
+      familyName: 'User',
+      company: 'Test Co',
+      userID: 'uid-1',
+    } as any;
+
+    const { rerender } = renderHook(
+      ({ u }) => useSegmentAnalytics('key', u as any),
+      { initialProps: { u: undefined as any } },
     );
 
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
+    expect(identify).not.toHaveBeenCalled();
+
+    rerender({ u: user });
+
     await act(async () => {
-      await result.current.trackClick({
-        itemName: 'Test Event',
-        section: 'Catalog',
-      });
-      // Wait for async hashing error to be handled
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    // Should not track due to hashing error
-    expect(mockAnalytics.track).not.toHaveBeenCalled();
+    expect(identify).toHaveBeenCalledTimes(1);
+    expect(identify).toHaveBeenCalledWith('uid-1', {
+      company: 'Test Co',
+    });
+
+    // Rerender with same user should not call identify again
+    rerender({ u: user });
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+    expect(identify).toHaveBeenCalledTimes(1);
   });
 
-  it('should generate consistent SHA1 hash for same input', async () => {
-    const { result } = renderHook(() =>
-      useSegmentAnalytics('test-write-key', 'consistent-user'),
+  it('should call group once with accountID and accountNumber trait when present', async () => {
+    const identify = jest.fn();
+    const group = jest.fn();
+    const track = jest.fn();
+    (AnalyticsBrowser.load as jest.Mock).mockReturnValue({
+      identify,
+      group,
+      track,
+    });
+
+    const user = {
+      name: 'Test User',
+      compliantUsername: 'testuser',
+      username: 'testuser',
+      givenName: 'Test',
+      familyName: 'User',
+      company: 'Test Co',
+      userID: 'uid-1',
+      accountID: 'acc-2',
+      accountNumber: '123456',
+    } as any;
+
+    const { rerender } = renderHook(
+      ({ u }) => useSegmentAnalytics('key', u as any),
+      { initialProps: { u: undefined as any } },
     );
 
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    // Track multiple events with same user
+    rerender({ u: user });
+
     await act(async () => {
-      await result.current.trackClick({
-        itemName: 'Event 1',
-        section: 'Catalog',
-      });
-      // Wait for async SHA1 hashing to complete
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
+    expect(group).toHaveBeenCalledTimes(1);
+    expect(group).toHaveBeenCalledWith('acc-2', { ebs: '123456' });
+
+    // Rerender with same user should not call group again
+    rerender({ u: user });
     await act(async () => {
-      await result.current.trackClick({
-        itemName: 'Event 2',
-        section: 'Activities',
-      });
-      // Wait for async SHA1 hashing to complete
       await new Promise(resolve => setTimeout(resolve, 0));
     });
-
-    // Both calls should have same userId
-    expect(mockAnalytics.track).toHaveBeenCalledTimes(2);
-
-    const firstCall = mockAnalytics.track.mock.calls[0];
-    const secondCall = mockAnalytics.track.mock.calls[1];
-
-    expect(firstCall[2]?.userId).toBe(
-      'a1b2c3d4e5f60708090a0b0c0d0e0f1011121314',
-    );
-    expect(secondCall[2]?.userId).toBe(
-      'a1b2c3d4e5f60708090a0b0c0d0e0f1011121314',
-    );
+    expect(group).toHaveBeenCalledTimes(1);
   });
 });
