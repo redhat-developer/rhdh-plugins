@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.4.0
+
+### Minor Changes
+
+- 47fd25f: Enabled Quickstart items for developer role.
+
 ## 1.3.0
 
 ### Minor Changes
