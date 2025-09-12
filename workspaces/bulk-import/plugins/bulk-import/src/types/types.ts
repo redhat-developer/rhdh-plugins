@@ -70,6 +70,7 @@ export type AddRepositoryData = {
     lastUpdated?: string;
   };
   lastUpdated?: string;
+  tasks?: { taskId: string; repositoryId: number }[];
 };
 
 export type Order = 'asc' | 'desc';
@@ -87,12 +88,14 @@ export type AddRepositoriesFormValues = {
   approvalTool: ApprovalTool;
 };
 
+// @deprecated
 export enum RepositoryStatus {
-  ADDED = 'ADDED',
   'WAIT_PR_APPROVAL' = 'WAIT_PR_APPROVAL',
+  'PR_MERGED' = 'PR_MERGED',
+  'PR_ERROR' = 'PR_ERROR',
+  ADDED = 'ADDED',
   Ready = 'Ready',
   NotGenerated = 'NotGenerated',
-  'PR_ERROR' = 'PR_ERROR',
   'CATALOG_INFO_FILE_EXISTS_IN_REPO' = 'CATALOG_INFO_FILE_EXISTS_IN_REPO',
   'CATALOG_ENTITY_CONFLICT' = 'CATALOG_ENTITY_CONFLICT',
   'REPO_EMPTY' = 'REPO_EMPTY',
@@ -124,15 +127,6 @@ export enum ApprovalTool {
 
 export type CreateImportJobRepository = {
   approvalTool: string;
-  catalogEntityName: string;
-  codeOwnersFileAsEntityOwner: boolean;
-  catalogInfoContent: string;
-  github: {
-    pullRequest: {
-      title: string;
-      body: string;
-    };
-  };
   repository: RepositoryResponse;
 };
 
@@ -150,6 +144,7 @@ export type ErrorType = {
     catalogEntityName: string;
     error: {
       message: RepositoryStatus[];
+      fromDb?: boolean;
     };
   };
 };
@@ -169,4 +164,5 @@ export type DataFetcherQueryParams = {
   showOrganizations?: boolean;
   orgName?: string;
   searchString?: string;
+  fromDb?: boolean;
 };

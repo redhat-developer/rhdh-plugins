@@ -429,6 +429,64 @@ export class GithubApiService {
     });
   }
 
+  async getPullRequest(
+    repoUrl: string,
+    pullRequestNumber: number,
+  ): Promise<{
+    title?: string;
+    body?: string;
+    merged?: boolean;
+    lastUpdated?: string;
+  }> {
+    const gitUrl = gitUrlParse(repoUrl);
+
+    const ghConfig = this.integrations.github.byUrl(repoUrl)?.config;
+    if (!ghConfig) {
+      throw new Error(
+        `No GitHub integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.github`,
+      );
+    }
+
+    const credentials = await getCredentialsForConfig(
+      this.githubCredentialsProvider,
+      ghConfig,
+    );
+    if (credentials.length === 0) {
+      throw new Error(`No credentials for GH integration`);
+    }
+    for (const credential of credentials) {
+      const octokit = buildOcto(
+        {
+          logger: this.logger,
+          cache: this.cache,
+        },
+        { credential, owner: gitUrl.owner },
+        ghConfig.apiBaseUrl,
+      );
+      if (!octokit) {
+        continue;
+      }
+      try {
+        const resp = await octokit.rest.pulls.get({
+          owner: gitUrl.owner,
+          repo: gitUrl.name,
+          pull_number: pullRequestNumber,
+        });
+        const pr = resp.data;
+        return {
+          title: pr.title,
+          body: pr.body ?? undefined,
+          merged: pr.merged,
+          lastUpdated: pr.updated_at,
+        };
+      } catch (error: any) {
+        logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
+      }
+    }
+    return {};
+  }
+
+  // @deprecated this functionality will be removed.
   async findImportOpenPr(
     logger: LoggerService,
     input: {
@@ -731,6 +789,7 @@ export class GithubApiService {
     return fileExists;
   }
 
+  // todo
   async closeImportPR(
     logger: LoggerService,
     input: {

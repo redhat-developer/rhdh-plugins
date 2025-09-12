@@ -2,9 +2,39 @@
 
 All URIs are relative to _http://localhost:7007/api/bulk-import_
 
-| Method                                                          | HTTP request          | Description                                                                 |
-| --------------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
-| [**findAllRepositories**](RepositoryApi.md#findAllRepositories) | **GET** /repositories | Fetch Organization Repositories accessible by Backstage Github Integrations |
+| Method                                                                        | HTTP request                    | Description                                                                 |
+| ----------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------- |
+| [**deleteTaskImportByRepo**](RepositoryApi.md#deleteTaskImportByRepo)         | **DELETE** /task-import/by-repo | Delete task import by repository name                                       |
+| [**findAllRepositories**](RepositoryApi.md#findAllRepositories)               | **GET** /repositories           | Fetch Organization Repositories accessible by Backstage Github Integrations |
+| [**findAllStoredRepositories**](RepositoryApi.md#findAllStoredRepositories)   | **GET** /stored-repositories    | Fetch all Repositories from the database                                    |
+| [**findStoredRepositoryByName**](RepositoryApi.md#findStoredRepositoryByName) | **GET** /stored-repository      | Fetch a single Repository from the database by its name                     |
+
+<a name="deleteTaskImportByRepo"></a>
+
+# **deleteTaskImportByRepo**
+
+> deleteTaskImportByRepo(repo)
+
+Delete task import by repository name
+
+### Parameters
+
+| Name     | Type       | Description              | Notes                        |
+| -------- | ---------- | ------------------------ | ---------------------------- |
+| **repo** | **String** | the full URL to the repo | [optional] [default to null] |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
 
 <a name="findAllRepositories"></a>
 
@@ -26,6 +56,58 @@ Fetch Organization Repositories accessible by Backstage Github Integrations
 ### Return type
 
 [**RepositoryList**](../Models/RepositoryList.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="findAllStoredRepositories"></a>
+
+# **findAllStoredRepositories**
+
+> RepositoryList findAllStoredRepositories()
+
+Fetch all Repositories from the database
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**RepositoryList**](../Models/RepositoryList.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="findStoredRepositoryByName"></a>
+
+# **findStoredRepositoryByName**
+
+> Repository findStoredRepositoryByName(repositoryName)
+
+Fetch a single Repository from the database by its name
+
+### Parameters
+
+| Name               | Type       | Description     | Notes             |
+| ------------------ | ---------- | --------------- | ----------------- |
+| **repositoryName** | **String** | Repository name | [default to null] |
+
+### Return type
+
+[**Repository**](../Models/Repository.md)
 
 ### Authorization
 

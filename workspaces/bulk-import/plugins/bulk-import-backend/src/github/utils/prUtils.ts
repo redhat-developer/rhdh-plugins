@@ -22,6 +22,7 @@ import { Octokit } from '@octokit/rest';
 import { getCatalogFilename } from '../../catalog/catalogUtils';
 import { logErrorIfNeeded } from '../../helpers';
 
+// @deprecated this functionality will be removed.
 export async function findOpenPRForBranch(
   logger: LoggerService,
   config: Config,

@@ -26,13 +26,9 @@ import {
   AddRepositoriesFormValues,
   ApprovalTool,
   CreateImportJobRepository,
-  ImportJobResponse,
   RepositorySelection,
 } from '../../types';
-import {
-  getJobErrors,
-  prepareDataForSubmission,
-} from '../../utils/repository-utils';
+import { prepareDataForSubmission } from '../../utils/repository-utils';
 import { DrawerContextProvider } from '../DrawerContext';
 import { AddRepositories } from './AddRepositories';
 
@@ -46,14 +42,8 @@ export const AddRepositoriesForm = () => {
     approvalTool: ApprovalTool.Git,
   };
 
-  const createImportJobs = (importOptions: {
-    importJobs: CreateImportJobRepository[];
-    dryRun?: boolean;
-  }) =>
-    bulkImportApi.createImportJobs(
-      importOptions.importJobs,
-      importOptions.dryRun,
-    );
+  const createImportJobs = (importJobs: CreateImportJobRepository[]) =>
+    bulkImportApi.createTaskImportJobs(importJobs);
 
   const mutationCreate = useMutation(createImportJobs);
 
@@ -66,31 +56,11 @@ export const AddRepositoriesForm = () => {
       values.repositories,
       values.approvalTool,
     );
-    mutationCreate.mutate({
-      importJobs: importRepositories,
-      dryRun: true,
+    mutationCreate.mutate(importRepositories, {
+      onSuccess: () => {
+        navigate(`..`);
+      },
     });
-    if (!mutationCreate.isError) {
-      const dryRunErrors = getJobErrors(
-        mutationCreate.data as ImportJobResponse[],
-      );
-      if (Object.keys(dryRunErrors?.errors || {}).length > 0) {
-        formikHelpers.setStatus(dryRunErrors);
-      } else {
-        formikHelpers.setStatus(dryRunErrors); // to show info messages
-        const submitResult = await mutationCreate.mutateAsync({
-          importJobs: importRepositories,
-        });
-        const createJobErrors = getJobErrors(
-          submitResult as ImportJobResponse[],
-        );
-        if (Object.keys(createJobErrors?.errors || {}).length > 0) {
-          formikHelpers.setStatus(createJobErrors);
-        } else {
-          navigate(`..`);
-        }
-      }
-    }
   };
 
   return (

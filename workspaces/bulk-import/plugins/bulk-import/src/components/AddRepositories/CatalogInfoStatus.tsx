@@ -16,7 +16,8 @@
 
 import { useEffect } from 'react';
 
-import { StatusRunning } from '@backstage/core-components';
+import { Link, StatusRunning } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
@@ -45,17 +46,29 @@ export const CatalogInfoStatus = ({
   alreadyAdded?: number;
   isItemSelected?: boolean;
   isDrawer?: boolean;
-  importStatus?: string;
+  importStatus?: {
+    taskId: string;
+    pullRequest?: {
+      number: number;
+      url: string;
+      title: string;
+      body: string;
+      catalogInfoContent: string;
+      status: 'WAIT_PR_APPROVAL' | 'PR_MERGED' | 'PR_ERROR';
+    };
+  };
 }) => {
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
+  const configApi = useApi(configApiRef);
+  const baseUrl = configApi.getString('app.baseUrl');
 
   useEffect(() => {
-    if (importStatus === RepositoryStatus.ADDED) {
+    if (importStatus?.pullRequest?.status === RepositoryStatus.PR_MERGED) {
       setFieldValue(`excludedRepositories.${data.id}`, {
         repoId: data.id,
         orgName: data.orgName,
-        status: importStatus,
+        status: importStatus.pullRequest?.status,
       });
     }
   }, [data.id, importStatus, setFieldValue, data.repoName, data.orgName]);
@@ -94,7 +107,22 @@ export const CatalogInfoStatus = ({
   if (importStatus) {
     return (
       <Typography component="span" style={{ color: '#6A6E73' }}>
-        {getImportStatus(importStatus)}
+        {importStatus.taskId && (
+          <Link to={`${baseUrl}/create/tasks/${importStatus.taskId}`}>
+            View task.
+          </Link>
+        )}
+        {getImportStatus(importStatus.pullRequest?.status as string)}
+        {importStatus.pullRequest?.url && (
+          <Link
+            to={importStatus.pullRequest.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ marginLeft: '8px' }}
+          >
+            PR
+          </Link>
+        )}
       </Typography>
     );
   }

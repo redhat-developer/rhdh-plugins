@@ -30,7 +30,6 @@ import {
   AddRepositoriesFormValues,
   AddRepositoryData,
   Order,
-  RepositoryStatus,
 } from '../../types';
 import {
   evaluateRowForOrg,
@@ -109,9 +108,9 @@ export const RepositoriesTable = ({
       ? evaluateRowForRepo(tableData, values.repositories)
       : evaluateRowForOrg(tableData, values.repositories);
 
-    filteredRows = [...(filteredRows || [])]?.sort(
-      getComparator(order, orderBy as string),
-    );
+    filteredRows = [...(filteredRows || [])]
+      .filter((row): row is AddRepositoryData => row !== null)
+      .sort(getComparator(order, orderBy as string));
 
     return filteredRows;
   }, [tableData, order, orderBy, values?.repositories, showOrganizations]);
@@ -151,12 +150,6 @@ export const RepositoriesTable = ({
       if (isAllSelected) {
         delete newSelectedRows[row.id];
       } else {
-        if (!drawer) {
-          setFieldValue(
-            `repositories.${row.repoName}.catalogInfoYaml.status`,
-            RepositoryStatus.Ready,
-          );
-        }
         newSelectedRows = { ...newSelectedRows, [row.id]: row };
       }
     });
@@ -312,7 +305,7 @@ export const RepositoriesTable = ({
           <RepositoriesTableBody
             loading={loading}
             ariaLabel={ariaLabel()}
-            rows={filteredData}
+            rows={filteredData as AddRepositoryData[]}
             emptyRows={emptyRows}
             onOrgRowSelected={handleOrgRowSelected}
             onClick={handleClick}

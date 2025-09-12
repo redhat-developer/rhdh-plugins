@@ -190,7 +190,7 @@ class GithubAppManager {
             );
             // The return type of the paginate method is incorrect.
             const repositories: RestEndpointMethodTypes['apps']['listReposAccessibleToInstallation']['response']['data']['repositories'] =
-              repos.repositories ?? repos;
+              repos;
 
             repositoryNames = repositories.map(repository => repository.name);
           }
@@ -219,7 +219,7 @@ class GithubAppManager {
     return allInstallations.map(installation => {
       return {
         installationId: installation.id,
-        accountLogin: installation.account?.login,
+        accountLogin: installation.account?.name,
         suspended: Boolean(installation.suspended_by),
       } as InstallationData;
     });
@@ -536,6 +536,6 @@ export class CustomGithubCredentialsProvider
     org: string,
   ) {
     const all = await this.getAllAppInstallations(config);
-    return all.filter(install => install.account?.login === org);
+    return all.filter(install => install.account?.name === org);
   }
 }

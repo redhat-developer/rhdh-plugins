@@ -55,10 +55,7 @@ jest.mock('react-use', () => ({
 }));
 
 class MockBulkImportApi {
-  async getImportAction(
-    repo: string,
-    _defaultBranch: string,
-  ): Promise<ImportJobStatus | Response> {
+  async getImportAction(repo: string): Promise<ImportJobStatus | Response> {
     return mockGetImportJobs.imports.find(
       i => i.repository.url === repo,
     ) as ImportJobStatus;

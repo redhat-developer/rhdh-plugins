@@ -168,6 +168,7 @@ export const mockGetImportJobs: ImportJobs = {
           catalogInfoContent:
             'apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: che1\n  annotations:\n    github.com/project-slug: debsmita1/che\nspec:\n  type: other\n  lifecycle: unknown\n  owner: user:default/debsmita1\n',
           title: 'PR title',
+          status: 'WAIT_PR_APPROVAL',
         },
       },
       lastUpdate: '2024-07-17T13:46:37Z',
@@ -180,6 +181,7 @@ export const mockGetImportJobs: ImportJobs = {
       },
       id: 'org/dessert/cupcake',
       status: 'WAIT_PR_APPROVAL',
+      task: { taskId: '123' },
     },
     {
       approvalTool: ApprovalTool.Git,
@@ -191,6 +193,7 @@ export const mockGetImportJobs: ImportJobs = {
           title: 'PR title',
           number: 91,
           url: 'https://github.com/org/dessert/donut/pull/91',
+          status: 'WAIT_PR_APPROVAL',
         },
       },
       lastUpdate: '2024-07-18T13:46:37Z',
@@ -203,6 +206,7 @@ export const mockGetImportJobs: ImportJobs = {
       },
       id: 'org/dessert/donut',
       status: 'WAIT_PR_APPROVAL',
+      task: { taskId: '124' },
     },
     {
       approvalTool: ApprovalTool.Git,
@@ -214,6 +218,7 @@ export const mockGetImportJobs: ImportJobs = {
           catalogInfoContent:
             'apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: che1\n  annotations:\n    github.com/project-slug: debsmita1/che\nspec:\n  type: other\n  lifecycle: unknown\n  owner: user:default/debsmita1\n',
           title: 'PR title',
+          status: 'WAIT_PR_APPROVAL',
         },
       },
       lastUpdate: '2024-07-21T13:46:37Z',
@@ -226,6 +231,7 @@ export const mockGetImportJobs: ImportJobs = {
       },
       id: 'org/food/food-app',
       status: 'WAIT_PR_APPROVAL',
+      task: { taskId: '125' },
     },
     {
       approvalTool: ApprovalTool.Git,
@@ -237,6 +243,7 @@ export const mockGetImportJobs: ImportJobs = {
           catalogInfoContent:
             'apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: che1\n  annotations:\n    github.com/project-slug: debsmita1/che\nspec:\n  type: other\n  lifecycle: unknown\n  owner: user:default/debsmita1\n',
           title: 'PR title',
+          status: 'WAIT_PR_APPROVAL',
         },
       },
       lastUpdate: '2024-07-22T13:46:37Z',
@@ -249,6 +256,7 @@ export const mockGetImportJobs: ImportJobs = {
       },
       id: 'org/pet-store-boston/pet-app',
       status: 'ADDED',
+      task: { taskId: '126' },
     },
   ],
   page: 1,
@@ -257,8 +265,14 @@ export const mockGetImportJobs: ImportJobs = {
 };
 
 export const mockSelectedRepositories: AddedRepositories = {
-  ['org/dessert/cupcake']: mockGetRepositories.repositories[0],
-  ['org/dessert/donut']: mockGetRepositories.repositories[1],
-  ['org/dessert/eclair']: mockGetRepositories.repositories[2],
-  ['org/dessert/frozenyogurt']: mockGetRepositories.repositories[3],
+  ['org/dessert/cupcake']: {
+    ...mockGetRepositories.repositories[0],
+    tasks: [],
+  },
+  ['org/dessert/donut']: { ...mockGetRepositories.repositories[1], tasks: [] },
+  ['org/dessert/eclair']: { ...mockGetRepositories.repositories[2], tasks: [] },
+  ['org/dessert/frozenyogurt']: {
+    ...mockGetRepositories.repositories[3],
+    tasks: [],
+  },
 };

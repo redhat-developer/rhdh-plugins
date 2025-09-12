@@ -31,7 +31,7 @@ import {
   AddedRepositoryColumnNameEnum,
   AddRepositoriesFormValues,
   AddRepositoryData,
-  ImportJobs,
+  Repository,
   SortingOrderEnum,
 } from '../types';
 import { prepareDataForAddedRepositories } from '../utils/repository-utils';
@@ -62,16 +62,9 @@ export const useAddedRepositories = (
   const baseUrl = configApi.getString('app.baseUrl');
 
   const bulkImportApi = useApi(bulkImportApiRef);
-  const { setFieldValue, values } =
-    useFormikContext<AddRepositoriesFormValues>();
-  const fetchAddedRepositories = async (
-    page: number,
-    size: number,
-    searchStr: string,
-    sortCol: AddedRepositoryColumnNameEnum,
-    sortOrd: SortingOrderEnum,
-  ) =>
-    await bulkImportApi.getImportJobs(page, size, searchStr, sortCol, sortOrd);
+  useFormikContext<AddRepositoriesFormValues>();
+  const fetchAddedRepositories = async () =>
+    await bulkImportApi.findAllStoredRepositories();
 
   const {
     data: value,
@@ -87,43 +80,31 @@ export const useAddedRepositories = (
       sortColumn,
       sortOrder,
     ],
-    () =>
-      fetchAddedRepositories(
-        pageNumber,
-        rowsPerPage,
-        searchString,
-        sortColumn,
-        sortOrder,
-      ),
+    () => fetchAddedRepositories(),
     { refetchInterval: pollInterval || 60000, refetchOnWindowFocus: false },
   );
 
   const prepareData = useMemo(() => {
     const repoData = prepareDataForAddedRepositories(
-      value as ImportJobs | Response,
+      value as { repositories: Repository[]; totalCount: number } | undefined,
       user as string,
       baseUrl as string,
     );
-    if (
-      Object.values(repoData.repoData).length !==
-      Object.values(values.repositories).length
-    )
-      setFieldValue(`repositories`, repoData.repoData);
     return {
       addedRepositories: Object.values(repoData.repoData),
       totalJobs: repoData.totalJobs,
     };
-  }, [value, user, baseUrl, values.repositories, setFieldValue]);
+  }, [value, user, baseUrl]);
 
   return {
     data: prepareData,
     loading: isLoadingTable,
     error: {
       ...(error ?? {}),
-      ...((value as Response)?.statusText
+      ...((value as any)?.statusText
         ? {
             name: 'Error',
-            message: (value as Response)?.statusText,
+            message: (value as any)?.statusText,
           }
         : {}),
     },

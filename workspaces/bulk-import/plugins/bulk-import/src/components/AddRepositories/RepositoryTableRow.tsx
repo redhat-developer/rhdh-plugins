@@ -27,7 +27,11 @@ import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
-import { AddRepositoryData, RepositoryStatus } from '../../types';
+import {
+  AddRepositoryData,
+  ImportJobStatus,
+  RepositoryStatus,
+} from '../../types';
 import { urlHelper } from '../../utils/repository-utils';
 import { CatalogInfoStatus } from './CatalogInfoStatus';
 
@@ -54,10 +58,7 @@ export const RepositoryTableRow = ({
   const bulkImportApi = useApi(bulkImportApiRef);
   const { value, loading } = useAsync(async () => {
     if (data.repoUrl) {
-      const result = await bulkImportApi.getImportAction(
-        data.repoUrl,
-        data?.defaultBranch || 'main',
-      );
+      const result = await bulkImportApi.getImportAction(data.repoUrl);
       return result;
     }
     return null;
@@ -119,7 +120,10 @@ export const RepositoryTableRow = ({
       <TableCell align="left" className={classes.tableCellStyle}>
         <CatalogInfoStatus
           data={data}
-          importStatus={value?.status as string}
+          importStatus={{
+            taskId: (value as ImportJobStatus)?.task?.taskId,
+            pullRequest: (value as ImportJobStatus)?.github?.pullRequest,
+          }}
           isLoading={loading}
           isItemSelected={isItemSelected}
           isDrawer={isDrawer}

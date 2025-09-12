@@ -28,6 +28,7 @@ import {
   ImportJobs,
   ImportJobStatus,
   OrgAndRepoResponse,
+  Repository,
   SortingOrderEnum,
 } from '../types';
 import { getApi } from '../utils/repository-utils';
@@ -51,14 +52,13 @@ export type BulkImportAPI = {
     importRepositories: CreateImportJobRepository[],
     dryRun?: boolean,
   ) => Promise<ImportJobResponse[]>;
-  deleteImportAction: (
-    repo: string,
-    defaultBranch: string,
-  ) => Promise<ImportJobStatus | Response>;
-  getImportAction: (
-    repo: string,
-    defaultBranch: string,
-  ) => Promise<ImportJobStatus | Response>;
+  deleteImportAction: (repo: string) => Promise<Response>;
+  getImportAction: (repo: string) => Promise<ImportJobStatus | Response>;
+  createTaskImportJobs: (
+    importJobs: CreateImportJobRepository[],
+  ) => Promise<ImportJobResponse[]>;
+  findAllStoredRepositories: () => Promise<Repository[]>;
+  findStoredRepositoryByName: (name: string) => Promise<Repository>;
 };
 
 export type Options = {
@@ -129,6 +129,26 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.status === 204 ? null : jsonResponse.json();
   }
 
+  async deleteImportAction(repo: string) {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}/api/bulk-import/task-import/by-repo?repo=${repo}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+      },
+    );
+    if (!jsonResponse.ok) {
+      const errorResponse = await jsonResponse.json();
+      throw errorResponse;
+    }
+    return jsonResponse.status === 204 ? null : await jsonResponse.json();
+  }
+
   async createImportJobs(
     importRepositories: CreateImportJobRepository[],
     dryRun?: boolean,
@@ -155,31 +175,11 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.status === 204 ? null : await jsonResponse.json();
   }
 
-  async deleteImportAction(repo: string, defaultBranch: string) {
+  async getImportAction(repo: string) {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(idToken && { Authorization: `Bearer ${idToken}` }),
-        },
-      },
-    );
-    if (!jsonResponse.ok) {
-      const errorResponse = await jsonResponse.json();
-      throw errorResponse.err;
-    }
-    return jsonResponse.status === 204 ? null : await jsonResponse.json();
-  }
-
-  async getImportAction(repo: string, defaultBranch: string) {
-    const { token: idToken } = await this.identityApi.getCredentials();
-    const backendUrl = this.configApi.getString('backend.baseUrl');
-    const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}`,
+      `${backendUrl}/api/bulk-import/task-import/by-repo?repo=${repo}`,
       {
         method: 'GET',
         headers: {
@@ -190,6 +190,64 @@ export class BulkImportBackendClient implements BulkImportAPI {
     );
     if (jsonResponse.status !== 200 && jsonResponse.status !== 204) {
       return jsonResponse;
+    }
+    return jsonResponse.json();
+  }
+  async createTaskImportJobs(importJobs: CreateImportJobRepository[]) {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}/api/bulk-import/task-imports`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+        body: JSON.stringify(importJobs),
+      },
+    );
+    if (!jsonResponse.ok) {
+      const errorResponse = await jsonResponse.json();
+      throw errorResponse;
+    }
+    return jsonResponse.status === 204 ? null : await jsonResponse.json();
+  }
+
+  async findAllStoredRepositories() {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}/api/bulk-import/stored-repositories`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+      },
+    );
+    if (!jsonResponse.ok) {
+      const errorResponse = await jsonResponse.json();
+      throw errorResponse;
+    }
+    return jsonResponse.status === 204 ? null : await jsonResponse.json();
+  }
+
+  async findStoredRepositoryByName(name: string): Promise<Repository> {
+    const { token: idToken } = await this.identityApi.getCredentials();
+    const backendUrl = this.configApi.getString('backend.baseUrl');
+    const jsonResponse = await fetch(
+      `${backendUrl}/api/bulk-import/stored-repository?repositoryName=${name}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(idToken && { Authorization: `Bearer ${idToken}` }),
+        },
+      },
+    );
+    if (!jsonResponse.ok) {
+      const errorResponse = await jsonResponse.json();
+      throw errorResponse;
     }
     return jsonResponse.json();
   }

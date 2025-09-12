@@ -20,7 +20,6 @@ import { StatusOK } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import * as jsyaml from 'js-yaml';
 import { get } from 'lodash';
-import * as yaml from 'yaml';
 import * as yup from 'yup';
 
 import { WaitingForPR } from '../components/WaitingForPR';
@@ -32,9 +31,7 @@ import {
   CreateImportJobRepository,
   ErrorType,
   ImportJobResponse,
-  ImportJobs,
   ImportJobStatus,
-  ImportStatus,
   JobErrors,
   Order,
   OrgAndRepoResponse,
@@ -54,10 +51,11 @@ export const descendingComparator = (
   let value1 = get(a, orderBy);
   let value2 = get(b, orderBy);
   const order = {
+    PR_MERGED: 1,
+    WAIT_PR_APPROVAL: 3,
+    PR_ERROR: 4,
     [RepositoryStatus.ADDED]: 1,
     [RepositoryStatus.Ready]: 2,
-    [RepositoryStatus.WAIT_PR_APPROVAL]: 3,
-    [RepositoryStatus.PR_ERROR]: 4,
     [RepositoryStatus.CATALOG_ENTITY_CONFLICT]: 4,
     [RepositoryStatus.CATALOG_INFO_FILE_EXISTS_IN_REPO]: 4,
     [RepositoryStatus.CODEOWNERS_FILE_NOT_FOUND_IN_REPO]: 4,
@@ -71,8 +69,10 @@ export const descendingComparator = (
   }
 
   if (orderBy === 'catalogInfoYaml.status') {
-    value1 = order[(value1 as ImportStatus) || RepositoryStatus.NotGenerated];
-    value2 = order[(value2 as ImportStatus) || RepositoryStatus.NotGenerated];
+    value1 =
+      order[(value1 as RepositoryStatus) || RepositoryStatus.NotGenerated];
+    value2 =
+      order[(value2 as RepositoryStatus) || RepositoryStatus.NotGenerated];
   }
   if (value2 < value1) {
     return -1;
@@ -220,6 +220,7 @@ export const urlHelper = (url: string) => {
   return url.split('https://')[1] || url;
 };
 
+// rework status handling...
 export const getImportStatus = (
   status: string,
   showIcon?: boolean,
@@ -240,7 +241,7 @@ export const getImportStatus = (
       ) : (
         'Waiting for Approval'
       );
-    case 'ADDED':
+    case RepositoryStatus.ADDED:
       return showIcon ? (
         <Typography
           component="span"
@@ -382,31 +383,11 @@ export const prepareDataForSubmission = (
     (acc: CreateImportJobRepository[], repo) => {
       acc.push({
         approvalTool: approvalTool.toLocaleUpperCase(),
-        codeOwnersFileAsEntityOwner:
-          repo.catalogInfoYaml?.prTemplate?.useCodeOwnersFile || false,
-        catalogEntityName:
-          repo.catalogInfoYaml?.prTemplate?.componentName ||
-          repo?.repoName ||
-          'my-component',
         repository: {
           id: repo.id,
           url: repo.repoUrl || '',
           name: repo.repoName || '',
           organization: repo.orgName || '',
-          defaultBranch: repo.defaultBranch || '',
-        },
-        catalogInfoContent: yaml.stringify(
-          repo.catalogInfoYaml?.prTemplate?.yaml,
-          null,
-          2,
-        ),
-        github: {
-          pullRequest: {
-            title:
-              repo.catalogInfoYaml?.prTemplate?.prTitle ||
-              'Add catalog-info.yaml config file',
-            body: repo.catalogInfoYaml?.prTemplate?.prDescription || '',
-          },
         },
       });
       return acc;
@@ -603,6 +584,7 @@ export const prepareDataForRepositories = (
               val.defaultBranch || 'main',
             ),
           },
+          tasks: val.tasks,
         },
       };
     }, {}) || {};
@@ -610,51 +592,48 @@ export const prepareDataForRepositories = (
 };
 
 export const prepareDataForAddedRepositories = (
-  addedRepositories: ImportJobs | Response | undefined,
+  addedRepositories:
+    | { repositories: Repository[]; totalCount: number }
+    | undefined,
   user: string,
   baseUrl: string,
 ): { repoData: AddedRepositories; totalJobs: number } => {
-  if (!Array.isArray((addedRepositories as ImportJobs)?.imports)) {
+  if (!Array.isArray(addedRepositories?.repositories)) {
     return { repoData: {}, totalJobs: 0 };
   }
-  const importJobs = addedRepositories as ImportJobs;
   const repoData: { [id: string]: AddRepositoryData } =
-    importJobs.imports?.reduce((acc, val: ImportJobStatus) => {
-      const id = `${val.repository.organization}/${val.repository.name}`;
+    addedRepositories.repositories.reduce((acc, val: Repository) => {
+      const id = val.id;
       return {
         ...acc,
         [id]: {
           id,
-          source: val.source,
-          repoName: val.repository.name,
-          defaultBranch: val.repository.defaultBranch,
-          orgName: val.repository.organization,
-          repoUrl: val.repository.url,
-          organizationUrl: val?.repository?.url?.substring(
+          repoName: val.name,
+          defaultBranch: val.defaultBranch,
+          orgName: val.organization,
+          repoUrl: val.url,
+          organizationUrl: val.url?.substring(
             0,
-            val.repository.url.indexOf(val?.repository?.name || '') - 1,
+            val.url.indexOf(val?.name || '') - 1,
           ),
           catalogInfoYaml: {
-            status: val.status
-              ? RepositoryStatus[val.status as RepositoryStatus]
-              : RepositoryStatus.NotGenerated,
+            status: RepositoryStatus.ADDED,
             prTemplate: getPRTemplate(
-              val.repository.name || '',
-              val.repository.organization || '',
+              val.name || '',
+              val.organization || '',
               user,
               baseUrl,
-              val.repository.url || '',
-              val.repository.defaultBranch || 'main',
+              val.url || '',
+              val.defaultBranch || 'main',
             ),
-            pullRequest: val?.github?.pullRequest?.url || '',
-            lastUpdated: val.lastUpdate,
           },
+          tasks: val.tasks,
         },
       };
     }, {});
   return {
     repoData,
-    totalJobs: (addedRepositories as ImportJobs)?.totalCount || 0,
+    totalJobs: addedRepositories.totalCount || 0,
   };
 };
 

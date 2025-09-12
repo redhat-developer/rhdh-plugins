@@ -57,10 +57,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
   });
   const { value, loading } = useAsync(async () => {
     if (repoUrl) {
-      return await bulkImportApi.getImportAction(
-        repoUrl,
-        defaultBranch || 'main',
-      );
+      return await bulkImportApi.getImportAction(repoUrl);
     }
     return null;
   }, [repoUrl, defaultBranch]);

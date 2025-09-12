@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { AuthService, LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  AuthService,
+  DiscoveryService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 
@@ -26,6 +30,10 @@ import {
   getCatalogFilename,
   getCatalogUrl,
 } from '../../../catalog/catalogUtils';
+import {
+  RepositoryDao,
+  ScaffolderTaskDao,
+} from '../../../database/repositoryDao';
 import type { Components, Paths } from '../../../generated/openapi';
 import type { GithubApiService } from '../../../github';
 import {
@@ -85,6 +93,10 @@ export async function findAllImports(
     config: Config;
     githubApiService: GithubApiService;
     catalogHttpClient: CatalogHttpClient;
+    repositoryDao: RepositoryDao;
+    taskDao: ScaffolderTaskDao;
+    discovery: DiscoveryService;
+    auth: AuthService;
   },
   requestHeaders?: {
     apiVersion?: Paths.FindAllImports.Parameters.ApiVersion;
@@ -153,7 +165,7 @@ export async function findAllImports(
 
     importStatusPromises.push(
       findImportStatusByRepo(
-        deps,
+        { ...deps },
         repoUrl,
         defaultBranchByRepoUrl.get(repoUrl),
         false,
@@ -318,7 +330,7 @@ For more information, read an [overview of the Backstage software catalog](https
   });
 }
 
-async function handleAddedReposFromCreateImportJobs(
+async function handleAddedReposFromCreateImportJobs( //
   deps: {
     logger: LoggerService;
     config: Config;
@@ -774,6 +786,103 @@ export async function findImportStatusByRepo(
   };
 }
 
+export async function findTaskImportStatusByRepo(
+  deps: {
+    logger: LoggerService;
+    config: Config;
+    githubApiService: GithubApiService;
+    catalogHttpClient: CatalogHttpClient;
+    repositoryDao: RepositoryDao;
+    taskDao: ScaffolderTaskDao;
+    discovery: DiscoveryService;
+    auth: AuthService;
+  },
+  repoUrl: string,
+): Promise<HandlerResponse<Components.Schemas.Import>> {
+  deps.logger.debug(`Getting bulk import job status for ${repoUrl}..`);
+
+  const gitUrl = gitUrlParse(repoUrl);
+
+  const errors: string[] = [];
+  const result = {
+    id: repoUrl,
+    repository: {
+      url: repoUrl,
+      name: gitUrl.name,
+      organization: gitUrl.organization,
+      id: `${gitUrl.organization}/${gitUrl.name}`,
+    },
+    approvalTool: 'GIT',
+  } as Components.Schemas.Import;
+  try {
+    const repository = await deps.repositoryDao.findRepositoryByUrl(repoUrl);
+    if (repository?.id) {
+      const task = (
+        await deps.taskDao.findTasksByRepositoryId(repository?.id)
+      )[0];
+
+      const scaffolderUrl = await deps.discovery.getBaseUrl('scaffolder');
+      const { token } = await deps.auth.getPluginRequestToken({
+        onBehalfOf: await deps.auth.getOwnServiceCredentials(),
+        targetPluginId: 'scaffolder',
+      });
+
+      const response = await fetch(`${scaffolderUrl}/v2/tasks/${task.taskId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      result.task = { taskId: task.taskId };
+      if (response.ok) {
+        const data = await response.json();
+        console.log(` data is ${JSON.stringify(data)}`);
+        if (data.state?.checkpoints) {
+          for (const key in data.state.checkpoints) {
+            if (key.startsWith('v1.task.checkpoint.publish.create.pr')) {
+              const url = data.state.checkpoints[key].value.html_url;
+              if (url) {
+                const prNumber = parseInt(url.split('/').pop()!, 10);
+                const prDetails = await deps.githubApiService.getPullRequest(
+                  // todo try to use findImportOpenPr
+                  repoUrl,
+                  prNumber,
+                );
+                result.github = {
+                  pullRequest: {
+                    // todo handle few pull requests... use try catch for this purpose...
+                    url,
+                    number: prNumber,
+                    title: prDetails.title,
+                    body: prDetails.body,
+                    status: prDetails.merged ? 'PR_MERGED' : 'WAIT_PR_APPROVAL', // todo add more statuses
+                  },
+                };
+                result.status = 'TASK_IN_PROGRESS'; // todo provide correct status...
+                result.lastUpdate = prDetails.lastUpdated;
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (error: any) {
+    errors.push(error.message);
+    result.errors = errors;
+    if (error.message?.includes('Not Found')) {
+      return {
+        statusCode: 404,
+        responseBody: result,
+      };
+    }
+    result.status = 'FAILED_TO_FETCH_TASK';
+  }
+
+  return {
+    statusCode: 200,
+    responseBody: result,
+  };
+}
+
 export async function deleteImportByRepo(
   deps: {
     logger: LoggerService;
@@ -834,4 +943,30 @@ export async function deleteImportByRepo(
     statusCode: 204,
     responseBody: undefined,
   };
+}
+
+export async function deleteTaskImportByRepo(
+  deps: {
+    logger: LoggerService;
+    dao: RepositoryDao;
+  },
+  repoUrl: string,
+): Promise<HandlerResponse<void>> {
+  deps.logger.debug(`Deleting repository from database by name ${repoUrl}...`);
+  try {
+    await deps.dao.deleteRepository(repoUrl);
+
+    return {
+      statusCode: 204,
+      responseBody: undefined,
+    };
+  } catch (error: any) {
+    deps.logger.error(
+      `Failed to delete repository from database by name ${repoUrl}`,
+      error,
+    );
+    return {
+      statusCode: 500,
+    };
+  }
 }

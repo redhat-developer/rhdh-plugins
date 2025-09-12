@@ -31,6 +31,8 @@ import {
   DataFetcherQueryParams,
   OrgAndRepoResponse,
   RepositoriesError,
+  Repository,
+  RepositoryStatus,
 } from '../types';
 import {
   prepareDataForOrganizations,
@@ -112,6 +114,50 @@ export const useRepositories = (
       baseUrl || '',
     );
   }, [options?.showOrganizations, value, user, baseUrl]);
+
+  const {
+    data: dbData,
+    error: dbError,
+    isLoading: isDbLoading,
+  } = useQuery(
+    ['added-repositories'],
+    () => bulkImportApi.findAllStoredRepositories(),
+    {
+      enabled: !!options?.fromDb,
+    },
+  );
+
+  const prepareDbData = useMemo(() => {
+    if (!dbData) {
+      return null;
+    }
+    const repositories = (dbData as unknown as Repository[]).reduce(
+      (acc, repo) => {
+        acc[repo.id] = {
+          id: repo.id,
+          repoName: repo.name,
+          orgName: repo.organization,
+          repoUrl: repo.url,
+          // Remove catalog-info.yaml; we cannot guarantee that this YAML will be imported via the scaffolder task.
+          catalogInfoYaml: {
+            status: RepositoryStatus.ADDED,
+          },
+          tasks: repo.tasks,
+        };
+        return acc;
+      },
+      {} as { [id: string]: AddRepositoryData },
+    );
+    return { repositories };
+  }, [dbData]);
+
+  if (options?.fromDb) {
+    return {
+      loading: isDbLoading,
+      data: prepareDbData,
+      error: dbError as RepositoriesError,
+    };
+  }
 
   return {
     loading: isQueryLoading,

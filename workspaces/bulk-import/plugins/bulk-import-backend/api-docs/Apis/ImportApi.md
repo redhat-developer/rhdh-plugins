@@ -2,12 +2,14 @@
 
 All URIs are relative to _http://localhost:7007/api/bulk-import_
 
-| Method                                                            | HTTP request               | Description                     |
-| ----------------------------------------------------------------- | -------------------------- | ------------------------------- |
-| [**createImportJobs**](ImportApi.md#createImportJobs)             | **POST** /imports          | Submit Import Jobs              |
-| [**deleteImportByRepo**](ImportApi.md#deleteImportByRepo)         | **DELETE** /import/by-repo | Delete Import by repository     |
-| [**findAllImports**](ImportApi.md#findAllImports)                 | **GET** /imports           | Fetch Import Jobs               |
-| [**findImportStatusByRepo**](ImportApi.md#findImportStatusByRepo) | **GET** /import/by-repo    | Get Import Status by repository |
+| Method                                                                    | HTTP request                 | Description                                              |
+| ------------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------- |
+| [**createImportJobs**](ImportApi.md#createImportJobs)                     | **POST** /imports            | Submit Import Jobs                                       |
+| [**createTaskImportJobs**](ImportApi.md#createTaskImportJobs)             | **POST** /task-imports       | Execute a scaffolder template for a list of repositories |
+| [**deleteImportByRepo**](ImportApi.md#deleteImportByRepo)                 | **DELETE** /import/by-repo   | Delete Import by repository                              |
+| [**findAllImports**](ImportApi.md#findAllImports)                         | **GET** /imports             | Fetch Import Jobs                                        |
+| [**findImportStatusByRepo**](ImportApi.md#findImportStatusByRepo)         | **GET** /import/by-repo      | Get Import Status by repository                          |
+| [**findTaskImportStatusByRepo**](ImportApi.md#findTaskImportStatusByRepo) | **GET** /task-import/by-repo | Get Import Status by repository                          |
 
 <a name="createImportJobs"></a>
 
@@ -23,6 +25,33 @@ Submit Import Jobs
 | ----------------- | -------------------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------- |
 | **ImportRequest** | [**List**](../Models/ImportRequest.md) | List of Import jobs to create                                                              |                               |
 | **dryRun**        | **Boolean**                            | whether to perform a dry-run to check if entity name collisions would occur in the catalog | [optional] [default to false] |
+
+### Return type
+
+[**List**](../Models/Import.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="createTaskImportJobs"></a>
+
+# **createTaskImportJobs**
+
+> List createTaskImportJobs(TaskImportRequest)
+
+Execute a scaffolder template for a list of repositories
+
+### Parameters
+
+| Name                  | Type                                       | Description                                                     | Notes |
+| --------------------- | ------------------------------------------ | --------------------------------------------------------------- | ----- |
+| **TaskImportRequest** | [**List**](../Models/TaskImportRequest.md) | The template to execute and the repositories to run it against. |       |
 
 ### Return type
 
@@ -83,7 +112,7 @@ Fetch Import Jobs
 | **page**               | **Integer** | the requested page number                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | [optional] [default to 1]                                                                                                    |
 | **size**               | **Integer** | the number of items to return per page                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | [optional] [default to 20]                                                                                                   |
 | **sortOrder**          | **String**  | The order of sorting asc for ascending or desc for descending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | [optional] [default to asc] [enum: asc, desc]                                                                                |
-| **sortColumn**         | **String**  | The allowed values for sorting columns: - &#x60;repository.name&#x60;: Sort by repository name. - &#x60;repository.organization&#x60;: Sort by organization URL. - &#x60;repository.url&#x60;: Sort by repository URL. - &#x60;lastUpdate&#x60;: Sort by the last time the catalog-info.yaml was updated. - &#x60;status&#x60;: Sort by the status of the catalog-info.yaml.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | [optional] [default to repository.name] [enum: repository.name, repository.organization, repository.url, lastUpdate, status] |
+| **sortColumn**         | **String**  | The allowed values for sorting columns: - repository.name: Sort by repository name. - repository.organization: Sort by organization URL. - repository.url: Sort by repository URL. - lastUpdate: Sort by the last time the catalog-info.yaml was updated. - status: Sort by the status of the catalog-info.yaml.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | [optional] [default to repository.name] [enum: repository.name, repository.organization, repository.url, lastUpdate, status] |
 | **search**             | **String**  | returns only the items that match the search string                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | [optional] [default to null]                                                                                                 |
 
 ### Return type
@@ -104,6 +133,34 @@ Fetch Import Jobs
 # **findImportStatusByRepo**
 
 > Import findImportStatusByRepo(repo, defaultBranch)
+
+Get Import Status by repository
+
+### Parameters
+
+| Name              | Type       | Description                    | Notes                        |
+| ----------------- | ---------- | ------------------------------ | ---------------------------- |
+| **repo**          | **String** | the full URL to the repo       | [optional] [default to null] |
+| **defaultBranch** | **String** | the name of the default branch | [optional] [default to main] |
+
+### Return type
+
+[**Import**](../Models/Import.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="findTaskImportStatusByRepo"></a>
+
+# **findTaskImportStatusByRepo**
+
+> Import findTaskImportStatusByRepo(repo, defaultBranch)
 
 Get Import Status by repository
 
