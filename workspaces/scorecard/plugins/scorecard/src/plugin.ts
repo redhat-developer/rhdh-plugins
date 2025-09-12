@@ -16,9 +16,13 @@
 import {
   createPlugin,
   createRoutableExtension,
+  createApiFactory,
+  fetchApiRef,
+  discoveryApiRef,
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
+import { scorecardApiRef, ScorecardApiClient } from './api';
 
 /**
  * Plugin for the Scorecard Frontend.
@@ -29,17 +33,28 @@ export const scorecardPlugin = createPlugin({
   routes: {
     root: rootRouteRef,
   },
+  apis: [
+    createApiFactory({
+      api: scorecardApiRef,
+      deps: {
+        fetchApi: fetchApiRef,
+        discoveryApi: discoveryApiRef,
+      },
+      factory: ({ fetchApi, discoveryApi }) =>
+        new ScorecardApiClient({ fetchApi, discoveryApi }),
+    }),
+  ],
 });
 
 /**
  * Frontend page for the Scorecard.
  * @public
  */
-export const ScorecardPage = scorecardPlugin.provide(
+export const EntityScorecardContent = scorecardPlugin.provide(
   createRoutableExtension({
-    name: 'ScorecardPage',
+    name: 'EntityScorecardContent',
     component: () =>
-      import('./components/ScorecardPage').then(m => m.ScorecardPage),
+      import('./components/Scorecard').then(m => m.EntityScorecardContent),
     mountPoint: rootRouteRef,
   }),
 );

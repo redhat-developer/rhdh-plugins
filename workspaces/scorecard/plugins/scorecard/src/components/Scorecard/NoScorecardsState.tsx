@@ -21,13 +21,19 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 
-import noScorecardSvg from '../../images/no-scorecard.svg';
+import noScorecardsSvg from '../../images/no-scorecards.svg';
 
-const ScorecardEmptyState: React.FC = () => {
+const NoScorecardsState: React.FC = () => {
   return (
-    <Box sx={{ p: 4 }}>
-      <Grid container spacing={4} alignItems="center" justifyContent="center">
-        <Grid item xs={12} md={6}>
+    <Box sx={{ p: 4, height: '100%', maxWidth: '1592px', margin: 'auto' }}>
+      <Grid
+        container
+        spacing={4}
+        alignItems="center"
+        justifyContent="center"
+        height="100%"
+      >
+        <Grid item xs={12} md={6} sx={{ textAlign: 'left' }}>
           <Typography
             sx={theme => ({
               fontSize: '2.5rem',
@@ -73,10 +79,10 @@ const ScorecardEmptyState: React.FC = () => {
           </Link>
         </Grid>
 
-        <Grid item xs={12} md={6} style={{ textAlign: 'center' }}>
+        <Grid item xs={12} md={6} sx={{ textAlign: 'right' }}>
           <Box
             component="img"
-            src={noScorecardSvg}
+            src={noScorecardsSvg}
             alt="No scorecards"
             sx={{
               width: '100%',
@@ -90,4 +96,4 @@ const ScorecardEmptyState: React.FC = () => {
   );
 };
 
-export default ScorecardEmptyState;
+export default NoScorecardsState;

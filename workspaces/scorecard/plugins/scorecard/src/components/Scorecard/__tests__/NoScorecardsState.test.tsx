@@ -18,9 +18,12 @@ import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 
-import ScorecardEmptyState from '../ScorecardEmptyState';
+import NoScorecardsState from '../NoScorecardsState';
 
-jest.mock('../../../images/no-scorecard.svg', () => 'mocked-no-scorecard.svg');
+jest.mock(
+  '../../../images/no-scorecards.svg',
+  () => 'mocked-no-scorecards.svg',
+);
 
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const theme = createTheme();
@@ -35,15 +38,15 @@ const renderWithProviders = (component: React.ReactElement) => {
   return render(component, { wrapper: TestWrapper });
 };
 
-describe('ScorecardEmptyState', () => {
+describe('NoScorecardsState Component', () => {
   it('should render the main heading', () => {
-    renderWithProviders(<ScorecardEmptyState />);
+    renderWithProviders(<NoScorecardsState />);
 
     expect(screen.getByText('No scorecards added yet')).toBeInTheDocument();
   });
 
   it('should render the description text', () => {
-    renderWithProviders(<ScorecardEmptyState />);
+    renderWithProviders(<NoScorecardsState />);
 
     expect(
       screen.getByText(
@@ -53,14 +56,14 @@ describe('ScorecardEmptyState', () => {
   });
 
   it('should render the documentation button with correct text', () => {
-    renderWithProviders(<ScorecardEmptyState />);
+    renderWithProviders(<NoScorecardsState />);
 
     const button = screen.getByRole('button', { name: /view documentation/i });
     expect(button).toBeInTheDocument();
   });
 
   it('should render the OpenInNewOutlined icon', () => {
-    renderWithProviders(<ScorecardEmptyState />);
+    renderWithProviders(<NoScorecardsState />);
 
     const button = screen.getByRole('button', { name: /view documentation/i });
     expect(button).toBeInTheDocument();
@@ -72,10 +75,10 @@ describe('ScorecardEmptyState', () => {
   });
 
   it('should render the no-scorecard image', () => {
-    renderWithProviders(<ScorecardEmptyState />);
+    renderWithProviders(<NoScorecardsState />);
 
     const image = screen.getByAltText('No scorecards');
     expect(image).toBeInTheDocument();
-    expect(image).toHaveAttribute('src', 'mocked-no-scorecard.svg');
+    expect(image).toHaveAttribute('src', 'mocked-no-scorecards.svg');
   });
 });
