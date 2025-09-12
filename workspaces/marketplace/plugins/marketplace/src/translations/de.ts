@@ -67,9 +67,9 @@ const marketplaceTranslationDe = createTranslationMessages({
     'alert.extensionsExample':
       'Beispiel zur Aktivierung der Extensions-Plugin-Installation',
     'alert.singlePluginRestart':
-      'Das <b>{{pluginName}}</b> Plugin erfordert einen Neustart des Backend-Systems, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
+      'Das **{{pluginName}}** Plugin erfordert einen Neustart des Backend-Systems, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
     'alert.multiplePluginRestart':
-      'Sie haben {{count}} Plugins, die einen Neustart Ihres Backend-Systems erfordern, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
+      'Sie haben **{{count}}** Plugins, die einen Neustart Ihres Backend-Systems erfordern, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
     'alert.restartRequired': '{{count}} Plugins installiert',
     'alert.backendRestartRequired': 'Backend-Neustart erforderlich',
     'alert.viewPlugins': 'Plugins anzeigen',

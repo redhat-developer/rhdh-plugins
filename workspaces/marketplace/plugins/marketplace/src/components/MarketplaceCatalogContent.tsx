@@ -19,6 +19,7 @@ import {
   CodeSnippet,
   Content,
   LinkButton,
+  MarkdownContent,
   WarningPanel,
 } from '@backstage/core-components';
 import { CatalogFilterLayout } from '@backstage/plugin-catalog-react';
@@ -49,7 +50,6 @@ import {
   generateExtensionsEnableLineNumbers,
 } from '../utils';
 import { useTranslation } from '../hooks/useTranslation';
-import { Trans } from './Trans';
 
 const EmptyState = ({ isError }: { isError?: boolean }) => {
   const { t } = useTranslation();
@@ -151,18 +151,19 @@ export const MarketplaceCatalogContent = () => {
   const getPluginAlertMessage = (count: number, pluginName?: string) => {
     if (count > 1) {
       return (
-        <Trans
-          message="alert.multiplePluginRestart"
-          params={{ count: count.toString() }}
+        <MarkdownContent
+          content={t('alert.multiplePluginRestart' as any, {
+            count: count.toString(),
+          })}
         />
       );
     }
 
     return (
-      <Trans
-        message="alert.singlePluginRestart"
-        params={{ pluginName: pluginName || '' }}
-        components={{ b: <strong /> }}
+      <MarkdownContent
+        content={t('alert.singlePluginRestart' as any, {
+          pluginName: pluginName || '',
+        })}
       />
     );
   };

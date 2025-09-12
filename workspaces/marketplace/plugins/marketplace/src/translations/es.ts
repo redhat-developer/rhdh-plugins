@@ -68,9 +68,9 @@ const marketplaceTranslationEs = createTranslationMessages({
     'alert.extensionsExample':
       'Ejemplo de cómo habilitar la instalación de plugins de extensiones',
     'alert.singlePluginRestart':
-      'El plugin <b>{{pluginName}}</b> requiere un reinicio del sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
+      'El plugin **{{pluginName}}** requiere un reinicio del sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
     'alert.multiplePluginRestart':
-      'Tiene {{count}} plugins que requieren un reinicio de su sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
+      'Tiene **{{count}}** plugins que requieren un reinicio de su sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
     'alert.restartRequired': '{{count}} plugins instalados',
     'alert.backendRestartRequired': 'Reinicio del backend requerido',
     'alert.viewPlugins': 'Ver plugins',

@@ -66,9 +66,9 @@ const marketplaceTranslationFr = createTranslationMessages({
     'alert.extensionsExample':
       "Exemple d'activation de l'installation de plugins d'extensions",
     'alert.singlePluginRestart':
-      "Le plugin <b>{{pluginName}}</b> nécessite un redémarrage du système backend pour terminer l'installation, la mise à jour, l'activation ou la désactivation.",
+      "Le plugin **{{pluginName}}** nécessite un redémarrage du système backend pour terminer l'installation, la mise à jour, l'activation ou la désactivation.",
     'alert.multiplePluginRestart':
-      "Vous avez {{count}} plugins qui nécessitent un redémarrage de votre système backend pour terminer l'installation, la mise à jour, l'activation ou la désactivation.",
+      "Vous avez **{{count}}** plugins qui nécessitent un redémarrage de votre système backend pour terminer l'installation, la mise à jour, l'activation ou la désactivation.",
     'alert.restartRequired': '{{count}} plugins installés',
     'alert.backendRestartRequired': 'Redémarrage du backend requis',
     'alert.viewPlugins': 'Voir les plugins',

@@ -78,9 +78,9 @@ export const marketplaceMessages = {
     installationDisabled: 'Plugin installation is disabled.',
     extensionsExample: 'Example how to enable extensions plugin installation',
     singlePluginRestart:
-      'The <b>{{pluginName}}</b> plugin requires a restart of the backend system to finish installing, updating, enabling or disabling.',
+      'The **{{pluginName}}** plugin requires a restart of the backend system to finish installing, updating, enabling or disabling.',
     multiplePluginRestart:
-      'You have {{count}} plugins that require a restart of your backend system to either finish installing, updating, enabling or disabling.',
+      'You have **{{count}}** plugins that require a restart of your backend system to either finish installing, updating, enabling or disabling.',
     restartRequired: '{{count}} plugins installed',
     backendRestartRequired: 'Backend restart required',
     viewPlugins: 'View plugins',
