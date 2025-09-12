@@ -41,7 +41,7 @@ Submit Import Jobs
 
 # **deleteImportByRepo**
 
-> deleteImportByRepo(repo, defaultBranch)
+> deleteImportByRepo(repo, defaultBranch, approvalTool)
 
 Delete Import by repository
 
@@ -51,6 +51,7 @@ Delete Import by repository
 | ----------------- | ---------- | ------------------------------ | ---------------------------- |
 | **repo**          | **String** | the full URL to the repo       | [optional] [default to null] |
 | **defaultBranch** | **String** | the name of the default branch | [optional] [default to main] |
+| **approvalTool**  | **String** | the approvalTool to use        | [optional] [default to GIT]  |
 
 ### Return type
 
@@ -69,7 +70,7 @@ null (empty response body)
 
 # **findAllImports**
 
-> findAllImports_200_response findAllImports(api-version, pagePerIntegration, sizePerIntegration, page, size, sortOrder, sortColumn, search)
+> findAllImports_200_response findAllImports(api-version, pagePerIntegration, sizePerIntegration, page, size, sortOrder, sortColumn, search, approvalTool)
 
 Fetch Import Jobs
 
@@ -85,6 +86,7 @@ Fetch Import Jobs
 | **sortOrder**          | **String**  | The order of sorting asc for ascending or desc for descending                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | [optional] [default to asc] [enum: asc, desc]                                                                                |
 | **sortColumn**         | **String**  | The allowed values for sorting columns: - &#x60;repository.name&#x60;: Sort by repository name. - &#x60;repository.organization&#x60;: Sort by organization URL. - &#x60;repository.url&#x60;: Sort by repository URL. - &#x60;lastUpdate&#x60;: Sort by the last time the catalog-info.yaml was updated. - &#x60;status&#x60;: Sort by the status of the catalog-info.yaml.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | [optional] [default to repository.name] [enum: repository.name, repository.organization, repository.url, lastUpdate, status] |
 | **search**             | **String**  | returns only the items that match the search string                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | [optional] [default to null]                                                                                                 |
+| **approvalTool**       | **String**  | the approvalTool to use                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | [optional] [default to GIT]                                                                                                  |
 
 ### Return type
 
@@ -103,7 +105,7 @@ Fetch Import Jobs
 
 # **findImportStatusByRepo**
 
-> Import findImportStatusByRepo(repo, defaultBranch)
+> Import findImportStatusByRepo(repo, defaultBranch, approvalTool)
 
 Get Import Status by repository
 
@@ -113,6 +115,7 @@ Get Import Status by repository
 | ----------------- | ---------- | ------------------------------ | ---------------------------- |
 | **repo**          | **String** | the full URL to the repo       | [optional] [default to null] |
 | **defaultBranch** | **String** | the name of the default branch | [optional] [default to main] |
+| **approvalTool**  | **String** | the approvalTool to use        | [optional] [default to GIT]  |
 
 ### Return type
 

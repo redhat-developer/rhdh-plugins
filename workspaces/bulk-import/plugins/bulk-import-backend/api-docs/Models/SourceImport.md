@@ -11,6 +11,7 @@
 | **errors**            | **List**                              |                                                                                            | [optional] [default to null] |
 | **approvalTool**      | [**ApprovalTool**](ApprovalTool.md)   |                                                                                            | [optional] [default to null] |
 | **repository**        | [**Repository**](Repository.md)       |                                                                                            | [optional] [default to null] |
+| **gitlab**            | [**Import_gitlab**](Import_gitlab.md) |                                                                                            | [optional] [default to null] |
 | **github**            | [**Import_github**](Import_github.md) |                                                                                            | [optional] [default to null] |
 | **source**            | [**Source**](Source.md)               |                                                                                            | [optional] [default to null] |
 
