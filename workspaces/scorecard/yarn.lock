@@ -7210,7 +7210,6 @@ __metadata:
     "@backstage/repo-tools": "npm:^0.15.0"
     "@changesets/cli": "npm:^2.27.1"
     "@playwright/test": "npm:1.55.0"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.9.1"
     "@spotify/prettier-config": "npm:^15.0.0"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
