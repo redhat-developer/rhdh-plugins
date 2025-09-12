@@ -26,8 +26,10 @@ import { usePluginFacet } from '../hooks/usePluginFacet';
 import { usePluginFacets } from '../hooks/usePluginFacets';
 import { CustomSelectFilter } from '../shared-components/CustomSelectFilter';
 import { useQueryArrayFilter } from '../hooks/useQueryArrayFilter';
+import { useTranslation } from '../hooks/useTranslation';
 
 const CategoryFilter = () => {
+  const { t } = useTranslation();
   const categoriesFacet = usePluginFacet('spec.categories');
   const filter = useQueryArrayFilter('spec.categories');
   const categories = categoriesFacet.data;
@@ -50,7 +52,7 @@ const CategoryFilter = () => {
 
   return (
     <CustomSelectFilter
-      label="Category"
+      label={t('search.category')}
       items={items}
       onChange={handleChange}
       selectedItems={filter.current}
@@ -59,6 +61,7 @@ const CategoryFilter = () => {
 };
 
 const AuthorFilter = () => {
+  const { t } = useTranslation();
   const authorsFacet = usePluginFacet('spec.authors.name');
   const authors = authorsFacet.data;
   const filter = useQueryArrayFilter('spec.authors.name');
@@ -81,7 +84,7 @@ const AuthorFilter = () => {
 
   return (
     <CustomSelectFilter
-      label="Author"
+      label={t('search.author')}
       items={items}
       onChange={handleChange}
       selectedItems={filter.current}
@@ -108,6 +111,7 @@ const evaluateParams = (
 };
 
 const SupportTypeFilter = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const pluginFacets = usePluginFacets({ facets: facetsKeys });
 
@@ -120,7 +124,10 @@ const SupportTypeFilter = () => {
     const certified = facets[facetsKeys[0]];
     certified?.forEach(certifiedBy => {
       allSupportTypeItems.push({
-        label: `Certified by ${certifiedBy.value} (${certifiedBy.count})`,
+        label: t('supportTypes.certifiedBy' as any, {
+          value: certifiedBy.value,
+          count: certifiedBy.count.toString(),
+        }),
         value: `${facetsKeys[0]}=${certifiedBy.value}`,
       });
     });
@@ -128,7 +135,10 @@ const SupportTypeFilter = () => {
     const verified = facets[facetsKeys[1]];
     verified?.forEach(verifiedBy => {
       allSupportTypeItems.push({
-        label: `Verified by ${verifiedBy.value} (${verifiedBy.count})`,
+        label: t('supportTypes.verifiedBy' as any, {
+          value: verifiedBy.value,
+          count: verifiedBy.count.toString(),
+        }),
         value: `${facetsKeys[1]}=${verifiedBy.value}`,
       });
     });
@@ -137,7 +147,9 @@ const SupportTypeFilter = () => {
     preInstalled?.forEach(preInstall => {
       if (preInstall.value === 'false') {
         allSupportTypeItems.push({
-          label: `Custom plugins (${preInstall.count})`,
+          label: t('supportTypes.customPlugins' as any, {
+            count: preInstall.count.toString(),
+          }),
           value: `${facetsKeys[2]}=${preInstall.value}`,
         });
       }
@@ -152,7 +164,7 @@ const SupportTypeFilter = () => {
     });
 
     return allSupportTypeItems;
-  }, [facets]);
+  }, [facets, t]);
 
   const selected = useMemo(() => {
     const selectedFilters = searchParams
@@ -206,7 +218,7 @@ const SupportTypeFilter = () => {
 
   return (
     <CustomSelectFilter
-      label="Support type"
+      label={t('search.supportType')}
       items={items}
       onChange={(_e, value) => onChange(value)}
       selectedItems={selected}

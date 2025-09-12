@@ -35,7 +35,13 @@
         "title": {
           "type": "string"
         },
+        "titleKey": {
+          "type": "string"
+        },
         "description": {
+          "type": "string"
+        },
+        "descriptionKey": {
           "type": "string"
         },
         "tags": {

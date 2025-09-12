@@ -17,6 +17,8 @@
 import { Link } from '@backstage/core-components';
 
 import Typography from '@mui/material/Typography';
+
+import { useTranslation } from '../hooks/useTranslation';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import {
@@ -30,6 +32,7 @@ export const Links = ({
 }: {
   entity: MarketplaceCollection | MarketplacePlugin | MarketplacePackage;
 }) => {
+  const { t } = useTranslation();
   const links = entity.metadata.links;
 
   if (!links || links.length === 0) {
@@ -43,7 +46,7 @@ export const Links = ({
         component="h3"
         sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
       >
-        Links
+        {t('common.links')}
       </Typography>
       <ul style={{ paddingLeft: '20px' }}>
         {links.map(link => (

@@ -22,14 +22,17 @@ import {
 } from '@backstage/core-components';
 
 import { themeId } from '../consts';
+import { useTranslation } from '../hooks/useTranslation';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { MarketplacePackagesTable } from '../components/MarketplacePackagesTable';
 
 export const MarketplacePackagesPage = () => {
+  const { t } = useTranslation();
+
   return (
     <ReactQueryProvider>
       <Page themeId={themeId}>
-        <Header title="Packages" />
+        <Header title={t('header.packagesPage')} />
         <Content>
           <ErrorBoundary>
             <MarketplacePackagesTable />

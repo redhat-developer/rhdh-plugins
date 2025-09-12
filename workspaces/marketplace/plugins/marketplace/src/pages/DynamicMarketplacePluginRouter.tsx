@@ -27,6 +27,7 @@ import {
 import { useScalprum } from '@scalprum/react-core';
 
 import { themeId } from '../consts';
+import { useTranslation } from '../hooks/useTranslation';
 
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 
@@ -62,6 +63,7 @@ export interface ScalprumState {
 }
 
 const Tabs = () => {
+  const { t } = useTranslation();
   const scalprum = useScalprum<ScalprumState>();
 
   const tabs = scalprum.api?.dynamicRootConfig?.mountPoints?.[
@@ -71,7 +73,7 @@ const Tabs = () => {
       Component: MarketplaceCatalogContent,
       config: {
         path: '',
-        title: 'Catalog',
+        title: t('header.pluginsPage'),
       },
     },
   ];
@@ -79,7 +81,7 @@ const Tabs = () => {
   return (
     <>
       <Page themeId={themeId}>
-        <Header title="Extensions" />
+        <Header title={t('header.title')} />
         <TabbedLayout>
           {/* <TabbedLayout.Route path="/catalog" title="Marketplace">
             <ErrorBoundary>

@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import {
+  useTranslationRef,
+  TranslationFunction,
+} from '@backstage/core-plugin-api/alpha';
+import { marketplaceTranslationRef } from '../translations';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
-
-export * from './plugin';
-
-// Translation exports
-export {
-  marketplaceTranslations,
-  marketplaceTranslationRef,
-} from './translations';
+/**
+ * @alpha
+ */
+export const useTranslation = (): {
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>;
+} => useTranslationRef(marketplaceTranslationRef);
