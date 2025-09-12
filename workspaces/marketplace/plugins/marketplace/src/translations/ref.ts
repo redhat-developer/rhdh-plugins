@@ -200,12 +200,16 @@ export const marketplaceMessages = {
 
   // Collections
   collection: {
-    featured: 'Featured',
     kubernetes: 'Kubernetes',
     monitoring: 'Monitoring',
     security: 'Security',
     viewMore: 'View more',
     pluginCount: '{{count}} plugins',
+    featured: {
+      title: 'Featured Plugins',
+      description:
+        'A curated collection of featured plugins recommended for most users',
+    },
   },
 
   // Installation and configuration

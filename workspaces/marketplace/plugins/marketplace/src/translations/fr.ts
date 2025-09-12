@@ -170,12 +170,14 @@ const marketplaceTranslationFr = createTranslationMessages({
     'supportTypes.customPlugins': 'Plugins personnalisés ({{count}})',
 
     // Collections
-    'collection.featured': 'En vedette',
     'collection.kubernetes': 'Kubernetes',
     'collection.monitoring': 'Surveillance',
     'collection.security': 'Sécurité',
     'collection.viewMore': 'Voir plus',
     'collection.pluginCount': '{{count}} plugins',
+    'collection.featured.title': 'Plugins en vedette',
+    'collection.featured.description':
+      'Une collection organisée de plugins recommandés pour la plupart des utilisateurs',
 
     // Installation and configuration
     'install.title': 'Installer le plugin',
