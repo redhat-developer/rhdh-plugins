@@ -64,7 +64,7 @@ const Scorecard = ({
           sx={{ pb: 2 }}
         />
         <Divider />
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2, px: 3 }}>
           <Typography variant="body2" color="textSecondary">
             {description}
           </Typography>
@@ -94,7 +94,7 @@ const Scorecard = ({
                   <StyledCircle
                     cx="100"
                     cy="100"
-                    r="75"
+                    r="90"
                     strokeWidth="10"
                     fill="none"
                     statusColor={statusColor}

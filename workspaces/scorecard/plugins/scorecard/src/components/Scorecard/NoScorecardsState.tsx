@@ -25,7 +25,7 @@ import noScorecardsSvg from '../../images/no-scorecards.svg';
 
 const NoScorecardsState: React.FC = () => {
   return (
-    <Box sx={{ p: 4, height: '100%' }}>
+    <Box sx={{ p: 4, height: '100%', maxWidth: '1592px', margin: 'auto' }}>
       <Grid
         container
         spacing={4}
