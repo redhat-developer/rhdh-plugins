@@ -26,6 +26,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
 import { styled, useTheme } from '@mui/material/styles';
 
 interface ScorecardProps {
@@ -57,7 +58,7 @@ const Scorecard = ({
 
   return (
     <Card sx={{ width: '364px' }}>
-      <CardContent sx={{ p: 0 }}>
+      <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
         <CardHeader
           title={cardTitle}
           titleTypographyProps={{ variant: 'h6', fontWeight: 500 }}
@@ -70,100 +71,131 @@ const Scorecard = ({
           </Typography>
         </Box>
 
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ p: 2 }}
-        >
-          <Box position="relative" width={200} height={200}>
-            {loading ? (
+        <Box sx={{ p: 2 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={6}>
               <Box
                 sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
-                <CircularProgress />
-              </Box>
-            ) : (
-              <>
-                <svg width="200" height="200">
-                  <StyledCircle
-                    cx="100"
-                    cy="100"
-                    r="90"
-                    strokeWidth="10"
-                    fill="none"
-                    statusColor={statusColor}
-                    theme={theme}
-                  />
-                </svg>
                 <Box
-                  position="absolute"
-                  top="50%"
-                  left="50%"
+                  position="relative"
+                  width={160}
+                  height={160}
                   sx={{
-                    transform: 'translate(-50%, -50%)',
                     display: 'flex',
-                    flexDirection: 'column',
+                    justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
-                  <StatusIcon
-                    sx={{
-                      color: (muiTheme: any) =>
-                        muiTheme.palette[statusColor.split('.')[0]].main,
-                      fontSize: 24,
-                    }}
-                  />
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: (muiTheme: any) =>
-                        muiTheme.palette[statusColor.split('.')[0]].main,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {value}
-                  </Typography>
+                  {loading ? (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    >
+                      <CircularProgress size={120} />
+                    </Box>
+                  ) : (
+                    <>
+                      <svg width="160" height="160">
+                        <StyledCircle
+                          cx="80"
+                          cy="80"
+                          r="75"
+                          strokeWidth="10"
+                          fill="none"
+                          statusColor={statusColor}
+                          theme={theme}
+                        />
+                      </svg>
+                      <Box
+                        position="absolute"
+                        top="50%"
+                        left="50%"
+                        sx={{
+                          transform: 'translate(-50%, -50%)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <StatusIcon
+                          sx={{
+                            color: (muiTheme: any) =>
+                              muiTheme.palette[statusColor.split('.')[0]].main,
+                            fontSize: 20,
+                          }}
+                        />
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: (muiTheme: any) =>
+                              muiTheme.palette[statusColor.split('.')[0]].main,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {value}
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
                 </Box>
-              </>
-            )}
-          </Box>
+              </Box>
+            </Grid>
 
-          <Box sx={{ p: 0 }}>
-            {thresholds?.definition.rules.map(({ key, expression }) => (
-              <div
-                key={key}
-                style={{
+            <Grid item xs={12} sm={6} sx={{ p: 2 }}>
+              <Box
+                sx={{
                   display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: 8,
+                  flexDirection: 'column',
+                  gap: 1,
+                  paddingLeft: '12px',
                 }}
               >
-                <div
-                  style={{
-                    width: 10,
-                    height: 10,
-                    backgroundColor:
-                      {
-                        error: theme.palette.error.main,
-                        warning: theme.palette.warning.main,
-                        success: theme.palette.success.main,
-                      }[key] || theme.palette.success.main,
-                    marginRight: 8,
-                  }}
-                />
-                <Typography variant="body2">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}{' '}
-                  {expression && `${expression}`}
-                </Typography>
-              </div>
-            ))}
-          </Box>
+                {thresholds?.definition.rules.map(({ key, expression }) => (
+                  <Box
+                    key={key}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 10,
+                        height: 10,
+                        backgroundColor:
+                          {
+                            error: theme.palette.error.main,
+                            warning: theme.palette.warning.main,
+                            success: theme.palette.success.main,
+                          }[key] || theme.palette.success.main,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        wordBreak: 'break-word',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {key.charAt(0).toUpperCase() + key.slice(1)}{' '}
+                      {expression && `${expression}`}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Grid>
+          </Grid>
         </Box>
       </CardContent>
     </Card>
