@@ -16,6 +16,7 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
+import { THRESHOLDS_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
@@ -25,11 +26,15 @@ import {
   MetricProvider,
   validateThresholds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { JiraClient } from '../clients/base';
+import { JiraClientFactory } from '../clients/JiraClientFactory';
 
 export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
+  private readonly jiraClient: JiraClient;
 
-  private constructor(thresholds?: ThresholdConfig) {
+  private constructor(config: Config, thresholds?: ThresholdConfig) {
+    this.jiraClient = JiraClientFactory.create(config);
     this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
   }
 
@@ -57,17 +62,15 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   }
 
   static fromConfig(config: Config): JiraOpenIssuesProvider {
-    const configPath = 'scorecard.plugins.jira.open_issues.thresholds';
-    const configuredThresholds = config.getOptional(configPath);
+    const configuredThresholds = config.getOptional(THRESHOLDS_CONFIG_PATH);
     if (configuredThresholds !== undefined) {
       validateThresholds(configuredThresholds, 'number');
     }
 
-    return new JiraOpenIssuesProvider(configuredThresholds);
+    return new JiraOpenIssuesProvider(config, configuredThresholds);
   }
 
   async calculateMetric(entity: Entity): Promise<number> {
-    const entityName = entity.metadata.name;
-    return entityName.length * 2;
+    return this.jiraClient.getCountOpenIssues(entity);
   }
 }
