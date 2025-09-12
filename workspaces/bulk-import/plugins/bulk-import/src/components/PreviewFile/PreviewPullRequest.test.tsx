@@ -131,9 +131,7 @@ describe('Preview Pull Request', () => {
     );
     expect(getByText(/Failed to create PR/)).toBeInTheDocument();
     expect(
-      getByText(
-        /CODEOWNERS file is missing from the repository. Add a CODEOWNERS file to create a new PR./,
-      ),
+      getByText(/No CODEOWNERS file found in the repository/),
     ).toBeInTheDocument();
   });
 

@@ -14,24 +14,26 @@
  * limitations under the License.
  */
 
-import { TableColumn } from '@backstage/core-components';
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 
-export const getReposSelectDrawerColumnHeader = (
-  t: (key: string, ...args: any[]) => string,
-): TableColumn[] => [
-  {
-    id: 'name',
-    title: t('table.headers.name'),
-    field: 'repoName',
+import { bulkImportTranslationRef } from './ref';
+
+/**
+ * Translation resource for bulk import plugin
+ * @public
+ */
+export const bulkImportTranslations = createTranslationResource({
+  ref: bulkImportTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    fr: () => import('./fr'),
+    es: () => import('./es'),
   },
-  {
-    id: 'url',
-    title: t('table.headers.url'),
-    field: 'repoUrl',
-  },
-  {
-    id: 'cataloginfoyaml',
-    title: '',
-    field: 'catalogInfoYaml.status',
-  },
-];
+});
+
+export { bulkImportTranslationRef };
+
+/**
+ * @public
+ */
+export type Messages = typeof bulkImportTranslationRef.T;
