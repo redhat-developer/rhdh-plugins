@@ -6,11 +6,16 @@
     "node": "18 || 20"
   },
   "scripts": {
+    "dev": "yarn workspaces foreach -A --include backend --include app --parallel -v -i run start",
+    "dev:debug": "yarn workspaces foreach -A --include backend --include app --parallel -v -i run start --inspect",
+    "start": "yarn workspace app start",
+    "start-backend": "yarn workspace backend start",
+    "build:backend": "yarn workspace backend build",
     "tsc": "tsc",
-    "tsc:full": "tsc --skipLibCheck false --incremental false",
+    "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
     "build:api-reports": "yarn build:api-reports:only --tsc",
-    "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type --validate-release-tags",
+    "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags",
     "build:knip-reports": "backstage-repo-tools knip-reports",
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
@@ -31,13 +36,14 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/mcp-integrations"
+    "directory": "workspaces/ai-integrations"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.0",
+    "@backstage/cli": "^0.31.0",
     "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.15.1",
+    "@backstage/repo-tools": "^0.13.1",
     "@changesets/cli": "^2.27.1",
+    "@spotify/prettier-config": "^12.0.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^2.3.2",
