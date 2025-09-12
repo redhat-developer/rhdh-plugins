@@ -49,8 +49,6 @@ const KeyValue = ({ label, value }: { label: string; value: ReactNode }) => {
 };
 
 const MarketplacePackageContentSkeleton = () => {
-  const { t } = useTranslation();
-
   return (
     <Content>
       <Stack direction="row" spacing={2}>
@@ -60,17 +58,13 @@ const MarketplacePackageContentSkeleton = () => {
         />
         <Stack spacing={0.5}>
           <Skeleton>
-            <Typography variant="subtitle1">
-              {t('package.entryName')}
-            </Typography>
+            <Typography variant="subtitle1">Package Name</Typography>
           </Skeleton>
           <Skeleton>
-            <Typography variant="subtitle2">
-              {t('package.bySomeone')}
-            </Typography>
+            <Typography variant="subtitle2">by someone</Typography>
           </Skeleton>
           <Skeleton>
-            <Typography variant="subtitle2">{t('package.category')}</Typography>
+            <Typography variant="subtitle2">Category</Typography>
           </Skeleton>
         </Stack>
       </Stack>
@@ -79,7 +73,7 @@ const MarketplacePackageContentSkeleton = () => {
       <Grid container spacing={2}>
         <Grid item md={2}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            {t('package.highlights')}
+            Highlights
           </Typography>
 
           <Skeleton sx={{ width: '60%' }} />
@@ -87,7 +81,7 @@ const MarketplacePackageContentSkeleton = () => {
         </Grid>
         <Grid item md={10}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            {t('package.about')}
+            About
           </Typography>
 
           <Skeleton sx={{ width: '30%' }} />

@@ -76,8 +76,6 @@ import {
 } from './InstallationContext';
 
 export const MarketplacePluginContentSkeleton = () => {
-  const { t } = useTranslation();
-
   return (
     <Content>
       <Stack direction="row" spacing={2}>
@@ -87,13 +85,13 @@ export const MarketplacePluginContentSkeleton = () => {
         />
         <Stack spacing={0.5}>
           <Skeleton>
-            <Typography variant="subtitle1">{t('plugin.entryName')}</Typography>
+            <Typography variant="subtitle1">Plugin Name</Typography>
           </Skeleton>
           <Skeleton>
-            <Typography variant="subtitle2">{t('plugin.bySomeone')}</Typography>
+            <Typography variant="subtitle2">by someone</Typography>
           </Skeleton>
           <Skeleton>
-            <Typography variant="subtitle2">{t('plugin.category')}</Typography>
+            <Typography variant="subtitle2">Category</Typography>
           </Skeleton>
         </Stack>
       </Stack>
@@ -102,7 +100,7 @@ export const MarketplacePluginContentSkeleton = () => {
       <Grid container spacing={2}>
         <Grid item md={2}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            {t('metadata.highlights')}
+            Highlights
           </Typography>
 
           <Skeleton sx={{ width: '60%' }} />
@@ -110,7 +108,7 @@ export const MarketplacePluginContentSkeleton = () => {
         </Grid>
         <Grid item md={10}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            {t('metadata.about')}
+            About
           </Typography>
 
           <Skeleton sx={{ width: '30%' }} />
