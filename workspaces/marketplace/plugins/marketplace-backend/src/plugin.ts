@@ -19,6 +19,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { CatalogClient } from '@backstage/catalog-client';
+import { dynamicPluginsServiceRef } from '@backstage/backend-dynamic-feature-service';
 
 import {
   MarketplaceApi,
@@ -45,8 +46,10 @@ export const marketplacePlugin = createBackendPlugin({
         discovery: coreServices.discovery,
         logger: coreServices.logger,
         permissions: coreServices.permissions,
+        pluginProvider: dynamicPluginsServiceRef,
       },
       async init({
+        pluginProvider,
         auth,
         config,
         httpAuth,
@@ -75,6 +78,8 @@ export const marketplacePlugin = createBackendPlugin({
             installationDataService,
             marketplaceApi,
             permissions,
+            pluginProvider,
+            logger,
             config,
           }),
         );

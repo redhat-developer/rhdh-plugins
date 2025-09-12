@@ -27,10 +27,12 @@ import {
 } from '@backstage/core-plugin-api';
 
 import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
+import MUIPluginsIcon from '@mui/icons-material/PowerOutlined';
 
 import { MarketplaceBackendClient } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { marketplaceApiRef } from './api';
+import { marketplaceApiRef, dynamicPluginsInfoApiRef } from './api';
+import { DynamicPluginsInfoClient } from './api/DynamicPluginsInfoClient';
 import { allRoutes } from './routes';
 
 /**
@@ -55,6 +57,20 @@ export const marketplacePlugin = createPlugin({
           fetchApi,
           identityApi,
           configApi,
+        }),
+    }),
+    createApiFactory({
+      api: dynamicPluginsInfoApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        identityApi: identityApiRef,
+      },
+      factory: ({ discoveryApi, fetchApi, identityApi }) =>
+        new DynamicPluginsInfoClient({
+          discoveryApi,
+          fetchApi,
+          identityApi,
         }),
     }),
   ],
@@ -91,11 +107,12 @@ export const MarketplaceTabbedPageRouter = marketplacePlugin.provide(
 );
 
 /**
+ * Main marketplace plugin router with tabs and sub-routes.
  * @public
  */
 export const DynamicMarketplacePluginRouter = marketplacePlugin.provide(
   createRoutableExtension({
-    name: 'DynamicMarketplacePluginRouter',
+    name: 'MarketplaceRouter',
     component: () =>
       import('./pages/DynamicMarketplacePluginRouter').then(
         m => m.DynamicMarketplacePluginRouter,
@@ -122,19 +139,9 @@ export const DynamicMarketplacePluginContent = marketplacePlugin.provide(
 /**
  * @public
  */
-export const InstallationContextProvider = marketplacePlugin.provide(
-  createComponentExtension({
-    name: 'InstallationContextProvider',
-    component: {
-      lazy: () =>
-        import('./components/InstallationContext').then(
-          m => m.InstallationContextProvider,
-        ),
-    },
-  }),
-);
+export const MarketplaceIcon: IconComponent = MUIMarketplaceIcon;
 
 /**
  * @public
  */
-export const MarketplaceIcon: IconComponent = MUIMarketplaceIcon;
+export const PluginsIcon: IconComponent = MUIPluginsIcon;

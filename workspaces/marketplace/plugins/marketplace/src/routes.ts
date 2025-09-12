@@ -68,6 +68,18 @@ export const collectionRouteRef = createSubRouteRef({
   parent: rootRouteRef,
 });
 
+export const catalogTabRouteRef = createSubRouteRef({
+  id: 'extensions/catalog',
+  path: '/catalog',
+  parent: rootRouteRef,
+});
+
+export const installedTabRouteRef = createSubRouteRef({
+  id: 'extensions/installed',
+  path: '/installed',
+  parent: rootRouteRef,
+});
+
 export const allRoutes = {
   rootRouteRef,
   pluginsRouteRef,
@@ -78,4 +90,6 @@ export const allRoutes = {
   packageInstallRouteRef,
   collectionsRouteRef,
   collectionRouteRef,
+  catalogTabRouteRef,
+  installedTabRouteRef,
 };
