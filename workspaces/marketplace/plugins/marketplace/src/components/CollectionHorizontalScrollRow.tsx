@@ -29,12 +29,10 @@ import { collectionRouteRef } from '../routes';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const CollectionHorizontalScrollRowSkeleton = () => {
-  const { t } = useTranslation();
-
   return (
     <div>
       <Skeleton>
-        <Typography variant="h4">{t('plugin.entryName')}</Typography>
+        <Typography variant="h4">Collection Title</Typography>
       </Skeleton>
       <Stack
         direction="row"

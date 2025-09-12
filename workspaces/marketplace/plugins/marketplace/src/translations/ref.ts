@@ -132,9 +132,6 @@ export const marketplaceMessages = {
     dependencies: 'Dependencies',
     configuration: 'Configuration',
     installation: 'Installation',
-    entryName: 'Entry name',
-    bySomeone: 'by someone',
-    category: 'Category',
   },
 
   // Package details
@@ -150,9 +147,6 @@ export const marketplaceMessages = {
     highlights: 'Highlights',
     about: 'About',
     notFound: 'Package {{namespace}}/{{name}} not found!',
-    entryName: 'Entry name',
-    bySomeone: 'by someone',
-    category: 'Category',
   },
 
   // Tables and lists

@@ -84,8 +84,6 @@ const renderInstallStatus = (
 };
 
 export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => {
-  const { t } = useTranslation();
-
   return (
     <Card variant="outlined">
       <CardContent>
@@ -98,19 +96,13 @@ export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => {
             />
             <Stack spacing={0.5}>
               <Skeleton animation={animation}>
-                <Typography variant="subtitle1">
-                  {t('plugin.entryName')}
-                </Typography>
+                <Typography variant="subtitle1">Plugin Name</Typography>
               </Skeleton>
               <Skeleton animation={animation}>
-                <Typography variant="subtitle2">
-                  {t('plugin.bySomeone')}
-                </Typography>
+                <Typography variant="subtitle2">by someone</Typography>
               </Skeleton>
               <Skeleton animation={animation}>
-                <Typography variant="subtitle2">
-                  {t('plugin.category')}
-                </Typography>
+                <Typography variant="subtitle2">Category</Typography>
               </Skeleton>
             </Stack>
           </Stack>

@@ -115,9 +115,6 @@ const marketplaceTranslationDe = createTranslationMessages({
     'plugin.dependencies': 'Abhängigkeiten',
     'plugin.configuration': 'Konfiguration',
     'plugin.installation': 'Installation',
-    'plugin.entryName': 'Eintragsname',
-    'plugin.bySomeone': 'von jemandem',
-    'plugin.category': 'Kategorie',
 
     // Package details
     'package.name': 'Paketname:',
@@ -131,9 +128,6 @@ const marketplaceTranslationDe = createTranslationMessages({
     'package.highlights': 'Highlights',
     'package.about': 'Über',
     'package.notFound': 'Paket {{namespace}}/{{name}} nicht gefunden!',
-    'package.entryName': 'Eintragsname',
-    'package.bySomeone': 'von jemandem',
-    'package.category': 'Kategorie',
 
     // Tables and lists
     'table.packageName': 'Paketname',
