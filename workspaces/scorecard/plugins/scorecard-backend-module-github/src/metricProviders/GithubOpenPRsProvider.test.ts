@@ -18,6 +18,7 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { GithubOpenPRsProvider } from './GithubOpenPRsProvider';
 import { GithubClient } from '../github/GithubClient';
+import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -33,13 +34,7 @@ describe('GithubOpenPRsProvider', () => {
     it('should create provider with default thresholds when no thresholds are configured', () => {
       const provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
 
-      expect(provider.getMetricThresholds()).toEqual({
-        rules: [
-          { key: 'error', expression: '>50' },
-          { key: 'warning', expression: '10-50' },
-          { key: 'success', expression: '<10' },
-        ],
-      });
+      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
 
     it('should create provider with custom thresholds when configured', () => {

@@ -153,7 +153,7 @@ export function validateThresholds(
     }
     if (!['error', 'warning', 'success'].includes(rule.key)) {
       throw new ThresholdConfigFormatError(
-        `Invalid threshold rule key "${rule.key}": only supported values are "error", "warning", "success"`,
+        `Invalid threshold rule key "${rule.key}": only supported values are "success", "warning", "error"`,
       );
     }
     if (seenKeys.has(rule.key)) {

@@ -57,7 +57,6 @@ export const scorecardPlugin = createBackendPlugin({
         auth: coreServices.auth,
         httpRouter: coreServices.httpRouter,
         catalog: catalogServiceRef,
-        logger: coreServices.logger,
         httpAuth: coreServices.httpAuth,
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
@@ -66,7 +65,6 @@ export const scorecardPlugin = createBackendPlugin({
         discovery,
         auth,
         httpRouter,
-        logger,
         httpAuth,
         permissions,
         permissionsRegistry,
@@ -82,7 +80,6 @@ export const scorecardPlugin = createBackendPlugin({
           catalogApi: catalogClient,
           registry: metricProvidersRegistry,
           thresholdEvaluator: new ThresholdEvaluator(),
-          logger,
           auth,
         });
 
