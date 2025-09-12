@@ -18,10 +18,8 @@ import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import CircularProgress from '@mui/material/CircularProgress';
 import { QuickstartItem } from './QuickstartItem';
-import { EmptyState } from '@backstage/core-components';
 import { useState, useEffect } from 'react';
 import { QuickstartItemData } from '../../types';
-import { useTranslation } from '../../hooks/useTranslation';
 
 type QuickstartContentProps = {
   quickstartItems: QuickstartItemData[];
@@ -36,7 +34,6 @@ export const QuickstartContent = ({
   itemCount,
   isLoading,
 }: QuickstartContentProps) => {
-  const { t } = useTranslation();
   const [openItems, setOpenItems] = useState<boolean[]>(
     new Array(itemCount).fill(false),
   );
@@ -69,28 +66,24 @@ export const QuickstartContent = ({
         paddingTop: theme => `${theme.spacing(3)}`,
       }}
     >
-      {quickstartItems.length > 0 ? (
-        <List disablePadding>
-          {quickstartItems.map((item: QuickstartItemData, index: number) => (
-            <QuickstartItem
-              key={`${item.title}-${index}`}
-              item={item}
-              index={index}
-              open={openItems[index]}
-              handleOpen={() =>
-                setOpenItems(oi => {
-                  return oi.map((val, valIndex) =>
-                    valIndex === index ? !val : false,
-                  );
-                })
-              }
-              setProgress={() => setProgress(index)}
-            />
-          ))}
-        </List>
-      ) : (
-        <EmptyState title={t('content.emptyState.title')} missing="data" />
-      )}
+      <List disablePadding>
+        {quickstartItems.map((item: QuickstartItemData, index: number) => (
+          <QuickstartItem
+            key={`${item.title}-${index}`}
+            item={item}
+            index={index}
+            open={openItems[index]}
+            handleOpen={() =>
+              setOpenItems(oi => {
+                return oi.map((val, valIndex) =>
+                  valIndex === index ? !val : false,
+                );
+              })
+            }
+            setProgress={() => setProgress(index)}
+          />
+        ))}
+      </List>
     </Box>
   );
 };

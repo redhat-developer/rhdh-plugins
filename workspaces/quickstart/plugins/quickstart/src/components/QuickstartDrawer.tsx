@@ -22,10 +22,14 @@ import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext'
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
 import { useQuickstartRole } from '../hooks/useQuickstartRole';
+import { useEffect, useRef } from 'react';
 
 export const QuickstartDrawer = () => {
-  const { isDrawerOpen, closeDrawer, drawerWidth } =
+  const { isDrawerOpen, closeDrawer, openDrawer, drawerWidth } =
     useQuickstartDrawerContext();
+
+  // Track if we've already auto-opened the drawer to prevent re-opening after manual close
+  const hasAutoOpened = useRef(false);
 
   const apiHolder = useApiHolder();
   const config = apiHolder.get(configApiRef);
@@ -38,6 +42,37 @@ export const QuickstartDrawer = () => {
     !isLoading && userRole
       ? filterQuickstartItemsByRole(quickstartItems, userRole)
       : [];
+
+  // Auto-open drawer when user logs in and has quickstart items available
+  // Only do this once, and respect user's manual close action
+  useEffect(() => {
+    if (
+      !isLoading &&
+      filteredItems.length > 0 &&
+      !isDrawerOpen &&
+      !hasAutoOpened.current
+    ) {
+      openDrawer();
+      hasAutoOpened.current = true;
+    }
+  }, [isLoading, filteredItems.length, isDrawerOpen, openDrawer]);
+
+  // Hide the drawer entirely if there are no quickstart items for the user
+  // Do this check first, before any rendering happens
+  if (!isLoading && filteredItems.length === 0) {
+    // Also close the drawer context if it's currently open to prevent layout issues
+    if (isDrawerOpen) {
+      closeDrawer();
+    }
+    return null;
+  }
+
+  // During loading, if drawer is open but we don't know if user will have items yet,
+  // close it preemptively to prevent flash and reset auto-open tracking
+  if (isLoading && isDrawerOpen) {
+    closeDrawer();
+    hasAutoOpened.current = false; // Reset for new user
+  }
 
   return (
     <Drawer

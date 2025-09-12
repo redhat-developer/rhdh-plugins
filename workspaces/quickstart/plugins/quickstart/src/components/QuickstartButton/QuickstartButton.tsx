@@ -22,6 +22,10 @@ import { useTheme } from '@mui/material/styles';
 import WavingHandIcon from '@mui/icons-material/WavingHandOutlined';
 import { useQuickstartDrawerContext } from '../../hooks/useQuickstartDrawerContext';
 import { useTranslation } from '../../hooks/useTranslation';
+import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
+import { QuickstartItemData } from '../../types';
+import { filterQuickstartItemsByRole } from '../../utils';
+import { useQuickstartRole } from '../../hooks/useQuickstartRole';
 
 /**
  * Props for the QuickstartButton component
@@ -51,9 +55,23 @@ export const QuickstartButton = ({
   style,
   onClick = () => {},
 }: QuickstartButtonProps) => {
+  // All hooks must be called at the top level, before any early returns
   const { t } = useTranslation();
   const { toggleDrawer } = useQuickstartDrawerContext();
   const theme = useTheme();
+
+  // Check if there are any quickstart items available for the current user
+  const apiHolder = useApiHolder();
+  const config = apiHolder.get(configApiRef);
+  const quickstartItems: QuickstartItemData[] = config?.has('app.quickstart')
+    ? config.get('app.quickstart')
+    : [];
+
+  const { isLoading, userRole } = useQuickstartRole();
+  const filteredItems =
+    !isLoading && userRole
+      ? filterQuickstartItemsByRole(quickstartItems, userRole)
+      : [];
 
   const defaultTitle = t('button.quickstart');
 
@@ -61,6 +79,11 @@ export const QuickstartButton = ({
     toggleDrawer();
     onClick();
   }, [toggleDrawer, onClick]);
+
+  // Hide the button if there are no quickstart items for the user
+  if (!isLoading && filteredItems.length === 0) {
+    return null;
+  }
 
   return (
     <MenuItem

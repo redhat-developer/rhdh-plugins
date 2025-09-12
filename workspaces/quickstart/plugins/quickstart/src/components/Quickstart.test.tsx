@@ -93,16 +93,6 @@ describe('Quickstart', () => {
 
       expectHideButton();
     });
-
-    it('shows empty state when no items match user role', async () => {
-      await renderWithRole('manager');
-
-      // Should show empty state
-      expect(
-        screen.getByText('Quickstart content not available for your role.'),
-      ).toBeInTheDocument();
-      expectHideButton();
-    });
   });
 
   describe('Progress calculation with role-based items', () => {
@@ -180,21 +170,6 @@ describe('Quickstart', () => {
       fireEvent.click(hideBtn);
 
       expect(mockHandleDrawerClose).toHaveBeenCalledTimes(1);
-    });
-
-    it('handles empty items array gracefully', async () => {
-      await renderInTestApp(
-        <Quickstart
-          quickstartItems={[]}
-          handleDrawerClose={mockHandleDrawerClose}
-          isLoading={false}
-        />,
-      );
-
-      expect(
-        screen.getByText('Quickstart content not available for your role.'),
-      ).toBeInTheDocument();
-      expectHideButton();
     });
   });
 });
