@@ -104,17 +104,6 @@ export const globalHeaderTranslationRef: TranslationRef<
     readonly 'profile.settings': string;
     readonly 'profile.myProfile': string;
     readonly 'profile.signOut': string;
-    readonly 'create.title': string;
-    readonly 'create.templates.errorFetching': string;
-    readonly 'create.templates.sectionTitle': string;
-    readonly 'create.templates.allTemplates': string;
-    readonly 'create.templates.noTemplatesAvailable': string;
-    readonly 'create.registerComponent.title': string;
-    readonly 'create.registerComponent.subtitle': string;
-    readonly 'starred.title': string;
-    readonly 'starred.removeTooltip': string;
-    readonly 'starred.noItemsTitle': string;
-    readonly 'starred.noItemsSubtitle': string;
     readonly 'applicationLauncher.tooltip': string;
     readonly 'applicationLauncher.noLinksTitle': string;
     readonly 'applicationLauncher.noLinksSubtitle': string;
@@ -122,6 +111,17 @@ export const globalHeaderTranslationRef: TranslationRef<
     readonly 'applicationLauncher.rhdhLocal': string;
     readonly 'applicationLauncher.sections.documentation': string;
     readonly 'applicationLauncher.sections.developerTools': string;
+    readonly 'starred.title': string;
+    readonly 'starred.removeTooltip': string;
+    readonly 'starred.noItemsTitle': string;
+    readonly 'starred.noItemsSubtitle': string;
+    readonly 'create.title': string;
+    readonly 'create.registerComponent.title': string;
+    readonly 'create.registerComponent.subtitle': string;
+    readonly 'create.templates.errorFetching': string;
+    readonly 'create.templates.sectionTitle': string;
+    readonly 'create.templates.allTemplates': string;
+    readonly 'create.templates.noTemplatesAvailable': string;
   }
 >;
 
