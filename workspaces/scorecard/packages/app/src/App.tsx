@@ -52,9 +52,11 @@ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const app = createApp({
   apis,
+  themes: getThemes(),
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,

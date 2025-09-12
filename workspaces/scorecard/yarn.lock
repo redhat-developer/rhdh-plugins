@@ -7210,6 +7210,7 @@ __metadata:
     "@backstage/repo-tools": "npm:^0.15.0"
     "@changesets/cli": "npm:^2.27.1"
     "@playwright/test": "npm:1.55.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.9.1"
     "@spotify/prettier-config": "npm:^15.0.0"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
@@ -8605,7 +8606,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.18.0":
+"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.17.1":
   version: 5.18.0
   resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
@@ -12375,6 +12376,22 @@ __metadata:
     react-router-dom: "*"
   languageName: unknown
   linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.9.1":
+  version: 0.9.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.9.1"
+  dependencies:
+    "@mui/icons-material": "npm:^5.17.1"
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.10.7
+    "@backstage/theme": ^0.6.6
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10/f6001ebec411e275cc6ed9226430aaa75c46794510f67d85cb599be03ee873d785bc179e0e74ccf122cef570d7a932528b74b6c275a8794386cb73a22c1ed28d
+  languageName: node
+  linkType: hard
 
 "@redis/client@npm:^1.6.0":
   version: 1.6.1
@@ -16967,6 +16984,7 @@ __metadata:
     "@material-ui/icons": "npm:^4.9.1"
     "@playwright/test": "npm:^1.54.1"
     "@red-hat-developer-hub/backstage-plugin-scorecard": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.9.1"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"

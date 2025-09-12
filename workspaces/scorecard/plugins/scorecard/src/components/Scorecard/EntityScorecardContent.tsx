@@ -42,11 +42,7 @@ export const EntityScorecardContent = () => {
   }
 
   if (error) {
-    return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <ResponseErrorPanel error={error} />
-      </Box>
-    );
+    return <ResponseErrorPanel error={error} />;
   }
 
   if (!loadingData && scorecards?.length === 0) {

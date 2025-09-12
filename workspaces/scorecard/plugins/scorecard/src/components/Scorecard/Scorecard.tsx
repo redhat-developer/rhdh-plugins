@@ -58,20 +58,16 @@ const Scorecard = ({
 
   return (
     <Card sx={{ width: '364px' }}>
-      <CardContent sx={{ p: 0, '&:last-child': { pb: 1 } }}>
-        <CardHeader
-          title={cardTitle}
-          titleTypographyProps={{ variant: 'h6', fontWeight: 500 }}
-          sx={{ pb: 2 }}
-        />
-        <Divider />
-        <Box sx={{ p: 2, px: 3 }}>
+      <CardHeader title={cardTitle} titleTypographyProps={{ mb: 0 }} />
+      <Divider />
+      <CardContent>
+        <Box sx={{ px: 1, pb: 2 }}>
           <Typography variant="body2" color="textSecondary">
             {description}
           </Typography>
         </Box>
 
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ px: 2 }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={6}>
               <Box
