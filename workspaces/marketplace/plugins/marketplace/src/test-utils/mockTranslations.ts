@@ -55,11 +55,3 @@ export const mockT = (key: string, params?: any) => {
 export const mockUseTranslation = () => ({
   t: mockT,
 });
-
-export const MockTrans = ({
-  message,
-  params,
-}: {
-  message: string;
-  params?: any;
-}) => mockT(message, params);

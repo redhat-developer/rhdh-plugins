@@ -58,7 +58,7 @@ const MarketplacePackageContentSkeleton = () => {
         />
         <Stack spacing={0.5}>
           <Skeleton>
-            <Typography variant="subtitle1">Package Name</Typography>
+            <Typography variant="subtitle1">Entry name</Typography>
           </Skeleton>
           <Skeleton>
             <Typography variant="subtitle2">by someone</Typography>

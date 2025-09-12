@@ -83,42 +83,40 @@ const renderInstallStatus = (
   }
 };
 
-export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => {
-  return (
-    <Card variant="outlined">
-      <CardContent>
-        <Stack spacing={2}>
-          <Stack direction="row" spacing={2}>
-            <Skeleton
-              variant="rectangular"
-              animation={animation}
-              sx={{ width: '80px', height: '80px', mr: 2 }}
-            />
-            <Stack spacing={0.5}>
-              <Skeleton animation={animation}>
-                <Typography variant="subtitle1">Plugin Name</Typography>
-              </Skeleton>
-              <Skeleton animation={animation}>
-                <Typography variant="subtitle2">by someone</Typography>
-              </Skeleton>
-              <Skeleton animation={animation}>
-                <Typography variant="subtitle2">Category</Typography>
-              </Skeleton>
-            </Stack>
+export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => (
+  <Card variant="outlined">
+    <CardContent>
+      <Stack spacing={2}>
+        <Stack direction="row" spacing={2}>
+          <Skeleton
+            variant="rectangular"
+            animation={animation}
+            sx={{ width: '80px', height: '80px', mr: 2 }}
+          />
+          <Stack spacing={0.5}>
+            <Skeleton animation={animation}>
+              <Typography variant="subtitle1">Entry name</Typography>
+            </Skeleton>
+            <Skeleton animation={animation}>
+              <Typography variant="subtitle2">by someone</Typography>
+            </Skeleton>
+            <Skeleton animation={animation}>
+              <Typography variant="subtitle2">Category</Typography>
+            </Skeleton>
           </Stack>
-          <div>
-            <Skeleton animation={animation} />
-            <Skeleton animation={animation} />
-            <Skeleton animation={animation} />
-          </div>
         </Stack>
-      </CardContent>
-      <CardActions sx={{ p: 2, justifyContent: 'flex-start' }}>
-        <Skeleton animation={animation} style={{ width: 50 }} />
-      </CardActions>
-    </Card>
-  );
-};
+        <div>
+          <Skeleton animation={animation} />
+          <Skeleton animation={animation} />
+          <Skeleton animation={animation} />
+        </div>
+      </Stack>
+    </CardContent>
+    <CardActions sx={{ p: 2, justifyContent: 'flex-start' }}>
+      <Skeleton animation={animation} style={{ width: 50 }} />
+    </CardActions>
+  </Card>
+);
 
 // orange: #EC7A08
 
