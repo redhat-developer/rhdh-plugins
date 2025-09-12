@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.17.1
+
+### Patch Changes
+
+- d59b616: Add `type` prop for MenuItemLink identification and hide "My profile" menuItemLink for guest users
+
+  - Add `type` prop to MenuItemLink component config for better identification when i18n applied
+  - Hide "My Profile" menu item when user entity reference contains '/guest'
+  - Hide "My Profile" menu item when catalog API fails to fetch user entity
+  - Export `globalHeaderTranslations` from plugin for i18n integration
+
 ## 1.17.0
 
 ### Minor Changes
