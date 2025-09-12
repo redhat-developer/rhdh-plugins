@@ -175,9 +175,6 @@ const marketplaceTranslationFr = createTranslationMessages({
     'collection.monitoring': 'Surveillance',
     'collection.security': 'Sécurité',
     'collection.viewMore': 'Voir plus',
-    'collection.featuredTitle': 'Plugins en vedette',
-    'collection.featuredDescription':
-      'Une collection organisée de plugins recommandés pour la plupart des utilisateurs',
     'collection.pluginCount': '{{count}} plugins',
 
     // Installation and configuration

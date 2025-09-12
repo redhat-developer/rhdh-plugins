@@ -17,38 +17,20 @@ import { useRouteRefParams } from '@backstage/core-plugin-api';
 
 import { useCollection } from '../hooks/useCollection';
 import { useCollectionPlugins } from '../hooks/useCollectionPlugins';
-import { useTranslation } from '../hooks/useTranslation';
 
 import { collectionRouteRef } from '../routes';
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
 import { Markdown } from './Markdown';
 
 export const MarketplaceCollectionGridLoader = () => {
-  const { t } = useTranslation();
   const params = useRouteRefParams(collectionRouteRef);
   const collection = useCollection(params.namespace, params.name);
   const plugins = useCollectionPlugins(params.namespace, params.name);
 
-  const getTranslatedDescription = (description: string) => {
-    // Check if description is a translation key
-    if (description.startsWith('collection.')) {
-      try {
-        return t(description as any, {});
-      } catch (error) {
-        return description;
-      }
-    }
-    return description;
-  };
-
   return (
     <div>
       {collection.data?.metadata?.description ? (
-        <Markdown
-          content={getTranslatedDescription(
-            collection.data.metadata.description,
-          )}
-        />
+        <Markdown content={collection.data.metadata.description} />
       ) : null}
 
       <PluginCardGrid>
