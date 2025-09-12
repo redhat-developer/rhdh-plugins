@@ -205,11 +205,7 @@ export const marketplaceMessages = {
     monitoring: 'Monitoring',
     security: 'Security',
     viewMore: 'View more',
-    featuredTitle: 'Featured Plugins',
-    featuredDescription:
-      'A curated collection of featured plugins recommended for most users',
     pluginCount: '{{count}} plugins',
-    entryName: 'Entry name',
   },
 
   // Installation and configuration
