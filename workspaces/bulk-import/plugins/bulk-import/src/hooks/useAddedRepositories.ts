@@ -27,6 +27,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../api/BulkImportBackendClient';
+import { useTranslation } from '../hooks';
 import {
   AddedRepositoryColumnNameEnum,
   AddRepositoriesFormValues,
@@ -54,6 +55,7 @@ export const useAddedRepositories = (
 } => {
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
+  const { t } = useTranslation();
   const { value: user } = useAsync(async () => {
     const identityRef = await identityApi.getBackstageIdentity();
     return identityRef.userEntityRef;
@@ -103,6 +105,7 @@ export const useAddedRepositories = (
       value as ImportJobs | Response,
       user as string,
       baseUrl as string,
+      (key: string) => t(key as any, {}),
     );
     if (
       Object.values(repoData.repoData).length !==
@@ -113,7 +116,7 @@ export const useAddedRepositories = (
       addedRepositories: Object.values(repoData.repoData),
       totalJobs: repoData.totalJobs,
     };
-  }, [value, user, baseUrl, values.repositories, setFieldValue]);
+  }, [value, user, baseUrl, values.repositories, setFieldValue, t]);
 
   return {
     data: prepareData,

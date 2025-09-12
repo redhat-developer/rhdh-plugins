@@ -22,6 +22,7 @@ import Paper from '@mui/material/Paper';
 import { useFormikContext } from 'formik';
 
 import { useNumberOfApprovalTools } from '../../hooks';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   ApprovalTool as ApprovalToolEnum,
@@ -33,6 +34,7 @@ import ApprovalTool from './ApprovalTool';
 import { RepositoriesTable } from './RepositoriesTable';
 
 export const AddRepositoriesTable = ({ title }: { title?: string }) => {
+  const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
   const [isApprovalToolGitlab, setIsApprovalToolGitlab] = useState(false);
@@ -67,7 +69,7 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
         <AddRepositoriesTableToolbar
           title={
             title ||
-            `Selected  ${isApprovalToolGitlab ? 'projects' : 'repositories'}`
+            `${t('addRepositories.selectedLabel')} ${isApprovalToolGitlab ? t('addRepositories.selectedProjects') : t('addRepositories.selectedRepositories')}`
           }
           setSearchString={setSearchInput}
           onPageChange={setPage}

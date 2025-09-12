@@ -26,6 +26,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../api/BulkImportBackendClient';
+import { useTranslation } from '../hooks';
 import {
   AddRepositoryData,
   DataFetcherQueryParams,
@@ -53,6 +54,7 @@ export const useRepositories = (
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
   const bulkImportApi = useApi(bulkImportApiRef);
+  const { t } = useTranslation();
 
   const { value: user } = useAsync(async () => {
     const identityRef = await identityApi.getBackstageIdentity();
@@ -110,8 +112,9 @@ export const useRepositories = (
       value as OrgAndRepoResponse,
       user || 'user:default/guest',
       baseUrl || '',
+      (key: string) => t(key as any, {}),
     );
-  }, [options?.showOrganizations, value, user, baseUrl]);
+  }, [options?.showOrganizations, value, user, baseUrl, t]);
 
   return {
     loading: isQueryLoading,

@@ -122,6 +122,7 @@ describe('Preview Pull Request', () => {
             'https://localhost:3001',
             'https://github.com/org/dessert/cupcake',
             'main',
+            (key: string) => key,
           ),
         }}
         setFormErrors={() => jest.fn()}
@@ -131,9 +132,7 @@ describe('Preview Pull Request', () => {
     );
     expect(getByText(/Failed to create PR/)).toBeInTheDocument();
     expect(
-      getByText(
-        /CODEOWNERS file is missing from the repository. Add a CODEOWNERS file to create a new PR./,
-      ),
+      getByText(/No CODEOWNERS file found in the repository/),
     ).toBeInTheDocument();
   });
 
@@ -175,6 +174,7 @@ describe('Preview Pull Request', () => {
             'https://localhost:3001',
             'https://github.com/org/dessert/cupcake',
             'main',
+            (key: string) => key,
           ),
         }}
         setFormErrors={() => jest.fn()}
@@ -215,6 +215,7 @@ describe('Preview Pull Request', () => {
               'https://localhost:3001',
               'https://github.com/org/dessert/cupcake',
               'main',
+              (key: string) => key,
             ),
             pullRequestUrl: 'https://github.com/org/dessert/cupcake/pulls/9',
           },
@@ -259,6 +260,7 @@ describe('Preview Pull Request', () => {
               'https://localhost:3001',
               'https://github.com/org/dessert/cupcake',
               'main',
+              (key: string) => key,
             ),
             pullRequestUrl: 'https://github.com/org/dessert/cupcake/pulls/9',
           },

@@ -38,6 +38,7 @@ import {
 } from '../src/mocks/mockData';
 import { mockEntities } from '../src/mocks/mockEntities';
 import { BulkImportPage, bulkImportPlugin } from '../src/plugin';
+import { bulkImportTranslations } from '../src/translations';
 import {
   APITypes,
   ImportJobResponse,
@@ -155,6 +156,9 @@ const mockConfigApi = new MockConfigApi({
 
 createDevApp()
   .registerPlugin(bulkImportPlugin)
+  .addTranslationResource(bulkImportTranslations)
+  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage({
     element: (
