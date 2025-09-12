@@ -58,7 +58,7 @@ const Scorecard = ({
 
   return (
     <Card sx={{ width: '364px' }}>
-      <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
+      <CardContent sx={{ p: 0, '&:last-child': { pb: 1 } }}>
         <CardHeader
           title={cardTitle}
           titleTypographyProps={{ variant: 'h6', fontWeight: 500 }}
