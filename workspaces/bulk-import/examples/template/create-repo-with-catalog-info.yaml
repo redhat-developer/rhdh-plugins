@@ -55,6 +55,7 @@ spec:
         description: This is ${{ parameters.repoUrl }}
         repoUrl: ${{ parameters.repoUrl }}
 
+    # The final step is to register our new component in the catalog.
     - id: register
       name: Register
       action: catalog:register
