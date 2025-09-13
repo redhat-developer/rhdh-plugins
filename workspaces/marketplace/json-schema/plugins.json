@@ -115,7 +115,31 @@
           }
         },
         "support": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "generally-available",
+                    "tech-preview",
+                    "dev-preview",
+                    "community-plugin",
+                    "custom-plugin"
+                  ]
+                }
+              },
+              "required": ["name", "level"],
+              "additionalProperties": false
+            }
+          ]
         },
         "lifecycle": {
           "type": "string"

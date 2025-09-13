@@ -109,6 +109,15 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
         entity.spec.authors = authors;
       }
 
+      // Align support field
+      if (typeof entity.spec?.support === 'string') {
+        entity.spec.support = { level: entity.spec.support };
+      }
+      if (!entity.spec?.support?.level) {
+        if (!entity.spec) entity.spec = {};
+        entity.spec.support = { level: 'custom-plugin' };
+      }
+
       // Relation - OWNED_BY
       const thisEntityRef = getCompoundEntityRef(entity);
       if (entity?.spec?.owner) {

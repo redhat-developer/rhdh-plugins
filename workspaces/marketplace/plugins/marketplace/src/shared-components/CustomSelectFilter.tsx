@@ -15,7 +15,7 @@
  */
 
 import type { SyntheticEvent } from 'react';
-import { SelectItem } from '@backstage/core-components';
+import { ExtendedSelectItem } from '../types';
 import Autocomplete from '@mui/material/Autocomplete';
 import Checkbox from '@mui/material/Checkbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -24,12 +24,15 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import Typography from '@mui/material/Typography';
 
 export interface BackstageSelectFilterProps {
   label: string;
-  items: SelectItem[];
-  selectedItems: SelectItem[];
-  onChange: (event: SyntheticEvent, value: SelectItem[]) => void;
+  helper?: string;
+  items: ExtendedSelectItem[];
+  selectedItems: ExtendedSelectItem[];
+  onChange: (event: SyntheticEvent, value: ExtendedSelectItem[]) => void;
 }
 
 export const CustomSelectFilter = (props: BackstageSelectFilterProps) => {
@@ -79,7 +82,23 @@ export const CustomSelectFilter = (props: BackstageSelectFilterProps) => {
                     : selectedOption.selected
                 }
               />
-              {option.label}
+              {option.isBadge && (
+                <TaskAltIcon
+                  style={{ color: option.badgeColor }}
+                  sx={{ marginRight: 1 }}
+                />
+              )}
+
+              {option.helperText ? (
+                <Box>
+                  <Typography variant="body1">{option.label}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {option.helperText}
+                  </Typography>
+                </Box>
+              ) : (
+                option.label
+              )}
             </li>
           );
         }}
