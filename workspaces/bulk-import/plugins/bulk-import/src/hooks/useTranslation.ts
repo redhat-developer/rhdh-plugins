@@ -14,24 +14,16 @@
  * limitations under the License.
  */
 
-import { TableColumn } from '@backstage/core-components';
+import {
+  TranslationFunction,
+  useTranslationRef,
+} from '@backstage/core-plugin-api/alpha';
 
-export const getReposSelectDrawerColumnHeader = (
-  t: (key: string, ...args: any[]) => string,
-): TableColumn[] => [
-  {
-    id: 'name',
-    title: t('table.headers.name'),
-    field: 'repoName',
-  },
-  {
-    id: 'url',
-    title: t('table.headers.url'),
-    field: 'repoUrl',
-  },
-  {
-    id: 'cataloginfoyaml',
-    title: '',
-    field: 'catalogInfoYaml.status',
-  },
-];
+import { bulkImportTranslationRef } from '../translations';
+
+/**
+ * @alpha
+ */
+export const useTranslation = (): {
+  t: TranslationFunction<typeof bulkImportTranslationRef.T>;
+} => useTranslationRef(bulkImportTranslationRef);

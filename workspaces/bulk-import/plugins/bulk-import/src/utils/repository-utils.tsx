@@ -130,6 +130,7 @@ export const getPRTemplate = (
   baseUrl: string,
   repositoryUrl: string,
   defaultBranch: string,
+  t: (key: string) => string,
 ): PullRequestPreview => {
   const importJobUrl = repositoryUrl
     ? `${baseUrl}/bulk-import/repositories?repository=${repositoryUrl}&defaultBranch=${defaultBranch}`
@@ -138,8 +139,10 @@ export const getPRTemplate = (
   return {
     componentName: name,
     entityOwner,
-    prTitle: 'Add catalog-info.yaml config file',
-    prDescription: `This pull request adds a **Backstage entity metadata file**\nto this repository so that the component can\nbe added to the [software catalog](${baseUrl}/catalog).\nAfter this pull request is merged, the component will become available.\nFor more information, read an [overview of the Backstage software catalog](https://backstage.io/docs/features/software-catalog/).\nView the import job in your app [here](${importJobUrl}).`,
+    prTitle: t('pullRequest.title'),
+    prDescription: t('pullRequest.description')
+      .replace('{{catalogUrl}}', `${baseUrl}/catalog`)
+      .replace('{{importJobUrl}}', importJobUrl),
     useCodeOwnersFile: false,
     yaml: defaultCatalogInfoYaml(name, componentName, orgName, entityOwner),
   };
@@ -222,6 +225,7 @@ export const urlHelper = (url: string) => {
 
 export const getImportStatus = (
   status: string,
+  t: (key: string) => string,
   showIcon?: boolean,
   prUrl?: string,
   isApprovalToolGitlab: boolean = false,
@@ -229,7 +233,9 @@ export const getImportStatus = (
   if (!status) {
     return '';
   }
-  const labelText = gitlabFeatureFlag ? 'Already imported' : 'Added';
+  const labelText = gitlabFeatureFlag
+    ? t('status.alreadyImported')
+    : t('status.added');
   switch (status) {
     case 'WAIT_PR_APPROVAL':
       return showIcon ? (
@@ -238,7 +244,7 @@ export const getImportStatus = (
           isApprovalToolGitlab={isApprovalToolGitlab}
         />
       ) : (
-        'Waiting for Approval'
+        t('status.waitingForApproval')
       );
     case 'ADDED':
       return showIcon ? (
@@ -247,7 +253,7 @@ export const getImportStatus = (
           style={{ display: 'flex', alignItems: 'baseline' }}
         >
           <StatusOK />
-          {gitlabFeatureFlag ? 'Imported' : 'Added'}
+          {gitlabFeatureFlag ? t('status.imported') : t('status.added')}
         </Typography>
       ) : (
         labelText
@@ -432,44 +438,30 @@ export const getApi = (
 
 export const getCustomisedErrorMessage = (
   status: (RepositoryStatus | string)[] | undefined,
+  t: (key: string) => string,
 ) => {
   let message = '';
   let showRepositoryLink = false;
   status?.forEach(s => {
     if (s === RepositoryStatus.PR_ERROR) {
-      message = message.concat(
-        "Couldn't create a new PR due to insufficient permissions. Contact your administrator.",
-        '\n',
-      );
+      message = message.concat(t('errors.prErrorPermissions'), '\n');
       showRepositoryLink = true;
     }
 
     if (s === RepositoryStatus.CATALOG_INFO_FILE_EXISTS_IN_REPO) {
-      message = message.concat(
-        'Since catalog-info.yaml already exists in the repository, no new PR will be created. However, the entity will still be registered in the catalog page.',
-        '\n',
-      );
+      message = message.concat(t('errors.catalogInfoExists'), '\n');
     }
 
     if (s === RepositoryStatus.CATALOG_ENTITY_CONFLICT) {
-      message = message.concat(
-        "Couldn't create a new PR because of catalog entity conflict.",
-        '\n',
-      );
+      message = message.concat(t('errors.catalogEntityConflict'), '\n');
     }
 
     if (s === RepositoryStatus.REPO_EMPTY) {
-      message = message.concat(
-        "Couldn't create a new PR because the repository is empty. Push an initial commit to the repository.",
-        '\n',
-      );
+      message = message.concat(t('errors.repoEmpty'), '\n');
     }
 
     if (s === RepositoryStatus.CODEOWNERS_FILE_NOT_FOUND_IN_REPO) {
-      message = message.concat(
-        'CODEOWNERS file is missing from the repository. Add a CODEOWNERS file to create a new PR.',
-        '\n',
-      );
+      message = message.concat(t('errors.codeOwnersNotFound'), '\n');
     }
   });
   if (!message) {
@@ -577,6 +569,7 @@ export const prepareDataForRepositories = (
   result: OrgAndRepoResponse,
   user: string,
   baseUrl: string,
+  t: (key: string) => string,
 ) => {
   const repoData: { [id: string]: AddRepositoryData } =
     result?.repositories?.reduce((acc, val: Repository) => {
@@ -601,6 +594,7 @@ export const prepareDataForRepositories = (
               baseUrl || '',
               val.url || '',
               val.defaultBranch || 'main',
+              t,
             ),
           },
         },
@@ -613,6 +607,7 @@ export const prepareDataForAddedRepositories = (
   addedRepositories: ImportJobs | Response | undefined,
   user: string,
   baseUrl: string,
+  t: (key: string) => string,
 ): { repoData: AddedRepositories; totalJobs: number } => {
   if (!Array.isArray((addedRepositories as ImportJobs)?.imports)) {
     return { repoData: {}, totalJobs: 0 };
@@ -645,6 +640,7 @@ export const prepareDataForAddedRepositories = (
               baseUrl,
               val.repository.url || '',
               val.repository.defaultBranch || 'main',
+              t,
             ),
             pullRequest: val?.github?.pullRequest?.url || '',
             lastUpdated: val.lastUpdate,
@@ -679,23 +675,28 @@ const validateKeyValuePair = yup
     },
   );
 
-export const getValidationSchema = (approvalTool: string) =>
+export const getValidationSchema = (
+  approvalTool: string,
+  t: (key: string, params?: any) => string,
+) =>
   yup.object().shape({
-    prTitle: yup.string().required(`${approvalTool} title is required`),
+    prTitle: yup
+      .string()
+      .required(t('validation.titleRequired', { approvalTool })),
     prDescription: yup
       .string()
-      .required(`${approvalTool} description is required`),
+      .required(t('validation.descriptionRequired', { approvalTool })),
     componentName: yup
       .string()
       .matches(
         componentNameRegex,
-        `"${yup.string()}" is not valid; expected a string that is sequences of [a-zA-Z0-9] separated by any of [-_.], at most 63 characters in total. To learn more about catalog file format, visit: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md`,
+        t('validation.componentNameInvalid', { value: yup.string() }),
       )
-      .required('Component name is required'),
+      .required(t('validation.componentNameRequired')),
     useCodeOwnersFile: yup.boolean(),
     entityOwner: yup.string().when('useCodeOwnersFile', {
       is: false,
-      then: schema => schema.required('Entity Owner is required'),
+      then: schema => schema.required(t('validation.entityOwnerRequired')),
       otherwise: schema => schema.notRequired(),
     }),
     prLabels: validateKeyValuePair,

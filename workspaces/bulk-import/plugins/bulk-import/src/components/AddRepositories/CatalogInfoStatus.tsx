@@ -21,6 +21,7 @@ import { StatusRunning } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -47,6 +48,7 @@ export const CatalogInfoStatus = ({
   isDrawer?: boolean;
   importStatus?: string;
 }) => {
+  const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
 
@@ -85,7 +87,7 @@ export const CatalogInfoStatus = ({
           component="span"
           style={{ fontWeight: '400', fontSize: '0.875rem', color: '#181818' }}
         >
-          Generating
+          {t('catalogInfo.status.generating')}
         </Typography>
       </StatusRunning>
     );
@@ -94,7 +96,13 @@ export const CatalogInfoStatus = ({
   if (importStatus) {
     return (
       <Typography component="span" style={{ color: '#6A6E73' }}>
-        {getImportStatus(importStatus)}
+        {getImportStatus(
+          importStatus,
+          (key: string) => t(key as any, {}),
+          false,
+          undefined,
+          false,
+        )}
       </Typography>
     );
   }
@@ -103,5 +111,9 @@ export const CatalogInfoStatus = ({
     return null;
   }
 
-  return <Typography component="span">Not Generated</Typography>;
+  return (
+    <Typography component="span">
+      {t('catalogInfo.status.notGenerated')}
+    </Typography>
+  );
 };

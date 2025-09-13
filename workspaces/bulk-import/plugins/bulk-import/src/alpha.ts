@@ -14,24 +14,4 @@
  * limitations under the License.
  */
 
-import { TableColumn } from '@backstage/core-components';
-
-export const getReposSelectDrawerColumnHeader = (
-  t: (key: string, ...args: any[]) => string,
-): TableColumn[] => [
-  {
-    id: 'name',
-    title: t('table.headers.name'),
-    field: 'repoName',
-  },
-  {
-    id: 'url',
-    title: t('table.headers.url'),
-    field: 'repoUrl',
-  },
-  {
-    id: 'cataloginfoyaml',
-    title: '',
-    field: 'catalogInfoYaml.status',
-  },
-];
+export * from './translations';
