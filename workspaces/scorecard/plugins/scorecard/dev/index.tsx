@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 import { createDevApp } from '@backstage/dev-utils';
-import { scorecardPlugin, ScorecardPage } from '../src/plugin';
+import { scorecardPlugin, EntityScorecardContent } from '../src/plugin';
 
 createDevApp()
   .registerPlugin(scorecardPlugin)
   .addPage({
-    element: <ScorecardPage />,
+    element: <EntityScorecardContent />,
     title: 'Root Page',
     path: '/scorecard',
   })

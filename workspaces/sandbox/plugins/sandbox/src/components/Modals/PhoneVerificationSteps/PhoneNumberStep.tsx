@@ -32,7 +32,10 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
 import CircularProgress from '@mui/material/CircularProgress';
-import { getEddlDataAttributes } from '../../../utils/eddl-utils';
+import {
+  getEddlDataAttributes,
+  useTrackAnalytics,
+} from '../../../utils/eddl-utils';
 
 const FLAG_FETCH_URL =
   'https://catamphetamine.github.io/country-flag-icons/3x2';
@@ -65,6 +68,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
   error,
 }) => {
   const theme = useTheme();
+  const trackAnalytics = useTrackAnalytics();
   const sendCodeEddlAttributes = getEddlDataAttributes(
     'Send Code',
     'Verification',
@@ -73,6 +77,22 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
     'Cancel Verification',
     'Verification',
   );
+
+  // Handle Send Code click for analytics tracking
+  const handleSendCodeClick = async () => {
+    await trackAnalytics('Send Code', 'Verification', window.location.href);
+    handlePhoneNumberSubmit();
+  };
+
+  // Handle Cancel click for analytics tracking
+  const handleCancelClick = async () => {
+    await trackAnalytics(
+      'Cancel Verification',
+      'Verification',
+      window.location.href,
+    );
+    handleClose();
+  };
 
   const PhoneInputField = forwardRef(function PhoneInputField(
     props: TextFieldProps,
@@ -213,7 +233,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         <Button
           data-testid="submit-phone-button"
           variant="contained"
-          onClick={handlePhoneNumberSubmit}
+          onClick={handleSendCodeClick}
           type="submit"
           disabled={!phoneNumber || loading}
           endIcon={
@@ -226,7 +246,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         <Button
           data-testid="close-phone-button"
           variant="outlined"
-          onClick={handleClose}
+          onClick={handleCancelClick}
           sx={{
             border: `1px solid ${theme.palette.primary.main}`,
             '&:hover': {

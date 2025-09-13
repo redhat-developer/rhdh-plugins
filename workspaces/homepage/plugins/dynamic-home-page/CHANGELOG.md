@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.7.0
+
+### Minor Changes
+
+- 7ebc8d3: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- 670728c: Updated dependency `@testing-library/jest-dom` to `6.8.0`.
+
 ## 1.6.0
 
 ### Minor Changes

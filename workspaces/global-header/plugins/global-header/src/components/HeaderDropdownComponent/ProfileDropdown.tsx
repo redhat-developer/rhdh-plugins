@@ -100,7 +100,8 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
           setUser(null);
           setProfileLink(null);
         }
-      } catch (_err) {
+      } catch (err) {
+        // User entity doesn't exist in catalog (e.g., guest user)
         setUser(null);
         setProfileLink(null);
       }
@@ -110,25 +111,36 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   }, [backstageIdentity, catalogApi]);
 
   const menuItems = useMemo(() => {
+    // Check if user is a guest (guest user has userEntityRef like "user:development/guest" or "user:default/guest")
+    const isGuestUser =
+      backstageIdentity?.userEntityRef?.includes('/guest') ||
+      profileLink === null;
+
     return (profileDropdownMountPoints ?? [])
       .map(mp => {
         const {
           title = '',
           icon = '',
           link: staticLink = '',
+          type = '',
         } = mp.config?.props ?? {};
-        const isMyProfile = title === 'profile.myProfile';
+        const isMyProfile = type === 'myProfile';
         const link = isMyProfile ? profileLink ?? '' : staticLink;
 
-        if (!link && title) {
+        // Hide "My Profile" for guest users or when user doesn't exist in catalog
+        if (isMyProfile && isGuestUser) {
+          return null;
+        }
+
+        // Hide items without links (but allow "My Profile" to pass through for authenticated users)
+        if (!link && title && !isMyProfile) {
           return null;
         }
 
         // Check if title looks like a translation key (contains dots)
-        const translatedTitle =
-          title && title.includes('.')
-            ? t(title as any, {}) || title // Fallback to original title if translation fails
-            : title;
+        const translatedTitle = title?.includes('.')
+          ? t(title as any, {}) || title // Fallback to original title if translation fails
+          : title;
 
         return {
           Component: mp.Component,
@@ -140,7 +152,7 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
       })
       .filter((item: MenuItemConfig) => item !== null)
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-  }, [profileDropdownMountPoints, profileLink, t]);
+  }, [profileDropdownMountPoints, profileLink, backstageIdentity, t]);
 
   if (menuItems.length === 0) {
     return null;
