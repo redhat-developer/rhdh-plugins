@@ -127,7 +127,13 @@
                 },
                 "level": {
                   "type": "string",
-                  "enum": ["production", "tech-preview", "dev-preview"]
+                  "enum": [
+                    "generally-available",
+                    "tech-preview",
+                    "dev-preview",
+                    "community-plugin",
+                    "custom-plugin"
+                  ]
                 }
               },
               "required": ["name", "level"],

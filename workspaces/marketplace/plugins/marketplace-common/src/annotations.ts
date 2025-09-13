@@ -19,6 +19,5 @@
  */
 export enum MarketplaceAnnotation {
   CERTIFIED_BY = 'extensions.backstage.io/certified-by',
-  SUPPORT_TYPE = 'extensions.backstage.io/support-type',
   PRE_INSTALLED = 'extensions.backstage.io/pre-installed',
 }

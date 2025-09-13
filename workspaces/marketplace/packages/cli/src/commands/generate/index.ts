@@ -173,15 +173,12 @@ export default async (opts: OptionValues) => {
             supportedVersions: packageJSON.backstage?.['supported-versions'],
           },
           author: author,
-          support: packageJSON.keywords
-            ?.find((k: string) => k.startsWith('support:'))
-            ?.split(':')[1]
-            ? {
-                name: packageJSON.keywords
-                  ?.find((k: string) => k.startsWith('support:'))
-                  ?.split(':')[1],
-              }
-            : undefined,
+          support: (() => {
+            const supportLevel = packageJSON.keywords
+              ?.find((k: string) => k.startsWith('support:'))
+              ?.split(':')[1];
+            return supportLevel ? { name: supportLevel } : undefined;
+          })(),
           lifecycle:
             packageJSON.keywords
               ?.find((k: string) => k.startsWith('lifecycle:'))

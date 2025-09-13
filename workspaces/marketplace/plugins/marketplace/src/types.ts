@@ -20,4 +20,5 @@ export interface ExtendedSelectItem extends SelectItem {
   helperText?: string;
   isBadge?: boolean;
   badgeColor?: string;
+  displayOrder?: number;
 }

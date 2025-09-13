@@ -22,7 +22,6 @@ import {
   MarketplacePlugin,
   MarketplacePackage,
   SupportLevel,
-  SupportProvider,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { colors } from '../consts';
 
@@ -46,23 +45,16 @@ const getBadgeOptions = (
       statusTooltip: `Stable and secured by ${entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY]}`,
     };
   }
-  if (
-    entity.spec?.support?.level === SupportLevel.PRODUCTION &&
-    entity.spec?.support?.name === SupportProvider.RED_HAT
-  ) {
+  if (entity.spec?.support?.level === SupportLevel.GENERALLY_AVAILABLE) {
     return {
       isBadge: true,
-      color: colors.verified,
+      color: colors.generallyAvailable,
       label: 'Generally available (GA)',
-      tooltip: 'Generally available (GA) and supported by Red Hat',
-      statusTooltip: 'Production-ready and supported by Red Hat',
+      tooltip: `Generally available (GA) and supported by ${entity.spec?.support?.name}`,
+      statusTooltip: `Production-ready and supported by ${entity.spec?.support?.name}`,
     };
   }
-
-  if (
-    entity.metadata.annotations?.[MarketplaceAnnotation.PRE_INSTALLED] ===
-    'false'
-  ) {
+  if (entity.spec?.support?.level === SupportLevel.CUSTOM_PLUGIN) {
     return {
       isBadge: true,
       color: colors.custom,
@@ -71,7 +63,7 @@ const getBadgeOptions = (
       statusTooltip: 'Plugins added by the administrator',
     };
   }
-  if (entity.spec?.support?.name === SupportProvider.BACKSTAGE_COMMUNITY) {
+  if (entity.spec?.support?.level === SupportLevel.COMMUNITY_PLUGIN) {
     return {
       isBadge: false,
       label: 'Community plugin',
