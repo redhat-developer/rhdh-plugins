@@ -41,11 +41,13 @@ export const adoptionInsightsMessages = {
   },
   activeUsers: {
     title: 'Active users',
-    averagePrefix: 'An average of',
-    averageText: '{{count}} active users per {{period}}',
-    averageSuffix: 'were active during this period.',
+    averagePrefix: 'Average peak active user count was',
+    averageText: '{{count}} per {{period}}',
+    averageSuffix: ' for this period.',
     hour: 'hour',
     day: 'day',
+    week: 'week',
+    month: 'month',
     legend: {
       newUsers: 'New users',
       returningUsers: 'Returning users',
@@ -74,11 +76,13 @@ export const adoptionInsightsMessages = {
   searches: {
     title: 'Top searches',
     totalCount: '{{count}} searches',
-    averagePrefix: 'An average of',
-    averageText: '{{count}} searches per {{period}}',
-    averageSuffix: 'were conducted during this period.',
+    averagePrefix: 'Average search count was',
+    averageText: '{{count}} per {{period}}',
+    averageSuffix: ' for this period.',
     hour: 'hour',
     day: 'day',
+    week: 'week',
+    month: 'month',
   },
   users: {
     title: 'Total number of users',

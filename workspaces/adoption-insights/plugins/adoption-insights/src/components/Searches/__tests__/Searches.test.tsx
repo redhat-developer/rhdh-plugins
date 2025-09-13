@@ -80,6 +80,35 @@ describe('Searches Component', () => {
 
     render(<Searches />);
     expect(screen.getByText(/300 searches/i)).toBeInTheDocument();
-    expect(screen.getByText(/150 searches per day/i)).toBeInTheDocument();
+    expect(screen.getByText(/Average search count was/i)).toBeInTheDocument();
+    expect(screen.getByText(/150 per day/i)).toBeInTheDocument();
+  });
+
+  it('should display correct time unit for different groupings', () => {
+    const testCases = [
+      { grouping: 'hourly', expectedText: '150 per hour' },
+      { grouping: 'daily', expectedText: '150 per day' },
+      { grouping: 'weekly', expectedText: '150 per week' },
+      { grouping: 'monthly', expectedText: '150 per month' },
+    ];
+
+    testCases.forEach(({ grouping, expectedText }) => {
+      (useSearches as jest.Mock).mockReturnValue({
+        searches: {
+          data: [
+            { date: '2025-03-01', count: 100 },
+            { date: '2025-03-02', count: 200 },
+          ],
+          grouping,
+        },
+        loading: false,
+      });
+
+      const { unmount } = render(<Searches />);
+      expect(
+        screen.getByText(new RegExp(expectedText, 'i')),
+      ).toBeInTheDocument();
+      unmount();
+    });
   });
 });

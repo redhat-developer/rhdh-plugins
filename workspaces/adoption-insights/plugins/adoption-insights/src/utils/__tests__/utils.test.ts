@@ -29,6 +29,7 @@ import {
   formatDateWithRange,
   formatWeeklyBucket,
   formatTooltipHeaderLabel,
+  getGroupingLabel,
 } from '../utils';
 import { format, subDays } from 'date-fns';
 
@@ -361,5 +362,60 @@ describe('formatTooltipHeaderLabel', () => {
 
   it('handles single word key', () => {
     expect(formatTooltipHeaderLabel('count')).toBe('Count');
+  });
+});
+
+describe('getGroupingLabel', () => {
+  const mockTranslation = (key: string) => {
+    const translations: Record<string, string> = {
+      'activeUsers.hour': 'hour',
+      'activeUsers.day': 'day',
+      'activeUsers.week': 'week',
+      'activeUsers.month': 'month',
+      'searches.hour': 'hour',
+      'searches.day': 'day',
+      'searches.week': 'week',
+      'searches.month': 'month',
+    };
+    return translations[key] || key;
+  };
+
+  it('should return correct label for activeUsers section', () => {
+    expect(
+      getGroupingLabel('hourly', mockTranslation as any, 'activeUsers'),
+    ).toBe('hour');
+    expect(
+      getGroupingLabel('daily', mockTranslation as any, 'activeUsers'),
+    ).toBe('day');
+    expect(
+      getGroupingLabel('weekly', mockTranslation as any, 'activeUsers'),
+    ).toBe('week');
+    expect(
+      getGroupingLabel('monthly', mockTranslation as any, 'activeUsers'),
+    ).toBe('month');
+  });
+
+  it('should return correct label for searches section', () => {
+    expect(getGroupingLabel('hourly', mockTranslation as any, 'searches')).toBe(
+      'hour',
+    );
+    expect(getGroupingLabel('daily', mockTranslation as any, 'searches')).toBe(
+      'day',
+    );
+    expect(getGroupingLabel('weekly', mockTranslation as any, 'searches')).toBe(
+      'week',
+    );
+    expect(
+      getGroupingLabel('monthly', mockTranslation as any, 'searches'),
+    ).toBe('month');
+  });
+
+  it('should fallback to day for unknown grouping', () => {
+    expect(
+      getGroupingLabel('unknown', mockTranslation as any, 'activeUsers'),
+    ).toBe('day');
+    expect(
+      getGroupingLabel('unknown', mockTranslation as any, 'searches'),
+    ).toBe('day');
   });
 });

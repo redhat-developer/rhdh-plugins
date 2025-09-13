@@ -69,7 +69,7 @@ test('Active users panel shows 1 visitor', async () => {
   await expect(panel).toMatchAriaSnapshot(`
     - heading "Active users" [level=5]
     - button "Export CSV"
-    - paragraph: An average of 1 active users per hour were active during this period.
+    - paragraph: Average peak active user count was 1 per hour for this period.
     `);
 });
 
@@ -186,7 +186,7 @@ test.describe(() => {
     await panel.scrollIntoViewIfNeeded();
     await expect(panel.locator('.recharts-surface')).toBeVisible();
     await expect(panel).toContainText(
-      'An average of 1 searches per hour were conducted during this period.',
+      'Average search count was 1 per hour for this period.',
     );
   });
 
