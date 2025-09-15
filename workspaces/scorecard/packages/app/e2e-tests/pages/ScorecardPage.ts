@@ -24,10 +24,12 @@ export class ScorecardPage {
   }
 
   async openTab() {
-    const tab = this.page.getByText('Scorecard');
-    await expect(tab).toBeVisible();
-    await tab.click();
-    await waitUntilApiCallSucceeds(this.page);
+    const scorecardTab = this.page.getByText('Scorecard');
+    await expect(scorecardTab).toBeVisible();
+    await Promise.all([
+      waitUntilApiCallSucceeds(this.page),
+      scorecardTab.click(),
+    ]);
   }
 
   async verifyScorecardValues(expectedValues: { [key: string]: string }) {
@@ -39,22 +41,41 @@ export class ScorecardPage {
 
   async expectEmptyState() {
     await expect(this.page.getByText('No scorecards added yet')).toBeVisible();
+    await expect(this.page.getByRole('article')).toContainText(
+      'Scorecards help you monitor component health at a glance. To begin, explore our documentation for setup guidelines.',
+    );
+    await expect(
+      this.page.getByRole('button', { name: 'View documentation' }),
+    ).toBeVisible();
   }
 
   async validateScorecardAria() {
-    await expect(this.page.getByRole('article')).toMatchAriaSnapshot(`
-      - heading "Github open PRs" [level=6]
-      - paragraph: Current count of open Pull Requests for a given GitHub repository.
-      - paragraph: /error/
-      - paragraph: /warning/
-      - paragraph: /success/
-    `);
-    await expect(this.page.getByRole('article')).toMatchAriaSnapshot(`
-      - heading "Jira open blocking tickets" [level=6]
-      - paragraph: Highlights the number of critical, blocking issues that are currently open in Jira.
-      - paragraph: /error/
-      - paragraph: /warning/
-      - paragraph: /success/
-    `);
+    const articles = [
+      {
+        title: 'Github open PRs',
+        description:
+          'Current count of open Pull Requests for a given GitHub repository.',
+      },
+      {
+        title: 'Jira open blocking tickets',
+        description:
+          'Highlights the number of critical, blocking issues that are currently open in Jira.',
+      },
+    ];
+
+    for (const { title, description } of articles) {
+      await expect(this.page.getByRole('article')).toMatchAriaSnapshot(`
+        - article:
+          - text: ${title}
+          - paragraph: ${description}
+          - paragraph: /Error/
+          - paragraph: /Warning/
+          - paragraph: /Success/
+      `);
+    }
+  }
+
+  async isScorecardVisible(scorecardTitle: string) {
+    return await this.page.getByText(scorecardTitle).isVisible();
   }
 }

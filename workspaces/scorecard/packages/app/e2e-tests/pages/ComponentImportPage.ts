@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { expect, Page } from '@playwright/test';
-import { waitUntilApiCallSucceeds } from '../utils/apiUtils';
+import { Page } from '@playwright/test';
 
 export class ComponentImportPage {
   readonly page: Page;
@@ -40,11 +39,5 @@ export class ComponentImportPage {
   async viewImportedComponent() {
     await this.page.getByRole('button', { name: 'View Component' }).click();
     await this.page.getByText('Overview').waitFor();
-  }
-
-  async goToScorecardTab() {
-    await expect(this.page.getByText('Scorecard')).toBeVisible();
-    await this.page.getByText('Scorecard').click();
-    await waitUntilApiCallSucceeds(this.page);
   }
 }

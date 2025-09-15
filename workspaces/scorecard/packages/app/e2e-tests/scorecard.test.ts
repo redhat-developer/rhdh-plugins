@@ -13,18 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { test } from '@playwright/test';
+
+import { test, expect } from '@playwright/test';
 import { mockScorecardResponse } from './utils/apiUtils';
 import { ComponentImportPage } from './pages/ComponentImportPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
-import customScorecardResponse from './mocks/customScorecardResponse.json';
-import emptyScorecardResponse from './mocks/emptyScorecardResponse.json';
+import { setupRBAC } from './utils/rbacSetup';
+import {
+  customScorecardResponse,
+  emptyScorecardResponse,
+  githubOnlyScorecardResponse,
+  jiraOnlyScorecardResponse,
+} from './utils/scorecardResponseUtils';
 
 test.describe.serial('Scorecard Plugin Tests', () => {
   let catalogPage: CatalogPage;
   let importPage: ComponentImportPage;
   let scorecardPage: ScorecardPage;
+
+  test.beforeAll(async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+
+    await setupRBAC(page);
+
+    await context.close();
+  });
 
   test.beforeEach(async ({ page }) => {
     catalogPage = new CatalogPage(page);
@@ -64,5 +79,47 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     await scorecardPage.openTab();
 
     await scorecardPage.expectEmptyState();
+  });
+
+  test('Display only the Jira scorecard when only Jira metrics are returned', async ({
+    page,
+  }) => {
+    await mockScorecardResponse(page, jiraOnlyScorecardResponse);
+
+    await page.goto('/');
+    await catalogPage.navigateToCatalog();
+    await catalogPage.openComponent('rhdh-app');
+    await scorecardPage.openTab();
+
+    const isJiraVisible = await scorecardPage.isScorecardVisible(
+      'Jira open blocking tickets',
+    );
+    expect(isJiraVisible).toBe(true);
+
+    const isGithubVisible = await scorecardPage.isScorecardVisible(
+      'Github open PRs',
+    );
+    expect(isGithubVisible).toBe(false);
+  });
+
+  test('Display only the GitHub scorecard when only GitHub metrics are returned', async ({
+    page,
+  }) => {
+    await mockScorecardResponse(page, githubOnlyScorecardResponse);
+
+    await page.goto('/');
+    await catalogPage.navigateToCatalog();
+    await catalogPage.openComponent('rhdh-app');
+    await scorecardPage.openTab();
+
+    const isJiraVisible = await scorecardPage.isScorecardVisible(
+      'Jira open blocking tickets',
+    );
+    expect(isJiraVisible).toBe(false);
+
+    const isGithubVisible = await scorecardPage.isScorecardVisible(
+      'Github open PRs',
+    );
+    expect(isGithubVisible).toBe(true);
   });
 });
