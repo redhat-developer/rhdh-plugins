@@ -83,8 +83,13 @@ export class CatalogMetricService {
       ? this.registry.listMetrics().filter(m => providerIds.includes(m.id))
       : this.registry.listMetrics();
 
+    const supportedMetricsToCalculate = metricsToCalculate.filter(m => {
+      const provider = this.registry.getProvider(m.id);
+      return provider.supportsEntity(entity);
+    });
+
     const authorizedMetricsToCalculate = filterAuthorizedMetrics(
-      metricsToCalculate,
+      supportedMetricsToCalculate,
       filter,
     );
     const rawResults = await this.registry.calculateMetrics(

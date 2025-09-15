@@ -26,6 +26,7 @@ import {
   githubNumberProvider,
   jiraBooleanMetricMetadata,
   jiraBooleanProvider,
+  MockNumberProvider,
 } from '../../__fixtures__/mockProviders';
 import { mockEntity } from '../../__fixtures__/mockEntities';
 import {
@@ -37,6 +38,22 @@ import {
 const mockCatalogApi = {
   getEntityByRef: jest.fn(),
 } as unknown as jest.Mocked<CatalogApi>;
+
+class AnnotationProvider extends MockNumberProvider {
+  constructor() {
+    super(
+      'annotation.metric',
+      'annotation',
+      'Annotation Metric',
+      "A metric that only works with entities having a 'custom.annotation' annotation",
+      10,
+    );
+  }
+
+  supportsEntity(entity: Entity): boolean {
+    return entity.metadata.annotations?.['custom.annotation'] !== undefined;
+  }
+}
 
 describe('CatalogMetricService', () => {
   let catalogMetricService: CatalogMetricService;
@@ -260,6 +277,47 @@ describe('CatalogMetricService', () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('github.number-metric');
       expect(result).toEqual([githubMetricResult]);
+    });
+
+    it('should filter out metrics that provider does not support for certain entity', async () => {
+      registry.register(new AnnotationProvider());
+      mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
+
+      const result = await catalogMetricService.calculateEntityMetrics(
+        'component:default/test-component',
+      );
+
+      expect(result).toHaveLength(2);
+      expect(result.map(r => r.id)).toEqual([
+        'github.number-metric',
+        'jira.boolean-metric',
+      ]);
+    });
+
+    it('should include metrics that provider supports for certain entity', async () => {
+      registry.register(new AnnotationProvider());
+      const entityWithAnnotation: Entity = {
+        ...mockEntity,
+        metadata: {
+          ...mockEntity.metadata,
+          annotations: {
+            'custom.annotation': 'A123',
+          },
+        },
+      };
+
+      mockCatalogApi.getEntityByRef.mockResolvedValue(entityWithAnnotation);
+
+      const result = await catalogMetricService.calculateEntityMetrics(
+        'component:default/test-component',
+      );
+
+      expect(result).toHaveLength(3);
+      expect(result.map(r => r.id)).toEqual([
+        'github.number-metric',
+        'jira.boolean-metric',
+        'annotation.metric',
+      ]);
     });
   });
 });
