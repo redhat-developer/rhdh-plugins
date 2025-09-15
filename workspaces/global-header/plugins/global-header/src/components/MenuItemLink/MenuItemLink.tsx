@@ -25,7 +25,9 @@ import { MenuItemLinkContent } from './MenuItemLinkContent';
 export interface MenuItemLinkProps {
   to: string;
   title?: string;
+  titleKey?: string;
   subTitle?: string;
+  subTitleKey?: string;
   icon?: string;
   tooltip?: string;
 }
@@ -33,7 +35,9 @@ export interface MenuItemLinkProps {
 export const MenuItemLink = ({
   to,
   title,
+  titleKey,
   subTitle,
+  subTitleKey,
   icon,
   tooltip,
 }: MenuItemLinkProps) => {
@@ -42,16 +46,21 @@ export const MenuItemLink = ({
     to && (to.startsWith('http://') || to.startsWith('https://')),
   );
 
-  // Check if title looks like a translation key (contains dots)
-  const translatedTitle = title?.includes('.')
-    ? t(title as any, {}) || title // Fallback to original title if translation fails
-    : title;
+  const translatedTitle = t(titleKey as any, {
+    defaultValue: title?.includes('.') ? t(title as any, {}) || title : title,
+  });
+
+  const translatedSubTitle = t(subTitleKey as any, {
+    defaultValue: subTitle?.includes('.')
+      ? t(subTitle as any, {}) || subTitle
+      : subTitle,
+  });
 
   const headerLinkContent = () => (
     <MenuItemLinkContent
       icon={icon}
       label={translatedTitle}
-      subLabel={subTitle}
+      subLabel={translatedSubTitle}
       isExternalLink={isExternalLink}
     />
   );
