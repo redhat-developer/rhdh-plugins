@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.3.0
+
+### Minor Changes
+
+- bc88e5f: Add internationalization (i18n) support with German, French and Spanish translations in quickstart.
+
 ## 1.2.0
 
 ### Minor Changes

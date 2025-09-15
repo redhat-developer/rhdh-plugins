@@ -13,6 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ScorecardPage } from './ScorecardPage';
+import { EntityScorecardContent } from './EntityScorecardContent';
 
-export { ScorecardPage };
+export { EntityScorecardContent };

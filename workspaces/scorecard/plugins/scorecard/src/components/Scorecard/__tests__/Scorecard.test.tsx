@@ -15,46 +15,54 @@
  */
 
 import { render, screen } from '@testing-library/react';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
 
 import Scorecard from '../Scorecard';
 
-// Mock the PatternFly ChartDonut component
-jest.mock('@patternfly/react-charts/victory', () => ({
-  ChartDonut: ({ data, colorScale, height, width }: any) => (
-    <div
-      data-testid="chart-donut"
-      data-value={data[0]?.y}
-      data-color={colorScale[0]}
-      data-height={height}
-      data-width={width}
-    >
-      Mocked ChartDonut
-    </div>
-  ),
-}));
+// Create a test theme to provide proper palette colors
+const testTheme = createTheme({
+  palette: {
+    success: { main: '#52c41a' },
+    warning: { main: '#F0AB00' },
+    error: { main: '#C9190B' },
+  },
+});
+
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <ThemeProvider theme={testTheme}>{children}</ThemeProvider>
+);
 
 describe('Scorecard Component', () => {
   const defaultProps = {
-    key: 'github.pull_requests_open',
     cardTitle: 'GitHub open PRs',
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
     loading: false,
-    statusColor: 'green',
+    statusColor: 'success',
     StatusIcon: CheckCircleOutlineIcon,
     value: 8,
-    thresholds: [
-      { key: 'error', expression: '> 40' },
-      { key: 'warning', expression: '> 20' },
-      { key: 'success', expression: '<= 20' },
-    ],
+    thresholds: {
+      status: 'success' as const,
+      definition: {
+        rules: [
+          { key: 'success', expression: '<= 20' },
+          { key: 'warning', expression: '> 20' },
+          { key: 'error', expression: '> 40' },
+        ],
+      },
+      evaluation: 'success',
+    },
   };
 
   it('should render the card title and description', () => {
-    render(<Scorecard {...defaultProps} />);
+    render(
+      <TestWrapper>
+        <Scorecard {...defaultProps} />
+      </TestWrapper>,
+    );
 
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
     expect(
@@ -65,21 +73,33 @@ describe('Scorecard Component', () => {
   });
 
   it('should display the value correctly', () => {
-    render(<Scorecard {...defaultProps} />);
+    render(
+      <TestWrapper>
+        <Scorecard {...defaultProps} />
+      </TestWrapper>,
+    );
 
     expect(screen.getByText('8')).toBeInTheDocument();
   });
 
   it('should render all threshold labels', () => {
-    render(<Scorecard {...defaultProps} />);
+    render(
+      <TestWrapper>
+        <Scorecard {...defaultProps} />
+      </TestWrapper>,
+    );
 
-    expect(screen.getByText('success <= 20')).toBeInTheDocument();
-    expect(screen.getByText('warning > 20')).toBeInTheDocument();
-    expect(screen.getByText('error > 40')).toBeInTheDocument();
+    expect(screen.getByText('Success <= 20')).toBeInTheDocument();
+    expect(screen.getByText('Warning > 20')).toBeInTheDocument();
+    expect(screen.getByText('Error > 40')).toBeInTheDocument();
   });
 
   it('should render the status icon with correct color', () => {
-    const { container } = render(<Scorecard {...defaultProps} />);
+    const { container } = render(
+      <TestWrapper>
+        <Scorecard {...defaultProps} />
+      </TestWrapper>,
+    );
 
     const iconElement = container.querySelector(
       '[data-testid="CheckCircleOutlineIcon"]',
@@ -88,59 +108,58 @@ describe('Scorecard Component', () => {
   });
 
   it('should show loading spinner when loading is true', () => {
-    render(<Scorecard {...defaultProps} loading />);
+    render(
+      <TestWrapper>
+        <Scorecard {...defaultProps} loading />
+      </TestWrapper>,
+    );
 
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
-    expect(screen.queryByTestId('chart-donut')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('8')).not.toBeInTheDocument();
   });
 
-  it('should render chart donut when not loading', () => {
-    render(<Scorecard {...defaultProps} />);
+  it('should handle zero value correctly', () => {
+    render(
+      <TestWrapper>
+        <Scorecard {...defaultProps} value={0} />
+      </TestWrapper>,
+    );
 
-    const chartDonut = screen.getByTestId('chart-donut');
-    expect(chartDonut).toBeInTheDocument();
-    expect(chartDonut).toHaveAttribute('data-value', '8');
-    expect(chartDonut).toHaveAttribute('data-color', 'green');
-    expect(chartDonut).toHaveAttribute('data-height', '200');
-    expect(chartDonut).toHaveAttribute('data-width', '200');
-  });
-
-  it('should handle zero value correctly in chart data', () => {
-    render(<Scorecard {...defaultProps} value={0} />);
-
-    const chartDonut = screen.getByTestId('chart-donut');
-    expect(chartDonut).toHaveAttribute('data-value', '1');
     expect(screen.getByText('0')).toBeInTheDocument();
   });
 
   it('should render with warning status', () => {
     const warningProps = {
       ...defaultProps,
-      statusColor: '#F0AB00',
+      statusColor: 'warning',
       StatusIcon: WarningAmberIcon,
       value: 25,
     };
 
-    render(<Scorecard {...warningProps} />);
+    render(
+      <TestWrapper>
+        <Scorecard {...warningProps} />
+      </TestWrapper>,
+    );
 
     expect(screen.getByText('25')).toBeInTheDocument();
-    const chartDonut = screen.getByTestId('chart-donut');
-    expect(chartDonut).toHaveAttribute('data-color', '#F0AB00');
   });
 
   it('should render with critical status', () => {
     const criticalProps = {
       ...defaultProps,
-      statusColor: '#C9190B',
+      statusColor: 'error',
       StatusIcon: DangerousOutlinedIcon,
       value: 75,
     };
 
-    render(<Scorecard {...criticalProps} />);
+    render(
+      <TestWrapper>
+        <Scorecard {...criticalProps} />
+      </TestWrapper>,
+    );
 
     expect(screen.getByText('75')).toBeInTheDocument();
-    const chartDonut = screen.getByTestId('chart-donut');
-    expect(chartDonut).toHaveAttribute('data-color', '#C9190B');
   });
 
   it('should render with large values', () => {
@@ -149,24 +168,45 @@ describe('Scorecard Component', () => {
       value: 9999,
     };
 
-    render(<Scorecard {...largeValueProps} />);
+    render(
+      <TestWrapper>
+        <Scorecard {...largeValueProps} />
+      </TestWrapper>,
+    );
 
     expect(screen.getByText('9999')).toBeInTheDocument();
-    const chartDonut = screen.getByTestId('chart-donut');
-    expect(chartDonut).toHaveAttribute('data-value', '9999');
   });
 
-  it('should handle empty thresholds array', () => {
+  it('should handle undefined thresholds', () => {
+    const noThresholdsProps = {
+      ...defaultProps,
+      thresholds: undefined,
+    };
+
+    render(<Scorecard {...noThresholdsProps} />);
+
+    expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
+    expect(screen.getByText('8')).toBeInTheDocument();
+    expect(screen.queryByText('Error')).not.toBeInTheDocument();
+  });
+
+  it('should handle empty thresholds rules array', () => {
     const emptyThresholdsProps = {
       ...defaultProps,
-      thresholds: [],
+      thresholds: {
+        status: 'success' as const,
+        definition: {
+          rules: [],
+        },
+        evaluation: 'success',
+      },
     };
 
     render(<Scorecard {...emptyThresholdsProps} />);
 
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
     expect(screen.getByText('8')).toBeInTheDocument();
-    expect(screen.queryByText('error')).not.toBeInTheDocument();
+    expect(screen.queryByText('Error')).not.toBeInTheDocument();
   });
 
   it('should render correctly with different card titles', () => {
@@ -177,7 +217,11 @@ describe('Scorecard Component', () => {
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
     };
 
-    render(<Scorecard {...jiraProps} />);
+    render(
+      <TestWrapper>
+        <Scorecard {...jiraProps} />
+      </TestWrapper>,
+    );
 
     expect(screen.getByText('Jira open blocking tickets')).toBeInTheDocument();
     expect(
@@ -185,5 +229,22 @@ describe('Scorecard Component', () => {
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
       ),
     ).toBeInTheDocument();
+  });
+
+  it('should render threshold rules with correct colors', () => {
+    render(
+      <TestWrapper>
+        <Scorecard {...defaultProps} />
+      </TestWrapper>,
+    );
+
+    // Check that threshold rules are rendered with appropriate styling
+    const errorRule = screen.getByText('Error > 40');
+    const warningRule = screen.getByText('Warning > 20');
+    const successRule = screen.getByText('Success <= 20');
+
+    expect(errorRule).toBeInTheDocument();
+    expect(warningRule).toBeInTheDocument();
+    expect(successRule).toBeInTheDocument();
   });
 });

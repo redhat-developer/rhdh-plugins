@@ -159,6 +159,7 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
       props: {
         title: 'profile.myProfile',
         icon: 'account',
+        type: 'myProfile', // Semantic identifier
       },
     },
   },

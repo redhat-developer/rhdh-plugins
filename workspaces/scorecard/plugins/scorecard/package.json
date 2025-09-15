@@ -38,18 +38,16 @@
   "dependencies": {
     "@backstage/core-components": "^0.17.4",
     "@backstage/core-plugin-api": "^1.10.9",
+    "@backstage/plugin-catalog-react": "^1.19.1",
     "@backstage/theme": "^0.6.7",
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
-    "@patternfly/react-charts": "^8.1.0",
-    "react-use": "^17.2.4",
-    "victory": "^37.3.6"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
+    "react-use": "^17.2.4"
   },
   "peerDependencies": {
-    "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+    "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
+    "react-router-dom": "*"
   },
   "devDependencies": {
     "@backstage/cli": "^0.33.1",

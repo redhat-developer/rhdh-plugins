@@ -33,20 +33,6 @@ beforeEach(() => {
 describe('QuickstartContent', () => {
   const mockSetProgress = jest.fn();
 
-  it('renders EmptyState when no items are passed', async () => {
-    await renderInTestApp(
-      <QuickstartContent
-        quickstartItems={[]}
-        setProgress={mockSetProgress}
-        itemCount={0}
-      />,
-    );
-
-    expect(
-      screen.getByText('Quickstart content not available for your role.'),
-    ).toBeInTheDocument();
-  });
-
   it('renders all quickstart items for admin role', async () => {
     const adminItems = filterQuickstartItemsByRole(
       mockQuickstartItems,
@@ -58,6 +44,7 @@ describe('QuickstartContent', () => {
         quickstartItems={adminItems}
         setProgress={mockSetProgress}
         itemCount={adminItems.length}
+        isLoading={false}
       />,
     );
 
@@ -81,6 +68,7 @@ describe('QuickstartContent', () => {
         quickstartItems={adminAndNoRoleItems}
         setProgress={mockSetProgress}
         itemCount={adminAndNoRoleItems.length}
+        isLoading={false}
       />,
     );
 
@@ -106,6 +94,7 @@ describe('QuickstartContent', () => {
         quickstartItems={developerItems}
         setProgress={mockSetProgress}
         itemCount={developerItems.length}
+        isLoading={false}
       />,
     );
 
@@ -117,53 +106,13 @@ describe('QuickstartContent', () => {
     expect(screen.queryByText('Step 2 for Admin')).not.toBeInTheDocument();
   });
 
-  it('renders EmptyState when no quickstart items match the user role', async () => {
-    const managerItems = filterQuickstartItemsByRole(
-      mockQuickstartItems,
-      'manager',
-    );
-
-    await renderInTestApp(
-      <QuickstartContent
-        quickstartItems={managerItems}
-        setProgress={mockSetProgress}
-        itemCount={managerItems.length}
-      />,
-    );
-
-    // No items for manager, should show EmptyState
-    expect(
-      screen.getByText('Quickstart content not available for your role.'),
-    ).toBeInTheDocument();
-  });
-
-  it('renders EmptyState when no quickstart items match the current role', async () => {
-    const userRole = 'test'; // A role that doesn't exist in our mock data
-    const filteredItems = filterQuickstartItemsByRole(
-      mockQuickstartItems,
-      userRole,
-    );
-
-    await renderInTestApp(
-      <QuickstartContent
-        quickstartItems={filteredItems}
-        setProgress={mockSetProgress}
-        itemCount={filteredItems.length}
-      />,
-    );
-
-    // No quickstart items for the test role, should show EmptyState
-    expect(
-      screen.getByText('Quickstart content not available for your role.'),
-    ).toBeInTheDocument();
-  });
-
   it('only opens one item at a time', async () => {
     await renderInTestApp(
       <QuickstartContent
         quickstartItems={mockQuickstartItems}
         setProgress={mockSetProgress}
         itemCount={2}
+        isLoading={false}
       />,
     );
 

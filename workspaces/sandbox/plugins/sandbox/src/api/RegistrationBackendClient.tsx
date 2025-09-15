@@ -35,6 +35,7 @@ export interface RegistrationService {
   ): Promise<void>;
   completePhoneVerification(code: string): Promise<void>;
   verifyActivationCode(code: string): Promise<void>;
+  getSegmentWriteKey(): Promise<string>;
 }
 
 export class RegistrationBackendClient implements RegistrationService {
@@ -191,5 +192,22 @@ export class RegistrationBackendClient implements RegistrationService {
       const error: CommonResponse = await response.json();
       throw new Error(error?.message);
     }
+  };
+
+  getSegmentWriteKey = async (): Promise<string> => {
+    const signupAPI = this.configApi.getString('sandbox.signupAPI');
+    const response = await this.secureFetchApi.fetch(
+      `${signupAPI}/analytics/segment-write-key`,
+      {
+        method: 'GET',
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Segment write key: ${response.status}`);
+    }
+
+    const writeKey = await response.text();
+    return writeKey.trim();
   };
 }
