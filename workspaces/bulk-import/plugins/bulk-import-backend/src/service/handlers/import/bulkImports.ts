@@ -282,24 +282,6 @@ async function resolveReposDefaultBranches(
           };
         }),
     );
-    // defaultBranchByRepoUrlPromises.push(
-    //   githubApiService
-    //     .getRepositoryFromIntegrations(repoUrl)
-    //     .then(resp => {
-    //       return { repoUrl, defaultBranch: resp?.repository?.default_branch };
-    //     })
-    //     .catch((err: any) => {
-    //       logErrorIfNeeded(
-    //         logger,
-    //         `Ignored repo ${repoUrl} due to an error while fetching details from GitHub`,
-    //         err,
-    //       );
-    //       return {
-    //         repoUrl,
-    //         defaultBranch: undefined,
-    //       };
-    //     }),
-    // );
   }
   const defaultBranchesResponses = await Promise.all(
     defaultBranchByRepoUrlPromises,
