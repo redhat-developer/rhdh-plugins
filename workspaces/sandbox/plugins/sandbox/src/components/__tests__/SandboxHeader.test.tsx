@@ -18,8 +18,25 @@ import React from 'react';
 import { SandboxHeader } from '../SandboxHeader';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { wrapInTestApp } from '@backstage/test-utils';
+import * as eddlUtils from '../../utils/eddl-utils';
+
+// Mock the useTrackAnalytics hook
+jest.mock('../../utils/eddl-utils', () => ({
+  ...jest.requireActual('../../utils/eddl-utils'),
+  useTrackAnalytics: jest.fn(),
+}));
 
 describe('SandboxHeader', () => {
+  const mockTrackAnalytics = jest.fn();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Mock the useTrackAnalytics hook to return a mock function
+    (eddlUtils.useTrackAnalytics as jest.Mock).mockReturnValue(
+      mockTrackAnalytics,
+    );
+  });
+
   const renderComponent = (pageTitle = 'My Page Title') => {
     const theme = createTheme();
     return render(

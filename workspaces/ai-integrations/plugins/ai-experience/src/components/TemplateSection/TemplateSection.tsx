@@ -21,9 +21,11 @@ import Box from '@mui/material/Box';
 import CardWrapper from './CardWrapper';
 import { useTemplates } from '../../hooks/useTemplates';
 import { ViewMoreLink } from '../Links/ViewMoreLink';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const TemplateSection = () => {
   const { data: templates } = useTemplates();
+  const { t } = useTranslation();
   const params = new URLSearchParams({
     'filters[kind]': 'template',
     limit: '20',
@@ -39,15 +41,18 @@ export const TemplateSection = () => {
               link={`/create/templates/default/${item.metadata.name}`}
               title={item.metadata.title}
               description={item.metadata.description}
-              kind="Template"
+              kind={t('common.template')}
             />
           </Grid>
         ))}
       </Grid>
       <Box sx={{ pt: 2 }}>
         <ViewMoreLink to={catalogTemplatesLink} underline="always">
-          View all {templates?.totalItems ? templates?.totalItems : ''}{' '}
-          templates
+          {t('sections.viewAllTemplates' as any, {
+            count: templates?.totalItems
+              ? templates?.totalItems.toString()
+              : '',
+          })}
         </ViewMoreLink>
       </Box>
     </React.Fragment>

@@ -85,6 +85,8 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
       appBarBackgroundColor: '#151515',
       appBarForegroundColor: '#ffffff',
       appBarBackgroundImage: 'none',
+
+      starredItemsColor: '#F3BA37',
     },
     primary: {
       main: '#92c5f9',

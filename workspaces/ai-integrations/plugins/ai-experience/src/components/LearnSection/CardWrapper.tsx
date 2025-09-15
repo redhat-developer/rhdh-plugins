@@ -61,14 +61,12 @@ const CardWrapper: React.FC<CardWrapperProps> = ({
             {title}
           </Typography>
         </Box>
-        <Box>
+        <Box sx={{ pt: 1, pb: 2 }}>
           <Typography
             variant="body2"
             sx={{
               fontSize: 16,
               fontWeight: '500',
-              pt: 1,
-              pb: 2,
               display: '-webkit-box',
               WebkitBoxOrient: 'vertical',
               WebkitLineClamp: 2,

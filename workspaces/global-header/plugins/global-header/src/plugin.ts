@@ -414,3 +414,10 @@ export const CompanyLogo = globalHeaderPlugin.provide(
     },
   }),
 );
+
+/**
+ * Translation resource for the global header plugin
+ *
+ * @public
+ */
+export { globalHeaderTranslations } from './translations';
