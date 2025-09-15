@@ -27,6 +27,18 @@ class TestJiraClient extends JiraClient {
   getAuthHeaders(): Record<string, string> {
     return { Authorization: 'Bearer test-token' };
   }
+
+  getSearchEndpoint(): string {
+    return '/search';
+  }
+
+  buildSearchBody(jql: string): string {
+    return JSON.stringify({ jql });
+  }
+
+  extractIssueCountFromResponse(): number {
+    return 10;
+  }
 }
 
 global.fetch = jest.fn();
@@ -190,33 +202,6 @@ describe('JiraClient', () => {
     });
   });
 
-  describe('sanitizeValue', () => {
-    it('should sanitize value', () => {
-      expect((testJiraClient as any).sanitizeValue('T"EST\\123')).toBe(
-        'T\\"EST\\\\123',
-      );
-    });
-  });
-
-  describe('validateIdentifier', () => {
-    it('should throw error for invalid identifier', () => {
-      expect(() =>
-        (testJiraClient as any).validateIdentifier(
-          'TEST$123',
-          'jira/project-key',
-        ),
-      ).toThrow(
-        'jira/project-key contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.',
-      );
-    });
-
-    it('should return valid identifier', () => {
-      expect(
-        (testJiraClient as any).validateIdentifier('TEST', 'project-key'),
-      ).toBe('TEST');
-    });
-  });
-
   describe('getFiltersFromEntity', () => {
     let entity: Entity;
 
@@ -269,7 +254,7 @@ describe('JiraClient', () => {
         expect(() =>
           (testJiraClient as any).getFiltersFromEntity(entity),
         ).toThrow(
-          'jira/project-key contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.',
+          'jira/project-key contains invalid characters. Only alphanumeric, hyphens, spaces, and underscores are allowed.',
         );
       });
     });
@@ -280,7 +265,7 @@ describe('JiraClient', () => {
           [PROJECT_KEY]: 'TEST',
           [COMPONENT]: 'backend',
           [LABEL]: 'critical',
-          [TEAM]: 'team-alpha',
+          [TEAM]: '4316',
           [CUSTOM_FILTER]: 'priority = High',
         };
       });
@@ -292,7 +277,7 @@ describe('JiraClient', () => {
           project: 'project = "TEST"',
           component: 'component = "backend"',
           label: 'labels = "critical"',
-          team: 'team = "team-alpha"',
+          team: 'team = 4316',
           customFilter: 'priority = High',
         });
       });
@@ -310,7 +295,7 @@ describe('JiraClient', () => {
         expect(() =>
           (testJiraClient as any).getFiltersFromEntity(entity),
         ).toThrow(
-          'jira/component contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.',
+          'jira/component contains invalid characters. Only alphanumeric, hyphens, spaces, and underscores are allowed.',
         );
       });
     });
@@ -327,7 +312,7 @@ describe('JiraClient', () => {
         expect(() =>
           (testJiraClient as any).getFiltersFromEntity(entity),
         ).toThrow(
-          'jira/label contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.',
+          'jira/label contains invalid characters. Only alphanumeric, hyphens, spaces, and underscores are allowed.',
         );
       });
     });

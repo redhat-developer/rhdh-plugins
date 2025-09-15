@@ -15,6 +15,7 @@
  */
 
 import type { Config } from '@backstage/config';
+import { mockServices } from '@backstage/backend-test-utils';
 import { JiraDataCenterClient } from '../clients/JiraDataCenterClient';
 import { JiraClientFactory } from './JiraClientFactory';
 import { JiraCloudClient } from '../clients/JiraCloudClient';
@@ -22,21 +23,28 @@ import { JiraCloudClient } from '../clients/JiraCloudClient';
 jest.mock('../clients/JiraDataCenterClient');
 jest.mock('../clients/JiraCloudClient');
 
+const getConfig = (product: string) => {
+  return mockServices.rootConfig({
+    data: {
+      jira: {
+        product,
+      },
+    },
+  });
+};
+
 describe('JiraClientFactory', () => {
   let config: Config;
+
+  beforeEach(() => {
+    config = getConfig('datacenter');
+  });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
-  describe('when product is datacenter', () => {
-    beforeEach(() => {
-      config = {
-        getConfig: jest.fn().mockReturnValue({
-          getString: jest.fn().mockReturnValue('datacenter'),
-        }),
-      } as unknown as Config;
-    });
 
+  describe('when product is datacenter', () => {
     it('should create a JiraDataCenterClient', () => {
       const client = JiraClientFactory.create(config);
       expect(JiraDataCenterClient).toHaveBeenCalledWith(config);
@@ -46,11 +54,7 @@ describe('JiraClientFactory', () => {
 
   describe('when product is cloud', () => {
     beforeEach(() => {
-      config = {
-        getConfig: jest.fn().mockReturnValue({
-          getString: jest.fn().mockReturnValue('cloud'),
-        }),
-      } as unknown as Config;
+      config = getConfig('cloud');
     });
 
     it('should create a JiraCloudClient', () => {
@@ -62,11 +66,7 @@ describe('JiraClientFactory', () => {
 
   describe('when product is invalid', () => {
     beforeEach(() => {
-      config = {
-        getConfig: jest.fn().mockReturnValue({
-          getString: jest.fn().mockReturnValue('foo'),
-        }),
-      } as unknown as Config;
+      config = getConfig('foo');
     });
 
     it('should throw an error', () => {

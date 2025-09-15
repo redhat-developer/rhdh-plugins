@@ -58,9 +58,9 @@ const mockEntity: Entity = {
 
 const customThresholds: ThresholdConfig = {
   rules: [
-    { key: 'error', expression: '>20' },
-    { key: 'warning', expression: '5-20' },
     { key: 'success', expression: '<5' },
+    { key: 'warning', expression: '5-20' },
+    { key: 'error', expression: '>20' },
   ],
 };
 
@@ -92,7 +92,7 @@ describe('JiraOpenIssuesProvider', () => {
         id: 'jira.open-issues',
         title: 'Jira open blocking tickets',
         description:
-          'Highlights the number of critical, blocking issues that are currently open in Jira.',
+          'Highlights the number of issues that are currently open in Jira.',
         type: 'number',
         history: true,
       });
@@ -105,9 +105,9 @@ describe('JiraOpenIssuesProvider', () => {
         const provider = JiraOpenIssuesProvider.fromConfig(mockConfig);
         expect(provider.getMetricThresholds()).toEqual({
           rules: [
-            { key: 'error', expression: '>50' },
-            { key: 'warning', expression: '10-50' },
             { key: 'success', expression: '<10' },
+            { key: 'warning', expression: '10-50' },
+            { key: 'error', expression: '>50' },
           ],
         });
       });
@@ -137,9 +137,9 @@ describe('JiraOpenIssuesProvider', () => {
         expect(mockedValidateThresholds).not.toHaveBeenCalled();
         expect(provider.getMetricThresholds()).toEqual({
           rules: [
-            { key: 'error', expression: '>50' },
-            { key: 'warning', expression: '10-50' },
             { key: 'success', expression: '<10' },
+            { key: 'warning', expression: '10-50' },
+            { key: 'error', expression: '>50' },
           ],
         });
       });

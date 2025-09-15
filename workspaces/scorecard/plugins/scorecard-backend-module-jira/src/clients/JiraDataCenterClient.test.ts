@@ -73,6 +73,42 @@ describe('JiraDataCenterClient', () => {
     });
   });
 
+  describe('getSearchEndpoint', () => {
+    it('should return correct search endpoint', () => {
+      const searchEndpoint = (jiraDataCenterClient as any).getSearchEndpoint();
+      expect(searchEndpoint).toEqual('/search');
+    });
+  });
+
+  describe('buildSearchBody', () => {
+    it('should return correct search body', () => {
+      const searchBody = (jiraDataCenterClient as any).buildSearchBody(
+        'project = DATACENTER',
+      );
+      const responseBody = JSON.stringify({
+        jql: 'project = DATACENTER',
+        fields: [],
+        maxResults: 0,
+      });
+      expect(searchBody).toEqual(responseBody);
+    });
+  });
+
+  describe('extractIssueCountFromResponse', () => {
+    it('should return correct issue count', () => {
+      const issueCount = (
+        jiraDataCenterClient as any
+      ).extractIssueCountFromResponse({ total: 10 });
+      expect(issueCount).toBe(10);
+    });
+
+    it('should throw error for incorrect response data', () => {
+      expect(() =>
+        (jiraDataCenterClient as any).extractIssueCountFromResponse({}),
+      ).toThrow('Incorrect response data for Jira Data Center client');
+    });
+  });
+
   describe('getCountOpenIssues', () => {
     const mockEntity: Entity = {
       apiVersion: 'backstage.io/v1alpha1',

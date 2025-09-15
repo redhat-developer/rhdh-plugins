@@ -51,7 +51,7 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
       id: this.getProviderId(),
       title: 'Jira open blocking tickets',
       description:
-        'Highlights the number of critical, blocking issues that are currently open in Jira.',
+        'Highlights the number of issues that are currently open in Jira.',
       type: 'number',
       history: true,
     };

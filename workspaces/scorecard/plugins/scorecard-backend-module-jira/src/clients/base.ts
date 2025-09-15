@@ -30,6 +30,7 @@ import {
   JIRA_MANDATORY_FILTER,
 } from '../constants';
 import { ScorecardJiraAnnotations } from '../annotations';
+import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
 
 const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
   ScorecardJiraAnnotations;
@@ -44,7 +45,8 @@ export abstract class JiraClient {
       baseUrl: jiraConfig.getString('baseUrl'),
       token: jiraConfig.getString('token'),
       product: jiraConfig.getString('product') as Product,
-      apiVersion: jiraConfig.getOptionalString('apiVersion'),
+      apiVersion:
+        jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT,
     };
 
     const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
@@ -55,6 +57,14 @@ export abstract class JiraClient {
       };
     }
   }
+
+  protected abstract getAuthHeaders(): Record<string, string>;
+
+  protected abstract getSearchEndpoint(): string;
+
+  protected abstract buildSearchBody(jql: string): string;
+
+  protected abstract extractIssueCountFromResponse(data: unknown): number;
 
   protected async sendRequest({
     url,
@@ -88,34 +98,21 @@ export abstract class JiraClient {
     }
   }
 
-  private sanitizeValue(value: string): string {
-    return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-  }
-
-  private validateIdentifier(value: string, fieldName: string): string {
-    if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
-      throw new Error(
-        `${fieldName} contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.`,
-      );
-    }
-    return value;
-  }
-
   protected getFiltersFromEntity(entity: Entity): JiraEntityFilters {
     const annotations = entity?.metadata?.annotations || {};
 
     const projectKey = annotations[PROJECT_KEY];
     if (!projectKey) {
       throw new Error(
-        `Missing required 'jira/project-key' annotation for entity '${
+        `Missing required '${PROJECT_KEY}' annotation for entity '${
           entity.metadata?.name || 'unknown'
         }'`,
       );
     }
 
-    const sanitizedProjectKey = this.sanitizeValue(projectKey);
+    const sanitizedProjectKey = sanitizeValue(projectKey);
     const filters: JiraEntityFilters = {
-      project: `project = "${this.validateIdentifier(
+      project: `project = "${validateJQLValue(
         sanitizedProjectKey,
         PROJECT_KEY,
       )}"`,
@@ -123,8 +120,8 @@ export abstract class JiraClient {
 
     const component = annotations[COMPONENT];
     if (component) {
-      const sanitizedComponent = this.sanitizeValue(component);
-      filters.component = `component = "${this.validateIdentifier(
+      const sanitizedComponent = sanitizeValue(component);
+      filters.component = `component = "${validateJQLValue(
         sanitizedComponent,
         COMPONENT,
       )}"`;
@@ -132,17 +129,14 @@ export abstract class JiraClient {
 
     const label = annotations[LABEL];
     if (label) {
-      const sanitizedLabel = this.sanitizeValue(label);
-      filters.label = `labels = "${this.validateIdentifier(
-        sanitizedLabel,
-        LABEL,
-      )}"`;
+      const sanitizedLabel = sanitizeValue(label);
+      filters.label = `labels = "${validateJQLValue(sanitizedLabel, LABEL)}"`;
     }
 
     const team = annotations[TEAM];
     if (team) {
-      const sanitizedTeam = this.sanitizeValue(team);
-      filters.team = `team = "${this.validateIdentifier(sanitizedTeam, TEAM)}"`;
+      const sanitizedTeam = sanitizeValue(team);
+      filters.team = `team = ${validateIdentifier(sanitizedTeam, TEAM)}`;
     }
 
     const customFilter = annotations[CUSTOM_FILTER];
@@ -175,36 +169,19 @@ export abstract class JiraClient {
       .join(' AND ');
   }
 
-  protected abstract getAuthHeaders(): Record<string, string>;
+  public async getCountOpenIssues(entity: Entity): Promise<number> {
+    const url = `${this.config.baseUrl}/rest/api/${
+      this.config.apiVersion
+    }${this.getSearchEndpoint()}`;
+    const method = 'POST';
+    const headers = this.getAuthHeaders();
 
-  async getCountOpenIssues(entity: Entity): Promise<number> {
     const filters = this.getFiltersFromEntity(entity);
     const jql = this.buildJqlFilters(filters);
 
-    const apiVersion = this.config.apiVersion ?? API_VERSION_DEFAULT;
-    const url = `${this.config.baseUrl}/rest/api/${apiVersion}/search`;
-
-    const method = 'POST';
-
-    const headers = this.getAuthHeaders();
-
-    const body = JSON.stringify({
-      jql,
-      fields: [],
-      maxResults: 0,
-    });
+    const body = this.buildSearchBody(jql);
 
     const data = await this.sendRequest({ url, method, headers, body });
-
-    if (
-      data &&
-      typeof data === 'object' &&
-      'total' in data &&
-      typeof data.total === 'number'
-    ) {
-      return data.total;
-    }
-
-    throw new Error('Jira error during loading');
+    return this.extractIssueCountFromResponse(data);
   }
 }

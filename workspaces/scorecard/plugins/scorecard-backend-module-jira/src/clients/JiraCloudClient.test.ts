@@ -71,6 +71,38 @@ describe('JiraCloudClient', () => {
     });
   });
 
+  describe('getSearchEndpoint', () => {
+    it('should return correct search endpoint', () => {
+      const searchEndpoint = (jiraCloudClient as any).getSearchEndpoint();
+      expect(searchEndpoint).toEqual('/search/approximate-count');
+    });
+  });
+
+  describe('buildSearchBody', () => {
+    it('should return correct search body', () => {
+      const searchBody = (jiraCloudClient as any).buildSearchBody(
+        'project = CLOUD',
+      );
+      const responseBody = JSON.stringify({ jql: 'project = CLOUD' });
+      expect(searchBody).toEqual(responseBody);
+    });
+  });
+
+  describe('extractIssueCountFromResponse', () => {
+    it('should return correct issue count', () => {
+      const issueCount = (jiraCloudClient as any).extractIssueCountFromResponse(
+        { count: 5 },
+      );
+      expect(issueCount).toBe(5);
+    });
+
+    it('should throw error for incorrect response data', () => {
+      expect(() =>
+        (jiraCloudClient as any).extractIssueCountFromResponse({}),
+      ).toThrow('Incorrect response data for Jira Cloud client');
+    });
+  });
+
   describe('getCountOpenIssues', () => {
     const mockEntity: Entity = {
       apiVersion: 'backstage.io/v1alpha1',
@@ -85,14 +117,14 @@ describe('JiraCloudClient', () => {
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: jest.fn().mockResolvedValueOnce({ total: 5 }),
+      json: jest.fn().mockResolvedValueOnce({ count: 5 }),
     });
 
     it('should get count with Basic auth header', async () => {
       const count = await jiraCloudClient.getCountOpenIssues(mockEntity);
       expect(count).toBe(5);
       expect(global.fetch).toHaveBeenCalledWith(
-        'https://jira.example.com/rest/api/3/search',
+        'https://jira.example.com/rest/api/3/search/approximate-count',
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: `Basic Fds31dsF32`,

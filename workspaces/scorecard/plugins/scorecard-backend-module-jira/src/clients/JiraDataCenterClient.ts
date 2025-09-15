@@ -22,4 +22,25 @@ export class JiraDataCenterClient extends JiraClient {
       Authorization: `Bearer ${this.config.token}`,
     };
   }
+
+  protected getSearchEndpoint(): string {
+    return '/search';
+  }
+
+  protected buildSearchBody(jql: string): string {
+    return JSON.stringify({ jql, fields: [], maxResults: 0 });
+  }
+
+  protected extractIssueCountFromResponse(data: unknown): number {
+    if (
+      data &&
+      typeof data === 'object' &&
+      'total' in data &&
+      typeof data.total === 'number'
+    ) {
+      return data.total;
+    }
+
+    throw new Error('Incorrect response data for Jira Data Center client');
+  }
 }

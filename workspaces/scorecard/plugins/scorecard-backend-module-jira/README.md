@@ -148,8 +148,8 @@ plugins:
   jira:
     open_issues:
       options:
-        # Optional: use mandatoryFilter filter if need to rewrite default which is "type = Bug AND resolution = Unresolved"
+        # Optional: use mandatoryFilter filter if need to replaces default which is "type = Bug AND resolution = Unresolved"
         mandatoryFilter: Type = Task AND Resolution = Resolved
-        # Optional: use to specify global customFilter, however the annotation `jira/custom-filter` will rewrite them
+        # Optional: use to specify global customFilter, however the annotation `jira/custom-filter` will replaces them
         customFilter: priority in ("Critical", "Blocker")
 ```

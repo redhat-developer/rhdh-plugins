@@ -22,4 +22,25 @@ export class JiraCloudClient extends JiraClient {
       Authorization: `Basic ${this.config.token}`,
     };
   }
+
+  protected getSearchEndpoint(): string {
+    return '/search/approximate-count';
+  }
+
+  protected buildSearchBody(jql: string): string {
+    return JSON.stringify({ jql });
+  }
+
+  protected extractIssueCountFromResponse(data: unknown): number {
+    if (
+      data &&
+      typeof data === 'object' &&
+      'count' in data &&
+      typeof data.count === 'number'
+    ) {
+      return data.count;
+    }
+
+    throw new Error('Incorrect response data for Jira Cloud client');
+  }
 }
