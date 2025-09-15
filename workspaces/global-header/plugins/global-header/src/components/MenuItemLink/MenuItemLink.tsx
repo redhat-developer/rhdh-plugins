@@ -17,6 +17,7 @@
 import Tooltip from '@mui/material/Tooltip';
 import { useTranslation } from '../../hooks/useTranslation';
 import { MenuItemLinkContent } from './MenuItemLinkContent';
+import { translateWithFallback } from '../../utils/translationUtils';
 
 /**
  * Header Icon Button properties
@@ -46,15 +47,8 @@ export const MenuItemLink = ({
     to && (to.startsWith('http://') || to.startsWith('https://')),
   );
 
-  const translatedTitle = t(titleKey as any, {
-    defaultValue: title?.includes('.') ? t(title as any, {}) || title : title,
-  });
-
-  const translatedSubTitle = t(subTitleKey as any, {
-    defaultValue: subTitle?.includes('.')
-      ? t(subTitle as any, {}) || subTitle
-      : subTitle,
-  });
+  const translatedTitle = translateWithFallback(t, titleKey, title);
+  const translatedSubTitle = translateWithFallback(t, subTitleKey, subTitle);
 
   const headerLinkContent = () => (
     <MenuItemLinkContent
