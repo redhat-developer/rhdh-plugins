@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: config-viewer
+  name: translations
   description: An example of a Backstage application.
   # Example for optional annotations
   # annotations:
@@ -11,4 +11,3 @@ spec:
   type: website
   owner: john@example.com
   lifecycle: experimental
-  
