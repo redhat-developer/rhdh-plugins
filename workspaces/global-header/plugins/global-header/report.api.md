@@ -90,9 +90,6 @@ export const globalHeaderPlugin: BackstagePlugin<{}, {}, {}>;
 export const globalHeaderTranslationRef: TranslationRef<
   'plugin.global-header',
   {
-    readonly 'search.placeholder': string;
-    readonly 'search.noResults': string;
-    readonly 'search.errorFetching': string;
     readonly 'help.tooltip': string;
     readonly 'help.noSupportLinks': string;
     readonly 'help.noSupportLinksSubtitle': string;
@@ -102,6 +99,9 @@ export const globalHeaderTranslationRef: TranslationRef<
     readonly 'profile.settings': string;
     readonly 'profile.myProfile': string;
     readonly 'profile.signOut': string;
+    readonly 'search.placeholder': string;
+    readonly 'search.noResults': string;
+    readonly 'search.errorFetching': string;
     readonly 'applicationLauncher.tooltip': string;
     readonly 'applicationLauncher.noLinksTitle': string;
     readonly 'applicationLauncher.noLinksSubtitle': string;
@@ -179,6 +179,7 @@ export const HeaderIcon: ({
 // @public (undocumented)
 export const HeaderIconButton: ({
   title,
+  titleKey,
   icon,
   tooltip,
   color,
@@ -202,6 +203,8 @@ export interface HeaderIconButtonProps {
   size?: 'small' | 'medium' | 'large';
   // (undocumented)
   title: string;
+  // (undocumented)
+  titleKey?: string;
   // (undocumented)
   to: string;
   // (undocumented)
@@ -248,9 +251,13 @@ export interface MenuItemConfig {
   // (undocumented)
   label: string;
   // (undocumented)
+  labelKey?: string;
+  // (undocumented)
   link?: string;
   // (undocumented)
   subLabel?: string;
+  // (undocumented)
+  subLabelKey?: string;
 }
 
 // @public
@@ -263,7 +270,11 @@ export interface MenuItemLinkProps {
   // (undocumented)
   subTitle?: string;
   // (undocumented)
+  subTitleKey?: string;
+  // (undocumented)
   title?: string;
+  // (undocumented)
+  titleKey?: string;
   // (undocumented)
   to: string;
   // (undocumented)
