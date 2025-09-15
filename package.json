@@ -10,7 +10,21 @@
     "create-workspace": "rhdh-repo-tools workspace create",
     "postinstall": "husky",
     "prettier:check": "prettier --check .",
-    "prettier:fix": "prettier --write ."
+    "prettier:fix": "prettier --write .",
+    "i18n-generate": "bash scripts/i18n-scripts/generate-json.sh",
+    "i18n-generate:help": "bash scripts/i18n-scripts/generate-json.sh --help",
+    "i18n-push": "bash scripts/i18n-scripts/push-to-tms.sh",
+    "i18n-push:help": "bash scripts/i18n-scripts/push-to-tms.sh --help",
+    "i18n-upload": "bash scripts/i18n-scripts/collect-and-upload.sh --legacy",
+    "i18n-upload:help": "bash scripts/i18n-scripts/collect-and-upload.sh --help",
+    "i18n-download": "bash scripts/i18n-scripts/collect-and-download.sh",
+    "i18n-download:help": "bash scripts/i18n-scripts/collect-and-download.sh --help",
+    "i18n-deploy": "bash scripts/i18n-scripts/deploy-translations.sh --clean-source",
+    "i18n-deploy:help": "bash scripts/i18n-scripts/deploy-translations.sh --help",
+    "i18n-sync": "bash scripts/i18n-scripts/sync-translations.sh --backup",
+    "i18n-sync:help": "bash scripts/i18n-scripts/sync-translations.sh --help",
+    "i18n-cleanup": "bash scripts/i18n-scripts/cleanup-backups.sh",
+    "i18n-cleanup:help": "bash scripts/i18n-scripts/cleanup-backups.sh --help"
   },
   "type": "module",
   "packageManager": "yarn@3.8.7",
@@ -37,7 +51,8 @@
     "lodash.escaperegexp": "^4.1.2",
     "node-fetch": "^2.6.7",
     "prettier": "^3.4.2",
-    "semver": "^7.7.2"
+    "semver": "^7.7.2",
+    "typescript": "^5.9.2"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

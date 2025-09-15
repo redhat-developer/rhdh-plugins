@@ -9,6 +9,11 @@
 
 This guide provides comprehensive patterns for implementing internationalization in Backstage plugins. It's designed as a source of truth for both AI assistants and developers.
 
+> **📚 Related Documentation:**
+>
+> - **[i18n Scripts Guide](./i18n-scripts-guide.md)** - Complete workflow and automation scripts
+> - **[i18n Quick Reference](./i18n-quick-reference.md)** - Quick commands and troubleshooting
+
 **🚨 CRITICAL**: Never modify original English strings when implementing i18n - preserve them exactly as they were
 
 **Example Languages**: German (de), French (fr), Italian (it), Spanish (es)
