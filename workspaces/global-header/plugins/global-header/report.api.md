@@ -90,6 +90,9 @@ export const globalHeaderPlugin: BackstagePlugin<{}, {}, {}>;
 export const globalHeaderTranslationRef: TranslationRef<
   'plugin.global-header',
   {
+    readonly 'search.placeholder': string;
+    readonly 'search.noResults': string;
+    readonly 'search.errorFetching': string;
     readonly 'help.tooltip': string;
     readonly 'help.noSupportLinks': string;
     readonly 'help.noSupportLinksSubtitle': string;
@@ -99,9 +102,6 @@ export const globalHeaderTranslationRef: TranslationRef<
     readonly 'profile.settings': string;
     readonly 'profile.myProfile': string;
     readonly 'profile.signOut': string;
-    readonly 'search.placeholder': string;
-    readonly 'search.noResults': string;
-    readonly 'search.errorFetching': string;
     readonly 'applicationLauncher.tooltip': string;
     readonly 'applicationLauncher.noLinksTitle': string;
     readonly 'applicationLauncher.noLinksSubtitle': string;
