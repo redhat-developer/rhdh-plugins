@@ -96,22 +96,20 @@ All plugins inherit from Backstage's standard Entity interface and include:
   ```yaml
   support:
     name: 'Red Hat' # Required: Support provider name
-    level: 'production' # Required: Support level
+    level: 'generally-available' # Required: Support level
   ```
 
 ###### Support Name Values
 
 The `support.name` field indicates who provides support for the plugin:
 
-- **`Red Hat`**: Red Hat developed/maintained plugins with full enterprise support.
-- **`Backstage Community`**: Community-maintained Backstage plugins with community support.
-- **`Partner/Vendor Name`**: Third-party vendor plugins (e.g., `IBM`, `PagerDuty`, `Roadie`).
-
 ###### Support Level Values
 
 The `support.level` field indicates the maturity and support level:
 
-- **`production`**: Stable, fully supported plugins ready for production use.
+- **`generally-available`**: Stable, fully supported plugins ready for production use.
+- **`community-plugin`**: Open-source plugins, no official support.
+- **`community-plugin`**: Plugins added by the administrator.
 - **`tech-preview`**: Plugin still in development.
 - **`dev-preview`**: An early-stage, experimental plugin.
 
@@ -171,7 +169,7 @@ spec:
   publisher: 'Red Hat'
   support:
     name: 'Red Hat'
-    level: 'production'
+    level: 'generally-available'
   categories:
     - 'CI/CD'
     - 'Kubernetes'
