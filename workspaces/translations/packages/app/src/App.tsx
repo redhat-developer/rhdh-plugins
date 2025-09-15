@@ -53,6 +53,8 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
 
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+
 import { TranslationsPage } from '@red-hat-developer-hub/backstage-plugin-translations';
 
 const app = createApp({
@@ -77,6 +79,7 @@ const app = createApp({
   components: {
     SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
   },
+  themes: getThemes(),
 });
 
 const routes = (
