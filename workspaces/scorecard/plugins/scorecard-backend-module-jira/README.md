@@ -8,10 +8,34 @@ Before installing this module, ensure that the Scorecard backend plugin is integ
 
 This module also requires a Jira integration to be configured in your `app-config.yaml`. The following example of configuration can help:
 
+**Configuration `token`:**
+
+- For the `cloud` product:
+
+  - Obtain your personal token from Jira
+  - Create a Base64-encoded string from the following plain text format: `your-atlassian-email:your-jira-api-token`:
+
+  ```bash
+  // Node
+  new Buffer('your-atlassian-email:your-jira-api-token').toString(
+    'base64',
+  );
+
+  // Browser console
+  btoa('your-atlassian-email:your-jira-api-token');
+
+  // Bash
+  echo -n 'your-atlassian-email:your-jira-api-token' | base64
+  ```
+
+- For the `datacenter` product:
+  - Obtain your personal token from Jira
+  - Use the Jira token without changing
+
 ```yaml
 jira:
   # Required
-  baseUrl: <JIRA_URL>
+  baseUrl: ${JIRA_URL}
   # Required
   token: ${JIRA_TOKEN}
   # Required: Supported products: `cloud` or `datacenter`
@@ -40,7 +64,7 @@ backend.add(
   import('@red-hat-developer-hub/backstage-plugin-scorecard-backend'),
 );
 
-// Install the GitHub module
+// Install the Jira module
 /* highlight-add-next-line */
 backend.add(
   import(
@@ -68,9 +92,9 @@ metadata:
     jira/component: Component
     # Optional: Jira label
     jira/label: UI
-    # Optional: Jira team ID
+    # Optional: recommended to use Jira team ID instead of team title
     jira/team: 9d3ea319-fb5b-4621-9dab-05fe502283e
-    # Optional: Custom filters for loading data request. Rewrite customFilters form app-config.yaml
+    # Optional: Custom filters for loading data request. This filter replaces customFilters form app-config.yaml
     jira/custom-filter: 'reporter = "psycon98@yahoo.com" AND resolution is not EMPTY'
 spec:
   type: website
@@ -99,12 +123,12 @@ plugins:
     open_issues:
       thresholds:
         rules:
-          - key: error
-            expression: '>100'
-          - key: warning
-            expression: '>50'
           - key: success
             expression: '<=50'
+          - key: warning
+            expression: '>50'
+          - key: error
+            expression: '>100'
 ```
 
 ## Configuration
