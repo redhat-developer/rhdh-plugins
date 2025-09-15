@@ -146,11 +146,7 @@ export enum MarketplaceAnnotation {
     // (undocumented)
     CERTIFIED_BY = "extensions.backstage.io/certified-by",
     // (undocumented)
-    PRE_INSTALLED = "extensions.backstage.io/pre-installed",
-    // (undocumented)
-    SUPPORT_TYPE = "extensions.backstage.io/support-type",
-    // (undocumented)
-    VERIFIED_BY = "extensions.backstage.io/verified-by"
+    PRE_INSTALLED = "extensions.backstage.io/pre-installed"
 }
 
 // @public (undocumented)
@@ -400,7 +396,7 @@ export interface MarketplacePackageSpec extends JsonObject {
     // (undocumented)
     role?: string;
     // (undocumented)
-    support?: string;
+    support?: MarketplaceSupport;
     // (undocumented)
     supportedVersions?: string;
     // (undocumented)
@@ -461,12 +457,34 @@ export interface MarketplacePluginSpec extends JsonObject {
     installStatus?: MarketplacePluginInstallStatus;
     // (undocumented)
     packages?: string[];
+    // (undocumented)
+    support?: MarketplaceSupport;
 }
+
+// @public (undocumented)
+export type MarketplaceSupport = {
+    name?: string;
+    level?: string | SupportLevel;
+};
 
 // @public (undocumented)
 export type NodeEnvironmentType = 'production' | 'development' | 'test';
 
 // @public (undocumented)
 export const RESOURCE_TYPE_EXTENSIONS_PLUGIN = "extensions-plugin";
+
+// @public (undocumented)
+export enum SupportLevel {
+    // (undocumented)
+    COMMUNITY_PLUGIN = "community-plugin",
+    // (undocumented)
+    CUSTOM_PLUGIN = "custom-plugin",
+    // (undocumented)
+    DEV_PREVIEW = "dev-preview",
+    // (undocumented)
+    GENERALLY_AVAILABLE = "generally-available",
+    // (undocumented)
+    TECH_PREVIEW = "tech-preview"
+}
 
 ```
