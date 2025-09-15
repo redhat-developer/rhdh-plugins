@@ -190,7 +190,7 @@ export class GitlabApiService {
     pageNumber: number = DefaultPageNumber,
     pageSize: number = DefaultPageSize,
   ): Promise<GitlabRepositoryResponse> {
-    const repositories = new Map<string, GitlabRepository>();
+    const orgRepositories = new Map<string, GitlabRepository>();
     const result = await fetchFromAllIntegrations(
       {
         logger: this.logger,
@@ -212,7 +212,7 @@ export class GitlabApiService {
             glApi,
             credential,
             orgName,
-            repositories,
+            orgRepositories,
             dataFetchErrors,
             {
               search,
@@ -232,7 +232,7 @@ export class GitlabApiService {
       },
     );
 
-    const repoList = Array.from(repositories.values());
+    const repoList = Array.from(orgRepositories.values());
     const totalCount = computeTotalCount(repoList, result.data, pageSize);
     return {
       repositories: repoList,
