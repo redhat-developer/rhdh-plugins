@@ -13,4 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { ExampleFetchComponent } from './ExampleFetchComponent';
+import { Page, Header, Content } from '@backstage/core-components';
+
+export const TranslationsPage = () => (
+  <Page themeId="tool">
+    <Header title="Translations" />
+    <Content>{/* test */}</Content>
+  </Page>
+);

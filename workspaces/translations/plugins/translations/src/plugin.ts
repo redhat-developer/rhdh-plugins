@@ -31,7 +31,7 @@ export const TranslationsPage = translationsPlugin.provide(
   createRoutableExtension({
     name: 'TranslationsPage',
     component: () =>
-      import('./components/ExampleComponent').then(m => m.ExampleComponent),
+      import('./components/TranslationsPage').then(m => m.TranslationsPage),
     mountPoint: rootRouteRef,
   }),
 );
