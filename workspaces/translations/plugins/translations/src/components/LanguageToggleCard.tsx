@@ -13,5 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './apis';
-export * from './plugin';
+import { InfoCard } from '@backstage/core-components';
+
+import { UserSettingsLanguageToggle } from '@backstage/plugin-user-settings';
+
+export const LanguageToggleCard = () => {
+  return (
+    <InfoCard title="Language Toggle">
+      <UserSettingsLanguageToggle />
+    </InfoCard>
+  );
+};

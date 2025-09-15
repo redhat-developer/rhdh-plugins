@@ -15,9 +15,27 @@
  */
 import { Page, Header, Content } from '@backstage/core-components';
 
-export const TranslationsPage = () => (
-  <Page themeId="tool">
-    <Header title="Translations" />
-    <Content>{/* test */}</Content>
-  </Page>
-);
+import { LanguageToggleCard } from './LanguageToggleCard';
+import { LoadedTranslationsTable } from './LoadedTranslationsTable';
+import { AppLanguageCard } from './AppLanguageCard';
+import { I18NextCard } from './I18NextCard';
+
+export const TranslationsPage = () => {
+  return (
+    <Page themeId="tool">
+      <Header title="Translations" />
+      <Content>
+        <LanguageToggleCard />
+        <br />
+        <br />
+        <LoadedTranslationsTable />
+        <br />
+        <br />
+        <AppLanguageCard />
+        <br />
+        <br />
+        <I18NextCard />
+      </Content>
+    </Page>
+  );
+};

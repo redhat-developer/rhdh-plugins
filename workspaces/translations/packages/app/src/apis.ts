@@ -24,7 +24,52 @@ import {
   createApiFactory,
 } from '@backstage/core-plugin-api';
 
+import {
+  appLanguageApiRef,
+  createTranslationMessages,
+  createTranslationResource,
+  translationApiRef,
+} from '@backstage/core-plugin-api/alpha';
+
+import { I18nextTranslationApi } from '@red-hat-developer-hub/backstage-plugin-translations';
+import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
+
 export const apis: AnyApiFactory[] = [
+  createApiFactory({
+    api: translationApiRef,
+    deps: { languageApi: appLanguageApiRef },
+    factory: ({ languageApi }) =>
+      I18nextTranslationApi.create({
+        languageApi,
+        resources: [
+          createTranslationResource({
+            ref: userSettingsTranslationRef,
+            translations: {
+              de: async () => ({
+                default: createTranslationMessages({
+                  ref: userSettingsTranslationRef,
+                  full: false,
+                  messages: {
+                    sidebarTitle: 'Einstellungen',
+                    'settingsLayout.title': 'Sprache',
+                    xxx: 'yyy de',
+                  } as any,
+                }),
+              }),
+              fr: async () => ({
+                default: createTranslationMessages({
+                  ref: userSettingsTranslationRef,
+                  full: false,
+                  messages: {
+                    xxx: 'yyy es',
+                  } as any,
+                }),
+              }),
+            },
+          }),
+        ],
+      }),
+  }),
   createApiFactory({
     api: scmIntegrationsApiRef,
     deps: { configApi: configApiRef },

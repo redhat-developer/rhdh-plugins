@@ -80,6 +80,9 @@ const app = createApp({
     SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
   },
   themes: getThemes(),
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'it', 'es'],
+  },
 });
 
 const routes = (
