@@ -30,17 +30,6 @@ export const aiExperienceTranslationRef: TranslationRef<
   {
     readonly 'page.title': string;
     readonly 'page.subtitle': string;
-    readonly 'common.template': string;
-    readonly 'common.guest': string;
-    readonly 'common.latest': string;
-    readonly 'common.more': string;
-    readonly 'common.viewMore': string;
-    readonly 'modal.cancel': string;
-    readonly 'modal.title.edit': string;
-    readonly 'modal.title.preview': string;
-    readonly 'modal.close': string;
-    readonly 'modal.edit': string;
-    readonly 'modal.save': string;
     readonly 'news.pageTitle': string;
     readonly 'news.fetchingRssFeed': string;
     readonly 'news.noContentAvailable': string;
@@ -55,6 +44,17 @@ export const aiExperienceTranslationRef: TranslationRef<
     readonly 'learn.explore.title': string;
     readonly 'learn.explore.description': string;
     readonly 'learn.explore.cta': string;
+    readonly 'modal.title.preview': string;
+    readonly 'modal.title.edit': string;
+    readonly 'modal.close': string;
+    readonly 'modal.edit': string;
+    readonly 'modal.save': string;
+    readonly 'modal.cancel': string;
+    readonly 'common.template': string;
+    readonly 'common.latest': string;
+    readonly 'common.more': string;
+    readonly 'common.viewMore': string;
+    readonly 'common.guest': string;
     readonly 'greeting.goodMorning': string;
     readonly 'greeting.goodAfternoon': string;
     readonly 'greeting.goodEvening': string;
