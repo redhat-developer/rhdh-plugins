@@ -7092,6 +7092,7 @@ __metadata:
     "@backstage/e2e-test-utils": ^0.1.1
     "@backstage/repo-tools": ^0.13.4
     "@changesets/cli": ^2.27.1
+    "@playwright/test": 1.55.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
     prettier: ^2.3.2
@@ -9679,7 +9680,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.32.3":
+"@playwright/test@npm:1.55.0, @playwright/test@npm:^1.32.3":
   version: 1.55.0
   resolution: "@playwright/test@npm:1.55.0"
   dependencies:
