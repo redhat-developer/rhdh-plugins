@@ -1,5 +1,5 @@
 {
-  "name": "@internal/config-viewer",
+  "name": "@internal/translations",
   "version": "1.0.0",
   "private": true,
   "engines": {
@@ -37,7 +37,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/config-viewer"
+    "directory": "workspaces/translations"
   },
   "devDependencies": {
     "@backstage/cli": "^0.32.1",
