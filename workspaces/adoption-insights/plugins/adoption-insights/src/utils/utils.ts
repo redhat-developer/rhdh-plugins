@@ -559,3 +559,31 @@ export const formatTooltipHeaderLabel = (key: string) => {
     )
     .join(' ');
 };
+
+/**
+ * Get the appropriate label for a grouping type.
+ * Maps grouping values to their corresponding translation keys.
+ *
+ * @param grouping - The grouping type ('hourly', 'daily', 'weekly', 'monthly')
+ * @param t - Translation function
+ * @param section - The translation section ('activeUsers' or 'searches')
+ * @returns Translated label for the grouping type
+ */
+export const getGroupingLabel = (
+  grouping: string,
+  t: TranslationFunction<typeof adoptionInsightsTranslationRef.T>,
+  section: 'activeUsers' | 'searches',
+): string => {
+  switch (grouping) {
+    case 'hourly':
+      return t(`${section}.hour`);
+    case 'daily':
+      return t(`${section}.day`);
+    case 'weekly':
+      return t(`${section}.week`);
+    case 'monthly':
+      return t(`${section}.month`);
+    default:
+      return t(`${section}.day`); // fallback to day
+  }
+};

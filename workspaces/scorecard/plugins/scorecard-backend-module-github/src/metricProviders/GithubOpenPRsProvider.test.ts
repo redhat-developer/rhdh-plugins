@@ -18,6 +18,7 @@ import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { GithubOpenPRsProvider } from './GithubOpenPRsProvider';
 import { GithubClient } from '../github/GithubClient';
+import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -29,17 +30,47 @@ jest.mock('@backstage/catalog-model', () => ({
 jest.mock('../github/GithubClient');
 
 describe('GithubOpenPRsProvider', () => {
+  describe('supportsEntity', () => {
+    let provider: GithubOpenPRsProvider;
+
+    beforeEach(() => {
+      provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
+    });
+
+    it.each([
+      [
+        'should return true for entity with github.com/project-slug annotation',
+        {
+          'github.com/project-slug': 'org/repo',
+        },
+        true,
+      ],
+      [
+        'should return false for entity without github.com/project-slug annotation',
+        {
+          'some.other/annotation': 'value',
+        },
+        false,
+      ],
+      ['should return false for entity with no annotations', undefined, false],
+    ])('%s', (_, annotations, expected) => {
+      const entity: Entity = {
+        apiVersion: 'backstage.io/v1alpha1',
+        kind: 'Component',
+        metadata: {
+          name: 'test-component',
+          annotations,
+        },
+      };
+      expect(provider.supportsEntity(entity)).toBe(expected);
+    });
+  });
+
   describe('fromConfig', () => {
     it('should create provider with default thresholds when no thresholds are configured', () => {
       const provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
 
-      expect(provider.getMetricThresholds()).toEqual({
-        rules: [
-          { key: 'error', expression: '>50' },
-          { key: 'warning', expression: '10-50' },
-          { key: 'success', expression: '<10' },
-        ],
-      });
+      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
 
     it('should create provider with custom thresholds when configured', () => {

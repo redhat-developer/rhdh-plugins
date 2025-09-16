@@ -44,12 +44,16 @@ describe('SandboxCatalogCardButton', () => {
   const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
     typeof useSandboxContext
   >;
-  const mockPushCtaEvent = jest.spyOn(eddlUtils, 'pushCtaEvent');
+  const mockTrackAnalytics = jest.fn();
+  const mockUseTrackAnalytics = jest.spyOn(eddlUtils, 'useTrackAnalytics');
 
   beforeEach(() => {
     jest.clearAllMocks();
     // Setup window.appEventData for tests
     (global as any).window = { appEventData: [] };
+
+    // Mock useTrackAnalytics to return our mock function
+    mockUseTrackAnalytics.mockReturnValue(mockTrackAnalytics);
     mockUseSandboxContext.mockReturnValue({
       loading: false,
       userFound: false,
@@ -240,11 +244,12 @@ describe('SandboxCatalogCardButton', () => {
       fireEvent.click(button);
 
       // Should push CTA event
-      expect(mockPushCtaEvent).toHaveBeenCalledWith(
+      expect(mockTrackAnalytics).toHaveBeenCalledWith(
         'OpenShift',
         'Catalog',
         'https://example.com',
         '701Pe00000dnCEYIA2',
+        'cta',
       );
     });
 
@@ -272,11 +277,12 @@ describe('SandboxCatalogCardButton', () => {
       fireEvent.click(link);
 
       // Should push CTA event
-      expect(mockPushCtaEvent).toHaveBeenCalledWith(
+      expect(mockTrackAnalytics).toHaveBeenCalledWith(
         'OpenShift',
         'Catalog',
         'https://example.com',
         '701Pe00000dnCEYIA2',
+        'cta',
       );
     });
 
@@ -325,32 +331,16 @@ describe('SandboxCatalogCardButton', () => {
         const button = screen.getByRole('button');
         fireEvent.click(button);
 
-        expect(mockPushCtaEvent).toHaveBeenCalledWith(
+        expect(mockTrackAnalytics).toHaveBeenCalledWith(
           title,
           'Catalog',
           'https://example.com',
           expectedIntcmp,
+          'cta',
         );
 
         unmount();
       });
-    });
-
-    it('should not push CTA event if link is empty', () => {
-      mockUseSandboxContext.mockReturnValue({
-        loading: false,
-        userFound: false,
-        userReady: false,
-        ansibleStatus: AnsibleStatus.UNKNOWN,
-      } as any);
-
-      renderButton({ link: '' });
-
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
-
-      // Should not push event when link is empty
-      expect(mockPushCtaEvent).not.toHaveBeenCalled();
     });
   });
 });

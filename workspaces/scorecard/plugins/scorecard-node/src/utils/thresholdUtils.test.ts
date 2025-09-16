@@ -318,22 +318,22 @@ describe('thresholdUtils', () => {
       {
         config: { rules: [{ key: 'invalid', expression: '>20' }] },
         expectedError:
-          'Invalid threshold rule key "invalid": only supported values are "error", "warning", "success"',
+          'Invalid threshold rule key "invalid": only supported values are "success", "warning", "error"',
       },
       {
         config: { rules: [{ key: 'ERROR', expression: '>20' }] },
         expectedError:
-          'Invalid threshold rule key "ERROR": only supported values are "error", "warning", "success"',
+          'Invalid threshold rule key "ERROR": only supported values are "success", "warning", "error"',
       },
       {
         config: { rules: [{ key: '', expression: '>20' }] },
         expectedError:
-          'Invalid threshold rule key "": only supported values are "error", "warning", "success"',
+          'Invalid threshold rule key "": only supported values are "success", "warning", "error"',
       },
       {
         config: { rules: [{ key: 'critical', expression: '>20' }] },
         expectedError:
-          'Invalid threshold rule key "critical": only supported values are "error", "warning", "success"',
+          'Invalid threshold rule key "critical": only supported values are "success", "warning", "error"',
       },
       {
         config: { rules: [{ key: 'success', expression: 'invalid' }] },
@@ -375,7 +375,7 @@ describe('thresholdUtils', () => {
 
       expect(() => validateThresholds(config, 'number')).toThrow(
         new ThresholdConfigFormatError(
-          'Invalid threshold rule key "invalid": only supported values are "error", "warning", "success"',
+          'Invalid threshold rule key "invalid": only supported values are "success", "warning", "error"',
         ),
       );
     });
