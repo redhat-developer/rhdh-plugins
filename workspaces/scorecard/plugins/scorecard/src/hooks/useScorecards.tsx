@@ -22,6 +22,7 @@ import useAsync from 'react-use/lib/useAsync';
 import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { scorecardApiRef } from '../api';
+import { useTranslation } from './useTranslation';
 
 export interface UseScorecardsOptions {
   /**
@@ -44,6 +45,7 @@ export const useScorecards = (options: UseScorecardsOptions = {}) => {
   const { entity } = useEntity();
   const scorecardApi = useApi(scorecardApiRef);
   const { metricIds } = options;
+  const { t } = useTranslation();
 
   const { error, loading, value } = useAsync(async () => {
     if (
@@ -51,16 +53,14 @@ export const useScorecards = (options: UseScorecardsOptions = {}) => {
       !entity?.metadata?.namespace ||
       !entity?.metadata?.name
     ) {
-      throw new Error(
-        'Entity missing required properties for scorecard lookup',
-      );
+      throw new Error(t('errors.entityMissingProperties'));
     }
 
     try {
       const scorecards = await scorecardApi.getScorecards(entity, metricIds);
 
       if (!scorecards || !Array.isArray(scorecards)) {
-        throw new Error('Invalid response format from scorecard API');
+        throw new Error(t('errors.invalidApiResponse'));
       }
 
       return scorecards;
@@ -68,9 +68,13 @@ export const useScorecards = (options: UseScorecardsOptions = {}) => {
       if (err instanceof Error) {
         throw err;
       }
-      throw new Error(`Error fetching scorecards: ${String(err)}`);
+      throw new Error(
+        t('errors.fetchError' as any, {
+          error: String(err),
+        }),
+      );
     }
-  }, [entity, scorecardApi]);
+  }, [entity, scorecardApi, t]);
 
   return useMemo(
     () => ({

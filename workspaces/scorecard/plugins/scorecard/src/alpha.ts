@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export * from './plugin';
-export { scorecardTranslations, scorecardTranslationRef } from './translations';
+export * from './translations';

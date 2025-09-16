@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,5 +14,20 @@
  * limitations under the License.
  */
 
-export * from './plugin';
-export { scorecardTranslations, scorecardTranslationRef } from './translations';
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { scorecardTranslationRef } from './ref';
+
+/**
+ * Translation Resource for scorecard
+ * @public
+ */
+export const scorecardTranslations = createTranslationResource({
+  ref: scorecardTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    fr: () => import('./fr'),
+    es: () => import('./es'),
+  },
+});
+
+export { scorecardTranslationRef };
