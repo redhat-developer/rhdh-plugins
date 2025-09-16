@@ -45,7 +45,7 @@ import {
 
 const DEFAULT_LANGUAGE = 'en';
 
-/** @alpha */
+/** @public */
 export interface I18nextTranslationApiOptions {
   languageApi: AppLanguageApi;
   resources?: Array<TranslationMessages | TranslationResource>;
@@ -234,7 +234,7 @@ export class JsxInterpolator {
   }
 }
 
-/** @alpha */
+/** @public */
 export class I18nextTranslationApi implements TranslationApi {
   static create(options: I18nextTranslationApiOptions) {
     const { languages } = options.languageApi.getAvailableLanguages();

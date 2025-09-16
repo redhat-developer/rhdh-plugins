@@ -14,3 +14,4 @@
  * limitations under the License.
  */
 export { I18nextTranslationApi } from './I18nextTranslationApi';
+export type { I18nextTranslationApiOptions } from './I18nextTranslationApi';

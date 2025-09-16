@@ -20,6 +20,9 @@ import {
 
 import { rootRouteRef } from './routes';
 
+/**
+ * @public
+ */
 export const translationsPlugin = createPlugin({
   id: 'translations',
   routes: {
@@ -27,6 +30,9 @@ export const translationsPlugin = createPlugin({
   },
 });
 
+/**
+ * @public
+ */
 export const TranslationsPage = translationsPlugin.provide(
   createRoutableExtension({
     name: 'TranslationsPage',
