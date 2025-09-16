@@ -26,9 +26,9 @@ import {
   githubNumberProvider,
   jiraBooleanMetricMetadata,
   jiraBooleanProvider,
+  MockNumberProvider,
 } from '../../__fixtures__/mockProviders';
 import { mockEntity } from '../../__fixtures__/mockEntities';
-import { ThresholdConfigFormatError } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
   PermissionCondition,
   PermissionCriteria,
@@ -39,11 +39,26 @@ const mockCatalogApi = {
   getEntityByRef: jest.fn(),
 } as unknown as jest.Mocked<CatalogApi>;
 
+class AnnotationProvider extends MockNumberProvider {
+  constructor() {
+    super(
+      'annotation.metric',
+      'annotation',
+      'Annotation Metric',
+      "A metric that only works with entities having a 'custom.annotation' annotation",
+      10,
+    );
+  }
+
+  supportsEntity(entity: Entity): boolean {
+    return entity.metadata.annotations?.['custom.annotation'] !== undefined;
+  }
+}
+
 describe('CatalogMetricService', () => {
   let catalogMetricService: CatalogMetricService;
   let registry: MetricProvidersRegistry;
   const timestamp = '2024-01-15T10:30:00.000Z';
-  const mockLogger = mockServices.logger.mock();
 
   const githubMetricResult = {
     id: 'github.number-metric',
@@ -102,7 +117,6 @@ describe('CatalogMetricService', () => {
       catalogApi: mockCatalogApi,
       registry,
       thresholdEvaluator: new ThresholdEvaluator(),
-      logger: mockLogger,
       auth: mockServices.auth(),
     });
   });
@@ -191,7 +205,7 @@ describe('CatalogMetricService', () => {
       expect(result).toEqual([githubMetricResult, jiraMetricErrorResult]);
     });
 
-    it('should handle invalid entity threshold annotations and skip them', async () => {
+    it('should handle invalid entity threshold annotations', async () => {
       const entityWithInvalidThresholds: Entity = {
         ...mockEntity,
         metadata: {
@@ -213,13 +227,18 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result).toEqual([githubMetricResult]);
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        `Invalid threshold annotation in entity 'component:default/test-component': {"key":"error","expression":"invalid_expression"}. Skipping including this threshold.`,
-        new ThresholdConfigFormatError(
-          'Invalid threshold expression: "invalid_expression".',
-        ),
-      );
+      expect(result[0]).toEqual({
+        ...githubMetricResult,
+        result: {
+          ...githubMetricResult.result,
+          thresholdResult: {
+            definition: undefined,
+            status: 'error',
+            evaluation: undefined,
+            error: expect.stringContaining('Invalid threshold annotation'),
+          },
+        },
+      });
     });
 
     it('should handle entity not found', async () => {
@@ -258,6 +277,47 @@ describe('CatalogMetricService', () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('github.number-metric');
       expect(result).toEqual([githubMetricResult]);
+    });
+
+    it('should filter out metrics that provider does not support for certain entity', async () => {
+      registry.register(new AnnotationProvider());
+      mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
+
+      const result = await catalogMetricService.calculateEntityMetrics(
+        'component:default/test-component',
+      );
+
+      expect(result).toHaveLength(2);
+      expect(result.map(r => r.id)).toEqual([
+        'github.number-metric',
+        'jira.boolean-metric',
+      ]);
+    });
+
+    it('should include metrics that provider supports for certain entity', async () => {
+      registry.register(new AnnotationProvider());
+      const entityWithAnnotation: Entity = {
+        ...mockEntity,
+        metadata: {
+          ...mockEntity.metadata,
+          annotations: {
+            'custom.annotation': 'A123',
+          },
+        },
+      };
+
+      mockCatalogApi.getEntityByRef.mockResolvedValue(entityWithAnnotation);
+
+      const result = await catalogMetricService.calculateEntityMetrics(
+        'component:default/test-component',
+      );
+
+      expect(result).toHaveLength(3);
+      expect(result.map(r => r.id)).toEqual([
+        'github.number-metric',
+        'jira.boolean-metric',
+        'annotation.metric',
+      ]);
     });
   });
 });

@@ -33,6 +33,8 @@ export interface MetricProvider<T extends MetricType = MetricType> {
   getProviderDatasourceId(): string;
   // (undocumented)
   getProviderId(): string;
+  // (undocumented)
+  supportsEntity(entity: Entity): boolean;
 }
 
 // @public

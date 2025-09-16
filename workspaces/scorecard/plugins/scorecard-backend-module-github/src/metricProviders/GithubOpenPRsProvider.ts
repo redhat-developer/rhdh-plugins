@@ -30,6 +30,7 @@ import {
   getHostnameFromEntity,
   getRepositoryInformationFromEntity,
 } from '../github/utils';
+import { GITHUB_PROJECT_ANNOTATION } from '../github/constants';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
@@ -61,6 +62,12 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
 
   getMetricThresholds(): ThresholdConfig {
     return this.thresholds;
+  }
+
+  supportsEntity(entity: Entity): boolean {
+    return (
+      entity.metadata.annotations?.[GITHUB_PROJECT_ANNOTATION] !== undefined
+    );
   }
 
   static fromConfig(config: Config): GithubOpenPRsProvider {

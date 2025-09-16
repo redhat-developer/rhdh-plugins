@@ -56,6 +56,10 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     return this.thresholds;
   }
 
+  supportsEntity(entity: Entity): boolean {
+    return entity.metadata.annotations?.['jira/project-key'] !== undefined;
+  }
+
   static fromConfig(config: Config): JiraOpenIssuesProvider {
     const configPath = 'scorecard.plugins.jira.open_issues.thresholds';
     const configuredThresholds = config.getOptional(configPath);
