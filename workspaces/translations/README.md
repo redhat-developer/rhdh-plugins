@@ -1,16 +1,7 @@
-# [Backstage](https://backstage.io)
+# Additional translations features for RHDH
 
-This is your newly scaffolded Backstage App, Good Luck!
+We implement this additional extensions here to move forward with translations.
 
-To start the app, run:
+Our goal is to contribute all missing feature back to Backstage Core or Backstage Community Plugins if they got accepted.
 
-```sh
-yarn install
-yarn dev
-```
-
-To generate knip reports for this app, run:
-
-```sh
-yarn backstage-repo-tools knip-reports
-```
+We might deprecate this workspace and plugin in the future when its not needed anymore.
