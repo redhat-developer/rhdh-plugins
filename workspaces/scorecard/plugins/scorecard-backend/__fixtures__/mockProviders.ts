@@ -45,6 +45,10 @@ abstract class MockMetricProvider<T extends MetricType>
     return this.providerId;
   }
 
+  supportsEntity(_: Entity): boolean {
+    return true;
+  }
+
   getMetric(): Metric<T> {
     const metric: Metric<T> = {
       id: this.providerId,

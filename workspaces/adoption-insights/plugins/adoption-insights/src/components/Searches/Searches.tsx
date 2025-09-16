@@ -36,6 +36,7 @@ import {
   getXAxisformat,
   getXAxisTickValues,
   formatNumber,
+  getGroupingLabel,
 } from '../../utils/utils';
 import CustomCursor from '../Common/CustomCursor';
 import EmptyChartState from '../Common/EmptyChartState';
@@ -102,13 +103,10 @@ const Searches = () => {
                   count: Math.round(getAverage(data, 'count')).toLocaleString(
                     'en-US',
                   ),
-                  period:
-                    grouping === 'hourly'
-                      ? t('searches.hour')
-                      : t('searches.day'),
+                  period: getGroupingLabel(grouping, t, 'searches'),
                 }}
               />
-            </b>{' '}
+            </b>
             {t('searches.averageSuffix')}
           </Typography>
           <Box sx={{ height: 310, mt: 4, mb: 4, ml: 0, mr: 0 }}>

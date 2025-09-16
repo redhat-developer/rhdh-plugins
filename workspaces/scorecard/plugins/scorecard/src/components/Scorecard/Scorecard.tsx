@@ -155,7 +155,7 @@ const Scorecard = ({
                   paddingLeft: '12px',
                 }}
               >
-                {thresholds?.definition.rules.map(({ key, expression }) => (
+                {thresholds?.definition?.rules.map(({ key, expression }) => (
                   <Box
                     key={key}
                     sx={{

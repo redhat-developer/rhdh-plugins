@@ -24,12 +24,13 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
-import { NotFoundError, stringifyError } from '@backstage/errors';
+import { isError, NotFoundError, stringifyError } from '@backstage/errors';
 import {
   MetricProvider,
+  ThresholdConfigFormatError,
   validateThresholds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { AuthService, LoggerService } from '@backstage/backend-plugin-api';
+import { AuthService } from '@backstage/backend-plugin-api';
 import { filterAuthorizedMetrics } from '../permissions/permissionUtils';
 import {
   PermissionCondition,
@@ -41,7 +42,6 @@ export type CatalogMetricServiceOptions = {
   catalogApi: CatalogApi;
   registry: MetricProvidersRegistry;
   thresholdEvaluator: ThresholdEvaluator;
-  logger: LoggerService;
   auth?: AuthService;
 };
 
@@ -49,14 +49,12 @@ export class CatalogMetricService {
   private readonly catalogApi: CatalogApi;
   private readonly registry: MetricProvidersRegistry;
   private readonly thresholdEvaluator: ThresholdEvaluator;
-  private readonly logger: LoggerService;
   private readonly auth?: AuthService;
 
   constructor(options: CatalogMetricServiceOptions) {
     this.thresholdEvaluator = options.thresholdEvaluator;
     this.registry = options.registry;
     this.catalogApi = options.catalogApi;
-    this.logger = options.logger;
     this.auth = options.auth;
   }
 
@@ -85,8 +83,13 @@ export class CatalogMetricService {
       ? this.registry.listMetrics().filter(m => providerIds.includes(m.id))
       : this.registry.listMetrics();
 
+    const supportedMetricsToCalculate = metricsToCalculate.filter(m => {
+      const provider = this.registry.getProvider(m.id);
+      return provider.supportsEntity(entity);
+    });
+
     const authorizedMetricsToCalculate = filterAuthorizedMetrics(
-      metricsToCalculate,
+      supportedMetricsToCalculate,
       filter,
     );
     const rawResults = await this.registry.calculateMetrics(
@@ -114,15 +117,15 @@ export class CatalogMetricService {
         };
       }
 
-      const thresholds = this.mergeEntityAndProviderThresholds(
-        entity,
-        provider,
-        metric.type,
-      );
-
+      let thresholds: ThresholdConfig | undefined;
       let evaluation: string | undefined;
       let thresholdError: string | undefined;
       try {
+        thresholds = this.mergeEntityAndProviderThresholds(
+          entity,
+          provider,
+          metric.type,
+        );
         evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
           value,
           metric.type,
@@ -192,14 +195,14 @@ export class CatalogMetricService {
           validateThresholds({ rules: [entityRule] }, metricType);
           overrides.push(entityRule);
         } catch (e) {
-          this.logger.error(
-            `Invalid threshold annotation in entity '${stringifyEntityRef(
-              entity,
-            )}': ${JSON.stringify(
-              entityRule,
-            )}. Skipping including this threshold.`,
-            e,
-          );
+          if (isError(e)) {
+            throw new ThresholdConfigFormatError(
+              `Invalid threshold annotation '${annotationKey}: ${expression}' in entity '${stringifyEntityRef(
+                entity,
+              )}': ${e.message}`,
+            );
+          }
+          throw e;
         }
       }
     }
@@ -225,7 +228,7 @@ export class CatalogMetricService {
       if (foundKey !== -1) {
         mergedRules[foundKey] = override;
       } else {
-        this.logger.error(
+        throw new ThresholdConfigFormatError(
           `Unable to override ${stringifyEntityRef(
             entity,
           )} thresholds by ${JSON.stringify(

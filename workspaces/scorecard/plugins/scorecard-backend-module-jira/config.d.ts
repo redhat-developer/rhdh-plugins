@@ -15,6 +15,13 @@
  */
 
 export interface Config {
+  /** Configuration for jira plugin */
+  jira: {
+    baseUrl: string;
+    token: string;
+    product: string;
+    apiVersion?: string;
+  };
   /** Configuration for scorecard plugin */
   scorecard?: {
     /** Configuration for scorecard plugins/datasources */
@@ -22,6 +29,10 @@ export interface Config {
       /** JIRA datasource configuration */
       jira?: {
         open_issues?: {
+          options?: {
+            mandatoryFilter?: string;
+            customFilter?: string;
+          };
           thresholds?: {
             rules?: Array<{
               key: 'error' | 'warning' | 'success';
