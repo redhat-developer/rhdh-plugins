@@ -16,6 +16,7 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
+import type { DiscoveryService } from '@backstage/backend-plugin-api';
 import { THRESHOLDS_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
@@ -33,8 +34,12 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
   private readonly jiraClient: JiraClient;
 
-  private constructor(config: Config, thresholds?: ThresholdConfig) {
-    this.jiraClient = JiraClientFactory.create(config);
+  private constructor(
+    config: Config,
+    discovery?: DiscoveryService,
+    thresholds?: ThresholdConfig,
+  ) {
+    this.jiraClient = JiraClientFactory.create(config, discovery);
     this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
   }
 
@@ -65,13 +70,16 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     return entity.metadata.annotations?.['jira/project-key'] !== undefined;
   }
 
-  static fromConfig(config: Config): JiraOpenIssuesProvider {
+  static fromConfig(
+    config: Config,
+    discovery?: DiscoveryService,
+  ): JiraOpenIssuesProvider {
     const configuredThresholds = config.getOptional(THRESHOLDS_CONFIG_PATH);
     if (configuredThresholds !== undefined) {
       validateThresholds(configuredThresholds, 'number');
     }
 
-    return new JiraOpenIssuesProvider(config, configuredThresholds);
+    return new JiraOpenIssuesProvider(config, discovery, configuredThresholds);
   }
 
   async calculateMetric(entity: Entity): Promise<number> {

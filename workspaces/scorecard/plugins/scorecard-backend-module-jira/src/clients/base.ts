@@ -16,6 +16,7 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
+import type { DiscoveryService } from '@backstage/backend-plugin-api';
 import {
   JiraConfig,
   JiraEntityFilters,
@@ -28,6 +29,7 @@ import {
   JIRA_CONFIG_PATH,
   JIRA_OPTIONS_PATH,
   JIRA_MANDATORY_FILTER,
+  JIRA_ENABLE_PROXY_PATH,
 } from '../constants';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
@@ -38,16 +40,23 @@ const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
 export abstract class JiraClient {
   protected readonly config: JiraConfig;
   protected readonly options?: JiraOptions;
+  private readonly discovery?: DiscoveryService;
 
-  constructor(rootConfig: Config) {
+  constructor(rootConfig: Config, discovery?: DiscoveryService) {
     const jiraConfig = rootConfig.getConfig(JIRA_CONFIG_PATH);
+    this.discovery = discovery;
     this.config = {
-      baseUrl: jiraConfig.getString('baseUrl'),
-      token: jiraConfig.getString('token'),
       product: jiraConfig.getString('product') as Product,
       apiVersion:
         jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT,
     };
+
+    if (rootConfig.getOptionalBoolean(JIRA_ENABLE_PROXY_PATH)) {
+      this.config.proxyPath = jiraConfig.getString('proxyPath');
+    } else {
+      this.config.baseUrl = jiraConfig.getString('baseUrl');
+      this.config.token = jiraConfig.getString('token');
+    }
 
     const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
     if (jiraOptions) {
@@ -147,6 +156,14 @@ export abstract class JiraClient {
     return filters;
   }
 
+  protected async getBaseUrl(): Promise<string> {
+    if (this.config.proxyPath && this.discovery) {
+      const backendUrl = await this.discovery.getBaseUrl('proxy');
+      return `${backendUrl}${this.config.proxyPath}/rest/api/${this.config.apiVersion}`;
+    }
+    return `${this.config.baseUrl}/rest/api/${this.config.apiVersion}`;
+  }
+
   protected buildJqlFilters(filters: JiraEntityFilters): string {
     const { customFilter: annotationCustomFilter } = filters;
     const { mandatoryFilter, customFilter: optionsCustomFilter } =
@@ -170,9 +187,8 @@ export abstract class JiraClient {
   }
 
   public async getCountOpenIssues(entity: Entity): Promise<number> {
-    const url = `${this.config.baseUrl}/rest/api/${
-      this.config.apiVersion
-    }${this.getSearchEndpoint()}`;
+    const baseUrl = await this.getBaseUrl();
+    const url = `${baseUrl}${this.getSearchEndpoint()}`;
     const method = 'POST';
     const headers = this.getAuthHeaders();
 
@@ -180,8 +196,9 @@ export abstract class JiraClient {
     const jql = this.buildJqlFilters(filters);
 
     const body = this.buildSearchBody(jql);
-
-    const data = await this.sendRequest({ url, method, headers, body });
-    return this.extractIssueCountFromResponse(data);
+    console.log('\n\n\nbaseUrl', baseUrl);
+    return 0;
+    // const data = await this.sendRequest({ url, method, headers, body });
+    // return this.extractIssueCountFromResponse(data);
   }
 }

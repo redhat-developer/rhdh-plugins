@@ -17,10 +17,11 @@
 export type Product = 'datacenter' | 'cloud';
 
 export interface JiraConfig {
-  baseUrl: string;
-  token: string;
+  baseUrl?: string;
+  token?: string;
   product: Product;
   apiVersion?: string;
+  proxyPath?: string;
 }
 
 export interface JiraOptions {

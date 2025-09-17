@@ -34,6 +34,13 @@ export const JIRA_CONFIG_PATH = 'jira' as const;
 export const JIRA_OPTIONS_PATH =
   'scorecard.plugins.jira.open_issues.options' as const;
 
+/**
+ * Jira enable proxy configuration path
+ * @public
+ */
+export const JIRA_ENABLE_PROXY_PATH =
+  'scorecard.plugins.jira.enableProxy' as const;
+
 export const API_VERSION_DEFAULT = 'latest' as const;
 
 export const JIRA_MANDATORY_FILTER =
