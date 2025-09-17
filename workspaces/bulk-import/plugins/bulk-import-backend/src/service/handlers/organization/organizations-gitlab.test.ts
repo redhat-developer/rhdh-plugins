@@ -42,6 +42,7 @@ describe('organizations', () => {
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
+        approvalTool: 'GITLAB',
         errors: [],
         organizations: [
           {
@@ -85,6 +86,7 @@ describe('organizations', () => {
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
+        approvalTool: 'GITLAB',
         errors: [],
         organizations: [
           {
@@ -124,6 +126,7 @@ describe('organizations', () => {
 
       expect(response.status).toEqual(500);
       expect(response.body).toEqual({
+        approvalTool: 'GITLAB',
         errors: ['Gitlab Token auth did not succeed'],
       });
     });

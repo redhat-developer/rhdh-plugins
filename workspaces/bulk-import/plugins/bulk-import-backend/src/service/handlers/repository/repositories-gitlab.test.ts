@@ -120,6 +120,7 @@ describe('repositories', () => {
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
+        approvalTool: 'GITLAB',
         errors: [],
         repositories: [
           {
@@ -141,6 +142,7 @@ describe('repositories', () => {
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
+        approvalTool: 'GITLAB',
         errors: [],
         repositories: [
           {
@@ -171,6 +173,7 @@ describe('repositories', () => {
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
+        approvalTool: 'GITLAB',
         errors: [],
         repositories: [],
         totalCount: 0,
@@ -202,6 +205,7 @@ describe('repositories', () => {
 
       expect(orgReposResp.status).toEqual(500);
       expect(orgReposResp.body).toEqual({
+        approvalTool: 'GITLAB',
         errors: ['Gitlab Token auth did not succeed'],
       });
     });
