@@ -11,6 +11,8 @@ import { FeaturedDocsCardProps } from '@backstage/plugin-home';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { StarredEntitiesProps } from '@backstage/plugin-home';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 import { VisitedByTypeProps } from '@backstage/plugin-home';
 
 // @public (undocumented)
@@ -111,6 +113,54 @@ export interface HomePageCardMountPointConfig {
     // (undocumented)
     priority?: number;
 }
+
+// @public
+export const homepageTranslationRef: TranslationRef<"plugin.homepage", {
+readonly "search.placeholder": string;
+readonly "header.local": string;
+readonly "header.welcome": string;
+readonly "header.welcomePersonalized": string;
+readonly "templates.error": string;
+readonly "templates.title": string;
+readonly "templates.empty": string;
+readonly "templates.register": string;
+readonly "templates.fetchError": string;
+readonly "templates.emptyDescription": string;
+readonly "templates.viewAll": string;
+readonly "entities.error": string;
+readonly "entities.title": string;
+readonly "entities.close": string;
+readonly "entities.description": string;
+readonly "entities.empty": string;
+readonly "entities.register": string;
+readonly "entities.fetchError": string;
+readonly "entities.emptyDescription": string;
+readonly "entities.viewAll": string;
+readonly "homePage.empty": string;
+readonly "quickAccess.error": string;
+readonly "quickAccess.title": string;
+readonly "quickAccess.fetchError": string;
+readonly "featuredDocs.learnMore": string;
+readonly "onboarding.guest": string;
+readonly "onboarding.greeting.goodMorning": string;
+readonly "onboarding.greeting.goodAfternoon": string;
+readonly "onboarding.greeting.goodEvening": string;
+readonly "onboarding.getStarted.title": string;
+readonly "onboarding.getStarted.ariaLabel": string;
+readonly "onboarding.getStarted.description": string;
+readonly "onboarding.getStarted.buttonText": string;
+readonly "onboarding.explore.title": string;
+readonly "onboarding.explore.ariaLabel": string;
+readonly "onboarding.explore.description": string;
+readonly "onboarding.explore.buttonText": string;
+readonly "onboarding.learn.title": string;
+readonly "onboarding.learn.ariaLabel": string;
+readonly "onboarding.learn.description": string;
+readonly "onboarding.learn.buttonText": string;
+}>;
+
+// @public
+export const homepageTranslations: TranslationResource<"plugin.homepage">;
 
 // @public (undocumented)
 export const JokeCard: ComponentType<{
