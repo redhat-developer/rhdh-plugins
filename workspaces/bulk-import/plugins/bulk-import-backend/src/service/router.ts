@@ -173,6 +173,7 @@ export async function createRouter(
         totalCount: response.responseBody?.totalCount,
         pagePerIntegration: response.responseBody?.pagePerIntegration,
         sizePerIntegration: response.responseBody?.sizePerIntegration,
+        approvalTool: q.approvalTool,
       } as Components.Schemas.OrganizationList);
     },
   );
@@ -246,6 +247,7 @@ export async function createRouter(
         totalCount: response.responseBody?.totalCount,
         pagePerIntegration: q.pagePerIntegration,
         sizePerIntegration: q.sizePerIntegration,
+        approvalTool: q.approvalTool,
       } as Components.Schemas.RepositoryList);
     },
   );
