@@ -5,6 +5,8 @@ metadata:
   namespace: marketplace-plugin-demo
   name: no-icon-no-description
   title: No Icon No Description
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
 spec:
   categories:
     - Test plugin entity

@@ -5,6 +5,8 @@ metadata:
   namespace: marketplace-plugin-demo
   name: support-unknown-level
   title: Support Unknown Level
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
 spec:
   categories:
     - Test plugin entity

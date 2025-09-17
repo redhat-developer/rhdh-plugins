@@ -5,6 +5,8 @@ metadata:
   namespace: marketplace-plugin-demo
   name: support-generally-available
   title: Support Generally Available
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
 spec:
   categories:
     - Test plugin entity

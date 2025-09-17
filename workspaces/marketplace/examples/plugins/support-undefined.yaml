@@ -3,11 +3,10 @@ apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   namespace: marketplace-plugin-demo
-  name: support-custom
-  title: Support Custom
+  name: support-undefined
+  title: Support undefined
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
 spec:
   categories:
     - Test plugin entity
-  support:
-    provider: A provider
-    level: custom

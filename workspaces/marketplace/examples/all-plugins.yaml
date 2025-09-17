@@ -15,15 +15,18 @@ spec:
     - ./plugins/keycloak.yaml
     - ./plugins/marketplace.yaml
     - ./plugins/no-icon-no-description.yaml
+    - ./plugins/pre-installed-false.yaml
+    - ./plugins/pre-installed-true.yaml
+    - ./plugins/pre-installed-undefined.yaml
     - ./plugins/quay.yaml
     - ./plugins/search.yaml
     - ./plugins/support-community.yaml
-    - ./plugins/support-custom.yaml
     - ./plugins/support-dev-preview.yaml
     - ./plugins/support-generally-available.yaml
     - ./plugins/support-none.yaml
     - ./plugins/support-string.yaml
     - ./plugins/support-tech-preview.yaml
+    - ./plugins/support-undefined.yaml
     - ./plugins/support-unknown-level.yaml
     - ./plugins/tekton.yaml
     - ./plugins/topology.yaml

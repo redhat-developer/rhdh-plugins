@@ -7,6 +7,7 @@ metadata:
   title: Certified Plugin 1 by Vendor A
   description: This is a certified plugin example
   annotations:
+    extensions.backstage.io/pre-installed: 'true'
     extensions.backstage.io/certified-by: Vendor A
 spec:
   categories:

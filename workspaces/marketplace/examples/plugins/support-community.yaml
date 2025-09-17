@@ -5,6 +5,8 @@ metadata:
   namespace: marketplace-plugin-demo
   name: support-community
   title: Support Community
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
 spec:
   categories:
     - Test plugin entity
