@@ -15,7 +15,7 @@
  */
 
 import { Entity } from '@backstage/catalog-model';
-import { StatusOK } from '@backstage/core-components';
+import { Link, StatusOK } from '@backstage/core-components';
 
 import Typography from '@mui/material/Typography';
 import * as jsyaml from 'js-yaml';
@@ -31,6 +31,7 @@ import {
   CreateImportJobRepository,
   ErrorType,
   ImportJobResponse,
+  ImportJobs,
   ImportJobStatus,
   JobErrors,
   Order,
@@ -129,10 +130,10 @@ export const getPRTemplate = (
   entityOwner: string,
   baseUrl: string,
   repositoryUrl: string,
-  defaultBranch: string,
+  _defaultBranch: string, // remove it
 ): PullRequestPreview => {
   const importJobUrl = repositoryUrl
-    ? `${baseUrl}/bulk-import/repositories?repository=${repositoryUrl}&defaultBranch=${defaultBranch}`
+    ? `${baseUrl}/bulk-import/repositories?repository=${repositoryUrl}`
     : `${baseUrl}/bulk-import/repositories`;
   const name = cleanComponentName(componentName);
   return {
@@ -230,7 +231,7 @@ export const getImportStatus = (
   if (!status) {
     return '';
   }
-  const labelText = gitlabFeatureFlag ? 'Already imported' : 'Added';
+  const labelText = gitlabFeatureFlag ? 'MR merged' : 'PR merged';
   switch (status) {
     case 'WAIT_PR_APPROVAL':
       return showIcon ? (
@@ -241,18 +242,30 @@ export const getImportStatus = (
       ) : (
         'Waiting for Approval'
       );
-    case RepositoryStatus.ADDED:
+    case 'PR_MERGED':
       return showIcon ? (
-        <Typography
-          component="span"
-          style={{ display: 'flex', alignItems: 'baseline' }}
-        >
-          <StatusOK />
-          {gitlabFeatureFlag ? 'Imported' : 'Added'}
-        </Typography>
+       <Typography
+         component="span"
+         style={{ display: 'flex', alignItems: 'baseline' }}
+       >
+         <Link
+           to={prUrl!}
+           data-testid="pull request url"
+           style={{
+             paddingLeft: '5px',
+             display: 'inline-flex',
+             alignItems: 'center',
+           }}
+         >
+           <StatusOK />
+           {labelText}
+         </Link>
+       </Typography>
       ) : (
-        labelText
-      );
+       labelText
+      )
+    // todo hande pr error
+    //case 'PR_ERROR':
     default:
       return '';
   }
@@ -592,48 +605,49 @@ export const prepareDataForRepositories = (
 };
 
 export const prepareDataForAddedRepositories = (
-  addedRepositories:
-    | { repositories: Repository[]; totalCount: number }
-    | undefined,
+  addedRepositories: ImportJobs | Response | undefined,
   user: string,
   baseUrl: string,
 ): { repoData: AddedRepositories; totalJobs: number } => {
-  if (!Array.isArray(addedRepositories?.repositories)) {
+  if (!Array.isArray((addedRepositories as ImportJobs)?.imports)) {
     return { repoData: {}, totalJobs: 0 };
   }
+  const importJobs = addedRepositories as ImportJobs;
   const repoData: { [id: string]: AddRepositoryData } =
-    addedRepositories.repositories.reduce((acc, val: Repository) => {
-      const id = val.id;
+    importJobs.imports?.reduce((acc, val: ImportJobStatus) => {
+      const id = `${val.repository.organization}/${val.repository.name}`;
       return {
         ...acc,
         [id]: {
           id,
-          repoName: val.name,
-          defaultBranch: val.defaultBranch,
-          orgName: val.organization,
-          repoUrl: val.url,
-          organizationUrl: val.url?.substring(
+          source: val.source,
+          repoName: val.repository.name,
+          defaultBranch: val.repository.defaultBranch,
+          orgName: val.repository.organization,
+          repoUrl: val.repository.url,
+          organizationUrl: val?.repository?.url?.substring(
             0,
-            val.url.indexOf(val?.name || '') - 1,
+            val.repository.url.indexOf(val?.repository?.name || '') - 1,
           ),
           catalogInfoYaml: {
-            status: RepositoryStatus.ADDED,
+            status: val.github?.pullRequest?.status,
             prTemplate: getPRTemplate(
-              val.name || '',
-              val.organization || '',
+              val.repository.name || '',
+              val.repository.organization || '',
               user,
               baseUrl,
-              val.url || '',
-              val.defaultBranch || 'main',
+              val.repository.url || '',
+              val.repository.defaultBranch || 'main',
             ),
+            pullRequest: val?.github?.pullRequest?.url || '',
+            lastUpdated: val.lastUpdate,
           },
-          tasks: val.tasks,
         },
       };
     }, {});
   return {
     repoData,
-    totalJobs: addedRepositories.totalCount || 0,
+    totalJobs: (addedRepositories as ImportJobs)?.totalCount || 0,
   };
 };
 

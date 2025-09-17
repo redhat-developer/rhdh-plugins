@@ -303,6 +303,53 @@ paths:
                   $ref: '#/components/examples/twoImportJobs'
 
   /task-imports:
+    get:
+      operationId: findAllTaskImports
+      summary: Fetch Import Jobs
+      security:
+        - BearerAuth: []
+      tags: [Import]
+      parameters:
+        - $ref: '#/components/parameters/apiVersionHeaderParam'
+
+        # The '*PerIntegration' query params are being kept for backward compatibility,
+        # but the behavior depends on the API Version specified in the request headers.
+        - $ref: '#/components/parameters/pagePerIntegrationQueryParamDeprecated'
+        - $ref: '#/components/parameters/sizePerIntegrationQueryParamDeprecated'
+        - $ref: '#/components/parameters/pageQueryParam'
+        - $ref: '#/components/parameters/sizeQueryParam'
+        - $ref: '#/components/parameters/sortOrderQueryParam'
+        - $ref: '#/components/parameters/sortColumnQueryParam'
+        - $ref: '#/components/parameters/searchQueryParam'
+      responses:
+        200:
+          description: Import Job list was fetched successfully with no errors
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/SourceImport'
+                  - $ref: '#/components/schemas/ImportJobListV2'
+              examples:
+                twoImports:
+                  $ref: '#/components/examples/twoImports'
+                multipleImportJobsV2:
+                  $ref: '#/components/examples/multipleImportJobsV2'
+        500:
+          description: Generic error when there are errors and no Import Job is returned
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: string
+                    description: Generic error
+                  - $ref: '#/components/schemas/ImportJobListV2'
+              examples:
+                repositoryListErrors:
+                  $ref: '#/components/examples/importJobListErrors'
+
     post:
       operationId: createTaskImportJobs
       summary: Execute a scaffolder template for a list of repositories

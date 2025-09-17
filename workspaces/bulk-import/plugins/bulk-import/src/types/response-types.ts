@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { RepositoryStatus } from './types';
+import { PRStatus, RepositoryStatus } from './types';
 
 export type Repository = {
   id: string;
@@ -53,7 +53,7 @@ export type ImportJobStatus = {
       title: string;
       body: string;
       catalogInfoContent: string;
-      status: 'WAIT_PR_APPROVAL' | 'PR_MERGED' | 'PR_ERROR';
+      status: PRStatus;
     };
   };
   status: string;

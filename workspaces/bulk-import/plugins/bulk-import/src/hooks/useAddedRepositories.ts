@@ -31,7 +31,7 @@ import {
   AddedRepositoryColumnNameEnum,
   AddRepositoriesFormValues,
   AddRepositoryData,
-  Repository,
+  ImportJobs,
   SortingOrderEnum,
 } from '../types';
 import { prepareDataForAddedRepositories } from '../utils/repository-utils';
@@ -62,9 +62,8 @@ export const useAddedRepositories = (
   const baseUrl = configApi.getString('app.baseUrl');
 
   const bulkImportApi = useApi(bulkImportApiRef);
-  useFormikContext<AddRepositoriesFormValues>();
-  const fetchAddedRepositories = async () =>
-    await bulkImportApi.findAllStoredRepositories();
+  const { setFieldValue, values } = useFormikContext<AddRepositoriesFormValues>();
+  const fetchAddedRepositories = async () => await bulkImportApi.getTaskImportJobs();
 
   const {
     data: value,
@@ -86,15 +85,20 @@ export const useAddedRepositories = (
 
   const prepareData = useMemo(() => {
     const repoData = prepareDataForAddedRepositories(
-      value as { repositories: Repository[]; totalCount: number } | undefined,
+      value as ImportJobs | Response,
       user as string,
       baseUrl as string,
     );
+        if (
+      Object.values(repoData.repoData).length !==
+      Object.values(values.repositories).length
+    )
+      setFieldValue(`repositories`, repoData.repoData);
     return {
       addedRepositories: Object.values(repoData.repoData),
       totalJobs: repoData.totalJobs,
     };
-  }, [value, user, baseUrl]);
+  }, [value, user, baseUrl, values.repositories, setFieldValue]);
 
   return {
     data: prepareData,

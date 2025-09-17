@@ -21,7 +21,7 @@ import {
 } from '@backstage/core-plugin-api';
 
 import {
-  AddedRepositoryColumnNameEnum,
+  // AddedRepositoryColumnNameEnum,
   APITypes,
   CreateImportJobRepository,
   ImportJobResponse,
@@ -29,7 +29,7 @@ import {
   ImportJobStatus,
   OrgAndRepoResponse,
   Repository,
-  SortingOrderEnum,
+  // SortingOrderEnum,
 } from '../types';
 import { getApi } from '../utils/repository-utils';
 
@@ -41,12 +41,19 @@ export type BulkImportAPI = {
     searchString: string,
     options?: APITypes,
   ) => Promise<OrgAndRepoResponse>;
-  getImportJobs: (
-    page: number,
-    size: number,
-    searchString: string,
-    sortColumn: AddedRepositoryColumnNameEnum,
-    sortOrder: SortingOrderEnum,
+  // getImportJobs: (
+  //   page: number,
+  //   size: number,
+  //   searchString: string,
+  //   sortColumn: AddedRepositoryColumnNameEnum,
+  //   sortOrder: SortingOrderEnum,
+  // ) => Promise<ImportJobs | Response>;
+  getTaskImportJobs: (
+    // page: number,
+    // size: number,
+    // searchString: string,
+    // sortColumn: AddedRepositoryColumnNameEnum,
+    // sortOrder: SortingOrderEnum,
   ) => Promise<ImportJobs | Response>;
   createImportJobs: (
     importRepositories: CreateImportJobRepository[],
@@ -104,17 +111,43 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.json();
   }
 
-  async getImportJobs(
-    page: number,
-    size: number,
-    searchString: string,
-    sortColumn: AddedRepositoryColumnNameEnum,
-    sortOrder: SortingOrderEnum,
+  // async getImportJobs(
+  //   page: number,
+  //   size: number,
+  //   searchString: string,
+  //   sortColumn: AddedRepositoryColumnNameEnum,
+  //   sortOrder: SortingOrderEnum,
+  // ) {
+  //   const { token: idToken } = await this.identityApi.getCredentials();
+  //   const backendUrl = this.configApi.getString('backend.baseUrl');
+  //   const jsonResponse = await fetch(
+  //     `${backendUrl}/api/bulk-import/imports?page=${page}&size=${size}&search=${searchString}&sortColumn=${sortColumn}&sortOrder=${sortOrder}`,
+  //     {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         ...(idToken && { Authorization: `Bearer ${idToken}` }),
+  //         'api-version': 'v2',
+  //       },
+  //     },
+  //   );
+  //   if (!jsonResponse.ok) {
+  //     return jsonResponse;
+  //   }
+  //   return jsonResponse.status === 204 ? null : jsonResponse.json();
+  // }
+
+    async getTaskImportJobs(
+    // page: number,
+    // size: number,
+    // searchString: string,
+    // sortColumn: AddedRepositoryColumnNameEnum,
+    // sortOrder: SortingOrderEnum,
   ) {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
+    // ?page=${page}&size=${size}&search=${searchString}&sortColumn=${sortColumn}&sortOrder=${sortOrder}
     const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/imports?page=${page}&size=${size}&search=${searchString}&sortColumn=${sortColumn}&sortOrder=${sortOrder}`,
+      `${backendUrl}/api/bulk-import/task-imports`,
       {
         headers: {
           'Content-Type': 'application/json',

@@ -62,9 +62,10 @@ export type AddRepositoryData = {
   repoUrl?: string;
   organizationUrl?: string;
   selectedRepositories?: AddedRepositories;
-  catalogInfoYaml?: {
+  catalogInfoYaml?: { //
     pullRequest?: string;
-    status?: ImportStatus;
+    // status?: ImportStatus; // todo use pr status here instead of mixing
+    status: PRStatus;
     prTemplate?: PullRequestPreview;
     isInitialized?: boolean;
     lastUpdated?: string;
@@ -72,6 +73,12 @@ export type AddRepositoryData = {
   lastUpdated?: string;
   tasks?: { taskId: string; repositoryId: number }[];
 };
+
+export enum PRStatus {
+  'WAIT_PR_APPROVAL' = 'WAIT_PR_APPROVAL',
+  'PR_MERGED' = 'PR_MERGED',
+  'PR_ERROR' = 'PR_ERROR',
+}
 
 export type Order = 'asc' | 'desc';
 

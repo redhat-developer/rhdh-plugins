@@ -1,18 +1,4 @@
-/*
- * Copyright Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// GENERATED FILE. DO NOT EDIT.
 
 // eslint-disable
 // prettier-ignore
@@ -522,6 +508,97 @@ const OPENAPI = `
       }
     },
     "/task-imports": {
+      "get": {
+        "operationId": "findAllTaskImports",
+        "summary": "Fetch Import Jobs",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Import"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiVersionHeaderParam"
+          },
+          {
+            "$ref": "#/components/parameters/pagePerIntegrationQueryParamDeprecated"
+          },
+          {
+            "$ref": "#/components/parameters/sizePerIntegrationQueryParamDeprecated"
+          },
+          {
+            "$ref": "#/components/parameters/pageQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/sizeQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/sortOrderQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/sortColumnQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/searchQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Import Job list was fetched successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SourceImport"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ImportJobListV2"
+                    }
+                  ]
+                },
+                "examples": {
+                  "twoImports": {
+                    "$ref": "#/components/examples/twoImports"
+                  },
+                  "multipleImportJobsV2": {
+                    "$ref": "#/components/examples/multipleImportJobsV2"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error when there are errors and no Import Job is returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "description": "Generic error"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ImportJobListV2"
+                    }
+                  ]
+                },
+                "examples": {
+                  "repositoryListErrors": {
+                    "$ref": "#/components/examples/importJobListErrors"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "operationId": "createTaskImportJobs",
         "summary": "Execute a scaffolder template for a list of repositories",

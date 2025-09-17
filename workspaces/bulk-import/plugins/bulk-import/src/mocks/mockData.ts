@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AddedRepositories, ApprovalTool, ImportJobs } from '../types';
+import { AddedRepositories, ApprovalTool, ImportJobs, PRStatus } from '../types';
 
 export const mockGetOrganizations = {
   errors: [],
@@ -168,7 +168,7 @@ export const mockGetImportJobs: ImportJobs = {
           catalogInfoContent:
             'apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: che1\n  annotations:\n    github.com/project-slug: debsmita1/che\nspec:\n  type: other\n  lifecycle: unknown\n  owner: user:default/debsmita1\n',
           title: 'PR title',
-          status: 'WAIT_PR_APPROVAL',
+          status: PRStatus.WAIT_PR_APPROVAL,
         },
       },
       lastUpdate: '2024-07-17T13:46:37Z',
@@ -193,7 +193,7 @@ export const mockGetImportJobs: ImportJobs = {
           title: 'PR title',
           number: 91,
           url: 'https://github.com/org/dessert/donut/pull/91',
-          status: 'WAIT_PR_APPROVAL',
+          status: PRStatus.WAIT_PR_APPROVAL,
         },
       },
       lastUpdate: '2024-07-18T13:46:37Z',
@@ -218,7 +218,7 @@ export const mockGetImportJobs: ImportJobs = {
           catalogInfoContent:
             'apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: che1\n  annotations:\n    github.com/project-slug: debsmita1/che\nspec:\n  type: other\n  lifecycle: unknown\n  owner: user:default/debsmita1\n',
           title: 'PR title',
-          status: 'WAIT_PR_APPROVAL',
+          status: PRStatus.WAIT_PR_APPROVAL,
         },
       },
       lastUpdate: '2024-07-21T13:46:37Z',
@@ -243,7 +243,7 @@ export const mockGetImportJobs: ImportJobs = {
           catalogInfoContent:
             'apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: che1\n  annotations:\n    github.com/project-slug: debsmita1/che\nspec:\n  type: other\n  lifecycle: unknown\n  owner: user:default/debsmita1\n',
           title: 'PR title',
-          status: 'WAIT_PR_APPROVAL',
+          status: PRStatus.WAIT_PR_APPROVAL,
         },
       },
       lastUpdate: '2024-07-22T13:46:37Z',

@@ -91,19 +91,19 @@ class MockBulkImportApi implements BulkImportAPI {
     };
   }
 
-  async getImportJobs(
-    _page: number,
-    _size: number,
-    searchString: string,
+  async getTaskImportJobs(
+    // _page: number,
+    // _size: number,
+    // searchString: string,
   ): Promise<ImportJobs> {
-    if (searchString) {
-      return {
-        ...mockGetImportJobs,
-        imports: mockGetImportJobs.imports?.filter(r =>
-          r.repository.name?.includes(searchString),
-        ),
-      };
-    }
+    // if (searchString) {
+    //   return {
+    //     ...mockGetImportJobs,
+    //     imports: mockGetImportJobs.imports?.filter(r =>
+    //       r.repository.name?.includes(searchString),
+    //     ),
+    //   };
+    // }
     return mockGetImportJobs;
   }
 

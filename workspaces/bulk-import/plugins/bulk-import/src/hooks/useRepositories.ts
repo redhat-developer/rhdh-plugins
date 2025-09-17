@@ -30,9 +30,9 @@ import {
   AddRepositoryData,
   DataFetcherQueryParams,
   OrgAndRepoResponse,
+  PRStatus,
   RepositoriesError,
   Repository,
-  RepositoryStatus,
 } from '../types';
 import {
   prepareDataForOrganizations,
@@ -138,9 +138,8 @@ export const useRepositories = (
           repoName: repo.name,
           orgName: repo.organization,
           repoUrl: repo.url,
-          // Remove catalog-info.yaml; we cannot guarantee that this YAML will be imported via the scaffolder task.
           catalogInfoYaml: {
-            status: RepositoryStatus.ADDED,
+            status: PRStatus.WAIT_PR_APPROVAL, // todo here
           },
           tasks: repo.tasks,
         };

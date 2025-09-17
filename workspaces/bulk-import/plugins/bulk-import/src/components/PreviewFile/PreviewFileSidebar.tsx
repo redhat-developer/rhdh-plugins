@@ -109,9 +109,10 @@ export const PreviewFileSidebar = ({
       const evaluatedPRTemplate = evaluatePRTemplate(importJobResult);
       let pullReqPreview = { ...evaluatedPRTemplate.pullReqPreview };
 
-      if (evaluatedPRTemplate.isInvalidEntity) {
+      if (evaluatedPRTemplate.isInvalidEntity) { // ?
         const identityRef = await identityApi.getBackstageIdentity();
         const baseUrl = configApi.getString('app.baseUrl');
+        // todo...
         const prTemp = getPRTemplate(
           repoName,
           orgName,

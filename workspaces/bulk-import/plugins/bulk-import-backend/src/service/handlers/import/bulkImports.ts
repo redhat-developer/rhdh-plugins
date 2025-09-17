@@ -843,10 +843,15 @@ export async function findTaskImportStatusByRepo(
               if (url) {
                 const prNumber = parseInt(url.split('/').pop()!, 10);
                 const prDetails = await deps.githubApiService.getPullRequest(
-                  // todo try to use findImportOpenPr
                   repoUrl,
                   prNumber,
                 );
+
+                let catalogInfoContent: string | undefined;
+                if (prDetails.prSha) {
+                  catalogInfoContent = await deps.githubApiService.getCatalogInfoFile(deps.logger, { repoUrl, prHeadSha: prDetails.prSha, prNumber});
+                }
+
                 result.github = {
                   pullRequest: {
                     // todo handle few pull requests... use try catch for this purpose...
@@ -855,6 +860,7 @@ export async function findTaskImportStatusByRepo(
                     title: prDetails.title,
                     body: prDetails.body,
                     status: prDetails.merged ? 'PR_MERGED' : 'WAIT_PR_APPROVAL', // todo add more statuses
+                    catalogInfoContent
                   },
                 };
                 result.status = 'TASK_IN_PROGRESS'; // todo provide correct status...

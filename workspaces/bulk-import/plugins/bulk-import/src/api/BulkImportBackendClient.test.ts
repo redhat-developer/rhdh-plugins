@@ -26,10 +26,10 @@ import {
   mockSelectedRepositories,
 } from '../mocks/mockData';
 import {
-  AddedRepositoryColumnNameEnum,
+  // AddedRepositoryColumnNameEnum,
   ApprovalTool,
   RepositoryStatus,
-  SortingOrderEnum,
+  // SortingOrderEnum,
 } from '../types';
 import { prepareDataForSubmission } from '../utils/repository-utils';
 import {
@@ -310,23 +310,23 @@ describe('BulkImportBackendClient', () => {
 
   describe('getImportJobs', () => {
     it('getImportJobs should retrieve the import jobs successfully', async () => {
-      const jobs = await bulkImportApi.getImportJobs(
-        1,
-        2,
-        '',
-        AddedRepositoryColumnNameEnum.repoName,
-        SortingOrderEnum.Asc,
+      const jobs = await bulkImportApi.getTaskImportJobs(
+        // 1,
+        // 2,
+        // '',
+        // AddedRepositoryColumnNameEnum.repoName,
+        // SortingOrderEnum.Asc,
       );
       expect(jobs).toEqual(mockGetImportJobs);
     });
 
     it('getImportJobs should retrieve the import jobs based on search string', async () => {
-      const jobs = await bulkImportApi.getImportJobs(
-        1,
-        2,
-        'cup',
-        AddedRepositoryColumnNameEnum.repoName,
-        SortingOrderEnum.Asc,
+      const jobs = await bulkImportApi.getTaskImportJobs(
+        // 1,
+        // 2,
+        // 'cup',
+        // AddedRepositoryColumnNameEnum.repoName,
+        // SortingOrderEnum.Asc,
       );
       expect(jobs).toEqual(
         mockGetImportJobs.imports.filter(r =>
@@ -337,12 +337,12 @@ describe('BulkImportBackendClient', () => {
 
     it('getImportJobs should handle non-200/204 responses correctly', async () => {
       await expect(
-        bulkImportApi.getImportJobs(
-          1,
-          2,
-          '',
-          AddedRepositoryColumnNameEnum.repoName,
-          SortingOrderEnum.Asc,
+        bulkImportApi.getTaskImportJobs(
+          // 1,
+          // 2,
+          // '',
+          // AddedRepositoryColumnNameEnum.repoName,
+          // SortingOrderEnum.Asc,
         ),
       ).resolves.toEqual(expect.objectContaining([]));
     });

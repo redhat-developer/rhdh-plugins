@@ -35,7 +35,7 @@ import {
   AddRepositoriesFormValues,
   AddRepositoryData,
   ImportJobStatus,
-  RepositoryStatus,
+  PRStatus,
 } from '../../types';
 import { useDrawer } from '../DrawerContext';
 
@@ -56,10 +56,8 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
     resourceRef: bulkImportPermission.resourceType,
   });
   const { value, loading } = useAsync(async () => {
-    if (repoUrl) {
-      return await bulkImportApi.getImportAction(repoUrl);
-    }
-    return null;
+    if (!repoUrl) return null;
+    return await bulkImportApi.getImportAction(repoUrl);
   }, [repoUrl, defaultBranch]);
 
   const handleOpenDrawer = (importStatus: ImportJobStatus) => {
@@ -76,11 +74,11 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
   const hasPermissionToEdit =
     allowed &&
     values.repositories[data.id]?.catalogInfoYaml?.status ===
-      RepositoryStatus.WAIT_PR_APPROVAL;
+      PRStatus.WAIT_PR_APPROVAL;
 
   const canView =
     values?.repositories?.[data.id]?.catalogInfoYaml?.status ===
-      RepositoryStatus.ADDED && values?.repositories?.[data.id]?.repoUrl;
+      PRStatus.WAIT_PR_APPROVAL && values?.repositories?.[data.id]?.repoUrl;
 
   const removeQueryParams = () => {
     searchParams.delete('repository');
@@ -92,9 +90,9 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
   };
 
   useEffect(() => {
-    if (!loading && repoUrl && defaultBranch) {
+    if (!loading && repoUrl && defaultBranch && value) {
       const shouldOpenPanel =
-        value?.status === RepositoryStatus.WAIT_PR_APPROVAL &&
+        (value as ImportJobStatus)?.github?.pullRequest?.status === PRStatus.WAIT_PR_APPROVAL &&
         values.repositories[(value as ImportJobStatus)?.repository?.id];
 
       if ((value as Response)?.statusText) {

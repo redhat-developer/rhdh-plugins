@@ -103,6 +103,7 @@ namespace Operations {
 
   // todo does client side use it? But It should from point of view optimisation...
   export const FIND_ALL_IMPORTS = 'findAllImports';
+  export const FIND_ALL_TASK_IMPORTS = 'findAllTaskImports';
 
   export const CREATE_IMPORT_JOBS = 'createImportJobs'; // @deprecated
   export const CREATE_TASK_IMPORT_JOBS = 'createTaskImportJobs';
@@ -308,6 +309,7 @@ export async function createRouter(
     },
   );
 
+  // @deprecated
   api.register(
     Operations.FIND_ALL_IMPORTS,
     async (c: Context, _req: Request, res: Response) => {
@@ -355,6 +357,42 @@ export async function createRouter(
       return res.status(response.statusCode).json(response.responseBody);
     },
   );
+api.register(
+  Operations.FIND_ALL_TASK_IMPORTS,
+  async (_c: Context, _req: Request, res: Response) => {
+    const imports: any[] = [];
+    const repositories = await repositoryDao.findAllRepositories();
+
+    for (const repo of repositories) {
+      const response = await findTaskImportStatusByRepo(
+        {
+          logger,
+          config,
+          githubApiService,
+          catalogHttpClient,
+          repositoryDao,
+          taskDao,
+          discovery,
+          auth,
+        },
+        repo.url!,
+      );
+      if (response.responseBody) {
+        imports.push(response.responseBody);
+      }
+    }
+
+    const responseBody: any = {
+      imports: imports,
+      totalCount: imports.length,
+      page: 1,
+      size: imports.length,
+    };
+
+    return res.status(200).json(responseBody);
+  },
+);
+
 
   // @deprecated
   api.register(

@@ -62,7 +62,7 @@ export const RepositoriesList = () => {
     error: errJobs,
     loading,
     refetch,
-  } = useAddedRepositories(
+  } = useAddedRepositories(//
     pageNumber + 1,
     rowsPerPage,
     debouncedSearch,
@@ -175,7 +175,7 @@ export const RepositoriesList = () => {
         }
       />
       {openDrawer && (
-        <EditCatalogInfo
+        <EditCatalogInfo //
           open={openDrawer}
           onClose={closeDrawer}
           importStatus={drawerData}

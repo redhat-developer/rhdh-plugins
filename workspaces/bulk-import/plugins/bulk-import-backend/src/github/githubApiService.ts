@@ -49,7 +49,7 @@ import {
   addGithubTokenOrgs,
   getAllAppOrgs,
 } from './utils/orgUtils';
-import { closePRWithComment, findOpenPRForBranch } from './utils/prUtils';
+import { closePRWithComment, findOpenPRForBranch, getCatalogInfoContentFromPR } from './utils/prUtils';
 import {
   addGithubAppRepositories,
   addGithubTokenOrgRepositories,
@@ -437,6 +437,7 @@ export class GithubApiService {
     body?: string;
     merged?: boolean;
     lastUpdated?: string;
+    prSha?: string
   }> {
     const gitUrl = gitUrlParse(repoUrl);
 
@@ -478,6 +479,7 @@ export class GithubApiService {
           body: pr.body ?? undefined,
           merged: pr.merged,
           lastUpdated: pr.updated_at,
+          prSha: pr.head.sha,
         };
       } catch (error: any) {
         logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
@@ -545,6 +547,58 @@ export class GithubApiService {
       }
     }
     return {};
+  }
+
+  async getCatalogInfoFile(
+    logger: LoggerService,
+    input: {
+      repoUrl: string;
+      prNumber: number;
+      prHeadSha: string;
+    }): Promise<string | undefined> {
+    const ghConfig = this.integrations.github.byUrl(input.repoUrl)?.config;
+    if (!ghConfig) {
+      throw new Error(`Could not find GH integration from ${input.repoUrl}`);
+    }
+
+    const gitUrl = gitUrlParse(input.repoUrl);
+    const owner = gitUrl.organization;
+    const repo = gitUrl.name;
+
+    const credentials = await this.githubCredentialsProvider.getAllCredentials({
+      host: ghConfig.host,
+    });
+    if (credentials.length === 0) {
+      throw new Error(`No credentials for GH integration`);
+    }
+
+    for (const credential of credentials) {
+      const octo = buildOcto(
+        {
+          logger: this.logger,
+          cache: this.cache,
+        },
+        { credential, owner },
+        ghConfig.apiBaseUrl,
+      );
+      if (!octo) {
+        continue;
+      }
+      try {
+        return await getCatalogInfoContentFromPR(
+          logger,
+          this.config,
+          octo,
+          owner,
+          repo,
+          input.prNumber,
+          input.prHeadSha,
+        );
+      } catch (error: any) {
+        logErrorIfNeeded(this.logger, 'Error fetching catalog info file content requests', error);
+      }
+    }
+    return undefined;
   }
 
   async submitPrToRepo(

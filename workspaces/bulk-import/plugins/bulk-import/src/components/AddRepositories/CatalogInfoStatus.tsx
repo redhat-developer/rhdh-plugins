@@ -25,7 +25,7 @@ import { useFormikContext } from 'formik';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
-  RepositoryStatus,
+  PRStatus,
 } from '../../types';
 import {
   areAllRowsSelected,
@@ -64,7 +64,7 @@ export const CatalogInfoStatus = ({
   const baseUrl = configApi.getString('app.baseUrl');
 
   useEffect(() => {
-    if (importStatus?.pullRequest?.status === RepositoryStatus.PR_MERGED) {
+    if (importStatus?.pullRequest?.status === PRStatus.PR_MERGED) {
       setFieldValue(`excludedRepositories.${data.id}`, {
         repoId: data.id,
         orgName: data.orgName,
@@ -120,7 +120,7 @@ export const CatalogInfoStatus = ({
             rel="noopener noreferrer"
             style={{ marginLeft: '8px' }}
           >
-            PR
+            {importStatus.pullRequest.status}
           </Link>
         )}
       </Typography>

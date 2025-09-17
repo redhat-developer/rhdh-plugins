@@ -49,7 +49,7 @@ const useStyles = makeStyles(() => ({
 const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
   const { values } = useFormikContext<AddRepositoriesFormValues>();
   const status = values.repositories?.[data.id]?.catalogInfoYaml?.status;
-
+  // console.log(`status ${status}`)
   return getImportStatus(
     status as ImportStatusType,
     true,

@@ -67,6 +67,7 @@ const EditCatalogInfo = ({
     repoName: importStatus?.repository?.name,
     orgName: importStatus?.repository?.organization,
     catalogInfoYaml: {
+      status: importStatus?.github?.pullRequest?.status,
       prTemplate: {
         prTitle: importStatus?.github?.pullRequest?.title,
         prDescription: importStatus?.github?.pullRequest?.body,
@@ -87,6 +88,7 @@ const EditCatalogInfo = ({
         [`${importStatus.repository.id}`]: {
           id: importStatus.repository.id,
           catalogInfoYaml: {
+            status: importStatus.github.pullRequest.status,
             prTemplate: pullRequest[`${importStatus.repository.id}`],
           },
           defaultBranch: importStatus.repository?.defaultBranch,
