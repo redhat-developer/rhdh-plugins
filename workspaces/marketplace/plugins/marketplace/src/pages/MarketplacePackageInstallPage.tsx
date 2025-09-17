@@ -27,14 +27,16 @@ import { packageInstallRouteRef, packageRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePackage } from '../hooks/usePackage';
 import { MarketplacePackageInstallContentLoader } from '../components/MarketplacePackageInstallContent';
+import { useTranslation } from '../hooks/useTranslation';
 
 const PackageInstallHeader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(packageInstallRouteRef);
 
   const pkg = usePackage(params.namespace, params.name);
 
   const displayName = pkg.data?.metadata.title ?? params.name;
-  const title = `Install ${displayName}`;
+  const title = t('actions.installTitle' as any, { displayName });
   const packageLink = useRouteRef(packageRouteRef)({
     namespace: params.namespace,
     name: params.name,

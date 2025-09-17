@@ -24,6 +24,10 @@ import {
   MarketplacePackage,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
+import { useTranslation } from '../hooks/useTranslation';
+import { marketplaceTranslationRef } from '../translations/ref';
+import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+
 const colors = {
   certified: '#A18FFF',
   verified: '#6EC664',
@@ -38,20 +42,27 @@ interface BadgeOptions {
 
 const getBadgeOptions = (
   entity: MarketplacePlugin | MarketplacePackage,
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
 ): BadgeOptions | null => {
   if (entity.metadata.annotations?.[MarketplaceAnnotation.CERTIFIED_BY]) {
     return {
       color: colors.certified,
-      label: 'Certified',
-      tooltip: `Certified by ${entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY]}`,
+      label: t('badges.certified'),
+      tooltip: t('badges.certifiedBy' as any, {
+        provider:
+          entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY],
+      }),
     };
   }
 
   if (entity.metadata.annotations?.[MarketplaceAnnotation.VERIFIED_BY]) {
     return {
       color: colors.verified,
-      label: 'Verified',
-      tooltip: `Verified by ${entity.metadata.annotations[MarketplaceAnnotation.VERIFIED_BY]}`,
+      label: t('badges.verified'),
+      tooltip: t('badges.verifiedBy' as any, {
+        provider:
+          entity.metadata.annotations[MarketplaceAnnotation.VERIFIED_BY],
+      }),
     };
   }
 
@@ -61,8 +72,8 @@ const getBadgeOptions = (
   ) {
     return {
       color: colors.custom,
-      label: 'Custom plugin',
-      tooltip: 'Custom plugin',
+      label: t('badges.customPlugin'),
+      tooltip: t('badges.customPlugin'),
     };
   }
 
@@ -70,10 +81,12 @@ const getBadgeOptions = (
 };
 
 export const BadgeChip = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const { t } = useTranslation();
+
   if (!plugin) {
     return null;
   }
-  const options = getBadgeOptions(plugin);
+  const options = getBadgeOptions(plugin, t);
   if (!options) {
     return null;
   }
@@ -88,10 +101,12 @@ export const BadgeChip = ({ plugin }: { plugin: MarketplacePlugin }) => {
 };
 
 export const BadgeTriange = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const { t } = useTranslation();
+
   if (!plugin) {
     return null;
   }
-  const options = getBadgeOptions(plugin);
+  const options = getBadgeOptions(plugin, t);
   if (!options) {
     return null;
   }

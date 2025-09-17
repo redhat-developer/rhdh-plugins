@@ -32,6 +32,7 @@ import { MarketplaceBackendClient } from '@red-hat-developer-hub/backstage-plugi
 
 import { marketplaceApiRef } from './api';
 import { allRoutes } from './routes';
+import { marketplaceTranslationRef } from './translations';
 
 /**
  * Marketplace Plugin
@@ -40,6 +41,10 @@ import { allRoutes } from './routes';
 export const marketplacePlugin = createPlugin({
   id: 'extensions',
   routes: allRoutes,
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [marketplaceTranslationRef],
+  },
   apis: [
     createApiFactory({
       api: marketplaceApiRef,
@@ -58,7 +63,7 @@ export const marketplacePlugin = createPlugin({
         }),
     }),
   ],
-});
+} as any);
 
 /**
  * Marketplace page with routes for different pages.

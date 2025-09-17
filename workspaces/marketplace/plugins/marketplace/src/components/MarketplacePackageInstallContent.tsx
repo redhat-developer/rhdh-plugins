@@ -50,6 +50,7 @@ import { CodeEditorContextProvider, useCodeEditor } from './CodeEditor';
 import { usePackage } from '../hooks/usePackage';
 import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface TabItem {
   label: string;
@@ -63,6 +64,7 @@ export const MarketplacePackageInstallContent = ({
 }: {
   pkg: MarketplacePackage;
 }) => {
+  const { t } = useTranslation();
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
 
   useEffect(() => {
@@ -105,7 +107,7 @@ export const MarketplacePackageInstallContent = ({
   };
   const availableTabs = [
     !!Object.values(examples[0])[0] && {
-      label: 'Examples',
+      label: t('install.examples'),
       content: examples,
       key: 'examples',
       others: { packageNames: packageDynamicArtifacts },
@@ -154,7 +156,7 @@ export const MarketplacePackageInstallContent = ({
               <CardHeader
                 title={
                   <Typography variant="h3">
-                    Installation instructions
+                    {t('install.installationInstructions')}
                   </Typography>
                 }
                 action={
@@ -173,7 +175,7 @@ export const MarketplacePackageInstallContent = ({
                     }}
                   >
                     <FileDownloadOutlinedIcon fontSize="small" />
-                    Download
+                    {t('install.download')}
                   </Typography>
                 }
                 sx={{ pb: 0 }}
@@ -190,7 +192,7 @@ export const MarketplacePackageInstallContent = ({
                   <Tabs
                     value={tabIndex}
                     onChange={handleTabChange}
-                    aria-label="Plugin tabs"
+                    aria-label={t('install.pluginTabs')}
                   >
                     {availableTabs.map((tab, index) => (
                       <Tab
@@ -236,7 +238,7 @@ export const MarketplacePackageInstallContent = ({
         }}
       >
         <Button variant="contained" color="primary" disabled>
-          Install
+          {t('button.install')}
         </Button>
         <Button
           variant="outlined"
@@ -244,7 +246,7 @@ export const MarketplacePackageInstallContent = ({
           sx={{ ml: 2 }}
           onClick={() => navigate(pluginLink)}
         >
-          Cancel
+          {t('install.cancel')}
         </Button>
         <Button
           variant="text"
@@ -252,7 +254,7 @@ export const MarketplacePackageInstallContent = ({
           onClick={onLoaded}
           sx={{ ml: 3 }}
         >
-          Reset
+          {t('install.reset')}
         </Button>
       </Box>
     </Box>
@@ -260,6 +262,7 @@ export const MarketplacePackageInstallContent = ({
 };
 
 export const MarketplacePackageInstallContentLoader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(packageInstallRouteRef);
 
   const pkg = usePackage(params.namespace, params.name);
@@ -277,7 +280,10 @@ export const MarketplacePackageInstallContentLoader = () => {
   }
   return (
     <ErrorPage
-      statusMessage={`Package ${params.namespace}/${params.name} not found!`}
+      statusMessage={t('package.notFound' as any, {
+        namespace: params.namespace,
+        name: params.name,
+      })}
     />
   );
 };
