@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import { useApi } from '@backstage/core-plugin-api';
+import { appLanguageApiRef } from '@backstage/core-plugin-api/alpha';
 
-export * from './plugin';
-export * from './translations';
+export const useLanguage = (): string =>
+  useApi(appLanguageApiRef).getLanguage().language;
