@@ -34,6 +34,19 @@ const scorecardTranslationFr = createTranslationMessages({
       "Format de réponse invalide de l'API scorecard",
     'errors.fetchError':
       'Erreur lors de la récupération des scorecards : {{error}}',
+
+    // Metric translations
+    'metric.github.open-prs.title': 'GitHub Pull Requests Ouvertes',
+    'metric.github.open-prs.description':
+      'Nombre actuel de Pull Requests ouvertes pour un dépôt GitHub donné',
+    'metric.jira.open-issues.title': 'Tickets Bloquants Ouverts Jira',
+    'metric.jira.open-issues.description':
+      'Met en évidence le nombre de problèmes critiques et bloquants actuellement ouverts dans Jira',
+
+    // Threshold translations
+    'thresholds.success': 'Succès',
+    'thresholds.warning': 'Avertissement',
+    'thresholds.error': 'Erreur',
   },
 });
 

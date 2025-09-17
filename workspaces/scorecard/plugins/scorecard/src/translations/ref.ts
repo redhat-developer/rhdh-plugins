@@ -38,6 +38,27 @@ export const scorecardMessages = {
     invalidApiResponse: 'Invalid response format from scorecard API',
     fetchError: 'Error fetching scorecards: {{error}}',
   },
+
+  // Metric translations
+  metric: {
+    'github.open-prs': {
+      title: 'GitHub Open Pull Requests',
+      description:
+        'Current count of open Pull Requests for a given GitHub repository',
+    },
+    'jira.open-issues': {
+      title: 'Jira Open Blocking Tickets',
+      description:
+        'Highlights the number of critical, blocking issues that are currently open in Jira',
+    },
+  },
+
+  // Threshold translations
+  thresholds: {
+    success: 'Success',
+    warning: 'Warning',
+    error: 'Error',
+  },
 };
 
 /**
