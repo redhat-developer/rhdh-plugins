@@ -25,6 +25,13 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.invalidApiResponse': string;
     readonly 'errors.fetchError': string;
+    readonly 'metric.github.open-prs.title': string;
+    readonly 'metric.github.open-prs.description': string;
+    readonly 'metric.jira.open-issues.title': string;
+    readonly 'metric.jira.open-issues.description': string;
+    readonly 'thresholds.success': string;
+    readonly 'thresholds.error': string;
+    readonly 'thresholds.warning': string;
   }
 >;
 
