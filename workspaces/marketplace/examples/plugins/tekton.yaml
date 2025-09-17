@@ -10,8 +10,10 @@ metadata:
     - url: https://tekton.dev
       title: Tekton
 spec:
-  icon: https://janus-idp.io/images/plugins/tekton.svg
   developer: Red Hat
+  support:
+    provider: Red Hat
+    level: community
   lifecycle: production
   owner: redhat
   categories:

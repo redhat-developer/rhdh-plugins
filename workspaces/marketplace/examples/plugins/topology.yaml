@@ -7,7 +7,6 @@ metadata:
   title: Application Topology for Kubernetes
   description: Visualize the deployment status and related resources of your applications deployed on any Kubernetes cluster.
 spec:
-  icon: https://janus-idp.io/images/plugins/topology.svg
   author: Red Hat
   lifecycle: production
   categories:

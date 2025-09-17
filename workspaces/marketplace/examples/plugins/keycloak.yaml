@@ -7,7 +7,6 @@ metadata:
   title: Authentication and Authorization with Keycloak
   description: Load users and groups from Keycloak, enabling use of multiple authentication providers to be applied to Backstage entities.
 spec:
-  icon: https://janus-idp.io/images/plugins/keycloak.svg
   developer: Red Hat
   lifecycle: production
   categories:

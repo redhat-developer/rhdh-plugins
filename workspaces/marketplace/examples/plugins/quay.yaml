@@ -7,7 +7,6 @@ metadata:
   title: Container Image Registry for Quay
   description: View container image details from Quay in Backstage.
 spec:
-  icon: https://janus-idp.io/images/plugins/quay.svg
   author: Red Hat
   lifecycle: production
   categories:

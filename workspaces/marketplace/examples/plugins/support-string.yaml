@@ -3,8 +3,9 @@ apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   namespace: marketplace-plugin-demo
-  name: no-icon-no-description
-  title: No Icon No Description
+  name: support-string
+  title: Support String
 spec:
   categories:
     - Test plugin entity
+  support: a-string
