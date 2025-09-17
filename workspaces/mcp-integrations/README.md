@@ -2,13 +2,13 @@
 
 This workspace contains plugins that define MCP actions that interact with the Backstage instance
 
-To start the instance in dev mode:
+A sample dev environment under `packages/` is provided to test the MCP tools. To start the instance:
 
 1. Set `MCP_TOKEN` to some value (8 characters or longer)
 
 2. Run `yarn install`
 
-3. Run `yarn dev` to launch the frontend and backend
+3. Run `yarn dev` to launch the frontend and backend.
 
 ## Configuring Remote RHDH Instances
 
