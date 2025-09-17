@@ -25,19 +25,20 @@ import {
   MarketplaceSupportLevel,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
-import { usePluginFacet } from '../hooks/usePluginFacet';
-import { usePluginFacets } from '../hooks/usePluginFacets';
 import {
   CustomSelectFilter,
   CustomSelectItem,
 } from '../shared-components/CustomSelectFilter';
+import { usePluginFacetsWithFilters } from '../hooks/usePluginFacetsWithFilters';
 import { useQueryArrayFilter } from '../hooks/useQueryArrayFilter';
 import { colors } from '../consts';
 
 const CategoryFilter = () => {
-  const categoriesFacet = usePluginFacet('spec.categories');
-  const filter = useQueryArrayFilter('category');
-  const categories = categoriesFacet.data;
+  const categoriesFacet = usePluginFacetsWithFilters({
+    facets: ['spec.categories'],
+  });
+  const filter = useQueryArrayFilter('spec.categories');
+  const categories = categoriesFacet.data?.['spec.categories'];
 
   const items = useMemo(() => {
     if (!categories) return [];
@@ -67,9 +68,11 @@ const CategoryFilter = () => {
 };
 
 const AuthorFilter = () => {
-  const authorsFacet = usePluginFacet('spec.authors.name');
-  const authors = authorsFacet.data;
-  const filter = useQueryArrayFilter('author');
+  const authorsFacet = usePluginFacetsWithFilters({
+    facets: ['spec.authors.name'],
+  });
+  const authors = authorsFacet.data?.['spec.authors.name'];
+  const filter = useQueryArrayFilter('spec.authors.name');
 
   const items = useMemo(() => {
     if (!authors) return [];
@@ -117,7 +120,10 @@ const evaluateParams = (
 
 const SupportTypeFilter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const pluginFacets = usePluginFacets({ facets: facetsKeys });
+  // Exclude support type filters from facets calculation to get accurate counts
+  const pluginFacets = usePluginFacetsWithFilters({ facets: facetsKeys }, [
+    'metadata.annotations.extensions.backstage.io/',
+  ]);
 
   const facets = pluginFacets.data;
 

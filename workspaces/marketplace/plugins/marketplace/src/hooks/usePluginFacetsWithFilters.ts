@@ -25,10 +25,11 @@ import {
 import { useMarketplaceApi } from './useMarketplaceApi';
 
 /**
- * Converts search param filters to catalog filter format
+ * Converts search param filters to catalog filter format, optionally excluding certain filter prefixes
  */
 const parseFiltersFromSearchParams = (
   searchParams: URLSearchParams,
+  excludeFilterPrefixes: string[] = [],
 ): EntityFilterQuery => {
   const filters = searchParams.getAll('filter');
   const filterObj: EntityFilterQuery = {};
@@ -39,6 +40,11 @@ const parseFiltersFromSearchParams = (
 
     const key = filter.substring(0, firstEqualIndex);
     const value = filter.substring(firstEqualIndex + 1);
+
+    // Skip filters that match any of the excluded prefixes
+    if (excludeFilterPrefixes.some(prefix => key.startsWith(prefix))) {
+      return;
+    }
 
     if (filterObj[key]) {
       // If the key already exists, convert to array or append to existing array
@@ -51,24 +57,36 @@ const parseFiltersFromSearchParams = (
       filterObj[key] = value;
     }
   });
+
   return filterObj;
 };
 
-export const usePluginFacets = (request: GetEntityFacetsRequest) => {
+/**
+ * Hook for getting plugin facets with current filters applied,
+ * but excluding specific filter types to get accurate counts for those facet types
+ */
+export const usePluginFacetsWithFilters = (
+  request: GetEntityFacetsRequest,
+  excludeFilterPrefixes: string[] = [],
+) => {
   const [searchParams] = useSearchParams();
   const marketplaceApi = useMarketplaceApi();
 
-  // Build the request with current filters for accurate facet counts
+  // Build the request with current filters (excluding specified prefixes) for accurate facet counts
   const requestWithFilters = {
     ...request,
     filter: {
       ...request.filter,
-      ...parseFiltersFromSearchParams(searchParams),
+      ...parseFiltersFromSearchParams(searchParams, excludeFilterPrefixes),
     },
   };
-
   return useQuery({
-    queryKey: ['marketplaceApi', 'getPluginFacets', requestWithFilters],
+    queryKey: [
+      'marketplaceApi',
+      'getPluginFacetsWithFilters',
+      requestWithFilters,
+      excludeFilterPrefixes,
+    ],
     queryFn: () =>
       marketplaceApi
         .getPluginFacets(requestWithFilters)
