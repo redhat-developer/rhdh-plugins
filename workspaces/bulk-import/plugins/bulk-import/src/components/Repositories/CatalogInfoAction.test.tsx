@@ -24,7 +24,7 @@ import { fireEvent, render } from '@testing-library/react';
 import { useFormikContext } from 'formik';
 
 import { mockGetImportJobs, mockGetRepositories } from '../../mocks/mockData';
-import { RepositoryStatus } from '../../types';
+import { PRStatus, RepositoryStatus } from '../../types';
 import { getPRTemplate } from '../../utils/repository-utils';
 import CatalogInfoAction from './CatalogInfoAction';
 
@@ -93,7 +93,7 @@ describe('CatalogInfoAction', () => {
           data={{
             ...mockGetRepositories.repositories[0],
             catalogInfoYaml: {
-              status: RepositoryStatus.WAIT_PR_APPROVAL,
+              status: PRStatus.WAIT_PR_APPROVAL,
             },
           }}
         />

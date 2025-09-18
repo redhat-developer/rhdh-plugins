@@ -31,9 +31,9 @@ import {
   AddRepositoriesFormValues,
   AddRepositoryData,
   ImportJobStatus,
+  PRStatus,
   PullRequestPreview,
   PullRequestPreviewData,
-  RepositoryStatus,
   RepositoryType,
 } from '../../types';
 import {
@@ -85,10 +85,7 @@ export const PreviewFileSidebar = ({
       return values.repositories[id].catalogInfoYaml
         ?.prTemplate as PullRequestPreview;
     }
-    const result = await bulkImportApi.getImportAction(
-      url || '',
-      branch || 'main',
-    );
+    const result = await bulkImportApi.getImportAction(url || '');
     if ((result as Response)?.statusText) {
       setStatus({
         ...status,
@@ -106,15 +103,25 @@ export const PreviewFileSidebar = ({
       });
       return repoPrTemplate;
     } else if (
-      (result as ImportJobStatus)?.status === RepositoryStatus.WAIT_PR_APPROVAL
+      (result as ImportJobStatus)?.github?.pullRequest?.status ===
+      PRStatus.WAIT_PR_APPROVAL
     ) {
       const importJobResult = result as ImportJobStatus;
       const evaluatedPRTemplate = evaluatePRTemplate(importJobResult);
-      let pullReqPreview = { ...evaluatedPRTemplate.pullReqPreview };
+
+      const prNumber = importJobResult?.github?.pullRequest?.number || 0;
+      const prUrl = importJobResult?.github?.pullRequest?.url || '';
+
+      let pullReqPreview = {
+        ...evaluatedPRTemplate.pullReqPreview,
+        pullRequestUrl: prUrl,
+        number: prNumber,
+      };
 
       if (evaluatedPRTemplate.isInvalidEntity) {
         const identityRef = await identityApi.getBackstageIdentity();
         const baseUrl = configApi.getString('app.baseUrl');
+        // todo... don't use hard coded template
         const prTemp = getPRTemplate(
           repoName,
           orgName,
@@ -141,9 +148,10 @@ export const PreviewFileSidebar = ({
         });
         pullReqPreview = {
           ...prTemp,
-          pullRequestUrl: pullReqPreview.pullRequestUrl || '',
+          pullRequestUrl: prUrl || '',
           prDescription: pullReqPreview.prDescription || '',
           prTitle: pullReqPreview.prTitle || '',
+          number: prNumber || 0,
         };
       }
       return pullReqPreview;

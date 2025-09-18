@@ -214,6 +214,7 @@ const OPENAPI = `
     "/repositories": {
       "get": {
         "operationId": "findAllRepositories",
+        "deprecated": true,
         "summary": "Fetch Organization Repositories accessible by Backstage Github Integrations",
         "security": [
           {
@@ -273,6 +274,93 @@ const OPENAPI = `
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/stored-repositories": {
+      "get": {
+        "operationId": "findAllStoredRepositories",
+        "summary": "Fetch all Repositories from the database",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Repository"
+        ],
+        "responses": {
+          "200": {
+            "description": "Repository list was fetched successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryList"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      }
+    },
+    "/stored-repository": {
+      "get": {
+        "operationId": "findStoredRepositoryByName",
+        "summary": "Fetch a single Repository from the database by its name",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Repository"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "repositoryName",
+            "description": "Repository name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Repository was fetched successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Repository"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Repository not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error"
           }
         }
       }
@@ -371,6 +459,7 @@ const OPENAPI = `
       },
       "post": {
         "operationId": "createImportJobs",
+        "deprecated": true,
         "summary": "Submit Import Jobs",
         "security": [
           {
@@ -432,9 +521,227 @@ const OPENAPI = `
         }
       }
     },
+    "/task-imports": {
+      "get": {
+        "operationId": "findAllTaskImports",
+        "summary": "Fetch Import Jobs",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Import"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiVersionHeaderParam"
+          },
+          {
+            "$ref": "#/components/parameters/pagePerIntegrationQueryParamDeprecated"
+          },
+          {
+            "$ref": "#/components/parameters/sizePerIntegrationQueryParamDeprecated"
+          },
+          {
+            "$ref": "#/components/parameters/pageQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/sizeQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/sortOrderQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/sortColumnQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/searchQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Import Job list was fetched successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SourceImport"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ImportJobListV2"
+                    }
+                  ]
+                },
+                "examples": {
+                  "twoImports": {
+                    "$ref": "#/components/examples/twoImports"
+                  },
+                  "multipleImportJobsV2": {
+                    "$ref": "#/components/examples/multipleImportJobsV2"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error when there are errors and no Import Job is returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "description": "Generic error"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ImportJobListV2"
+                    }
+                  ]
+                },
+                "examples": {
+                  "repositoryListErrors": {
+                    "$ref": "#/components/examples/importJobListErrors"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTaskImportJobs",
+        "summary": "Execute a scaffolder template for a list of repositories",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Import"
+        ],
+        "requestBody": {
+          "description": "The template to execute and the repositories to run it against.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ImportRequest"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Import Jobs request was submitted successfully to the API. Check the status in each item of the response body list to see their individual status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Import"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/task-import/by-repo": {
+      "get": {
+        "operationId": "findTaskImportStatusByRepo",
+        "summary": "Get Import Status by repository",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Import"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "repo",
+            "description": "the full URL to the repo",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "defaultBranch",
+            "description": "the name of the default branch",
+            "schema": {
+              "type": "string",
+              "default": "main"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Import Job status was determined successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Import"
+                },
+                "examples": {
+                  "singleImportStatusForRepo": {
+                    "$ref": "#/components/examples/singleImportStatusForRepo"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteTaskImportByRepo",
+        "summary": "Delete task import by repository name",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Repository"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "repo",
+            "description": "the full URL to the repo",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Repository was deleted successfully with no errors"
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      }
+    },
     "/import/by-repo": {
       "get": {
         "operationId": "findImportStatusByRepo",
+        "deprecated": true,
         "summary": "Get Import Status by repository",
         "security": [
           {
@@ -486,6 +793,7 @@ const OPENAPI = `
       },
       "delete": {
         "operationId": "deleteImportByRepo",
+        "deprecated": true,
         "summary": "Delete Import by repository",
         "security": [
           {
@@ -743,7 +1051,14 @@ const OPENAPI = `
             "description": "organization which the repository is part of"
           },
           "importStatus": {
-            "$ref": "#/components/schemas/ImportStatus"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ImportStatus"
+              },
+              {
+                "$ref": "#/components/schemas/TaskImportStatus"
+              }
+            ]
           },
           "defaultBranch": {
             "type": "string",
@@ -766,6 +1081,16 @@ const OPENAPI = `
         "enum": [
           "GIT",
           "SERVICENOW"
+        ]
+      },
+      "TaskImportStatus": {
+        "type": "string",
+        "nullable": true,
+        "description": "Import Job status",
+        "enum": [
+          "TASK_COMPLETED",
+          "TASK_IN_PROGRESS",
+          "FAILED_TO_FETCH_TASK"
         ]
       },
       "ImportStatus": {
@@ -814,7 +1139,22 @@ const OPENAPI = `
             "type": "string"
           },
           "status": {
-            "$ref": "#/components/schemas/ImportStatus"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ImportStatus"
+              },
+              {
+                "$ref": "#/components/schemas/TaskImportStatus"
+              }
+            ]
+          },
+          "task": {
+            "type": "object",
+            "properties": {
+              "taskId": {
+                "type": "string"
+              }
+            }
           },
           "catalogEntityName": {
             "type": "string",
@@ -862,6 +1202,14 @@ const OPENAPI = `
                   "catalogInfoContent": {
                     "type": "string",
                     "description": "content of the catalog-info.yaml as fetched from the Pull Request."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "WAIT_PR_APPROVAL",
+                      "PR_MERGED",
+                      "PR_ERROR"
+                    ]
                   }
                 }
               }
@@ -957,10 +1305,30 @@ const OPENAPI = `
                   "body": {
                     "type": "string",
                     "description": "body of the Pull Request"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "URL to update an existing pull request"
+                  },
+                  "number": {
+                    "type": "number",
+                    "description": "number of the existing pull request"
                   }
                 }
               }
             }
+          }
+        }
+      },
+      "ScaffolderTask": {
+        "title": "Scaffolder Task",
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string"
+          },
+          "repositoryId": {
+            "type": "number"
           }
         }
       }

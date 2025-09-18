@@ -26,10 +26,10 @@ import {
   mockSelectedRepositories,
 } from '../mocks/mockData';
 import {
-  AddedRepositoryColumnNameEnum,
+  // AddedRepositoryColumnNameEnum,
   ApprovalTool,
   RepositoryStatus,
-  SortingOrderEnum,
+  // SortingOrderEnum,
 } from '../types';
 import { prepareDataForSubmission } from '../utils/repository-utils';
 import {
@@ -310,24 +310,26 @@ describe('BulkImportBackendClient', () => {
 
   describe('getImportJobs', () => {
     it('getImportJobs should retrieve the import jobs successfully', async () => {
-      const jobs = await bulkImportApi.getImportJobs(
-        1,
-        2,
-        '',
-        AddedRepositoryColumnNameEnum.repoName,
-        SortingOrderEnum.Asc,
-      );
+      const jobs = await bulkImportApi
+        .getTaskImportJobs
+        // 1,
+        // 2,
+        // '',
+        // AddedRepositoryColumnNameEnum.repoName,
+        // SortingOrderEnum.Asc,
+        ();
       expect(jobs).toEqual(mockGetImportJobs);
     });
 
     it('getImportJobs should retrieve the import jobs based on search string', async () => {
-      const jobs = await bulkImportApi.getImportJobs(
-        1,
-        2,
-        'cup',
-        AddedRepositoryColumnNameEnum.repoName,
-        SortingOrderEnum.Asc,
-      );
+      const jobs = await bulkImportApi
+        .getTaskImportJobs
+        // 1,
+        // 2,
+        // 'cup',
+        // AddedRepositoryColumnNameEnum.repoName,
+        // SortingOrderEnum.Asc,
+        ();
       expect(jobs).toEqual(
         mockGetImportJobs.imports.filter(r =>
           r.repository.name?.includes('cup'),
@@ -337,13 +339,14 @@ describe('BulkImportBackendClient', () => {
 
     it('getImportJobs should handle non-200/204 responses correctly', async () => {
       await expect(
-        bulkImportApi.getImportJobs(
-          1,
-          2,
-          '',
-          AddedRepositoryColumnNameEnum.repoName,
-          SortingOrderEnum.Asc,
-        ),
+        bulkImportApi
+          .getTaskImportJobs
+          // 1,
+          // 2,
+          // '',
+          // AddedRepositoryColumnNameEnum.repoName,
+          // SortingOrderEnum.Asc,
+          (),
       ).resolves.toEqual(expect.objectContaining([]));
     });
   });
@@ -352,7 +355,6 @@ describe('BulkImportBackendClient', () => {
     it('deleteImportAction should send a DELETE request and handle successful response', async () => {
       const response = await bulkImportApi.deleteImportAction(
         'org/dessert/cupcake',
-        'main',
       );
 
       expect(response.status).toBe(200);
@@ -361,10 +363,7 @@ describe('BulkImportBackendClient', () => {
 
   describe('getImportAction', () => {
     it('getImportAction should retrive the status of the repo', async () => {
-      const response = await bulkImportApi.getImportAction(
-        'org/dessert/donut',
-        'master',
-      );
+      const response = await bulkImportApi.getImportAction('org/dessert/donut');
 
       expect(response.status).toBe(RepositoryStatus.WAIT_PR_APPROVAL);
       expect(response).toEqual(
@@ -375,13 +374,12 @@ describe('BulkImportBackendClient', () => {
 
   describe('createImportJobs', () => {
     it('createImportJobs should be able to dry run and check for errors', async () => {
-      let response = await bulkImportApi.createImportJobs(
+      let response = await bulkImportApi.createTaskImportJobs(
         prepareDataForSubmission(mockSelectedRepositories, ApprovalTool.Git),
-        true,
       );
       expect(response.length).toBe(4);
 
-      response = await bulkImportApi.createImportJobs(
+      response = await bulkImportApi.createTaskImportJobs(
         prepareDataForSubmission(
           {
             ['org/dessert/cupcake']: {
@@ -391,7 +389,6 @@ describe('BulkImportBackendClient', () => {
           },
           ApprovalTool.Git,
         ),
-        true,
       );
 
       expect(response).toEqual({

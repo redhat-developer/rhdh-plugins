@@ -40,10 +40,12 @@ import { mockEntities } from '../src/mocks/mockEntities';
 import { BulkImportPage, bulkImportPlugin } from '../src/plugin';
 import {
   APITypes,
+  CreateImportJobRepository,
   ImportJobResponse,
   ImportJobs,
   ImportJobStatus,
   OrgAndRepoResponse,
+  Repository,
   RepositoryStatus,
 } from '../src/types';
 
@@ -89,19 +91,19 @@ class MockBulkImportApi implements BulkImportAPI {
     };
   }
 
-  async getImportJobs(
-    _page: number,
-    _size: number,
-    searchString: string,
+  async getTaskImportJobs(
+    // _page: number,
+    // _size: number,
+    // searchString: string,
   ): Promise<ImportJobs> {
-    if (searchString) {
-      return {
-        ...mockGetImportJobs,
-        imports: mockGetImportJobs.imports?.filter(r =>
-          r.repository.name?.includes(searchString),
-        ),
-      };
-    }
+    // if (searchString) {
+    //   return {
+    //     ...mockGetImportJobs,
+    //     imports: mockGetImportJobs.imports?.filter(r =>
+    //       r.repository.name?.includes(searchString),
+    //     ),
+    //   };
+    // }
     return mockGetImportJobs;
   }
 
@@ -125,19 +127,38 @@ class MockBulkImportApi implements BulkImportAPI {
     ] as ImportJobResponse[];
   }
 
-  async deleteImportAction(
-    _repo: string,
-    _defaultBranch: string,
-  ): Promise<ImportJobStatus | Response> {
+  async deleteImportAction(_repo: string): Promise<Response> {
     return {} as Response;
   }
-  async getImportAction(
-    repo: string,
-    _defaultBranch: string,
-  ): Promise<ImportJobStatus | Response> {
+  async getImportAction(repo: string): Promise<ImportJobStatus | Response> {
     return mockGetImportJobs.imports.find(
       i => i.repository.url === repo,
     ) as ImportJobStatus;
+  }
+  async createTaskImportJobs(
+    _repositories: CreateImportJobRepository[],
+  ): Promise<any> {
+    return Promise.resolve();
+  }
+  async findAllStoredRepositories(): Promise<Repository[]> {
+    return Promise.resolve([]);
+  }
+  async findStoredRepositoryByName(_name: string): Promise<any> {
+    return Promise.resolve({
+      repositories: [
+        {
+          id: '1',
+          name: 'repo1',
+          url: 'http://repo1.com',
+          organization: 'org1',
+          tasks: [],
+        },
+      ],
+      totalCount: 1,
+    });
+  }
+  async getScaffolderTaskEvents(_taskId: string): Promise<EventSource> {
+    return new EventSource('');
   }
 }
 

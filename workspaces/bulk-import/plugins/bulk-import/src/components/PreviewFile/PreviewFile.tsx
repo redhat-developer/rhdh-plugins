@@ -103,6 +103,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
             style={{ verticalAlign: 'sub', paddingTop: '7px' }}
           />
           {gitlabFeatureFlag ? 'Ready to import' : RepositoryStatus.Ready}{' '}
+          {/* don't show file preview if repository doesn't have job info status... */}
           <Link
             to=""
             onClick={() => openDrawer(data)}

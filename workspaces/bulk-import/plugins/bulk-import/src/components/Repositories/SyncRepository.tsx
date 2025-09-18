@@ -38,10 +38,7 @@ const SyncRepository = ({ data }: SyncRepositoryProps) => {
   const { setFieldValue } = useFormikContext<AddRepositoriesFormValues>();
 
   const handleClick = async () => {
-    const value = await bulkImportApi.getImportAction(
-      data.repoUrl || '',
-      data?.defaultBranch || 'main',
-    );
+    const value = await bulkImportApi.getImportAction(data.repoUrl || '');
     setFieldValue(
       `repositories.[${data.id}].catalogInfoYaml.status`,
       (value as ImportJobStatus).status,

@@ -15,7 +15,7 @@
  */
 
 import { Entity } from '@backstage/catalog-model';
-import { StatusOK } from '@backstage/core-components';
+import { Link, StatusOK } from '@backstage/core-components';
 
 import Typography from '@mui/material/Typography';
 import * as jsyaml from 'js-yaml';
@@ -34,7 +34,6 @@ import {
   ImportJobResponse,
   ImportJobs,
   ImportJobStatus,
-  ImportStatus,
   JobErrors,
   Order,
   OrgAndRepoResponse,
@@ -54,10 +53,11 @@ export const descendingComparator = (
   let value1 = get(a, orderBy);
   let value2 = get(b, orderBy);
   const order = {
+    PR_MERGED: 1,
+    WAIT_PR_APPROVAL: 3,
+    PR_ERROR: 4,
     [RepositoryStatus.ADDED]: 1,
     [RepositoryStatus.Ready]: 2,
-    [RepositoryStatus.WAIT_PR_APPROVAL]: 3,
-    [RepositoryStatus.PR_ERROR]: 4,
     [RepositoryStatus.CATALOG_ENTITY_CONFLICT]: 4,
     [RepositoryStatus.CATALOG_INFO_FILE_EXISTS_IN_REPO]: 4,
     [RepositoryStatus.CODEOWNERS_FILE_NOT_FOUND_IN_REPO]: 4,
@@ -71,8 +71,10 @@ export const descendingComparator = (
   }
 
   if (orderBy === 'catalogInfoYaml.status') {
-    value1 = order[(value1 as ImportStatus) || RepositoryStatus.NotGenerated];
-    value2 = order[(value2 as ImportStatus) || RepositoryStatus.NotGenerated];
+    value1 =
+      order[(value1 as RepositoryStatus) || RepositoryStatus.NotGenerated];
+    value2 =
+      order[(value2 as RepositoryStatus) || RepositoryStatus.NotGenerated];
   }
   if (value2 < value1) {
     return -1;
@@ -129,10 +131,10 @@ export const getPRTemplate = (
   entityOwner: string,
   baseUrl: string,
   repositoryUrl: string,
-  defaultBranch: string,
+  _defaultBranch: string, // remove it
 ): PullRequestPreview => {
   const importJobUrl = repositoryUrl
-    ? `${baseUrl}/bulk-import/repositories?repository=${repositoryUrl}&defaultBranch=${defaultBranch}`
+    ? `${baseUrl}/bulk-import/repositories?repository=${repositoryUrl}`
     : `${baseUrl}/bulk-import/repositories`;
   const name = cleanComponentName(componentName);
   return {
@@ -220,6 +222,7 @@ export const urlHelper = (url: string) => {
   return url.split('https://')[1] || url;
 };
 
+// rework status handling...
 export const getImportStatus = (
   status: string,
   showIcon?: boolean,
@@ -229,7 +232,7 @@ export const getImportStatus = (
   if (!status) {
     return '';
   }
-  const labelText = gitlabFeatureFlag ? 'Already imported' : 'Added';
+  const labelText = gitlabFeatureFlag ? 'MR merged' : 'PR merged';
   switch (status) {
     case 'WAIT_PR_APPROVAL':
       return showIcon ? (
@@ -240,18 +243,30 @@ export const getImportStatus = (
       ) : (
         'Waiting for Approval'
       );
-    case 'ADDED':
+    case 'PR_MERGED':
       return showIcon ? (
         <Typography
           component="span"
           style={{ display: 'flex', alignItems: 'baseline' }}
         >
-          <StatusOK />
-          {gitlabFeatureFlag ? 'Imported' : 'Added'}
+          <Link
+            to={prUrl!}
+            data-testid="pull request url"
+            style={{
+              paddingLeft: '5px',
+              display: 'inline-flex',
+              alignItems: 'center',
+            }}
+          >
+            <StatusOK />
+            {labelText}
+          </Link>
         </Typography>
       ) : (
         labelText
       );
+    // todo hande pr error
+    // case 'PR_ERROR':
     default:
       return '';
   }
@@ -402,6 +417,8 @@ export const prepareDataForSubmission = (
         ),
         github: {
           pullRequest: {
+            url: repo.catalogInfoYaml?.prTemplate?.pullRequestUrl,
+            number: repo.catalogInfoYaml?.prTemplate?.number,
             title:
               repo.catalogInfoYaml?.prTemplate?.prTitle ||
               'Add catalog-info.yaml config file',
@@ -603,6 +620,7 @@ export const prepareDataForRepositories = (
               val.defaultBranch || 'main',
             ),
           },
+          tasks: val.tasks,
         },
       };
     }, {}) || {};
@@ -635,9 +653,7 @@ export const prepareDataForAddedRepositories = (
             val.repository.url.indexOf(val?.repository?.name || '') - 1,
           ),
           catalogInfoYaml: {
-            status: val.status
-              ? RepositoryStatus[val.status as RepositoryStatus]
-              : RepositoryStatus.NotGenerated,
+            status: val.github?.pullRequest?.status,
             prTemplate: getPRTemplate(
               val.repository.name || '',
               val.repository.organization || '',

@@ -67,6 +67,7 @@ const EditCatalogInfo = ({
     repoName: importStatus?.repository?.name,
     orgName: importStatus?.repository?.organization,
     catalogInfoYaml: {
+      status: importStatus?.github?.pullRequest?.status,
       prTemplate: {
         prTitle: importStatus?.github?.pullRequest?.title,
         prDescription: importStatus?.github?.pullRequest?.body,
@@ -74,6 +75,8 @@ const EditCatalogInfo = ({
         componentName: catalogEntityName,
         entityOwner,
         yaml: yamlContent,
+        pullRequestUrl: importStatus?.github?.pullRequest.url,
+        number: importStatus?.github?.pullRequest.number,
       },
     },
   };
@@ -87,6 +90,7 @@ const EditCatalogInfo = ({
         [`${importStatus.repository.id}`]: {
           id: importStatus.repository.id,
           catalogInfoYaml: {
+            status: importStatus.github.pullRequest.status,
             prTemplate: pullRequest[`${importStatus.repository.id}`],
           },
           defaultBranch: importStatus.repository?.defaultBranch,
@@ -107,39 +111,31 @@ const EditCatalogInfo = ({
     );
     try {
       setSubmitting(true);
-      const dryrunResponse: ImportJobResponse[] =
-        await bulkImportApi.createImportJobs(importRepositories, true);
-      const dryRunErrors = getJobErrors(dryrunResponse);
-      if (Object.keys(dryRunErrors?.errors || {}).length > 0) {
-        setStatus(dryRunErrors);
-        setSubmitting(false);
-      } else {
-        const createJobResponse: ImportJobResponse[] | Response =
-          await bulkImportApi.createImportJobs(importRepositories);
-        setSubmitting(true);
-        if (!Array.isArray(createJobResponse)) {
-          setStatus({
-            [`${importStatus.repository.id}`]: {
-              repository: importStatus.repository.name,
-              catalogEntityName,
-              error: {
-                message:
-                  get(createJobResponse, 'error.message') ||
-                  'Failed to create pull request',
-                status: get(createJobResponse, 'error.name') || 'Error occured',
-              },
+      const createJobResponse: ImportJobResponse[] | Response =
+        await bulkImportApi.createTaskImportJobs(importRepositories);
+      setSubmitting(true);
+      if (!Array.isArray(createJobResponse)) {
+        setStatus({
+          [`${importStatus.repository.id}`]: {
+            repository: importStatus.repository.name,
+            catalogEntityName,
+            error: {
+              message:
+                get(createJobResponse, 'error.message') ||
+                'Failed to create pull request',
+              status: get(createJobResponse, 'error.name') || 'Error occured',
             },
-          });
+          },
+        });
+      } else {
+        const createJobErrors = getJobErrors(createJobResponse);
+        if (Object.keys(createJobErrors?.errors || {}).length > 0) {
+          setStatus(createJobErrors);
         } else {
-          const createJobErrors = getJobErrors(createJobResponse);
-          if (Object.keys(createJobErrors?.errors || {}).length > 0) {
-            setStatus(createJobErrors);
-          } else {
-            onClose();
-          }
+          onClose();
         }
-        setSubmitting(false);
       }
+      setSubmitting(false);
     } catch (error: any) {
       setStatus({
         [`${importStatus.repository.id}`]: {

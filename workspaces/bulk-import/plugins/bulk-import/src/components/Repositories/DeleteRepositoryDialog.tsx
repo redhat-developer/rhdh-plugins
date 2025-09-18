@@ -65,10 +65,7 @@ const DeleteRepositoryDialog = ({
   const classes = useStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
   const deleteRepository = (deleteRepo: AddRepositoryData) => {
-    return bulkImportApi.deleteImportAction(
-      deleteRepo.repoUrl || '',
-      deleteRepo.defaultBranch || 'main',
-    );
+    return bulkImportApi.deleteImportAction(deleteRepo.repoUrl!);
   };
   const mutationDelete = useMutation(deleteRepository, {
     onSuccess: () => {
@@ -123,8 +120,8 @@ const DeleteRepositoryDialog = ({
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1">
-          {`Removing ${gitlabFeatureFlag ? 'it will' : 'a repository'} erases all associated information from the
-          Catalog page.`}
+          Removing a repository will also remove all associated scaffolder task
+          info.
         </Typography>
       </DialogContent>
       {(isUrlMissing || mutationDelete.isError) && (

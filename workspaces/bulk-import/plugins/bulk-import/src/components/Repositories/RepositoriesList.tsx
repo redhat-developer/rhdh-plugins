@@ -45,7 +45,8 @@ export const RepositoriesList = () => {
   const queryParams = new URLSearchParams(location.search);
   const [order, setOrder] = useState<SortingOrderEnum>(SortingOrderEnum.Asc);
   const [orderBy, setOrderBy] = useState<string>('repoName');
-  const { openDialog, setOpenDialog, deleteComponent } = useDeleteDialog();
+  const { openDialog, setOpenDialog, deleteComponent, setDeleteComponent } =
+    useDeleteDialog();
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const [pageNumber, setPageNumber] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -61,7 +62,7 @@ export const RepositoriesList = () => {
     error: errJobs,
     loading,
     refetch,
-  } = useAddedRepositories(
+  } = useAddedRepositories(//
     pageNumber + 1,
     rowsPerPage,
     debouncedSearch,
@@ -69,7 +70,7 @@ export const RepositoriesList = () => {
     order,
   );
 
-  const closeDialog = () => {
+  const closeDialog = async () => {
     setOpenDialog(false);
     refetch();
   };
@@ -128,6 +129,12 @@ export const RepositoriesList = () => {
               loading={loading}
               rows={importJobs.addedRepositories || []}
               emptyRows={emptyRows}
+              onDelete={repo => {
+                if (repo.source === 'integration') {
+                  setOpenDialog(true);
+                  setDeleteComponent(repo);
+                }
+              }}
             />
           ),
 
@@ -168,7 +175,7 @@ export const RepositoriesList = () => {
         }
       />
       {openDrawer && (
-        <EditCatalogInfo
+        <EditCatalogInfo //
           open={openDrawer}
           onClose={closeDrawer}
           importStatus={drawerData}

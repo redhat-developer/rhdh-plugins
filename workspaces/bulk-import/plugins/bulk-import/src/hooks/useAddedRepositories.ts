@@ -62,16 +62,8 @@ export const useAddedRepositories = (
   const baseUrl = configApi.getString('app.baseUrl');
 
   const bulkImportApi = useApi(bulkImportApiRef);
-  const { setFieldValue, values } =
-    useFormikContext<AddRepositoriesFormValues>();
-  const fetchAddedRepositories = async (
-    page: number,
-    size: number,
-    searchStr: string,
-    sortCol: AddedRepositoryColumnNameEnum,
-    sortOrd: SortingOrderEnum,
-  ) =>
-    await bulkImportApi.getImportJobs(page, size, searchStr, sortCol, sortOrd);
+  const { setFieldValue, values } = useFormikContext<AddRepositoriesFormValues>();
+  const fetchAddedRepositories = async () => await bulkImportApi.getTaskImportJobs();
 
   const {
     data: value,
@@ -87,14 +79,7 @@ export const useAddedRepositories = (
       sortColumn,
       sortOrder,
     ],
-    () =>
-      fetchAddedRepositories(
-        pageNumber,
-        rowsPerPage,
-        searchString,
-        sortColumn,
-        sortOrder,
-      ),
+    () => fetchAddedRepositories(),
     { refetchInterval: pollInterval || 60000, refetchOnWindowFocus: false },
   );
 
@@ -104,7 +89,7 @@ export const useAddedRepositories = (
       user as string,
       baseUrl as string,
     );
-    if (
+        if (
       Object.values(repoData.repoData).length !==
       Object.values(values.repositories).length
     )
@@ -120,10 +105,10 @@ export const useAddedRepositories = (
     loading: isLoadingTable,
     error: {
       ...(error ?? {}),
-      ...((value as Response)?.statusText
+      ...((value as any)?.statusText
         ? {
             name: 'Error',
-            message: (value as Response)?.statusText,
+            message: (value as any)?.statusText,
           }
         : {}),
     },

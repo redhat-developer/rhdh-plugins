@@ -18,7 +18,7 @@ import {
   mockGetRepositories,
   mockSelectedRepositories,
 } from '../mocks/mockData';
-import { ImportJobResponse, RepositoryStatus } from '../types';
+import { ImportJobResponse, PRStatus, RepositoryStatus } from '../types';
 import {
   cleanComponentName,
   componentNameRegex,
@@ -236,6 +236,9 @@ describe('Repository utils', () => {
   it('should load catalog info content and evaluate PR template', () => {
     const importJobStatus = {
       approvalTool: 'GIT',
+      task: {
+        taskId: 'bb624cb5-64fb-41a7-be8f-c17e60d24a12',
+      },
       github: {
         pullRequest: {
           number: 105,
@@ -244,6 +247,7 @@ describe('Repository utils', () => {
           body: 'This pull request adds a **Backstage entity metadata file**\nto this repository so that the component can\nbe added to the [software catalog](http://localhost:3000/catalog).\nAfter this pull request is merged, the component will become available.\nFor more information, read an [overview of the Backstage software catalog](https://backstage.io/docs/features/software-catalog/).\nView the import job in your app [here](http://localhost:3000/bulk-import/repositories?repository=https://github.com/che-electron/client&defaultBranch=master).',
           catalogInfoContent:
             'apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: client\n  annotations:\n    github.com/project-slug: che-electron/client\nspec:\n  type: other\n  lifecycle: unknown\n  owner: user:default/debsmita1\n',
+          status: PRStatus.WAIT_PR_APPROVAL,
         },
       },
       id: 'https://github.com/che-electron/client',
@@ -255,7 +259,7 @@ describe('Repository utils', () => {
         id: 'che-electron/client',
         defaultBranch: 'main',
       },
-      status: 'WAIT_PR_APPROVAL',
+      status: 'TASK_COMPLETED',
     };
     expect(evaluatePRTemplate(importJobStatus).isInvalidEntity).toBeFalsy();
 

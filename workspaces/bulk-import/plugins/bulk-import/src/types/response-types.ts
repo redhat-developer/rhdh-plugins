@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { RepositoryStatus } from './types';
+import { PRStatus, RepositoryStatus } from './types';
 
 export type Repository = {
   id: string;
   url?: string;
+  tasks?: ScaffolderTask[];
   name?: string;
   organization?: string;
   defaultBranch?: string;
@@ -26,6 +27,12 @@ export type Repository = {
   errors?: string[];
   totalRepoCount?: number;
 };
+
+export interface ScaffolderTask {
+  taskId: string;
+  repositoryId: number;
+  locations?: string[];
+}
 
 export type ImportJobResponse = {
   errors: RepositoryStatus[];
@@ -36,6 +43,9 @@ export type ImportJobResponse = {
 
 export type ImportJobStatus = {
   approvalTool: string;
+  task: {
+    taskId: string;
+  };
   github: {
     pullRequest: {
       number: number;
@@ -43,6 +53,7 @@ export type ImportJobStatus = {
       title: string;
       body: string;
       catalogInfoContent: string;
+      status: PRStatus;
     };
   };
   status: string;

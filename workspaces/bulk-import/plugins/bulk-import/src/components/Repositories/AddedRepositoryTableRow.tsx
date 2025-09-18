@@ -15,10 +15,12 @@
  */
 
 import { Link } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
@@ -26,6 +28,7 @@ import {
   AddRepositoriesFormValues,
   AddRepositoryData,
   ApprovalTool,
+  ImportStatus as ImportStatusType,
 } from '../../types';
 import {
   calculateLastUpdated,
@@ -45,8 +48,10 @@ const useStyles = makeStyles(() => ({
 
 const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
   const { values } = useFormikContext<AddRepositoriesFormValues>();
+  const status = values.repositories?.[data.id]?.catalogInfoYaml?.status;
+  // console.log(`status ${status}`)
   return getImportStatus(
-    values.repositories?.[data.id]?.catalogInfoYaml?.status as string,
+    status as ImportStatusType,
     true,
     values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
     values?.approvalTool === ApprovalTool.Gitlab,
@@ -62,20 +67,28 @@ const LastUpdated = ({ data }: { data: AddRepositoryData }) => {
 
 export const AddedRepositoryTableRow = ({
   data,
+  onDelete,
 }: {
   data: AddRepositoryData;
+  onDelete: (repo: AddRepositoryData) => void;
 }) => {
   const classes = useStyles();
-
+  useApi(configApiRef);
   return (
     <TableRow hover>
       <TableCell component="th" scope="row" className={classes.tableCellStyle}>
-        {data.repoName}
+        <Link
+          to={`/bulk-import/repositories/tasks/${encodeURIComponent(
+            data.repoUrl || '',
+          )}`}
+        >
+          {data.repoName}
+        </Link>
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
         {data?.repoUrl ? (
-          <Link to={data.repoUrl}>
-            {urlHelper(data.repoUrl)}
+          <Link to={data.repoUrl || ''}>
+            {urlHelper(data.repoUrl || '')}
             <OpenInNewIcon
               style={{ verticalAlign: 'sub', paddingTop: '7px' }}
             />
@@ -86,7 +99,7 @@ export const AddedRepositoryTableRow = ({
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
         {data?.organizationUrl ? (
-          <Link to={data.organizationUrl}>
+          <Link to={data.organizationUrl || ''}>
             {data.orgName}
             <OpenInNewIcon
               style={{ verticalAlign: 'sub', paddingTop: '7px' }}
@@ -99,13 +112,24 @@ export const AddedRepositoryTableRow = ({
       <TableCell align="left" className={classes.tableCellStyle}>
         <ImportStatus data={data} />
       </TableCell>
-
+      <TableCell align="left" className={classes.tableCellStyle}>
+        {data.tasks?.map(task => (
+          <Typography key={task.taskId} component="span">
+            {task.taskId}
+          </Typography>
+        ))}
+      </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
         <LastUpdated data={data} />
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
         <CatalogInfoAction data={data} />
-        <DeleteRepository data={data} />
+        <DeleteRepository
+          data={data}
+          onDelete={() => {
+            onDelete(data);
+          }}
+        />
         <SyncRepository data={data} />
       </TableCell>
     </TableRow>
