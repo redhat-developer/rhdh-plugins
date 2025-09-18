@@ -3,10 +3,12 @@ apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   namespace: marketplace-plugin-demo
-  name: no-icon-no-description
-  title: No Icon No Description
+  name: certified-plugin-1-by-vendor-a
+  title: Certified Plugin 1 by Vendor A
+  description: This is a certified plugin example
   annotations:
     extensions.backstage.io/pre-installed: 'true'
+    extensions.backstage.io/certified-by: Vendor A
 spec:
   categories:
     - Test plugin entity

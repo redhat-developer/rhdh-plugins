@@ -121,7 +121,31 @@
           "type": "string"
         },
         "support": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "generally-available",
+                    "tech-preview",
+                    "dev-preview",
+                    "community",
+                    "none"
+                  ]
+                }
+              },
+              "required": ["provider", "level"],
+              "additionalProperties": false
+            }
+          ]
         },
         "lifecycle": {
           "type": "string"

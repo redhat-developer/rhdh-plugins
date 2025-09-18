@@ -143,7 +143,10 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
                 value={pkg.spec?.backstage?.supportedVersions}
               />
               <KeyValue label="Author:" value={pkg.spec?.author} />
-              <KeyValue label="Support:" value={pkg.spec?.support} />
+              <KeyValue
+                label="Support Provider"
+                value={pkg.spec?.support?.provider}
+              />
               <KeyValue label="Lifecycle:" value={pkg.spec?.lifecycle} />
 
               <Links entity={pkg} />

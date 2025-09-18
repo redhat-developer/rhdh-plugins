@@ -3,8 +3,9 @@ apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   namespace: marketplace-plugin-demo
-  name: no-icon-no-description
-  title: No Icon No Description
+  name: pre-installed-true
+  title: Pre-installed True
+  description: Pre-installed true means that the YAML is bundled with RHDH and this means this is NOT a custom plugin.
   annotations:
     extensions.backstage.io/pre-installed: 'true'
 spec:

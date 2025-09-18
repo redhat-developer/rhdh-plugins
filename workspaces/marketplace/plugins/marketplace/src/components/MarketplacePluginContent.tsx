@@ -30,6 +30,7 @@ import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -73,6 +74,57 @@ import {
   InstallationType,
   useInstallationContext,
 } from './InstallationContext';
+
+const PluginMetadataSection = ({
+  value,
+  title,
+}: {
+  value: any;
+  title: string;
+}) => {
+  if (!value) return null;
+  if (Array.isArray(value)) {
+    if (value.length === 0 || typeof value[0] !== 'string') return null;
+    return (
+      <Box sx={{ mb: 3 }}>
+        <Typography
+          variant="h6"
+          component="h3"
+          sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
+        >
+          {title}
+        </Typography>
+        {value.length === 1 ? (
+          <Typography variant="body2">{value[0]}</Typography>
+        ) : (
+          <ul style={{ paddingLeft: '20px', marginBottom: '24px' }}>
+            {value.map((item, index) => (
+              <li key={item || index} style={{ marginBottom: '8px' }}>
+                {item}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Box>
+    );
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    return (
+      <Box sx={{ mt: 3, mb: 3 }}>
+        <Typography
+          variant="h6"
+          component="h3"
+          sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
+        >
+          {title}
+        </Typography>
+        <Typography variant="body2">{String(value)}</Typography>
+      </Box>
+    );
+  }
+
+  return null;
+};
 
 export const MarketplacePluginContentSkeleton = () => {
   return (
@@ -148,7 +200,7 @@ const columns: TableColumn<MarketplacePackage>[] = [
     },
   },
   {
-    title: 'Supported version',
+    title: 'Backstage compatibility version',
     field: 'spec.backstage.supportedVersions',
     type: 'string',
   },
@@ -469,24 +521,29 @@ export const MarketplacePluginContent = ({
 
         <Grid container spacing={2}>
           <Grid item md={3}>
-            {highlights.length > 0 ? (
-              <>
-                <Typography
-                  variant="h6"
-                  component="h3"
-                  sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
-                >
-                  Highlights
-                </Typography>
-                <ul style={{ paddingLeft: '20px', marginBottom: '24px' }}>
-                  {highlights.map(highlight => (
-                    <li key={highlight} style={{ marginBottom: '8px' }}>
-                      {highlight}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
+            <PluginMetadataSection title="Highlights" value={highlights} />
+
+            <PluginMetadataSection
+              title={`Author${plugin.spec?.authors && plugin.spec.authors.length > 1 ? 's' : ''}`}
+              value={plugin.spec?.authors?.map(author => author.name)}
+            />
+
+            <PluginMetadataSection title="Tags" value={plugin.metadata?.tags} />
+
+            <PluginMetadataSection
+              title="Category"
+              value={plugin.spec?.categories}
+            />
+
+            <PluginMetadataSection
+              title="Publisher"
+              value={plugin.spec?.publisher}
+            />
+
+            <PluginMetadataSection
+              title="Support Provider"
+              value={plugin.spec?.support?.provider}
+            />
 
             {pluginActionButton()}
           </Grid>
