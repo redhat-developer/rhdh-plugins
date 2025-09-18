@@ -28,6 +28,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import { styled, useTheme } from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip';
 
 interface ScorecardProps {
   cardTitle: string;
@@ -37,12 +38,19 @@ interface ScorecardProps {
   StatusIcon: React.ElementType;
   value?: MetricValue;
   thresholds?: ThresholdResult;
+  isThresholdError?: boolean;
+  thresholdError?: string;
+  isMetricDataError?: boolean;
+  metricDataError?: string;
 }
 
 const StyledCircle = styled('circle')(
-  ({ theme, statusColor }: { theme: any; statusColor: string }) => ({
-    stroke: theme.palette[statusColor.split('.')[0]].main,
-  }),
+  ({ theme, statusColor }: { theme: any; statusColor: string }) => {
+    const [paletteKey, shade] = statusColor.split('.');
+    return {
+      stroke: theme.palette[paletteKey]?.[shade] ?? statusColor,
+    };
+  },
 );
 
 const Scorecard = ({
@@ -53,6 +61,10 @@ const Scorecard = ({
   StatusIcon,
   value,
   thresholds,
+  isThresholdError = false,
+  thresholdError,
+  isMetricDataError = false,
+  metricDataError,
 }: ScorecardProps) => {
   const theme = useTheme();
 
@@ -100,17 +112,29 @@ const Scorecard = ({
                     </Box>
                   ) : (
                     <>
-                      <svg width="160" height="160">
-                        <StyledCircle
-                          cx="80"
-                          cy="80"
-                          r="75"
-                          strokeWidth="10"
-                          fill="none"
-                          statusColor={statusColor}
-                          theme={theme}
-                        />
-                      </svg>
+                      <Tooltip
+                        title={
+                          // eslint-disable-next-line no-nested-ternary
+                          isMetricDataError
+                            ? metricDataError
+                            : isThresholdError
+                            ? thresholdError
+                            : undefined
+                        }
+                        arrow
+                      >
+                        <svg width="160" height="160">
+                          <StyledCircle
+                            cx="80"
+                            cy="80"
+                            r="75"
+                            strokeWidth="10"
+                            fill="none"
+                            statusColor={statusColor}
+                            theme={theme}
+                          />
+                        </svg>
+                      </Tooltip>
                       <Box
                         position="absolute"
                         top="50%"
@@ -122,22 +146,36 @@ const Scorecard = ({
                           alignItems: 'center',
                         }}
                       >
-                        <StatusIcon
-                          sx={{
-                            color: (muiTheme: any) =>
-                              muiTheme.palette[statusColor.split('.')[0]].main,
-                            fontSize: 20,
-                          }}
-                        />
+                        {!isThresholdError && !isMetricDataError && (
+                          <StatusIcon
+                            sx={{
+                              color: (muiTheme: any) =>
+                                muiTheme.palette[statusColor.split('.')[0]][
+                                  statusColor.split('.')[1]
+                                ],
+                              fontSize: 20,
+                            }}
+                          />
+                        )}
                         <Typography
                           variant="h6"
                           sx={{
                             color: (muiTheme: any) =>
-                              muiTheme.palette[statusColor.split('.')[0]].main,
-                            fontWeight: 600,
+                              muiTheme.palette[statusColor.split('.')[0]][
+                                statusColor.split('.')[1]
+                              ],
+                            fontWeight:
+                              isThresholdError || isMetricDataError ? 400 : 500,
+                            textAlign: 'center',
+                            fontSize:
+                              isThresholdError || isMetricDataError ? 14 : 24,
                           }}
                         >
-                          {value}
+                          {isThresholdError && 'Invalid thresholds'}
+                          {!isThresholdError &&
+                            isMetricDataError &&
+                            'Metric data unavailable'}
+                          {!isThresholdError && !isMetricDataError && value}
                         </Typography>
                       </Box>
                     </>
@@ -155,9 +193,8 @@ const Scorecard = ({
                   paddingLeft: '12px',
                 }}
               >
-                {thresholds?.definition?.rules.map(({ key, expression }) => (
+                {isThresholdError || isMetricDataError ? (
                   <Box
-                    key={key}
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
@@ -168,27 +205,48 @@ const Scorecard = ({
                       sx={{
                         width: 10,
                         height: 10,
-                        backgroundColor:
-                          {
-                            error: theme.palette.error.main,
-                            warning: theme.palette.warning.main,
-                            success: theme.palette.success.main,
-                          }[key] || theme.palette.success.main,
+                        backgroundColor: theme.palette.grey['400'],
                         flexShrink: 0,
                       }}
-                    />
-                    <Typography
-                      variant="body2"
+                    />{' '}
+                    --
+                  </Box>
+                ) : (
+                  thresholds?.definition?.rules.map(({ key, expression }) => (
+                    <Box
+                      key={key}
                       sx={{
-                        wordBreak: 'break-word',
-                        lineHeight: 1.2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
                       }}
                     >
-                      {key.charAt(0).toUpperCase() + key.slice(1)}{' '}
-                      {expression && `${expression}`}
-                    </Typography>
-                  </Box>
-                ))}
+                      <Box
+                        sx={{
+                          width: 10,
+                          height: 10,
+                          backgroundColor:
+                            {
+                              error: theme.palette.error.main,
+                              warning: theme.palette.warning.main,
+                              success: theme.palette.success.main,
+                            }[key] || theme.palette.success.main,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          wordBreak: 'break-word',
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {key.charAt(0).toUpperCase() + key.slice(1)}{' '}
+                        {expression && `${expression}`}
+                      </Typography>
+                    </Box>
+                  ))
+                )}
               </Box>
             </Grid>
           </Grid>
