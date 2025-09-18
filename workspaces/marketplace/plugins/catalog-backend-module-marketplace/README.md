@@ -53,7 +53,6 @@ spec:
   categories:
     - CI/CD
   developer: Red Hat
-  icon: https://janus-idp.io/images/plugins/tekton.svg
   description: |
     # Tekton plugin for Backstage
   installation:

@@ -144,8 +144,8 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
               />
               <KeyValue label="Author:" value={pkg.spec?.author} />
               <KeyValue
-                label="Support:"
-                value={pkg.spec?.support?.name || 'N/A'}
+                label="Support Provider"
+                value={pkg.spec?.support?.provider}
               />
               <KeyValue label="Lifecycle:" value={pkg.spec?.lifecycle} />
 

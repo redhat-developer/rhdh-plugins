@@ -16,24 +16,27 @@
 
 import { useMemo, useCallback } from 'react';
 
-import { ExtendedSelectItem } from '../types';
 import { useSearchParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
+
 import {
   MarketplaceAnnotation,
-  SupportLevel,
+  MarketplaceSupportLevel,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { usePluginFacet } from '../hooks/usePluginFacet';
 import { usePluginFacets } from '../hooks/usePluginFacets';
-import { CustomSelectFilter } from '../shared-components/CustomSelectFilter';
+import {
+  CustomSelectFilter,
+  CustomSelectItem,
+} from '../shared-components/CustomSelectFilter';
 import { useQueryArrayFilter } from '../hooks/useQueryArrayFilter';
 import { colors } from '../consts';
 
 const CategoryFilter = () => {
   const categoriesFacet = usePluginFacet('spec.categories');
-  const filter = useQueryArrayFilter('spec.categories');
+  const filter = useQueryArrayFilter('category');
   const categories = categoriesFacet.data;
 
   const items = useMemo(() => {
@@ -41,11 +44,12 @@ const CategoryFilter = () => {
     return categories.map(category => ({
       label: category.value,
       value: category.value,
+      count: category.count,
     }));
   }, [categories]);
 
   const handleChange = useCallback(
-    (_e: any, value: ExtendedSelectItem[]) => {
+    (_e: any, value: CustomSelectItem[]) => {
       const newSelection = value.map(v => v.value);
       filter.set(newSelection);
     },
@@ -65,19 +69,20 @@ const CategoryFilter = () => {
 const AuthorFilter = () => {
   const authorsFacet = usePluginFacet('spec.authors.name');
   const authors = authorsFacet.data;
-  const filter = useQueryArrayFilter('spec.authors.name');
+  const filter = useQueryArrayFilter('author');
 
   const items = useMemo(() => {
     if (!authors) return [];
     return authors.map(author => ({
       label: author.value,
       value: author.value,
+      count: author.count,
     }));
   }, [authors]);
 
   const handleChange = useCallback(
-    (_e: any, value: ExtendedSelectItem[]) => {
-      const newSelection = value.map(v => v.label);
+    (_e: any, value: CustomSelectItem[]) => {
+      const newSelection = value.map(v => v.value);
       filter.set(newSelection);
     },
     [filter],
@@ -95,6 +100,7 @@ const AuthorFilter = () => {
 
 const facetsKeys = [
   `metadata.annotations.${MarketplaceAnnotation.CERTIFIED_BY}`,
+  `metadata.annotations.${MarketplaceAnnotation.PRE_INSTALLED}`,
   'spec.support.level',
 ];
 
@@ -117,61 +123,84 @@ const SupportTypeFilter = () => {
 
   const items = useMemo(() => {
     if (!facets) return [];
-    const allSupportTypeItems: ExtendedSelectItem[] = [];
+    const allSupportTypeItems: CustomSelectItem[] = [];
 
     // Certified plugins
     const certified = facets[facetsKeys[0]];
-    certified?.forEach(certifiedBy => {
-      allSupportTypeItems.push({
-        label: `Certified (${certifiedBy.count})`,
-        value: `${facetsKeys[0]}=${certifiedBy.value}`,
-        isBadge: true,
-        badgeColor: colors.certified,
-        helperText: 'Stable and secured by Red Hat',
-        displayOrder: 2,
-      });
+    const certifiedCount =
+      certified?.reduce((acc, curr) => acc + curr.count, 0) || 0;
+    // const certifiedFilter = certified?.map(c => c.value).join(', ') || '';
+    const certifiedProviders = certified?.map(c => c.value).join(', ') || '';
+
+    allSupportTypeItems.push({
+      label: 'Certified',
+      value: 'certified',
+      count: certifiedCount,
+      isBadge: true,
+      badgeColor: colors.certified,
+      helperText: `Stable and secured by ${certifiedProviders}`,
+      displayOrder: 2,
     });
 
-    const supportLevelFilters = facets[facetsKeys[1]];
+    // Custom plugins
+    const preinstalled = facets[facetsKeys[1]];
+    const customCount =
+      preinstalled?.find(p => p.value === 'false')?.count ?? 0;
+    if (customCount > 0) {
+      allSupportTypeItems.push({
+        label: 'Custom plugin',
+        value: 'custom',
+        count: customCount,
+        isBadge: true,
+        badgeColor: colors.custom,
+        helperText: 'Added by the administrator',
+        displayOrder: 3,
+      });
+    }
+
+    const supportLevelFilters = facets[facetsKeys[2]];
     supportLevelFilters?.forEach(supportLevelFilter => {
-      if (supportLevelFilter.value === SupportLevel.GENERALLY_AVAILABLE) {
+      if (
+        supportLevelFilter.value === MarketplaceSupportLevel.GENERALLY_AVAILABLE
+      ) {
         allSupportTypeItems.push({
-          label: `Generally available (${supportLevelFilter.count})`,
-          value: `${facetsKeys[1]}=${supportLevelFilter.value}`,
+          label: 'Generally available (GA)',
+          value: `support-level=${supportLevelFilter.value}`,
+          count: supportLevelFilter.count,
           isBadge: true,
           badgeColor: colors.generallyAvailable,
           helperText: 'Production-ready and supported',
           displayOrder: 1,
         });
-      } else if (supportLevelFilter.value === SupportLevel.CUSTOM_PLUGIN) {
+      } else if (
+        supportLevelFilter.value === MarketplaceSupportLevel.TECH_PREVIEW
+      ) {
         allSupportTypeItems.push({
-          label: `Custom plugin (${supportLevelFilter.count})`,
-          value: `${facetsKeys[1]}=${supportLevelFilter.value}`,
-          isBadge: true,
-          badgeColor: colors.custom,
-          helperText: 'Added by the administrator',
-          displayOrder: 3,
-        });
-      } else if (supportLevelFilter.value === SupportLevel.COMMUNITY_PLUGIN) {
-        allSupportTypeItems.push({
-          label: `Community plugin (${supportLevelFilter.count})`,
-          value: `${facetsKeys[1]}=${supportLevelFilter.value}`,
-          helperText: 'Open-source plugins, no official support',
-          displayOrder: 6,
-        });
-      } else if (supportLevelFilter.value === SupportLevel.TECH_PREVIEW) {
-        allSupportTypeItems.push({
-          label: `Tech preview (TP) (${supportLevelFilter.count})`,
-          value: `${facetsKeys[1]}=${supportLevelFilter.value}`,
+          label: 'Tech preview (TP)',
+          value: `support-level=${supportLevelFilter.value}`,
+          count: supportLevelFilter.count,
           helperText: 'Plugin still in development',
+          displayOrder: 4,
+        });
+      } else if (
+        supportLevelFilter.value === MarketplaceSupportLevel.DEV_PREVIEW
+      ) {
+        allSupportTypeItems.push({
+          label: 'Dev preview (DP)',
+          value: `support-level=${supportLevelFilter.value}`,
+          count: supportLevelFilter.count,
+          helperText: 'An early-stage, experimental plugin',
           displayOrder: 5,
         });
-      } else if (supportLevelFilter.value === SupportLevel.DEV_PREVIEW) {
+      } else if (
+        supportLevelFilter.value === MarketplaceSupportLevel.COMMUNITY
+      ) {
         allSupportTypeItems.push({
-          label: `Dev preview (DP) (${supportLevelFilter.count})`,
-          value: `${facetsKeys[1]}=${supportLevelFilter.value}`,
-          helperText: 'An early-stage, experimental plugin',
-          displayOrder: 4,
+          label: 'Community plugin',
+          value: `support-level=${supportLevelFilter.value}`,
+          count: supportLevelFilter.count,
+          helperText: 'Open-source plugins, no official support',
+          displayOrder: 6,
         });
       }
     });
@@ -182,21 +211,23 @@ const SupportTypeFilter = () => {
   }, [facets]);
 
   const selected = useMemo(() => {
-    const selectedFilters = searchParams
-      .getAll('filter')
-      .filter(
-        filter =>
-          filter.startsWith('metadata.annotations.extensions.backstage.io/') ||
-          filter.startsWith('spec.support.'),
-      );
-    return items?.filter(item => {
-      const itemValue = item.value.toString();
-      return selectedFilters.includes(itemValue);
+    const selectedFilters = searchParams.getAll('filter');
+    return items.filter(item => {
+      if (item.value === 'certified') {
+        return selectedFilters.includes('certified');
+      }
+      if (item.value === 'custom') {
+        return selectedFilters.includes('custom');
+      }
+      if (item.value.toString().startsWith('support-level=')) {
+        return selectedFilters.includes(item.value.toString());
+      }
+      return false;
     });
   }, [searchParams, items]);
 
   const onChange = useCallback(
-    (newValues: ExtendedSelectItem[]) => {
+    (newValues: CustomSelectItem[]) => {
       const newSelection = newValues.map(v => v.value);
       setSearchParams(
         params => {
@@ -214,10 +245,9 @@ const SupportTypeFilter = () => {
           params.forEach((value, key) => {
             if (
               key === 'filter' &&
-              (value.startsWith(
-                `metadata.annotations.extensions.backstage.io/`,
-              ) ||
-                value.startsWith('spec.support.'))
+              (value === `certified` ||
+                value === `custom` ||
+                value.startsWith('support-level='))
             ) {
               add();
             } else {

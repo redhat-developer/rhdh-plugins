@@ -21,7 +21,7 @@ import {
   MarketplaceAnnotation,
   MarketplacePlugin,
   MarketplacePackage,
-  SupportLevel,
+  MarketplaceSupportLevel,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { colors } from '../consts';
 
@@ -36,6 +36,9 @@ interface BadgeOptions {
 const getBadgeOptions = (
   entity: MarketplacePlugin | MarketplacePackage,
 ): BadgeOptions | null => {
+  const supportLevel = entity.spec?.support?.level;
+  const supportProvider = entity.spec?.support?.provider;
+
   if (entity.metadata.annotations?.[MarketplaceAnnotation.CERTIFIED_BY]) {
     return {
       isBadge: true,
@@ -45,43 +48,51 @@ const getBadgeOptions = (
       statusTooltip: `Stable and secured by ${entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY]}`,
     };
   }
-  if (entity.spec?.support?.level === SupportLevel.GENERALLY_AVAILABLE) {
+  if (supportLevel === MarketplaceSupportLevel.GENERALLY_AVAILABLE) {
     return {
       isBadge: true,
       color: colors.generallyAvailable,
       label: 'Generally available (GA)',
-      tooltip: `Generally available (GA) and supported by ${entity.spec?.support?.name}`,
-      statusTooltip: `Production-ready and supported by ${entity.spec?.support?.name}`,
+      tooltip: supportProvider
+        ? `Generally available (GA) and supported by ${supportProvider}`
+        : 'Generally available (GA) and supported',
+      statusTooltip: supportProvider
+        ? `Production-ready and supported by ${supportProvider}`
+        : 'Production-ready and supported',
     };
   }
-  if (entity.spec?.support?.level === SupportLevel.CUSTOM_PLUGIN) {
-    return {
-      isBadge: true,
-      color: colors.custom,
-      label: 'Custom plugin',
-      tooltip: 'Custom plugin',
-      statusTooltip: 'Plugins added by the administrator',
-    };
-  }
-  if (entity.spec?.support?.level === SupportLevel.COMMUNITY_PLUGIN) {
+  if (supportLevel === MarketplaceSupportLevel.COMMUNITY) {
     return {
       isBadge: false,
       label: 'Community plugin',
       statusTooltip: 'Open-source plugins, no official support',
     };
   }
-  if (entity.spec?.support?.level === SupportLevel.TECH_PREVIEW) {
+  if (supportLevel === MarketplaceSupportLevel.TECH_PREVIEW) {
     return {
       isBadge: false,
       label: 'Tech preview (TP)',
       statusTooltip: 'Plugin still in development',
     };
   }
-  if (entity.spec?.support?.level === SupportLevel.DEV_PREVIEW) {
+  if (supportLevel === MarketplaceSupportLevel.DEV_PREVIEW) {
     return {
       isBadge: false,
       label: 'Dev preview (DP)',
       statusTooltip: 'An early-stage, experimental plugin',
+    };
+  }
+
+  if (
+    entity.metadata?.annotations?.[MarketplaceAnnotation.PRE_INSTALLED] !==
+    'true'
+  ) {
+    return {
+      isBadge: true,
+      color: colors.custom,
+      label: 'Custom plugin',
+      tooltip: 'Custom plugin',
+      statusTooltip: 'Plugins added by the administrator',
     };
   }
 

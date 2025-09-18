@@ -95,30 +95,18 @@ All plugins inherit from Backstage's standard Entity interface and include:
 - **`support`** (object, optional): Support and maintenance information
   ```yaml
   support:
-    name: 'Red Hat' # Required: Support provider name
+    provider: 'Red Hat' # Required: Support provider name, like 'Red Hat', 'IBM', 'Spotify', 'Backstage Community', etc.
     level: 'generally-available' # Required: Support level
   ```
 
-###### Support Name Values
-
-The `support.name` field indicates who provides support for the plugin:
-
 ###### Support Level Values
 
-The `support.level` field indicates the maturity and support level:
+The `support.level` field indicates the maturity and support level
+provided bt the `support.provider`. Like:
 
 - **`generally-available`**: Stable, fully supported plugins ready for production use.
-- **`community-plugin`**: Open-source plugins, no official support.
-- **`community-plugin`**: Plugins added by the administrator.
-- **`tech-preview`**: Plugin still in development.
-- **`dev-preview`**: An early-stage, experimental plugin.
-
-##### Publisher Information
-
-- **`publisher`** (string, optional): Indicates who distributes/packages the plugin for RHDH
-  ```yaml
-  publisher: 'Red Hat'
-  ```
+- **`tech-preview`**: A technical preview of a plugin that is not fully supported yet.
+- **`dev-preview`**: An early-stage plugin.
 
 ##### Installation Status
 
@@ -246,14 +234,6 @@ spec:
 metadata:
   annotations:
     extensions.backstage.io/certified-by: Company name
-```
-
-### Verification
-
-```yaml
-metadata:
-  annotations:
-    extensions.backstage.io/verified-by: Company name
 ```
 
 ### Support type for Core and Community plugins

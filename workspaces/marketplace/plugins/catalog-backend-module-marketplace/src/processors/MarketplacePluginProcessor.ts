@@ -113,10 +113,6 @@ export class MarketplacePluginProcessor implements CatalogProcessor {
       if (typeof entity.spec?.support === 'string') {
         entity.spec.support = { level: entity.spec.support };
       }
-      if (!entity.spec?.support?.level) {
-        if (!entity.spec) entity.spec = {};
-        entity.spec.support = { level: 'custom-plugin' };
-      }
 
       // Relation - OWNED_BY
       const thisEntityRef = getCompoundEntityRef(entity);

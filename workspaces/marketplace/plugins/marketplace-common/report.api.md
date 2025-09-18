@@ -463,28 +463,28 @@ export interface MarketplacePluginSpec extends JsonObject {
 
 // @public (undocumented)
 export type MarketplaceSupport = {
-    name?: string;
-    level?: string | SupportLevel;
+    provider?: string;
+    level?: MarketplaceSupportLevel;
 };
+
+// @public (undocumented)
+export enum MarketplaceSupportLevel {
+    // (undocumented)
+    COMMUNITY = "community",
+    // (undocumented)
+    DEV_PREVIEW = "dev-preview",
+    // (undocumented)
+    GENERALLY_AVAILABLE = "generally-available",
+    // (undocumented)
+    NONE = "none",
+    // (undocumented)
+    TECH_PREVIEW = "tech-preview"
+}
 
 // @public (undocumented)
 export type NodeEnvironmentType = 'production' | 'development' | 'test';
 
 // @public (undocumented)
 export const RESOURCE_TYPE_EXTENSIONS_PLUGIN = "extensions-plugin";
-
-// @public (undocumented)
-export enum SupportLevel {
-    // (undocumented)
-    COMMUNITY_PLUGIN = "community-plugin",
-    // (undocumented)
-    CUSTOM_PLUGIN = "custom-plugin",
-    // (undocumented)
-    DEV_PREVIEW = "dev-preview",
-    // (undocumented)
-    GENERALLY_AVAILABLE = "generally-available",
-    // (undocumented)
-    TECH_PREVIEW = "tech-preview"
-}
 
 ```

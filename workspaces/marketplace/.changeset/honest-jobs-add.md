@@ -12,8 +12,7 @@
 
 ### Plugin Details Enhancements
 
-- Added status badges for all support levels: GA, Certified, Custom, Dev Preview, Tech Preview
-- Added tooltips for all status badges
+- Added status badges for all support levels: GA, Dev Preview, Tech Preview, Community, Custom
 - Added **Publisher**, **Author**, and **Supported By** metadata
 - Renamed **Supported version** → **Backstage compatibility version**
 - Removed **Verified** status

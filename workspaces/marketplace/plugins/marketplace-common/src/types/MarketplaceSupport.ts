@@ -17,18 +17,20 @@
 /**
  * @public
  */
-export enum SupportLevel {
+export enum MarketplaceSupportLevel {
   GENERALLY_AVAILABLE = 'generally-available',
   TECH_PREVIEW = 'tech-preview',
   DEV_PREVIEW = 'dev-preview',
-  COMMUNITY_PLUGIN = 'community-plugin',
-  CUSTOM_PLUGIN = 'custom-plugin',
+  COMMUNITY = 'community',
+  NONE = 'none',
 }
 
 /**
  * @public
  */
 export type MarketplaceSupport = {
-  name?: string;
-  level?: string | SupportLevel;
+  // Technically both attributes are required, but we expecting undefined anyway
+  provider?: string;
+  // Technically both attributes are required, but we expecting undefined anyway
+  level?: MarketplaceSupportLevel;
 };

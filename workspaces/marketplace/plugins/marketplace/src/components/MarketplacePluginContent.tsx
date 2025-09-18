@@ -111,7 +111,11 @@ const PluginMetadataSection = ({
   if (typeof value === 'string' || typeof value === 'number') {
     return (
       <Box sx={{ mt: 3, mb: 3 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+        <Typography
+          variant="h6"
+          component="h3"
+          sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
+        >
           {title}
         </Typography>
         <Typography variant="body2">{String(value)}</Typography>
@@ -517,28 +521,28 @@ export const MarketplacePluginContent = ({
 
         <Grid container spacing={2}>
           <Grid item md={3}>
-            <PluginMetadataSection value={highlights} title="Highlights" />
+            <PluginMetadataSection title="Highlights" value={highlights} />
 
             <PluginMetadataSection
-              value={plugin.spec?.authors?.map(author => author.name)}
               title={`Author${plugin.spec?.authors && plugin.spec.authors.length > 1 ? 's' : ''}`}
+              value={plugin.spec?.authors?.map(author => author.name)}
             />
 
-            <PluginMetadataSection value={plugin.metadata?.tags} title="Tags" />
+            <PluginMetadataSection title="Tags" value={plugin.metadata?.tags} />
 
             <PluginMetadataSection
-              value={plugin.spec?.categories}
               title="Category"
+              value={plugin.spec?.categories}
             />
 
             <PluginMetadataSection
-              value={plugin.spec?.publisher}
               title="Publisher"
+              value={plugin.spec?.publisher}
             />
 
             <PluginMetadataSection
-              value={plugin.spec?.support?.name}
               title="Support Provider"
+              value={plugin.spec?.support?.provider}
             />
 
             {pluginActionButton()}

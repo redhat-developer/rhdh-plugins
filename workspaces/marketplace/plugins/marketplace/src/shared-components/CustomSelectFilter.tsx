@@ -15,7 +15,7 @@
  */
 
 import type { SyntheticEvent } from 'react';
-import { ExtendedSelectItem } from '../types';
+import { SelectItem } from '@backstage/core-components';
 import Autocomplete from '@mui/material/Autocomplete';
 import Checkbox from '@mui/material/Checkbox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
@@ -27,15 +27,23 @@ import Box from '@mui/material/Box';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Typography from '@mui/material/Typography';
 
-export interface BackstageSelectFilterProps {
-  label: string;
-  helper?: string;
-  items: ExtendedSelectItem[];
-  selectedItems: ExtendedSelectItem[];
-  onChange: (event: SyntheticEvent, value: ExtendedSelectItem[]) => void;
+export interface CustomSelectItem extends SelectItem {
+  helperText?: string;
+  isBadge?: boolean;
+  badgeColor?: string;
+  count?: number;
+  displayOrder?: number;
 }
 
-export const CustomSelectFilter = (props: BackstageSelectFilterProps) => {
+export interface CustomSelectFilterProps {
+  label: string;
+  helper?: string;
+  items: CustomSelectItem[];
+  selectedItems: CustomSelectItem[];
+  onChange: (event: SyntheticEvent, value: CustomSelectItem[]) => void;
+}
+
+export const CustomSelectFilter = (props: CustomSelectFilterProps) => {
   return (
     <Box
       sx={{
@@ -90,15 +98,25 @@ export const CustomSelectFilter = (props: BackstageSelectFilterProps) => {
               )}
 
               {option.helperText ? (
-                <Box>
+                <div>
                   <Typography variant="body1">{option.label}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {option.helperText}
                   </Typography>
-                </Box>
+                </div>
               ) : (
-                option.label
+                <div style={{ flexGrow: 1 }}>{option.label}</div>
               )}
+
+              {option.count ? (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ pl: 1 }}
+                >
+                  {option.count}
+                </Typography>
+              ) : null}
             </li>
           );
         }}
