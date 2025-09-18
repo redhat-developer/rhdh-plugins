@@ -18,9 +18,11 @@ import { JiraClient } from './base';
 
 export class JiraDataCenterClient extends JiraClient {
   protected getAuthHeaders(): Record<string, string> {
-    return {
-      Authorization: `Bearer ${this.config.token}`,
-    };
+    return this.config.proxyPath
+      ? {}
+      : {
+          Authorization: `Bearer ${this.config.token}`,
+        };
   }
 
   protected getSearchEndpoint(): string {
