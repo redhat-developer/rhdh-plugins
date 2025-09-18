@@ -49,7 +49,7 @@ import { UserSettingsPage } from '@backstage/plugin-user-settings';
 import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
 import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { getThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { Navigate, Route } from 'react-router-dom';
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';

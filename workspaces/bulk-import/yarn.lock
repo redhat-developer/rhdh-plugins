@@ -6901,7 +6901,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.15.17":
+"@mui/icons-material@npm:5.18.0, @mui/icons-material@npm:^5.15.17, @mui/icons-material@npm:^5.17.1":
   version: 5.18.0
   resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
@@ -9170,7 +9170,7 @@ __metadata:
     "@mui/styles": 5.18.0
     "@playwright/test": 1.55.1
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
-    "@redhat-developer/red-hat-developer-hub-theme": ^0.5.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
     "@spotify/prettier-config": ^15.0.0
     "@tanstack/react-query": ^4.29.21
     "@testing-library/dom": ^10.0.0
@@ -9195,18 +9195,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@redhat-developer/red-hat-developer-hub-theme@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.0"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/theme": ^0.5.2
-    "@emotion/react": ^11.11.1
-    "@emotion/styled": ^11.11.0
-    "@material-ui/core": ^4.12.4
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/theme": ^0.6.8
     "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.14.19
-    "@mui/material": ^5.14.20
-  checksum: 158667ac33e7b926fec2c7ed9d26c3bd81deafe8b0026316ab171e66dd2f3a36474225e42b7ac8527d0e357c1c11432fe767f0cd46b2cd86464e53e4c146a09c
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: a5626d864def2e255d026d1620d370ada033f11ee357b145a9f5bd95185cbb9392cae1c83d2dbdcafde8747feb95d79f7067f645d5c6086628d5910a216cf34e
   languageName: node
   linkType: hard
 
@@ -13466,7 +13467,7 @@ __metadata:
     "@mui/styles": 5.18.0
     "@playwright/test": 1.55.1
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
-    "@redhat-developer/red-hat-developer-hub-theme": ^0.5.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
