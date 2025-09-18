@@ -34,6 +34,8 @@ import Typography from '@mui/material/Typography';
 import TemplateCard from './TemplateCard';
 import { useEntities } from '../../hooks/useEntities';
 import { ViewMoreLink } from './ViewMoreLink';
+import { useTranslation } from '../../hooks/useTranslation';
+import { Trans } from '../Trans';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -45,6 +47,7 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
 }));
 
 export const TemplateSection = () => {
+  const { t } = useTranslation();
   const {
     data: templates,
     error,
@@ -74,10 +77,10 @@ export const TemplateSection = () => {
     );
   } else if (!templates) {
     content = (
-      <WarningPanel severity="error" title="Could not fetch data.">
+      <WarningPanel severity="error" title={t('templates.fetchError')}>
         <CodeSnippet
           language="text"
-          text={error?.toString() ?? 'Unknown error'}
+          text={error?.toString() ?? t('templates.error')}
         />
       </WarningPanel>
     );
@@ -115,7 +118,7 @@ export const TemplateSection = () => {
                     }}
                   >
                     <Typography sx={{ fontSize: '1.125rem', fontWeight: 500 }}>
-                      No templates added yet
+                      {t('templates.empty')}
                     </Typography>
                     <Typography
                       sx={{
@@ -125,11 +128,10 @@ export const TemplateSection = () => {
                         mb: '16px',
                       }}
                     >
-                      Once templates are added, this space will showcase
-                      relevant content tailored to your experience.
+                      {t('templates.emptyDescription')}
                     </Typography>
                     <StyledLink to="/catalog-import" underline="none">
-                      Register a template
+                      {t('templates.register')}
                     </StyledLink>
                   </CardContent>
                 </Box>
@@ -159,14 +161,16 @@ export const TemplateSection = () => {
           fontSize: '1.5rem',
         }}
       >
-        Explore Templates
+        {t('templates.title')}
       </Typography>
       {content}
       {templates?.items && templates?.items.length > 0 && (
         <Box sx={{ pt: 2 }}>
           <ViewMoreLink to={catalogTemplatesLink} underline="always">
-            View all {templates?.totalItems ? templates?.totalItems : ''}{' '}
-            templates
+            <Trans
+              message="templates.viewAll"
+              params={{ count: templates?.totalItems?.toString() || '' }}
+            />
           </ViewMoreLink>
         </Box>
       )}

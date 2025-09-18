@@ -63,6 +63,7 @@ import {
   EntitySection,
   TemplateSection,
 } from '../src/plugin';
+import { homepageTranslations } from '../src/translations';
 import { HomePageCardMountPoint, QuickAccessLink } from '../src/types';
 import defaultQuickAccess from './quickaccess-default.json';
 
@@ -276,6 +277,9 @@ const createPage = ({
 
 createDevApp()
   .registerPlugin(dynamicHomePagePlugin)
+  .addTranslationResource(homepageTranslations)
+  .setAvailableLanguages(['en', 'de', 'fr', 'it', 'es'])
+  .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage(
     createPage({

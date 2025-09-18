@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import {
+  useTranslationRef,
+  TranslationFunction,
+} from '@backstage/core-plugin-api/alpha';
 
-export * from './plugin';
-export * from './translations';
+import { homepageTranslationRef } from '../translations';
+
+export const useTranslation = (): {
+  t: TranslationFunction<typeof homepageTranslationRef.T>;
+} => useTranslationRef(homepageTranslationRef);

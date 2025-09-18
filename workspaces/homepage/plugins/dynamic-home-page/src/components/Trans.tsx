@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import { useTranslation } from '../hooks/useTranslation';
+import { homepageTranslationRef } from '../translations';
 
-export * from './plugin';
-export * from './translations';
+type Messages = typeof homepageTranslationRef.T;
+
+interface TransProps<TMessages extends { [key in string]: string }> {
+  message: keyof TMessages;
+  params?: any;
+}
+
+export const Trans = ({ message, params }: TransProps<Messages>) => {
+  const { t } = useTranslation();
+  return t(message, params);
+};
