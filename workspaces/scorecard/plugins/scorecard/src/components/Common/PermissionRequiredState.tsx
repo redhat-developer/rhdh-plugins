@@ -30,6 +30,10 @@ const PermissionRequiredState = () => {
         height: '100%',
         alignItems: 'center',
         padding: '100px',
+        '& h5': {
+          fontSize: '2.5rem',
+          fontWeight: 600,
+        },
       }}
     >
       <EmptyState
