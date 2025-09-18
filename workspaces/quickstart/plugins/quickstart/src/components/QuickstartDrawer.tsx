@@ -22,57 +22,54 @@ import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext'
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
 import { useQuickstartRole } from '../hooks/useQuickstartRole';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 
 export const QuickstartDrawer = () => {
   const { isDrawerOpen, closeDrawer, openDrawer, drawerWidth } =
     useQuickstartDrawerContext();
 
-  // Track if we've already auto-opened the drawer to prevent re-opening after manual close
-  const hasAutoOpened = useRef(false);
-
   const apiHolder = useApiHolder();
   const config = apiHolder.get(configApiRef);
-  const quickstartItems: QuickstartItemData[] = config?.has('app.quickstart')
-    ? config.get('app.quickstart')
-    : [];
+  const quickstartItems: QuickstartItemData[] = useMemo(() => {
+    return config?.has('app.quickstart')
+      ? (config.get('app.quickstart') as QuickstartItemData[])
+      : [];
+  }, [config]);
 
   const { isLoading, userRole } = useQuickstartRole();
-  const filteredItems =
-    !isLoading && userRole
+
+  // Items available to the user based on cached/derived role
+  const eligibleItems = useMemo(() => {
+    return !isLoading && userRole
       ? filterQuickstartItemsByRole(quickstartItems, userRole)
       : [];
+  }, [isLoading, userRole, quickstartItems]);
 
-  // Auto-open drawer when user logs in and has quickstart items available
-  // Only do this once, and respect user's manual close action
+  // Only expose items to the body when drawer is open to avoid re-renders during close
+  const filteredItems = useMemo(() => {
+    return isDrawerOpen ? eligibleItems : [];
+  }, [isDrawerOpen, eligibleItems]);
+
+  // Auto-open once when there are eligible items, unless user manually closed
   useEffect(() => {
+    const quickstartOpenLS = localStorage.getItem('quickstart-open');
+    const userHasManuallyClosed = quickstartOpenLS === 'false';
     if (
       !isLoading &&
-      filteredItems.length > 0 &&
+      eligibleItems.length > 0 &&
       !isDrawerOpen &&
-      !hasAutoOpened.current
+      !userHasManuallyClosed
     ) {
       openDrawer();
-      hasAutoOpened.current = true;
     }
-  }, [isLoading, filteredItems.length, isDrawerOpen, openDrawer]);
+  }, [isLoading, eligibleItems.length, isDrawerOpen, openDrawer]);
 
-  // Hide the drawer entirely if there are no quickstart items for the user
-  // Do this check first, before any rendering happens
-  if (!isLoading && filteredItems.length === 0) {
-    // Also close the drawer context if it's currently open to prevent layout issues
-    if (isDrawerOpen) {
-      closeDrawer();
-    }
+  // If there are no items for the user, hide the drawer entirely
+  if (!isLoading && eligibleItems.length === 0) {
     return null;
   }
 
-  // During loading, if drawer is open but we don't know if user will have items yet,
-  // close it preemptively to prevent flash and reset auto-open tracking
-  if (isLoading && isDrawerOpen) {
-    closeDrawer();
-    hasAutoOpened.current = false; // Reset for new user
-  }
+  // No role-fetching or filtering here when the drawer is closed
 
   return (
     <Drawer

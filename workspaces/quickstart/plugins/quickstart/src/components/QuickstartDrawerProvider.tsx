@@ -15,6 +15,7 @@
  */
 
 import { useEffect, PropsWithChildren, useState } from 'react';
+import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 import Snackbar from '@mui/material/Snackbar';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
@@ -26,6 +27,8 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const [showNotification, setShowNotification] = useState(false);
   const [hasShownNotification, setHasShownNotification] = useState(false);
   const [drawerWidth, setDrawerWidth] = useState<number>(500);
+  const [userKey, setUserKey] = useState<string>('guest');
+  const identityApi = useApi(identityApiRef);
 
   // Single useEffect - sets class on document.body
   useEffect(() => {
@@ -46,27 +49,51 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
     };
   }, [isDrawerOpen, drawerWidth]);
 
+  // Resolve the current user's identity to scope localStorage keys per user
   useEffect(() => {
-    const wasOpen = localStorage.getItem('quickstart-open');
-    const hasVisited = localStorage.getItem('quickstart-visited');
-    const notificationShown = localStorage.getItem(
-      'quickstart-notification-shown',
-    );
+    let cancelled = false;
+    (async () => {
+      try {
+        const identity = await identityApi.getBackstageIdentity();
+        const ref = identity?.userEntityRef?.toLowerCase() || 'guest';
+        if (!cancelled) setUserKey(ref);
+      } catch (e) {
+        if (!cancelled) setUserKey('guest');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [identityApi]);
+
+  // Initialize drawer state based on per-user keys
+  useEffect(() => {
+    if (!userKey) return;
+    const openKey = `quickstart-open:${userKey}`;
+    const visitedKey = `quickstart-visited:${userKey}`;
+    const notificationKey = `quickstart-notification-shown:${userKey}`;
+
+    const wasOpen = localStorage.getItem(openKey);
+    const hasVisited = localStorage.getItem(visitedKey);
+    const notificationShown = localStorage.getItem(notificationKey);
 
     if (!hasVisited) {
       setIsDrawerOpen(true);
-      localStorage.setItem('quickstart-visited', 'true');
-      localStorage.setItem('quickstart-open', 'true');
+      localStorage.setItem(visitedKey, 'true');
+      localStorage.setItem(openKey, 'true');
     } else if (wasOpen === 'true') {
       setIsDrawerOpen(true);
+    } else {
+      setIsDrawerOpen(false);
     }
 
     setHasShownNotification(notificationShown === 'true');
-  }, []);
+  }, [userKey]);
 
   const openDrawer = () => {
     setIsDrawerOpen(true);
-    localStorage.setItem('quickstart-open', 'true');
+    const openKey = `quickstart-open:${userKey}`;
+    localStorage.setItem(openKey, 'true');
   };
 
   const closeDrawer = () => {
@@ -74,14 +101,18 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
     if (!hasShownNotification) {
       setShowNotification(true);
       setHasShownNotification(true);
-      localStorage.setItem('quickstart-notification-shown', 'true');
+      const notificationKey = `quickstart-notification-shown:${userKey}`;
+      localStorage.setItem(notificationKey, 'true');
     }
-    localStorage.setItem('quickstart-open', 'false');
+    const openKey = `quickstart-open:${userKey}`;
+    localStorage.setItem(openKey, 'false');
   };
 
   const toggleDrawer = () => {
-    setIsDrawerOpen(!isDrawerOpen);
-    localStorage.setItem('quickstart-open', (!isDrawerOpen).toString());
+    const next = !isDrawerOpen;
+    setIsDrawerOpen(next);
+    const openKey = `quickstart-open:${userKey}`;
+    localStorage.setItem(openKey, next.toString());
   };
 
   const handleNotificationClose = () => setShowNotification(false);
