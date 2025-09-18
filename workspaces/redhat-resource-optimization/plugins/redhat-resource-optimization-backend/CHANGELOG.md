@@ -1,4 +1,4 @@
-# @backstage-community/plugin-redhat-resource-optimization-backend
+# @red-hat-developer-hub/plugin-redhat-resource-optimization-backend
 
 ## 2.0.1
 
@@ -11,7 +11,7 @@
 
 ### Major Changes
 
-- 02bf923: plugin for viewing and applying RedHat Insight recommendations
+- 02bf923: plugin for viewing and applying Red Hat Insight recommendations
 - 67c18a8: sync with original repo
 
 ### Patch Changes
