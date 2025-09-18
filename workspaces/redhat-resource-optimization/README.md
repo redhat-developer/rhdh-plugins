@@ -51,8 +51,8 @@ This method requires vanilla backstage to be used:
 
    ```sh
    # From your Backstage root directory
-   yarn --cwd packages/app add @backstage-community/plugin-redhat-resource-optimization
-   yarn --cwd packages/backend add @backstage-community/plugin-redhat-resource-optimization-backend
+   yarn --cwd packages/app add @red-hat-developer-hub/plugin-redhat-resource-optimization
+   yarn --cwd packages/backend add @red-hat-developer-hub/plugin-redhat-resource-optimization-backend
    ```
 
 1. Update your `app-config.yaml` file
@@ -79,7 +79,9 @@ This method requires vanilla backstage to be used:
 
    ```ts
    backend.add(
-     import('@backstage-community/plugin-redhat-resource-optimization-backend'),
+     import(
+       '@red-hat-developer-hub/plugin-redhat-resource-optimization-backend'
+     ),
    );
    ```
 
@@ -88,7 +90,7 @@ This method requires vanilla backstage to be used:
    ```ts
    // packages/app/src/App.tsx
 
-   import { ResourceOptimizationPage } from '@backstage-community/plugin-redhat-resource-optimization';
+   import { ResourceOptimizationPage } from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
 
    <FlatRoutes>
      ...
@@ -105,7 +107,7 @@ This method requires vanilla backstage to be used:
    ```diff
    // packages/app/src/components/Root/Root.tsx
 
-   + import { ResourceOptimizationIconOutlined } from '@backstage-community/plugin-redhat-resource-optimization';
+   + import { ResourceOptimizationIconOutlined } from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
 
    export const Root = ({ children }: PropsWithChildren<{}>) => (
      <SidebarPage>
