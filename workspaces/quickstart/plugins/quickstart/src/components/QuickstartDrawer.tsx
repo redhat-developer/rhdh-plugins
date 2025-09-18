@@ -22,10 +22,10 @@ import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext'
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
 import { useQuickstartRole } from '../hooks/useQuickstartRole';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 export const QuickstartDrawer = () => {
-  const { isDrawerOpen, closeDrawer, openDrawer, drawerWidth } =
+  const { isDrawerOpen, closeDrawer, drawerWidth } =
     useQuickstartDrawerContext();
 
   const apiHolder = useApiHolder();
@@ -50,19 +50,7 @@ export const QuickstartDrawer = () => {
     return isDrawerOpen ? eligibleItems : [];
   }, [isDrawerOpen, eligibleItems]);
 
-  // Auto-open once when there are eligible items, unless user manually closed
-  useEffect(() => {
-    const quickstartOpenLS = localStorage.getItem('quickstart-open');
-    const userHasManuallyClosed = quickstartOpenLS === 'false';
-    if (
-      !isLoading &&
-      eligibleItems.length > 0 &&
-      !isDrawerOpen &&
-      !userHasManuallyClosed
-    ) {
-      openDrawer();
-    }
-  }, [isLoading, eligibleItems.length, isDrawerOpen, openDrawer]);
+  // No auto-open logic here; the provider initializes per user (visited/open)
 
   // If there are no items for the user, hide the drawer entirely
   if (!isLoading && eligibleItems.length === 0) {
