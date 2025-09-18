@@ -20,6 +20,7 @@ import { Link, StatusOK } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import * as jsyaml from 'js-yaml';
 import { get } from 'lodash';
+import * as yaml from 'yaml';
 import * as yup from 'yup';
 
 import { WaitingForPR } from '../components/WaitingForPR';
@@ -244,28 +245,28 @@ export const getImportStatus = (
       );
     case 'PR_MERGED':
       return showIcon ? (
-       <Typography
-         component="span"
-         style={{ display: 'flex', alignItems: 'baseline' }}
-       >
-         <Link
-           to={prUrl!}
-           data-testid="pull request url"
-           style={{
-             paddingLeft: '5px',
-             display: 'inline-flex',
-             alignItems: 'center',
-           }}
-         >
-           <StatusOK />
-           {labelText}
-         </Link>
-       </Typography>
+        <Typography
+          component="span"
+          style={{ display: 'flex', alignItems: 'baseline' }}
+        >
+          <Link
+            to={prUrl!}
+            data-testid="pull request url"
+            style={{
+              paddingLeft: '5px',
+              display: 'inline-flex',
+              alignItems: 'center',
+            }}
+          >
+            <StatusOK />
+            {labelText}
+          </Link>
+        </Typography>
       ) : (
-       labelText
-      )
+        labelText
+      );
     // todo hande pr error
-    //case 'PR_ERROR':
+    // case 'PR_ERROR':
     default:
       return '';
   }
@@ -396,11 +397,33 @@ export const prepareDataForSubmission = (
     (acc: CreateImportJobRepository[], repo) => {
       acc.push({
         approvalTool: approvalTool.toLocaleUpperCase(),
+        codeOwnersFileAsEntityOwner:
+          repo.catalogInfoYaml?.prTemplate?.useCodeOwnersFile || false,
+        catalogEntityName:
+          repo.catalogInfoYaml?.prTemplate?.componentName ||
+          repo?.repoName ||
+          'my-component',
         repository: {
           id: repo.id,
           url: repo.repoUrl || '',
           name: repo.repoName || '',
           organization: repo.orgName || '',
+          defaultBranch: repo.defaultBranch || '',
+        },
+        catalogInfoContent: yaml.stringify(
+          repo.catalogInfoYaml?.prTemplate?.yaml,
+          null,
+          2,
+        ),
+        github: {
+          pullRequest: {
+            url: repo.catalogInfoYaml?.prTemplate?.pullRequestUrl,
+            number: repo.catalogInfoYaml?.prTemplate?.number,
+            title:
+              repo.catalogInfoYaml?.prTemplate?.prTitle ||
+              'Add catalog-info.yaml config file',
+            body: repo.catalogInfoYaml?.prTemplate?.prDescription || '',
+          },
         },
       });
       return acc;

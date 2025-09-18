@@ -261,7 +261,7 @@ async function resolveReposDefaultBranches(
   );
 }
 
-function repoUrlFromLocation(loc: string) {
+export function repoUrlFromLocation(loc: string) {
   const split = loc.split('/blob/');
   if (split.length < 2) {
     return undefined;
@@ -835,7 +835,6 @@ export async function findTaskImportStatusByRepo(
       result.task = { taskId: task.taskId };
       if (response.ok) {
         const data = await response.json();
-        console.log(` data is ${JSON.stringify(data)}`);
         if (data.state?.checkpoints) {
           for (const key in data.state.checkpoints) {
             if (key.startsWith('v1.task.checkpoint.publish.create.pr')) {
@@ -849,7 +848,11 @@ export async function findTaskImportStatusByRepo(
 
                 let catalogInfoContent: string | undefined;
                 if (prDetails.prSha) {
-                  catalogInfoContent = await deps.githubApiService.getCatalogInfoFile(deps.logger, { repoUrl, prHeadSha: prDetails.prSha, prNumber});
+                  catalogInfoContent =
+                    await deps.githubApiService.getCatalogInfoFile(
+                      deps.logger,
+                      { repoUrl, prHeadSha: prDetails.prSha, prNumber },
+                    );
                 }
 
                 result.github = {
@@ -860,7 +863,7 @@ export async function findTaskImportStatusByRepo(
                     title: prDetails.title,
                     body: prDetails.body,
                     status: prDetails.merged ? 'PR_MERGED' : 'WAIT_PR_APPROVAL', // todo add more statuses
-                    catalogInfoContent
+                    catalogInfoContent,
                   },
                 };
                 result.status = 'TASK_IN_PROGRESS'; // todo provide correct status...

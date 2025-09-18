@@ -310,24 +310,26 @@ describe('BulkImportBackendClient', () => {
 
   describe('getImportJobs', () => {
     it('getImportJobs should retrieve the import jobs successfully', async () => {
-      const jobs = await bulkImportApi.getTaskImportJobs(
+      const jobs = await bulkImportApi
+        .getTaskImportJobs
         // 1,
         // 2,
         // '',
         // AddedRepositoryColumnNameEnum.repoName,
         // SortingOrderEnum.Asc,
-      );
+        ();
       expect(jobs).toEqual(mockGetImportJobs);
     });
 
     it('getImportJobs should retrieve the import jobs based on search string', async () => {
-      const jobs = await bulkImportApi.getTaskImportJobs(
+      const jobs = await bulkImportApi
+        .getTaskImportJobs
         // 1,
         // 2,
         // 'cup',
         // AddedRepositoryColumnNameEnum.repoName,
         // SortingOrderEnum.Asc,
-      );
+        ();
       expect(jobs).toEqual(
         mockGetImportJobs.imports.filter(r =>
           r.repository.name?.includes('cup'),
@@ -337,13 +339,14 @@ describe('BulkImportBackendClient', () => {
 
     it('getImportJobs should handle non-200/204 responses correctly', async () => {
       await expect(
-        bulkImportApi.getTaskImportJobs(
+        bulkImportApi
+          .getTaskImportJobs
           // 1,
           // 2,
           // '',
           // AddedRepositoryColumnNameEnum.repoName,
           // SortingOrderEnum.Asc,
-        ),
+          (),
       ).resolves.toEqual(expect.objectContaining([]));
     });
   });
@@ -371,13 +374,12 @@ describe('BulkImportBackendClient', () => {
 
   describe('createImportJobs', () => {
     it('createImportJobs should be able to dry run and check for errors', async () => {
-      let response = await bulkImportApi.createImportJobs(
+      let response = await bulkImportApi.createTaskImportJobs(
         prepareDataForSubmission(mockSelectedRepositories, ApprovalTool.Git),
-        true,
       );
       expect(response.length).toBe(4);
 
-      response = await bulkImportApi.createImportJobs(
+      response = await bulkImportApi.createTaskImportJobs(
         prepareDataForSubmission(
           {
             ['org/dessert/cupcake']: {
@@ -387,7 +389,6 @@ describe('BulkImportBackendClient', () => {
           },
           ApprovalTool.Git,
         ),
-        true,
       );
 
       expect(response).toEqual({

@@ -59,6 +59,7 @@ import {
   findImportStatusByRepo,
   findTaskImportStatusByRepo,
 } from './handlers/import';
+import { createTaskImportJobs } from './handlers/import/execute-template';
 import { findAllOrganizations } from './handlers/organization';
 import { ping } from './handlers/ping';
 import {
@@ -67,7 +68,6 @@ import {
   findRepositoriesByOrganization,
   findRepositoryFromDbByName,
 } from './handlers/repository';
-import { createTaskImportJobs } from './handlers/scaffolder/execute-template';
 
 /**
  * Router Options
@@ -357,42 +357,41 @@ export async function createRouter(
       return res.status(response.statusCode).json(response.responseBody);
     },
   );
-api.register(
-  Operations.FIND_ALL_TASK_IMPORTS,
-  async (_c: Context, _req: Request, res: Response) => {
-    const imports: any[] = [];
-    const repositories = await repositoryDao.findAllRepositories();
+  api.register(
+    Operations.FIND_ALL_TASK_IMPORTS,
+    async (_c: Context, _req: Request, res: Response) => {
+      const imports: any[] = [];
+      const repositories = await repositoryDao.findAllRepositories();
 
-    for (const repo of repositories) {
-      const response = await findTaskImportStatusByRepo(
-        {
-          logger,
-          config,
-          githubApiService,
-          catalogHttpClient,
-          repositoryDao,
-          taskDao,
-          discovery,
-          auth,
-        },
-        repo.url!,
-      );
-      if (response.responseBody) {
-        imports.push(response.responseBody);
+      for (const repo of repositories) {
+        const response = await findTaskImportStatusByRepo(
+          {
+            logger,
+            config,
+            githubApiService,
+            catalogHttpClient,
+            repositoryDao,
+            taskDao,
+            discovery,
+            auth,
+          },
+          repo.url!,
+        );
+        if (response.responseBody) {
+          imports.push(response.responseBody);
+        }
       }
-    }
 
-    const responseBody: any = {
-      imports: imports,
-      totalCount: imports.length,
-      page: 1,
-      size: imports.length,
-    };
+      const responseBody: any = {
+        imports: imports,
+        totalCount: imports.length,
+        page: 1,
+        size: imports.length,
+      };
 
-    return res.status(200).json(responseBody);
-  },
-);
-
+      return res.status(200).json(responseBody);
+    },
+  );
 
   // @deprecated
   api.register(
@@ -428,7 +427,7 @@ api.register(
   api.register(
     Operations.CREATE_TASK_IMPORT_JOBS,
     async (
-      c: Context<Paths.CreateTaskImportJobs.RequestBody>,
+      c: Context<Paths.CreateImportJobs.RequestBody>,
       _req: Request,
       res: Response,
     ) => {
@@ -441,6 +440,7 @@ api.register(
         taskDao,
         taskLocationsDao,
         c.request.requestBody,
+        githubApiService,
       );
       return res.status(response.statusCode).json(response);
     },

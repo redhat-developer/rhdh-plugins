@@ -22,13 +22,16 @@ import {
 import { Config } from '@backstage/config';
 
 import { fetchEventSource } from '@ai-zen/node-fetch-event-source';
+import gitUrlParse from 'git-url-parse';
 
+import { getCatalogFilename } from '../../../catalog/catalogUtils';
 import {
   RepositoryDao,
   ScaffolderTaskDao,
   TaskLocationsDao,
 } from '../../../database/repositoryDao';
 import { Components } from '../../../generated/openapi';
+import { GithubApiService } from '../../../github';
 import { HandlerResponse } from '../handlers';
 
 interface ScaffolderEvent {
@@ -144,6 +147,100 @@ async function processTaskEvents(
   }
 }
 
+const handlePullRequestUpdate = async (
+  importReq: Components.Schemas.ImportRequest,
+  logger: LoggerService,
+  config: Config,
+  githubApiService: GithubApiService,
+): Promise<Components.Schemas.Import | undefined> => {
+  const url = importReq.repository.url;
+  const owner = importReq.repository.organization;
+  const repoName = importReq.repository.name;
+  const prUrl = importReq.github?.pullRequest?.url;
+  const prNumber = importReq.github?.pullRequest?.number;
+  const prTitle = importReq.github?.pullRequest?.title;
+  const prBody = importReq.github?.pullRequest?.body;
+  const catalogInfoContent = importReq.catalogInfoContent;
+
+  try {
+    if (prNumber && prTitle && prBody) {
+      try {
+        await githubApiService.updatePullRequest(
+          url,
+          prNumber,
+          prTitle,
+          prBody,
+        );
+      } catch (err) {
+        // todo: handle error
+        console.log(`===== ${err}`);
+      }
+
+      const prInfo = await githubApiService.getPullRequest(url, prNumber);
+
+      // Update catalog info content in the pull request
+      const gitUrl = gitUrlParse(url);
+      const fileName = getCatalogFilename(config);
+
+      console.log(
+        `let update catalog-info yaml file with content ${catalogInfoContent}`,
+      );
+      if (catalogInfoContent) {
+        try {
+          await githubApiService.createOrUpdateFileInBranch(
+            gitUrl.owner,
+            gitUrl.name,
+            prInfo.prBranch!, // todo handle undefined.
+            fileName,
+            catalogInfoContent,
+          );
+        } catch (e) {
+          // todo: handle error
+          logger.error(`Failed to update file in branch`, e);
+        }
+      } else {
+        logger.warn(
+          `catalogInfoContent is undefined, skipping createOrUpdateFileInBranch`,
+        );
+      }
+    } else {
+      logger.warn(`prNumber is undefined, skipping updatePullRequest`);
+    }
+  } catch (error: any) {
+    // todo: handle error
+    logger.error(`Error updating pull request ${prUrl}`, error);
+    return {
+      repository: {
+        organization: owner,
+        url: url,
+        name: repoName,
+      },
+      status: 'PR_ERROR', // Update with correct status
+      errors: [error.message],
+      approvalTool: importReq.approvalTool,
+    } as Components.Schemas.Import;
+  }
+
+  return {
+    repository: {
+      organization: owner,
+      url: url,
+      name: repoName,
+    },
+    status: 'TASK_IN_PROGRESS', // Update with correct status
+    github: {
+      pullRequest: {
+        url: prUrl,
+        number: prNumber,
+        title: prTitle,
+        body: prBody,
+        catalogInfoContent: catalogInfoContent,
+      },
+    },
+    approvalTool: importReq.approvalTool,
+  } as Components.Schemas.Import;
+};
+
 export const createTaskImportJobs = async (
   discovery: DiscoveryService,
   logger: LoggerService,
@@ -152,7 +249,8 @@ export const createTaskImportJobs = async (
   repositoryDao: RepositoryDao,
   taskDao: ScaffolderTaskDao,
   taskLocationsDao: TaskLocationsDao,
-  importRequests: Components.Schemas.TaskImportRequest[],
+  importRequests: Components.Schemas.ImportRequest[],
+  githubApiService: GithubApiService,
 ): Promise<
   HandlerResponse<Components.Schemas.Import[] | { errors: string[] }>
 > => {
@@ -200,31 +298,64 @@ export const createTaskImportJobs = async (
       const owner = importReq.repository.organization;
       const repoName = importReq.repository.name;
 
-      const normalizedUrl = `${new URL(importReq.repository.url).hostname}?owner=${owner}&repo=${repoName}`;
+      try {
+        if (importReq.github?.pullRequest?.url) {
+          const updatedImport = await handlePullRequestUpdate(
+            importReq,
+            logger,
+            config,
+            githubApiService,
+          );
+          if (updatedImport) {
+            result.push(updatedImport);
+          }
+        } else {
+          // Create new task
+          const normalizedUrl = `${new URL(importReq.repository.url).hostname}?owner=${owner}&repo=${repoName}`;
 
-      const scaffolderOptions = {
-        repoUrl: normalizedUrl,
-      };
-      const taskId = await executeTask(scaffolderOptions);
+          const scaffolderOptions = {
+            repoUrl: normalizedUrl,
+          };
+          const taskId = await executeTask(scaffolderOptions);
 
-      const repositoryId = await repositoryDao.insertRepository(url, taskId);
-      await taskDao.insertTask({ repositoryId, scaffolderOptions, taskId });
-      result.push({
-        repository: {
-          organization: owner,
-          url,
-          name: repoName,
-          // importStatus: '' // todo:  why do we need this status here... ?
-        },
-        status: 'TASK_IN_PROGRESS',
-        task: { taskId },
-        approvalTool: importReq.approvalTool,
-        // errors // todo
-      });
+          const repositoryId = await repositoryDao.insertRepository(
+            url,
+            taskId,
+          );
+          await taskDao.insertTask({ repositoryId, scaffolderOptions, taskId });
+          result.push({
+            repository: {
+              organization: owner,
+              url,
+              name: repoName,
+            },
+            status: 'TASK_IN_PROGRESS',
+            task: { taskId },
+            approvalTool: importReq.approvalTool,
+            // errors // todo
+          });
 
-      logger.info(`Started scaffolder task ${taskId} for ${url}`);
-
-      processTaskEvents(taskId, scaffolderUrl, token, logger, taskLocationsDao);
+          processTaskEvents(
+            taskId,
+            scaffolderUrl,
+            token,
+            logger,
+            taskLocationsDao,
+          );
+        }
+      } catch (error: any) {
+        logger.error(`Error processing import request for ${url}`, error);
+        result.push({
+          repository: {
+            organization: owner,
+            url,
+            name: repoName,
+          },
+          status: 'PR_ERROR', // Update with correct status
+          errors: [error.message],
+          approvalTool: importReq.approvalTool,
+        });
+      }
     }
   }
 

@@ -1,4 +1,18 @@
-// GENERATED FILE. DO NOT EDIT.
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 // eslint-disable
 // prettier-ignore
@@ -618,7 +632,7 @@ const OPENAPI = `
               "schema": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/TaskImportRequest"
+                  "$ref": "#/components/schemas/ImportRequest"
                 }
               }
             }
@@ -1291,40 +1305,16 @@ const OPENAPI = `
                   "body": {
                     "type": "string",
                     "description": "body of the Pull Request"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "URL to update an existing pull request"
+                  },
+                  "number": {
+                    "type": "number",
+                    "description": "number of the existing pull request"
                   }
                 }
-              }
-            }
-          }
-        }
-      },
-      "TaskImportRequest": {
-        "title": "Task import Job request",
-        "type": "object",
-        "required": [
-          "repository"
-        ],
-        "properties": {
-          "approvalTool": {
-            "$ref": "#/components/schemas/ApprovalTool"
-          },
-          "repository": {
-            "type": "object",
-            "required": [
-              "url"
-            ],
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "repository name"
-              },
-              "url": {
-                "type": "string",
-                "description": "repository URL"
-              },
-              "organization": {
-                "type": "string",
-                "description": "organization which the repository is part of"
               }
             }
           }

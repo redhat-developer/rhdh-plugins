@@ -48,22 +48,17 @@ export type BulkImportAPI = {
   //   sortColumn: AddedRepositoryColumnNameEnum,
   //   sortOrder: SortingOrderEnum,
   // ) => Promise<ImportJobs | Response>;
-  getTaskImportJobs: (
-    // page: number,
-    // size: number,
-    // searchString: string,
-    // sortColumn: AddedRepositoryColumnNameEnum,
-    // sortOrder: SortingOrderEnum,
-  ) => Promise<ImportJobs | Response>;
-  createImportJobs: (
-    importRepositories: CreateImportJobRepository[],
-    dryRun?: boolean,
-  ) => Promise<ImportJobResponse[]>;
-  deleteImportAction: (repo: string) => Promise<Response>;
-  getImportAction: (repo: string) => Promise<ImportJobStatus | Response>;
+  getTaskImportJobs: () // page: number,
+  // size: number,
+  // searchString: string,
+  // sortColumn: AddedRepositoryColumnNameEnum,
+  // sortOrder: SortingOrderEnum,
+  => Promise<ImportJobs | Response>;
   createTaskImportJobs: (
     importJobs: CreateImportJobRepository[],
   ) => Promise<ImportJobResponse[]>;
+  deleteImportAction: (repo: string) => Promise<Response>;
+  getImportAction: (repo: string) => Promise<ImportJobStatus | Response>;
   findAllStoredRepositories: () => Promise<Repository[]>;
   findStoredRepositoryByName: (name: string) => Promise<Repository>;
 };
@@ -136,13 +131,12 @@ export class BulkImportBackendClient implements BulkImportAPI {
   //   return jsonResponse.status === 204 ? null : jsonResponse.json();
   // }
 
-    async getTaskImportJobs(
-    // page: number,
-    // size: number,
-    // searchString: string,
-    // sortColumn: AddedRepositoryColumnNameEnum,
-    // sortOrder: SortingOrderEnum,
-  ) {
+  async getTaskImportJobs() // page: number,
+  // size: number,
+  // searchString: string,
+  // sortColumn: AddedRepositoryColumnNameEnum,
+  // sortOrder: SortingOrderEnum,
+  {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     // ?page=${page}&size=${size}&search=${searchString}&sortColumn=${sortColumn}&sortOrder=${sortOrder}
@@ -173,32 +167,6 @@ export class BulkImportBackendClient implements BulkImportAPI {
           'Content-Type': 'application/json',
           ...(idToken && { Authorization: `Bearer ${idToken}` }),
         },
-      },
-    );
-    if (!jsonResponse.ok) {
-      const errorResponse = await jsonResponse.json();
-      throw errorResponse;
-    }
-    return jsonResponse.status === 204 ? null : await jsonResponse.json();
-  }
-
-  async createImportJobs(
-    importRepositories: CreateImportJobRepository[],
-    dryRun?: boolean,
-  ) {
-    const { token: idToken } = await this.identityApi.getCredentials();
-    const backendUrl = this.configApi.getString('backend.baseUrl');
-    const jsonResponse = await fetch(
-      dryRun
-        ? `${backendUrl}/api/bulk-import/imports?dryRun=true`
-        : `${backendUrl}/api/bulk-import/imports`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(idToken && { Authorization: `Bearer ${idToken}` }),
-        },
-        body: JSON.stringify(importRepositories),
       },
     );
     if (!jsonResponse.ok) {

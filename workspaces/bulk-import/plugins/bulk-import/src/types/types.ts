@@ -34,6 +34,7 @@ export type PullRequestPreview = {
   prLabels?: string;
   prSpec?: string;
   pullRequestUrl?: string;
+  number?: number;
   componentName?: string;
   entityOwner?: string;
   useCodeOwnersFile: boolean;
@@ -62,7 +63,8 @@ export type AddRepositoryData = {
   repoUrl?: string;
   organizationUrl?: string;
   selectedRepositories?: AddedRepositories;
-  catalogInfoYaml?: { //
+  catalogInfoYaml?: {
+    //
     pullRequest?: string;
     // status?: ImportStatus; // todo use pr status here instead of mixing
     status: PRStatus;
@@ -134,6 +136,17 @@ export enum ApprovalTool {
 
 export type CreateImportJobRepository = {
   approvalTool: string;
+  catalogEntityName: string;
+  codeOwnersFileAsEntityOwner: boolean;
+  catalogInfoContent: string;
+  github: {
+    pullRequest: {
+      url?: string;
+      number?: number;
+      title: string;
+      body: string;
+    };
+  };
   repository: RepositoryResponse;
 };
 

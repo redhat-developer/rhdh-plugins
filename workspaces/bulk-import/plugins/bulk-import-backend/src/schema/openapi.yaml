@@ -365,7 +365,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/TaskImportRequest'
+                $ref: '#/components/schemas/ImportRequest'
       responses:
         202:
           description:
@@ -882,29 +882,12 @@ components:
                 body:
                   type: string
                   description: body of the Pull Request
-
-    TaskImportRequest:
-      title: Task import Job request
-      type: object
-      required:
-        - repository
-      properties:
-        approvalTool:
-          $ref: '#/components/schemas/ApprovalTool'
-        repository:
-          type: object
-          required:
-            - url
-          properties:
-            name:
-              type: string
-              description: repository name
-            url:
-              type: string
-              description: repository URL
-            organization:
-              type: string
-              description: organization which the repository is part of
+                url:
+                  type: string
+                  description:  URL to update an existing pull request
+                number: 
+                  type: number
+                  description: number of the existing pull request
 
     ScaffolderTask:
       title: Scaffolder Task
