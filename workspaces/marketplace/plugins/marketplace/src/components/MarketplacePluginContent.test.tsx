@@ -153,7 +153,6 @@ describe('MarketplacePluginContent', () => {
     apiVersion: 'extensions.backstage.io/v1alpha1',
     kind: 'Plugin',
     spec: {
-      icon: 'https://janus-idp.io/images/plugins/3scale.svg',
       packages: ['backstage-community-plugin-3scale-backend'],
     },
   };

@@ -3,10 +3,9 @@ apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   namespace: marketplace-plugin-demo
-  name: no-icon-no-description
-  title: No Icon No Description
-  annotations:
-    extensions.backstage.io/pre-installed: 'true'
+  name: pre-installed-undefined
+  title: Pre-installed Undefined
+  description: Pre-installed undefined means that the YAML is NOT bundled with RHDH and this means this IS a custom plugin.
 spec:
   categories:
     - Test plugin entity

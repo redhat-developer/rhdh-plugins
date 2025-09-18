@@ -14,10 +14,23 @@
  * limitations under the License.
  */
 
-export const themeId = 'extensions';
+/**
+ * @public
+ */
+export enum MarketplaceSupportLevel {
+  GENERALLY_AVAILABLE = 'generally-available',
+  TECH_PREVIEW = 'tech-preview',
+  DEV_PREVIEW = 'dev-preview',
+  COMMUNITY = 'community',
+  NONE = 'none',
+}
 
-export const colors = {
-  certified: '#A18FFF',
-  generallyAvailable: '#6EC664',
-  custom: '#EC7A08',
-} as const;
+/**
+ * @public
+ */
+export type MarketplaceSupport = {
+  // Technically both attributes are required, but we expecting undefined anyway
+  provider?: string;
+  // Technically both attributes are required, but we expecting undefined anyway
+  level?: MarketplaceSupportLevel;
+};
