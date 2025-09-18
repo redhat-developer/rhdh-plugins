@@ -41,14 +41,6 @@ const bulkImportTranslationEs = createTranslationMessages({
     'permissions.viewRepositoriesMessage':
       'Para ver los repositorios agregados, contacta a tu administrador para que te otorgue el permiso `bulk.import`.',
 
-    // Pagination
-    'pagination.rows5': '5 filas',
-    'pagination.rows10': '10 filas',
-    'pagination.rows20': '20 filas',
-    'pagination.rows50': '50 filas',
-    'pagination.rows100': '100 filas',
-    'pagination.noRecordsFound': 'No se encontraron registros',
-
     // Repositories
     'repositories.addedRepositories': 'Repositorios agregados',
     'repositories.importedEntities': 'Entidades importadas',
@@ -57,12 +49,7 @@ const bulkImportTranslationEs = createTranslationMessages({
     'repositories.noRecordsFound': 'No se encontraron registros',
     'repositories.refresh': 'Actualizar',
     'repositories.import': 'Importar',
-    'repositories.add': 'Añadir',
-    'repositories.remove': 'Eliminar',
-    'repositories.cancel': 'Cancelar',
     'repositories.removing': 'Eliminando...',
-    'repositories.close': 'Cerrar',
-    'repositories.delete': 'Eliminar',
     'repositories.deleteRepository': 'Eliminar Repositorio',
     'repositories.removeRepositoryQuestion':
       '¿Eliminar {{repoName}} {{repositoryText}}?',
@@ -75,19 +62,15 @@ const bulkImportTranslationEs = createTranslationMessages({
       'No se puede eliminar el repositorio ya que falta la URL del repositorio.',
     'repositories.unableToRemoveRepository':
       'No se puede eliminar el repositorio. {{error}}',
-    'repositories.removeTooltip': 'Eliminar',
     'repositories.removeTooltipDisabled':
       'Este repositorio se agregó al archivo app-config. Para eliminarlo, modifique el archivo directamente.',
     'repositories.errorOccuredWhileFetching':
       'Error al obtener la pull request',
     'repositories.failedToCreatePullRequest': 'Error al crear la pull request',
     'repositories.errorOccured': 'Error ocurrido',
-    'repositories.update': 'Actualizar',
-    'repositories.view': 'Ver',
     'repositories.editCatalogInfoTooltip':
       'Editar pull request catalog-info.yaml',
     'repositories.viewCatalogInfoTooltip': 'Ver archivo catalog-info.yaml',
-    'repositories.waitingForApproval': 'Esperando aprobación',
     'repositories.pr': 'PR',
 
     // Status
@@ -130,13 +113,6 @@ const bulkImportTranslationEs = createTranslationMessages({
     'table.headers.actions': 'Acciones',
     'table.headers.catalogInfoYaml': 'catalog-info.yaml',
 
-    // Table pagination
-    'table.pagination.rows5': '5 filas',
-    'table.pagination.rows10': '10 filas',
-    'table.pagination.rows20': '20 filas',
-    'table.pagination.rows50': '50 filas',
-    'table.pagination.rows100': '100 filas',
-
     // Steps
     'steps.chooseApprovalTool':
       'Elegir herramienta de aprobación (GitHub/GitLab) para la creación de PR',
@@ -174,120 +150,30 @@ const bulkImportTranslationEs = createTranslationMessages({
     'addRepositories.selectedProjects': 'proyectos',
     'addRepositories.selectedLabel': 'Seleccionados',
     'addRepositories.selectedCount': '{{count}} seleccionado(s)',
-    'addRepositories.cancel': 'Cancelar',
-    'addRepositories.add': 'Agregar',
     'addRepositories.addSelected': 'Agregar seleccionados',
     'addRepositories.generateCatalogInfo': 'Generar catalog-info.yaml',
     'addRepositories.editPullRequest': 'Editar pull request',
     'addRepositories.preview': 'Vista previa',
-    'addRepositories.close': 'Cerrar',
-    'addRepositories.save': 'Guardar',
-    'addRepositories.delete': 'Eliminar',
-    'addRepositories.sync': 'Sincronizar',
-    'addRepositories.edit': 'Editar',
-    'addRepositories.refresh': 'Actualizar',
-    'addRepositories.back': 'Atrás',
-    'addRepositories.next': 'Siguiente',
-    'addRepositories.submit': 'Enviar',
-    'addRepositories.loading': 'Cargando...',
-    'addRepositories.error': 'Error',
-    'addRepositories.success': 'Éxito',
-    'addRepositories.warning': 'Advertencia',
-    'addRepositories.info': 'Información',
 
     // Catalog info status
     'catalogInfo.status.generating': 'Generando',
     'catalogInfo.status.notGenerated': 'No generado',
-    'catalogInfo.status.added': 'Agregado',
-    'catalogInfo.status.pending': 'Pendiente',
-    'catalogInfo.status.failed': 'Fallido',
-    'catalogInfo.status.prOpened': 'PR abierto',
-    'catalogInfo.status.waitingForApproval': 'Esperando aprobación',
-    'catalogInfo.status.approved': 'Aprobado',
-
-    // Catalog info actions
-    'catalogInfo.actions.edit': 'Editar catalog-info.yaml',
-    'catalogInfo.actions.delete': 'Eliminar repositorio',
-    'catalogInfo.actions.sync': 'Sincronizar repositorio',
-    'catalogInfo.actions.view': 'Ver catalog-info.yaml',
-    'catalogInfo.actions.createPr': 'Crear pull request',
 
     // Preview file
 
-    // Pull request
-    'pullRequest.createTitle': 'Crear Pull Request',
-    'pullRequest.editTitle': 'Editar Pull Request',
-    'pullRequest.descriptionLabel': 'Descripción',
-    'pullRequest.branch': 'Rama',
-    'pullRequest.targetBranch': 'Rama destino',
-    'pullRequest.sourceBranch': 'Rama origen',
-    'pullRequest.defaultBranch': 'Rama predeterminada',
-    'pullRequest.prTitle': 'Título del pull request',
-    'pullRequest.prDescription': 'Descripción del pull request',
-    'pullRequest.createPr': 'Crear PR',
-    'pullRequest.updatePr': 'Actualizar PR',
-    'pullRequest.viewPr': 'Ver PR',
-    'pullRequest.waitingForPr': 'Esperando PR',
-
-    // Delete
-    'delete.title': '¿Eliminar repositorio?',
-    'delete.message':
-      '¿Estás seguro de que quieres eliminar este repositorio del catálogo?',
-    'delete.repositoryName': 'Repositorio: {{name}}',
-    'delete.confirm': 'Eliminar',
-    'delete.cancel': 'Cancelar',
-    'delete.success': 'Repositorio eliminado exitosamente',
-    'delete.error': 'Error al eliminar el repositorio',
-
     // Common
-    'common.loading': 'Cargando...',
-    'common.error': 'Error',
-    'common.success': 'Éxito',
-    'common.warning': 'Advertencia',
-    'common.info': 'Información',
-    'common.retry': 'Reintentar',
-    'common.refresh': 'Actualizar',
-    'common.search': 'Buscar',
-    'common.filter': 'Filtrar',
-    'common.clear': 'Limpiar',
-    'common.apply': 'Aplicar',
-    'common.reset': 'Restablecer',
-    'common.export': 'Exportar',
-    'common.import': 'Importar',
-    'common.download': 'Descargar',
-    'common.upload': 'Subir',
-    'common.create': 'Crear',
-    'common.update': 'Actualizar',
-    'common.save': 'Guardar',
+    'common.add': 'Agregar',
     'common.cancel': 'Cancelar',
     'common.close': 'Cerrar',
-    'common.open': 'Abrir',
-    'common.view': 'Ver',
-    'common.edit': 'Editar',
     'common.delete': 'Eliminar',
+    'common.edit': 'Editar',
+    'common.filter': 'Filtrar',
+    'common.import': 'Importar',
     'common.remove': 'Quitar',
-    'common.add': 'Agregar',
+    'common.save': 'Guardar',
     'common.select': 'Seleccionar',
-    'common.selectAll': 'Seleccionar todo',
-    'common.deselectAll': 'Deseleccionar todo',
-    'common.none': 'Ninguno',
-    'common.all': 'Todos',
-    'common.yes': 'Sí',
-    'common.no': 'No',
-    'common.ok': 'OK',
-    'common.done': 'Hecho',
-    'common.finish': 'Finalizar',
-    'common.continue': 'Continuar',
-    'common.back': 'Atrás',
-    'common.next': 'Siguiente',
-    'common.previous': 'Anterior',
-    'common.submit': 'Enviar',
-    'common.send': 'Enviar',
-    'common.copy': 'Copiar',
-    'common.paste': 'Pegar',
-    'common.cut': 'Cortar',
-    'common.undo': 'Deshacer',
-    'common.redo': 'Rehacer',
+    'common.update': 'Actualizar',
+    'common.view': 'Ver',
 
     // Time
     'time.daysAgo': 'hace {{count}} día(s)',
@@ -295,41 +181,11 @@ const bulkImportTranslationEs = createTranslationMessages({
     'time.minutesAgo': 'hace {{count}} minuto(s)',
     'time.secondsAgo': 'hace {{count}} segundo(s)',
 
-    // Notifications
-    'notifications.repositoryAdded': 'Repositorio agregado exitosamente',
-    'notifications.repositoryUpdated': 'Repositorio actualizado exitosamente',
-    'notifications.repositoryDeleted': 'Repositorio eliminado exitosamente',
-    'notifications.catalogInfoUpdated':
-      'Información del catálogo actualizada exitosamente',
-    'notifications.pullRequestCreated': 'Pull request creado exitosamente',
-    'notifications.pullRequestUpdated': 'Pull request actualizado exitosamente',
-    'notifications.syncCompleted': 'Sincronización completada exitosamente',
-    'notifications.operationFailed': 'Operación fallida',
-    'notifications.unexpectedError': 'Ocurrió un error inesperado',
-    'notifications.networkError':
-      'Error de red. Por favor verifica tu conexión.',
-    'notifications.permissionDenied': 'Permiso denegado',
-    'notifications.notFound': 'Recurso no encontrado',
-    'notifications.timeout':
-      'Tiempo de espera agotado. Por favor intenta de nuevo.',
-
     // Errors
     'errors.errorOccurred': 'Ocurrió un error',
     'errors.failedToCreatePullRequest': 'Error al crear el pull request',
 
-    // Buttons
-    'buttons.select': 'Seleccionar',
-    'buttons.cancel': 'Cancelar',
-    'buttons.create': 'Crear',
-    'buttons.edit': 'Editar',
-    'buttons.view': 'Ver',
-    'buttons.none': 'Ninguno',
-    'buttons.import': 'Importar',
-    'buttons.save': 'Guardar',
-    'buttons.close': 'Cerrar',
-
     // Preview File
-    'previewFile.edit': 'Editar',
     'previewFile.readyToImport': 'Listo para importar',
     'previewFile.previewFile': 'Vista previa del archivo',
     'previewFile.previewFiles': 'Vista previa de archivos',
@@ -389,6 +245,13 @@ const bulkImportTranslationEs = createTranslationMessages({
       'Los archivos Catalog-info.yaml deben generarse para la importación.',
     'forms.footer.pullRequestTooltip':
       'Los archivos Catalog-info.yaml deben generarse antes de crear un pull request',
+
+    // Table pagination (keeping for compatibility)
+    'table.pagination.rows5': '5 filas',
+    'table.pagination.rows10': '10 filas',
+    'table.pagination.rows20': '20 filas',
+    'table.pagination.rows50': '50 filas',
+    'table.pagination.rows100': '100 filas',
   },
 });
 

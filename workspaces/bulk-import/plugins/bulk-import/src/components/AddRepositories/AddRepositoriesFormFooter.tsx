@@ -37,7 +37,7 @@ export const AddRepositoriesFormFooter = () => {
 
   const getGitSubmitTitle = () => {
     if (gitlabFeatureFlag) {
-      return t('buttons.import');
+      return t('common.import');
     }
     return isPluralRepositories
       ? t('forms.footer.createPullRequests')
@@ -52,7 +52,7 @@ export const AddRepositoriesFormFooter = () => {
       toolTipTitle: t('forms.footer.serviceNowTooltip'),
     },
     [ApprovalTool.Gitlab]: {
-      submitTitle: t('buttons.import'),
+      submitTitle: t('common.import'),
       toolTipTitle: t('forms.footer.importTooltip'),
     },
     [ApprovalTool.Git]: {
@@ -118,7 +118,7 @@ export const AddRepositoriesFormFooter = () => {
         submitButton
       )}
       <Link to="/bulk-import/repositories">
-        <Button variant="outlined">{t('buttons.cancel')}</Button>
+        <Button variant="outlined">{t('common.cancel')}</Button>
       </Link>
     </Box>
   );

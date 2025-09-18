@@ -58,7 +58,7 @@ export const RepositoriesAddLink = () => {
           variant="contained"
           data-testid="add-repository"
         >
-          {gitlabFeatureFlag ? t('repositories.import') : t('repositories.add')}
+          {gitlabFeatureFlag ? t('common.import') : t('common.add')}
         </LinkButton>
       </Typography>
     </>

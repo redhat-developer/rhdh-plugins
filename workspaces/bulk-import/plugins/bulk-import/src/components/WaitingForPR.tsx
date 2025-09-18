@@ -59,7 +59,7 @@ export const WaitingForPR = ({
         />
       )}
       <Typography component="span" style={{ color: '#757575' }}>
-        {t('repositories.waitingForApproval')}
+        {t('status.waitingForApproval')}
       </Typography>
       {url && (
         <Link

@@ -126,7 +126,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
         icon: (
           <IconButton
             color="inherit"
-            aria-label={t('repositories.update')}
+            aria-label={t('common.update')}
             data-testid="update"
             onClick={() => handleOpenDrawer(value as ImportJobStatus)}
             size="large"
@@ -145,7 +145,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
             target="_blank"
             href={canView}
             color="inherit"
-            aria-label={t('repositories.view')}
+            aria-label={t('common.view')}
             size="large"
           >
             <OpenInNewIcon />

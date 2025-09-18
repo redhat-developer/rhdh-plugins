@@ -126,7 +126,7 @@ export const RepositoriesTableBody = ({
               justifyContent: 'center',
             }}
           >
-            {t('pagination.noRecordsFound')}
+            {t('repositories.noRecordsFound')}
           </Box>
         </td>
       </tr>

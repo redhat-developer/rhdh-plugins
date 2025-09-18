@@ -41,14 +41,6 @@ const bulkImportTranslationDe = createTranslationMessages({
     'permissions.viewRepositoriesMessage':
       'Um die hinzugefügten Repositories anzuzeigen, wenden Sie sich an Ihren Administrator, damit er Ihnen die `bulk.import`-Berechtigung erteilt.',
 
-    // Pagination
-    'pagination.rows5': '5 Zeilen',
-    'pagination.rows10': '10 Zeilen',
-    'pagination.rows20': '20 Zeilen',
-    'pagination.rows50': '50 Zeilen',
-    'pagination.rows100': '100 Zeilen',
-    'pagination.noRecordsFound': 'Keine Datensätze gefunden',
-
     // Repositories
     'repositories.addedRepositories': 'Hinzugefügte Repositories',
     'repositories.importedEntities': 'Importierte Entitäten',
@@ -58,12 +50,7 @@ const bulkImportTranslationDe = createTranslationMessages({
     'repositories.noRecordsFound': 'Keine Datensätze gefunden',
     'repositories.refresh': 'Aktualisieren',
     'repositories.import': 'Importieren',
-    'repositories.add': 'Hinzufügen',
-    'repositories.remove': 'Entfernen',
-    'repositories.cancel': 'Abbrechen',
     'repositories.removing': 'Wird entfernt...',
-    'repositories.close': 'Schließen',
-    'repositories.delete': 'Löschen',
     'repositories.deleteRepository': 'Repository löschen',
     'repositories.removeRepositoryQuestion':
       '{{repoName}} {{repositoryText}} entfernen?',
@@ -76,7 +63,6 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Repository kann nicht entfernt werden, da die Repository-URL fehlt.',
     'repositories.unableToRemoveRepository':
       'Repository kann nicht entfernt werden. {{error}}',
-    'repositories.removeTooltip': 'Entfernen',
     'repositories.removeTooltipDisabled':
       'Dieses Repository wurde zur app-config-Datei hinzugefügt. Um es zu entfernen, ändern Sie die Datei direkt.',
     'repositories.errorOccuredWhileFetching':
@@ -84,12 +70,9 @@ const bulkImportTranslationDe = createTranslationMessages({
     'repositories.failedToCreatePullRequest':
       'Pull-Request konnte nicht erstellt werden',
     'repositories.errorOccured': 'Fehler aufgetreten',
-    'repositories.update': 'Aktualisieren',
-    'repositories.view': 'Anzeigen',
     'repositories.editCatalogInfoTooltip':
       'catalog-info.yaml Pull-Request bearbeiten',
     'repositories.viewCatalogInfoTooltip': 'catalog-info.yaml Datei anzeigen',
-    'repositories.waitingForApproval': 'Warten auf Genehmigung',
     'repositories.pr': 'PR',
 
     // Status keys used by getImportStatus function
@@ -109,13 +92,6 @@ const bulkImportTranslationDe = createTranslationMessages({
     'table.headers.lastUpdated': 'Zuletzt aktualisiert',
     'table.headers.actions': 'Aktionen',
     'table.headers.catalogInfoYaml': 'catalog-info.yaml',
-
-    // Table pagination
-    'table.pagination.rows5': '5 Zeilen',
-    'table.pagination.rows10': '10 Zeilen',
-    'table.pagination.rows20': '20 Zeilen',
-    'table.pagination.rows50': '50 Zeilen',
-    'table.pagination.rows100': '100 Zeilen',
 
     // Steps
     'steps.chooseApprovalTool':
@@ -154,120 +130,30 @@ const bulkImportTranslationDe = createTranslationMessages({
     'addRepositories.selectedProjects': 'Projekte',
     'addRepositories.selectedLabel': 'Ausgewählt',
     'addRepositories.selectedCount': '{{count}} ausgewählt',
-    'addRepositories.cancel': 'Abbrechen',
-    'addRepositories.add': 'Hinzufügen',
     'addRepositories.addSelected': 'Ausgewählte hinzufügen',
     'addRepositories.generateCatalogInfo': 'catalog-info.yaml generieren',
     'addRepositories.editPullRequest': 'Pull-Request bearbeiten',
     'addRepositories.preview': 'Vorschau',
-    'addRepositories.close': 'Schließen',
-    'addRepositories.save': 'Speichern',
-    'addRepositories.delete': 'Löschen',
-    'addRepositories.sync': 'Synchronisieren',
-    'addRepositories.edit': 'Bearbeiten',
-    'addRepositories.refresh': 'Aktualisieren',
-    'addRepositories.back': 'Zurück',
-    'addRepositories.next': 'Weiter',
-    'addRepositories.submit': 'Absenden',
-    'addRepositories.loading': 'Wird geladen...',
-    'addRepositories.error': 'Fehler',
-    'addRepositories.success': 'Erfolg',
-    'addRepositories.warning': 'Warnung',
-    'addRepositories.info': 'Information',
 
     // Catalog info status
     'catalogInfo.status.generating': 'Generierung',
     'catalogInfo.status.notGenerated': 'Nicht generiert',
-    'catalogInfo.status.added': 'Hinzugefügt',
-    'catalogInfo.status.pending': 'Ausstehend',
-    'catalogInfo.status.failed': 'Fehlgeschlagen',
-    'catalogInfo.status.prOpened': 'PR geöffnet',
-    'catalogInfo.status.waitingForApproval': 'Warten auf Genehmigung',
-    'catalogInfo.status.approved': 'Genehmigt',
-
-    // Catalog info actions
-    'catalogInfo.actions.edit': 'catalog-info.yaml bearbeiten',
-    'catalogInfo.actions.delete': 'Repository entfernen',
-    'catalogInfo.actions.sync': 'Repository synchronisieren',
-    'catalogInfo.actions.view': 'catalog-info.yaml anzeigen',
-    'catalogInfo.actions.createPr': 'Pull-Request erstellen',
 
     // Preview file
 
-    // Pull request
-    'pullRequest.createTitle': 'Pull-Request erstellen',
-    'pullRequest.editTitle': 'Pull-Request bearbeiten',
-    'pullRequest.descriptionLabel': 'Beschreibung',
-    'pullRequest.branch': 'Branch',
-    'pullRequest.targetBranch': 'Ziel-Branch',
-    'pullRequest.sourceBranch': 'Quell-Branch',
-    'pullRequest.defaultBranch': 'Standard-Branch',
-    'pullRequest.prTitle': 'Pull-Request-Titel',
-    'pullRequest.prDescription': 'Pull-Request-Beschreibung',
-    'pullRequest.createPr': 'PR erstellen',
-    'pullRequest.updatePr': 'PR aktualisieren',
-    'pullRequest.viewPr': 'PR anzeigen',
-    'pullRequest.waitingForPr': 'Warten auf PR',
-
-    // Delete
-    'delete.title': 'Repository entfernen?',
-    'delete.message':
-      'Sind Sie sicher, dass Sie dieses Repository aus dem Katalog entfernen möchten?',
-    'delete.repositoryName': 'Repository: {{name}}',
-    'delete.confirm': 'Entfernen',
-    'delete.cancel': 'Abbrechen',
-    'delete.success': 'Repository erfolgreich entfernt',
-    'delete.error': 'Fehler beim Entfernen des Repositories',
-
     // Common
-    'common.loading': 'Wird geladen...',
-    'common.error': 'Fehler',
-    'common.success': 'Erfolg',
-    'common.warning': 'Warnung',
-    'common.info': 'Information',
-    'common.retry': 'Wiederholen',
-    'common.refresh': 'Aktualisieren',
-    'common.search': 'Suchen',
-    'common.filter': 'Filtern',
-    'common.clear': 'Löschen',
-    'common.apply': 'Anwenden',
-    'common.reset': 'Zurücksetzen',
-    'common.export': 'Exportieren',
-    'common.import': 'Importieren',
-    'common.download': 'Herunterladen',
-    'common.upload': 'Hochladen',
-    'common.create': 'Erstellen',
-    'common.update': 'Aktualisieren',
-    'common.save': 'Speichern',
+    'common.add': 'Hinzufügen',
     'common.cancel': 'Abbrechen',
     'common.close': 'Schließen',
-    'common.open': 'Öffnen',
-    'common.view': 'Anzeigen',
-    'common.edit': 'Bearbeiten',
     'common.delete': 'Löschen',
+    'common.edit': 'Bearbeiten',
+    'common.filter': 'Filtern',
+    'common.import': 'Importieren',
     'common.remove': 'Entfernen',
-    'common.add': 'Hinzufügen',
+    'common.save': 'Speichern',
     'common.select': 'Auswählen',
-    'common.selectAll': 'Alle auswählen',
-    'common.deselectAll': 'Alle abwählen',
-    'common.none': 'Keine',
-    'common.all': 'Alle',
-    'common.yes': 'Ja',
-    'common.no': 'Nein',
-    'common.ok': 'OK',
-    'common.done': 'Fertig',
-    'common.finish': 'Abschließen',
-    'common.continue': 'Fortfahren',
-    'common.back': 'Zurück',
-    'common.next': 'Weiter',
-    'common.previous': 'Vorherige',
-    'common.submit': 'Absenden',
-    'common.send': 'Senden',
-    'common.copy': 'Kopieren',
-    'common.paste': 'Einfügen',
-    'common.cut': 'Ausschneiden',
-    'common.undo': 'Rückgängig',
-    'common.redo': 'Wiederholen',
+    'common.update': 'Aktualisieren',
+    'common.view': 'Anzeigen',
 
     // Time
     'time.daysAgo': 'vor {{count}} Tag(en)',
@@ -275,35 +161,7 @@ const bulkImportTranslationDe = createTranslationMessages({
     'time.minutesAgo': 'vor {{count}} Minute(n)',
     'time.secondsAgo': 'vor {{count}} Sekunde(n)',
 
-    // Notifications
-    'notifications.repositoryAdded': 'Repository erfolgreich hinzugefügt',
-    'notifications.repositoryUpdated': 'Repository erfolgreich aktualisiert',
-    'notifications.repositoryDeleted': 'Repository erfolgreich gelöscht',
-    'notifications.catalogInfoUpdated': 'Katalog-Info erfolgreich aktualisiert',
-    'notifications.pullRequestCreated': 'Pull-Request erfolgreich erstellt',
-    'notifications.pullRequestUpdated': 'Pull-Request erfolgreich aktualisiert',
-    'notifications.syncCompleted': 'Synchronisation erfolgreich abgeschlossen',
-    'notifications.operationFailed': 'Operation fehlgeschlagen',
-    'notifications.unexpectedError': 'Ein unerwarteter Fehler ist aufgetreten',
-    'notifications.networkError':
-      'Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung.',
-    'notifications.permissionDenied': 'Berechtigung verweigert',
-    'notifications.notFound': 'Ressource nicht gefunden',
-    'notifications.timeout': 'Anfrage-Timeout. Bitte versuchen Sie es erneut.',
-
-    // Buttons
-    'buttons.select': 'Auswählen',
-    'buttons.cancel': 'Abbrechen',
-    'buttons.create': 'Erstellen',
-    'buttons.edit': 'Bearbeiten',
-    'buttons.view': 'Anzeigen',
-    'buttons.none': 'Keine',
-    'buttons.import': 'Importieren',
-    'buttons.save': 'Speichern',
-    'buttons.close': 'Schließen',
-
     // Preview File
-    'previewFile.edit': 'Bearbeiten',
     'previewFile.readyToImport': 'Bereit zum Import',
     'previewFile.previewFile': 'Datei-Vorschau',
     'previewFile.previewFiles': 'Dateien-Vorschau',
@@ -351,6 +209,11 @@ const bulkImportTranslationDe = createTranslationMessages({
     'previewFile.pullRequest.codeOwnersWarning':
       'WARNUNG: Dies kann fehlschlagen, wenn keine CODEOWNERS-Datei am Zielort gefunden wird.',
 
+    // Errors
+    'errors.errorOccurred': 'Fehler aufgetreten',
+    'errors.failedToCreatePullRequest':
+      'Pull-Request konnte nicht erstellt werden',
+
     // Forms
     'forms.footer.createServiceNowTicket': 'ServiceNow-Ticket erstellen',
     'forms.footer.createServiceNowTickets': 'ServiceNow-Tickets erstellen',
@@ -362,6 +225,13 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Die Catalog-info.yaml-Dateien müssen für den Import generiert werden.',
     'forms.footer.pullRequestTooltip':
       'Catalog-info.yaml-Dateien müssen vor der Erstellung eines Pull-Requests generiert werden',
+
+    // Table pagination (keeping for compatibility)
+    'table.pagination.rows5': '5 Zeilen',
+    'table.pagination.rows10': '10 Zeilen',
+    'table.pagination.rows20': '20 Zeilen',
+    'table.pagination.rows50': '50 Zeilen',
+    'table.pagination.rows100': '100 Zeilen',
   },
 });
 

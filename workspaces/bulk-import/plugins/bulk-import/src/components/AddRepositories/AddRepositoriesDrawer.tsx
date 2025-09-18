@@ -159,7 +159,7 @@ export const AddRepositoriesDrawer = ({
               }}
               data-testid="select-from-drawer"
             >
-              {t('buttons.select')}
+              {t('common.select')}
             </Button>
           </Typography>
           <Typography component="span">
@@ -168,7 +168,7 @@ export const AddRepositoriesDrawer = ({
               variant="outlined"
               onClick={onClose}
             >
-              {t('buttons.cancel')}
+              {t('common.cancel')}
             </Button>
           </Typography>
         </Box>

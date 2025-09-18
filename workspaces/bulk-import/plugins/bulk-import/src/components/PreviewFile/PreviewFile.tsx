@@ -95,7 +95,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
                 />{' '}
               </>
             ) : (
-              t('previewFile.edit')
+              t('common.edit')
             )}
           </Link>
         </>

@@ -115,7 +115,7 @@ const DeleteRepositoryDialog = ({
           <IconButton
             aria-label="close"
             onClick={closeDialog}
-            title={t('repositories.close')}
+            title={t('common.close')}
             size="large"
             sx={{
               position: 'absolute',
@@ -172,7 +172,7 @@ const DeleteRepositoryDialog = ({
         >
           {mutationDelete.isLoading
             ? t('repositories.removing')
-            : t('repositories.remove')}
+            : t('common.remove')}
         </Button>
         <Button
           variant="outlined"
@@ -181,7 +181,7 @@ const DeleteRepositoryDialog = ({
           }}
           onClick={() => closeDialog()}
         >
-          {t('repositories.cancel')}
+          {t('common.cancel')}
         </Button>
       </DialogActions>
     </Dialog>

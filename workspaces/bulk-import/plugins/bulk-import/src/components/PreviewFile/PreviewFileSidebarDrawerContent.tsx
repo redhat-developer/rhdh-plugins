@@ -199,10 +199,10 @@ export const PreviewFileSidebarDrawerContent = ({
             isSubmitting && <CircularProgress size="20px" color="inherit" />
           }
         >
-          {t('buttons.save')}
+          {t('common.save')}
         </Button>
         <Link to="" variant="button" onClick={onCancel}>
-          <Button variant="outlined">{t('buttons.cancel')}</Button>
+          <Button variant="outlined">{t('common.cancel')}</Button>
         </Link>
       </Box>
     </>

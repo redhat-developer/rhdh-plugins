@@ -328,11 +328,11 @@ export const RepositoriesTable = ({
           <TablePagination
             style={{ height: '30%' }}
             rowsPerPageOptions={[
-              { value: 5, label: t('pagination.rows5') },
-              { value: 10, label: t('pagination.rows10') },
-              { value: 20, label: t('pagination.rows20') },
-              { value: 50, label: t('pagination.rows50') },
-              { value: 100, label: t('pagination.rows100') },
+              { value: 5, label: t('table.pagination.rows5') },
+              { value: 10, label: t('table.pagination.rows10') },
+              { value: 20, label: t('table.pagination.rows20') },
+              { value: 50, label: t('table.pagination.rows50') },
+              { value: 100, label: t('table.pagination.rows100') },
             ]}
             component="div"
             count={

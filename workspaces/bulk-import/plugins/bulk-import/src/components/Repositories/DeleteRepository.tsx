@@ -34,7 +34,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
 
   const tooltipMessage =
     data.source === 'location'
-      ? t('repositories.removeTooltip')
+      ? t('common.remove')
       : t('repositories.removeTooltipDisabled');
 
   return (
@@ -43,7 +43,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
         <IconButton
           color="inherit"
           onClick={() => openDialog(data)}
-          aria-label={t('repositories.delete')}
+          aria-label={t('common.delete')}
           size="large"
           disabled={data.source !== 'location'}
         >
