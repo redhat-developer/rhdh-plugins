@@ -10309,7 +10309,7 @@ __metadata:
     "@types/supertest": 2.0.16
     express: ^4.21.1
     http-proxy-middleware: ^3.0.2
-    msw: 2.11.1
+    msw: 2.11.2
     node-fetch: 2.7.0
     prettier: 3.6.2
     supertest: 6.3.4
@@ -26952,9 +26952,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:2.11.1":
-  version: 2.11.1
-  resolution: "msw@npm:2.11.1"
+"msw@npm:2.11.2":
+  version: 2.11.2
+  resolution: "msw@npm:2.11.2"
   dependencies:
     "@bundled-es-modules/cookie": ^2.0.1
     "@bundled-es-modules/statuses": ^1.0.1
@@ -26970,6 +26970,7 @@ __metadata:
     outvariant: ^1.4.3
     path-to-regexp: ^6.3.0
     picocolors: ^1.1.1
+    rettime: ^0.7.0
     strict-event-emitter: ^0.5.1
     tough-cookie: ^6.0.0
     type-fest: ^4.26.1
@@ -26981,7 +26982,7 @@ __metadata:
       optional: true
   bin:
     msw: cli/index.js
-  checksum: df5326ddc6c1845d39e374018f56629c0f012ec44aa7eae5807c33f86ddb7207dd811b171abeab37cb850431ac41523f843f5696d1fbc3a26c449bb249b523f4
+  checksum: 599aa3ed6e5043479bef473fa427a7aaf343d32aedba301ec62cac1a30c50b2a2898c4b9fe11b939ab03768807860eff64ce2fbdd28f78d0c6be4f4318d8b276
   languageName: node
   linkType: hard
 
@@ -31142,6 +31143,13 @@ __metadata:
   version: 0.12.0
   resolution: "retry@npm:0.12.0"
   checksum: 623bd7d2e5119467ba66202d733ec3c2e2e26568074923bc0585b6b99db14f357e79bdedb63cab56cec47491c4a0da7e6021a7465ca6dc4f481d3898fdd3158c
+  languageName: node
+  linkType: hard
+
+"rettime@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "rettime@npm:0.7.0"
+  checksum: 1ad3984a4f8000adf56c623882170115d7453b3bbaed56429a40077b067fad98c1c5db9a58e63793add15a97006fa7c817516d985c3347df40b5d274dc087803
   languageName: node
   linkType: hard
 
