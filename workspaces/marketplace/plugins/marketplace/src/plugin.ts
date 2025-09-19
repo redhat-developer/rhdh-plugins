@@ -64,13 +64,11 @@ export const marketplacePlugin = createPlugin({
       deps: {
         discoveryApi: discoveryApiRef,
         fetchApi: fetchApiRef,
-        identityApi: identityApiRef,
       },
-      factory: ({ discoveryApi, fetchApi, identityApi }) =>
+      factory: ({ discoveryApi, fetchApi }) =>
         new DynamicPluginsInfoClient({
           discoveryApi,
           fetchApi,
-          identityApi,
         }),
     }),
   ],
