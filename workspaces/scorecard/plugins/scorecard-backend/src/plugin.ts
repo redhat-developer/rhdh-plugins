@@ -34,6 +34,7 @@ import {
 } from './permissions/rules';
 import { migrate } from './database/migration';
 import { DatabaseMetricValuesStore } from './database/DatabaseMetricValuesStore';
+import { connectMetricProviders } from './providers/Connection';
 
 /**
  * scorecardPlugin backend plugin
@@ -60,6 +61,7 @@ export const scorecardPlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         catalog: catalogServiceRef,
         httpAuth: coreServices.httpAuth,
+        logger: coreServices.logger,
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
         database: coreServices.database,
@@ -69,6 +71,7 @@ export const scorecardPlugin = createBackendPlugin({
         auth,
         httpRouter,
         httpAuth,
+        logger,
         permissions,
         permissionsRegistry,
         database,
@@ -96,6 +99,10 @@ export const scorecardPlugin = createBackendPlugin({
           auth,
           metricValuesStore,
         });
+        await connectMetricProviders(
+          metricProvidersRegistry.listProviders(),
+          metricValuesStore,
+        );
 
         httpRouter.use(
           await createRouter({
