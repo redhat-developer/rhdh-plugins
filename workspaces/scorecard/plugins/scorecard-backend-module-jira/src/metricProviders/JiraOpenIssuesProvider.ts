@@ -29,7 +29,15 @@ import {
 import { JiraClient } from '../clients/base';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
 import { ScorecardJiraAnnotations } from '../annotations';
-import { AuthService, DiscoveryService } from '@backstage/backend-plugin-api';
+import {
+  AuthService,
+  DiscoveryService,
+  LoggerService,
+  readSchedulerServiceTaskScheduleDefinitionFromConfig,
+  SchedulerService,
+  SchedulerServiceTaskRunner,
+  SchedulerServiceTaskScheduleDefinition,
+} from '@backstage/backend-plugin-api';
 import {
   ConnectionStrategy,
   DirectConnectionStrategy,
@@ -42,14 +50,21 @@ const { PROJECT_KEY } = ScorecardJiraAnnotations;
 export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
   private readonly jiraClient: JiraClient;
+  private readonly logger: LoggerService;
+  private readonly scheduleFn: () => Promise<void>;
+  private connection?: MetricProviderConnection;
 
   private constructor(
     config: Config,
     connectionStrategy: ConnectionStrategy,
+    logger: LoggerService,
+    taskRunner: SchedulerServiceTaskRunner,
     thresholds?: ThresholdConfig,
   ) {
     this.jiraClient = JiraClientFactory.create(config, connectionStrategy);
     this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
+    this.logger = logger;
+    this.scheduleFn = this.schedule(taskRunner);
   }
 
   getProviderDatasourceId(): string {
@@ -84,6 +99,8 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     options: {
       auth: AuthService;
       discovery: DiscoveryService;
+      logger: LoggerService;
+      scheduler: SchedulerService
     },
   ): JiraOpenIssuesProvider {
     const configuredThresholds = config.getOptional(THRESHOLDS_CONFIG_PATH);
@@ -110,14 +127,77 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
       );
     }
 
+    const schedule = config.has('scorecard.plugins.jira.open_issues.schedule')
+    ? readSchedulerServiceTaskScheduleDefinitionFromConfig(
+        config.getConfig('scorecard.plugins.jira.open_issues.schedule'),
+      )
+    : ({
+        frequency: { hours: 2 },
+        timeout: { minutes: 15 },
+        initialDelay: { seconds: 3 },
+        scope: 'local',
+      } as SchedulerServiceTaskScheduleDefinition);
+
     return new JiraOpenIssuesProvider(
       config,
       connectionStrategy,
+      options.logger,
+      taskRunner,
       configuredThresholds,
     );
   }
 
   async calculateMetric(entity: Entity): Promise<number> {
     return this.jiraClient.getCountOpenIssues(entity);
+  }
+
+  public async connect(connection: MetricProviderConnection): Promise<void> {
+    this.connection = connection;
+    await this.scheduleFn();
+  }
+
+  async refresh(logger: LoggerService) {
+    if (!this.connection) {
+      throw new Error('Not initialized');
+    }
+
+    logger.info(`Refreshing metrics for ${this.getProviderId()}`);
+
+    // calculate metric for each entity that provider.supportsEntity
+    // insert metrics via connection
+    await this.connection.insertMetrics([]);
+
+    logger.info(`Committed X metrics for ${this.getProviderId()}`);
+  }
+
+  /**
+   * Periodically schedules a task to run calculation of metrics
+   * @param taskRunner - The task runner to use for scheduling tasks.
+   */
+  private schedule(
+    taskRunner: SchedulerServiceTaskRunner,
+  ): () => Promise<void> {
+    return async () => {
+      const taskId = `${this.getProviderId()}:refresh`;
+      return taskRunner.run({
+        id: taskId,
+        fn: async () => {
+          const logger = this.logger.child({
+            class: JiraOpenIssuesProvider.prototype.constructor.name,
+            taskId,
+            taskInstanceId: uuid(),
+          });
+
+          try {
+            await this.refresh(logger);
+          } catch (error) {
+            logger.error(
+              `${this.getProviderId()} refresh failed, ${error}`,
+              error,
+            );
+          }
+        },
+      });
+    };
   }
 }

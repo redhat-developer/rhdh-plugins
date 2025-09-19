@@ -21,8 +21,11 @@ import {
   MetricValuesFilter,
   MetricValuesStore,
 } from './MetricValuesStore';
+import { ProviderStore } from './ProviderStore';
 
-export class DatabaseMetricValuesStore implements MetricValuesStore {
+export class DatabaseMetricValuesStore
+  implements MetricValuesStore, ProviderStore
+{
   private readonly knex: Knex;
   private readonly logger: LoggerService;
   private readonly tableName = 'metric_values';

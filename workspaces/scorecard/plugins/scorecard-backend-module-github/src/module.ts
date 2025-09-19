@@ -27,10 +27,14 @@ export const scorecardModuleGithub = createBackendModule({
     reg.registerInit({
       deps: {
         config: coreServices.rootConfig,
+        logger: coreServices.logger,
+        scheduler: coreServices.scheduler,
         metrics: scorecardMetricsExtensionPoint,
       },
-      async init({ config, metrics }) {
-        metrics.addMetricProvider(GithubOpenPRsProvider.fromConfig(config));
+      async init({ config, logger, scheduler, metrics }) {
+        metrics.addMetricProvider(
+          GithubOpenPRsProvider.fromConfig(config, { logger, scheduler }),
+        );
       },
     });
   },

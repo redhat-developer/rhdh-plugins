@@ -103,6 +103,10 @@ export class MetricProvidersRegistry {
     });
   }
 
+  listProviders(): MetricProvider[] {
+    return Array.from(this.metricProviders.values());
+  }
+
   listMetrics(): Metric[] {
     return [...this.metricProviders.values()].map(provider =>
       provider.getMetric(),

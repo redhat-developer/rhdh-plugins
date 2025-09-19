@@ -40,7 +40,8 @@
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.4.2",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.8.0",
