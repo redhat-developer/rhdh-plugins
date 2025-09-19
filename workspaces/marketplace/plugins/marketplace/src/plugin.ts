@@ -146,7 +146,7 @@ export const PluginsIcon: IconComponent = MUIPluginsIcon;
 
 /**
  * @public
- * @deprecated
+ * @deprecated Use the latest RHDH. This no-op export remains only for backward compatibility and will be removed in a future major release.
  */
 export const InstallationContextProvider = marketplacePlugin.provide(
   createComponentExtension({

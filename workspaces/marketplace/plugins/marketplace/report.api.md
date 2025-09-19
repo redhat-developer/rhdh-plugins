@@ -17,6 +17,9 @@ export const DynamicMarketplacePluginContent: () => JSX_2.Element;
 // @public
 export const DynamicMarketplacePluginRouter: () => JSX_2.Element;
 
+// @public @deprecated (undocumented)
+export const InstallationContextProvider: () => null;
+
 // @public
 export const MarketplaceFullPageRouter: () => JSX_2.Element;
 
