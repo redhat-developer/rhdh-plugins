@@ -41,6 +41,7 @@ import {
   PolicyDecision,
 } from '@backstage/plugin-permission-common';
 import { PermissionsService } from '@backstage/backend-plugin-api';
+import { mockMetricValuesStore } from '../../__fixtures__/mockDatabase';
 
 const mockCatalogClient = {
   getEntityByRef: jest.fn(),
@@ -79,6 +80,7 @@ describe('createRouter', () => {
       registry: metricProvidersRegistry,
       thresholdEvaluator: new ThresholdEvaluator(),
       auth: mockServices.auth(),
+      metricValuesStore: mockMetricValuesStore,
     });
 
     permissionsMock.authorizeConditional.mockResolvedValue([
@@ -220,7 +222,7 @@ describe('createRouter', () => {
 
     beforeEach(() => {
       jest
-        .spyOn(catalogMetricService, 'calculateEntityMetrics')
+        .spyOn(catalogMetricService, 'getLatestEntityMetrics')
         .mockResolvedValue(mockMetricResults);
     });
 
@@ -303,7 +305,7 @@ describe('createRouter', () => {
 
     it('should return 404 NotFoundError when entity is not found', async () => {
       jest
-        .spyOn(catalogMetricService, 'calculateEntityMetrics')
+        .spyOn(catalogMetricService, 'getLatestEntityMetrics')
         .mockRejectedValue(
           new NotFoundError('Entity not found: component:default/non-existent'),
         );

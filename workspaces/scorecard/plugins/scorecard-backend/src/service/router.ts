@@ -129,7 +129,7 @@ export async function createRouter({
       throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
     }
 
-    const entityRef = `${kind}:${namespace}/${name}`;
+    const entityRef = `${kind}:${namespace}/${name}`.toLowerCase();
     const metricIdArray = metricIds
       ? (metricIds as string).split(',').map(id => id.trim())
       : undefined;

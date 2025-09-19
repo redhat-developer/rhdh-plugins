@@ -37,12 +37,14 @@ import {
   PermissionCriteria,
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
+import { MetricValuesStore, MetricValue } from '../database/MetricValuesStore';
 
 export type CatalogMetricServiceOptions = {
   catalogApi: CatalogApi;
   registry: MetricProvidersRegistry;
   thresholdEvaluator: ThresholdEvaluator;
   auth?: AuthService;
+  metricValuesStore: MetricValuesStore;
 };
 
 export class CatalogMetricService {
@@ -50,12 +52,14 @@ export class CatalogMetricService {
   private readonly registry: MetricProvidersRegistry;
   private readonly thresholdEvaluator: ThresholdEvaluator;
   private readonly auth?: AuthService;
+  private readonly metricValuesStore: MetricValuesStore;
 
   constructor(options: CatalogMetricServiceOptions) {
     this.thresholdEvaluator = options.thresholdEvaluator;
     this.registry = options.registry;
     this.catalogApi = options.catalogApi;
     this.auth = options.auth;
+    this.metricValuesStore = options.metricValuesStore;
   }
 
   /**
