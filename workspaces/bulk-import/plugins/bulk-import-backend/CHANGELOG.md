@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 6.3.0
+
+### Minor Changes
+
+- 60cea87: Add the ability to use GitLab for bulk imports
+- 81cfcfe: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [81cfcfe]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.9.0
+
 ## 6.2.0
 
 ### Minor Changes
