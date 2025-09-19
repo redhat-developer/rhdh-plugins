@@ -112,7 +112,7 @@ export const MarketplaceTabbedPageRouter = marketplacePlugin.provide(
  */
 export const DynamicMarketplacePluginRouter = marketplacePlugin.provide(
   createRoutableExtension({
-    name: 'MarketplaceRouter',
+    name: 'DynamicMarketplacePluginRouter',
     component: () =>
       import('./pages/DynamicMarketplacePluginRouter').then(
         m => m.DynamicMarketplacePluginRouter,
@@ -145,3 +145,16 @@ export const MarketplaceIcon: IconComponent = MUIMarketplaceIcon;
  * @public
  */
 export const PluginsIcon: IconComponent = MUIPluginsIcon;
+
+/**
+ * @public
+ * @deprecated
+ */
+export const InstallationContextProvider = marketplacePlugin.provide(
+  createComponentExtension({
+    name: 'InstallationContextProvider',
+    component: {
+      sync: () => null,
+    },
+  }),
+);

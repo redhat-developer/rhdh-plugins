@@ -17,7 +17,7 @@
 import { useState, useEffect } from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 import { dynamicPluginsInfoApiRef } from '../api';
-import { getUniquePluginsCount } from '../utils/pluginProcessing';
+// Count should reflect all records from dynamic-plugins-info
 
 export const useInstalledPluginsCount = () => {
   const [count, setCount] = useState<number>(0);
@@ -31,7 +31,7 @@ export const useInstalledPluginsCount = () => {
         setLoading(true);
         setError(undefined);
         const plugins = await dynamicPluginInfo.listLoadedPlugins();
-        setCount(getUniquePluginsCount(plugins));
+        setCount(plugins.length);
       } catch (err) {
         setError(err as Error);
         setCount(0);

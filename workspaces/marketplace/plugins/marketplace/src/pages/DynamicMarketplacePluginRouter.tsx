@@ -28,7 +28,7 @@ import Typography from '@mui/material/Typography';
 import { themeId } from '../consts';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { MarketplaceCatalogContent } from '../components/MarketplaceCatalogContent';
-import { InstalledPluginsTable } from '../components/InstalledPlugins/InstalledPluginsTable';
+import { InstalledPackagesTable } from '../components/InstalledPackages/InstalledPackagesTable';
 import { useInstalledPluginsCount } from '../hooks/useInstalledPluginsCount';
 import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
 import { MarketplacePluginDrawer } from '../components/MarketplacePluginDrawer';
@@ -67,8 +67,8 @@ const MarketplacePage = () => {
   const { count: installedPluginsCount, loading } = useInstalledPluginsCount();
 
   const installedPluginsTitle = loading
-    ? 'Installed Plugins'
-    : `Installed Plugins (${installedPluginsCount})`;
+    ? 'Installed packages'
+    : `Installed packages (${installedPluginsCount})`;
 
   return (
     <>
@@ -92,7 +92,7 @@ const MarketplacePage = () => {
           </TabbedLayout.Route>
 
           <TabbedLayout.Route
-            path="/installed-plugins"
+            path="/installed-packages"
             title=""
             tabProps={{
               icon: (
@@ -103,7 +103,7 @@ const MarketplacePage = () => {
             }}
           >
             <ErrorBoundary>
-              <InstalledPluginsTable />
+              <InstalledPackagesTable />
             </ErrorBoundary>
           </TabbedLayout.Route>
         </TabbedLayout>

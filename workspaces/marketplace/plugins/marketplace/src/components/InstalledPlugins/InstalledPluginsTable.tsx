@@ -25,7 +25,7 @@ import { useApi } from '@backstage/core-plugin-api';
 
 import { Query, QueryResult } from '@material-table/core';
 
-import { DynamicPluginInfo, dynamicPluginsInfoApiRef } from '../../api';
+import { dynamicPluginsInfoApiRef } from '../../api';
 import { useInstalledPluginsCount } from '../../hooks/useInstalledPluginsCount';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -34,18 +34,25 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
-import { processPluginsForDisplay } from '../../utils/pluginProcessing';
+import { useMarketplaceApi } from '../../hooks/useMarketplaceApi';
+
+type InstalledPackageRow = {
+  displayName: string;
+  packageName: string;
+  version?: string;
+};
 
 export const InstalledPluginsTable = () => {
   const [error, setError] = useState<Error | undefined>(undefined);
   const [currentSearchTerm, setCurrentSearchTerm] = useState<string>('');
   const { count } = useInstalledPluginsCount();
   const dynamicPluginInfo = useApi(dynamicPluginsInfoApiRef);
-  let data: DynamicPluginInfo[] = [];
-  const columns: TableColumn<DynamicPluginInfo>[] = [
+  const marketplaceApi = useMarketplaceApi();
+  let data: InstalledPackageRow[] = [];
+  const columns: TableColumn<InstalledPackageRow>[] = [
     {
       title: 'Name',
-      field: 'name',
+      field: 'displayName',
       align: 'left',
       width: '30ch',
       defaultSort: 'asc',
@@ -57,9 +64,21 @@ export const InstalledPluginsTable = () => {
       },
     },
     {
+      title: 'Package',
+      field: 'packageName',
+      width: '54ch',
+      align: 'left',
+      headerStyle: {
+        textAlign: 'left',
+      },
+      cellStyle: {
+        textAlign: 'left',
+      },
+    },
+    {
       title: 'Version',
       field: 'version',
-      width: '54ch',
+      width: '24ch',
       align: 'left',
       headerStyle: {
         textAlign: 'left',
@@ -78,7 +97,7 @@ export const InstalledPluginsTable = () => {
       cellStyle: {
         textAlign: 'left',
       },
-      render: (_rowData: DynamicPluginInfo) => {
+      render: (_rowData: InstalledPackageRow) => {
         return (
           <Box display="flex" gap={1}>
             <Tooltip title="Edit">
@@ -118,10 +137,10 @@ export const InstalledPluginsTable = () => {
     },
   ];
   const fetchData = async (
-    query: Query<DynamicPluginInfo>,
-  ): Promise<QueryResult<DynamicPluginInfo>> => {
+    query: Query<InstalledPackageRow>,
+  ): Promise<QueryResult<InstalledPackageRow>> => {
     const {
-      orderBy = { field: 'name' },
+      orderBy = { field: 'displayName' },
       orderDirection = 'asc',
       page = 0,
       pageSize = 5,
@@ -133,12 +152,35 @@ export const InstalledPluginsTable = () => {
 
     try {
       // for now sorting/searching/pagination is handled client-side
-      const installedPlugins = await dynamicPluginInfo.listLoadedPlugins();
+      const installed = await dynamicPluginInfo.listLoadedPlugins();
 
-      // Process plugins to create single rows with readable names
-      const processedPlugins = processPluginsForDisplay(installedPlugins);
+      // Normalize installed names to entity names: replace @ and / with -
+      const installedEntityNames = Array.from(
+        new Set(installed.map(p => p.name.replace(/[@/]/g, '-').toLowerCase())),
+      );
 
-      data = [...processedPlugins]
+      // Fetch marketplace package entities
+      const packagesResponse = await marketplaceApi.getPackages({});
+      const entitiesByName = new Map(
+        packagesResponse.items.map(entity => [
+          (entity.metadata?.name ?? '').toLowerCase(),
+          entity,
+        ]),
+      );
+
+      // Map into rows for installed packages only
+      const rows: InstalledPackageRow[] = installedEntityNames
+        .map(name => entitiesByName.get(name))
+        .filter(Boolean)
+        .map(entity => ({
+          displayName:
+            (entity!.metadata as any)?.title ||
+            (entity!.metadata?.name as string),
+          packageName: (entity as any)!.spec?.packageName as string,
+          version: ((entity as any)!.spec?.version as string) ?? undefined,
+        }));
+
+      data = [...rows]
         .sort((a: Record<string, any>, b: Record<string, any>) => {
           const field = Array.isArray(orderBy.field)
             ? orderBy.field[0]
@@ -159,8 +201,8 @@ export const InstalledPluginsTable = () => {
             orderMultiplier
           );
         })
-        .filter(plugin =>
-          plugin.name
+        .filter(row =>
+          row.displayName
             .toLowerCase()
             .trim()
             .includes(search.toLowerCase().trim()),
@@ -191,7 +233,7 @@ export const InstalledPluginsTable = () => {
 
   return (
     <Table
-      title={`Installed plugins (${count})`}
+      title={`Installed packages (${count})`}
       options={{
         draggable: false,
         filtering: false,
