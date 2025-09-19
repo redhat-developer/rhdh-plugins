@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-export type {
-  MetricProvider,
-  MetricProviderConnection,
-  MetricProviderInsertion,
-} from './MetricProvider';
+import { MetricValue } from './MetricValuesStore';
+
+/**
+ * Interface for storing and retrieving metric values
+ */
+export interface ProviderStore {
+  /**
+   * Insert multiple metric values in a batch
+   */
+  createMetricValues(metricValues: Omit<MetricValue, 'id'>[]): Promise<void>;
+}
