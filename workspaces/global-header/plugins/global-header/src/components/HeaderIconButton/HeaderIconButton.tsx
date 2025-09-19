@@ -22,12 +22,14 @@ import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
 import { HeaderIcon } from '../HeaderIcon/HeaderIcon';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * @public
  */
 export interface HeaderIconButtonProps {
   title: string;
+  titleKey?: string;
   icon: string;
   tooltip?: string;
   color?: 'inherit' | 'primary' | 'secondary' | 'default';
@@ -44,6 +46,7 @@ const Link = (props: any) => (
 
 export const HeaderIconButton = ({
   title,
+  titleKey,
   icon,
   tooltip,
   color = 'inherit',
@@ -52,7 +55,9 @@ export const HeaderIconButton = ({
   to,
   layout,
 }: HeaderIconButtonProps) => {
-  if (!title) {
+  const { t } = useTranslation();
+  const displayTitle = t(titleKey as any, { defaultValue: title });
+  if (!displayTitle) {
     // eslint-disable-next-line no-console
     console.warn('HeaderIconButton has no title:', { icon, to });
   }
@@ -61,13 +66,13 @@ export const HeaderIconButton = ({
 
   return (
     <Box sx={layout}>
-      <Tooltip title={tooltip ?? title}>
+      <Tooltip title={tooltip ?? displayTitle}>
         <div>
           <IconButton
             LinkComponent={Link}
             color={color}
             size={size}
-            aria-label={ariaLabel ?? title}
+            aria-label={ariaLabel ?? displayTitle}
             {...linkProps} // to={to} isn't supported
           >
             <HeaderIcon icon={icon} size={size} />

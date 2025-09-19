@@ -32,8 +32,10 @@ import { useTranslation } from '../../hooks/useTranslation';
 export interface MenuItemConfig {
   Component: ComponentType<MenuItemLinkProps | MenuItemProps | {}>;
   label: string;
+  labelKey?: string;
   icon?: string;
   subLabel?: string;
+  subLabelKey?: string;
   link?: string;
 }
 
@@ -106,25 +108,32 @@ export const MenuSection: FC<MenuSectionConfig> = ({
         </MenuItem>
       )}
 
-      {items.map(({ icon, label, subLabel, link, Component }, index) => (
-        <MenuItem
-          key={`menu-item-${index.toString()}`}
-          disableRipple
-          disableTouchRipple
-          onClick={handleClose}
-          sx={{ py: 0.5 }}
-          component={link ? Link : Fragment}
-          to={link}
-        >
-          <Component
-            icon={icon}
-            to={link!}
-            title={label}
-            subTitle={subLabel}
+      {items.map(
+        (
+          { icon, label, labelKey, subLabel, subLabelKey, link, Component },
+          index,
+        ) => (
+          <MenuItem
+            key={`menu-item-${index.toString()}`}
+            disableRipple
+            disableTouchRipple
             onClick={handleClose}
-          />
-        </MenuItem>
-      ))}
+            sx={{ py: 0.5 }}
+            component={link ? Link : Fragment}
+            to={link}
+          >
+            <Component
+              icon={icon}
+              to={link!}
+              title={label}
+              titleKey={labelKey}
+              subTitle={subLabel}
+              subTitleKey={subLabelKey}
+              onClick={handleClose}
+            />
+          </MenuItem>
+        ),
+      )}
       {!hideDivider && <Divider sx={{ my: 0.5 }} />}
     </>
   );
