@@ -81,8 +81,8 @@ const ApprovalTool: FC<ApprovalToolProps> = ({
         value={approvalTool}
         onChange={handleApprovalToolChange}
       >
-        <FormControlLabel value="git" control={<Radio />} label="GitHub" />
-        <FormControlLabel value="gitlab" control={<Radio />} label="GitLab" />
+        <FormControlLabel value="GIT" control={<Radio />} label="GitHub" />
+        <FormControlLabel value="GITLAB" control={<Radio />} label="GitLab" />
       </RadioGroup>
     </Box>
   );
