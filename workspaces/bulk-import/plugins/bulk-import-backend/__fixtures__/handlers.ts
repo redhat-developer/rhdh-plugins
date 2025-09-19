@@ -19,6 +19,8 @@ import { rest } from 'msw';
 const localHostAndPort = 'localhost:8765';
 export const LOCAL_ADDR = `http://${localHostAndPort}`;
 
+export const LOCAL_GITLAB_ADDR = `https://gitlab.com/api/v4`;
+
 export function loadTestFixture(filePathFromFixturesDir: string) {
   return require(`${__dirname}/${filePathFromFixturesDir}`);
 }
@@ -29,6 +31,7 @@ function normalizeUrlsForTest(filePath: string) {
       .replaceAll('HOSTNAME', localHostAndPort)
       .replaceAll('api.github.com', localHostAndPort)
       .replaceAll('github.com', localHostAndPort)
+      .replaceAll('gitlab.com', localHostAndPort)
       .replaceAll('https://', 'http://'),
   );
 }
@@ -252,6 +255,240 @@ export const DEFAULT_TEST_HANDLERS = [
   ),
   rest.get(
     `${LOCAL_ADDR}/repos/octocat/my-awesome-repo/contents/catalog-info.yaml`,
+    (_, res, ctx) => {
+      return res(ctx.status(404));
+    },
+  ),
+  // Gitlab related apis
+  rest.get(`${LOCAL_ADDR}/api/v4/projects`, (_, res, ctx) => {
+    const projectListHeaders = {
+      'x-next-page': '',
+      'x-page': '1',
+      'x-per-page': '20',
+      'x-prev-page': '',
+      'x-total': '3',
+      'x-total-pages': '1',
+    };
+    return res(
+      ctx.status(200),
+      ctx.set(projectListHeaders),
+      ctx.json(normalizeUrlsForTest('gitlab/user/repos.json')),
+    );
+  }),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/saltypig1%2Ffuntimes`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(loadTestFixture('gitlab/repos/saltypig1/funtimes/repo.json')),
+      );
+    },
+  ),
+  rest.get(`${LOCAL_ADDR}/api/v4/user`, (_, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json(normalizeUrlsForTest('gitlab/user/user.json')),
+    );
+  }),
+  rest.get(`${LOCAL_ADDR}/api/v4/groups`, (req, res, ctx) => {
+    const url = new URL(req.url);
+    const searchParam = url.searchParams?.get('search');
+    const orgList = normalizeUrlsForTest('gitlab/user/orgs.json');
+    const orgListHeaders = {
+      'x-next-page': '',
+      'x-page': '1',
+      'x-per-page': '20',
+      'x-prev-page': '',
+      'x-total': '3',
+      'x-total-pages': '1',
+    };
+
+    if (searchParam) {
+      orgListHeaders['x-total'] = '1';
+      return res(
+        ctx.status(200),
+        ctx.set(orgListHeaders),
+        ctx.json(
+          orgList.filter((org: { name: string }) => org.name === searchParam),
+        ),
+      );
+    }
+    return res(
+      ctx.status(200),
+      // Set the pagination headers
+      ctx.set(orgListHeaders),
+      ctx.json(orgList),
+    );
+  }),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/groups/my-ent-org-1/projects`,
+    (_, res, ctx) => {
+      const repoListHeaders = {
+        'x-next-page': '',
+        'x-page': '1',
+        'x-per-page': '20',
+        'x-prev-page': '',
+        'x-total': '1',
+        'x-total-pages': '1',
+      };
+      return res(
+        ctx.status(200),
+        // Set the pagination headers
+        ctx.set(repoListHeaders),
+        ctx.json(normalizeUrlsForTest('gitlab/orgs/repos/my-ent-org-1.json')),
+      );
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/groups/my-ent-org-2/projects`,
+    (_, res, ctx) => {
+      const repoListHeaders = {
+        'x-next-page': '',
+        'x-page': '1',
+        'x-per-page': '20',
+        'x-prev-page': '',
+        'x-total': '2',
+        'x-total-pages': '1',
+      };
+      return res(
+        ctx.status(200),
+        ctx.set(repoListHeaders),
+        ctx.json(normalizeUrlsForTest('gitlab/orgs/repos/my-ent-org-2.json')),
+      );
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/groups/my-ent-org--no-repos/projects`,
+    (_, res, ctx) => {
+      const repoListHeaders = {
+        'x-next-page': '',
+        'x-page': '1',
+        'x-per-page': '20',
+        'x-prev-page': '',
+        'x-total': '0',
+        'x-total-pages': '1',
+      };
+      return res(
+        ctx.status(200),
+        ctx.set(repoListHeaders),
+        ctx.json(
+          normalizeUrlsForTest('gitlab/orgs/repos/my-ent-org--no-repos.json'),
+        ),
+      );
+    },
+  ),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/saltypig1%2Ffuntimes/merge_requests`,
+    (_, res, ctx) => {
+      return res(ctx.status(200), ctx.json([]));
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-ent-org-2%2Fswapi-node`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(
+          loadTestFixture('gitlab/repos/my-ent-org-2/swapi-node/repo.json'),
+        ),
+      );
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/saltypig1%2Ffuntimes/repository/files/catalog-info.yaml`,
+    (_, res, ctx) => {
+      return res(ctx.status(404));
+    },
+  ),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-existing-catalog-info-in-default-branch`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(
+          loadTestFixture(
+            'gitlab/repos/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/repo.json',
+          ),
+        ),
+      );
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/repos/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/contributors`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json([loadTestFixture('user/user.json')]),
+      );
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-existing-catalog-info-in-default-branch/merge_requests`,
+    (_, res, ctx) => {
+      return res(ctx.status(200), ctx.json([]));
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-existing-catalog-info-in-default-branch/repository/files/catalog-info.yaml`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(
+          loadTestFixture(
+            'gitlab/repos/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/contents/catalog-info.yaml.json',
+          ),
+        ),
+      );
+    },
+  ),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-no-catalog-info-in-default-branch-and-no-import-pr`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(
+          loadTestFixture(
+            'gitlab/repos/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-no-import-pr/repo.json',
+          ),
+        ),
+      );
+    },
+  ),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-no-catalog-info-in-default-branch-and-import-pr`,
+    (_, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json(
+          loadTestFixture(
+            'gitlab/repos/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-import-pr/repo.json',
+          ),
+        ),
+      );
+    },
+  ),
+
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-no-catalog-info-in-default-branch-and-import-pr/merge_requests`,
+    (req, res, ctx) => {
+      let prs: any;
+      const stateQueryParam = req.url.searchParams?.get('state');
+      if (stateQueryParam) {
+        prs = loadTestFixture(
+          `gitlab/repos/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-import-pr/pulls/${stateQueryParam}.json`,
+        );
+      }
+      return res(ctx.status(200), ctx.json(prs));
+    },
+  ),
+  rest.get(
+    `${LOCAL_ADDR}/api/v4/projects/my-org-1%2Fmy-repo-with-no-catalog-info-in-default-branch-and-import-pr/repository/files/catalog-info.yaml`,
     (_, res, ctx) => {
       return res(ctx.status(404));
     },

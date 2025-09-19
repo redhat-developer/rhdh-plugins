@@ -50,6 +50,7 @@
     "@backstage/plugin-catalog-node": "^1.18.0",
     "@backstage/plugin-permission-common": "^0.9.1",
     "@backstage/plugin-permission-node": "^0.10.3",
+    "@gitbeaker/rest": "^43.4.0",
     "@octokit/auth-app": "^6.0.3",
     "@octokit/rest": "^20.0.2",
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^",

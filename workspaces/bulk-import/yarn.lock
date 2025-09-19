@@ -4942,6 +4942,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gitbeaker/core@npm:^43.5.0":
+  version: 43.5.0
+  resolution: "@gitbeaker/core@npm:43.5.0"
+  dependencies:
+    "@gitbeaker/requester-utils": ^43.5.0
+    qs: ^6.14.0
+    xcase: ^2.0.1
+  checksum: 61d0578036f414ed94e6173a16fee85389353fa5022e1a86f77864f44bf1d3dc5a11c9ded623a2351140cea3d5a2263b116e7c6b7ce4b1a747d125ece4bcee82
+  languageName: node
+  linkType: hard
+
 "@gitbeaker/requester-utils@npm:^41.2.0, @gitbeaker/requester-utils@npm:^41.3.0":
   version: 41.3.0
   resolution: "@gitbeaker/requester-utils@npm:41.3.0"
@@ -4954,6 +4965,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gitbeaker/requester-utils@npm:^43.5.0":
+  version: 43.5.0
+  resolution: "@gitbeaker/requester-utils@npm:43.5.0"
+  dependencies:
+    picomatch-browser: ^2.2.6
+    qs: ^6.14.0
+    rate-limiter-flexible: ^7.2.0
+    xcase: ^2.0.1
+  checksum: 35486080c264f8717e62709a2ec62d89d7db868d431b2f6a8c8e5377e8afa4615074489d61b1539141d46dbe19aa2e6a652a095257d89bf3e016002fc1da757e
+  languageName: node
+  linkType: hard
+
 "@gitbeaker/rest@npm:^41.2.0":
   version: 41.3.0
   resolution: "@gitbeaker/rest@npm:41.3.0"
@@ -4961,6 +4984,16 @@ __metadata:
     "@gitbeaker/core": ^41.3.0
     "@gitbeaker/requester-utils": ^41.3.0
   checksum: 96aa8d5e7ff3ca0e27f874df8b435fb12d20e6975d2291de26c90b7c2e201c286ffd241884b609b2200ddc4e28a331563b1b2d6767a1dd0160fc341f88761016
+  languageName: node
+  linkType: hard
+
+"@gitbeaker/rest@npm:^43.4.0":
+  version: 43.5.0
+  resolution: "@gitbeaker/rest@npm:43.5.0"
+  dependencies:
+    "@gitbeaker/core": ^43.5.0
+    "@gitbeaker/requester-utils": ^43.5.0
+  checksum: 5e8a957e6f402da54fac5aacd8ec1d32ad1c1cafaab4d09ae6c21601291a34a2c632e4106d3e63aa3d0fb2f6f842f9a0b0e18b0515bb53d86c7a6da3e6444274
   languageName: node
   linkType: hard
 
@@ -9037,6 +9070,7 @@ __metadata:
     "@backstage/plugin-permission-common": ^0.9.1
     "@backstage/plugin-permission-node": ^0.10.3
     "@backstage/types": ^1.2.1
+    "@gitbeaker/rest": ^43.4.0
     "@octokit/auth-app": ^6.0.3
     "@octokit/rest": ^20.0.2
     "@openapitools/openapi-generator-cli": 2.20.2
@@ -28553,6 +28587,13 @@ __metadata:
   version: 4.0.1
   resolution: "rate-limiter-flexible@npm:4.0.1"
   checksum: 88cb4ae4c6a94646eb4987f08ae203896fc340d84038e145958607ab711d9c703e47e55f177a4bf9bab4c637c73ee2254fffe2ec4e289d41389c8502194ca868
+  languageName: node
+  linkType: hard
+
+"rate-limiter-flexible@npm:^7.2.0":
+  version: 7.3.1
+  resolution: "rate-limiter-flexible@npm:7.3.1"
+  checksum: 9ca598b15b5e21a68566894cdccd469dfdf9204eaf8129466c6ba48a311e3687442b2e346ee785490c82065a190ef750c3a05524ed59945a528fd9314f88358e
   languageName: node
   linkType: hard
 

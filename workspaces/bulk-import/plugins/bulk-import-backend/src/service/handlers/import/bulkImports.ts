@@ -28,10 +28,12 @@ import {
 } from '../../../catalog/catalogUtils';
 import type { Components, Paths } from '../../../generated/openapi';
 import type { GithubApiService } from '../../../github';
+import { GitlabApiService } from '../../../gitlab';
 import {
   getNestedValue,
   logErrorIfNeeded,
   paginateArray,
+  parseGitURLForApprovalTool,
 } from '../../../helpers';
 import {
   DefaultPageNumber,
@@ -83,6 +85,7 @@ export async function findAllImports(
   deps: {
     logger: LoggerService;
     config: Config;
+    gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
     catalogHttpClient: CatalogHttpClient;
   },
@@ -119,6 +122,7 @@ export async function findAllImports(
   // It can be 'main' or something more convoluted like 'our/awesome/main'.
   const defaultBranchByRepoUrl = await resolveReposDefaultBranches(
     deps.logger,
+    deps.gitlabApiService,
     deps.githubApiService,
     allLocations.keys(),
     catalogFilename,
@@ -132,10 +136,36 @@ export async function findAllImports(
     catalogFilename,
   );
 
-  // Keep only repos that are accessible from the configured GH integrations
+  // Keep only repos that are accessible from the configured GH/GL integrations
   const importsReachableFromGHIntegrations =
     await deps.githubApiService.filterLocationsAccessibleFromIntegrations(
-      importCandidates,
+      importCandidates.filter(val => {
+        return parseGitURLForApprovalTool(val) === 'GIT';
+      }),
+    );
+
+  const importsReachableFromGLIntegrations =
+    await deps.gitlabApiService.filterLocationsAccessibleFromIntegrations(
+      importCandidates.filter(val => {
+        return parseGitURLForApprovalTool(val) === 'GITLAB';
+      }),
+    );
+
+  // Merge the two lists together and map the appropriate approvalTool
+  const mergedReachbleFromIntegrations = importsReachableFromGHIntegrations
+    .map(val => {
+      return {
+        loc: val,
+        approvalTool: 'GIT',
+      };
+    })
+    .concat(
+      importsReachableFromGLIntegrations.map(val => {
+        return {
+          loc: val,
+          approvalTool: 'GITLAB',
+        };
+      }),
     );
 
   const repoUrlToLocation = new Map<string, string>();
@@ -144,16 +174,25 @@ export async function findAllImports(
   const importStatusPromises: Promise<
     HandlerResponse<Components.Schemas.Import>
   >[] = [];
-  for (const loc of importsReachableFromGHIntegrations) {
-    const repoUrl = repoUrlFromLocation(loc);
+  for (const imports of mergedReachbleFromIntegrations) {
+    const repoUrl = repoUrlFromLocation(imports.loc);
     if (!repoUrl) {
       continue;
     }
-    repoUrlToLocation.set(repoUrl, loc);
+    repoUrlToLocation.set(repoUrl, imports.loc);
 
     importStatusPromises.push(
       findImportStatusByRepo(
-        deps,
+        {
+          logger: deps.logger,
+          config: deps.config,
+          gitApiService:
+            imports.approvalTool === 'GITLAB'
+              ? deps.gitlabApiService
+              : deps.githubApiService,
+          catalogHttpClient: deps.catalogHttpClient,
+          approvalTool: imports.approvalTool,
+        },
         repoUrl,
         defaultBranchByRepoUrl.get(repoUrl),
         false,
@@ -197,6 +236,7 @@ export async function findAllImports(
 
 async function resolveReposDefaultBranches(
   logger: LoggerService,
+  gitlabApiService: GitlabApiService,
   githubApiService: GithubApiService,
   allLocations: Iterable<string>,
   catalogFilename: string,
@@ -219,8 +259,13 @@ async function resolveReposDefaultBranches(
     if (!repoUrl) {
       continue;
     }
+    // Have to do this for Both the gitlab/github, possibly a better way?
+    // Should probably parse the URL to figure out which to use?
     defaultBranchByRepoUrlPromises.push(
-      githubApiService
+      (parseGitURLForApprovalTool(repoUrl) === 'GITLAB'
+        ? gitlabApiService
+        : githubApiService
+      )
         .getRepositoryFromIntegrations(repoUrl)
         .then(resp => {
           return { repoUrl, defaultBranch: resp?.repository?.default_branch };
@@ -285,7 +330,7 @@ function findImportCandidates(
 }
 
 async function createPR(
-  githubApiService: GithubApiService,
+  gitApiService: GithubApiService | GitlabApiService,
   logger: LoggerService,
   req: Components.Schemas.ImportRequest,
   gitUrl: gitUrlParse.GitUrl,
@@ -296,7 +341,7 @@ async function createPR(
     config.getOptionalString('app.title') ?? 'Red Hat Developer Hub';
   const appBaseUrl = config.getString('app.baseUrl');
   const catalogFileName = getCatalogFilename(config);
-  return await githubApiService.submitPrToRepo(logger, {
+  return await gitApiService.submitPrToRepo(logger, {
     repoUrl: req.repository.url,
     gitUrl: gitUrl,
     defaultBranch: req.repository.defaultBranch,
@@ -305,9 +350,12 @@ async function createPR(
       (await catalogInfoGenerator.generateDefaultCatalogInfoContent(
         req.repository.url,
       )),
-    prTitle: req.github?.pullRequest?.title ?? `Add ${catalogFileName}`,
+    prTitle:
+      req[req.approvalTool === 'GITLAB' ? 'gitlab' : 'github']?.pullRequest
+        ?.title ?? `Add ${catalogFileName}`,
     prBody:
-      req.github?.pullRequest?.body ??
+      req[req.approvalTool === 'GITLAB' ? 'gitlab' : 'github']?.pullRequest
+        ?.body ??
       `
 This pull request adds a **Backstage entity metadata file** to this repository so that the component can be added to a Backstage application.
 
@@ -324,6 +372,7 @@ async function handleAddedReposFromCreateImportJobs(
     config: Config;
     auth: AuthService;
     catalogApi: CatalogApi;
+    gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
@@ -344,7 +393,11 @@ async function handleAddedReposFromCreateImportJobs(
     if (!hasLocation) {
       continue;
     }
-    const hasCatalogInfoFileInRepo = await deps.githubApiService.hasFileInRepo({
+    const gitApiService =
+      req.approvalTool === 'GITLAB'
+        ? deps.gitlabApiService
+        : deps.githubApiService;
+    const hasCatalogInfoFileInRepo = await gitApiService.hasFileInRepo({
       repoUrl: req.repository.url,
       defaultBranch: req.repository.defaultBranch,
       fileName: getCatalogFilename(deps.config),
@@ -353,7 +406,7 @@ async function handleAddedReposFromCreateImportJobs(
       continue;
     }
 
-    const ghRepo = await deps.githubApiService.getRepositoryFromIntegrations(
+    const ghRepo = await gitApiService.getRepositoryFromIntegrations(
       req.repository.url,
     );
 
@@ -383,6 +436,7 @@ async function handlePrCreationRequest(
     config: Config;
     auth: AuthService;
     catalogApi: CatalogApi;
+    gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
@@ -395,8 +449,12 @@ async function handlePrCreationRequest(
     req.repository.url,
     req.repository.defaultBranch,
   );
+  const gitApiService =
+    req.approvalTool === 'GITLAB'
+      ? deps.gitlabApiService
+      : deps.githubApiService;
   const prToRepo = await createPR(
-    deps.githubApiService,
+    gitApiService,
     deps.logger,
     req,
     gitUrl,
@@ -439,6 +497,7 @@ async function handlePrCreationRequest(
   }
 
   return {
+    approvalTool: req.approvalTool ?? 'GIT',
     errors: prToRepo.errors,
     status: 'WAIT_PR_APPROVAL',
     lastUpdate: prToRepo.lastUpdate,
@@ -447,7 +506,7 @@ async function handlePrCreationRequest(
       name: gitUrl.name,
       organization: gitUrl.organization,
     },
-    github: {
+    [req.approvalTool === 'GITLAB' ? 'gitlab' : 'github']: {
       pullRequest: {
         url: prToRepo.prUrl,
         number: prToRepo.prNumber,
@@ -462,6 +521,7 @@ export async function createImportJobs(
     config: Config;
     auth: AuthService;
     catalogApi: CatalogApi;
+    gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
@@ -541,6 +601,7 @@ async function dryRunCreateImportJobs(
     config: Config;
     auth: AuthService;
     catalogApi: CatalogApi;
+    gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
     catalogInfoGenerator: CatalogInfoGenerator;
     catalogHttpClient: CatalogHttpClient;
@@ -576,6 +637,7 @@ async function performDryRunChecks(
     auth: AuthService;
     catalogApi: CatalogApi;
     config: Config;
+    gitlabApiService: GitlabApiService;
     githubApiService: GithubApiService;
     catalogHttpClient: CatalogHttpClient;
   },
@@ -595,11 +657,15 @@ async function performDryRunChecks(
     return {};
   };
 
+  const gitApiService =
+    req.approvalTool === 'GITLAB'
+      ? deps.gitlabApiService
+      : deps.githubApiService;
   const checkEmptyRepo = async (): Promise<{
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    const empty = await deps.githubApiService.isRepoEmpty({
+    const empty = await gitApiService.isRepoEmpty({
       repoUrl: req.repository.url,
     });
     if (empty) {
@@ -614,7 +680,7 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    const exists = await deps.githubApiService.hasFileInRepo({
+    const exists = await gitApiService.hasFileInRepo({
       repoUrl: req.repository.url,
       defaultBranch: req.repository.defaultBranch,
       fileName: getCatalogFilename(deps.config),
@@ -631,10 +697,12 @@ async function performDryRunChecks(
     dryRunStatuses?: CreateImportDryRunStatus[];
     errors?: string[];
   }> => {
-    const exists = await deps.githubApiService.hasFileInRepo({
+    const gitDirLocation =
+      req.approvalTool === 'GITLAB' ? '.gitlab' : '.github';
+    const exists = await gitApiService.hasFileInRepo({
       repoUrl: req.repository.url,
       defaultBranch: req.repository.defaultBranch,
-      fileName: '.github/CODEOWNERS',
+      fileName: `${gitDirLocation}/CODEOWNERS`,
     });
     if (!exists) {
       return {
@@ -675,8 +743,9 @@ export async function findImportStatusByRepo(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
+    gitApiService: GitlabApiService | GithubApiService;
     catalogHttpClient: CatalogHttpClient;
+    approvalTool: string | undefined;
   },
   repoUrl: string,
   defaultBranch?: string,
@@ -696,18 +765,19 @@ export async function findImportStatusByRepo(
       id: `${gitUrl.organization}/${gitUrl.name}`,
       defaultBranch,
     },
-    approvalTool: 'GIT',
+    approvalTool: deps.approvalTool,
     status: null,
   } as Components.Schemas.Import;
   try {
     // Check to see if there are any PR
-    const openImportPr = await deps.githubApiService.findImportOpenPr(
+    const openImportPr = await deps.gitApiService.findImportOpenPr(
       deps.logger,
       {
         repoUrl: repoUrl,
         includeCatalogInfoContent,
       },
     );
+
     if (!openImportPr.prUrl) {
       const catalogLocations = (
         await deps.catalogHttpClient.listCatalogUrlLocations()
@@ -723,7 +793,7 @@ export async function findImportStatusByRepo(
       }
       if (
         exists &&
-        (await deps.githubApiService.hasFileInRepo({
+        (await deps.gitApiService.hasFileInRepo({
           repoUrl,
           defaultBranch,
           fileName: getCatalogFilename(deps.config),
@@ -738,7 +808,7 @@ export async function findImportStatusByRepo(
       }
       // No import PR => let's determine last update from the repository
       const ghRepo =
-        await deps.githubApiService.getRepositoryFromIntegrations(repoUrl);
+        await deps.gitApiService.getRepositoryFromIntegrations(repoUrl);
       result.lastUpdate = ghRepo.repository?.updated_at ?? undefined;
       return {
         statusCode: 200,
@@ -746,7 +816,7 @@ export async function findImportStatusByRepo(
       };
     }
     result.status = 'WAIT_PR_APPROVAL';
-    result.github = {
+    result[deps.approvalTool === 'GITLAB' ? 'gitlab' : 'github'] = {
       pullRequest: {
         number: openImportPr.prNum,
         url: openImportPr.prUrl,
@@ -755,6 +825,7 @@ export async function findImportStatusByRepo(
         catalogInfoContent: openImportPr.prCatalogInfoContent,
       },
     };
+
     result.lastUpdate = openImportPr.lastUpdate;
   } catch (error: any) {
     errors.push(error.message);
@@ -778,7 +849,7 @@ export async function deleteImportByRepo(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   repoUrl: string,
@@ -787,26 +858,25 @@ export async function deleteImportByRepo(
   deps.logger.debug(`Deleting bulk import job status for ${repoUrl}..`);
 
   // Check to see if there are any PR
-  const openImportPr = await deps.githubApiService.findImportOpenPr(
-    deps.logger,
-    {
-      repoUrl: repoUrl,
-    },
-  );
+  const openImportPr = await deps.gitApiService.findImportOpenPr(deps.logger, {
+    repoUrl: repoUrl,
+  });
+
   const gitUrl = gitUrlParse(repoUrl);
   if (openImportPr.prUrl) {
     // Close PR
     const appTitle =
       deps.config.getOptionalString('app.title') ?? 'Red Hat Developer Hub';
     const appBaseUrl = deps.config.getString('app.baseUrl');
-    await deps.githubApiService.closeImportPR(deps.logger, {
+
+    await deps.gitApiService.closeImportPR(deps.logger, {
       repoUrl,
       gitUrl,
       comment: `Closing PR upon request for bulk import deletion. This request was created from [${appTitle}](${appBaseUrl}).`,
     });
   }
   // Also delete the import branch, so that it is not outdated if we try later to import the repo again
-  await deps.githubApiService.deleteImportBranch({
+  await deps.gitApiService.deleteImportBranch({
     repoUrl,
     gitUrl,
   });
