@@ -79,6 +79,7 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
             page={page}
             isApprovalToolGitlab={isApprovalToolGitlab}
             setPage={setPage}
+            approvalTool={values.approvalTool}
           />
         ) : (
           <RepositoriesTable
@@ -87,6 +88,7 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
             isApprovalToolGitlab={isApprovalToolGitlab}
             setPage={setPage}
             showOrganizations
+            approvalTool={values.approvalTool}
           />
         )}
       </Paper>
