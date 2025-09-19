@@ -11047,12 +11047,13 @@ __metadata:
     "@backstage/plugin-permission-node": ^0.10.3
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
-    "@types/express": ^4.17.6
-    "@types/supertest": ^2.0.12
-    express: ^4.17.1
-    express-promise-router: ^4.1.0
-    supertest: ^6.2.4
-    zod: ^3.22.4
+    "@types/express": "npm:^4.17.6"
+    "@types/supertest": "npm:^2.0.12"
+    express: "npm:^4.17.1"
+    express-promise-router: "npm:^4.1.0"
+    knex: "npm:^3.1.0"
+    supertest: "npm:^6.2.4"
+    zod: "npm:^3.22.4"
   languageName: unknown
   linkType: soft
 
@@ -24821,7 +24822,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:3, knex@npm:3.1.0, knex@npm:^3.0.0":
+"knex@npm:3, knex@npm:3.1.0, knex@npm:^3.0.0, knex@npm:^3.1.0":
   version: 3.1.0
   resolution: "knex@npm:3.1.0"
   dependencies:

@@ -132,7 +132,7 @@ export async function createRouter({
       throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
     }
 
-    const entityRef = `${kind}:${namespace}/${name}`;
+    const entityRef = `${kind}:${namespace}/${name}`.toLowerCase();
 
     // Check if user has permission to read this specific catalog entity
     await checkEntityAccess(entityRef, req, permissions, httpAuth);

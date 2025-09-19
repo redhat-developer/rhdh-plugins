@@ -32,6 +32,8 @@ import {
   scorecardMetricPermissionResourceRef,
   rules as scorecardRules,
 } from './permissions/rules';
+import { migrate } from './database/migration';
+import { DatabaseMetricValuesStore } from './database/DatabaseMetricValuesStore';
 
 /**
  * scorecardPlugin backend plugin
@@ -60,6 +62,7 @@ export const scorecardPlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
+        database: coreServices.database,
       },
       async init({
         discovery,
@@ -68,11 +71,21 @@ export const scorecardPlugin = createBackendPlugin({
         httpAuth,
         permissions,
         permissionsRegistry,
+        database,
       }) {
         permissionsRegistry.addResourceType({
           resourceRef: scorecardMetricPermissionResourceRef,
           permissions: scorecardPermissions,
           rules: Object.values(scorecardRules),
+        });
+
+        // Run database migrations
+        await migrate(database);
+
+        const knex = await database.getClient();
+        const metricValuesStore = new DatabaseMetricValuesStore({
+          knex,
+          logger,
         });
 
         const catalogClient = new CatalogClient({ discoveryApi: discovery });
@@ -81,6 +94,7 @@ export const scorecardPlugin = createBackendPlugin({
           registry: metricProvidersRegistry,
           thresholdEvaluator: new ThresholdEvaluator(),
           auth,
+          metricValuesStore,
         });
 
         httpRouter.use(

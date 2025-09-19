@@ -34,6 +34,7 @@ import {
   PermissionCriteria,
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
+import { mockMetricValuesStore } from '../../__fixtures__/mockDatabase';
 
 const mockCatalogApi = {
   getEntityByRef: jest.fn(),
@@ -118,6 +119,7 @@ describe('CatalogMetricService', () => {
       registry,
       thresholdEvaluator: new ThresholdEvaluator(),
       auth: mockServices.auth(),
+      metricValuesStore: mockMetricValuesStore,
     });
   });
 
