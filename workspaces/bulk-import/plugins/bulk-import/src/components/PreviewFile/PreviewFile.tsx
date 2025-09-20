@@ -23,6 +23,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -37,6 +38,7 @@ import {
 import { useDrawer } from '../DrawerContext';
 
 export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
+  const { t } = useTranslation();
   const { status, values } = useFormikContext<AddRepositoriesFormValues>();
   const { setOpenDrawer, setDrawerData } = useDrawer();
   const statusErrors = (status?.errors as ErrorType) || {};
@@ -44,6 +46,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
   const errorMessage = getCustomisedErrorMessage(
     Object.values(statusErrors).find(s => s?.repository?.name === data.repoName)
       ?.error.message,
+    (key: string) => t(key as any, {}),
   );
 
   const openDrawer = (dd: AddRepositoryData) => {
@@ -65,7 +68,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
             title={
               values.repositoryType === RepositorySelection.Repository
                 ? errorMessage.message
-                : 'PR creation was unsuccessful for some repositories. Click on `Edit` to see the reason.'
+                : t('previewFile.prCreationUnsuccessful')
             }
           >
             <FailIcon
@@ -75,7 +78,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
           </Tooltip>
           <Typography component="span" data-testid="failed">
             {' '}
-            Failed to create PR{' '}
+            {t('previewFile.failedToCreatePR')}{' '}
           </Typography>
           <Link
             to={errorMessage.showRepositoryLink ? data.repoUrl || '' : ''}
@@ -86,13 +89,13 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
           >
             {errorMessage.showRepositoryLink ? (
               <>
-                View repository{' '}
+                {t('previewFile.viewRepository')}{' '}
                 <OpenInNewIcon
                   style={{ verticalAlign: 'sub', paddingTop: '7px' }}
                 />{' '}
               </>
             ) : (
-              'Edit'
+              t('common.edit')
             )}
           </Link>
         </>
@@ -102,7 +105,9 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
             color="success"
             style={{ verticalAlign: 'sub', paddingTop: '7px' }}
           />
-          {gitlabFeatureFlag ? 'Ready to import' : RepositoryStatus.Ready}{' '}
+          {gitlabFeatureFlag
+            ? t('previewFile.readyToImport')
+            : RepositoryStatus.Ready}{' '}
           <Link
             to=""
             onClick={() => openDrawer(data)}
@@ -113,8 +118,8 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
             }
           >
             {Object.keys(data?.selectedRepositories || []).length > 1
-              ? 'Preview files'
-              : 'Preview file'}
+              ? t('previewFile.previewFiles')
+              : t('previewFile.previewFile')}
           </Link>
         </>
       )}

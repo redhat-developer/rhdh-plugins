@@ -20,6 +20,7 @@ import { usePermission } from '@backstage/plugin-permission-react';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
+import { useTranslation } from '../hooks/useTranslation';
 import { getImageForIconClass } from '../utils/icons';
 
 /**
@@ -37,6 +38,7 @@ export const BulkImportIcon = () => {
 };
 
 export const BulkImportSidebarItem = () => {
+  const { t } = useTranslation();
   const { loading: isUserLoading, allowed } = usePermission({
     permission: bulkImportPermission,
     resourceRef: bulkImportPermission.resourceType,
@@ -49,7 +51,7 @@ export const BulkImportSidebarItem = () => {
   if (!isUserLoading && isPermissionFrameworkEnabled) {
     return allowed ? (
       <SidebarItem
-        text="Bulk import"
+        text={t('sidebar.bulkImport')}
         to="bulk-import/repositories"
         icon={BulkImportIcon}
       />
@@ -59,7 +61,7 @@ export const BulkImportSidebarItem = () => {
   if (!isPermissionFrameworkEnabled) {
     return (
       <SidebarItem
-        text="Bulk import"
+        text={t('sidebar.bulkImport')}
         to="bulk-import/repositories"
         icon={BulkImportIcon}
       />

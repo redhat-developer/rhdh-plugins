@@ -30,6 +30,7 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddedRepositories,
   AddRepositoriesFormValues,
@@ -68,6 +69,7 @@ export const AddRepositoriesDrawer = ({
   title: string;
   orgData: AddRepositoryData;
 }) => {
+  const { t } = useTranslation();
   const classes = useStyles();
   const { values, status, setStatus } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -157,7 +159,7 @@ export const AddRepositoriesDrawer = ({
               }}
               data-testid="select-from-drawer"
             >
-              Select
+              {t('common.select')}
             </Button>
           </Typography>
           <Typography component="span">
@@ -166,7 +168,7 @@ export const AddRepositoriesDrawer = ({
               variant="outlined"
               onClick={onClose}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           </Typography>
         </Box>

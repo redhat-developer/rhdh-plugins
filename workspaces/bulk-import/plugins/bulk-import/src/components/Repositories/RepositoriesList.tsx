@@ -24,6 +24,7 @@ import Box from '@mui/material/Box';
 import TablePagination from '@mui/material/TablePagination';
 
 import { useAddedRepositories } from '../../hooks/useAddedRepositories';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddedRepositoryColumnNameEnum,
   AddRepositoryData,
@@ -37,12 +38,13 @@ import { AddedRepositoriesTableBody } from './AddedRepositoriesTableBody';
 import DeleteRepositoryDialog from './DeleteRepositoryDialog';
 import EditCatalogInfo from './EditCatalogInfo';
 import { RepositoriesAddLink } from './RepositoriesAddLink';
-import { RepositoriesListColumns } from './RepositoriesListColumns';
+import { getRepositoriesListColumns } from './RepositoriesListColumns';
 
 export const RepositoriesList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
+  const { t } = useTranslation();
   const [order, setOrder] = useState<SortingOrderEnum>(SortingOrderEnum.Asc);
   const [orderBy, setOrderBy] = useState<string>('repoName');
   const { openDialog, setOpenDialog, deleteComponent } = useDeleteDialog();
@@ -99,20 +101,38 @@ export const RepositoriesList = () => {
     setPageNumber(0);
   };
   const baseTitle = gitlabFeatureFlag
-    ? 'Imported entities'
-    : 'Added repositories';
+    ? t('repositories.importedEntities')
+    : t('repositories.addedRepositories');
+
+  const getTitleWithCount = () => {
+    if (gitlabFeatureFlag) {
+      return t('repositories.importedEntitiesCount' as any, {
+        count: importJobs.totalJobs.toString(),
+      });
+    }
+    return t('repositories.addedRepositoriesCount' as any, {
+      count: importJobs.totalJobs.toString(),
+    });
+  };
+
   const finalTitle =
-    importJobs?.totalJobs === 0
-      ? baseTitle
-      : `${baseTitle} (${importJobs.totalJobs})`;
+    importJobs?.totalJobs === 0 ? baseTitle : getTitleWithCount();
   return (
     <>
       <RepositoriesAddLink />
       <Table
         data={importJobs.addedRepositories ?? []}
-        columns={RepositoriesListColumns}
+        columns={getRepositoriesListColumns(t)}
         onSearchChange={handleSearch}
         title={finalTitle}
+        options={{
+          search: true,
+        }}
+        localization={{
+          toolbar: {
+            searchPlaceholder: t('common.filter'),
+          },
+        }}
         components={{
           Header: () => (
             <RepositoriesHeader
@@ -134,11 +154,11 @@ export const RepositoriesList = () => {
           Pagination: () => (
             <TablePagination
               rowsPerPageOptions={[
-                { value: 5, label: '5 rows' },
-                { value: 10, label: '10 rows' },
-                { value: 20, label: '20 rows' },
-                { value: 50, label: '50 rows' },
-                { value: 100, label: '100 rows' },
+                { value: 5, label: t('table.pagination.rows5') },
+                { value: 10, label: t('table.pagination.rows10') },
+                { value: 20, label: t('table.pagination.rows20') },
+                { value: 50, label: t('table.pagination.rows50') },
+                { value: 100, label: t('table.pagination.rows100') },
               ]}
               component="div"
               count={importJobs.totalJobs || 0}
@@ -163,7 +183,7 @@ export const RepositoriesList = () => {
               justifyContent: 'center',
             }}
           >
-            No records found
+            {t('repositories.noRecordsFound')}
           </Box>
         }
       />

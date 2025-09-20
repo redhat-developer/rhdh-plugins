@@ -22,6 +22,7 @@ import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -44,9 +45,11 @@ const useStyles = makeStyles(() => ({
 }));
 
 const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
+  const { t } = useTranslation();
   const { values } = useFormikContext<AddRepositoriesFormValues>();
   return getImportStatus(
     values.repositories?.[data.id]?.catalogInfoYaml?.status as string,
+    (key: string) => t(key as any, {}),
     true,
     values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
     values?.approvalTool === ApprovalTool.Gitlab,
@@ -54,9 +57,11 @@ const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
 };
 
 const LastUpdated = ({ data }: { data: AddRepositoryData }) => {
+  const { t } = useTranslation();
   const { values } = useFormikContext<AddRepositoriesFormValues>();
   return calculateLastUpdated(
     values.repositories?.[data.id]?.catalogInfoYaml?.lastUpdated || '',
+    (key: string, params?: any) => t(key as any, params),
   );
 };
 

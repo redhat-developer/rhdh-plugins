@@ -22,6 +22,7 @@ import yaml from 'js-yaml';
 import { get } from 'lodash';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -45,6 +46,7 @@ const EditCatalogInfo = ({
   onClose: () => void;
   open: boolean;
 }) => {
+  const { t } = useTranslation();
   const bulkImportApi = useApi(bulkImportApiRef);
   const { setSubmitting, setStatus, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -125,8 +127,10 @@ const EditCatalogInfo = ({
               error: {
                 message:
                   get(createJobResponse, 'error.message') ||
-                  'Failed to create pull request',
-                status: get(createJobResponse, 'error.name') || 'Error occured',
+                  t('repositories.failedToCreatePullRequest'),
+                status:
+                  get(createJobResponse, 'error.name') ||
+                  t('repositories.errorOccured'),
               },
             },
           });
@@ -146,7 +150,7 @@ const EditCatalogInfo = ({
           repository: importStatus.repository.name,
           catalogEntityName,
           error: {
-            message: error?.message || 'Error occured',
+            message: error?.message || t('repositories.errorOccured'),
             status: error?.name,
           },
         },

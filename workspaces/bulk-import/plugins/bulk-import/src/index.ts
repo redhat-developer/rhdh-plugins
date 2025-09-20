@@ -29,3 +29,9 @@ export {
 } from './plugin';
 
 export { default as BulkImportIcon } from './components/BulkImportSidebarItem';
+
+// Translation exports
+export {
+  bulkImportTranslations,
+  bulkImportTranslationRef,
+} from './translations';

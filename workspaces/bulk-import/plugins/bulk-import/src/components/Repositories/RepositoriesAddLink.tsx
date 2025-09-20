@@ -21,10 +21,12 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues } from '../../types';
 import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 export const RepositoriesAddLink = () => {
+  const { t } = useTranslation();
   const { status, setStatus } = useFormikContext<AddRepositoriesFormValues>();
 
   const handleCloseAlert = () => {
@@ -36,7 +38,7 @@ export const RepositoriesAddLink = () => {
         <>
           <Alert severity="error" onClose={() => handleCloseAlert()}>
             <AlertTitle>
-              Error occured while fetching the pull request
+              {t('repositories.errorOccuredWhileFetching')}
             </AlertTitle>
             {`${status?.title} ${status?.url}`}
           </Alert>
@@ -56,7 +58,7 @@ export const RepositoriesAddLink = () => {
           variant="contained"
           data-testid="add-repository"
         >
-          {gitlabFeatureFlag ? 'Import' : 'Add'}
+          {gitlabFeatureFlag ? t('common.import') : t('common.add')}
         </LinkButton>
       </Typography>
     </>
