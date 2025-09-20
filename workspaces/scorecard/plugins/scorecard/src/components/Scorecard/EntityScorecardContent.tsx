@@ -24,9 +24,11 @@ import NoScorecardsState from './NoScorecardsState';
 import Scorecard from './Scorecard';
 import { useScorecards } from '../../hooks/useScorecards';
 import { getStatusConfig } from '../../utils/utils';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const EntityScorecardContent = () => {
   const { scorecards, loadingData, error } = useScorecards();
+  const { t } = useTranslation();
 
   if (loadingData) {
     return (
@@ -65,11 +67,25 @@ export const EntityScorecardContent = () => {
           metric.result?.thresholdResult?.evaluation,
         );
 
+        // Use metric ID to construct translation keys, fallback to original title/description
+        const titleKey = `metric.${metric.id}.title`;
+        const descriptionKey = `metric.${metric.id}.description`;
+
+        const title = t(titleKey as any, {});
+        const description = t(descriptionKey as any, {});
+
+        // If translation returns the key itself, fallback to original title/description
+        const finalTitle = title === titleKey ? metric.metadata.title : title;
+        const finalDescription =
+          description === descriptionKey
+            ? metric.metadata.description
+            : description;
+
         return (
           <Scorecard
             key={metric.id}
-            cardTitle={metric.metadata.title}
-            description={metric.metadata.description}
+            cardTitle={finalTitle}
+            description={finalDescription}
             loading={false}
             statusColor={statusConfig.color}
             StatusIcon={statusConfig.icon}

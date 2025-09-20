@@ -28,6 +28,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import { styled, useTheme } from '@mui/material/styles';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface ScorecardProps {
   cardTitle: string;
@@ -55,9 +56,10 @@ const Scorecard = ({
   thresholds,
 }: ScorecardProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
-    <Card sx={{ width: '364px' }}>
+    <Card sx={{ width: '405px' }}>
       <CardHeader title={cardTitle} titleTypographyProps={{ mb: 0 }} />
       <Divider />
       <CardContent>
@@ -146,7 +148,7 @@ const Scorecard = ({
               </Box>
             </Grid>
 
-            <Grid item xs={12} sm={6} sx={{ p: 2 }}>
+            <Grid item xs={12} sm={6} sx={{ p: 2, paddingRight: 0 }}>
               <Box
                 sx={{
                   display: 'flex',
@@ -184,7 +186,13 @@ const Scorecard = ({
                         lineHeight: 1.2,
                       }}
                     >
-                      {key.charAt(0).toUpperCase() + key.slice(1)}{' '}
+                      {(() => {
+                        const translated = t(`thresholds.${key}` as any, {});
+                        // If translation returns the key itself, fallback to capitalized key
+                        return translated === `thresholds.${key}`
+                          ? key.charAt(0).toUpperCase() + key.slice(1)
+                          : translated;
+                      })()}{' '}
                       {expression && `${expression}`}
                     </Typography>
                   </Box>

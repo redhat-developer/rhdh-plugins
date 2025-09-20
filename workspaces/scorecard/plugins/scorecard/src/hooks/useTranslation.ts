@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,5 +14,16 @@
  * limitations under the License.
  */
 
-export * from './plugin';
-export { scorecardTranslations, scorecardTranslationRef } from './translations';
+import {
+  useTranslationRef,
+  TranslationFunction,
+} from '@backstage/core-plugin-api/alpha';
+import { scorecardTranslationRef } from '../translations';
+
+/**
+ * Hook for getting the translation function for the scorecard plugin
+ * @alpha
+ */
+export const useTranslation = (): {
+  t: TranslationFunction<typeof scorecardTranslationRef.T>;
+} => useTranslationRef(scorecardTranslationRef);

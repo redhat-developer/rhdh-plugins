@@ -22,8 +22,11 @@ import Grid from '@mui/material/Grid';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 
 import noScorecardsSvg from '../../images/no-scorecards.svg';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const NoScorecardsState: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <Box sx={{ p: 4, height: '100%', maxWidth: '1592px', margin: 'auto' }}>
       <Grid
@@ -42,7 +45,7 @@ const NoScorecardsState: React.FC = () => {
               mb: 2,
             })}
           >
-            No scorecards added yet
+            {t('emptyState.title')}
           </Typography>
 
           <Typography
@@ -53,8 +56,7 @@ const NoScorecardsState: React.FC = () => {
               lineHeight: 1.5,
             })}
           >
-            Scorecards help you monitor component health at a glance. To begin,
-            explore our documentation for setup guidelines.
+            {t('emptyState.description')}
           </Typography>
 
           <Link to="/docs">
@@ -73,7 +75,7 @@ const NoScorecardsState: React.FC = () => {
                 },
               }}
             >
-              View documentation{' '}
+              {t('emptyState.button')}{' '}
               <OpenInNewOutlinedIcon sx={{ width: 16, height: 16, ml: 1 }} />
             </Button>
           </Link>
@@ -83,7 +85,7 @@ const NoScorecardsState: React.FC = () => {
           <Box
             component="img"
             src={noScorecardsSvg}
-            alt="No scorecards"
+            alt={t('emptyState.altText')}
             sx={{
               width: '100%',
               maxWidth: '600px',
