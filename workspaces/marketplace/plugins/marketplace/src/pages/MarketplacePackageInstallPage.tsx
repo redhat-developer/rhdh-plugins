@@ -15,6 +15,7 @@
  */
 
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { useLocation } from 'react-router-dom';
 import {
   Page,
   Header,
@@ -30,15 +31,18 @@ import { MarketplacePackageInstallContentLoader } from '../components/Marketplac
 
 const PackageInstallHeader = () => {
   const params = useRouteRefParams(packageInstallRouteRef);
+  const location = useLocation();
 
   const pkg = usePackage(params.namespace, params.name);
 
   const displayName = pkg.data?.metadata.title ?? params.name;
   const title = `Install ${displayName}`;
-  const packageLink = useRouteRef(packageRouteRef)({
+  const baseLink = useRouteRef(packageRouteRef)({
     namespace: params.namespace,
     name: params.name,
   });
+  const preserved = new URLSearchParams(location.search);
+  const packageLink = preserved.size ? `${baseLink}?${preserved}` : baseLink;
 
   return <Header title={title} type="Package" typeLink={packageLink} />;
 };

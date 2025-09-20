@@ -52,10 +52,7 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
-import {
-  InstallationContextProvider,
-  DynamicMarketplacePluginRouter as Marketplace,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace';
+import { DynamicMarketplacePluginRouter as Marketplace } from '@red-hat-developer-hub/backstage-plugin-marketplace';
 
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
@@ -136,14 +133,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route
-      path="/extensions"
-      element={
-        <InstallationContextProvider>
-          <Marketplace />
-        </InstallationContextProvider>
-      }
-    />
+    <Route path="/extensions" element={<Marketplace />} />
   </FlatRoutes>
 );
 

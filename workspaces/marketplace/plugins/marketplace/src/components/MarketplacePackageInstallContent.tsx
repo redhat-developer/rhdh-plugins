@@ -19,10 +19,9 @@ import type { SetStateAction } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { ErrorPage, Progress } from '@backstage/core-components';
-import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { useRouteRefParams } from '@backstage/core-plugin-api';
 
-import yaml from 'yaml';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
   MarketplacePackage,
@@ -40,11 +39,7 @@ import Tab from '@mui/material/Tab';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
-import {
-  packageInstallRouteRef,
-  pluginInstallRouteRef,
-  pluginRouteRef,
-} from '../routes';
+import { packageInstallRouteRef } from '../routes';
 
 import { CodeEditorContextProvider, useCodeEditor } from './CodeEditor';
 import { usePackage } from '../hooks/usePackage';
@@ -75,26 +70,16 @@ export const MarketplacePackageInstallContent = ({
     : 'calc(100vh - 160px)';
 
   const codeEditor = useCodeEditor();
-  const params = useRouteRefParams(pluginInstallRouteRef);
-
-  const pluginLink = useRouteRef(pluginRouteRef)({
-    namespace: params.namespace,
-    name: params.name,
-  });
+  const params = useRouteRefParams(packageInstallRouteRef);
 
   const onLoaded = useCallback(() => {
-    const dynamicPluginYaml = {
-      plugins: [
-        {
-          package: pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....',
-          disabled: false,
-        },
-      ],
-    };
-    codeEditor.setValue(yaml.stringify(dynamicPluginYaml));
+    const path = pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....';
+    const yamlContent = `plugins:\n  - package: ${JSON.stringify(path)}\n    disabled: false\n`;
+    codeEditor.setValue(yamlContent);
   }, [codeEditor, pkg]);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const examples = [
     {
       [`${pkg.metadata.name}`]: pkg.spec?.appConfigExamples,
@@ -242,7 +227,13 @@ export const MarketplacePackageInstallContent = ({
           variant="outlined"
           color="primary"
           sx={{ ml: 2 }}
-          onClick={() => navigate(pluginLink)}
+          onClick={() => {
+            const ns = pkg.metadata.namespace ?? params.namespace;
+            const name = pkg.metadata.name;
+            const preserved = new URLSearchParams(location.search);
+            preserved.set('package', `${ns}/${name}`);
+            navigate(`/extensions/installed-packages?${preserved.toString()}`);
+          }}
         >
           Cancel
         </Button>
