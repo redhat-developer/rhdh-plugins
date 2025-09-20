@@ -20,9 +20,15 @@ import { GithubClient } from './GithubClient';
 import { GithubRepository } from './types';
 import { DEFAULT_GITHUB_HOSTNAME } from './constants';
 
+const mockedGraphqlClient = jest.fn();
+jest.mock('@octokit/graphql', () => ({
+  graphql: {
+    defaults: () => mockedGraphqlClient,
+  },
+}));
+
 describe('GithubClient', () => {
   let githubClient: GithubClient;
-  const mockedGraphqlClient = jest.fn();
   const repository: GithubRepository = {
     owner: 'owner',
     repo: 'repo',
@@ -38,13 +44,6 @@ describe('GithubClient', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // @ts-ignore
-    jest.unstable_mockModule('@octokit/graphql', async () => ({
-      graphql: {
-        defaults: () => mockedGraphqlClient,
-      },
-    }));
 
     const mockConfig = new ConfigReader({
       integrations: {
