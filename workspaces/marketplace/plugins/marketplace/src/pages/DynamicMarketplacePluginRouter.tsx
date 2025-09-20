@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { Routes, Route } from 'react-router-dom';
+import {
+  Routes,
+  Route,
+  useParams,
+  useLocation,
+  Navigate,
+} from 'react-router-dom';
 import {
   Page,
   Header,
@@ -63,6 +69,16 @@ const TabLabel = ({
   </Typography>
 );
 
+const PackageDeepLinkRedirect = () => {
+  const { namespace, name } = useParams();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  if (namespace && name) {
+    params.set('package', `${namespace}/${name}`);
+  }
+  return <Navigate to={`../installed-packages?${params.toString()}`} replace />;
+};
+
 const MarketplacePage = () => {
   const { count: installedPluginsCount, loading } = useInstalledPluginsCount();
 
@@ -104,6 +120,7 @@ const MarketplacePage = () => {
           >
             <ErrorBoundary>
               <InstalledPackagesTable />
+              <MarketplacePackageDrawer />
             </ErrorBoundary>
           </TabbedLayout.Route>
         </TabbedLayout>
@@ -116,7 +133,7 @@ const MarketplacePage = () => {
         />
         <Route
           path="/packages/:namespace/:name"
-          Component={MarketplacePackageDrawer}
+          Component={PackageDeepLinkRedirect}
         />
       </Routes>
     </>

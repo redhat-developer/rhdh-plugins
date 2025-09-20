@@ -22,12 +22,13 @@ import {
   TableColumn,
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
+import { Link } from '@backstage/core-components';
+import { useLocation } from 'react-router-dom';
 
 import { Query, QueryResult } from '@material-table/core';
 import { useQuery } from '@tanstack/react-query';
 
 import { dynamicPluginsInfoApiRef } from '../../api';
-import { useInstalledPluginsCount } from '../../hooks/useInstalledPluginsCount';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
@@ -36,22 +37,27 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
 import { useMarketplaceApi } from '../../hooks/useMarketplaceApi';
+import { getReadableName } from '../../utils/pluginProcessing';
 import { useQueryFullTextSearch } from '../../hooks/useQueryFullTextSearch';
 import { SearchTextField } from '../../shared-components/SearchTextField';
 
 type InstalledPackageRow = {
   displayName: string;
   packageName: string;
+  role?: string;
   version?: string;
   hasEntity: boolean;
+  namespace?: string;
+  name?: string;
 };
 
 export const InstalledPackagesTable = () => {
   const [error, setError] = useState<Error | undefined>(undefined);
-  const { count } = useInstalledPluginsCount();
+  const [filteredCount, setFilteredCount] = useState<number>(0);
   const dynamicPluginInfo = useApi(dynamicPluginsInfoApiRef);
   const marketplaceApi = useMarketplaceApi();
   const fullTextSearch = useQueryFullTextSearch();
+  const location = useLocation();
 
   // Fetch once and cache
   const installedQuery = useQuery({
@@ -81,11 +87,36 @@ export const InstalledPackagesTable = () => {
         cellStyle: {
           textAlign: 'left',
         },
+        render: (row: InstalledPackageRow) => {
+          if (row.hasEntity && row.namespace && row.name) {
+            const params = new URLSearchParams(location.search);
+            params.set('package', `${row.namespace}/${row.name}`);
+            const to = `${location.pathname}?${params.toString()}`;
+            return (
+              <Link to={to} onClick={e => e.stopPropagation()}>
+                {row.displayName}
+              </Link>
+            );
+          }
+          return row.displayName;
+        },
       },
       {
-        title: 'Package',
+        title: 'npm package name',
         field: 'packageName',
         width: '54ch',
+        align: 'left',
+        headerStyle: {
+          textAlign: 'left',
+        },
+        cellStyle: {
+          textAlign: 'left',
+        },
+      },
+      {
+        title: 'Role',
+        field: 'role',
+        width: '24ch',
         align: 'left',
         headerStyle: {
           textAlign: 'left',
@@ -197,7 +228,7 @@ export const InstalledPackagesTable = () => {
         sorting: false,
       },
     ],
-    [],
+    [location.pathname, location.search],
   );
   const fetchData = async (
     query: Query<InstalledPackageRow>,
@@ -236,19 +267,30 @@ export const InstalledPackagesTable = () => {
           .replace(/^-+/, '')
           .toLowerCase();
         const entity = entitiesByName.get(normalized) as any | undefined;
+        const rawName = entity
+          ? (entity.metadata?.title as string) ||
+            (entity.metadata?.name as string)
+          : getReadableName(p.name);
+        const cleanedName = rawName.replace(/\s+(frontend|backend)$/i, '');
         return {
-          displayName: entity
-            ? (entity.metadata?.title as string) ||
-              (entity.metadata?.name as string)
-            : 'Missing catalog entity',
+          displayName: cleanedName,
           // Show the npm package name directly from dynamic-plugins-info record
           packageName: p.name,
+          // Humanized role from dynamic-plugins-info
+          role: (p as any).role
+            ? (() => {
+                const raw = ((p as any).role as string).replace(/-/g, ' ');
+                return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+              })()
+            : undefined,
           // Prefer dynamic-plugins-info version, then fallback to entity spec.version
           version:
             (p.version as string | undefined) ??
             (entity?.spec?.version as string | undefined) ??
             undefined,
           hasEntity: !!entity,
+          namespace: entity?.metadata?.namespace ?? 'default',
+          name: entity?.metadata?.name,
         } as InstalledPackageRow;
       });
       // Debug: rows and missing entity stats
@@ -284,9 +326,16 @@ export const InstalledPackagesTable = () => {
         filteredRows.length,
       );
       const totalCount = filteredRows.length;
-      const start = Math.max(0, page * pageSize);
+      setFilteredCount(totalCount);
+      const lastPage = Math.max(0, Math.ceil(totalCount / pageSize) - 1);
+      const effectivePage = Math.min(page, lastPage);
+      const start = Math.max(0, effectivePage * pageSize);
       const end = Math.min(totalCount, start + pageSize);
-      return { data: filteredRows.slice(start, end), page, totalCount };
+      return {
+        data: filteredRows.slice(start, end),
+        page: effectivePage,
+        totalCount,
+      };
     } catch (loadingError) {
       // eslint-disable-next-line no-console
       console.error('Failed to load plugins', loadingError);
@@ -312,7 +361,7 @@ export const InstalledPackagesTable = () => {
       </div>
       <Table
         key={`${installedQuery.data?.length ?? 0}-${packagesQuery.data?.items?.length ?? 0}-${fullTextSearch.current || ''}`}
-        title={`Installed packages (${count})`}
+        title={`Installed packages (${filteredCount})`}
         options={{
           search: false,
           draggable: false,
