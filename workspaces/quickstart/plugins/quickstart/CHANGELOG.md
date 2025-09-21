@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.5.0
+
+### Minor Changes
+
+- d49b252: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- e8cc528: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0` and move it from plugin dependencies to devDependencies.
+
 ## 1.4.0
 
 ### Minor Changes
