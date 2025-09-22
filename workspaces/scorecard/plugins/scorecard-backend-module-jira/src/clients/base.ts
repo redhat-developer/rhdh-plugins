@@ -16,6 +16,10 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
+import type {
+  AuthService,
+  DiscoveryService,
+} from '@backstage/backend-plugin-api';
 import {
   JiraConfig,
   JiraEntityFilters,
@@ -28,9 +32,15 @@ import {
   JIRA_CONFIG_PATH,
   JIRA_OPTIONS_PATH,
   JIRA_MANDATORY_FILTER,
+  JIRA_ENABLE_PROXY_PATH,
 } from '../constants';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
+import {
+  ConnectionStrategy,
+  DirectConnectionStrategy,
+  ProxyConnectionStrategy,
+} from '../strategies/ConnectionStrategy';
 
 const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
   ScorecardJiraAnnotations;
@@ -38,16 +48,37 @@ const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
 export abstract class JiraClient {
   protected readonly config: JiraConfig;
   protected readonly options?: JiraOptions;
+  protected readonly connectionStrategy: ConnectionStrategy;
 
-  constructor(rootConfig: Config) {
+  constructor(
+    rootConfig: Config,
+    discovery: DiscoveryService,
+    auth: AuthService,
+  ) {
     const jiraConfig = rootConfig.getConfig(JIRA_CONFIG_PATH);
+
     this.config = {
-      baseUrl: jiraConfig.getString('baseUrl'),
-      token: jiraConfig.getString('token'),
       product: jiraConfig.getString('product') as Product,
       apiVersion:
         jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT,
     };
+
+    if (rootConfig.getOptionalBoolean(JIRA_ENABLE_PROXY_PATH)) {
+      const proxyPath = jiraConfig.getString('proxyPath');
+      this.connectionStrategy = new ProxyConnectionStrategy(
+        proxyPath,
+        discovery,
+        auth,
+      );
+    } else {
+      const baseUrl = jiraConfig.getString('baseUrl');
+      const token = jiraConfig.getString('token');
+      this.connectionStrategy = new DirectConnectionStrategy(
+        baseUrl,
+        token,
+        this.config.product,
+      );
+    }
 
     const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
     if (jiraOptions) {
@@ -57,8 +88,6 @@ export abstract class JiraClient {
       };
     }
   }
-
-  protected abstract getAuthHeaders(): Record<string, string>;
 
   protected abstract getSearchEndpoint(): string;
 
@@ -169,19 +198,29 @@ export abstract class JiraClient {
       .join(' AND ');
   }
 
+  protected async getBaseUrl(): Promise<string> {
+    return this.connectionStrategy.getBaseUrl(this.config.apiVersion);
+  }
+
+  protected async getAuthHeaders(): Promise<Record<string, string>> {
+    return this.connectionStrategy.getAuthHeaders();
+  }
+
   public async getCountOpenIssues(entity: Entity): Promise<number> {
-    const url = `${this.config.baseUrl}/rest/api/${
-      this.config.apiVersion
-    }${this.getSearchEndpoint()}`;
-    const method = 'POST';
-    const headers = this.getAuthHeaders();
+    const baseUrl = await this.getBaseUrl();
+    const countOpenIssuesUrl = `${baseUrl}${this.getSearchEndpoint()}`;
 
     const filters = this.getFiltersFromEntity(entity);
     const jql = this.buildJqlFilters(filters);
+    const headers = await this.getAuthHeaders();
 
-    const body = this.buildSearchBody(jql);
+    const data = await this.sendRequest({
+      method: 'POST',
+      url: countOpenIssuesUrl,
+      headers,
+      body: this.buildSearchBody(jql),
+    });
 
-    const data = await this.sendRequest({ url, method, headers, body });
     return this.extractIssueCountFromResponse(data);
   }
 }

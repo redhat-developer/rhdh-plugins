@@ -15,21 +15,29 @@
  */
 
 import type { Config } from '@backstage/config';
+import type {
+  AuthService,
+  DiscoveryService,
+} from '@backstage/backend-plugin-api';
 import { JIRA_CONFIG_PATH } from '../constants';
 import { JiraClient } from '../clients/base';
-import { JiraDataCenterClient } from '../clients/JiraDataCenterClient';
-import { JiraCloudClient } from '../clients/JiraCloudClient';
+import { JiraDataCenterClientStrategy } from '../strategies/JiraDataCenterClientStrategy';
+import { JiraCloudClientStrategy } from '../strategies/JiraCloudClientStrategy';
 
 export class JiraClientFactory {
-  static create(config: Config): JiraClient {
+  static create(
+    config: Config,
+    discovery: DiscoveryService,
+    auth: AuthService,
+  ): JiraClient {
     const jiraConfig = config.getConfig(JIRA_CONFIG_PATH);
     const product = jiraConfig.getString('product');
 
     switch (product) {
       case 'datacenter':
-        return new JiraDataCenterClient(config);
+        return new JiraDataCenterClientStrategy(config, discovery, auth);
       case 'cloud':
-        return new JiraCloudClient(config);
+        return new JiraCloudClientStrategy(config, discovery, auth);
       default:
         throw new Error(
           `Invalid Jira product: ${product}. Valid products for 'jira.product' are: datacenter, cloud`,

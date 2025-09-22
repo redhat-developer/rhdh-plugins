@@ -16,11 +16,24 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  Metric,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { validateThresholds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraOpenIssuesProvider } from './JiraOpenIssuesProvider';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
 import { JiraClient } from '../clients/base';
+import { mockServices } from '@backstage/backend-test-utils';
+import {
+  newEntityComponent,
+  newThresholdsConfig,
+  newMockRootConfig,
+} from '../../__fixtures__/testUtils';
+import { ScorecardJiraAnnotations } from '../annotations';
+
+const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
 jest.mock('../clients/JiraClientFactory');
 jest.mock('@red-hat-developer-hub/backstage-plugin-scorecard-node', () => ({
@@ -31,10 +44,6 @@ const mockJiraClient = {
   getCountOpenIssues: jest.fn(),
 } as unknown as jest.Mocked<JiraClient>;
 
-const mockConfig = {
-  getOptional: jest.fn(),
-} as unknown as jest.Mocked<Config>;
-
 const MockedJiraClientFactory = JiraClientFactory as jest.Mocked<
   typeof JiraClientFactory
 >;
@@ -42,53 +51,61 @@ const mockedValidateThresholds = validateThresholds as jest.MockedFunction<
   typeof validateThresholds
 >;
 
-const mockEntity: Entity = {
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
-  metadata: {
-    name: 'test-component',
-    annotations: {
-      'scorecard.jira/project-key': 'TEST',
-    },
-  },
-  spec: {
-    owner: 'guests',
-  },
-};
+const mockEntity: Entity = newEntityComponent({
+  [PROJECT_KEY]: 'TEST',
+});
 
-const customThresholds: ThresholdConfig = {
-  rules: [
-    { key: 'success', expression: '<5' },
-    { key: 'warning', expression: '5-20' },
-    { key: 'error', expression: '>20' },
-  ],
-};
+const customThresholds: ThresholdConfig = newThresholdsConfig();
+const mockDiscovery = mockServices.discovery();
+const mockAuth = mockServices.auth();
 
 describe('JiraOpenIssuesProvider', () => {
+  let mockConfig: Config;
+
   beforeEach(() => {
     jest.clearAllMocks();
     MockedJiraClientFactory.create.mockReturnValue(mockJiraClient);
-    mockConfig.getOptional.mockReturnValue(undefined);
+    mockConfig = mockServices.rootConfig({ data: {} });
   });
 
   describe('getProviderDatasourceId', () => {
     it('should return "jira"', () => {
-      const provider = JiraOpenIssuesProvider.fromConfig(mockConfig);
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        mockConfig,
+        mockDiscovery,
+        mockAuth,
+      );
       expect(provider.getProviderDatasourceId()).toEqual('jira');
     });
   });
 
   describe('getProviderId', () => {
     it('should return "jira.open-issues"', () => {
-      const provider = JiraOpenIssuesProvider.fromConfig(mockConfig);
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        mockConfig,
+        mockDiscovery,
+        mockAuth,
+      );
       expect(provider.getProviderId()).toEqual('jira.open-issues');
     });
   });
 
   describe('getMetric', () => {
+    let getMetricResult: Metric<'number'>;
+
+    beforeEach(() => {
+      jest.spyOn(JiraOpenIssuesProvider.prototype, 'getProviderId');
+
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        mockConfig,
+        mockDiscovery,
+        mockAuth,
+      );
+      getMetricResult = provider.getMetric();
+    });
+
     it('should return correct metric metadata', () => {
-      const provider = JiraOpenIssuesProvider.fromConfig(mockConfig);
-      expect(provider.getMetric()).toEqual({
+      expect(getMetricResult).toEqual({
         id: 'jira.open-issues',
         title: 'Jira open blocking tickets',
         description:
@@ -97,112 +114,128 @@ describe('JiraOpenIssuesProvider', () => {
         history: true,
       });
     });
+
+    it('should call getProviderId', () => {
+      expect(JiraOpenIssuesProvider.prototype.getProviderId).toHaveBeenCalled();
+    });
   });
 
   describe('getMetricThresholds', () => {
-    describe('when no thresholds are configured', () => {
-      it('should return default config', () => {
-        const provider = JiraOpenIssuesProvider.fromConfig(mockConfig);
-        expect(provider.getMetricThresholds()).toEqual({
-          rules: [
-            { key: 'success', expression: '<10' },
-            { key: 'warning', expression: '10-50' },
-            { key: 'error', expression: '>50' },
-          ],
-        });
-      });
+    it('should return default config when no thresholds are configured', () => {
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        mockConfig,
+        mockDiscovery,
+        mockAuth,
+      );
+      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
 
-    describe('when thresholds are configured', () => {
-      beforeEach(() => {
-        mockConfig.getOptional.mockReturnValue(customThresholds);
-      });
+    it('should return custom config when thresholds are configured', () => {
+      const config = newMockRootConfig({ thresholds: customThresholds });
 
-      it('should return custom config', () => {
-        const provider = JiraOpenIssuesProvider.fromConfig(mockConfig);
-        expect(provider.getMetricThresholds()).toEqual(customThresholds);
-      });
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        config,
+        mockDiscovery,
+        mockAuth,
+      );
+      expect(provider.getMetricThresholds()).toEqual(customThresholds);
+    });
+  });
+
+  describe('supportsEntity', () => {
+    it('should return true when entity has project key annotation', () => {
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        mockConfig,
+        mockDiscovery,
+        mockAuth,
+      );
+      expect(provider.supportsEntity(mockEntity)).toBe(true);
+    });
+
+    it('should return false when entity does not have project key annotation', () => {
+      const mockEmptyEntity: Entity = newEntityComponent({});
+
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        mockConfig,
+        mockDiscovery,
+        mockAuth,
+      );
+      expect(provider.supportsEntity(mockEmptyEntity)).toBe(false);
     });
   });
 
   describe('fromConfig', () => {
-    describe('when thresholds are not configured', () => {
-      it('should create provider with default config', () => {
-        const provider = JiraOpenIssuesProvider.fromConfig(mockConfig);
+    it('should create provider with default config when thresholds are not configured', () => {
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        mockConfig,
+        mockDiscovery,
+        mockAuth,
+      );
 
-        expect(mockConfig.getOptional).toHaveBeenCalledWith(
-          'scorecard.plugins.jira.open_issues.thresholds',
-        );
-        expect(MockedJiraClientFactory.create).toHaveBeenCalledWith(mockConfig);
-        expect(mockedValidateThresholds).not.toHaveBeenCalled();
-        expect(provider.getMetricThresholds()).toEqual({
-          rules: [
-            { key: 'success', expression: '<10' },
-            { key: 'warning', expression: '10-50' },
-            { key: 'error', expression: '>50' },
-          ],
-        });
-      });
+      expect(MockedJiraClientFactory.create).toHaveBeenCalledWith(
+        mockConfig,
+        mockDiscovery,
+        mockAuth,
+      );
+      expect(mockedValidateThresholds).not.toHaveBeenCalled();
+      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
 
-    describe('when thresholds are configured', () => {
-      it('should create provider with custom config', () => {
-        mockConfig.getOptional.mockReturnValue(customThresholds);
+    it('should create provider with custom config when thresholds are configured', () => {
+      const config = newMockRootConfig({ thresholds: customThresholds });
 
-        const provider = JiraOpenIssuesProvider.fromConfig(mockConfig);
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        config,
+        mockDiscovery,
+        mockAuth,
+      );
 
-        expect(mockConfig.getOptional).toHaveBeenCalledWith(
-          'scorecard.plugins.jira.open_issues.thresholds',
-        );
-        expect(MockedJiraClientFactory.create).toHaveBeenCalledWith(mockConfig);
-        expect(mockedValidateThresholds).toHaveBeenCalledWith(
-          customThresholds,
-          'number',
-        );
-        expect(provider.getMetricThresholds()).toEqual(customThresholds);
-      });
+      expect(MockedJiraClientFactory.create).toHaveBeenCalledWith(
+        config,
+        mockDiscovery,
+        mockAuth,
+      );
+      expect(mockedValidateThresholds).toHaveBeenCalledWith(
+        customThresholds,
+        'number',
+      );
+      expect(provider.getMetricThresholds()).toEqual(customThresholds);
     });
 
-    describe('when thresholds validation fails', () => {
+    it('should throw an error when invalid thresholds are configured', () => {
       const invalidThresholds = {
         rules: [{ key: 'invalid', expression: 'bad' }],
       };
-
-      beforeEach(() => {
-        mockConfig.getOptional.mockReturnValue(invalidThresholds);
-        mockedValidateThresholds.mockImplementation(() => {
-          throw new Error('Invalid thresholds');
-        });
+      mockedValidateThresholds.mockImplementation(() => {
+        throw new Error('Invalid thresholds');
       });
+      const config = newMockRootConfig({ thresholds: invalidThresholds });
 
-      it('should throw an error', () => {
-        expect(() => JiraOpenIssuesProvider.fromConfig(mockConfig)).toThrow(
-          'Invalid thresholds',
-        );
-        expect(mockedValidateThresholds).toHaveBeenCalledWith(
-          invalidThresholds,
-          'number',
-        );
-      });
+      expect(() =>
+        JiraOpenIssuesProvider.fromConfig(config, mockDiscovery, mockAuth),
+      ).toThrow('Invalid thresholds');
+      expect(mockedValidateThresholds).toHaveBeenCalledWith(
+        invalidThresholds,
+        'number',
+      );
     });
   });
 
   describe('calculateMetric', () => {
-    describe('when Jira client processed successfully', () => {
-      beforeEach(() => {
-        mockJiraClient.getCountOpenIssues.mockResolvedValue(5);
-      });
+    it('should return the count of open issues when Jira client processed successfully', async () => {
+      mockJiraClient.getCountOpenIssues.mockResolvedValue(5);
 
-      it('should return the count of open issues', async () => {
-        const provider = JiraOpenIssuesProvider.fromConfig(mockConfig);
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        mockConfig,
+        mockDiscovery,
+        mockAuth,
+      );
+      const result = await provider.calculateMetric(mockEntity);
 
-        const result = await provider.calculateMetric(mockEntity);
-
-        expect(result).toBe(5);
-        expect(mockJiraClient.getCountOpenIssues).toHaveBeenCalledWith(
-          mockEntity,
-        );
-      });
+      expect(result).toBe(5);
+      expect(mockJiraClient.getCountOpenIssues).toHaveBeenCalledWith(
+        mockEntity,
+      );
     });
 
     describe('when Jira client processed with error', () => {
@@ -213,8 +246,11 @@ describe('JiraOpenIssuesProvider', () => {
       });
 
       it('should propagate errors from Jira client', async () => {
-        const provider = JiraOpenIssuesProvider.fromConfig(mockConfig);
-
+        const provider = JiraOpenIssuesProvider.fromConfig(
+          mockConfig,
+          mockDiscovery,
+          mockAuth,
+        );
         await expect(provider.calculateMetric(mockEntity)).rejects.toThrow(
           'Jira API error',
         );

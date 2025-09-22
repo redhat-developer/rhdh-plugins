@@ -16,6 +16,10 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
+import type {
+  AuthService,
+  DiscoveryService,
+} from '@backstage/backend-plugin-api';
 import { THRESHOLDS_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
@@ -28,13 +32,21 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraClient } from '../clients/base';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
+import { ScorecardJiraAnnotations } from '../annotations';
+
+const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
 export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
   private readonly jiraClient: JiraClient;
 
-  private constructor(config: Config, thresholds?: ThresholdConfig) {
-    this.jiraClient = JiraClientFactory.create(config);
+  private constructor(
+    config: Config,
+    discovery: DiscoveryService,
+    auth: AuthService,
+    thresholds?: ThresholdConfig,
+  ) {
+    this.jiraClient = JiraClientFactory.create(config, discovery, auth);
     this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
   }
 
@@ -62,16 +74,25 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   }
 
   supportsEntity(entity: Entity): boolean {
-    return entity.metadata.annotations?.['jira/project-key'] !== undefined;
+    return entity.metadata.annotations?.[PROJECT_KEY] !== undefined;
   }
 
-  static fromConfig(config: Config): JiraOpenIssuesProvider {
+  static fromConfig(
+    config: Config,
+    discovery: DiscoveryService,
+    auth: AuthService,
+  ): JiraOpenIssuesProvider {
     const configuredThresholds = config.getOptional(THRESHOLDS_CONFIG_PATH);
     if (configuredThresholds !== undefined) {
       validateThresholds(configuredThresholds, 'number');
     }
 
-    return new JiraOpenIssuesProvider(config, configuredThresholds);
+    return new JiraOpenIssuesProvider(
+      config,
+      discovery,
+      auth,
+      configuredThresholds,
+    );
   }
 
   async calculateMetric(entity: Entity): Promise<number> {

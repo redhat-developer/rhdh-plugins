@@ -16,63 +16,56 @@
 
 import type { Config } from '@backstage/config';
 import { mockServices } from '@backstage/backend-test-utils';
-import { JiraDataCenterClient } from '../clients/JiraDataCenterClient';
+import { JiraDataCenterClientStrategy } from '../strategies/JiraDataCenterClientStrategy';
 import { JiraClientFactory } from './JiraClientFactory';
-import { JiraCloudClient } from '../clients/JiraCloudClient';
+import { JiraCloudClientStrategy } from '../strategies/JiraCloudClientStrategy';
+import { newMockRootConfig } from '../../__fixtures__/testUtils';
 
-jest.mock('../clients/JiraDataCenterClient');
-jest.mock('../clients/JiraCloudClient');
-
-const getConfig = (product: string) => {
-  return mockServices.rootConfig({
-    data: {
-      jira: {
-        product,
-      },
-    },
-  });
-};
+jest.mock('../strategies/JiraDataCenterClientStrategy');
+jest.mock('../strategies/JiraCloudClientStrategy');
 
 describe('JiraClientFactory', () => {
   let config: Config;
-
-  beforeEach(() => {
-    config = getConfig('datacenter');
-  });
+  const mockDiscovery = mockServices.discovery();
+  const mockAuth = mockServices.auth();
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('when product is datacenter', () => {
-    it('should create a JiraDataCenterClient', () => {
-      const client = JiraClientFactory.create(config);
-      expect(JiraDataCenterClient).toHaveBeenCalledWith(config);
-      expect(client).toBeInstanceOf(JiraDataCenterClient);
-    });
+  it('should create a JiraDataCenterClient when product is datacenter', () => {
+    config = newMockRootConfig({ jiraConfig: { product: 'datacenter' } });
+
+    expect(
+      JiraClientFactory.create(config, mockDiscovery, mockAuth),
+    ).toBeInstanceOf(JiraDataCenterClientStrategy);
+    expect(JiraDataCenterClientStrategy).toHaveBeenCalledWith(
+      config,
+      mockDiscovery,
+      mockAuth,
+    );
   });
 
-  describe('when product is cloud', () => {
-    beforeEach(() => {
-      config = getConfig('cloud');
-    });
+  it('should create a JiraCloudClient when product is cloud', () => {
+    config = newMockRootConfig({ jiraConfig: { product: 'cloud' } });
 
-    it('should create a JiraCloudClient', () => {
-      const client = JiraClientFactory.create(config);
-      expect(JiraCloudClient).toHaveBeenCalledWith(config);
-      expect(client).toBeInstanceOf(JiraCloudClient);
-    });
+    expect(
+      JiraClientFactory.create(config, mockDiscovery, mockAuth),
+    ).toBeInstanceOf(JiraCloudClientStrategy);
+    expect(JiraCloudClientStrategy).toHaveBeenCalledWith(
+      config,
+      mockDiscovery,
+      mockAuth,
+    );
   });
 
-  describe('when product is invalid', () => {
-    beforeEach(() => {
-      config = getConfig('foo');
-    });
+  it('should throw an error when product is invalid', () => {
+    config = newMockRootConfig({ jiraConfig: { product: 'foo' } });
 
-    it('should throw an error', () => {
-      expect(() => JiraClientFactory.create(config)).toThrow(
-        "Invalid Jira product: foo. Valid products for 'jira.product' are: datacenter, cloud",
-      );
-    });
+    expect(() =>
+      JiraClientFactory.create(config, mockDiscovery, mockAuth),
+    ).toThrow(
+      "Invalid Jira product: foo. Valid products for 'jira.product' are: datacenter, cloud",
+    );
   });
 });

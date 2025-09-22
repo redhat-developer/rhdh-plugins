@@ -6,9 +6,9 @@ This is an extension module to the `backstage-plugin-scorecard-backend` plugin. 
 
 Before installing this module, ensure that the Scorecard backend plugin is integrated into your Backstage instance. Follow the [Scorecard backend plugin README](../scorecard-backend/README.md) for setup instructions.
 
-This module also requires a Jira integration to be configured in your `app-config.yaml`. The following example of configuration can help:
+This module also requires a Jira integration to be configured in your `app-config.yaml`. This module support **Direct** OR **Proxy** jira integration config. The following example of configuration can help:
 
-**Configuration `token`:**
+### Configuration `token`:
 
 - For the `cloud` product:
 
@@ -32,17 +32,60 @@ This module also requires a Jira integration to be configured in your `app-confi
   - Obtain your personal token from Jira
   - Use the Jira token without changing
 
+### Configuration **Direct** Jira integration
+
+Provide the following config to `app-config.yaml` file:
+
 ```yaml
 jira:
   # Required
   baseUrl: ${JIRA_URL}
-  # Required
-  token: ${JIRA_TOKEN}
-  # Required: Supported products: `cloud` or `datacenter`
+  # Required | (For cloud use 'Basic YourCreatedAboveToken', for datacenter use 'Bearer YourJiraToken')
+  token: Bearer ${JIRA_TOKEN}
+  # Required | Supported products: `cloud` or `datacenter`
   product: cloud
   # By default, the latest version is used. You can omit this prop when using the latest version.
   apiVersion: '3'
+
+scorecard:
+  plugins:
+    jira:
+      enableProxy: false
 ```
+
+Be sure that the `enableProxy` property is not exist or set to **false** at the config file by the following path: `scorecard.plugins.jira.enableProxy`
+
+### Configuration **Proxy** jira integration
+
+Provide the following config to `app-config.yaml` file:
+
+```yaml
+jira:
+  # Required |
+  proxyPath: /jira/api
+  # Required | Supported products: `cloud` or `datacenter`
+  product: cloud
+  # By default, the latest version is used. You can omit this prop when using the latest version.
+  apiVersion: '3'
+
+scorecard:
+  plugins:
+    jira:
+      enableProxy: true
+
+# This proxy configuration presented only as an example
+proxy:
+  endpoints:
+    '/jira/api':
+      target: https://example.atlassian.net
+      headers:
+        Accept: 'application/json'
+        Content-Type: 'application/json'
+        X-Atlassian-Token: 'no-check'
+        Authorization: Basic SomeTokenHere
+```
+
+Be sure that the `enableProxy` property is to **true** at the config file by the following path: `scorecard.plugins.jira.enableProxy`
 
 ## Installation
 
@@ -118,17 +161,17 @@ This metric counts all jira issues that match the filter condition specified in 
 ```yaml
 # app-config.yaml
 scorecard:
-plugins:
-  jira:
-    open_issues:
-      thresholds:
-        rules:
-          - key: success
-            expression: '<=50'
-          - key: warning
-            expression: '>50'
-          - key: error
-            expression: '>100'
+  plugins:
+    jira:
+      open_issues:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<=50'
+            - key: warning
+              expression: '>50'
+            - key: error
+              expression: '>100'
 ```
 
 ## Configuration
@@ -144,12 +187,12 @@ Options define configuration that affect fetch jira issues global configuration,
 ```yaml
 # app-config.yaml
 scorecard:
-plugins:
-  jira:
-    open_issues:
-      options:
-        # Optional: use mandatoryFilter filter if need to replaces default which is "type = Bug AND resolution = Unresolved"
-        mandatoryFilter: Type = Task AND Resolution = Resolved
-        # Optional: use to specify global customFilter, however the annotation `jira/custom-filter` will replaces them
-        customFilter: priority in ("Critical", "Blocker")
+  plugins:
+    jira:
+      open_issues:
+        options:
+          # Optional: use mandatoryFilter filter if need to replaces default which is "type = Bug AND resolution = Unresolved"
+          mandatoryFilter: Type = Task AND Resolution = Resolved
+          # Optional: use to specify global customFilter, however the annotation `jira/custom-filter` will replaces them
+          customFilter: priority in ("Critical", "Blocker")
 ```

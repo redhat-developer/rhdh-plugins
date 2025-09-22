@@ -17,10 +17,14 @@
 export interface Config {
   /** Configuration for jira plugin */
   jira: {
-    baseUrl: string;
-    token: string;
+    /** Optional only when using proxy. */
+    baseUrl?: string;
+    /** Optional only when using proxy. */
+    token?: string;
     product: string;
     apiVersion?: string;
+    /** Required only when using proxy. */
+    proxyPath?: string;
   };
   /** Configuration for scorecard plugin */
   scorecard?: {
@@ -28,6 +32,8 @@ export interface Config {
     plugins?: {
       /** JIRA datasource configuration */
       jira?: {
+        /** When not provided, proxy will not be used */
+        enableProxy?: boolean;
         open_issues?: {
           options?: {
             mandatoryFilter?: string;
