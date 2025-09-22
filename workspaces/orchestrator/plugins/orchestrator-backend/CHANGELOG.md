@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 8.0.6
+
+### Patch Changes
+
+- f0a427c: Added internationalization to the frontend plugins.
+- Updated dependencies [f0a427c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.6
+
 ## 8.0.5
 
 ### Patch Changes
