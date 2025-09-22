@@ -93,7 +93,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
         {/* End global nav */}
         <SidebarDivider />
-        <SidebarItem icon={ExtensionIcon} to="bc-tests" text="BC tests" />
+        <SidebarItem icon={ExtensionIcon} to="bcc-tests" text="BCC tests" />
         <SidebarItem icon={ExtensionIcon} to="mui4-tests" text="MUI v4 tests" />
         <SidebarItem icon={ExtensionIcon} to="mui5-tests" text="MUI v5 tests" />
         <SidebarDivider />

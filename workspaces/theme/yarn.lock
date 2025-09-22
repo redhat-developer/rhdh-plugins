@@ -8723,9 +8723,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-bc-test@workspace:^, @red-hat-developer-hub/backstage-plugin-bc-test@workspace:plugins/bc-test":
+"@red-hat-developer-hub/backstage-plugin-bcc-test@workspace:^, @red-hat-developer-hub/backstage-plugin-bcc-test@workspace:plugins/bcc-test":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-bc-test@workspace:plugins/bc-test"
+  resolution: "@red-hat-developer-hub/backstage-plugin-bcc-test@workspace:plugins/bcc-test"
   dependencies:
     "@backstage/cli": ^0.34.1
     "@backstage/core-app-api": ^1.18.0
@@ -12837,7 +12837,7 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@playwright/test": 1.55.0
-    "@red-hat-developer-hub/backstage-plugin-bc-test": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-bcc-test": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-mui4-test": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-mui5-test": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "workspace:^"

@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import { bcTestPlugin } from './plugin';
+import { createRouteRef } from '@backstage/core-plugin-api';
 
-describe('bc-test', () => {
-  it('should export plugin', () => {
-    expect(bcTestPlugin).toBeDefined();
-  });
+export const rootRouteRef = createRouteRef({
+  id: 'bcc-test',
 });

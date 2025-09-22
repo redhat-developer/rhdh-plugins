@@ -14,14 +14,31 @@
  * limitations under the License.
  */
 
-import { createDevApp } from '@backstage/dev-utils';
-import { bcTestPlugin, BCTestPage } from '../src/plugin';
+import {
+  createPlugin,
+  createRoutableExtension,
+} from '@backstage/core-plugin-api';
 
-createDevApp()
-  .registerPlugin(bcTestPlugin)
-  .addPage({
-    element: <BCTestPage />,
-    title: 'Root Page',
-    path: '/bc-test',
-  })
-  .render();
+import { rootRouteRef } from './routes';
+
+/**
+ * @public
+ */
+export const bccTestPlugin = createPlugin({
+  id: 'bcc-test',
+  routes: {
+    root: rootRouteRef,
+  },
+});
+
+/**
+ * @public
+ */
+export const BCCTestPage = bccTestPlugin.provide(
+  createRoutableExtension({
+    name: 'BCTestPage',
+    component: () =>
+      import('./components/BCCTestPage').then(m => m.BCCTestPage),
+    mountPoint: rootRouteRef,
+  }),
+);
