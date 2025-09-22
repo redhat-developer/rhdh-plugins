@@ -107,6 +107,7 @@ provided bt the `support.provider`. Like:
 - **`generally-available`**: Stable, fully supported plugins ready for production use.
 - **`tech-preview`**: A technical preview of a plugin that is not fully supported yet.
 - **`dev-preview`**: An early-stage plugin.
+- **`community`**: Open-source plugins, supported by Community.
 
 ##### Installation Status
 
@@ -213,18 +214,18 @@ spec:
 
 ## User facing attributes
 
-| Attribute              | Type                               | Description                                                                               |
-| ---------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------- |
-| `metadata.description` | `string`                           | Short description that is shown on the cards (text)                                       |
-| `spec.author`          | `string`                           | A single author name, this attribute is automatically converted to `authors` if specified |
-| `spec.authors`         | `{ name: string, url?: string }[]` | Authors array if a plugin is developed by multiple authors                                |
-| `spec.publisher`       | `string`                           | Who distributes/packages the plugin for RHDH                                              |
-| `spec.support`         | `{ name: string, level: string }`  | Support provider and level information                                                    |
-| `spec.categories`      | `string[]`                         | Categories are displayed directly as filter and labels                                    |
-| `spec.highlights`      | `string[]`                         | Highlights for the details page                                                           |
-| `spec.description`     | `string`                           | Full description that is shown on the details page (markdown)                             |
-| `spec.installation`    | `string`                           | Full installation description that is shown later on the install page (markdown)          |
-| `spec.icon`            | `string`                           | Icon URL                                                                                  |
+| Attribute              | Type                                  | Description                                                                               |
+| ---------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `metadata.description` | `string`                              | Short description that is shown on the cards (text)                                       |
+| `spec.author`          | `string`                              | A single author name, this attribute is automatically converted to `authors` if specified |
+| `spec.authors`         | `{ name: string, url?: string }[]`    | Authors array if a plugin is developed by multiple authors                                |
+| `spec.publisher`       | `string`                              | Who distributes/packages the plugin for RHDH                                              |
+| `spec.support`         | `{ provider: string, level: string }` | Support provider and level information                                                    |
+| `spec.categories`      | `string[]`                            | Categories are displayed directly as filter and labels                                    |
+| `spec.highlights`      | `string[]`                            | Highlights for the details page                                                           |
+| `spec.description`     | `string`                              | Full description that is shown on the details page (markdown)                             |
+| `spec.installation`    | `string`                              | Full installation description that is shown later on the install page (markdown)          |
+| `spec.icon`            | `string`                              | Icon URL                                                                                  |
 
 ## Annotations
 
