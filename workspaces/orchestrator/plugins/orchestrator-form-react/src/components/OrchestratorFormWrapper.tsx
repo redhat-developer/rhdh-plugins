@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo, useState } from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
@@ -32,6 +32,7 @@ import {
   useOrchestratorFormApiOrDefault,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
+import { useTranslation } from '../hooks/useTranslation';
 import { getActiveStepKey } from '../utils/getSortedStepEntries';
 import { useStepperContext } from '../utils/StepperContext';
 import useValidator from '../utils/useValidator';
@@ -47,20 +48,19 @@ const MuiForm = withTheme<
 const FormComponent = (decoratorProps: FormDecoratorProps) => {
   const formContext = decoratorProps.formContext;
 
-  const [extraErrors, setExtraErrors] = React.useState<
+  const [extraErrors, setExtraErrors] = useState<
     ErrorSchema<JsonObject> | undefined
   >();
   const numStepsInMultiStepSchema = formContext?.numStepsInMultiStepSchema;
   const isMultiStep = numStepsInMultiStepSchema !== undefined;
   const { handleNext, activeStep, handleValidateStarted, handleValidateEnded } =
     useStepperContext();
-  const [validationError, setValidationError] = React.useState<
-    Error | undefined
-  >();
+  const [validationError, setValidationError] = useState<Error | undefined>();
   const validator = useValidator(isMultiStep);
+  const { t } = useTranslation();
 
   if (!formContext) {
-    return <div>Form decorator must provide context data.</div>;
+    return <div>{t('formDecorator.error')}</div>;
   }
 
   const {
@@ -148,7 +148,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
 const OrchestratorFormWrapper = (props: OrchestratorFormContextProps) => {
   const formApi = useOrchestratorFormApiOrDefault();
 
-  const NewComponent = React.useMemo(() => {
+  const NewComponent = useMemo(() => {
     const formDecorator = formApi.getFormDecorator();
     return formDecorator(FormComponent);
   }, [formApi]);

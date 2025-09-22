@@ -17,6 +17,8 @@
 import { forwardRef, ForwardRefRenderFunction } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+
 import { Close } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -29,6 +31,9 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
+import { useTranslation } from '../../hooks/useTranslation';
+import { orchestratorTranslationRef } from '../../translations';
 
 export type WorkflowDescriptionModalProps = {
   workflow: WorkflowOverviewDTO;
@@ -51,10 +56,17 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
+// hack
+type LocalTranslationFunction =
+  | TranslationFunction<typeof orchestratorTranslationRef.T>
+  | ((key: string, params?: Record<string, string>) => string);
+
 export const RefForwardingWorkflowDescriptionModal: ForwardRefRenderFunction<
   ParentComponentRef,
   WorkflowDescriptionModalProps
 > = (props, forwardedRef): JSX.Element | null => {
+  const { t } = useTranslation() as { t: LocalTranslationFunction };
+
   const {
     workflow,
     open = false,
@@ -76,8 +88,9 @@ export const RefForwardingWorkflowDescriptionModal: ForwardRefRenderFunction<
     content = (
       <Box>
         <Typography paragraph>
-          Failed to load details for the workflow ID:
-          {workflowError.itemId}
+          {t('workflow.errors.failedToLoadDetails', {
+            id: workflowError.itemId,
+          })}
         </Typography>
         {workflowError.error.message && (
           <Typography paragraph>{workflowError.error.message}</Typography>
@@ -90,7 +103,7 @@ export const RefForwardingWorkflowDescriptionModal: ForwardRefRenderFunction<
     content = (
       <Box>
         <Typography paragraph>
-          Are you sure you want to run this workflow?
+          {t('workflow.messages.areYouSureYouWantToRunThisWorkflow')}
         </Typography>
       </Box>
     );
@@ -125,10 +138,10 @@ export const RefForwardingWorkflowDescriptionModal: ForwardRefRenderFunction<
           variant="contained"
           disabled={!!workflowError}
         >
-          Run workflow
+          {t('workflow.buttons.runWorkflow')}
         </Button>
         <Button onClick={onClose} color="primary" variant="outlined">
-          Close
+          {t('common.close')}
         </Button>
       </DialogActions>
     </Dialog>

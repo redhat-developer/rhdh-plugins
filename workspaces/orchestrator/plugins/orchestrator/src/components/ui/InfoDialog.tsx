@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { forwardRef, ForwardRefRenderFunction } from 'react';
+import { forwardRef, ForwardRefRenderFunction, ReactNode } from 'react';
 
 import Close from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
@@ -27,12 +27,12 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 export type InfoDialogProps = {
-  title: React.ReactNode;
-  titleIcon?: React.ReactNode;
+  title: ReactNode;
+  titleIcon?: ReactNode;
   open: boolean;
   onClose?: () => void;
-  dialogActions?: React.ReactNode;
-  children?: React.ReactNode;
+  dialogActions?: ReactNode;
+  children?: ReactNode;
   wideDialog?: boolean;
 };
 

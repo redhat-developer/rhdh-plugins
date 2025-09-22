@@ -24,6 +24,7 @@ import Grid from '@mui/material/Grid';
 import { makeStyles } from 'tss-react/mui';
 
 import { orchestratorApiRef } from '../../api';
+import { useTranslation } from '../../hooks/useTranslation';
 import { workflowRouteRef, workflowRunsRoutePath } from '../../routes';
 import { useIsDarkMode } from '../../utils/isDarkMode';
 import { WorkflowRunsTabContent } from '../OrchestratorPage/WorkflowRunsTabContent';
@@ -42,6 +43,7 @@ const useStyles = makeStyles<{ isDarkMode: boolean }>()(
 );
 
 export const WorkflowPage = () => {
+  const { t } = useTranslation();
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
   const isDarkMode = useIsDarkMode();
@@ -64,7 +66,7 @@ export const WorkflowPage = () => {
     >
       <Box className={classes.tabbedLayout}>
         <TabbedLayout>
-          <TabbedLayout.Route path="/" title="Workflow details">
+          <TabbedLayout.Route path="/" title={t('page.tabs.workflowDetails')}>
             <Grid container spacing={2}>
               <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
               <WorkflowDetailsTabContent
@@ -76,7 +78,7 @@ export const WorkflowPage = () => {
           </TabbedLayout.Route>
           <TabbedLayout.Route
             path={workflowRunsRoutePath}
-            title="Workflow runs"
+            title={t('page.tabs.workflowRuns')}
           >
             <Grid container spacing={2}>
               <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
