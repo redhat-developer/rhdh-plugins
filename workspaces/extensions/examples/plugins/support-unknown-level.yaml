@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../../json-schema/plugins.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: Plugin
+metadata:
+  namespace: extensions-plugin-demo
+  name: support-unknown-level
+  title: Support Unknown Level
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
+spec:
+  categories:
+    - Test plugin entity
+  support:
+    provider: a-string
+    # broken by design
+    level: a-level

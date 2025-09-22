@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=../../json-schema/collections.json
+apiVersion: extensions.backstage.io/v1alpha1
+kind: PluginCollection
+metadata:
+  namespace: extensions-plugin-demo
+  name: kubernetes
+  title: Kubernetes Plugins
+  description: A set of Kubernetes plugins! :)
+spec:
+  type: curated
+  plugins:
+    - quay
+    - tekton
+    - topology

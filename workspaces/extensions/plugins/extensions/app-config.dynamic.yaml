@@ -1,0 +1,17 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-extensions:
+      appIcons:
+        - name: extensions
+          importName: ExtensionsIcon
+      dynamicRoutes:
+        - path: /extensions/catalog
+          importName: DynamicExtensionsPluginRouter
+      mountPoints:
+        - mountPoint: application/provider
+          importName: InstallationContextProvider
+        - mountPoint: internal.plugins/tab
+          importName: DynamicExtensionsPluginContent
+          config:
+            path: extensions
+            title: Catalog
