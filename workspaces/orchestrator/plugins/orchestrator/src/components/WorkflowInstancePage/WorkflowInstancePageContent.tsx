@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
 
 import { Content, InfoCard, Link } from '@backstage/core-components';
@@ -35,6 +35,7 @@ import {
 
 import { orchestratorApiRef } from '../../api/api';
 import { VALUE_UNAVAILABLE } from '../../constants';
+import { useTranslation } from '../../hooks/useTranslation';
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { VariablesDialog } from './VariablesDialog';
 import { WorkflowInputs } from './WorkflowInputs';
@@ -90,10 +91,11 @@ const useStyles = makeStyles()(() => ({
 export const WorkflowInstancePageContent: React.FC<{
   instance: ProcessInstanceDTO;
 }> = ({ instance }) => {
+  const { t } = useTranslation();
   const { classes } = useStyles();
   const orchestratorApi = useApi(orchestratorApiRef);
 
-  const details = React.useMemo(
+  const details = useMemo(
     () => mapProcessInstanceToDetails(instance),
     [instance],
   );
@@ -125,7 +127,7 @@ export const WorkflowInstancePageContent: React.FC<{
 
   const [isVariablesDialogOpen, setIsVariablesDialogOpen] = useState(false);
 
-  const toggleVariablesDialog = React.useCallback(() => {
+  const toggleVariablesDialog = useCallback(() => {
     setIsVariablesDialogOpen(prev => !prev);
   }, []);
 
@@ -146,7 +148,7 @@ export const WorkflowInstancePageContent: React.FC<{
         component="div"
         style={{ textAlign: 'right' }}
       >
-        <b>View variables</b>
+        <b>{t('run.viewVariables')}</b>
       </Typography>
     </Link>
   );
@@ -163,7 +165,7 @@ export const WorkflowInstancePageContent: React.FC<{
           <InfoCard
             title={
               <div className={classes.titleContainer}>
-                <span>Details</span>
+                <Typography component="span">{t('common.details')}</Typography>
                 {viewVariables}
               </div>
             }
@@ -195,7 +197,7 @@ export const WorkflowInstancePageContent: React.FC<{
 
         <Grid item xs={6}>
           <InfoCard
-            title="Workflow progress"
+            title={t('workflow.progress')}
             divider={false}
             className={classes.bottomRowCard}
             cardClassName={classes.cardClassName}

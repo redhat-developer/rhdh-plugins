@@ -8,6 +8,7 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SvgIconProps } from '@mui/material/SvgIcon';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // Warning: (ae-missing-release-tag) "IsOrchestratorCatalogTabAvailable" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -30,10 +31,16 @@ export const orchestratorPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;
 
+// Warning: (ae-missing-release-tag) "orchestratorTranslations" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export const orchestratorTranslations: TranslationResource<"plugin.orchestrator">;
+
 // Warnings were encountered during analysis:
 //
 // src/components/catalogComponents/CatalogTab.d.ts:1:22 - (ae-undocumented) Missing documentation for "IsOrchestratorCatalogTabAvailable".
 // src/components/catalogComponents/CatalogTab.d.ts:2:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
+// src/translations/index.d.ts:2:22 - (ae-undocumented) Missing documentation for "orchestratorTranslations".
 
 // (No @packageDocumentation comment for this package)
 

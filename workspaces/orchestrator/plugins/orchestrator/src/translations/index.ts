@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-export const isNonNullable = <T = unknown>(value: T): value is NonNullable<T> =>
-  value !== null && typeof value !== 'undefined';
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 
-export const hasOwnProp = <X extends {}, Y extends PropertyKey>(
-  obj: X,
-  prop: Y,
-): obj is X & Record<Y, unknown> => {
-  return obj.hasOwnProperty(prop);
-};
+import { orchestratorTranslationRef } from './ref';
+
+export const orchestratorTranslations = createTranslationResource({
+  ref: orchestratorTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    fr: () => import('./fr'),
+    it: () => import('./it'),
+    es: () => import('./es'),
+  },
+});
+
+export { orchestratorTranslationRef };

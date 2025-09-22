@@ -19,9 +19,13 @@ import { createDevApp } from '@backstage/dev-utils';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import { OrchestratorPage, orchestratorPlugin } from '../src';
+import { orchestratorTranslations } from '../src/translations';
 
 createDevApp()
   .registerPlugin(orchestratorPlugin)
+  .addTranslationResource(orchestratorTranslations)
+  .setAvailableLanguages(['en', 'de', 'fr', 'it', 'es'])
+  .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage({
     element: <OrchestratorPage />,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo } from 'react';
 
 import { Content, StructuredMetadataTable } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
@@ -25,6 +25,7 @@ import Paper from '@mui/material/Paper';
 import type { JSONSchema7 } from 'json-schema';
 import { makeStyles } from 'tss-react/mui';
 
+import { useTranslation } from '../hooks/useTranslation';
 import generateReviewTableData from '../utils/generateReviewTableData';
 import { useStepperContext } from '../utils/StepperContext';
 import SubmitButton from './SubmitButton';
@@ -66,9 +67,11 @@ const ReviewStep = ({
   data: JsonObject;
   handleExecute: () => void;
 }) => {
+  const { t } = useTranslation();
+
   const { classes } = useStyles();
   const { handleBack } = useStepperContext();
-  const displayData = React.useMemo<JsonObject>(() => {
+  const displayData = useMemo<JsonObject>(() => {
     return generateReviewTableData(schema, data);
   }, [schema, data]);
 
@@ -83,14 +86,14 @@ const ReviewStep = ({
             className={classes.backButton}
             disabled={busy}
           >
-            Back
+            {t('common.back')}
           </Button>
           <SubmitButton
             handleClick={handleExecute}
             submitting={busy}
             focusOnMount
           >
-            Run
+            {t('common.run')}
           </SubmitButton>
         </div>
       </Paper>

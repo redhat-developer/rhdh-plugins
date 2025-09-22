@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useState } from 'react';
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Box from '@mui/material/Box';
@@ -65,7 +65,7 @@ export const JsonCodeBlock = ({
   maxHeight?: number;
 }) => {
   const jsonString = JSON.stringify(value, null, 2);
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
   const { classes } = useStyles({ isDarkMode, maxHeight });
 
   const handleCopy = async () => {

@@ -17,6 +17,12 @@
 export const VALUE_UNAVAILABLE = '---' as const;
 export const AVAILABLE = 'Available';
 export const UNAVAILABLE = 'Unavailable';
+
+// Translation keys for workflow status
+export const WORKFLOW_STATUS_KEYS = {
+  available: 'workflow.status.available',
+  unavailable: 'workflow.status.unavailable',
+} as const;
 export const SHORT_REFRESH_INTERVAL = 5000;
 export const LONG_REFRESH_INTERVAL = 15000;
 export const DEFAULT_TABLE_PAGE_SIZE = 20;

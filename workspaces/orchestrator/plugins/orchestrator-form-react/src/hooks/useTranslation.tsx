@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-export const isNonNullable = <T = unknown>(value: T): value is NonNullable<T> =>
-  value !== null && typeof value !== 'undefined';
+import { useStepperContext } from '../utils/StepperContext';
 
-export const hasOwnProp = <X extends {}, Y extends PropertyKey>(
-  obj: X,
-  prop: Y,
-): obj is X & Record<Y, unknown> => {
-  return obj.hasOwnProperty(prop);
-};
+export type TranslationFunction = (key: string) => string;
+
+// Motivation for passing t in the context:
+// Keep a single set of translation files
+// Avoid introduction new plugin for them
+// Avoid moving them to a common package
+
+export const useTranslation = (): {
+  t: TranslationFunction;
+} => ({ t: useStepperContext().t });

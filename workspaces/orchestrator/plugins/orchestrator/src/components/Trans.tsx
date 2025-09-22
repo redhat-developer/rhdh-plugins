@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-export const isNonNullable = <T = unknown>(value: T): value is NonNullable<T> =>
-  value !== null && typeof value !== 'undefined';
+import { useTranslation } from '../hooks/useTranslation';
+import { orchestratorTranslationRef } from '../translations';
 
-export const hasOwnProp = <X extends {}, Y extends PropertyKey>(
-  obj: X,
-  prop: Y,
-): obj is X & Record<Y, unknown> => {
-  return obj.hasOwnProperty(prop);
+type Messages = typeof orchestratorTranslationRef.T;
+
+interface TransProps<TMessages extends { [key in string]: string }> {
+  message: keyof TMessages;
+  params?: any;
+}
+
+export const Trans = ({ message, params }: TransProps<Messages>) => {
+  const { t } = useTranslation();
+  return t(message, params);
 };
