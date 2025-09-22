@@ -62,7 +62,7 @@ export const EntityScorecardContent = () => {
         }
 
         const statusConfig = getStatusConfig(
-          metric.result?.thresholdResult?.evaluation,
+          metric.result.thresholdResult?.evaluation,
         );
 
         return (
@@ -73,8 +73,8 @@ export const EntityScorecardContent = () => {
             loading={false}
             statusColor={statusConfig.color}
             StatusIcon={statusConfig.icon}
-            value={metric.result?.value}
-            thresholds={metric.result?.thresholdResult}
+            value={metric.result.value}
+            thresholds={metric.result.thresholdResult}
           />
         );
       })}
