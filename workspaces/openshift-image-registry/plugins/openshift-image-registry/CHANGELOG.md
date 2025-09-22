@@ -1,5 +1,15 @@
 ### Dependencies
 
+## 1.15.0
+
+### Minor Changes
+
+- da9c62b: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- 788ae3c: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0`.
+
 ## 1.14.0
 
 ### Minor Changes
