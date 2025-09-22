@@ -176,7 +176,6 @@ export const MarketplaceCatalogContent = () => {
             <>
               <WarningPanel
                 title="Plugin installation is disabled."
-                defaultExpanded
                 severity="info"
                 message={
                   <>
