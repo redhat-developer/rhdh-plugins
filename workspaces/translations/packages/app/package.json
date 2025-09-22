@@ -50,6 +50,7 @@
     "@material-ui/icons": "^4.9.1",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.10.0",
     "@red-hat-developer-hub/backstage-plugin-translations": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-translations-test": "workspace:^",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
     "react-router": "^6.3.0",
