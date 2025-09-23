@@ -52,7 +52,7 @@ export const translationsMessages = {
 /**
  * @public
  */
-export const translationsTranslationRef = createTranslationRef({
+export const translationsPluginTranslationRef = createTranslationRef({
   id: 'plugin.translations',
   messages: translationsMessages,
 });

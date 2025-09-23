@@ -72,7 +72,7 @@ export const translationsPlugin: BackstagePlugin<
 >;
 
 // @public (undocumented)
-export const translationsTranslationRef: TranslationRef<
+export const translationsPluginTranslationRef: TranslationRef<
   'plugin.translations',
   {
     readonly 'table.title': string;
@@ -94,7 +94,7 @@ export const translationsTranslationRef: TranslationRef<
 >;
 
 // @public (undocumented)
-export const translationsTranslations: TranslationResource<'plugin.translations'>;
+export const translationsPluginTranslations: TranslationResource<'plugin.translations'>;
 
 // (No @packageDocumentation comment for this package)
 ```

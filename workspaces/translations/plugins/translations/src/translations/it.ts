@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-import { translationsTranslationRef } from './ref';
+import { translationsPluginTranslationRef } from './ref';
 
 const translationsTranslationIt = createTranslationMessages({
-  ref: translationsTranslationRef,
+  ref: translationsPluginTranslationRef,
   messages: {
     // CRITICAL: Use flat dot notation, not nested objects
     'page.title': 'Traduzioni',

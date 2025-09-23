@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import { useTranslation } from '../hooks/useTranslation';
-import { translationsTranslationRef } from '../translations';
+import { translationsPluginTranslationRef } from '../translations';
 
-type Messages = typeof translationsTranslationRef.T;
+type Messages = typeof translationsPluginTranslationRef.T;
 
 interface TransProps<TMessages extends { [key in string]: string }> {
   message: keyof TMessages;

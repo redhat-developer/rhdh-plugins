@@ -17,8 +17,8 @@ import {
   useTranslationRef,
   TranslationFunction,
 } from '@backstage/core-plugin-api/alpha';
-import { translationsTranslationRef } from '../translations';
+import { translationsPluginTranslationRef } from '../translations';
 
 export const useTranslation = (): {
-  t: TranslationFunction<typeof translationsTranslationRef.T>;
-} => useTranslationRef(translationsTranslationRef);
+  t: TranslationFunction<typeof translationsPluginTranslationRef.T>;
+} => useTranslationRef(translationsPluginTranslationRef);

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-import { translationsTranslationRef } from './ref';
+import { translationsPluginTranslationRef } from './ref';
 
 /**
  *  @public
  *
  */
-export const translationsTranslations = createTranslationResource({
-  ref: translationsTranslationRef,
+export const translationsPluginTranslations = createTranslationResource({
+  ref: translationsPluginTranslationRef,
   translations: {
     de: () => import('./de'),
     fr: () => import('./fr'),
@@ -29,5 +29,7 @@ export const translationsTranslations = createTranslationResource({
     es: () => import('./es'),
   },
 });
-
-export { translationsTranslationRef };
+/**
+ * @public
+ */
+export { translationsPluginTranslationRef };
