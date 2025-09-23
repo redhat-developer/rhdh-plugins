@@ -28308,7 +28308,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"memfs@npm:^4.28.0":
+"memfs@npm:^4.28.0, memfs@npm:^4.6.0":
   version: 4.43.0
   resolution: "memfs@npm:4.43.0"
   dependencies:
@@ -28319,20 +28319,6 @@ __metadata:
     tree-dump: "npm:^1.0.3"
     tslib: "npm:^2.0.0"
   checksum: 10/dfe692f574f22b637206af6a3ec8208bbecb25e629e3840584796f117fe5709be279592d0ca9735c20c109ef827a720c6bc53fc512a5b10cf6af220e8734fb24
-  languageName: node
-  linkType: hard
-
-"memfs@npm:^4.6.0":
-  version: 4.41.0
-  resolution: "memfs@npm:4.41.0"
-  dependencies:
-    "@jsonjoy.com/json-pack": "npm:^1.11.0"
-    "@jsonjoy.com/util": "npm:^1.9.0"
-    glob-to-regex.js: "npm:^1.0.1"
-    thingies: "npm:^2.5.0"
-    tree-dump: "npm:^1.0.3"
-    tslib: "npm:^2.0.0"
-  checksum: 10/354444be944f70cfa11bc00844171bfcf4c1e5a25785b4e3647d086214fd19e3a545ac6d570a6ed1d2b93ff49b122243b44fe44a7884d0db3766db9131841e34
   languageName: node
   linkType: hard
 
