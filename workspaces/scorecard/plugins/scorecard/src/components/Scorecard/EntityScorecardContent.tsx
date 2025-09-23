@@ -92,10 +92,10 @@ export const EntityScorecardContent = () => {
             StatusIcon={statusConfig.icon ?? (() => null)}
             value={metric.result?.value}
             thresholds={metric.result?.thresholdResult}
-            isThresholdError={isThresholdError}
-            thresholdError={metric.result?.thresholdResult?.error}
             isMetricDataError={isMetricDataError}
             metricDataError={metric?.error}
+            isThresholdError={isThresholdError}
+            thresholdError={metric.result?.thresholdResult?.error}
           />
         );
       })}
