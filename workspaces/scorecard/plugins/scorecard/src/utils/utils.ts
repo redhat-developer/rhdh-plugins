@@ -39,7 +39,7 @@ export const getStatusConfig = ({
 }): StatusConfig => {
   // If threshold or metric has an error, return grey.400 color
   if (thresholdStatus === 'error' || metricStatus === 'error') {
-    return { color: 'grey.400' };
+    return { color: 'rhdh.general.disabled' };
   }
 
   switch (evaluation) {

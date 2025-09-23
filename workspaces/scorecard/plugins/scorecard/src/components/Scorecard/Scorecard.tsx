@@ -45,10 +45,20 @@ interface ScorecardProps {
 }
 
 const StyledCircle = styled('circle')(
-  ({ theme, statusColor }: { theme: any; statusColor: string }) => {
+  ({
+    theme,
+    statusColor,
+    isError,
+  }: {
+    theme: any;
+    statusColor: string;
+    isError: boolean;
+  }) => {
     const [paletteKey, shade] = statusColor.split('.');
     return {
-      stroke: theme.palette[paletteKey]?.[shade] ?? statusColor,
+      stroke: isError
+        ? theme.palette.rhdh.general.cardBorderColor
+        : theme.palette?.[paletteKey]?.[shade] ?? statusColor,
     };
   },
 );
@@ -132,6 +142,7 @@ const Scorecard = ({
                             fill="none"
                             statusColor={statusColor}
                             theme={theme}
+                            isError={isThresholdError || isMetricDataError}
                           />
                         </svg>
                       </Tooltip>
@@ -160,10 +171,18 @@ const Scorecard = ({
                         <Typography
                           variant="h6"
                           sx={{
-                            color: (muiTheme: any) =>
-                              muiTheme.palette[statusColor.split('.')[0]][
-                                statusColor.split('.')[1]
-                              ],
+                            color: (muiTheme: any) => {
+                              if (isThresholdError || isMetricDataError) {
+                                return muiTheme.palette[
+                                  statusColor.split('.')[0]
+                                ]?.[statusColor.split('.')[1]]?.[
+                                  statusColor.split('.')[2]
+                                ];
+                              }
+                              return muiTheme.palette[
+                                statusColor.split('.')[0]
+                              ]?.[statusColor.split('.')[1]];
+                            },
                             fontWeight:
                               isThresholdError || isMetricDataError ? 400 : 500,
                             textAlign: 'center',
@@ -193,7 +212,8 @@ const Scorecard = ({
                   paddingLeft: '12px',
                 }}
               >
-                {isThresholdError || isMetricDataError ? (
+                {thresholds?.definition?.rules.length === 0 ||
+                thresholds?.definition?.rules === undefined ? (
                   <Box
                     sx={{
                       display: 'flex',

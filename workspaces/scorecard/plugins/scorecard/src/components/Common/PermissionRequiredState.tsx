@@ -14,48 +14,82 @@
  * limitations under the License.
  */
 
-import { EmptyState } from '@backstage/core-components';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-import { PermissionRequiredIcon } from './PermissionRequiredIcon';
+import permissionRequiredSvg from '../../images/permission-required.svg';
 
 const PermissionRequiredState = () => {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        height: '100%',
-        alignItems: 'center',
-        padding: '100px',
-        '& h5': {
-          fontSize: '2.5rem',
-          fontWeight: 600,
-        },
-      }}
-    >
-      <EmptyState
-        title="Missing permissions"
-        description={
-          <Typography variant="subtitle1" component="span">
-            To view Scorecard plugin, contact your administrator to give the{' '}
-            <b>scorecard.metric.read</b> permission.
+    <Box sx={{ p: 4, height: '100%', maxWidth: '1592px', margin: 'auto' }}>
+      <Grid
+        container
+        spacing={4}
+        alignItems="center"
+        justifyContent="center"
+        height="100%"
+      >
+        <Grid item xs={12} md={6} sx={{ textAlign: 'left' }}>
+          <Typography
+            sx={theme => ({
+              fontSize: '2.5rem',
+              fontWeight: 400,
+              color: theme.palette.text.primary,
+              mb: 2,
+            })}
+          >
+            Missing permission
           </Typography>
-        }
-        missing={{ customImage: <PermissionRequiredIcon /> }}
-        action={
+
+          <Typography
+            sx={theme => ({
+              fontSize: '1rem',
+              color: theme.palette.text.secondary,
+              mb: 3,
+              lineHeight: 1.5,
+            })}
+          >
+            To view Scorecard plugin, contact your administrator to give the{' '}
+            <Typography
+              component="span"
+              sx={theme => ({
+                fontWeight: 'bold',
+                color: theme.palette.text.primary,
+              })}
+            >
+              scorecard.metric.read
+            </Typography>{' '}
+            permission.
+          </Typography>
+
           <Button
             variant="outlined"
-            color="primary"
             target="_blank"
-            href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/adoption-insights/plugins/adoption-insights/README.md#permission-framework-support"
+            href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/scorecard/plugins/scorecard/README.md#permission-framework-support"
+            sx={theme => ({
+              color: theme.palette.primary.main,
+            })}
           >
             Read more &nbsp; <OpenInNewIcon />
           </Button>
-        }
-      />
+        </Grid>
+
+        <Grid item xs={12} md={6} sx={{ textAlign: 'right' }}>
+          <Box
+            component="img"
+            src={permissionRequiredSvg}
+            alt="No scorecards"
+            sx={{
+              width: '100%',
+              maxWidth: '600px',
+              height: 'auto',
+            }}
+          />
+        </Grid>
+      </Grid>
     </Box>
   );
 };
