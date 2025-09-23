@@ -37,7 +37,10 @@ import {
   PermissionCriteria,
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
-import { MetricValuesStore, MetricValue } from '../database/MetricValuesStore';
+import {
+  MetricValuesStore,
+  DbMetricValue,
+} from '../database/MetricValuesStore';
 
 export type CatalogMetricServiceOptions = {
   catalogApi: CatalogApi;
