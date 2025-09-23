@@ -125,28 +125,28 @@ const Scorecard = ({
                       <CircularProgress size={120} />
                     </Box>
                   ) : (
-                    <>
-                      <Tooltip
-                        title={
-                          // eslint-disable-next-line no-nested-ternary
-                          isMetricDataError
-                            ? metricDataError
-                            : isThresholdError
-                            ? thresholdError
-                            : undefined
-                        }
-                        arrow
-                        slotProps={{
-                          tooltip: {
-                            sx: {
-                              cursor:
-                                isMetricDataError || isThresholdError
-                                  ? 'pointer'
-                                  : 'default',
-                            },
+                    <Tooltip
+                      title={
+                        // eslint-disable-next-line no-nested-ternary
+                        isMetricDataError
+                          ? metricDataError
+                          : isThresholdError
+                          ? thresholdError
+                          : undefined
+                      }
+                      arrow
+                      slotProps={{
+                        tooltip: {
+                          sx: {
+                            cursor:
+                              isMetricDataError || isThresholdError
+                                ? 'pointer'
+                                : 'default',
                           },
-                        }}
-                      >
+                        },
+                      }}
+                    >
+                      <Box position="relative" width={160} height={160}>
                         <svg width="160" height="160">
                           <StyledCircle
                             cx="80"
@@ -159,59 +159,61 @@ const Scorecard = ({
                             isError={isMetricDataError || isThresholdError}
                           />
                         </svg>
-                      </Tooltip>
-                      <Box
-                        position="absolute"
-                        top="50%"
-                        left="50%"
-                        sx={{
-                          transform: 'translate(-50%, -50%)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                        }}
-                      >
-                        {!isMetricDataError && !isThresholdError && (
-                          <StatusIcon
-                            sx={{
-                              color: (muiTheme: any) =>
-                                muiTheme.palette[statusColor.split('.')[0]][
-                                  statusColor.split('.')[1]
-                                ],
-                              fontSize: 20,
-                            }}
-                          />
-                        )}
-                        <Typography
-                          variant="h6"
+                        <Box
+                          position="absolute"
+                          top="50%"
+                          left="50%"
                           sx={{
-                            color: (muiTheme: any) => {
-                              if (isMetricDataError || isThresholdError) {
-                                return muiTheme.palette[
-                                  statusColor.split('.')[0]
-                                ]?.[statusColor.split('.')[1]]?.[
-                                  statusColor.split('.')[2]
-                                ];
-                              }
-                              return muiTheme.palette[
-                                statusColor.split('.')[0]
-                              ]?.[statusColor.split('.')[1]];
-                            },
-                            fontWeight:
-                              isMetricDataError || isThresholdError ? 400 : 500,
-                            textAlign: 'center',
-                            fontSize:
-                              isMetricDataError || isThresholdError ? 14 : 24,
+                            transform: 'translate(-50%, -50%)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
                           }}
                         >
-                          {isMetricDataError && 'Metric data unavailable'}
-                          {!isMetricDataError &&
-                            isThresholdError &&
-                            'Invalid thresholds'}
-                          {!isThresholdError && !isMetricDataError && value}
-                        </Typography>
+                          {!isMetricDataError && !isThresholdError && (
+                            <StatusIcon
+                              sx={{
+                                color: (muiTheme: any) =>
+                                  muiTheme.palette[statusColor.split('.')[0]][
+                                    statusColor.split('.')[1]
+                                  ],
+                                fontSize: 20,
+                              }}
+                            />
+                          )}
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              color: (muiTheme: any) => {
+                                if (isMetricDataError || isThresholdError) {
+                                  return muiTheme.palette[
+                                    statusColor.split('.')[0]
+                                  ]?.[statusColor.split('.')[1]]?.[
+                                    statusColor.split('.')[2]
+                                  ];
+                                }
+                                return muiTheme.palette[
+                                  statusColor.split('.')[0]
+                                ]?.[statusColor.split('.')[1]];
+                              },
+                              fontWeight:
+                                isMetricDataError || isThresholdError
+                                  ? 400
+                                  : 500,
+                              textAlign: 'center',
+                              fontSize:
+                                isMetricDataError || isThresholdError ? 14 : 24,
+                            }}
+                          >
+                            {isMetricDataError && 'Metric data unavailable'}
+                            {!isMetricDataError &&
+                              isThresholdError &&
+                              'Invalid thresholds'}
+                            {!isThresholdError && !isMetricDataError && value}
+                          </Typography>
+                        </Box>
                       </Box>
-                    </>
+                    </Tooltip>
                   )}
                 </Box>
               </Box>
@@ -223,7 +225,8 @@ const Scorecard = ({
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 1,
-                  paddingLeft: '12px',
+                  pl: 1.5,
+                  pt: 2,
                 }}
               >
                 {thresholds?.definition?.rules.length === 0 ||
