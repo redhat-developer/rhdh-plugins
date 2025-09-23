@@ -45,8 +45,7 @@
     "@backstage/plugin-catalog-node": "^1.18.0",
     "@octokit/graphql": "^9.0.1",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^",
-    "uuid": "^9.0.1"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.8.0",
