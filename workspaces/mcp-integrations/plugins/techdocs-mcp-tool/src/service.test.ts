@@ -695,7 +695,6 @@ describe('TechDocsService', () => {
 
       const mockHtmlContent =
         '<html><head><title>Test Service Docs</title></head><body><h1>Welcome</h1></body></html>';
-      const expectedTextContent = '# Welcome';
 
       mockFetch.mockResolvedValue({
         ok: true,

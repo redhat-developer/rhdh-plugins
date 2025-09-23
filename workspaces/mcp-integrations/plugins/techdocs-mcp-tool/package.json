@@ -2,7 +2,6 @@
   "name": "@redhat-developer-hub/backstage-plugin-techdocs-mcp-tool",
   "version": "0.1.0",
   "license": "Apache-2.0",
-  "private": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
   "publishConfig": {
@@ -10,9 +9,17 @@
     "main": "dist/index.cjs.js",
     "types": "dist/index.d.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/mcp-integrations/plugins/techdocs-mcp-tool"
+  },
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "techdocs-mcp-tool"
+    "pluginId": "techdocs-mcp-tool",
+    "pluginPackages": [
+      "@redhat-developer-hub/backstage-plugin-techdocs-mcp-tool"
+    ]
   },
   "scripts": {
     "start": "backstage-cli package start",

@@ -25,6 +25,11 @@ import { CatalogService } from '@backstage/plugin-catalog-node';
 import { Entity } from '@backstage/catalog-model';
 import TurndownService from 'turndown';
 
+/**
+ * TechDocsEntity
+ *
+ * @public
+ */
 export interface TechDocsEntity {
   name: string;
   tags: Array<string>;
@@ -36,11 +41,21 @@ export interface TechDocsEntity {
   kind: string;
 }
 
+/**
+ * TechDocsEntityWithUrls
+ *
+ * @public
+ */
 export interface TechDocsEntityWithUrls extends TechDocsEntity {
   techDocsUrl: string;
   metadataUrl: string;
 }
 
+/**
+ * TechDocsEntityWithMetadata
+ *
+ * @public
+ */
 export interface TechDocsEntityWithMetadata extends TechDocsEntityWithUrls {
   metadata?: {
     lastUpdated?: string;
@@ -52,6 +67,11 @@ export interface TechDocsEntityWithMetadata extends TechDocsEntityWithUrls {
   };
 }
 
+/**
+ * TechDocsContentResult
+ *
+ * @public
+ */
 export interface TechDocsContentResult {
   entityRef: string;
   name: string;
@@ -71,6 +91,11 @@ export interface TechDocsContentResult {
   };
 }
 
+/**
+ * ListTechDocsOptions
+ *
+ * @public
+ */
 export interface ListTechDocsOptions {
   entityType?: string;
   namespace?: string;
@@ -80,12 +105,22 @@ export interface ListTechDocsOptions {
   limit?: number;
 }
 
+/**
+ * TechDocsCoverageResult
+ *
+ * @public
+ */
 export interface TechDocsCoverageResult {
   totalEntities: number;
   entitiesWithDocs: number;
   coveragePercentage: number;
 }
 
+/**
+ * TechDocsService
+ *
+ * @public
+ */
 export class TechDocsService {
   private publisher?: PublisherBase;
   private turndownService: TurndownService;
@@ -315,6 +350,7 @@ export class TechDocsService {
 
   // analyzeCoverage:: analyzes the coverage of techdocs
   // in the catalog
+  // @public
   async analyzeCoverage(
     options: ListTechDocsOptions = {},
     auth: any,

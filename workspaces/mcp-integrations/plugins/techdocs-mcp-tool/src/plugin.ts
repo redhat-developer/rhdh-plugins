@@ -22,6 +22,11 @@ import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { TechDocsService } from './service';
 
+/**
+ * mcpTechdocsRetrievalPlugin
+ *
+ * @public
+ */
 export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
   pluginId: 'techdocs-mcp-tool',
   register(env) {

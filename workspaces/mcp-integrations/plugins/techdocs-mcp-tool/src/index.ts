@@ -21,4 +21,6 @@ export type {
   TechDocsEntityWithUrls,
   TechDocsCoverageResult,
   ListTechDocsOptions,
+  TechDocsContentResult,
+  TechDocsEntityWithMetadata,
 } from './service';
