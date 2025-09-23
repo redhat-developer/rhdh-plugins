@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
+import { mockServices } from '@backstage/backend-test-utils';
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import {
   Metric,
   MetricType,
   MetricValue,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { BaseMetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
-abstract class MockMetricProvider<T extends MetricType>
-  implements MetricProvider<T>
-{
+abstract class MockMetricProvider<
+  T extends MetricType,
+> extends BaseMetricProvider<T> {
   constructor(
     protected metricType: T,
     protected providerId: string,
@@ -33,9 +36,27 @@ abstract class MockMetricProvider<T extends MetricType>
     protected title: string,
     protected description: string,
     protected value: MetricValue<T>,
-  ) {}
+    thresholds: ThresholdConfig,
+  ) {
+    const mockTaskRunner = mockServices.scheduler
+      .mock()
+      .createScheduledTaskRunner({
+        frequency: { minutes: 10 },
+        timeout: { minutes: 15 },
+      });
 
-  abstract getMetricThresholds(): ThresholdConfig;
+    super(
+      mockServices.auth(),
+      mockServices.logger.mock(),
+      catalogServiceMock(),
+      mockTaskRunner,
+      {
+        'metadata.annotations.mockMetricId.mockRequiredKey':
+          CATALOG_FILTER_EXISTS,
+      },
+      thresholds,
+    );
+  }
 
   getProviderDatasourceId(): string {
     return this.datasourceId;
@@ -72,16 +93,22 @@ export class MockNumberProvider extends MockMetricProvider<'number'> {
     description: string = 'Mock number description.',
     value: number = 42,
   ) {
-    super('number', providerId, datasourceId, title, description, value);
-  }
-  getMetricThresholds(): ThresholdConfig {
-    return {
+    const thresholds = {
       rules: [
         { key: 'error', expression: '>40' },
         { key: 'warning', expression: '>20' },
         { key: 'success', expression: '<=20' },
       ],
     };
+    super(
+      'number',
+      providerId,
+      datasourceId,
+      title,
+      description,
+      value,
+      thresholds,
+    );
   }
 }
 
@@ -93,15 +120,21 @@ export class MockBooleanProvider extends MockMetricProvider<'boolean'> {
     description: string = 'Mock boolean description.',
     value: boolean = false,
   ) {
-    super('boolean', providerId, datasourceId, title, description, value);
-  }
-  getMetricThresholds(): ThresholdConfig {
-    return {
+    const thresholds = {
       rules: [
         { key: 'success', expression: '==true' },
         { key: 'error', expression: '==false' },
       ],
     };
+    super(
+      'boolean',
+      providerId,
+      datasourceId,
+      title,
+      description,
+      value,
+      thresholds,
+    );
   }
 }
 

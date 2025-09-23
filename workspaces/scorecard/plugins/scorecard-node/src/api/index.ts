@@ -19,3 +19,4 @@ export type {
   MetricProviderConnection,
   MetricProviderInsertion,
 } from './MetricProvider';
+export { BaseMetricProvider } from './BaseMetricProvider';
