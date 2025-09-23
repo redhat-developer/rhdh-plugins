@@ -20,7 +20,6 @@ import {
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
-import { translationsTranslations } from './translations';
 
 /**
  * @public
@@ -44,6 +43,10 @@ export const TranslationsPage = translationsPlugin.provide(
   }),
 );
 
+/**
+ * Export Translation Keys
+ * @public
+ */
 export const ExportTranslationKeys = translationsPlugin.provide(
   createComponentExtension({
     name: 'ExportTranslationKeys',

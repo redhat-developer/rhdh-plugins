@@ -29,7 +29,7 @@ import { ExportTranslationKeys } from './ExportTranslationKeys';
 
 describe('ExportTranslationKeys', () => {
   it('renders translated content', () => {
-    const mockResources = [];
+    const mockResources: any[] = [];
     render(<ExportTranslationKeys resources={mockResources} />);
     expect(screen.getByText('Translations')).toBeInTheDocument();
     expect(

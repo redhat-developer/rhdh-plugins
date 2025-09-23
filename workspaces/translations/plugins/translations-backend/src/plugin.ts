@@ -20,6 +20,9 @@ import {
 
 import { createRouter } from './service/router';
 
+/**
+ * @public
+ */
 export const translationsPlugin = createBackendPlugin({
   pluginId: 'translations',
   register(env) {

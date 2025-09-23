@@ -15,6 +15,18 @@ import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 import { TranslationSnapshot } from '@backstage/core-plugin-api/alpha';
 
+// @public
+export const ExportTranslationKeys: ({
+  resources,
+}: {
+  resources: TranslationRef<
+    string,
+    {
+      [x: string]: string;
+    }
+  >[];
+}) => JSX_2.Element;
+
 // @public (undocumented)
 export class I18nextTranslationApi implements TranslationApi {
   // (undocumented)
@@ -58,6 +70,31 @@ export const translationsPlugin: BackstagePlugin<
   {},
   {}
 >;
+
+// @public (undocumented)
+export const translationsTranslationRef: TranslationRef<
+  'plugin.translations',
+  {
+    readonly 'table.title': string;
+    readonly 'table.headers.refId': string;
+    readonly 'table.headers.key': string;
+    readonly 'table.options.pageSize': string;
+    readonly 'table.options.pageSizeOptions': string;
+    readonly 'language.displayFormat': string;
+    readonly 'page.title': string;
+    readonly 'page.subtitle': string;
+    readonly 'export.title': string;
+    readonly 'export.downloadButton': string;
+    readonly 'export.filename': string;
+    readonly 'common.loading': string;
+    readonly 'common.error': string;
+    readonly 'common.noData': string;
+    readonly 'common.refresh': string;
+  }
+>;
+
+// @public (undocumented)
+export const translationsTranslations: TranslationResource<'plugin.translations'>;
 
 // (No @packageDocumentation comment for this package)
 ```

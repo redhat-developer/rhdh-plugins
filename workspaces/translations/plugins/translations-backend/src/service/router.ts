@@ -19,11 +19,18 @@ import express, { Router } from 'express';
 
 import { TranslationService } from './TranslationService';
 
+/**
+ *  @public
+ *
+ */
 export interface RouterOptions {
   logger: LoggerService;
   config: Config;
 }
-
+/**
+ *  @public
+ *
+ */
 export async function createRouter({
   logger,
   config,

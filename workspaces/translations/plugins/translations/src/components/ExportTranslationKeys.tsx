@@ -23,6 +23,13 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 import { useTranslation } from '../hooks/useTranslation';
 
+/**
+ * @public
+ * @param resources - The resources to export
+ * @returns The exported translations
+ * @example
+ * <ExportTranslationKeys resources={resources} />
+ */
 export const ExportTranslationKeys = ({
   resources,
 }: {

@@ -16,6 +16,10 @@
 import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 import { translationsTranslationRef } from './ref';
 
+/**
+ *  @public
+ *
+ */
 export const translationsTranslations = createTranslationResource({
   ref: translationsTranslationRef,
   translations: {

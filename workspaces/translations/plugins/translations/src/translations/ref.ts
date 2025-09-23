@@ -15,7 +15,9 @@
  */
 import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 
-// CRITICAL: Export messages separately for testing
+/**
+ * @public
+ */
 export const translationsMessages = {
   page: {
     title: 'Translations',
@@ -47,7 +49,9 @@ export const translationsMessages = {
     displayFormat: '{{displayName}} ({{code}})',
   },
 };
-
+/**
+ * @public
+ */
 export const translationsTranslationRef = createTranslationRef({
   id: 'plugin.translations',
   messages: translationsMessages,
