@@ -59,7 +59,6 @@ const StyledCircle = styled('circle')(
       stroke: isError
         ? theme.palette.rhdh.general.cardBorderColor
         : theme.palette?.[paletteKey]?.[shade] ?? statusColor,
-      cursor: isError ? 'pointer' : 'default',
     };
   },
 );
@@ -108,6 +107,10 @@ const Scorecard = ({
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
+                    cursor:
+                      isMetricDataError || isThresholdError
+                        ? 'pointer'
+                        : 'default',
                   }}
                 >
                   {loading ? (
@@ -133,6 +136,16 @@ const Scorecard = ({
                             : undefined
                         }
                         arrow
+                        slotProps={{
+                          tooltip: {
+                            sx: {
+                              cursor:
+                                isMetricDataError || isThresholdError
+                                  ? 'pointer'
+                                  : 'default',
+                            },
+                          },
+                        }}
                       >
                         <svg width="160" height="160">
                           <StyledCircle
