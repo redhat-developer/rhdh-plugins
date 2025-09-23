@@ -17,8 +17,8 @@
 import { Knex } from 'knex';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import {
-  MetricValue,
-  MetricValuesFilter,
+  DbMetricValue,
+  DbMetricValuesFilter,
   MetricValuesStore,
 } from './MetricValuesStore';
 import { ProviderStore } from './ProviderStore';
@@ -39,7 +39,7 @@ export class DatabaseMetricValuesStore
    * Insert multiple metric values
    */
   async createMetricValues(
-    metricValues: Omit<MetricValue, 'id'>[],
+    metricValues: Omit<DbMetricValue, 'id'>[],
   ): Promise<void> {
     try {
       await this.knex(this.tableName).insert(metricValues);
@@ -53,8 +53,8 @@ export class DatabaseMetricValuesStore
    * Get metric values based on filter criteria
    */
   async readMetricValues(
-    filter: MetricValuesFilter = {},
-  ): Promise<MetricValue[]> {
+    filter: DbMetricValuesFilter = {},
+  ): Promise<DbMetricValue[]> {
     try {
       let query = this.knex(this.tableName).select('*');
 
@@ -92,7 +92,7 @@ export class DatabaseMetricValuesStore
   async readLatestMetricValue(
     catalog_entity_ref: string,
     metric_id: string,
-  ): Promise<MetricValue | null> {
+  ): Promise<DbMetricValue | null> {
     try {
       const result = await this.knex(this.tableName)
         .select('*')

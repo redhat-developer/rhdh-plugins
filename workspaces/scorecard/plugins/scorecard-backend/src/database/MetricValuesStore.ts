@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export type MetricValue = {
+export type DbMetricValue = {
   id: number;
   catalog_entity_ref: string;
   metric_id: string;
@@ -23,7 +23,7 @@ export type MetricValue = {
   error_message?: string;
 };
 
-export type MetricValuesFilter = {
+export type DbMetricValuesFilter = {
   catalog_entity_ref?: string;
   metric_id?: string;
   from_timestamp?: Date;
@@ -39,12 +39,12 @@ export interface MetricValuesStore {
   /**
    * Insert multiple metric values in a batch
    */
-  createMetricValues(metricValues: Omit<MetricValue, 'id'>[]): Promise<void>;
+  createMetricValues(metricValues: Omit<DbMetricValue, 'id'>[]): Promise<void>;
 
   /**
    * Get metric values based on filter criteria
    */
-  readMetricValues(filter?: MetricValuesFilter): Promise<MetricValue[]>;
+  readMetricValues(filter?: DbMetricValuesFilter): Promise<DbMetricValue[]>;
 
   /**
    * Get the latest metric value for a specific entity and metric
@@ -52,5 +52,5 @@ export interface MetricValuesStore {
   readLatestMetricValue(
     catalog_entity_ref: string,
     metric_id: string,
-  ): Promise<MetricValue | null>;
+  ): Promise<DbMetricValue | null>;
 }
