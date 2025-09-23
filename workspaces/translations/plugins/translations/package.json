@@ -37,6 +37,8 @@
     "@backstage/plugin-user-settings": "^0.8.22",
     "@backstage/theme": "^0.6.6",
     "@backstage/types": "^1.2.1",
+    "@mui/icons-material": "5.18.0",
+    "@mui/material": "5.18.0",
     "i18next": "^22.4.15",
     "zen-observable": "^0.10.0"
   },
