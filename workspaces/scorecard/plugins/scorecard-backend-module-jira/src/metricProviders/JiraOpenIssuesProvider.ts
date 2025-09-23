@@ -16,6 +16,8 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
+import { stringifyEntityRef } from '@backstage/catalog-model';
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { JIRA_CONFIG_PATH, THRESHOLDS_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
@@ -25,6 +27,8 @@ import {
 import {
   MetricProvider,
   validateThresholds,
+  MetricProviderConnection,
+  MetricProviderInsertion,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraClient } from '../clients/base';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
@@ -44,6 +48,8 @@ import {
   ProxyConnectionStrategy,
 } from '../strategies/ConnectionStrategy';
 import { Product } from '../clients/types';
+import { CatalogService } from '@backstage/plugin-catalog-node';
+import { v4 as uuid } from 'uuid';
 
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
@@ -51,19 +57,25 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
   private readonly jiraClient: JiraClient;
   private readonly logger: LoggerService;
+  private readonly catalog: CatalogService;
+  private readonly auth: AuthService;
   private readonly scheduleFn: () => Promise<void>;
   private connection?: MetricProviderConnection;
 
   private constructor(
     config: Config,
     connectionStrategy: ConnectionStrategy,
+    auth: AuthService,
     logger: LoggerService,
+    catalog: CatalogService,
     taskRunner: SchedulerServiceTaskRunner,
     thresholds?: ThresholdConfig,
   ) {
     this.jiraClient = JiraClientFactory.create(config, connectionStrategy);
     this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
+    this.auth = auth;
     this.logger = logger;
+    this.catalog = catalog;
     this.scheduleFn = this.schedule(taskRunner);
   }
 
@@ -100,7 +112,8 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
       auth: AuthService;
       discovery: DiscoveryService;
       logger: LoggerService;
-      scheduler: SchedulerService
+      scheduler: SchedulerService;
+      catalog: CatalogService;
     },
   ): JiraOpenIssuesProvider {
     const configuredThresholds = config.getOptional(THRESHOLDS_CONFIG_PATH);
@@ -141,7 +154,9 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     return new JiraOpenIssuesProvider(
       config,
       connectionStrategy,
+      options.auth,
       options.logger,
+      options.catalog,
       taskRunner,
       configuredThresholds,
     );
@@ -162,12 +177,70 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     }
 
     logger.info(`Refreshing metrics for ${this.getProviderId()}`);
+    const catalogBatchSize = 100;
+    let totalProcessed = 0;
+    let cursor: string | undefined = undefined;
+    try {
+      do {
+        const entitiesResponse = await this.catalog.queryEntities(
+          {
+            filter: {
+              'metadata.annotations.jira/project-key': CATALOG_FILTER_EXISTS,
+            },
+            limit: catalogBatchSize,
+            ...(cursor ? { cursor } : {}),
+          },
+          { credentials: await this.auth.getOwnServiceCredentials() },
+        );
+        cursor = entitiesResponse.pageInfo.nextCursor;
+        totalProcessed += entitiesResponse.items.length;
+        const batchResults = await Promise.allSettled(
+          entitiesResponse.items.map(async entity => {
+            try {
+              logger.info(`Calculating for ${stringifyEntityRef(entity)}`);
+              const value = await this.calculateMetric(entity);
+              return {
+                catalog_entity_ref: stringifyEntityRef(entity),
+                metric_id: this.getProviderId(),
+                value,
+                timestamp: new Date(),
+                error_message: null,
+              } as MetricProviderInsertion;
+            } catch (error) {
+              return {
+                catalog_entity_ref: stringifyEntityRef(entity),
+                metric_id: this.getProviderId(),
+                value: null,
+                timestamp: new Date(),
+                error_message:
+                  error instanceof Error ? error.message : String(error),
+              } as MetricProviderInsertion;
+            }
+          }),
+        ).then(promises =>
+          promises.reduce((acc, curr) => {
+            if (curr.status === 'fulfilled') {
+              return [...acc, curr.value];
+            }
+            return acc;
+          }, [] as MetricProviderInsertion[]),
+        );
 
-    // calculate metric for each entity that provider.supportsEntity
-    // insert metrics via connection
-    await this.connection.insertMetrics([]);
+        await this.connection.insertMetrics(batchResults);
 
-    logger.info(`Committed X metrics for ${this.getProviderId()}`);
+        totalProcessed += entitiesResponse.items.length;
+        cursor = entitiesResponse.pageInfo.nextCursor;
+      } while (cursor !== undefined);
+
+      logger.info(
+        `Completed metric refresh for ${this.getProviderId()}: processed ${totalProcessed} entities`,
+      );
+    } catch (error) {
+      logger.error(
+        `Failed to refresh metrics for ${this.getProviderId()}: ${error}`,
+      );
+      throw error;
+    }
   }
 
   /**
