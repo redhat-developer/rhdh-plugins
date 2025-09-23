@@ -15,7 +15,9 @@
  */
 
 import type { Config } from '@backstage/config';
-import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
+import { getEntitySourceLocation, stringifyEntityRef, type Entity } from '@backstage/catalog-model';
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
+import { AuthService } from '@backstage/backend-plugin-api';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
@@ -24,6 +26,8 @@ import {
 import {
   MetricProvider,
   validateThresholds,
+  MetricProviderConnection,
+  MetricProviderInsertion,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubClient } from '../github/GithubClient';
 import { getRepositoryInformationFromEntity } from '../github/utils';
@@ -35,25 +39,31 @@ import {
   SchedulerServiceTaskRunner,
   SchedulerServiceTaskScheduleDefinition,
 } from '@backstage/backend-plugin-api';
+import { CatalogService } from '@backstage/plugin-catalog-node';
 import { v4 as uuid } from 'uuid';
-import { MetricProviderConnection } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
   private readonly githubClient: GithubClient;
   private readonly logger: LoggerService;
+  private readonly catalog: CatalogService;
+  private readonly auth: AuthService;
   private readonly scheduleFn: () => Promise<void>;
   private connection?: MetricProviderConnection;
 
   private constructor(
     config: Config,
+    auth: AuthService,
     logger: LoggerService,
+    catalog: CatalogService,
     taskRunner: SchedulerServiceTaskRunner,
     thresholds?: ThresholdConfig,
   ) {
     this.githubClient = new GithubClient(config);
     this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
+    this.auth = auth;
     this.logger = logger;
+    this.catalog = catalog;
     this.scheduleFn = this.schedule(taskRunner);
   }
 
@@ -88,7 +98,12 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
 
   static fromConfig(
     config: Config,
-    options: { logger: LoggerService; scheduler: SchedulerService },
+    options: {
+      auth: AuthService;
+      logger: LoggerService;
+      scheduler: SchedulerService;
+      catalog: CatalogService;
+    },
   ): GithubOpenPRsProvider {
     const configPath = 'scorecard.plugins.github.open_prs.thresholds';
     const configuredThresholds = config.getOptional(configPath);
@@ -111,7 +126,9 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
 
     return new GithubOpenPRsProvider(
       config,
+      options.auth,
       options.logger,
+      options.catalog,
       taskRunner,
       configuredThresholds,
     );
@@ -140,12 +157,70 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
     }
 
     logger.info(`Refreshing metrics for ${this.getProviderId()}`);
+    const catalogBatchSize = 100;
+    let totalProcessed = 0;
+    let cursor: string | undefined = undefined;
+    try {
+      do {
+        const entitiesResponse = await this.catalog.queryEntities(
+          {
+            filter: {
+              'metadata.annotations.github/project-key': CATALOG_FILTER_EXISTS,
+            },
+            limit: catalogBatchSize,
+            ...(cursor ? { cursor } : {}),
+          },
+          { credentials: await this.auth.getOwnServiceCredentials() },
+        );
+        cursor = entitiesResponse.pageInfo.nextCursor;
+        totalProcessed += entitiesResponse.items.length;
+        const batchResults = await Promise.allSettled(
+          entitiesResponse.items.map(async entity => {
+            try {
+              logger.info(`Calculating for ${stringifyEntityRef(entity)}`);
+              const value = await this.calculateMetric(entity);
+              return {
+                catalog_entity_ref: stringifyEntityRef(entity),
+                metric_id: this.getProviderId(),
+                value,
+                timestamp: new Date(),
+                error_message: null,
+              } as MetricProviderInsertion;
+            } catch (error) {
+              return {
+                catalog_entity_ref: stringifyEntityRef(entity),
+                metric_id: this.getProviderId(),
+                value: null,
+                timestamp: new Date(),
+                error_message:
+                  error instanceof Error ? error.message : String(error),
+              } as MetricProviderInsertion;
+            }
+          }),
+        ).then(promises =>
+          promises.reduce((acc, curr) => {
+            if (curr.status === 'fulfilled') {
+              return [...acc, curr.value];
+            }
+            return acc;
+          }, [] as MetricProviderInsertion[]),
+        );
 
-    // calculate metric for each entity that provider.supportsEntity
-    // insert metrics via connection
-    await this.connection.insertMetrics([]);
+        await this.connection.insertMetrics(batchResults);
 
-    logger.info(`Committed X metrics for ${this.getProviderId()}`);
+        totalProcessed += entitiesResponse.items.length;
+        cursor = entitiesResponse.pageInfo.nextCursor;
+      } while (cursor !== undefined);
+
+      logger.info(
+        `Completed metric refresh for ${this.getProviderId()}: processed ${totalProcessed} entities`,
+      );
+    } catch (error) {
+      logger.error(
+        `Failed to refresh metrics for ${this.getProviderId()}: ${error}`,
+      );
+      throw error;
+    }
   }
 
   /**
