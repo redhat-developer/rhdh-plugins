@@ -53,6 +53,7 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 
 import { BCCTestPage } from '@red-hat-developer-hub/backstage-plugin-bcc-test';
+import { BUITestPage } from '@red-hat-developer-hub/backstage-plugin-bui-test';
 import { MUI4TestPage } from '@red-hat-developer-hub/backstage-plugin-mui4-test';
 import { MUI5TestPage } from '@red-hat-developer-hub/backstage-plugin-mui5-test';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
@@ -117,6 +118,7 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/bcc-tests" element={<BCCTestPage />} />
+    <Route path="/bui-tests" element={<BUITestPage />} />
     <Route path="/mui4-tests" element={<MUI4TestPage />} />
     <Route path="/mui5-tests" element={<MUI5TestPage />} />
   </FlatRoutes>

@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { createDevApp } from '@backstage/dev-utils';
+import { buiTestPlugin, BuiTestPage } from '../src/plugin';
 
-import '@backstage/cli/asset-types';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+createDevApp()
+  .registerPlugin(buiTestPlugin)
+  .addPage({
+    element: <BuiTestPage />,
+    title: 'Root Page',
+    path: '/bui-test',
+  })
+  .render();

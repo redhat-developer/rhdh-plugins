@@ -14,9 +14,31 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
+import {
+  createPlugin,
+  createRoutableExtension,
+} from '@backstage/core-plugin-api';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+import { rootRouteRef } from './routes';
+
+/**
+ * @public
+ */
+export const buiTestPlugin = createPlugin({
+  id: 'bui-test',
+  routes: {
+    root: rootRouteRef,
+  },
+});
+
+/**
+ * @public
+ */
+export const BUITestPage = buiTestPlugin.provide(
+  createRoutableExtension({
+    name: 'BuiTestPage',
+    component: () =>
+      import('./components/BUITestPage').then(m => m.BUITestPage),
+    mountPoint: rootRouteRef,
+  }),
+);

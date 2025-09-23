@@ -14,9 +14,19 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
+import { Card, CardBody } from '@backstage/ui';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+export const CardsExample = () => {
+  return (
+    <Card title="Information card">
+      <CardBody>
+        <h1>Headline 1</h1>
+        <h2>Headline 2</h2>
+        <h3>Headline 3</h3>
+        <h4>Headline 4</h4>
+        <h5>Headline 5</h5>
+        <h6>Headline 6</h6>
+      </CardBody>
+    </Card>
+  );
+};
