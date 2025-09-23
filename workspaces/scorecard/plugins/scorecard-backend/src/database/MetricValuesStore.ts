@@ -47,10 +47,10 @@ export interface MetricValuesStore {
   readMetricValues(filter?: DbMetricValuesFilter): Promise<DbMetricValue[]>;
 
   /**
-   * Get the latest metric value for a specific entity and metric
+   * Get the latest metric values for a specific entity and metrics
    */
-  readLatestMetricValue(
+  readLatestEntityMetricValues(
     catalog_entity_ref: string,
-    metric_id: string,
-  ): Promise<DbMetricValue | null>;
+    metric_ids: string[],
+  ): Promise<DbMetricValue[]>;
 }

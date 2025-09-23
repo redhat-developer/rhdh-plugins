@@ -87,23 +87,27 @@ export class DatabaseMetricValuesStore
   }
 
   /**
-   * Get the latest metric value for a specific entity and metric
+   * Get the latest metric values for a specific entity and metrics
    */
-  async readLatestMetricValue(
+  async readLatestEntityMetricValues(
     catalog_entity_ref: string,
-    metric_id: string,
-  ): Promise<DbMetricValue | null> {
+    metric_ids: string[],
+  ): Promise<DbMetricValue[]> {
     try {
       const result = await this.knex(this.tableName)
         .select('*')
-        .where('metric_id', metric_id)
-        .where('catalog_entity_ref', catalog_entity_ref)
-        .orderBy('id', 'desc')
-        .first();
+        .whereIn(
+          'id',
+          this.knex(this.tableName)
+            .max('id')
+            .whereIn('metric_id', metric_ids)
+            .where('catalog_entity_ref', catalog_entity_ref)
+            .groupBy('metric_id'),
+        );
 
-      return result || null;
+      return result;
     } catch (error) {
-      this.logger.error(`Failed to get latest metric value: ${error}`);
+      this.logger.error(`Failed to get latest metric values: ${error}`);
       throw error;
     }
   }
