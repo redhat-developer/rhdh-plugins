@@ -15,7 +15,11 @@
  */
 
 import { useEffect, PropsWithChildren, useState } from 'react';
-import { identityApiRef, useApi } from '@backstage/core-plugin-api';
+import {
+  configApiRef,
+  identityApiRef,
+  useApi,
+} from '@backstage/core-plugin-api';
 import Snackbar from '@mui/material/Snackbar';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
@@ -29,6 +33,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const [drawerWidth, setDrawerWidth] = useState<number>(500);
   const [userKey, setUserKey] = useState<string>('guest');
   const identityApi = useApi(identityApiRef);
+  const configApi = useApi(configApiRef);
 
   // Single useEffect - sets class on document.body
   useEffect(() => {
@@ -66,12 +71,32 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
     };
   }, [identityApi]);
 
-  // Initialize drawer state based on per-user keys
+  // Initialize drawer state based on per-user keys and only when quickstarts exist
   useEffect(() => {
     if (!userKey) return;
+
+    // Determine if there are any quickstart items configured globally
+    const hasAnyQuickstarts = (() => {
+      try {
+        if (!configApi?.has('app.quickstart')) return false;
+        const items = configApi.get('app.quickstart') as unknown;
+        return Array.isArray(items) && items.length > 0;
+      } catch {
+        return false;
+      }
+    })();
+
     const openKey = `quickstart-open:${userKey}`;
     const visitedKey = `quickstart-visited:${userKey}`;
     const notificationKey = `quickstart-notification-shown:${userKey}`;
+
+    // If no quickstarts are configured, ensure the drawer is closed and don't mark as visited
+    if (!hasAnyQuickstarts) {
+      setIsDrawerOpen(false);
+      // Avoid persisting visited so future addition of items can auto-open
+      localStorage.setItem(openKey, 'false');
+      return;
+    }
 
     const wasOpen = localStorage.getItem(openKey);
     const hasVisited = localStorage.getItem(visitedKey);
@@ -88,7 +113,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
     }
 
     setHasShownNotification(notificationShown === 'true');
-  }, [userKey]);
+  }, [userKey, configApi]);
 
   const openDrawer = () => {
     setIsDrawerOpen(true);

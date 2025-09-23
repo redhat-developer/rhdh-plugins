@@ -52,6 +52,11 @@ export const QuickstartDrawer = () => {
 
   // No auto-open logic here; the provider initializes per user (visited/open)
 
+  // If no quickstart items are configured at all, don't render the drawer to avoid reserving space
+  if (quickstartItems.length === 0) {
+    return null;
+  }
+
   // If there are no items for the user, hide the drawer entirely
   if (!isLoading && eligibleItems.length === 0) {
     return null;
