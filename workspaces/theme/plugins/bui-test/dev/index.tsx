@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 import { createDevApp } from '@backstage/dev-utils';
-import { buiTestPlugin, BuiTestPage } from '../src/plugin';
+import { buiTestPlugin, BUITestPage } from '../src/plugin';
 
 createDevApp()
   .registerPlugin(buiTestPlugin)
   .addPage({
-    element: <BuiTestPage />,
+    element: <BUITestPage />,
     title: 'Root Page',
     path: '/bui-test',
   })
