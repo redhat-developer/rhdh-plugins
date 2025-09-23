@@ -249,7 +249,7 @@ describe('createRouter', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+      expect(catalogMetricService.getLatestEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         undefined,
         undefined,
@@ -263,7 +263,7 @@ describe('createRouter', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+      expect(catalogMetricService.getLatestEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         ['github.open_prs', 'github.open_issues'],
         undefined,
@@ -277,7 +277,7 @@ describe('createRouter', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+      expect(catalogMetricService.getLatestEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         ['github.open_prs'],
         undefined,
@@ -293,7 +293,7 @@ describe('createRouter', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+      expect(catalogMetricService.getLatestEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         undefined,
         {

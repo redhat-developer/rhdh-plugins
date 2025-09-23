@@ -127,7 +127,7 @@ describe('CatalogMetricService', () => {
     it('should calculate metrics successfully with default thresholds', async () => {
       mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
 
-      const result = await catalogMetricService.calculateEntityMetrics(
+      const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
       );
 
@@ -150,7 +150,7 @@ describe('CatalogMetricService', () => {
       };
       mockCatalogApi.getEntityByRef.mockResolvedValue(annotatedEntity);
 
-      const result = await catalogMetricService.calculateEntityMetrics(
+      const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
       );
       expect(result).toHaveLength(2);
@@ -178,7 +178,7 @@ describe('CatalogMetricService', () => {
     it('should calculate metrics for specific provider IDs', async () => {
       mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
 
-      const result = await catalogMetricService.calculateEntityMetrics(
+      const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
         ['jira.boolean_metric'],
       );
@@ -219,7 +219,7 @@ describe('CatalogMetricService', () => {
       };
       mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
 
-      const result = await catalogMetricService.calculateEntityMetrics(
+      const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
       );
 
@@ -243,7 +243,7 @@ describe('CatalogMetricService', () => {
         entityWithInvalidThresholds,
       );
 
-      const result = await catalogMetricService.calculateEntityMetrics(
+      const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
         ['github.number_metric'],
       );
@@ -267,7 +267,7 @@ describe('CatalogMetricService', () => {
       mockCatalogApi.getEntityByRef.mockResolvedValue(undefined);
 
       await expect(
-        catalogMetricService.calculateEntityMetrics(
+        catalogMetricService.getLatestEntityMetrics(
           'component:default/non-existent',
         ),
       ).rejects.toThrow(
@@ -290,7 +290,7 @@ describe('CatalogMetricService', () => {
         ],
       };
 
-      const result = await catalogMetricService.calculateEntityMetrics(
+      const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
         undefined,
         filter,
@@ -305,7 +305,7 @@ describe('CatalogMetricService', () => {
       registry.register(new AnnotationProvider());
       mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
 
-      const result = await catalogMetricService.calculateEntityMetrics(
+      const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
       );
 
@@ -330,7 +330,7 @@ describe('CatalogMetricService', () => {
 
       mockCatalogApi.getEntityByRef.mockResolvedValue(entityWithAnnotation);
 
-      const result = await catalogMetricService.calculateEntityMetrics(
+      const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
       );
 
