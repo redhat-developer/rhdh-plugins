@@ -59,6 +59,7 @@ const StyledCircle = styled('circle')(
       stroke: isError
         ? theme.palette.rhdh.general.cardBorderColor
         : theme.palette?.[paletteKey]?.[shade] ?? statusColor,
+      cursor: isError ? 'pointer' : 'default',
     };
   },
 );
