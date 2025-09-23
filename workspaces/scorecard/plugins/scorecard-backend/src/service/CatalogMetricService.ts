@@ -37,10 +37,7 @@ import {
   PermissionCriteria,
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
-import {
-  MetricValuesStore,
-  DbMetricValue,
-} from '../database/MetricValuesStore';
+import { MetricValuesStore } from '../database/MetricValuesStore';
 
 export type CatalogMetricServiceOptions = {
   catalogApi: CatalogApi;
@@ -66,14 +63,15 @@ export class CatalogMetricService {
   }
 
   /**
-   * Calculate metric results for a specific catalog entity.
+   * Get latest metric results for a specific catalog entity and metric providers.
    *
    * @param entityRef - Entity reference in format "kind:namespace/name"
-   * @param providerIds - Optional array of provider IDs to calculate.
-   *                      If not provided, calculates all available metrics.
+   * @param providerIds - Optional array of provider IDs to get latest metrics of.
+   *                      If not provided, gets all available latest metrics.
+   * @param filter - Permission filter
    * @returns Metric results with entity-specific thresholds applied
    */
-  async calculateEntityMetrics(
+  async getLatestEntityMetrics(
     entityRef: string,
     providerIds?: string[],
     filter?: PermissionCriteria<
@@ -86,27 +84,27 @@ export class CatalogMetricService {
       throw new NotFoundError(`Entity not found: ${entityRef}`);
     }
 
-    const metricsToCalculate = providerIds
+    const metricsToFetch = providerIds
       ? this.registry.listMetrics().filter(m => providerIds.includes(m.id))
       : this.registry.listMetrics();
 
-    const supportedMetricsToCalculate = metricsToCalculate.filter(m => {
-      const provider = this.registry.getProvider(m.id);
-      return provider.supportsEntity(entity);
-    });
-
-    const authorizedMetricsToCalculate = filterAuthorizedMetrics(
-      supportedMetricsToCalculate,
+    const authorizedMetricsToFetch = filterAuthorizedMetrics(
+      metricsToFetch,
       filter,
     );
-    const rawResults = await this.registry.calculateMetrics(
-      authorizedMetricsToCalculate.map(m => m.id),
-      entity,
-    );
+    const rawResults =
+      await this.metricValuesStore.readLatestEntityMetricValues(
+        entityRef,
+        authorizedMetricsToFetch.map(m => m.id),
+      );
 
-    return rawResults.map(({ providerId, value, error }, index) => {
-      const provider = this.registry.getProvider(providerId);
-      const metric = authorizedMetricsToCalculate[index];
+    return rawResults.map(({ metric_id, value, error_message, timestamp }) => {
+      const provider = this.registry.getProvider(metric_id);
+      const metric = provider.getMetric();
+      const convertedValue =
+        metric.type === 'boolean' && value !== undefined
+          ? Boolean(value)
+          : value;
 
       let thresholds: ThresholdConfig | undefined;
       let evaluation: string | undefined;
@@ -117,12 +115,12 @@ export class CatalogMetricService {
           provider,
           metric.type,
         );
-        if (value === undefined) {
+        if (convertedValue === undefined) {
           thresholdError =
             'Unable to evaluate thresholds, metric value is missing';
         } else {
           evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
-            value,
+            convertedValue,
             metric.type,
             thresholds,
           );
@@ -131,7 +129,7 @@ export class CatalogMetricService {
         thresholdError = stringifyError(e);
       }
 
-      const isMetricCalcError = error || value === undefined;
+      const isMetricCalcError = error_message || value === undefined;
       return {
         id: metric.id,
         status: isMetricCalcError ? 'error' : 'success',
@@ -142,13 +140,13 @@ export class CatalogMetricService {
           history: metric.history,
         },
         ...(isMetricCalcError && {
-          error: error
-            ? stringifyError(error)
-            : stringifyError(new Error(`Metric value is 'undefined'`)),
+          error:
+            error_message ??
+            stringifyError(new Error(`Metric value is 'undefined'`)),
         }),
         result: {
-          value,
-          timestamp: new Date().toISOString(),
+          value: convertedValue,
+          timestamp: new Date(timestamp).toISOString(),
           thresholdResult: {
             definition: thresholds,
             status: thresholdError ? 'error' : 'success',
