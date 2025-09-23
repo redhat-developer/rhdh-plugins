@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './apis';
-export * from './plugin';
-export * from './translations';
+import { useApi } from '@backstage/core-plugin-api';
+import { appLanguageApiRef } from '@backstage/core-plugin-api/alpha';
+
+export const useLanguage = (): string =>
+  useApi(appLanguageApiRef).getLanguage().language;

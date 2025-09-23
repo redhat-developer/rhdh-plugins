@@ -21,12 +21,14 @@ import { useState } from 'react';
 
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const ExportTranslationKeys = ({
   resources,
 }: {
   resources: TranslationRef[];
 }) => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
 
   function downloadTranslations(
@@ -63,7 +65,7 @@ export const ExportTranslationKeys = ({
   }
 
   return (
-    <InfoCard title="Translations">
+    <InfoCard title={t('export.title')}>
       <Button
         variant="text"
         startIcon={<FileDownloadOutlinedIcon />}
@@ -91,7 +93,7 @@ export const ExportTranslationKeys = ({
           },
         }}
       >
-        Download default translations (English)
+        {t('export.downloadButton')}
       </Button>
     </InfoCard>
   );

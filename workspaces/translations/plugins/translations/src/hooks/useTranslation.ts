@@ -13,6 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './apis';
-export * from './plugin';
-export * from './translations';
+import {
+  useTranslationRef,
+  TranslationFunction,
+} from '@backstage/core-plugin-api/alpha';
+import { translationsTranslationRef } from '../translations';
+
+export const useTranslation = (): {
+  t: TranslationFunction<typeof translationsTranslationRef.T>;
+} => useTranslationRef(translationsTranslationRef);

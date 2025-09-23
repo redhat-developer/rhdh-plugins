@@ -13,6 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './apis';
-export * from './plugin';
-export * from './translations';
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { translationsTranslationRef } from './ref';
+
+export const translationsTranslations = createTranslationResource({
+  ref: translationsTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    fr: () => import('./fr'),
+    it: () => import('./it'),
+    es: () => import('./es'),
+  },
+});
+
+export { translationsTranslationRef };

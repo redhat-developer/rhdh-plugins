@@ -13,6 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './apis';
-export * from './plugin';
-export * from './translations';
+import { useTranslation } from '../hooks/useTranslation';
+import { translationsTranslationRef } from '../translations';
+
+type Messages = typeof translationsTranslationRef.T;
+
+interface TransProps<TMessages extends { [key in string]: string }> {
+  message: keyof TMessages;
+  params?: any;
+}
+
+export const Trans = ({ message, params }: TransProps<Messages>) => {
+  const { t } = useTranslation();
+  return t(message, params);
+};

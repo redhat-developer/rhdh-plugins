@@ -22,6 +22,7 @@ import {
 
 import type { i18n as I18n, Resource } from 'i18next';
 import { useMemo } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface Row {
   ref: string;
@@ -59,6 +60,7 @@ const getTranslation = (
 };
 
 export const LoadedTranslationsTable = () => {
+  const { t } = useTranslation();
   const appLanguageApi = useApi(appLanguageApiRef);
   const translationApi = useApi(translationApiRef);
   const i18n: I18n = (translationApi as any).getI18nInstance();
@@ -78,14 +80,14 @@ export const LoadedTranslationsTable = () => {
 
   const columns = useMemo(
     () => [
-      { title: 'Ref ID', field: 'ref' },
-      { title: 'Key', field: 'key' },
+      { title: t('table.headers.refId'), field: 'ref' },
+      { title: t('table.headers.key'), field: 'key' },
       ...showLanguages.map(lang => ({
         title: getLanguageDisplayName(lang),
         field: lang,
       })),
     ],
-    [showLanguages],
+    [showLanguages, t],
   );
 
   const data = useMemo(() => {
@@ -155,7 +157,7 @@ export const LoadedTranslationsTable = () => {
 
   return (
     <Table
-      title={`Loaded translations (${data.length})`}
+      title={t('table.title' as any, { count: data.length.toString() })}
       columns={columns}
       data={data}
       options={{

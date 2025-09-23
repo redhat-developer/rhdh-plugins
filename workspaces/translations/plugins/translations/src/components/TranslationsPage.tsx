@@ -15,26 +15,17 @@
  */
 import { Page, Header, Content } from '@backstage/core-components';
 
-import { LanguageToggleCard } from './LanguageToggleCard';
 import { LoadedTranslationsTable } from './LoadedTranslationsTable';
-import { AppLanguageCard } from './AppLanguageCard';
-import { I18NextCard } from './I18NextCard';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const TranslationsPage = () => {
+  const { t } = useTranslation();
+
   return (
     <Page themeId="tool">
-      <Header title="Translations" />
+      <Header title={t('page.title')} />
       <Content>
-        <LanguageToggleCard />
-        <br />
-        <br />
         <LoadedTranslationsTable />
-        <br />
-        <br />
-        <AppLanguageCard />
-        <br />
-        <br />
-        <I18NextCard />
       </Content>
     </Page>
   );
