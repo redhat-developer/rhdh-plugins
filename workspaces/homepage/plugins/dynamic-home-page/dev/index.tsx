@@ -47,6 +47,7 @@ import {
   dynamicHomePagePlugin,
   CatalogStarredEntitiesCard,
   DynamicHomePage,
+  DynamicCustomizableHomePage,
   DynamicHomePageProps,
   FeaturedDocsCard,
   Headline,
@@ -228,12 +229,14 @@ const createPage = ({
   props,
   pageWidth,
   mountPoints,
+  customizable,
 }: {
   navTitle: string;
   pageTitle?: string;
   props?: DynamicHomePageProps;
   pageWidth?: number;
   mountPoints?: HomePageCardMountPoint[];
+  customizable?: boolean;
 }): DevAppPageOptions => {
   const backstageApis = [
     [searchApiRef, new MockSearchApi()],
@@ -262,7 +265,11 @@ const createPage = ({
     <TestApiProvider apis={backstageApis}>
       <ScalprumContext.Provider value={scalprumState}>
         <div style={{ width: pageWidth }}>
-          <DynamicHomePage title={pageTitle} {...props} />
+          {customizable ? (
+            <DynamicCustomizableHomePage title={pageTitle} {...props} />
+          ) : (
+            <DynamicHomePage title={pageTitle} {...props} />
+          )}
         </div>
       </ScalprumContext.Provider>
     </TestApiProvider>
@@ -306,6 +313,14 @@ createDevApp()
       navTitle: 'Default large',
       pageWidth: 1600,
       mountPoints: defaultMountPoints,
+    }),
+  )
+  .addPage(
+    createPage({
+      navTitle: 'Customizable',
+      pageTitle: 'Customizable Homepage',
+      mountPoints: defaultMountPoints,
+      customizable: true,
     }),
   )
   .addPage(

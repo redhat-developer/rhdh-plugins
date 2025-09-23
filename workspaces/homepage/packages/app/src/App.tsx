@@ -57,7 +57,7 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 import {
-  DynamicHomePage,
+  DynamicCustomizableHomePage,
   OnboardingSection,
   EntitySection,
   TemplateSection,
@@ -170,7 +170,7 @@ const routes = (
       path="/"
       element={
         <ScalprumContext.Provider value={scalprumState}>
-          <DynamicHomePage />
+          <DynamicCustomizableHomePage />
         </ScalprumContext.Provider>
       }
     />
