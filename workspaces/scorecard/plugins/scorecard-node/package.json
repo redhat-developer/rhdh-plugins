@@ -43,8 +43,11 @@
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.4.2",
+    "@backstage/catalog-model": "^1.7.5",
     "@backstage/errors": "^1.2.7",
-    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    "@backstage/plugin-catalog-node": "^1.18.0",
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",
