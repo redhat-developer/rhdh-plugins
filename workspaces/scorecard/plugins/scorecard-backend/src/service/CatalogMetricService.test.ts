@@ -209,7 +209,7 @@ describe('CatalogMetricService', () => {
             },
             evaluation: undefined,
             status: 'error',
-            error: 'Metric value is missing',
+            error: 'Unable to evaluate thresholds, metric value is missing',
           },
           timestamp: '2024-01-15T10:30:00.000Z',
           value: undefined,

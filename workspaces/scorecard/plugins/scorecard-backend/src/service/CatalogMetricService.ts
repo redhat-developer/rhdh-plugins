@@ -111,7 +111,8 @@ export class CatalogMetricService {
           metric.type,
         );
         if (value === undefined) {
-          thresholdError = 'Metric value is missing';
+          thresholdError =
+            'Unable to evaluate thresholds, metric value is missing';
         } else {
           evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
             value,
