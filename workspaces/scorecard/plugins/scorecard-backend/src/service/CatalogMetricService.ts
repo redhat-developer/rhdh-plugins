@@ -101,22 +101,6 @@ export class CatalogMetricService {
       const provider = this.registry.getProvider(providerId);
       const metric = authorizedMetricsToCalculate[index];
 
-      if (error || value === undefined) {
-        return {
-          id: providerId,
-          status: 'error',
-          metadata: {
-            title: metric.title,
-            description: metric.description,
-            type: metric.type,
-            history: metric.history,
-          },
-          error: error
-            ? stringifyError(error)
-            : stringifyError(new Error(`Metric value is 'undefined'`)),
-        };
-      }
-
       let thresholds: ThresholdConfig | undefined;
       let evaluation: string | undefined;
       let thresholdError: string | undefined;
@@ -126,24 +110,35 @@ export class CatalogMetricService {
           provider,
           metric.type,
         );
-        evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
-          value,
-          metric.type,
-          thresholds,
-        );
+        if (value === undefined) {
+          thresholdError =
+            'Unable to evaluate thresholds, metric value is missing';
+        } else {
+          evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
+            value,
+            metric.type,
+            thresholds,
+          );
+        }
       } catch (e) {
         thresholdError = stringifyError(e);
       }
 
+      const isMetricCalcError = error || value === undefined;
       return {
         id: metric.id,
-        status: 'success',
+        status: isMetricCalcError ? 'error' : 'success',
         metadata: {
           title: metric.title,
           description: metric.description,
           type: metric.type,
           history: metric.history,
         },
+        ...(isMetricCalcError && {
+          error: error
+            ? stringifyError(error)
+            : stringifyError(new Error(`Metric value is 'undefined'`)),
+        }),
         result: {
           value,
           timestamp: new Date().toISOString(),

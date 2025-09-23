@@ -193,7 +193,27 @@ describe('CatalogMetricService', () => {
         ...jiraMetricResult,
         status: 'error' as const,
         error: 'Error: Jira API failure',
-        result: undefined,
+        result: {
+          thresholdResult: {
+            definition: {
+              rules: [
+                {
+                  expression: '==true',
+                  key: 'success',
+                },
+                {
+                  expression: '==false',
+                  key: 'error',
+                },
+              ],
+            },
+            evaluation: undefined,
+            status: 'error',
+            error: 'Unable to evaluate thresholds, metric value is missing',
+          },
+          timestamp: '2024-01-15T10:30:00.000Z',
+          value: undefined,
+        },
       };
       mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
 
