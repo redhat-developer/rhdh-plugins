@@ -110,14 +110,14 @@ export class CatalogMetricService {
           provider,
           metric.type,
         );
-        if (value !== undefined) {
+        if (value === undefined) {
+          thresholdError = 'Metric value is missing';
+        } else {
           evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
             value,
             metric.type,
             thresholds,
           );
-        } else {
-          thresholdError = 'Metric value is missing';
         }
       } catch (e) {
         thresholdError = stringifyError(e);
