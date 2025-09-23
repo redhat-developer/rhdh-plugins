@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { MetricValue } from './MetricValuesStore';
+import { DbMetricValue } from './MetricValuesStore';
 
 /**
  * Interface for storing and retrieving metric values
@@ -23,5 +23,5 @@ export interface ProviderStore {
   /**
    * Insert multiple metric values in a batch
    */
-  createMetricValues(metricValues: Omit<MetricValue, 'id'>[]): Promise<void>;
+  createMetricValues(metricValues: Omit<DbMetricValue, 'id'>[]): Promise<void>;
 }
