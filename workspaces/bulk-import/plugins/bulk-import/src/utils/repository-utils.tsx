@@ -650,13 +650,11 @@ export const prepareDataForAddedRepositories = (
   };
 };
 
-const validateKeyValuePair = yup
-  .string()
-  .nullable()
-  .test(
-    'is-key-value-pair',
-    'Each entry must have a key and a value separated by a colon.',
-    value => {
+const validateKeyValuePair = (t: (key: string) => string) =>
+  yup
+    .string()
+    .nullable()
+    .test('is-key-value-pair', t('validation.keyValuePairFormat'), value => {
       if (!value) return true;
       const keyValuePairs = value.split(';').map(pair => pair.trim());
       for (const pair of keyValuePairs) {
@@ -668,8 +666,7 @@ const validateKeyValuePair = yup
         }
       }
       return true;
-    },
-  );
+    });
 
 export const getValidationSchema = (
   approvalTool: string,
@@ -695,7 +692,7 @@ export const getValidationSchema = (
       then: schema => schema.required(t('validation.entityOwnerRequired')),
       otherwise: schema => schema.notRequired(),
     }),
-    prLabels: validateKeyValuePair,
-    prAnnotations: validateKeyValuePair,
-    prSpec: validateKeyValuePair,
+    prLabels: validateKeyValuePair(t),
+    prAnnotations: validateKeyValuePair(t),
+    prSpec: validateKeyValuePair(t),
   });

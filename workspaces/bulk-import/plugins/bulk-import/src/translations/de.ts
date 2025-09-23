@@ -20,19 +20,20 @@ import { bulkImportTranslationRef } from './ref';
 
 const bulkImportTranslationDe = createTranslationMessages({
   ref: bulkImportTranslationRef,
+  full: true,
   messages: {
     // Page titles and subtitles
-    'page.title': 'Massen-Import',
+    'page.title': 'Bulk import',
     'page.subtitle': 'Entitäten in Red Hat Developer Hub importieren',
     'page.addRepositoriesTitle': 'Repositories hinzufügen',
     'page.importEntitiesTitle': 'Entitäten importieren',
     'page.addRepositoriesSubtitle':
       'Repositories in 4 Schritten zum Red Hat Developer Hub hinzufügen',
     'page.importEntitiesSubtitle': 'In Red Hat Developer Hub importieren',
-    'page.typeLink': 'Massen-Import',
+    'page.typeLink': 'Bulk import',
 
     // Sidebar
-    'sidebar.bulkImport': 'Massen-Import',
+    'sidebar.bulkImport': 'Bulk import',
 
     // Permissions
     'permissions.title': 'Berechtigung erforderlich',
@@ -213,6 +214,12 @@ const bulkImportTranslationDe = createTranslationMessages({
     'errors.errorOccurred': 'Fehler aufgetreten',
     'errors.failedToCreatePullRequest':
       'Pull-Request konnte nicht erstellt werden',
+    'errors.prErrorPermissions':
+      'Sie haben keine Berechtigung, einen Pull-Request zu erstellen',
+    'errors.catalogInfoExists': 'catalog-info.yaml existiert bereits',
+    'errors.catalogEntityConflict': 'Katalog-Entitätskonflikt',
+    'errors.repoEmpty': 'Repository ist leer',
+    'errors.codeOwnersNotFound': 'CODEOWNERS-Datei nicht gefunden',
 
     // Forms
     'forms.footer.createServiceNowTicket': 'ServiceNow-Ticket erstellen',
@@ -225,6 +232,17 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Die Catalog-info.yaml-Dateien müssen für den Import generiert werden.',
     'forms.footer.pullRequestTooltip':
       'Catalog-info.yaml-Dateien müssen vor der Erstellung eines Pull-Requests generiert werden',
+
+    // Validation
+    'validation.componentNameInvalid':
+      '"{{value}}" ist nicht gültig; erwartet wird eine Zeichenkette aus Sequenzen von [a-zA-Z0-9], getrennt durch [-_.], mit maximal 63 Zeichen insgesamt. Um mehr über das Katalogdateiformat zu erfahren, besuchen Sie: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md',
+    'validation.componentNameRequired': 'Komponentenname ist erforderlich',
+    'validation.entityOwnerRequired': 'Entity-Besitzer ist erforderlich',
+    'validation.titleRequired': '{{approvalTool}}-Titel ist erforderlich',
+    'validation.descriptionRequired':
+      '{{approvalTool}}-Beschreibung ist erforderlich',
+    'validation.keyValuePairFormat':
+      'Jeder Eintrag muss einen Schlüssel und einen Wert haben, getrennt durch einen Doppelpunkt.',
 
     // Table pagination (keeping for compatibility)
     'table.pagination.rows5': '5 Zeilen',

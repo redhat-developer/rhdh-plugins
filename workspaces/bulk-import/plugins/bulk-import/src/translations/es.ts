@@ -20,19 +20,20 @@ import { bulkImportTranslationRef } from './ref';
 
 const bulkImportTranslationEs = createTranslationMessages({
   ref: bulkImportTranslationRef,
+  full: true,
   messages: {
     // Page titles and subtitles
-    'page.title': 'Importación masiva',
+    'page.title': 'Bulk import',
     'page.subtitle': 'Importar entidades a Red Hat Developer Hub',
     'page.addRepositoriesTitle': 'Agregar repositorios',
     'page.importEntitiesTitle': 'Importar entidades',
     'page.addRepositoriesSubtitle':
       'Agregar repositorios a Red Hat Developer Hub en 4 pasos',
     'page.importEntitiesSubtitle': 'Importar a Red Hat Developer Hub',
-    'page.typeLink': 'Importación masiva',
+    'page.typeLink': 'Bulk import',
 
     // Sidebar
-    'sidebar.bulkImport': 'Importación masiva',
+    'sidebar.bulkImport': 'Bulk import',
 
     // Permissions
     'permissions.title': 'Autorización requerida',
@@ -79,18 +80,6 @@ const bulkImportTranslationEs = createTranslationMessages({
     'status.waitingForApproval': 'Esperando aprobación',
     'status.imported': 'Importado',
 
-    // Errors
-    'errors.prErrorPermissions':
-      'No se pudo crear una nueva PR debido a permisos insuficientes. Contacte a su administrador.',
-    'errors.catalogInfoExists':
-      'Dado que catalog-info.yaml ya existe en el repositorio, no se creará ninguna nueva PR. Sin embargo, la entidad aún se registrará en la página del catálogo.',
-    'errors.catalogEntityConflict':
-      'No se pudo crear una nueva PR debido a un conflicto de entidad del catálogo.',
-    'errors.repoEmpty':
-      'No se pudo crear una nueva PR porque el repositorio está vacío. Empuje un commit inicial al repositorio.',
-    'errors.codeOwnersNotFound':
-      'No se encontró archivo CODEOWNERS en el repositorio',
-
     // Validation
     'validation.componentNameInvalid':
       '"{{value}}" no es válido; se espera una cadena que son secuencias de [a-zA-Z0-9] separadas por [-_.], máximo 63 caracteres en total. Para obtener más información sobre el formato de archivo de catálogo, visite: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md',
@@ -100,6 +89,8 @@ const bulkImportTranslationEs = createTranslationMessages({
     'validation.titleRequired': 'El título {{approvalTool}} es requerido',
     'validation.descriptionRequired':
       'La descripción {{approvalTool}} es requerida',
+    'validation.keyValuePairFormat':
+      'Cada entrada debe tener una clave y un valor separados por dos puntos.',
 
     // Table headers
     'table.headers.name': 'Nombre',
@@ -184,6 +175,12 @@ const bulkImportTranslationEs = createTranslationMessages({
     // Errors
     'errors.errorOccurred': 'Ocurrió un error',
     'errors.failedToCreatePullRequest': 'Error al crear el pull request',
+    'errors.prErrorPermissions':
+      'No tienes permisos para crear un pull request',
+    'errors.catalogInfoExists': 'catalog-info.yaml ya existe',
+    'errors.catalogEntityConflict': 'Conflicto de entidad del catálogo',
+    'errors.repoEmpty': 'El repositorio está vacío',
+    'errors.codeOwnersNotFound': 'Archivo CODEOWNERS no encontrado',
 
     // Preview File
     'previewFile.readyToImport': 'Listo para importar',

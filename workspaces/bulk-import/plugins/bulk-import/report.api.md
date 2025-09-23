@@ -97,6 +97,7 @@ readonly "validation.componentNameRequired": string;
 readonly "validation.entityOwnerRequired": string;
 readonly "validation.titleRequired": string;
 readonly "validation.descriptionRequired": string;
+readonly "validation.keyValuePairFormat": string;
 readonly "steps.chooseApprovalTool": string;
 readonly "steps.chooseRepositories": string;
 readonly "steps.chooseItems": string;

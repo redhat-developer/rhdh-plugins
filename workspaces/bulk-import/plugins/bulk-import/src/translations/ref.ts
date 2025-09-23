@@ -92,6 +92,8 @@ export const bulkImportMessages = {
     entityOwnerRequired: 'Entity Owner is required',
     titleRequired: '{{approvalTool}} title is required',
     descriptionRequired: '{{approvalTool}} description is required',
+    keyValuePairFormat:
+      'Each entry must have a key and a value separated by a colon.',
   },
   table: {
     headers: {
