@@ -38,10 +38,10 @@ interface ScorecardProps {
   StatusIcon: React.ElementType;
   value?: MetricValue;
   thresholds?: ThresholdResult;
-  isThresholdError?: boolean;
-  thresholdError?: string;
   isMetricDataError?: boolean;
   metricDataError?: string;
+  isThresholdError?: boolean;
+  thresholdError?: string;
 }
 
 const StyledCircle = styled('circle')(
@@ -71,10 +71,10 @@ const Scorecard = ({
   StatusIcon,
   value,
   thresholds,
-  isThresholdError = false,
-  thresholdError,
   isMetricDataError = false,
   metricDataError,
+  isThresholdError = false,
+  thresholdError,
 }: ScorecardProps) => {
   const theme = useTheme();
 
@@ -142,7 +142,7 @@ const Scorecard = ({
                             fill="none"
                             statusColor={statusColor}
                             theme={theme}
-                            isError={isThresholdError || isMetricDataError}
+                            isError={isMetricDataError || isThresholdError}
                           />
                         </svg>
                       </Tooltip>
@@ -157,7 +157,7 @@ const Scorecard = ({
                           alignItems: 'center',
                         }}
                       >
-                        {!isThresholdError && !isMetricDataError && (
+                        {!isMetricDataError && !isThresholdError && (
                           <StatusIcon
                             sx={{
                               color: (muiTheme: any) =>
@@ -172,7 +172,7 @@ const Scorecard = ({
                           variant="h6"
                           sx={{
                             color: (muiTheme: any) => {
-                              if (isThresholdError || isMetricDataError) {
+                              if (isMetricDataError || isThresholdError) {
                                 return muiTheme.palette[
                                   statusColor.split('.')[0]
                                 ]?.[statusColor.split('.')[1]]?.[
@@ -184,16 +184,16 @@ const Scorecard = ({
                               ]?.[statusColor.split('.')[1]];
                             },
                             fontWeight:
-                              isThresholdError || isMetricDataError ? 400 : 500,
+                              isMetricDataError || isThresholdError ? 400 : 500,
                             textAlign: 'center',
                             fontSize:
-                              isThresholdError || isMetricDataError ? 14 : 24,
+                              isMetricDataError || isThresholdError ? 14 : 24,
                           }}
                         >
-                          {isThresholdError && 'Invalid thresholds'}
-                          {!isThresholdError &&
-                            isMetricDataError &&
-                            'Metric data unavailable'}
+                          {isMetricDataError && 'Metric data unavailable'}
+                          {!isMetricDataError &&
+                            isThresholdError &&
+                            'Invalid thresholds'}
                           {!isThresholdError && !isMetricDataError && value}
                         </Typography>
                       </Box>
