@@ -22,7 +22,7 @@ import { getStatusConfig } from '../utils';
 
 describe('getStatusConfig', () => {
   describe('error handling', () => {
-    it('should return grey.400 color when thresholdStatus is error', () => {
+    it('should return rhdh.general.disabled color when thresholdStatus is error', () => {
       const result = getStatusConfig({
         evaluation: 'success',
         thresholdStatus: 'error',
@@ -30,11 +30,11 @@ describe('getStatusConfig', () => {
       });
 
       expect(result).toEqual({
-        color: 'grey.400',
+        color: 'rhdh.general.disabled',
       });
     });
 
-    it('should return grey.400 color when metricStatus is error', () => {
+    it('should return rhdh.general.disabled color when metricStatus is error', () => {
       const result = getStatusConfig({
         evaluation: 'success',
         thresholdStatus: 'success',
@@ -42,11 +42,11 @@ describe('getStatusConfig', () => {
       });
 
       expect(result).toEqual({
-        color: 'grey.400',
+        color: 'rhdh.general.disabled',
       });
     });
 
-    it('should return grey.400 color when both thresholdStatus and metricStatus are error', () => {
+    it('should return rhdh.general.disabled color when both thresholdStatus and metricStatus are error', () => {
       const result = getStatusConfig({
         evaluation: 'success',
         thresholdStatus: 'error',
@@ -54,11 +54,11 @@ describe('getStatusConfig', () => {
       });
 
       expect(result).toEqual({
-        color: 'grey.400',
+        color: 'rhdh.general.disabled',
       });
     });
 
-    it('should return grey.400 color when thresholdStatus is error regardless of evaluation', () => {
+    it('should return rhdh.general.disabled color when thresholdStatus is error regardless of evaluation', () => {
       const result = getStatusConfig({
         evaluation: 'error',
         thresholdStatus: 'error',
@@ -66,11 +66,11 @@ describe('getStatusConfig', () => {
       });
 
       expect(result).toEqual({
-        color: 'grey.400',
+        color: 'rhdh.general.disabled',
       });
     });
 
-    it('should return grey.400 color when metricStatus is error regardless of evaluation', () => {
+    it('should return rhdh.general.disabled color when metricStatus is error regardless of evaluation', () => {
       const result = getStatusConfig({
         evaluation: 'warning',
         thresholdStatus: 'success',
@@ -78,7 +78,7 @@ describe('getStatusConfig', () => {
       });
 
       expect(result).toEqual({
-        color: 'grey.400',
+        color: 'rhdh.general.disabled',
       });
     });
   });

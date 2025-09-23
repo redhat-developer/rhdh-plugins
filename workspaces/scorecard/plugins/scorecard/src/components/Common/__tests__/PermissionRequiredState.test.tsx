@@ -20,17 +20,11 @@ import { BrowserRouter } from 'react-router-dom';
 
 import PermissionRequiredState from '../PermissionRequiredState';
 
-// Mock the PermissionRequiredIcon component
-jest.mock('../PermissionRequiredIcon', () => ({
-  PermissionRequiredIcon: function MockPermissionRequiredIcon() {
-    const React = require('react');
-    return React.createElement(
-      'div',
-      { 'data-testid': 'permission-required-icon' },
-      'Permission Icon',
-    );
-  },
-}));
+// Mock the SVG import
+jest.mock(
+  '../../../images/permission-required.svg',
+  () => 'mocked-permission-required.svg',
+);
 
 // Mock the EmptyState component from Backstage
 jest.mock('@backstage/core-components', () => ({
@@ -90,23 +84,27 @@ describe('PermissionRequiredState Component', () => {
   it('should render the main title', () => {
     renderWithProviders(<PermissionRequiredState />);
 
-    expect(screen.getByTestId('empty-state-title')).toHaveTextContent(
-      'Missing permissions',
-    );
+    expect(screen.getByText('Missing permission')).toBeInTheDocument();
   });
 
-  it('should render the description text', () => {
+  it('should render the description text with permission name', () => {
     renderWithProviders(<PermissionRequiredState />);
 
-    expect(screen.getByTestId('empty-state-description')).toHaveTextContent(
-      'To view Scorecard plugin, contact your administrator to give the scorecard.metric.read permission.',
-    );
+    expect(
+      screen.getByText(
+        /To view Scorecard plugin, contact your administrator to give the/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('scorecard.metric.read')).toBeInTheDocument();
+    expect(screen.getByText(/permission\./)).toBeInTheDocument();
   });
 
-  it('should render the permission required icon', () => {
+  it('should render the permission name with bold styling', () => {
     renderWithProviders(<PermissionRequiredState />);
 
-    expect(screen.getByTestId('permission-required-icon')).toBeInTheDocument();
+    const permissionText = screen.getByText('scorecard.metric.read');
+    expect(permissionText).toBeInTheDocument();
+    expect(permissionText.tagName).toBe('SPAN');
   });
 
   it('should render the read more link button with correct text', () => {
@@ -132,7 +130,7 @@ describe('PermissionRequiredState Component', () => {
     const linkButton = screen.getByRole('link', { name: /read more/i });
     expect(linkButton).toHaveAttribute(
       'href',
-      'https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/adoption-insights/plugins/adoption-insights/README.md#permission-framework-support',
+      'https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/scorecard/plugins/scorecard/README.md#permission-framework-support',
     );
     expect(linkButton).toHaveAttribute('target', '_blank');
   });
