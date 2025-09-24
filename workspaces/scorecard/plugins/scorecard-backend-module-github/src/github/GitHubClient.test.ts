@@ -18,7 +18,6 @@ import { ConfigReader } from '@backstage/config';
 import { DefaultGithubCredentialsProvider } from '@backstage/integration';
 import { GithubClient } from './GithubClient';
 import { GithubRepository } from './types';
-import { DEFAULT_GITHUB_HOSTNAME } from './constants';
 
 describe('GithubClient', () => {
   let githubClient: GithubClient;
@@ -50,7 +49,7 @@ describe('GithubClient', () => {
       integrations: {
         github: [
           {
-            host: DEFAULT_GITHUB_HOSTNAME,
+            host: 'github.com',
             token: 'dummy-token',
           },
         ],
@@ -61,6 +60,7 @@ describe('GithubClient', () => {
 
   describe('getOpenPullRequestsCount', () => {
     it('should return the count of open pull requests', async () => {
+      const url = `https://github.com/owner/repo`;
       const response = {
         repository: {
           pullRequests: {
@@ -71,8 +71,8 @@ describe('GithubClient', () => {
       mockedGraphqlClient.mockResolvedValue(response);
 
       const result = await githubClient.getOpenPullRequestsCount(
+        url,
         repository,
-        DEFAULT_GITHUB_HOSTNAME,
       );
 
       expect(result).toBe(42);
@@ -82,14 +82,15 @@ describe('GithubClient', () => {
         repository,
       );
       expect(getCredentialsSpy).toHaveBeenCalledWith({
-        url: `https://${DEFAULT_GITHUB_HOSTNAME}/owner`,
+        url,
       });
     });
 
-    it('should throw error when GitHub integration for hostname is missing', async () => {
+    it('should throw error when GitHub integration for URL is missing', async () => {
+      const unknownUrl = 'https://unknown-host/owner/repo';
       await expect(
-        githubClient.getOpenPullRequestsCount(repository, 'unknown-host'),
-      ).rejects.toThrow("Missing GitHub integration for 'unknown-host'");
+        githubClient.getOpenPullRequestsCount(unknownUrl, repository),
+      ).rejects.toThrow(`Missing GitHub integration for '${unknownUrl}'`);
     });
   });
 });

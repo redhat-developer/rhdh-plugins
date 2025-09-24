@@ -152,13 +152,10 @@ describe('GithubOpenPRsProvider', () => {
       expect(result).toBe(42);
       expect(
         mockedGithubClientInstance.getOpenPullRequestsCount,
-      ).toHaveBeenCalledWith(
-        {
-          owner: 'org',
-          repo: 'orgRepo',
-        },
-        'github.com',
-      );
+      ).toHaveBeenCalledWith('https://github.com/org/orgRepo/tree/main/', {
+        owner: 'org',
+        repo: 'orgRepo',
+      });
     });
   });
 });
