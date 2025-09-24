@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 1.15.0
+
+### Minor Changes
+
+- 81cfcfe: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [81cfcfe]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.9.0
+
 ## 1.14.0
 
 ### Minor Changes
