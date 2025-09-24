@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { CatalogApi } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import { NotFoundError } from '@backstage/errors';
+import { mockServices } from '@backstage/backend-test-utils';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { CatalogMetricService } from './CatalogMetricService';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
-import { mockServices } from '@backstage/backend-test-utils';
 import {
   githubNumberMetricMetadata,
   githubNumberProvider,
@@ -35,10 +35,6 @@ import {
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
 import { mockMetricValuesStore } from '../../__fixtures__/mockDatabase';
-
-const mockCatalogApi = {
-  getEntityByRef: jest.fn(),
-} as unknown as jest.Mocked<CatalogApi>;
 
 class AnnotationProvider extends MockNumberProvider {
   constructor() {
@@ -59,6 +55,7 @@ class AnnotationProvider extends MockNumberProvider {
 describe('CatalogMetricService', () => {
   let catalogMetricService: CatalogMetricService;
   let registry: MetricProvidersRegistry;
+  const mockCatalogService = catalogServiceMock.mock();
   const timestamp = '2024-01-15T10:30:00.000Z';
 
   const githubMetricResult = {
@@ -115,17 +112,17 @@ describe('CatalogMetricService', () => {
     registry.register(jiraBooleanProvider);
 
     catalogMetricService = new CatalogMetricService({
-      catalogApi: mockCatalogApi,
+      catalog: mockCatalogService,
+      auth: mockServices.auth(),
       registry,
       thresholdEvaluator: new ThresholdEvaluator(),
-      auth: mockServices.auth(),
       metricValuesStore: mockMetricValuesStore,
     });
   });
 
   describe('calculateEntityMetrics', () => {
     it('should calculate metrics successfully with default thresholds', async () => {
-      mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
+      mockCatalogService.getEntityByRef.mockResolvedValue(mockEntity);
 
       const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
@@ -148,7 +145,7 @@ describe('CatalogMetricService', () => {
           },
         },
       };
-      mockCatalogApi.getEntityByRef.mockResolvedValue(annotatedEntity);
+      mockCatalogService.getEntityByRef.mockResolvedValue(annotatedEntity);
 
       const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
@@ -176,7 +173,7 @@ describe('CatalogMetricService', () => {
     });
 
     it('should calculate metrics for specific provider IDs', async () => {
-      mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
+      mockCatalogService.getEntityByRef.mockResolvedValue(mockEntity);
 
       const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
@@ -217,7 +214,7 @@ describe('CatalogMetricService', () => {
           value: undefined,
         },
       };
-      mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
+      mockCatalogService.getEntityByRef.mockResolvedValue(mockEntity);
 
       const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
@@ -239,7 +236,7 @@ describe('CatalogMetricService', () => {
         },
       };
 
-      mockCatalogApi.getEntityByRef.mockResolvedValue(
+      mockCatalogService.getEntityByRef.mockResolvedValue(
         entityWithInvalidThresholds,
       );
 
@@ -264,7 +261,7 @@ describe('CatalogMetricService', () => {
     });
 
     it('should handle entity not found', async () => {
-      mockCatalogApi.getEntityByRef.mockResolvedValue(undefined);
+      mockCatalogService.getEntityByRef.mockResolvedValue(undefined);
 
       await expect(
         catalogMetricService.getLatestEntityMetrics(
@@ -276,7 +273,7 @@ describe('CatalogMetricService', () => {
     });
 
     it('should filter authorized metrics based upon permission filter', async () => {
-      mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
+      mockCatalogService.getEntityByRef.mockResolvedValue(mockEntity);
 
       const filter: PermissionCriteria<
         PermissionCondition<string, PermissionRuleParams>
@@ -303,7 +300,7 @@ describe('CatalogMetricService', () => {
 
     it('should filter out metrics that provider does not support for certain entity', async () => {
       registry.register(new AnnotationProvider());
-      mockCatalogApi.getEntityByRef.mockResolvedValue(mockEntity);
+      mockCatalogService.getEntityByRef.mockResolvedValue(mockEntity);
 
       const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
@@ -328,7 +325,7 @@ describe('CatalogMetricService', () => {
         },
       };
 
-      mockCatalogApi.getEntityByRef.mockResolvedValue(entityWithAnnotation);
+      mockCatalogService.getEntityByRef.mockResolvedValue(entityWithAnnotation);
 
       const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
