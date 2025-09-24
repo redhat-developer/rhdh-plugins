@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header-test
 
+## 0.5.1
+
+### Patch Changes
+
+- 4e2f33e: Fix the test package build and rebuild both packages to have a consistant commit for them.
+
 ## 0.5.0
 
 ### Minor Changes
