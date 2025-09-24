@@ -143,10 +143,24 @@ export const MarketplacePackageEditContent = ({
               .join('\n')
           : bodyLines.join('\n');
 
+      const linesNoIndent = pluginsYamlString.split('\n');
+      let packageYamlString: string;
+      if (linesNoIndent[0]?.startsWith('- ')) {
+        linesNoIndent[0] = linesNoIndent[0].slice(2);
+        for (let i = 1; i < linesNoIndent.length; i += 1) {
+          if (linesNoIndent[i].startsWith('  ')) {
+            linesNoIndent[i] = linesNoIndent[i].slice(2);
+          }
+        }
+        packageYamlString = linesNoIndent.join('\n');
+      } else {
+        packageYamlString = pluginsYamlString;
+      }
+
       const res = await installPackage({
         namespace: pkg.metadata.namespace ?? params.namespace,
         name: pkg.metadata.name,
-        configYaml: pluginsYamlString.trim(),
+        configYaml: packageYamlString.trim(),
       });
 
       if ((res as any)?.status === 'OK') {
