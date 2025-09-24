@@ -56,9 +56,9 @@ const bulkImportTranslationFr = createTranslationMessages({
       'Supprimer {{repoName}} {{repositoryText}} ?',
     'repositories.repositoryText': 'dépôt',
     'repositories.removeRepositoryWarning':
-      'La suppression de {{action}} efface toutes les informations associées de la page Catalogue.',
-    'repositories.removeAction': "d'un dépôt",
-    'repositories.removeActionGitlab': 'cela va',
+      "La suppression d'un dépôt efface toutes les informations associées de la page Catalogue.",
+    'repositories.removeRepositoryWarningGitlab':
+      'La suppression efface toutes les informations associées de la page Catalogue.',
     'repositories.cannotRemoveRepositoryUrl':
       "Impossible de supprimer le dépôt car l'URL du dépôt est manquante.",
     'repositories.unableToRemoveRepository':
@@ -180,7 +180,8 @@ const bulkImportTranslationFr = createTranslationMessages({
     'errors.catalogInfoExists': 'catalog-info.yaml existe déjà',
     'errors.catalogEntityConflict': "Conflit d'entité de catalogue",
     'errors.repoEmpty': 'Le dépôt est vide',
-    'errors.codeOwnersNotFound': 'Fichier CODEOWNERS non trouvé',
+    'errors.codeOwnersNotFound':
+      'Le fichier CODEOWNERS est manquant dans le dépôt. Ajoutez un fichier CODEOWNERS pour créer une nouvelle PR.',
 
     // Preview File
     'previewFile.readyToImport': 'Prêt à importer',
@@ -193,9 +194,8 @@ const bulkImportTranslationFr = createTranslationMessages({
       'Échec de la récupération de la pull request. Un nouveau YAML a été généré ci-dessous.',
     'previewFile.invalidEntityYaml':
       "Le YAML d'entité dans votre pull request est invalide (fichier vide ou apiVersion, kind ou metadata.name manquant). Un nouveau YAML a été généré ci-dessous.",
-    'previewFile.pullRequestPendingApprovalPrefix': 'La',
-    'previewFile.pullRequestPendingApprovalSuffix':
-      "est en attente d'approbation",
+    'previewFile.pullRequestPendingApproval':
+      "La [{{pullRequestText}}]({{pullRequestUrl}}) est en attente d'approbation",
     'previewFile.pullRequestText': 'pull request',
     'previewFile.viewRepository': 'Voir le dépôt',
     'previewFile.closeDrawer': 'Fermer le tiroir',
@@ -227,7 +227,7 @@ const bulkImportTranslationFr = createTranslationMessages({
     'previewFile.pullRequest.labels': 'Libelles',
     'previewFile.pullRequest.spec': 'Spécification',
     'previewFile.pullRequest.useCodeOwnersFile':
-      "Utiliser le fichier CODEOWNERS comme propriétaire d'entité",
+      "Utiliser le fichier *CODEOWNERS* comme propriétaire d'entité",
     'previewFile.pullRequest.codeOwnersWarning':
       "ATTENTION : Cela peut échouer si aucun fichier CODEOWNERS n'est trouvé à l'emplacement cible.",
 

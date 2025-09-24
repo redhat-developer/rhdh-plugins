@@ -130,11 +130,9 @@ const DeleteRepositoryDialog = ({
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1">
-          {t('repositories.removeRepositoryWarning' as any, {
-            action: gitlabFeatureFlag
-              ? t('repositories.removeActionGitlab')
-              : t('repositories.removeAction'),
-          })}
+          {gitlabFeatureFlag
+            ? t('repositories.removeRepositoryWarningGitlab')
+            : t('repositories.removeRepositoryWarning')}
         </Typography>
       </DialogContent>
       {(isUrlMissing || mutationDelete.isError) && (

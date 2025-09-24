@@ -57,9 +57,9 @@ const bulkImportTranslationDe = createTranslationMessages({
       '{{repoName}} {{repositoryText}} entfernen?',
     'repositories.repositoryText': 'Repository',
     'repositories.removeRepositoryWarning':
-      'Das Entfernen von {{action}} löscht alle zugehörigen Informationen von der Katalogseite.',
-    'repositories.removeAction': 'einem Repository',
-    'repositories.removeActionGitlab': 'es wird',
+      'Das Entfernen eines Repositorys löscht alle zugehörigen Informationen von der Katalogseite.',
+    'repositories.removeRepositoryWarningGitlab':
+      'Das Entfernen löscht alle zugehörigen Informationen von der Katalogseite.',
     'repositories.cannotRemoveRepositoryUrl':
       'Repository kann nicht entfernt werden, da die Repository-URL fehlt.',
     'repositories.unableToRemoveRepository':
@@ -173,8 +173,8 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Pull-Request konnte nicht abgerufen werden. Eine neue YAML wurde unten generiert.',
     'previewFile.invalidEntityYaml':
       'Die Entitäts-YAML in Ihrem Pull-Request ist ungültig (leere Datei oder fehlende apiVersion, kind oder metadata.name). Eine neue YAML wurde unten generiert.',
-    'previewFile.pullRequestPendingApprovalPrefix': 'Der',
-    'previewFile.pullRequestPendingApprovalSuffix': 'wartet auf Genehmigung',
+    'previewFile.pullRequestPendingApproval':
+      'Der [{{pullRequestText}}]({{pullRequestUrl}}) wartet auf Genehmigung',
     'previewFile.pullRequestText': 'Pull-Request',
     'previewFile.viewRepository': 'Repository anzeigen',
     'previewFile.closeDrawer': 'Schublade schließen',
@@ -206,7 +206,7 @@ const bulkImportTranslationDe = createTranslationMessages({
     'previewFile.pullRequest.labels': 'Labels',
     'previewFile.pullRequest.spec': 'Spezifikation',
     'previewFile.pullRequest.useCodeOwnersFile':
-      'Verwende CODEOWNERS-Datei als Entitätsbesitzer',
+      'Verwende *CODEOWNERS*-Datei als Entitätsbesitzer',
     'previewFile.pullRequest.codeOwnersWarning':
       'WARNUNG: Dies kann fehlschlagen, wenn keine CODEOWNERS-Datei am Zielort gefunden wird.',
 
@@ -219,7 +219,8 @@ const bulkImportTranslationDe = createTranslationMessages({
     'errors.catalogInfoExists': 'catalog-info.yaml existiert bereits',
     'errors.catalogEntityConflict': 'Katalog-Entitätskonflikt',
     'errors.repoEmpty': 'Repository ist leer',
-    'errors.codeOwnersNotFound': 'CODEOWNERS-Datei nicht gefunden',
+    'errors.codeOwnersNotFound':
+      'CODEOWNERS-Datei fehlt im Repository. Fügen Sie eine CODEOWNERS-Datei hinzu, um einen neuen PR zu erstellen.',
 
     // Forms
     'forms.footer.createServiceNowTicket': 'ServiceNow-Ticket erstellen',

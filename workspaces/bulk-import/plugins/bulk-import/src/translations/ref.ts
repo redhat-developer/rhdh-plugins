@@ -51,9 +51,9 @@ export const bulkImportMessages = {
     removeRepositoryQuestion: 'Remove {{repoName}} {{repositoryText}}?',
     repositoryText: 'repository',
     removeRepositoryWarning:
-      'Removing {{action}} erases all associated information from the Catalog page.',
-    removeAction: 'a repository',
-    removeActionGitlab: 'it will',
+      'Removing a repository erases all associated information from the Catalog page.',
+    removeRepositoryWarningGitlab:
+      'Removing it will erase all associated information from the Catalog page.',
     cannotRemoveRepositoryUrl:
       'Cannot remove repository as the repository URL is missing.',
     unableToRemoveRepository: 'Unable to remove repository. {{error}}',
@@ -81,7 +81,8 @@ export const bulkImportMessages = {
       "Couldn't create a new PR because of catalog entity conflict.",
     repoEmpty:
       "Couldn't create a new PR because the repository is empty. Push an initial commit to the repository.",
-    codeOwnersNotFound: 'No CODEOWNERS file found in the repository',
+    codeOwnersNotFound:
+      'CODEOWNERS file is missing from the repository. Add a CODEOWNERS file to create a new PR.',
     errorOccurred: 'Error occurred',
     failedToCreatePullRequest: 'Failed to create pull request',
   },
@@ -195,8 +196,8 @@ export const bulkImportMessages = {
       'Failed to fetch the pull request. A new YAML has been generated below.',
     invalidEntityYaml:
       'The entity YAML in your pull request is invalid (empty file or missing apiVersion, kind, or metadata.name). A new YAML has been generated below.',
-    pullRequestPendingApprovalPrefix: 'The',
-    pullRequestPendingApprovalSuffix: 'is pending approval',
+    pullRequestPendingApproval:
+      'The [{{pullRequestText}}]({{pullRequestUrl}}) is pending approval',
     pullRequestText: 'pull request',
     viewRepository: 'View repository',
     closeDrawer: 'Close the drawer',
@@ -224,7 +225,7 @@ export const bulkImportMessages = {
       annotations: 'Annotations',
       labels: 'Labels',
       spec: 'Spec',
-      useCodeOwnersFile: 'Use CODEOWNERS file as Entity Owner',
+      useCodeOwnersFile: 'Use *CODEOWNERS* file as Entity Owner',
       codeOwnersWarning:
         'WARNING: This may fail if no CODEOWNERS file is found at the target location.',
     },

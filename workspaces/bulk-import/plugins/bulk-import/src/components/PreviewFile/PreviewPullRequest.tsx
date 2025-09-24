@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Link } from '@backstage/core-components';
+import { Link, MarkdownContent } from '@backstage/core-components';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Alert from '@mui/material/Alert';
@@ -120,11 +120,28 @@ export const PreviewPullRequest = ({
       {pullRequest[repoId]?.pullRequestUrl && (
         <Box marginTop={others?.addPaddingTop ? 2 : 0}>
           <Alert severity="info" data-testid="pull-request-info">
-            {t('previewFile.pullRequestPendingApprovalPrefix')}{' '}
-            <Link to={pullRequest[repoId].pullRequestUrl || ''}>
-              {t('previewFile.pullRequestText')}
-            </Link>{' '}
-            {t('previewFile.pullRequestPendingApprovalSuffix')}
+            <Box
+              sx={{
+                margin: 0,
+                padding: 0,
+                '& p': {
+                  margin: 0,
+                  padding: 0,
+                },
+              }}
+            >
+              <MarkdownContent
+                content={t('previewFile.pullRequestPendingApproval')
+                  .replace(
+                    '{{pullRequestUrl}}',
+                    pullRequest[repoId].pullRequestUrl || '',
+                  )
+                  .replace(
+                    '{{pullRequestText}}',
+                    t('previewFile.pullRequestText'),
+                  )}
+              />
+            </Box>
           </Alert>
         </Box>
       )}

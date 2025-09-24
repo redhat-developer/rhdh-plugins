@@ -19,6 +19,7 @@ import { useEffect } from 'react';
 import { useAsync } from 'react-use';
 
 import { Entity, EntityMeta } from '@backstage/catalog-model';
+import { MarkdownContent } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import {
   PreviewCatalogInfoComponent,
@@ -390,7 +391,11 @@ export const PreviewPullRequestForm = ({
             }
           />
         }
-        label={t('previewFile.pullRequest.useCodeOwnersFile')}
+        label={
+          <MarkdownContent
+            content={t('previewFile.pullRequest.useCodeOwnersFile')}
+          />
+        }
       />
       <FormHelperText>
         {t('previewFile.pullRequest.codeOwnersWarning')}
