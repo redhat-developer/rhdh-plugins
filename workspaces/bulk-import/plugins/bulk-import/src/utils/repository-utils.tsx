@@ -171,7 +171,7 @@ export const getPRTemplate = (
     prTitle: 'Add catalog-info.yaml config file',
     prDescription: `This pull request adds a **Backstage entity metadata file**\nto this repository so that the component can\nbe added to the [software catalog](${baseUrl}/catalog).\nAfter this pull request is merged, the component will become available.\nFor more information, read an [overview of the Backstage software catalog](https://backstage.io/docs/features/software-catalog/).\nView the import job in your app [here](${importJobUrl}).`,
     useCodeOwnersFile: false,
-    yaml: defaultCatalogInfoYaml(name, componentName, orgName, entityOwner), //
+    yaml: defaultCatalogInfoYaml(name, componentName, orgName, entityOwner),
   };
 };
 
@@ -605,7 +605,7 @@ export const prepareDataForOrganizations = (result: OrgAndRepoResponse) => {
           [val.id]: {
             id: val.id,
             orgName: val.name,
-            organizationUrl: `https://github.com/${val?.name}`,
+            organizationUrl: `${val?.url}`,
             totalReposInOrg: val.totalRepoCount,
           },
         };
@@ -663,7 +663,7 @@ export const prepareDataForAddedRepositories = (
   const repoData: { [id: string]: AddRepositoryData } =
     importJobs.imports?.reduce((acc, val: ImportJobStatus) => {
       const id = `${val.repository.organization}/${val.repository.name}`;
-      const gitProvider = val && 'gitlab' in val ? 'gitlab' : 'github';
+      const gitProvider = isGithubJob(val) ? 'gitlab' : 'github';
       return {
         ...acc,
         [id]: {
