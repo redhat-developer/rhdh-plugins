@@ -35,7 +35,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/ai-integrations"
+    "directory": "workspaces/mcp-integrations"
   },
   "devDependencies": {
     "@backstage/cli": "^0.31.0",

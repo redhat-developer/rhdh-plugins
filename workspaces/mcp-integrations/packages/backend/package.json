@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/ai-integrations/packages/backend"
+    "directory": "workspaces/mcp-integrations/packages/backend"
   },
   "backstage": {
     "role": "backend"
@@ -47,6 +47,7 @@
     "@backstage/plugin-search-backend-node": "^1.3.12",
     "@backstage/plugin-techdocs-backend": "^2.0.3",
     "@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool": "workspace:^",
+    "@redhat-developer-hub/backstage-plugin-techdocs-mcp-tool": "workspace:^",
     "app": "link:../app",
     "better-sqlite3": "^9.0.0",
     "node-gyp": "^10.0.0",
