@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-import {
-  FeaturedDocsCard as PluginHomeFeaturedDocsCard,
-  FeaturedDocsCardProps,
-} from '@backstage/plugin-home';
-
 import { useTranslation } from '../hooks/useTranslation';
+import { homepageTranslationRef } from '../translations';
 
-/**
- * Overrides `FeaturedDocsCard` from the home plugin, but overrides the
- * `subLinkText` prop to be " Learn more" instead of "LEARN MORE".
- *
- * 1. To fix the all uppercase that is used in home plugin
- * 2. To add a small missing gap between the title and the button
- */
-export const FeaturedDocsCard = (props: FeaturedDocsCardProps) => {
+type Messages = typeof homepageTranslationRef.T;
+
+interface TransProps<TMessages extends { [key in string]: string }> {
+  message: keyof TMessages;
+  params?: any;
+}
+
+export const Trans = ({ message, params }: TransProps<Messages>) => {
   const { t } = useTranslation();
-  return (
-    <PluginHomeFeaturedDocsCard
-      subLinkText={` ${t('featuredDocs.learnMore')}`}
-      {...props}
-    />
-  );
+  return t(message, params);
 };
