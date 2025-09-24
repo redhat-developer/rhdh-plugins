@@ -27,16 +27,16 @@ import { themeId } from '../consts';
 import { packageInstallRouteRef, packageRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePackage } from '../hooks/usePackage';
-import { MarketplacePackageInstallContentLoader } from '../components/MarketplacePackageInstallContent';
+import { MarketplacePackageEditContentLoader } from '../components/MarketplacePackageEditContent';
 
-const PackageInstallHeader = () => {
+const PackageEditHeader = () => {
   const params = useRouteRefParams(packageInstallRouteRef);
   const location = useLocation();
 
   const pkg = usePackage(params.namespace, params.name);
 
   const displayName = pkg.data?.metadata.title ?? params.name;
-  const title = `Install ${displayName}`;
+  const title = `Edit ${displayName}`;
   const baseLink = useRouteRef(packageRouteRef)({
     namespace: params.namespace,
     name: params.name,
@@ -44,16 +44,16 @@ const PackageInstallHeader = () => {
   const preserved = new URLSearchParams(location.search);
   const packageLink = preserved.size ? `${baseLink}?${preserved}` : baseLink;
 
-  return <Header title={title} type="Package" typeLink={packageLink} />;
+  return <Header title={title} type="Packages" typeLink={packageLink} />;
 };
 
-export const MarketplacePackageInstallPage = () => (
+export const MarketplacePackageEditPage = () => (
   <ReactQueryProvider>
     <Page themeId={themeId}>
-      <PackageInstallHeader />
+      <PackageEditHeader />
       <Content>
         <ErrorBoundary>
-          <MarketplacePackageInstallContentLoader />
+          <MarketplacePackageEditContentLoader />
         </ErrorBoundary>
       </Content>
     </Page>

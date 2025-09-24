@@ -26,7 +26,7 @@ import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
 
 import { MarketplacePackagesPage } from './MarketplacePackagesPage';
 import { MarketplacePackagePage } from './MarketplacePackagePage';
-import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
+import { MarketplacePackageEditPage } from './MarketplacePackageEditPage';
 
 import { MarketplaceCollectionsPage } from './MarketplaceCollectionsPage';
 import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
@@ -60,7 +60,7 @@ export const MarketplaceFullPageRouter = () => {
         />
         <Route
           path="/packages/:namespace/:name/install"
-          Component={MarketplacePackageInstallPage}
+          Component={MarketplacePackageEditPage}
         />
 
         <Route path="/collections" Component={MarketplaceCollectionsPage} />

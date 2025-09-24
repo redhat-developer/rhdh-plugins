@@ -19,7 +19,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { dynamicPluginsInfoApiRef } from '../api';
 // Count should reflect all records from dynamic-plugins-info
 
-export const useInstalledPluginsCount = () => {
+export const useInstalledPackagesCount = () => {
   const [count, setCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | undefined>(undefined);

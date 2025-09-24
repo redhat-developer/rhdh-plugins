@@ -240,18 +240,6 @@ export const InstalledPackagesTable = () => {
       const installed = installedQuery.data ?? [];
       const packagesResponse = packagesQuery.data ?? { items: [] as any[] };
 
-      // Debug: sizes
-      // eslint-disable-next-line no-console
-      console.log(
-        '[InstalledPackagesTable] dynamic-plugins-info count',
-        installed.length,
-      );
-      // eslint-disable-next-line no-console
-      console.log(
-        '[InstalledPackagesTable] catalog packages count',
-        packagesResponse.items?.length ?? 0,
-      );
-
       const entitiesByName = new Map(
         (packagesResponse.items ?? []).map(entity => [
           (entity.metadata?.name ?? '').toLowerCase(),
@@ -293,14 +281,6 @@ export const InstalledPackagesTable = () => {
           name: entity?.metadata?.name,
         } as InstalledPackageRow;
       });
-      // Debug: rows and missing entity stats
-      // eslint-disable-next-line no-console
-      console.log('[InstalledPackagesTable] rows count', rows.length);
-      // eslint-disable-next-line no-console
-      console.log(
-        '[InstalledPackagesTable] missing entity rows',
-        rows.filter(r => r.displayName === 'Missing catalog entity').length,
-      );
 
       const sortField =
         ((query as any)?.orderBy?.field as string) || 'displayName';
@@ -319,12 +299,7 @@ export const InstalledPackagesTable = () => {
           const cmp = aVal.localeCompare(bVal);
           return sortDirection === 'desc' ? -cmp : cmp;
         });
-      // Debug: filtered rows count
-      // eslint-disable-next-line no-console
-      console.log(
-        '[InstalledPackagesTable] filtered rows count',
-        filteredRows.length,
-      );
+
       const totalCount = filteredRows.length;
       setFilteredCount(totalCount);
       const lastPage = Math.max(0, Math.ceil(totalCount / pageSize) - 1);

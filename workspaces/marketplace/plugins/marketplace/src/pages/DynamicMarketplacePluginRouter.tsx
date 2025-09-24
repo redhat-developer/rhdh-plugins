@@ -35,12 +35,12 @@ import { themeId } from '../consts';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { MarketplaceCatalogContent } from '../components/MarketplaceCatalogContent';
 import { InstalledPackagesTable } from '../components/InstalledPackages/InstalledPackagesTable';
-import { useInstalledPluginsCount } from '../hooks/useInstalledPluginsCount';
+import { useInstalledPackagesCount } from '../hooks/useInstalledPackagesCount';
 import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
 import { MarketplacePluginDrawer } from '../components/MarketplacePluginDrawer';
 import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
 import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer';
-import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
+import { MarketplacePackageEditPage } from './MarketplacePackageEditPage';
 import { InstallationContextProvider } from '../components/InstallationContext';
 
 // Constants for consistent styling
@@ -80,7 +80,7 @@ const PackageDeepLinkRedirect = () => {
 };
 
 const MarketplacePage = () => {
-  const { count: installedPluginsCount, loading } = useInstalledPluginsCount();
+  const { count: installedPluginsCount, loading } = useInstalledPackagesCount();
 
   const installedPluginsTitle = loading
     ? 'Installed packages'
@@ -154,7 +154,7 @@ export const DynamicMarketplacePluginRouter = () => (
         />
         <Route
           path="/packages/:namespace/:name/install"
-          Component={MarketplacePackageInstallPage}
+          Component={MarketplacePackageEditPage}
         />
         <Route path="/*" Component={MarketplacePage} />
       </Routes>

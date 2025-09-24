@@ -38,10 +38,13 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { packageInstallRouteRef } from '../routes';
 
 import { CodeEditorContextProvider, useCodeEditor } from './CodeEditor';
+import { useInstallPackage } from '../hooks/useInstallPackage';
 import { usePackage } from '../hooks/usePackage';
 import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
@@ -53,12 +56,15 @@ interface TabItem {
   others?: { [key: string]: any };
 }
 
-export const MarketplacePackageInstallContent = ({
+export const MarketplacePackageEditContent = ({
   pkg,
 }: {
   pkg: MarketplacePackage;
 }) => {
+  const { mutateAsync: installPackage } = useInstallPackage();
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     const header = document.querySelector('nav#global-header');
@@ -104,6 +110,61 @@ export const MarketplacePackageInstallContent = ({
     setTabIndex(newValue);
   };
 
+  const handleSave = async () => {
+    try {
+      setSaveError(null);
+      setIsSubmitting(true);
+      const raw = codeEditor.getValue() ?? '';
+      const lines = raw.split('\n');
+      const idx = lines.findIndex(l => /^\s*plugins\s*:/i.test(l));
+      if (idx === -1) {
+        setIsSubmitting(false);
+        return;
+      }
+      const bodyLines = lines.slice(idx + 1);
+      // Detect common indentation among non-empty lines
+      const nonEmpty = bodyLines.filter(l => l.trim().length > 0);
+      const commonIndent = nonEmpty.reduce(
+        (acc, l) => {
+          const m = l.match(/^(\s*)/);
+          const indent = m ? m[1].length : 0;
+          return acc === null ? indent : Math.min(acc, indent);
+        },
+        null as number | null,
+      );
+      const pluginsYamlString =
+        (commonIndent ?? 0) > 0
+          ? bodyLines
+              .map(l =>
+                l.startsWith(' '.repeat(commonIndent!))
+                  ? l.slice(commonIndent!)
+                  : l,
+              )
+              .join('\n')
+          : bodyLines.join('\n');
+
+      const res = await installPackage({
+        namespace: pkg.metadata.namespace ?? params.namespace,
+        name: pkg.metadata.name,
+        configYaml: pluginsYamlString.trim(),
+      });
+
+      if ((res as any)?.status === 'OK') {
+        const ns = pkg.metadata.namespace ?? params.namespace;
+        const name = pkg.metadata.name;
+        const preserved = new URLSearchParams(location.search);
+        preserved.set('package', `${ns}/${name}`);
+        navigate(`/extensions/installed-packages?${preserved.toString()}`);
+      } else {
+        setSaveError((res as any)?.error?.message ?? 'Failed to save');
+        setIsSubmitting(false);
+      }
+    } catch (e: any) {
+      setSaveError(e?.error?.message ?? 'Failed to save');
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -137,11 +198,7 @@ export const MarketplacePackageInstallContent = ({
               }}
             >
               <CardHeader
-                title={
-                  <Typography variant="h3">
-                    Installation instructions
-                  </Typography>
-                }
+                title={<Typography variant="h3">Edit instructions</Typography>}
                 action={
                   <Typography
                     component="a"
@@ -213,6 +270,12 @@ export const MarketplacePackageInstallContent = ({
         )}
       </Grid>
 
+      {saveError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {saveError}
+        </Alert>
+      )}
+
       <Box
         sx={{
           mt: 4,
@@ -220,8 +283,18 @@ export const MarketplacePackageInstallContent = ({
           backgroundColor: 'inherit',
         }}
       >
-        <Button variant="contained" color="primary" disabled>
-          Install
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSave}
+          disabled={isSubmitting}
+          startIcon={
+            isSubmitting ? (
+              <CircularProgress size="20px" color="inherit" />
+            ) : undefined
+          }
+        >
+          Save
         </Button>
         <Button
           variant="outlined"
@@ -250,7 +323,7 @@ export const MarketplacePackageInstallContent = ({
   );
 };
 
-export const MarketplacePackageInstallContentLoader = () => {
+export const MarketplacePackageEditContentLoader = () => {
   const params = useRouteRefParams(packageInstallRouteRef);
 
   const pkg = usePackage(params.namespace, params.name);
@@ -260,7 +333,7 @@ export const MarketplacePackageInstallContentLoader = () => {
   } else if (pkg.data) {
     return (
       <CodeEditorContextProvider>
-        <MarketplacePackageInstallContent pkg={pkg.data} />
+        <MarketplacePackageEditContent pkg={pkg.data} />
       </CodeEditorContextProvider>
     );
   } else if (pkg.error) {
