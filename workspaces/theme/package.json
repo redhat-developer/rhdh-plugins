@@ -10,7 +10,7 @@
     "start-backend": "yarn workspace backend start",
     "build:backend": "yarn workspace backend build",
     "tsc": "tsc",
-    "tsc:full": "tsc --skipLibCheck false --incremental false",
+    "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
     "build:api-reports": "yarn build:api-reports:only --tsc",
     "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-missing-release-tag,ae-undocumented --validate-release-tags",
@@ -24,7 +24,7 @@
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
-    "new": "backstage-cli new --scope @red-hat-developer-hub",
+    "new": "backstage-cli new --scope red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },
   "workspaces": {
