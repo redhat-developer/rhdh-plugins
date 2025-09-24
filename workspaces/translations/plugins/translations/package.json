@@ -18,7 +18,8 @@
     "role": "frontend-plugin",
     "pluginId": "translations",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-translations"
+      "@red-hat-developer-hub/backstage-plugin-translations",
+      "@red-hat-developer-hub/backstage-plugin-translations-backend"
     ]
   },
   "sideEffects": false,

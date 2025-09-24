@@ -31,7 +31,10 @@ import {
   translationApiRef,
 } from '@backstage/core-plugin-api/alpha';
 
-import { I18nextTranslationApi } from '@red-hat-developer-hub/backstage-plugin-translations';
+import {
+  I18nextTranslationApi,
+  translationsPluginTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-translations';
 import { userSettingsTranslationRef } from '@backstage/plugin-user-settings/alpha';
 
 export const apis: AnyApiFactory[] = [
@@ -42,6 +45,7 @@ export const apis: AnyApiFactory[] = [
       I18nextTranslationApi.create({
         languageApi,
         resources: [
+          translationsPluginTranslations,
           createTranslationResource({
             ref: userSettingsTranslationRef,
             translations: {

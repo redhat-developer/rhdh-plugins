@@ -17,6 +17,8 @@ import { Page, Header, Content } from '@backstage/core-components';
 
 import { LoadedTranslationsTable } from './LoadedTranslationsTable';
 import { useTranslation } from '../hooks/useTranslation';
+import { ExportTranslationKeys } from './ExportTranslationKeys';
+import { translationsPluginTranslationRef } from '../translations';
 
 export const TranslationsPage = () => {
   const { t } = useTranslation();
@@ -25,6 +27,8 @@ export const TranslationsPage = () => {
     <Page themeId="tool">
       <Header title={t('page.title')} />
       <Content>
+        <ExportTranslationKeys resources={[translationsPluginTranslationRef]} />
+        <br />
         <LoadedTranslationsTable />
       </Content>
     </Page>
