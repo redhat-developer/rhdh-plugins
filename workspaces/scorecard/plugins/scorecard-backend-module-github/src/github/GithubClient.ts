@@ -20,7 +20,6 @@ import {
   ScmIntegrations,
 } from '@backstage/integration';
 import { GithubRepository } from './types';
-import { DEFAULT_GITHUB_HOSTNAME } from './constants';
 
 export class GithubClient {
   private readonly integrations: ScmIntegrations;
@@ -29,19 +28,17 @@ export class GithubClient {
     this.integrations = ScmIntegrations.fromConfig(config);
   }
 
-  private async getOctokitClient(
-    hostname: string = DEFAULT_GITHUB_HOSTNAME,
-  ): Promise<typeof graphql> {
-    const githubIntegration = this.integrations.github.byHost(hostname);
+  private async getOctokitClient(url: string): Promise<typeof graphql> {
+    const githubIntegration = this.integrations.github.byUrl(url);
     if (!githubIntegration) {
-      throw new Error(`Missing GitHub integration for '${hostname}'`);
+      throw new Error(`Missing GitHub integration for '${url}'`);
     }
 
     const credentialsProvider =
       DefaultGithubCredentialsProvider.fromIntegrations(this.integrations);
 
     const { headers } = await credentialsProvider.getCredentials({
-      url: `https://${hostname}`,
+      url,
     });
 
     const { graphql } = await import('@octokit/graphql');
@@ -52,10 +49,10 @@ export class GithubClient {
   }
 
   async getOpenPullRequestsCount(
+    url: string,
     repository: GithubRepository,
-    hostname: string,
   ): Promise<number> {
-    const octokit = await this.getOctokitClient(hostname);
+    const octokit = await this.getOctokitClient(url);
 
     const query = `
       query getOpenPRsCount($owner: String!, $repo: String!) {

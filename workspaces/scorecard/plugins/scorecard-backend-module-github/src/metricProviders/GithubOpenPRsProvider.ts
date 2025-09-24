@@ -15,7 +15,7 @@
  */
 
 import type { Config } from '@backstage/config';
-import type { Entity } from '@backstage/catalog-model';
+import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
@@ -26,10 +26,7 @@ import {
   validateThresholds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubClient } from '../github/GithubClient';
-import {
-  getHostnameFromEntity,
-  getRepositoryInformationFromEntity,
-} from '../github/utils';
+import { getRepositoryInformationFromEntity } from '../github/utils';
 import { GITHUB_PROJECT_ANNOTATION } from '../github/constants';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
@@ -82,11 +79,11 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
 
   async calculateMetric(entity: Entity): Promise<number> {
     const repository = getRepositoryInformationFromEntity(entity);
-    const hostname = getHostnameFromEntity(entity);
+    const { target } = getEntitySourceLocation(entity);
 
     const result = await this.githubClient.getOpenPullRequestsCount(
+      target,
       repository,
-      hostname,
     );
 
     return result;
