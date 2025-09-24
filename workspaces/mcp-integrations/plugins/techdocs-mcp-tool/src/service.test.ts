@@ -57,6 +57,9 @@ describe('TechDocsService', () => {
       token: 'mock-service-token',
       principal: { subject: 'user:default/test' },
     }),
+    getPluginRequestToken: jest.fn().mockResolvedValue({
+      token: 'mock-plugin-token',
+    }),
   };
 
   const createMockEntity = (
@@ -735,6 +738,11 @@ describe('TechDocsService', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:7007/api/techdocs/static/docs/default/component/test-service/index.html',
+        {
+          headers: {
+            Authorization: 'Bearer mock-plugin-token',
+          },
+        },
       );
     });
 
@@ -787,6 +795,11 @@ describe('TechDocsService', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:7007/api/techdocs/static/docs/default/component/test-service/index.html',
+        {
+          headers: {
+            Authorization: 'Bearer mock-plugin-token',
+          },
+        },
       );
     });
 
@@ -808,122 +821,49 @@ describe('TechDocsService', () => {
       );
     });
 
-    it('should handle 401 unauthorized and retry with static token', async () => {
+    it('should handle 401 unauthorized error', async () => {
       const mockEntity = createMockEntity('test-service', 'Component', true);
       const mockCatalog = {
         getEntityByRef: jest.fn().mockResolvedValue(mockEntity),
       };
 
-      const mockHtmlContent = '<html><body><h1>Welcome</h1></body></html>';
-      const expectedTextContent = '# Welcome';
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+      });
 
-      // First call returns 401, second call with auth succeeds
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 401,
-          statusText: 'Unauthorized',
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          text: jest.fn().mockResolvedValue(mockHtmlContent),
-        });
-
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
-
-      const result = await service.retrieveTechDocsContent(
-        'component:default/test-service',
-        'index.html',
-        mockAuth,
-        mockCatalog as any,
-      );
-
-      expect(result?.content).toBe(expectedTextContent);
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-
-      // First call without auth
-      expect(mockFetch).toHaveBeenNthCalledWith(
-        1,
-        'http://localhost:7007/api/techdocs/static/docs/default/component/test-service/index.html',
-      );
-
-      // Second call with service credentials auth
-      expect(mockFetch).toHaveBeenNthCalledWith(
-        2,
-        'http://localhost:7007/api/techdocs/static/docs/default/component/test-service/index.html',
-        {
-          headers: {
-            Authorization: 'Bearer mock-service-token',
-          },
-        },
-      );
+      await expect(
+        service.retrieveTechDocsContent(
+          'component:default/test-service',
+          'index.html',
+          mockAuth,
+          mockCatalog as any,
+        ),
+      ).rejects.toThrow('Failed to fetch TechDocs content: 401 Unauthorized');
     });
 
-    it('should handle 401 unauthorized and fallback to service credentials when no static token', async () => {
-      // Create service with config that has no static token
-      const configWithoutStaticToken = new ConfigReader({
-        app: {
-          baseUrl: 'http://localhost:3000',
-        },
-      });
-      const serviceWithoutStaticToken = new TechDocsService(
-        configWithoutStaticToken,
-        mockLogger,
-        mockDiscovery,
-        mockFetch,
-      );
-      jest
-        .spyOn(serviceWithoutStaticToken, 'getPublisher')
-        .mockResolvedValue(mockPublisher as any);
-
+    it('should handle 500 server error', async () => {
       const mockEntity = createMockEntity('test-service', 'Component', true);
       const mockCatalog = {
         getEntityByRef: jest.fn().mockResolvedValue(mockEntity),
       };
 
-      const mockAuthWithToken = {
-        getOwnServiceCredentials: jest.fn().mockResolvedValue({
-          token: 'service-token',
-          principal: { subject: 'user:default/test' },
-        }),
-      };
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
 
-      const mockHtmlContent = '<html><body><h1>Welcome</h1></body></html>';
-      const expectedTextContent = '# Welcome';
-
-      // First call returns 401, second call with service credentials succeeds
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 401,
-          statusText: 'Unauthorized',
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          text: jest.fn().mockResolvedValue(mockHtmlContent),
-        });
-
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
-
-      const result = await serviceWithoutStaticToken.retrieveTechDocsContent(
-        'component:default/test-service',
-        'index.html',
-        mockAuthWithToken,
-        mockCatalog as any,
-      );
-
-      expect(result?.content).toBe(expectedTextContent);
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-
-      // Second call should use service token
-      expect(mockFetch).toHaveBeenNthCalledWith(
-        2,
-        'http://localhost:7007/api/techdocs/static/docs/default/component/test-service/index.html',
-        {
-          headers: {
-            Authorization: 'Bearer service-token',
-          },
-        },
+      await expect(
+        service.retrieveTechDocsContent(
+          'component:default/test-service',
+          'index.html',
+          mockAuth,
+          mockCatalog as any,
+        ),
+      ).rejects.toThrow(
+        'Failed to fetch TechDocs content: 500 Internal Server Error',
       );
     });
 
@@ -988,10 +928,15 @@ describe('TechDocsService', () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:7007/api/techdocs/static/docs/production/component/test-service/index.html',
+        {
+          headers: {
+            Authorization: 'Bearer mock-plugin-token',
+          },
+        },
       );
     });
 
-    it('should work without catalog service provided', async () => {
+    it('should work without auth service provided', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         text: jest.fn().mockResolvedValue('<html></html>'),
@@ -1008,6 +953,11 @@ describe('TechDocsService', () => {
       expect(result?.name).toBe('test-service');
       expect(result?.kind).toBe('component');
       expect(result?.namespace).toBe('default');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/techdocs/static/docs/default/component/test-service/index.html',
+        { headers: {} },
+      );
     });
   });
 });

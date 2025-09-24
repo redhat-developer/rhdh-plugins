@@ -267,11 +267,15 @@ export class TechDocsService {
       this.logger.debug(`Fetching content from URL: ${contentUrl}`);
       const fetch = this.fetchFunction || (await import('node-fetch')).default;
       const headers: Record<string, string> = {};
-      const { token } = await auth.getPluginRequestToken({
-        onBehalfOf: await auth.getOwnServiceCredentials(),
-        targetPluginId: 'techdocs',
-      });
-      headers.Authorization = `Bearer ${token}`;
+
+      if (auth) {
+        const { token } = await auth.getPluginRequestToken({
+          onBehalfOf: await auth.getOwnServiceCredentials(),
+          targetPluginId: 'techdocs',
+        });
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const response = await fetch(contentUrl, { headers });
 
       // check 404 and err_status cases
