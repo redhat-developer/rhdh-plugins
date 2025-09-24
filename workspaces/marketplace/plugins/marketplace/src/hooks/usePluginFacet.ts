@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-import { useQuery } from '@tanstack/react-query';
-
-import { useMarketplaceApi } from './useMarketplaceApi';
+import { usePluginFacets } from './usePluginFacets';
 
 export const usePluginFacet = (facet: string) => {
-  const marketplaceApi = useMarketplaceApi();
-  return useQuery({
-    queryKey: ['marketplaceApi', 'getPluginFacet', facet],
-    queryFn: () =>
-      marketplaceApi
-        .getPluginFacets({ facets: [facet] })
-        .then(data => data.facets[facet]),
-  });
+  const facetsQuery = usePluginFacets({ facets: [facet] });
+  return {
+    ...facetsQuery,
+    data: facetsQuery.data?.[facet],
+  };
 };
