@@ -4,3 +4,5 @@
 ---
 
 Create an initial version of translations backend plugin
+Add Download keys translations support in frontend plugin
+Upgraded backstage to 1.42.5

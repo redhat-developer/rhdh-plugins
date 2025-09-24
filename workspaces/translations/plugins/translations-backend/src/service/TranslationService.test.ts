@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 import { mockServices } from '@backstage/backend-test-utils';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import fs from 'fs';
 
 import { TranslationService } from './TranslationService';
-
-// Helper function to create safe test paths
-const createSafeTestPaths = (testDir: string, filenames: string[]) => {
-  return filenames.map(filename => join(testDir, filename));
-};
+import {
+  createSafeTestPaths,
+  createSafeTestDir,
+  cleanupTestDir,
+  createExistsSyncMock,
+  createReadFileSyncMock,
+  createThrowingReadFileSyncMock,
+} from '../test-utils/testHelpers';
 
 jest.mock('fs', () => {
   const actualFs = jest.requireActual('fs');
@@ -46,7 +48,7 @@ describe('TranslationService', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     // Create a safe, isolated test directory
-    testDir = join(tmpdir(), 'backstage-translations-test');
+    testDir = createSafeTestDir();
     safeTestPaths = createSafeTestPaths(testDir, ['en.json', 'de.json']);
 
     mockConfig = mockServices.rootConfig({
@@ -63,40 +65,17 @@ describe('TranslationService', () => {
 
   afterEach(() => {
     // Clean up test directory if it exists
-    try {
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true, force: true });
-      }
-    } catch (error) {
-      // Ignore cleanup errors in tests
-    }
+    cleanupTestDir(testDir);
   });
 
   describe('getTranslations', () => {
     it('should return merged translations when multiple files exist', async () => {
-      (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Don't find any 'src' or 'translations' folders
-        if (
-          path.endsWith('/src') ||
-          path.endsWith('\\src') ||
-          path.endsWith('/translations') ||
-          path.endsWith('\\translations')
-        ) {
-          return false;
-        }
-        // Find the override files
-        return safeTestPaths.includes(path);
-      });
-
-      (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
-        if (filePath === safeTestPaths[0]) {
-          return JSON.stringify({ plugin: { en: { hello: 'world' } } });
-        }
-        if (filePath === safeTestPaths[1]) {
-          return JSON.stringify({ plugin: { de: { hello: 'welt' } } });
-        }
-        return '{}';
-      });
+      (fs.existsSync as jest.Mock).mockImplementation(
+        createExistsSyncMock(safeTestPaths),
+      );
+      (fs.readFileSync as jest.Mock).mockImplementation(
+        createReadFileSyncMock(safeTestPaths),
+      );
 
       const result = await service.getTranslations();
 
@@ -132,19 +111,9 @@ describe('TranslationService', () => {
     });
 
     it('should skip invalid JSON files', async () => {
-      (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Don't find any 'src' or 'translations' folders
-        if (
-          path.endsWith('/src') ||
-          path.endsWith('\\src') ||
-          path.endsWith('/translations') ||
-          path.endsWith('\\translations')
-        ) {
-          return false;
-        }
-        // Find the override files
-        return safeTestPaths.includes(path);
-      });
+      (fs.existsSync as jest.Mock).mockImplementation(
+        createExistsSyncMock(safeTestPaths),
+      );
       (fs.readFileSync as jest.Mock).mockReturnValue(
         JSON.stringify({ notAPluginKey: 'just a string' }),
       );
@@ -155,22 +124,12 @@ describe('TranslationService', () => {
     });
 
     it('should throw error when JSON parsing fails for all files', async () => {
-      (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Don't find any 'src' or 'translations' folders
-        if (
-          path.endsWith('/src') ||
-          path.endsWith('\\src') ||
-          path.endsWith('/translations') ||
-          path.endsWith('\\translations')
-        ) {
-          return false;
-        }
-        // Find the override files
-        return safeTestPaths.includes(path);
-      });
-      (fs.readFileSync as jest.Mock).mockImplementation(() => {
-        throw new Error('boom');
-      });
+      (fs.existsSync as jest.Mock).mockImplementation(
+        createExistsSyncMock(safeTestPaths),
+      );
+      (fs.readFileSync as jest.Mock).mockImplementation(
+        createThrowingReadFileSyncMock(),
+      );
 
       await expect(service.getTranslations()).rejects.toThrow(
         'No valid translation files found in the provided files',
