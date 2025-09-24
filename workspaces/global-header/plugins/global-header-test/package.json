@@ -24,11 +24,11 @@
   "sideEffects": false,
   "scripts": {
     "start": "backstage-cli package start",
-    "build": "backstage-cli package build && yarn export-dynamic",
+    "build": "backstage-cli package build",
     "lint": "backstage-cli package lint",
     "test": "backstage-cli package test",
-    "clean": "backstage-cli package clean && rm -rf dist-scalprum",
-    "prepack": "backstage-cli package prepack && yarn export-dynamic",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
