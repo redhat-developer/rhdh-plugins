@@ -5,38 +5,12 @@
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
-import { TranslationRef } from '@backstage/core-plugin-api/alpha';
-import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
 export const EntityScorecardContent: () => JSX_2.Element;
 
 // @public
 export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;
-
-// @public
-export const scorecardTranslationRef: TranslationRef<
-  'plugin.scorecard',
-  {
-    readonly 'emptyState.button': string;
-    readonly 'emptyState.title': string;
-    readonly 'emptyState.description': string;
-    readonly 'emptyState.altText': string;
-    readonly 'errors.entityMissingProperties': string;
-    readonly 'errors.invalidApiResponse': string;
-    readonly 'errors.fetchError': string;
-    readonly 'metric.github.open-prs.title': string;
-    readonly 'metric.github.open-prs.description': string;
-    readonly 'metric.jira.open-issues.title': string;
-    readonly 'metric.jira.open-issues.description': string;
-    readonly 'thresholds.success': string;
-    readonly 'thresholds.error': string;
-    readonly 'thresholds.warning': string;
-  }
->;
-
-// @public
-export const scorecardTranslations: TranslationResource<'plugin.scorecard'>;
 
 // (No @packageDocumentation comment for this package)
 ```

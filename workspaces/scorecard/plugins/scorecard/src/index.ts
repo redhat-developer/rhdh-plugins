@@ -15,4 +15,3 @@
  */
 
 export * from './plugin';
-export { scorecardTranslations, scorecardTranslationRef } from './translations';

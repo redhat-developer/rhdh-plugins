@@ -19,6 +19,7 @@ import { scorecardTranslationRef } from './ref';
 
 const scorecardTranslationDe = createTranslationMessages({
   ref: scorecardTranslationRef,
+  full: true,
   messages: {
     // Empty state
     'emptyState.title': 'Noch keine Scorecards hinzugefügt',
