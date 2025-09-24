@@ -130,12 +130,15 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     await expect(errorLocator).toBeVisible();
 
     await errorLocator.hover();
-    const errorTooltip = unavailableMetricResponse.find(
+    const errorMetric = unavailableMetricResponse.find(
       metric => metric.id === 'github.open-prs',
-    )?.error;
+    );
 
-    await expect(errorTooltip).toBeTruthy();
-    await expect(page.getByText(errorTooltip!)).toBeVisible();
+    if (errorMetric && 'error' in errorMetric) {
+      const errorTooltip = errorMetric.error;
+      expect(errorTooltip).toBeTruthy();
+      await expect(page.getByText(errorTooltip!)).toBeVisible();
+    }
 
     await scorecardPage.validateScorecardAriaFor(jiraMetric);
   });
@@ -171,10 +174,12 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     await errorLocator.hover();
     const errorTooltip = invalidThresholdResponse.find(
       metric => metric.id === 'github.open-prs',
-    )?.result?.thresholdResult?.error;
+    )?.result?.thresholdResult;
 
-    await expect(errorTooltip).toBeTruthy();
-    await expect(page.getByText(errorTooltip!)).toBeVisible();
+    if (errorTooltip && 'error' in errorTooltip) {
+      expect(errorTooltip.error).toBeTruthy();
+      await expect(page.getByText(errorTooltip.error)).toBeVisible();
+    }
 
     await scorecardPage.validateScorecardAriaFor(jiraMetric);
   });

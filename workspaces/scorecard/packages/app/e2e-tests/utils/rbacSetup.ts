@@ -29,49 +29,29 @@ export async function setupRBAC(page: Page) {
   await page.getByTestId('nextButton-0').click();
 
   await page.getByRole('combobox', { name: 'Select users and groups' }).click();
-  await page
-    .getByRole('option', { name: 'guest', exact: true })
-    .getByRole('checkbox')
-    .check();
+  await selectOptionCheckbox(page, 'guest');
+
   await page.getByRole('button', { name: 'Close' }).click();
 
   await page.getByTestId('nextButton-1').click();
 
   await page.getByRole('combobox', { name: 'Select plugins' }).click();
-  await page
-    .getByRole('option', { name: 'Catalog' })
-    .getByRole('checkbox')
-    .check();
-  await page
-    .getByRole('option', { name: 'Scorecard' })
-    .getByRole('checkbox')
-    .check();
+  await selectOptionCheckbox(page, 'Catalog');
+  await selectOptionCheckbox(page, 'Scorecard');
+
   await page.getByRole('button', { name: 'Close' }).click();
 
   await page.getByTestId('expand-row-catalog').click();
-  await page
-    .getByRole('cell', { name: 'catalog.entity.read info' })
-    .getByRole('checkbox')
-    .check();
-  await page
-    .getByRole('cell', { name: 'catalog.entity.create' })
-    .getByRole('checkbox')
-    .check();
-  await page
-    .getByRole('cell', { name: 'catalog.location.analyze' })
-    .getByRole('checkbox')
-    .check();
-  await page
-    .getByRole('cell', { name: 'catalog.location.create' })
-    .getByRole('checkbox')
-    .check();
-  await page.getByTestId('expand-row-catalog').click();
 
+  await selectCheckbox(page, 'catalog.entity.read info');
+  await selectCheckbox(page, 'catalog.entity.create');
+  await selectCheckbox(page, 'catalog.location.analyze');
+  await selectCheckbox(page, 'catalog.location.create');
+
+  await page.getByTestId('expand-row-catalog').click();
   await page.getByTestId('expand-row-scorecard').click();
-  await page
-    .getByRole('cell', { name: 'scorecard.metric.read info' })
-    .getByRole('checkbox')
-    .check();
+
+  await selectCheckbox(page, 'scorecard.metric.read info');
   await page.getByTestId('expand-row-scorecard').click();
 
   await page.getByTestId('nextButton-2').click();
@@ -79,4 +59,14 @@ export async function setupRBAC(page: Page) {
 
   await page.locator('a').filter({ hasText: 'Home' }).click();
   await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
+}
+async function selectCheckbox(page: Page, label: string) {
+  await page.getByRole('cell', { name: label }).getByRole('checkbox').check();
+}
+
+async function selectOptionCheckbox(page: Page, optionLabel: string) {
+  await page
+    .getByRole('option', { name: optionLabel, exact: true })
+    .getByRole('checkbox')
+    .check();
 }

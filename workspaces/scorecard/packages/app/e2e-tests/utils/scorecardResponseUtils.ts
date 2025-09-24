@@ -70,42 +70,44 @@ export const customScorecardResponse = [
 
 export const emptyScorecardResponse = [];
 
-export const unavailableMetricResponse = [
-  {
-    id: 'jira.open-issues',
-    status: 'success',
-    metadata: {
-      title: 'Jira open blocking tickets',
-      description:
-        'Highlights the number of critical, blocking issues that are currently open in Jira.',
-      type: 'number',
-      history: true,
-    },
-    result: {
-      value: 54,
-      timestamp: '2025-09-12T15:28:56.898Z',
-      thresholdResult: {
-        definition: {
-          rules: [
-            {
-              key: 'error',
-              expression: '>50',
-            },
-            {
-              key: 'warning',
-              expression: '10-50',
-            },
-            {
-              key: 'success',
-              expression: '<10',
-            },
-          ],
-        },
-        status: 'success',
-        evaluation: 'error',
+const jiraOpenIssues = {
+  id: 'jira.open-issues',
+  status: 'success',
+  metadata: {
+    title: 'Jira open blocking tickets',
+    description:
+      'Highlights the number of critical, blocking issues that are currently open in Jira.',
+    type: 'number',
+    history: true,
+  },
+  result: {
+    value: 54,
+    timestamp: '2025-09-12T15:28:56.898Z',
+    thresholdResult: {
+      definition: {
+        rules: [
+          {
+            key: 'error',
+            expression: '>50',
+          },
+          {
+            key: 'warning',
+            expression: '10-50',
+          },
+          {
+            key: 'success',
+            expression: '<10',
+          },
+        ],
       },
+      status: 'success',
+      evaluation: 'error',
     },
   },
+};
+
+export const unavailableMetricResponse = [
+  jiraOpenIssues,
   {
     id: 'github.open-prs',
     status: 'error',
@@ -145,41 +147,7 @@ export const unavailableMetricResponse = [
 ];
 
 export const invalidThresholdResponse = [
-  {
-    id: 'jira.open-issues',
-    status: 'success',
-    metadata: {
-      title: 'Jira open blocking tickets',
-      description:
-        'Highlights the number of critical, blocking issues that are currently open in Jira.',
-      type: 'number',
-      history: true,
-    },
-    result: {
-      value: 54,
-      timestamp: '2025-09-12T15:28:56.898Z',
-      thresholdResult: {
-        definition: {
-          rules: [
-            {
-              key: 'error',
-              expression: '>50',
-            },
-            {
-              key: 'warning',
-              expression: '10-50',
-            },
-            {
-              key: 'success',
-              expression: '<10',
-            },
-          ],
-        },
-        status: 'success',
-        evaluation: 'error',
-      },
-    },
-  },
+  jiraOpenIssues,
   {
     id: 'github.open-prs',
     status: 'success',
