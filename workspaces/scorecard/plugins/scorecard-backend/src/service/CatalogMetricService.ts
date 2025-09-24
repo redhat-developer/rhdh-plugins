@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { CatalogApi } from '@backstage/catalog-client';
 import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import {
   MetricResult,
@@ -38,27 +37,28 @@ import {
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
 import { MetricValuesStore } from '../database/MetricValuesStore';
+import { CatalogService } from '@backstage/plugin-catalog-node';
 
 export type CatalogMetricServiceOptions = {
-  catalogApi: CatalogApi;
+  catalog: CatalogService;
+  auth: AuthService;
   registry: MetricProvidersRegistry;
   thresholdEvaluator: ThresholdEvaluator;
-  auth?: AuthService;
   metricValuesStore: MetricValuesStore;
 };
 
 export class CatalogMetricService {
-  private readonly catalogApi: CatalogApi;
+  private readonly catalog: CatalogService;
+  private readonly auth: AuthService;
   private readonly registry: MetricProvidersRegistry;
   private readonly thresholdEvaluator: ThresholdEvaluator;
-  private readonly auth?: AuthService;
   private readonly metricValuesStore: MetricValuesStore;
 
   constructor(options: CatalogMetricServiceOptions) {
-    this.thresholdEvaluator = options.thresholdEvaluator;
-    this.registry = options.registry;
-    this.catalogApi = options.catalogApi;
+    this.catalog = options.catalog;
     this.auth = options.auth;
+    this.registry = options.registry;
+    this.thresholdEvaluator = options.thresholdEvaluator;
     this.metricValuesStore = options.metricValuesStore;
   }
 
@@ -78,8 +78,9 @@ export class CatalogMetricService {
       PermissionCondition<string, PermissionRuleParams>
     >,
   ): Promise<MetricResult[]> {
-    const token = await this.getServiceToken();
-    const entity = await this.catalogApi.getEntityByRef(entityRef, token);
+    const entity = await this.catalog.getEntityByRef(entityRef, {
+      credentials: await this.auth.getOwnServiceCredentials(),
+    });
     if (!entity) {
       throw new NotFoundError(`Entity not found: ${entityRef}`);
     }
@@ -155,16 +156,6 @@ export class CatalogMetricService {
           },
         },
       };
-    });
-  }
-
-  private async getServiceToken(): Promise<{ token: string } | undefined> {
-    if (!this.auth) {
-      return undefined;
-    }
-    return await this.auth.getPluginRequestToken({
-      onBehalfOf: await this.auth.getOwnServiceCredentials(),
-      targetPluginId: 'catalog',
     });
   }
 

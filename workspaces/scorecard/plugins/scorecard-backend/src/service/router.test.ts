@@ -33,19 +33,15 @@ import {
   MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogMetricService } from './CatalogMetricService';
-import { CatalogClient } from '@backstage/catalog-client';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 import { NotFoundError } from '@backstage/errors';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import {
   AuthorizeResult,
   PolicyDecision,
 } from '@backstage/plugin-permission-common';
 import { PermissionsService } from '@backstage/backend-plugin-api';
 import { mockMetricValuesStore } from '../../__fixtures__/mockDatabase';
-
-const mockCatalogClient = {
-  getEntityByRef: jest.fn(),
-} as unknown as CatalogClient;
 
 const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
   result: AuthorizeResult.CONDITIONAL,
@@ -77,7 +73,7 @@ describe('createRouter', () => {
   beforeEach(async () => {
     metricProvidersRegistry = new MetricProvidersRegistry();
     catalogMetricService = new CatalogMetricService({
-      catalogApi: mockCatalogClient,
+      catalog: catalogServiceMock.mock(),
       registry: metricProvidersRegistry,
       thresholdEvaluator: new ThresholdEvaluator(),
       auth: mockServices.auth(),
