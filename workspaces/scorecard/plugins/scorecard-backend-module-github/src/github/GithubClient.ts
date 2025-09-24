@@ -31,6 +31,7 @@ export class GithubClient {
 
   private async getOctokitClient(
     hostname: string = DEFAULT_GITHUB_HOSTNAME,
+    owner: string,
   ): Promise<typeof graphql> {
     const githubIntegration = this.integrations.github.byHost(hostname);
     if (!githubIntegration) {
@@ -41,7 +42,7 @@ export class GithubClient {
       DefaultGithubCredentialsProvider.fromIntegrations(this.integrations);
 
     const { headers } = await credentialsProvider.getCredentials({
-      url: `https://${hostname}`,
+      url: `https://${hostname}/${owner}`,
     });
 
     const { graphql } = await import('@octokit/graphql');
@@ -55,7 +56,7 @@ export class GithubClient {
     repository: GithubRepository,
     hostname: string,
   ): Promise<number> {
-    const octokit = await this.getOctokitClient(hostname);
+    const octokit = await this.getOctokitClient(hostname, repository.owner);
 
     const query = `
       query getOpenPRsCount($owner: String!, $repo: String!) {

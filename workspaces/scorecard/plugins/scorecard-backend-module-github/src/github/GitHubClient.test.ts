@@ -28,7 +28,7 @@ describe('GithubClient', () => {
     repo: 'repo',
   };
 
-  jest
+  const getCredentialsSpy = jest
     .spyOn(DefaultGithubCredentialsProvider.prototype, 'getCredentials')
     .mockResolvedValue({
       type: 'token',
@@ -81,6 +81,9 @@ describe('GithubClient', () => {
         expect.stringContaining('query getOpenPRsCount'),
         repository,
       );
+      expect(getCredentialsSpy).toHaveBeenCalledWith({
+        url: `https://${DEFAULT_GITHUB_HOSTNAME}/owner`,
+      });
     });
 
     it('should throw error when GitHub integration for hostname is missing', async () => {
