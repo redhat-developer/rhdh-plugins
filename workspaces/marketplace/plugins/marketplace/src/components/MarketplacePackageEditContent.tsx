@@ -40,14 +40,17 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { packageInstallRouteRef } from '../routes';
 
 import { CodeEditorContextProvider, useCodeEditor } from './CodeEditor';
 import { useInstallPackage } from '../hooks/useInstallPackage';
 import { usePackage } from '../hooks/usePackage';
+import { usePackageConfig } from '../hooks/usePackageConfig';
 import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
+import { useInstallationContext } from './InstallationContext';
 
 interface TabItem {
   label: string;
@@ -77,15 +80,80 @@ export const MarketplacePackageEditContent = ({
 
   const codeEditor = useCodeEditor();
   const params = useRouteRefParams(packageInstallRouteRef);
+  const pkgConfig = usePackageConfig(params.namespace, params.name);
 
+  // Seed editor when the Monaco editor mounts (avoids race when config arrives before editor)
   const onLoaded = useCallback(() => {
-    const path = pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....';
-    const yamlContent = `plugins:\n  - package: ${JSON.stringify(path)}\n    disabled: false\n`;
-    codeEditor.setValue(yamlContent);
-  }, [codeEditor, pkg]);
+    const existing = pkgConfig.data?.configYaml;
+    if (existing) {
+      // Wrap backend single-map YAML under plugins list using simple string ops
+      const lines = (existing || '').split('\n');
+      const first = lines[0] ?? '';
+      const isAlreadyItem = /^\s*-\s+/.test(first);
+      const wrapped = isAlreadyItem
+        ? ['plugins:', ...lines.map(l => (l ? `  ${l}` : l))]
+        : [
+            'plugins:',
+            `- ${first}`,
+            ...lines.slice(1).map(l => (l ? `  ${l}` : l)),
+          ];
+      codeEditor.setValue(wrapped.filter(l => l !== undefined).join('\n'));
+      return;
+    }
+    if (pkgConfig.isSuccess && !existing) {
+      const path = pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....';
+      const yamlContent = `plugins:\n  - package: ${JSON.stringify(path)}\n    disabled: false\n`;
+      codeEditor.setValue(yamlContent);
+    }
+  }, [
+    codeEditor,
+    pkgConfig.data?.configYaml,
+    pkgConfig.isSuccess,
+    pkg.spec?.dynamicArtifact,
+  ]);
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { installedPlugins, setInstalledPlugins } = useInstallationContext();
+  const queryClient = useQueryClient();
+
+  // Populate editor from backend config when available; otherwise set default template once
+  useEffect(() => {
+    const existing = pkgConfig.data?.configYaml;
+    const isLoadingConfig = (pkgConfig as any)?.isLoading;
+    if (!existing && !isLoadingConfig) {
+      // Seed default only if editor is empty to avoid overwriting existing content
+      const current = codeEditor.getValue();
+      if (!current || current.trim() === '') {
+        const path = pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....';
+        const yamlContent = `plugins:\n  - package: ${JSON.stringify(path)}\n    disabled: false\n`;
+        codeEditor.setValue(yamlContent);
+      }
+      return;
+    }
+    if (existing) {
+      // Wrap backend single-map YAML under plugins list using simple string ops
+      const lines = (existing || '').split('\n');
+      const first = lines[0] ?? '';
+      const isAlreadyItem = /^\s*-\s+/.test(first);
+      const wrapped = isAlreadyItem
+        ? ['plugins:', ...lines.map(l => (l ? `  ${l}` : l))]
+        : [
+            'plugins:',
+            `- ${first}`,
+            ...lines.slice(1).map(l => (l ? `  ${l}` : l)),
+          ];
+      codeEditor.setValue(wrapped.filter(l => l !== undefined).join('\n'));
+    }
+  }, [
+    pkgConfig,
+    pkgConfig.data?.configYaml,
+    params.namespace,
+    params.name,
+    codeEditor,
+    pkg.spec?.dynamicArtifact,
+  ]);
+
   const examples = [
     {
       [`${pkg.metadata.name}`]: pkg.spec?.appConfigExamples,
@@ -115,46 +183,44 @@ export const MarketplacePackageEditContent = ({
       setSaveError(null);
       setIsSubmitting(true);
       const raw = codeEditor.getValue() ?? '';
-      const lines = raw.split('\n');
-      const idx = lines.findIndex(l => /^\s*plugins\s*:/i.test(l));
-      if (idx === -1) {
-        setIsSubmitting(false);
-        return;
-      }
-      const bodyLines = lines.slice(idx + 1);
-      // Detect common indentation among non-empty lines
-      const nonEmpty = bodyLines.filter(l => l.trim().length > 0);
-      const commonIndent = nonEmpty.reduce(
-        (acc, l) => {
-          const m = l.match(/^(\s*)/);
-          const indent = m ? m[1].length : 0;
-          return acc === null ? indent : Math.min(acc, indent);
-        },
-        null as number | null,
-      );
-      const pluginsYamlString =
-        (commonIndent ?? 0) > 0
-          ? bodyLines
-              .map(l =>
-                l.startsWith(' '.repeat(commonIndent!))
-                  ? l.slice(commonIndent!)
-                  : l,
-              )
-              .join('\n')
-          : bodyLines.join('\n');
 
-      const linesNoIndent = pluginsYamlString.split('\n');
-      let packageYamlString: string;
-      if (linesNoIndent[0]?.startsWith('- ')) {
-        linesNoIndent[0] = linesNoIndent[0].slice(2);
-        for (let i = 1; i < linesNoIndent.length; i += 1) {
-          if (linesNoIndent[i].startsWith('  ')) {
-            linesNoIndent[i] = linesNoIndent[i].slice(2);
-          }
-        }
-        packageYamlString = linesNoIndent.join('\n');
-      } else {
-        packageYamlString = pluginsYamlString;
+      // Extract the first package item under plugins and convert to a single-map YAML (no leading dash)
+      const lines = raw.split('\n');
+      const pluginsIdx = lines.findIndex(l => /^\s*plugins\s*:/i.test(l));
+      if (pluginsIdx === -1)
+        throw new Error("Invalid editor content: missing 'plugins' list");
+      let i = pluginsIdx + 1;
+      // Skip blank lines
+      while (i < lines.length && lines[i].trim() === '') i += 1;
+      const startLine = lines[i] || '';
+      const startMatch = startLine.match(/^(\s*)-\s+/);
+      if (!startMatch)
+        throw new Error('Invalid editor content: missing package item');
+      const itemIndent = startMatch[1].length; // indent before '- '
+      const firstLine = startLine.replace(/^(\s*)-\s+/, '');
+      const pkgLines: string[] = [firstLine];
+      // Subsequent lines that are part of this list item must be indented at least itemIndent+2
+      for (let j = i + 1; j < lines.length; j += 1) {
+        const line = lines[j] ?? '';
+        // If we hit another sibling list item at the same indent, stop
+        const siblingMatch = line.match(/^(\s*)-\s+/);
+        if (siblingMatch && siblingMatch[1].length === itemIndent) break;
+        // Remove exactly one indent level (itemIndent + 2 spaces) if present
+        const removeIndent = new RegExp(`^\\s{${itemIndent + 2}}`);
+        pkgLines.push(line.replace(removeIndent, ''));
+      }
+      // Finalize single-map YAML
+      const packageYamlString = pkgLines
+        .join('\n')
+        .replace(/^\s*[-]\s*/m, '')
+        .replace(/\r/g, '')
+        .replace(/^\s*$/gm, '')
+        .trim();
+      // Validate minimal shape before POST
+      if (!/^package\s*:/m.test(packageYamlString)) {
+        setIsSubmitting(false);
+        setSaveError("Invalid editor content: 'package' field missing in item");
+        return;
       }
 
       const res = await installPackage({
@@ -164,6 +230,19 @@ export const MarketplacePackageEditContent = ({
       });
 
       if ((res as any)?.status === 'OK') {
+        const updated = {
+          ...installedPlugins,
+          [pkg.metadata.title ?? pkg.metadata.name]: 'Package updated',
+        };
+        setInstalledPlugins(updated);
+        queryClient.invalidateQueries({
+          queryKey: [
+            'marketplaceApi',
+            'getPackageConfigByName',
+            pkg.metadata.namespace ?? params.namespace,
+            pkg.metadata.name,
+          ],
+        });
         const ns = pkg.metadata.namespace ?? params.namespace;
         const name = pkg.metadata.name;
         const preserved = new URLSearchParams(location.search);

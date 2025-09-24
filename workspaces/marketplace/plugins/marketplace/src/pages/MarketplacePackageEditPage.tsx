@@ -47,15 +47,21 @@ const PackageEditHeader = () => {
   return <Header title={title} type="Packages" typeLink={packageLink} />;
 };
 
-export const MarketplacePackageEditPage = () => (
-  <ReactQueryProvider>
-    <Page themeId={themeId}>
-      <PackageEditHeader />
-      <Content>
-        <ErrorBoundary>
-          <MarketplacePackageEditContentLoader />
-        </ErrorBoundary>
-      </Content>
-    </Page>
-  </ReactQueryProvider>
-);
+export const MarketplacePackageEditPage = () => {
+  const location = useLocation();
+  return (
+    <ReactQueryProvider>
+      <Page themeId={themeId}>
+        <PackageEditHeader />
+        <Content>
+          <ErrorBoundary>
+            {/* Force remount on navigation within same route to reseed editor */}
+            <MarketplacePackageEditContentLoader
+              key={`${location.key}-${location.search}`}
+            />
+          </ErrorBoundary>
+        </Content>
+      </Page>
+    </ReactQueryProvider>
+  );
+};

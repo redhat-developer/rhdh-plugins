@@ -27,6 +27,8 @@ import {
   ErrorBoundary,
   TabbedLayout,
 } from '@backstage/core-components';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import Typography from '@mui/material/Typography';
@@ -42,6 +44,7 @@ import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
 import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer';
 import { MarketplacePackageEditPage } from './MarketplacePackageEditPage';
 import { InstallationContextProvider } from '../components/InstallationContext';
+import { useInstallationContext } from '../components/InstallationContext';
 
 // Constants for consistent styling
 const TAB_ICON_STYLE = {
@@ -81,6 +84,8 @@ const PackageDeepLinkRedirect = () => {
 
 const MarketplacePage = () => {
   const { count: installedPluginsCount, loading } = useInstalledPackagesCount();
+  const { installedPlugins } = useInstallationContext();
+  const restartCount = Object.entries(installedPlugins)?.length ?? 0;
 
   const installedPluginsTitle = loading
     ? 'Installed packages'
@@ -119,6 +124,13 @@ const MarketplacePage = () => {
             }}
           >
             <ErrorBoundary>
+              {restartCount > 0 && (
+                <Alert severity="info" sx={{ mb: '1rem' }}>
+                  <AlertTitle>Backend restart required</AlertTitle>
+                  To finish the package modifications, restart your backend
+                  system.
+                </Alert>
+              )}
               <InstalledPackagesTable />
               <MarketplacePackageDrawer />
             </ErrorBoundary>
@@ -152,6 +164,7 @@ export const DynamicMarketplacePluginRouter = () => (
           path="/plugins/:namespace/:name/install"
           Component={MarketplacePluginInstallPage}
         />
+        {/* Use existing install route as the edit page */}
         <Route
           path="/packages/:namespace/:name/install"
           Component={MarketplacePackageEditPage}
