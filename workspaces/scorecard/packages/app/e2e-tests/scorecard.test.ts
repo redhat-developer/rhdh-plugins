@@ -36,6 +36,7 @@ test.describe.serial('Pre-RBAC Access Tests', () => {
     await catalogPage.navigateToCatalog();
     await catalogPage.openComponent('Red Hat Developer Hub');
     await page.getByText('Scorecard').click();
+
     await expect(page.getByText('Missing permission')).toBeVisible();
     await expect(page.getByRole('article')).toContainText(
       'To view Scorecard plugin, contact your administrator to give the scorecard.metric.read permission.',
