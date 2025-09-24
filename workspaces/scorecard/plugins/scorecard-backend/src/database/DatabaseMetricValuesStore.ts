@@ -16,11 +16,7 @@
 
 import { Knex } from 'knex';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import {
-  DbMetricValue,
-  DbMetricValuesFilter,
-  MetricValuesStore,
-} from './MetricValuesStore';
+import { DbMetricValue, MetricValuesStore } from './MetricValuesStore';
 import { ProviderStore } from './ProviderStore';
 
 export class DatabaseMetricValuesStore
@@ -45,43 +41,6 @@ export class DatabaseMetricValuesStore
       await this.knex(this.tableName).insert(metricValues);
     } catch (error) {
       this.logger.error(`Failed to insert metric values batch: ${error}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Get metric values based on filter criteria
-   */
-  async readMetricValues(
-    filter: DbMetricValuesFilter = {},
-  ): Promise<DbMetricValue[]> {
-    try {
-      let query = this.knex(this.tableName).select('*');
-
-      if (filter.metric_id) {
-        query = query.where('metric_id', filter.metric_id);
-      }
-      if (filter.catalog_entity_ref) {
-        query = query.where('catalog_entity_ref', filter.catalog_entity_ref);
-      }
-      if (filter.from_timestamp) {
-        query = query.where('timestamp', '>=', filter.from_timestamp);
-      }
-      if (filter.to_timestamp) {
-        query = query.where('timestamp', '<=', filter.to_timestamp);
-      }
-      query = query.orderBy('id', 'desc');
-      if (filter.limit) {
-        query = query.limit(filter.limit);
-      }
-      if (filter.offset) {
-        query = query.offset(filter.offset);
-      }
-
-      const results = await query;
-      return results;
-    } catch (error) {
-      this.logger.error(`Failed to get metric values: ${error}`);
       throw error;
     }
   }

@@ -23,15 +23,6 @@ export type DbMetricValue = {
   error_message?: string;
 };
 
-export type DbMetricValuesFilter = {
-  catalog_entity_ref?: string;
-  metric_id?: string;
-  from_timestamp?: Date;
-  to_timestamp?: Date;
-  limit?: number;
-  offset?: number;
-};
-
 /**
  * Interface for storing and retrieving metric values
  */
@@ -40,11 +31,6 @@ export interface MetricValuesStore {
    * Insert multiple metric values in a batch
    */
   createMetricValues(metricValues: Omit<DbMetricValue, 'id'>[]): Promise<void>;
-
-  /**
-   * Get metric values based on filter criteria
-   */
-  readMetricValues(filter?: DbMetricValuesFilter): Promise<DbMetricValue[]>;
 
   /**
    * Get the latest metric values for a specific entity and metrics
