@@ -1,10 +1,9 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-bc-test",
-  "version": "0.1.0",
+  "name": "@red-hat-developer-hub/backstage-plugin-bui-test",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "license": "Apache-2.0",
-  "private": true,
   "publishConfig": {
     "access": "public",
     "main": "dist/index.esm.js",
@@ -13,13 +12,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/theme/plugins/bc-test"
+    "directory": "workspaces/theme/plugins/bui-test"
   },
   "backstage": {
     "role": "frontend-plugin",
-    "pluginId": "bc-test",
+    "pluginId": "bui-test",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-bc-test"
+      "@red-hat-developer-hub/backstage-plugin-bui-test"
     ]
   },
   "sideEffects": false,
@@ -33,13 +32,14 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/core-components": "^0.17.5",
     "@backstage/core-plugin-api": "^1.10.9",
     "@backstage/plugin-user-settings": "^0.8.25",
-    "@mui/material": "^5"
+    "@backstage/theme": "^0.6.8",
+    "@backstage/ui": "^0.7.0"
   },
   "peerDependencies": {
-    "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+    "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
+    "react-router": "*"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.1",

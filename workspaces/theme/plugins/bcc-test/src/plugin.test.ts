@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
+import { bccTestPlugin } from './plugin';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+describe('bcc-test', () => {
+  it('should export plugin', () => {
+    expect(bccTestPlugin).toBeDefined();
+  });
+});

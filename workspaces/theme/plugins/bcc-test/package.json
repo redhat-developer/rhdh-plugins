@@ -1,5 +1,5 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-mui4-test",
+  "name": "@red-hat-developer-hub/backstage-plugin-bcc-test",
   "version": "0.0.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -12,13 +12,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/theme/plugins/mui4-test"
+    "directory": "workspaces/theme/plugins/bcc-test"
   },
   "backstage": {
     "role": "frontend-plugin",
-    "pluginId": "mui4-test",
+    "pluginId": "bcc-test",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-mui4-test"
+      "@red-hat-developer-hub/backstage-plugin-bcc-test"
     ]
   },
   "sideEffects": false,
@@ -35,9 +35,6 @@
     "@backstage/core-components": "^0.17.5",
     "@backstage/core-plugin-api": "^1.10.9",
     "@backstage/plugin-user-settings": "^0.8.25",
-    "@material-ui/core": "^4.9.13",
-    "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/material": "^5"
   },
   "peerDependencies": {

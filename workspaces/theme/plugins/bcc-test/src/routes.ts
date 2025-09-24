@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
+import { createRouteRef } from '@backstage/core-plugin-api';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+export const rootRouteRef = createRouteRef({
+  id: 'bcc-test',
+});

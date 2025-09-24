@@ -13,31 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { createDevApp } from '@backstage/dev-utils';
+import { buiTestPlugin, BUITestPage } from '../src/plugin';
 
-import {
-  createPlugin,
-  createRoutableExtension,
-} from '@backstage/core-plugin-api';
-
-import { rootRouteRef } from './routes';
-
-/**
- * @public
- */
-export const bcTestPlugin = createPlugin({
-  id: 'bc-test',
-  routes: {
-    root: rootRouteRef,
-  },
-});
-
-/**
- * @public
- */
-export const BCTestPage = bcTestPlugin.provide(
-  createRoutableExtension({
-    name: 'BCTestPage',
-    component: () => import('./components/BCTestPage').then(m => m.BCTestPage),
-    mountPoint: rootRouteRef,
-  }),
-);
+createDevApp()
+  .registerPlugin(buiTestPlugin)
+  .addPage({
+    element: <BUITestPage />,
+    title: 'Root Page',
+    path: '/bui-test',
+  })
+  .render();
