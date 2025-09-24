@@ -24,12 +24,12 @@ import Box from '@mui/material/Box';
 import TablePagination from '@mui/material/TablePagination';
 
 import { useAddedRepositories } from '../../hooks/useAddedRepositories';
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import {
   AddedRepositoryColumnNameEnum,
   AddRepositoryData,
   SortingOrderEnum,
 } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { RepositoriesHeader } from '../AddRepositories/RepositoriesHeader';
 import { useDeleteDialog } from '../DeleteDialogContext';
 import { useDrawer } from '../DrawerContext';
@@ -37,7 +37,7 @@ import { AddedRepositoriesTableBody } from './AddedRepositoriesTableBody';
 import DeleteRepositoryDialog from './DeleteRepositoryDialog';
 import EditCatalogInfo from './EditCatalogInfo';
 import { RepositoriesAddLink } from './RepositoriesAddLink';
-import { RepositoriesListColumns } from './RepositoriesListColumns';
+import { getRepositoriesListColumns } from './RepositoriesListColumns';
 
 export const RepositoriesList = () => {
   const navigate = useNavigate();
@@ -50,6 +50,8 @@ export const RepositoriesList = () => {
   const [pageNumber, setPageNumber] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const gitlabConfigured = useGitlabConfigured();
+  const columns = getRepositoriesListColumns(gitlabConfigured);
 
   const orderByColumn = useMemo(() => {
     return orderBy?.replace(/\.([a-zA-Z])/g, (_, char) =>
@@ -98,7 +100,7 @@ export const RepositoriesList = () => {
     setDebouncedSearch(str);
     setPageNumber(0);
   };
-  const baseTitle = gitlabFeatureFlag
+  const baseTitle = gitlabConfigured
     ? 'Imported entities'
     : 'Added repositories';
   const finalTitle =
@@ -110,7 +112,7 @@ export const RepositoriesList = () => {
       <RepositoriesAddLink />
       <Table
         data={importJobs.addedRepositories ?? []}
-        columns={RepositoriesListColumns}
+        columns={columns}
         onSearchChange={handleSearch}
         title={finalTitle}
         components={{

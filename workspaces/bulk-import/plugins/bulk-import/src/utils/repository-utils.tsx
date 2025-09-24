@@ -45,8 +45,6 @@ import {
   RepositoryStatus,
 } from '../types';
 
-export const gitlabFeatureFlag = true;
-
 export const descendingComparator = (
   a: AddRepositoryData,
   b: AddRepositoryData,
@@ -226,11 +224,12 @@ export const getImportStatus = (
   showIcon?: boolean,
   prUrl?: string,
   isApprovalToolGitlab: boolean = false,
+  gitlabConfigured: boolean = false,
 ) => {
   if (!status) {
     return '';
   }
-  const labelText = gitlabFeatureFlag ? 'Already imported' : 'Added';
+  const labelText = gitlabConfigured ? 'Already imported' : 'Added';
   switch (status) {
     case 'WAIT_PR_APPROVAL':
       return showIcon ? (
@@ -248,7 +247,7 @@ export const getImportStatus = (
           style={{ display: 'flex', alignItems: 'baseline' }}
         >
           <StatusOK />
-          {gitlabFeatureFlag ? 'Imported' : 'Added'}
+          {gitlabConfigured ? 'Imported' : 'Added'}
         </Typography>
       ) : (
         labelText
