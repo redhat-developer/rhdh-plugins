@@ -22,6 +22,7 @@ import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -51,6 +52,7 @@ export const CatalogInfoStatus = ({
   const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
+  const gitlabConfigured = useGitlabConfigured();
 
   useEffect(() => {
     if (importStatus === RepositoryStatus.ADDED) {
@@ -101,7 +103,7 @@ export const CatalogInfoStatus = ({
           (key: string) => t(key as any, {}),
           false,
           undefined,
-          false,
+          gitlabConfigured,
         )}
       </Typography>
     );

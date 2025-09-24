@@ -25,18 +25,20 @@ import { useFormikContext } from 'formik';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
+
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 
 export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
+  const gitlabConfigured = useGitlabConfigured();
 
   const isPluralRepositories =
     Object.keys(values.repositories || []).length > 1;
 
-  const getGitSubmitTitle = () => {
-    if (gitlabFeatureFlag) {
+  const getGitSubmitTitle = (gitlabConfigured: boolean) => {
+    if (gitlabConfigured) {
       return t('common.import');
     }
     return isPluralRepositories
@@ -56,8 +58,8 @@ export const AddRepositoriesFormFooter = () => {
       toolTipTitle: t('forms.footer.importTooltip'),
     },
     [ApprovalTool.Git]: {
-      submitTitle: getGitSubmitTitle(),
-      toolTipTitle: gitlabFeatureFlag
+      submitTitle: getGitSubmitTitle(gitlabConfigured),
+      toolTipTitle: gitlabConfigured
         ? t('forms.footer.importTooltip')
         : t('forms.footer.pullRequestTooltip'),
     },
