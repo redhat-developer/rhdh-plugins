@@ -55,10 +55,7 @@ import { SignalsDisplay } from '@backstage/plugin-signals';
 
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
-import {
-  TranslationsPage,
-  translationsPluginTranslations,
-} from '@red-hat-developer-hub/backstage-plugin-translations';
+import { TranslationsPage } from '@red-hat-developer-hub/backstage-plugin-translations';
 import { TranslationsTestPage } from '@red-hat-developer-hub/backstage-plugin-translations-test';
 
 const app = createApp({

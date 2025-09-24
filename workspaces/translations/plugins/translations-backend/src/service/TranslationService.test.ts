@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 import { mockServices } from '@backstage/backend-test-utils';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import fs from 'fs';
 
 import { TranslationService } from './TranslationService';
+
+// Helper function to create safe test paths
+const createSafeTestPaths = (testDir: string, filenames: string[]) => {
+  return filenames.map(filename => join(testDir, filename));
+};
 
 jest.mock('fs', () => {
   const actualFs = jest.requireActual('fs');
@@ -33,19 +40,36 @@ describe('TranslationService', () => {
   let service: TranslationService;
   let mockConfig: any;
   let mockLogger: any;
+  let testDir: string;
+  let safeTestPaths: string[];
 
   beforeEach(() => {
     jest.resetAllMocks();
+    // Create a safe, isolated test directory
+    testDir = join(tmpdir(), 'backstage-translations-test');
+    safeTestPaths = createSafeTestPaths(testDir, ['en.json', 'de.json']);
+
     mockConfig = mockServices.rootConfig({
       data: {
         i18n: {
           locales: ['en', 'de'],
-          overrides: ['/tmp/en.json', '/tmp/de.json'],
+          overrides: safeTestPaths,
         },
       },
     });
     mockLogger = mockServices.logger.mock();
     service = new TranslationService(mockConfig, mockLogger);
+  });
+
+  afterEach(() => {
+    // Clean up test directory if it exists
+    try {
+      if (fs.existsSync(testDir)) {
+        fs.rmSync(testDir, { recursive: true, force: true });
+      }
+    } catch (error) {
+      // Ignore cleanup errors in tests
+    }
   });
 
   describe('getTranslations', () => {
@@ -61,14 +85,14 @@ describe('TranslationService', () => {
           return false;
         }
         // Find the override files
-        return path === '/tmp/en.json' || path === '/tmp/de.json';
+        return safeTestPaths.includes(path);
       });
 
       (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
-        if (filePath === '/tmp/en.json') {
+        if (filePath === safeTestPaths[0]) {
           return JSON.stringify({ plugin: { en: { hello: 'world' } } });
         }
-        if (filePath === '/tmp/de.json') {
+        if (filePath === safeTestPaths[1]) {
           return JSON.stringify({ plugin: { de: { hello: 'welt' } } });
         }
         return '{}';
@@ -119,7 +143,7 @@ describe('TranslationService', () => {
           return false;
         }
         // Find the override files
-        return path === '/tmp/en.json' || path === '/tmp/de.json';
+        return safeTestPaths.includes(path);
       });
       (fs.readFileSync as jest.Mock).mockReturnValue(
         JSON.stringify({ notAPluginKey: 'just a string' }),
@@ -142,7 +166,7 @@ describe('TranslationService', () => {
           return false;
         }
         // Find the override files
-        return path === '/tmp/en.json' || path === '/tmp/de.json';
+        return safeTestPaths.includes(path);
       });
       (fs.readFileSync as jest.Mock).mockImplementation(() => {
         throw new Error('boom');
@@ -157,7 +181,7 @@ describe('TranslationService', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            overrides: ['/tmp/en.json', '/tmp/de.json'],
+            overrides: safeTestPaths,
             locales: ['en'],
           },
         },
@@ -175,14 +199,14 @@ describe('TranslationService', () => {
           return false;
         }
         // Find the override files
-        return path === '/tmp/en.json' || path === '/tmp/de.json';
+        return safeTestPaths.includes(path);
       });
 
       (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
-        if (filePath === '/tmp/en.json') {
+        if (filePath === safeTestPaths[0]) {
           return JSON.stringify({ plugin: { en: { hello: 'world' } } });
         }
-        if (filePath === '/tmp/de.json') {
+        if (filePath === safeTestPaths[1]) {
           return JSON.stringify({ plugin: { de: { hello: 'welt' } } });
         }
         return '{}';
@@ -201,7 +225,7 @@ describe('TranslationService', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            overrides: ['/tmp/de.json'],
+            overrides: [safeTestPaths[1]],
             locales: ['en'],
           },
         },
@@ -219,7 +243,7 @@ describe('TranslationService', () => {
           return false;
         }
         // Find the override files
-        return path === '/tmp/de.json';
+        return path === safeTestPaths[1];
       });
 
       (fs.readFileSync as jest.Mock).mockImplementation(_filePath =>
@@ -297,7 +321,7 @@ describe('TranslationService', () => {
         data: {
           i18n: {
             locales: ['en'],
-            overrides: ['/tmp/override.json'],
+            overrides: [join(testDir, 'override.json')],
           },
         },
       });
@@ -318,7 +342,9 @@ describe('TranslationService', () => {
           return true;
         }
         // Mock override files and JSON files
-        return path === '/tmp/override.json' || path.endsWith('.json');
+        return (
+          path === join(testDir, 'override.json') || path.endsWith('.json')
+        );
       });
       (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => true });
 
@@ -333,7 +359,7 @@ describe('TranslationService', () => {
             },
           });
         }
-        if (filePath.includes('/tmp/override.json')) {
+        if (filePath.includes(join(testDir, 'override.json'))) {
           return JSON.stringify({
             plugin: {
               en: {
@@ -364,7 +390,7 @@ describe('TranslationService', () => {
         data: {
           i18n: {
             locales: ['en'],
-            overrides: ['/tmp/override.json'],
+            overrides: [join(testDir, 'override.json')],
           },
         },
       });
@@ -372,7 +398,7 @@ describe('TranslationService', () => {
 
       (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
         // Don't find any 'src' or 'translations' folders, only override files
-        return path === '/tmp/override.json';
+        return path === join(testDir, 'override.json');
       });
 
       (fs.readFileSync as jest.Mock).mockReturnValue(

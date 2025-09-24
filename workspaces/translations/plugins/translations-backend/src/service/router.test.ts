@@ -17,10 +17,17 @@ import { mockServices } from '@backstage/backend-test-utils';
 
 import express from 'express';
 import request from 'supertest';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 import fs from 'fs';
 
 import { createRouter } from './router';
+
+// Helper function to create safe test paths
+const createSafeTestPaths = (testDir: string, filenames: string[]) => {
+  return filenames.map(filename => join(testDir, filename));
+};
 
 jest.mock('fs', () => {
   const actualFs = jest.requireActual('fs');
@@ -36,13 +43,19 @@ jest.mock('fs', () => {
 describe('createRouter', () => {
   let app: express.Express;
   let mockConfig: any;
+  let testDir: string;
+  let safeTestPaths: string[];
 
   beforeEach(async () => {
+    // Create a safe, isolated test directory
+    testDir = join(tmpdir(), `backstage-translations-test`);
+    safeTestPaths = createSafeTestPaths(testDir, ['en.json', 'de.json']);
+
     mockConfig = mockServices.rootConfig({
       data: {
         i18n: {
           locales: ['en', 'de'],
-          overrides: ['/tmp/en.json', '/tmp/de.json'],
+          overrides: safeTestPaths,
         },
       },
     });
@@ -74,6 +87,14 @@ describe('createRouter', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
+    // Clean up test directory if it exists
+    try {
+      if (fs.existsSync(testDir)) {
+        fs.rmSync(testDir, { recursive: true, force: true });
+      }
+    } catch (error) {
+      // Ignore cleanup errors in tests
+    }
   });
 
   it('should return merged translations when multiple files exist', async () => {
@@ -87,15 +108,15 @@ describe('createRouter', () => {
       ) {
         return false;
       }
-      // Find the override files
-      return path === '/tmp/en.json' || path === '/tmp/de.json';
+      // Find the override files using safe test paths
+      return safeTestPaths.includes(path);
     });
 
     (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
-      if (filePath === '/tmp/en.json') {
+      if (filePath === safeTestPaths[0]) {
         return JSON.stringify({ plugin: { en: { hello: 'world' } } });
       }
-      if (filePath === '/tmp/de.json') {
+      if (filePath === safeTestPaths[1]) {
         return JSON.stringify({ plugin: { de: { hello: 'welt' } } });
       }
       return '{}';
@@ -146,8 +167,8 @@ describe('createRouter', () => {
       ) {
         return false;
       }
-      // Find the override files
-      return path === '/tmp/en.json' || path === '/tmp/de.json';
+      // Find the override files using safe test paths
+      return safeTestPaths.includes(path);
     });
     (fs.readFileSync as jest.Mock).mockReturnValue(
       JSON.stringify({ notAPluginKey: 'just a string' }),
@@ -172,8 +193,8 @@ describe('createRouter', () => {
       ) {
         return false;
       }
-      // Find the override files
-      return path === '/tmp/en.json' || path === '/tmp/de.json';
+      // Find the override files using safe test paths
+      return safeTestPaths.includes(path);
     });
     (fs.readFileSync as jest.Mock).mockImplementation(() => {
       throw new Error('boom');
@@ -203,7 +224,7 @@ describe('createRouter', () => {
     mockConfig = mockServices.rootConfig({
       data: {
         i18n: {
-          overrides: ['/tmp/en.json', '/tmp/de.json'],
+          overrides: safeTestPaths,
           locales: ['en'],
         },
       },
@@ -220,8 +241,8 @@ describe('createRouter', () => {
       ) {
         return false;
       }
-      // Find the override files
-      return path === '/tmp/en.json' || path === '/tmp/de.json';
+      // Find the override files using safe test paths
+      return safeTestPaths.includes(path);
     });
 
     const router = await createRouter({
@@ -233,10 +254,10 @@ describe('createRouter', () => {
     app.use('/', router);
 
     (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
-      if (filePath === '/tmp/en.json') {
+      if (filePath === safeTestPaths[0]) {
         return JSON.stringify({ plugin: { en: { hello: 'world' } } });
       }
-      if (filePath === '/tmp/de.json') {
+      if (filePath === safeTestPaths[1]) {
         return JSON.stringify({ plugin: { de: { hello: 'welt' } } });
       }
       return '{}';
@@ -256,7 +277,7 @@ describe('createRouter', () => {
     mockConfig = mockServices.rootConfig({
       data: {
         i18n: {
-          overrides: ['/tmp/de.json'],
+          overrides: [safeTestPaths[1]],
           locales: ['en'],
         },
       },
@@ -282,7 +303,7 @@ describe('createRouter', () => {
         return false;
       }
       // Find the override files
-      return path === '/tmp/de.json';
+      return path === safeTestPaths[1];
     });
     (fs.readFileSync as jest.Mock).mockImplementation(_filePath =>
       JSON.stringify({ plugin: { de: { hello: 'welt' } } }),
@@ -342,10 +363,10 @@ describe('createRouter', () => {
         'All configured translation files were not found',
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        'Translation file not found: /tmp/en.json (config overrides)',
+        `Translation file not found: ${safeTestPaths[0]} (config overrides)`,
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        'Translation file not found: /tmp/de.json (config overrides)',
+        `Translation file not found: ${safeTestPaths[1]} (config overrides)`,
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'All configured translation files were not found',
@@ -364,7 +385,7 @@ describe('createRouter', () => {
           return false;
         }
         // Find the override files
-        return path === '/tmp/en.json' || path === '/tmp/de.json';
+        return safeTestPaths.includes(path);
       });
       (fs.readFileSync as jest.Mock).mockReturnValue(
         JSON.stringify({ notAPluginKey: 'just a string' }),
@@ -386,10 +407,10 @@ describe('createRouter', () => {
         'No valid translation files found in the provided files',
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        'Invalid JSON translation file format: /tmp/en.json (config overrides)',
+        `Invalid JSON translation file format: ${safeTestPaths[0]} (config overrides)`,
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        'Invalid JSON translation file format: /tmp/de.json (config overrides)',
+        `Invalid JSON translation file format: ${safeTestPaths[1]} (config overrides)`,
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'No valid translation files found in the provided files',
@@ -398,11 +419,11 @@ describe('createRouter', () => {
 
     it('should handle mixed scenarios with some files found and some invalid', async () => {
       (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
-        return filePath === '/tmp/en.json';
+        return filePath === safeTestPaths[0];
       });
 
       (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
-        if (filePath === '/tmp/en.json') {
+        if (filePath === safeTestPaths[0]) {
           return JSON.stringify({ plugin: { en: { hello: 'world' } } });
         }
         return '{}';
@@ -426,7 +447,7 @@ describe('createRouter', () => {
         },
       });
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        'Translation file not found: /tmp/de.json (config overrides)',
+        `Translation file not found: ${safeTestPaths[1]} (config overrides)`,
       );
     });
 
@@ -442,13 +463,13 @@ describe('createRouter', () => {
           return false;
         }
         // Find the override files
-        return path === '/tmp/en.json' || path === '/tmp/de.json';
+        return safeTestPaths.includes(path);
       });
       (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
-        if (filePath === '/tmp/en.json') {
+        if (filePath === safeTestPaths[0]) {
           return 'invalid json content';
         }
-        if (filePath === '/tmp/de.json') {
+        if (filePath === safeTestPaths[1]) {
           return JSON.stringify({ plugin: { de: { hello: 'welt' } } });
         }
         return '{}';
@@ -473,7 +494,12 @@ describe('createRouter', () => {
       });
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.stringMatching(
-          /Failed to parse JSON from file: \/tmp\/en\.json/,
+          new RegExp(
+            `Failed to parse JSON from file: ${safeTestPaths[0].replace(
+              /[.*+?^${}()|[\]\\]/g,
+              '\\$&',
+            )}`,
+          ),
         ),
       );
     });
@@ -490,7 +516,7 @@ describe('createRouter', () => {
           return false;
         }
         // Find the override files
-        return path === '/tmp/en.json' || path === '/tmp/de.json';
+        return safeTestPaths.includes(path);
       });
       (fs.readFileSync as jest.Mock).mockImplementation(() => {
         throw new Error('Invalid JSON');
@@ -513,12 +539,22 @@ describe('createRouter', () => {
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.stringMatching(
-          /Failed to parse JSON from file: \/tmp\/en\.json/,
+          new RegExp(
+            `Failed to parse JSON from file: ${safeTestPaths[0].replace(
+              /[.*+?^${}()|[\]\\]/g,
+              '\\$&',
+            )}`,
+          ),
         ),
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.stringMatching(
-          /Failed to parse JSON from file: \/tmp\/de\.json/,
+          new RegExp(
+            `Failed to parse JSON from file: ${safeTestPaths[1].replace(
+              /[.*+?^${}()|[\]\\]/g,
+              '\\$&',
+            )}`,
+          ),
         ),
       );
     });
@@ -528,7 +564,7 @@ describe('createRouter', () => {
         data: {
           i18n: {
             locales: ['en'],
-            overrides: ['/tmp/single.json'],
+            overrides: [join(testDir, 'single.json')],
           },
         },
       });
@@ -545,7 +581,7 @@ describe('createRouter', () => {
           return false;
         }
         // Find the override files
-        return path === '/tmp/single.json';
+        return path === join(testDir, 'single.json');
       });
 
       const router = await createRouter({
@@ -575,7 +611,7 @@ describe('createRouter', () => {
         data: {
           i18n: {
             locales: ['en'],
-            overrides: ['/tmp/single.json'],
+            overrides: [join(testDir, 'single.json')],
           },
         },
       });
@@ -598,7 +634,10 @@ describe('createRouter', () => {
         'All configured translation files were not found',
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        'Translation file not found: /tmp/single.json (config overrides)',
+        `Translation file not found: ${join(
+          testDir,
+          'single.json',
+        )} (config overrides)`,
       );
     });
   });
@@ -685,7 +724,7 @@ describe('createRouter', () => {
         data: {
           i18n: {
             locales: ['en'],
-            overrides: ['/tmp/override.json'],
+            overrides: [join(testDir, 'override.json')],
           },
         },
       });
@@ -705,7 +744,9 @@ describe('createRouter', () => {
           return true;
         }
         // Mock override files and JSON files
-        return path === '/tmp/override.json' || path.endsWith('.json');
+        return (
+          path === join(testDir, 'override.json') || path.endsWith('.json')
+        );
       });
       (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => true });
 
@@ -720,7 +761,7 @@ describe('createRouter', () => {
             },
           });
         }
-        if (filePath.includes('/tmp/override.json')) {
+        if (filePath.includes(join(testDir, 'override.json'))) {
           return JSON.stringify({
             plugin: {
               en: {
@@ -762,14 +803,14 @@ describe('createRouter', () => {
         data: {
           i18n: {
             locales: ['en'],
-            overrides: ['/tmp/override.json'],
+            overrides: [join(testDir, 'override.json')],
           },
         },
       });
 
       (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
         // Don't find any 'src' or 'translations' folders, only override files
-        return path === '/tmp/override.json';
+        return path === join(testDir, 'override.json');
       });
 
       (fs.readFileSync as jest.Mock).mockReturnValue(
