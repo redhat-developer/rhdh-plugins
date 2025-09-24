@@ -47,8 +47,6 @@ import {
 } from '../types';
 import { getTaskStatusInfo } from './task-status';
 
-export const gitlabFeatureFlag = true;
-
 const TaskLink = ({
   labelText,
   taskId,
@@ -256,12 +254,12 @@ export const getImportStatus = (
   showIcon?: boolean,
   prUrl?: string,
   taskId?: string,
-  isApprovalToolGitlab: boolean = false,
+  gitlabConfigured: boolean = false,
 ) => {
   if (!status) {
     return '';
   }
-  const labelText = gitlabFeatureFlag
+  const labelText = gitlabConfigured
     ? t('status.alreadyImported')
     : t('status.added');
 
@@ -269,7 +267,7 @@ export const getImportStatus = (
     return showIcon ? (
       <WaitingForPR
         url={prUrl as string}
-        isApprovalToolGitlab={isApprovalToolGitlab}
+        isApprovalToolGitlab={gitlabConfigured}
       />
     ) : (
       t('status.waitingForApproval')
@@ -283,7 +281,7 @@ export const getImportStatus = (
         style={{ display: 'flex', alignItems: 'baseline' }}
       >
         <StatusOK />
-        {gitlabFeatureFlag ? t('status.imported') : t('status.added')}
+        {gitlabConfigured ? t('status.imported') : t('status.added')}
       </Typography>
     ) : (
       labelText

@@ -22,8 +22,8 @@ import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import { AddRepositoriesFormValues } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 export const RepositoriesAddLink = () => {
   const { t } = useTranslation();
@@ -32,6 +32,8 @@ export const RepositoriesAddLink = () => {
   const handleCloseAlert = () => {
     setStatus(null);
   };
+
+  const gitlabConfigured = useGitlabConfigured();
   return (
     <>
       {(status?.title || status?.url) && (
@@ -58,7 +60,7 @@ export const RepositoriesAddLink = () => {
           variant="contained"
           data-testid="add-repository"
         >
-          {gitlabFeatureFlag ? t('common.import') : t('common.add')}
+          {gitlabConfigured ? t('common.import') : t('common.add')}
         </LinkButton>
       </Typography>
     </>

@@ -39,3 +39,7 @@ export function useNumberOfApprovalTools(): ApprovalToolConfig {
       Number(isGitHubConfigured) + Number(isGitLabConfigured),
   };
 }
+
+export function useGitlabConfigured(): boolean {
+  return useNumberOfApprovalTools().gitlabConfigured;
+}

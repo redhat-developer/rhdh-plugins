@@ -29,7 +29,8 @@ import Typography from '@mui/material/Typography';
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
+
 import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
 
@@ -41,6 +42,8 @@ export const AddRepositoriesPage = () => {
     permission: bulkImportPermission,
     resourceRef: bulkImportPermission.resourceType,
   });
+
+  const gitlabConfigured = useGitlabConfigured();
 
   const showContent = () => {
     if (bulkImportViewPermissionResult.loading) {
@@ -56,7 +59,7 @@ export const AddRepositoriesPage = () => {
                 id="add-repository-summary"
               >
                 <Typography variant="h5">
-                  {gitlabFeatureFlag
+                  {gitlabConfigured
                     ? t('page.importEntitiesSubtitle')
                     : t('page.addRepositoriesSubtitle')}
                 </Typography>
@@ -69,7 +72,7 @@ export const AddRepositoriesPage = () => {
                   overflow: 'auto',
                 }}
               >
-                {gitlabFeatureFlag && (
+                {gitlabConfigured && (
                   <Illustrations
                     iconClassname={
                       theme.palette.mode === 'dark'
@@ -86,7 +89,7 @@ export const AddRepositoriesPage = () => {
                       : 'icon-choose-repositories-black'
                   }
                   iconText={
-                    gitlabFeatureFlag
+                    gitlabConfigured
                       ? t('steps.chooseItems')
                       : t('steps.chooseRepositories')
                   }
@@ -98,7 +101,7 @@ export const AddRepositoriesPage = () => {
                       : 'icon-generate-cataloginfo-black'
                   }
                   iconText={
-                    gitlabFeatureFlag
+                    gitlabConfigured
                       ? t('steps.generateCatalogInfoItems')
                       : t('steps.generateCatalogInfo')
                   }
@@ -139,7 +142,7 @@ export const AddRepositoriesPage = () => {
     <Page themeId="tool">
       <Header
         title={
-          gitlabFeatureFlag
+          gitlabConfigured
             ? t('page.importEntitiesTitle')
             : t('page.addRepositoriesTitle')
         }

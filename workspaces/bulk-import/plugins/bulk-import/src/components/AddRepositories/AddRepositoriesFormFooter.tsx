@@ -26,19 +26,22 @@ import { useFormikContext } from 'formik';
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
+
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 
 export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
+
   const importFlow = useImportFlow();
+  const gitlabConfigured = useGitlabConfigured();
 
   const isPluralRepositories =
     Object.keys(values.repositories || []).length > 1;
 
-  const getGitSubmitTitle = () => {
-    if (gitlabFeatureFlag || importFlow === 'scaffolder') {
+  const getGitSubmitTitle = (gitlabConfigured: boolean) => {
+    if (gitlabConfigured || importFlow === 'scaffolder') {
       return t('common.import');
     }
     return isPluralRepositories
@@ -58,9 +61,9 @@ export const AddRepositoriesFormFooter = () => {
       toolTipTitle: t('forms.footer.importTooltip'),
     },
     [ApprovalTool.Git]: {
-      submitTitle: getGitSubmitTitle(),
+      submitTitle: getGitSubmitTitle(gitlabConfigured),
       toolTipTitle:
-        gitlabFeatureFlag || importFlow === 'scaffolder'
+        gitlabConfigured || importFlow === 'scaffolder'
           ? t('forms.footer.importTooltip')
           : t('forms.footer.pullRequestTooltip'),
     },
