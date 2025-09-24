@@ -24,6 +24,30 @@ To install the Scorecard plugin, run the following command:
 yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
 ```
 
+**Note**
+
+### Permission Framework Support
+
+The Scorecard plugin has support for the permission framework.
+
+- When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access scorecard UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
+
+```CSV
+p, role:default/team_a, scorecard.metric.read, read, allow
+
+g, user:default/<your-user-name>, role:default/team_a
+```
+
+You can specify the path to this configuration file in your application configuration:
+
+```yaml
+permission:
+  enabled: true
+  rbac:
+    policies-csv-file: /some/path/rbac-policy.csv
+    policyFileReload: true
+```
+
 ### Configuration
 
 1. Add the Scorecard page to you Entity overview page by modifying `packages/app/src/components/catalog/EntityPage.tsx`:

@@ -63,6 +63,7 @@ import {
   TemplateSection,
   VisitListener,
   HomePageCardMountPoint,
+  homepageTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
 
 const identityProviders: IdentityProviders = [
@@ -78,6 +79,10 @@ const identityProviders: IdentityProviders = [
 const app = createApp({
   apis,
   themes: getThemes(),
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'it', 'es'],
+    resources: [homepageTranslations],
+  },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,

@@ -29,15 +29,17 @@ import { useTheme } from '@mui/material/styles';
 import OnboardingCard from './OnboardingCard';
 import HomePageIllustrationDark from '../../images/homepage-illustration-dark.svg';
 import HomePageIllustrationLight from '../../images/homepage-illustration-light.svg';
-import { LEARNING_SECTION_ITEMS } from '../../utils/constants';
+import { getLearningItems } from '../../utils/constants';
 import useGreeting from '../../hooks/useGreeting';
 import { LearningSectionItem } from '../../types';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const OnboardingSection = () => {
   const [user, setUser] = useState<string | null>();
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
   const greeting = useGreeting();
+  const { t } = useTranslation();
   const {
     displayName,
     backstageIdentity,
@@ -100,7 +102,7 @@ export const OnboardingSection = () => {
             }}
           />
         </Grid>
-        {LEARNING_SECTION_ITEMS.map((item: LearningSectionItem) => (
+        {getLearningItems(t).map((item: LearningSectionItem) => (
           <Grid
             item
             xs={12}
@@ -145,7 +147,7 @@ export const OnboardingSection = () => {
             fontSize: '1.5rem',
           }}
         >
-          {`${greeting}, ${profileDisplayName() || 'Guest'}!`}
+          {`${greeting}, ${profileDisplayName() || t('onboarding.guest')}!`}
         </Typography>
       )}
       {content}

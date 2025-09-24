@@ -15,35 +15,47 @@
  */
 import { useState, useEffect } from 'react';
 
-const getGreetingByTimeZone = (timeZone?: string) => {
-  const hours = new Date().toLocaleString('en-US', {
+import { useTranslation } from './useTranslation';
+import { useLanguage } from './useLanguage';
+
+const getGreetingByTimeZone = (
+  timeZone: string | undefined,
+  t: any,
+  language: string,
+) => {
+  // Use user's language for consistent time parsing
+  const hours = new Date().toLocaleString(language, {
     timeZone,
     hour: 'numeric',
     hour12: false,
   });
   const hour = parseInt(hours, 10);
 
+  // Note: Time boundaries could be culturally specific in the future
+  // For now, using universal 12/18 hour boundaries
   if (hour < 12) {
-    return 'Good morning';
+    return t('onboarding.greeting.goodMorning');
   }
   if (hour < 18) {
-    return 'Good afternoon';
+    return t('onboarding.greeting.goodAfternoon');
   }
-  return 'Good evening';
+  return t('onboarding.greeting.goodEvening');
 };
 
 const useGreeting = (timeZone?: string) => {
+  const { t } = useTranslation();
+  const language = useLanguage();
   const [greeting, setGreeting] = useState<string>(
-    getGreetingByTimeZone(timeZone),
+    getGreetingByTimeZone(timeZone, t, language),
   );
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setGreeting(getGreetingByTimeZone(timeZone));
+      setGreeting(getGreetingByTimeZone(timeZone, t, language));
     }, 60000); // Update every minute
 
     return () => clearInterval(interval);
-  }, [timeZone]);
+  }, [timeZone, t, language]);
 
   return greeting;
 };
