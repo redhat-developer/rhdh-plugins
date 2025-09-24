@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-import { createDevApp } from '@backstage/dev-utils';
-import { bcTestPlugin, BCTestPage } from '../src/plugin';
+import { Card, CardBody } from '@backstage/ui';
 
-createDevApp()
-  .registerPlugin(bcTestPlugin)
-  .addPage({
-    element: <BCTestPage />,
-    title: 'Root Page',
-    path: '/bc-test',
-  })
-  .render();
+export const CardsExample = () => {
+  return (
+    <Card title="Information card">
+      <CardBody>
+        <h1>Headline 1</h1>
+        <h2>Headline 2</h2>
+        <h3>Headline 3</h3>
+        <h4>Headline 4</h4>
+        <h5>Headline 5</h5>
+        <h6>Headline 6</h6>
+      </CardBody>
+    </Card>
+  );
+};

@@ -20,10 +20,10 @@ import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
 import { TableExample } from './TableExample';
 import { CardsExample } from './CardExample';
 
-export const BCTestPage = () => {
+export const BCCTestPage = () => {
   return (
     <Page themeId="tool">
-      <Header title="Backstage Components Tests">
+      <Header title="Backstage Core Components Tests">
         <UserSettingsThemeToggle />
       </Header>
       <TabbedLayout>

@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import { bcTestPlugin } from './plugin';
+import { createDevApp } from '@backstage/dev-utils';
+import { bccTestPlugin, BCCTestPage } from '../src/plugin';
 
-describe('bc-test', () => {
-  it('should export plugin', () => {
-    expect(bcTestPlugin).toBeDefined();
-  });
-});
+createDevApp()
+  .registerPlugin(bccTestPlugin)
+  .addPage({
+    element: <BCCTestPage />,
+    title: 'Root Page',
+    path: '/bcc-test',
+  })
+  .render();
