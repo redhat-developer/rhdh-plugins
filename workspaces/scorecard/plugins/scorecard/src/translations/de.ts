@@ -34,6 +34,8 @@ const scorecardTranslationDe = createTranslationMessages({
     'errors.invalidApiResponse':
       'Ungültiges Antwortformat von der Scorecard-API',
     'errors.fetchError': 'Fehler beim Abrufen der Scorecards: {{error}}',
+    'errors.metricDataUnavailable': 'Metrikdaten nicht verfügbar',
+    'errors.invalidThresholds': 'Ungültige Schwellenwerte',
 
     // Metric translations
     'metric.github.open-prs.title': 'GitHub Offene Pull Requests',

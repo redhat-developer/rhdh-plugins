@@ -81,7 +81,7 @@ const Scorecard = ({
   const { t } = useTranslation();
 
   return (
-    <Card sx={{ width: '405px' }}>
+    <Card sx={{ width: '405px' }} role="article">
       <CardHeader title={cardTitle} titleTypographyProps={{ mb: 0 }} />
       <Divider />
       <CardContent>
@@ -207,10 +207,11 @@ const Scorecard = ({
                                 isMetricDataError || isThresholdError ? 14 : 24,
                             }}
                           >
-                            {isMetricDataError && 'Metric data unavailable'}
+                            {isMetricDataError &&
+                              t('errors.metricDataUnavailable')}
                             {!isMetricDataError &&
                               isThresholdError &&
-                              'Invalid thresholds'}
+                              t('errors.invalidThresholds')}
                             {!isThresholdError && !isMetricDataError && value}
                           </Typography>
                         </Box>

@@ -17,6 +17,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.invalidApiResponse': string;
     readonly 'errors.fetchError': string;
+    readonly 'errors.metricDataUnavailable': string;
+    readonly 'errors.invalidThresholds': string;
     readonly 'metric.github.open-prs.title': string;
     readonly 'metric.github.open-prs.description': string;
     readonly 'metric.jira.open-issues.title': string;

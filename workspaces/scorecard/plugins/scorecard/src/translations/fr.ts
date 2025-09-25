@@ -35,6 +35,8 @@ const scorecardTranslationFr = createTranslationMessages({
       "Format de réponse invalide de l'API scorecard",
     'errors.fetchError':
       'Erreur lors de la récupération des scorecards : {{error}}',
+    'errors.metricDataUnavailable': 'Données de métrique indisponibles',
+    'errors.invalidThresholds': 'Seuils invalides',
 
     // Metric translations
     'metric.github.open-prs.title': 'GitHub Pull Requests Ouvertes',

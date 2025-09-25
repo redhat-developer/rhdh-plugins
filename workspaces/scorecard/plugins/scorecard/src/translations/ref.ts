@@ -37,6 +37,8 @@ export const scorecardMessages = {
       'Entity missing required properties for scorecard lookup',
     invalidApiResponse: 'Invalid response format from scorecard API',
     fetchError: 'Error fetching scorecards: {{error}}',
+    metricDataUnavailable: 'Metric data unavailable',
+    invalidThresholds: 'Invalid thresholds',
   },
 
   // Metric translations
