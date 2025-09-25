@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { FC } from 'react';
 import { useAsync } from 'react-use';
 
 import { Link } from '@backstage/core-components';
@@ -32,6 +32,7 @@ import {
 
 import { orchestratorApiRef } from '../../api';
 import { VALUE_UNAVAILABLE } from '../../constants';
+import { useTranslation } from '../../hooks/useTranslation';
 import { workflowRouteRef } from '../../routes';
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusIndicator';
@@ -41,9 +42,10 @@ type WorkflowDetailsCardProps = {
   details: WorkflowRunDetail;
 };
 
-export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
+export const WorkflowRunDetails: FC<WorkflowDetailsCardProps> = ({
   details,
 }) => {
+  const { t } = useTranslation();
   const orchestratorApi = useApi(orchestratorApiRef);
   const { value, loading, error } =
     useAsync(async (): Promise<WorkflowOverviewDTO> => {
@@ -57,7 +59,7 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
   return (
     <Grid container alignContent="flex-start" spacing="1rem">
       <Grid item md={7} key="Workflow">
-        <AboutField label="Workflow">
+        <AboutField label={t('workflow.fields.workflow')}>
           <Link to={workflowPageLink({ workflowId: details.workflowId })}>
             <Typography variant="subtitle2" component="div">
               <b>{capitalize(details.processName)}</b>
@@ -66,7 +68,7 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
         </AboutField>
       </Grid>
       <Grid item md={5} key="Run status">
-        <AboutField label="Run status">
+        <AboutField label={t('workflow.fields.runStatus')}>
           <Typography variant="subtitle2" component="div">
             <b>
               <WorkflowInstanceStatusIndicator
@@ -77,7 +79,7 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
         </AboutField>
       </Grid>
       <Grid item md={7} key="Workflow Status">
-        <AboutField label="Workflow Status">
+        <AboutField label={t('workflow.fields.workflowStatus')}>
           <Typography variant="subtitle2" component="div">
             <b>
               {!error && !loading ? (
@@ -90,21 +92,21 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
         </AboutField>
       </Grid>
       <Grid item md={5} key="Duration">
-        <AboutField label="Duration">
+        <AboutField label={t('workflow.fields.duration')}>
           <Typography variant="subtitle2" component="div">
             <b>{details.duration}</b>
           </Typography>
         </AboutField>
       </Grid>
       <Grid item md={7} key="Description">
-        <AboutField label="Description">
+        <AboutField label={t('workflow.fields.description')}>
           <Typography variant="subtitle2" component="div">
             <b>{details.description ?? VALUE_UNAVAILABLE}</b>
           </Typography>
         </AboutField>
       </Grid>
       <Grid item md={5} key="Started">
-        <AboutField label="Started">
+        <AboutField label={t('workflow.fields.started')}>
           <Typography variant="subtitle2" component="div">
             <b>{details.start}</b>
           </Typography>

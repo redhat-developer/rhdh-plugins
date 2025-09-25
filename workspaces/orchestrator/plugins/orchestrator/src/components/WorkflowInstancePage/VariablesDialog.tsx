@@ -23,6 +23,7 @@ import {
   WorkflowDataDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { useIsDarkMode } from '../../utils/isDarkMode';
 import { InfoDialog } from '../ui/InfoDialog';
 import { JsonCodeBlock } from '../ui/JsonCodeBlock';
@@ -36,17 +37,18 @@ export const VariablesDialog = ({
   onClose: () => void;
   instanceVariables: WorkflowDataDTO;
 }) => {
+  const { t } = useTranslation();
   const isDarkMode = useIsDarkMode();
   const hasVariables = Object.keys(instanceVariables).length > 0;
 
   return (
     <InfoDialog
-      title="Run Variables"
+      title={t('run.variables')}
       onClose={onClose}
       open={open}
       dialogActions={
         <Button color="primary" variant="contained" onClick={onClose}>
-          Close
+          {t('common.close')}
         </Button>
       }
       wideDialog
@@ -61,7 +63,7 @@ export const VariablesDialog = ({
           </Box>
         ))
       ) : (
-        <Typography>No variables found for this run.</Typography>
+        <Typography>{t('messages.noVariablesFound')}</Typography>
       )}
     </InfoDialog>
   );

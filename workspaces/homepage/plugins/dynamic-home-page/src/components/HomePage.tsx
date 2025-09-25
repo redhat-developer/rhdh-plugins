@@ -19,6 +19,7 @@ import { useMemo } from 'react';
 import { Content, EmptyState, Page } from '@backstage/core-components';
 
 import { HomePageCardMountPoint } from '../types';
+import { useTranslation } from '../hooks/useTranslation';
 
 import { Header, HeaderProps } from './Header';
 import { ReadOnlyGrid } from './ReadOnlyGrid';
@@ -28,6 +29,7 @@ export interface HomePageProps extends HeaderProps {
 }
 
 export const HomePage = (props: HomePageProps) => {
+  const { t } = useTranslation();
   const filteredAndSortedHomePageCards = useMemo(() => {
     if (!props.cards) {
       return [];
@@ -48,13 +50,10 @@ export const HomePage = (props: HomePageProps) => {
 
   return (
     <Page themeId="home">
-      <Header title="Welcome back!" {...props} />
+      <Header title={t('header.welcome')} {...props} />
       <Content>
         {filteredAndSortedHomePageCards.length === 0 ? (
-          <EmptyState
-            title="No home page cards (mount points) configured or found."
-            missing="content"
-          />
+          <EmptyState title={t('homePage.empty')} missing="content" />
         ) : (
           <ReadOnlyGrid mountPoints={filteredAndSortedHomePageCards} />
         )}

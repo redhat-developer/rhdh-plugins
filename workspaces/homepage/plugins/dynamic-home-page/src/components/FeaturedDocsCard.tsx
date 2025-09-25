@@ -19,6 +19,8 @@ import {
   FeaturedDocsCardProps,
 } from '@backstage/plugin-home';
 
+import { useTranslation } from '../hooks/useTranslation';
+
 /**
  * Overrides `FeaturedDocsCard` from the home plugin, but overrides the
  * `subLinkText` prop to be " Learn more" instead of "LEARN MORE".
@@ -27,5 +29,11 @@ import {
  * 2. To add a small missing gap between the title and the button
  */
 export const FeaturedDocsCard = (props: FeaturedDocsCardProps) => {
-  return <PluginHomeFeaturedDocsCard subLinkText=" Learn more" {...props} />;
+  const { t } = useTranslation();
+  return (
+    <PluginHomeFeaturedDocsCard
+      subLinkText={` ${t('featuredDocs.learnMore')}`}
+      {...props}
+    />
+  );
 };

@@ -17,9 +17,23 @@
 import { SidebarItem } from '@backstage/core-components';
 import WavingHandOutlinedIcon from '@mui/icons-material/WavingHandOutlined';
 import { useQuickstartDrawerContext } from '@red-hat-developer-hub/backstage-plugin-quickstart';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 export const QuickstartSidebarItem = () => {
+  const configApi = useApi(configApiRef);
   const { toggleDrawer } = useQuickstartDrawerContext();
+
+  // Hide nav item if no quickstart items are configured
+  try {
+    const items = configApi?.has('app.quickstart')
+      ? (configApi.get('app.quickstart') as unknown)
+      : undefined;
+    if (!Array.isArray(items) || items.length === 0) {
+      return null;
+    }
+  } catch {
+    return null;
+  }
   return (
     <SidebarItem
       text="Quickstart"

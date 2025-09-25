@@ -194,6 +194,18 @@ export function GenerateModelServerComponentEntity(
       url: `${modelServer.API.url}`,
     });
     modelServerComponent.spec.providesApis = [modelServer.name];
+
+    // Copy annotations from API to component metadata if they exist
+    if (modelServer.API.annotations !== undefined) {
+      if (modelServerComponent.metadata.annotations === undefined) {
+        modelServerComponent.metadata.annotations = {};
+      }
+      // Copy all key-value pairs from API annotations to component annotations
+      Object.keys(modelServer.API.annotations).forEach(key => {
+        modelServerComponent.metadata.annotations![key] =
+          modelServer.API!.annotations![key];
+      });
+    }
   }
   if (modelServer.homepageURL !== undefined) {
     modelServerComponent.metadata.links.push({

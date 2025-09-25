@@ -67,4 +67,5 @@ backend.add(import('@backstage/plugin-mcp-actions-backend'));
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool'),
 );
+backend.add(import('@redhat-developer-hub/backstage-plugin-techdocs-mcp-tool'));
 backend.start();

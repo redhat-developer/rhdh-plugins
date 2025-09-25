@@ -18,9 +18,17 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { EntityScorecardContent } from '../EntityScorecardContent';
 
 // Mock the child components
-jest.mock('../NoScorecardsState', () => {
+jest.mock('../../Common/NoScorecardsState', () => {
   return function MockNoScorecardsState() {
     return <div data-testid="no-scorecards-state">Empty State</div>;
+  };
+});
+
+jest.mock('../../Common/PermissionRequiredState', () => {
+  return function MockPermissionRequiredState() {
+    return (
+      <div data-testid="permission-required-state">Permission Required</div>
+    );
   };
 });
 
@@ -33,6 +41,10 @@ jest.mock('../Scorecard', () => {
     statusColor,
     StatusIcon,
     thresholds,
+    isThresholdError,
+    thresholdError,
+    isMetricDataError,
+    metricDataError,
   }: any) {
     if (loading) {
       return <div data-testid="scorecard-loading">Loading...</div>;
@@ -43,6 +55,8 @@ jest.mock('../Scorecard', () => {
         data-title={cardTitle}
         data-value={value}
         data-status-color={statusColor}
+        data-threshold-error={isThresholdError}
+        data-metric-error={isMetricDataError}
       >
         <h3>{cardTitle}</h3>
         <p>{description}</p>
@@ -50,6 +64,16 @@ jest.mock('../Scorecard', () => {
         <span>Status: {statusColor}</span>
         {StatusIcon && <span data-testid="status-icon">Status Icon</span>}
         {thresholds && <span data-testid="thresholds">Thresholds</span>}
+        {isThresholdError && (
+          <span data-testid="threshold-error">
+            Threshold Error: {thresholdError}
+          </span>
+        )}
+        {isMetricDataError && (
+          <span data-testid="metric-error">
+            Metric Error: {metricDataError}
+          </span>
+        )}
       </div>
     );
   };
@@ -57,6 +81,10 @@ jest.mock('../Scorecard', () => {
 
 jest.mock('../../../hooks/useScorecards', () => ({
   useScorecards: jest.fn(),
+}));
+
+jest.mock('../../../hooks/useScorecardMetricsReadPermission', () => ({
+  useScorecardMetricsReadPermission: jest.fn(),
 }));
 
 jest.mock('../../../utils/utils', () => ({
@@ -79,19 +107,14 @@ const mockDataWithMetrics = [
       timestamp: '2025-08-08T10:00:00Z',
       thresholdResult: {
         definition: {
-          type: 'DecisionTable',
-          inputs: ['value'],
           rules: [
-            { condition: '< 10', status: 'green', label: 'Ideal' },
-            { condition: '10-50', status: 'orange', label: 'Warning' },
-            { condition: '> 50', status: 'red', label: 'Critical' },
+            { key: 'success', expression: '< 10' },
+            { key: 'warning', expression: '10-50' },
+            { key: 'error', expression: '> 50' },
           ],
         },
-        evaluation: {
-          status: 'green',
-          matchedRule: '< 10',
-          label: 'Ideal',
-        },
+        status: 'success',
+        evaluation: 'success',
       },
     },
   },
@@ -110,19 +133,14 @@ const mockDataWithMetrics = [
       timestamp: '2025-08-08T10:00:00Z',
       thresholdResult: {
         definition: {
-          type: 'DecisionTable',
-          inputs: ['value'],
           rules: [
-            { condition: '< 10', status: 'green', label: 'Ideal' },
-            { condition: '10-50', status: 'orange', label: 'Warning' },
-            { condition: '> 50', status: 'red', label: 'Critical' },
+            { key: 'success', expression: '< 10' },
+            { key: 'warning', expression: '10-50' },
+            { key: 'error', expression: '> 50' },
           ],
         },
-        evaluation: {
-          status: 'orange',
-          matchedRule: '10-50',
-          label: 'Warning',
-        },
+        evaluation: 'success',
+        status: 'success',
       },
     },
   },
@@ -130,11 +148,20 @@ const mockDataWithMetrics = [
 
 // Get the mocked functions
 const { useScorecards } = require('../../../hooks/useScorecards');
+const {
+  useScorecardMetricsReadPermission,
+} = require('../../../hooks/useScorecardMetricsReadPermission');
 const { getStatusConfig } = require('../../../utils/utils');
 
 describe('EntityScorecardContent Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Default permission mock - user has permission
+    useScorecardMetricsReadPermission.mockReturnValue({
+      allowed: true,
+      loading: false,
+    });
 
     getStatusConfig.mockReturnValue({
       color: 'green',
@@ -154,6 +181,40 @@ describe('EntityScorecardContent Component', () => {
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
+  it('should render loading state when permission is loading', () => {
+    useScorecards.mockReturnValue({
+      scorecards: mockDataWithMetrics,
+      loadingData: false,
+      error: undefined,
+    });
+
+    useScorecardMetricsReadPermission.mockReturnValue({
+      allowed: false,
+      loading: true,
+    });
+
+    render(<EntityScorecardContent />);
+
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+
+  it('should render permission required state when user does not have permission', () => {
+    useScorecards.mockReturnValue({
+      scorecards: mockDataWithMetrics,
+      loadingData: false,
+      error: undefined,
+    });
+
+    useScorecardMetricsReadPermission.mockReturnValue({
+      allowed: false,
+      loading: false,
+    });
+
+    render(<EntityScorecardContent />);
+
+    expect(screen.getByTestId('permission-required-state')).toBeInTheDocument();
+  });
+
   it('should render empty state when data has no metrics', async () => {
     useScorecards.mockReturnValue({
       scorecards: [],
@@ -168,7 +229,7 @@ describe('EntityScorecardContent Component', () => {
     });
   });
 
-  it('should render scorecards when data is loaded successfully', async () => {
+  it('should render scorecards when data is loaded successfully and user has permission', async () => {
     useScorecards.mockReturnValue({
       scorecards: mockDataWithMetrics,
       loadingData: false,
@@ -201,12 +262,16 @@ describe('EntityScorecardContent Component', () => {
     render(<EntityScorecardContent />);
 
     expect(getStatusConfig).toHaveBeenCalledTimes(2);
-    expect(getStatusConfig).toHaveBeenCalledWith(
-      mockDataWithMetrics[0].result.thresholdResult.evaluation,
-    );
-    expect(getStatusConfig).toHaveBeenCalledWith(
-      mockDataWithMetrics[1].result.thresholdResult.evaluation,
-    );
+    expect(getStatusConfig).toHaveBeenCalledWith({
+      evaluation: mockDataWithMetrics[0].result.thresholdResult.evaluation,
+      thresholdStatus: mockDataWithMetrics[0].result.thresholdResult.status,
+      metricStatus: mockDataWithMetrics[0].status,
+    });
+    expect(getStatusConfig).toHaveBeenCalledWith({
+      evaluation: mockDataWithMetrics[1].result.thresholdResult.evaluation,
+      thresholdStatus: mockDataWithMetrics[1].result.thresholdResult.status,
+      metricStatus: mockDataWithMetrics[1].status,
+    });
   });
 
   it('should render multiple scorecards with different statuses', async () => {
@@ -297,5 +362,65 @@ describe('EntityScorecardContent Component', () => {
     expect(scorecard).toHaveAttribute('data-status-color', 'red');
     expect(screen.getByTestId('status-icon')).toBeInTheDocument();
     expect(screen.getByTestId('thresholds')).toBeInTheDocument();
+  });
+
+  it('should handle threshold errors correctly', () => {
+    const mockDataWithThresholdError = [
+      {
+        ...mockDataWithMetrics[0],
+        result: {
+          ...mockDataWithMetrics[0].result,
+          thresholdResult: {
+            ...mockDataWithMetrics[0].result.thresholdResult,
+            status: 'error',
+            error: 'Threshold evaluation failed',
+          },
+        },
+      },
+    ];
+
+    useScorecards.mockReturnValue({
+      scorecards: mockDataWithThresholdError,
+      loadingData: false,
+      error: undefined,
+    });
+
+    render(<EntityScorecardContent />);
+
+    const scorecard = screen.getByTestId('scorecard-card');
+    expect(scorecard).toHaveAttribute('data-threshold-error', 'true');
+    expect(screen.getByTestId('threshold-error')).toBeInTheDocument();
+    expect(
+      screen.getByText('Threshold Error: Threshold evaluation failed'),
+    ).toBeInTheDocument();
+  });
+
+  it('should handle metric data errors correctly', () => {
+    const mockDataWithMetricError = [
+      {
+        ...mockDataWithMetrics[0],
+        status: 'error',
+        error: 'Failed to fetch metric data',
+        result: {
+          ...mockDataWithMetrics[0].result,
+          value: undefined,
+        },
+      },
+    ];
+
+    useScorecards.mockReturnValue({
+      scorecards: mockDataWithMetricError,
+      loadingData: false,
+      error: undefined,
+    });
+
+    render(<EntityScorecardContent />);
+
+    const scorecard = screen.getByTestId('scorecard-card');
+    expect(scorecard).toHaveAttribute('data-metric-error', 'true');
+    expect(screen.getByTestId('metric-error')).toBeInTheDocument();
+    expect(
+      screen.getByText('Metric Error: Failed to fetch metric data'),
+    ).toBeInTheDocument();
   });
 });

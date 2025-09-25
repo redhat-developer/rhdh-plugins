@@ -27,8 +27,8 @@ export type MetricResult = {
     type: MetricType;
     history?: boolean;
   };
-  result?: {
-    value: MetricValue;
+  result: {
+    value?: MetricValue;
     timestamp: string;
     thresholdResult: ThresholdResult;
   };

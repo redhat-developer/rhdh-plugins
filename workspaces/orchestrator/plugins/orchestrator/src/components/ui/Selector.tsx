@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { Select, SelectedItems } from '@backstage/core-components';
 
@@ -55,7 +55,7 @@ export const Selector = ({
 }: SelectorProps) => {
   const { classes } = useStyles();
 
-  const selectItems = React.useMemo(
+  const selectItems = useMemo(
     () =>
       includeAll
         ? [{ label: 'All', value: ALL_ITEMS }, ...otherProps.items]
@@ -63,7 +63,7 @@ export const Selector = ({
     [includeAll, otherProps.items],
   );
 
-  const handleChange = React.useCallback(
+  const handleChange = useCallback(
     (item: SelectedItems) => otherProps.onChange(item as string),
     [otherProps],
   );

@@ -17,3 +17,4 @@
 export { useAddedRepositories } from './useAddedRepositories';
 export { useRepositories } from './useRepositories';
 export { useNumberOfApprovalTools } from './useNumberOfApprovalTools';
+export { useTranslation } from './useTranslation';

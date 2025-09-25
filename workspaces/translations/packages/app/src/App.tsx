@@ -56,6 +56,7 @@ import { SignalsDisplay } from '@backstage/plugin-signals';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import { TranslationsPage } from '@red-hat-developer-hub/backstage-plugin-translations';
+import { TranslationsTestPage } from '@red-hat-developer-hub/backstage-plugin-translations-test';
 
 const app = createApp({
   apis,
@@ -121,6 +122,7 @@ const routes = (
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
     <Route path="/translations" element={<TranslationsPage />} />
+    <Route path="/translations-test" element={<TranslationsTestPage />} />
   </FlatRoutes>
 );
 

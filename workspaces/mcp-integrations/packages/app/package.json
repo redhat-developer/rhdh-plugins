@@ -6,7 +6,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/ai-integrations/packages/app"
+    "directory": "workspaces/mcp-integrations/packages/app"
   },
   "backstage": {
     "role": "frontend"

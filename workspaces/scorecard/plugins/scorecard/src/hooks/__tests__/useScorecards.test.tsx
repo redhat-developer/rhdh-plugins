@@ -136,6 +136,7 @@ describe('useScorecards', () => {
       expect(mockUseAsync).toHaveBeenCalledWith(expect.any(Function), [
         mockEntity,
         mockScorecardApi,
+        expect.any(Function), // translation function
       ]);
     });
 

@@ -33,6 +33,7 @@ import createStyles from '@mui/styles/createStyles';
 import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
@@ -62,6 +63,7 @@ const DeleteRepositoryDialog = ({
   repository: AddRepositoryData;
   closeDialog: () => void;
 }) => {
+  const { t } = useTranslation();
   const classes = useStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
   const deleteRepository = (deleteRepo: AddRepositoryData) => {
@@ -90,7 +92,7 @@ const DeleteRepositoryDialog = ({
     >
       <DialogTitle
         id="delete-repository"
-        title="Delete Repository"
+        title={t('repositories.deleteRepository')}
         className={classes.dialogTitle}
       >
         <Box
@@ -102,13 +104,18 @@ const DeleteRepositoryDialog = ({
         >
           <Typography component="span" style={{ fontWeight: 'bold' }}>
             <WarningIcon className={classes.warningIcon} color="warning" />{' '}
-            {`Remove ${repository.repoName} ${gitlabFeatureFlag ? '' : 'repository'}?`}
+            {t('repositories.removeRepositoryQuestion' as any, {
+              repoName: repository.repoName || '',
+              repositoryText: gitlabFeatureFlag
+                ? ''
+                : t('repositories.repositoryText'),
+            })}
           </Typography>
 
           <IconButton
             aria-label="close"
             onClick={closeDialog}
-            title="Close"
+            title={t('common.close')}
             size="large"
             sx={{
               position: 'absolute',
@@ -123,17 +130,19 @@ const DeleteRepositoryDialog = ({
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1">
-          {`Removing ${gitlabFeatureFlag ? 'it will' : 'a repository'} erases all associated information from the
-          Catalog page.`}
+          {gitlabFeatureFlag
+            ? t('repositories.removeRepositoryWarningGitlab')
+            : t('repositories.removeRepositoryWarning')}
         </Typography>
       </DialogContent>
       {(isUrlMissing || mutationDelete.isError) && (
         <Box maxWidth="650px" marginLeft="20px">
           <Alert severity="error">
-            {isUrlMissing &&
-              'Cannot remove repository as the repository URL is missing.'}
+            {isUrlMissing && t('repositories.cannotRemoveRepositoryUrl')}
             {mutationDelete.isError &&
-              `Unable to remove repository. ${mutationDelete.error}`}
+              t('repositories.unableToRemoveRepository' as any, {
+                error: String(mutationDelete.error),
+              })}
           </Alert>
         </Box>
       )}
@@ -159,7 +168,9 @@ const DeleteRepositoryDialog = ({
             },
           }}
         >
-          {mutationDelete.isLoading ? 'Removing...' : 'Remove'}
+          {mutationDelete.isLoading
+            ? t('repositories.removing')
+            : t('common.remove')}
         </Button>
         <Button
           variant="outlined"
@@ -168,7 +179,7 @@ const DeleteRepositoryDialog = ({
           }}
           onClick={() => closeDialog()}
         >
-          Cancel
+          {t('common.cancel')}
         </Button>
       </DialogActions>
     </Dialog>

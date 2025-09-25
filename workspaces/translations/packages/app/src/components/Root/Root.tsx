@@ -98,6 +98,11 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
           to="translations"
           text="Translations"
         />
+        <SidebarItem
+          icon={ExtensionIcon}
+          to="translations-test"
+          text="Translations Test"
+        />
         <SidebarDivider />
         <SidebarScrollWrapper>
           {/* Items in this group will be scrollable if they run out of space */}
