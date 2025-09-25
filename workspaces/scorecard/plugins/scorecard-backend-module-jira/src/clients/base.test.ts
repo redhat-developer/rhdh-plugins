@@ -18,7 +18,7 @@ import type { Config } from '@backstage/config';
 import { JiraClient } from './base';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { mockServices } from '@backstage/backend-test-utils';
-import { AuthService, DiscoveryService } from '@backstage/backend-plugin-api';
+import { AuthOptions } from '../types';
 import {
   DirectConnectionStrategy,
   ProxyConnectionStrategy,
@@ -50,8 +50,7 @@ globalThis.fetch = jest.fn();
 describe('JiraClient', () => {
   let testJiraClient: TestJiraClient;
   let mockRootConfig: Config;
-  let mockDiscovery: DiscoveryService;
-  let mockAuth: AuthService;
+  let mockAuthOptions: AuthOptions;
 
   const mockMethod = 'GET';
   const mockURL = 'https://example.com/api';
@@ -64,19 +63,17 @@ describe('JiraClient', () => {
     };
     mockRootConfig = newMockRootConfig({ options });
 
-    mockDiscovery = mockServices.discovery();
-    mockAuth = mockServices.auth();
+    mockAuthOptions = {
+      discovery: mockServices.discovery(),
+      auth: mockServices.auth(),
+    };
 
     (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: jest.fn().mockResolvedValueOnce({ total: 10 }),
     });
 
-    testJiraClient = new TestJiraClient(
-      mockRootConfig,
-      mockDiscovery,
-      mockAuth,
-    );
+    testJiraClient = new TestJiraClient(mockRootConfig, mockAuthOptions);
   });
 
   afterEach(() => {
@@ -100,10 +97,9 @@ describe('JiraClient', () => {
 
     it('should create proxy connection when enableProxy is true', () => {
       const config = newMockRootConfig({
-        enableProxy: true,
         jiraConfig: { proxyPath: '/jira/api' },
       });
-      const client = new TestJiraClient(config, mockDiscovery, mockAuth);
+      const client = new TestJiraClient(config, mockAuthOptions);
 
       expect((client as any).connectionStrategy).toBeInstanceOf(
         ProxyConnectionStrategy,
@@ -316,7 +312,7 @@ describe('JiraClient', () => {
         },
       });
 
-      testJiraClient = new TestJiraClient(config, mockDiscovery, mockAuth);
+      testJiraClient = new TestJiraClient(config, mockAuthOptions);
 
       const jql = (testJiraClient as any).buildJqlFilters({});
       expect(jql).toBe('(team = 4316)');
@@ -338,7 +334,7 @@ describe('JiraClient', () => {
           mandatoryFilter: 'resolution = Unresolved',
         },
       });
-      testJiraClient = new TestJiraClient(config, mockDiscovery, mockAuth);
+      testJiraClient = new TestJiraClient(config, mockAuthOptions);
 
       const jql = (testJiraClient as any).buildJqlFilters({
         customFilter: 'assignee = Robot',
@@ -357,7 +353,8 @@ describe('JiraClient', () => {
     it('should not use any custom filters when custom filter is not provided in annotation and options', () => {
       const config = newMockRootConfig();
 
-      const client = new TestJiraClient(config, mockDiscovery, mockAuth);
+      const client = new TestJiraClient(config, mockAuthOptions);
+
       const jql = (client as any).buildJqlFilters({});
 
       expect(jql).toContain('(type = Bug AND resolution = Unresolved)');
@@ -372,11 +369,11 @@ describe('JiraClient', () => {
 
     it('should return proxy base URL when enableProxy is true', async () => {
       const config = newMockRootConfig({
-        enableProxy: true,
         jiraConfig: { proxyPath: '/jira/api' },
       });
 
-      const client = new TestJiraClient(config, mockDiscovery, mockAuth);
+      const client = new TestJiraClient(config, mockAuthOptions);
+
       const baseUrl = await (client as any).getBaseUrl();
 
       expect(baseUrl).toEqual(
@@ -396,7 +393,8 @@ describe('JiraClient', () => {
         jiraConfig: { product: 'datacenter' },
       });
 
-      const client = new TestJiraClient(config, mockDiscovery, mockAuth);
+      const client = new TestJiraClient(config, mockAuthOptions);
+
       const authHeaders = await (client as any).getAuthHeaders();
 
       expect(authHeaders).toEqual({ Authorization: 'Bearer Fds31dsF32' });

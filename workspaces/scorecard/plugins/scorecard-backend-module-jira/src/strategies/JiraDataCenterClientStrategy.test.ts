@@ -30,6 +30,11 @@ const { PROJECT_KEY } = ScorecardJiraAnnotations;
 const mockAuth = mockServices.auth();
 const mockDiscovery = mockServices.discovery();
 
+const authOptions = {
+  discovery: mockDiscovery,
+  auth: mockAuth,
+};
+
 describe('JiraDataCenterClient', () => {
   let jiraDataCenterClient: JiraDataCenterClientStrategy;
 
@@ -49,8 +54,7 @@ describe('JiraDataCenterClient', () => {
 
     jiraDataCenterClient = new JiraDataCenterClientStrategy(
       config,
-      mockDiscovery,
-      mockAuth,
+      authOptions,
     );
   });
 

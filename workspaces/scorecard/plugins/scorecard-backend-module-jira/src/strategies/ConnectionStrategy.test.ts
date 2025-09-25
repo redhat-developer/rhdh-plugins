@@ -20,8 +20,10 @@ import {
   ProxyConnectionStrategy,
 } from './ConnectionStrategy';
 
-const mockDiscovery = mockServices.discovery();
-const mockAuth = mockServices.auth();
+const mockAuthOptions = {
+  discovery: mockServices.discovery(),
+  auth: mockServices.auth(),
+};
 
 describe('ConnectionStrategy', () => {
   beforeEach(() => {
@@ -69,8 +71,7 @@ describe('ConnectionStrategy', () => {
   describe('ProxyConnectionStrategy', () => {
     const connectionStrategy = new ProxyConnectionStrategy(
       '/jira/api',
-      mockDiscovery,
-      mockAuth,
+      mockAuthOptions,
     );
 
     describe('constructor', () => {
@@ -91,7 +92,7 @@ describe('ConnectionStrategy', () => {
     describe('getAuthHeaders', () => {
       it('should return Bearer auth headers when service token is present', async () => {
         jest
-          .spyOn(mockAuth, 'getPluginRequestToken')
+          .spyOn(mockAuthOptions.auth, 'getPluginRequestToken')
           .mockResolvedValue({ token: 'Fds31dsF32' });
 
         const authHeaders = await connectionStrategy.getAuthHeaders();
@@ -100,7 +101,7 @@ describe('ConnectionStrategy', () => {
 
       it('should return an empty object when service token is not present', async () => {
         jest
-          .spyOn(mockAuth, 'getPluginRequestToken')
+          .spyOn(mockAuthOptions.auth, 'getPluginRequestToken')
           .mockResolvedValue({ token: '' });
 
         const authHeaders = await connectionStrategy.getAuthHeaders();
@@ -111,7 +112,7 @@ describe('ConnectionStrategy', () => {
     describe('getServiceToken', () => {
       it('should return the service token', async () => {
         jest
-          .spyOn(mockAuth, 'getPluginRequestToken')
+          .spyOn(mockAuthOptions.auth, 'getPluginRequestToken')
           .mockResolvedValue({ token: 'Fds31dsF32' });
 
         const serviceToken = await (

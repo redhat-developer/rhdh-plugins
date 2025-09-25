@@ -56,8 +56,11 @@ const mockEntity: Entity = newEntityComponent({
 });
 
 const customThresholds: ThresholdConfig = newThresholdsConfig();
-const mockDiscovery = mockServices.discovery();
-const mockAuth = mockServices.auth();
+
+const mockAuthOptions = {
+  discovery: mockServices.discovery(),
+  auth: mockServices.auth(),
+};
 
 describe('JiraOpenIssuesProvider', () => {
   let mockConfig: Config;
@@ -72,8 +75,7 @@ describe('JiraOpenIssuesProvider', () => {
     it('should return "jira"', () => {
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
       expect(provider.getProviderDatasourceId()).toEqual('jira');
     });
@@ -83,8 +85,7 @@ describe('JiraOpenIssuesProvider', () => {
     it('should return "jira.open-issues"', () => {
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
       expect(provider.getProviderId()).toEqual('jira.open-issues');
     });
@@ -98,8 +99,7 @@ describe('JiraOpenIssuesProvider', () => {
 
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
       getMetricResult = provider.getMetric();
     });
@@ -124,8 +124,7 @@ describe('JiraOpenIssuesProvider', () => {
     it('should return default config when no thresholds are configured', () => {
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
       expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
@@ -135,8 +134,7 @@ describe('JiraOpenIssuesProvider', () => {
 
       const provider = JiraOpenIssuesProvider.fromConfig(
         config,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
       expect(provider.getMetricThresholds()).toEqual(customThresholds);
     });
@@ -146,8 +144,7 @@ describe('JiraOpenIssuesProvider', () => {
     it('should return true when entity has project key annotation', () => {
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
       expect(provider.supportsEntity(mockEntity)).toBe(true);
     });
@@ -157,8 +154,7 @@ describe('JiraOpenIssuesProvider', () => {
 
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
       expect(provider.supportsEntity(mockEmptyEntity)).toBe(false);
     });
@@ -168,14 +164,12 @@ describe('JiraOpenIssuesProvider', () => {
     it('should create provider with default config when thresholds are not configured', () => {
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
 
       expect(MockedJiraClientFactory.create).toHaveBeenCalledWith(
         mockConfig,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
       expect(mockedValidateThresholds).not.toHaveBeenCalled();
       expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
@@ -186,14 +180,12 @@ describe('JiraOpenIssuesProvider', () => {
 
       const provider = JiraOpenIssuesProvider.fromConfig(
         config,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
 
       expect(MockedJiraClientFactory.create).toHaveBeenCalledWith(
         config,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
       expect(mockedValidateThresholds).toHaveBeenCalledWith(
         customThresholds,
@@ -212,7 +204,7 @@ describe('JiraOpenIssuesProvider', () => {
       const config = newMockRootConfig({ thresholds: invalidThresholds });
 
       expect(() =>
-        JiraOpenIssuesProvider.fromConfig(config, mockDiscovery, mockAuth),
+        JiraOpenIssuesProvider.fromConfig(config, mockAuthOptions),
       ).toThrow('Invalid thresholds');
       expect(mockedValidateThresholds).toHaveBeenCalledWith(
         invalidThresholds,
@@ -227,8 +219,7 @@ describe('JiraOpenIssuesProvider', () => {
 
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
-        mockDiscovery,
-        mockAuth,
+        mockAuthOptions,
       );
       const result = await provider.calculateMetric(mockEntity);
 
@@ -248,8 +239,7 @@ describe('JiraOpenIssuesProvider', () => {
       it('should propagate errors from Jira client', async () => {
         const provider = JiraOpenIssuesProvider.fromConfig(
           mockConfig,
-          mockDiscovery,
-          mockAuth,
+          mockAuthOptions,
         );
         await expect(provider.calculateMetric(mockEntity)).rejects.toThrow(
           'Jira API error',

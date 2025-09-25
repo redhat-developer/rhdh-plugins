@@ -14,27 +14,9 @@
  * limitations under the License.
  */
 
-/**
- * Jira open issues thresholds configuration path
- * @public
- */
-export const THRESHOLDS_CONFIG_PATH =
-  'scorecard.plugins.jira.open_issues.thresholds' as const;
+import { AuthService, DiscoveryService } from '@backstage/backend-plugin-api';
 
-/**
- * Jira integration configuration path
- * @public
- */
-export const JIRA_CONFIG_PATH = 'jira' as const;
-
-/**
- * Jira open issues options configuration path
- * @public
- */
-export const JIRA_OPTIONS_PATH =
-  'scorecard.plugins.jira.open_issues.options' as const;
-
-export const API_VERSION_DEFAULT = 'latest' as const;
-
-export const JIRA_MANDATORY_FILTER =
-  'type = Bug AND resolution = Unresolved' as const;
+export interface AuthOptions {
+  discovery: DiscoveryService;
+  auth: AuthService;
+}

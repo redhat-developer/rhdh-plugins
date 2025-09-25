@@ -33,7 +33,7 @@ export const scorecardModuleJira = createBackendModule({
       },
       async init({ config, discovery, auth, metrics }) {
         metrics.addMetricProvider(
-          JiraOpenIssuesProvider.fromConfig(config, discovery, auth),
+          JiraOpenIssuesProvider.fromConfig(config, { discovery, auth }),
         );
       },
     });

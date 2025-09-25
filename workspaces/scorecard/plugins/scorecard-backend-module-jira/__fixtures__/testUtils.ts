@@ -51,7 +51,6 @@ interface NewMockRootConfigProps {
     mandatoryFilter?: string;
     customFilter?: string;
   };
-  enableProxy?: boolean;
   jiraConfig?: {
     baseUrl?: string;
     token?: string;
@@ -64,7 +63,6 @@ interface NewMockRootConfigProps {
 export function newMockRootConfig({
   thresholds,
   options,
-  enableProxy,
   jiraConfig,
 }: NewMockRootConfigProps = {}): Config {
   const jira = {
@@ -80,7 +78,6 @@ export function newMockRootConfig({
       scorecard: {
         plugins: {
           jira: {
-            enableProxy,
             open_issues: {
               options,
               thresholds,

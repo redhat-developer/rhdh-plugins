@@ -16,15 +16,20 @@
 
 export interface Config {
   /** Configuration for jira plugin */
-  jira: {
-    /** Optional only when using proxy. */
-    baseUrl?: string;
-    /** Optional only when using proxy. */
-    token?: string;
+  jira: (
+    | {
+        /** Required only when using direct connection. */
+        baseUrl: string;
+        /** Required only when using direct connection. */
+        token: string;
+      }
+    | {
+        /** Required only when using proxy connection. */
+        proxyPath: string;
+      }
+  ) & {
     product: string;
     apiVersion?: string;
-    /** Required only when using proxy. */
-    proxyPath?: string;
   };
   /** Configuration for scorecard plugin */
   scorecard?: {
@@ -32,8 +37,6 @@ export interface Config {
     plugins?: {
       /** JIRA datasource configuration */
       jira?: {
-        /** When not provided, proxy will not be used */
-        enableProxy?: boolean;
         open_issues?: {
           options?: {
             mandatoryFilter?: string;

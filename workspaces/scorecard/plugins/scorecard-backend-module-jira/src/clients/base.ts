@@ -16,10 +16,7 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import type {
-  AuthService,
-  DiscoveryService,
-} from '@backstage/backend-plugin-api';
+import { AuthOptions } from '../types';
 import {
   JiraConfig,
   JiraEntityFilters,
@@ -32,7 +29,6 @@ import {
   JIRA_CONFIG_PATH,
   JIRA_OPTIONS_PATH,
   JIRA_MANDATORY_FILTER,
-  JIRA_ENABLE_PROXY_PATH,
 } from '../constants';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
@@ -50,11 +46,7 @@ export abstract class JiraClient {
   protected readonly options?: JiraOptions;
   protected readonly connectionStrategy: ConnectionStrategy;
 
-  constructor(
-    rootConfig: Config,
-    discovery: DiscoveryService,
-    auth: AuthService,
-  ) {
+  constructor(rootConfig: Config, authOptions: AuthOptions) {
     const jiraConfig = rootConfig.getConfig(JIRA_CONFIG_PATH);
 
     this.config = {
@@ -63,12 +55,11 @@ export abstract class JiraClient {
         jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT,
     };
 
-    if (rootConfig.getOptionalBoolean(JIRA_ENABLE_PROXY_PATH)) {
+    if (jiraConfig.getOptionalString('proxyPath')) {
       const proxyPath = jiraConfig.getString('proxyPath');
       this.connectionStrategy = new ProxyConnectionStrategy(
         proxyPath,
-        discovery,
-        auth,
+        authOptions,
       );
     } else {
       const baseUrl = jiraConfig.getString('baseUrl');

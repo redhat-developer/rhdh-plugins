@@ -30,6 +30,11 @@ globalThis.fetch = jest.fn();
 const mockAuth = mockServices.auth();
 const mockDiscovery = mockServices.discovery();
 
+const authOptions = {
+  discovery: mockDiscovery,
+  auth: mockAuth,
+};
+
 describe('JiraCloudClient', () => {
   let jiraCloudClient: JiraCloudClientStrategy;
 
@@ -43,11 +48,7 @@ describe('JiraCloudClient', () => {
     };
     const config = newMockRootConfig({ jiraConfig, options });
 
-    jiraCloudClient = new JiraCloudClientStrategy(
-      config,
-      mockDiscovery,
-      mockAuth,
-    );
+    jiraCloudClient = new JiraCloudClientStrategy(config, authOptions);
   });
 
   afterEach(() => {

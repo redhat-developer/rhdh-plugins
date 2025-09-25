@@ -16,10 +16,6 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import type {
-  AuthService,
-  DiscoveryService,
-} from '@backstage/backend-plugin-api';
 import { THRESHOLDS_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
@@ -33,6 +29,7 @@ import {
 import { JiraClient } from '../clients/base';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
 import { ScorecardJiraAnnotations } from '../annotations';
+import { AuthOptions } from '../types';
 
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
@@ -42,11 +39,10 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
 
   private constructor(
     config: Config,
-    discovery: DiscoveryService,
-    auth: AuthService,
+    authOptions: AuthOptions,
     thresholds?: ThresholdConfig,
   ) {
-    this.jiraClient = JiraClientFactory.create(config, discovery, auth);
+    this.jiraClient = JiraClientFactory.create(config, authOptions);
     this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
   }
 
@@ -79,8 +75,7 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
 
   static fromConfig(
     config: Config,
-    discovery: DiscoveryService,
-    auth: AuthService,
+    authOptions: AuthOptions,
   ): JiraOpenIssuesProvider {
     const configuredThresholds = config.getOptional(THRESHOLDS_CONFIG_PATH);
     if (configuredThresholds !== undefined) {
@@ -89,8 +84,7 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
 
     return new JiraOpenIssuesProvider(
       config,
-      discovery,
-      auth,
+      authOptions,
       configuredThresholds,
     );
   }
