@@ -20,43 +20,43 @@ import { globalHeaderTranslationRef } from './ref';
 const globalHeaderTranslationFr = createTranslationMessages({
   ref: globalHeaderTranslationRef,
   messages: {
-    'applicationLauncher.developerHub': 'Centre des développeurs',
-    'applicationLauncher.noLinksSubtitle':
-      "Configurez les liens d'application dans la configuration du plugin dynamique pour un accès rapide à partir d'ici.",
-    'applicationLauncher.noLinksTitle': "Aucun lien d'application configuré",
-    'applicationLauncher.rhdhLocal': 'RHDH Local',
-    'applicationLauncher.sections.developerTools': 'Outils de développement',
-    'applicationLauncher.sections.documentation': 'Documentation',
+    'help.tooltip': 'Aide',
+    'help.noSupportLinks': 'Aucun lien de support',
+    'help.noSupportLinksSubtitle':
+      'Votre administrateur doit configurer les liens de support.',
+    'help.quickStart': 'Démarrage rapide',
+    'help.supportTitle': 'Support',
+    'profile.picture': 'Photo de profil',
+    'profile.signOut': 'Se déconnecter',
+    'search.placeholder': 'Rechercher...',
+    'search.noResults': 'Aucun résultat trouvé',
+    'search.errorFetching': 'Erreur lors de la récupération des résultats',
     'applicationLauncher.tooltip': "Lanceur d'applications",
-    'create.registerComponent.subtitle': 'Importez-le sur la page du catalogue',
+    'applicationLauncher.noLinksTitle': "Aucun lien d'application configuré",
+    'applicationLauncher.noLinksSubtitle':
+      "Configurez les liens d'application dans la configuration du plugin dynamique pour un accès rapide depuis ici.",
+    'starred.title': 'Vos éléments favoris',
+    'starred.removeTooltip': 'Supprimer de la liste',
+    'starred.noItemsTitle': 'Aucun élément favori pour le moment',
+    'starred.noItemsSubtitle':
+      "Cliquez sur l'icône étoile à côté du nom d'une entité pour l'enregistrer ici pour un accès rapide.",
+    'notifications.title': 'Notifications',
+    'notifications.unsupportedDismissOption':
+      'Option de rejet non supportée "{{option}}", actuellement supporté "none", "session" ou "localstorage" !',
+    'create.title': 'Libre-service',
     'create.registerComponent.title': 'Enregistrer un composant',
+    'create.registerComponent.subtitle': "L'importer dans la page de catalogue",
+    'create.templates.sectionTitle': 'Utiliser un modèle',
     'create.templates.allTemplates': 'Tous les modèles',
     'create.templates.errorFetching':
       'Erreur lors de la récupération des modèles',
     'create.templates.noTemplatesAvailable': 'Aucun modèle disponible',
-    'create.templates.sectionTitle': 'Utiliser un modèle',
-    'create.title': 'Self-service',
-    'help.noSupportLinks': 'Aucun lien de support',
-    'help.noSupportLinksSubtitle':
-      'Votre administrateur doit configurer des liens d’assistance.',
-    'help.quickStart': 'Démarrage rapide',
-    'help.supportTitle': 'Support',
-    'help.tooltip': 'Aide',
-    'notifications.title': 'Notifications',
-    'notifications.unsupportedDismissOption':
-      'Option de rejet non prise en charge « {{option}} », actuellement prise en charge « none », « session » ou « localstorage » !',
-    'profile.myProfile': 'Mon profil',
-    'profile.picture': 'Photo de profil',
     'profile.settings': 'Paramètres',
-    'profile.signOut': 'se déconnecter',
-    'search.errorFetching': 'Erreur lors de la récupération des résultats',
-    'search.noResults': 'Aucun résultat trouvé',
-    'search.placeholder': 'Recherche...',
-    'starred.noItemsSubtitle':
-      "Cliquez sur l'icône étoile à côté du nom d'une entité pour l'enregistrer ici pour un accès rapide.",
-    'starred.noItemsTitle': 'Aucun élément étoilé pour le moment',
-    'starred.removeTooltip': 'Supprimer de la liste',
-    'starred.title': 'Vos articles favoris',
+    'profile.myProfile': 'Mon profil',
+    'applicationLauncher.developerHub': 'Developer Hub',
+    'applicationLauncher.rhdhLocal': 'RHDH Local',
+    'applicationLauncher.sections.documentation': 'Documentation',
+    'applicationLauncher.sections.developerTools': 'Outils de développement',
   },
 });
 
