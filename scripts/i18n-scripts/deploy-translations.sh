@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Deploy downloaded translations to their original source locations
-# This script takes downloaded translation files and puts them back where the ref.ts files are located
+# Deploy downloaded translations directly to TypeScript files
+# This script takes JSON translation files from Memsource and updates the corresponding TypeScript translation files directly
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 show_usage() {
-  echo "Deploy Downloaded Translations"
+  echo "Deploy Translations to TypeScript Files"
   echo ""
   echo "Usage: $0 [OPTIONS] [FILES...]"
   echo ""
   echo "Options:"
   echo "  --source-dir DIR     Directory containing downloaded translation files (default: repo root)"
-  echo "  --dry-run           Show what would be deployed without actually doing it"
+  echo "  --dry-run           Show what would be updated without actually doing it"
   echo "  --clean-source      Remove source files after successful deployment"
   echo "  -h, --help          Show this help"
   echo ""
@@ -67,21 +67,15 @@ deploy_translation_file() {
   local file_path="$1"
   local filename=$(basename "$file_path")
   
-  # Parse filename: rhdh-plugins__workspaces__PLUGIN__plugins__PLUGIN__src__translations__ref-en-LANG-C.json
+  # Parse filename: rhdh-plugins__workspaces__WORKSPACE__plugins__PLUGIN__src__translations__ref-en-LANG-C.json
   if [[ "$filename" =~ ^rhdh-plugins__workspaces__([^_]+)__plugins__([^_]+)__src__translations__ref-en-([^-]+)-[^.]+\.json$ ]]; then
-    local plugin_name="${BASH_REMATCH[1]}"
-    local plugin_name2="${BASH_REMATCH[2]}"
+    local workspace_name="${BASH_REMATCH[1]}"
+    local plugin_name="${BASH_REMATCH[2]}"
     local language="${BASH_REMATCH[3]}"
     
-    # Verify plugin names match (they should be the same)
-    if [[ "$plugin_name" != "$plugin_name2" ]]; then
-      echo "  ⚠️  Plugin name mismatch in filename: $plugin_name vs $plugin_name2"
-      return 1
-    fi
-    
     # Construct target path
-    local target_dir="$REPO_ROOT/workspaces/$plugin_name/plugins/$plugin_name/src/translations"
-    local target_file="$target_dir/ref-$language.json"
+    local target_dir="$REPO_ROOT/workspaces/$workspace_name/plugins/$plugin_name/src/translations"
+    local target_ts_file="$target_dir/$language.ts"
     
     echo "  → Plugin: $plugin_name, Language: $language"
     
@@ -97,16 +91,154 @@ deploy_translation_file() {
       echo "    ⚠️  This might not be the correct location"
     fi
     
+    # Check if target TypeScript file exists
+    if [[ ! -f "$target_ts_file" ]]; then
+      echo "    ❌ Target TypeScript file doesn't exist: $target_ts_file"
+      return 1
+    fi
+    
     if [[ "$DRY_RUN" == true ]]; then
-      echo "    [DRY RUN] Would copy: $file_path → $target_file"
+      echo "    [DRY RUN] Would update: $target_ts_file with translations from $file_path"
     else
-      echo "    📁 Deploying: $target_file"
-      cp "$file_path" "$target_file"
+      echo "    📁 Updating: $target_ts_file"
       
-      # Clean source file if requested
-      if [[ "$CLEAN_SOURCE" == true ]]; then
-        rm "$file_path"
-        echo "    🗑️  Removed source: $file_path"
+      # Update the TypeScript file directly with JSON translations
+      node -e "
+        const fs = require('fs');
+        const path = require('path');
+        
+        // Read files
+        const tsContent = fs.readFileSync('$target_ts_file', 'utf8');
+        const jsonMessages = JSON.parse(fs.readFileSync('$file_path', 'utf8'));
+        
+        // Find the messages object in the TypeScript file
+        const messagesStartMatch = tsContent.match(/(messages:\s*{)/);
+        if (!messagesStartMatch) {
+          console.error('Could not find messages object start in TypeScript file');
+          process.exit(1);
+        }
+        
+        const beforeMessages = messagesStartMatch[1];
+        const startIndex = messagesStartMatch.index + messagesStartMatch[0].length;
+        
+        // Find the matching closing brace by counting braces
+        let braceCount = 1;
+        let endIndex = startIndex;
+        let inString = false;
+        let stringChar = '';
+        let escaped = false;
+        
+        for (let i = startIndex; i < tsContent.length && braceCount > 0; i++) {
+          const char = tsContent[i];
+          
+          if (escaped) {
+            escaped = false;
+            continue;
+          }
+          
+          if (char === '\\\\') {
+            escaped = true;
+            continue;
+          }
+          
+          if (inString) {
+            if (char === stringChar) {
+              inString = false;
+              stringChar = '';
+            }
+          } else {
+            if (char === '\"' || char === \"'\") {
+              inString = true;
+              stringChar = char;
+            } else if (char === '{') {
+              braceCount++;
+            } else if (char === '}') {
+              braceCount--;
+            }
+          }
+          
+          endIndex = i;
+        }
+        
+        if (braceCount !== 0) {
+          console.error('Could not find matching closing brace for messages object');
+          process.exit(1);
+        }
+        
+        const afterMessages = '}';
+        const fullMessagesMatch = tsContent.substring(messagesStartMatch.index, endIndex + 1);
+        
+        // Build new messages content
+        const newMessagesLines = [];
+        const sortedKeys = Object.keys(jsonMessages).sort();
+        
+        for (const key of sortedKeys) {
+          const value = jsonMessages[key];
+          
+          // Validate the key and value
+          if (typeof key !== 'string' || typeof value !== 'string') {
+            console.error(\`Invalid key-value pair: \${key} = \${value}\`);
+            continue;
+          }
+          
+          // Check for problematic characters that might cause issues
+          const problematicChars = /[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/;
+          if (problematicChars.test(value)) {
+            console.warn(\`Warning: Translation for '\${key}' contains control characters that may cause issues\`);
+          }
+          
+          // Properly escape special characters for JavaScript strings
+          let escapedValue = JSON.stringify(value);
+          // Remove the outer double quotes added by JSON.stringify
+          escapedValue = escapedValue.slice(1, -1);
+          // Convert double quotes to single quotes (since we're using single-quoted strings)
+          escapedValue = escapedValue.replace(/\\\\\"/g, '\"').replace(/'/g, \"\\\\'\");
+          
+          // Format the line with proper indentation
+          if (value.length > 60) {
+            // Multi-line format for long strings
+            newMessagesLines.push(\`    '\${key}':\`);
+            newMessagesLines.push(\`      '\${escapedValue}',\`);
+          } else {
+            // Single line format
+            newMessagesLines.push(\`    '\${key}': '\${escapedValue}',\`);
+          }
+        }
+        
+        // Construct the new content
+        const newMessagesContent = newMessagesLines.join('\\n');
+        const newMessagesObject = beforeMessages + '\\n' + newMessagesContent + '\\n  ' + afterMessages;
+        const newTsContent = tsContent.replace(
+          fullMessagesMatch,
+          newMessagesObject
+        );
+        
+        // Write the updated file
+        fs.writeFileSync('$target_ts_file', newTsContent, 'utf8');
+        console.log('✅ Updated TypeScript file successfully');
+        
+        // Validate the syntax of the generated file
+        try {
+          require('child_process').execSync('node -c \"$target_ts_file\"', { stdio: 'pipe' });
+          console.log('✅ Generated file has valid JavaScript syntax');
+        } catch (syntaxError) {
+          console.error('❌ Generated file has syntax errors:');
+          console.error(syntaxError.toString());
+          throw new Error('Generated TypeScript file has invalid syntax');
+        }
+      "
+      
+      if [[ $? -eq 0 ]]; then
+        echo "    ✅ Successfully updated: $target_ts_file"
+        
+        # Clean up source file if requested
+        if [[ "$CLEAN_SOURCE" == true ]]; then
+          echo "    🗑️  Removed source: $file_path"
+          rm "$file_path"
+        fi
+      else
+        echo "    ❌ Failed to update: $target_ts_file"
+        return 1
       fi
     fi
     
