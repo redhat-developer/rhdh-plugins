@@ -40,9 +40,20 @@ test.describe('Bulk import plugin', () => {
   });
 
   test('Repositories list is shown', async () => {
-    await expect(page.getByText(/Added repositories.*\(4\)/)).toBeVisible();
-    await expect(page.locator('thead')).toBeVisible();
-    await expect(page.locator('tbody')).toBeVisible();
+    await expect(page.getByText('Added repositories (4)')).toBeVisible();
+    const columns = [
+      'Name',
+      'Repo URL',
+      'Organization',
+      'Status',
+      'Last Updated',
+      'Actions',
+    ];
+    const thead = page.locator('thead');
+
+    for (const col of columns) {
+      await expect(thead.getByText(col)).toBeVisible();
+    }
   });
 
   test('View pull request for jobs waiting for approval', async () => {
@@ -68,7 +79,9 @@ test.describe('Bulk import plugin', () => {
   test('Disabled repository icon should show tooltip', async () => {
     await page.locator('span[data-testid="delete-repository"]').hover();
     await expect(
-      page.getByText(/This repository.*app-config.*file.*modify.*directly/),
+      page.getByText(
+        'This repository added to the app-config file. To remove it modify the file directly',
+      ),
     ).toBeVisible();
   });
 
@@ -91,52 +104,56 @@ test.describe('Bulk import plugin', () => {
     });
     await page.mouse.wheel(0, 200);
     await expect(
-      page.getByRole('heading', { name: /Selected.*repositories.*\(0\)/ }),
+      page.getByRole('heading', { name: 'Selected repositories (0)' }),
     ).toBeVisible({
       timeout: 20000,
     });
-    // Check that the table has the expected structure rather than exact text
-    await expect(page.locator('thead')).toBeVisible();
-    await expect(page.locator('tbody')).toBeVisible();
+    let columns = ['Name', 'URL', 'Organization', 'catalog-info.yaml'];
+    let thead = page.locator('thead');
+
+    for (const col of columns) {
+      await expect(thead.getByText(col)).toBeVisible();
+    }
     await page.click('input[aria-label="select all repositories"]');
-    await page.waitForTimeout(1000);
     await expect(
-      page.getByRole('heading', { name: /Selected.*repositories.*\(\d+\)/ }),
+      page.getByRole('heading', { name: 'Selected repositories (5)' }),
     ).toBeVisible({
       timeout: 20000,
     });
     await page.locator('button[aria-label="Go to next page"]').click();
     await page.waitForTimeout(2000);
     await page.click('input[aria-label="select all repositories"]');
-    await page.waitForTimeout(1000);
     await expect(
-      page.getByRole('heading', { name: /Selected.*repositories.*\(\d+\)/ }),
+      page.getByRole('heading', { name: 'Selected repositories (9)' }),
     ).toBeVisible({
       timeout: 20000,
     });
     await page.locator(`button`).filter({ hasText: 'Organization' }).click();
     await page.waitForTimeout(2000);
     await expect(
-      page.getByRole('heading', { name: /Selected.*repositories.*\(\d+\)/ }),
+      page.getByRole('heading', { name: 'Selected repositories (9)' }),
     ).toBeVisible({
       timeout: 20000,
     });
-    // Check that the table has the expected structure rather than exact text
-    await expect(page.locator('thead')).toBeVisible();
-    await expect(page.locator('tbody')).toBeVisible();
+    columns = ['Name', 'URL', 'Selected repositories', 'catalog-info.yaml'];
+    thead = page.locator('thead');
+
+    for (const col of columns) {
+      await expect(thead.getByText(col)).toBeVisible();
+    }
   });
 
   test('Select Repositories side panel is shown', async () => {
     await page.locator('button[type="button"][value="repository"]').click();
     await page.waitForTimeout(2000);
     await expect(
-      page.getByRole('heading', { name: /Selected.*repositories.*\(\d+\)/ }),
+      page.getByRole('heading', { name: 'Selected repositories (9)' }),
     ).toBeVisible({
       timeout: 20000,
     });
     await page.click('input[aria-label="select all repositories"]');
     await expect(
-      page.getByRole('heading', { name: /Selected.*repositories.*\(\d+\)/ }),
+      page.getByRole('heading', { name: 'Selected repositories (4)' }),
     ).toBeVisible({
       timeout: 20000,
     });
@@ -175,7 +192,7 @@ test.describe('Bulk import plugin', () => {
     });
 
     await expect(
-      page.getByRole('heading', { name: /Selected.*repositories.*\(\d+\)/ }),
+      page.getByRole('heading', { name: 'Selected repositories (1)' }),
     ).toBeVisible({
       timeout: 20000,
     });
@@ -187,7 +204,7 @@ test.describe('Bulk import plugin', () => {
       timeout: 20000,
     });
     await expect(
-      page.getByRole('heading', { name: /Selected.*repositories.*\(\d+\)/ }),
+      page.getByRole('heading', { name: 'Selected repositories (4)' }),
     ).toBeVisible({
       timeout: 20000,
     });
@@ -206,12 +223,12 @@ test.describe('Bulk import plugin', () => {
     await page.waitForTimeout(2000);
     await page.click('input[type="checkbox"]');
     await expect(
-      page.getByRole('heading', { name: /Selected.*repositories.*\(\d+\)/ }),
+      page.getByRole('heading', { name: 'Selected repositories (3)' }),
     ).toBeVisible();
 
     await page.getByTestId('select-from-drawer').click();
     await expect(
-      page.getByRole('heading', { name: /Selected.*repositories.*\(\d+\)/ }),
+      page.getByRole('heading', { name: 'Selected repositories (5)' }),
     ).toBeVisible();
     await expect(
       page.locator('tr:has-text("org/pet-store-boston") >> text=1/1'),
