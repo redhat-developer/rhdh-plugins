@@ -23,6 +23,7 @@ import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -34,6 +35,7 @@ type SyncRepositoryProps = {
 };
 
 const SyncRepository = ({ data }: SyncRepositoryProps) => {
+  const { t } = useTranslation();
   const bulkImportApi = useApi(bulkImportApiRef);
   const { setFieldValue } = useFormikContext<AddRepositoriesFormValues>();
 
@@ -53,12 +55,12 @@ const SyncRepository = ({ data }: SyncRepositoryProps) => {
   };
 
   return (
-    <Tooltip title="Refresh">
+    <Tooltip title={t('repositories.refresh')}>
       <Typography component="span" data-testid="refresh-repository">
         <IconButton
           color="inherit"
           onClick={() => handleClick()}
-          aria-label="Refresh"
+          aria-label={t('repositories.refresh')}
           size="large"
         >
           <SyncIcon />
