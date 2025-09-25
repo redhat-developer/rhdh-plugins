@@ -27,7 +27,7 @@ exports.up = async function up(knex) {
       .notNullable()
       .comment('The entity ref for which this metric value was calculated');
     table
-      .decimal('value', 15, 6)
+      .json('value')
       .nullable()
       .comment('Metric value when calculation succeeds');
     table
