@@ -101,3 +101,64 @@ permission:
 1. Open your Backstage application.
 2. Navigate to the Entity overview page from catalog.
 3. Explore and analyze scorecard metrics using the scorecards tab.
+
+## Adding Translations
+
+The Scorecard plugin supports internationalization (i18n) for metric titles and descriptions. To add translations for new metrics:
+
+### 1. Add Translations to Translation Files
+
+Add your translations to the appropriate language files in `src/translations/`:
+
+**English (ref.ts):**
+
+```typescript
+export const scorecardMessages = {
+  // ... existing translations
+  metric: {
+    'your-metric-id': {
+      title: 'Your Translated Title',
+      description: 'Your translated description',
+    },
+  },
+};
+```
+
+**Other languages (de.ts, es.ts, fr.ts):**
+
+```typescript
+const scorecardTranslationDe = createTranslationMessages({
+  ref: scorecardTranslationRef,
+  messages: {
+    // ... existing translations
+    'metric.your-metric-id.title': 'Ihr übersetzter Titel', // German
+    'metric.your-metric-id.description': 'Ihre übersetzte Beschreibung',
+  },
+});
+```
+
+### 3. Translation Key Format
+
+Translation keys follow this pattern:
+
+- **Metric titles**: `metric.{metric-id}.title`
+- **Metric descriptions**: `metric.{metric-id}.description`
+
+### 4. Fallback Behavior
+
+If a translation key is not found, the plugin will automatically fall back to:
+
+- The original `title` and `description` values from the metric definition
+- For thresholds: capitalized versions of the threshold keys
+
+### Example: Adding GitHub Open PRs Translation
+
+```typescript
+// In ref.ts
+metric: {
+  'github.open-prs': {
+    title: 'GitHub open PRs',
+    description: 'Current count of open Pull Requests for a given GitHub repository',
+  },
+}
+```

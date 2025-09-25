@@ -49,7 +49,7 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   getMetric(): Metric<'number'> {
     return {
       id: this.getProviderId(),
-      title: 'Github open PRs',
+      title: 'GitHub open PRs',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',

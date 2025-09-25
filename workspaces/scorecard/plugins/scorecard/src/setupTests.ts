@@ -14,3 +14,9 @@
  * limitations under the License.
  */
 import '@testing-library/jest-dom';
+import { mockUseTranslation } from './test-utils/mockTranslations';
+
+// Global mock for useTranslation hook
+jest.mock('./hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));

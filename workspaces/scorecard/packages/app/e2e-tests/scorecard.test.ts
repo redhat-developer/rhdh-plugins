@@ -79,7 +79,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     await scorecardPage.openTab();
 
     await scorecardPage.verifyScorecardValues({
-      'Github open PRs': '9',
+      'GitHub open PRs': '9',
       'Jira open blocking tickets': '8',
     });
 

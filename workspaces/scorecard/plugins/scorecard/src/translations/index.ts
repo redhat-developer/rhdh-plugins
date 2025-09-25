@@ -13,18 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createDevApp } from '@backstage/dev-utils';
-import { scorecardPlugin, EntityScorecardContent } from '../src/plugin';
-import { scorecardTranslations } from '../src/translations';
 
-createDevApp()
-  .registerPlugin(scorecardPlugin)
-  .addTranslationResource(scorecardTranslations)
-  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
-  .setDefaultLanguage('en')
-  .addPage({
-    element: <EntityScorecardContent />,
-    title: 'Root Page',
-    path: '/scorecard',
-  })
-  .render();
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { scorecardTranslationRef } from './ref';
+
+/**
+ * Translation Resource for scorecard
+ * @public
+ */
+export const scorecardTranslations = createTranslationResource({
+  ref: scorecardTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    fr: () => import('./fr'),
+    es: () => import('./es'),
+  },
+});
+
+export { scorecardTranslationRef };

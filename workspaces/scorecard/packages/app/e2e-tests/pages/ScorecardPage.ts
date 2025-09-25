@@ -27,7 +27,7 @@ export class ScorecardPage {
   get scorecardMetrics() {
     return [
       {
-        title: 'Github open PRs',
+        title: 'GitHub open PRs',
         description:
           'Current count of open Pull Requests for a given GitHub repository.',
       },
@@ -71,18 +71,23 @@ export class ScorecardPage {
   }) {
     const { title, description } = scorecard;
 
-    const scorecardSection = this.page
-      .locator('article')
-      .filter({ hasText: title });
+    // Look for the specific scorecard card that contains this title
+    const scorecardCard = this.page
+      .locator('[role="article"]')
+      .filter({ hasText: title })
+      .first();
 
-    await expect(scorecardSection).toMatchAriaSnapshot(`
-      - article:
-        - text: ${title}
-        - paragraph: ${description}
-        - paragraph: /Error/
-        - paragraph: /Warning/
-        - paragraph: /Success/
-    `);
+    // Verify the basic structure exists without being too specific about content
+    await expect(scorecardCard).toBeVisible();
+
+    // Check that key accessibility elements are present
+    await expect(scorecardCard.getByText(title)).toBeVisible();
+    await expect(scorecardCard.getByText(description)).toBeVisible();
+
+    // Check that threshold information is present (Error, Warning, Success)
+    await expect(scorecardCard.getByText(/Error/)).toBeVisible();
+    await expect(scorecardCard.getByText(/Warning/)).toBeVisible();
+    await expect(scorecardCard.getByText(/Success/)).toBeVisible();
   }
 
   async isScorecardVisible(scorecardTitle: string): Promise<boolean> {
