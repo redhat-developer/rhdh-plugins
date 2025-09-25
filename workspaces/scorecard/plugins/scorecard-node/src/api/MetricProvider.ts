@@ -28,7 +28,7 @@ import {
 export type MetricProviderInsertion = {
   catalog_entity_ref: string;
   metric_id: string;
-  value?: number;
+  value?: MetricValue;
   timestamp: Date;
   error_message?: string;
 };
