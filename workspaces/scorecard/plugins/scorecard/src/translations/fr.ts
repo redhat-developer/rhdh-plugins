@@ -28,6 +28,15 @@ const scorecardTranslationFr = createTranslationMessages({
     'emptyState.button': 'Voir la documentation',
     'emptyState.altText': 'Aucune scorecard',
 
+    // Permission required state
+    'permissionRequired.title': 'Permission manquante',
+    'permissionRequired.description':
+      'Pour voir le plugin Scorecard, contactez votre administrateur pour donner la',
+    'permissionRequired.permission': 'scorecard.metric.read',
+    'permissionRequired.descriptionSuffix': 'permission.',
+    'permissionRequired.button': 'Lire plus',
+    'permissionRequired.altText': 'Permission requise',
+
     // Error messages
     'errors.entityMissingProperties':
       'Entité manque de propriétés requises pour la recherche de scorecard',

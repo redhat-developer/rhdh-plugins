@@ -20,9 +20,12 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import permissionRequiredSvg from '../../images/permission-required.svg';
 
 const PermissionRequiredState = () => {
+  const { t } = useTranslation();
+
   return (
     <Box sx={{ p: 4, height: '100%', maxWidth: '1592px', margin: 'auto' }}>
       <Grid
@@ -41,7 +44,7 @@ const PermissionRequiredState = () => {
               mb: 2,
             })}
           >
-            Missing permission
+            {t('permissionRequired.title')}
           </Typography>
 
           <Typography
@@ -52,7 +55,7 @@ const PermissionRequiredState = () => {
               lineHeight: 1.5,
             })}
           >
-            To view Scorecard plugin, contact your administrator to give the{' '}
+            {t('permissionRequired.description')}{' '}
             <Typography
               component="span"
               sx={theme => ({
@@ -60,9 +63,9 @@ const PermissionRequiredState = () => {
                 color: theme.palette.text.primary,
               })}
             >
-              scorecard.metric.read
+              {t('permissionRequired.permission')}
             </Typography>{' '}
-            permission.
+            {t('permissionRequired.descriptionSuffix')}
           </Typography>
 
           <Button
@@ -73,7 +76,7 @@ const PermissionRequiredState = () => {
               color: theme.palette.primary.main,
             })}
           >
-            Read more &nbsp; <OpenInNewIcon />
+            {t('permissionRequired.button')} &nbsp; <OpenInNewIcon />
           </Button>
         </Grid>
 
@@ -81,7 +84,7 @@ const PermissionRequiredState = () => {
           <Box
             component="img"
             src={permissionRequiredSvg}
-            alt="No scorecards"
+            alt={t('permissionRequired.altText')}
             sx={{
               width: '100%',
               maxWidth: '600px',
