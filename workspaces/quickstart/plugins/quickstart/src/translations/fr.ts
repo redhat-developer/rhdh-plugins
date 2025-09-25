@@ -22,40 +22,42 @@ const quickstartTranslationFr = createTranslationMessages({
   messages: {
     'header.title': 'Commençons avec le Hub Développeur',
     'header.subtitle': 'Nous vous guiderons à travers quelques étapes rapides',
-    'steps.title.setupAuthentication': "Configurer l'authentification",
-    'steps.title.configureRbac': 'Configurer RBAC',
-    'steps.title.configureGit': 'Configurer Git',
-    'steps.title.managePlugins': 'Gérer les plugins',
-    'steps.title.importApplication': 'Importer une application',
-    'steps.title.learnAboutCatalog': 'Apprendre le Catalogue',
-    'steps.title.exploreSelfServiceTemplates':
-      'Explorer les modèles en libre-service',
-    'steps.title.findAllLearningPaths':
-      "Trouver tous les parcours d'apprentissage",
-    'steps.description.setupAuthentication':
+    'steps.setupAuthentication.title': "Configurer l'authentification",
+    'steps.setupAuthentication.description':
       "Configurez des identifiants de connexion sécurisés pour protéger votre compte contre l'accès non autorisé.",
-    'steps.description.configureRbac':
+    'steps.setupAuthentication.ctaTitle': 'En savoir plus',
+    'steps.configureRbac.title': 'Configurer RBAC',
+    'steps.configureRbac.description':
       'Attribuez des rôles et des permissions pour contrôler qui peut voir, créer ou modifier des ressources, assurant une collaboration sécurisée et efficace.',
-    'steps.description.configureGit':
+    'steps.configureRbac.ctaTitle': "Gérer l'accès",
+    'steps.configureGit.title': 'Configurer Git',
+    'steps.configureGit.description':
       'Connectez vos fournisseurs Git, comme GitHub, pour gérer le code, automatiser les flux de travail et intégrer avec les fonctionnalités de la plateforme.',
-    'steps.description.managePlugins':
+    'steps.configureGit.ctaTitle': 'En savoir plus',
+    'steps.managePlugins.title': 'Gérer les plugins',
+    'steps.managePlugins.description':
       'Parcourez et installez des extensions pour ajouter des fonctionnalités, connecter avec des outils externes et personnaliser votre expérience.',
-    'steps.description.importApplication':
+    'steps.managePlugins.ctaTitle': 'Explorer les plugins',
+    'steps.importApplication.title': 'Importer une application',
+    'steps.importApplication.description':
       'Importez votre code et vos services existants dans le catalogue pour les organiser et y accéder via votre portail développeur.',
-    'steps.description.learnAboutCatalog':
+    'steps.importApplication.ctaTitle': 'Importer',
+    'steps.learnAboutCatalog.title': 'Apprendre le Catalogue',
+    'steps.learnAboutCatalog.description':
       'Découvrez tous les composants logiciels, services et API, et consultez leurs propriétaires et leur documentation.',
-    'steps.description.exploreSelfServiceTemplates':
+    'steps.learnAboutCatalog.ctaTitle': 'Voir le catalogue',
+    'steps.exploreSelfServiceTemplates.title':
+      'Explorer les modèles en libre-service',
+    'steps.exploreSelfServiceTemplates.description':
       'Utilisez nos modèles en libre-service pour configurer rapidement de nouveaux projets, services ou documentation.',
-    'steps.description.findAllLearningPaths':
+    'steps.exploreSelfServiceTemplates.ctaTitle': 'Explorer les modèles',
+    'steps.findAllLearningPaths.title':
+      "Trouver tous les parcours d'apprentissage",
+    'steps.findAllLearningPaths.description':
       "Intégrez l'e-learning sur mesure dans vos flux de travail avec des parcours d'apprentissage pour accélérer l'intégration, combler les lacunes de compétences et promouvoir les meilleures pratiques.",
-    'steps.cta.learnMore': 'En savoir plus',
-    'steps.cta.manageAccess': "Gérer l'accès",
-    'steps.cta.explorePlugins': 'Explorer les plugins',
-    'steps.cta.import': 'Importer',
-    'steps.cta.viewCatalog': 'Voir le catalogue',
-    'steps.cta.exploreTemplates': 'Explorer les modèles',
-    'steps.cta.viewLearningPaths': "Voir les parcours d'apprentissage",
+    'steps.findAllLearningPaths.ctaTitle': "Voir les parcours d'apprentissage",
     'button.quickstart': 'Démarrage rapide',
+    'button.gotIt': 'Compris !',
     'footer.progress': '{{progress}}% de progression',
     'footer.notStarted': 'Pas encore commencé',
     'footer.hide': 'Masquer',

@@ -37,7 +37,7 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
           onClick();
         }}
       >
-        Got it!
+        {t('button.gotIt')}
       </LinkButton>
     );
   }
