@@ -27,7 +27,7 @@ export class ScorecardPage {
   get scorecardMetrics() {
     return [
       {
-        title: 'Github open PRs',
+        title: 'GitHub open PRs',
         description:
           'Current count of open Pull Requests for a given GitHub repository.',
       },

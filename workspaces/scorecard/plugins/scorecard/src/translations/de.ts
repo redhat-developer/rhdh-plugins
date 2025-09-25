@@ -1,5 +1,5 @@
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ const scorecardTranslationDe = createTranslationMessages({
     'errors.invalidThresholds': 'Ungültige Schwellenwerte',
 
     // Metric translations
-    'metric.github.open-prs.title': 'Github offene PRs',
+    'metric.github.open-prs.title': 'GitHub offene PRs',
     'metric.github.open-prs.description':
       'Aktuelle Anzahl offener Pull Requests für ein bestimmtes GitHub-Repository.',
     'metric.jira.open-issues.title': 'Jira offene blockierende Tickets',

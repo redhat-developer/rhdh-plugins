@@ -116,7 +116,7 @@ Add your translations to the appropriate language files in `src/translations/`:
 export const scorecardMessages = {
   // ... existing translations
   metric: {
-    'your-provider-id': {
+    'your-metric-id': {
       title: 'Your Translated Title',
       description: 'Your translated description',
     },
@@ -131,8 +131,8 @@ const scorecardTranslationDe = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     // ... existing translations
-    'metric.your-provider-id.title': 'Ihr übersetzter Titel', // German
-    'metric.your-provider-id.description': 'Ihre übersetzte Beschreibung',
+    'metric.your-metric-id.title': 'Ihr übersetzter Titel', // German
+    'metric.your-metric-id.description': 'Ihre übersetzte Beschreibung',
   },
 });
 ```
@@ -141,8 +141,8 @@ const scorecardTranslationDe = createTranslationMessages({
 
 Translation keys follow this pattern:
 
-- **Metric titles**: `metric.{provider-id}.title`
-- **Metric descriptions**: `metric.{provider-id}.description`
+- **Metric titles**: `metric.{metric-id}.title`
+- **Metric descriptions**: `metric.{metric-id}.description`
 
 ### 4. Fallback Behavior
 
@@ -157,7 +157,7 @@ If a translation key is not found, the plugin will automatically fall back to:
 // In ref.ts
 metric: {
   'github.open-prs': {
-    title: 'Github open PRs',
+    title: 'GitHub open PRs',
     description: 'Current count of open Pull Requests for a given GitHub repository',
   },
 }

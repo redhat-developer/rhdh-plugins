@@ -50,7 +50,7 @@ describe('useScorecards', () => {
       id: 'github.pull_requests_open',
       status: 'success',
       metadata: {
-        title: 'Github open PRs',
+        title: 'GitHub open PRs',
         description:
           'Current count of open Pull Requests for a given GitHub repository.',
         type: 'number',

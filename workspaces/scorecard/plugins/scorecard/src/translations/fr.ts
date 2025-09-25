@@ -1,5 +1,5 @@
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ const scorecardTranslationFr = createTranslationMessages({
     'errors.invalidThresholds': 'Seuils invalides',
 
     // Metric translations
-    'metric.github.open-prs.title': 'Github PRs ouvertes',
+    'metric.github.open-prs.title': 'GitHub PRs ouvertes',
     'metric.github.open-prs.description':
       'Nombre actuel de Pull Requests ouvertes pour un dépôt GitHub donné.',
     'metric.jira.open-issues.title': 'Jira tickets bloquants ouverts',
