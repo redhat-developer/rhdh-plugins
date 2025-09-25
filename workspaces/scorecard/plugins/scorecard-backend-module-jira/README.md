@@ -6,13 +6,13 @@ This is an extension module to the `backstage-plugin-scorecard-backend` plugin. 
 
 Before installing this module, ensure that the Scorecard backend plugin is integrated into your Backstage instance. Follow the [Scorecard backend plugin README](../scorecard-backend/README.md) for setup instructions.
 
-This module also requires a Jira integration to be configured in your `app-config.yaml`. This module support **Direct** OR **Proxy** jira integration config. The following example of configuration can help:
+This module also requires a Jira integration to be configured in your `app-config.yaml`. This module supports **Direct** OR **Proxy** jira integration config. The following example of configuration can help:
 
 ### Configuration `token`:
 
 - For the `cloud` product:
 
-  - Obtain your personal token from Jira
+  - Obtain your personal token from Jira. Please use the following link to create token: [link](https://id.atlassian.com/manage-profile/security/api-tokens).
   - Create a Base64-encoded string from the following plain text format: `your-atlassian-email:your-jira-api-token`:
 
   ```bash
@@ -29,7 +29,7 @@ This module also requires a Jira integration to be configured in your `app-confi
   ```
 
 - For the `datacenter` product:
-  - Obtain your personal token from Jira
+  - Obtain your personal token from Jira. Please use the following link to the Jira documentation for information on how to generate a token: [link](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html)
   - Use the Jira token without changing
 
 ### Configuration **Direct** Jira integration
@@ -40,20 +40,13 @@ Provide the following config to `app-config.yaml` file:
 jira:
   # Required
   baseUrl: ${JIRA_URL}
-  # Required | (For cloud use 'Basic YourCreatedAboveToken', for datacenter use 'Bearer YourJiraToken')
-  token: Bearer ${JIRA_TOKEN}
-  # Required | Supported products: `cloud` or `datacenter`
+  # Required
+  token: ${JIRA_TOKEN}
+  # Required: Supported products: `cloud` or `datacenter`
   product: cloud
-  # By default, the latest version is used. You can omit this prop when using the latest version.
+  # Optional: By default, the latest version is used. You can omit this prop when using the latest version.
   apiVersion: '3'
-
-scorecard:
-  plugins:
-    jira:
-      enableProxy: false
 ```
-
-Be sure that the `enableProxy` property is not exist or set to **false** at the config file by the following path: `scorecard.plugins.jira.enableProxy`
 
 ### Configuration **Proxy** jira integration
 
@@ -61,17 +54,12 @@ Provide the following config to `app-config.yaml` file:
 
 ```yaml
 jira:
-  # Required |
+  # Required
   proxyPath: /jira/api
-  # Required | Supported products: `cloud` or `datacenter`
+  # Required: Supported products: `cloud` or `datacenter`
   product: cloud
-  # By default, the latest version is used. You can omit this prop when using the latest version.
+  # Optional: By default, the latest version is used. You can omit this prop when using the latest version.
   apiVersion: '3'
-
-scorecard:
-  plugins:
-    jira:
-      enableProxy: true
 
 # This proxy configuration presented only as an example
 proxy:
@@ -82,10 +70,9 @@ proxy:
         Accept: 'application/json'
         Content-Type: 'application/json'
         X-Atlassian-Token: 'no-check'
+        # Required: (For cloud use 'Basic YourCreatedAboveToken', for datacenter use 'Bearer YourJiraToken')
         Authorization: Basic SomeTokenHere
 ```
-
-Be sure that the `enableProxy` property is to **true** at the config file by the following path: `scorecard.plugins.jira.enableProxy`
 
 ## Installation
 
