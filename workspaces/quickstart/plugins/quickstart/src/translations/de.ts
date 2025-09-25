@@ -22,6 +22,37 @@ const quickstartTranslationDe = createTranslationMessages({
   messages: {
     'header.title': 'Erste Schritte mit dem Developer Hub',
     'header.subtitle': 'Wir führen Sie durch einige schnelle Schritte',
+    'steps.title.setupAuthentication': 'Authentifizierung einrichten',
+    'steps.title.configureRbac': 'RBAC konfigurieren',
+    'steps.title.configureGit': 'Git konfigurieren',
+    'steps.title.managePlugins': 'Plugins verwalten',
+    'steps.title.importApplication': 'Anwendung importieren',
+    'steps.title.learnAboutCatalog': 'Über den Katalog lernen',
+    'steps.title.exploreSelfServiceTemplates': 'Self-Service-Vorlagen erkunden',
+    'steps.title.findAllLearningPaths': 'Alle Lernpfade finden',
+    'steps.description.setupAuthentication':
+      'Richten Sie sichere Anmeldedaten ein, um Ihr Konto vor unbefugtem Zugriff zu schützen.',
+    'steps.description.configureRbac':
+      'Weisen Sie Rollen und Berechtigungen zu, um zu kontrollieren, wer Ressourcen anzeigen, erstellen oder bearbeiten kann.',
+    'steps.description.configureGit':
+      'Verbinden Sie Ihre Git-Anbieter wie GitHub, um Code zu verwalten, Workflows zu automatisieren und mit Plattformfunktionen zu integrieren.',
+    'steps.description.managePlugins':
+      'Durchsuchen und installieren Sie Erweiterungen, um Funktionen hinzuzufügen, externe Tools zu verbinden und Ihre Erfahrung anzupassen.',
+    'steps.description.importApplication':
+      'Importieren Sie Ihren vorhandenen Code und Ihre Dienste in den Katalog, um sie über Ihr Entwicklerportal zu organisieren und darauf zuzugreifen.',
+    'steps.description.learnAboutCatalog':
+      'Entdecken Sie alle Softwarekomponenten, Dienste und APIs und sehen Sie deren Eigentümer und Dokumentation.',
+    'steps.description.exploreSelfServiceTemplates':
+      'Verwenden Sie unsere Self-Service-Vorlagen, um schnell neue Projekte, Dienste oder Dokumentationen einzurichten.',
+    'steps.description.findAllLearningPaths':
+      'Integrieren Sie maßgeschneidertes E-Learning in Ihre Workflows mit Lernpfaden, um das Onboarding zu beschleunigen, Qualifikationslücken zu schließen und bewährte Praktiken zu fördern.',
+    'steps.cta.learnMore': 'Mehr erfahren',
+    'steps.cta.manageAccess': 'Zugriff verwalten',
+    'steps.cta.explorePlugins': 'Plugins erkunden',
+    'steps.cta.import': 'Importieren',
+    'steps.cta.viewCatalog': 'Katalog anzeigen',
+    'steps.cta.exploreTemplates': 'Vorlagen erkunden',
+    'steps.cta.viewLearningPaths': 'Lernpfade anzeigen',
     'button.quickstart': 'Schnellstart',
     'button.openQuickstartGuide': 'Schnellstart-Leitfaden öffnen',
     'button.closeDrawer': 'Drawer schließen',

@@ -16,6 +16,7 @@
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { QuickstartItemCtaData } from '../../types';
 import { LinkButton } from '@backstage/core-components';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export type QuickstartCtaLinkProps = {
   cta?: QuickstartItemCtaData;
@@ -23,6 +24,7 @@ export type QuickstartCtaLinkProps = {
 };
 
 export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
+  const { t } = useTranslation();
   // If no CTA is provided, show a default "Got it!" button
   if (!cta) {
     return (
@@ -53,7 +55,13 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
       to={cta.link}
       onClick={onClick}
     >
-      {cta.text}&nbsp;
+      {cta.textKey
+        ? (() => {
+            const translation = t(cta.textKey as keyof typeof t, {});
+            return translation !== cta.textKey ? translation : cta.text;
+          })()
+        : cta.text}
+      &nbsp;
       <OpenInNewIcon
         sx={{
           fontSize: '15px',
@@ -67,7 +75,12 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
       to={cta.link}
       onClick={onClick}
     >
-      {cta.text}
+      {cta.textKey
+        ? (() => {
+            const translation = t(cta.textKey as keyof typeof t, {});
+            return translation !== cta.textKey ? translation : cta.text;
+          })()
+        : cta.text}
     </LinkButton>
   );
 };

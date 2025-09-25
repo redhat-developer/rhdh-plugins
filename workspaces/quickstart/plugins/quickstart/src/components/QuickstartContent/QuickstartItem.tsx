@@ -109,7 +109,16 @@ export const QuickstartItem = ({
           />
         </ListItemIcon>
         <ListItemText
-          primary={item.title}
+          primary={
+            item.titleKey
+              ? (() => {
+                  const translation = t(item.titleKey as keyof typeof t, {});
+                  return translation !== item.titleKey
+                    ? translation
+                    : item.title;
+                })()
+              : item.title
+          }
           sx={{
             '& .v5-MuiTypography-root': {
               fontWeight: theme =>
@@ -150,7 +159,21 @@ export const QuickstartItem = ({
           }}
         >
           <ListItem>
-            <ListItemText primary={item.description} />
+            <ListItemText
+              primary={
+                item.descriptionKey
+                  ? (() => {
+                      const translation = t(
+                        item.descriptionKey as keyof typeof t,
+                        {},
+                      );
+                      return translation !== item.descriptionKey
+                        ? translation
+                        : item.description;
+                    })()
+                  : item.description
+              }
+            />
           </ListItem>
           <ListItem>
             <QuickstartCtaLink

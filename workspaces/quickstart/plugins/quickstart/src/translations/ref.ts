@@ -23,8 +23,47 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
  */
 export const quickstartMessages = {
   header: {
-    title: "Let's get you started with Developer Hub",
+    title: 'xxxx',
     subtitle: "We'll guide you through a few quick steps",
+  },
+  steps: {
+    title: {
+      setupAuthentication: 'Set up authentication',
+      configureRbac: 'Configure RBAC',
+      configureGit: 'Configure Git',
+      managePlugins: 'Manage plugins',
+      importApplication: 'Import application',
+      learnAboutCatalog: 'Learn about the Catalog',
+      exploreSelfServiceTemplates: 'Explore Self-service templates',
+      findAllLearningPaths: 'Find all Learning Paths',
+    },
+    description: {
+      setupAuthentication:
+        'Set up secure login credentials to protect your account from unauthorized access.',
+      configureRbac:
+        'Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and efficient collaboration.',
+      configureGit:
+        'Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform features.',
+      managePlugins:
+        'Browse and install extensions to add features, connect with external tools, and customize your experience.',
+      importApplication:
+        'Import your existing code and services into the catalog to organize and access them through your developer portal.',
+      learnAboutCatalog:
+        'Discover all software components, services, and APIs, and view their owners and documentation.',
+      exploreSelfServiceTemplates:
+        'Use our self-service templates to quickly set up new projects, services, or documentation.',
+      findAllLearningPaths:
+        'Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close skill gaps, and promote best practices.',
+    },
+    cta: {
+      learnMore: 'Learn more',
+      manageAccess: 'Manage access',
+      explorePlugins: 'Explore plugins',
+      import: 'Import',
+      viewCatalog: 'View Catalog',
+      exploreTemplates: 'Explore templates',
+      viewLearningPaths: 'View Learning Paths',
+    },
   },
   button: {
     quickstart: 'Quick start',

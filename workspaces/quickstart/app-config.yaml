@@ -3,62 +3,86 @@ app:
   baseUrl: http://localhost:3000
   quickstart:
     - title: Set up authentication
+      titleKey: steps.title.setupAuthentication
       icon: Admin
       roles:
         - admin
       description: Set up secure login credentials to protect your account from unauthorized access.
+      descriptionKey: steps.description.setupAuthentication
       cta:
         text: Learn more
+        textKey: steps.cta.learnMore
         link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
     - title: Configure RBAC
+      titleKey: steps.title.configureRbac    
       icon: Rbac
       description: Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and efficient collaboration.
+      descriptionKey: steps.description.configureRbac
       cta:
         text: Manage access
+        textKey: steps.cta.manageAccess
         link: /rbac
     - title: Configure Git
+      titleKey: steps.title.configureGit
       icon: Git
       description: Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform features.
+      descriptionKey: steps.description.configureGit
       cta:
         text: Learn more
+        textKey: steps.cta.learnMore
         link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
     - title: Manage plugins
+      titleKey: steps.title.managePlugins
       icon: Plugins
       description: Browse and install extensions to add features, connect with external tools, and customize your experience.
+      descriptionKey: steps.description.managePlugins
       cta:
         text: Explore plugins
+        textKey: steps.cta.explorePlugins
         link: /extensions
     - title: Import application
-      roles:
-        - developer
+      titleKey: steps.title.importApplication
+      # roles:
+      #   - developer
       icon: Import
       description: Import your existing code and services into the catalog to organize and access them through your developer portal.
+      descriptionKey: steps.description.importApplication
       cta:
         text: Import
+        textKey: steps.cta.import
         link: /bulk-import
     - title: Learn about the Catalog
-      roles:
-        - developer
+      titleKey: steps.title.learnAboutCatalog
+      # roles:
+      #   - developer
       icon: Catalog
       description: Discover all software components, services, and APIs, and view their owners and documentation.
+      descriptionKey: steps.description.learnAboutCatalog
       cta:
         text: View Catalog
+        textKey: steps.cta.viewCatalog
         link: /catalog
     - title: Explore Self-service templates
-      roles:
-        - developer
+      titleKey: steps.title.exploreSelfServiceTemplates
+      # roles:
+      #   - developer
       icon: SelfService
       description: Use our self-service templates to quickly set up new projects, services, or documentation.
+      descriptionKey: steps.description.exploreSelfServiceTemplates
       cta:
         text: Explore templates
+        textKey: steps.cta.exploreTemplates
         link: /create
     - title: Find all Learning Paths
-      roles:
-        - developer
+      titleKey: steps.title.findAllLearningPaths
+      # roles:
+      #   - developer
       icon: Learning
       description: Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close skill gaps, and promote best practices.
+      descriptionKey: steps.description.findAllLearningPaths
       cta:
         text: View Learning Paths
+        textKey: steps.cta.viewLearningPaths
         link: /docs
 
 organization:
