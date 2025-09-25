@@ -60,7 +60,7 @@ export const ExportTranslationKeys = ({
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `translations-${timestamp}.json`;
+      link.download = t('export.filename', { timestamp } as any);
       link.click();
 
       // Clean up after a short delay to ensure download starts
