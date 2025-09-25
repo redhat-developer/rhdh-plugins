@@ -21,6 +21,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from 'tss-react/mui';
 
 import { AVAILABLE, UNAVAILABLE } from '../../constants';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const useStyles = makeStyles()(theme => ({
   warning: {
@@ -36,20 +37,21 @@ export const WorkflowStatus = ({
 }: {
   availability: string | undefined | boolean;
 }) => {
+  const { t } = useTranslation();
   const { classes } = useStyles();
   if (availability === AVAILABLE || availability === true) {
     return (
       <Box display="flex" alignItems="center">
         <CheckCircleOutlined className={classes.success} />
-        &nbsp; {AVAILABLE}
+        &nbsp; {t('workflow.status.available')}
       </Box>
     );
   } else if (availability === UNAVAILABLE || availability === false) {
     return (
-      <Tooltip title="Workflow is currently down or in an error state">
+      <Tooltip title={t('tooltips.workflowDown')}>
         <Box display="flex" alignItems="center">
           <WarningAmberOutlined className={classes.warning} />
-          &nbsp; {UNAVAILABLE}
+          &nbsp; {t('workflow.status.unavailable')}
         </Box>
       </Tooltip>
     );

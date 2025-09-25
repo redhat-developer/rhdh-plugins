@@ -32,12 +32,12 @@ export interface FormattedWorkflowOverview {
   readonly lastRunId: string;
   readonly description: string;
   readonly format: WorkflowFormatDTO;
-  readonly availablity?: string;
+  readonly availability?: string;
 }
 
-const formatIsAvailable = (availablity: boolean | undefined) => {
-  if (availablity === true) return AVAILABLE;
-  else if (availablity === false) return UNAVAILABLE;
+const formatIsAvailable = (availability: boolean | undefined) => {
+  if (availability === true) return AVAILABLE;
+  else if (availability === false) return UNAVAILABLE;
   return VALUE_UNAVAILABLE;
 };
 
@@ -63,7 +63,7 @@ const WorkflowOverviewFormatter: DataFormatter<
       lastRunId: data.lastRunId ?? VALUE_UNAVAILABLE,
       description: data.description ?? VALUE_UNAVAILABLE,
       format: data.format,
-      availablity: formatIsAvailable(data.isAvailable),
+      availability: formatIsAvailable(data.isAvailable),
     };
   },
 };

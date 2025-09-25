@@ -7,9 +7,8 @@ metadata:
   title: Container Image Registry for ACR
   description: View container image details from Azure Container Registry in Backstage.
   annotations:
-    extensions.backstage.io/verified-by: Red Hat
+    extensions.backstage.io/pre-installed: 'true'
 spec:
-  icon: https://janus-idp.io/images/plugins/oci-acr.svg
   author: Red Hat
   lifecycle: production
   categories:

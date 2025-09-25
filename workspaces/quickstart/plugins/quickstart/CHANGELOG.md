@@ -1,5 +1,33 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.5.1
+
+### Patch Changes
+
+- 9057587: Fix Quickstart drawer re-opening on close by scoping drawer flags per user, caching resolved role per session, and filtering items only when the drawer is open; preserves first-time auto-open and respects manual close.
+
+## 1.5.0
+
+### Minor Changes
+
+- d49b252: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- e8cc528: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0` and move it from plugin dependencies to devDependencies.
+
+## 1.4.0
+
+### Minor Changes
+
+- 47fd25f: Enabled Quickstart items for developer role.
+
+## 1.3.0
+
+### Minor Changes
+
+- bc88e5f: Add internationalization (i18n) support with German, French and Spanish translations in quickstart.
+
 ## 1.2.0
 
 ### Minor Changes

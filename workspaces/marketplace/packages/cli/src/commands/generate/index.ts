@@ -173,9 +173,6 @@ export default async (opts: OptionValues) => {
             supportedVersions: packageJSON.backstage?.['supported-versions'],
           },
           author: author,
-          support: packageJSON.keywords
-            ?.find((k: string) => k.startsWith('support:'))
-            ?.split(':')[1],
           lifecycle:
             packageJSON.keywords
               ?.find((k: string) => k.startsWith('lifecycle:'))

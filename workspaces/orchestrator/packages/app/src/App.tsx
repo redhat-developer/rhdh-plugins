@@ -58,6 +58,7 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { Root } from './components/Root';
 import { searchPage } from './components/search/SearchPage';
+import { orchestratorTranslations } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 
 const app = createApp({
   apis,
@@ -102,6 +103,10 @@ const app = createApp({
     ),
   },
   themes: getThemes(),
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'it', 'es'],
+    resources: [orchestratorTranslations],
+  },
   /* Hardcoded deployment of the Orchestrator Form Widget library in our DEV-only instance.
     In a production deployment, the plugin will be loaded dynamically. */
   plugins: [orchestratorFormWidgetsPlugin, customAuthProviderPlugin],

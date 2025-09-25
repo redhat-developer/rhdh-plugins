@@ -17,52 +17,82 @@
 import Chip from '@mui/material/Chip';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Tooltip from '@mui/material/Tooltip';
-
 import {
   MarketplaceAnnotation,
   MarketplacePlugin,
   MarketplacePackage,
+  MarketplaceSupportLevel,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-
-const colors = {
-  certified: '#A18FFF',
-  verified: '#6EC664',
-  custom: '#EC7A08',
-} as const;
+import { colors } from '../consts';
 
 interface BadgeOptions {
+  isBadge?: boolean;
   color?: string;
-  label: string;
-  tooltip: string;
+  label?: string;
+  tooltip?: string;
+  statusTooltip?: string;
 }
 
 const getBadgeOptions = (
   entity: MarketplacePlugin | MarketplacePackage,
 ): BadgeOptions | null => {
+  const supportLevel = entity.spec?.support?.level;
+  const supportProvider = entity.spec?.support?.provider;
+
   if (entity.metadata.annotations?.[MarketplaceAnnotation.CERTIFIED_BY]) {
     return {
+      isBadge: true,
       color: colors.certified,
       label: 'Certified',
       tooltip: `Certified by ${entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY]}`,
+      statusTooltip: `Stable and secured by ${entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY]}`,
     };
   }
-
-  if (entity.metadata.annotations?.[MarketplaceAnnotation.VERIFIED_BY]) {
+  if (supportLevel === MarketplaceSupportLevel.GENERALLY_AVAILABLE) {
     return {
-      color: colors.verified,
-      label: 'Verified',
-      tooltip: `Verified by ${entity.metadata.annotations[MarketplaceAnnotation.VERIFIED_BY]}`,
+      isBadge: true,
+      color: colors.generallyAvailable,
+      label: 'Generally available (GA)',
+      tooltip: supportProvider
+        ? `Generally available (GA) and supported by ${supportProvider}`
+        : 'Generally available (GA) and supported',
+      statusTooltip: supportProvider
+        ? `Production-ready and supported by ${supportProvider}`
+        : 'Production-ready and supported',
+    };
+  }
+  if (supportLevel === MarketplaceSupportLevel.COMMUNITY) {
+    return {
+      isBadge: false,
+      label: 'Community plugin',
+      statusTooltip: 'Open-source plugins, no official support',
+    };
+  }
+  if (supportLevel === MarketplaceSupportLevel.TECH_PREVIEW) {
+    return {
+      isBadge: false,
+      label: 'Tech preview (TP)',
+      statusTooltip: 'Plugin still in development',
+    };
+  }
+  if (supportLevel === MarketplaceSupportLevel.DEV_PREVIEW) {
+    return {
+      isBadge: false,
+      label: 'Dev preview (DP)',
+      statusTooltip: 'An early-stage, experimental plugin',
     };
   }
 
   if (
-    entity.metadata.annotations?.[MarketplaceAnnotation.PRE_INSTALLED] ===
-    'false'
+    entity.metadata?.annotations?.[MarketplaceAnnotation.PRE_INSTALLED] !==
+    'true'
   ) {
     return {
+      isBadge: true,
       color: colors.custom,
       label: 'Custom plugin',
       tooltip: 'Custom plugin',
+      statusTooltip: 'Plugins added by the administrator',
     };
   }
 
@@ -78,12 +108,22 @@ export const BadgeChip = ({ plugin }: { plugin: MarketplacePlugin }) => {
     return null;
   }
   return (
-    <Chip
-      avatar={<TaskAltIcon style={{ color: options.color }} />}
-      label={options.label}
-      variant="outlined"
-      size="small"
-    />
+    <Tooltip title={options.statusTooltip} placement="right" arrow>
+      <Chip
+        avatar={
+          options.isBadge ? (
+            <TaskAltIcon style={{ color: options.color }} />
+          ) : undefined
+        }
+        label={options.label}
+        variant="outlined"
+        size="small"
+        title={options.tooltip}
+        sx={{
+          cursor: 'pointer',
+        }}
+      />
+    </Tooltip>
   );
 };
 
@@ -92,7 +132,7 @@ export const BadgeTriange = ({ plugin }: { plugin: MarketplacePlugin }) => {
     return null;
   }
   const options = getBadgeOptions(plugin);
-  if (!options) {
+  if (!options || !options.isBadge) {
     return null;
   }
   // We can't extract as a prop because the icon size depends on it.

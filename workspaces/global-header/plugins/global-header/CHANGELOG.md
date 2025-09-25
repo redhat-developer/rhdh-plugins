@@ -1,5 +1,29 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.17.2
+
+### Patch Changes
+
+- 4e2f33e: Fix the test package build and rebuild both packages to have a consistant commit for them.
+- 2c4b3c0: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0`.
+
+## 1.17.1
+
+### Patch Changes
+
+- d59b616: Add `type` prop for MenuItemLink identification and hide "My profile" menuItemLink for guest users
+
+  - Add `type` prop to MenuItemLink component config for better identification when i18n applied
+  - Hide "My Profile" menu item when user entity reference contains '/guest'
+  - Hide "My Profile" menu item when catalog API fails to fetch user entity
+  - Export `globalHeaderTranslations` from plugin for i18n integration
+
+## 1.17.0
+
+### Minor Changes
+
+- d59f08b: Backstage version bump to v1.42.5
+
 ## 1.16.1
 
 ### Patch Changes

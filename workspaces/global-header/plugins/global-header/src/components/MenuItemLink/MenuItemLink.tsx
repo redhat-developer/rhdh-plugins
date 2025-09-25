@@ -38,14 +38,14 @@ export const MenuItemLink = ({
   tooltip,
 }: MenuItemLinkProps) => {
   const { t } = useTranslation();
-  const isExternalLink =
-    to?.startsWith('http://') || to?.startsWith('https://');
+  const isExternalLink = Boolean(
+    to && (to.startsWith('http://') || to.startsWith('https://')),
+  );
 
   // Check if title looks like a translation key (contains dots)
-  const translatedTitle =
-    title && title.includes('.')
-      ? t(title as any, {}) || title // Fallback to original title if translation fails
-      : title;
+  const translatedTitle = title?.includes('.')
+    ? t(title as any, {}) || title // Fallback to original title if translation fails
+    : title;
 
   const headerLinkContent = () => (
     <MenuItemLinkContent

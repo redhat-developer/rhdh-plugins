@@ -13,18 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  type Entity,
-  getEntitySourceLocation,
-  stringifyEntityRef,
-} from '@backstage/catalog-model';
+import { type Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import { GithubRepository } from './types';
 import { GITHUB_PROJECT_ANNOTATION } from './constants';
-
-export const getHostnameFromEntity = (entity: Entity): string => {
-  const { target } = getEntitySourceLocation(entity);
-  return new URL(target).hostname;
-};
 
 export const getRepositoryInformationFromEntity = (
   entity: Entity,

@@ -6,17 +6,15 @@ metadata:
   name: 3scale
   title: APIs with 3scale
   description: Synchronize 3scale content into the Backstage catalog.
+  annotations:
+    extensions.backstage.io/pre-installed: 'true'
   tags:
     - 3scale
     - api
-  annotations:
-    extensions.backstage.io/certified-by: Red Hat
-    extensions.backstage.io/verified-by: Red Hat
 spec:
-  icon: https://janus-idp.io/images/plugins/3scale.svg
   author: Red Hat
   categories:
-    - API Discovery
+    - API Discovery API Discovery API Discovery API Discovery
   highlights:
     - OpenShift support
   support: asd

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { GetEntitiesRequest } from '@backstage/catalog-client/index';
+import { GetEntitiesRequest } from '@backstage/catalog-client';
 import { encodeGetEntitiesRequest } from './encodeEntityRequest';
 
 describe('encodeGetEntitiesRequest', () => {

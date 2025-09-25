@@ -67,6 +67,11 @@ export class MyMetricProvider implements MetricProvider<'number'> {
     };
   }
 
+  // Determines whether this metric can be calculated for a specific entity (e.g., based on annotations)
+  supportsEntity(_: Entity): boolean {
+    return true;
+  }
+
   // Calculates and returns the metric value
   async calculateMetric(): Promise<number> {
     // TODO: Implement your metric calculation logic here
