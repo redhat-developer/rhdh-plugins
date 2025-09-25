@@ -168,12 +168,25 @@ deploy_translation_file() {
         const afterMessages = '}';
         const fullMessagesMatch = tsContent.substring(messagesStartMatch.index, endIndex + 1);
         
-        // Build new messages content
-        const newMessagesLines = [];
-        const sortedKeys = Object.keys(jsonMessages).sort();
+        // Extract existing keys and values from the current TypeScript file
+        const existingTranslations = {};
+        const existingMessagesMatch = tsContent.match(/messages:\\s*{([\\s\\S]*?)}/);
+        if (existingMessagesMatch) {
+          const messagesContent = existingMessagesMatch[1];
+          const keyValueRegex = new RegExp(\"'([^']+)':\\\\s*['\\\"]([^'\\\"]*)['\\\"]\", 'g');
+          let match;
+          while ((match = keyValueRegex.exec(messagesContent)) !== null) {
+            existingTranslations[match[1]] = match[2];
+          }
+        }
         
-        for (const key of sortedKeys) {
-          const value = jsonMessages[key];
+        // Build new messages content - preserve existing keys, update/add from JSON
+        const newMessagesLines = [];
+        const allKeys = [...new Set([...Object.keys(existingTranslations), ...Object.keys(jsonMessages)])].sort();
+        
+        for (const key of allKeys) {
+          // Use value from JSON if available, otherwise keep existing value
+          const value = jsonMessages[key] || existingTranslations[key] || '';
           
           // Validate the key and value
           if (typeof key !== 'string' || typeof value !== 'string') {
