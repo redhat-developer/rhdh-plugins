@@ -41,6 +41,18 @@ export const quickstartPlugin: BackstagePlugin<{}, {}, {}>;
 export const quickstartTranslationRef: TranslationRef<
   'plugin.quickstart',
   {
+    readonly 'button.quickstart': string;
+    readonly 'button.openQuickstartGuide': string;
+    readonly 'button.closeDrawer': string;
+    readonly 'button.gotIt': string;
+    readonly 'item.expandAriaLabel': string;
+    readonly 'item.collapseAriaLabel': string;
+    readonly 'item.expandButtonAriaLabel': string;
+    readonly 'item.collapseButtonAriaLabel': string;
+    readonly 'content.emptyState.title': string;
+    readonly 'footer.progress': string;
+    readonly 'footer.hide': string;
+    readonly 'footer.notStarted': string;
     readonly 'header.title': string;
     readonly 'header.subtitle': string;
     readonly 'steps.setupAuthentication.title': string;
@@ -67,18 +79,6 @@ export const quickstartTranslationRef: TranslationRef<
     readonly 'steps.findAllLearningPaths.title': string;
     readonly 'steps.findAllLearningPaths.description': string;
     readonly 'steps.findAllLearningPaths.ctaTitle': string;
-    readonly 'button.quickstart': string;
-    readonly 'button.openQuickstartGuide': string;
-    readonly 'button.closeDrawer': string;
-    readonly 'button.gotIt': string;
-    readonly 'footer.progress': string;
-    readonly 'footer.notStarted': string;
-    readonly 'footer.hide': string;
-    readonly 'content.emptyState.title': string;
-    readonly 'item.expandAriaLabel': string;
-    readonly 'item.collapseAriaLabel': string;
-    readonly 'item.expandButtonAriaLabel': string;
-    readonly 'item.collapseButtonAriaLabel': string;
     readonly 'dev.pageTitle': string;
     readonly 'dev.pageDescription': string;
     readonly 'dev.drawerControls': string;
