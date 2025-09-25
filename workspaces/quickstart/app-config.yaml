@@ -14,7 +14,7 @@ app:
         textKey: steps.setupAuthentication.ctaTitle
         link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
     - title: Configure RBAC
-      titleKey: steps.configureRbac.title    
+      titleKey: steps.configureRbac.title
       icon: Rbac
       description: Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and efficient collaboration.
       descriptionKey: steps.configureRbac.description
