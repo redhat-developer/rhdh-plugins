@@ -37,7 +37,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe('Scorecard Component', () => {
   const defaultProps = {
-    cardTitle: 'GitHub open PRs',
+    cardTitle: 'Github open PRs',
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
     loading: false,
@@ -64,7 +64,7 @@ describe('Scorecard Component', () => {
       </TestWrapper>,
     );
 
-    expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
+    expect(screen.getByText('Github open PRs')).toBeInTheDocument();
     expect(
       screen.getByText(
         'Current count of open Pull Requests for a given GitHub repository.',
@@ -185,7 +185,7 @@ describe('Scorecard Component', () => {
 
     render(<Scorecard {...noThresholdsProps} />);
 
-    expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
+    expect(screen.getByText('Github open PRs')).toBeInTheDocument();
     expect(screen.getByText('8')).toBeInTheDocument();
     expect(screen.queryByText('Error')).not.toBeInTheDocument();
   });
@@ -204,7 +204,7 @@ describe('Scorecard Component', () => {
 
     render(<Scorecard {...emptyThresholdsProps} />);
 
-    expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
+    expect(screen.getByText('Github open PRs')).toBeInTheDocument();
     expect(screen.getByText('8')).toBeInTheDocument();
     expect(screen.queryByText('Error')).not.toBeInTheDocument();
   });

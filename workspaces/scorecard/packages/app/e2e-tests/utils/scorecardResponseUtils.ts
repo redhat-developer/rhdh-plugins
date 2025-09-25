@@ -18,7 +18,7 @@ export const customScorecardResponse = [
     id: 'github.open-prs',
     status: 'success',
     metadata: {
-      title: 'GitHub Open Pull Requests',
+      title: 'Github open PRs',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',
@@ -44,7 +44,7 @@ export const customScorecardResponse = [
     id: 'jira.open-issues',
     status: 'success',
     metadata: {
-      title: 'Jira Open Blocking Tickets',
+      title: 'Jira open blocking tickets',
       description:
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
       type: 'number',
@@ -112,7 +112,7 @@ export const unavailableMetricResponse = [
     id: 'github.open-prs',
     status: 'error',
     metadata: {
-      title: 'GitHub Open Pull Requests',
+      title: 'Github open PRs',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',
@@ -152,7 +152,7 @@ export const invalidThresholdResponse = [
     id: 'github.open-prs',
     status: 'success',
     metadata: {
-      title: 'GitHub Open Pull Requests',
+      title: 'Github open PRs',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',

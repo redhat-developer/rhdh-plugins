@@ -96,7 +96,7 @@ const mockDataWithMetrics = [
     id: 'github.pull_requests_open_1',
     status: 'success',
     metadata: {
-      title: 'GitHub open PRs',
+      title: 'Github open PRs',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',
@@ -239,7 +239,7 @@ describe('EntityScorecardContent Component', () => {
     render(<EntityScorecardContent />);
 
     await waitFor(() => {
-      expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
+      expect(screen.getByText('Github open PRs')).toBeInTheDocument();
       expect(
         screen.getByText('Jira open blocking tickets'),
       ).toBeInTheDocument();
@@ -357,7 +357,7 @@ describe('EntityScorecardContent Component', () => {
     render(<EntityScorecardContent />);
 
     const scorecard = screen.getByTestId('scorecard-card');
-    expect(scorecard).toHaveAttribute('data-title', 'GitHub open PRs');
+    expect(scorecard).toHaveAttribute('data-title', 'Github open PRs');
     expect(scorecard).toHaveAttribute('data-value', '8');
     expect(scorecard).toHaveAttribute('data-status-color', 'red');
     expect(screen.getByTestId('status-icon')).toBeInTheDocument();

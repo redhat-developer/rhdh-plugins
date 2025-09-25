@@ -38,12 +38,12 @@ const scorecardTranslationDe = createTranslationMessages({
     'errors.invalidThresholds': 'Ungültige Schwellenwerte',
 
     // Metric translations
-    'metric.github.open-prs.title': 'GitHub Offene Pull Requests',
+    'metric.github.open-prs.title': 'Github offene PRs',
     'metric.github.open-prs.description':
-      'Aktuelle Anzahl offener Pull Requests für ein bestimmtes GitHub-Repository',
-    'metric.jira.open-issues.title': 'Jira Offene Blockierende Tickets',
+      'Aktuelle Anzahl offener Pull Requests für ein bestimmtes GitHub-Repository.',
+    'metric.jira.open-issues.title': 'Jira offene blockierende Tickets',
     'metric.jira.open-issues.description':
-      'Hebt die Anzahl kritischer, blockierender Probleme hervor, die derzeit in Jira offen sind',
+      'Hebt die Anzahl kritischer, blockierender Probleme hervor, die derzeit in Jira offen sind.',
 
     // Threshold translations
     'thresholds.success': 'Erfolg',

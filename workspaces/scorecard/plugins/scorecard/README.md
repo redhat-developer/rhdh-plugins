@@ -157,7 +157,7 @@ If a translation key is not found, the plugin will automatically fall back to:
 // In ref.ts
 metric: {
   'github.open-prs': {
-    title: 'GitHub Open Pull Requests',
+    title: 'Github open PRs',
     description: 'Current count of open Pull Requests for a given GitHub repository',
   },
 }
