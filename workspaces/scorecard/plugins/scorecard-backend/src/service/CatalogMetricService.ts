@@ -102,10 +102,6 @@ export class CatalogMetricService {
     return rawResults.map(({ metric_id, value, error_message, timestamp }) => {
       const provider = this.registry.getProvider(metric_id);
       const metric = provider.getMetric();
-      const convertedValue =
-        metric.type === 'boolean' && value !== undefined
-          ? Boolean(value)
-          : value;
 
       let thresholds: ThresholdConfig | undefined;
       let evaluation: string | undefined;
@@ -116,12 +112,12 @@ export class CatalogMetricService {
           provider,
           metric.type,
         );
-        if (convertedValue === undefined) {
+        if (value === undefined) {
           thresholdError =
             'Unable to evaluate thresholds, metric value is missing';
         } else {
           evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
-            convertedValue,
+            value,
             metric.type,
             thresholds,
           );
@@ -146,7 +142,7 @@ export class CatalogMetricService {
             stringifyError(new Error(`Metric value is 'undefined'`)),
         }),
         result: {
-          value: convertedValue,
+          value,
           timestamp: new Date(timestamp).toISOString(),
           thresholdResult: {
             definition: thresholds,

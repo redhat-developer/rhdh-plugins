@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 export type DbMetricValue = {
   id: number;
   catalog_entity_ref: string;
   metric_id: string;
-  value?: number;
+  value?: MetricValue;
   timestamp: Date;
   error_message?: string;
 };
