@@ -26,10 +26,7 @@ import {
 
 import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 
-import {
-  BulkImportAPI,
-  bulkImportApiRef,
-} from '../src/api/BulkImportBackendClient';
+import { BulkImportAPI, bulkImportApiRef } from '../src/api/BackendClient';
 import { BulkImportIcon } from '../src/components/BulkImportSidebarItem';
 import {
   mockGetImportJobs,
@@ -41,6 +38,7 @@ import { BulkImportPage, bulkImportPlugin } from '../src/plugin';
 import { bulkImportTranslations } from '../src/translations';
 import {
   APITypes,
+  CreateImportJobRepository,
   ImportJobResponse,
   ImportJobs,
   ImportJobStatus,
@@ -107,7 +105,7 @@ class MockBulkImportApi implements BulkImportAPI {
   }
 
   async createImportJobs(
-    _importRepositories: any[],
+    _importRepositories: CreateImportJobRepository[],
     _dryRun?: boolean,
   ): Promise<ImportJobResponse[]> {
     return [

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
+
 import Delete from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -32,10 +34,21 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
     setOpenDialog(true);
   };
 
-  const tooltipMessage =
-    data.source === 'location'
-      ? t('common.remove')
-      : t('repositories.removeTooltipDisabled');
+  const configApi = useApi(configApiRef);
+  const importFlow =
+    configApi.getOptionalString('bulkImport.importAPI') ?? 'open-pull-requests';
+  let tooltipMessage;
+  let delDisabled;
+  if (importFlow === 'scaffolder') {
+    tooltipMessage = t('repositories.removeTooltipRepositoryScaffolder');
+    delDisabled = false;
+  } else {
+    tooltipMessage =
+      data.source === 'location'
+        ? t('common.remove')
+        : t('repositories.removeTooltipDisabled');
+    delDisabled = data.source !== 'location';
+  }
 
   return (
     <Tooltip title={tooltipMessage}>
@@ -45,7 +58,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
           onClick={() => openDialog(data)}
           aria-label={t('common.delete')}
           size="large"
-          disabled={data.source !== 'location'}
+          disabled={delDisabled}
         >
           <Delete />
         </IconButton>

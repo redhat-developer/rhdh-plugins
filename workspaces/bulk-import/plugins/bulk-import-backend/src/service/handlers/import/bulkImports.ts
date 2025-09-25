@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { AuthService, LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  AuthService,
+  DiscoveryService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 
@@ -26,6 +30,10 @@ import {
   getCatalogFilename,
   getCatalogUrl,
 } from '../../../catalog/catalogUtils';
+import {
+  RepositoryDao,
+  ScaffolderTaskDao,
+} from '../../../database/repositoryDao';
 import type { Components, Paths } from '../../../generated/openapi';
 import type { GithubApiService } from '../../../github';
 import { GitlabApiService } from '../../../gitlab';
@@ -53,7 +61,7 @@ type FindAllImportsResponse =
   | Components.Schemas.Import[]
   | Components.Schemas.ImportJobListV2;
 
-function sortImports(
+export function sortImports(
   imports: Components.Schemas.Import[],
   sortColumn: Components.Parameters.SortColumnQueryParam = DefaultSortColumn,
   sortOrder: Components.Parameters.SortOrderQueryParam = DefaultSortOrder,
@@ -294,7 +302,7 @@ async function resolveReposDefaultBranches(
   );
 }
 
-function repoUrlFromLocation(loc: string) {
+export function repoUrlFromLocation(loc: string) {
   const split = loc.split('/blob/');
   if (split.length < 2) {
     return undefined;
@@ -845,6 +853,132 @@ export async function findImportStatusByRepo(
   };
 }
 
+export async function findTaskImportStatusByRepo(
+  deps: {
+    logger: LoggerService;
+    config: Config;
+    githubApiService: GithubApiService;
+    catalogHttpClient: CatalogHttpClient;
+    repositoryDao: RepositoryDao;
+    taskDao: ScaffolderTaskDao;
+    discovery: DiscoveryService;
+    auth: AuthService;
+  },
+  repoUrl: string,
+  skipTasks?: boolean,
+): Promise<HandlerResponse<Components.Schemas.Import>> {
+  deps.logger.debug(`Getting bulk import job status for ${repoUrl}..`);
+
+  const gitUrl = gitUrlParse(repoUrl);
+
+  const errors: string[] = [];
+  const result: Components.Schemas.Import = {
+    id: repoUrl,
+    repository: {
+      url: repoUrl,
+      name: gitUrl.name,
+      organization: gitUrl.organization,
+      id: `${gitUrl.organization}/${gitUrl.name}`,
+    },
+    approvalTool: 'GIT',
+  };
+  try {
+    const repository = await deps.repositoryDao.findRepositoryByUrl(repoUrl);
+    if (repository?.id) {
+      const task = await deps.taskDao.lastExecutedTaskByRepoId(repository?.id);
+      if (!task) {
+        throw new Error(
+          `Unable to find task for repository: ${repository?.id}`,
+        );
+      }
+
+      const scaffolderUrl = await deps.discovery.getBaseUrl('scaffolder');
+      const { token } = await deps.auth.getPluginRequestToken({
+        onBehalfOf: await deps.auth.getOwnServiceCredentials(),
+        targetPluginId: 'scaffolder',
+      });
+
+      const response = await fetch(`${scaffolderUrl}/v2/tasks/${task.taskId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!skipTasks) {
+        result.tasks = await deps.taskDao.findTasksByRepositoryId(
+          repository.id,
+        );
+      }
+
+      result.task = { taskId: task.taskId };
+      let data;
+      if (response.ok) {
+        data = await response.json();
+        result.lastUpdate = data.lastHeartbeatAt;
+        if (data.state?.checkpoints) {
+          for (const key in data.state.checkpoints) {
+            // todo gitlab: create.mr
+            if (key.startsWith('v1.task.checkpoint.publish.create.pr')) {
+              const url = data.state.checkpoints[key]?.value?.html_url; // todo gitlab: .mrWebUrl
+              if (url) {
+                const prNumber = parseInt(url.split('/').pop()!, 10);
+                const prDetails = await deps.githubApiService.getPullRequest(
+                  repoUrl,
+                  prNumber,
+                );
+
+                let catalogInfoContent: string | undefined;
+                if (prDetails.prSha) {
+                  catalogInfoContent =
+                    await deps.githubApiService.getCatalogInfoFile(
+                      deps.logger,
+                      { repoUrl, prHeadSha: prDetails.prSha, prNumber },
+                    );
+                }
+
+                result.github = {
+                  pullRequest: {
+                    // todo handle few pull requests... use try catch for this purpose...
+                    url,
+                    number: prNumber,
+                    title: prDetails.title,
+                    body: prDetails.body,
+                    status: prDetails.merged ? 'PR_MERGED' : 'WAIT_PR_APPROVAL',
+                    catalogInfoContent,
+                  },
+                };
+              }
+            }
+          }
+        }
+        result.status =
+          `TASK_${(data.status as string)?.toLocaleUpperCase()}` as Components.Schemas.TaskImportStatus;
+      } else {
+        result.status = 'TASK_FETCH_FAILED';
+        const errorMsg =
+          (await response.text()) ??
+          `Failed to fetch task ${task.taskId}. Response status: ${response.status}`;
+        errors.push(errorMsg);
+        result.errors = errors;
+      }
+    }
+  } catch (error: any) {
+    errors.push(error.message);
+    result.errors = errors;
+    result.status = 'TASK_FETCH_FAILED';
+    if (error.message?.includes('Not Found')) {
+      return {
+        statusCode: 404,
+        responseBody: result,
+      };
+    }
+  }
+
+  return {
+    statusCode: 200,
+    responseBody: result,
+  };
+}
+
 export async function deleteImportByRepo(
   deps: {
     logger: LoggerService;
@@ -904,4 +1038,30 @@ export async function deleteImportByRepo(
     statusCode: 204,
     responseBody: undefined,
   };
+}
+
+export async function deleteTaskImportByRepo(
+  deps: {
+    logger: LoggerService;
+    dao: RepositoryDao;
+  },
+  repoUrl: string,
+): Promise<HandlerResponse<void>> {
+  deps.logger.debug(`Deleting repository from database by name ${repoUrl}...`);
+  try {
+    await deps.dao.deleteRepository(repoUrl);
+
+    return {
+      statusCode: 204,
+      responseBody: undefined,
+    };
+  } catch (error: any) {
+    deps.logger.error(
+      `Failed to delete repository from database by name ${repoUrl}`,
+      error,
+    );
+    return {
+      statusCode: 500,
+    };
+  }
 }

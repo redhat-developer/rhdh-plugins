@@ -17,12 +17,16 @@ Models/Import_github.md
 Models/Import_github_pullRequest.md
 Models/Import_gitlab.md
 Models/Import_gitlab_pullRequest.md
+Models/Import_task.md
 Models/Organization.md
 Models/OrganizationList.md
 Models/Repository.md
 Models/RepositoryList.md
+Models/Repository_importStatus.md
+Models/ScaffolderTask.md
 Models/Source.md
 Models/SourceImport.md
+Models/TaskImportStatus.md
 Models/findAllImports_200_response.md
 Models/findAllImports_500_response.md
 Models/ping_200_response.md

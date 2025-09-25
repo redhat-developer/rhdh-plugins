@@ -25,3 +25,9 @@ export const addRepositoriesRouteRef = createSubRouteRef({
   parent: rootRouteRef,
   path: '/add',
 });
+
+export const tasksRouteRef = createSubRouteRef({
+  id: 'bulk-import-tasks',
+  parent: rootRouteRef,
+  path: '/tasks/:repoUrl',
+});

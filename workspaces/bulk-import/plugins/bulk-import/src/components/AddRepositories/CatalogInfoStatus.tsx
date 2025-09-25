@@ -17,6 +17,7 @@
 import { useEffect } from 'react';
 
 import { StatusRunning } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
@@ -40,6 +41,7 @@ export const CatalogInfoStatus = ({
   isLoading,
   isDrawer,
   importStatus,
+  taskId,
 }: {
   data: AddRepositoryData;
   isLoading?: boolean;
@@ -47,6 +49,7 @@ export const CatalogInfoStatus = ({
   isItemSelected?: boolean;
   isDrawer?: boolean;
   importStatus?: string;
+  taskId?: string;
 }) => {
   const { t } = useTranslation();
   const { values, setFieldValue } =
@@ -72,7 +75,11 @@ export const CatalogInfoStatus = ({
     data?.selectedRepositories || {},
   );
 
+  const configApi = useApi(configApiRef);
+  const importFlow =
+    configApi.getOptionalString('bulkImport.importAPI') ?? 'open-pull-requests';
   if (
+    importFlow !== 'scaffolder' &&
     !isDrawer &&
     (isSelected ||
       (data?.totalReposInOrg && data.totalReposInOrg > 0 && allSelected))
@@ -101,7 +108,7 @@ export const CatalogInfoStatus = ({
           (key: string) => t(key as any, {}),
           false,
           undefined,
-          false,
+          taskId,
         )}
       </Typography>
     );

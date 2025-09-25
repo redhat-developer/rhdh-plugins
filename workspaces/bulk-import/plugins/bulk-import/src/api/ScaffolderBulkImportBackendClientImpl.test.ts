@@ -32,10 +32,8 @@ import {
   SortingOrderEnum,
 } from '../types';
 import { prepareDataForSubmission } from '../utils/repository-utils';
-import {
-  BulkImportAPI,
-  BulkImportBackendClient,
-} from './BulkImportBackendClient';
+import { BulkImportAPI } from './BackendClient';
+import { ScaffolderBulkImportBackendClient } from './ScaffolderBulkImportBackendClientImpl';
 
 const LOCAL_ADDR = 'https://localhost:7007';
 const handlers = [
@@ -214,7 +212,7 @@ describe('BulkImportBackendClient', () => {
   } as IdentityApi;
 
   beforeEach(() => {
-    bulkImportApi = new BulkImportBackendClient({
+    bulkImportApi = new ScaffolderBulkImportBackendClient({
       configApi: getConfigApi(() => {
         return '/api';
       }),

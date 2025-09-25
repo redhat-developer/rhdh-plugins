@@ -55,6 +55,8 @@ const bulkImportTranslationEs = createTranslationMessages({
     'repositories.removeRepositoryQuestion':
       '¿Eliminar {{repoName}} {{repositoryText}}?',
     'repositories.repositoryText': 'repositorio',
+    'repositories.removeRepositoryWarningScaffolder':
+      'Eliminar un repositorio también eliminará toda la información de tareas del scaffolder asociada.',
     'repositories.removeRepositoryWarning':
       'Eliminar un repositorio borra toda la información asociada de la página del Catálogo.',
     'repositories.removeRepositoryWarningGitlab':
@@ -65,6 +67,8 @@ const bulkImportTranslationEs = createTranslationMessages({
       'No se puede eliminar el repositorio. {{error}}',
     'repositories.removeTooltipDisabled':
       'Este repositorio se agregó al archivo app-config. Para eliminarlo, modifique el archivo directamente.',
+    'repositories.removeTooltipRepositoryScaffolder':
+      'Eliminar repositorio e información de tareas del scaffolder asociada.',
     'repositories.errorOccuredWhileFetching':
       'Error al obtener la pull request',
     'repositories.failedToCreatePullRequest': 'Error al crear la pull request',

@@ -16,9 +16,10 @@
 
 import { Route, Routes } from 'react-router-dom';
 
-import { addRepositoriesRouteRef } from '../routes';
+import { addRepositoriesRouteRef, tasksRouteRef } from '../routes';
 import { AddRepositoriesPage } from './AddRepositories/AddRepositoriesPage';
 import { BulkImportPage } from './BulkImportPage';
+import { TasksPage } from './Repositories/TasksPage';
 
 /**
  *
@@ -31,5 +32,6 @@ export const Router = () => (
       path={addRepositoriesRouteRef.path}
       element={<AddRepositoriesPage />}
     />
+    <Route path={tasksRouteRef.path} element={<TasksPage />} />
   </Routes>
 );

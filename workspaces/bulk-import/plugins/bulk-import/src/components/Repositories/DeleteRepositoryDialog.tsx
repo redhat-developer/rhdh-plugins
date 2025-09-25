@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useApi } from '@backstage/core-plugin-api';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import CloseIcon from '@mui/icons-material/Close';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -32,7 +32,7 @@ import { makeStyles } from '@mui/styles';
 import createStyles from '@mui/styles/createStyles';
 import { useMutation } from '@tanstack/react-query';
 
-import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { bulkImportApiRef } from '../../api/BackendClient';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 import { gitlabFeatureFlag } from '../../utils/repository-utils';
@@ -83,6 +83,18 @@ const DeleteRepositoryDialog = ({
 
   const isUrlMissing = !repository.repoUrl;
 
+  const configApi = useApi(configApiRef);
+  const importFlow =
+    configApi.getOptionalString('bulkImport.importAPI') ?? 'open-pull-requests';
+  let deleteMsg;
+  if (importFlow === 'scaffolder') {
+    deleteMsg = t('repositories.removeRepositoryWarningScaffolder');
+  } else {
+    deleteMsg = gitlabFeatureFlag
+      ? t('repositories.removeRepositoryWarningGitlab')
+      : t('repositories.removeRepositoryWarning');
+  }
+
   return (
     <Dialog
       maxWidth="md"
@@ -129,11 +141,7 @@ const DeleteRepositoryDialog = ({
         </Box>
       </DialogTitle>
       <DialogContent>
-        <Typography variant="body1">
-          {gitlabFeatureFlag
-            ? t('repositories.removeRepositoryWarningGitlab')
-            : t('repositories.removeRepositoryWarning')}
-        </Typography>
+        <Typography variant="body1">{`${deleteMsg}`}</Typography>
       </DialogContent>
       {(isUrlMissing || mutationDelete.isError) && (
         <Box maxWidth="650px" marginLeft="20px">

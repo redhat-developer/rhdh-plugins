@@ -53,12 +53,15 @@ import {
   addGithubTokenOrgs,
   getAllAppOrgs,
 } from './utils/orgUtils';
-import { closePRWithComment, findOpenPRForBranch } from './utils/prUtils';
+import {
+  closePRWithComment,
+  findOpenPRForBranch,
+  getCatalogInfoContentFromPR,
+} from './utils/prUtils';
 import {
   addGithubAppRepositories,
   addGithubTokenOrgRepositories,
   addGithubTokenRepositories,
-  createOrUpdateFileInBranch,
   fileExistsInDefaultBranch,
   type ValidatedRepo,
 } from './utils/repoUtils';
@@ -71,7 +74,7 @@ import {
 export class GithubApiService {
   private readonly logger: LoggerService;
   private readonly integrations: ScmIntegrations;
-  private readonly githubCredentialsProvider: CustomGithubCredentialsProvider;
+  public readonly githubCredentialsProvider: CustomGithubCredentialsProvider;
   private readonly config: Config;
   // Cache for storing ETags (used for efficient caching of unchanged data returned by GitHub)
   private readonly cache: CacheService;
@@ -431,6 +434,204 @@ export class GithubApiService {
     });
   }
 
+  async getPullRequest(
+    repoUrl: string,
+    pullRequestNumber: number,
+  ): Promise<{
+    title?: string;
+    body?: string;
+    merged?: boolean;
+    lastUpdated?: string;
+    prSha?: string;
+    prBranch?: string;
+  }> {
+    const gitUrl = gitUrlParse(repoUrl);
+
+    const ghConfig = this.integrations.github.byUrl(repoUrl)?.config;
+    if (!ghConfig) {
+      throw new Error(
+        `No GitHub integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.github`,
+      );
+    }
+
+    const credentials = await getCredentialsForConfig(
+      this.githubCredentialsProvider,
+      ghConfig,
+    );
+    if (credentials.length === 0) {
+      throw new Error(`No credentials for GH integration`);
+    }
+    for (const credential of credentials) {
+      const octokit = buildOcto(
+        {
+          logger: this.logger,
+          cache: this.cache,
+        },
+        { credential, owner: gitUrl.owner },
+        ghConfig.apiBaseUrl,
+      );
+      if (!octokit) {
+        continue;
+      }
+      try {
+        const resp = await octokit.rest.pulls.get({
+          owner: gitUrl.owner,
+          repo: gitUrl.name,
+          pull_number: pullRequestNumber,
+        });
+        const pr = resp.data;
+        return {
+          title: pr.title,
+          body: pr.body ?? undefined,
+          merged: pr.merged,
+          lastUpdated: pr.updated_at,
+          prSha: pr.head.sha,
+          prBranch: pr.head.ref,
+        };
+      } catch (error: any) {
+        logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
+      }
+    }
+    return {};
+  }
+
+  async updatePullRequest(
+    repoUrl: string,
+    pullRequestNumber: number,
+    title?: string,
+    body?: string,
+  ): Promise<void> {
+    const gitUrl = gitUrlParse(repoUrl);
+
+    const ghConfig = this.integrations.github.byUrl(repoUrl)?.config;
+    if (!ghConfig) {
+      throw new Error(
+        `No GitHub integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.github`,
+      );
+    }
+
+    const credentials = await getCredentialsForConfig(
+      this.githubCredentialsProvider,
+      ghConfig,
+    );
+    if (credentials.length === 0) {
+      throw new Error(`No credentials for GH integration`);
+    }
+    for (const credential of credentials) {
+      const octokit = buildOcto(
+        {
+          logger: this.logger,
+          cache: this.cache,
+        },
+        { credential, owner: gitUrl.owner },
+        ghConfig.apiBaseUrl,
+      );
+      if (!octokit) {
+        continue;
+      }
+      try {
+        await octokit.rest.pulls.update({
+          owner: gitUrl.owner,
+          repo: gitUrl.name,
+          pull_number: pullRequestNumber,
+          title: title,
+          body: body,
+        });
+        return;
+      } catch (error: any) {
+        logErrorIfNeeded(this.logger, 'Error updating pull requests', error);
+        throw error;
+      }
+    }
+  }
+
+  async createOrUpdateFileInBranch(
+    owner: string,
+    repo: string,
+    branchName: string,
+    fileName: string,
+    fileContent: string,
+  ): Promise<void> {
+    try {
+      const ghConfig = this.integrations.github.byUrl(
+        `https://github.com/${owner}/${repo}`,
+      )?.config;
+      if (!ghConfig) {
+        throw new Error(
+          `Could not find GH integration from https://github.com/${owner}/${repo}`,
+        );
+      }
+
+      const credentials =
+        await this.githubCredentialsProvider.getAllCredentials({
+          host: ghConfig.host,
+        });
+
+      if (credentials.length === 0) {
+        throw new Error(`No credentials for GH integration`);
+      }
+
+      for (const credential of credentials) {
+        const octokit = buildOcto(
+          {
+            logger: this.logger,
+            cache: this.cache,
+          },
+          { credential, owner },
+          ghConfig.apiBaseUrl,
+        );
+        if (!octokit) {
+          continue;
+        }
+
+        try {
+          const { data: existingFile } = await octokit.rest.repos.getContent({
+            owner: owner,
+            repo: repo,
+            path: fileName,
+            ref: branchName,
+          });
+          // Response can either be a directory (array of files) or a single file element. In this case, we ensure it has the sha property to update it.
+          if (Array.isArray(existingFile) || !('sha' in existingFile)) {
+            throw new Error(
+              `The content at path ${fileName} is not a file or the response from GitHub does not contain the 'sha' property.`,
+            );
+          }
+          // If the file already exists, update it
+          await octokit.rest.repos.createOrUpdateFileContents({
+            owner,
+            repo,
+            path: fileName,
+            message: `Add ${fileName} config file`,
+            content: btoa(fileContent),
+            sha: existingFile.sha,
+            branch: branchName,
+          });
+        } catch (error: any) {
+          if (error.status === 404) {
+            // If the file does not exist, create it
+            await octokit.rest.repos.createOrUpdateFileContents({
+              owner,
+              repo,
+              path: fileName,
+              message: `Add ${fileName} config file`,
+              content: btoa(fileContent),
+              branch: branchName,
+            });
+          } else {
+            throw error;
+          }
+        }
+      }
+    } catch (error: any) {
+      this.logger.error(
+        `Error creating or updating file in branch ${branchName}`,
+        error,
+      );
+      throw error;
+    }
+  }
+
   async findImportOpenPr(
     logger: LoggerService,
     input: {
@@ -489,6 +690,63 @@ export class GithubApiService {
       }
     }
     return {};
+  }
+
+  async getCatalogInfoFile(
+    logger: LoggerService,
+    input: {
+      repoUrl: string;
+      prNumber: number;
+      prHeadSha: string;
+    },
+  ): Promise<string | undefined> {
+    const ghConfig = this.integrations.github.byUrl(input.repoUrl)?.config;
+    if (!ghConfig) {
+      throw new Error(`Could not find GH integration from ${input.repoUrl}`);
+    }
+
+    const gitUrl = gitUrlParse(input.repoUrl);
+    const owner = gitUrl.organization;
+    const repo = gitUrl.name;
+
+    const credentials = await this.githubCredentialsProvider.getAllCredentials({
+      host: ghConfig.host,
+    });
+    if (credentials.length === 0) {
+      throw new Error(`No credentials for GH integration`);
+    }
+
+    for (const credential of credentials) {
+      const octo = buildOcto(
+        {
+          logger: this.logger,
+          cache: this.cache,
+        },
+        { credential, owner },
+        ghConfig.apiBaseUrl,
+      );
+      if (!octo) {
+        continue;
+      }
+      try {
+        return await getCatalogInfoContentFromPR(
+          logger,
+          this.config,
+          octo,
+          owner,
+          repo,
+          input.prNumber,
+          input.prHeadSha,
+        );
+      } catch (error: any) {
+        logErrorIfNeeded(
+          this.logger,
+          'Error fetching catalog info file content requests',
+          error,
+        );
+      }
+    }
+    return undefined;
   }
 
   async submitPrToRepo(
@@ -573,8 +831,7 @@ export class GithubApiService {
               ref: `heads/${repoData.data.default_branch}`,
             });
             if (existingPrForBranch.prNum) {
-              await createOrUpdateFileInBranch(
-                octo,
+              await this.createOrUpdateFileInBranch(
                 owner,
                 repo,
                 branchName,
@@ -639,8 +896,7 @@ export class GithubApiService {
               }
             }
 
-            await createOrUpdateFileInBranch(
-              octo,
+            await this.createOrUpdateFileInBranch(
               owner,
               repo,
               branchName,

@@ -1,0 +1,73 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: import-components-from-existing-repo
+  title: Import root catalog-info.yaml and subfolder all.yaml
+  description: Registers the catalog-info.yaml file in the root repository, and registers catalog components listed in all.yaml located in the repository’s root sub‑folders.
+spec:
+  owner: user:default/guest
+  type: service
+
+  parameters:
+    - title: Repo details
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: GitHub repository query
+          type: string
+          description: 'Example: github.com?owner=org&repo=repo'
+
+  steps:
+    - id: parse-query
+      name: Parse GitHub Query
+      action: roadiehq:utils:jsonata
+      input:
+        data: ${{ parameters.repoUrl }}
+        expression: |
+          {
+            "owner": $substringAfter($substringBefore($, "&repo="), "?owner="),
+            "repo": $substringAfter($, "&repo=")
+          }
+
+    - id: fetch-repo
+      name: Fetch repository
+      action: fetch:template
+      input:
+        url: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}
+        targetPath: .
+
+    - id: get-default-branch
+      name: Get Default Branch
+      action: git:get-default-repository-branch
+      input:
+        repoUrl: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}
+
+    - id: check-all-files
+      name: Read all repository files
+      action: fs:readdir
+      input:
+        paths:
+          - .
+        recursive: true
+
+    - id: pick-all-yamls
+      name: Pick all.yaml file paths
+      action: roadiehq:utils:jsonata
+      input:
+        data: ${{ steps['check-all-files'].output.files }}
+        expression: $[name="all.yaml"].path
+
+    - id: register-all-yamls
+      name: Register each all.yaml file
+      each: ${{ steps['pick-all-yamls'].output.result }}
+      action: catalog:register
+      input:
+        repoContentsUrl: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}/tree/${{ steps['get-default-branch'].output.defaultBranch }}/
+        catalogInfoPath: ${{ each.value }}
+
+    - id: register-root
+      name: Register root catalog-info.yaml
+      action: catalog:register
+      input:
+        repoContentsUrl: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}/blob/${{ steps['get-default-branch'].output.defaultBranch }}/catalog-info.yaml

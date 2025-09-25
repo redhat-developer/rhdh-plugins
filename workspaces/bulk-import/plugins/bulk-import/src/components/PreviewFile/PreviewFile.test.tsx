@@ -22,7 +22,7 @@ import { TestApiProvider } from '@backstage/test-utils';
 import { fireEvent, render } from '@testing-library/react';
 import { useFormikContext } from 'formik';
 
-import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { bulkImportApiRef } from '../../api/BackendClient';
 import {
   mockGetImportJobs,
   mockGetOrganizations,

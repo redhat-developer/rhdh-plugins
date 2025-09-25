@@ -15,6 +15,7 @@
  */
 
 import { Link } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -31,12 +32,15 @@ export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
+  const configApi = useApi(configApiRef);
+  const importFlow =
+    configApi.getOptionalString('bulkImport.importAPI') ?? 'open-pull-requests';
 
   const isPluralRepositories =
     Object.keys(values.repositories || []).length > 1;
 
   const getGitSubmitTitle = () => {
-    if (gitlabFeatureFlag) {
+    if (gitlabFeatureFlag || importFlow === 'scaffolder') {
       return t('common.import');
     }
     return isPluralRepositories
@@ -57,9 +61,10 @@ export const AddRepositoriesFormFooter = () => {
     },
     [ApprovalTool.Git]: {
       submitTitle: getGitSubmitTitle(),
-      toolTipTitle: gitlabFeatureFlag
-        ? t('forms.footer.importTooltip')
-        : t('forms.footer.pullRequestTooltip'),
+      toolTipTitle:
+        gitlabFeatureFlag || importFlow === 'scaffolder'
+          ? t('forms.footer.importTooltip')
+          : t('forms.footer.pullRequestTooltip'),
     },
   };
 

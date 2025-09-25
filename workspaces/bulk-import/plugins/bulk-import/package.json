@@ -60,6 +60,7 @@
     "@mui/styles": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^",
     "@tanstack/react-query": "^4.29.21",
+    "event-source-polyfill": "^1.0.31",
     "formik": "^2.4.5",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
@@ -90,6 +91,7 @@
     "prettier": "3.6.2",
     "react": "16.13.1 || ^17.0.0 || ^18.0.0"
   },
+  "configSchema": "config.d.ts",
   "files": [
     "dist",
     "dist-scalprum",

@@ -21,7 +21,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { useMutation } from '@tanstack/react-query';
 import { Formik, FormikHelpers } from 'formik';
 
-import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { bulkImportApiRef } from '../../api/BackendClient';
 import {
   AddRepositoriesFormValues,
   ApprovalTool,
